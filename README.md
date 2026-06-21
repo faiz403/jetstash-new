@@ -134,3 +134,4 @@ The `Route` interface in `data/routes.ts` has two fields for this:
 - **`connectingAlternative`** — populated for any route where a realistic 1-stop (or 2-stop) alternative matters, whether the route is currently direct (as a "what happens after the direct service ends" fallback) or already connecting-only (as the main "how this route works" content). The route page renders this as a dedicated section, with the heading and framing copy changing based on whether `isDirect` is currently true or false.
 
 **When the withdrawal date passes:** update the route entry — flip `isDirect` to `false`, remove `directServiceEndDate`/`directServiceEndNote`, and rewrite `intro`/`frequency`/`airlines` to describe the connecting-only reality, using `connectingAlternative`'s data as the basis. Don't leave a route marked direct with a past end date — that's the exact stale-claim pattern this whole system exists to avoid.
+
