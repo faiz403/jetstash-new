@@ -205,9 +205,9 @@ export const airports: Airport[] = [
     longHaulRoutes: ['Dubai'],
     shortHaulHighlights: ['Antalya', 'Alicante', 'Palma'],
     whyThisAirport:
-      'Emirates operates a daily direct service from Newcastle to Dubai, making this a genuine long-haul gateway in its own right for Gulf travel — useful both as a destination and as a connecting point onward to South Asia. For direct Pakistan or India travel specifically, most of the region\\'s Pakistani and Bangladeshi communities still drive to Manchester (around 2 hours) rather than connecting through Newcastle, as no direct South Asia service operates from here.',
+      'Emirates operates a daily direct service from Newcastle to Dubai, making this a genuine long-haul gateway in its own right for Gulf travel — useful both as a destination and as a connecting point onward to South Asia. For direct Pakistan or India travel specifically, most of the region\'s Pakistani and Bangladeshi communities still drive to Manchester (around 2 hours) rather than connecting through Newcastle, as no direct South Asia service operates from here.',
     practicalNotes: [
-      { title: 'The direct Dubai service is a real Gulf gateway, not just a connection', body: 'Emirates\\' daily Newcastle–Dubai flight runs in Economy, Premium Economy and Business Class — worth booking as a destination in its own right, not only as a stopover en route elsewhere.' },
+      { title: 'The direct Dubai service is a real Gulf gateway, not just a connection', body: 'Emirates\' daily Newcastle–Dubai flight runs in Economy, Premium Economy and Business Class — worth booking as a destination in its own right, not only as a stopover en route elsewhere.' },
       { title: 'For direct Pakistan or India travel, compare against driving to Manchester', body: 'A one-stop Gulf-connecting itinerary departing Newcastle is sometimes cheaper overall than the fuel, parking and time cost of driving to Manchester for a direct flight — run both numbers before deciding.' },
       { title: 'Strong, well-established package holiday routes to the Mediterranean', body: 'TUI and Jet2 both run a wide seasonal programme from Newcastle, making it a genuinely competitive option for family package holidays.' },
     ],
@@ -225,11 +225,11 @@ export const airports: Airport[] = [
     longHaulRoutes: ['Dubai'],
     shortHaulHighlights: ['Barcelona', 'Antalya', 'Faro'],
     whyThisAirport:
-      'Emirates resumed a daily direct Edinburgh–Dubai service, giving Scotland\\'s capital a genuine long-haul gateway independent of Glasgow. For South Asia specifically, Scottish travellers still typically connect via Heathrow or via the Gulf, as no direct India/Pakistan service operates from Scotland — but for Dubai and onward Gulf connections, Edinburgh now stands on its own rather than requiring the journey to Glasgow.',
+      'Emirates resumed a daily direct Edinburgh–Dubai service, giving Scotland\'s capital a genuine long-haul gateway independent of Glasgow. For South Asia specifically, Scottish travellers still typically connect via Heathrow or via the Gulf, as no direct India/Pakistan service operates from Scotland — but for Dubai and onward Gulf connections, Edinburgh now stands on its own rather than requiring the journey to Glasgow.',
     practicalNotes: [
       { title: 'The daily Dubai service runs across all cabins', body: 'Emirates flies Economy, Premium Economy, Business and First Class on this route — a genuine alternative to travelling via Glasgow for Gulf travel specifically.' },
       { title: 'Glasgow remains worth comparing for schedule flexibility', body: 'Both Edinburgh and Glasgow now run daily Emirates Dubai services — comparing departure times and connection options across both before booking is worth the extra few minutes, particularly around Eid or school holidays.' },
-      { title: 'Strong direct European network for short breaks', body: 'Edinburgh\\'s European route map is denser than Glasgow\\'s, making it the better choice for Mediterranean city breaks specifically.' },
+      { title: 'Strong direct European network for short breaks', body: 'Edinburgh\'s European route map is denser than Glasgow\'s, making it the better choice for Mediterranean city breaks specifically.' },
     ],
     servesCommunities: ['Edinburgh', 'Fife', 'Scottish Borders'],
     hasDirectLongHaul: true,
