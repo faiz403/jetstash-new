@@ -1,0 +1,60 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-display: 'Fraunces', serif;
+  --font-sans: 'Public Sans', sans-serif;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: #0B0E14;
+  color: #F4F5F7;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+::selection {
+  background-color: #C8932E;
+  color: #0B0E14;
+}
+
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* Focus ring — visible keyboard navigation */
+:focus-visible {
+  outline: 2px solid #C8932E;
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+.text-balance {
+  text-wrap: balance;
+}
+
+/* Route map line drawing */
+.route-line {
+  stroke-dasharray: 6 6;
+  stroke-dashoffset: 1000;
+}
+.route-line.is-visible {
+  animation: routeDraw 1.8s cubic-bezier(0.65, 0, 0.35, 1) forwards;
+}
+
+@keyframes routeDraw {
+  to { stroke-dashoffset: 0; }
+}

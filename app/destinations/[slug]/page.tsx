@@ -1,0 +1,140 @@
+import type { Metadata } from 'next';
+import { notFound } from 'next/navigation';
+import Link from 'next/link';
+import Image from 'next/image';
+import { Plane, FileCheck, ArrowUpRight } from 'lucide-react';
+import { destinations, getDestinationBySlug } from '@/data/destinations';
+import { getDealsByDestination } from '@/data/deals';
+import { airports } from '@/data/airports';
+import { getRoutesByDestination } from '@/data/routes';
+import { DealCard } from '@/components/ui/deal-card';
+import { Badge } from '@/components/ui/badge';
+import { FamilyVisitBlock } from '@/components/sections/family-visit-block';
+import { siteConfig } from '@/lib/site-config';
+import { placeholderUrl } from '@/lib/images';
+
+export async function generateStaticParams() {
+  return destinations.map((d) => ({ slug: d.slug }));
+}
+
+export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
+  const dest = getDestinationBySlug(params.slug);
+  if (!dest) return {};
+  return {
+    title: `Flights to ${dest.city}, ${dest.country} from the UK`,
+    description: `${dest.tagline}. Flight times, visa requirements and current fares for UK travellers to ${dest.city}.`,
+    alternates: { canonical: `${siteConfig.url}/destinations/${dest.slug}` },
+  };
+}
+
+export default function DestinationPage({ params }: { params: { slug: string } }) {
+  const dest = getDestinationBySlug(params.slug);
+  if (!dest) {
+    notFound();
+    return null;
+  }
+
+  const dealsHere = getDealsByDestination(dest.slug);
+  const servingAirports = airports.filter((a) => dest.ukAirports.includes(a.slug));
+  const routesHere = getRoutesByDestination(dest.slug);
+
+  return (
+    <>
+      <section className="bg-ink-900 py-16 sm:py-20">
+        <div className="mx-auto max-w-content px-5 sm:px-8">
+          <nav className="mb-5 flex items-center gap-1.5 text-xs text-ink-400">
+            <Link href="/" className="hover:text-brass-300">Home</Link>
+            <span>/</span>
+            <Link href="/destinations" className="hover:text-brass-300">Destinations</Link>
+            <span>/</span>
+            <span className="text-ink-200">{dest.city}</span>
+          </nav>
+          <div className="grid gap-8 lg:grid-cols-[1.2fr_1fr] lg:items-center">
+            <div>
+              <Badge variant="dark">{dest.country}</Badge>
+              <h1 className="mt-4 font-display text-4xl text-sand-50 sm:text-5xl">{dest.city}</h1>
+              <p className="mt-3 max-w-xl text-lg leading-relaxed text-ink-300">{dest.tagline}</p>
+              <div className="mt-6 flex flex-wrap gap-2">
+                {dest.bestFor.map((tag) => (
+                  <Badge key={tag} variant="dark">{tag}</Badge>
+                ))}
+              </div>
+            </div>
+            <div className="relative aspect-[4/3] overflow-hidden rounded-md">
+              <Image
+                src={placeholderUrl(`${dest.city}, ${dest.country}`)}
+                alt={`${dest.city}, ${dest.country}`}
+                fill
+                sizes="(max-width: 1024px) 100vw, 40vw"
+                className="object-cover"
+                priority
+              />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="bg-white py-16 sm:py-20">
+        <div className="mx-auto max-w-content px-5 sm:px-8">
+          <div className="grid gap-10 lg:grid-cols-[1.3fr_0.7fr]">
+            <div>
+              <h2 className="font-display text-2xl text-ink-900">About {dest.city}</h2>
+              <p className="mt-4 leading-relaxed text-ink-600">{dest.description}</p>
+
+              <h3 className="mt-10 font-display text-xl text-ink-900">Flying from the UK</h3>
+              <div className="mt-4 flex flex-col gap-3">
+                {servingAirports.map((airport) => {
+                  const matchedRoute = routesHere.find((r) => r.airportSlug === airport.slug);
+                  const href = matchedRoute ? `/routes/${matchedRoute.slug}` : `/airports/${airport.slug}`;
+                  return (
+                    <Link
+                      key={airport.slug}
+                      href={href}
+                      className="flex items-center justify-between rounded-sm border border-ink-100 px-4 py-3 transition-colors hover:border-brass/40 hover:bg-sand-50"
+                    >
+                      <span className="flex items-center gap-2 text-sm font-medium text-ink-700">
+                        <Plane className="h-4 w-4 text-ink-400" strokeWidth={2} />
+                        {airport.name} ({airport.code})
+                      </span>
+                      <span className="flex items-center gap-1 text-xs text-ink-400">
+                        {matchedRoute ? 'View route guide' : 'View airport guide'}
+                        <ArrowUpRight className="h-3 w-3" strokeWidth={2.25} />
+                      </span>
+                    </Link>
+                  );
+                })}
+              </div>
+              <p className="mt-3 text-sm text-ink-500">Typical flight time: {dest.flightTimeFromUK}</p>
+            </div>
+
+            <div className="rounded-md border border-ink-100 bg-sand-50 p-7">
+              <div className="flex items-center gap-2">
+                <FileCheck className="h-5 w-5 text-terracotta-600" strokeWidth={2} />
+                <h3 className="font-display text-lg text-ink-900">Visa & entry</h3>
+              </div>
+              <p className="mt-3 text-sm leading-relaxed text-ink-600">{dest.visaNote}</p>
+              <p className="mt-4 text-xs text-ink-400">
+                Always confirm current requirements with the relevant embassy or high commission before booking.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {dest.familyVisitContent && <FamilyVisitBlock content={dest.familyVisitContent} city={dest.city} />}
+
+      {dealsHere.length > 0 && (
+        <section className="bg-sand-50 py-16 sm:py-20">
+          <div className="mx-auto max-w-content px-5 sm:px-8">
+            <h2 className="font-display text-2xl text-ink-900 sm:text-3xl">Current fares to {dest.city}</h2>
+            <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              {dealsHere.map((deal) => (
+                <DealCard key={deal.id} deal={deal} />
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+    </>
+  );
+}

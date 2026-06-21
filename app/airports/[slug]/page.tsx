@@ -1,0 +1,173 @@
+import type { Metadata } from 'next';
+import { notFound } from 'next/navigation';
+import Link from 'next/link';
+import { Plane, ArrowUpRight, Info, MapPin } from 'lucide-react';
+import { airports, getAirportBySlug } from '@/data/airports';
+import { getDealsByAirport } from '@/data/deals';
+import { getRoutesByAirport, getRouteDestination } from '@/data/routes';
+import { DealCard } from '@/components/ui/deal-card';
+import { Badge } from '@/components/ui/badge';
+import { siteConfig } from '@/lib/site-config';
+
+export async function generateStaticParams() {
+  return airports.map((a) => ({ slug: a.slug }));
+}
+
+export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
+  const airport = getAirportBySlug(params.slug);
+  if (!airport) return {};
+  return {
+    title: `Flights from ${airport.name} (${airport.code}) — Pakistan, India & Gulf Routes`,
+    description: airport.description,
+    alternates: { canonical: `${siteConfig.url}/airports/${airport.slug}` },
+  };
+}
+
+export default function AirportPage({ params }: { params: { slug: string } }) {
+  const airport = getAirportBySlug(params.slug);
+  if (!airport) {
+    notFound();
+    return null;
+  }
+
+  const dealsHere = getDealsByAirport(airport.slug);
+  const routesHere = getRoutesByAirport(airport.slug);
+
+  return (
+    <>
+      <section className="bg-ink-900 py-16 sm:py-20">
+        <div className="mx-auto max-w-content px-5 sm:px-8">
+          <nav className="mb-5 flex items-center gap-1.5 text-xs text-ink-400">
+            <Link href="/" className="hover:text-brass-300">Home</Link>
+            <span>/</span>
+            <Link href="/airports" className="hover:text-brass-300">Airports</Link>
+            <span>/</span>
+            <span className="text-ink-200">{airport.name}</span>
+          </nav>
+          <Badge variant="dark">{airport.code} · {airport.region}</Badge>
+          <h1 className="mt-4 font-display text-4xl text-sand-50 sm:text-5xl">{airport.name}</h1>
+          <p className="mt-3 max-w-2xl text-lg leading-relaxed text-ink-300">{airport.description}</p>
+        </div>
+      </section>
+
+      {/* Why this airport — community-specific framing */}
+      <section className="bg-white py-14 sm:py-16">
+        <div className="mx-auto max-w-content px-5 sm:px-8">
+          <div className="grid gap-10 lg:grid-cols-[1.3fr_0.7fr]">
+            <div>
+              <h2 className="font-display text-2xl text-ink-900">Why {airport.city} is the right airport for this route</h2>
+              <p className="mt-4 leading-relaxed text-ink-600">{airport.whyThisAirport}</p>
+            </div>
+            <div className="rounded-md border border-ink-100 bg-sand-50 p-6">
+              <span className="text-xs font-semibold uppercase tracking-wide text-terracotta-600">Serves communities in</span>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {airport.servesCommunities.map((c) => (
+                  <span key={c} className="rounded-full border border-ink-200 bg-white px-3 py-1 text-xs font-medium text-ink-700">
+                    {c}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Route hub links — the actual missing architecture */}
+      {routesHere.length > 0 && (
+        <section className="bg-sand-50 py-14 sm:py-16">
+          <div className="mx-auto max-w-content px-5 sm:px-8">
+            <h2 className="font-display text-2xl text-ink-900 sm:text-3xl">Direct routes from {airport.name}</h2>
+            <p className="mt-2 max-w-xl text-sm text-ink-500">
+              Each route below has its own guide — booking windows, peak periods and airline coverage specific to that exact pairing.
+            </p>
+            <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              {routesHere.map((route) => {
+                const dest = getRouteDestination(route);
+                if (!dest) return null;
+                return (
+                  <Link
+                    key={route.slug}
+                    href={`/routes/${route.slug}`}
+                    className="group flex flex-col rounded-md border border-ink-100 bg-white p-6 shadow-card transition-all hover:-translate-y-1 hover:shadow-card-hover"
+                  >
+                    <span className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-ink-400">
+                      <MapPin className="h-3.5 w-3.5" strokeWidth={2.25} />
+                      {dest.country}
+                    </span>
+                    <h3 className="mt-2 font-display text-xl text-ink-900">{airport.city} → {dest.city}</h3>
+                    <p className="mt-1.5 text-sm text-ink-500">{route.flightTime} · {route.isDirect ? 'Direct' : 'Connecting'}</p>
+                    <span className="mt-4 flex items-center gap-1.5 text-sm font-semibold text-ink-900">
+                      View route guide
+                      <ArrowUpRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" strokeWidth={2.25} />
+                    </span>
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Practical notes — real hub depth, not generic airport copy */}
+      <section className="bg-white py-14 sm:py-16">
+        <div className="mx-auto max-w-content px-5 sm:px-8">
+          <h2 className="font-display text-2xl text-ink-900 sm:text-3xl">Before you fly from {airport.city}</h2>
+          <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {airport.practicalNotes.map((note) => (
+              <div key={note.title} className="rounded-md border border-ink-100 bg-sand-50 p-6">
+                <div className="flex h-9 w-9 items-center justify-center rounded-sm bg-terracotta-50 text-terracotta-600">
+                  <Info className="h-4.5 w-4.5" strokeWidth={2} />
+                </div>
+                <h3 className="mt-4 font-display text-lg text-ink-900">{note.title}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-ink-500">{note.body}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Long-haul + short-haul lists retained, but as supporting detail not the page's main content */}
+      <section className="bg-sand-50 py-14 sm:py-16">
+        <div className="mx-auto max-w-content px-5 sm:px-8">
+          <div className="grid gap-10 sm:grid-cols-2">
+            <div>
+              <h2 className="font-display text-xl text-ink-900">All long-haul routes</h2>
+              <ul className="mt-4 flex flex-col gap-2.5">
+                {airport.longHaulRoutes.map((route) => (
+                  <li key={route} className="flex items-center gap-2 text-sm text-ink-600">
+                    <Plane className="h-4 w-4 text-terracotta-600" strokeWidth={2} />
+                    {route}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div>
+              <h2 className="font-display text-xl text-ink-900">Popular short-haul</h2>
+              <ul className="mt-4 flex flex-col gap-2.5">
+                {airport.shortHaulHighlights.map((route) => (
+                  <li key={route} className="flex items-center gap-2 text-sm text-ink-600">
+                    <Plane className="h-4 w-4 text-ink-400" strokeWidth={2} />
+                    {route}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {dealsHere.length > 0 && (
+        <section className="bg-white py-14 sm:py-16">
+          <div className="mx-auto max-w-content px-5 sm:px-8">
+            <h2 className="font-display text-2xl text-ink-900 sm:text-3xl">Current fares from {airport.name}</h2>
+            <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              {dealsHere.map((deal) => (
+                <DealCard key={deal.id} deal={deal} />
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+    </>
+  );
+}
