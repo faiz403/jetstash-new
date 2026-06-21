@@ -350,7 +350,7 @@ export const routes: Route[] = [
     peakPeriods: ['Diwali', 'Christmas–New Year', 'UK summer holidays'],
     directServiceEndDate: '2026-09-01',
     directServiceEndNote:
-      'IndiGo has announced it will withdraw from Manchester entirely from 1 September 2026, ending both the Delhi and Mumbai direct services. If you are travelling after this date, plan around the one-stop alternative below rather than the direct route.',
+      'IndiGo has announced it will withdraw from Manchester entirely from 31 August 2026, ending both the Delhi and Mumbai direct services. If you are travelling after this date, plan around the one-stop alternative below rather than the direct route.',
     connectingAlternative: {
       typicalStops: 1,
       hubAirports: ['Dubai', 'Doha', 'Abu Dhabi', 'Istanbul'],
@@ -373,7 +373,7 @@ export const routes: Route[] = [
     peakPeriods: ['Diwali', 'Christmas–New Year', 'UK summer holidays'],
     directServiceEndDate: '2026-09-01',
     directServiceEndNote:
-      'IndiGo has announced it will withdraw from Manchester entirely from 1 September 2026, ending both the Mumbai and Delhi direct services. If you are travelling after this date, plan around the one-stop alternative below rather than the direct route.',
+      'IndiGo has announced it will withdraw from Manchester entirely from 31 August 2026, ending both the Mumbai and Delhi direct services. If you are travelling after this date, plan around the one-stop alternative below rather than the direct route.',
     connectingAlternative: {
       typicalStops: 1,
       hubAirports: ['Dubai', 'Doha', 'Abu Dhabi'],

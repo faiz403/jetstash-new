@@ -31,7 +31,7 @@ export default function IndiaHubPage() {
         },
         {
           title: 'Manchester\'s direct Delhi and Mumbai services have an announced end date',
-          body: 'IndiGo\'s direct Manchester services to Delhi and Mumbai are scheduled to be withdrawn from 1 September 2026. If you\'re travelling after that date, plan around a one-stop Gulf-carrier connection rather than assuming the direct flight will still be running — check the relevant route guide for the realistic alternative.',
+          body: 'IndiGo\'s direct Manchester services to Delhi and Mumbai are scheduled to be withdrawn from 31 August 2026. If you\'re travelling after that date, plan around a one-stop Gulf-carrier connection rather than assuming the direct flight will still be running — check the relevant route guide for the realistic alternative.',
         },
         {
           title: 'Domestic onward connections add up',
