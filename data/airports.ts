@@ -14,6 +14,8 @@ export interface Airport {
   /** Nearest major communities this airport meaningfully serves — used for internal linking and on-page relevance signals. */
   servesCommunities: string[];
   hasDirectLongHaul: boolean;
+  /** Set only for airports with no curated route on JetStash — points to the nearest airport(s) genuinely worth comparing against, matching what whyThisAirport already says. Plural because some airports (e.g. East Midlands, Bristol) name more than one realistic alternative. */
+  compareAirportSlugs?: string[];
 }
 
 export const airports: Airport[] = [
@@ -24,11 +26,11 @@ export const airports: Airport[] = [
     city: 'Manchester',
     region: 'North West England',
     description:
-      'The largest airport outside London and the busiest direct gateway in the North of England to Pakistan, the Gulf and South Asia, alongside year-round European routes.',
-    longHaulRoutes: ['Islamabad', 'Lahore', 'Dubai', 'Doha', 'Abu Dhabi', 'Karachi'],
+      'The largest airport outside London and the busiest direct gateway in the North of England to Pakistan, India, the Gulf and South Asia, alongside year-round European routes.',
+    longHaulRoutes: ['Islamabad', 'Lahore', 'Dubai', 'Doha', 'Abu Dhabi', 'Karachi', 'Delhi', 'Mumbai'],
     shortHaulHighlights: ['Istanbul', 'Antalya', 'Marrakech', 'Barcelona'],
     whyThisAirport:
-      'Manchester is the only airport in the North of England with genuine daily-frequency direct services to Pakistan — a fact that shapes travel patterns for the large Pakistani-heritage communities across Greater Manchester, Lancashire, and West Yorkshire. For most of this audience, Manchester beats connecting via London on both price and journey time, even after accounting for the drive to the airport.',
+      'Manchester is the only airport in the North of England with genuine daily-frequency direct services to Pakistan — a fact that shapes travel patterns for the large Pakistani-heritage communities across Greater Manchester, Lancashire, and West Yorkshire. For most of this audience, Manchester beats connecting via London on both price and journey time, even after accounting for the drive to the airport. Manchester is also currently the only Northern UK airport with direct flights to both Delhi and Mumbai, run by IndiGo since 2025 — though this direct India service has an announced end date of 1 September 2026, so check the relevant route guide for current status and the realistic one-stop alternative before booking, particularly for travel after that date.',
     practicalNotes: [
       { title: 'Terminal 2 handles most long-haul South Asia and Gulf routes', body: 'PIA, Emirates and Qatar Airways operate primarily from Terminal 2. Confirm your terminal at booking — Terminal 1 and 3 serve different carriers and a wrong assumption costs real time on departure day.' },
       { title: 'Allow 3 hours for PIA departures specifically', body: 'PIA check-in for Lahore and Islamabad routes is consistently busier than scheduled-carrier norms, particularly around Eid and wedding season. Arriving at the standard 2.5-hour mark has caused missed flights during peak weeks.' },
@@ -83,17 +85,18 @@ export const airports: Airport[] = [
     city: 'London',
     region: 'Greater London',
     description:
-      'A major leisure and long-haul airport south of London with strong seasonal and scheduled links to the Gulf and the Mediterranean.',
-    longHaulRoutes: ['Dubai', 'Doha'],
+      'A major leisure and long-haul airport south of London, with direct Gulf links and the UK\'s only non-stop service to Ahmedabad — a genuine gateway for Gujarat alongside its established Amritsar and Mediterranean network.',
+    longHaulRoutes: ['Dubai', 'Doha', 'Ahmedabad', 'Amritsar'],
     shortHaulHighlights: ['Barcelona', 'Rome', 'Malaga', 'Antalya'],
     whyThisAirport:
-      'Gatwick works well as a Gulf gateway and Mediterranean leisure airport, and is a sensible alternative to Heathrow for South London, Surrey and Sussex-based travellers — though its long-haul South Asia coverage is far thinner than Heathrow\'s, so it\'s rarely the first choice for direct Pakistan or India travel.',
+      'Gatwick works well as a Gulf gateway and Mediterranean leisure airport, and is also the only UK airport with a direct, non-stop service to Ahmedabad — making it the genuine first choice for Gujarati heritage travellers, alongside a direct Amritsar service shared with Birmingham. For Pakistan and Delhi/Mumbai-bound India travel specifically, Heathrow still has the wider network.',
     practicalNotes: [
-      { title: 'South Terminal handles the long-haul Gulf routes', body: 'Emirates and Qatar Airways operate from the South Terminal — confirm this rather than defaulting to North Terminal, which is mostly short-haul and charter.' },
+      { title: 'South Terminal handles the long-haul Gulf and India routes', body: 'Emirates, Qatar Airways and Air India all operate from the South Terminal — confirm this rather than defaulting to North Terminal, which is mostly short-haul and charter.' },
+      { title: 'The Ahmedabad and Amritsar services run 3 times a week, not daily', body: 'Unlike the daily Gulf routes, both Air India South Asia services from Gatwick run on a reduced weekly schedule — confirm your travel dates align with an active flight day before booking.' },
       { title: 'The Gatwick Express from Victoria is the fastest non-car option', body: 'A reliable 30-minute journey that avoids the variability of the M23 during peak travel periods.' },
     ],
     servesCommunities: ['South London', 'Croydon', 'Surrey', 'Sussex'],
-    hasDirectLongHaul: false,
+    hasDirectLongHaul: true,
   },
   {
     slug: 'birmingham-east-midlands',
@@ -112,6 +115,7 @@ export const airports: Airport[] = [
     ],
     servesCommunities: ['Nottingham', 'Derby', 'Leicester'],
     hasDirectLongHaul: false,
+    compareAirportSlugs: ['birmingham', 'manchester'],
   },
   {
     slug: 'leeds-bradford',
@@ -120,17 +124,18 @@ export const airports: Airport[] = [
     city: 'Leeds',
     region: 'Yorkshire',
     description:
-      'Yorkshire\'s main airport, popular for direct and one-stop connections to Pakistan and the Gulf serving Bradford\'s large Pakistani-heritage community.',
-    longHaulRoutes: ['Islamabad (seasonal)', 'Dubai (via connection)'],
+      'Yorkshire\'s main airport, serving Bradford\'s large Pakistani-heritage community — though claims of a stable direct Pakistan service have not held up over time, and connecting via Manchester or the Gulf is currently the more reliable option.',
+    longHaulRoutes: ['Dubai (via connection)', 'Islamabad (via connection)'],
     shortHaulHighlights: ['Antalya', 'Palma', 'Alicante'],
     whyThisAirport:
-      'Bradford has one of the highest concentrations of Pakistani-heritage residents of any UK city, and Leeds Bradford\'s seasonal direct Islamabad service exists specifically to serve that demand. Outside the seasonal window, Manchester (roughly an hour\'s drive) is consistently the better-connected alternative for this audience.',
+      'Bradford has one of the highest concentrations of Pakistani-heritage residents of any UK city, and a direct Leeds Bradford–Islamabad service has been announced more than once — but none has proven stable: a 2025 PIA announcement and an earlier start-up airline both failed to establish an ongoing schedule, the latter collapsing under a CAA investigation after cancelling booked passengers. Treat any "direct from Leeds Bradford" claim with caution and verify current availability before booking; Manchester, roughly an hour\'s drive away, remains the consistently reliable option.',
     practicalNotes: [
-      { title: 'Seasonal direct service means availability varies by month', body: 'The direct Islamabad route does not run year-round on a fixed schedule — always confirm whether your specific travel dates fall within the active seasonal window before assuming a direct option exists.' },
-      { title: 'Manchester is the standard fallback for off-season long-haul', body: 'When the seasonal direct service isn\'t running, most Bradford and Leeds-based travellers compare against the drive to Manchester rather than connecting through London.' },
+      { title: 'Verify any direct service claim before booking — don\'t assume one exists', body: 'Direct Leeds Bradford to Pakistan services have been announced and then failed to materialise more than once. Confirm directly with the airline\'s own booking system that a specific flight number and date genuinely exists before committing.' },
+      { title: 'Manchester is the consistently reliable alternative for direct long-haul', body: 'Most Bradford and Leeds-based travellers compare against the roughly hour-long drive to Manchester rather than relying on an unconfirmed direct service from Leeds Bradford itself.' },
     ],
     servesCommunities: ['Bradford', 'Leeds', 'Huddersfield', 'Dewsbury'],
-    hasDirectLongHaul: true,
+    hasDirectLongHaul: false,
+    compareAirportSlugs: ['manchester'],
   },
   {
     slug: 'glasgow',
@@ -167,6 +172,67 @@ export const airports: Airport[] = [
     ],
     servesCommunities: ['Bristol', 'Bath', 'Gloucester'],
     hasDirectLongHaul: false,
+    compareAirportSlugs: ['london-heathrow', 'london-gatwick'],
+  },
+  {
+    slug: 'liverpool',
+    name: 'Liverpool John Lennon Airport',
+    code: 'LPL',
+    city: 'Liverpool',
+    region: 'North West England',
+    description:
+      'A growing regional airport serving Merseyside and North Wales, with no direct long-haul service of its own but a genuine catchment of South Asian and Gulf-bound travellers who compare it against Manchester.',
+    longHaulRoutes: ['Dubai (via connection)', 'Islamabad (via connection)'],
+    shortHaulHighlights: ['Antalya', 'Faro', 'Alicante'],
+    whyThisAirport:
+      'Liverpool has no direct long-haul flights, but for Merseyside and North Wales-based travellers it remains worth pricing against Manchester before defaulting south — parking and access can be quicker even when the headline fare is similar, and one-stop Gulf-connecting options are routinely available through the same booking channels as Manchester.',
+    practicalNotes: [
+      { title: 'Always price-compare against Manchester before booking a connection here', body: 'Manchester is roughly 35–45 minutes away and has direct Pakistan and Gulf services. For long-haul, run both searches before assuming Liverpool is the cheaper or easier option.' },
+      { title: 'A strong choice for short-haul Mediterranean breaks', body: 'Ryanair and easyJet both operate dense seasonal schedules from Liverpool, often undercutting Manchester on price for the same European routes.' },
+    ],
+    servesCommunities: ['Liverpool', 'Wirral', 'St Helens', 'North Wales'],
+    hasDirectLongHaul: false,
+    compareAirportSlugs: ['manchester'],
+  },
+  {
+    slug: 'newcastle',
+    name: 'Newcastle International Airport',
+    code: 'NCL',
+    city: 'Newcastle',
+    region: 'North East England',
+    description:
+      'The principal gateway for the North East, with a daily direct Emirates service to Dubai and a meaningful Pakistani and Bangladeshi community in the region — though no direct Pakistan or India service of its own.',
+    longHaulRoutes: ['Dubai'],
+    shortHaulHighlights: ['Antalya', 'Alicante', 'Palma'],
+    whyThisAirport:
+      'Emirates operates a daily direct service from Newcastle to Dubai, making this a genuine long-haul gateway in its own right for Gulf travel — useful both as a destination and as a connecting point onward to South Asia. For direct Pakistan or India travel specifically, most of the region\\'s Pakistani and Bangladeshi communities still drive to Manchester (around 2 hours) rather than connecting through Newcastle, as no direct South Asia service operates from here.',
+    practicalNotes: [
+      { title: 'The direct Dubai service is a real Gulf gateway, not just a connection', body: 'Emirates\\' daily Newcastle–Dubai flight runs in Economy, Premium Economy and Business Class — worth booking as a destination in its own right, not only as a stopover en route elsewhere.' },
+      { title: 'For direct Pakistan or India travel, compare against driving to Manchester', body: 'A one-stop Gulf-connecting itinerary departing Newcastle is sometimes cheaper overall than the fuel, parking and time cost of driving to Manchester for a direct flight — run both numbers before deciding.' },
+      { title: 'Strong, well-established package holiday routes to the Mediterranean', body: 'TUI and Jet2 both run a wide seasonal programme from Newcastle, making it a genuinely competitive option for family package holidays.' },
+    ],
+    servesCommunities: ['Newcastle', 'Sunderland', 'Middlesbrough', 'Durham'],
+    hasDirectLongHaul: true,
+  },
+  {
+    slug: 'edinburgh',
+    name: 'Edinburgh Airport',
+    code: 'EDI',
+    city: 'Edinburgh',
+    region: 'Scotland',
+    description:
+      'Scotland\'s busiest airport, with a daily direct Emirates service to Dubai alongside the country\'s widest European network — though no direct Pakistan or India service of its own.',
+    longHaulRoutes: ['Dubai'],
+    shortHaulHighlights: ['Barcelona', 'Antalya', 'Faro'],
+    whyThisAirport:
+      'Emirates resumed a daily direct Edinburgh–Dubai service, giving Scotland\\'s capital a genuine long-haul gateway independent of Glasgow. For South Asia specifically, Scottish travellers still typically connect via Heathrow or via the Gulf, as no direct India/Pakistan service operates from Scotland — but for Dubai and onward Gulf connections, Edinburgh now stands on its own rather than requiring the journey to Glasgow.',
+    practicalNotes: [
+      { title: 'The daily Dubai service runs across all cabins', body: 'Emirates flies Economy, Premium Economy, Business and First Class on this route — a genuine alternative to travelling via Glasgow for Gulf travel specifically.' },
+      { title: 'Glasgow remains worth comparing for schedule flexibility', body: 'Both Edinburgh and Glasgow now run daily Emirates Dubai services — comparing departure times and connection options across both before booking is worth the extra few minutes, particularly around Eid or school holidays.' },
+      { title: 'Strong direct European network for short breaks', body: 'Edinburgh\\'s European route map is denser than Glasgow\\'s, making it the better choice for Mediterranean city breaks specifically.' },
+    ],
+    servesCommunities: ['Edinburgh', 'Fife', 'Scottish Borders'],
+    hasDirectLongHaul: true,
   },
 ];
 

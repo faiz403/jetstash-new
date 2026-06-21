@@ -33,6 +33,9 @@ export default function AirportPage({ params }: { params: { slug: string } }) {
 
   const dealsHere = getDealsByAirport(airport.slug);
   const routesHere = getRoutesByAirport(airport.slug);
+  const compareAirports = (airport.compareAirportSlugs ?? [])
+    .map((slug) => getAirportBySlug(slug))
+    .filter((a): a is NonNullable<typeof a> => Boolean(a));
 
   return (
     <>
@@ -73,41 +76,70 @@ export default function AirportPage({ params }: { params: { slug: string } }) {
         </div>
       </section>
 
-      {/* Route hub links — the actual missing architecture */}
-      {routesHere.length > 0 && (
-        <section className="bg-sand-50 py-14 sm:py-16">
-          <div className="mx-auto max-w-content px-5 sm:px-8">
-            <h2 className="font-display text-2xl text-ink-900 sm:text-3xl">Direct routes from {airport.name}</h2>
-            <p className="mt-2 max-w-xl text-sm text-ink-500">
-              Each route below has its own guide — booking windows, peak periods and airline coverage specific to that exact pairing.
-            </p>
-            <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-              {routesHere.map((route) => {
-                const dest = getRouteDestination(route);
-                if (!dest) return null;
-                return (
+      {/* Route hub links — either this airport's own routes, or a genuine comparison link */}
+      <section className="bg-sand-50 py-14 sm:py-16">
+        <div className="mx-auto max-w-content px-5 sm:px-8">
+          {routesHere.length > 0 ? (
+            <>
+              <h2 className="font-display text-2xl text-ink-900 sm:text-3xl">Direct routes from {airport.name}</h2>
+              <p className="mt-2 max-w-xl text-sm text-ink-500">
+                Each route below has its own guide — booking windows, peak periods and airline coverage specific to that exact pairing.
+              </p>
+              <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                {routesHere.map((route) => {
+                  const dest = getRouteDestination(route);
+                  if (!dest) return null;
+                  return (
+                    <Link
+                      key={route.slug}
+                      href={`/routes/${route.slug}`}
+                      className="group flex flex-col rounded-md border border-ink-100 bg-white p-6 shadow-card transition-all hover:-translate-y-1 hover:shadow-card-hover"
+                    >
+                      <span className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-ink-400">
+                        <MapPin className="h-3.5 w-3.5" strokeWidth={2.25} />
+                        {dest.country}
+                      </span>
+                      <h3 className="mt-2 font-display text-xl text-ink-900">{airport.city} → {dest.city}</h3>
+                      <p className="mt-1.5 text-sm text-ink-500">{route.flightTime} · {route.isDirect ? 'Direct' : 'Connecting'}</p>
+                      <span className="mt-4 flex items-center gap-1.5 text-sm font-semibold text-ink-900">
+                        View route guide
+                        <ArrowUpRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" strokeWidth={2.25} />
+                      </span>
+                    </Link>
+                  );
+                })}
+              </div>
+            </>
+          ) : compareAirports.length > 0 ? (
+            <>
+              <h2 className="font-display text-2xl text-ink-900 sm:text-3xl">No curated route from {airport.name} yet</h2>
+              <p className="mt-2 max-w-xl text-sm text-ink-500">{airport.whyThisAirport}</p>
+              <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                {compareAirports.map((cmp) => (
                   <Link
-                    key={route.slug}
-                    href={`/routes/${route.slug}`}
+                    key={cmp.slug}
+                    href={`/airports/${cmp.slug}`}
                     className="group flex flex-col rounded-md border border-ink-100 bg-white p-6 shadow-card transition-all hover:-translate-y-1 hover:shadow-card-hover"
                   >
                     <span className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-ink-400">
-                      <MapPin className="h-3.5 w-3.5" strokeWidth={2.25} />
-                      {dest.country}
+                      <Plane className="h-3.5 w-3.5" strokeWidth={2.25} />
+                      {cmp.code}
                     </span>
-                    <h3 className="mt-2 font-display text-xl text-ink-900">{airport.city} → {dest.city}</h3>
-                    <p className="mt-1.5 text-sm text-ink-500">{route.flightTime} · {route.isDirect ? 'Direct' : 'Connecting'}</p>
+                    <h3 className="mt-2 font-display text-xl text-ink-900">Compare with {cmp.name}</h3>
+                    <p className="mt-1.5 text-sm text-ink-500">{cmp.region}</p>
                     <span className="mt-4 flex items-center gap-1.5 text-sm font-semibold text-ink-900">
-                      View route guide
+                      View {cmp.city} routes
                       <ArrowUpRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" strokeWidth={2.25} />
                     </span>
                   </Link>
-                );
-              })}
-            </div>
-          </div>
-        </section>
-      )}
+                ))}
+              </div>
+            </>
+          ) : (
+            <NoFareFallback cityLabel={airport.name} />
+          )}
+        </div>
+      </section>
 
       {/* Practical notes — real hub depth, not generic airport copy */}
       <section className="bg-white py-14 sm:py-16">

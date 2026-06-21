@@ -106,8 +106,8 @@ export const destinations: Destination[] = [
       'From the Red Fort to Chandni Chowk\'s street food, Delhi is the practical gateway to North India — and the connecting point for travellers heading on to Punjab, Rajasthan or the hills.',
     heroImageQuery: 'delhi india red fort architecture',
     bestFor: ['Heritage travel', 'Family visits', 'Onward travel'],
-    flightTimeFromUK: '8h 45m direct from London Heathrow',
-    ukAirports: ['london-heathrow', 'birmingham'],
+    flightTimeFromUK: '8h 45m direct from London Heathrow or Manchester',
+    ukAirports: ['london-heathrow', 'birmingham', 'manchester'],
     visaNote: 'e-Visa required for UK passport holders, apply at least 4 days before travel.',
     familyVisitContent: {
       travelPattern:
@@ -126,12 +126,21 @@ export const destinations: Destination[] = [
     region: 'india',
     tagline: 'India\'s coastal commercial and cultural capital',
     description:
-      'Mumbai moves at its own pace — Bollywood, the Gateway of India, and a financial district that never quite sleeps. A common stopover for travellers connecting south or onward to the Gulf.',
+      'Mumbai moves at its own pace — Bollywood, the Gateway of India, and a financial district that never quite sleeps. A common stopover for travellers connecting south or onward to the Gulf, and now directly reachable from Manchester as well as London.',
     heroImageQuery: 'mumbai india gateway of india',
-    bestFor: ['Business travel', 'City breaks'],
-    flightTimeFromUK: '9h direct from London Heathrow',
-    ukAirports: ['london-heathrow'],
+    bestFor: ['Business travel', 'City breaks', 'Family visits'],
+    flightTimeFromUK: '9h direct from London Heathrow or Manchester',
+    ukAirports: ['london-heathrow', 'manchester'],
     visaNote: 'e-Visa required for UK passport holders, apply at least 4 days before travel.',
+    familyVisitContent: {
+      travelPattern:
+        'Mumbai is increasingly a direct family-visit destination for North West-based travellers, not just a business or stopover city — IndiGo\'s Manchester service was launched explicitly to serve the large Indian diaspora in the region, alongside its business and tourism case.',
+      documentNote:
+        'OCI (Overseas Citizen of India) cardholders do not require a separate visa. Standard e-Tourist or e-Business visas apply to other UK passport holders — apply at least 4 days ahead, though earlier is sensible during Diwali or December.',
+      packingNote:
+        'If flying the Manchester direct service, check the current baggage allowance directly with the airline rather than assuming it matches a full-service carrier\'s standard — allowances and any extra-baggage charges can differ from the Heathrow route\'s operators.',
+      peakFamilyPeriods: ['Diwali', 'Christmas–New Year', 'UK summer holidays'],
+    },
   },
   {
     slug: 'amritsar',
@@ -144,7 +153,7 @@ export const destinations: Destination[] = [
     heroImageQuery: 'amritsar golden temple india',
     bestFor: ['Pilgrimage', 'Family visits', 'Heritage travel'],
     flightTimeFromUK: '9h direct from Birmingham',
-    ukAirports: ['birmingham', 'london-heathrow'],
+    ukAirports: ['birmingham', 'london-gatwick', 'manchester'],
     visaNote: 'e-Visa required for UK passport holders, apply at least 4 days before travel.',
     familyVisitContent: {
       travelPattern:
@@ -152,8 +161,31 @@ export const destinations: Destination[] = [
       documentNote:
         'OCI cardholders do not require a separate visa; other UK passport holders need the standard e-Visa, applied for at least 4 days ahead.',
       packingNote:
-        'Birmingham\'s direct service to Amritsar runs seasonally rather than year-round — if travelling outside the direct season, price a Delhi-connection fallback before assuming non-stop availability.',
+        'Air India\'s direct Amritsar services run at reduced midweek frequency rather than daily — confirm specific flight days before assuming a non-stop option exists on your preferred date.',
       peakFamilyPeriods: ['Baisakhi (April)', 'Diwali', 'UK summer holidays'],
+    },
+  },
+  {
+    slug: 'ahmedabad',
+    city: 'Ahmedabad',
+    country: 'India',
+    region: 'india',
+    tagline: 'Gujarat\'s commercial capital, on the Sabarmati',
+    description:
+      'Ahmedabad pairs Gandhi\'s Sabarmati Ashram with a fast-growing business and textile hub, and is the most direct route from the UK for Gujarati heritage travellers — Air India\'s non-stop Gatwick service makes this a genuine alternative to a Mumbai or Delhi connection.',
+    heroImageQuery: 'ahmedabad gujarat sabarmati ashram india',
+    bestFor: ['Family visits', 'Heritage travel', 'Business travel'],
+    flightTimeFromUK: '9h 40m direct from London Gatwick',
+    ukAirports: ['london-gatwick', 'manchester', 'birmingham'],
+    visaNote: 'e-Visa required for UK passport holders, apply at least 4 days before travel.',
+    familyVisitContent: {
+      travelPattern:
+        'Most UK Gujarati family travel to Ahmedabad is timed around Navratri and Diwali, both major nine-night and multi-day festival periods specific to Gujarati and wider Hindu communities — trip lengths often extend to cover both the festival and an extended family stay.',
+      documentNote:
+        'OCI cardholders do not require a separate visa. Other UK passport holders need the standard e-Visa, applied for at least 4 days ahead — book this alongside flights rather than leaving it until closer to departure.',
+      packingNote:
+        'Air India\'s direct Gatwick service runs 3 times a week, not daily — confirm your specific travel dates align with an active flight day before booking, and price a Mumbai or Delhi-connecting fallback for off-schedule dates.',
+      peakFamilyPeriods: ['Navratri', 'Diwali', 'UK summer holidays'],
     },
   },
   // Gulf
@@ -168,7 +200,7 @@ export const destinations: Destination[] = [
     heroImageQuery: 'dubai skyline burj khalifa uae',
     bestFor: ['Family holidays', 'Stopovers', 'Shopping', 'Beach'],
     flightTimeFromUK: '7h direct from most UK airports',
-    ukAirports: ['london-heathrow', 'manchester', 'birmingham', 'london-gatwick', 'glasgow', 'leeds-bradford'],
+    ukAirports: ['manchester', 'glasgow', 'edinburgh', 'newcastle', 'london-heathrow', 'birmingham', 'london-gatwick'],
     visaNote: 'Visa on arrival for UK passport holders, free for stays up to 30 days.',
   },
   {
@@ -210,7 +242,7 @@ export const destinations: Destination[] = [
     heroImageQuery: 'madinah prophets mosque saudi arabia',
     bestFor: ['Umrah', 'Pilgrimage'],
     flightTimeFromUK: '6h 15m direct from London Heathrow',
-    ukAirports: ['london-heathrow'],
+    ukAirports: ['london-heathrow', 'manchester'],
     visaNote: 'Umrah visa required — apply through an authorised UK travel provider or the Nusuk platform.',
   },
   // Secondary — Mediterranean & North Africa

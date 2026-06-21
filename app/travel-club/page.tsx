@@ -1,11 +1,11 @@
 import type { Metadata } from 'next';
-import { Mail, Bell, ShieldCheck } from 'lucide-react';
+import { Mail, Bell, ShieldCheck, MapPinned } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { NewsletterSection } from '@/components/sections/newsletter-section';
 
 export const metadata: Metadata = {
   title: 'JetStash Travel Club',
-  description: 'Join JetStash Travel Club for fare-drop alerts on flights from the UK to Pakistan, India, the Gulf and beyond.',
+  description: 'Join JetStash Travel Club for fare alerts on flights from the UK to Pakistan, India, the Gulf and beyond, filtered by the route you actually care about.',
 };
 
 export default function TravelClubPage() {
@@ -18,24 +18,29 @@ export default function TravelClubPage() {
             One email, when it's actually worth opening
           </h1>
           <p className="mt-4 max-w-xl text-lg leading-relaxed text-ink-300">
-            JetStash Travel Club exists for one reason: to tell you when a fare on a route you care about has
-            genuinely dropped. No daily digest, no padding it out with filler.
+            JetStash Travel Club exists for one reason: to tell you when we've found a fare on a route you care
+            about that's genuinely worth knowing about. No daily digest, no padding it out with filler.
           </p>
         </div>
       </section>
 
       <section className="bg-white py-16 sm:py-20">
         <div className="mx-auto max-w-content px-5 sm:px-8">
-          <div className="grid gap-6 sm:grid-cols-3">
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             <FeatureCard
               icon={<Bell className="h-5 w-5" strokeWidth={2} />}
-              title="Triggered by real price movement"
-              body="We only send an alert when a route shows a genuine drop against its recent average — not on a fixed schedule."
+              title="Checked by us, not an algorithm"
+              body="We don't run automated live price tracking — fares are researched and updated by hand. You'll hear from us when we've found something genuinely worth flagging, not on a fixed schedule."
             />
             <FeatureCard
               icon={<Mail className="h-5 w-5" strokeWidth={2} />}
               title="Focused on your routes"
-              body="Tell us which UK airport and which region you care about, and that's what shapes what lands in your inbox."
+              body="Tell us your nearest airport and which region or cabin you're tracking, and that's what shapes what lands in your inbox — not every update we make."
+            />
+            <FeatureCard
+              icon={<MapPinned className="h-5 w-5" strokeWidth={2} />}
+              title="Told when a new route launches"
+              body="When we add a new direct or improved route in a region you've told us you care about — like Ahmedabad's Gatwick service — Travel Club hears about it first."
             />
             <FeatureCard
               icon={<ShieldCheck className="h-5 w-5" strokeWidth={2} />}

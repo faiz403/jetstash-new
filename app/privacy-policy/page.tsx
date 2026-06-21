@@ -16,17 +16,21 @@ export default function PrivacyPolicyPage() {
           <div>
             <h2 className="font-display text-xl text-ink-900">What we collect</h2>
             <p className="mt-2 leading-relaxed">
-              If you sign up to JetStash Travel Club, we collect your email address. If you use the contact form,
-              we collect your name, email address, and the content of your message. We do not collect payment
-              information — all bookings happen on the airline or partner's own website.
+              If you sign up to JetStash Travel Club, we collect your email address and, if you choose to provide
+              them, your nearest UK airport and which region or cabin you're interested in. Both preference fields
+              are optional. If you use the contact form, we collect your name, email address, and the content of
+              your message. We do not collect payment information — all bookings happen on the airline or
+              partner's own website.
             </p>
           </div>
 
           <div>
             <h2 className="font-display text-xl text-ink-900">How we use it</h2>
             <p className="mt-2 leading-relaxed">
-              Email addresses collected via Travel Club are used solely to send fare-drop alerts and occasional
-              JetStash updates. Contact form submissions are used to respond to your enquiry and are not added to
+              Email addresses collected via Travel Club, along with any airport or interest preference you give
+              us, are used to send occasional emails about fares and routes we think are relevant to you. These
+              are reviewed and sent by a person, not generated automatically — we do not run live, automated
+              price-tracking. Contact form submissions are used to respond to your enquiry and are not added to
               any marketing list unless you separately opt in.
             </p>
           </div>

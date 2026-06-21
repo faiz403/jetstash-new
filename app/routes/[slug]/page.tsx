@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { Plane, Calendar, Clock, ArrowUpRight, AlertCircle } from 'lucide-react';
-import { routes, getRouteBySlug, getRouteAirport, getRouteDestination } from '@/data/routes';
+import { Plane, Calendar, Clock, ArrowUpRight, AlertCircle, GitCompareArrows, CalendarClock, Luggage, Users } from 'lucide-react';
+import { routes, getRouteBySlug, getRouteAirport, getRouteDestination, getRoutesByDestination } from '@/data/routes';
 import { getDealsByDestination } from '@/data/deals';
 import { DealCard } from '@/components/ui/deal-card';
 import { NoFareFallback } from '@/components/ui/no-fare-fallback';
@@ -12,6 +12,10 @@ import { siteConfig } from '@/lib/site-config';
 
 export async function generateStaticParams() {
   return routes.map((r) => ({ slug: r.slug }));
+}
+
+function formatEndDate(iso: string): string {
+  return new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
 }
 
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
@@ -42,6 +46,7 @@ export default function RoutePage({ params }: { params: { slug: string } }) {
   }
 
   const dealsHere = getDealsByDestination(dest.slug).filter((d) => d.fromAirportSlug === airport.slug);
+  const alternativeRoutes = getRoutesByDestination(dest.slug).filter((r) => r.slug !== route.slug);
 
   return (
     <>
@@ -67,6 +72,24 @@ export default function RoutePage({ params }: { params: { slug: string } }) {
           </div>
         </div>
       </section>
+
+      {route.directServiceEndDate && (
+        <section className="bg-terracotta-50 py-8 sm:py-10">
+          <div className="mx-auto max-w-content px-5 sm:px-8">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-sm bg-terracotta-100 text-terracotta-700">
+                <CalendarClock className="h-4.5 w-4.5" strokeWidth={2} />
+              </div>
+              <div>
+                <h2 className="font-display text-lg text-ink-900">
+                  Direct service scheduled to end {formatEndDate(route.directServiceEndDate)}
+                </h2>
+                <p className="mt-1.5 max-w-2xl text-sm leading-relaxed text-ink-700">{route.directServiceEndNote}</p>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
 
       <section className="bg-white py-14 sm:py-16">
         <div className="mx-auto max-w-content px-5 sm:px-8">
@@ -96,7 +119,80 @@ export default function RoutePage({ params }: { params: { slug: string } }) {
         </div>
       </section>
 
+      {route.connectingAlternative && (
+        <section className="bg-sand-50 py-14 sm:py-16">
+          <div className="mx-auto max-w-content px-5 sm:px-8">
+            <h2 className="font-display text-2xl text-ink-900 sm:text-3xl">
+              {route.isDirect ? 'The realistic 1-stop alternative' : 'How this connecting route usually works'}
+            </h2>
+            <p className="mt-2 max-w-2xl text-sm text-ink-500">
+              {route.isDirect
+                ? 'Worth knowing even if you book the direct flight — useful as a fallback, and this is what the route looks like once the direct service is unavailable.'
+                : 'No direct service currently exists on this route. Here is the realistic connecting pattern most travellers use.'}
+            </p>
+            <div className="mt-7 grid gap-5 sm:grid-cols-3">
+              <div className="rounded-md border border-ink-100 bg-white p-5">
+                <p className="text-xs font-semibold uppercase tracking-wide text-ink-400">Typical stops</p>
+                <p className="mt-1 font-display text-lg text-ink-900">
+                  Usually {route.connectingAlternative.typicalStops} stop{route.connectingAlternative.typicalStops > 1 ? 's' : ''}
+                </p>
+              </div>
+              <div className="rounded-md border border-ink-100 bg-white p-5">
+                <p className="text-xs font-semibold uppercase tracking-wide text-ink-400">Common hub airports</p>
+                <p className="mt-1 font-display text-lg text-ink-900">{route.connectingAlternative.hubAirports.join(', ')}</p>
+              </div>
+              <div className="rounded-md border border-ink-100 bg-white p-5">
+                <p className="text-xs font-semibold uppercase tracking-wide text-ink-400">Typical total journey time</p>
+                <p className="mt-1 font-display text-lg text-ink-900">{route.connectingAlternative.typicalJourneyTime}</p>
+              </div>
+            </div>
+            <p className="mt-5 text-sm text-ink-500">
+              Airlines commonly used on this connection: {route.connectingAlternative.typicalAirlines.join(', ')}.
+            </p>
+          </div>
+        </section>
+      )}
+
       {dest.familyVisitContent && <FamilyVisitBlock content={dest.familyVisitContent} city={dest.city} />}
+
+      {alternativeRoutes.length > 0 && (
+        <section className="bg-white py-14 sm:py-16">
+          <div className="mx-auto max-w-content px-5 sm:px-8">
+            <div className="flex items-center gap-2.5">
+              <GitCompareArrows className="h-5 w-5 text-terracotta-600" strokeWidth={2} />
+              <span className="text-xs font-semibold uppercase tracking-wide text-terracotta-600">Worth comparing</span>
+            </div>
+            <h2 className="mt-2 font-display text-2xl text-ink-900 sm:text-3xl">Other UK airports for {dest.city}</h2>
+            <p className="mt-2 max-w-xl text-sm text-ink-500">
+              If more than one airport is realistically within reach, comparing the total journey — not just the
+              headline fare — is usually worth the extra few minutes.
+            </p>
+            <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              {alternativeRoutes.map((altRoute) => {
+                const altAirport = getRouteAirport(altRoute);
+                if (!altAirport) return null;
+                return (
+                  <Link
+                    key={altRoute.slug}
+                    href={`/routes/${altRoute.slug}`}
+                    className="group flex flex-col rounded-md border border-ink-100 bg-sand-50 p-6 transition-all hover:-translate-y-1 hover:shadow-card-hover"
+                  >
+                    <span className="text-xs font-semibold uppercase tracking-wide text-ink-400">
+                      {altRoute.isDirect ? 'Direct' : 'Connecting'}
+                    </span>
+                    <h3 className="mt-1.5 font-display text-xl text-ink-900">{altAirport.city} → {dest.city}</h3>
+                    <p className="mt-1 text-sm text-ink-500">{altRoute.flightTime} · {altRoute.airlines.join(', ')}</p>
+                    <span className="mt-4 flex items-center gap-1.5 text-sm font-semibold text-ink-900">
+                      Compare this route
+                      <ArrowUpRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" strokeWidth={2.25} />
+                    </span>
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+      )}
 
       <section className="bg-sand-50 py-14 sm:py-16">
         <div className="mx-auto max-w-content px-5 sm:px-8">

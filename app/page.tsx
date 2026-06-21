@@ -14,7 +14,12 @@ export default function HomePage() {
   const featuredFlights = deals.filter((d) => d.category === 'flight').slice(0, 3);
   const businessDeals = getDealsByCategory('business').slice(0, 2);
   const umrahDeals = getDealsByCategory('umrah').slice(0, 1);
-  const popularRoutes = routes.slice(0, 4);
+  // Deliberately representative spread across the network, not an accident of array order —
+  // one Pakistan, one India, one Gulf, one Umrah route, each from a different UK airport.
+  const featuredRouteSlugs = ['manchester-lahore', 'birmingham-amritsar', 'manchester-dubai', 'london-heathrow-jeddah'];
+  const popularRoutes = featuredRouteSlugs
+    .map((slug) => routes.find((r) => r.slug === slug))
+    .filter((r): r is NonNullable<typeof r> => Boolean(r));
 
   return (
     <>

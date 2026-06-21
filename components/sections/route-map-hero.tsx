@@ -21,7 +21,9 @@ interface Route {
 const routes: Route[] = [
   { id: 'man-lhe', fromLabel: 'Manchester', fromX: 165, fromY: 120, toLabel: 'Lahore', toCountry: 'Pakistan', toX: 760, toY: 195, price: 489, href: '/pakistan' },
   { id: 'lhr-isb', fromLabel: 'London', fromX: 195, fromY: 175, toLabel: 'Islamabad', toCountry: 'Pakistan', toX: 745, toY: 175, price: 512, href: '/pakistan' },
+  { id: 'man-khi', fromLabel: 'Manchester', fromX: 165, fromY: 120, toLabel: 'Karachi', toCountry: 'Pakistan', toX: 740, toY: 235, price: 495, href: '/pakistan' },
   { id: 'lhr-del', fromLabel: 'London', fromX: 195, fromY: 175, toLabel: 'Delhi', toCountry: 'India', toX: 800, toY: 210, price: 467, href: '/india' },
+  { id: 'lhr-bom', fromLabel: 'London', fromX: 195, fromY: 175, toLabel: 'Mumbai', toCountry: 'India', toX: 790, toY: 260, price: 498, href: '/india' },
   { id: 'bhx-atq', fromLabel: 'Birmingham', fromX: 178, fromY: 150, toLabel: 'Amritsar', toCountry: 'India', toX: 770, toY: 190, price: 521, href: '/india' },
   { id: 'man-dxb', fromLabel: 'Manchester', fromX: 165, fromY: 120, toLabel: 'Dubai', toCountry: 'UAE', toX: 680, toY: 250, price: 349, href: '/gulf' },
   { id: 'lhr-doh', fromLabel: 'London', fromX: 195, fromY: 175, toLabel: 'Doha', toCountry: 'Qatar', toX: 665, toY: 245, price: 398, href: '/gulf' },

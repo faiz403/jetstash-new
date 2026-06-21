@@ -2,9 +2,37 @@
 
 import { useState, FormEvent } from 'react';
 import { ArrowRight, CheckCircle2 } from 'lucide-react';
+import { airports } from '@/data/airports';
+
+const INTEREST_OPTIONS: { value: string; label: string; shortLabel: string }[] = [
+  { value: 'pakistan', label: 'Pakistan (Lahore, Islamabad, Karachi)', shortLabel: 'Pakistan' },
+  { value: 'india', label: 'India (Delhi, Mumbai, Ahmedabad, Amritsar)', shortLabel: 'India' },
+  { value: 'gulf', label: 'Gulf (Dubai, Doha)', shortLabel: 'Gulf' },
+  { value: 'umrah', label: 'Umrah & Saudi Arabia', shortLabel: 'Umrah' },
+  { value: 'business-class', label: 'Business class, any route', shortLabel: 'business class' },
+];
+
+function interestHref(interest: string): string {
+  switch (interest) {
+    case 'pakistan':
+      return '/pakistan';
+    case 'india':
+      return '/india';
+    case 'gulf':
+      return '/gulf';
+    case 'umrah':
+      return '/umrah';
+    case 'business-class':
+      return '/business-class';
+    default:
+      return '/';
+  }
+}
 
 export function NewsletterSection({ compact = false }: { compact?: boolean }) {
   const [email, setEmail] = useState('');
+  const [nearestAirport, setNearestAirport] = useState('');
+  const [interest, setInterest] = useState('');
   const [status, setStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
 
   async function handleSubmit(e: FormEvent) {
@@ -15,7 +43,11 @@ export function NewsletterSection({ compact = false }: { compact?: boolean }) {
       const res = await fetch('/api/subscribe', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({
+          email,
+          nearestAirport: nearestAirport || undefined,
+          interest: interest || undefined,
+        }),
       });
       if (!res.ok) throw new Error('Request failed');
       setStatus('success');
@@ -33,44 +65,94 @@ export function NewsletterSection({ compact = false }: { compact?: boolean }) {
             <div>
               <span className="text-xs font-semibold uppercase tracking-wide text-brass-300">JetStash Travel Club</span>
               <h2 className="mt-3 font-display text-3xl leading-tight text-sand-50 sm:text-4xl">
-                Fare drops to Pakistan, India and the Gulf — sent when they happen
+                Tell us your route. We'll tell you when it's worth booking.
               </h2>
               <p className="mt-3 max-w-md text-ink-300">
-                Free to join. We send a short note when a route from your nearest airport drops in price.
-                Unsubscribe in one click, any time.
+                Free to join. Pick your nearest airport and what you're tracking, and that's what shapes what
+                lands in your inbox — not a generic weekly digest. Unsubscribe in one click, any time.
               </p>
             </div>
 
             <div>
               {status === 'success' ? (
-                <div className="flex items-center gap-3 rounded-sm border border-brass/30 bg-brass-50/10 p-5">
-                  <CheckCircle2 className="h-6 w-6 flex-shrink-0 text-brass-300" />
-                  <p className="text-sm text-sand-100">
-                    You&apos;re on the list. Check your inbox to confirm your subscription.
-                  </p>
+                <div className="rounded-sm border border-brass/30 bg-brass-50/10 p-5">
+                  <div className="flex items-center gap-3">
+                    <CheckCircle2 className="h-6 w-6 flex-shrink-0 text-brass-300" />
+                    <p className="text-sm text-sand-100">You&apos;re on the list — welcome to Travel Club.</p>
+                  </div>
+                  {interest && (
+                    <p className="mt-3 text-xs text-ink-300">
+                      We&apos;ll keep an eye out for {INTEREST_OPTIONS.find((o) => o.value === interest)?.shortLabel ?? 'your region'}{' '}
+                      fares worth flagging. In the meantime,{' '}
+                      <a href={interestHref(interest)} className="font-semibold text-brass-300 underline underline-offset-2 hover:text-brass-200">
+                        have a look at the {INTEREST_OPTIONS.find((o) => o.value === interest)?.shortLabel} hub
+                      </a>
+                      .
+                    </p>
+                  )}
                 </div>
               ) : (
-                <form onSubmit={handleSubmit} className="flex flex-col gap-3 sm:flex-row">
-                  <label htmlFor="email" className="sr-only">
-                    Email address
-                  </label>
-                  <input
-                    id="email"
-                    type="email"
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="you@example.com"
-                    className="h-12 flex-1 rounded-sm border border-white/15 bg-white/5 px-4 text-sand-50 placeholder:text-ink-400 focus-visible:border-brass"
-                  />
-                  <button
-                    type="submit"
-                    disabled={status === 'submitting'}
-                    className="inline-flex h-12 items-center justify-center gap-1.5 rounded-sm bg-brass px-6 font-semibold text-ink-900 transition-colors hover:bg-brass-400 disabled:opacity-60"
-                  >
-                    {status === 'submitting' ? 'Joining…' : 'Join free'}
-                    {status !== 'submitting' && <ArrowRight className="h-4 w-4" strokeWidth={2.25} />}
-                  </button>
+                <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+                  <div className="flex flex-col gap-3 sm:flex-row">
+                    <label htmlFor="email" className="sr-only">
+                      Email address
+                    </label>
+                    <input
+                      id="email"
+                      type="email"
+                      required
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="you@example.com"
+                      className="h-12 flex-1 rounded-sm border border-white/15 bg-white/5 px-4 text-sand-50 placeholder:text-ink-400 focus-visible:border-brass"
+                    />
+                    <button
+                      type="submit"
+                      disabled={status === 'submitting'}
+                      className="inline-flex h-12 items-center justify-center gap-1.5 rounded-sm bg-brass px-6 font-semibold text-ink-900 transition-colors hover:bg-brass-400 disabled:opacity-60"
+                    >
+                      {status === 'submitting' ? 'Joining…' : 'Join free'}
+                      {status !== 'submitting' && <ArrowRight className="h-4 w-4" strokeWidth={2.25} />}
+                    </button>
+                  </div>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <div>
+                      <label htmlFor="nearestAirport" className="text-xs text-ink-400">
+                        Nearest airport <span className="text-ink-500">(optional)</span>
+                      </label>
+                      <select
+                        id="nearestAirport"
+                        value={nearestAirport}
+                        onChange={(e) => setNearestAirport(e.target.value)}
+                        className="mt-1.5 h-11 w-full rounded-sm border border-white/15 bg-white/5 px-3 text-sm text-sand-50 focus-visible:border-brass"
+                      >
+                        <option value="" className="bg-ink-900">Select airport</option>
+                        {airports.map((a) => (
+                          <option key={a.slug} value={a.slug} className="bg-ink-900">
+                            {a.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label htmlFor="interest" className="text-xs text-ink-400">
+                        What you're tracking <span className="text-ink-500">(optional)</span>
+                      </label>
+                      <select
+                        id="interest"
+                        value={interest}
+                        onChange={(e) => setInterest(e.target.value)}
+                        className="mt-1.5 h-11 w-full rounded-sm border border-white/15 bg-white/5 px-3 text-sm text-sand-50 focus-visible:border-brass"
+                      >
+                        <option value="" className="bg-ink-900">Select region</option>
+                        {INTEREST_OPTIONS.map((opt) => (
+                          <option key={opt.value} value={opt.value} className="bg-ink-900">
+                            {opt.label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
                 </form>
               )}
               {status === 'error' && (
@@ -78,7 +160,13 @@ export function NewsletterSection({ compact = false }: { compact?: boolean }) {
                   Something went wrong — please try again or email us at hello@jetstash.co.uk.
                 </p>
               )}
-              <p className="mt-3 text-xs text-ink-400">No spam. We never sell your details. See our privacy policy.</p>
+              <p className="mt-3 text-xs text-ink-400">
+                No spam. We never sell your details. See our{' '}
+                <a href="/privacy-policy" className="underline underline-offset-2 hover:text-ink-300">
+                  privacy policy
+                </a>
+                .
+              </p>
             </div>
           </div>
         </div>
