@@ -3,13 +3,14 @@ import Link from 'next/link';
 import { ArrowUpRight, Crown, Bed, UtensilsCrossed, Briefcase } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { DealCard } from '@/components/ui/deal-card';
-import { getDealsByCategory } from '@/data/deals';
+import { NoFareFallback } from '@/components/ui/no-fare-fallback';
+import { getDealsByCategory, getDealsByDestination } from '@/data/deals';
 import { routes, getRouteAirport, getRouteDestination } from '@/data/routes';
 
 export const metadata: Metadata = {
   title: 'Business Class Deals — Gulf & South Asia Routes from the UK',
   description:
-    'Business class flight fares from UK airports to Dubai, Doha, Delhi, Lahore and beyond, checked regularly and shown with the date last verified.',
+    'Example business class fares from UK airports to Dubai, Doha, Delhi, Lahore and beyond, for illustration alongside live partner pricing.',
 };
 
 const cabinFeatures = [
@@ -27,7 +28,13 @@ const decisionPoints = [
 
 export default function BusinessClassPage() {
   const businessDeals = getDealsByCategory('business');
-  const businessCapableRoutes = routes.filter((r) => r.isDirect);
+  const businessCapableRoutes = routes.filter((r) => {
+    const airport = getRouteAirport(r);
+    if (!airport) return false;
+    return getDealsByDestination(r.destinationSlug).some(
+      (d) => d.cabin === 'Business' && d.fromAirportSlug === r.airportSlug
+    );
+  });
 
   return (
     <>
@@ -68,9 +75,9 @@ export default function BusinessClassPage() {
       {/* Route coverage — links into route hubs */}
       <section className="bg-sand-50 py-14 sm:py-16">
         <div className="mx-auto max-w-content px-5 sm:px-8">
-          <h2 className="font-display text-2xl text-ink-900 sm:text-3xl">Routes with strong direct business class coverage</h2>
+          <h2 className="font-display text-2xl text-ink-900 sm:text-3xl">Direct routes with an example business class fare</h2>
           <p className="mt-2 max-w-xl text-sm text-ink-500">
-            Direct sectors are where business class makes the strongest case — no cabin change at a connection, no risk of an aircraft swap downgrading the seat.
+            Direct sectors are where business class makes the strongest case — no cabin change at a connection, no risk of an aircraft swap downgrading the seat. Prices below are illustrative examples, not live quotes.
           </p>
           <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {businessCapableRoutes.map((route) => {
@@ -95,18 +102,22 @@ export default function BusinessClassPage() {
         </div>
       </section>
 
-      {businessDeals.length > 0 && (
-        <section className="bg-white py-14 sm:py-16">
-          <div className="mx-auto max-w-content px-5 sm:px-8">
-            <h2 className="font-display text-2xl text-ink-900 sm:text-3xl">Current business class fares</h2>
+      <section className="bg-white py-14 sm:py-16">
+        <div className="mx-auto max-w-content px-5 sm:px-8">
+          <h2 className="font-display text-2xl text-ink-900 sm:text-3xl">Example business class fares</h2>
+          {businessDeals.length > 0 ? (
             <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {businessDeals.map((deal) => (
                 <DealCard key={deal.id} deal={deal} />
               ))}
             </div>
-          </div>
-        </section>
-      )}
+          ) : (
+            <div className="mt-8">
+              <NoFareFallback cityLabel="business class routes" />
+            </div>
+          )}
+        </div>
+      </section>
 
       <section className="bg-sand-50 py-14 sm:py-16">
         <div className="mx-auto max-w-content px-5 sm:px-8">

@@ -4,6 +4,7 @@ import Image from 'next/image';
 import { ArrowUpRight, MapPin } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { DealCard } from '@/components/ui/deal-card';
+import { NoFareFallback } from '@/components/ui/no-fare-fallback';
 import { destinations } from '@/data/destinations';
 import { getDealsByCategory } from '@/data/deals';
 import { placeholderUrl } from '@/lib/images';
@@ -73,12 +74,18 @@ export default function FamilyHolidaysPage() {
 
       <section className="bg-sand-50 py-16 sm:py-20">
         <div className="mx-auto max-w-content px-5 sm:px-8">
-          <h2 className="font-display text-2xl text-ink-900 sm:text-3xl">Current family package fares</h2>
-          <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {packageDeals.map((deal) => (
-              <DealCard key={deal.id} deal={deal} />
-            ))}
-          </div>
+          <h2 className="font-display text-2xl text-ink-900 sm:text-3xl">Example family package fares</h2>
+          {packageDeals.length > 0 ? (
+            <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              {packageDeals.map((deal) => (
+                <DealCard key={deal.id} deal={deal} />
+              ))}
+            </div>
+          ) : (
+            <div className="mt-8">
+              <NoFareFallback cityLabel="family package holidays" />
+            </div>
+          )}
         </div>
       </section>
 

@@ -25,10 +25,10 @@ export default function DealsPage() {
     <>
       <section className="bg-ink-900 py-16 sm:py-20">
         <div className="mx-auto max-w-content px-5 sm:px-8">
-          <h1 className="font-display text-4xl text-sand-50 sm:text-5xl">Current fares</h1>
+          <h1 className="font-display text-4xl text-sand-50 sm:text-5xl">Example fares</h1>
           <p className="mt-3 max-w-xl text-lg text-ink-300">
-            Every fare on this page is checked against a live search and shown with the date — no fabricated
-            "deals refresh hourly" claims.
+            Every fare below is an indicative example, not a live quote — prices change quickly, so always
+            confirm the current price with the airline or partner before booking.
           </p>
         </div>
       </section>

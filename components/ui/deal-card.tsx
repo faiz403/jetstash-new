@@ -38,12 +38,13 @@ export function DealCard({ deal }: { deal: Deal }) {
           <span className="font-display text-3xl tracking-tight text-ink-900">£{deal.indicativePrice.toLocaleString('en-GB')}</span>
           <span className="text-sm text-ink-400">{deal.priceNote}</span>
         </div>
+        <p className="mt-0.5 text-xs font-medium text-terracotta-600">Indicative price — prices change quickly</p>
 
         <p className="mt-1 text-sm font-medium text-ink-500">{deal.airline} · {cabinLabel[deal.cabin]}</p>
 
         <div className="mt-4 flex items-center gap-1.5 text-xs text-ink-400">
           <Calendar className="h-3.5 w-3.5" strokeWidth={2} />
-          Checked {formatChecked(deal.lastChecked)}
+          Example fare checked {formatChecked(deal.lastChecked)}
         </div>
 
         <a
@@ -55,7 +56,7 @@ export function DealCard({ deal }: { deal: Deal }) {
           Check live price
           <ArrowUpRight className="h-4 w-4" strokeWidth={2.25} />
         </a>
-        <p className="mt-2 text-center text-[11px] text-ink-300">Partner link · price shown is indicative</p>
+        <p className="mt-2 text-center text-[11px] text-ink-300">Partner link · indicative price, not a live quote</p>
       </div>
     </article>
   );

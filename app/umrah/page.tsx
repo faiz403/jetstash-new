@@ -4,6 +4,7 @@ import Image from 'next/image';
 import { ArrowUpRight, MapPin } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { DealCard } from '@/components/ui/deal-card';
+import { NoFareFallback } from '@/components/ui/no-fare-fallback';
 import { LinkButton } from '@/components/ui/button';
 import { getDestinationsByRegion } from '@/data/destinations';
 import { getDealsByCategory } from '@/data/deals';
@@ -89,18 +90,22 @@ export default function UmrahHubPage() {
         </div>
       </section>
 
-      {umrahDeals.length > 0 && (
-        <section className="bg-white py-16 sm:py-20">
-          <div className="mx-auto max-w-content px-5 sm:px-8">
-            <h2 className="font-display text-2xl text-ink-900 sm:text-3xl">Current package fares</h2>
+      <section className="bg-white py-16 sm:py-20">
+        <div className="mx-auto max-w-content px-5 sm:px-8">
+          <h2 className="font-display text-2xl text-ink-900 sm:text-3xl">Example package fares</h2>
+          {umrahDeals.length > 0 ? (
             <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {umrahDeals.map((deal) => (
                 <DealCard key={deal.id} deal={deal} />
               ))}
             </div>
-          </div>
-        </section>
-      )}
+          ) : (
+            <div className="mt-8">
+              <NoFareFallback cityLabel="Umrah packages" />
+            </div>
+          )}
+        </div>
+      </section>
 
       <section className="bg-sand-50 py-16 sm:py-20">
         <div className="mx-auto max-w-content px-5 sm:px-8">

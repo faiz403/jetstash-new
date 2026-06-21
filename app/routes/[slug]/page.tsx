@@ -5,6 +5,7 @@ import { Plane, Calendar, Clock, ArrowUpRight, AlertCircle } from 'lucide-react'
 import { routes, getRouteBySlug, getRouteAirport, getRouteDestination } from '@/data/routes';
 import { getDealsByDestination } from '@/data/deals';
 import { DealCard } from '@/components/ui/deal-card';
+import { NoFareFallback } from '@/components/ui/no-fare-fallback';
 import { Badge } from '@/components/ui/badge';
 import { FamilyVisitBlock } from '@/components/sections/family-visit-block';
 import { siteConfig } from '@/lib/site-config';
@@ -97,18 +98,22 @@ export default function RoutePage({ params }: { params: { slug: string } }) {
 
       {dest.familyVisitContent && <FamilyVisitBlock content={dest.familyVisitContent} city={dest.city} />}
 
-      {dealsHere.length > 0 && (
-        <section className="bg-sand-50 py-14 sm:py-16">
-          <div className="mx-auto max-w-content px-5 sm:px-8">
-            <h2 className="font-display text-2xl text-ink-900 sm:text-3xl">Current fares on this route</h2>
+      <section className="bg-sand-50 py-14 sm:py-16">
+        <div className="mx-auto max-w-content px-5 sm:px-8">
+          <h2 className="font-display text-2xl text-ink-900 sm:text-3xl">Current fares on this route</h2>
+          {dealsHere.length > 0 ? (
             <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {dealsHere.map((deal) => (
                 <DealCard key={deal.id} deal={deal} />
               ))}
             </div>
-          </div>
-        </section>
-      )}
+          ) : (
+            <div className="mt-8">
+              <NoFareFallback cityLabel={`${airport.city} to ${dest.city}`} />
+            </div>
+          )}
+        </div>
+      </section>
 
       <section className="bg-white py-14 sm:py-16">
         <div className="mx-auto max-w-content px-5 sm:px-8">

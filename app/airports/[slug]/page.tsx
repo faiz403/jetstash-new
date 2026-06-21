@@ -6,6 +6,7 @@ import { airports, getAirportBySlug } from '@/data/airports';
 import { getDealsByAirport } from '@/data/deals';
 import { getRoutesByAirport, getRouteDestination } from '@/data/routes';
 import { DealCard } from '@/components/ui/deal-card';
+import { NoFareFallback } from '@/components/ui/no-fare-fallback';
 import { Badge } from '@/components/ui/badge';
 import { siteConfig } from '@/lib/site-config';
 
@@ -156,18 +157,22 @@ export default function AirportPage({ params }: { params: { slug: string } }) {
         </div>
       </section>
 
-      {dealsHere.length > 0 && (
-        <section className="bg-white py-14 sm:py-16">
-          <div className="mx-auto max-w-content px-5 sm:px-8">
-            <h2 className="font-display text-2xl text-ink-900 sm:text-3xl">Current fares from {airport.name}</h2>
+      <section className="bg-white py-14 sm:py-16">
+        <div className="mx-auto max-w-content px-5 sm:px-8">
+          <h2 className="font-display text-2xl text-ink-900 sm:text-3xl">Example fares from {airport.name}</h2>
+          {dealsHere.length > 0 ? (
             <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {dealsHere.map((deal) => (
                 <DealCard key={deal.id} deal={deal} />
               ))}
             </div>
-          </div>
-        </section>
-      )}
+          ) : (
+            <div className="mt-8">
+              <NoFareFallback cityLabel={airport.name} />
+            </div>
+          )}
+        </div>
+      </section>
     </>
   );
 }
