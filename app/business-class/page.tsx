@@ -91,7 +91,7 @@ export default function BusinessClassPage() {
                   className="group flex flex-col rounded-md border border-ink-100 bg-white p-6 shadow-card transition-all hover:-translate-y-1 hover:shadow-card-hover"
                 >
                   <h3 className="font-display text-xl text-ink-900">{airport.city} → {dest.city}</h3>
-                  <p className="mt-1.5 text-sm text-ink-500">{route.flightTime} direct · {route.airlines.join(', ')}</p>
+                  <p className="mt-1.5 text-sm text-ink-500">{route.flightTime} · {route.airlines.join(', ')}</p>
                   <span className="mt-4 flex items-center gap-1.5 text-sm font-semibold text-ink-900">
                     View route guide <ArrowUpRight className="h-4 w-4" strokeWidth={2.25} />
                   </span>
