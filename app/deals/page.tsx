@@ -28,7 +28,7 @@ export default function DealsPage() {
           <h1 className="font-display text-4xl text-sand-50 sm:text-5xl">Example fares</h1>
           <p className="mt-3 max-w-xl text-lg text-ink-300">
             Every fare below is an indicative example, not a live quote — prices change quickly, so always
-            confirm the current price with the airline or partner before booking.
+            confirm the current price with the airline or partner before booking. "Checked" means a member of our team manually searched that route and recorded the fare shown — not an automated price feed.
           </p>
         </div>
       </section>
