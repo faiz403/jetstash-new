@@ -56,7 +56,7 @@ export function DealCard({ deal }: { deal: Deal }) {
           Check live price
           <ArrowUpRight className="h-4 w-4" strokeWidth={2.25} />
         </a>
-        <p className="mt-2 text-center text-[11px] text-ink-300">Partner link · indicative price, not a live quote</p>
+        <p className="mt-2 text-center text-[10px] text-ink-400">Partner link · indicative</p>
       </div>
     </article>
   );
