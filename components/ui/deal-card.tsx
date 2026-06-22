@@ -43,6 +43,7 @@ export function DealCard({ deal }: { deal: Deal }) {
         <p className="mt-1 text-sm font-medium text-ink-500">{deal.airline} · {cabinLabel[deal.cabin]}</p>
 
         <div className="mt-4 flex items-center gap-1.5 text-xs text-ink-400">
+          <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
           <Calendar className="h-3.5 w-3.5" strokeWidth={2} />
           Example fare checked {formatChecked(deal.lastChecked)}
         </div>
