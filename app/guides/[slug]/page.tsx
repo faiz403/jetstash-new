@@ -44,9 +44,11 @@ export default function GuidePage({ params }: { params: { slug: string } }) {
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(200,147,46,0.12),transparent_60%)]" />
         <div className="relative mx-auto max-w-content px-5 sm:px-8">
           <nav aria-label="Breadcrumb" className="mb-5 flex items-center gap-1.5 text-xs text-ink-400">
-            <Link href="/" className="hover:text-brass-300">Home</Link>
+            <Link href="/" className="shrink-0 hover:text-brass-300">Home</Link>
             <span>/</span>
-            <Link href="/guides" className="hover:text-brass-300">Travel Guides</Link>
+            <Link href="/guides" className="shrink-0 hover:text-brass-300">Travel Guides</Link>
+            <span>/</span>
+            <span className="truncate text-ink-200">{guide.title}</span>
           </nav>
           <div className="stagger-in stagger-1 animate-fade-up">
             <Badge variant="dark">Travel guide</Badge>

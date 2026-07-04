@@ -186,7 +186,7 @@ export default function HomePage() {
               <h2 className="mt-2 font-display text-3xl text-ink-900 sm:text-4xl">Featured fares from UK airports</h2>
             </div>
             <Link href="/deals" className="flex items-center gap-1.5 text-sm font-semibold text-ink-900 hover:text-terracotta-600">
-              All current deals <ArrowUpRight className="h-4 w-4" strokeWidth={2.25} />
+              All tracked fares <ArrowUpRight className="h-4 w-4" strokeWidth={2.25} />
             </Link>
           </div>
 
@@ -356,7 +356,9 @@ function ComparisonColumn({
   tone: 'muted' | 'highlight';
 }) {
   return (
-    <div className={tone === 'highlight' ? 'bg-ink-800 p-7' : 'bg-ink-900 p-7'}>
+    // On mobile the columns stack — JetStash leads rather than a competitor;
+    // sm+ restores the classic ours-in-the-middle comparison layout.
+    <div className={tone === 'highlight' ? 'order-first bg-ink-800 p-7 sm:order-none' : 'bg-ink-900 p-7'}>
       <h3 className={`font-display text-lg ${tone === 'highlight' ? 'text-brass-300' : 'text-ink-300'}`}>{label}</h3>
       <ul className="mt-4 flex flex-col gap-3">
         {points.map((point) => (

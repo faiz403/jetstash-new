@@ -22,13 +22,16 @@ export default function UmrahHubPage() {
 
   return (
     <>
-      <section className="bg-ink-900 py-16 sm:py-20">
-        <div className="mx-auto max-w-content px-5 sm:px-8">
-          <Badge variant="dark">Umrah & Saudi Arabia</Badge>
-          <h1 className="mt-4 max-w-2xl font-display text-4xl leading-[1.08] text-sand-50 sm:text-5xl">
+      <section className="relative overflow-hidden bg-ink-900 py-16 sm:py-20">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(200,147,46,0.12),transparent_60%)]" />
+        <div className="relative mx-auto max-w-content px-5 sm:px-8">
+          <div className="stagger-in stagger-1 animate-fade-up">
+            <Badge variant="dark">Umrah & Saudi Arabia</Badge>
+          </div>
+          <h1 className="stagger-in stagger-2 mt-4 max-w-2xl animate-fade-up font-display text-4xl leading-[1.08] tracking-tight text-sand-50 sm:text-5xl">
             Umrah packages, compared properly
           </h1>
-          <p className="mt-4 max-w-xl text-lg leading-relaxed text-ink-300">
+          <p className="stagger-in stagger-3 mt-4 max-w-xl animate-fade-up text-lg leading-relaxed text-ink-300">
             Most Umrah packages bundle flights, hotels in Makkah and Madinah, and ground transport into a single
             price. We help you understand what's actually included before you compare numbers.
           </p>
@@ -84,7 +87,10 @@ export default function UmrahHubPage() {
                 className="group flex flex-col overflow-hidden rounded-md border border-ink-100 bg-white shadow-card transition-all hover:-translate-y-1 hover:shadow-card-hover"
               >
                 <div className="relative h-40 w-full overflow-hidden">
-                  <DestinationMark seed={`${dest.city}, Saudi Arabia`} />
+                  <DestinationMark
+                    seed={`${dest.city}, Saudi Arabia`}
+                    className="transition-transform duration-500 group-hover:scale-[1.03]"
+                  />
                 </div>
                 <div className="flex flex-1 flex-col p-6">
                   <span className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-ink-400">

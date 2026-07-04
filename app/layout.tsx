@@ -6,10 +6,11 @@ import { Footer } from '@/components/layout/footer';
 import { JsonLd, organizationSchema, webSiteSchema } from '@/components/seo/json-ld';
 import { siteConfig } from '@/lib/site-config';
 
+// No italic style: nothing on the site sets font-style, so shipping the
+// italic face would double the display-font payload for zero rendered glyphs.
 const fraunces = Fraunces({
   subsets: ['latin'],
   weight: ['400', '500', '600'],
-  style: ['normal', 'italic'],
   variable: '--font-display',
   display: 'swap',
 });

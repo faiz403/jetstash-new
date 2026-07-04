@@ -52,7 +52,7 @@ export const routes: Route[] = [
     airlineSlugs: ['pia'],
     isDirect: true,
     intro:
-      'This is the single most-travelled long-haul route on JetStash. PIA runs direct Manchester–Lahore services, making it the most convenient option for the North West\'s Punjabi community — no Gulf connection, no extra layover, no lost luggage transfer risk.',
+      'The flagship Pakistan corridor from the North of England. PIA runs direct Manchester–Lahore services, making it the most convenient option for the North West\'s Punjabi community — no Gulf connection, no extra layover, no lost luggage transfer risk.',
     bookingWindowNote:
       'Outside Eid and the summer school holidays, fares hold reasonably steady 8–10 weeks out. Within 3 weeks of Eid, expect a sharp jump — book that window 3+ months ahead if your dates are fixed.',
     peakPeriodIds: ['eid-al-fitr', 'eid-al-adha', 'uk-summer-holidays', 'wedding-season'],
@@ -138,7 +138,7 @@ export const routes: Route[] = [
     intro:
       'The primary direct Umrah arrival route from the UK. Most flight-inclusive Umrah packages are built around this exact corridor, with onward ground transport to Makkah.',
     bookingWindowNote:
-      'Ramadan and the weeks immediately preceding Hajj season carry the sharpest price increases of any route on JetStash. Outside those windows, pricing is comparatively settled.',
+      'Ramadan and the weeks immediately preceding Hajj season are this route\'s steepest pricing windows by a distance. Outside those windows, pricing is comparatively settled.',
     peakPeriodIds: ['ramadan', 'pre-hajj', 'school-half-terms-umrah'],
   },
   {

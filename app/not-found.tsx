@@ -23,7 +23,7 @@ export default function NotFound() {
         <div className="mt-7 flex flex-wrap justify-center gap-3">
           <LinkButton href="/" variant="dark">Go home</LinkButton>
           <LinkButton href="/deals" variant="outline" className="border-ink-200 text-ink-900 hover:bg-ink-50">
-            See current fares
+            See tracked fares
           </LinkButton>
         </div>
 

@@ -6,8 +6,8 @@ export function Footer() {
   return (
     <footer className="border-t border-white/5 bg-ink-950">
       <div className="mx-auto max-w-content px-5 py-16 sm:px-8">
-        <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-[1.6fr_1fr_1fr_1fr]">
-          <div>
+        <div className="grid grid-cols-2 gap-10 lg:grid-cols-[1.6fr_1fr_1fr_1fr]">
+          <div className="col-span-2 lg:col-span-1">
             <span className="flex items-center gap-2.5">
               <Logomark size={26} />
               <span className="font-display text-2xl text-sand-50">{siteConfig.name}</span>

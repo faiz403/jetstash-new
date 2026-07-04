@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { ArrowUpRight, MapPin, Plane, Users } from 'lucide-react';
+import { ArrowUpRight, FileText, MapPin, Plane, Users } from 'lucide-react';
 import { DealCard } from '@/components/ui/deal-card';
 import { NoFareFallback } from '@/components/ui/no-fare-fallback';
 import { Badge } from '@/components/ui/badge';
@@ -8,6 +8,7 @@ import { Destination } from '@/data/destinations';
 import { getDealsByRegionGroup } from '@/data/deals';
 import { getRoutesByDestination, getRouteAirport } from '@/data/routes';
 import { DestinationMark } from '@/components/ui/destination-mark';
+import type { QuoteRegion } from '@/lib/quote-request-options';
 
 interface RegionHubProps {
   eyebrow: string;
@@ -19,6 +20,8 @@ interface RegionHubProps {
   airportsServed: string[];
   /** When true, surfaces a "visiting family" callout — only relevant for Pakistan/India-style hubs. */
   showFamilyVisitCallout?: boolean;
+  /** When set, surfaces the quote-request banner pre-filtered to this region — the same funnel the Umrah and Family Holidays pages use. */
+  quoteRegion?: QuoteRegion;
 }
 
 export function RegionHubPage({
@@ -30,6 +33,7 @@ export function RegionHubPage({
   practicalNotes,
   airportsServed,
   showFamilyVisitCallout = false,
+  quoteRegion,
 }: RegionHubProps) {
   const slugs = destinationsInRegion.map((d) => d.slug);
   const regionDeals = getDealsByRegionGroup(slugs);
@@ -63,7 +67,10 @@ export function RegionHubPage({
                 className="group flex flex-col overflow-hidden rounded-md border border-ink-100 bg-white shadow-card transition-all hover:-translate-y-1 hover:shadow-card-hover"
               >
                 <div className="relative h-36 w-full overflow-hidden">
-                  <DestinationMark seed={`${dest.city}, ${dest.country}`} />
+                  <DestinationMark
+                    seed={`${dest.city}, ${dest.country}`}
+                    className="transition-transform duration-500 group-hover:scale-[1.03]"
+                  />
                 </div>
                 <div className="flex flex-1 flex-col p-6">
                   <span className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-ink-400">
@@ -83,6 +90,33 @@ export function RegionHubPage({
           </div>
         </div>
       </section>
+
+      {quoteRegion && (
+        <section className="bg-brass-50 py-10 sm:py-12">
+          <div className="mx-auto max-w-content px-5 sm:px-8">
+            <div className="flex flex-col gap-4 rounded-md border border-brass/30 bg-white p-7 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex items-start gap-3">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-sm bg-brass-50 text-brass-700">
+                  <FileText className="h-4.5 w-4.5" strokeWidth={2} />
+                </div>
+                <div>
+                  <h2 className="font-display text-xl text-ink-900">Planning a family or group trip here?</h2>
+                  <p className="mt-1 text-sm text-ink-500">
+                    Tell us your dates and group size — a person follows up with real pricing, not an automated number.
+                  </p>
+                </div>
+              </div>
+              <LinkButton
+                href={`/quote-request?tripType=family-trip&region=${quoteRegion}`}
+                size="md"
+                className="shrink-0"
+              >
+                Request a quote
+              </LinkButton>
+            </div>
+          </div>
+        </section>
+      )}
 
       {showFamilyVisitCallout && (
         <section className="bg-ink-900 py-14 sm:py-16">

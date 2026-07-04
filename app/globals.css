@@ -9,6 +9,8 @@
 
 html {
   scroll-behavior: smooth;
+  /* Sticky header is h-20 (80px) — keep anchor targets clear of it. */
+  scroll-padding-top: 6rem;
 }
 
 body {

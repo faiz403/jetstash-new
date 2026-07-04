@@ -6,7 +6,7 @@ import { deals, formatChecked } from '@/data/deals';
 import { siteConfig } from '@/lib/site-config';
 
 export const metadata: Metadata = {
-  title: 'Current Fares — UK to Pakistan, India, the Gulf & Umrah',
+  title: 'Tracked Fares — UK to Pakistan, India, the Gulf & Umrah',
   description:
     'Example fares from UK airports to Pakistan, India, the Gulf and Umrah, each checked by hand on a stated date — never a live price claim.',
   alternates: { canonical: `${siteConfig.url}/deals` },

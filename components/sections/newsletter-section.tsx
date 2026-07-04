@@ -3,33 +3,9 @@
 import { useState, FormEvent } from 'react';
 import { ArrowRight, CheckCircle2 } from 'lucide-react';
 import { airports } from '@/data/airports';
+import { TRAVEL_INTEREST_OPTIONS } from '@/lib/travel-club-options';
 
-const INTEREST_OPTIONS: { value: string; label: string; shortLabel: string }[] = [
-  { value: 'pakistan', label: 'Pakistan (Lahore, Islamabad, Karachi)', shortLabel: 'Pakistan' },
-  { value: 'india', label: 'India (Delhi, Mumbai, Ahmedabad, Amritsar)', shortLabel: 'India' },
-  { value: 'gulf', label: 'Gulf (Dubai, Doha)', shortLabel: 'Gulf' },
-  { value: 'umrah', label: 'Umrah & Saudi Arabia', shortLabel: 'Umrah' },
-  { value: 'business-class', label: 'Business class, any route', shortLabel: 'business class' },
-];
-
-function interestHref(interest: string): string {
-  switch (interest) {
-    case 'pakistan':
-      return '/pakistan';
-    case 'india':
-      return '/india';
-    case 'gulf':
-      return '/gulf';
-    case 'umrah':
-      return '/umrah';
-    case 'business-class':
-      return '/business-class';
-    default:
-      return '/';
-  }
-}
-
-export function NewsletterSection({ compact = false }: { compact?: boolean }) {
+export function NewsletterSection() {
   const [email, setEmail] = useState('');
   const [nearestAirport, setNearestAirport] = useState('');
   const [interest, setInterest] = useState('');
@@ -58,7 +34,7 @@ export function NewsletterSection({ compact = false }: { compact?: boolean }) {
   }
 
   return (
-    <section className={compact ? 'py-12' : 'py-20'}>
+    <section className="py-20">
       <div className="mx-auto max-w-content px-5 sm:px-8">
         <div className="rounded-lg border border-white/10 bg-gradient-to-br from-ink-800 to-ink-900 p-8 sm:p-12">
           <div className="grid items-center gap-8 lg:grid-cols-2">
@@ -80,16 +56,19 @@ export function NewsletterSection({ compact = false }: { compact?: boolean }) {
                     <CheckCircle2 className="h-6 w-6 flex-shrink-0 text-brass-300" />
                     <p className="text-sm text-sand-100">You&apos;re on the list — welcome to Travel Club.</p>
                   </div>
-                  {interest && (
-                    <p className="mt-3 text-xs text-ink-300">
-                      We&apos;ll keep an eye out for {INTEREST_OPTIONS.find((o) => o.value === interest)?.shortLabel ?? 'your region'}{' '}
-                      fares worth flagging. In the meantime,{' '}
-                      <a href={interestHref(interest)} className="font-semibold text-brass-300 underline underline-offset-2 hover:text-brass-200">
-                        have a look at the {INTEREST_OPTIONS.find((o) => o.value === interest)?.shortLabel} hub
-                      </a>
-                      .
-                    </p>
-                  )}
+                  {(() => {
+                    const selected = TRAVEL_INTEREST_OPTIONS.find((o) => o.value === interest);
+                    if (!selected) return null;
+                    return (
+                      <p className="mt-3 text-xs text-ink-300">
+                        We&apos;ll keep an eye out for {selected.shortLabel} fares worth flagging. In the meantime,{' '}
+                        <a href={selected.href} className="font-semibold text-brass-300 underline underline-offset-2 hover:text-brass-200">
+                          have a look at the {selected.shortLabel} hub
+                        </a>
+                        .
+                      </p>
+                    );
+                  })()}
                 </div>
               ) : (
                 <form onSubmit={handleSubmit} className="flex flex-col gap-3">
@@ -109,7 +88,7 @@ export function NewsletterSection({ compact = false }: { compact?: boolean }) {
                     <button
                       type="submit"
                       disabled={status === 'submitting'}
-                      className="inline-flex h-12 items-center justify-center gap-1.5 rounded-sm bg-brass px-6 font-semibold text-ink-900 transition-colors hover:bg-brass-400 disabled:opacity-60"
+                      className="inline-flex h-12 items-center justify-center gap-1.5 rounded-sm bg-brass px-6 font-semibold text-ink-900 transition-all hover:bg-brass-400 hover:shadow-brass-glow active:scale-[0.985] disabled:opacity-60"
                     >
                       {status === 'submitting' ? 'Joining…' : 'Join free'}
                       {status !== 'submitting' && <ArrowRight className="h-4 w-4" strokeWidth={2.25} />}
@@ -145,7 +124,7 @@ export function NewsletterSection({ compact = false }: { compact?: boolean }) {
                         className="mt-1.5 h-11 w-full rounded-sm border border-white/15 bg-white/5 px-3 text-sm text-sand-50 focus-visible:border-brass"
                       >
                         <option value="" className="bg-ink-900">Select region</option>
-                        {INTEREST_OPTIONS.map((opt) => (
+                        {TRAVEL_INTEREST_OPTIONS.map((opt) => (
                           <option key={opt.value} value={opt.value} className="bg-ink-900">
                             {opt.label}
                           </option>

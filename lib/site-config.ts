@@ -33,6 +33,7 @@ export const footerNav = {
     { label: 'Request a Quote', href: '/quote-request' },
     { label: 'All Deals', href: '/deals' },
     { label: 'All Routes', href: '/routes' },
+    { label: 'All Destinations', href: '/destinations' },
     { label: 'Travel Guides', href: '/guides' },
     { label: 'UK Airports', href: '/airports' },
   ],

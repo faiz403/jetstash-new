@@ -36,7 +36,7 @@ export const destinations: Destination[] = [
     region: 'pakistan',
     tagline: 'Mughal heritage and Punjab\'s cultural capital',
     description:
-      'Lahore pairs centuries of Mughal architecture — the Badshahi Mosque, Lahore Fort, Shalimar Gardens — with one of South Asia\'s great food cities. For UK families with Punjabi roots, it remains the most-travelled route on JetStash.',
+      'Lahore pairs centuries of Mughal architecture — the Badshahi Mosque, Lahore Fort, Shalimar Gardens — with one of South Asia\'s great food cities. For UK families with Punjabi roots, this is often the most important journey of the year.',
     heroImageQuery: 'lahore badshahi mosque pakistan architecture',
     bestFor: ['Family visits', 'Heritage travel', 'Food'],
     flightTimeFromUK: '8h direct from Manchester',

@@ -119,7 +119,7 @@ export function FareWatchForm({ defaultAirportSlug, defaultDestinationSlug }: Fa
             <button
               type="submit"
               disabled={status === 'submitting'}
-              className="inline-flex h-11 items-center justify-center rounded-sm bg-ink-900 px-5 text-sm font-semibold text-sand-50 transition-colors hover:bg-brass-600 disabled:opacity-60"
+              className="inline-flex h-11 items-center justify-center rounded-sm bg-ink-900 px-5 text-sm font-semibold text-sand-50 transition-all hover:bg-brass-600 active:scale-[0.985] disabled:opacity-60"
             >
               {status === 'submitting' ? 'Saving…' : 'Watch this route'}
             </button>
@@ -127,7 +127,13 @@ export function FareWatchForm({ defaultAirportSlug, defaultDestinationSlug }: Fa
           {status === 'error' && (
             <p className="text-xs text-terracotta-600">{errorMsg || 'Something went wrong — please try again or use the contact page.'}</p>
           )}
-          <p className="text-xs text-ink-400">No spam. Unsubscribe any time. See our privacy policy.</p>
+          <p className="text-xs text-ink-400">
+            No spam. Unsubscribe any time. See our{' '}
+            <a href="/privacy-policy" className="underline underline-offset-2 hover:text-ink-600">
+              privacy policy
+            </a>
+            .
+          </p>
         </form>
       )}
     </div>

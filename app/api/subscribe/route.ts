@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getAirportBySlug } from '@/data/airports';
 import { isValidEmail, upsertBrevoContact } from '@/lib/email';
+import { isTravelInterest } from '@/lib/travel-club-options';
 
 /**
  * Newsletter / Travel Club subscribe endpoint.
@@ -33,22 +35,6 @@ import { isValidEmail, upsertBrevoContact } from '@/lib/email';
  * correctly, otherwise Brevo silently drops fields it doesn't recognise.
  */
 
-const VALID_AIRPORTS = [
-  'manchester',
-  'birmingham',
-  'london-heathrow',
-  'london-gatwick',
-  'leeds-bradford',
-  'liverpool',
-  'newcastle',
-  'glasgow',
-  'edinburgh',
-  'bristol',
-  'birmingham-east-midlands',
-];
-
-const VALID_INTERESTS = ['pakistan', 'india', 'gulf', 'umrah', 'business-class'];
-
 export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => null);
   const email = body?.email;
@@ -59,11 +45,14 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'A valid email address is required.' }, { status: 400 });
   }
 
-  if (nearestAirport && !VALID_AIRPORTS.includes(nearestAirport)) {
+  // Validate against the same sources the form is rendered from
+  // (data/airports.ts and lib/travel-club-options.ts) so form and API
+  // can never drift apart when an airport or segment is added.
+  if (nearestAirport && !getAirportBySlug(nearestAirport)) {
     return NextResponse.json({ error: 'Unrecognised airport selection.' }, { status: 400 });
   }
 
-  if (interest && !VALID_INTERESTS.includes(interest)) {
+  if (interest && !isTravelInterest(interest)) {
     return NextResponse.json({ error: 'Unrecognised interest selection.' }, { status: 400 });
   }
 

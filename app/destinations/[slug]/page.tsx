@@ -25,7 +25,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   if (!dest) return {};
   return {
     title: `Flights to ${dest.city}, ${dest.country} from the UK`,
-    description: `${dest.tagline}. Flight times, visa requirements and current fares for UK travellers to ${dest.city}.`,
+    description: `${dest.tagline}. Flight times, visa requirements and tracked example fares for UK travellers to ${dest.city}.`,
     alternates: { canonical: `${siteConfig.url}/destinations/${dest.slug}` },
   };
 }
@@ -143,7 +143,7 @@ export default function DestinationPage({ params }: { params: { slug: string } }
 
       <section className="bg-sand-50 py-16 sm:py-20">
         <div className="mx-auto max-w-content px-5 sm:px-8">
-          <h2 className="font-display text-2xl text-ink-900 sm:text-3xl">Current fares to {dest.city}</h2>
+          <h2 className="font-display text-2xl text-ink-900 sm:text-3xl">Example fares to {dest.city}</h2>
           {dealsHere.length > 0 ? (
             <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {dealsHere.map((deal) => (

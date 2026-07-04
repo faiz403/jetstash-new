@@ -19,6 +19,7 @@ export default function GulfHubPage() {
       intro="Dubai and Doha work as standalone family holidays, weekend city breaks, or the most comfortable way to break up a longer journey south or east."
       destinationsInRegion={destinations}
       airportsServed={['London Heathrow', 'Manchester', 'Birmingham', 'London Gatwick', 'Glasgow', 'Leeds Bradford']}
+      quoteRegion="gulf"
       visaNote="UK passport holders receive a visa on arrival for both the UAE and Qatar, typically valid for 30 days and free of charge. Always check the latest requirements with the relevant embassy before travel, as policies can change."
       practicalNotes={[
         {

@@ -19,7 +19,11 @@ export function DealCard({ deal }: { deal: Deal }) {
   return (
     <article className="group relative flex flex-col overflow-hidden rounded-md border border-ink-100 bg-white shadow-card transition-all duration-300 hover:-translate-y-1 hover:shadow-card-hover">
       <div className="relative h-44 w-full overflow-hidden">
-        <DestinationMark label={deal.toCity} sublabel={deal.toCountry} />
+        <DestinationMark
+          label={deal.toCity}
+          sublabel={deal.toCountry}
+          className="transition-transform duration-500 group-hover:scale-[1.03]"
+        />
         {deal.tag && (
           <div className="absolute right-4 top-4">
             <Badge variant={deal.cabin === 'Business' ? 'terracotta' : 'brass'}>{deal.tag}</Badge>
@@ -43,7 +47,7 @@ export function DealCard({ deal }: { deal: Deal }) {
         <p className="mt-1 text-sm font-medium text-ink-500">{deal.airline}</p>
 
         <div className="mt-4 flex items-center gap-1.5 text-xs text-ink-400">
-          <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+          <span className="h-1.5 w-1.5 rounded-full bg-brass-400" />
           Example fare checked {formatChecked(deal.lastChecked)}
         </div>
         {observations.length > 1 && (
@@ -57,7 +61,7 @@ export function DealCard({ deal }: { deal: Deal }) {
           href={deal.partnerUrl}
           target="_blank"
           rel="nofollow sponsored noopener noreferrer"
-          className="mt-5 inline-flex items-center justify-center gap-1.5 rounded-sm bg-ink-900 px-4 py-3 text-sm font-semibold text-sand-50 transition-colors duration-200 hover:bg-brass-600"
+          className="mt-5 inline-flex items-center justify-center gap-1.5 rounded-sm bg-ink-900 px-4 py-3 text-sm font-semibold text-sand-50 transition-all duration-200 hover:bg-brass-600 active:scale-[0.985]"
         >
           Check live price
           <ArrowUpRight className="h-4 w-4" strokeWidth={2.25} />

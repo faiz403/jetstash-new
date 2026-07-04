@@ -4,6 +4,7 @@ import { ArrowUpRight, Crown, Bed, UtensilsCrossed, Briefcase } from 'lucide-rea
 import { Badge } from '@/components/ui/badge';
 import { DealCard } from '@/components/ui/deal-card';
 import { NoFareFallback } from '@/components/ui/no-fare-fallback';
+import { NewsletterSection } from '@/components/sections/newsletter-section';
 import { getDealsByCategory, getDealsByDestination } from '@/data/deals';
 import { routes, getRouteAirport, getRouteDestination, getRouteAirlines } from '@/data/routes';
 
@@ -39,13 +40,16 @@ export default function BusinessClassPage() {
 
   return (
     <>
-      <section className="bg-ink-900 py-16 sm:py-20">
-        <div className="mx-auto max-w-content px-5 sm:px-8">
-          <Badge variant="dark">Business Class</Badge>
-          <h1 className="mt-4 max-w-2xl font-display text-4xl leading-[1.08] text-sand-50 sm:text-5xl">
+      <section className="relative overflow-hidden bg-ink-900 py-16 sm:py-20">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(200,147,46,0.12),transparent_60%)]" />
+        <div className="relative mx-auto max-w-content px-5 sm:px-8">
+          <div className="stagger-in stagger-1 animate-fade-up">
+            <Badge variant="dark">Business Class</Badge>
+          </div>
+          <h1 className="stagger-in stagger-2 mt-4 max-w-2xl animate-fade-up font-display text-4xl leading-[1.08] tracking-tight text-sand-50 sm:text-5xl">
             Long-haul, done properly
           </h1>
-          <p className="mt-4 max-w-xl text-lg leading-relaxed text-ink-300">
+          <p className="stagger-in stagger-3 mt-4 max-w-xl animate-fade-up text-lg leading-relaxed text-ink-300">
             Business class fares to the Gulf, Pakistan and India move on different patterns to economy — fuel
             surcharges, seasonal corporate demand, and airline-specific sales all shift the picture. We track the
             routes that UK travellers actually book.
@@ -133,6 +137,10 @@ export default function BusinessClassPage() {
           </div>
         </div>
       </section>
+
+      {/* Travel Club close — business class is an existing Travel Club segment,
+          and long-haul premium fares are exactly the "worth an email" moments. */}
+      <NewsletterSection />
     </>
   );
 }

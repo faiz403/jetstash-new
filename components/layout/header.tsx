@@ -16,7 +16,12 @@ export function Header() {
   const isActive = (href: string) => pathname === href || pathname.startsWith(`${href}/`);
 
   return (
-    <header className="sticky top-0 z-50 border-b border-white/5 bg-ink-900/95 backdrop-blur-md">
+    <header
+      className="sticky top-0 z-50 border-b border-white/5 bg-ink-900/95 backdrop-blur-md"
+      onKeyDown={(e) => {
+        if (e.key === 'Escape') setOpen(false);
+      }}
+    >
       <div className="mx-auto flex h-20 max-w-content items-center justify-between px-5 sm:px-8">
         <Link href="/" className="flex items-center gap-2.5" aria-label={`${siteConfig.name} home`}>
           <Logomark />
@@ -54,13 +59,14 @@ export function Header() {
           className="flex h-10 w-10 items-center justify-center rounded-sm text-sand-50 transition-colors hover:bg-white/5 lg:hidden"
           aria-label={open ? 'Close menu' : 'Open menu'}
           aria-expanded={open}
+          aria-controls="mobile-menu"
         >
           {open ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
         </button>
       </div>
 
       {open && (
-        <div className="animate-menu-in border-t border-white/5 bg-ink-900 px-5 pb-6 pt-2 lg:hidden">
+        <div id="mobile-menu" className="animate-menu-in border-t border-white/5 bg-ink-900 px-5 pb-6 pt-2 lg:hidden">
           <nav className="flex flex-col" aria-label="Main navigation">
             {mainNav.map((item) => (
               <Link

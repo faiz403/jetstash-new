@@ -23,6 +23,7 @@ export function organizationSchema() {
     url: siteConfig.url,
     description: siteConfig.description,
     logo: `${siteConfig.url}/icon.png`,
+    email: 'hello@jetstash.co.uk',
   };
 }
 

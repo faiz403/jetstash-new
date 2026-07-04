@@ -61,9 +61,32 @@ export function RouteMapHero() {
 
   return (
     <div className="relative w-full">
+      {/* At phone width the 1000-unit map renders city labels at ~4px with ~2px
+          tap targets — unusable. Below sm the chip selector is the interface
+          and the map hides; the readout below serves both. */}
+      <div className="-mx-5 flex gap-2 overflow-x-auto px-5 pb-1 no-scrollbar sm:hidden" role="group" aria-label="Preview a route">
+        {mapRoutes.map((route) => {
+          const isActive = route.id === active;
+          return (
+            <button
+              key={`chip-${route.id}`}
+              onClick={() => setActive(route.id)}
+              aria-pressed={isActive}
+              className={
+                isActive
+                  ? 'shrink-0 rounded-full bg-brass px-4 py-2 text-sm font-semibold text-ink-900'
+                  : 'shrink-0 rounded-full border border-white/15 bg-white/5 px-4 py-2 text-sm font-medium text-ink-200'
+              }
+            >
+              {route.toLabel}
+            </button>
+          );
+        })}
+      </div>
+
       <svg
         viewBox="0 0 1000 380"
-        className="h-auto w-full"
+        className="hidden h-auto w-full sm:block"
         role="img"
         aria-label="Map of flight routes from UK airports to South Asia and the Gulf"
       >
@@ -155,7 +178,7 @@ export function RouteMapHero() {
       {/* Active route readout — every figure comes from data/deals.ts */}
       <div
         aria-live="polite"
-        className="mt-2 flex flex-col items-start gap-4 rounded-md border border-white/10 bg-white/[0.03] p-5 transition-colors duration-300 sm:flex-row sm:items-center sm:justify-between"
+        className="mt-4 flex flex-col items-start gap-4 rounded-md border border-white/10 bg-white/[0.03] p-5 transition-colors duration-300 sm:mt-2 sm:flex-row sm:items-center sm:justify-between"
       >
         <div>
           <p className="text-xs font-semibold uppercase tracking-wide text-ink-400">
@@ -180,7 +203,7 @@ export function RouteMapHero() {
         </div>
         <Link
           href={routeHref(activeRoute)}
-          className="inline-flex items-center gap-1.5 rounded-sm bg-brass px-5 py-3 text-sm font-semibold text-ink-900 transition-colors hover:bg-brass-400"
+          className="inline-flex items-center gap-1.5 rounded-sm bg-brass px-5 py-3 text-sm font-semibold text-ink-900 transition-all hover:bg-brass-400 hover:shadow-brass-glow active:scale-[0.985]"
         >
           View route guide
           <ArrowUpRight className="h-4 w-4" strokeWidth={2.25} />

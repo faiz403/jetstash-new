@@ -19,7 +19,7 @@ export function NoFareFallback({ cityLabel }: { cityLabel: string }) {
         href="https://www.skyscanner.net"
         target="_blank"
         rel="nofollow sponsored noopener noreferrer"
-        className="mt-5 inline-flex items-center gap-1.5 rounded-sm bg-ink-900 px-5 py-3 text-sm font-semibold text-sand-50 transition-colors hover:bg-brass-600"
+        className="mt-5 inline-flex items-center gap-1.5 rounded-sm bg-ink-900 px-5 py-3 text-sm font-semibold text-sand-50 transition-all hover:bg-brass-600 active:scale-[0.985]"
       >
         Search live prices
         <ArrowUpRight className="h-4 w-4" strokeWidth={2.25} />

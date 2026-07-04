@@ -104,9 +104,9 @@ export default function RoutePage({ params }: { params: { slug: string } }) {
 
           <div className="stagger-in stagger-4 mt-7 flex animate-fade-up flex-wrap gap-6">
             <RouteStat icon={<Clock className="h-4 w-4" strokeWidth={2} />} label="Flight time" value={route.flightTime} />
-            <RouteStat icon={<Plane className="h-4 w-4" strokeWidth={2} />} label="Frequency" value={route.frequency} />
+            <RouteStat icon={<Calendar className="h-4 w-4" strokeWidth={2} />} label="Frequency" value={route.frequency} />
             {airlines.length > 0 && (
-              <RouteStat icon={<Calendar className="h-4 w-4" strokeWidth={2} />} label="Airlines" value={airlines.map((a) => a.name).join(', ')} />
+              <RouteStat icon={<Plane className="h-4 w-4" strokeWidth={2} />} label="Airlines" value={airlines.map((a) => a.name).join(', ')} />
             )}
           </div>
 
@@ -115,7 +115,7 @@ export default function RoutePage({ params }: { params: { slug: string } }) {
               href={skyscannerRouteUrl(airport, dest)}
               target="_blank"
               rel="nofollow sponsored noopener noreferrer"
-              className="inline-flex h-12 items-center justify-center gap-1.5 rounded-sm bg-brass px-6 text-sm font-semibold text-ink-900 transition-colors hover:bg-brass-400"
+              className="inline-flex h-12 items-center justify-center gap-1.5 rounded-sm bg-brass px-6 text-sm font-semibold text-ink-900 transition-all hover:bg-brass-400 hover:shadow-brass-glow active:scale-[0.985]"
             >
               Check live prices for this route
               <ArrowUpRight className="h-4 w-4" strokeWidth={2.25} />
@@ -370,7 +370,7 @@ export default function RoutePage({ params }: { params: { slug: string } }) {
             </div>
             <Link
               href={`/destinations/${dest.slug}`}
-              className="inline-flex shrink-0 items-center justify-center gap-1.5 rounded-sm bg-ink-900 px-5 py-3 text-sm font-semibold text-sand-50 transition-colors hover:bg-ink-700"
+              className="inline-flex shrink-0 items-center justify-center gap-1.5 rounded-sm bg-ink-900 px-5 py-3 text-sm font-semibold text-sand-50 transition-all hover:bg-ink-700 active:scale-[0.985]"
             >
               View {dest.city} guide
               <ArrowUpRight className="h-4 w-4" strokeWidth={2.25} />
