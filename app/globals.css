@@ -46,6 +46,22 @@ body {
   text-wrap: balance;
 }
 
+/* Display headings always balance — avoids single-word orphan lines. */
+h1, h2 {
+  text-wrap: balance;
+}
+
+/* Staggered entrance for hero content. Elements start hidden and the
+   fade-up animation (fill-mode: forwards) reveals them in sequence.
+   prefers-reduced-motion collapses all delays/durations above. */
+.stagger-in {
+  opacity: 0;
+}
+.stagger-1 { animation-delay: 0.05s; }
+.stagger-2 { animation-delay: 0.15s; }
+.stagger-3 { animation-delay: 0.25s; }
+.stagger-4 { animation-delay: 0.35s; }
+
 /* Route map line drawing */
 .route-line {
   stroke-dasharray: 6 6;

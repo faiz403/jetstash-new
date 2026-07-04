@@ -69,6 +69,8 @@ module.exports = {
         card: '0 2px 8px -2px rgba(11,14,20,0.08), 0 1px 2px -1px rgba(11,14,20,0.04)',
         'card-hover': '0 16px 32px -8px rgba(11,14,20,0.16), 0 4px 8px -2px rgba(11,14,20,0.08)',
         panel: '0 24px 64px -16px rgba(11,14,20,0.32)',
+        // Warm lift under brass CTAs on dark surfaces — reads as light, not decoration.
+        'brass-glow': '0 4px 24px -6px rgba(200,147,46,0.45)',
       },
       letterSpacing: {
         tightest: '-0.04em',
@@ -83,12 +85,17 @@ module.exports = {
       },
       animation: {
         'fade-up': 'fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+        'menu-in': 'menuIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards',
         'route-draw': 'routeDraw 1.8s cubic-bezier(0.65, 0, 0.35, 1) forwards',
         'pulse-dot': 'pulseDot 2.4s ease-in-out infinite',
       },
       keyframes: {
         fadeUp: {
           '0%': { opacity: '0', transform: 'translateY(16px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+        menuIn: {
+          '0%': { opacity: '0', transform: 'translateY(-8px)' },
           '100%': { opacity: '1', transform: 'translateY(0)' },
         },
         routeDraw: {

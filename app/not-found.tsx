@@ -3,8 +3,8 @@ import { ArrowUpRight } from 'lucide-react';
 import { LinkButton } from '@/components/ui/button';
 import { routes, getRouteAirport, getRouteDestination } from '@/data/routes';
 
-// Same representative spread the homepage features — one route per major region.
-const suggestedRouteSlugs = ['manchester-lahore', 'birmingham-amritsar', 'manchester-dubai', 'london-heathrow-jeddah'];
+// Same flagship spread the homepage features — one route per major region, India first.
+const suggestedRouteSlugs = ['london-heathrow-delhi', 'manchester-lahore', 'manchester-dubai', 'london-heathrow-jeddah'];
 
 export default function NotFound() {
   const suggestions = suggestedRouteSlugs
@@ -15,9 +15,10 @@ export default function NotFound() {
     <section className="flex min-h-[60vh] items-center bg-white py-20">
       <div className="mx-auto max-w-content px-5 text-center sm:px-8">
         <p className="text-sm font-semibold uppercase tracking-wide text-terracotta-600">404</p>
-        <h1 className="mt-3 font-display text-4xl text-ink-900">That page isn&apos;t here</h1>
+        <h1 className="mt-3 font-display text-4xl text-ink-900">This page seems to have flown</h1>
         <p className="mx-auto mt-3 max-w-md text-ink-500">
-          The page you&apos;re looking for may have moved. Try one of these instead.
+          The page you&apos;re looking for may have moved or never existed. The routes below are a good place
+          to pick the journey back up.
         </p>
         <div className="mt-7 flex flex-wrap justify-center gap-3">
           <LinkButton href="/" variant="dark">Go home</LinkButton>

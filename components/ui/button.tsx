@@ -2,11 +2,13 @@ import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import { ButtonHTMLAttributes, AnchorHTMLAttributes } from 'react';
 
+// No focus-visible:outline-none here — the global brass :focus-visible ring in
+// globals.css is the keyboard affordance for every button and link-button.
 const base =
-  'inline-flex items-center justify-center gap-2 font-sans font-semibold transition-all duration-200 rounded-sm focus-visible:outline-none disabled:opacity-50 disabled:pointer-events-none whitespace-nowrap';
+  'inline-flex items-center justify-center gap-2 font-sans font-semibold transition-all duration-200 rounded-sm active:scale-[0.985] disabled:opacity-50 disabled:pointer-events-none whitespace-nowrap';
 
 const variants = {
-  primary: 'bg-brass text-ink-900 hover:bg-brass-400 active:bg-brass-600',
+  primary: 'bg-brass text-ink-900 hover:bg-brass-400 hover:shadow-brass-glow active:bg-brass-600',
   dark: 'bg-ink-900 text-sand-50 hover:bg-ink-700 active:bg-ink-950',
   outline: 'border border-ink-200/20 text-sand-50 hover:bg-white/5 active:bg-white/10',
   ghost: 'text-ink-900 hover:bg-ink-50 active:bg-ink-100',

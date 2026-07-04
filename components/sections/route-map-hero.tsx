@@ -97,7 +97,14 @@ export function RouteMapHero() {
           const isActive = route.id === active;
           return (
             <g key={`pt-${route.id}`}>
-              <circle cx={route.toX} cy={route.toY} r={isActive ? 22 : 0} fill="url(#dotglow)" className="transition-all duration-500" />
+              <circle
+                cx={route.toX}
+                cy={route.toY}
+                r={isActive ? 22 : 0}
+                fill="url(#dotglow)"
+                className={isActive ? 'animate-pulse-dot transition-all duration-500' : 'transition-all duration-500'}
+                style={isActive ? { transformOrigin: `${route.toX}px ${route.toY}px` } : undefined}
+              />
               <circle
                 cx={route.toX}
                 cy={route.toY}
@@ -146,14 +153,17 @@ export function RouteMapHero() {
       </svg>
 
       {/* Active route readout — every figure comes from data/deals.ts */}
-      <div className="mt-2 flex flex-col items-start gap-4 rounded-md border border-white/10 bg-white/[0.03] p-5 sm:flex-row sm:items-center sm:justify-between">
+      <div
+        aria-live="polite"
+        className="mt-2 flex flex-col items-start gap-4 rounded-md border border-white/10 bg-white/[0.03] p-5 transition-colors duration-300 sm:flex-row sm:items-center sm:justify-between"
+      >
         <div>
           <p className="text-xs font-semibold uppercase tracking-wide text-ink-400">
             {activeRoute.fromLabel} → {activeRoute.toLabel}, {activeRoute.toCountry}
           </p>
           {activeDeal ? (
             <>
-              <p className="mt-1 font-display text-2xl text-sand-50">
+              <p className="mt-1 font-display text-2xl text-sand-50 tabular-nums">
                 from £{activeDeal.indicativePrice.toLocaleString('en-GB')}
                 <span className="ml-2 font-sans text-sm font-normal text-ink-300">return, example fare</span>
               </p>

@@ -33,16 +33,21 @@ export default function HomePage() {
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(200,147,46,0.12),transparent_60%)]" />
         <div className="relative mx-auto max-w-content px-5 sm:px-8">
           <div className="max-w-2xl">
-            <Badge variant="dark">The UK's South Asia, Gulf & Umrah travel intelligence platform</Badge>
-            <h1 className="mt-5 font-display text-[2.5rem] leading-[1.05] tracking-tight text-sand-50 sm:text-6xl">
-              Built for the routes other sites treat as an afterthought.
+            <div className="stagger-in stagger-1 animate-fade-up">
+              <Badge variant="dark">The UK's South Asia, Gulf & Umrah travel intelligence platform</Badge>
+            </div>
+            {/* The headline centres the traveller's journey, not our competitors' failings —
+                the same trip framing the whole brand is built around: for most of our
+                audience this is the most important journey of their year. */}
+            <h1 className="stagger-in stagger-2 mt-5 animate-fade-up font-display text-[2.5rem] leading-[1.05] tracking-tight text-sand-50 sm:text-6xl">
+              The journey that matters most, taken seriously.
             </h1>
-            <p className="mt-5 max-w-lg text-lg leading-relaxed text-ink-300">
-              JetStash tracks route history, fare patterns and booking windows from UK airports to Pakistan, India,
-              the Gulf and Saudi Arabia — with dedicated route guides, family-visit logistics, Umrah packages and
-              business class coverage that gets more useful the longer we track it.
+            <p className="stagger-in stagger-3 mt-5 max-w-lg animate-fade-up text-lg leading-relaxed text-ink-300">
+              Flights from UK airports to Pakistan, India, the Gulf and Umrah — with route guides, fare
+              history and honest booking windows, checked by people and dated. No countdown timers, no
+              invented urgency, ever.
             </p>
-            <div className="mt-7 flex flex-wrap gap-3">
+            <div className="stagger-in stagger-4 mt-7 flex animate-fade-up flex-wrap gap-3">
               <LinkButton href="/deals" size="lg">
                 See the fares we track
               </LinkButton>

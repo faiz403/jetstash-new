@@ -37,7 +37,7 @@ export function DealCard({ deal }: { deal: Deal }) {
 
       <div className="flex flex-1 flex-col px-5 py-5">
         <div className="flex items-baseline gap-2">
-          <span className="font-display text-3xl tracking-tight text-ink-900">£{deal.indicativePrice.toLocaleString('en-GB')}</span>
+          <span className="font-display text-3xl tracking-tight text-ink-900 tabular-nums">£{deal.indicativePrice.toLocaleString('en-GB')}</span>
           <span className="text-sm text-ink-400">{deal.priceNote}</span>
         </div>
         <p className="mt-1 text-sm font-medium text-ink-500">{deal.airline}</p>

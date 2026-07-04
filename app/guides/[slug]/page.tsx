@@ -55,8 +55,12 @@ export default function GuidePage({ params }: { params: { slug: string } }) {
       <section className="bg-white py-14 sm:py-20">
         <div className="mx-auto max-w-2xl px-5 sm:px-8">
           <article className="flex flex-col gap-5">
-            {guide.paragraphs.map((p) => (
-              <p key={p.slice(0, 40)} className="text-lg leading-relaxed text-ink-600">
+            {guide.paragraphs.map((p, i) => (
+              <p
+                key={p.slice(0, 40)}
+                // Editorial lead: the opening paragraph is set larger, like a magazine standfirst.
+                className={i === 0 ? 'text-xl leading-relaxed text-ink-700' : 'text-lg leading-relaxed text-ink-600'}
+              >
                 {p}
               </p>
             ))}

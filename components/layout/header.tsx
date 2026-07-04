@@ -7,6 +7,7 @@ import { Menu, X, ArrowUpRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { mainNav, siteConfig } from '@/lib/site-config';
 import { LinkButton } from '../ui/button';
+import { Logomark } from '../ui/logomark';
 
 export function Header() {
   const [open, setOpen] = useState(false);
@@ -29,10 +30,12 @@ export function Header() {
               href={item.href}
               aria-current={isActive(item.href) ? 'page' : undefined}
               className={cn(
+                // Underline animates in from the left on hover; stays put on the active page.
                 'relative py-1 text-[15px] font-medium transition-colors hover:text-brass-300',
+                'after:absolute after:inset-x-0 after:-bottom-1 after:h-0.5 after:origin-left after:rounded-full after:bg-brass after:transition-transform after:duration-300',
                 isActive(item.href)
-                  ? 'text-sand-50 after:absolute after:inset-x-0 after:-bottom-1 after:h-0.5 after:rounded-full after:bg-brass'
-                  : 'text-ink-200'
+                  ? 'text-sand-50 after:scale-x-100'
+                  : 'text-ink-200 after:scale-x-0 hover:after:scale-x-100'
               )}
             >
               {item.label}
@@ -48,7 +51,7 @@ export function Header() {
 
         <button
           onClick={() => setOpen(!open)}
-          className="flex h-10 w-10 items-center justify-center rounded-sm text-sand-50 lg:hidden"
+          className="flex h-10 w-10 items-center justify-center rounded-sm text-sand-50 transition-colors hover:bg-white/5 lg:hidden"
           aria-label={open ? 'Close menu' : 'Open menu'}
           aria-expanded={open}
         >
@@ -57,7 +60,7 @@ export function Header() {
       </div>
 
       {open && (
-        <div className="border-t border-white/5 bg-ink-900 px-5 pb-6 pt-2 lg:hidden">
+        <div className="animate-menu-in border-t border-white/5 bg-ink-900 px-5 pb-6 pt-2 lg:hidden">
           <nav className="flex flex-col" aria-label="Main navigation">
             {mainNav.map((item) => (
               <Link
@@ -81,21 +84,5 @@ export function Header() {
         </div>
       )}
     </header>
-  );
-}
-
-function Logomark() {
-  return (
-    <svg width="30" height="30" viewBox="0 0 32 32" fill="none" aria-hidden="true">
-      <circle cx="16" cy="16" r="15" stroke="#C8932E" strokeWidth="1.4" />
-      <path
-        d="M9 19.5L16 8L23 19.5M11.5 16H20.5"
-        stroke="#C8932E"
-        strokeWidth="1.4"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <circle cx="16" cy="23.5" r="1.6" fill="#C8932E" />
-    </svg>
   );
 }
