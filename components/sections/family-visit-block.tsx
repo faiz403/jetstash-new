@@ -1,5 +1,6 @@
 import { Users, FileCheck, Briefcase, Calendar } from 'lucide-react';
 import type { FamilyVisitContent } from '@/data/destinations';
+import { getPeakPeriodsByIds } from '@/data/peak-periods';
 import { Badge } from '@/components/ui/badge';
 
 export function FamilyVisitBlock({ content, city }: { content: FamilyVisitContent; city: string }) {
@@ -43,8 +44,8 @@ export function FamilyVisitBlock({ content, city }: { content: FamilyVisitConten
             <h3 className="font-display text-lg text-sand-50">When demand peaks</h3>
             <p className="mt-1 text-xs text-ink-400">Book 2–3 months ahead of these windows where dates are fixed</p>
             <div className="mt-3 flex flex-wrap gap-2">
-              {content.peakFamilyPeriods.map((period) => (
-                <Badge key={period} variant="dark">{period}</Badge>
+              {getPeakPeriodsByIds(content.peakPeriodIds).map((period) => (
+                <Badge key={period.id} variant="dark">{period.label}</Badge>
               ))}
             </div>
           </div>

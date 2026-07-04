@@ -1,18 +1,20 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import Image from 'next/image';
 import { Plane, FileCheck, ArrowUpRight } from 'lucide-react';
 import { destinations, getDestinationBySlug } from '@/data/destinations';
 import { getDealsByDestination } from '@/data/deals';
 import { airports } from '@/data/airports';
 import { getRoutesByDestination } from '@/data/routes';
+import { getTipsForScope } from '@/data/traveller-tips';
 import { DealCard } from '@/components/ui/deal-card';
 import { NoFareFallback } from '@/components/ui/no-fare-fallback';
 import { Badge } from '@/components/ui/badge';
 import { FamilyVisitBlock } from '@/components/sections/family-visit-block';
+import { TravellerTipList } from '@/components/route/traveller-tip-list';
 import { siteConfig } from '@/lib/site-config';
-import { placeholderUrl } from '@/lib/images';
+import { DestinationMark } from '@/components/ui/destination-mark';
+import { JsonLd, breadcrumbSchema } from '@/components/seo/json-ld';
 
 export async function generateStaticParams() {
   return destinations.map((d) => ({ slug: d.slug }));
@@ -38,12 +40,20 @@ export default function DestinationPage({ params }: { params: { slug: string } }
   const dealsHere = getDealsByDestination(dest.slug);
   const servingAirports = airports.filter((a) => dest.ukAirports.includes(a.slug));
   const routesHere = getRoutesByDestination(dest.slug);
+  const travellerTips = getTipsForScope({ destinationSlug: dest.slug });
 
   return (
     <>
+      <JsonLd
+        data={breadcrumbSchema([
+          { name: 'Home', href: '/' },
+          { name: 'Destinations', href: '/destinations' },
+          { name: dest.city, href: `/destinations/${dest.slug}` },
+        ])}
+      />
       <section className="bg-ink-900 py-16 sm:py-20">
         <div className="mx-auto max-w-content px-5 sm:px-8">
-          <nav className="mb-5 flex items-center gap-1.5 text-xs text-ink-400">
+          <nav aria-label="Breadcrumb" className="mb-5 flex items-center gap-1.5 text-xs text-ink-400">
             <Link href="/" className="hover:text-brass-300">Home</Link>
             <span>/</span>
             <Link href="/destinations" className="hover:text-brass-300">Destinations</Link>
@@ -61,15 +71,8 @@ export default function DestinationPage({ params }: { params: { slug: string } }
                 ))}
               </div>
             </div>
-            <div className="relative aspect-[4/3] overflow-hidden rounded-md">
-              <Image
-                src={placeholderUrl(`${dest.city}, ${dest.country}`)}
-                alt={`${dest.city}, ${dest.country}`}
-                fill
-                sizes="(max-width: 1024px) 100vw, 40vw"
-                className="object-cover"
-                priority
-              />
+            <div className="relative aspect-[4/3] overflow-hidden rounded-md border border-white/10">
+              <DestinationMark label={dest.city} sublabel={dest.country} />
             </div>
           </div>
         </div>
@@ -123,6 +126,17 @@ export default function DestinationPage({ params }: { params: { slug: string } }
       </section>
 
       {dest.familyVisitContent && <FamilyVisitBlock content={dest.familyVisitContent} city={dest.city} />}
+
+      {travellerTips.length > 0 && (
+        <section className="bg-white py-16 sm:py-20">
+          <div className="mx-auto max-w-content px-5 sm:px-8">
+            <h2 className="font-display text-2xl text-ink-900 sm:text-3xl">Traveller tips for {dest.city}</h2>
+            <div className="mt-8">
+              <TravellerTipList tips={travellerTips} />
+            </div>
+          </div>
+        </section>
+      )}
 
       <section className="bg-sand-50 py-16 sm:py-20">
         <div className="mx-auto max-w-content px-5 sm:px-8">

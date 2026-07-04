@@ -30,13 +30,15 @@ Open http://localhost:3000.
 
 This codebase was written without the ability to run `npm install` or a real build in the environment it was produced in (no network access to the npm registry). Before treating this as launch-ready:
 
-1. **Run a real build and fix whatever the compiler finds.** `npm install && npm run build` locally or let Vercel's first deploy do it. I've hand-checked the code carefully for type errors, but a real compiler pass is the only way to be certain.
-2. **Replace placeholder images with real photography.** See `/lib/images.ts` — it currently renders clean on-brand placeholder blocks instead of real images, because the only "free, no API key" image service that used to support this (`source.unsplash.com`) was shut down by Unsplash in 2023. Either get a free Unsplash API key and resolve real photo URLs, license stock photography, or commission your own.
+1. **Run a real build and fix whatever the compiler finds.** `npm install && npm run build` locally or let Vercel's first deploy do it. Note for Windows: run the build from the *correctly-cased* project path (`C:\Users\<you>\Documents\...`, capital D). Building from a lowercase-`documents` working directory makes webpack resolve two differently-cased copies of every module, which loads React twice and fails prerendering with `Cannot read properties of null (reading 'useContext')`.
+2. **Replace generated destination panels with real photography.** All destination imagery is currently rendered locally by `components/ui/destination-mark.tsx` — an on-brand generated panel (zero external requests, never a broken image). This is deliberate and ships fine, but real photography will always convert better; see `/lib/images.ts` for the migration options (licensed photos in `/public/images/`, Unsplash API, or a CDN-backed stock library).
 3. **Wire up the newsletter.** `/app/api/subscribe/route.ts` is written for Brevo (free up to 300 emails/day) but needs `BREVO_API_KEY` and `BREVO_LIST_ID` set as environment variables. The form also now captures a nearest-airport preference — create a custom Brevo contact attribute called `NEAREST_AIRPORT` (Contacts → Settings → Contact Attributes → Add attribute, type "Text") before this will save correctly, otherwise Brevo silently drops the field. Until the environment variables are set, the form fails clearly rather than pretending to succeed.
 4. **Wire up the contact form.** `/app/api/contact/route.ts` is written for Resend (resend.com) but needs `RESEND_API_KEY` and `CONTACT_TO_EMAIL` set. Same fail-clearly behaviour until configured.
 5. **Get real, current flight prices.** Every price in `/data/deals.ts` is a plausible placeholder with a real `lastChecked` date format — none of it is a live, verified fare. Replace with real researched prices before publishing, and keep the `lastChecked` field honest and current.
 6. **Connect an actual affiliate/booking partner.** Every "Check live price" button currently links to a generic Skyscanner search URL with no affiliate tracking ID. Apply to Skyscanner Partners (or your chosen affiliate programmes) and add tracking parameters to every `partnerUrl` in `/data/deals.ts`.
 7. **Refresh the hardcoded dates in business class `partnerUrl`s periodically.** The 10 business class fares in `/data/deals.ts` use Skyscanner URLs with a fixed example date (`260920/261004`) so the `cabinclass=business` parameter is actually honoured — Skyscanner's flexible/dateless search silently falls back to economy regardless of that parameter. Update these dates every few months so they stay roughly "a few months out," and verify Skyscanner's URL format hasn't changed.
+8. **Create the fare-watch Brevo attributes.** `/app/api/fare-watch/route.ts` reuses `BREVO_API_KEY`/`BREVO_LIST_ID` (no new env vars) but needs five custom Brevo contact attributes created first, same place as `NEAREST_AIRPORT`: `WATCH_AIRPORT`, `WATCH_DESTINATION`, `WATCH_ROUTE`, `WATCH_REGION`, `WATCH_INTENT` (all type "Text"). Until these exist, Brevo silently drops the fields it doesn't recognise rather than erroring.
+9. **Route quote-request leads somewhere real.** `/app/api/quote-request/route.ts` reuses `RESEND_API_KEY`/`CONTACT_TO_EMAIL` (no new env vars). Right now every Umrah/family/group quote request lands in one inbox for manual follow-up — before relying on this for real leads, decide whether that's a person at JetStash, a rotation of partner agents, or a shared inbox, and update `CONTACT_TO_EMAIL` (or extend the route to send to more than one address) accordingly.
 
 ## Environment variables
 
@@ -55,27 +57,43 @@ app/                  Routes (Next.js App Router)
   pakistan/ india/ gulf/ umrah/     Region hub pages
   family-holidays/ business-class/ travel-club/
   deals/              All fares, with client-side filtering
+  quote-request/      Umrah/family/group trip quote-request form
   destinations/[slug] Dynamic destination pages (generateStaticParams)
   airports/[slug]     Dynamic airport pages (generateStaticParams)
   api/subscribe/      Newsletter API route
   api/contact/        Contact form API route
+  api/quote-request/  Umrah/family/group quote-request API route (Resend)
+  api/fare-watch/     Per-route fare-watch signup API route (Brevo)
   sitemap.ts          Dynamic sitemap.xml
   robots.ts           robots.txt
 
 components/
   ui/                 Button, Badge, DealCard, HubCard — shared primitives
   layout/             Header, Footer
-  sections/           RouteMapHero, NewsletterSection, RegionHubPage template
+  sections/           RouteMapHero, NewsletterSection, QuoteRequestForm, RegionHubPage template
+  route/               warning-banner, route-timeline, fare-history-panel, booking-window-panel,
+                       traveller-tip-list, community-notes-panel, fare-watch-form, whatsapp-share-button
 
 data/
-  airports.ts         UK departure airports
-  destinations.ts     All destinations across every region
-  deals.ts             Every fare shown across the site
+  airports.ts             UK departure airports
+  destinations.ts         All destinations across every region
+  routes.ts               Airport-to-destination route guides
+  deals.ts                Every current example fare shown across the site
+  airlines.ts              Canonical airline reference (data/routes.ts links by slug)
+  peak-periods.ts          Canonical demand-period reference (routes/destinations link by id)
+  route-timeline.ts        Real, dated history of changes to specific routes
+  route-warnings.ts        Append-only warning log per route
+  fare-observations.ts     Append-only fare history per route
+  booking-windows.ts       Structured booking-window guidance, additive to route prose
+  airport-notes.ts         Practical, hub-specific advice per airport
+  traveller-tips.ts        Curated tips scoped to a route/destination/airport
+  community-notes.ts       Real traveller-submitted notes (seeded empty — no submission pipeline yet)
 
 lib/
-  site-config.ts      Nav structure, region groupings, site metadata
-  images.ts           Placeholder image helper (read the warning in this file)
-  utils.ts            Tailwind className merge helper
+  site-config.ts             Nav structure, region groupings, site metadata
+  images.ts                  Placeholder image helper (read the warning in this file)
+  utils.ts                   Tailwind className merge helper
+  quote-request-options.ts   Shared trip-type/region options for the quote-request form + API route
 ```
 
 ## Design system
@@ -133,5 +151,23 @@ The `Route` interface in `data/routes.ts` has two fields for this:
 - **`directServiceEndDate`** (ISO date) + **`directServiceEndNote`** (plain-language explanation) — set only when a currently-direct service has an announced end date. The route page (`app/routes/[slug]/page.tsx`) renders a visible notice when this is set.
 - **`connectingAlternative`** — populated for any route where a realistic 1-stop (or 2-stop) alternative matters, whether the route is currently direct (as a "what happens after the direct service ends" fallback) or already connecting-only (as the main "how this route works" content). The route page renders this as a dedicated section, with the heading and framing copy changing based on whether `isDirect` is currently true or false.
 
-**When the withdrawal date passes:** update the route entry — flip `isDirect` to `false`, remove `directServiceEndDate`/`directServiceEndNote`, and rewrite `intro`/`frequency`/`airlines` to describe the connecting-only reality, using `connectingAlternative`'s data as the basis. Don't leave a route marked direct with a past end date — that's the exact stale-claim pattern this whole system exists to avoid.
+**When the withdrawal date passes:** update the route entry — flip `isDirect` to `false`, remove `directServiceEndDate`/`directServiceEndNote`, and rewrite `intro`/`frequency`/`airlineSlugs` to describe the connecting-only reality, using `connectingAlternative`'s data as the basis. Don't leave a route marked direct with a past end date — that's the exact stale-claim pattern this whole system exists to avoid.
+
+## Data model & accumulation conventions
+
+JetStash's differentiator versus a generic comparison site is accumulated, real history per route — not a bigger list of destinations. `route-timeline.ts`, `route-warnings.ts`, `fare-observations.ts`, `booking-windows.ts`, `airport-notes.ts`, `traveller-tips.ts` and `community-notes.ts` all follow the same rule:
+
+- **Append, never overwrite.** When a fare changes, add a new `FareObservation` with a later `observedDate` — don't edit the old one. When a warning stops applying, flip its `status` to `'resolved'` rather than deleting it.
+- **Only add an entry once it's a real, sourced fact.** Every seeded entry in these files was migrated from prose that was already stated elsewhere in the codebase (a route's `intro`/`bookingWindowNote`, an airport's old `practicalNotes`) — none of it was invented to fill a gap. Keep it that way: a plausible-sounding fare, warning, or tip is exactly the kind of fabricated content this project's "No fabricated content" rule (above) exists to prevent.
+- **Reference canonical tables instead of retyping strings.** `data/airlines.ts` and `data/peak-periods.ts` exist because free-text airline names and peak-period labels had already drifted (e.g. `'UK summer holidays (Jul–Aug)'` vs `'UK summer holidays'`) across `routes.ts` and `destinations.ts`. New routes should reference `airlineSlugs`/`peakPeriodIds`, adding a new canonical entry first if one genuinely doesn't exist yet — never re-typing a new label inline.
+- **Empty is honest.** `data/community-notes.ts` ships empty on purpose — there's no submission pipeline yet, and fabricating "traveller" testimonials would violate the same rule as a fabricated price. `components/route/community-notes-panel.tsx` renders a plain "not yet" state rather than pretending otherwise; follow that pattern for any other section that doesn't have real content yet.
+
+## Future expansion opportunities
+
+Recorded here so they aren't silently dropped, not because they're scheduled:
+
+- **Bangladesh is a named target market with zero current content.** Adding Dhaka/Sylhet/Chattogram routes needs the same real-schedule verification described above under "Verified route and airport claims" before anything goes into `data/routes.ts` — don't infer routes from demand alone.
+- **A real community-notes submission pipeline.** Currently schema-only and empty (see above). Needs a submission form and a moderation step — a genuine scope increase since this project has no database today.
+- **eSIM and travel insurance affiliate pages**, already identified as "worth adding once traffic exists" — revisit at a defined traffic trigger rather than building ahead of demand.
+- **Promoting Turkey, Morocco and Saudi Arabia to first-class `RegionGroup`s** (they currently sit inside the broader `mediterranean`/`north-africa`/`gulf` groupings) once there's enough route depth in each to justify a dedicated hub, rather than adding hub pages ahead of the content that would fill them.
 

@@ -1,37 +1,37 @@
 /**
  * Image handling for JetStash.
  *
- * IMPORTANT — read before deploying:
- * Unsplash's old "source.unsplash.com" redirect endpoint was shut down by
- * Unsplash in 2023. It will NOT work in production. There is no drop-in
- * free replacement that resolves an arbitrary text query to a photo URL
- * without an API key.
+ * Current state: there is NO real photography pipeline yet. All destination
+ * imagery across the site is rendered by the locally generated, on-brand
+ * <DestinationMark /> panel (components/ui/destination-mark.tsx) — zero
+ * external requests, never a broken image, always on-palette.
  *
- * Before launch, do ONE of the following:
+ * History: the site previously used placehold.co placeholder images here.
+ * (And before that, Unsplash's old "source.unsplash.com" redirect endpoint,
+ * which Unsplash shut down in 2023.) Both made every page depend on a
+ * third-party service for what is essentially decoration.
  *
- *   1. Sign up for a free Unsplash API key at unsplash.com/developers,
- *      then call the Unsplash Search API to resolve each `imageQuery`
- *      value below to a real, stable photo URL, and hardcode those URLs
- *      into the data files (data/deals.ts, data/destinations.ts).
+ * When real photography is ready, do ONE of the following:
  *
- *   2. License or commission your own destination photography and place
- *      the files in /public/images/, referencing them directly.
+ *   1. License or commission destination photography, place the files in
+ *      /public/images/, and swap <DestinationMark /> call sites for
+ *      <Image /> per destination.
+ *
+ *   2. Sign up for an Unsplash API key (unsplash.com/developers), resolve
+ *      each destination to a real, stable photo URL, and hardcode those
+ *      URLs into the data files (data/deals.ts, data/destinations.ts).
  *
  *   3. Use a stock library with a CDN (e.g. Cloudinary's free tier) and
  *      store the resulting URLs in the data files.
  *
- * Until one of those is done, `placeholderUrl` below renders a clean,
- * on-brand placeholder instead of a broken image — this is deliberate so
- * the site never ships with broken <img> tags pointing at a dead service.
+ * `placeholderUrl` is kept only as a legacy escape hatch; nothing in the
+ * app imports it any more. Prefer <DestinationMark /> until real photos exist.
  */
 
 const PLACEHOLDER_BG = '0B0E14';
 const PLACEHOLDER_FG = 'C8932E';
 
-/**
- * Returns a safe on-brand placeholder image URL until real photography is
- * wired up. Replace call sites with real licensed image URLs before launch.
- */
+/** @deprecated Unused — all call sites now render <DestinationMark />. */
 export function placeholderUrl(label: string, width = 800, height = 600): string {
   const text = encodeURIComponent(label);
   return `https://placehold.co/${width}x${height}/${PLACEHOLDER_BG}/${PLACEHOLDER_FG}?text=${text}&font=raleway`;

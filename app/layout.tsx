@@ -1,9 +1,10 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Fraunces, Public_Sans } from 'next/font/google';
 import './globals.css';
 import { Header } from '@/components/layout/header';
 import { Footer } from '@/components/layout/footer';
 import { TravelClubBar } from '@/components/layout/travel-club-bar';
+import { JsonLd, organizationSchema, webSiteSchema } from '@/components/seo/json-ld';
 import { siteConfig } from '@/lib/site-config';
 
 const fraunces = Fraunces({
@@ -40,13 +41,27 @@ export const metadata: Metadata = {
   robots: { index: true, follow: true },
 };
 
+// Matches the ink-900 body background defined in globals.css, so mobile
+// browser chrome blends with the brand instead of flashing white.
+export const viewport: Viewport = {
+  themeColor: '#0B0E14',
+};
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${fraunces.variable} ${publicSans.variable}`}>
       <body className="font-sans">
+        <a
+          href="#main-content"
+          className="sr-only z-[60] rounded-sm bg-brass px-4 py-2 text-sm font-semibold text-ink-900 focus:not-sr-only focus:absolute focus:left-4 focus:top-4"
+        >
+          Skip to main content
+        </a>
+        <JsonLd data={organizationSchema()} />
+        <JsonLd data={webSiteSchema()} />
         <TravelClubBar />
         <Header />
-        <main>{children}</main>
+        <main id="main-content">{children}</main>
         <Footer />
       </body>
     </html>

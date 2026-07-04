@@ -5,6 +5,7 @@ import { routes, getRouteAirport, getRouteDestination, type Route } from '@/data
 import type { RegionGroup } from '@/data/destinations';
 
 export const metadata: Metadata = {
+  alternates: { canonical: '/routes' },
   title: 'All Routes — UK Airports to Pakistan, India & the Gulf',
   description: 'Every flight route covered by JetStash, with booking windows and peak periods specific to each airport-destination pairing.',
 };

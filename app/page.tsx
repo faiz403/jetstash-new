@@ -1,4 +1,4 @@
-import { ArrowUpRight, ShieldCheck, Users, Crown, BadgeCheck } from 'lucide-react';
+import { ArrowUpRight, ShieldCheck, Users, Crown, BadgeCheck, CalendarCheck } from 'lucide-react';
 import Link from 'next/link';
 import { RouteMapHero } from '@/components/sections/route-map-hero';
 import { HubCard } from '@/components/ui/hub-card';
@@ -6,12 +6,13 @@ import { DealCard } from '@/components/ui/deal-card';
 import { NewsletterSection } from '@/components/sections/newsletter-section';
 import { LinkButton } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { deals, getDealsByCategory } from '@/data/deals';
+import { deals, getDealsByCategory, formatChecked } from '@/data/deals';
 import { routes, getRouteAirport, getRouteDestination } from '@/data/routes';
-import { placeholderUrl } from '@/lib/images';
 
 export default function HomePage() {
   const featuredFlights = deals.filter((d) => d.category === 'flight').slice(0, 3);
+  // Derived from data so the label can never claim a fresher check than actually happened.
+  const latestCheck = deals.reduce((max, d) => (d.lastChecked > max ? d.lastChecked : max), deals[0].lastChecked);
   const businessDeals = getDealsByCategory('business').slice(0, 2);
   const umrahDeals = getDealsByCategory('umrah').slice(0, 1);
   // Deliberately representative spread across the network, not an accident of array order —
@@ -28,17 +29,18 @@ export default function HomePage() {
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(200,147,46,0.12),transparent_60%)]" />
         <div className="relative mx-auto max-w-content px-5 sm:px-8">
           <div className="max-w-2xl">
-            <Badge variant="dark">The UK's South Asia, Gulf & Umrah travel platform</Badge>
+            <Badge variant="dark">The UK's South Asia, Gulf & Umrah travel intelligence platform</Badge>
             <h1 className="mt-5 font-display text-[2.5rem] leading-[1.05] tracking-tight text-sand-50 sm:text-6xl">
               Built for the routes other sites treat as an afterthought.
             </h1>
             <p className="mt-5 max-w-lg text-lg leading-relaxed text-ink-300">
-              JetStash tracks flights and holidays from UK airports to Pakistan, India, the Gulf and Saudi Arabia —
-              with dedicated route guides, family-visit logistics, Umrah packages and business class coverage.
+              JetStash tracks route history, fare patterns and booking windows from UK airports to Pakistan, India,
+              the Gulf and Saudi Arabia — with dedicated route guides, family-visit logistics, Umrah packages and
+              business class coverage that gets more useful the longer we track it.
             </p>
             <div className="mt-7 flex flex-wrap gap-3">
               <LinkButton href="/deals" size="lg">
-                See today's fares
+                See the fares we track
               </LinkButton>
               <LinkButton href="/routes" variant="outline" size="lg">
                 Find your route
@@ -48,6 +50,42 @@ export default function HomePage() {
 
           <div className="mt-14">
             <RouteMapHero />
+          </div>
+        </div>
+      </section>
+
+      {/* ───────────────────────── HOW WE WORK — trust strip, every claim true ───────────────────────── */}
+      <section className="border-b border-white/5 bg-ink-950 py-8">
+        <div className="mx-auto grid max-w-content gap-6 px-5 sm:grid-cols-3 sm:px-8">
+          <div className="flex items-start gap-3">
+            <CalendarCheck className="mt-0.5 h-5 w-5 shrink-0 text-brass-300" strokeWidth={2} />
+            <div>
+              <p className="text-sm font-semibold text-sand-50">Checked by a person, dated</p>
+              <p className="mt-1 text-xs leading-relaxed text-ink-400">
+                Every fare shows the date a member of our team actually checked it — never a live-price claim.
+              </p>
+            </div>
+          </div>
+          <div className="flex items-start gap-3">
+            <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-brass-300" strokeWidth={2} />
+            <div>
+              <p className="text-sm font-semibold text-sand-50">No invented urgency</p>
+              <p className="mt-1 text-xs leading-relaxed text-ink-400">
+                No countdown timers, no &ldquo;2 seats left&rdquo;, no fake reviews. If we can&apos;t verify it, we don&apos;t say it.
+              </p>
+            </div>
+          </div>
+          <div className="flex items-start gap-3">
+            <Users className="mt-0.5 h-5 w-5 shrink-0 text-brass-300" strokeWidth={2} />
+            <div>
+              <p className="text-sm font-semibold text-sand-50">Built for these routes</p>
+              <p className="mt-1 text-xs leading-relaxed text-ink-400">
+                Route history, booking windows and peak-period warnings — specific to each airport pairing.{' '}
+                <Link href="/about" className="font-medium text-brass-300 underline underline-offset-2 hover:text-brass-200">
+                  Our standards
+                </Link>
+              </p>
+            </div>
           </div>
         </div>
       </section>
@@ -64,28 +102,24 @@ export default function HomePage() {
               eyebrow="Family visits & heritage"
               title="Pakistan"
               description="Lahore, Islamabad and Karachi — direct routes, Eid travel timing, NICOP guidance and what to know before you fly."
-              image={placeholderUrl('Lahore, Pakistan')}
             />
             <HubCard
               href="/india"
               eyebrow="Family visits & heritage"
               title="India"
               description="Delhi, Mumbai and Amritsar — OCI guidance, festival season pricing, and the routes that hold value."
-              image={placeholderUrl('Delhi, India')}
             />
             <HubCard
               href="/gulf"
               eyebrow="Stopovers & city breaks"
               title="The Gulf"
               description="Dubai and Doha — year-round flights, family-friendly stopovers, and beach-meets-city breaks."
-              image={placeholderUrl('Dubai, UAE')}
             />
             <HubCard
               href="/umrah"
               eyebrow="Pilgrimage travel"
               title="Umrah & Saudi Arabia"
               description="Jeddah and Madinah — package structures, Nusuk visa guidance, and what genuinely affects price."
-              image={placeholderUrl('Jeddah, Saudi Arabia')}
             />
           </div>
         </div>
@@ -136,7 +170,7 @@ export default function HomePage() {
         <div className="mx-auto max-w-content px-5 sm:px-8">
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
-              <span className="text-xs font-semibold uppercase tracking-wide text-terracotta-600">Checked this week</span>
+              <span className="text-xs font-semibold uppercase tracking-wide text-terracotta-600">Most recent check: {formatChecked(latestCheck)}</span>
               <h2 className="mt-2 font-display text-3xl text-ink-900 sm:text-4xl">Featured fares from UK airports</h2>
             </div>
             <Link href="/deals" className="flex items-center gap-1.5 text-sm font-semibold text-ink-900 hover:text-terracotta-600">
@@ -194,14 +228,12 @@ export default function HomePage() {
                 eyebrow="Pakistan"
                 title="Lahore"
                 description="NICOP guidance, Eid booking windows and the baggage detail that catches people out."
-                image={placeholderUrl('Lahore, Pakistan')}
               />
               <HubCard
                 href="/destinations/amritsar"
                 eyebrow="India"
                 title="Amritsar"
                 description="OCI guidance, Baisakhi timing and the Golden Temple route most direct from the UK."
-                image={placeholderUrl('Amritsar Golden Temple')}
               />
             </div>
           </div>
@@ -246,7 +278,6 @@ export default function HomePage() {
               eyebrow="Pilgrimage travel"
               title="Umrah & Saudi Arabia"
               description="What's actually included in a package, how Makkah hotel distance affects price, and the visa route through Nusuk."
-              image={placeholderUrl('Masjid al Haram Makkah')}
               size="lg"
             />
             <div className="flex flex-col gap-5">
@@ -283,7 +314,7 @@ export default function HomePage() {
             />
             <ComparisonColumn
               label="JetStash"
-              points={['Dedicated hub for every route', 'Peak-period warnings built into every route page', 'Document guidance specific to each destination', 'Business class hub with route-level cabin coverage']}
+              points={['Dedicated hub for every route', 'Fare and route history, not just today\'s snapshot', 'Peak-period warnings built into every route page', 'Document guidance specific to each destination']}
               tone="highlight"
             />
             <ComparisonColumn

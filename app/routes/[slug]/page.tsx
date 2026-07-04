@@ -1,13 +1,30 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { Plane, Calendar, Clock, ArrowUpRight, AlertCircle, GitCompareArrows, CalendarClock, Luggage, Users } from 'lucide-react';
-import { routes, getRouteBySlug, getRouteAirport, getRouteDestination, getRoutesByDestination } from '@/data/routes';
+import { Plane, Calendar, Clock, ArrowUpRight, AlertCircle, GitCompareArrows, CalendarClock, History, MapPinned, MessageSquareText } from 'lucide-react';
+import { routes, getRouteBySlug, getRouteAirport, getRouteDestination, getRoutesByDestination, getRouteAirlines, getRoutePeakPeriods } from '@/data/routes';
 import { getDealsByDestination } from '@/data/deals';
+import { getTimelineByRoute } from '@/data/route-timeline';
+import { getActiveWarningsByRoute } from '@/data/route-warnings';
+import { getObservationsByRoute } from '@/data/fare-observations';
+import { getBookingWindowsByRoute } from '@/data/booking-windows';
+import { getTipsForScope } from '@/data/traveller-tips';
+import { getCommunityNotesForScope } from '@/data/community-notes';
+import { getNotesByAirport } from '@/data/airport-notes';
 import { DealCard } from '@/components/ui/deal-card';
 import { NoFareFallback } from '@/components/ui/no-fare-fallback';
 import { Badge } from '@/components/ui/badge';
+import { RouteStat } from '@/components/ui/route-stat';
 import { FamilyVisitBlock } from '@/components/sections/family-visit-block';
+import { WarningBanner } from '@/components/route/warning-banner';
+import { RouteTimeline } from '@/components/route/route-timeline';
+import { FareHistoryPanel } from '@/components/route/fare-history-panel';
+import { BookingWindowPanel } from '@/components/route/booking-window-panel';
+import { TravellerTipList } from '@/components/route/traveller-tip-list';
+import { CommunityNotesPanel } from '@/components/route/community-notes-panel';
+import { FareWatchForm } from '@/components/route/fare-watch-form';
+import { WhatsAppShareButton } from '@/components/route/whatsapp-share-button';
+import { JsonLd, breadcrumbSchema } from '@/components/seo/json-ld';
 import { siteConfig } from '@/lib/site-config';
 
 export async function generateStaticParams() {
@@ -47,12 +64,28 @@ export default function RoutePage({ params }: { params: { slug: string } }) {
 
   const dealsHere = getDealsByDestination(dest.slug).filter((d) => d.fromAirportSlug === airport.slug);
   const alternativeRoutes = getRoutesByDestination(dest.slug).filter((r) => r.slug !== route.slug);
+  const airlines = getRouteAirlines(route);
+  const peakPeriods = getRoutePeakPeriods(route);
+  const activeWarnings = getActiveWarningsByRoute(route.slug);
+  const timelineEvents = getTimelineByRoute(route.slug);
+  const fareObservations = getObservationsByRoute(route.slug);
+  const bookingWindows = getBookingWindowsByRoute(route.slug);
+  const travellerTips = getTipsForScope({ routeSlug: route.slug, destinationSlug: dest.slug });
+  const communityNotes = getCommunityNotesForScope({ routeSlug: route.slug, destinationSlug: dest.slug });
+  const airportAdvice = getNotesByAirport(airport.slug).slice(0, 2);
 
   return (
     <>
+      <JsonLd
+        data={breadcrumbSchema([
+          { name: 'Home', href: '/' },
+          { name: airport.name, href: `/airports/${airport.slug}` },
+          { name: `${airport.city} to ${dest.city}`, href: `/routes/${route.slug}` },
+        ])}
+      />
       <section className="bg-ink-900 py-16 sm:py-20">
         <div className="mx-auto max-w-content px-5 sm:px-8">
-          <nav className="mb-5 flex items-center gap-1.5 text-xs text-ink-400">
+          <nav aria-label="Breadcrumb" className="mb-5 flex items-center gap-1.5 text-xs text-ink-400">
             <Link href="/" className="hover:text-brass-300">Home</Link>
             <span>/</span>
             <Link href={`/airports/${airport.slug}`} className="hover:text-brass-300">{airport.name}</Link>
@@ -68,7 +101,16 @@ export default function RoutePage({ params }: { params: { slug: string } }) {
           <div className="mt-7 flex flex-wrap gap-6">
             <RouteStat icon={<Clock className="h-4 w-4" strokeWidth={2} />} label="Flight time" value={route.flightTime} />
             <RouteStat icon={<Plane className="h-4 w-4" strokeWidth={2} />} label="Frequency" value={route.frequency} />
-            <RouteStat icon={<Calendar className="h-4 w-4" strokeWidth={2} />} label="Airlines" value={route.airlines.join(', ')} />
+            {airlines.length > 0 && (
+              <RouteStat icon={<Calendar className="h-4 w-4" strokeWidth={2} />} label="Airlines" value={airlines.map((a) => a.name).join(', ')} />
+            )}
+          </div>
+
+          <div className="mt-6">
+            <WhatsAppShareButton
+              url={`${siteConfig.url}/routes/${route.slug}`}
+              text={`${airport.city} to ${dest.city}: ${route.flightTime}, ${route.frequency}. ${route.bookingWindowNote}`}
+            />
           </div>
         </div>
       </section>
@@ -91,30 +133,45 @@ export default function RoutePage({ params }: { params: { slug: string } }) {
         </section>
       )}
 
+      {activeWarnings.length > 0 && (
+        <section className="bg-sand-50 py-10 sm:py-12">
+          <div className="mx-auto max-w-content px-5 sm:px-8">
+            <WarningBanner warnings={activeWarnings} />
+          </div>
+        </section>
+      )}
+
       <section className="bg-white py-14 sm:py-16">
         <div className="mx-auto max-w-content px-5 sm:px-8">
           <div className="grid gap-10 lg:grid-cols-[1.2fr_0.8fr]">
             <div>
               <h2 className="font-display text-2xl text-ink-900">When to book this route</h2>
               <p className="mt-4 leading-relaxed text-ink-600">{route.bookingWindowNote}</p>
+              {bookingWindows.length > 0 && (
+                <div className="mt-7">
+                  <BookingWindowPanel windows={bookingWindows} />
+                </div>
+              )}
             </div>
-            <div className="rounded-md border border-ink-100 bg-sand-50 p-6">
-              <div className="flex items-center gap-2">
-                <AlertCircle className="h-4.5 w-4.5 text-terracotta-600" strokeWidth={2} />
-                <span className="text-xs font-semibold uppercase tracking-wide text-terracotta-600">Peak demand periods</span>
+            {peakPeriods.length > 0 && (
+              <div className="rounded-md border border-ink-100 bg-sand-50 p-6">
+                <div className="flex items-center gap-2">
+                  <AlertCircle className="h-4.5 w-4.5 text-terracotta-600" strokeWidth={2} />
+                  <span className="text-xs font-semibold uppercase tracking-wide text-terracotta-600">Peak demand periods</span>
+                </div>
+                <div className="mt-3 flex flex-col gap-2">
+                  {peakPeriods.map((period) => (
+                    <div key={period.id} className="flex items-center gap-2 text-sm text-ink-700">
+                      <span className="h-1.5 w-1.5 rounded-full bg-terracotta-500" />
+                      {period.label}
+                    </div>
+                  ))}
+                </div>
+                <p className="mt-4 text-xs text-ink-400">
+                  Fares on this route rise sharply within 3–4 weeks of these periods. Book ahead if your dates are fixed.
+                </p>
               </div>
-              <div className="mt-3 flex flex-col gap-2">
-                {route.peakPeriods.map((period) => (
-                  <div key={period} className="flex items-center gap-2 text-sm text-ink-700">
-                    <span className="h-1.5 w-1.5 rounded-full bg-terracotta-500" />
-                    {period}
-                  </div>
-                ))}
-              </div>
-              <p className="mt-4 text-xs text-ink-400">
-                Fares on this route rise sharply within 3–4 weeks of these periods. Book ahead if your dates are fixed.
-              </p>
-            </div>
+            )}
           </div>
         </div>
       </section>
@@ -153,10 +210,28 @@ export default function RoutePage({ params }: { params: { slug: string } }) {
         </section>
       )}
 
+      {timelineEvents.length > 0 && (
+        <section className="bg-white py-14 sm:py-16">
+          <div className="mx-auto max-w-content px-5 sm:px-8">
+            <div className="flex items-center gap-2.5">
+              <History className="h-5 w-5 text-terracotta-600" strokeWidth={2} />
+              <span className="text-xs font-semibold uppercase tracking-wide text-terracotta-600">Route history</span>
+            </div>
+            <h2 className="mt-2 font-display text-2xl text-ink-900 sm:text-3xl">What's actually changed on this route</h2>
+            <p className="mt-2 max-w-xl text-sm text-ink-500">
+              Real, dated changes to this specific route — not a generic "things to know" list.
+            </p>
+            <div className="mt-8">
+              <RouteTimeline events={timelineEvents} />
+            </div>
+          </div>
+        </section>
+      )}
+
       {dest.familyVisitContent && <FamilyVisitBlock content={dest.familyVisitContent} city={dest.city} />}
 
       {alternativeRoutes.length > 0 && (
-        <section className="bg-white py-14 sm:py-16">
+        <section className="bg-sand-50 py-14 sm:py-16">
           <div className="mx-auto max-w-content px-5 sm:px-8">
             <div className="flex items-center gap-2.5">
               <GitCompareArrows className="h-5 w-5 text-terracotta-600" strokeWidth={2} />
@@ -175,13 +250,13 @@ export default function RoutePage({ params }: { params: { slug: string } }) {
                   <Link
                     key={altRoute.slug}
                     href={`/routes/${altRoute.slug}`}
-                    className="group flex flex-col rounded-md border border-ink-100 bg-sand-50 p-6 transition-all hover:-translate-y-1 hover:shadow-card-hover"
+                    className="group flex flex-col rounded-md border border-ink-100 bg-white p-6 transition-all hover:-translate-y-1 hover:shadow-card-hover"
                   >
                     <span className="text-xs font-semibold uppercase tracking-wide text-ink-400">
                       {altRoute.isDirect ? 'Direct' : 'Connecting'}
                     </span>
                     <h3 className="mt-1.5 font-display text-xl text-ink-900">{altAirport.city} → {dest.city}</h3>
-                    <p className="mt-1 text-sm text-ink-500">{altRoute.flightTime} · {altRoute.airlines.join(', ')}</p>
+                    <p className="mt-1 text-sm text-ink-500">{altRoute.flightTime} · {getRouteAirlines(altRoute).map((a) => a.name).join(', ')}</p>
                     <span className="mt-4 flex items-center gap-1.5 text-sm font-semibold text-ink-900">
                       Compare this route
                       <ArrowUpRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" strokeWidth={2.25} />
@@ -194,9 +269,18 @@ export default function RoutePage({ params }: { params: { slug: string } }) {
         </section>
       )}
 
-      <section className="bg-sand-50 py-14 sm:py-16">
+      <section className="bg-white py-14 sm:py-16">
         <div className="mx-auto max-w-content px-5 sm:px-8">
-          <h2 className="font-display text-2xl text-ink-900 sm:text-3xl">Current fares on this route</h2>
+          <h2 className="font-display text-2xl text-ink-900 sm:text-3xl">Fare history & current example</h2>
+          <p className="mt-2 max-w-xl text-sm text-ink-500">
+            Every fare below is an example checked on the date shown, not a live quote — the history is what makes
+            it worth tracking over time.
+          </p>
+          {fareObservations.length > 0 && (
+            <div className="mt-8">
+              <FareHistoryPanel observations={fareObservations} />
+            </div>
+          )}
           {dealsHere.length > 0 ? (
             <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {dealsHere.map((deal) => (
@@ -208,6 +292,58 @@ export default function RoutePage({ params }: { params: { slug: string } }) {
               <NoFareFallback cityLabel={`${airport.city} to ${dest.city}`} />
             </div>
           )}
+          <div className="mt-8 max-w-xl">
+            <FareWatchForm defaultAirportSlug={airport.slug} defaultDestinationSlug={dest.slug} />
+          </div>
+        </div>
+      </section>
+
+      {travellerTips.length > 0 && (
+        <section className="bg-sand-50 py-14 sm:py-16">
+          <div className="mx-auto max-w-content px-5 sm:px-8">
+            <h2 className="font-display text-2xl text-ink-900 sm:text-3xl">Traveller tips for this route</h2>
+            <div className="mt-8">
+              <TravellerTipList tips={travellerTips} />
+            </div>
+          </div>
+        </section>
+      )}
+
+      {airportAdvice.length > 0 && (
+        <section className="bg-white py-14 sm:py-16">
+          <div className="mx-auto max-w-content px-5 sm:px-8">
+            <div className="flex items-center gap-2.5">
+              <MapPinned className="h-5 w-5 text-terracotta-600" strokeWidth={2} />
+              <span className="text-xs font-semibold uppercase tracking-wide text-terracotta-600">Before you fly from {airport.city}</span>
+            </div>
+            <div className="mt-6 grid gap-5 sm:grid-cols-2">
+              {airportAdvice.map((note) => (
+                <div key={note.id} className="rounded-md border border-ink-100 bg-sand-50 p-5">
+                  <h3 className="font-display text-base text-ink-900">{note.title}</h3>
+                  <p className="mt-1.5 text-sm leading-relaxed text-ink-500">{note.body}</p>
+                </div>
+              ))}
+            </div>
+            <Link
+              href={`/airports/${airport.slug}`}
+              className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-ink-900 hover:text-terracotta-600"
+            >
+              Full {airport.name} guide <ArrowUpRight className="h-4 w-4" strokeWidth={2.25} />
+            </Link>
+          </div>
+        </section>
+      )}
+
+      <section className="bg-sand-50 py-14 sm:py-16">
+        <div className="mx-auto max-w-content px-5 sm:px-8">
+          <div className="flex items-center gap-2.5">
+            <MessageSquareText className="h-5 w-5 text-terracotta-600" strokeWidth={2} />
+            <span className="text-xs font-semibold uppercase tracking-wide text-terracotta-600">Community notes</span>
+          </div>
+          <h2 className="mt-2 font-display text-2xl text-ink-900 sm:text-3xl">What real travellers say about this route</h2>
+          <div className="mt-8">
+            <CommunityNotesPanel notes={communityNotes} />
+          </div>
         </div>
       </section>
 
@@ -229,17 +365,5 @@ export default function RoutePage({ params }: { params: { slug: string } }) {
         </div>
       </section>
     </>
-  );
-}
-
-function RouteStat({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
-  return (
-    <div className="flex items-center gap-2.5">
-      <div className="flex h-9 w-9 items-center justify-center rounded-sm bg-white/10 text-brass-300">{icon}</div>
-      <div>
-        <p className="text-xs text-ink-400">{label}</p>
-        <p className="text-sm font-semibold text-sand-100">{value}</p>
-      </div>
-    </div>
   );
 }

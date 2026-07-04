@@ -3,6 +3,7 @@ import { RegionHubPage } from '@/components/sections/region-hub-page';
 import { getDestinationsByRegion } from '@/data/destinations';
 
 export const metadata: Metadata = {
+  alternates: { canonical: '/gulf' },
   title: 'Gulf Travel Hub — Dubai, Doha & UAE Flights from the UK',
   description:
     'Flights and travel guidance for Dubai and Doha from UK airports, including stopover routes, visa rules and seasonal pricing.',

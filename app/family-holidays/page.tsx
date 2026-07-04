@@ -1,15 +1,16 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import Image from 'next/image';
-import { ArrowUpRight, MapPin } from 'lucide-react';
+import { ArrowUpRight, MapPin, FileText } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { DealCard } from '@/components/ui/deal-card';
 import { NoFareFallback } from '@/components/ui/no-fare-fallback';
+import { LinkButton } from '@/components/ui/button';
 import { destinations } from '@/data/destinations';
 import { getDealsByCategory } from '@/data/deals';
-import { placeholderUrl } from '@/lib/images';
+import { DestinationMark } from '@/components/ui/destination-mark';
 
 export const metadata: Metadata = {
+  alternates: { canonical: '/family-holidays' },
   title: 'Family Holidays — All-Inclusive & Long-Haul Trips from the UK',
   description:
     'Family holiday guidance for UK travellers, covering all-inclusive resorts in Turkey and the Mediterranean alongside long-haul family trips to the Gulf and South Asia.',
@@ -47,13 +48,7 @@ export default function FamilyHolidaysPage() {
                 className="group flex flex-col overflow-hidden rounded-md border border-ink-100 bg-white shadow-card transition-all hover:-translate-y-1 hover:shadow-card-hover"
               >
                 <div className="relative h-32 w-full overflow-hidden">
-                  <Image
-                    src={placeholderUrl(`${dest.city}, ${dest.country}`)}
-                    alt={`${dest.city}, ${dest.country}`}
-                    fill
-                    sizes="(max-width: 768px) 50vw, 25vw"
-                    className="object-cover transition-transform duration-500 group-hover:scale-105"
-                  />
+                  <DestinationMark seed={`${dest.city}, ${dest.country}`} />
                 </div>
                 <div className="flex flex-1 flex-col p-6">
                   <span className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-ink-400">
@@ -68,6 +63,25 @@ export default function FamilyHolidaysPage() {
                 </div>
               </Link>
             ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="bg-brass-50 py-10 sm:py-12">
+        <div className="mx-auto max-w-content px-5 sm:px-8">
+          <div className="flex flex-col gap-4 rounded-md border border-brass/30 bg-white p-7 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-start gap-3">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-sm bg-brass-50 text-brass-700">
+                <FileText className="h-4.5 w-4.5" strokeWidth={2} />
+              </div>
+              <div>
+                <h2 className="font-display text-xl text-ink-900">Planning a family or group trip?</h2>
+                <p className="mt-1 text-sm text-ink-500">Tell us where and when — a person follows up with real pricing for your group size.</p>
+              </div>
+            </div>
+            <LinkButton href="/quote-request?tripType=family-trip" size="md" className="shrink-0">
+              Request a quote
+            </LinkButton>
           </div>
         </div>
       </section>

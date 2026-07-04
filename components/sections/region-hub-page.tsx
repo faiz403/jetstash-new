@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import Image from 'next/image';
 import { ArrowUpRight, MapPin, Plane, Users } from 'lucide-react';
 import { DealCard } from '@/components/ui/deal-card';
 import { NoFareFallback } from '@/components/ui/no-fare-fallback';
@@ -8,7 +7,7 @@ import { LinkButton } from '@/components/ui/button';
 import { Destination } from '@/data/destinations';
 import { getDealsByRegionGroup } from '@/data/deals';
 import { getRoutesByDestination, getRouteAirport } from '@/data/routes';
-import { placeholderUrl } from '@/lib/images';
+import { DestinationMark } from '@/components/ui/destination-mark';
 
 interface RegionHubProps {
   eyebrow: string;
@@ -61,13 +60,7 @@ export function RegionHubPage({
                 className="group flex flex-col overflow-hidden rounded-md border border-ink-100 bg-white shadow-card transition-all hover:-translate-y-1 hover:shadow-card-hover"
               >
                 <div className="relative h-36 w-full overflow-hidden">
-                  <Image
-                    src={placeholderUrl(`${dest.city}, ${dest.country}`)}
-                    alt={`${dest.city}, ${dest.country}`}
-                    fill
-                    sizes="(max-width: 768px) 100vw, 33vw"
-                    className="object-cover transition-transform duration-500 group-hover:scale-105"
-                  />
+                  <DestinationMark seed={`${dest.city}, ${dest.country}`} />
                 </div>
                 <div className="flex flex-1 flex-col p-6">
                   <span className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-ink-400">

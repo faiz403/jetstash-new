@@ -3,6 +3,7 @@ import { RegionHubPage } from '@/components/sections/region-hub-page';
 import { getDestinationsByRegion } from '@/data/destinations';
 
 export const metadata: Metadata = {
+  alternates: { canonical: '/pakistan' },
   title: 'Pakistan Travel Hub — Flights from the UK',
   description:
     'Flights and travel guidance for Lahore, Islamabad and Karachi from UK airports, including visa requirements and Eid travel timing.',

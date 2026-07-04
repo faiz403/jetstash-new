@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
+  alternates: { canonical: '/deals' },
   title: 'Example Fares',
   description:
     'Example fares from UK airports to Pakistan, India, the Gulf and Umrah — flights, packages, business class and more, filterable by category.',

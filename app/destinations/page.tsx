@@ -5,6 +5,7 @@ import { destinations } from '@/data/destinations';
 import { regionGroups } from '@/lib/site-config';
 
 export const metadata: Metadata = {
+  alternates: { canonical: '/destinations' },
   title: 'All Destinations',
   description: 'Every destination covered by JetStash, from Pakistan and India to the Gulf and the Mediterranean.',
 };

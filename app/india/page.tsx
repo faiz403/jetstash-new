@@ -3,6 +3,7 @@ import { RegionHubPage } from '@/components/sections/region-hub-page';
 import { getDestinationsByRegion } from '@/data/destinations';
 
 export const metadata: Metadata = {
+  alternates: { canonical: '/india' },
   title: 'India Travel Hub — Flights from the UK',
   description:
     'Flights and travel guidance for Delhi, Mumbai, Ahmedabad and Amritsar from UK airports, including visa timelines and festival season pricing.',

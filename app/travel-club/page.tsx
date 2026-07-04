@@ -4,8 +4,9 @@ import { Badge } from '@/components/ui/badge';
 import { NewsletterSection } from '@/components/sections/newsletter-section';
 
 export const metadata: Metadata = {
+  alternates: { canonical: '/travel-club' },
   title: 'JetStash Travel Club',
-  description: 'Join JetStash Travel Club for fare alerts on flights from the UK to Pakistan, India, the Gulf and beyond, filtered by the route you actually care about.',
+  description: 'Join JetStash Travel Club for hand-picked fare tips on flights from the UK to Pakistan, India, the Gulf and beyond, curated for the route you actually care about.',
 };
 
 export default function TravelClubPage() {

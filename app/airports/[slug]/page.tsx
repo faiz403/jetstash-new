@@ -5,9 +5,13 @@ import { Plane, ArrowUpRight, Info, MapPin } from 'lucide-react';
 import { airports, getAirportBySlug } from '@/data/airports';
 import { getDealsByAirport } from '@/data/deals';
 import { getRoutesByAirport, getRouteDestination } from '@/data/routes';
+import { getNotesByAirport } from '@/data/airport-notes';
+import { getTipsForScope } from '@/data/traveller-tips';
 import { DealCard } from '@/components/ui/deal-card';
 import { NoFareFallback } from '@/components/ui/no-fare-fallback';
 import { Badge } from '@/components/ui/badge';
+import { TravellerTipList } from '@/components/route/traveller-tip-list';
+import { JsonLd, breadcrumbSchema } from '@/components/seo/json-ld';
 import { siteConfig } from '@/lib/site-config';
 
 export async function generateStaticParams() {
@@ -36,12 +40,21 @@ export default function AirportPage({ params }: { params: { slug: string } }) {
   const compareAirports = (airport.compareAirportSlugs ?? [])
     .map((slug) => getAirportBySlug(slug))
     .filter((a): a is NonNullable<typeof a> => Boolean(a));
+  const practicalNotes = getNotesByAirport(airport.slug);
+  const travellerTips = getTipsForScope({ airportSlug: airport.slug });
 
   return (
     <>
+      <JsonLd
+        data={breadcrumbSchema([
+          { name: 'Home', href: '/' },
+          { name: 'Airports', href: '/airports' },
+          { name: airport.name, href: `/airports/${airport.slug}` },
+        ])}
+      />
       <section className="bg-ink-900 py-16 sm:py-20">
         <div className="mx-auto max-w-content px-5 sm:px-8">
-          <nav className="mb-5 flex items-center gap-1.5 text-xs text-ink-400">
+          <nav aria-label="Breadcrumb" className="mb-5 flex items-center gap-1.5 text-xs text-ink-400">
             <Link href="/" className="hover:text-brass-300">Home</Link>
             <span>/</span>
             <Link href="/airports" className="hover:text-brass-300">Airports</Link>
@@ -142,22 +155,31 @@ export default function AirportPage({ params }: { params: { slug: string } }) {
       </section>
 
       {/* Practical notes — real hub depth, not generic airport copy */}
-      <section className="bg-white py-14 sm:py-16">
-        <div className="mx-auto max-w-content px-5 sm:px-8">
-          <h2 className="font-display text-2xl text-ink-900 sm:text-3xl">Before you fly from {airport.city}</h2>
-          <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {airport.practicalNotes.map((note) => (
-              <div key={note.title} className="rounded-md border border-ink-100 bg-sand-50 p-6">
-                <div className="flex h-9 w-9 items-center justify-center rounded-sm bg-terracotta-50 text-terracotta-600">
-                  <Info className="h-4.5 w-4.5" strokeWidth={2} />
-                </div>
-                <h3 className="mt-4 font-display text-lg text-ink-900">{note.title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-ink-500">{note.body}</p>
+      {(practicalNotes.length > 0 || travellerTips.length > 0) && (
+        <section className="bg-white py-14 sm:py-16">
+          <div className="mx-auto max-w-content px-5 sm:px-8">
+            <h2 className="font-display text-2xl text-ink-900 sm:text-3xl">Before you fly from {airport.city}</h2>
+            {practicalNotes.length > 0 && (
+              <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                {practicalNotes.map((note) => (
+                  <div key={note.id} className="rounded-md border border-ink-100 bg-sand-50 p-6">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-sm bg-terracotta-50 text-terracotta-600">
+                      <Info className="h-4.5 w-4.5" strokeWidth={2} />
+                    </div>
+                    <h3 className="mt-4 font-display text-lg text-ink-900">{note.title}</h3>
+                    <p className="mt-2 text-sm leading-relaxed text-ink-500">{note.body}</p>
+                  </div>
+                ))}
               </div>
-            ))}
+            )}
+            {travellerTips.length > 0 && (
+              <div className="mt-10">
+                <TravellerTipList tips={travellerTips} />
+              </div>
+            )}
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* Long-haul + short-haul lists retained, but as supporting detail not the page's main content */}
       <section className="bg-sand-50 py-14 sm:py-16">

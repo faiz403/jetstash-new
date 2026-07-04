@@ -1,11 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  images: {
-    remotePatterns: [
-      { protocol: 'https', hostname: 'placehold.co' },
-      { protocol: 'https', hostname: 'images.unsplash.com' },
-    ],
-  },
+  // No remote image hosts: all destination imagery is rendered locally by
+  // <DestinationMark />. Add remotePatterns back when real photography lands.
   eslint: { ignoreDuringBuilds: true },
 };
 

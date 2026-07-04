@@ -4,6 +4,7 @@ import { ArrowUpRight } from 'lucide-react';
 import { airports } from '@/data/airports';
 
 export const metadata: Metadata = {
+  alternates: { canonical: '/airports' },
   title: 'UK Departure Airports',
   description: 'Every UK airport covered by JetStash, with long-haul and short-haul routes from each.',
 };

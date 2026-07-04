@@ -1,38 +1,154 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
+import { CalendarCheck, ShieldCheck, Route, Scale, Ban, Mail } from 'lucide-react';
+import { LinkButton } from '@/components/ui/button';
+import { siteConfig } from '@/lib/site-config';
 
 export const metadata: Metadata = {
-  title: 'About JetStash',
-  description: 'JetStash is a UK travel site focused on routes to Pakistan, India, the Gulf and beyond.',
+  title: 'About JetStash — How We Work',
+  description:
+    'JetStash is a UK travel platform for routes to Pakistan, India, the Gulf and Umrah. Read the editorial standards behind every fare and route claim on the site.',
+  alternates: { canonical: `${siteConfig.url}/about` },
 };
+
+const standards = [
+  {
+    icon: CalendarCheck,
+    title: 'Every fare is dated, and checked by a person',
+    body: 'When you see a price on JetStash, it is an example fare that a member of our team manually searched and recorded on the date shown. We never present it as a live quote, and we never hide when it was last checked. If a fare is old, you can see that it\'s old.',
+  },
+  {
+    icon: Route,
+    title: 'Route claims are verified against real schedules',
+    body: 'Whether a route is direct or connecting is checked against real airline schedules before it goes on the site — not assumed from marketing material. Where sources conflict, we model the route the conservative way and say so. When an airline withdraws a direct service, the route page says that too, with the date.',
+  },
+  {
+    icon: ShieldCheck,
+    title: 'No invented urgency, statistics or reviews',
+    body: 'You will not find countdown timers, "2 seats left at this price", fabricated testimonials or made-up savings percentages anywhere on JetStash. If we can\'t trace a claim to something real, it doesn\'t ship.',
+  },
+  {
+    icon: Ban,
+    title: 'We\'d rather be incomplete than wrong',
+    body: 'Some verticals you might expect — hotels, car hire, airport lounges, parking — aren\'t on the site yet. That\'s deliberate: we would rather not cover something than cover it with thin, generic placeholder content. They\'ll arrive when we can do them to the same standard as the routes.',
+  },
+  {
+    icon: Scale,
+    title: 'How we make money, plainly',
+    body: 'JetStash earns a commission on some bookings made through partner links. This never changes the price you pay, and it never changes which routes we cover or what we say about them. The full detail is on our affiliate disclosure page.',
+  },
+];
 
 export default function AboutPage() {
   return (
-    <section className="bg-white py-16 sm:py-24">
-      <div className="mx-auto max-w-2xl px-5 sm:px-8">
-        <h1 className="font-display text-4xl text-ink-900">About JetStash</h1>
-        <div className="mt-8 flex flex-col gap-5 text-ink-600">
-          <p className="leading-relaxed">
-            Most UK travel sites treat flights to Pakistan, India and the Gulf as a footnote — a handful of pages
-            bolted onto a site built primarily around Spain and the Mediterranean. JetStash starts from the
-            opposite assumption: these routes deserve the same depth of coverage as anywhere else, because for a
-            huge number of people in the UK, they're the trip that actually matters most.
-          </p>
-          <p className="leading-relaxed">
-            We track flight and package prices from UK airports, organise the site around how people actually
-            travel — family visits, Umrah, business trips, holidays — and try to be honest about what we don't
-            know. Where a fare is indicative, we say so. Where a price was last checked, we show the date.
-          </p>
-          <p className="leading-relaxed">
-            JetStash earns a commission on some bookings made through partner links on this site. This is how the
-            site is funded, and it never changes the price you pay or which routes we choose to cover. You can read
-            the full detail on our{' '}
-            <a href="/affiliate-disclosure" className="font-medium text-terracotta-600 underline">
-              affiliate disclosure page
-            </a>
-            .
+    <>
+      <section className="bg-ink-900 py-16 sm:py-20">
+        <div className="mx-auto max-w-content px-5 sm:px-8">
+          <span className="text-xs font-semibold uppercase tracking-wide text-brass-300">About JetStash</span>
+          <h1 className="mt-3 max-w-2xl font-display text-4xl leading-[1.08] text-sand-50 sm:text-5xl">
+            The routes that matter most deserve more than a footnote.
+          </h1>
+          <p className="mt-5 max-w-xl text-lg leading-relaxed text-ink-300">
+            Most UK travel sites treat flights to Pakistan, India, the Gulf and Saudi Arabia as an edge case —
+            a few pages bolted onto a site built around Spain. JetStash starts from the opposite assumption:
+            for millions of people in the UK, these are the trips that actually matter.
           </p>
         </div>
-      </div>
-    </section>
+      </section>
+
+      <section className="bg-white py-16 sm:py-20">
+        <div className="mx-auto max-w-content px-5 sm:px-8">
+          <span className="text-xs font-semibold uppercase tracking-wide text-terracotta-600">Editorial standards</span>
+          <h2 className="mt-2 max-w-2xl font-display text-3xl text-ink-900 sm:text-4xl">
+            Honesty is the product
+          </h2>
+          <p className="mt-3 max-w-xl text-ink-500">
+            Travel pricing is full of manufactured urgency and unverifiable claims. Our bet is the opposite:
+            that being conservative and traceable, every time, is worth more to you than looking impressive.
+            These are the rules the site is built on.
+          </p>
+
+          <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {standards.map((s) => (
+              <div key={s.title} className="rounded-md border border-ink-100 bg-sand-50 p-6">
+                <div className="flex h-10 w-10 items-center justify-center rounded-sm bg-white text-brass-600 shadow-card">
+                  <s.icon className="h-5 w-5" strokeWidth={2} />
+                </div>
+                <h3 className="mt-4 font-display text-lg leading-snug text-ink-900">{s.title}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-ink-500">{s.body}</p>
+              </div>
+            ))}
+            <div className="flex flex-col justify-between rounded-md border border-ink-100 bg-ink-900 p-6">
+              <div>
+                <div className="flex h-10 w-10 items-center justify-center rounded-sm bg-white/10 text-brass-300">
+                  <Mail className="h-5 w-5" strokeWidth={2} />
+                </div>
+                <h3 className="mt-4 font-display text-lg leading-snug text-sand-50">Spotted something wrong?</h3>
+                <p className="mt-2 text-sm leading-relaxed text-ink-300">
+                  If a fare, schedule or claim on this site doesn&apos;t hold up, we want to know — corrections make
+                  the site better for everyone.
+                </p>
+              </div>
+              <LinkButton href="/contact" size="sm" className="mt-5 self-start">
+                Tell us
+              </LinkButton>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="bg-sand-50 py-16 sm:py-20">
+        <div className="mx-auto max-w-content px-5 sm:px-8">
+          <div className="grid gap-10 lg:grid-cols-2">
+            <div>
+              <h2 className="font-display text-2xl text-ink-900 sm:text-3xl">How the site is organised</h2>
+              <div className="mt-5 flex flex-col gap-4 text-ink-600">
+                <p className="leading-relaxed">
+                  JetStash is organised around how people actually travel on these routes — family visits, Umrah,
+                  business trips, holidays — rather than generic destination pages. Every airport-to-destination
+                  pairing gets its own guide, with booking windows, peak-period warnings and fare history specific
+                  to that route.
+                </p>
+                <p className="leading-relaxed">
+                  The longer we track a route, the more useful its guide becomes. That&apos;s the whole model: depth
+                  over breadth, on the routes generic comparison sites treat as an afterthought.
+                </p>
+              </div>
+              <div className="mt-6 flex flex-wrap gap-3">
+                <LinkButton href="/routes" variant="dark" size="md">Browse all routes</LinkButton>
+                <LinkButton href="/travel-club" variant="ghost" size="md">Join Travel Club</LinkButton>
+              </div>
+            </div>
+            <div className="rounded-md border border-ink-100 bg-white p-7">
+              <h3 className="font-display text-xl text-ink-900">The small print, up front</h3>
+              <ul className="mt-4 flex flex-col gap-3 text-sm leading-relaxed text-ink-600">
+                <li>
+                  Prices are indicative examples, never live quotes — always confirm the final price with the
+                  airline or operator before booking.
+                </li>
+                <li>
+                  Visa and entry guidance is a starting point, not advice — always confirm with the relevant
+                  embassy or high commission.
+                </li>
+                <li>
+                  Travel Club emails are curated by a person, segmented by your nearest airport and the region you
+                  track — not automated price alerts.
+                </li>
+              </ul>
+              <p className="mt-5 text-xs text-ink-400">
+                Full details:{' '}
+                <Link href="/affiliate-disclosure" className="underline hover:text-terracotta-600">
+                  affiliate disclosure
+                </Link>{' '}
+                ·{' '}
+                <Link href="/privacy-policy" className="underline hover:text-terracotta-600">
+                  privacy policy
+                </Link>
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+    </>
   );
 }

@@ -1,8 +1,9 @@
-import Image from 'next/image';
 import { Deal, DealCabin, formatChecked } from '@/data/deals';
-import { Plane, Calendar, ArrowUpRight } from 'lucide-react';
+import { getRouteByAirportAndDestination } from '@/data/routes';
+import { getObservationsByRoute } from '@/data/fare-observations';
+import { Plane, ArrowUpRight, TrendingUp } from 'lucide-react';
 import { Badge } from './badge';
-import { placeholderUrl } from '@/lib/images';
+import { DestinationMark } from './destination-mark';
 
 const cabinLabel: Record<DealCabin, string> = {
   Economy: 'Economy',
@@ -11,42 +12,46 @@ const cabinLabel: Record<DealCabin, string> = {
 };
 
 export function DealCard({ deal }: { deal: Deal }) {
+  // Fare history context, not a marketing tag — reinforces this is a tracked route, not a one-off "today's deal".
+  const matchedRoute = getRouteByAirportAndDestination(deal.fromAirportSlug, deal.toDestinationSlug);
+  const observations = matchedRoute ? getObservationsByRoute(matchedRoute.slug) : [];
+
   return (
     <article className="group relative flex flex-col overflow-hidden rounded-md border border-ink-100 bg-white shadow-card transition-all duration-300 hover:-translate-y-1 hover:shadow-card-hover">
-      <div className="relative h-40 w-full overflow-hidden">
-        <Image
-          src={placeholderUrl(deal.toCity)}
-          alt={`${deal.toCity}, ${deal.toCountry}`}
-          fill
-          sizes="(max-width: 768px) 100vw, 33vw"
-          className="object-cover transition-transform duration-500 group-hover:scale-105"
-        />
+      <div className="relative h-44 w-full overflow-hidden">
+        <DestinationMark label={deal.toCity} sublabel={deal.toCountry} />
+        {deal.tag && (
+          <div className="absolute right-4 top-4">
+            <Badge variant={deal.cabin === 'Business' ? 'terracotta' : 'brass'}>{deal.tag}</Badge>
+          </div>
+        )}
       </div>
+
       <div className="flex items-center justify-between border-b border-ink-100 px-5 py-3">
         <span className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-ink-400">
           <Plane className="h-3.5 w-3.5" strokeWidth={2.25} />
           {deal.fromCity} → {deal.toCity}
         </span>
-        {deal.tag && <Badge variant={deal.cabin === 'Business' ? 'terracotta' : 'brass'}>{deal.tag}</Badge>}
+        <span className="text-xs font-medium text-ink-500">{cabinLabel[deal.cabin]}</span>
       </div>
 
       <div className="flex flex-1 flex-col px-5 py-5">
-        <h3 className="font-display text-2xl leading-tight text-ink-900">{deal.toCity}</h3>
-        <p className="mt-0.5 text-sm text-ink-400">{deal.toCountry}</p>
-
-        <div className="mt-4 flex items-baseline gap-2">
+        <div className="flex items-baseline gap-2">
           <span className="font-display text-3xl tracking-tight text-ink-900">£{deal.indicativePrice.toLocaleString('en-GB')}</span>
           <span className="text-sm text-ink-400">{deal.priceNote}</span>
         </div>
-        <p className="mt-0.5 text-xs font-medium text-terracotta-600">Indicative price — prices change quickly</p>
-
-        <p className="mt-1 text-sm font-medium text-ink-500">{deal.airline} · {cabinLabel[deal.cabin]}</p>
+        <p className="mt-1 text-sm font-medium text-ink-500">{deal.airline}</p>
 
         <div className="mt-4 flex items-center gap-1.5 text-xs text-ink-400">
           <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-          <Calendar className="h-3.5 w-3.5" strokeWidth={2} />
           Example fare checked {formatChecked(deal.lastChecked)}
         </div>
+        {observations.length > 1 && (
+          <div className="mt-1.5 flex items-center gap-1.5 text-xs text-ink-400">
+            <TrendingUp className="h-3.5 w-3.5" strokeWidth={2} />
+            {observations.length} fares tracked on this route — see the full history on the route guide
+          </div>
+        )}
 
         <a
           href={deal.partnerUrl}
@@ -57,7 +62,9 @@ export function DealCard({ deal }: { deal: Deal }) {
           Check live price
           <ArrowUpRight className="h-4 w-4" strokeWidth={2.25} />
         </a>
-        <p className="mt-2 text-center text-[10px] text-ink-400">Partner link · indicative</p>
+        <p className="mt-2 text-center text-[11px] text-ink-400">
+          Partner link — prices change quickly, confirm the final price before booking
+        </p>
       </div>
     </article>
   );

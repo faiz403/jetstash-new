@@ -2,9 +2,9 @@ export const siteConfig = {
   name: 'JetStash',
   domain: 'jetstash.co.uk',
   url: 'https://jetstash.co.uk',
-  tagline: "The UK's travel hub for South Asia, the Gulf and beyond",
+  tagline: "The UK's travel intelligence platform for South Asia, the Gulf and beyond",
   description:
-    'JetStash tracks flight and holiday prices from UK airports to Pakistan, India, the Gulf and the Mediterranean — with dedicated hubs for family travel, Umrah and business class.',
+    'JetStash tracks route history, fare patterns and booking windows from UK airports to Pakistan, India, the Gulf, Turkey, Morocco and the wider Mediterranean — with dedicated hubs for family travel, Umrah and business class.',
 };
 
 export const mainNav = [
@@ -27,6 +27,7 @@ export const footerNav = {
   travel: [
     { label: 'Family Holidays', href: '/family-holidays' },
     { label: 'Business Class', href: '/business-class' },
+    { label: 'Request a Quote', href: '/quote-request' },
     { label: 'All Deals', href: '/deals' },
     { label: 'All Routes', href: '/routes' },
     { label: 'Travel Guides', href: '/guides' },

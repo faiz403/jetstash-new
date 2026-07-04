@@ -73,6 +73,11 @@ module.exports = {
       letterSpacing: {
         tightest: '-0.04em',
       },
+      spacing: {
+        // 18px — used for mid-size icons (h-4.5/w-4.5). Without this token those
+        // classes silently do nothing and icons render at their default 24px.
+        4.5: '1.125rem',
+      },
       maxWidth: {
         content: '1320px',
       },

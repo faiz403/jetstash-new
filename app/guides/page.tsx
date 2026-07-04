@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Badge } from '@/components/ui/badge';
 
 export const metadata: Metadata = {
+  alternates: { canonical: '/guides' },
   title: 'Travel Guides',
   description: 'Practical guides for UK travellers heading to Pakistan, India, the Gulf and beyond.',
 };

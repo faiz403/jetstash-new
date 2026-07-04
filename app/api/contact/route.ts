@@ -1,22 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { isValidEmail, sendResendEmail } from '@/lib/email';
 
 /**
- * Contact form endpoint.
- *
- * Wire this up to a real provider before launch. The simplest option for a
- * Vercel project is Resend (resend.com) — free tier covers low-volume contact
- * forms easily. Set RESEND_API_KEY and CONTACT_TO_EMAIL in Vercel's
- * environment variables, then uncomment the Resend call below.
- *
- * import { Resend } from 'resend';
- * const resend = new Resend(process.env.RESEND_API_KEY);
- * await resend.emails.send({
- *   from: 'JetStash <forms@jetstash.co.uk>',
- *   to: process.env.CONTACT_TO_EMAIL!,
- *   subject: `New contact form message from ${name}`,
- *   text: message,
- *   replyTo: email,
- * });
+ * Contact form endpoint. Sends via Resend (resend.com) — set RESEND_API_KEY
+ * and CONTACT_TO_EMAIL in Vercel's environment variables before launch.
  */
 
 export async function POST(req: NextRequest) {
@@ -26,7 +13,7 @@ export async function POST(req: NextRequest) {
   if (!name || !email || !message) {
     return NextResponse.json({ error: 'Name, email and message are all required.' }, { status: 400 });
   }
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+  if (!isValidEmail(email)) {
     return NextResponse.json({ error: 'Please enter a valid email address.' }, { status: 400 });
   }
 
@@ -39,31 +26,16 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  try {
-    const res = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        from: 'JetStash <forms@jetstash.co.uk>',
-        to: process.env.CONTACT_TO_EMAIL ?? 'hello@jetstash.co.uk',
-        subject: `New contact form message from ${name}`,
-        text: `From: ${name} (${email})\n\n${message}`,
-        reply_to: email,
-      }),
-    });
-
-    if (!res.ok) {
-      const text = await res.text();
-      console.error('Resend error:', res.status, text);
-      return NextResponse.json({ error: 'Could not send your message. Please try again.' }, { status: 502 });
-    }
-
-    return NextResponse.json({ success: true });
-  } catch (err) {
-    console.error('Contact form failed:', err);
-    return NextResponse.json({ error: 'Could not send your message. Please try again.' }, { status: 500 });
+  const result = await sendResendEmail({
+    apiKey,
+    to: process.env.CONTACT_TO_EMAIL ?? 'hello@jetstash.co.uk',
+    subject: `New contact form message from ${name}`,
+    text: `From: ${name} (${email})\n\n${message}`,
+    replyTo: email,
+    failureMessage: 'Could not send your message. Please try again.',
+  });
+  if (!result.ok) {
+    return NextResponse.json({ error: result.message }, { status: result.status });
   }
+  return NextResponse.json({ success: true });
 }

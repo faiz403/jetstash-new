@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { isValidEmail, upsertBrevoContact } from '@/lib/email';
 
 /**
  * Newsletter / Travel Club subscribe endpoint.
@@ -54,7 +55,7 @@ export async function POST(req: NextRequest) {
   const nearestAirport = typeof body?.nearestAirport === 'string' ? body.nearestAirport : undefined;
   const interest = typeof body?.interest === 'string' ? body.interest : undefined;
 
-  if (!email || typeof email !== 'string' || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+  if (!isValidEmail(email)) {
     return NextResponse.json({ error: 'A valid email address is required.' }, { status: 400 });
   }
 
@@ -82,31 +83,9 @@ export async function POST(req: NextRequest) {
   if (nearestAirport) attributes.NEAREST_AIRPORT = nearestAirport;
   if (interest) attributes.TRAVEL_INTEREST = interest;
 
-  try {
-    const res = await fetch('https://api.brevo.com/v3/contacts', {
-      method: 'POST',
-      headers: {
-        'api-key': apiKey,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        email,
-        listIds: [Number(listId)],
-        updateEnabled: true,
-        ...(Object.keys(attributes).length > 0 ? { attributes } : {}),
-      }),
-    });
-
-    if (!res.ok && res.status !== 400) {
-      // 400 from Brevo often means "contact already exists" — treat as success.
-      const text = await res.text();
-      console.error('Brevo error:', res.status, text);
-      return NextResponse.json({ error: 'Could not complete sign-up. Please try again.' }, { status: 502 });
-    }
-
-    return NextResponse.json({ success: true });
-  } catch (err) {
-    console.error('Newsletter signup failed:', err);
-    return NextResponse.json({ error: 'Could not complete sign-up. Please try again.' }, { status: 500 });
+  const result = await upsertBrevoContact({ apiKey, listId, email, attributes });
+  if (!result.ok) {
+    return NextResponse.json({ error: result.message }, { status: result.status });
   }
+  return NextResponse.json({ success: true });
 }

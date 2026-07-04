@@ -5,7 +5,7 @@ export interface FamilyVisitContent {
   travelPattern: string;
   documentNote: string;
   packingNote: string;
-  peakFamilyPeriods: string[];
+  peakPeriodIds: string[]; // references data/peak-periods.ts
 }
 
 export interface Destination {
@@ -46,7 +46,7 @@ export const destinations: Destination[] = [
         'NICOP holders (Pakistan-origin UK nationals with a National Identity Card for Overseas Pakistanis) typically do not need a separate visa. Confirm current requirements with NADRA or your nearest Pakistani consulate before booking, as this is not guaranteed and policy specifics change.',
       packingNote:
         'Excess baggage is the single most underestimated cost on this route — gifts and shopping for the return leg routinely exceed standard allowances. Pre-purchasing extra baggage online at the time of booking is consistently cheaper than paying at the airport.',
-      peakFamilyPeriods: ['Eid al-Fitr', 'Eid al-Adha', 'Wedding season (Nov–Feb)', 'UK summer holidays'],
+      peakPeriodIds: ['eid-al-fitr', 'eid-al-adha', 'wedding-season', 'uk-summer-holidays'],
     },
   },
   {
@@ -69,7 +69,7 @@ export const destinations: Destination[] = [
         'NICOP holders typically do not require a separate visa. Always confirm current requirements directly with NADRA or your nearest consulate, as policy specifics change and shouldn\'t be assumed from prior trips.',
       packingNote:
         'If continuing on to northern areas, factor road travel time honestly — onward journeys can add a full day, which affects how tight a return flight booking should be.',
-      peakFamilyPeriods: ['Eid al-Fitr', 'Eid al-Adha', 'UK summer holidays'],
+      peakPeriodIds: ['eid-al-fitr', 'eid-al-adha', 'uk-summer-holidays'],
     },
   },
   {
@@ -92,7 +92,7 @@ export const destinations: Destination[] = [
         'NICOP holders typically do not require a separate visa. Confirm directly with NADRA or your nearest consulate, as requirements can change.',
       packingNote:
         'Karachi\'s longer flight time from most UK airports (often via a connection) makes layover comfort and luggage transfer reliability worth factoring into the airline choice, not just the headline fare.',
-      peakFamilyPeriods: ['Eid al-Fitr', 'Eid al-Adha'],
+      peakPeriodIds: ['eid-al-fitr', 'eid-al-adha'],
     },
   },
   // India
@@ -116,7 +116,7 @@ export const destinations: Destination[] = [
         'OCI (Overseas Citizen of India) cardholders do not require a separate visa. Standard e-Tourist or e-Business visas apply to other UK passport holders — apply at least 4 days ahead, though earlier is sensible during Diwali or December.',
       packingNote:
         'If your onward journey involves a domestic Indian flight, check the (often stricter) domestic baggage allowance separately from your international one — the two are frequently different and this catches travellers out.',
-      peakFamilyPeriods: ['Diwali', 'Christmas–New Year', 'UK summer holidays'],
+      peakPeriodIds: ['diwali', 'christmas-new-year', 'uk-summer-holidays'],
     },
   },
   {
@@ -139,7 +139,7 @@ export const destinations: Destination[] = [
         'OCI (Overseas Citizen of India) cardholders do not require a separate visa. Standard e-Tourist or e-Business visas apply to other UK passport holders — apply at least 4 days ahead, though earlier is sensible during Diwali or December.',
       packingNote:
         'If flying the Manchester direct service, check the current baggage allowance directly with the airline rather than assuming it matches a full-service carrier\'s standard — allowances and any extra-baggage charges can differ from the Heathrow route\'s operators.',
-      peakFamilyPeriods: ['Diwali', 'Christmas–New Year', 'UK summer holidays'],
+      peakPeriodIds: ['diwali', 'christmas-new-year', 'uk-summer-holidays'],
     },
   },
   {
@@ -162,7 +162,7 @@ export const destinations: Destination[] = [
         'OCI cardholders do not require a separate visa; other UK passport holders need the standard e-Visa, applied for at least 4 days ahead.',
       packingNote:
         'Air India\'s direct Amritsar services run at reduced midweek frequency rather than daily — confirm specific flight days before assuming a non-stop option exists on your preferred date.',
-      peakFamilyPeriods: ['Baisakhi (April)', 'Diwali', 'UK summer holidays'],
+      peakPeriodIds: ['baisakhi', 'diwali', 'uk-summer-holidays'],
     },
   },
   {
@@ -185,7 +185,7 @@ export const destinations: Destination[] = [
         'OCI cardholders do not require a separate visa. Other UK passport holders need the standard e-Visa, applied for at least 4 days ahead — book this alongside flights rather than leaving it until closer to departure.',
       packingNote:
         'Air India\'s direct Gatwick service runs 3 times a week, not daily — confirm your specific travel dates align with an active flight day before booking, and price a Mumbai or Delhi-connecting fallback for off-schedule dates.',
-      peakFamilyPeriods: ['Navratri', 'Diwali', 'UK summer holidays'],
+      peakPeriodIds: ['navratri', 'diwali', 'uk-summer-holidays'],
     },
   },
   // Gulf

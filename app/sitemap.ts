@@ -18,6 +18,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     '/umrah',
     '/family-holidays',
     '/business-class',
+    '/quote-request',
     '/travel-club',
     '/about',
     '/contact',
