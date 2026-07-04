@@ -23,7 +23,8 @@ export default function OgImage({ params }: { params: { slug: string } }) {
 
   const from = airport?.city ?? 'UK';
   const to = dest?.city ?? 'the world';
-  const detail = route ? `${route.flightTime} · ${route.isDirect ? 'Direct' : 'Connecting'} · ${route.frequency}` : '';
+  // flightTime and frequency strings already say direct/connecting — don't repeat it.
+  const detail = route ? `${route.flightTime} · ${route.frequency}` : '';
 
   return new ImageResponse(
     (
@@ -56,22 +57,22 @@ export default function OgImage({ params }: { params: { slug: string } }) {
           >
             ✈
           </div>
-          <div style={{ color: SAND, fontSize: 36 }}>JetStash</div>
+          <div style={{ display: 'flex', color: SAND, fontSize: 36 }}>JetStash</div>
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column' }}>
-          <div style={{ color: BRASS, fontSize: 28, textTransform: 'uppercase', letterSpacing: 4 }}>
+          <div style={{ display: 'flex', color: BRASS, fontSize: 28, textTransform: 'uppercase', letterSpacing: 4 }}>
             Route guide
           </div>
-          <div style={{ color: SAND, fontSize: 84, marginTop: 12, lineHeight: 1.05 }}>
+          <div style={{ display: 'flex', color: SAND, fontSize: 84, marginTop: 12, lineHeight: 1.05 }}>
             {from} → {to}
           </div>
           {detail ? (
-            <div style={{ color: INK_LIGHT, fontSize: 32, marginTop: 20 }}>{detail}</div>
+            <div style={{ display: 'flex', color: INK_LIGHT, fontSize: 32, marginTop: 20 }}>{detail}</div>
           ) : null}
         </div>
 
-        <div style={{ color: INK_LIGHT, fontSize: 24 }}>
+        <div style={{ display: 'flex', color: INK_LIGHT, fontSize: 24 }}>
           Booking windows · Peak periods · Fare history — jetstash.co.uk
         </div>
       </div>
