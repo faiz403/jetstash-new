@@ -1,7 +1,9 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { ArrowUpRight, MapPin } from 'lucide-react';
+import { ArrowUpRight, MapPin, Plane } from 'lucide-react';
+import { PageHero } from '@/components/sections/page-hero';
 import { routes, getRouteAirport, getRouteDestination, type Route } from '@/data/routes';
+import { airports } from '@/data/airports';
 import type { RegionGroup } from '@/data/destinations';
 
 export const metadata: Metadata = {
@@ -32,20 +34,24 @@ export default function RoutesIndexPage() {
     })
     .filter((g) => g.routesInRegion.length > 0);
 
+  const directCount = routes.filter((r) => r.isDirect).length;
+  const airportCount = airports.filter((a) => routes.some((r) => r.airportSlug === a.slug)).length;
+
   return (
     <>
-      <section className="bg-ink-900 py-16 sm:py-20">
-        <div className="mx-auto max-w-content px-5 sm:px-8">
-          <h1 className="font-display text-4xl text-sand-50 sm:text-5xl">All routes</h1>
-          <p className="mt-3 max-w-xl text-lg text-ink-300">
-            {routes.length} airport-to-destination pairings across Pakistan, India, the Gulf and Umrah. Each has
-            its own booking pattern — find yours below.
-          </p>
-        </div>
-      </section>
+      <PageHero
+        eyebrow="Route guides"
+        title="Every route has its own story"
+        description="Airport-to-destination pairings across Pakistan, India, the Gulf and Umrah — each with its own booking pattern, peak periods and honest direct-or-connecting answer."
+        stats={[
+          { value: String(routes.length), label: 'Route guides' },
+          { value: String(directCount), label: 'Direct routes' },
+          { value: String(airportCount), label: 'UK airports' },
+        ]}
+      />
 
       {grouped.map(({ region, routesInRegion }) => (
-        <section key={region} className="border-b border-ink-100 bg-white py-14 sm:py-16 last:border-0">
+        <section key={region} className="border-b border-ink-100 bg-white py-14 last:border-0 sm:py-16">
           <div className="mx-auto max-w-content px-5 sm:px-8">
             <h2 className="font-display text-2xl text-ink-900 sm:text-3xl">{regionLabels[region]}</h2>
             <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
@@ -57,16 +63,36 @@ export default function RoutesIndexPage() {
                   <Link
                     key={route.slug}
                     href={`/routes/${route.slug}`}
-                    className="group flex flex-col rounded-md border border-ink-100 p-6 shadow-card transition-all hover:-translate-y-1 hover:shadow-card-hover"
+                    className="group relative flex flex-col overflow-hidden rounded-md border border-ink-100 p-6 shadow-card transition-all hover:-translate-y-1 hover:border-brass-200 hover:shadow-card-hover"
                   >
-                    <span className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-ink-400">
-                      <MapPin className="h-3.5 w-3.5" strokeWidth={2.25} />
-                      {dest.country}
-                    </span>
-                    <h3 className="mt-2 font-display text-xl text-ink-900">{airport.city} → {dest.city}</h3>
-                    <p className="mt-1.5 text-sm text-ink-500">{route.flightTime} · {route.isDirect ? 'Direct' : 'Connecting'}</p>
-                    <span className="mt-4 flex items-center gap-1.5 text-sm font-semibold text-ink-900">
-                      View route guide <ArrowUpRight className="h-4 w-4" strokeWidth={2.25} />
+                    <div className="flex items-center justify-between gap-3">
+                      <span className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-ink-400">
+                        <MapPin className="h-3.5 w-3.5" strokeWidth={2.25} />
+                        {dest.country}
+                      </span>
+                      <span
+                        className={
+                          route.isDirect
+                            ? 'inline-flex items-center gap-1.5 rounded-full bg-brass-50 px-2.5 py-0.5 text-xs font-semibold text-brass-700'
+                            : 'inline-flex items-center rounded-full bg-ink-50 px-2.5 py-0.5 text-xs font-semibold text-ink-500'
+                        }
+                      >
+                        {route.isDirect && <Plane className="h-3 w-3" strokeWidth={2.5} />}
+                        {route.isDirect ? 'Direct' : 'Connecting'}
+                      </span>
+                    </div>
+                    <h3 className="mt-3 font-display text-xl text-ink-900">
+                      {airport.city}{' '}
+                      <span className="inline-block text-brass-500 transition-transform duration-300 group-hover:translate-x-0.5">→</span>{' '}
+                      {dest.city}
+                    </h3>
+                    <p className="mt-1.5 text-sm text-ink-500">{route.flightTime}</p>
+                    <span className="mt-4 flex items-center gap-1.5 text-sm font-semibold text-ink-900 transition-colors group-hover:text-terracotta-600">
+                      View route guide
+                      <ArrowUpRight
+                        className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+                        strokeWidth={2.25}
+                      />
                     </span>
                   </Link>
                 );

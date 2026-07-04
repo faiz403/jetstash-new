@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { CalendarCheck, ShieldCheck, Route, Scale, Ban, Mail } from 'lucide-react';
 import { LinkButton } from '@/components/ui/button';
+import { PageHero } from '@/components/sections/page-hero';
 import { siteConfig } from '@/lib/site-config';
 
 export const metadata: Metadata = {
@@ -42,19 +43,11 @@ const standards = [
 export default function AboutPage() {
   return (
     <>
-      <section className="bg-ink-900 py-16 sm:py-20">
-        <div className="mx-auto max-w-content px-5 sm:px-8">
-          <span className="text-xs font-semibold uppercase tracking-wide text-brass-300">About JetStash</span>
-          <h1 className="mt-3 max-w-2xl font-display text-4xl leading-[1.08] text-sand-50 sm:text-5xl">
-            The routes that matter most deserve more than a footnote.
-          </h1>
-          <p className="mt-5 max-w-xl text-lg leading-relaxed text-ink-300">
-            Most UK travel sites treat flights to Pakistan, India, the Gulf and Saudi Arabia as an edge case —
-            a few pages bolted onto a site built around Spain. JetStash starts from the opposite assumption:
-            for millions of people in the UK, these are the trips that actually matter.
-          </p>
-        </div>
-      </section>
+      <PageHero
+        eyebrow="About JetStash"
+        title="The routes that matter most deserve more than a footnote."
+        description="Most UK travel sites treat flights to Pakistan, India, the Gulf and Saudi Arabia as an edge case — a few pages bolted onto a site built around Spain. JetStash starts from the opposite assumption: for millions of people in the UK, these are the trips that actually matter."
+      />
 
       <section className="bg-white py-16 sm:py-20">
         <div className="mx-auto max-w-content px-5 sm:px-8">

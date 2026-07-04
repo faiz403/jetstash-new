@@ -84,8 +84,9 @@ export default function RoutePage({ params }: { params: { slug: string } }) {
           { name: `${airport.city} to ${dest.city}`, href: `/routes/${route.slug}` },
         ])}
       />
-      <section className="bg-ink-900 py-16 sm:py-20">
-        <div className="mx-auto max-w-content px-5 sm:px-8">
+      <section className="relative overflow-hidden bg-ink-900 py-16 sm:py-20">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(200,147,46,0.12),transparent_60%)]" />
+        <div className="relative mx-auto max-w-content px-5 sm:px-8">
           <nav aria-label="Breadcrumb" className="mb-5 flex items-center gap-1.5 text-xs text-ink-400">
             <Link href="/" className="hover:text-brass-300">Home</Link>
             <span>/</span>
@@ -93,13 +94,15 @@ export default function RoutePage({ params }: { params: { slug: string } }) {
             <span>/</span>
             <span className="text-ink-200">{dest.city}</span>
           </nav>
-          <Badge variant="dark">{route.isDirect ? 'Direct route' : 'Connecting route'}</Badge>
-          <h1 className="mt-4 font-display text-4xl leading-[1.05] text-sand-50 sm:text-5xl">
+          <div className="stagger-in stagger-1 animate-fade-up">
+            <Badge variant="dark">{route.isDirect ? 'Direct route' : 'Connecting route'}</Badge>
+          </div>
+          <h1 className="stagger-in stagger-2 mt-4 animate-fade-up font-display text-4xl leading-[1.05] tracking-tight text-sand-50 sm:text-5xl">
             {airport.city} to {dest.city}
           </h1>
-          <p className="mt-4 max-w-2xl text-lg leading-relaxed text-ink-300">{route.intro}</p>
+          <p className="stagger-in stagger-3 mt-4 max-w-2xl animate-fade-up text-lg leading-relaxed text-ink-300">{route.intro}</p>
 
-          <div className="mt-7 flex flex-wrap gap-6">
+          <div className="stagger-in stagger-4 mt-7 flex animate-fade-up flex-wrap gap-6">
             <RouteStat icon={<Clock className="h-4 w-4" strokeWidth={2} />} label="Flight time" value={route.flightTime} />
             <RouteStat icon={<Plane className="h-4 w-4" strokeWidth={2} />} label="Frequency" value={route.frequency} />
             {airlines.length > 0 && (

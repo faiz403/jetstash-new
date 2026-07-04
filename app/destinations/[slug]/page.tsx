@@ -51,8 +51,9 @@ export default function DestinationPage({ params }: { params: { slug: string } }
           { name: dest.city, href: `/destinations/${dest.slug}` },
         ])}
       />
-      <section className="bg-ink-900 py-16 sm:py-20">
-        <div className="mx-auto max-w-content px-5 sm:px-8">
+      <section className="relative overflow-hidden bg-ink-900 py-16 sm:py-20">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(200,147,46,0.12),transparent_60%)]" />
+        <div className="relative mx-auto max-w-content px-5 sm:px-8">
           <nav aria-label="Breadcrumb" className="mb-5 flex items-center gap-1.5 text-xs text-ink-400">
             <Link href="/" className="hover:text-brass-300">Home</Link>
             <span>/</span>
@@ -62,16 +63,18 @@ export default function DestinationPage({ params }: { params: { slug: string } }
           </nav>
           <div className="grid gap-8 lg:grid-cols-[1.2fr_1fr] lg:items-center">
             <div>
-              <Badge variant="dark">{dest.country}</Badge>
-              <h1 className="mt-4 font-display text-4xl text-sand-50 sm:text-5xl">{dest.city}</h1>
-              <p className="mt-3 max-w-xl text-lg leading-relaxed text-ink-300">{dest.tagline}</p>
-              <div className="mt-6 flex flex-wrap gap-2">
+              <div className="stagger-in stagger-1 animate-fade-up">
+                <Badge variant="dark">{dest.country}</Badge>
+              </div>
+              <h1 className="stagger-in stagger-2 mt-4 animate-fade-up font-display text-4xl tracking-tight text-sand-50 sm:text-5xl">{dest.city}</h1>
+              <p className="stagger-in stagger-3 mt-3 max-w-xl animate-fade-up text-lg leading-relaxed text-ink-300">{dest.tagline}</p>
+              <div className="stagger-in stagger-4 mt-6 flex animate-fade-up flex-wrap gap-2">
                 {dest.bestFor.map((tag) => (
                   <Badge key={tag} variant="dark">{tag}</Badge>
                 ))}
               </div>
             </div>
-            <div className="relative aspect-[4/3] overflow-hidden rounded-md border border-white/10">
+            <div className="stagger-in stagger-3 relative aspect-[4/3] animate-fade-up overflow-hidden rounded-md border border-white/10">
               <DestinationMark label={dest.city} sublabel={dest.country} />
             </div>
           </div>

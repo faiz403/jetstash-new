@@ -1,7 +1,9 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { ArrowUpRight } from 'lucide-react';
+import { ArrowUpRight, Plane } from 'lucide-react';
+import { PageHero } from '@/components/sections/page-hero';
 import { airports } from '@/data/airports';
+import { getRoutesByAirport } from '@/data/routes';
 
 export const metadata: Metadata = {
   alternates: { canonical: '/airports' },
@@ -10,37 +12,64 @@ export const metadata: Metadata = {
 };
 
 export default function AirportsIndexPage() {
+  const directLongHaulCount = airports.filter((a) => a.hasDirectLongHaul).length;
+
   return (
     <>
-      <section className="bg-ink-900 py-16 sm:py-20">
-        <div className="mx-auto max-w-content px-5 sm:px-8">
-          <h1 className="font-display text-4xl text-sand-50 sm:text-5xl">UK departure airports</h1>
-          <p className="mt-3 max-w-xl text-lg text-ink-300">Find the routes available from your nearest airport.</p>
-        </div>
-      </section>
+      <PageHero
+        eyebrow="UK airports"
+        title="Start from the airport nearest you"
+        description="Every fare on JetStash is tied to a real UK departure airport — because the right route from Manchester is rarely the right route from Heathrow."
+        stats={[
+          { value: String(airports.length), label: 'UK airports' },
+          { value: String(directLongHaulCount), label: 'With direct long-haul' },
+        ]}
+      />
 
       <section className="bg-white py-16 sm:py-20">
         <div className="mx-auto max-w-content px-5 sm:px-8">
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {airports.map((airport) => (
-              <Link
-                key={airport.slug}
-                href={`/airports/${airport.slug}`}
-                className="group flex flex-col rounded-md border border-ink-100 p-6 shadow-card transition-all hover:-translate-y-1 hover:shadow-card-hover"
-              >
-                <span className="text-xs font-semibold uppercase tracking-wide text-terracotta-600">{airport.code}</span>
-                <h3 className="mt-1.5 font-display text-2xl text-ink-900">{airport.name}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-ink-500">{airport.region}</p>
-                {airport.hasDirectLongHaul && (
-                  <span className="mt-2 inline-flex w-fit items-center rounded-full bg-terracotta-50 px-2.5 py-0.5 text-xs font-semibold text-terracotta-700">
-                    Direct long-haul
+            {airports.map((airport) => {
+              const routeCount = getRoutesByAirport(airport.slug).length;
+              return (
+                <Link
+                  key={airport.slug}
+                  href={`/airports/${airport.slug}`}
+                  className="group relative flex flex-col overflow-hidden rounded-md border border-ink-100 p-6 shadow-card transition-all hover:-translate-y-1 hover:border-brass-200 hover:shadow-card-hover"
+                >
+                  <span
+                    className="pointer-events-none absolute -right-3 -top-8 select-none font-display text-[6.5rem] leading-none text-ink-900/[0.04] transition-colors duration-300 group-hover:text-brass-500/[0.08]"
+                    aria-hidden="true"
+                  >
+                    {airport.code}
                   </span>
-                )}
-                <span className="mt-4 flex items-center gap-1.5 text-sm font-semibold text-ink-900">
-                  View routes <ArrowUpRight className="h-4 w-4" strokeWidth={2.25} />
-                </span>
-              </Link>
-            ))}
+                  <span className="relative text-xs font-semibold uppercase tracking-wide text-terracotta-600">
+                    {airport.code} · {airport.region}
+                  </span>
+                  <h3 className="relative mt-1.5 font-display text-2xl text-ink-900">{airport.name}</h3>
+                  <div className="relative mt-3 flex flex-wrap items-center gap-2">
+                    {airport.hasDirectLongHaul && (
+                      <span className="inline-flex items-center gap-1.5 rounded-full bg-brass-50 px-2.5 py-0.5 text-xs font-semibold text-brass-700">
+                        <Plane className="h-3 w-3" strokeWidth={2.5} />
+                        Direct long-haul
+                      </span>
+                    )}
+                    {routeCount > 0 && (
+                      <span className="inline-flex items-center rounded-full bg-ink-50 px-2.5 py-0.5 text-xs font-semibold text-ink-500">
+                        {routeCount} route guide{routeCount === 1 ? '' : 's'}
+                      </span>
+                    )}
+                  </div>
+                  <span className="relative mt-4 flex items-center gap-1.5 text-sm font-semibold text-ink-900 transition-colors group-hover:text-terracotta-600">
+                    View routes
+                    <ArrowUpRight
+                      className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+                      strokeWidth={2.25}
+                    />
+                  </span>
+                </Link>
+              );
+            })}
           </div>
         </div>
       </section>

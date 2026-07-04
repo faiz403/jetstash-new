@@ -52,8 +52,15 @@ export default function AirportPage({ params }: { params: { slug: string } }) {
           { name: airport.name, href: `/airports/${airport.slug}` },
         ])}
       />
-      <section className="bg-ink-900 py-16 sm:py-20">
-        <div className="mx-auto max-w-content px-5 sm:px-8">
+      <section className="relative overflow-hidden bg-ink-900 py-16 sm:py-20">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(200,147,46,0.12),transparent_60%)]" />
+        <span
+          className="pointer-events-none absolute -right-6 -top-10 hidden select-none font-display text-[12rem] leading-none text-sand-50/[0.04] lg:block"
+          aria-hidden="true"
+        >
+          {airport.code}
+        </span>
+        <div className="relative mx-auto max-w-content px-5 sm:px-8">
           <nav aria-label="Breadcrumb" className="mb-5 flex items-center gap-1.5 text-xs text-ink-400">
             <Link href="/" className="hover:text-brass-300">Home</Link>
             <span>/</span>
@@ -61,9 +68,11 @@ export default function AirportPage({ params }: { params: { slug: string } }) {
             <span>/</span>
             <span className="text-ink-200">{airport.name}</span>
           </nav>
-          <Badge variant="dark">{airport.code} · {airport.region}</Badge>
-          <h1 className="mt-4 font-display text-4xl text-sand-50 sm:text-5xl">{airport.name}</h1>
-          <p className="mt-3 max-w-2xl text-lg leading-relaxed text-ink-300">{airport.description}</p>
+          <div className="stagger-in stagger-1 animate-fade-up">
+            <Badge variant="dark">{airport.code} · {airport.region}</Badge>
+          </div>
+          <h1 className="stagger-in stagger-2 mt-4 animate-fade-up font-display text-4xl tracking-tight text-sand-50 sm:text-5xl">{airport.name}</h1>
+          <p className="stagger-in stagger-3 mt-3 max-w-2xl animate-fade-up text-lg leading-relaxed text-ink-300">{airport.description}</p>
         </div>
       </section>
 
