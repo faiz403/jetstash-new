@@ -1,12 +1,12 @@
 import { ImageResponse } from 'next/og';
-import { routes, getRouteBySlug, getRouteAirport, getRouteDestination } from '@/data/routes';
+import { getRouteBySlug, getRouteAirport, getRouteDestination } from '@/data/routes';
+
+// @vercel/og's Node runtime fails to resolve its bundled font on some
+// platforms (ERR_INVALID_URL); the edge runtime is its supported home.
+export const runtime = 'edge';
 
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
-
-export function generateStaticParams() {
-  return routes.map((r) => ({ slug: r.slug }));
-}
 
 export const alt = 'JetStash route guide';
 
