@@ -2,6 +2,7 @@ import { MetadataRoute } from 'next';
 import { destinations } from '@/data/destinations';
 import { airports } from '@/data/airports';
 import { routes } from '@/data/routes';
+import { guides } from '@/data/guides';
 import { siteConfig } from '@/lib/site-config';
 
 export default function sitemap(): MetadataRoute.Sitemap {
@@ -52,5 +53,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.75,
   }));
 
-  return [...staticPages, ...destinationPages, ...airportPages, ...routePages];
+  const guidePages = guides.map((g) => ({
+    url: `${siteConfig.url}/guides/${g.slug}`,
+    lastModified: new Date(),
+    changeFrequency: 'monthly' as const,
+    priority: 0.6,
+  }));
+
+  return [...staticPages, ...destinationPages, ...airportPages, ...routePages, ...guidePages];
 }

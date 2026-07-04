@@ -30,7 +30,11 @@ export default function DealsPage() {
             Every fare below is an indicative example, not a live quote — prices change quickly, so always
             confirm the current price with the airline or partner before booking. "Checked" means a member of our
             team manually searched that route and recorded the fare shown — not an automated price feed. Routes with
-            more than one recorded fare build up a real history over time, visible on that route's own guide.
+            more than one recorded fare build up a real history over time, visible on that route's own guide.{' '}
+            <a href="/about" className="font-medium text-brass-300 underline underline-offset-2 hover:text-brass-200">
+              Read our standards
+            </a>
+            .
           </p>
         </div>
       </section>

@@ -10,14 +10,18 @@ import { deals, getDealsByCategory, formatChecked } from '@/data/deals';
 import { routes, getRouteAirport, getRouteDestination } from '@/data/routes';
 
 export default function HomePage() {
-  const featuredFlights = deals.filter((d) => d.category === 'flight').slice(0, 3);
+  // Explicit commercial selection, not array order: Dubai leads with the lowest price
+  // anchor and broadest appeal, then the India and Pakistan flagship routes.
+  const featuredFlightIds = ['man-dxb-economy', 'lhr-del-economy', 'man-lhe-economy'];
+  const featuredFlights = featuredFlightIds
+    .map((id) => deals.find((d) => d.id === id))
+    .filter((d): d is NonNullable<typeof d> => Boolean(d));
   // Derived from data so the label can never claim a fresher check than actually happened.
   const latestCheck = deals.reduce((max, d) => (d.lastChecked > max ? d.lastChecked : max), deals[0].lastChecked);
   const businessDeals = getDealsByCategory('business').slice(0, 2);
   const umrahDeals = getDealsByCategory('umrah').slice(0, 1);
-  // Deliberately representative spread across the network, not an accident of array order —
-  // one Pakistan, one India, one Gulf, one Umrah route, each from a different UK airport.
-  const featuredRouteSlugs = ['manchester-lahore', 'birmingham-amritsar', 'manchester-dubai', 'london-heathrow-jeddah'];
+  // One flagship route per region, ordered by market size: India, Pakistan, Gulf, Umrah.
+  const featuredRouteSlugs = ['london-heathrow-delhi', 'manchester-lahore', 'manchester-dubai', 'london-heathrow-jeddah'];
   const popularRoutes = featuredRouteSlugs
     .map((slug) => routes.find((r) => r.slug === slug))
     .filter((r): r is NonNullable<typeof r> => Boolean(r));
@@ -96,13 +100,10 @@ export default function HomePage() {
           <span className="text-xs font-semibold uppercase tracking-wide text-terracotta-600">Where we specialise</span>
           <h2 className="mt-2 font-display text-3xl text-ink-900 sm:text-4xl">Four hubs, built for how you actually travel</h2>
 
+          {/* Ordered by UK market size and revenue potential: India (largest diaspora and
+              traffic), Pakistan (strongest community wedge), Umrah (highest value per
+              traveller via the quote funnel), Gulf (broadest mainstream appeal). */}
           <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            <HubCard
-              href="/pakistan"
-              eyebrow="Family visits & heritage"
-              title="Pakistan"
-              description="Lahore, Islamabad and Karachi — direct routes, Eid travel timing, NICOP guidance and what to know before you fly."
-            />
             <HubCard
               href="/india"
               eyebrow="Family visits & heritage"
@@ -110,16 +111,22 @@ export default function HomePage() {
               description="Delhi, Mumbai and Amritsar — OCI guidance, festival season pricing, and the routes that hold value."
             />
             <HubCard
-              href="/gulf"
-              eyebrow="Stopovers & city breaks"
-              title="The Gulf"
-              description="Dubai and Doha — year-round flights, family-friendly stopovers, and beach-meets-city breaks."
+              href="/pakistan"
+              eyebrow="Family visits & heritage"
+              title="Pakistan"
+              description="Lahore, Islamabad and Karachi — direct routes, Eid travel timing, NICOP guidance and what to know before you fly."
             />
             <HubCard
               href="/umrah"
               eyebrow="Pilgrimage travel"
               title="Umrah & Saudi Arabia"
               description="Jeddah and Madinah — package structures, Nusuk visa guidance, and what genuinely affects price."
+            />
+            <HubCard
+              href="/gulf"
+              eyebrow="Stopovers & city breaks"
+              title="The Gulf"
+              description="Dubai and Doha — year-round flights, family-friendly stopovers, and beach-meets-city breaks."
             />
           </div>
         </div>
@@ -284,16 +291,18 @@ export default function HomePage() {
               {umrahDeals.map((deal) => (
                 <DealCard key={deal.id} deal={deal} />
               ))}
-              <Link
-                href="/umrah"
-                className="flex flex-1 flex-col justify-center rounded-md border border-ink-100 bg-white p-6 shadow-card transition-shadow hover:shadow-card-hover"
-              >
-                <span className="text-xs font-semibold uppercase tracking-wide text-terracotta-600">Read first</span>
-                <span className="mt-2 font-display text-xl text-ink-900">What's actually in an Umrah package</span>
-                <span className="mt-3 flex items-center gap-1.5 text-sm font-semibold text-ink-900">
-                  Read the Umrah hub <ArrowUpRight className="h-4 w-4" strokeWidth={2.25} />
-                </span>
-              </Link>
+              <div className="flex flex-1 flex-col justify-center rounded-md border border-ink-100 bg-white p-6 shadow-card">
+                <span className="text-xs font-semibold uppercase tracking-wide text-terracotta-600">Real quotes, from a person</span>
+                <span className="mt-2 font-display text-xl text-ink-900">Tell us your dates and group size — we'll come back with real Umrah pricing</span>
+                <div className="mt-4 flex flex-wrap gap-3">
+                  <LinkButton href="/quote-request?tripType=umrah&region=gulf" variant="dark" size="sm">
+                    Request a quote
+                  </LinkButton>
+                  <Link href="/umrah" className="inline-flex items-center gap-1.5 text-sm font-semibold text-ink-900 hover:text-terracotta-600">
+                    Read the Umrah hub <ArrowUpRight className="h-4 w-4" strokeWidth={2.25} />
+                  </Link>
+                </div>
+              </div>
             </div>
           </div>
         </div>

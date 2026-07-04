@@ -26,6 +26,7 @@ import { FareWatchForm } from '@/components/route/fare-watch-form';
 import { WhatsAppShareButton } from '@/components/route/whatsapp-share-button';
 import { JsonLd, breadcrumbSchema } from '@/components/seo/json-ld';
 import { siteConfig } from '@/lib/site-config';
+import { skyscannerRouteUrl } from '@/lib/partners';
 
 export async function generateStaticParams() {
   return routes.map((r) => ({ slug: r.slug }));
@@ -106,12 +107,22 @@ export default function RoutePage({ params }: { params: { slug: string } }) {
             )}
           </div>
 
-          <div className="mt-6">
+          <div className="mt-7 flex flex-wrap items-center gap-3">
+            <a
+              href={skyscannerRouteUrl(airport, dest)}
+              target="_blank"
+              rel="nofollow sponsored noopener noreferrer"
+              className="inline-flex h-12 items-center justify-center gap-1.5 rounded-sm bg-brass px-6 text-sm font-semibold text-ink-900 transition-colors hover:bg-brass-400"
+            >
+              Check live prices for this route
+              <ArrowUpRight className="h-4 w-4" strokeWidth={2.25} />
+            </a>
             <WhatsAppShareButton
               url={`${siteConfig.url}/routes/${route.slug}`}
               text={`${airport.city} to ${dest.city}: ${route.flightTime}, ${route.frequency}. ${route.bookingWindowNote}`}
             />
           </div>
+          <p className="mt-2.5 text-xs text-ink-400">Partner link — opens Skyscanner in a new tab. Booking there never costs you more.</p>
         </div>
       </section>
 

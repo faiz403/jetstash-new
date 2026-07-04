@@ -12,6 +12,8 @@ export interface Destination {
   slug: string;
   city: string;
   country: string;
+  /** IATA code of the destination's primary airport — used to build partner deep links. */
+  iataCode: string;
   region: RegionGroup;
   tagline: string;
   description: string;
@@ -28,6 +30,7 @@ export const destinations: Destination[] = [
   // Pakistan
   {
     slug: 'lahore',
+    iataCode: 'LHE',
     city: 'Lahore',
     country: 'Pakistan',
     region: 'pakistan',
@@ -51,6 +54,7 @@ export const destinations: Destination[] = [
   },
   {
     slug: 'islamabad',
+    iataCode: 'ISB',
     city: 'Islamabad',
     country: 'Pakistan',
     region: 'pakistan',
@@ -74,6 +78,7 @@ export const destinations: Destination[] = [
   },
   {
     slug: 'karachi',
+    iataCode: 'KHI',
     city: 'Karachi',
     country: 'Pakistan',
     region: 'pakistan',
@@ -98,6 +103,7 @@ export const destinations: Destination[] = [
   // India
   {
     slug: 'delhi',
+    iataCode: 'DEL',
     city: 'Delhi',
     country: 'India',
     region: 'india',
@@ -121,6 +127,7 @@ export const destinations: Destination[] = [
   },
   {
     slug: 'mumbai',
+    iataCode: 'BOM',
     city: 'Mumbai',
     country: 'India',
     region: 'india',
@@ -144,6 +151,7 @@ export const destinations: Destination[] = [
   },
   {
     slug: 'amritsar',
+    iataCode: 'ATQ',
     city: 'Amritsar',
     country: 'India',
     region: 'india',
@@ -167,6 +175,7 @@ export const destinations: Destination[] = [
   },
   {
     slug: 'ahmedabad',
+    iataCode: 'AMD',
     city: 'Ahmedabad',
     country: 'India',
     region: 'india',
@@ -191,6 +200,7 @@ export const destinations: Destination[] = [
   // Gulf
   {
     slug: 'dubai',
+    iataCode: 'DXB',
     city: 'Dubai',
     country: 'United Arab Emirates',
     region: 'gulf',
@@ -205,6 +215,7 @@ export const destinations: Destination[] = [
   },
   {
     slug: 'doha',
+    iataCode: 'DOH',
     city: 'Doha',
     country: 'Qatar',
     region: 'gulf',
@@ -219,6 +230,7 @@ export const destinations: Destination[] = [
   },
   {
     slug: 'jeddah',
+    iataCode: 'JED',
     city: 'Jeddah',
     country: 'Saudi Arabia',
     region: 'gulf',
@@ -233,6 +245,7 @@ export const destinations: Destination[] = [
   },
   {
     slug: 'madinah',
+    iataCode: 'MED',
     city: 'Madinah',
     country: 'Saudi Arabia',
     region: 'gulf',
@@ -248,6 +261,7 @@ export const destinations: Destination[] = [
   // Secondary — Mediterranean & North Africa
   {
     slug: 'istanbul',
+    iataCode: 'IST',
     city: 'Istanbul',
     country: 'Turkey',
     region: 'mediterranean',
@@ -262,6 +276,7 @@ export const destinations: Destination[] = [
   },
   {
     slug: 'antalya',
+    iataCode: 'AYT',
     city: 'Antalya',
     country: 'Turkey',
     region: 'mediterranean',
@@ -276,6 +291,7 @@ export const destinations: Destination[] = [
   },
   {
     slug: 'marrakech',
+    iataCode: 'RAK',
     city: 'Marrakech',
     country: 'Morocco',
     region: 'north-africa',
@@ -290,6 +306,7 @@ export const destinations: Destination[] = [
   },
   {
     slug: 'barcelona',
+    iataCode: 'BCN',
     city: 'Barcelona',
     country: 'Spain',
     region: 'mediterranean',
@@ -304,6 +321,7 @@ export const destinations: Destination[] = [
   },
   {
     slug: 'faro',
+    iataCode: 'FAO',
     city: 'Faro',
     country: 'Portugal',
     region: 'mediterranean',
@@ -318,6 +336,7 @@ export const destinations: Destination[] = [
   },
   {
     slug: 'athens',
+    iataCode: 'ATH',
     city: 'Athens',
     country: 'Greece',
     region: 'mediterranean',
@@ -332,6 +351,7 @@ export const destinations: Destination[] = [
   },
   {
     slug: 'rome',
+    iataCode: 'FCO',
     city: 'Rome',
     country: 'Italy',
     region: 'mediterranean',
