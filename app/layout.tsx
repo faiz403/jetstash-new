@@ -3,7 +3,6 @@ import { Fraunces, Public_Sans } from 'next/font/google';
 import './globals.css';
 import { Header } from '@/components/layout/header';
 import { Footer } from '@/components/layout/footer';
-import { TravelClubBar } from '@/components/layout/travel-club-bar';
 import { JsonLd, organizationSchema, webSiteSchema } from '@/components/seo/json-ld';
 import { siteConfig } from '@/lib/site-config';
 
@@ -59,7 +58,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </a>
         <JsonLd data={organizationSchema()} />
         <JsonLd data={webSiteSchema()} />
-        <TravelClubBar />
         <Header />
         <main id="main-content">{children}</main>
         <Footer />

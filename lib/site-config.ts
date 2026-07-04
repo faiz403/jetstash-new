@@ -7,14 +7,17 @@ export const siteConfig = {
     'JetStash tracks route history, fare patterns and booking windows from UK airports to Pakistan, India, the Gulf, Turkey, Morocco and the wider Mediterranean — with dedicated hubs for family travel, Umrah and business class.',
 };
 
+// The nav is the brand's spine: the four core corridors in commercial order
+// (matching the homepage hub ordering), then the two revenue verticals.
+// Family Holidays stays in the footer and hub cross-links — seven top-level
+// items plus a CTA read as clutter, not range.
 export const mainNav = [
-  { label: 'Pakistan', href: '/pakistan' },
   { label: 'India', href: '/india' },
-  { label: 'Gulf', href: '/gulf' },
+  { label: 'Pakistan', href: '/pakistan' },
   { label: 'Umrah', href: '/umrah' },
-  { label: 'Family Holidays', href: '/family-holidays' },
+  { label: 'Gulf', href: '/gulf' },
   { label: 'Business Class', href: '/business-class' },
-  { label: 'All Deals', href: '/deals' },
+  { label: 'Deals', href: '/deals' },
 ];
 
 export const footerNav = {
