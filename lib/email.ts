@@ -15,8 +15,13 @@ interface BrevoContactError {
 }
 
 /**
- * Upserts a contact into a Brevo list. A 400 from Brevo usually means "contact
- * already exists" and is treated as success, matching Brevo's own semantics.
+ * Upserts a contact into a Brevo list via the official Contacts API
+ * (POST /v3/contacts with updateEnabled: true) — an existing contact is
+ * updated and added to the list rather than failing. A 400 is only treated
+ * as success when Brevo's error code says the contact already exists
+ * (duplicate_parameter); any other 400 (bad list ID, malformed payload) is
+ * a real failure and must surface, or the form would claim success while
+ * saving nothing.
  */
 export async function upsertBrevoContact({
   apiKey,
@@ -44,8 +49,17 @@ export async function upsertBrevoContact({
       }),
     });
 
-    if (!res.ok && res.status !== 400) {
+    if (!res.ok) {
       const text = await res.text();
+      let code: string | undefined;
+      try {
+        code = (JSON.parse(text) as { code?: string }).code;
+      } catch {
+        // Non-JSON error body — fall through to the failure path.
+      }
+      if (res.status === 400 && code === 'duplicate_parameter') {
+        return { ok: true };
+      }
       console.error('Brevo error:', res.status, text);
       return { ok: false, status: 502, message: 'Could not complete sign-up. Please try again.' };
     }
