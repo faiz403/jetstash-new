@@ -18,7 +18,8 @@ const regionLabels: Record<RegionGroup, string> = {
   'north-africa': 'North Africa',
 };
 
-const regionOrder: RegionGroup[] = ['pakistan', 'india', 'gulf', 'mediterranean', 'north-africa'];
+// Matches the site-wide commercial ordering: India first, then Pakistan, then Gulf/Umrah.
+const regionOrder: RegionGroup[] = ['india', 'pakistan', 'gulf', 'mediterranean', 'north-africa'];
 
 export default function RoutesIndexPage() {
   const grouped = regionOrder

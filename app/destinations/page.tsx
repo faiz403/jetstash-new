@@ -10,7 +10,8 @@ export const metadata: Metadata = {
   description: 'Every destination covered by JetStash, from Pakistan and India to the Gulf and the Mediterranean.',
 };
 
-const groupOrder: (keyof typeof regionGroups)[] = ['pakistan', 'india', 'gulf', 'umrah', 'mediterranean', 'northAfrica'];
+// Matches the site-wide commercial ordering: India first, then Pakistan, Umrah, Gulf.
+const groupOrder: (keyof typeof regionGroups)[] = ['india', 'pakistan', 'umrah', 'gulf', 'mediterranean', 'northAfrica'];
 
 export default function DestinationsIndexPage() {
   return (
