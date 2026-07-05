@@ -26,7 +26,7 @@ export const airports: Airport[] = [
     description:
       'The largest airport outside London and the busiest direct gateway in the North of England to Pakistan, India, the Gulf and South Asia, alongside year-round European routes.',
     longHaulRoutes: ['Islamabad', 'Lahore', 'Dubai', 'Doha', 'Abu Dhabi', 'Karachi', 'Delhi', 'Mumbai'],
-    shortHaulHighlights: ['Istanbul', 'Antalya', 'Marrakech', 'Barcelona'],
+    shortHaulHighlights: ['Istanbul', 'Antalya', 'Dalaman', 'Marrakech', 'Barcelona'],
     whyThisAirport:
       'Manchester is the only airport in the North of England with genuine daily-frequency direct services to Pakistan — a fact that shapes travel patterns for the large Pakistani-heritage communities across Greater Manchester, Lancashire, and West Yorkshire. For most of this audience, Manchester beats connecting via London on both price and journey time, even after accounting for the drive to the airport. Manchester is also currently the only Northern UK airport with direct flights to both Delhi and Mumbai, run by IndiGo since 2025 — though this direct India service has an announced end date of 1 September 2026, so check the relevant route guide for current status and the realistic one-stop alternative before booking, particularly for travel after that date.',
     servesCommunities: ['Manchester', 'Bolton', 'Rochdale', 'Oldham', 'Blackburn', 'Bradford (via M62 corridor)'],
@@ -41,7 +41,7 @@ export const airports: Airport[] = [
     description:
       'A key Midlands departure point with strong connections to the Gulf, Pakistan, and India, serving one of the UK\'s largest South Asian communities.',
     longHaulRoutes: ['Islamabad', 'Dubai', 'Sharjah', 'Doha'],
-    shortHaulHighlights: ['Malaga', 'Faro', 'Alicante', 'Antalya'],
+    shortHaulHighlights: ['Malaga', 'Faro', 'Alicante', 'Antalya', 'Bodrum'],
     whyThisAirport:
       'Birmingham sits at the centre of the UK\'s largest concentration of British-Pakistani and British-Indian communities outside London, and its route network reflects that — strong Gulf-connecting options to both India and Pakistan, plus seasonal direct services that rotate by demand. For Midlands-based families, it consistently beats the calculation of driving to Heathrow once parking and travel time are factored in.',
     servesCommunities: ['Birmingham', 'Wolverhampton', 'Coventry', 'Walsall', 'Smethwick'],
@@ -71,7 +71,7 @@ export const airports: Airport[] = [
     description:
       'A major leisure and long-haul airport south of London, with direct Gulf links and the UK\'s only non-stop service to Ahmedabad — a genuine gateway for Gujarat alongside its established Amritsar and Mediterranean network.',
     longHaulRoutes: ['Dubai', 'Doha', 'Ahmedabad', 'Amritsar'],
-    shortHaulHighlights: ['Barcelona', 'Rome', 'Malaga', 'Antalya'],
+    shortHaulHighlights: ['Barcelona', 'Rome', 'Malaga', 'Antalya', 'Agadir', 'Tangier'],
     whyThisAirport:
       'Gatwick works well as a Gulf gateway and Mediterranean leisure airport, and is also the only UK airport with a direct, non-stop service to Ahmedabad — making it the genuine first choice for Gujarati heritage travellers, alongside a direct Amritsar service shared with Birmingham. For Pakistan and Delhi/Mumbai-bound India travel specifically, Heathrow still has the wider network.',
     servesCommunities: ['South London', 'Croydon', 'Surrey', 'Sussex'],

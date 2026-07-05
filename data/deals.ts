@@ -23,10 +23,11 @@ export interface Deal {
  * IMPORTANT: every price below is example/indicative data for demonstration purposes.
  * None of these figures are live, scraped, or independently verified fares. Several
  * entries (Mumbai, Karachi, Athens, Rome economy; Islamabad, Karachi, Amritsar, Doha,
- * Jeddah, Madinah business) were added specifically to fill destination/cabin coverage
- * gaps and are clearly tagged 'Example fare' rather than carrying a category-specific
- * tag like the earlier entries. Before launch, replace with real researched fares or
- * a live pricing API and update this comment.
+ * Jeddah, Madinah business; the July 2026 Turkey/Morocco additions — Dalaman, Bodrum,
+ * Izmir, Agadir, Casablanca, Tangier) were added specifically to fill destination/cabin
+ * coverage gaps and are clearly tagged 'Example fare' rather than carrying a
+ * category-specific tag like the earlier entries. Before launch, replace with real
+ * researched fares or a live pricing API and update this comment.
  */
 
 export const deals: Deal[] = [
@@ -284,6 +285,111 @@ export const deals: Deal[] = [
     partnerUrl: 'https://www.skyscanner.net/transport/flights/lgw/rak/',
     lastChecked: '2026-06-13',
     tag: 'City break',
+  },
+  // Turkey & Morocco coverage additions (July 2026) — same rule as the header
+  // comment: indicative example levels, clearly tagged 'Example fare', never a
+  // live or verified price claim.
+  {
+    id: 'man-dlm-flight',
+    category: 'flight',
+    cabin: 'Economy',
+    fromAirportSlug: 'manchester',
+    toDestinationSlug: 'dalaman',
+    fromCity: 'Manchester',
+    toCity: 'Dalaman',
+    toCountry: 'Turkey',
+    indicativePrice: 229,
+    priceNote: 'example fare, return, per person',
+    airline: 'Jet2',
+    imageQuery: 'oludeniz lagoon fethiye turkey',
+    partnerUrl: 'https://www.skyscanner.net/transport/flights/man/dlm/',
+    lastChecked: '2026-07-05',
+    tag: 'Example fare',
+  },
+  {
+    id: 'man-bjv-flight',
+    category: 'flight',
+    cabin: 'Economy',
+    fromAirportSlug: 'manchester',
+    toDestinationSlug: 'bodrum',
+    fromCity: 'Manchester',
+    toCity: 'Bodrum',
+    toCountry: 'Turkey',
+    indicativePrice: 219,
+    priceNote: 'example fare, return, per person',
+    airline: 'Jet2',
+    imageQuery: 'bodrum turkey castle harbour',
+    partnerUrl: 'https://www.skyscanner.net/transport/flights/man/bjv/',
+    lastChecked: '2026-07-05',
+    tag: 'Example fare',
+  },
+  {
+    id: 'lgw-adb-flight',
+    category: 'flight',
+    cabin: 'Economy',
+    fromAirportSlug: 'london-gatwick',
+    toDestinationSlug: 'izmir',
+    fromCity: 'London Gatwick',
+    toCity: 'Izmir',
+    toCountry: 'Turkey',
+    indicativePrice: 169,
+    priceNote: 'example fare, return, per person',
+    airline: 'SunExpress',
+    imageQuery: 'izmir turkey aegean seafront',
+    partnerUrl: 'https://www.skyscanner.net/transport/flights/lgw/adb/',
+    lastChecked: '2026-07-05',
+    tag: 'Example fare',
+  },
+  {
+    id: 'lgw-aga-flight',
+    category: 'flight',
+    cabin: 'Economy',
+    fromAirportSlug: 'london-gatwick',
+    toDestinationSlug: 'agadir',
+    fromCity: 'London Gatwick',
+    toCity: 'Agadir',
+    toCountry: 'Morocco',
+    indicativePrice: 179,
+    priceNote: 'example fare, return, per person',
+    airline: 'easyJet',
+    imageQuery: 'agadir morocco beach atlantic',
+    partnerUrl: 'https://www.skyscanner.net/transport/flights/lgw/aga/',
+    lastChecked: '2026-07-05',
+    tag: 'Example fare',
+  },
+  {
+    id: 'lhr-cmn-flight',
+    category: 'flight',
+    cabin: 'Economy',
+    fromAirportSlug: 'london-heathrow',
+    toDestinationSlug: 'casablanca',
+    fromCity: 'London Heathrow',
+    toCity: 'Casablanca',
+    toCountry: 'Morocco',
+    indicativePrice: 199,
+    priceNote: 'example fare, return, per person',
+    airline: 'Royal Air Maroc',
+    imageQuery: 'casablanca morocco hassan ii mosque',
+    partnerUrl: 'https://www.skyscanner.net/transport/flights/lhr/cmn/',
+    lastChecked: '2026-07-05',
+    tag: 'Example fare',
+  },
+  {
+    id: 'lgw-tng-flight',
+    category: 'flight',
+    cabin: 'Economy',
+    fromAirportSlug: 'london-gatwick',
+    toDestinationSlug: 'tangier',
+    fromCity: 'London Gatwick',
+    toCity: 'Tangier',
+    toCountry: 'Morocco',
+    indicativePrice: 149,
+    priceNote: 'example fare, return, per person',
+    airline: 'easyJet',
+    imageQuery: 'tangier morocco medina strait',
+    partnerUrl: 'https://www.skyscanner.net/transport/flights/lgw/tng/',
+    lastChecked: '2026-07-05',
+    tag: 'Example fare',
   },
   {
     id: 'man-bcn-flight',

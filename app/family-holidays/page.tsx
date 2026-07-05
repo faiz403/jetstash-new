@@ -17,8 +17,10 @@ export const metadata: Metadata = {
 };
 
 export default function FamilyHolidaysPage() {
+  // Curated family picks: Turkey's two big family coasts, winter sun in
+  // Agadir, the Algarve, a city-plus-beach option and long-haul Dubai.
   const familyDestinations = destinations.filter((d) =>
-    ['antalya', 'faro', 'barcelona', 'dubai'].includes(d.slug)
+    ['antalya', 'dalaman', 'agadir', 'faro', 'barcelona', 'dubai'].includes(d.slug)
   );
   const packageDeals = getDealsByCategory('package');
 
@@ -43,7 +45,7 @@ export default function FamilyHolidaysPage() {
       <section className="bg-white py-16 sm:py-20">
         <div className="mx-auto max-w-content px-5 sm:px-8">
           <h2 className="font-display text-2xl text-ink-900 sm:text-3xl">Family-suited destinations</h2>
-          <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {familyDestinations.map((dest) => (
               <Link
                 key={dest.slug}

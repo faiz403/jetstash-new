@@ -55,7 +55,7 @@ export const regionGroups = {
   india: {
     label: 'India',
     slug: 'india',
-    destinationSlugs: ['delhi', 'mumbai', 'amritsar'],
+    destinationSlugs: ['delhi', 'mumbai', 'ahmedabad', 'amritsar'],
   },
   gulf: {
     label: 'Gulf',
@@ -70,11 +70,11 @@ export const regionGroups = {
   mediterranean: {
     label: 'Mediterranean & Beyond',
     slug: 'mediterranean',
-    destinationSlugs: ['istanbul', 'antalya', 'barcelona', 'faro', 'athens', 'rome'],
+    destinationSlugs: ['istanbul', 'antalya', 'dalaman', 'bodrum', 'izmir', 'barcelona', 'faro', 'athens', 'rome'],
   },
   northAfrica: {
     label: 'North Africa',
     slug: 'north-africa',
-    destinationSlugs: ['marrakech'],
+    destinationSlugs: ['marrakech', 'agadir', 'casablanca', 'tangier'],
   },
 };
