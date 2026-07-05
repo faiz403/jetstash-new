@@ -21,6 +21,7 @@ export default function PakistanHubPage() {
       airportsServed={['Manchester', 'Birmingham', 'London Heathrow']}
       showFamilyVisitCallout
       quoteRegion="pakistan"
+      heroKey="pakistan"
       visaNote="UK passport holders require a visa to enter Pakistan. The e-Visa system processes most tourist and family-visit applications within 7 days when applied for in advance. NICOP holders (Pakistan-origin UK nationals) typically do not require a separate visa — confirm current requirements with NADRA or your nearest Pakistani consulate."
       practicalNotes={[
         {

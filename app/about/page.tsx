@@ -44,6 +44,7 @@ export default function AboutPage() {
   return (
     <>
       <PageHero
+        heroKey="about"
         eyebrow="About JetStash"
         title="The routes that matter most deserve more than a footnote."
         description="Most UK travel sites treat flights to Pakistan, India, the Gulf and Saudi Arabia as an edge case — a few pages bolted onto a site built around Spain. JetStash starts from the opposite assumption: for millions of people in the UK, these are the trips that actually matter."

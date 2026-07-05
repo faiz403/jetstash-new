@@ -17,6 +17,7 @@ export default function AirportsIndexPage() {
   return (
     <>
       <PageHero
+        heroKey="airports"
         eyebrow="UK airports"
         title="Start from the airport nearest you"
         description="Every fare on JetStash is tied to a real UK departure airport — because the right route from Manchester is rarely the right route from Heathrow."

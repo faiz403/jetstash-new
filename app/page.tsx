@@ -8,6 +8,10 @@ import { LinkButton } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { deals, getDealsByCategory, formatChecked } from '@/data/deals';
 import { routes, getRouteAirport, getRouteDestination } from '@/data/routes';
+import { getDestinationBySlug } from '@/data/destinations';
+import { getDestinationImage, getHeroImage } from '@/lib/brand-images';
+import { DestinationVisual } from '@/components/ui/destination-visual';
+import { HeroBackdrop } from '@/components/ui/hero-backdrop';
 
 export default function HomePage() {
   // Explicit commercial selection, not array order: Dubai leads with the lowest price
@@ -30,7 +34,7 @@ export default function HomePage() {
     <>
       {/* ───────────────────────── HERO ───────────────────────── */}
       <section className="relative overflow-hidden bg-ink-900 pb-16 pt-12 sm:pb-24 sm:pt-16">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(200,147,46,0.12),transparent_60%)]" />
+        <HeroBackdrop heroKey="homepage" />
         <div className="relative mx-auto max-w-content px-5 sm:px-8">
           <div className="max-w-2xl">
             <div className="stagger-in stagger-1 animate-fade-up">
@@ -114,24 +118,28 @@ export default function HomePage() {
               eyebrow="Family visits & heritage"
               title="India"
               description="Delhi, Mumbai and Amritsar — OCI guidance, festival season pricing, and the routes that hold value."
+              image={getHeroImage('india')}
             />
             <HubCard
               href="/pakistan"
               eyebrow="Family visits & heritage"
               title="Pakistan"
               description="Lahore, Islamabad and Karachi — direct routes, Eid travel timing, NICOP guidance and what to know before you fly."
+              image={getHeroImage('pakistan')}
             />
             <HubCard
               href="/umrah"
               eyebrow="Pilgrimage travel"
               title="Umrah & Saudi Arabia"
               description="Jeddah and Madinah — package structures, Nusuk visa guidance, and what genuinely affects price."
+              image={getHeroImage('umrah')}
             />
             <HubCard
               href="/gulf"
               eyebrow="Stopovers & city breaks"
               title="The Gulf"
               description="Dubai and Doha — year-round flights, family-friendly stopovers, and beach-meets-city breaks."
+              image={getHeroImage('gulf')}
             />
           </div>
         </div>
@@ -240,12 +248,14 @@ export default function HomePage() {
                 eyebrow="Pakistan"
                 title="Lahore"
                 description="NICOP guidance, Eid booking windows and the baggage detail that catches people out."
+                image={getDestinationImage('lahore')}
               />
               <HubCard
                 href="/destinations/amritsar"
                 eyebrow="India"
                 title="Amritsar"
                 description="OCI guidance, Baisakhi timing and the Golden Temple route most direct from the UK."
+                image={getDestinationImage('amritsar')}
               />
             </div>
           </div>
@@ -291,6 +301,7 @@ export default function HomePage() {
               title="Umrah & Saudi Arabia"
               description="What's actually included in a package, how Makkah hotel distance affects price, and the visa route through Nusuk."
               size="lg"
+              image={getHeroImage('umrah')}
             />
             <div className="flex flex-col gap-5">
               {umrahDeals.map((deal) => (
@@ -309,6 +320,55 @@ export default function HomePage() {
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ───────────────────────── TURKEY, MOROCCO & THE MED — short-haul range, honest seasonality ───────────────────────── */}
+      <section className="bg-white py-16 sm:py-24">
+        <div className="mx-auto max-w-content px-5 sm:px-8">
+          <div className="flex flex-wrap items-end justify-between gap-4">
+            <div>
+              <span className="text-xs font-semibold uppercase tracking-wide text-terracotta-600">Short-haul & winter sun</span>
+              <h2 className="mt-2 font-display text-3xl text-ink-900 sm:text-4xl">Turkey, Morocco and the Mediterranean</h2>
+              <p className="mt-2 max-w-lg text-sm text-ink-500">
+                The same honest coverage, under five hours from the UK — including which routes are genuinely
+                seasonal, so you don&apos;t plan around a flight that pauses for winter.
+              </p>
+            </div>
+            <Link href="/destinations" className="flex items-center gap-1.5 text-sm font-semibold text-ink-900 hover:text-terracotta-600">
+              All destinations <ArrowUpRight className="h-4 w-4" strokeWidth={2.25} />
+            </Link>
+          </div>
+
+          <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            {['istanbul', 'dalaman', 'marrakech', 'agadir'].map((slug) => {
+              const dest = getDestinationBySlug(slug);
+              if (!dest) return null;
+              return (
+                <Link
+                  key={slug}
+                  href={`/destinations/${slug}`}
+                  className="group flex flex-col overflow-hidden rounded-md border border-ink-100 bg-white shadow-card transition-all hover:-translate-y-1 hover:shadow-card-hover"
+                >
+                  <div className="relative h-36 w-full overflow-hidden">
+                    <DestinationVisual
+                      slug={slug}
+                      className="transition-transform duration-500 group-hover:scale-[1.03]"
+                    />
+                  </div>
+                  <div className="flex flex-1 flex-col p-5">
+                    <span className="text-xs font-semibold uppercase tracking-wide text-ink-400">{dest.country}</span>
+                    <h3 className="mt-1.5 font-display text-xl text-ink-900">{dest.city}</h3>
+                    <p className="mt-1 text-sm leading-relaxed text-ink-500">{dest.tagline}</p>
+                    <span className="mt-4 flex items-center gap-1.5 text-sm font-semibold text-ink-900">
+                      View guide
+                      <ArrowUpRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" strokeWidth={2.25} />
+                    </span>
+                  </div>
+                </Link>
+              );
+            })}
           </div>
         </div>
       </section>

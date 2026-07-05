@@ -13,6 +13,7 @@ export default function TravelClubPage() {
   return (
     <>
       <PageHero
+        heroKey="travel-club"
         eyebrow="Travel Club"
         title="One email, when it's actually worth opening"
         description="JetStash Travel Club exists for one reason: to tell you when we've found a fare on a route you care about that's genuinely worth knowing about. No daily digest, no padding it out with filler."

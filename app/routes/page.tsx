@@ -40,6 +40,7 @@ export default function RoutesIndexPage() {
   return (
     <>
       <PageHero
+        heroKey="routes"
         eyebrow="Route guides"
         title="Every route has its own story"
         description="Airport-to-destination pairings across Pakistan, India, the Gulf and Umrah — each with its own booking pattern, peak periods and honest direct-or-connecting answer."

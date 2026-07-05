@@ -20,6 +20,7 @@ export default function GulfHubPage() {
       destinationsInRegion={destinations}
       airportsServed={['London Heathrow', 'Manchester', 'Birmingham', 'London Gatwick', 'Glasgow', 'Leeds Bradford']}
       quoteRegion="gulf"
+      heroKey="gulf"
       visaNote="UK passport holders receive a visa on arrival for both the UAE and Qatar, typically valid for 30 days and free of charge. Always check the latest requirements with the relevant embassy before travel, as policies can change."
       practicalNotes={[
         {

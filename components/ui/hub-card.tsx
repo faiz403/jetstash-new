@@ -1,6 +1,8 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { ArrowUpRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import type { BrandImage } from '@/lib/brand-images';
 import { DestinationMark } from './destination-mark';
 
 export function HubCard({
@@ -9,12 +11,15 @@ export function HubCard({
   title,
   description,
   size = 'md',
+  image,
 }: {
   href: string;
   eyebrow: string;
   title: string;
   description: string;
   size?: 'md' | 'lg';
+  /** Resolved brand photo (getHeroImage/getDestinationImage) — falls back to the generated panel when null/omitted. */
+  image?: BrandImage | null;
 }) {
   return (
     <Link
@@ -25,7 +30,18 @@ export function HubCard({
       )}
     >
       <div className="absolute inset-0">
-        <DestinationMark seed={title} className="p-0" />
+        {image ? (
+          <Image
+            src={image.src}
+            alt=""
+            fill
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+            className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+            aria-hidden="true"
+          />
+        ) : (
+          <DestinationMark seed={title} className="p-0" />
+        )}
       </div>
       <div className="absolute inset-0 bg-gradient-to-t from-ink-950/80 via-ink-950/20 to-transparent" />
 

@@ -1,4 +1,5 @@
 import { Badge } from '@/components/ui/badge';
+import { HeroBackdrop } from '@/components/ui/hero-backdrop';
 
 /**
  * PageHero — the shared premium hero for every secondary page.
@@ -6,6 +7,8 @@ import { Badge } from '@/components/ui/badge';
  * The homepage set the bar: dark ink surface, warm brass radial light,
  * staggered entrance. Every other page inherits that same arrival moment
  * from here, so no page on the site opens with a flat, static block.
+ * `heroKey` opts the page into a photographic backdrop the moment
+ * public/images/heroes/<heroKey>.* exists (see docs/visual-identity.md).
  *
  * Stats are optional and must be derived from real data at the callsite —
  * never hardcode a number here (see CLAUDE.md "No invented stats").
@@ -15,6 +18,7 @@ export function PageHero({
   title,
   description,
   stats,
+  heroKey,
   children,
 }: {
   eyebrow?: string;
@@ -22,11 +26,13 @@ export function PageHero({
   description?: React.ReactNode;
   /** Real, data-derived figures only. */
   stats?: { value: string; label: string }[];
+  /** Key into public/images/heroes/ for an optional photographic backdrop. */
+  heroKey?: string;
   children?: React.ReactNode;
 }) {
   return (
     <section className="relative overflow-hidden bg-ink-900 py-16 sm:py-20">
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(200,147,46,0.12),transparent_60%)]" />
+      <HeroBackdrop heroKey={heroKey} />
       <div
         className="absolute -right-24 top-1/2 hidden h-[420px] w-[420px] -translate-y-1/2 rounded-full border border-white/[0.04] lg:block"
         aria-hidden="true"

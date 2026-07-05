@@ -27,6 +27,8 @@ import { WhatsAppShareButton } from '@/components/route/whatsapp-share-button';
 import { JsonLd, breadcrumbSchema } from '@/components/seo/json-ld';
 import { siteConfig } from '@/lib/site-config';
 import { skyscannerRouteUrl } from '@/lib/partners';
+import { getDestinationImage } from '@/lib/brand-images';
+import { HeroBackdrop } from '@/components/ui/hero-backdrop';
 
 export async function generateStaticParams() {
   return routes.map((r) => ({ slug: r.slug }));
@@ -84,8 +86,10 @@ export default function RoutePage({ params }: { params: { slug: string } }) {
           { name: `${airport.city} to ${dest.city}`, href: `/routes/${route.slug}` },
         ])}
       />
+      {/* Route heroes borrow the destination's photograph (dimmed, decorative) —
+          one image per destination serves every surface, per docs/visual-identity.md. */}
       <section className="relative overflow-hidden bg-ink-900 py-16 sm:py-20">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(200,147,46,0.12),transparent_60%)]" />
+        <HeroBackdrop image={(() => { const img = getDestinationImage(dest.slug); return img ? { ...img, alt: '' } : null; })()} />
         <div className="relative mx-auto max-w-content px-5 sm:px-8">
           <nav aria-label="Breadcrumb" className="mb-5 flex items-center gap-1.5 text-xs text-ink-400">
             <Link href="/" className="hover:text-brass-300">Home</Link>

@@ -13,7 +13,8 @@ import { Badge } from '@/components/ui/badge';
 import { FamilyVisitBlock } from '@/components/sections/family-visit-block';
 import { TravellerTipList } from '@/components/route/traveller-tip-list';
 import { siteConfig } from '@/lib/site-config';
-import { DestinationMark } from '@/components/ui/destination-mark';
+import { DestinationVisual } from '@/components/ui/destination-visual';
+import { HeroBackdrop } from '@/components/ui/hero-backdrop';
 import { JsonLd, breadcrumbSchema } from '@/components/seo/json-ld';
 
 export async function generateStaticParams() {
@@ -52,7 +53,7 @@ export default function DestinationPage({ params }: { params: { slug: string } }
         ])}
       />
       <section className="relative overflow-hidden bg-ink-900 py-16 sm:py-20">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(200,147,46,0.12),transparent_60%)]" />
+        <HeroBackdrop />
         <div className="relative mx-auto max-w-content px-5 sm:px-8">
           <nav aria-label="Breadcrumb" className="mb-5 flex items-center gap-1.5 text-xs text-ink-400">
             <Link href="/" className="hover:text-brass-300">Home</Link>
@@ -75,7 +76,12 @@ export default function DestinationPage({ params }: { params: { slug: string } }
               </div>
             </div>
             <div className="stagger-in stagger-3 relative aspect-[4/3] animate-fade-up overflow-hidden rounded-md border border-white/10">
-              <DestinationMark label={dest.city} sublabel={dest.country} />
+              <DestinationVisual
+                slug={dest.slug}
+                label={dest.city}
+                sublabel={dest.country}
+                sizes="(max-width: 1024px) 100vw, 40vw"
+              />
             </div>
           </div>
         </div>

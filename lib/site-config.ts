@@ -8,14 +8,15 @@ export const siteConfig = {
 };
 
 // The nav is the brand's spine: the four core corridors in commercial order
-// (matching the homepage hub ordering), then the two revenue verticals.
-// Family Holidays stays in the footer and hub cross-links — seven top-level
-// items plus a CTA read as clutter, not range.
+// (matching the homepage hub ordering), then the full destination catalogue
+// (the only nav path to Turkey, Morocco and the Mediterranean), then the two
+// revenue verticals. Family Holidays stays in the footer and hub cross-links.
 export const mainNav = [
   { label: 'India', href: '/india' },
   { label: 'Pakistan', href: '/pakistan' },
   { label: 'Umrah', href: '/umrah' },
   { label: 'Gulf', href: '/gulf' },
+  { label: 'Destinations', href: '/destinations' },
   { label: 'Business Class', href: '/business-class' },
   { label: 'Deals', href: '/deals' },
 ];

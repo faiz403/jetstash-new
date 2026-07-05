@@ -7,7 +7,8 @@ import { NoFareFallback } from '@/components/ui/no-fare-fallback';
 import { LinkButton } from '@/components/ui/button';
 import { destinations } from '@/data/destinations';
 import { getDealsByCategory } from '@/data/deals';
-import { DestinationMark } from '@/components/ui/destination-mark';
+import { DestinationVisual } from '@/components/ui/destination-visual';
+import { HeroBackdrop } from '@/components/ui/hero-backdrop';
 
 export const metadata: Metadata = {
   alternates: { canonical: '/family-holidays' },
@@ -27,7 +28,7 @@ export default function FamilyHolidaysPage() {
   return (
     <>
       <section className="relative overflow-hidden bg-ink-900 py-16 sm:py-20">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(200,147,46,0.12),transparent_60%)]" />
+        <HeroBackdrop heroKey="family-holidays" />
         <div className="relative mx-auto max-w-content px-5 sm:px-8">
           <div className="stagger-in stagger-1 animate-fade-up">
             <Badge variant="dark">Family Holidays</Badge>
@@ -53,8 +54,8 @@ export default function FamilyHolidaysPage() {
                 className="group flex flex-col overflow-hidden rounded-md border border-ink-100 bg-white shadow-card transition-all hover:-translate-y-1 hover:shadow-card-hover"
               >
                 <div className="relative h-32 w-full overflow-hidden">
-                  <DestinationMark
-                    seed={`${dest.city}, ${dest.country}`}
+                  <DestinationVisual
+                    slug={dest.slug}
                     className="transition-transform duration-500 group-hover:scale-[1.03]"
                   />
                 </div>

@@ -20,6 +20,7 @@ export default function DealsPage() {
   return (
     <>
       <PageHero
+        heroKey="deals"
         eyebrow="Tracked fares"
         title="Fares we're tracking"
         description={

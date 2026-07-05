@@ -17,7 +17,6 @@ export interface Destination {
   region: RegionGroup;
   tagline: string;
   description: string;
-  heroImageQuery: string;
   bestFor: string[];
   flightTimeFromUK: string;
   ukAirports: string[]; // airport slugs
@@ -37,7 +36,6 @@ export const destinations: Destination[] = [
     tagline: 'Mughal heritage and Punjab\'s cultural capital',
     description:
       'Lahore pairs centuries of Mughal architecture — the Badshahi Mosque, Lahore Fort, Shalimar Gardens — with one of South Asia\'s great food cities. For UK families with Punjabi roots, this is often the most important journey of the year.',
-    heroImageQuery: 'lahore badshahi mosque pakistan architecture',
     bestFor: ['Family visits', 'Heritage travel', 'Food'],
     flightTimeFromUK: '8h direct from Manchester',
     ukAirports: ['manchester', 'birmingham', 'london-heathrow'],
@@ -61,7 +59,6 @@ export const destinations: Destination[] = [
     tagline: 'A modern capital framed by the Margalla Hills',
     description:
       'Islamabad is the green, planned counterpoint to Pakistan\'s older cities — a useful base for visiting family across Punjab and Khyber Pakhtunkhwa, with easy onward travel to the north.',
-    heroImageQuery: 'islamabad pakistan margalla hills mosque',
     bestFor: ['Family visits', 'Gateway to northern Pakistan'],
     flightTimeFromUK: '7h 45m direct from Manchester',
     ukAirports: ['manchester', 'birmingham'],
@@ -85,7 +82,6 @@ export const destinations: Destination[] = [
     tagline: 'Pakistan\'s coastal commercial capital',
     description:
       'A sprawling port city on the Arabian Sea, Karachi is the economic heart of Pakistan and a major arrival point for UK travellers connecting onward across Sindh and southern Punjab.',
-    heroImageQuery: 'karachi pakistan skyline coast',
     bestFor: ['Business travel', 'Family visits'],
     flightTimeFromUK: '8h 30m direct from London Heathrow',
     ukAirports: ['london-heathrow', 'manchester'],
@@ -110,7 +106,6 @@ export const destinations: Destination[] = [
     tagline: 'Mughal monuments and modern India side by side',
     description:
       'From the Red Fort to Chandni Chowk\'s street food, Delhi is the practical gateway to North India — and the connecting point for travellers heading on to Punjab, Rajasthan or the hills.',
-    heroImageQuery: 'delhi india red fort architecture',
     bestFor: ['Heritage travel', 'Family visits', 'Onward travel'],
     flightTimeFromUK: '8h 45m direct from London Heathrow or Manchester',
     ukAirports: ['london-heathrow', 'birmingham', 'manchester'],
@@ -134,7 +129,6 @@ export const destinations: Destination[] = [
     tagline: 'India\'s coastal commercial and cultural capital',
     description:
       'Mumbai moves at its own pace — Bollywood, the Gateway of India, and a financial district that never quite sleeps. A common stopover for travellers connecting south or onward to the Gulf, and now directly reachable from Manchester as well as London.',
-    heroImageQuery: 'mumbai india gateway of india',
     bestFor: ['Business travel', 'City breaks', 'Family visits'],
     flightTimeFromUK: '9h direct from London Heathrow or Manchester',
     ukAirports: ['london-heathrow', 'manchester'],
@@ -158,7 +152,6 @@ export const destinations: Destination[] = [
     tagline: 'Home of the Golden Temple',
     description:
       'Amritsar centres on the Harmandir Sahib — the Golden Temple — one of the most significant sites in Sikhism. It\'s the most direct route for UK travellers with Punjabi heritage on either side of the border.',
-    heroImageQuery: 'amritsar golden temple india',
     bestFor: ['Pilgrimage', 'Family visits', 'Heritage travel'],
     flightTimeFromUK: '9h direct from Birmingham',
     ukAirports: ['birmingham', 'london-gatwick', 'manchester'],
@@ -182,7 +175,6 @@ export const destinations: Destination[] = [
     tagline: 'Gujarat\'s commercial capital, on the Sabarmati',
     description:
       'Ahmedabad pairs Gandhi\'s Sabarmati Ashram with a fast-growing business and textile hub, and is the most direct route from the UK for Gujarati heritage travellers — Air India\'s non-stop Gatwick service makes this a genuine alternative to a Mumbai or Delhi connection.',
-    heroImageQuery: 'ahmedabad gujarat sabarmati ashram india',
     bestFor: ['Family visits', 'Heritage travel', 'Business travel'],
     flightTimeFromUK: '9h 40m direct from London Gatwick',
     ukAirports: ['london-gatwick', 'manchester', 'birmingham'],
@@ -207,7 +199,6 @@ export const destinations: Destination[] = [
     tagline: 'Skylines, souks and a stopover that became a destination',
     description:
       'Dubai works as a standalone holiday, a family stopover en route to South Asia, or a long weekend of beach club and old-town contrast. Year-round flights from almost every major UK airport make it the most accessible Gulf city.',
-    heroImageQuery: 'dubai skyline burj khalifa uae',
     bestFor: ['Family holidays', 'Stopovers', 'Shopping', 'Beach'],
     flightTimeFromUK: '7h direct from most UK airports',
     ukAirports: ['manchester', 'glasgow', 'edinburgh', 'newcastle', 'london-heathrow', 'birmingham', 'london-gatwick'],
@@ -222,7 +213,6 @@ export const destinations: Destination[] = [
     tagline: 'The Gulf\'s cultural capital, built for stopovers',
     description:
       'Doha\'s Museum of Islamic Art, the Souq Waqif and a coastline of new public beaches make it more than a connection point — Qatar Airways\' hub status means most UK travellers will pass through at some stage.',
-    heroImageQuery: 'doha qatar skyline corniche',
     bestFor: ['Stopovers', 'Culture', 'Family holidays'],
     flightTimeFromUK: '6h 30m direct from London Heathrow',
     ukAirports: ['london-heathrow', 'manchester', 'birmingham'],
@@ -237,7 +227,6 @@ export const destinations: Destination[] = [
     tagline: 'The gateway to Makkah',
     description:
       'Jeddah is the principal arrival point for pilgrims travelling to Makkah for Umrah and Hajj, and increasingly a city break destination in its own right with the restored Al-Balad old town.',
-    heroImageQuery: 'jeddah saudi arabia al balad old town',
     bestFor: ['Umrah', 'Pilgrimage', 'Heritage travel'],
     flightTimeFromUK: '6h direct from London Heathrow',
     ukAirports: ['london-heathrow', 'manchester', 'birmingham'],
@@ -252,7 +241,6 @@ export const destinations: Destination[] = [
     tagline: 'The second holiest city in Islam',
     description:
       'Madinah is most often the second stop on an Umrah itinerary, home to the Prophet\'s Mosque (Al-Masjid an-Nabawi) and a calmer pace than Makkah for pilgrims completing their visit.',
-    heroImageQuery: 'madinah prophets mosque saudi arabia',
     bestFor: ['Umrah', 'Pilgrimage'],
     flightTimeFromUK: '6h 15m direct from London Heathrow',
     ukAirports: ['london-heathrow', 'manchester'],
@@ -268,7 +256,6 @@ export const destinations: Destination[] = [
     tagline: 'Two continents, one city break',
     description:
       'Istanbul\'s Hagia Sophia, Grand Bazaar and Bosphorus crossings make it one of the most rewarding short-haul city breaks from the UK, with year-round direct flights from most regional airports.',
-    heroImageQuery: 'istanbul hagia sophia bosphorus turkey',
     bestFor: ['City breaks', 'Heritage travel'],
     flightTimeFromUK: '4h direct from Manchester',
     ukAirports: ['manchester', 'birmingham', 'london-gatwick', 'leeds-bradford'],
@@ -283,7 +270,6 @@ export const destinations: Destination[] = [
     tagline: 'Turkey\'s all-inclusive coastline',
     description:
       'Antalya anchors the Turquoise Coast — the UK\'s most popular all-inclusive resort region outside Spain, with a long season and direct charter flights from almost every regional UK airport.',
-    heroImageQuery: 'antalya turkey turquoise coast beach',
     bestFor: ['Family holidays', 'All-inclusive', 'Beach'],
     flightTimeFromUK: '4h 15m direct from Manchester',
     ukAirports: ['manchester', 'birmingham', 'leeds-bradford', 'glasgow', 'bristol', 'london-gatwick'],
@@ -298,7 +284,6 @@ export const destinations: Destination[] = [
     tagline: 'The western Turquoise Coast — Ölüdeniz, Fethiye and Marmaris',
     description:
       'Dalaman is the gateway to the western half of Turkey\'s Turquoise Coast — Ölüdeniz\'s lagoon, Fethiye\'s harbour, Hisarönü and Marmaris. It\'s a strongly seasonal airport: UK charter and low-cost routes run densely from spring to autumn, then most pause for winter, so shoulder-season dates need checking against actual flight days.',
-    heroImageQuery: 'oludeniz lagoon fethiye turkey coast',
     bestFor: ['Family holidays', 'All-inclusive', 'Beach'],
     flightTimeFromUK: '4h 15m direct from Manchester',
     ukAirports: ['manchester', 'birmingham', 'leeds-bradford', 'london-gatwick', 'bristol', 'glasgow', 'newcastle'],
@@ -313,7 +298,6 @@ export const destinations: Destination[] = [
     tagline: 'Aegean peninsula of whitewashed towns and gulet coastline',
     description:
       'The Bodrum peninsula is the Aegean counterpoint to Antalya\'s Mediterranean strip — a castle-topped harbour town ringed by beach resorts from lively Gümbet to quieter Yalıkavak and Türkbükü. Like Dalaman, it\'s a seasonal UK market: direct flights concentrate between May and October.',
-    heroImageQuery: 'bodrum turkey castle harbour aegean',
     bestFor: ['Beach', 'All-inclusive', 'Couples'],
     flightTimeFromUK: '4h direct from Manchester',
     ukAirports: ['manchester', 'birmingham', 'leeds-bradford', 'london-gatwick', 'glasgow'],
@@ -328,7 +312,6 @@ export const destinations: Destination[] = [
     tagline: 'Turkey\'s Aegean city — and the doorstep of Ephesus',
     description:
       'Izmir pairs a big, liberal seafront city with the Aegean\'s best day trips — Ephesus, Şirince and the Çeşme peninsula\'s beaches are all within easy reach. Direct UK service is newer and more seasonal than Dalaman or Bodrum; outside the summer schedule most itineraries connect via Istanbul, so compare both before booking.',
-    heroImageQuery: 'izmir turkey aegean seafront ephesus',
     bestFor: ['City breaks', 'Heritage travel', 'Beach'],
     flightTimeFromUK: '4h direct from Manchester',
     ukAirports: ['manchester', 'london-gatwick'],
@@ -343,7 +326,6 @@ export const destinations: Destination[] = [
     tagline: 'Souks, riads and the edge of the Atlas Mountains',
     description:
       'A short flight delivers an entirely different world — the Jemaa el-Fnaa, the Jardin Majorelle and a medina built for getting pleasantly lost in, with the High Atlas an hour away.',
-    heroImageQuery: 'marrakech morocco medina jemaa el fnaa',
     bestFor: ['City breaks', 'Culture'],
     flightTimeFromUK: '3h 30m direct from London Gatwick',
     ukAirports: ['london-gatwick', 'manchester', 'bristol'],
@@ -358,7 +340,6 @@ export const destinations: Destination[] = [
     tagline: 'Morocco\'s winter-sun beach city',
     description:
       'Agadir is the reliable winter-sun option under four hours from the UK — a long crescent beach and a modern, rebuilt city that stays genuinely warm through the months the UK doesn\'t. The souk and the hilltop kasbah ruins add just enough Morocco to a beach week.',
-    heroImageQuery: 'agadir morocco beach promenade atlantic',
     bestFor: ['Winter sun', 'Beach', 'Family holidays'],
     flightTimeFromUK: '3h 45m direct from London Gatwick',
     ukAirports: ['london-gatwick', 'manchester', 'birmingham'],
@@ -373,7 +354,6 @@ export const destinations: Destination[] = [
     tagline: 'Morocco\'s working capital — and its main flight hub',
     description:
       'Casablanca is a business and transit city more than a resort — the vast Hassan II Mosque and a faded art-deco centre reward a day or two, but its real role for UK travellers is as Royal Air Maroc\'s hub: the natural connecting point for the rest of Morocco and, via the Al Boraq high-speed train, barely two hours from Tangier.',
-    heroImageQuery: 'casablanca morocco hassan ii mosque atlantic',
     bestFor: ['Business travel', 'Culture'],
     flightTimeFromUK: '3h 25m direct from London Heathrow',
     ukAirports: ['london-heathrow'],
@@ -388,7 +368,6 @@ export const destinations: Destination[] = [
     tagline: 'Where the Mediterranean meets the Atlantic',
     description:
       'Tangier has shed its rough-edged reputation for a whitewashed medina, a renewed seafront and a literary history worth chasing through its cafés. Direct UK service is limited — check current schedules, and note the Al Boraq high-speed train makes Tangier an easy add-on to a Casablanca or wider Morocco trip.',
-    heroImageQuery: 'tangier morocco medina kasbah strait',
     bestFor: ['City breaks', 'Culture'],
     flightTimeFromUK: '2h 50m direct from London Gatwick',
     ukAirports: ['london-gatwick'],
@@ -403,7 +382,6 @@ export const destinations: Destination[] = [
     tagline: 'Gaudí, the Mediterranean and Catalan food',
     description:
       'Barcelona remains the UK\'s most popular year-round European city break — Gaudí\'s unfinished cathedral, the Gothic Quarter and a beach within walking distance of the centre.',
-    heroImageQuery: 'barcelona spain sagrada familia gothic quarter',
     bestFor: ['City breaks', 'Family holidays'],
     flightTimeFromUK: '2h 15m direct from Manchester',
     ukAirports: ['manchester', 'birmingham', 'london-gatwick', 'bristol', 'leeds-bradford'],
@@ -418,7 +396,6 @@ export const destinations: Destination[] = [
     tagline: 'Gateway to the Algarve coastline',
     description:
       'Faro is the entry point for the Algarve\'s beaches and golf resorts — a reliably mild, family-friendly stretch of coast that runs a long flight season from regional UK airports.',
-    heroImageQuery: 'algarve portugal coastline cliffs beach',
     bestFor: ['Family holidays', 'Golf', 'Beach'],
     flightTimeFromUK: '2h 45m direct from Bristol',
     ukAirports: ['bristol', 'manchester', 'birmingham', 'leeds-bradford', 'london-gatwick'],
@@ -433,7 +410,6 @@ export const destinations: Destination[] = [
     tagline: 'The Acropolis and the islands beyond',
     description:
       'Athens works as a city break on its own or as the launch point for the Saronic and Cycladic islands — a flight under four hours puts the Acropolis within reach of most of the UK.',
-    heroImageQuery: 'athens greece acropolis parthenon',
     bestFor: ['City breaks', 'Island hopping'],
     flightTimeFromUK: '3h 40m direct from Manchester',
     ukAirports: ['manchester', 'birmingham', 'london-gatwick', 'glasgow'],
@@ -448,7 +424,6 @@ export const destinations: Destination[] = [
     tagline: 'The Colosseum, the Vatican and three millennia of layers',
     description:
       'Rome rewards even a short city break — the Colosseum and Roman Forum in the morning, Vatican City in the afternoon, and a trattoria within walking distance of wherever you end up.',
-    heroImageQuery: 'rome italy colosseum architecture',
     bestFor: ['City breaks', 'Heritage travel'],
     flightTimeFromUK: '2h 35m direct from Manchester',
     ukAirports: ['manchester', 'birmingham', 'london-gatwick', 'bristol'],

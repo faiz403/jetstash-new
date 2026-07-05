@@ -14,6 +14,7 @@ export default function GuidesPage() {
   return (
     <>
       <PageHero
+        heroKey="guides"
         eyebrow="Travel guides"
         title="The detail that actually affects your booking"
         description="Visa timing, festival pricing, direct-versus-connecting maths — the questions people on these routes actually ask, answered without filler."

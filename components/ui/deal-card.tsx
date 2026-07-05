@@ -3,7 +3,7 @@ import { getRouteByAirportAndDestination } from '@/data/routes';
 import { getObservationsByRoute } from '@/data/fare-observations';
 import { Plane, ArrowUpRight, TrendingUp } from 'lucide-react';
 import { Badge } from './badge';
-import { DestinationMark } from './destination-mark';
+import { DestinationVisual } from './destination-visual';
 
 const cabinLabel: Record<DealCabin, string> = {
   Economy: 'Economy',
@@ -19,7 +19,8 @@ export function DealCard({ deal }: { deal: Deal }) {
   return (
     <article className="group relative flex flex-col overflow-hidden rounded-md border border-ink-100 bg-white shadow-card transition-all duration-300 hover:-translate-y-1 hover:shadow-card-hover">
       <div className="relative h-44 w-full overflow-hidden">
-        <DestinationMark
+        <DestinationVisual
+          slug={deal.toDestinationSlug}
           label={deal.toCity}
           sublabel={deal.toCountry}
           className="transition-transform duration-500 group-hover:scale-[1.03]"

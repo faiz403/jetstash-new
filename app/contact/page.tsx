@@ -15,6 +15,7 @@ export default function ContactPage() {
   return (
     <>
       <PageHero
+        heroKey="contact"
         eyebrow="Contact"
         title="Talk to a person, not a ticket queue"
         description="Questions about a route, a destination, a fare that doesn't look right — send us a message and a real person reads it."

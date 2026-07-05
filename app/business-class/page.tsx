@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { DealCard } from '@/components/ui/deal-card';
 import { NoFareFallback } from '@/components/ui/no-fare-fallback';
 import { NewsletterSection } from '@/components/sections/newsletter-section';
+import { HeroBackdrop } from '@/components/ui/hero-backdrop';
 import { getDealsByCategory, getDealsByDestination } from '@/data/deals';
 import { routes, getRouteAirport, getRouteDestination, getRouteAirlines } from '@/data/routes';
 
@@ -41,7 +42,7 @@ export default function BusinessClassPage() {
   return (
     <>
       <section className="relative overflow-hidden bg-ink-900 py-16 sm:py-20">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(200,147,46,0.12),transparent_60%)]" />
+        <HeroBackdrop heroKey="business-class" />
         <div className="relative mx-auto max-w-content px-5 sm:px-8">
           <div className="stagger-in stagger-1 animate-fade-up">
             <Badge variant="dark">Business Class</Badge>

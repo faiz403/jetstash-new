@@ -42,6 +42,7 @@ export default function QuoteRequestPage({
   return (
     <>
       <PageHero
+        heroKey="quote-request"
         eyebrow="Real quotes, from a person"
         title="Tell us the trip. We'll price it properly."
         description="For Umrah packages, family trips and group travel — Pakistan, India, Bangladesh, the Gulf, Turkey, Morocco and Southern Europe. A real person follows up with real pricing, not an instant automated number."

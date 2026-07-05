@@ -13,6 +13,8 @@ import { Badge } from '@/components/ui/badge';
 import { TravellerTipList } from '@/components/route/traveller-tip-list';
 import { JsonLd, breadcrumbSchema } from '@/components/seo/json-ld';
 import { siteConfig } from '@/lib/site-config';
+import { getAirportImage } from '@/lib/brand-images';
+import { HeroBackdrop } from '@/components/ui/hero-backdrop';
 
 export async function generateStaticParams() {
   return airports.map((a) => ({ slug: a.slug }));
@@ -53,7 +55,7 @@ export default function AirportPage({ params }: { params: { slug: string } }) {
         ])}
       />
       <section className="relative overflow-hidden bg-ink-900 py-16 sm:py-20">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(200,147,46,0.12),transparent_60%)]" />
+        <HeroBackdrop image={(() => { const img = getAirportImage(airport.slug); return img ? { ...img, alt: '' } : null; })()} />
         <span
           className="pointer-events-none absolute -right-6 -top-10 hidden select-none font-display text-[12rem] leading-none text-sand-50/[0.04] lg:block"
           aria-hidden="true"

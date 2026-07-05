@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { ArrowUpRight } from 'lucide-react';
 import { PageHero } from '@/components/sections/page-hero';
-import { DestinationMark } from '@/components/ui/destination-mark';
+import { DestinationVisual } from '@/components/ui/destination-visual';
 import { destinations } from '@/data/destinations';
 import { routes, getRoutesByDestination } from '@/data/routes';
 import { regionGroups } from '@/lib/site-config';
@@ -24,6 +24,7 @@ export default function DestinationsIndexPage() {
   return (
     <>
       <PageHero
+        heroKey="destinations"
         eyebrow="Destinations"
         title="Every destination, covered properly"
         description="Each city gets its own guide — routes from UK airports, booking windows, document guidance and the detail generic sites skip."
@@ -51,8 +52,9 @@ export default function DestinationsIndexPage() {
                       href={`/destinations/${dest.slug}`}
                       className="group flex flex-col overflow-hidden rounded-md border border-ink-100 shadow-card transition-all hover:-translate-y-1 hover:shadow-card-hover"
                     >
-                      <div className="h-36 overflow-hidden">
-                        <DestinationMark
+                      <div className="relative h-36 overflow-hidden">
+                        <DestinationVisual
+                          slug={dest.slug}
                           label={dest.city}
                           sublabel={dest.country}
                           className="transition-transform duration-500 group-hover:scale-[1.03]"

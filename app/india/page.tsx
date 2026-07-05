@@ -21,6 +21,7 @@ export default function IndiaHubPage() {
       airportsServed={['London Heathrow', 'London Gatwick', 'Birmingham', 'Manchester']}
       showFamilyVisitCallout
       quoteRegion="india"
+      heroKey="india"
       visaNote="UK passport holders require a visa for India. The e-Visa (tourist or business) is processed online and should be applied for at least 4 days before travel, though earlier is recommended during busy periods. Overseas Citizen of India (OCI) cardholders do not require a separate visa."
       practicalNotes={[
         {

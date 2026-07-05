@@ -3,6 +3,7 @@ import { routes, getRouteAirport, getRouteDestination } from '@/data/routes';
 import { destinations } from '@/data/destinations';
 import { getObservationsByRoute } from '@/data/fare-observations';
 import { routeWarnings } from '@/data/route-warnings';
+import { imageCoverage } from '@/lib/brand-images';
 
 /**
  * Founder Command Centre insights — every figure here is derived from the
@@ -170,17 +171,24 @@ function affiliateStatus(): FounderSection {
 
 // ── 4. Missing real photography ──────────────────────────────────────────
 function photographyStatus(): FounderSection {
-  // There is no photography pipeline at all — every destination renders the
-  // generated DestinationMark panel. This is a count of what needs photos,
-  // not a per-image audit.
+  // Counted from the same image manifest the site renders from — drop files
+  // into public/images/ (per docs/visual-identity.md) and these figures
+  // update on the next build.
+  const coverage = imageCoverage();
+  const destTotal = destinations.length;
+  const allCovered = coverage.destinations >= destTotal;
+
   return {
     id: 'photography',
     title: 'Missing real photography',
-    status: 'setup',
-    headline: `All ${destinations.length} destinations use the generated brand panel — no real photography exists yet.`,
+    status: allCovered ? 'ok' : coverage.total > 0 ? 'watch' : 'setup',
+    headline:
+      coverage.total === 0
+        ? `No real photography yet — all ${destTotal} destinations render the generated brand panel. The full shot list, prompts and naming convention live in docs/visual-identity.md.`
+        : `${coverage.destinations} of ${destTotal} destinations have real photography · ${coverage.heroes} hero backdrops · ${coverage.airports} of 11 airports · ${coverage.guides} guide images.`,
     items: [],
     action:
-      'This ships fine (deliberate decision — zero broken images), but photography converts better. Migration path is documented in lib/images.ts: licensed photos in /public/images/, swapped in per-callsite without changing card layouts.',
+      'Produce images per docs/visual-identity.md (production order at the end of that file) and drop them into public/images/{destinations,heroes,airports,guides}/ named by slug — no code changes needed.',
   };
 }
 

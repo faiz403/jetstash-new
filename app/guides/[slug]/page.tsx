@@ -7,6 +7,8 @@ import { Badge } from '@/components/ui/badge';
 import { LinkButton } from '@/components/ui/button';
 import { JsonLd, breadcrumbSchema } from '@/components/seo/json-ld';
 import { siteConfig } from '@/lib/site-config';
+import { getGuideImage } from '@/lib/brand-images';
+import { HeroBackdrop } from '@/components/ui/hero-backdrop';
 
 export async function generateStaticParams() {
   return guides.map((g) => ({ slug: g.slug }));
@@ -41,7 +43,7 @@ export default function GuidePage({ params }: { params: { slug: string } }) {
         ])}
       />
       <section className="relative overflow-hidden bg-ink-900 py-16 sm:py-20">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(200,147,46,0.12),transparent_60%)]" />
+        <HeroBackdrop image={getGuideImage(guide.slug)} />
         <div className="relative mx-auto max-w-content px-5 sm:px-8">
           <nav aria-label="Breadcrumb" className="mb-5 flex items-center gap-1.5 text-xs text-ink-400">
             <Link href="/" className="shrink-0 hover:text-brass-300">Home</Link>

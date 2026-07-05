@@ -11,6 +11,7 @@ import {
   PlugZap,
 } from 'lucide-react';
 import { getFounderSnapshot, type FounderItem, type FounderSection, type FounderStatus } from '@/lib/founder-insights';
+import { HeroBackdrop } from '@/components/ui/hero-backdrop';
 import { cn } from '@/lib/utils';
 
 /**
@@ -123,7 +124,7 @@ export default function FounderPage() {
   return (
     <>
       <section className="relative overflow-hidden bg-ink-900 py-12 sm:py-14">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(200,147,46,0.12),transparent_60%)]" />
+        <HeroBackdrop />
         <div className="relative mx-auto max-w-content px-5 sm:px-8">
           <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-brass-300">
             <Eye className="h-4 w-4" strokeWidth={2} />
