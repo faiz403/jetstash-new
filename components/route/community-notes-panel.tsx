@@ -19,7 +19,7 @@ export function CommunityNotesPanel({ notes }: { notes: CommunityNote[] }) {
           <MessageSquareText className="h-5 w-5" strokeWidth={2} />
         </div>
         <p className="mt-4 max-w-sm text-sm leading-relaxed text-ink-600">
-          No community notes recorded for this route yet — this section will fill in with real traveller experiences
+          No community notes recorded for this route yet. This section will fill in with real traveller experiences
           over time, not manufactured reviews.
         </p>
       </div>

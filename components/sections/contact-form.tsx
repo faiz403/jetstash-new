@@ -32,7 +32,7 @@ export function ContactForm() {
     return (
       <div className="mt-8 flex items-center gap-3 rounded-md border border-brass/30 bg-brass-50 p-5">
         <CheckCircle2 className="h-6 w-6 flex-shrink-0 text-brass-600" />
-        <p className="text-sm text-ink-700">Thanks — we&apos;ve got your message and will reply soon.</p>
+        <p className="text-sm text-ink-700">Thanks. We&apos;ve got your message and will reply soon.</p>
       </div>
     );
   }

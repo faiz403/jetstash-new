@@ -11,22 +11,22 @@ import { routes, getRouteAirport, getRouteDestination, getRouteAirlines } from '
 
 export const metadata: Metadata = {
   alternates: { canonical: '/business-class' },
-  title: 'Business Class Deals — Gulf & South Asia Routes from the UK',
+  title: 'Business Class Deals: Gulf & South Asia Routes from the UK',
   description:
     'Example business class fares from UK airports to Dubai, Doha, Delhi, Lahore and beyond, for illustration alongside live partner pricing.',
 };
 
 const cabinFeatures = [
-  { icon: <Bed className="h-4.5 w-4.5" strokeWidth={2} />, title: 'Flat-bed seating', body: 'Most South Asia and Gulf business cabins on this route set now offer fully flat beds on long-haul sectors — a genuine difference on an 8+ hour flight, not a marginal upgrade.' },
-  { icon: <UtensilsCrossed className="h-4.5 w-4.5" strokeWidth={2} />, title: 'Lounge access both ends', body: 'Business class tickets typically include lounge access at both the UK departure airport and the arrival hub — worth factoring into long layovers via Dubai or Doha.' },
-  { icon: <Briefcase className="h-4.5 w-4.5" strokeWidth={2} />, title: 'Higher baggage allowance', body: 'Business class allowances are usually 2–3x the economy limit — relevant for family-visit travel where return luggage often exceeds standard limits.' },
+  { icon: <Bed className="h-4.5 w-4.5" strokeWidth={2} />, title: 'Flat-bed seating', body: 'Most South Asia and Gulf business cabins on this route set now offer fully flat beds on long-haul sectors, a genuine difference on an 8+ hour flight, not a marginal upgrade.' },
+  { icon: <UtensilsCrossed className="h-4.5 w-4.5" strokeWidth={2} />, title: 'Lounge access both ends', body: 'Business class tickets typically include lounge access at both the UK departure airport and the arrival hub, worth factoring into long layovers via Dubai or Doha.' },
+  { icon: <Briefcase className="h-4.5 w-4.5" strokeWidth={2} />, title: 'Higher baggage allowance', body: 'Business class allowances are usually 2 to 3 times the economy limit, relevant for family-visit travel where return luggage often exceeds standard limits.' },
 ];
 
 const decisionPoints = [
   { title: 'Booking window matters less than economy', body: 'Business fares are less sensitive to the typical "book 6 weeks ahead" rule. Airline sales and seasonal corporate demand often matter more than how far ahead you book.' },
-  { title: 'Stopover routings can undercut direct fares', body: 'A one-stop business fare via the Gulf sometimes prices well below a direct service in the same cabin — worth comparing both, especially on Pakistan and India routes.' },
+  { title: 'Stopover routings can undercut direct fares', body: 'A one-stop business fare via the Gulf sometimes prices well below a direct service in the same cabin. Worth comparing both, especially on Pakistan and India routes.' },
   { title: 'Mixed-cabin bookings exist', body: 'Some fare combinations allow economy on one leg and business on a long-haul connecting flight, which can reduce the total cost compared with all-business itineraries.' },
-  { title: 'Worth it most on 7+ hour direct sectors', body: 'The case for business class is strongest on long, single-sector flights — Manchester–Dubai, Heathrow–Delhi. On routes with a short connecting hop, the economy-plus option on the long leg sometimes delivers similar comfort for less.' },
+  { title: 'Worth it most on 7+ hour direct sectors', body: 'The case for business class is strongest on long, single-sector flights: Manchester to Dubai, Heathrow to Delhi. On routes with a short connecting hop, the economy-plus option on the long leg sometimes delivers similar comfort for less.' },
 ];
 
 export default function BusinessClassPage() {
@@ -51,7 +51,7 @@ export default function BusinessClassPage() {
             Long-haul, done properly
           </h1>
           <p className="stagger-in stagger-3 mt-4 max-w-xl animate-fade-up text-lg leading-relaxed text-ink-300">
-            Business class fares to the Gulf, Pakistan and India move on different patterns to economy — fuel
+            Business class fares to the Gulf, Pakistan and India move on different patterns to economy. Fuel
             surcharges, seasonal corporate demand, and airline-specific sales all shift the picture. We track the
             routes that UK travellers actually book.
           </p>
@@ -83,7 +83,7 @@ export default function BusinessClassPage() {
         <div className="mx-auto max-w-content px-5 sm:px-8">
           <h2 className="font-display text-2xl text-ink-900 sm:text-3xl">Direct routes with an example business class fare</h2>
           <p className="mt-2 max-w-xl text-sm text-ink-500">
-            Direct sectors are where business class makes the strongest case — no cabin change at a connection, no risk of an aircraft swap downgrading the seat. Prices below are illustrative examples, not live quotes.
+            Direct sectors are where business class makes the strongest case: no cabin change at a connection, no risk of an aircraft swap downgrading the seat. Prices below are illustrative examples, not live quotes.
           </p>
           <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {businessCapableRoutes.map((route) => {
@@ -127,7 +127,7 @@ export default function BusinessClassPage() {
 
       <section className="bg-sand-50 py-14 sm:py-16">
         <div className="mx-auto max-w-content px-5 sm:px-8">
-          <h2 className="font-display text-2xl text-ink-900 sm:text-3xl">What moves the price — and when it's worth it</h2>
+          <h2 className="font-display text-2xl text-ink-900 sm:text-3xl">What moves the price, and when it's worth it</h2>
           <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {decisionPoints.map((item) => (
               <div key={item.title} className="rounded-md border border-ink-100 bg-white p-6">

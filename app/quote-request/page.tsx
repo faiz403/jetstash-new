@@ -7,9 +7,9 @@ import { isQuoteTripType, isQuoteRegion } from '@/lib/quote-request-options';
 import { siteConfig } from '@/lib/site-config';
 
 export const metadata: Metadata = {
-  title: 'Request a Quote — Umrah, Family & Group Travel',
+  title: 'Request a Quote: Umrah, Family & Group Travel',
   description:
-    'Request a real quote for an Umrah package, family trip or group booking to Pakistan, India, Bangladesh, the Gulf, Turkey, Morocco or Southern Europe — followed up by a person, not an automated price.',
+    'Request a real quote for an Umrah package, family trip or group booking to Pakistan, India, Bangladesh, the Gulf, Turkey, Morocco or Southern Europe, followed up by a person, not an automated price.',
   alternates: { canonical: `${siteConfig.url}/quote-request` },
 };
 
@@ -17,12 +17,12 @@ const steps = [
   {
     icon: ClipboardList,
     title: 'Tell us the trip',
-    body: 'Dates, group size, where you\'re flying from — the form takes a couple of minutes. Rough dates are fine.',
+    body: 'Dates, group size, where you\'re flying from. The form takes a couple of minutes, and rough dates are fine.',
   },
   {
     icon: Search,
     title: 'We research it properly',
-    body: 'Real availability on your actual dates — not a generic price band pulled from a lookup table.',
+    body: 'Real availability on your actual dates, not a generic price band pulled from a lookup table.',
   },
   {
     icon: UserRound,
@@ -45,7 +45,7 @@ export default function QuoteRequestPage({
         heroKey="quote-request"
         eyebrow="Real quotes, from a person"
         title="Tell us the trip. We'll price it properly."
-        description="For Umrah packages, family trips and group travel — Pakistan, India, Bangladesh, the Gulf, Turkey, Morocco and Southern Europe. A real person follows up with real pricing, not an instant automated number."
+        description="For Umrah packages, family trips and group travel: Pakistan, India, Bangladesh, the Gulf, Turkey, Morocco and Southern Europe. A real person follows up with real pricing, not an instant automated number."
       />
 
       <section className="border-b border-white/5 bg-ink-950 py-10">
@@ -75,7 +75,7 @@ export default function QuoteRequestPage({
             <Link href="/routes" className="font-medium text-ink-700 underline underline-offset-2 hover:text-brass-600">
               Browse the route guides
             </Link>{' '}
-            — no form required.
+            and no form is required.
           </p>
         </div>
       </section>

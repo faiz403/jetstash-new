@@ -8,7 +8,7 @@ import type { RegionGroup } from '@/data/destinations';
 
 export const metadata: Metadata = {
   alternates: { canonical: '/routes' },
-  title: 'All Routes — UK Airports to Pakistan, India & the Gulf',
+  title: 'All Routes: UK Airports to Pakistan, India & the Gulf',
   description: 'Every flight route covered by JetStash, with booking windows and peak periods specific to each airport-destination pairing.',
 };
 
@@ -43,7 +43,7 @@ export default function RoutesIndexPage() {
         heroKey="routes"
         eyebrow="Route guides"
         title="Every route has its own story"
-        description="Airport-to-destination pairings across Pakistan, India, the Gulf and Umrah — each with its own booking pattern, peak periods and honest direct-or-connecting answer."
+        description="Airport-to-destination pairings across Pakistan, India, the Gulf and Umrah, each with its own booking pattern, peak periods and honest direct-or-connecting answer."
         stats={[
           { value: String(routes.length), label: 'Route guides' },
           { value: String(directCount), label: 'Direct routes' },

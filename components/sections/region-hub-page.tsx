@@ -106,7 +106,7 @@ export function RegionHubPage({
                 <div>
                   <h2 className="font-display text-xl text-ink-900">Planning a family or group trip here?</h2>
                   <p className="mt-1 text-sm text-ink-500">
-                    Tell us your dates and group size — a person follows up with real pricing, not an automated number.
+                    Tell us your dates and group size, and a person follows up with real pricing, not an automated number.
                   </p>
                 </div>
               </div>
@@ -205,7 +205,7 @@ export function RegionHubPage({
               <h3 className="font-display text-xl text-ink-900">Visa & entry requirements</h3>
               <p className="mt-3 text-sm leading-relaxed text-ink-600">{visaNote}</p>
               <p className="mt-4 text-xs text-ink-400">
-                Requirements change — always confirm directly with the relevant embassy, high commission, or an
+                Requirements change. Always confirm directly with the relevant embassy, high commission, or an
                 authorised visa service before booking.
               </p>
               <LinkButton href="/contact" variant="ghost" size="sm" className="mt-5">

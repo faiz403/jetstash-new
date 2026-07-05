@@ -73,7 +73,7 @@ export default function OgImage({ params }: { params: { slug: string } }) {
         </div>
 
         <div style={{ display: 'flex', color: INK_LIGHT, fontSize: 24 }}>
-          Booking windows · Peak periods · Fare history — jetstash.co.uk
+          Booking windows · Peak periods · Fare history · jetstash.co.uk
         </div>
       </div>
     ),

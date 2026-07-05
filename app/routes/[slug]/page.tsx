@@ -45,7 +45,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   const dest = getRouteDestination(route);
   if (!airport || !dest) return {};
   return {
-    title: `${airport.city} to ${dest.city} Flights — Booking Windows & Peak Periods`,
+    title: `${airport.city} to ${dest.city} Flights: Booking Windows & Peak Periods`,
     description: `${route.intro.slice(0, 150)}...`,
     alternates: { canonical: `${siteConfig.url}/routes/${route.slug}` },
   };
@@ -129,7 +129,7 @@ export default function RoutePage({ params }: { params: { slug: string } }) {
               text={`${airport.city} to ${dest.city}: ${route.flightTime}, ${route.frequency}. ${route.bookingWindowNote}`}
             />
           </div>
-          <p className="mt-2.5 text-xs text-ink-400">Partner link — opens Skyscanner in a new tab. Booking there never costs you more.</p>
+          <p className="mt-2.5 text-xs text-ink-400">Partner link, opens Skyscanner in a new tab. Booking there never costs you more.</p>
         </div>
       </section>
 
@@ -202,7 +202,7 @@ export default function RoutePage({ params }: { params: { slug: string } }) {
             </h2>
             <p className="mt-2 max-w-2xl text-sm text-ink-500">
               {route.isDirect
-                ? 'Worth knowing even if you book the direct flight — useful as a fallback, and this is what the route looks like once the direct service is unavailable.'
+                ? 'Worth knowing even if you book the direct flight. Useful as a fallback, and this is what the route looks like once the direct service is unavailable.'
                 : 'No direct service currently exists on this route. Here is the realistic connecting pattern most travellers use.'}
             </p>
             <div className="mt-7 grid gap-5 sm:grid-cols-3">
@@ -237,7 +237,7 @@ export default function RoutePage({ params }: { params: { slug: string } }) {
             </div>
             <h2 className="mt-2 font-display text-2xl text-ink-900 sm:text-3xl">What's actually changed on this route</h2>
             <p className="mt-2 max-w-xl text-sm text-ink-500">
-              Real, dated changes to this specific route — not a generic "things to know" list.
+              Real, dated changes to this specific route, not a generic "things to know" list.
             </p>
             <div className="mt-8">
               <RouteTimeline events={timelineEvents} />
@@ -257,8 +257,8 @@ export default function RoutePage({ params }: { params: { slug: string } }) {
             </div>
             <h2 className="mt-2 font-display text-2xl text-ink-900 sm:text-3xl">Other UK airports for {dest.city}</h2>
             <p className="mt-2 max-w-xl text-sm text-ink-500">
-              If more than one airport is realistically within reach, comparing the total journey — not just the
-              headline fare — is usually worth the extra few minutes.
+              If more than one airport is realistically within reach, comparing the total journey, not just the
+              headline fare, is usually worth the extra few minutes.
             </p>
             <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {alternativeRoutes.map((altRoute) => {
@@ -291,7 +291,7 @@ export default function RoutePage({ params }: { params: { slug: string } }) {
         <div className="mx-auto max-w-content px-5 sm:px-8">
           <h2 className="font-display text-2xl text-ink-900 sm:text-3xl">Fare history & current example</h2>
           <p className="mt-2 max-w-xl text-sm text-ink-500">
-            Every fare below is an example checked on the date shown, not a live quote — the history is what makes
+            Every fare below is an example checked on the date shown, not a live quote. The history is what makes
             it worth tracking over time.
           </p>
           {fareObservations.length > 0 && (
@@ -370,7 +370,7 @@ export default function RoutePage({ params }: { params: { slug: string } }) {
           <div className="flex flex-col gap-4 rounded-md border border-ink-100 bg-sand-50 p-7 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h2 className="font-display text-xl text-ink-900">More about {dest.city}</h2>
-              <p className="mt-1 text-sm text-ink-500">Full destination guide, visa notes and all current fares — not just this one route.</p>
+              <p className="mt-1 text-sm text-ink-500">Full destination guide, visa notes and all current fares, not just this one route.</p>
             </div>
             <Link
               href={`/destinations/${dest.slug}`}

@@ -12,7 +12,7 @@ import { HeroBackdrop } from '@/components/ui/hero-backdrop';
 
 export const metadata: Metadata = {
   alternates: { canonical: '/family-holidays' },
-  title: 'Family Holidays — All-Inclusive & Long-Haul Trips from the UK',
+  title: 'Family Holidays: All-Inclusive & Long-Haul Trips from the UK',
   description:
     'Family holiday guidance for UK travellers, covering all-inclusive resorts in Turkey and the Mediterranean alongside long-haul family trips to the Gulf and South Asia.',
 };
@@ -85,7 +85,7 @@ export default function FamilyHolidaysPage() {
               </div>
               <div>
                 <h2 className="font-display text-xl text-ink-900">Planning a family or group trip?</h2>
-                <p className="mt-1 text-sm text-ink-500">Tell us where and when — a person follows up with real pricing for your group size.</p>
+                <p className="mt-1 text-sm text-ink-500">Tell us where and when, and a person follows up with real pricing for your group size.</p>
               </div>
             </div>
             <LinkButton href="/quote-request?tripType=family-trip" size="md" className="shrink-0">
@@ -123,11 +123,11 @@ export default function FamilyHolidaysPage() {
               },
               {
                 title: 'All-inclusive means different things',
-                body: 'Confirm exactly what is and isn\'t included — some "all-inclusive" resorts charge separately for water sports, kids\' clubs, or à la carte restaurants.',
+                body: 'Confirm exactly what is and isn\'t included. Some "all-inclusive" resorts charge separately for water sports, kids\' clubs, or à la carte restaurants.',
               },
               {
                 title: 'Direct flights save more than money',
-                body: 'For families, the value of a direct flight over a connection often outweighs a modest price difference — fewer transition points means fewer opportunities for things to go wrong.',
+                body: 'For families, the value of a direct flight over a connection often outweighs a modest price difference. Fewer transition points means fewer opportunities for things to go wrong.',
               },
             ].map((item) => (
               <div key={item.title} className="rounded-md border border-ink-100 bg-sand-50 p-6">

@@ -52,9 +52,9 @@ export const routes: Route[] = [
     airlineSlugs: ['pia'],
     isDirect: true,
     intro:
-      'The flagship Pakistan corridor from the North of England. PIA runs direct Manchester–Lahore services, making it the most convenient option for the North West\'s Punjabi community — no Gulf connection, no extra layover, no lost luggage transfer risk.',
+      'The flagship Pakistan corridor from the North of England. PIA runs direct Manchester to Lahore services, and for the North West\'s Punjabi community it\'s usually the most convenient option going: no Gulf connection, no extra layover, no risk of luggage going missing at a transfer.',
     bookingWindowNote:
-      'Outside Eid and the summer school holidays, fares hold reasonably steady 8–10 weeks out. Within 3 weeks of Eid, expect a sharp jump — book that window 3+ months ahead if your dates are fixed.',
+      'Outside Eid and the summer school holidays, fares hold reasonably steady 8 to 10 weeks out. Within 3 weeks of Eid, expect a sharp jump, so book that window at least 3 months ahead if your dates are fixed.',
     peakPeriodIds: ['eid-al-fitr', 'eid-al-adha', 'uk-summer-holidays', 'wedding-season'],
   },
   {
@@ -66,9 +66,9 @@ export const routes: Route[] = [
     airlineSlugs: ['pia'],
     isDirect: true,
     intro:
-      'Manchester–Islamabad direct services are the practical choice for families based across Yorkshire, Lancashire and the wider North West heading to Punjab or onward to Khyber Pakhtunkhwa.',
+      'Manchester to Islamabad direct services are the practical choice for families based across Yorkshire, Lancashire and the wider North West heading to Punjab or onward to Khyber Pakhtunkhwa.',
     bookingWindowNote:
-      'Similar pattern to the Lahore route — stable pricing most of the year, sharp rises tight to Eid and major family events. The route sells out faster than Lahore in peak weeks due to fewer weekly frequencies.',
+      'The pattern is similar to the Lahore route: stable pricing most of the year, then sharp rises close to Eid and major family events. This route also tends to sell out faster than Lahore in peak weeks, simply because it runs fewer weekly frequencies.',
     peakPeriodIds: ['eid-al-fitr', 'eid-al-adha', 'uk-summer-holidays'],
   },
   {
@@ -80,9 +80,9 @@ export const routes: Route[] = [
     airlineSlugs: ['virgin-atlantic', 'british-airways', 'air-india'],
     isDirect: true,
     intro:
-      'Heathrow–Delhi is the busiest UK–India corridor, with genuine airline competition keeping fares more elastic than routes served by a single carrier. Worth comparing across all three direct operators rather than booking the first result.',
+      'Heathrow to Delhi is the busiest UK to India corridor, and genuine airline competition keeps fares more responsive here than on routes served by a single carrier. It\'s worth comparing all three direct operators rather than booking the first result you see.',
     bookingWindowNote:
-      'Diwali and the December–January window are the two demand spikes that matter most. Outside those, February–April and September–October are reliably the best value months.',
+      'Diwali and the December to January window are the two demand spikes that matter most. Outside those, February to April and September to October are reliably the best value months.',
     peakPeriodIds: ['diwali', 'christmas-new-year', 'uk-summer-holidays'],
   },
   {
@@ -94,9 +94,9 @@ export const routes: Route[] = [
     airlineSlugs: ['air-india'],
     isDirect: true,
     intro:
-      'For the Midlands\' large Punjabi community, Birmingham\'s direct Air India service to Amritsar avoids the otherwise-necessary Delhi connection — the most direct route to the Golden Temple and rural Punjab, running 3 times a week rather than daily.',
+      'For the Midlands\' large Punjabi community, Birmingham\'s direct Air India service to Amritsar avoids the Delhi connection that would otherwise be necessary. It\'s the most direct route to the Golden Temple and rural Punjab, though it runs 3 times a week rather than daily.',
     bookingWindowNote:
-      'This is a reduced-frequency scheduled service, not a daily one — confirm your travel dates fall on an active flight day before booking, and have a Delhi or Gatwick-connecting fallback priced as backup for off-schedule dates.',
+      'This is a reduced-frequency scheduled service, not a daily one, so confirm your travel dates fall on an active flight day before booking. It\'s also worth pricing a Delhi or Gatwick-connecting fallback in case your preferred dates don\'t line up.',
     peakPeriodIds: ['baisakhi', 'diwali', 'uk-summer-holidays'],
   },
   {
@@ -108,9 +108,9 @@ export const routes: Route[] = [
     airlineSlugs: ['emirates'],
     isDirect: true,
     intro:
-      'Emirates\' daily Manchester–Dubai service is one of the most reliably priced long-haul routes from the North — strong competition from connecting Gulf carriers via other UK airports keeps fares honest.',
+      'Emirates\' daily Manchester to Dubai service is one of the more reliably priced long-haul routes from the North, helped by strong competition from connecting Gulf carriers flying out of other UK airports.',
     bookingWindowNote:
-      'Less booking-window sensitive than South Asia routes. Winter (UK school holidays) carries the clearest premium; outside that, fares are comparatively stable.',
+      'Less sensitive to booking window than the South Asia routes. Winter, when UK schools are off, carries the clearest premium; outside that, fares are comparatively stable.',
     peakPeriodIds: ['christmas-new-year', 'february-half-term', 'easter-holidays'],
   },
   {
@@ -122,9 +122,9 @@ export const routes: Route[] = [
     airlineSlugs: ['qatar-airways'],
     isDirect: true,
     intro:
-      'Qatar Airways operates this as a high-frequency hub route — most UK travellers heading further afield through Doha will pass through here, but it also stands alone as a city break or family stopover.',
+      'Qatar Airways runs this as a high-frequency hub route. Most UK travellers heading further afield through Doha will pass through here, though it also stands on its own as a city break or family stopover.',
     bookingWindowNote:
-      'High frequency means more fare classes open at once — comparing departure times on the same day can surface meaningfully different prices. Ramadan shifts the pace of travel through this hub but does not reliably move the price the way it does on Jeddah/Madinah routes.',
+      'High frequency means more fare classes open at once, so comparing departure times on the same day can turn up meaningfully different prices. Ramadan shifts the pace of travel through this hub, but it doesn\'t move the price the way it does on the Jeddah and Madinah routes.',
     peakPeriodIds: ['uk-summer-holidays', 'christmas-new-year', 'february-half-term', 'easter-holidays'],
   },
   {
@@ -138,7 +138,7 @@ export const routes: Route[] = [
     intro:
       'The primary direct Umrah arrival route from the UK. Most flight-inclusive Umrah packages are built around this exact corridor, with onward ground transport to Makkah.',
     bookingWindowNote:
-      'Ramadan and the weeks immediately preceding Hajj season are this route\'s steepest pricing windows by a distance. Outside those windows, pricing is comparatively settled.',
+      'Ramadan and the weeks immediately before Hajj season are by far the steepest pricing windows on this route. Outside them, pricing is comparatively settled.',
     peakPeriodIds: ['ramadan', 'pre-hajj', 'school-half-terms-umrah'],
   },
   {
@@ -150,9 +150,9 @@ export const routes: Route[] = [
     airlineSlugs: ['pia'],
     isDirect: true,
     intro:
-      'PIA operates direct Manchester–Karachi services alongside its Lahore and Islamabad routes, giving the North of England a genuine third direct option into Pakistan\'s commercial capital and Sindh province.',
+      'PIA operates direct Manchester to Karachi services alongside its Lahore and Islamabad routes, giving the North of England a genuine third direct option into Pakistan\'s commercial capital and Sindh province.',
     bookingWindowNote:
-      'PIA\'s UK network has expanded significantly through 2025–26 after a long suspension, with frequency still settling. Confirm the current weekly schedule before assuming daily availability, and book 2–3 months ahead of Eid or wedding season.',
+      'PIA\'s UK network has expanded significantly through 2025 and 2026 after a long suspension, and frequency is still settling. Confirm the current weekly schedule before assuming daily availability, and book 2 to 3 months ahead of Eid or wedding season.',
     peakPeriodIds: ['eid-al-fitr', 'eid-al-adha', 'wedding-season', 'uk-summer-holidays'],
   },
   {
@@ -164,9 +164,9 @@ export const routes: Route[] = [
     airlineSlugs: ['pia'],
     isDirect: true,
     intro:
-      'Birmingham\'s direct PIA service to Lahore gives the Midlands\' large Punjabi community a non-stop option alongside the existing Islamabad route, avoiding a drive to Manchester or a Gulf connection.',
+      'Birmingham\'s direct PIA service to Lahore gives the Midlands\' large Punjabi community a non-stop option alongside the existing Islamabad route, sparing you either a drive to Manchester or a Gulf connection.',
     bookingWindowNote:
-      'This direct service is newer and runs at lower weekly frequency than the Manchester equivalent — confirm seat availability well ahead of Eid or wedding season, and have a Gulf-connecting fare priced as a fallback.',
+      'This direct service is newer and runs at a lower weekly frequency than the Manchester equivalent, so confirm seat availability well ahead of Eid or wedding season and have a Gulf-connecting fare priced as a fallback.',
     peakPeriodIds: ['eid-al-fitr', 'eid-al-adha', 'wedding-season', 'uk-summer-holidays'],
   },
   {
@@ -178,9 +178,9 @@ export const routes: Route[] = [
     airlineSlugs: ['pia'],
     isDirect: true,
     intro:
-      'Birmingham–Islamabad is PIA\'s longest-established direct route from the Midlands, predating the airline\'s newer Lahore service, and remains the most reliable non-stop option for Midlands-based families.',
+      'Birmingham to Islamabad is PIA\'s longest-established direct route from the Midlands, predating the airline\'s newer Lahore service, and it remains the most reliable non-stop option for Midlands-based families.',
     bookingWindowNote:
-      'As the more established of Birmingham\'s two direct Pakistan routes, this one tends to hold marginally more availability during peak weeks than the newer Lahore service — still worth booking 2–3 months ahead of Eid.',
+      'As the more established of Birmingham\'s two direct Pakistan routes, this one tends to hold marginally more availability during peak weeks than the newer Lahore service, though it\'s still worth booking 2 to 3 months ahead of Eid.',
     peakPeriodIds: ['eid-al-fitr', 'eid-al-adha', 'uk-summer-holidays'],
   },
   {
@@ -192,9 +192,9 @@ export const routes: Route[] = [
     airlineSlugs: ['air-india', 'etihad-airways'],
     isDirect: false,
     intro:
-      'There is no current direct service from Leeds Bradford to Amritsar — the most practical options connect via Delhi with Air India or via Abu Dhabi with Etihad. Birmingham\'s seasonal direct service is worth comparing against the cost and time of a Leeds Bradford connection.',
+      'There is no current direct service from Leeds Bradford to Amritsar. The most practical options connect via Delhi with Air India or via Abu Dhabi with Etihad, and Birmingham\'s seasonal direct service is worth weighing against the cost and time of a Leeds Bradford connection.',
     bookingWindowNote:
-      'Because this route always involves a connection, total journey time and layover length matter as much as headline price — a cheaper fare with a long overnight layover is not always the better choice for family travel with children or elderly relatives.',
+      'Because this route always involves a connection, total journey time and layover length matter as much as the headline price. A cheaper fare with a long overnight layover isn\'t always the better choice for family travel with children or elderly relatives.',
     peakPeriodIds: ['baisakhi', 'diwali', 'uk-summer-holidays'],
   },
   {
@@ -206,9 +206,9 @@ export const routes: Route[] = [
     airlineSlugs: ['emirates', 'qatar-airways'],
     isDirect: false,
     intro:
-      'Leeds Bradford has no current confirmed direct service to Islamabad — claims of a direct route have circulated periodically but have not materialised into a stable, ongoing schedule. The realistic options are a Gulf-connecting itinerary via Dubai or Doha, or driving to Manchester for PIA\'s direct service.',
+      'Leeds Bradford has no current confirmed direct service to Islamabad. Claims of a direct route have circulated periodically, but none have turned into a stable, ongoing schedule. The realistic options are a Gulf-connecting itinerary via Dubai or Doha, or driving to Manchester for PIA\'s direct service.',
     bookingWindowNote:
-      'Always compare the total cost and time of a Leeds Bradford Gulf-connection against driving to Manchester — for many Bradford-based travellers, Manchester\'s direct PIA service ends up both cheaper and faster once the full journey is accounted for.',
+      'Always compare the total cost and time of a Leeds Bradford Gulf connection against driving to Manchester. For many Bradford-based travellers, Manchester\'s direct PIA service ends up both cheaper and faster once the whole journey is accounted for.',
     peakPeriodIds: ['eid-al-fitr', 'eid-al-adha', 'uk-summer-holidays'],
   },
   {
@@ -220,9 +220,9 @@ export const routes: Route[] = [
     airlineSlugs: ['british-airways', 'air-india', 'virgin-atlantic'],
     isDirect: true,
     intro:
-      'Heathrow–Mumbai has genuine multi-carrier competition, with British Airways, Air India and Virgin Atlantic all operating direct services — comparing all three rather than booking the first result is consistently worthwhile.',
+      'Heathrow to Mumbai has genuine multi-carrier competition, with British Airways, Air India and Virgin Atlantic all operating direct services. Comparing all three rather than booking the first result is consistently worthwhile.',
     bookingWindowNote:
-      'Less booking-window sensitive than the Punjab and Pakistan routes — Diwali and the December–January window remain the two periods where fares rise sharply, with February–April and September–October offering the most reliable value.',
+      'Less sensitive to booking window than the Punjab and Pakistan routes. Diwali and the December to January window remain the two periods when fares rise sharply, and February to April and September to October offer the most reliable value.',
     peakPeriodIds: ['diwali', 'christmas-new-year', 'uk-summer-holidays'],
   },
   {
@@ -234,9 +234,9 @@ export const routes: Route[] = [
     airlineSlugs: ['qatar-airways'],
     isDirect: true,
     intro:
-      'Qatar Airways runs one of its busiest European direct services on this route, giving the North of England genuine daily access to Doha without travelling to London first — useful both as a destination and as a Gulf-connecting gateway onward.',
+      'Qatar Airways runs one of its busiest European direct services on this route, giving the North of England genuine daily access to Doha without having to travel to London first. It works both as a destination and as a Gulf-connecting gateway onward.',
     bookingWindowNote:
-      'High frequency keeps this route comparatively well-priced year-round. UK school holidays carry the clearest premium; outside those windows, fares are more stable than the South Asia routes.',
+      'High frequency keeps this route comparatively well priced year-round. UK school holidays carry the clearest premium; outside those windows, fares are more stable than on the South Asia routes.',
     peakPeriodIds: ['christmas-new-year', 'february-half-term', 'easter-holidays'],
   },
   {
@@ -248,7 +248,7 @@ export const routes: Route[] = [
     airlineSlugs: ['qatar-airways'],
     isDirect: false,
     intro:
-      'There is no current direct Manchester–Jeddah service — Qatar Airways\' connecting itinerary via Doha is the most consistent option, using the same daily Manchester–Doha service that operates as a standalone route in its own right.',
+      'There is no current direct Manchester to Jeddah service. Qatar Airways\' connecting itinerary via Doha is the most consistent option, using the same daily Manchester to Doha service that operates as a standalone route in its own right.',
     bookingWindowNote:
       'Because the connection runs through Doha on an already high-frequency service, availability is generally good outside Ramadan and the weeks immediately before Hajj season, when both legs see sharp demand spikes.',
     peakPeriodIds: ['ramadan', 'pre-hajj', 'school-half-terms-umrah'],
@@ -262,9 +262,9 @@ export const routes: Route[] = [
     airlineSlugs: ['turkish-airlines', 'qatar-airways', 'saudia'],
     isDirect: false,
     intro:
-      'Birmingham has no direct Madinah service — Turkish Airlines\' connection via Istanbul is the most frequently used option, though Qatar Airways via Doha and Saudia via Jeddah are both worth comparing, particularly for Umrah itineraries that already include a Jeddah leg.',
+      'Birmingham has no direct Madinah service. Turkish Airlines\' connection via Istanbul is the most frequently used option, though Qatar Airways via Doha and Saudia via Jeddah are both worth comparing, particularly for Umrah itineraries that already include a Jeddah leg.',
     bookingWindowNote:
-      'For Umrah travel specifically, compare flying into Jeddah and travelling overland to Madinah against a direct-to-Madinah connection — the total journey time difference is often smaller than expected, and Jeddah routings sometimes price lower.',
+      'For Umrah travel specifically, compare flying into Jeddah and travelling overland to Madinah against a direct-to-Madinah connection. The total journey time difference is often smaller than expected, and Jeddah routings sometimes price lower.',
     peakPeriodIds: ['ramadan', 'pre-hajj', 'school-half-terms-umrah'],
   },
   {
@@ -276,9 +276,9 @@ export const routes: Route[] = [
     airlineSlugs: ['emirates'],
     isDirect: true,
     intro:
-      'Emirates\' daily Glasgow–Dubai service is Scotland\'s longest-established direct long-haul route, giving the West of Scotland genuine non-stop access to the Gulf without travelling south.',
+      'Emirates\' daily Glasgow to Dubai service is Scotland\'s longest-established direct long-haul route, giving the West of Scotland genuine non-stop access to the Gulf without travelling south first.',
     bookingWindowNote:
-      'Less booking-window sensitive than the South Asia routes. UK school holidays and the winter months carry the clearest premium; outside those, fares are comparatively stable year-round.',
+      'Less sensitive to booking window than the South Asia routes. UK school holidays and the winter months carry the clearest premium; outside those, fares are comparatively stable year-round.',
     peakPeriodIds: ['christmas-new-year', 'february-half-term', 'easter-holidays'],
   },
   {
@@ -290,9 +290,9 @@ export const routes: Route[] = [
     airlineSlugs: ['emirates'],
     isDirect: true,
     intro:
-      'Emirates resumed a daily direct Edinburgh–Dubai service after a four-year gap, giving Scotland\'s capital a long-haul gateway independent of Glasgow — both cities now run daily Emirates services, so comparing departure times across the two is genuinely worthwhile.',
+      'Emirates resumed a daily direct Edinburgh to Dubai service after a four-year gap, giving Scotland\'s capital a long-haul gateway independent of Glasgow. Both cities now run daily Emirates services, so it\'s genuinely worth comparing departure times across the two.',
     bookingWindowNote:
-      'As one of two daily Scotland–Dubai options, fares here are comparatively stable outside UK school holidays. Worth comparing against the Glasgow service on the same dates before booking, since pricing can differ between the two.',
+      'As one of two daily Scotland to Dubai options, fares here are comparatively stable outside UK school holidays. Worth comparing against the Glasgow service on the same dates before booking, since pricing can differ between the two.',
     peakPeriodIds: ['christmas-new-year', 'february-half-term', 'easter-holidays'],
   },
   {
@@ -304,7 +304,7 @@ export const routes: Route[] = [
     airlineSlugs: ['emirates'],
     isDirect: true,
     intro:
-      'Emirates\' daily Newcastle–Dubai service gives the North East genuine long-haul access to the Gulf without the drive to Manchester — useful both as a destination in its own right and as a connecting gateway onward to South Asia.',
+      'Emirates\' daily Newcastle to Dubai service gives the North East genuine long-haul access to the Gulf without the drive to Manchester, and it doubles as a connecting gateway onward to South Asia.',
     bookingWindowNote:
       'Comparatively stable pricing outside UK school holidays. For onward South Asia connections via Dubai, book the connecting leg as part of the same itinerary rather than as separate tickets, to protect against missed-connection risk.',
     peakPeriodIds: ['christmas-new-year', 'february-half-term', 'easter-holidays'],
@@ -318,9 +318,9 @@ export const routes: Route[] = [
     airlineSlugs: ['air-india'],
     isDirect: true,
     intro:
-      'Air India\'s non-stop Gatwick–Ahmedabad service is the only direct UK route into Gujarat, launched specifically to serve the UK\'s large Gujarati community without requiring a Delhi or Mumbai connection. It runs 3 times a week, not daily.',
+      'Air India\'s non-stop Gatwick to Ahmedabad service is the only direct UK route into Gujarat, launched specifically to serve the UK\'s large Gujarati community without requiring a Delhi or Mumbai connection. It runs 3 times a week, not daily.',
     bookingWindowNote:
-      'Because this is a reduced-frequency route rather than a daily one, confirm your travel dates align with an active flight day before booking. Navratri and Diwali both see sharp demand spikes on this specific service, more so than on higher-frequency Delhi or Mumbai routes.',
+      'Because this is a reduced-frequency route rather than a daily one, confirm your travel dates align with an active flight day before booking. Navratri and Diwali both see sharp demand spikes on this specific service, more so than on the higher-frequency Delhi or Mumbai routes.',
     peakPeriodIds: ['navratri', 'diwali', 'uk-summer-holidays'],
   },
   {
@@ -332,7 +332,7 @@ export const routes: Route[] = [
     airlineSlugs: ['air-india'],
     isDirect: true,
     intro:
-      'Alongside Birmingham, Air India also runs a direct Gatwick–Amritsar service — worth comparing against the Birmingham route on whichever specific dates and times suit your trip, since the two don\'t always run on the same days of the week.',
+      'Alongside Birmingham, Air India also runs a direct Gatwick to Amritsar service. It\'s worth comparing against the Birmingham route on whichever specific dates and times suit your trip, since the two don\'t always fly on the same days of the week.',
     bookingWindowNote:
       'Like the Birmingham service, this runs 3 times a week rather than daily. Confirm the specific flight day before booking, and compare both Gatwick and Birmingham schedules for your travel dates rather than assuming either is guaranteed to fly on your preferred day.',
     peakPeriodIds: ['baisakhi', 'diwali', 'uk-summer-holidays'],
@@ -342,13 +342,13 @@ export const routes: Route[] = [
     airportSlug: 'manchester',
     destinationSlug: 'delhi',
     flightTime: '9h 30m direct (currently)',
-    frequency: 'Currently 3–4x weekly direct, reducing — confirm before booking',
+    frequency: 'Currently 3 to 4x weekly direct, reducing; confirm before booking',
     airlineSlugs: ['indigo'],
     isDirect: true,
     intro:
-      'IndiGo launched the first non-stop Manchester–Delhi service in 25 years in November 2025, flying a two-class Boeing 787-9 leased from Norse Atlantic Airways. It is currently the only airline flying this route direct, and frequency has already been reduced once on operational grounds — always confirm the live schedule rather than assuming a fixed weekly pattern.',
+      'IndiGo launched the first non-stop Manchester to Delhi service in 25 years in November 2025, flying a two-class Boeing 787-9 leased from Norse Atlantic Airways. It\'s currently the only airline flying this route direct, and frequency has already been reduced once on operational grounds, so always confirm the live schedule rather than assuming a fixed weekly pattern.',
     bookingWindowNote:
-      'Because this is a single-airline direct service with announced frequency cuts, treat any specific date as unconfirmed until checked. If your dates are flexible, compare the direct fare against the well-established one-stop Gulf-carrier options below before committing — the direct service is not necessarily the cheaper or more reliable choice on every date.',
+      'Because this is a single-airline direct service with announced frequency cuts, treat any specific date as unconfirmed until checked. If your dates are flexible, compare the direct fare against the well-established one-stop Gulf-carrier options below before committing. The direct service isn\'t necessarily the cheaper or more reliable choice on every date.',
     peakPeriodIds: ['diwali', 'christmas-new-year', 'uk-summer-holidays'],
     directServiceEndDate: '2026-09-01',
     directServiceEndNote:
@@ -357,7 +357,7 @@ export const routes: Route[] = [
       typicalStops: 1,
       hubAirports: ['Dubai', 'Doha', 'Abu Dhabi', 'Istanbul'],
       typicalAirlines: ['Emirates', 'Qatar Airways', 'Etihad Airways', 'Turkish Airlines', 'British Airways'],
-      typicalJourneyTime: '12–15h total, depending on layover length',
+      typicalJourneyTime: '12 to 15h total, depending on layover length',
     },
   },
   {
@@ -365,13 +365,13 @@ export const routes: Route[] = [
     airportSlug: 'manchester',
     destinationSlug: 'mumbai',
     flightTime: '9h 45m direct (currently)',
-    frequency: 'Currently around 4x weekly direct — confirm before booking',
+    frequency: 'Currently around 4x weekly direct; confirm before booking',
     airlineSlugs: ['indigo'],
     isDirect: true,
     intro:
-      'IndiGo\'s Mumbai–Manchester service, launched July 2025, was the airline\'s first ever long-haul route and remains the only non-stop link between Manchester and India\'s financial capital. As with the Delhi route, it is a single-airline direct service rather than a long-established one, so scheduling has already shifted once since launch.',
+      'IndiGo\'s Mumbai to Manchester service, launched in July 2025, was the airline\'s first ever long-haul route and remains the only non-stop link between Manchester and India\'s financial capital. As with the Delhi route, it\'s a single-airline direct service rather than a long-established one, and scheduling has already shifted once since launch.',
     bookingWindowNote:
-      'Treat the direct schedule as worth double-checking close to your travel date rather than assumed fixed. The well-established one-stop Gulf-carrier options below run far more frequently and are worth comparing on price and convenience, not just treating as a fallback.',
+      'Treat the direct schedule as worth double-checking close to your travel date rather than assumed fixed. The well-established one-stop Gulf-carrier options below run far more frequently and are worth comparing on price and convenience, not just kept as a fallback.',
     peakPeriodIds: ['diwali', 'christmas-new-year', 'uk-summer-holidays'],
     directServiceEndDate: '2026-09-01',
     directServiceEndNote:
@@ -380,7 +380,7 @@ export const routes: Route[] = [
       typicalStops: 1,
       hubAirports: ['Dubai', 'Doha', 'Abu Dhabi'],
       typicalAirlines: ['Emirates', 'Qatar Airways', 'Etihad Airways', 'British Airways'],
-      typicalJourneyTime: '12–14h total, depending on layover length',
+      typicalJourneyTime: '12 to 14h total, depending on layover length',
     },
   },
   {
@@ -392,15 +392,15 @@ export const routes: Route[] = [
     airlineSlugs: ['qatar-airways', 'indigo', 'british-airways', 'air-india'],
     isDirect: false,
     intro:
-      'There is no direct Manchester–Amritsar service. Qatar Airways\' one-stop routing via Doha is the most consistently quoted fastest option, at around 13h 20m total — other one-stop combinations via Delhi or London add meaningfully to journey time. Birmingham and Gatwick both have genuine direct Amritsar services, worth comparing against a Manchester connection if either is within reasonable travelling distance.',
+      'There is no direct Manchester to Amritsar service. Qatar Airways\' one-stop routing via Doha is the most consistently quoted fastest option, at around 13h 20m total, though other one-stop combinations via Delhi or London add meaningfully to journey time. Birmingham and Gatwick both have genuine direct Amritsar services, worth comparing against a Manchester connection if either is within reasonable travelling distance.',
     bookingWindowNote:
-      'Because every option here involves a connection, total journey time and layover length matter as much as headline price. Compare the Doha one-stop against driving to Birmingham or Gatwick for their direct services, particularly for family travel with young children or elderly relatives.',
+      'Because every option here involves a connection, total journey time and layover length matter as much as the headline price. Compare the Doha one-stop against driving to Birmingham or Gatwick for their direct services, particularly for family travel with young children or elderly relatives.',
     peakPeriodIds: ['baisakhi', 'diwali', 'uk-summer-holidays'],
     connectingAlternative: {
       typicalStops: 1,
       hubAirports: ['Doha', 'Delhi', 'London Heathrow'],
       typicalAirlines: ['Qatar Airways', 'IndiGo', 'British Airways'],
-      typicalJourneyTime: '13–15h total, depending on the connection',
+      typicalJourneyTime: '13 to 15h total, depending on the connection',
     },
   },
   {
@@ -412,15 +412,15 @@ export const routes: Route[] = [
     airlineSlugs: ['qatar-airways', 'etihad-airways', 'emirates'],
     isDirect: false,
     intro:
-      'There is no direct Manchester–Ahmedabad service — Doha is the most commonly used one-stop connection, chosen on the large majority of one-stop itineraries booked on this route, with Abu Dhabi and Dubai as the other realistic Gulf-hub alternatives. London Gatwick has the UK\'s only direct service to Ahmedabad, worth comparing against a Manchester connection for Gujarati heritage travellers based in the North West.',
+      'There is no direct Manchester to Ahmedabad service. Doha is the most commonly used one-stop connection, chosen on the large majority of one-stop itineraries booked on this route, with Abu Dhabi and Dubai as the other realistic Gulf-hub alternatives. London Gatwick has the UK\'s only direct service to Ahmedabad, worth comparing against a Manchester connection for Gujarati heritage travellers based in the North West.',
     bookingWindowNote:
-      'Compare a Gulf one-stop departing Manchester against the cost and time of travelling to Gatwick for Air India\'s direct service — for some North West travellers the direct Gatwick option works out better overall once the full journey is accounted for, particularly around Navratri and Diwali when both routes see sharp demand spikes.',
+      'Compare a Gulf one-stop departing Manchester against the cost and time of travelling to Gatwick for Air India\'s direct service. For some North West travellers the direct Gatwick option works out better overall once the whole journey is accounted for, particularly around Navratri and Diwali when both routes see sharp demand spikes.',
     peakPeriodIds: ['navratri', 'diwali', 'uk-summer-holidays'],
     connectingAlternative: {
       typicalStops: 1,
       hubAirports: ['Doha', 'Abu Dhabi', 'Dubai'],
       typicalAirlines: ['Qatar Airways', 'Etihad Airways', 'Emirates'],
-      typicalJourneyTime: '13–16h total, depending on the connection',
+      typicalJourneyTime: '13 to 16h total, depending on the connection',
     },
   },
   {
@@ -432,15 +432,15 @@ export const routes: Route[] = [
     airlineSlugs: ['turkish-airlines', 'saudia', 'egyptair', 'royal-jordanian'],
     isDirect: false,
     intro:
-      'Manchester once had a direct Saudia service to Madinah, but it does not currently operate — Turkish Airlines\' one-stop routing via Istanbul is now the fastest realistic option, at around 9h 15m total. EgyptAir via Cairo and Royal Jordanian via Amman are the other commonly used alternatives.',
+      'Manchester once had a direct Saudia service to Madinah, but it doesn\'t currently operate. Turkish Airlines\' one-stop routing via Istanbul is now the fastest realistic option, at around 9h 15m total. EgyptAir via Cairo and Royal Jordanian via Amman are the other commonly used alternatives.',
     bookingWindowNote:
-      'For Umrah travel specifically, compare flying into Jeddah and travelling overland to Madinah against a direct-to-Madinah connection — Manchester\'s Jeddah service runs through the same Doha-based connection pattern as the wider network, and the total journey time difference is often smaller than expected.',
+      'For Umrah travel specifically, compare flying into Jeddah and travelling overland to Madinah against a direct-to-Madinah connection. Manchester\'s Jeddah service runs through the same Doha-based connection pattern as the wider network, and the total journey time difference is often smaller than expected.',
     peakPeriodIds: ['ramadan', 'pre-hajj', 'school-half-terms-umrah'],
     connectingAlternative: {
       typicalStops: 1,
       hubAirports: ['Istanbul', 'Cairo', 'Amman'],
       typicalAirlines: ['Turkish Airlines', 'EgyptAir', 'Royal Jordanian'],
-      typicalJourneyTime: '9–11h total, depending on the connection',
+      typicalJourneyTime: '9 to 11h total, depending on the connection',
     },
   },
 ];

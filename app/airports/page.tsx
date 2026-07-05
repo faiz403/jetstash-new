@@ -20,7 +20,7 @@ export default function AirportsIndexPage() {
         heroKey="airports"
         eyebrow="UK airports"
         title="Start from the airport nearest you"
-        description="Every fare on JetStash is tied to a real UK departure airport — because the right route from Manchester is rarely the right route from Heathrow."
+        description="Every fare on JetStash is tied to a real UK departure airport, because the right route from Manchester is rarely the right route from Heathrow."
         stats={[
           { value: String(airports.length), label: 'UK airports' },
           { value: String(directLongHaulCount), label: 'With direct long-haul' },

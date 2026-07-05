@@ -36,7 +36,7 @@ export function FareHistoryPanel({ observations }: { observations: FareObservati
         ))}
       </div>
       <p className="border-t border-ink-100 px-6 py-3 text-xs text-ink-400">
-        Every figure above is an example fare recorded manually at the date shown — not a live price feed. Use the
+        Every figure above is an example fare recorded manually at the date shown, not a live price feed. Use the
         partner link below to check the current price.
       </p>
     </div>

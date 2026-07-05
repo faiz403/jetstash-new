@@ -27,7 +27,7 @@ export default function DestinationsIndexPage() {
         heroKey="destinations"
         eyebrow="Destinations"
         title="Every destination, covered properly"
-        description="Each city gets its own guide — routes from UK airports, booking windows, document guidance and the detail generic sites skip."
+        description="Each city gets its own guide: routes from UK airports, booking windows, document guidance and the detail generic sites skip."
         stats={[
           { value: String(destinations.length), label: 'Destinations' },
           { value: String(regionCount), label: 'Regions' },

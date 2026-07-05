@@ -6,7 +6,7 @@ import { PageHero } from '@/components/sections/page-hero';
 import { siteConfig } from '@/lib/site-config';
 
 export const metadata: Metadata = {
-  title: 'About JetStash — How We Work',
+  title: 'About JetStash: How We Work',
   description:
     'JetStash is a UK travel platform for routes to Pakistan, India, the Gulf and Umrah. Read the editorial standards behind every fare and route claim on the site.',
   alternates: { canonical: `${siteConfig.url}/about` },
@@ -21,7 +21,7 @@ const standards = [
   {
     icon: Route,
     title: 'Route claims are verified against real schedules',
-    body: 'Whether a route is direct or connecting is checked against real airline schedules before it goes on the site — not assumed from marketing material. Where sources conflict, we model the route the conservative way and say so. When an airline withdraws a direct service, the route page says that too, with the date.',
+    body: 'Whether a route is direct or connecting is checked against real airline schedules before it goes on the site, not assumed from marketing material. Where sources conflict, we model the route the conservative way and say so. When an airline withdraws a direct service, the route page says that too, with the date.',
   },
   {
     icon: ShieldCheck,
@@ -31,7 +31,7 @@ const standards = [
   {
     icon: Ban,
     title: 'We\'d rather be incomplete than wrong',
-    body: 'Some verticals you might expect — hotels, car hire, airport lounges, parking — aren\'t on the site yet. That\'s deliberate: we would rather not cover something than cover it with thin, generic placeholder content. They\'ll arrive when we can do them to the same standard as the routes.',
+    body: 'Some verticals you might expect, hotels, car hire, airport lounges, parking, aren\'t on the site yet. That\'s deliberate: we would rather not cover something than cover it with thin, generic placeholder content. They\'ll arrive when we can do them to the same standard as the routes.',
   },
   {
     icon: Scale,
@@ -47,7 +47,7 @@ export default function AboutPage() {
         heroKey="about"
         eyebrow="About JetStash"
         title="The routes that matter most deserve more than a footnote."
-        description="Most UK travel sites treat flights to Pakistan, India, the Gulf and Saudi Arabia as an edge case — a few pages bolted onto a site built around Spain. JetStash starts from the opposite assumption: for millions of people in the UK, these are the trips that actually matter."
+        description="Most UK travel sites treat flights to Pakistan, India, the Gulf and Saudi Arabia as an edge case, a few pages bolted onto a site built around Spain. JetStash starts from the opposite assumption: for millions of people in the UK, these are the trips that actually matter."
       />
 
       <section className="bg-white py-16 sm:py-20">
@@ -79,7 +79,7 @@ export default function AboutPage() {
                 </div>
                 <h3 className="mt-4 font-display text-lg leading-snug text-sand-50">Spotted something wrong?</h3>
                 <p className="mt-2 text-sm leading-relaxed text-ink-300">
-                  If a fare, schedule or claim on this site doesn&apos;t hold up, we want to know — corrections make
+                  If a fare, schedule or claim on this site doesn&apos;t hold up, we want to know. Corrections make
                   the site better for everyone.
                 </p>
               </div>
@@ -98,8 +98,8 @@ export default function AboutPage() {
               <h2 className="font-display text-2xl text-ink-900 sm:text-3xl">How the site is organised</h2>
               <div className="mt-5 flex flex-col gap-4 text-ink-600">
                 <p className="leading-relaxed">
-                  JetStash is organised around how people actually travel on these routes — family visits, Umrah,
-                  business trips, holidays — rather than generic destination pages. Every airport-to-destination
+                  JetStash is organised around how people actually travel on these routes, family visits, Umrah,
+                  business trips, holidays, rather than generic destination pages. Every airport-to-destination
                   pairing gets its own guide, with booking windows, peak-period warnings and fare history specific
                   to that route.
                 </p>
@@ -117,16 +117,16 @@ export default function AboutPage() {
               <h3 className="font-display text-xl text-ink-900">The small print, up front</h3>
               <ul className="mt-4 flex flex-col gap-3 text-sm leading-relaxed text-ink-600">
                 <li>
-                  Prices are indicative examples, never live quotes — always confirm the final price with the
+                  Prices are indicative examples, never live quotes. Always confirm the final price with the
                   airline or operator before booking.
                 </li>
                 <li>
-                  Visa and entry guidance is a starting point, not advice — always confirm with the relevant
+                  Visa and entry guidance is a starting point, not advice. Always confirm with the relevant
                   embassy or high commission.
                 </li>
                 <li>
                   Travel Club emails are curated by a person, segmented by your nearest airport and the region you
-                  track — not automated price alerts.
+                  track, not automated price alerts.
                 </li>
               </ul>
               <p className="mt-5 text-xs text-ink-400">

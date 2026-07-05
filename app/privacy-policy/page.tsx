@@ -12,11 +12,11 @@ export const metadata: Metadata = {
 const sections: { title: string; body: React.ReactNode }[] = [
   {
     title: 'What we collect',
-    body: 'If you sign up to JetStash Travel Club, we collect your email address and, if you choose to provide them, your nearest UK airport and which region or cabin you\'re interested in. Both preference fields are optional. If you use the contact form, we collect your name, email address, and the content of your message. We do not collect payment information — all bookings happen on the airline or partner\'s own website.',
+    body: 'If you sign up to JetStash Travel Club, we collect your email address and, if you choose to provide them, your nearest UK airport and which region or cabin you\'re interested in. Both preference fields are optional. If you use the contact form, we collect your name, email address, and the content of your message. We do not collect payment information: all bookings happen on the airline or partner\'s own website.',
   },
   {
     title: 'How we use it',
-    body: 'Email addresses collected via Travel Club, along with any airport or interest preference you give us, are used to send occasional emails about fares and routes we think are relevant to you. These are reviewed and sent by a person, not generated automatically — we do not run live, automated price-tracking. Contact form submissions are used to respond to your enquiry and are not added to any marketing list unless you separately opt in.',
+    body: 'Email addresses collected via Travel Club, along with any airport or interest preference you give us, are used to send occasional emails about fares and routes we think are relevant to you. These are reviewed and sent by a person, not generated automatically, and we do not run live, automated price-tracking. Contact form submissions are used to respond to your enquiry and are not added to any marketing list unless you separately opt in.',
   },
   {
     title: 'Third parties',
@@ -47,7 +47,7 @@ export default function PrivacyPolicyPage() {
       <PageHero
         eyebrow="Privacy"
         title="Your data, handled the way everything else here is: plainly"
-        description="No dark patterns, no pre-ticked boxes, no selling your email. This page says exactly what we collect and why — it's short because there isn't much."
+        description="No dark patterns, no pre-ticked boxes, no selling your email. This page says exactly what we collect and why. It's short because there isn't much."
       />
 
       <section className="bg-white py-16 sm:py-24">

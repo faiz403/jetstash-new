@@ -67,7 +67,7 @@ export async function POST(req: NextRequest) {
   const result = await sendResendEmail({
     apiKey,
     to: process.env.CONTACT_TO_EMAIL ?? 'hello@jetstash.co.uk',
-    subject: `New quote request: ${tripTypeLabel(tripType)} — ${regionLabel(region)}`,
+    subject: `New quote request: ${tripTypeLabel(tripType)} (${regionLabel(region)})`,
     text: lines.join('\n'),
     replyTo: email,
     failureMessage: 'Could not send your quote request. Please try again.',

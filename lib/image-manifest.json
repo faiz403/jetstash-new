@@ -1,3 +1,22 @@
 {
-  "images": []
+  "images": [
+    "airports/manchester.webp",
+    "destinations/agadir.webp",
+    "destinations/ahmedabad.webp",
+    "destinations/amritsar.webp",
+    "destinations/antalya.webp",
+    "destinations/bodrum.webp",
+    "destinations/casablanca.webp",
+    "destinations/dalaman.webp",
+    "destinations/delhi.webp",
+    "destinations/dubai.webp",
+    "destinations/islamabad.webp",
+    "destinations/istanbul.webp",
+    "destinations/izmir.webp",
+    "destinations/karachi.webp",
+    "destinations/lahore.webp",
+    "destinations/marrakech.webp",
+    "destinations/mumbai.webp",
+    "destinations/tangier.png"
+  ]
 }

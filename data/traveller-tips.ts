@@ -30,7 +30,7 @@ export const travellerTips: TravellerTip[] = [
     scope: { destinationSlug: 'lahore' },
     category: 'baggage',
     title: 'Pre-purchase excess baggage online, not at the airport',
-    body: 'Gifts and shopping for the return leg routinely exceed standard allowances on this route — pre-purchasing extra baggage online at the time of booking is consistently cheaper than paying at the airport.',
+    body: 'Gifts and shopping for the return leg routinely exceed standard allowances on this route, so pre-purchasing extra baggage online at the time of booking is consistently cheaper than paying at the airport.',
   },
   {
     id: 'lahore-nicop',
@@ -44,7 +44,7 @@ export const travellerTips: TravellerTip[] = [
     scope: { destinationSlug: 'islamabad' },
     category: 'logistics',
     title: 'Factor onward road travel honestly if continuing north',
-    body: 'Onward journeys into Khyber Pakhtunkhwa or northern Punjab can add a full day — this affects how tight a return flight booking should be.',
+    body: 'Onward journeys into Khyber Pakhtunkhwa or northern Punjab can add a full day, which affects how tight a return flight booking should be.',
   },
   {
     id: 'karachi-connection-comfort',
@@ -58,14 +58,14 @@ export const travellerTips: TravellerTip[] = [
     scope: { destinationSlug: 'delhi' },
     category: 'documents',
     title: 'OCI cardholders skip the e-Visa; others should apply early',
-    body: 'OCI (Overseas Citizen of India) cardholders do not require a separate visa. Other UK passport holders need the standard e-Tourist or e-Business visa — apply at least 4 days ahead, earlier during Diwali or December.',
+    body: 'OCI (Overseas Citizen of India) cardholders do not require a separate visa. Other UK passport holders need the standard e-Tourist or e-Business visa: apply at least 4 days ahead, earlier still during Diwali or December.',
   },
   {
     id: 'delhi-domestic-baggage',
     scope: { destinationSlug: 'delhi' },
     category: 'baggage',
     title: 'Domestic Indian flight baggage allowances are often stricter',
-    body: 'If your onward journey involves a domestic Indian flight, check the domestic baggage allowance separately from your international one — the two are frequently different and this catches travellers out.',
+    body: 'If your onward journey involves a domestic Indian flight, check the domestic baggage allowance separately from your international one. The two are frequently different, and it catches travellers out.',
   },
   {
     id: 'mumbai-baggage-allowance',
@@ -82,7 +82,7 @@ export const travellerTips: TravellerTip[] = [
     scope: { destinationSlug: 'ahmedabad' },
     category: 'documents',
     title: 'Book the e-Visa alongside flights, not closer to departure',
-    body: 'Other UK passport holders need the standard e-Visa, applied for at least 4 days ahead — book this alongside flights rather than leaving it until closer to departure, especially around Navratri and Diwali.',
+    body: 'Other UK passport holders need the standard e-Visa, applied for at least 4 days ahead. Book it alongside flights rather than leaving it until closer to departure, especially around Navratri and Diwali.',
   },
   {
     // Split per-route rather than scoped to the whole destination — this is
@@ -94,14 +94,14 @@ export const travellerTips: TravellerTip[] = [
     scope: { routeSlug: 'birmingham-amritsar' },
     category: 'logistics',
     title: 'Confirm the specific flight day before assuming a non-stop exists',
-    body: "Air India's direct Amritsar services run at reduced midweek frequency rather than daily — confirm specific flight days before assuming a non-stop option exists on your preferred date.",
+    body: "Air India's direct Amritsar services run at reduced midweek frequency rather than daily. Confirm specific flight days before assuming a non-stop option exists on your preferred date.",
   },
   {
     id: 'gatwick-amritsar-reduced-frequency',
     scope: { routeSlug: 'london-gatwick-amritsar' },
     category: 'logistics',
     title: 'Confirm the specific flight day before assuming a non-stop exists',
-    body: "Air India's direct Amritsar services run at reduced midweek frequency rather than daily — confirm specific flight days before assuming a non-stop option exists on your preferred date.",
+    body: "Air India's direct Amritsar services run at reduced midweek frequency rather than daily. Confirm specific flight days before assuming a non-stop option exists on your preferred date.",
   },
 ];
 

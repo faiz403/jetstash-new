@@ -7,7 +7,7 @@ import { siteConfig } from '@/lib/site-config';
 
 export const metadata: Metadata = {
   title: 'Contact JetStash',
-  description: 'Questions about a route, a fare, or anything else on JetStash — send us a message.',
+  description: 'Questions about a route, a fare, or anything else on JetStash: send us a message.',
   alternates: { canonical: `${siteConfig.url}/contact` },
 };
 
@@ -18,7 +18,7 @@ export default function ContactPage() {
         heroKey="contact"
         eyebrow="Contact"
         title="Talk to a person, not a ticket queue"
-        description="Questions about a route, a destination, a fare that doesn't look right — send us a message and a real person reads it."
+        description="Questions about a route, a destination, a fare that doesn't look right: send us a message and a real person reads it."
       />
 
       <section className="bg-white py-16 sm:py-24">
@@ -45,7 +45,7 @@ export default function ContactPage() {
               <h3 className="mt-4 font-display text-lg text-ink-900">Looking for real pricing?</h3>
               <p className="mt-2 text-sm leading-relaxed text-ink-500">
                 For Umrah packages, family trips and group bookings, the quote request form gets you a
-                researched answer from a person — faster than a general enquiry.
+                researched answer from a person, faster than a general enquiry.
               </p>
               <Link
                 href="/quote-request"
@@ -61,7 +61,7 @@ export default function ContactPage() {
               </div>
               <h3 className="mt-4 font-display text-lg text-ink-900">Spotted something wrong?</h3>
               <p className="mt-2 text-sm leading-relaxed text-ink-500">
-                If a fare, schedule or claim on this site doesn&apos;t hold up, tell us — corrections make the
+                If a fare, schedule or claim on this site doesn&apos;t hold up, tell us. Corrections make the
                 site better for everyone. That&apos;s a standing invitation, not a formality.
               </p>
               <Link

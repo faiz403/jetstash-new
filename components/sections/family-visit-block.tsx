@@ -52,7 +52,7 @@ export function FamilyVisitBlock({ content, city }: { content: FamilyVisitConten
         </div>
 
         <p className="mt-6 max-w-2xl text-xs text-ink-400">
-          Visa and identity document requirements change — always confirm directly with the relevant high
+          Visa and identity document requirements change. Always confirm directly with the relevant high
           commission, embassy, or NADRA/OCI portal before booking, rather than relying on a previous trip.
         </p>
       </div>

@@ -24,7 +24,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   const airport = getAirportBySlug(params.slug);
   if (!airport) return {};
   return {
-    title: `Flights from ${airport.name} (${airport.code}) — Pakistan, India & Gulf Routes`,
+    title: `Flights from ${airport.name} (${airport.code}): Pakistan, India & Gulf Routes`,
     description: airport.description,
     alternates: { canonical: `${siteConfig.url}/airports/${airport.slug}` },
   };
@@ -107,7 +107,7 @@ export default function AirportPage({ params }: { params: { slug: string } }) {
             <>
               <h2 className="font-display text-2xl text-ink-900 sm:text-3xl">Direct routes from {airport.name}</h2>
               <p className="mt-2 max-w-xl text-sm text-ink-500">
-                Each route below has its own guide — booking windows, peak periods and airline coverage specific to that exact pairing.
+                Each route below has its own guide: booking windows, peak periods and airline coverage specific to that exact pairing.
               </p>
               <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
                 {routesHere.map((route) => {

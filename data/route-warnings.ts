@@ -25,9 +25,9 @@ export const routeWarnings: RouteWarning[] = [
     routeSlug: 'leeds-bradford-islamabad',
     severity: 'critical',
     status: 'active',
-    title: 'Direct Leeds Bradford–Islamabad claims have repeatedly failed to materialise',
+    title: 'Direct Leeds Bradford to Islamabad claims have repeatedly failed to materialise',
     body:
-      'A 2025 PIA announcement and an earlier start-up airline both failed to establish a stable, ongoing direct schedule — the start-up collapsed under a CAA investigation after cancelling booked passengers. Verify any "direct from Leeds Bradford" claim directly with the airline\'s own booking system before committing to it.',
+      'A 2025 PIA announcement and an earlier start-up airline both failed to establish a stable, ongoing direct schedule. The start-up collapsed under a CAA investigation after cancelling booked passengers. Verify any "direct from Leeds Bradford" claim directly with the airline\'s own booking system before committing to it.',
   },
   // NOTE: the Manchester–Delhi and Manchester–Mumbai IndiGo withdrawal is
   // deliberately NOT duplicated here — it's already modelled authoritatively
@@ -42,7 +42,7 @@ export const routeWarnings: RouteWarning[] = [
     status: 'active',
     title: 'Weekly frequency still settling after PIA\'s UK network expansion',
     body:
-      'PIA\'s UK network has expanded significantly through 2025–26 after a long suspension, with frequency still settling. Confirm the current weekly schedule before assuming daily availability.',
+      'PIA\'s UK network has expanded significantly through 2025 and 2026 after a long suspension, and frequency is still settling. Confirm the current weekly schedule before assuming daily availability.',
   },
   {
     id: 'lgw-amd-reduced-frequency',
@@ -51,7 +51,7 @@ export const routeWarnings: RouteWarning[] = [
     status: 'active',
     title: 'Runs 3 times a week, not daily',
     body:
-      'This is a reduced-frequency route rather than a daily one — confirm your travel dates align with an active flight day before booking.',
+      'This is a reduced-frequency route rather than a daily one. Confirm your travel dates align with an active flight day before booking.',
   },
   {
     id: 'lgw-atq-reduced-frequency',
@@ -60,7 +60,7 @@ export const routeWarnings: RouteWarning[] = [
     status: 'active',
     title: 'Runs 3 times a week, not daily',
     body:
-      'Like the Birmingham service, this runs 3 times a week rather than daily — confirm the specific flight day before booking, and compare both Gatwick and Birmingham schedules for your travel dates.',
+      'Like the Birmingham service, this runs 3 times a week rather than daily. Confirm the specific flight day before booking, and compare both Gatwick and Birmingham schedules for your travel dates.',
   },
   {
     id: 'bhx-atq-reduced-frequency',
@@ -69,7 +69,7 @@ export const routeWarnings: RouteWarning[] = [
     status: 'active',
     title: 'Runs 3 times a week, not daily',
     body:
-      'This is a reduced-frequency scheduled service — confirm your travel dates fall on an active flight day before booking, and have a Delhi or Gatwick-connecting fallback priced as backup for off-schedule dates.',
+      'This is a reduced-frequency scheduled service. Confirm your travel dates fall on an active flight day before booking, and have a Delhi or Gatwick-connecting fallback priced as backup for off-schedule dates.',
   },
 ];
 

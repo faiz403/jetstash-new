@@ -25,17 +25,17 @@ export default function TravelClubPage() {
             <FeatureCard
               icon={<Bell className="h-5 w-5" strokeWidth={2} />}
               title="Checked by us, not an algorithm"
-              body="We don't run automated live price tracking — fares are researched and updated by hand. You'll hear from us when we've found something genuinely worth flagging, not on a fixed schedule."
+              body="We don't run automated live price tracking. Fares are researched and updated by hand, and you'll hear from us when we've found something genuinely worth flagging, not on a fixed schedule."
             />
             <FeatureCard
               icon={<Mail className="h-5 w-5" strokeWidth={2} />}
               title="Focused on your routes"
-              body="Tell us your nearest airport and which region or cabin you're tracking, and that's what shapes what lands in your inbox — not every update we make."
+              body="Tell us your nearest airport and which region or cabin you're tracking, and that's what shapes what lands in your inbox, not every update we make."
             />
             <FeatureCard
               icon={<MapPinned className="h-5 w-5" strokeWidth={2} />}
               title="Told when a new route launches"
-              body="When we add a new direct or improved route in a region you've told us you care about — like Ahmedabad's Gatwick service — Travel Club hears about it first."
+              body="When we add a new direct or improved route in a region you've told us you care about, like Ahmedabad's Gatwick service, Travel Club hears about it first."
             />
             <FeatureCard
               icon={<ShieldCheck className="h-5 w-5" strokeWidth={2} />}

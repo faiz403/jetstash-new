@@ -12,7 +12,7 @@ import { HeroBackdrop } from '@/components/ui/hero-backdrop';
 
 export const metadata: Metadata = {
   alternates: { canonical: '/umrah' },
-  title: 'Umrah & Saudi Arabia — Packages from the UK',
+  title: 'Umrah & Saudi Arabia: Packages from the UK',
   description:
     'Umrah package guidance for UK travellers, covering Jeddah and Madinah, visa requirements, and how to compare flight-plus-hotel packages.',
 };
@@ -48,7 +48,7 @@ export default function UmrahHubPage() {
               </div>
               <div>
                 <h2 className="font-display text-xl text-ink-900">Want a real Umrah package quote?</h2>
-                <p className="mt-1 text-sm text-ink-500">Tell us your dates and group size — a person follows up with real pricing, not an automated number.</p>
+                <p className="mt-1 text-sm text-ink-500">Tell us your dates and group size, and a person follows up with real pricing, not an automated number.</p>
               </div>
             </div>
             <LinkButton href="/quote-request?tripType=umrah&region=gulf" size="md" className="shrink-0">
@@ -64,9 +64,9 @@ export default function UmrahHubPage() {
           <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {[
               { title: 'Flights', body: 'Return economy flights, usually to Jeddah or Madinah, occasionally with a connection via the Gulf.' },
-              { title: 'Hotel nights', body: 'A split stay — typically a portion of nights in Makkah near the Haram, then Madinah, though ratios vary by package.' },
-              { title: 'Ground transport', body: 'Transfers between airport, hotels and the two holy cities — confirm whether this is shared or private transport.' },
-              { title: 'Ziyarat tours', body: 'Optional guided visits to historical sites in Makkah and Madinah — sometimes included, often an add-on.' },
+              { title: 'Hotel nights', body: 'A split stay, typically a portion of nights in Makkah near the Haram, then Madinah, though ratios vary by package.' },
+              { title: 'Ground transport', body: 'Transfers between airport, hotels and the two holy cities. Confirm whether this is shared or private transport.' },
+              { title: 'Ziyarat tours', body: 'Optional guided visits to historical sites in Makkah and Madinah, sometimes included, often an add-on.' },
             ].map((item) => (
               <div key={item.title} className="rounded-md border border-ink-100 bg-sand-50 p-6">
                 <h3 className="font-display text-lg text-ink-900">{item.title}</h3>
@@ -144,7 +144,7 @@ export default function UmrahHubPage() {
                   <h3 className="font-semibold text-ink-900">Check which Makkah hotel zone is included</h3>
                   <p className="mt-1 text-sm leading-relaxed text-ink-500">
                     Hotels within walking distance of the Haram cost considerably more than those requiring a
-                    shuttle. Package prices can look similar while offering very different proximity — always
+                    shuttle. Package prices can look similar while offering very different proximity, so always
                     confirm the hotel name and distance, not just the star rating.
                   </p>
                 </div>
@@ -165,7 +165,7 @@ export default function UmrahHubPage() {
                 is tied to your Umrah package dates.
               </p>
               <p className="mt-4 text-xs text-ink-400">
-                Requirements change — always confirm directly with your Umrah provider or the Saudi authorities
+                Requirements change, so always confirm directly with your Umrah provider or the Saudi authorities
                 before booking.
               </p>
               <LinkButton href="/contact" variant="ghost" size="sm" className="mt-5">

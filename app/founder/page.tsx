@@ -134,7 +134,7 @@ export default function FounderPage() {
           <p className="mt-2 max-w-xl text-ink-300">
             {today.length === 0
               ? 'Nothing needs your attention today. Everything below is derived live from the site\'s own data.'
-              : `What needs your attention today — ${attentionCount > 0 ? `${attentionCount} urgent, ` : ''}${setupCount} awaiting setup. All derived live from the site's own data, nothing estimated.`}
+              : `What needs your attention today: ${attentionCount > 0 ? `${attentionCount} urgent, ` : ''}${setupCount} awaiting setup. All derived live from the site's own data, nothing estimated.`}
           </p>
           <p className="mt-3 flex items-center gap-2 text-xs text-ink-400">
             <CalendarCheck className="h-4 w-4" strokeWidth={2} />
@@ -221,7 +221,7 @@ export default function FounderPage() {
               ))}
             </div>
             <p className="border-t border-ink-100 bg-sand-50 px-5 py-3 text-xs leading-relaxed text-ink-500">
-              Mirrors README &ldquo;Required before launch&rdquo; — the README stays the source of truth; auto-checked items
+              Mirrors README &ldquo;Required before launch&rdquo;. The README stays the source of truth; auto-checked items
               re-verify from code and env on every load of this page.
             </p>
           </section>

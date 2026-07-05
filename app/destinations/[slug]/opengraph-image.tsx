@@ -71,7 +71,7 @@ export default function OgImage({ params }: { params: { slug: string } }) {
         </div>
 
         <div style={{ display: 'flex', color: INK_LIGHT, fontSize: 24 }}>
-          Routes from UK airports · Visa notes · Fare history — jetstash.co.uk
+          Routes from UK airports · Visa notes · Fare history · jetstash.co.uk
         </div>
       </div>
     ),

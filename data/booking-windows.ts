@@ -27,7 +27,7 @@ export const bookingWindows: BookingWindow[] = [
     routeSlug: 'manchester-lahore',
     label: 'Within 3 weeks of Eid',
     weeksBeforeDeparture: { min: 0, max: 3 },
-    guidance: 'Expect a sharp price jump — this is the window to avoid if your dates are flexible.',
+    guidance: 'Expect a sharp price jump. This is the window to avoid if your dates are flexible.',
   },
   {
     id: 'man-lhe-eid-recommended',
@@ -41,14 +41,14 @@ export const bookingWindows: BookingWindow[] = [
     routeSlug: 'birmingham-islamabad',
     label: 'Recommended booking window ahead of Eid',
     weeksBeforeDeparture: { min: 8, max: 13 },
-    guidance: '2–3 months ahead of Eid, this route tends to hold marginally more availability than the newer Birmingham–Lahore service.',
+    guidance: '2 to 3 months ahead of Eid, this route tends to hold marginally more availability than the newer Birmingham to Lahore service.',
   },
   {
     id: 'man-khi-eid-wedding-recommended',
     routeSlug: 'manchester-karachi',
     label: 'Recommended booking window ahead of Eid or wedding season',
     weeksBeforeDeparture: { min: 8, max: 13 },
-    guidance: "Book 2–3 months ahead of Eid or wedding season while PIA's expanded UK schedule is still settling.",
+    guidance: "Book 2 to 3 months ahead of Eid or wedding season while PIA's expanded UK schedule is still settling.",
   },
 ];
 

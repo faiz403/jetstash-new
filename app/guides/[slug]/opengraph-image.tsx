@@ -66,7 +66,7 @@ export default function OgImage({ params }: { params: { slug: string } }) {
         </div>
 
         <div style={{ display: 'flex', color: INK_LIGHT, fontSize: 24 }}>
-          Practical, verifiable, no invented urgency — jetstash.co.uk
+          Practical, verifiable, no invented urgency · jetstash.co.uk
         </div>
       </div>
     ),

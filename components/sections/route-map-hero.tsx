@@ -62,7 +62,7 @@ export function RouteMapHero() {
   return (
     <div className="relative w-full">
       {/* At phone width the 1000-unit map renders city labels at ~4px with ~2px
-          tap targets — unusable. Below sm the chip selector is the interface
+          tap targets, unusable. Below sm the chip selector is the interface
           and the map hides; the readout below serves both. */}
       <div className="-mx-5 flex gap-2 overflow-x-auto px-5 pb-1 no-scrollbar sm:hidden" role="group" aria-label="Preview a route">
         {mapRoutes.map((route) => {
@@ -210,7 +210,7 @@ export function RouteMapHero() {
         </Link>
       </div>
       <p className="mt-3 text-center text-xs text-ink-400 sm:text-left">
-        Select any city to preview its route. Fares are examples checked manually on the date shown — not live
+        Select any city to preview its route. Fares are examples checked manually on the date shown, not live
         prices. Always confirm the final price before booking.
       </p>
     </div>

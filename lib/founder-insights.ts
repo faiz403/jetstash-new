@@ -81,7 +81,7 @@ function routesNeedingFareChecks(now: Date): FounderSection {
     if (observations.length === 0) {
       noHistory.push({
         label,
-        detail: 'No fare history yet — the route page shows no tracked fares.',
+        detail: 'No fare history yet. The route page shows no tracked fares.',
         status: 'watch',
         href,
       });
@@ -138,7 +138,7 @@ function dealsNeedingRecheck(now: Date): FounderSection {
     headline:
       items.length === 0
         ? `All ${deals.length} example fares checked within ${DEAL_WATCH_DAYS} days.`
-        : `${items.length} of ${deals.length} fares are ${DEAL_WATCH_DAYS}+ days old — the oldest is ${oldest} days.`,
+        : `${items.length} of ${deals.length} fares are ${DEAL_WATCH_DAYS}+ days old. The oldest is ${oldest} days.`,
     items,
     action: `Re-check each fare and update lastChecked in data/deals.ts. The site renders these dates publicly ("Example fare checked …"), so honesty depends on keeping them current.`,
   };
@@ -162,7 +162,7 @@ function affiliateStatus(): FounderSection {
     headline:
       untracked.length === 0
         ? 'Every partner link carries a tracking parameter.'
-        : `${untracked.length} of ${deals.length} deal links have no affiliate tracking — every click-through is currently unpaid. Route-page links (lib/partners.ts) are also untracked.`,
+        : `${untracked.length} of ${deals.length} deal links have no affiliate tracking, so every click-through is currently unpaid. Route-page links (lib/partners.ts) are also untracked.`,
     items: [],
     action:
       'Apply to Skyscanner Partners (or chosen programme), then add the tracking parameter in lib/partners.ts for route links and to every partnerUrl in data/deals.ts.',
@@ -184,11 +184,11 @@ function photographyStatus(): FounderSection {
     status: allCovered ? 'ok' : coverage.total > 0 ? 'watch' : 'setup',
     headline:
       coverage.total === 0
-        ? `No real photography yet — all ${destTotal} destinations render the generated brand panel. The full shot list, prompts and naming convention live in docs/visual-identity.md.`
+        ? `No real photography yet. All ${destTotal} destinations render the generated brand panel. The full shot list, prompts and naming convention live in docs/visual-identity.md.`
         : `${coverage.destinations} of ${destTotal} destinations have real photography · ${coverage.heroes} hero backdrops · ${coverage.airports} of 11 airports · ${coverage.guides} guide images.`,
     items: [],
     action:
-      'Produce images per docs/visual-identity.md (production order at the end of that file) and drop them into public/images/{destinations,heroes,airports,guides}/ named by slug — no code changes needed.',
+      'Produce images per docs/visual-identity.md (production order at the end of that file) and drop them into public/images/{destinations,heroes,airports,guides}/ named by slug. No code changes needed.',
   };
 }
 
@@ -202,11 +202,11 @@ function quoteRequestStatus(): FounderSection {
     title: 'Quote requests',
     status: connected ? 'ok' : 'setup',
     headline: connected
-      ? `Connected via Resend — every quote request is emailed to ${inbox}. There is no request log or count here: the inbox is the source of truth, check it directly.`
-      : 'Not connected yet — RESEND_API_KEY is not set, so the quote form fails clearly with a 503 instead of pretending to work.',
+      ? `Connected via Resend. Every quote request is emailed to ${inbox}. There is no request log or count here: the inbox is the source of truth, so check it directly.`
+      : 'Not connected yet. RESEND_API_KEY is not set, so the quote form fails clearly with a 503 instead of pretending to work.',
     items: [],
     action: connected
-      ? `Also decide where leads should really route (one inbox vs partner agents) — currently ${inbox}. See README item 9.`
+      ? `Also decide where leads should really route (one inbox vs partner agents). Currently ${inbox}. See README item 9.`
       : 'Create a Resend account, verify the sending domain, and set RESEND_API_KEY and CONTACT_TO_EMAIL in Vercel project settings.',
   };
 }
@@ -219,11 +219,11 @@ function travelClubStatus(): FounderSection {
     title: 'Travel Club signups',
     status: connected ? 'ok' : 'setup',
     headline: connected
-      ? 'Connected via Brevo — signups save with airport/interest preferences. Subscriber counts and segments live in the Brevo dashboard; this page does not duplicate them.'
-      : 'Not connected yet — BREVO_API_KEY / BREVO_LIST_ID are not set, so the signup form fails clearly with a 503 instead of silently dropping emails.',
+      ? 'Connected via Brevo. Signups save with airport/interest preferences. Subscriber counts and segments live in the Brevo dashboard; this page does not duplicate them.'
+      : 'Not connected yet. BREVO_API_KEY / BREVO_LIST_ID are not set, so the signup form fails clearly with a 503 instead of silently dropping emails.',
     items: [],
     action: connected
-      ? 'Confirm the custom contact attributes exist in Brevo (NEAREST_AIRPORT, TRAVEL_INTEREST, and the five WATCH_* fields) — Brevo silently drops attributes it does not recognise, and that cannot be verified from code.'
+      ? 'Confirm the custom contact attributes exist in Brevo (NEAREST_AIRPORT, TRAVEL_INTEREST, and the five WATCH_* fields). Brevo silently drops attributes it does not recognise, and that cannot be verified from code.'
       : 'Create a Brevo account and list, add the custom contact attributes (README items 3 and 8), then set both env vars in Vercel.',
   };
 }
@@ -264,7 +264,7 @@ function linkHealth(now: Date): FounderSection {
       label: `${dated.length} business-class links carry a fixed travel date`,
       detail:
         daysAway < 0
-          ? `Embedded outbound date ${formatShortDate(dated[0].outbound)} has PASSED — these searches now open with an invalid date. Refresh now.`
+          ? `Embedded outbound date ${formatShortDate(dated[0].outbound)} has PASSED. These searches now open with an invalid date. Refresh now.`
           : `Embedded outbound date is ${formatShortDate(dated[0].outbound)} (${daysAway} days away). The date exists so cabinclass=business is honoured; refresh it when it gets close so links stay "a few months out".`,
       status,
     });
@@ -277,9 +277,9 @@ function linkHealth(now: Date): FounderSection {
     headline:
       items.every((i) => i.status === 'ok')
         ? `All ${deals.length} partner links are well-formed; the only date-bearing links are comfortably in the future.`
-        : 'Some partner links need a look — details below.',
+        : 'Some partner links need a look. Details below.',
     items,
-    action: 'Dated business-class URLs are README launch item 7 — update the YYMMDD pair in data/deals.ts every few months.',
+    action: 'Dated business-class URLs are README launch item 7. Update the YYMMDD pair in data/deals.ts every few months.',
   };
 }
 
@@ -288,7 +288,7 @@ function warningsForReview(now: Date): FounderSection {
   const items: FounderItem[] = routeWarnings
     .filter((w) => w.status === 'active')
     .map((w) => ({
-      label: `${routeLabel(w.routeSlug)} — ${w.title}`,
+      label: `${routeLabel(w.routeSlug)}: ${w.title}`,
       detail: `Severity: ${w.severity}. Still accurate? If resolved, flip status to 'resolved' in data/route-warnings.ts (never delete).`,
       status: w.severity === 'critical' ? 'attention' : 'watch',
       href: `/routes/${w.routeSlug}`,
@@ -299,14 +299,14 @@ function warningsForReview(now: Date): FounderSection {
     const daysAway = -daysBetween(route.directServiceEndDate, now);
     if (daysAway < 0) {
       items.push({
-        label: `${routeLabel(route.slug)} — direct service end date has passed`,
+        label: `${routeLabel(route.slug)}: direct service end date has passed`,
         detail: `Ended ${formatShortDate(route.directServiceEndDate)}. Follow the README "Time-bound direct services" update procedure: flip the route to connecting and move the end note into the timeline.`,
         status: 'attention',
         href: `/routes/${route.slug}`,
       });
     } else if (daysAway <= SERVICE_END_WATCH_DAYS) {
       items.push({
-        label: `${routeLabel(route.slug)} — direct service ends ${formatShortDate(route.directServiceEndDate)}`,
+        label: `${routeLabel(route.slug)}: direct service ends ${formatShortDate(route.directServiceEndDate)}`,
         detail: `${daysAway} days away. When the date passes, apply the README "Time-bound direct services" procedure so the route stays honest.`,
         status: 'watch',
         href: `/routes/${route.slug}`,
@@ -323,7 +323,7 @@ function warningsForReview(now: Date): FounderSection {
         ? 'No active warnings and no approaching service-end dates.'
         : `${items.length} item${items.length === 1 ? '' : 's'} to re-verify against current airline schedules.`,
     items,
-    action: 'Verify each against the airline\'s own booking system — the site\'s standard is schedules, not press releases.',
+    action: 'Verify each against the airline\'s own booking system. The site\'s standard is schedules, not press releases.',
   };
 }
 
@@ -334,21 +334,21 @@ function staleContent(now: Date): FounderSection {
   const newest = deals.reduce((max, d) => (d.lastChecked > max ? d.lastChecked : max), deals[0].lastChecked);
   const newestAge = daysBetween(newest, now);
   items.push({
-    label: 'Homepage & /deals — "Most recent check" label',
+    label: 'Homepage & /deals: "Most recent check" label',
     detail: `The freshest fare check shown publicly is ${formatShortDate(newest)} (${newestAge} days ago). This label is derived from data, so it only improves when a fare is actually re-checked.`,
     status: newestAge >= DEAL_ATTENTION_DAYS ? 'attention' : newestAge >= DEAL_WATCH_DAYS ? 'watch' : 'ok',
     href: '/deals',
   });
 
   items.push({
-    label: 'Privacy policy — "Last updated: June 2026"',
+    label: 'Privacy policy: "Last updated: June 2026"',
     detail: 'Hand-dated. Re-read it whenever data handling changes (new provider, analytics, etc.) and update the date honestly.',
     status: 'ok',
     href: '/privacy-policy',
   });
 
   items.push({
-    label: 'India hub & Manchester airport copy — IndiGo withdrawal wording',
+    label: 'India hub & Manchester airport copy: IndiGo withdrawal wording',
     detail: 'Both mention the 31 Aug / 1 Sep 2026 IndiGo Manchester withdrawal in prose. When the route pages get their post-withdrawal update, update this copy in the same pass.',
     status: 'watch',
     href: '/india',
@@ -388,7 +388,7 @@ function launchChecklist(now: Date): { section: FounderSection; checklist: Check
     },
     {
       label: 'Real photography',
-      detail: `All ${destinations.length} destinations still use the generated panel (deliberate, ships fine — but photography converts better).`,
+      detail: `All ${destinations.length} destinations still use the generated panel (deliberate, and it ships fine, but photography converts better).`,
       done: false,
       verifiedBy: 'auto',
     },
@@ -424,13 +424,13 @@ function launchChecklist(now: Date): { section: FounderSection; checklist: Check
     },
     {
       label: 'Brevo custom contact attributes created',
-      detail: 'NEAREST_AIRPORT, TRAVEL_INTEREST + five WATCH_* attributes. Cannot be verified from code — confirm in the Brevo dashboard and tick off mentally.',
+      detail: 'NEAREST_AIRPORT, TRAVEL_INTEREST + five WATCH_* attributes. Cannot be verified from code, so confirm in the Brevo dashboard and tick off mentally.',
       done: false,
       verifiedBy: 'manual',
     },
     {
       label: 'Quote-request leads route somewhere real',
-      detail: 'Decide: one founder inbox, shared inbox, or partner-agent rotation — then set CONTACT_TO_EMAIL accordingly (README item 9).',
+      detail: 'Decide: one founder inbox, shared inbox, or partner-agent rotation. Then set CONTACT_TO_EMAIL accordingly (README item 9).',
       done: false,
       verifiedBy: 'manual',
     },
@@ -445,7 +445,7 @@ function launchChecklist(now: Date): { section: FounderSection; checklist: Check
       id: 'launch',
       title: 'Launch checklist',
       status: doneCount === checklist.length ? 'ok' : 'setup',
-      headline: `${doneCount} of ${checklist.length} complete. Mirrors the README "Required before launch" section — that document stays the source of truth.`,
+      headline: `${doneCount} of ${checklist.length} complete. Mirrors the README "Required before launch" section, which stays the source of truth.`,
       items: [],
     },
   };

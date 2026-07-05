@@ -47,7 +47,7 @@ export default function HomePage() {
               The journey that matters most, taken seriously.
             </h1>
             <p className="stagger-in stagger-3 mt-5 max-w-lg animate-fade-up text-lg leading-relaxed text-ink-300">
-              Flights from UK airports to Pakistan, India, the Gulf and Umrah — with route guides, fare
+              Flights from UK airports to Pakistan, India, the Gulf and Umrah, with route guides, fare
               history and honest booking windows, checked by people and dated. No countdown timers, no
               invented urgency, ever.
             </p>
@@ -75,7 +75,7 @@ export default function HomePage() {
             <div>
               <p className="text-sm font-semibold text-sand-50">Checked by a person, dated</p>
               <p className="mt-1 text-xs leading-relaxed text-ink-400">
-                Every fare shows the date a member of our team actually checked it — never a live-price claim.
+                Every fare shows the date a member of our team actually checked it. Never a live-price claim.
               </p>
             </div>
           </div>
@@ -93,7 +93,7 @@ export default function HomePage() {
             <div>
               <p className="text-sm font-semibold text-sand-50">Built for these routes</p>
               <p className="mt-1 text-xs leading-relaxed text-ink-400">
-                Route history, booking windows and peak-period warnings — specific to each airport pairing.{' '}
+                Route history, booking windows and peak-period warnings, specific to each airport pairing.{' '}
                 <Link href="/about" className="font-medium text-brass-300 underline underline-offset-2 hover:text-brass-200">
                   Our standards
                 </Link>
@@ -117,28 +117,28 @@ export default function HomePage() {
               href="/india"
               eyebrow="Family visits & heritage"
               title="India"
-              description="Delhi, Mumbai and Amritsar — OCI guidance, festival season pricing, and the routes that hold value."
+              description="Delhi, Mumbai and Amritsar: OCI guidance, festival season pricing, and the routes that hold value."
               image={getHeroImage('india')}
             />
             <HubCard
               href="/pakistan"
               eyebrow="Family visits & heritage"
               title="Pakistan"
-              description="Lahore, Islamabad and Karachi — direct routes, Eid travel timing, NICOP guidance and what to know before you fly."
+              description="Lahore, Islamabad and Karachi: direct routes, Eid travel timing, NICOP guidance and what to know before you fly."
               image={getHeroImage('pakistan')}
             />
             <HubCard
               href="/umrah"
               eyebrow="Pilgrimage travel"
               title="Umrah & Saudi Arabia"
-              description="Jeddah and Madinah — package structures, Nusuk visa guidance, and what genuinely affects price."
+              description="Jeddah and Madinah: package structures, Nusuk visa guidance, and what genuinely affects price."
               image={getHeroImage('umrah')}
             />
             <HubCard
               href="/gulf"
               eyebrow="Stopovers & city breaks"
               title="The Gulf"
-              description="Dubai and Doha — year-round flights, family-friendly stopovers, and beach-meets-city breaks."
+              description="Dubai and Doha: year-round flights, family-friendly stopovers, and beach-meets-city breaks."
               image={getHeroImage('gulf')}
             />
           </div>
@@ -153,7 +153,7 @@ export default function HomePage() {
               <span className="text-xs font-semibold uppercase tracking-wide text-terracotta-600">Find your exact route</span>
               <h2 className="mt-2 font-display text-3xl text-ink-900 sm:text-4xl">Most-searched UK routes</h2>
               <p className="mt-2 max-w-lg text-sm text-ink-500">
-                Each route has its own booking-window guide and peak-period warnings — not a generic destination page.
+                Each route has its own booking-window guide and peak-period warnings, not a generic destination page.
               </p>
             </div>
             <Link href="/routes" className="flex items-center gap-1.5 text-sm font-semibold text-ink-900 hover:text-terracotta-600">
@@ -219,7 +219,7 @@ export default function HomePage() {
                 Built around how these trips actually happen
               </h2>
               <p className="mt-4 max-w-md text-ink-300">
-                Most Pakistan and India travel from the UK isn't a holiday — it's a family visit, with its own
+                Most Pakistan and India travel from the UK isn't a holiday. It's a family visit, with its own
                 booking patterns, document requirements and baggage realities. We cover that specifically, not as
                 an afterthought to a generic destination page.
               </p>
@@ -276,7 +276,7 @@ export default function HomePage() {
               </h2>
               <p className="mt-4 max-w-md text-ink-600">
                 Long-haul business fares move on different patterns to economy. We track the routes UK
-                travellers actually fly — and flag when a fare is genuinely worth booking.
+                travellers actually fly, and flag when a fare is genuinely worth booking.
               </p>
               <LinkButton href="/business-class" variant="dark" className="mt-6">
                 Explore business class
@@ -309,7 +309,7 @@ export default function HomePage() {
               ))}
               <div className="flex flex-1 flex-col justify-center rounded-md border border-ink-100 bg-white p-6 shadow-card">
                 <span className="text-xs font-semibold uppercase tracking-wide text-terracotta-600">Real quotes, from a person</span>
-                <span className="mt-2 font-display text-xl text-ink-900">Tell us your dates and group size — we'll come back with real Umrah pricing</span>
+                <span className="mt-2 font-display text-xl text-ink-900">Tell us your dates and group size, and we'll come back with real Umrah pricing</span>
                 <div className="mt-4 flex flex-wrap gap-3">
                   <LinkButton href="/quote-request?tripType=umrah&region=gulf" variant="dark" size="sm">
                     Request a quote
@@ -332,7 +332,7 @@ export default function HomePage() {
               <span className="text-xs font-semibold uppercase tracking-wide text-terracotta-600">Short-haul & winter sun</span>
               <h2 className="mt-2 font-display text-3xl text-ink-900 sm:text-4xl">Turkey, Morocco and the Mediterranean</h2>
               <p className="mt-2 max-w-lg text-sm text-ink-500">
-                The same honest coverage, under five hours from the UK — including which routes are genuinely
+                The same honest coverage, under five hours from the UK, including which routes are genuinely
                 seasonal, so you don&apos;t plan around a flight that pauses for winter.
               </p>
             </div>

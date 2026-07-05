@@ -45,7 +45,7 @@ export function NewsletterSection() {
               </h2>
               <p className="mt-3 max-w-md text-ink-300">
                 Free to join. Pick your nearest airport and what you're tracking, and that's what shapes what
-                lands in your inbox — not a generic weekly digest. Unsubscribe in one click, any time.
+                lands in your inbox, not a generic weekly digest. Unsubscribe in one click, any time.
               </p>
             </div>
 
@@ -54,7 +54,7 @@ export function NewsletterSection() {
                 <div className="rounded-sm border border-brass/30 bg-brass-50/10 p-5">
                   <div className="flex items-center gap-3">
                     <CheckCircle2 className="h-6 w-6 flex-shrink-0 text-brass-300" />
-                    <p className="text-sm text-sand-100">You&apos;re on the list — welcome to Travel Club.</p>
+                    <p className="text-sm text-sand-100">You&apos;re on the list. Welcome to Travel Club.</p>
                   </div>
                   {(() => {
                     const selected = TRAVEL_INTEREST_OPTIONS.find((o) => o.value === interest);
@@ -136,7 +136,7 @@ export function NewsletterSection() {
               )}
               {status === 'error' && (
                 <p className="mt-2 text-sm text-terracotta-400">
-                  Something went wrong — please try again or email us at hello@jetstash.co.uk.
+                  Something went wrong. Please try again or email us at hello@jetstash.co.uk.
                 </p>
               )}
               <p className="mt-3 text-xs text-ink-400">

@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 const sections: { title: string; body: React.ReactNode }[] = [
   {
     title: 'How JetStash is funded',
-    body: 'JetStash earns a commission on some bookings made through links on this site — typically when you click through to an airline, travel agent or booking platform and complete a purchase. This is how JetStash is funded.',
+    body: 'JetStash earns a commission on some bookings made through links on this site, typically when you click through to an airline, travel agent or booking platform and complete a purchase. This is how JetStash is funded.',
   },
   {
     title: 'It never changes your price',
@@ -20,7 +20,7 @@ const sections: { title: string; body: React.ReactNode }[] = [
   },
   {
     title: 'It never changes what we say',
-    body: 'We aim to show fares and routes based on what\'s genuinely useful to UK travellers heading to Pakistan, India, the Gulf and beyond — not based on which partner pays the highest commission. Where we feature a specific operator or fare, it\'s because we believe it\'s relevant, not because of the size of the commission involved.',
+    body: 'We aim to show fares and routes based on what\'s genuinely useful to UK travellers heading to Pakistan, India, the Gulf and beyond, not based on which partner pays the highest commission. Where we feature a specific operator or fare, it\'s because we believe it\'s relevant, not because of the size of the commission involved.',
   },
   {
     title: 'Prices are indicative, always',

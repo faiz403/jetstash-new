@@ -54,7 +54,7 @@ export function DealCard({ deal }: { deal: Deal }) {
         {observations.length > 1 && (
           <div className="mt-1.5 flex items-center gap-1.5 text-xs text-ink-400">
             <TrendingUp className="h-3.5 w-3.5" strokeWidth={2} />
-            {observations.length} fares tracked on this route — see the full history on the route guide
+            {observations.length} fares tracked on this route. See the full history on the route guide
           </div>
         )}
 
@@ -68,7 +68,7 @@ export function DealCard({ deal }: { deal: Deal }) {
           <ArrowUpRight className="h-4 w-4" strokeWidth={2.25} />
         </a>
         <p className="mt-2 text-center text-[11px] text-ink-400">
-          Partner link — prices change quickly, confirm the final price before booking
+          Partner link. Prices change quickly, confirm the final price before booking
         </p>
       </div>
     </article>

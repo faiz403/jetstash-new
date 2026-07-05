@@ -4,7 +4,7 @@ export const siteConfig = {
   url: 'https://jetstash.co.uk',
   tagline: "The UK's travel intelligence platform for South Asia, the Gulf and beyond",
   description:
-    'JetStash tracks route history, fare patterns and booking windows from UK airports to Pakistan, India, the Gulf, Turkey, Morocco and the wider Mediterranean — with dedicated hubs for family travel, Umrah and business class.',
+    'JetStash tracks route history, fare patterns and booking windows from UK airports to Pakistan, India, the Gulf, Turkey, Morocco and the wider Mediterranean, with dedicated hubs for family travel, Umrah and business class.',
 };
 
 // The nav is the brand's spine: the four core corridors in commercial order

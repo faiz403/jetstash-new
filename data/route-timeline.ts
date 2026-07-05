@@ -27,16 +27,16 @@ export const routeTimelineEvents: RouteTimelineEvent[] = [
     routeSlug: 'manchester-delhi',
     date: '2025-11-01',
     type: 'service-launched',
-    title: 'IndiGo launches non-stop Manchester–Delhi (November 2025)',
+    title: 'IndiGo launches non-stop Manchester to Delhi (November 2025)',
     description:
-      'The first non-stop Manchester–Delhi service in 25 years, flown on a two-class Boeing 787-9 leased from Norse Atlantic Airways.',
+      'The first non-stop Manchester to Delhi service in 25 years, flown on a two-class Boeing 787-9 leased from Norse Atlantic Airways.',
   },
   {
     id: 'man-del-2026-withdrawal',
     routeSlug: 'manchester-delhi',
     date: '2026-09-01',
     type: 'withdrawal-announced',
-    title: 'IndiGo withdrawal from Manchester takes effect 1 September 2026',
+    title: 'IndiGo withdrawal from Manchester takes effect on 1 September 2026',
     description:
       'IndiGo has announced it will withdraw from Manchester entirely from this date, ending both the Delhi and Mumbai direct services. Frequency was already reduced once before this announcement.',
   },
@@ -45,16 +45,16 @@ export const routeTimelineEvents: RouteTimelineEvent[] = [
     routeSlug: 'manchester-mumbai',
     date: '2025-07-01',
     type: 'service-launched',
-    title: "IndiGo launches Manchester–Mumbai — the airline's first long-haul route (July 2025)",
+    title: "IndiGo launches Manchester to Mumbai, the airline's first long-haul route (July 2025)",
     description:
-      "IndiGo's Mumbai–Manchester service was the airline's first ever long-haul route and remains the only non-stop link between Manchester and Mumbai.",
+      "IndiGo's Mumbai to Manchester service was the airline's first ever long-haul route and remains the only non-stop link between Manchester and Mumbai.",
   },
   {
     id: 'man-bom-2026-withdrawal',
     routeSlug: 'manchester-mumbai',
     date: '2026-09-01',
     type: 'withdrawal-announced',
-    title: 'IndiGo withdrawal from Manchester takes effect 1 September 2026',
+    title: 'IndiGo withdrawal from Manchester takes effect on 1 September 2026',
     description:
       'IndiGo has announced it will withdraw from Manchester entirely from this date, ending both the Mumbai and Delhi direct services.',
   },
@@ -63,9 +63,9 @@ export const routeTimelineEvents: RouteTimelineEvent[] = [
     routeSlug: 'manchester-karachi',
     date: '2025-06-01',
     type: 'frequency-change',
-    title: "PIA's UK network expands through 2025–26 after a long suspension",
+    title: "PIA's UK network expands through 2025 and 2026 after a long suspension",
     description:
-      'PIA significantly expanded its UK network through 2025–26 after a long suspension, with frequency on this route still settling — confirm the current weekly schedule before assuming daily availability.',
+      'PIA significantly expanded its UK network through 2025 and 2026 after a long suspension, and frequency on this route is still settling. Confirm the current weekly schedule before assuming daily availability.',
   },
 ];
 
