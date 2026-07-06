@@ -43,14 +43,25 @@ export function HubCard({
           <DestinationMark seed={title} className="p-0" />
         )}
       </div>
-      <div className="absolute inset-0 bg-gradient-to-t from-ink-950/80 via-ink-950/20 to-transparent" />
+      {/* Vignette rather than a single bottom-anchored gradient: this card's
+          content sits at the TOP (eyebrow/title/description) with only the
+          "Explore" CTA at the bottom, so both ends need protection — a photo
+          can put bright sky exactly where the title/description sit. Dark at
+          top and bottom, lighter only through the untexted middle band; the
+          via stop is pushed past the halfway point so the dark zone actually
+          reaches down past a two-line title and description, not just the
+          eyebrow line. */}
+      <div className="absolute inset-0 bg-gradient-to-b from-ink-950/90 via-ink-950/25 via-[65%] to-ink-950/75" />
 
-      <div className="relative z-10">
+      {/* Belt and braces: a drop-shadow on the text itself, independent of
+          gradient timing, so legibility holds regardless of which photo a
+          future file-drop puts here or how brightness falls within it. */}
+      <div className="relative z-10 drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)]">
         <span className="text-xs font-semibold uppercase tracking-wide text-brass-300">{eyebrow}</span>
         <h3 className={cn('mt-2 font-display leading-tight text-sand-50', size === 'lg' ? 'text-3xl' : 'text-2xl')}>
           {title}
         </h3>
-        <p className="mt-2 text-sm leading-relaxed text-ink-200">{description}</p>
+        <p className="mt-2 text-sm leading-relaxed text-sand-100">{description}</p>
       </div>
       <div className="relative z-10 mt-4 flex items-center gap-1.5 text-sm font-semibold text-brass-300">
         Explore
