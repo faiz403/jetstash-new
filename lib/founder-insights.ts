@@ -378,6 +378,8 @@ function launchChecklist(now: Date): { section: FounderSection; checklist: Check
   const anyTracking = deals.some((d) => hasTracking(d.partnerUrl));
   const datedUrl = deals.map((d) => parseEmbeddedOutboundDate(d.partnerUrl)).find((d) => d !== null);
   const datedUrlFresh = datedUrl ? -daysBetween(datedUrl, now) > DATED_URL_WATCH_DAYS : true;
+  const photoCoverage = imageCoverage();
+  const photosComplete = photoCoverage.destinations >= destinations.length;
 
   const checklist: ChecklistItem[] = [
     {
@@ -388,8 +390,11 @@ function launchChecklist(now: Date): { section: FounderSection; checklist: Check
     },
     {
       label: 'Real photography',
-      detail: `All ${destinations.length} destinations still use the generated panel (deliberate, and it ships fine, but photography converts better).`,
-      done: false,
+      detail:
+        photoCoverage.destinations === 0
+          ? `All ${destinations.length} destinations still use the generated panel (deliberate, and it ships fine, but photography converts better).`
+          : `${photoCoverage.destinations} of ${destinations.length} destinations now have real Signature Collection photography; the rest still use the generated panel.`,
+      done: photosComplete,
       verifiedBy: 'auto',
     },
     {
