@@ -1,218 +1,292 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { ArrowUpRight } from 'lucide-react';
-import { deals, formatChecked, type Deal } from '@/data/deals';
 import { getRouteByAirportAndDestination } from '@/data/routes';
+import geo from '@/lib/route-map-geo.json';
 
-interface MapRoute {
-  id: string;
-  fromLabel: string;
-  fromX: number;
-  fromY: number;
-  toLabel: string;
-  toCountry: string;
-  toX: number;
-  toY: number;
-  airportSlug: string;
-  destinationSlug: string;
+const ORIGIN_AIRPORT_SLUG = 'manchester';
+
+type RegionKey = 'pakistan' | 'india' | 'gulf' | 'turkey-morocco';
+type LabelAnchor = 'start' | 'middle' | 'end';
+
+interface CityMeta {
+  region: RegionKey;
+  /** Label placement relative to the marker — tuned to the projected layout so the crowded eastern cluster stays legible. */
+  dx: number;
+  dy: number;
+  anchor: LabelAnchor;
+  /** Cities with no destination page of their own (e.g. Abu Dhabi) link to the region hub instead of a dead URL. */
+  hrefOverride?: string;
 }
 
-// Coordinates are positioned on a stylised 1000x380 world strip — UK to South Asia / Gulf.
-// Prices are NOT stored here: every figure shown is looked up from data/deals.ts so the
-// hero can never drift out of sync with the single source of truth.
-// Order matters: the first route is the default highlight. London–Delhi leads because
-// UK–India is the largest UK–South Asia travel market by traffic and search demand.
-const mapRoutes: MapRoute[] = [
-  { id: 'lhr-del', fromLabel: 'London', fromX: 195, fromY: 175, toLabel: 'Delhi', toCountry: 'India', toX: 800, toY: 210, airportSlug: 'london-heathrow', destinationSlug: 'delhi' },
-  { id: 'man-lhe', fromLabel: 'Manchester', fromX: 165, fromY: 120, toLabel: 'Lahore', toCountry: 'Pakistan', toX: 760, toY: 195, airportSlug: 'manchester', destinationSlug: 'lahore' },
-  { id: 'lhr-isb', fromLabel: 'London', fromX: 195, fromY: 175, toLabel: 'Islamabad', toCountry: 'Pakistan', toX: 745, toY: 175, airportSlug: 'london-heathrow', destinationSlug: 'islamabad' },
-  { id: 'man-khi', fromLabel: 'Manchester', fromX: 165, fromY: 120, toLabel: 'Karachi', toCountry: 'Pakistan', toX: 740, toY: 235, airportSlug: 'manchester', destinationSlug: 'karachi' },
-  { id: 'lhr-bom', fromLabel: 'London', fromX: 195, fromY: 175, toLabel: 'Mumbai', toCountry: 'India', toX: 790, toY: 260, airportSlug: 'london-heathrow', destinationSlug: 'mumbai' },
-  { id: 'bhx-atq', fromLabel: 'Birmingham', fromX: 178, fromY: 150, toLabel: 'Amritsar', toCountry: 'India', toX: 770, toY: 190, airportSlug: 'birmingham', destinationSlug: 'amritsar' },
-  { id: 'man-dxb', fromLabel: 'Manchester', fromX: 165, fromY: 120, toLabel: 'Dubai', toCountry: 'UAE', toX: 680, toY: 250, airportSlug: 'manchester', destinationSlug: 'dubai' },
-  { id: 'lhr-doh', fromLabel: 'London', fromX: 195, fromY: 175, toLabel: 'Doha', toCountry: 'Qatar', toX: 665, toY: 245, airportSlug: 'london-heathrow', destinationSlug: 'doha' },
-  { id: 'lhr-jed', fromLabel: 'London', fromX: 195, fromY: 175, toLabel: 'Jeddah', toCountry: 'Saudi Arabia', toX: 590, toY: 270, airportSlug: 'london-heathrow', destinationSlug: 'jeddah' },
+// Display config keyed by slug. Coordinates and names come from the generated
+// lib/route-map-geo.json (real Natural Earth geography); this only carries the
+// app-level concerns: region grouping for the mobile list, label placement,
+// and href overrides.
+const CITY_META: Record<string, CityMeta> = {
+  islamabad: { region: 'pakistan', dx: -12, dy: 0, anchor: 'end' },
+  lahore: { region: 'pakistan', dx: -12, dy: 5, anchor: 'end' },
+  karachi: { region: 'pakistan', dx: -12, dy: 4, anchor: 'end' },
+  delhi: { region: 'india', dx: 12, dy: 4, anchor: 'start' },
+  amritsar: { region: 'india', dx: 12, dy: 9, anchor: 'start' },
+  ahmedabad: { region: 'india', dx: 12, dy: 4, anchor: 'start' },
+  mumbai: { region: 'india', dx: 12, dy: 4, anchor: 'start' },
+  dubai: { region: 'gulf', dx: 12, dy: 4, anchor: 'start' },
+  'abu-dhabi': { region: 'gulf', dx: 0, dy: 22, anchor: 'middle', hrefOverride: '/gulf' },
+  doha: { region: 'gulf', dx: -12, dy: 4, anchor: 'end' },
+  jeddah: { region: 'gulf', dx: 12, dy: 4, anchor: 'start' },
+  istanbul: { region: 'turkey-morocco', dx: 12, dy: 4, anchor: 'start' },
+  marrakech: { region: 'turkey-morocco', dx: 12, dy: 4, anchor: 'start' },
+};
+
+const REGIONS: { key: RegionKey; label: string }[] = [
+  { key: 'pakistan', label: 'Pakistan' },
+  { key: 'india', label: 'India' },
+  { key: 'gulf', label: 'Gulf' },
+  { key: 'turkey-morocco', label: 'Turkey & Morocco' },
 ];
 
-/** Cheapest economy flight fare recorded for this pair, if any. */
-function findFlightDeal(route: MapRoute): Deal | undefined {
-  return deals
-    .filter(
-      (d) =>
-        d.category === 'flight' &&
-        d.cabin === 'Economy' &&
-        d.fromAirportSlug === route.airportSlug &&
-        d.toDestinationSlug === route.destinationSlug
-    )
-    .sort((a, b) => a.indicativePrice - b.indicativePrice)[0];
+interface City {
+  slug: string;
+  name: string;
+  x: number;
+  y: number;
+  meta: CityMeta;
 }
 
-function routeHref(route: MapRoute): string {
-  const guide = getRouteByAirportAndDestination(route.airportSlug, route.destinationSlug);
-  return guide ? `/routes/${guide.slug}` : `/destinations/${route.destinationSlug}`;
+// Merge generated coordinates with display config once, preserving the generated
+// order (roughly north-west to south-east) for a natural reveal sequence.
+const CITIES: City[] = geo.cities
+  .filter((c) => CITY_META[c.slug])
+  .map((c) => ({ ...c, meta: CITY_META[c.slug] }));
+
+const ORIGIN = geo.origin;
+
+function destinationHref(slug: string, override?: string): string {
+  if (override) return override;
+  const guide = getRouteByAirportAndDestination(ORIGIN_AIRPORT_SLUG, slug);
+  return guide ? `/routes/${guide.slug}` : `/destinations/${slug}`;
+}
+
+// Elegant single-bow arc from Manchester to a city: a quadratic whose control
+// point lifts perpendicular-ish (upward) from the chord midpoint, scaled by
+// distance, so every route sweeps the same graceful direction.
+function arcPath(city: City): string {
+  const dx = city.x - ORIGIN.x;
+  const dy = city.y - ORIGIN.y;
+  const dist = Math.hypot(dx, dy);
+  const mx = (ORIGIN.x + city.x) / 2;
+  const my = (ORIGIN.y + city.y) / 2;
+  const lift = dist * 0.16;
+  return `M ${ORIGIN.x} ${ORIGIN.y} Q ${mx.toFixed(1)} ${(my - lift).toFixed(1)} ${city.x} ${city.y}`;
 }
 
 export function RouteMapHero() {
-  const [active, setActive] = useState<string>(mapRoutes[0].id);
-  const activeRoute = mapRoutes.find((r) => r.id === active) ?? mapRoutes[0];
-  const activeDeal = findFlightDeal(activeRoute);
+  const router = useRouter();
+  const [active, setActive] = useState<string | null>(null);
+  const [revealed, setRevealed] = useState(false);
+  const sectionRef = useRef<HTMLDivElement>(null);
+  const activeCity = CITIES.find((c) => c.slug === active) ?? null;
+
+  useEffect(() => {
+    const el = sectionRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setRevealed(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.2 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
 
   return (
-    <div className="relative w-full">
-      {/* At phone width the 1000-unit map renders city labels at ~4px with ~2px
-          tap targets, unusable. Below sm the chip selector is the interface
-          and the map hides; the readout below serves both. */}
-      <div className="-mx-5 flex gap-2 overflow-x-auto px-5 pb-1 no-scrollbar sm:hidden" role="group" aria-label="Preview a route">
-        {mapRoutes.map((route) => {
-          const isActive = route.id === active;
-          return (
-            <button
-              key={`chip-${route.id}`}
-              onClick={() => setActive(route.id)}
-              aria-pressed={isActive}
-              className={
-                isActive
-                  ? 'shrink-0 rounded-full bg-brass px-4 py-2 text-sm font-semibold text-ink-900'
-                  : 'shrink-0 rounded-full border border-white/15 bg-white/5 px-4 py-2 text-sm font-medium text-ink-200'
-              }
+    <div ref={sectionRef}>
+      <div className="max-w-xl">
+        <span className="text-xs font-semibold uppercase tracking-wide text-brass-300">Where we fly</span>
+        <h2 className="mt-2 font-display text-3xl leading-tight text-sand-50 sm:text-4xl">
+          Manchester to the destinations that matter
+        </h2>
+        <p className="mt-3 text-ink-300">
+          Every destination we cover from Manchester, mapped in one view. Select a city to trace its route and
+          explore the guide.
+        </p>
+      </div>
+
+      {/* Below sm the map's labels are unreadable, so small screens get a direct
+          editorial index grouped the same way. */}
+      <div className="mt-10 flex flex-col gap-8 sm:hidden">
+        {REGIONS.map((region) => (
+          <div key={region.key}>
+            <span className="text-xs font-semibold uppercase tracking-wide text-ink-400">{region.label}</span>
+            <ul className="mt-3 flex flex-col divide-y divide-white/10 border-t border-white/10">
+              {CITIES.filter((c) => c.meta.region === region.key).map((city) => (
+                <li key={city.slug}>
+                  <Link
+                    href={destinationHref(city.slug, city.meta.hrefOverride)}
+                    className="flex items-center justify-between py-3.5 text-sand-50 transition-colors hover:text-brass-300"
+                  >
+                    <span className="font-display text-xl">{city.name}</span>
+                    <ArrowUpRight className="h-4 w-4 shrink-0" strokeWidth={2} />
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
+
+      <div className="mt-8 hidden sm:block">
+        <div className="mx-auto max-w-[1100px]">
+          <svg
+            viewBox={geo.viewBox}
+            className="h-auto w-full"
+            role="img"
+            aria-label="Map of flight routes from Manchester to Pakistan, India, the Gulf, Turkey and Morocco, drawn on real geography"
+          >
+            <defs>
+              <filter id="rmGlow" x="-120%" y="-120%" width="340%" height="340%">
+                <feGaussianBlur stdDeviation="4" />
+              </filter>
+            </defs>
+
+            {/* Real Natural Earth landmass + faint borders — the subtle canvas. */}
+            <path d={geo.land} fill="#0E1521" stroke="#C8932E" strokeOpacity="0.13" strokeWidth="0.6" strokeLinejoin="round" />
+            <path d={geo.borders} fill="none" stroke="#C8932E" strokeOpacity="0.07" strokeWidth="0.5" />
+
+            {/* Routes — thin gold arcs, drawn in on reveal, brightening on hover. */}
+            <g fill="none" strokeLinecap="round">
+              {CITIES.map((city, i) => {
+                const isActive = city.slug === active;
+                return (
+                  <path
+                    key={city.slug}
+                    d={arcPath(city)}
+                    stroke={isActive ? '#E7BE6A' : '#C8932E'}
+                    strokeOpacity={isActive ? 0.95 : 0.2}
+                    strokeWidth={isActive ? 1.8 : 1}
+                    pathLength={1}
+                    strokeDasharray={1}
+                    strokeDashoffset={revealed ? 0 : 1}
+                    style={{
+                      transition: 'stroke-dashoffset 1.1s ease, stroke-opacity 0.35s ease, stroke 0.35s ease, stroke-width 0.35s ease',
+                      transitionDelay: revealed ? `${i * 55}ms` : '0ms',
+                    }}
+                  />
+                );
+              })}
+            </g>
+
+            {/* Markers + labels sit above the routes. Each is a link-role group. */}
+            <g
+              style={{
+                opacity: revealed ? 1 : 0,
+                transition: 'opacity 0.6s ease',
+                transitionDelay: '0.5s',
+              }}
             >
-              {route.toLabel}
-            </button>
-          );
-        })}
-      </div>
-
-      <svg
-        viewBox="0 0 1000 380"
-        className="hidden h-auto w-full sm:block"
-        role="img"
-        aria-label="Map of flight routes from UK airports to South Asia and the Gulf"
-      >
-        <defs>
-          <radialGradient id="dotglow" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stopColor="#C8932E" stopOpacity="0.9" />
-            <stop offset="100%" stopColor="#C8932E" stopOpacity="0" />
-          </radialGradient>
-        </defs>
-
-        {mapRoutes.map((route) => {
-          const isActive = route.id === active;
-          const midX = (route.fromX + route.toX) / 2;
-          const midY = Math.min(route.fromY, route.toY) - 60;
-          const path = `M ${route.fromX} ${route.fromY} Q ${midX} ${midY} ${route.toX} ${route.toY}`;
-          return (
-            <g key={route.id}>
-              <path
-                d={path}
-                fill="none"
-                stroke={isActive ? '#C8932E' : '#1E222B'}
-                strokeWidth={isActive ? 1.75 : 1}
-                strokeDasharray={isActive ? 'none' : '3 5'}
-                className="transition-all duration-500"
-              />
+              {CITIES.map((city) => {
+                const isActive = city.slug === active;
+                const href = destinationHref(city.slug, city.meta.hrefOverride);
+                return (
+                  <g
+                    key={city.slug}
+                    role="link"
+                    tabIndex={0}
+                    aria-label={`Manchester to ${city.name}. Explore destination.`}
+                    className="cursor-pointer focus:outline-none"
+                    onMouseEnter={() => setActive(city.slug)}
+                    onFocus={() => setActive(city.slug)}
+                    onMouseLeave={() => setActive((c) => (c === city.slug ? null : c))}
+                    onBlur={() => setActive((c) => (c === city.slug ? null : c))}
+                    onClick={() => router.push(href)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        router.push(href);
+                      }
+                    }}
+                  >
+                    {/* Generous invisible hit area over the marker. */}
+                    <circle cx={city.x} cy={city.y} r="18" fill="transparent" />
+                    {isActive && (
+                      <circle cx={city.x} cy={city.y} r="9" fill="#E7BE6A" opacity="0.5" filter="url(#rmGlow)" />
+                    )}
+                    <circle
+                      cx={city.x}
+                      cy={city.y}
+                      r={isActive ? 4 : 2.6}
+                      fill={isActive ? '#F1D28C' : '#C8932E'}
+                      fillOpacity={isActive ? 1 : 0.75}
+                      className="transition-all duration-300"
+                    />
+                    <text
+                      x={city.x + city.meta.dx}
+                      y={city.y + city.meta.dy}
+                      textAnchor={city.meta.anchor}
+                      className="select-none font-display transition-all duration-300"
+                      fontSize={isActive ? 15 : 13}
+                      fill={isActive ? '#F7F2E9' : '#9CA3B0'}
+                      style={{ paintOrder: 'stroke', stroke: 'transparent', strokeWidth: 10 }}
+                    >
+                      {city.name}
+                    </text>
+                  </g>
+                );
+              })}
             </g>
-          );
-        })}
 
-        {mapRoutes.map((route) => {
-          const isActive = route.id === active;
-          return (
-            <g key={`pt-${route.id}`}>
-              <circle
-                cx={route.toX}
-                cy={route.toY}
-                r={isActive ? 22 : 0}
-                fill="url(#dotglow)"
-                className={isActive ? 'animate-pulse-dot transition-all duration-500' : 'transition-all duration-500'}
-                style={isActive ? { transformOrigin: `${route.toX}px ${route.toY}px` } : undefined}
-              />
-              <circle
-                cx={route.toX}
-                cy={route.toY}
-                r={isActive ? 6 : 4}
-                fill={isActive ? '#C8932E' : '#454B57'}
-                stroke="#0B0E14"
-                strokeWidth="2"
-                className="cursor-pointer transition-all duration-300 focus:outline-none"
-                tabIndex={0}
-                role="button"
-                aria-label={`Show ${route.fromLabel} to ${route.toLabel} route`}
-                onMouseEnter={() => setActive(route.id)}
-                onFocus={() => setActive(route.id)}
-                onClick={() => setActive(route.id)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') setActive(route.id);
-                }}
-              />
+            {/* Manchester origin. */}
+            <g
+              style={{
+                opacity: revealed ? 1 : 0,
+                transition: 'opacity 0.6s ease',
+                transitionDelay: '0.3s',
+              }}
+            >
+              <circle cx={ORIGIN.x} cy={ORIGIN.y} r="10" fill="#F7F2E9" opacity="0.12" filter="url(#rmGlow)" />
+              <circle cx={ORIGIN.x} cy={ORIGIN.y} r="3.6" fill="#F7F2E9" />
               <text
-                x={route.toX}
-                y={route.toY - 14}
+                x={ORIGIN.x}
+                y={ORIGIN.y - 15}
                 textAnchor="middle"
-                className="pointer-events-none select-none font-sans"
-                fontSize={isActive ? 13 : 11}
-                fontWeight={isActive ? 700 : 500}
-                fill={isActive ? '#F7F2E9' : '#6B7280'}
+                className="select-none font-sans"
+                fontSize="12"
+                fontWeight={700}
+                letterSpacing="0.08em"
+                fill="#F7F2E9"
               >
-                {route.toLabel}
+                MANCHESTER
               </text>
             </g>
-          );
-        })}
+          </svg>
 
-        {/* origin markers — UK airports */}
-        {[...new Set(mapRoutes.map((r) => r.fromLabel))].map((label) => {
-          const r = mapRoutes.find((x) => x.fromLabel === label)!;
-          return (
-            <g key={label}>
-              <circle cx={r.fromX} cy={r.fromY} r="5" fill="#F7F2E9" stroke="#0B0E14" strokeWidth="2" />
-              <text x={r.fromX} y={r.fromY - 13} textAnchor="middle" fontSize="11" fontWeight={600} fill="#F7F2E9" className="select-none">
-                {label}
-              </text>
-            </g>
-          );
-        })}
-      </svg>
-
-      {/* Active route readout — every figure comes from data/deals.ts */}
-      <div
-        aria-live="polite"
-        className="mt-4 flex flex-col items-start gap-4 rounded-md border border-white/10 bg-white/[0.03] p-5 transition-colors duration-300 sm:mt-2 sm:flex-row sm:items-center sm:justify-between"
-      >
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-ink-400">
-            {activeRoute.fromLabel} → {activeRoute.toLabel}, {activeRoute.toCountry}
-          </p>
-          {activeDeal ? (
-            <>
-              <p className="mt-1 font-display text-2xl text-sand-50 tabular-nums">
-                from £{activeDeal.indicativePrice.toLocaleString('en-GB')}
-                <span className="ml-2 font-sans text-sm font-normal text-ink-300">return, example fare</span>
-              </p>
-              <p className="mt-0.5 text-xs text-ink-400">
-                {activeDeal.airline} · checked {formatChecked(activeDeal.lastChecked)}
-              </p>
-            </>
-          ) : (
-            <p className="mt-1 font-display text-xl text-sand-50">
-              Full route guide
-              <span className="ml-2 font-sans text-sm font-normal text-ink-300">booking windows & fare history</span>
-            </p>
-          )}
+          {/* Route card — swaps between an idle prompt and the active route. No prices, no stats. */}
+          <div aria-live="polite" className="mt-4 flex min-h-[4.5rem] items-center justify-center border-t border-white/10 pt-6">
+            {activeCity ? (
+              <div className="flex flex-col items-center gap-2 text-center">
+                <p className="font-display text-2xl text-sand-50">Manchester → {activeCity.name}</p>
+                <Link
+                  href={destinationHref(activeCity.slug, activeCity.meta.hrefOverride)}
+                  className="inline-flex items-center gap-1.5 text-sm font-semibold text-brass-300 transition-colors hover:text-brass-200"
+                >
+                  Explore destination
+                  <ArrowUpRight className="h-4 w-4" strokeWidth={2.25} />
+                </Link>
+              </div>
+            ) : (
+              <p className="text-sm text-ink-400">Hover a destination to trace its route from Manchester.</p>
+            )}
+          </div>
         </div>
-        <Link
-          href={routeHref(activeRoute)}
-          className="inline-flex items-center gap-1.5 rounded-sm bg-brass px-5 py-3 text-sm font-semibold text-ink-900 transition-all hover:bg-brass-400 hover:shadow-brass-glow active:scale-[0.985]"
-        >
-          View route guide
-          <ArrowUpRight className="h-4 w-4" strokeWidth={2.25} />
-        </Link>
       </div>
-      <p className="mt-3 text-center text-xs text-ink-400 sm:text-left">
-        Select any city to preview its route. Fares are examples checked manually on the date shown, not live
-        prices. Always confirm the final price before booking.
-      </p>
     </div>
   );
 }

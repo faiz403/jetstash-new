@@ -1,4 +1,4 @@
-import { ArrowUpRight, ShieldCheck, Users, Crown, BadgeCheck, CalendarCheck } from 'lucide-react';
+import { ArrowUpRight, ShieldCheck, Users, Crown, BadgeCheck, CalendarCheck, Plane, Compass, BookOpen, Globe, type LucideIcon } from 'lucide-react';
 import Link from 'next/link';
 import { RouteMapHero } from '@/components/sections/route-map-hero';
 import { HubCard } from '@/components/ui/hub-card';
@@ -9,7 +9,8 @@ import { Badge } from '@/components/ui/badge';
 import { deals, getDealsByCategory, formatChecked } from '@/data/deals';
 import { routes, getRouteAirport, getRouteDestination } from '@/data/routes';
 import { getDestinationBySlug } from '@/data/destinations';
-import { getDestinationImage, getHeroImage } from '@/lib/brand-images';
+import { getGuideBySlug } from '@/data/guides';
+import { getDestinationImage, getHeroImage, getAirportImage } from '@/lib/brand-images';
 import { DestinationVisual } from '@/components/ui/destination-visual';
 import { HeroBackdrop } from '@/components/ui/hero-backdrop';
 
@@ -29,41 +30,54 @@ export default function HomePage() {
   const popularRoutes = featuredRouteSlugs
     .map((slug) => routes.find((r) => r.slug === slug))
     .filter((r): r is NonNullable<typeof r> => Boolean(r));
+  // Broadly relevant across the whole audience (not Umrah- or business-class-specific),
+  // so they earn a place on the homepage rather than only their region hub.
+  const featuredGuideSlugs = ['visa-processing-booking-date', 'eid-diwali-vs-school-holiday-pricing', 'direct-vs-gulf-connecting-fares'];
+  const featuredGuides = featuredGuideSlugs
+    .map((slug) => getGuideBySlug(slug))
+    .filter((g): g is NonNullable<typeof g> => Boolean(g));
 
   return (
     <>
       {/* ───────────────────────── HERO ───────────────────────── */}
+      {/* Manchester's own photo (control tower, departing aircraft, routes fanning
+          from the UK across the world) rather than a destination shot — it makes
+          the "UK departure first" claim visual, and sets up the interactive route
+          map immediately below as its literal, clickable version. */}
       <section className="relative overflow-hidden bg-ink-900 pb-16 pt-12 sm:pb-24 sm:pt-16">
-        <HeroBackdrop heroKey="homepage" />
+        <HeroBackdrop image={getAirportImage('manchester')} />
         <div className="relative mx-auto max-w-content px-5 sm:px-8">
           <div className="max-w-2xl">
             <div className="stagger-in stagger-1 animate-fade-up">
-              <Badge variant="dark">The UK's South Asia, Gulf & Umrah travel intelligence platform</Badge>
+              <Badge variant="dark">UK departure first</Badge>
             </div>
-            {/* The headline centres the traveller's journey, not our competitors' failings —
-                the same trip framing the whole brand is built around: for most of our
-                audience this is the most important journey of their year. */}
             <h1 className="stagger-in stagger-2 mt-5 animate-fade-up font-display text-[2.5rem] leading-[1.05] tracking-tight text-sand-50 sm:text-6xl">
-              The journey that matters most, taken seriously.
+              Find better flights from the UK to the destinations that matter.
             </h1>
             <p className="stagger-in stagger-3 mt-5 max-w-lg animate-fade-up text-lg leading-relaxed text-ink-300">
-              Flights from UK airports to Pakistan, India, the Gulf and Umrah, with route guides, fare
-              history and honest booking windows, checked by people and dated. No countdown timers, no
-              invented urgency, ever.
+              Routes, destination guides and travel inspiration from UK airports to Pakistan, India, Turkey,
+              Morocco and the Gulf, checked by people and dated. No countdown timers, no invented urgency, ever.
             </p>
-            <div className="stagger-in stagger-4 mt-7 flex animate-fade-up flex-wrap gap-3">
-              <LinkButton href="/deals" size="lg">
-                See the fares we track
+            <div className="stagger-in stagger-4 mt-7 flex animate-fade-up flex-wrap items-center gap-x-7 gap-y-4">
+              <LinkButton href="/destinations" size="lg">
+                Explore destinations
               </LinkButton>
-              <LinkButton href="/routes" variant="outline" size="lg">
-                Find your route
-              </LinkButton>
+              <Link
+                href="/airports"
+                className="inline-flex items-center gap-1.5 text-sm font-semibold text-sand-50 underline decoration-white/30 underline-offset-4 hover:text-brass-300 hover:decoration-brass-300"
+              >
+                Browse UK airports
+                <ArrowUpRight className="h-4 w-4" strokeWidth={2.25} />
+              </Link>
             </div>
           </div>
+        </div>
+      </section>
 
-          <div className="mt-14">
-            <RouteMapHero />
-          </div>
+      {/* ───────────────────────── INTERACTIVE MANCHESTER ROUTE MAP ───────────────────────── */}
+      <section className="border-t border-white/5 bg-ink-950 py-16 sm:py-20">
+        <div className="mx-auto max-w-content px-5 sm:px-8">
+          <RouteMapHero />
         </div>
       </section>
 
@@ -373,30 +387,98 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ───────────────────────── WHY JETSTASH — real comparison, not generic trust badges ───────────────────────── */}
+      {/* ───────────────────────── WHY JETSTASH — three editorial cards, no invented stats ───────────────────────── */}
       <section className="bg-ink-900 py-16 sm:py-24">
         <div className="mx-auto max-w-content px-5 sm:px-8">
-          <span className="text-xs font-semibold uppercase tracking-wide text-brass-300">Why JetStash, specifically</span>
+          <span className="text-xs font-semibold uppercase tracking-wide text-brass-300">Why JetStash</span>
           <h2 className="mt-2 max-w-2xl font-display text-3xl leading-tight text-sand-50 sm:text-4xl">
-            Generic search engines treat these routes as an edge case. We don't.
+            Built around how you actually fly from the UK, not a generic search box.
           </h2>
-          <div className="mt-10 grid gap-px overflow-hidden rounded-md border border-white/10 sm:grid-cols-3">
-            <ComparisonColumn
-              label="Generic comparison sites"
-              points={['One Pakistan/India page, if any', 'No Eid or Diwali pricing context', 'No NICOP/OCI guidance', 'Business class treated identically to economy']}
-              tone="muted"
+          <div className="mt-10 grid gap-5 sm:grid-cols-3">
+            <WhyCard
+              icon={Plane}
+              title="UK departure first"
+              description="Every hub starts from a UK airport, not a global search bar. Manchester today, with more UK airports being added as coverage grows."
             />
-            <ComparisonColumn
-              label="JetStash"
-              points={['Dedicated hub for every route', 'Fare and route history, not just today\'s snapshot', 'Peak-period warnings built into every route page', 'Document guidance specific to each destination']}
-              tone="highlight"
+            <WhyCard
+              icon={ShieldCheck}
+              title="Honest travel guidance"
+              description="Visa timing, booking windows and route history, checked by a person and dated. Never a countdown timer or invented urgency."
             />
-            <ComparisonColumn
-              label="Specialist travel agents"
-              points={['Strong on packages', 'Limited on live fare comparison', 'Often phone/in-person only', 'Good for Umrah, thinner on flights-only']}
-              tone="muted"
+            <WhyCard
+              icon={Compass}
+              title="Curated destinations"
+              description="Every destination we cover gets its own guide, hand-picked for the routes our travellers actually fly."
             />
           </div>
+        </div>
+      </section>
+
+      {/* ───────────────────────── MANCHESTER, OUR FIRST AIRPORT + LATEST GUIDES ───────────────────────── */}
+      <section className="bg-sand-50 py-16 sm:py-24">
+        <div className="mx-auto max-w-content px-5 sm:px-8">
+          <div className="grid gap-6 lg:grid-cols-[0.85fr_1.15fr]">
+            <div className="flex flex-col justify-between rounded-md bg-ink-900 p-8">
+              <div>
+                <span className="text-xs font-semibold uppercase tracking-wide text-brass-300">Starting with Manchester</span>
+                <h2 className="mt-3 font-display text-2xl leading-tight text-sand-50 sm:text-3xl">
+                  Our first airport, not our only one
+                </h2>
+                <p className="mt-4 text-sm leading-relaxed text-ink-300">
+                  Manchester is the busiest direct gateway to Pakistan, India and the Gulf outside London, which
+                  is why it's where JetStash started. It's the beginning of a wider UK airport collection, not
+                  the limit of one.
+                </p>
+              </div>
+              <LinkButton href="/airports/manchester" className="mt-6 self-start">
+                Explore Manchester Airport
+              </LinkButton>
+            </div>
+            <div>
+              <div className="flex flex-wrap items-end justify-between gap-4">
+                <h3 className="font-display text-xl text-ink-900">Latest travel guides</h3>
+                <Link href="/guides" className="flex items-center gap-1.5 text-sm font-semibold text-ink-900 hover:text-terracotta-600">
+                  All guides <ArrowUpRight className="h-4 w-4" strokeWidth={2.25} />
+                </Link>
+              </div>
+              <div className="mt-5 grid gap-5 sm:grid-cols-3">
+                {featuredGuides.map((guide) => (
+                  <Link
+                    key={guide.slug}
+                    href={`/guides/${guide.slug}`}
+                    className="group flex flex-col rounded-md border border-ink-100 bg-white p-5 shadow-card transition-all hover:-translate-y-1 hover:shadow-card-hover"
+                  >
+                    <BookOpen className="h-5 w-5 text-terracotta-600" strokeWidth={2} />
+                    <h4 className="mt-3 font-display text-base leading-snug text-ink-900">{guide.title}</h4>
+                    <p className="mt-2 text-xs leading-relaxed text-ink-500">{guide.summary}</p>
+                    <span className="mt-4 flex items-center gap-1.5 text-xs font-semibold text-ink-900">
+                      Read guide
+                      <ArrowUpRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" strokeWidth={2.25} />
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ───────────────────────── FINAL CTA — simple, minimal, elegant ───────────────────────── */}
+      <section className="border-t border-white/5 bg-ink-950 py-10">
+        <div className="mx-auto flex max-w-content flex-col items-start justify-between gap-6 px-5 sm:flex-row sm:items-center sm:px-8">
+          <div className="flex items-start gap-3">
+            <Globe className="mt-0.5 h-6 w-6 shrink-0 text-brass-300" strokeWidth={1.75} />
+            <div>
+              <p className="font-display text-xl text-sand-50">Your journey starts here.</p>
+              <p className="mt-1 max-w-md text-sm text-ink-400">
+                Explore flights from UK airports to the destinations that matter, and find the route guide built
+                for how you actually travel.
+              </p>
+            </div>
+          </div>
+          <LinkButton href="/airports" size="lg" className="shrink-0">
+            Explore UK airports
+          </LinkButton>
         </div>
       </section>
 
@@ -406,35 +488,14 @@ export default function HomePage() {
   );
 }
 
-function ComparisonColumn({
-  label,
-  points,
-  tone,
-}: {
-  label: string;
-  points: string[];
-  tone: 'muted' | 'highlight';
-}) {
+function WhyCard({ icon: Icon, title, description }: { icon: LucideIcon; title: string; description: string }) {
   return (
-    // On mobile the columns stack — JetStash leads rather than a competitor;
-    // sm+ restores the classic ours-in-the-middle comparison layout.
-    <div className={tone === 'highlight' ? 'order-first bg-ink-800 p-7 sm:order-none' : 'bg-ink-900 p-7'}>
-      <h3 className={`font-display text-lg ${tone === 'highlight' ? 'text-brass-300' : 'text-ink-300'}`}>{label}</h3>
-      <ul className="mt-4 flex flex-col gap-3">
-        {points.map((point) => (
-          <li
-            key={point}
-            className={`flex items-start gap-2.5 text-sm leading-snug ${tone === 'highlight' ? 'text-sand-100' : 'text-ink-400'}`}
-          >
-            {tone === 'highlight' ? (
-              <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-brass-300" strokeWidth={2} />
-            ) : (
-              <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-ink-500" />
-            )}
-            {point}
-          </li>
-        ))}
-      </ul>
+    <div className="rounded-md border border-white/10 bg-white/[0.02] p-6">
+      <span className="flex h-11 w-11 items-center justify-center rounded-full border border-brass/40 text-brass-300">
+        <Icon className="h-5 w-5" strokeWidth={2} />
+      </span>
+      <h3 className="mt-4 font-display text-lg text-sand-50">{title}</h3>
+      <p className="mt-2 text-sm leading-relaxed text-ink-300">{description}</p>
     </div>
   );
 }
