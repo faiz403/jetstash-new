@@ -40,7 +40,7 @@ export function HubCard({
             aria-hidden="true"
           />
         ) : (
-          <DestinationMark seed={title} className="p-0" />
+          <DestinationMark seed={title} className="p-0 transition-transform duration-500 group-hover:scale-[1.03]" />
         )}
       </div>
       {/* Vignette rather than a single bottom-anchored gradient: this card's

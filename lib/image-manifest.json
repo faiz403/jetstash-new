@@ -9,14 +9,21 @@
     "destinations/casablanca.webp",
     "destinations/dalaman.webp",
     "destinations/delhi.webp",
+    "destinations/doha.webp",
     "destinations/dubai.webp",
     "destinations/islamabad.webp",
     "destinations/istanbul.webp",
     "destinations/izmir.webp",
+    "destinations/jeddah.webp",
     "destinations/karachi.webp",
     "destinations/lahore.webp",
+    "destinations/madinah.webp",
     "destinations/marrakech.webp",
     "destinations/mumbai.webp",
-    "destinations/tangier.png"
+    "destinations/tangier.png",
+    "heroes/gulf.webp",
+    "heroes/india.webp",
+    "heroes/pakistan.webp",
+    "heroes/umrah.webp"
   ]
 }

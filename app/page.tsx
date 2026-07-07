@@ -176,7 +176,7 @@ export default function HomePage() {
           </div>
 
           <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            {popularRoutes.map((route) => {
+            {popularRoutes.map((route, i) => {
               const airport = getRouteAirport(route);
               const dest = getRouteDestination(route);
               if (!airport || !dest) return null;
@@ -184,9 +184,17 @@ export default function HomePage() {
                 <Link
                   key={route.slug}
                   href={`/routes/${route.slug}`}
-                  className="group flex flex-col rounded-md border border-ink-100 p-5 shadow-card transition-all hover:-translate-y-1 hover:shadow-card-hover"
+                  className="group flex flex-col rounded-md border border-ink-100 p-5 shadow-card transition-all hover:-translate-y-1 hover:border-terracotta-200 hover:shadow-card-hover"
                 >
-                  <span className="text-xs font-semibold uppercase tracking-wide text-ink-400">{route.isDirect ? 'Direct' : 'Connecting'}</span>
+                  <div className="flex items-center justify-between">
+                    <span className="flex h-9 w-9 items-center justify-center rounded-sm bg-terracotta-50 text-terracotta-600 transition-colors group-hover:bg-terracotta-100">
+                      <Plane className="h-4.5 w-4.5" strokeWidth={2} />
+                    </span>
+                    <span className="font-display text-sm text-ink-200" aria-hidden="true">
+                      {String(i + 1).padStart(2, '0')}
+                    </span>
+                  </div>
+                  <span className="mt-3 text-xs font-semibold uppercase tracking-wide text-ink-400">{route.isDirect ? 'Direct' : 'Connecting'}</span>
                   <h3 className="mt-1.5 font-display text-lg text-ink-900">{airport.city} → {dest.city}</h3>
                   <p className="mt-1 text-xs text-ink-500">{route.flightTime}</p>
                   <span className="mt-3 flex items-center gap-1 text-xs font-semibold text-ink-900">
@@ -442,13 +450,20 @@ export default function HomePage() {
                 </Link>
               </div>
               <div className="mt-5 grid gap-5 sm:grid-cols-3">
-                {featuredGuides.map((guide) => (
+                {featuredGuides.map((guide, i) => (
                   <Link
                     key={guide.slug}
                     href={`/guides/${guide.slug}`}
-                    className="group flex flex-col rounded-md border border-ink-100 bg-white p-5 shadow-card transition-all hover:-translate-y-1 hover:shadow-card-hover"
+                    className="group flex flex-col rounded-md border border-ink-100 bg-white p-5 shadow-card transition-all hover:-translate-y-1 hover:border-terracotta-200 hover:shadow-card-hover"
                   >
-                    <BookOpen className="h-5 w-5 text-terracotta-600" strokeWidth={2} />
+                    <div className="flex items-center justify-between">
+                      <span className="flex h-9 w-9 items-center justify-center rounded-sm bg-terracotta-50 text-terracotta-600 transition-colors group-hover:bg-terracotta-100">
+                        <BookOpen className="h-4.5 w-4.5" strokeWidth={2} />
+                      </span>
+                      <span className="font-display text-sm text-ink-200" aria-hidden="true">
+                        {String(i + 1).padStart(2, '0')}
+                      </span>
+                    </div>
                     <h4 className="mt-3 font-display text-base leading-snug text-ink-900">{guide.title}</h4>
                     <p className="mt-2 text-xs leading-relaxed text-ink-500">{guide.summary}</p>
                     <span className="mt-4 flex items-center gap-1.5 text-xs font-semibold text-ink-900">
