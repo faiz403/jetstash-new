@@ -153,14 +153,14 @@ function affiliateStatus(): FounderSection {
   return {
     id: 'affiliate',
     title: 'Booking provider configuration',
-    status: hasTracking ? 'ok' : 'setup',
-    headline: hasTracking
-      ? `Primary provider is ${primary.name}, and every outbound link carries its affiliate tracking parameters.`
-      : `Primary provider is ${primary.name}, but it has no affiliate tracking parameters yet — every click-through is currently unpaid. Skyscanner stays disabled (application declined pre-launch).`,
+    status: hasTracking && primary.supportsDeepLink ? 'ok' : 'setup',
+    headline: !primary.supportsDeepLink
+      ? `Primary provider is ${primary.name}. Deep-linking is OFF — a guessed URL shape landed users on a TravelUp error page in production, so every booking link falls back to their real homepage instead. No affiliate tracking parameters yet either, so every click-through is currently unpaid. Skyscanner stays disabled (application declined pre-launch).`
+      : hasTracking
+        ? `Primary provider is ${primary.name}, deep-linking is on, and every outbound link carries its affiliate tracking parameters.`
+        : `Primary provider is ${primary.name} with deep-linking on, but it has no affiliate tracking parameters yet — every click-through is currently unpaid.`,
     items: [],
-    action: hasTracking
-      ? 'Everything reads from lib/booking-providers.ts — no other file needs touching.'
-      : `Once ${primary.name} issues real affiliate tracking parameters, add them to BOOKING_PROVIDERS.${PRIMARY_PROVIDER_ID}.affiliateParams in lib/booking-providers.ts. Also verify the deep-link query names (origin/destination/cabinClass) against ${primary.name}'s real integration docs before launch. To re-enable ${skyscanner.name} later, flip its enabled flag and add its params in the same file.`,
+    action: `Sign up for ${primary.name}'s affiliate programme (via Commission Junction: https://signup.cj.com/member/signup/publisher/?cid=6248437, or their own page at travelup.com/en-us/company/affiliate-programme) to get real tracking parameters and their actual deep-link URL structure. Add the tracking parameters to BOOKING_PROVIDERS.${PRIMARY_PROVIDER_ID}.affiliateParams and, once the real query/path schema is confirmed, update getRouteBookingUrl and flip supportsDeepLink to true in lib/booking-providers.ts. To re-enable ${skyscanner.name} later, flip its enabled flag and add its params in the same file.`,
   };
 }
 
@@ -400,10 +400,12 @@ function launchChecklist(): { section: FounderSection; checklist: ChecklistItem[
       verifiedBy: 'auto',
     },
     {
-      label: `${primaryProvider.name} deep-link schema verified`,
-      detail: `The origin/destination/cabinClass query names in lib/booking-providers.ts are a best-effort convention, not confirmed against ${primaryProvider.name}'s real integration docs. Verify before launch.`,
-      done: false,
-      verifiedBy: 'manual',
+      label: `${primaryProvider.name} deep-link schema confirmed`,
+      detail: primaryProvider.supportsDeepLink
+        ? `Deep-linking is on — confirmed against ${primaryProvider.name}'s real integration docs.`
+        : `Deep-linking is OFF. A guessed origin/destination/cabinClass URL shape landed users on a ${primaryProvider.name} error page in production, so every booking link falls back to their homepage. Sign up for their affiliate programme to get the real schema, then update lib/booking-providers.ts.`,
+      done: primaryProvider.supportsDeepLink,
+      verifiedBy: 'auto',
     },
     {
       label: 'Brevo custom contact attributes created',
