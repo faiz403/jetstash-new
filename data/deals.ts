@@ -1,6 +1,20 @@
 export type DealCabin = 'Economy' | 'Premium Economy' | 'Business';
 export type DealCategory = 'flight' | 'package' | 'business' | 'umrah';
 
+/**
+ * A Deal is curation, not a price: which airport→destination+cabin
+ * combinations are worth featuring as a card on the homepage, /deals,
+ * region hubs and destination pages, plus the descriptive metadata for
+ * that card (city/country names, airline, category tag).
+ *
+ * It deliberately carries no price field. DealCard derives what price
+ * information to show (an honest observed range, a single logged check, or
+ * — if nothing has been logged yet — non-perishable route facts instead)
+ * from data/fare-observations.ts at render time via
+ * getFareRangeSummary(routeSlug, cabin). That keeps exactly one source of
+ * truth for "what have we actually seen this fare cost" and means no card
+ * can silently go stale the way a hardcoded price used to.
+ */
 export interface Deal {
   id: string;
   category: DealCategory;
@@ -10,23 +24,9 @@ export interface Deal {
   fromCity: string;
   toCity: string;
   toCountry: string;
-  indicativePrice: number;
-  priceNote: string; // e.g. "return, per person"
   airline: string;
-  lastChecked: string; // ISO date — shown as "Example fare checked <date>", never a live/verified price claim
   tag?: string;
 }
-
-/**
- * IMPORTANT: every price below is example/indicative data for demonstration purposes.
- * None of these figures are live, scraped, or independently verified fares. Several
- * entries (Mumbai, Karachi, Athens, Rome economy; Islamabad, Karachi, Amritsar, Doha,
- * Jeddah, Madinah business; the July 2026 Turkey/Morocco additions — Dalaman, Bodrum,
- * Izmir, Agadir, Casablanca, Tangier) were added specifically to fill destination/cabin
- * coverage gaps and are clearly tagged 'Example fare' rather than carrying a
- * category-specific tag like the earlier entries. Before launch, replace with real
- * researched fares or a live pricing API and update this comment.
- */
 
 export const deals: Deal[] = [
   {
@@ -38,10 +38,7 @@ export const deals: Deal[] = [
     fromCity: 'Manchester',
     toCity: 'Lahore',
     toCountry: 'Pakistan',
-    indicativePrice: 489,
-    priceNote: 'example fare, return, per person',
     airline: 'PIA',
-    lastChecked: '2026-06-15',
     tag: 'Direct flight',
   },
   {
@@ -53,10 +50,7 @@ export const deals: Deal[] = [
     fromCity: 'London Heathrow',
     toCity: 'Islamabad',
     toCountry: 'Pakistan',
-    indicativePrice: 512,
-    priceNote: 'example fare, return, per person',
     airline: 'British Airways',
-    lastChecked: '2026-06-15',
     tag: 'Direct flight',
   },
   {
@@ -68,10 +62,7 @@ export const deals: Deal[] = [
     fromCity: 'London Heathrow',
     toCity: 'Delhi',
     toCountry: 'India',
-    indicativePrice: 467,
-    priceNote: 'example fare, return, per person',
     airline: 'Virgin Atlantic',
-    lastChecked: '2026-06-14',
     tag: 'Direct flight',
   },
   {
@@ -83,10 +74,7 @@ export const deals: Deal[] = [
     fromCity: 'Birmingham',
     toCity: 'Amritsar',
     toCountry: 'India',
-    indicativePrice: 521,
-    priceNote: 'example fare, return, per person',
     airline: 'Air India',
-    lastChecked: '2026-06-13',
     tag: 'Direct flight',
   },
   {
@@ -98,10 +86,7 @@ export const deals: Deal[] = [
     fromCity: 'Manchester',
     toCity: 'Dubai',
     toCountry: 'United Arab Emirates',
-    indicativePrice: 349,
-    priceNote: 'example fare, return, per person',
     airline: 'Emirates',
-    lastChecked: '2026-06-16',
     tag: 'Direct flight',
   },
   {
@@ -113,10 +98,7 @@ export const deals: Deal[] = [
     fromCity: 'London Heathrow',
     toCity: 'Doha',
     toCountry: 'Qatar',
-    indicativePrice: 398,
-    priceNote: 'example fare, return, per person',
     airline: 'Qatar Airways',
-    lastChecked: '2026-06-16',
     tag: 'Direct flight',
   },
   {
@@ -128,10 +110,7 @@ export const deals: Deal[] = [
     fromCity: 'Manchester',
     toCity: 'Dubai',
     toCountry: 'United Arab Emirates',
-    indicativePrice: 1840,
-    priceNote: 'example fare, return, per person',
     airline: 'Emirates',
-    lastChecked: '2026-06-12',
     tag: 'Example fare',
   },
   {
@@ -143,10 +122,7 @@ export const deals: Deal[] = [
     fromCity: 'London Heathrow',
     toCity: 'Delhi',
     toCountry: 'India',
-    indicativePrice: 2150,
-    priceNote: 'example fare, return, per person',
     airline: 'Virgin Atlantic',
-    lastChecked: '2026-06-11',
     tag: 'Example fare',
   },
   {
@@ -158,10 +134,7 @@ export const deals: Deal[] = [
     fromCity: 'London Heathrow',
     toCity: 'Lahore',
     toCountry: 'Pakistan',
-    indicativePrice: 1690,
-    priceNote: 'example fare, return, per person',
     airline: 'British Airways',
-    lastChecked: '2026-06-10',
     tag: 'Example fare',
   },
   {
@@ -173,10 +146,7 @@ export const deals: Deal[] = [
     fromCity: 'Manchester',
     toCity: 'Lahore',
     toCountry: 'Pakistan',
-    indicativePrice: 1845,
-    priceNote: 'example fare, return, per person',
     airline: 'PIA',
-    lastChecked: '2026-06-09',
     tag: 'Example fare',
   },
   {
@@ -188,10 +158,7 @@ export const deals: Deal[] = [
     fromCity: 'London Heathrow',
     toCity: 'Jeddah',
     toCountry: 'Saudi Arabia',
-    indicativePrice: 899,
-    priceNote: 'example fare, 7 nights, flights + hotel, per person sharing',
     airline: 'Saudia',
-    lastChecked: '2026-06-09',
     tag: 'Umrah package',
   },
   {
@@ -203,10 +170,7 @@ export const deals: Deal[] = [
     fromCity: 'Manchester',
     toCity: 'Madinah',
     toCountry: 'Saudi Arabia',
-    indicativePrice: 1149,
-    priceNote: 'example fare, 14 nights Makkah & Madinah, flights + hotel, per person sharing',
     airline: 'Saudia',
-    lastChecked: '2026-06-09',
     tag: 'Umrah package',
   },
   {
@@ -218,10 +182,7 @@ export const deals: Deal[] = [
     fromCity: 'Manchester',
     toCity: 'Istanbul',
     toCountry: 'Turkey',
-    indicativePrice: 379,
-    priceNote: 'example fare, 4 nights, flights + hotel, per person',
     airline: 'Turkish Airlines',
-    lastChecked: '2026-06-15',
     tag: 'City break',
   },
   {
@@ -233,10 +194,7 @@ export const deals: Deal[] = [
     fromCity: 'Birmingham',
     toCity: 'Antalya',
     toCountry: 'Turkey',
-    indicativePrice: 459,
-    priceNote: 'example fare, 7 nights all-inclusive, flights + hotel, per person',
     airline: 'Jet2',
-    lastChecked: '2026-06-14',
     tag: 'Family all-inclusive',
   },
   {
@@ -248,10 +206,7 @@ export const deals: Deal[] = [
     fromCity: 'London Gatwick',
     toCity: 'Marrakech',
     toCountry: 'Morocco',
-    indicativePrice: 329,
-    priceNote: 'example fare, 3 nights, flights + riad, per person',
     airline: 'easyJet',
-    lastChecked: '2026-06-13',
     tag: 'City break',
   },
   // Turkey & Morocco coverage additions (July 2026) — same rule as the header
@@ -266,10 +221,7 @@ export const deals: Deal[] = [
     fromCity: 'Manchester',
     toCity: 'Dalaman',
     toCountry: 'Turkey',
-    indicativePrice: 229,
-    priceNote: 'example fare, return, per person',
     airline: 'Jet2',
-    lastChecked: '2026-07-05',
     tag: 'Example fare',
   },
   {
@@ -281,10 +233,7 @@ export const deals: Deal[] = [
     fromCity: 'Manchester',
     toCity: 'Bodrum',
     toCountry: 'Turkey',
-    indicativePrice: 219,
-    priceNote: 'example fare, return, per person',
     airline: 'Jet2',
-    lastChecked: '2026-07-05',
     tag: 'Example fare',
   },
   {
@@ -296,10 +245,7 @@ export const deals: Deal[] = [
     fromCity: 'London Gatwick',
     toCity: 'Izmir',
     toCountry: 'Turkey',
-    indicativePrice: 169,
-    priceNote: 'example fare, return, per person',
     airline: 'SunExpress',
-    lastChecked: '2026-07-05',
     tag: 'Example fare',
   },
   {
@@ -311,10 +257,7 @@ export const deals: Deal[] = [
     fromCity: 'London Gatwick',
     toCity: 'Agadir',
     toCountry: 'Morocco',
-    indicativePrice: 179,
-    priceNote: 'example fare, return, per person',
     airline: 'easyJet',
-    lastChecked: '2026-07-05',
     tag: 'Example fare',
   },
   {
@@ -326,10 +269,7 @@ export const deals: Deal[] = [
     fromCity: 'London Heathrow',
     toCity: 'Casablanca',
     toCountry: 'Morocco',
-    indicativePrice: 199,
-    priceNote: 'example fare, return, per person',
     airline: 'Royal Air Maroc',
-    lastChecked: '2026-07-05',
     tag: 'Example fare',
   },
   {
@@ -341,10 +281,7 @@ export const deals: Deal[] = [
     fromCity: 'London Gatwick',
     toCity: 'Tangier',
     toCountry: 'Morocco',
-    indicativePrice: 149,
-    priceNote: 'example fare, return, per person',
     airline: 'easyJet',
-    lastChecked: '2026-07-05',
     tag: 'Example fare',
   },
   {
@@ -356,10 +293,7 @@ export const deals: Deal[] = [
     fromCity: 'Manchester',
     toCity: 'Barcelona',
     toCountry: 'Spain',
-    indicativePrice: 64,
-    priceNote: 'example fare, return, per person, flight only',
     airline: 'Ryanair',
-    lastChecked: '2026-06-16',
     tag: 'Flight only',
   },
   {
@@ -371,10 +305,7 @@ export const deals: Deal[] = [
     fromCity: 'Bristol',
     toCity: 'Faro',
     toCountry: 'Portugal',
-    indicativePrice: 412,
-    priceNote: 'example fare, 7 nights, flights + apartment, per person',
     airline: 'TUI',
-    lastChecked: '2026-06-12',
     tag: 'Family holiday',
   },
   // ─── Added to fill destination coverage gaps — see note below ───
@@ -387,10 +318,7 @@ export const deals: Deal[] = [
     fromCity: 'London Heathrow',
     toCity: 'Mumbai',
     toCountry: 'India',
-    indicativePrice: 498,
-    priceNote: 'example fare, return, per person',
     airline: 'British Airways',
-    lastChecked: '2026-06-16',
     tag: 'Example fare',
   },
   {
@@ -402,10 +330,7 @@ export const deals: Deal[] = [
     fromCity: 'London Heathrow',
     toCity: 'Karachi',
     toCountry: 'Pakistan',
-    indicativePrice: 521,
-    priceNote: 'example fare, return, per person',
     airline: 'British Airways',
-    lastChecked: '2026-06-16',
     tag: 'Example fare',
   },
   {
@@ -417,10 +342,7 @@ export const deals: Deal[] = [
     fromCity: 'Manchester',
     toCity: 'Karachi',
     toCountry: 'Pakistan',
-    indicativePrice: 495,
-    priceNote: 'example fare, return, per person',
     airline: 'PIA',
-    lastChecked: '2026-06-16',
     tag: 'Example fare',
   },
   {
@@ -432,10 +354,7 @@ export const deals: Deal[] = [
     fromCity: 'Manchester',
     toCity: 'Athens',
     toCountry: 'Greece',
-    indicativePrice: 142,
-    priceNote: 'example fare, return, per person',
     airline: 'easyJet',
-    lastChecked: '2026-06-16',
     tag: 'Example fare',
   },
   {
@@ -447,10 +366,7 @@ export const deals: Deal[] = [
     fromCity: 'Manchester',
     toCity: 'Rome',
     toCountry: 'Italy',
-    indicativePrice: 98,
-    priceNote: 'example fare, return, per person',
     airline: 'Ryanair',
-    lastChecked: '2026-06-16',
     tag: 'Example fare',
   },
   {
@@ -462,10 +378,7 @@ export const deals: Deal[] = [
     fromCity: 'Manchester',
     toCity: 'Islamabad',
     toCountry: 'Pakistan',
-    indicativePrice: 1780,
-    priceNote: 'example fare, return, per person',
     airline: 'PIA',
-    lastChecked: '2026-06-09',
     tag: 'Example fare',
   },
   {
@@ -477,10 +390,7 @@ export const deals: Deal[] = [
     fromCity: 'London Heathrow',
     toCity: 'Karachi',
     toCountry: 'Pakistan',
-    indicativePrice: 1910,
-    priceNote: 'example fare, return, per person',
     airline: 'British Airways',
-    lastChecked: '2026-06-09',
     tag: 'Example fare',
   },
   {
@@ -492,10 +402,7 @@ export const deals: Deal[] = [
     fromCity: 'Birmingham',
     toCity: 'Amritsar',
     toCountry: 'India',
-    indicativePrice: 2080,
-    priceNote: 'example fare, return, per person',
     airline: 'Air India',
-    lastChecked: '2026-06-08',
     tag: 'Example fare',
   },
   {
@@ -507,10 +414,7 @@ export const deals: Deal[] = [
     fromCity: 'London Heathrow',
     toCity: 'Doha',
     toCountry: 'Qatar',
-    indicativePrice: 1640,
-    priceNote: 'example fare, return, per person',
     airline: 'Qatar Airways',
-    lastChecked: '2026-06-11',
     tag: 'Example fare',
   },
   {
@@ -522,10 +426,7 @@ export const deals: Deal[] = [
     fromCity: 'London Heathrow',
     toCity: 'Jeddah',
     toCountry: 'Saudi Arabia',
-    indicativePrice: 1730,
-    priceNote: 'example fare, return, per person',
     airline: 'Saudia',
-    lastChecked: '2026-06-10',
     tag: 'Example fare',
   },
   {
@@ -537,10 +438,7 @@ export const deals: Deal[] = [
     fromCity: 'London Heathrow',
     toCity: 'Madinah',
     toCountry: 'Saudi Arabia',
-    indicativePrice: 1755,
-    priceNote: 'example fare, return, per person',
     airline: 'Saudia',
-    lastChecked: '2026-06-10',
     tag: 'Example fare',
   },
   {
@@ -552,10 +450,7 @@ export const deals: Deal[] = [
     fromCity: 'London Gatwick',
     toCity: 'Ahmedabad',
     toCountry: 'India',
-    indicativePrice: 412,
-    priceNote: 'example fare, return, per person',
     airline: 'Air India',
-    lastChecked: '2026-06-17',
     tag: 'Example fare',
   },
   {
@@ -567,10 +462,7 @@ export const deals: Deal[] = [
     fromCity: 'London Gatwick',
     toCity: 'Ahmedabad',
     toCountry: 'India',
-    indicativePrice: 1620,
-    priceNote: 'example fare, return, per person',
     airline: 'Air India',
-    lastChecked: '2026-06-17',
     tag: 'Example fare',
   },
 ];

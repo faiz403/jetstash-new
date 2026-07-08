@@ -7,6 +7,7 @@ import { NewsletterSection } from '@/components/sections/newsletter-section';
 import { LinkButton } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { deals, getDealsByCategory, formatChecked } from '@/data/deals';
+import { fareObservations } from '@/data/fare-observations';
 import { routes, getRouteAirport, getRouteDestination } from '@/data/routes';
 import { getDestinationBySlug } from '@/data/destinations';
 import { getGuideBySlug } from '@/data/guides';
@@ -22,7 +23,10 @@ export default function HomePage() {
     .map((id) => deals.find((d) => d.id === id))
     .filter((d): d is NonNullable<typeof d> => Boolean(d));
   // Derived from data so the label can never claim a fresher check than actually happened.
-  const latestCheck = deals.reduce((max, d) => (d.lastChecked > max ? d.lastChecked : max), deals[0].lastChecked);
+  const latestCheck = fareObservations.reduce(
+    (max, o) => (o.observedDate > max ? o.observedDate : max),
+    fareObservations[0].observedDate
+  );
   const businessDeals = getDealsByCategory('business').slice(0, 2);
   const umrahDeals = getDealsByCategory('umrah').slice(0, 1);
   // One flagship route per region, ordered by market size: India, Pakistan, Gulf, Umrah.

@@ -1,6 +1,8 @@
+import Link from 'next/link';
 import { Deal, DealCabin, formatChecked } from '@/data/deals';
 import { getRouteByAirportAndDestination } from '@/data/routes';
-import { getObservationsByRoute } from '@/data/fare-observations';
+import { getDestinationBySlug } from '@/data/destinations';
+import { getObservationsByRoute, getFareRangeSummary } from '@/data/fare-observations';
 import { getDealBookingUrl } from '@/lib/booking-providers';
 import { Plane, ArrowUpRight, TrendingUp } from 'lucide-react';
 import { Badge } from './badge';
@@ -13,9 +15,16 @@ const cabinLabel: Record<DealCabin, string> = {
 };
 
 export function DealCard({ deal }: { deal: Deal }) {
-  // Fare history context, not a marketing tag — reinforces this is a tracked route, not a one-off "today's deal".
   const matchedRoute = getRouteByAirportAndDestination(deal.fromAirportSlug, deal.toDestinationSlug);
+  // Fare history context, not a marketing tag — reinforces this is a tracked route, not a one-off "today's deal".
   const observations = matchedRoute ? getObservationsByRoute(matchedRoute.slug) : [];
+  // The only source of truth for what this card shows as a price: a real
+  // logged range/check, or nothing at all — never a hardcoded figure that
+  // can go stale. See data/deals.ts's header comment.
+  const range = matchedRoute ? getFareRangeSummary(matchedRoute.slug, deal.cabin) : null;
+  const destination = getDestinationBySlug(deal.toDestinationSlug);
+  const flightTime = matchedRoute?.flightTime ?? destination?.flightTimeFromUK;
+  const directness = matchedRoute ? (matchedRoute.isDirect ? 'Direct' : 'Via connection') : undefined;
 
   return (
     <article className="group relative flex flex-col overflow-hidden rounded-md border border-ink-100 bg-white shadow-card transition-all duration-300 hover:-translate-y-1 hover:shadow-card-hover">
@@ -42,16 +51,50 @@ export function DealCard({ deal }: { deal: Deal }) {
       </div>
 
       <div className="flex flex-1 flex-col px-5 py-5">
-        <div className="flex items-baseline gap-2">
-          <span className="font-display text-3xl tracking-tight text-ink-900 tabular-nums">£{deal.indicativePrice.toLocaleString('en-GB')}</span>
-          <span className="text-sm text-ink-400">{deal.priceNote}</span>
-        </div>
-        <p className="mt-1 text-sm font-medium text-ink-500">{deal.airline}</p>
+        {range ? (
+          <>
+            <div className="flex items-baseline gap-2">
+              <span className="font-display text-3xl tracking-tight text-ink-900 tabular-nums">
+                {range.count > 1
+                  ? `£${range.min.toLocaleString('en-GB')}–£${range.max.toLocaleString('en-GB')}`
+                  : `£${range.min.toLocaleString('en-GB')}`}
+              </span>
+              <span className="text-sm text-ink-400">{range.priceNote}</span>
+            </div>
+            <p className="mt-1 text-sm font-medium text-ink-500">{deal.airline}</p>
 
-        <div className="mt-4 flex items-center gap-1.5 text-xs text-ink-400">
-          <span className="h-1.5 w-1.5 rounded-full bg-brass-400" />
-          Example fare checked {formatChecked(deal.lastChecked)}
-        </div>
+            <div className="mt-4 flex items-center gap-1.5 text-xs text-ink-400">
+              <span className="h-1.5 w-1.5 rounded-full bg-brass-400" />
+              {range.count > 1
+                ? `From ${range.count} checks since ${formatChecked(range.earliestDate)}`
+                : `One check, ${formatChecked(range.latestDate)}`}
+            </div>
+          </>
+        ) : (
+          <>
+            <p className="font-display text-xl leading-snug text-ink-900">
+              {matchedRoute ? flightTime : `Typical flight time: ${flightTime ?? 'varies'}`}
+            </p>
+            <p className="mt-1 text-sm font-medium text-ink-500">
+              {deal.airline}
+              {directness ? ` · ${directness}` : ''}
+            </p>
+
+            <div className="mt-4 flex items-center gap-1.5 text-xs text-ink-400">
+              <span className="h-1.5 w-1.5 rounded-full bg-ink-300" />
+              No fare checks logged yet — check the live price below
+            </div>
+            {matchedRoute && (
+              <Link
+                href={`/routes/${matchedRoute.slug}`}
+                className="mt-1.5 inline-flex items-center gap-1 text-xs text-ink-400 transition-colors hover:text-ink-600"
+              >
+                Booking-window guidance on the route guide
+                <ArrowUpRight className="h-3 w-3" strokeWidth={2.25} />
+              </Link>
+            )}
+          </>
+        )}
         {observations.length > 1 && (
           <div className="mt-1.5 flex items-center gap-1.5 text-xs text-ink-400">
             <TrendingUp className="h-3.5 w-3.5" strokeWidth={2} />

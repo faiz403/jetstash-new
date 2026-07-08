@@ -4,7 +4,7 @@ export interface FareObservation {
   id: string;
   routeSlug: string;
   cabin: DealCabin;
-  /** ISO date this fare was actually checked — same honesty rule as Deal.lastChecked, never a live price claim. */
+  /** ISO date this fare was actually checked — never a live price claim. */
   observedDate: string;
   price: number;
   priceNote: string;
@@ -49,4 +49,41 @@ export function getObservationsByRoute(routeSlug: string) {
 export function getLatestObservation(routeSlug: string) {
   const observations = getObservationsByRoute(routeSlug);
   return observations[observations.length - 1];
+}
+
+export function getObservationsByRouteAndCabin(routeSlug: string, cabin: DealCabin) {
+  return fareObservations
+    .filter((o) => o.routeSlug === routeSlug && o.cabin === cabin)
+    .sort((a, b) => a.observedDate.localeCompare(b.observedDate));
+}
+
+export interface FareRangeSummary {
+  count: number;
+  min: number;
+  max: number;
+  earliestDate: string;
+  latestDate: string;
+  /** Taken from the most recent observation — the most representative note for the range shown. */
+  priceNote: string;
+}
+
+/**
+ * Derives an honest price range from real logged observations — never a
+ * "current price" claim. A single observation still returns a summary
+ * (min === max), framed by the caller as "one check", not a range. Returns
+ * null when nothing has been logged yet for this route/cabin, so callers
+ * can fall back to non-perishable route facts instead of showing a price.
+ */
+export function getFareRangeSummary(routeSlug: string, cabin: DealCabin): FareRangeSummary | null {
+  const observations = getObservationsByRouteAndCabin(routeSlug, cabin);
+  if (observations.length === 0) return null;
+  const prices = observations.map((o) => o.price);
+  return {
+    count: observations.length,
+    min: Math.min(...prices),
+    max: Math.max(...prices),
+    earliestDate: observations[0].observedDate,
+    latestDate: observations[observations.length - 1].observedDate,
+    priceNote: observations[observations.length - 1].priceNote,
+  };
 }

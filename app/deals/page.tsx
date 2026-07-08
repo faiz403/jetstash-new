@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { PageHero } from '@/components/sections/page-hero';
 import { DealsExplorer } from '@/components/sections/deals-explorer';
 import { deals, formatChecked } from '@/data/deals';
+import { fareObservations } from '@/data/fare-observations';
 import { siteConfig } from '@/lib/site-config';
 
 export const metadata: Metadata = {
@@ -14,7 +15,10 @@ export const metadata: Metadata = {
 
 export default function DealsPage() {
   // Derived from data so the hero can never claim a fresher check than actually happened.
-  const latestCheck = deals.reduce((max, d) => (d.lastChecked > max ? d.lastChecked : max), deals[0].lastChecked);
+  const latestCheck = fareObservations.reduce(
+    (max, o) => (o.observedDate > max ? o.observedDate : max),
+    fareObservations[0].observedDate
+  );
   const airportCount = new Set(deals.map((d) => d.fromAirportSlug)).size;
 
   return (

@@ -2,7 +2,7 @@ import { deals } from '@/data/deals';
 import { routes, getRouteAirport, getRouteDestination } from '@/data/routes';
 import { destinations, getDestinationBySlug } from '@/data/destinations';
 import { getAirportBySlug } from '@/data/airports';
-import { getObservationsByRoute } from '@/data/fare-observations';
+import { fareObservations, getObservationsByRoute } from '@/data/fare-observations';
 import { routeWarnings } from '@/data/route-warnings';
 import { imageCoverage } from '@/lib/brand-images';
 import { BOOKING_PROVIDERS, PRIMARY_PROVIDER_ID } from '@/lib/booking-providers';
@@ -37,12 +37,10 @@ export interface FounderSection {
   action?: string;
 }
 
-// ── Thresholds (days). Chosen for a hand-checked fare site: fares are
-// re-checked roughly monthly, so "watch" warms up before "attention" fires.
-const DEAL_WATCH_DAYS = 21;
-const DEAL_ATTENTION_DAYS = 35;
-const OBS_WATCH_DAYS = 30;
-const OBS_ATTENTION_DAYS = 45;
+// ── Thresholds (days). Fare observations don't go stale (a historical
+// range/check is honest at any age), so there is deliberately no watch/
+// attention threshold for them any more — only for route service-end dates,
+// which are genuine deadlines.
 const SERVICE_END_WATCH_DAYS = 90;
 
 function daysBetween(fromIso: string, now: Date): number {
@@ -69,78 +67,35 @@ function routeLabel(routeSlug: string): string {
   return airport && dest ? `${airport.city} → ${dest.city}` : routeSlug;
 }
 
-// ── 1. Routes needing fare checks ────────────────────────────────────────
-function routesNeedingFareChecks(now: Date): FounderSection {
-  const noHistory: FounderItem[] = [];
-  const stale: FounderItem[] = [];
+// ── 1. Fare observation coverage ─────────────────────────────────────────
+// A calm backlog, not a deadline: a fare observation never goes "wrong" as
+// it ages — an honest historical range or single check is just as true a
+// year later, it just doesn't get any tighter. So there's nothing to
+// escalate here, only routes worth enriching with a fresh check whenever
+// convenient. Replaces the old age-based "stale deal" alarms entirely.
+function fareObservationCoverage(): FounderSection {
+  const noHistory: FounderItem[] = routes
+    .filter((route) => getObservationsByRoute(route.slug).length === 0)
+    .map((route) => ({
+      label: routeLabel(route.slug),
+      detail: 'No fare observations logged yet — its deal cards show route facts instead of a price until one is.',
+      status: 'watch',
+      href: `/routes/${route.slug}`,
+    }));
 
-  for (const route of routes) {
-    const observations = getObservationsByRoute(route.slug);
-    const label = routeLabel(route.slug);
-    const href = `/routes/${route.slug}`;
-    if (observations.length === 0) {
-      noHistory.push({
-        label,
-        detail: 'No fare history yet. The route page shows no tracked fares.',
-        status: 'watch',
-        href,
-      });
-    } else {
-      const latest = observations[observations.length - 1];
-      const age = daysBetween(latest.observedDate, now);
-      if (age >= OBS_ATTENTION_DAYS) {
-        stale.push({ label, detail: `Last checked ${age} days ago (${formatShortDate(latest.observedDate)}).`, status: 'attention', href });
-      } else if (age >= OBS_WATCH_DAYS) {
-        stale.push({ label, detail: `Last checked ${age} days ago (${formatShortDate(latest.observedDate)}).`, status: 'watch', href });
-      }
-    }
-  }
-
-  stale.sort((a, b) => (a.status === b.status ? 0 : a.status === 'attention' ? -1 : 1));
-  const items = [...stale, ...noHistory];
-  const status = worst(items.map((i) => i.status));
   const withHistory = routes.length - noHistory.length;
 
   return {
     id: 'fare-checks',
-    title: 'Routes needing fare checks',
-    status,
+    title: 'Fare observation coverage',
+    status: noHistory.length > 0 ? 'watch' : 'ok',
     headline:
-      items.length === 0
-        ? `All ${routes.length} routes have fresh fare history.`
-        : `${stale.length} route${stale.length === 1 ? '' : 's'} with ageing checks · ${noHistory.length} of ${routes.length} routes have no fare history yet (${withHistory} tracked).`,
-    items,
+      noHistory.length === 0
+        ? `All ${routes.length} routes have at least one logged fare observation.`
+        : `${withHistory} of ${routes.length} routes have at least one fare observation · ${noHistory.length} have none yet. No deadline — log one whenever convenient to add a price to that route's deal cards.`,
+    items: noHistory,
     action:
-      'Check the fare on TravelUp or the airline\'s own site, then append a new entry to data/fare-observations.ts (never overwrite) and update the matching deal in data/deals.ts with the same date.',
-  };
-}
-
-// ── 2. Deals with old lastChecked dates ──────────────────────────────────
-function dealsNeedingRecheck(now: Date): FounderSection {
-  const aged = deals
-    .map((deal) => ({ deal, age: daysBetween(deal.lastChecked, now) }))
-    .filter(({ age }) => age >= DEAL_WATCH_DAYS)
-    .sort((a, b) => b.age - a.age);
-
-  const items: FounderItem[] = aged.map(({ deal, age }) => ({
-    label: `${deal.fromCity} → ${deal.toCity} (${deal.cabin})`,
-    detail: `Checked ${age} days ago (${formatShortDate(deal.lastChecked)}) · £${deal.indicativePrice.toLocaleString('en-GB')} ${deal.airline}.`,
-    status: age >= DEAL_ATTENTION_DAYS ? 'attention' : 'watch',
-    href: `/destinations/${deal.toDestinationSlug}`,
-  }));
-
-  const oldest = deals.reduce((max, d) => Math.max(max, daysBetween(d.lastChecked, now)), 0);
-
-  return {
-    id: 'deal-freshness',
-    title: 'Deals with old lastChecked dates',
-    status: worst(items.map((i) => i.status)),
-    headline:
-      items.length === 0
-        ? `All ${deals.length} example fares checked within ${DEAL_WATCH_DAYS} days.`
-        : `${items.length} of ${deals.length} fares are ${DEAL_WATCH_DAYS}+ days old. The oldest is ${oldest} days.`,
-    items,
-    action: `Re-check each fare and update lastChecked in data/deals.ts. The site renders these dates publicly ("Example fare checked …"), so honesty depends on keeping them current.`,
+      'Optional, no deadline: check a fare on TravelUp or the airline\'s own site, then append a new entry to data/fare-observations.ts (never overwrite existing entries — it\'s an append-only history log).',
   };
 }
 
@@ -305,15 +260,16 @@ function warningsForReview(now: Date): FounderSection {
 }
 
 // ── 9. Pages with stale content ──────────────────────────────────────────
-function staleContent(now: Date): FounderSection {
+function staleContent(): FounderSection {
   const items: FounderItem[] = [];
 
-  const newest = deals.reduce((max, d) => (d.lastChecked > max ? d.lastChecked : max), deals[0].lastChecked);
-  const newestAge = daysBetween(newest, now);
+  // Informational only — an observation log has no staleness to escalate,
+  // unlike the single "current price" this label used to be derived from.
+  const newest = fareObservations.reduce((max, o) => (o.observedDate > max ? o.observedDate : max), fareObservations[0].observedDate);
   items.push({
     label: 'Homepage & /deals: "Most recent check" label',
-    detail: `The freshest fare check shown publicly is ${formatShortDate(newest)} (${newestAge} days ago). This label is derived from data, so it only improves when a fare is actually re-checked.`,
-    status: newestAge >= DEAL_ATTENTION_DAYS ? 'attention' : newestAge >= DEAL_WATCH_DAYS ? 'watch' : 'ok',
+    detail: `The freshest fare observation logged is ${formatShortDate(newest)}, from ${fareObservations.length} observations logged in total. Purely informational — no deadline attached.`,
+    status: 'ok',
     href: '/deals',
   });
 
@@ -386,8 +342,9 @@ function launchChecklist(): { section: FounderSection; checklist: ChecklistItem[
       verifiedBy: 'auto',
     },
     {
-      label: 'Real, current fare data',
-      detail: 'Every price in data/deals.ts is still example/indicative data (see the file\'s header comment). Replace with genuinely researched fares.',
+      label: 'Fare observations reflect genuinely researched prices',
+      detail:
+        'Deal cards now show an honest range/check from data/fare-observations.ts instead of a hardcoded price, which removes the staleness risk — but the £ figures currently logged are still the original example numbers, not independently verified market fares. Replace them with genuinely researched checks over time (no deadline; log via the Fare observation coverage section above).',
       done: false,
       verifiedBy: 'manual',
     },
@@ -449,15 +406,14 @@ export function getFounderSnapshot(now: Date): FounderSnapshot {
   const { section: launchSection, checklist, doneCount } = launchChecklist();
 
   const sections: FounderSection[] = [
-    routesNeedingFareChecks(now),
-    dealsNeedingRecheck(now),
+    fareObservationCoverage(),
     affiliateStatus(),
     photographyStatus(),
     quoteRequestStatus(),
     travelClubStatus(),
     linkHealth(),
     warningsForReview(now),
-    staleContent(now),
+    staleContent(),
     launchSection,
   ];
 
