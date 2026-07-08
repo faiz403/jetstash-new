@@ -111,7 +111,6 @@ export const deals: Deal[] = [
     toCity: 'Dubai',
     toCountry: 'United Arab Emirates',
     airline: 'Emirates',
-    tag: 'Example fare',
   },
   {
     id: 'lhr-business-del',
@@ -123,7 +122,6 @@ export const deals: Deal[] = [
     toCity: 'Delhi',
     toCountry: 'India',
     airline: 'Virgin Atlantic',
-    tag: 'Example fare',
   },
   {
     id: 'lhr-business-lhe',
@@ -135,7 +133,6 @@ export const deals: Deal[] = [
     toCity: 'Lahore',
     toCountry: 'Pakistan',
     airline: 'British Airways',
-    tag: 'Example fare',
   },
   {
     id: 'man-lhe-business',
@@ -147,7 +144,6 @@ export const deals: Deal[] = [
     toCity: 'Lahore',
     toCountry: 'Pakistan',
     airline: 'PIA',
-    tag: 'Example fare',
   },
   {
     id: 'umrah-package-jed',
@@ -209,9 +205,8 @@ export const deals: Deal[] = [
     airline: 'easyJet',
     tag: 'City break',
   },
-  // Turkey & Morocco coverage additions (July 2026) — same rule as the header
-  // comment: indicative example levels, clearly tagged 'Example fare', never a
-  // live or verified price claim.
+  // Turkey & Morocco coverage additions (July 2026) — fill destination/cabin
+  // coverage gaps, same curation-only rule as the header comment.
   {
     id: 'man-dlm-flight',
     category: 'flight',
@@ -222,7 +217,6 @@ export const deals: Deal[] = [
     toCity: 'Dalaman',
     toCountry: 'Turkey',
     airline: 'Jet2',
-    tag: 'Example fare',
   },
   {
     id: 'man-bjv-flight',
@@ -234,7 +228,6 @@ export const deals: Deal[] = [
     toCity: 'Bodrum',
     toCountry: 'Turkey',
     airline: 'Jet2',
-    tag: 'Example fare',
   },
   {
     id: 'lgw-adb-flight',
@@ -246,7 +239,6 @@ export const deals: Deal[] = [
     toCity: 'Izmir',
     toCountry: 'Turkey',
     airline: 'SunExpress',
-    tag: 'Example fare',
   },
   {
     id: 'lgw-aga-flight',
@@ -258,7 +250,6 @@ export const deals: Deal[] = [
     toCity: 'Agadir',
     toCountry: 'Morocco',
     airline: 'easyJet',
-    tag: 'Example fare',
   },
   {
     id: 'lhr-cmn-flight',
@@ -270,7 +261,6 @@ export const deals: Deal[] = [
     toCity: 'Casablanca',
     toCountry: 'Morocco',
     airline: 'Royal Air Maroc',
-    tag: 'Example fare',
   },
   {
     id: 'lgw-tng-flight',
@@ -282,7 +272,6 @@ export const deals: Deal[] = [
     toCity: 'Tangier',
     toCountry: 'Morocco',
     airline: 'easyJet',
-    tag: 'Example fare',
   },
   {
     id: 'man-bcn-flight',
@@ -319,7 +308,6 @@ export const deals: Deal[] = [
     toCity: 'Mumbai',
     toCountry: 'India',
     airline: 'British Airways',
-    tag: 'Example fare',
   },
   {
     id: 'lhr-khi-economy',
@@ -331,7 +319,6 @@ export const deals: Deal[] = [
     toCity: 'Karachi',
     toCountry: 'Pakistan',
     airline: 'British Airways',
-    tag: 'Example fare',
   },
   {
     id: 'man-khi-economy',
@@ -343,7 +330,6 @@ export const deals: Deal[] = [
     toCity: 'Karachi',
     toCountry: 'Pakistan',
     airline: 'PIA',
-    tag: 'Example fare',
   },
   {
     id: 'man-ath-economy',
@@ -355,7 +341,6 @@ export const deals: Deal[] = [
     toCity: 'Athens',
     toCountry: 'Greece',
     airline: 'easyJet',
-    tag: 'Example fare',
   },
   {
     id: 'man-fco-economy',
@@ -367,7 +352,6 @@ export const deals: Deal[] = [
     toCity: 'Rome',
     toCountry: 'Italy',
     airline: 'Ryanair',
-    tag: 'Example fare',
   },
   {
     id: 'man-isb-business',
@@ -379,7 +363,6 @@ export const deals: Deal[] = [
     toCity: 'Islamabad',
     toCountry: 'Pakistan',
     airline: 'PIA',
-    tag: 'Example fare',
   },
   {
     id: 'lhr-khi-business',
@@ -391,7 +374,6 @@ export const deals: Deal[] = [
     toCity: 'Karachi',
     toCountry: 'Pakistan',
     airline: 'British Airways',
-    tag: 'Example fare',
   },
   {
     id: 'bhx-atq-business',
@@ -403,7 +385,6 @@ export const deals: Deal[] = [
     toCity: 'Amritsar',
     toCountry: 'India',
     airline: 'Air India',
-    tag: 'Example fare',
   },
   {
     id: 'lhr-doh-business',
@@ -415,7 +396,6 @@ export const deals: Deal[] = [
     toCity: 'Doha',
     toCountry: 'Qatar',
     airline: 'Qatar Airways',
-    tag: 'Example fare',
   },
   {
     id: 'lhr-jed-business',
@@ -427,7 +407,6 @@ export const deals: Deal[] = [
     toCity: 'Jeddah',
     toCountry: 'Saudi Arabia',
     airline: 'Saudia',
-    tag: 'Example fare',
   },
   {
     id: 'lhr-med-business',
@@ -439,7 +418,6 @@ export const deals: Deal[] = [
     toCity: 'Madinah',
     toCountry: 'Saudi Arabia',
     airline: 'Saudia',
-    tag: 'Example fare',
   },
   {
     id: 'lgw-amd-economy',
@@ -451,7 +429,6 @@ export const deals: Deal[] = [
     toCity: 'Ahmedabad',
     toCountry: 'India',
     airline: 'Air India',
-    tag: 'Example fare',
   },
   {
     id: 'lgw-amd-business',
@@ -463,7 +440,6 @@ export const deals: Deal[] = [
     toCity: 'Ahmedabad',
     toCountry: 'India',
     airline: 'Air India',
-    tag: 'Example fare',
   },
 ];
 
@@ -483,7 +459,7 @@ export function getDealsByCategory(category: DealCategory) {
   return deals.filter((d) => d.category === category);
 }
 
-/** Renders a human "15 June 2026" date string for display alongside "Example fare checked". Never implies a live or verified price. */
+/** Renders a human "15 June 2026" date string for observed-fare dates (e.g. "One check, 15 June 2026"). Never implies a live or verified price. */
 export function formatChecked(iso: string): string {
   return new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
 }

@@ -172,7 +172,7 @@ export function RegionHubPage({
 
       <section className="bg-sand-50 py-16 sm:py-20">
         <div className="mx-auto max-w-content px-5 sm:px-8">
-          <h2 className="font-display text-2xl text-ink-900 sm:text-3xl">Example fares in this hub</h2>
+          <h2 className="font-display text-2xl text-ink-900 sm:text-3xl">Fares we're tracking in this hub</h2>
           {regionDeals.length > 0 ? (
             <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {regionDeals.map((deal) => (

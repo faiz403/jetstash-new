@@ -2,9 +2,10 @@ import { SearchX, ArrowUpRight } from 'lucide-react';
 import { getGeneralBookingUrl, getPrimaryBookingProvider } from '@/lib/booking-providers';
 
 /**
- * Shown wherever a destination/route/cabin combination has no example fare
- * data yet. Deliberately avoids implying that fares exist elsewhere and are
- * just hidden — it directs the visitor straight to a live partner search.
+ * Shown wherever a destination/route/cabin combination has no fare
+ * observations logged yet. Deliberately avoids implying that fares exist
+ * elsewhere and are just hidden — it directs the visitor straight to a
+ * live partner search.
  */
 export function NoFareFallback({ cityLabel }: { cityLabel: string }) {
   const provider = getPrimaryBookingProvider();
@@ -14,7 +15,7 @@ export function NoFareFallback({ cityLabel }: { cityLabel: string }) {
         <SearchX className="h-5 w-5" strokeWidth={2} />
       </div>
       <p className="mt-4 max-w-sm text-sm leading-relaxed text-ink-600">
-        We do not have a current example fare for {cityLabel} yet. Check live prices with our travel partners.
+        We haven't logged a tracked fare for {cityLabel} yet. Check live prices with our travel partners.
       </p>
       <a
         href={getGeneralBookingUrl()}

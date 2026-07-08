@@ -9,7 +9,7 @@ import { siteConfig } from '@/lib/site-config';
 export const metadata: Metadata = {
   title: 'Tracked Fares: UK to Pakistan, India, the Gulf & Umrah',
   description:
-    'Example fares from UK airports to Pakistan, India, the Gulf and Umrah, each checked by hand on a stated date. Never a live price claim.',
+    'Fares from UK airports to Pakistan, India, the Gulf and Umrah, tracked from hand-checked observations logged over time. Never a live price claim.',
   alternates: { canonical: `${siteConfig.url}/deals` },
 };
 
@@ -29,8 +29,9 @@ export default function DealsPage() {
         title="Fares we're tracking"
         description={
           <>
-            Every fare below is an example a member of our team checked by hand on the date shown. Never a
-            live price, never an automated feed. Always confirm the final price before booking.{' '}
+            Every fare shown below is a real check a member of our team logged by hand, dated. Where we've
+            checked a route more than once, you'll see the range we've actually observed — never a single
+            price left to quietly go stale. Always confirm the final price before booking.{' '}
             <Link href="/about" className="font-medium text-brass-300 underline underline-offset-2 hover:text-brass-200">
               Read our standards
             </Link>
@@ -38,7 +39,7 @@ export default function DealsPage() {
           </>
         }
         stats={[
-          { value: String(deals.length), label: 'Tracked fares' },
+          { value: String(fareObservations.length), label: 'Fare checks logged' },
           { value: String(airportCount), label: 'UK airports' },
           { value: formatChecked(latestCheck), label: 'Most recent check' },
         ]}

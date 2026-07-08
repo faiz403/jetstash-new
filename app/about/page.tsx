@@ -16,7 +16,7 @@ const standards = [
   {
     icon: CalendarCheck,
     title: 'Every fare is dated, and checked by a person',
-    body: 'When you see a price on JetStash, it is an example fare that a member of our team manually searched and recorded on the date shown. We never present it as a live quote, and we never hide when it was last checked. If a fare is old, you can see that it\'s old.',
+    body: 'When you see a price on JetStash, it comes from a real fare check a member of our team logged by hand, on the date shown — never presented as a live quote. Where we\'ve checked a route more than once, we show the range we\'ve actually observed rather than a single number. Where no one\'s checked a route yet, we show real flight-time and booking-window facts instead of a price, with a link to check live prices yourself.',
   },
   {
     icon: Route,
