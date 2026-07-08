@@ -7,6 +7,7 @@ import { getDealsByDestination } from '@/data/deals';
 import { airports } from '@/data/airports';
 import { getRoutesByDestination } from '@/data/routes';
 import { getTipsForScope } from '@/data/traveller-tips';
+import { getVisaLinkForCountry } from '@/lib/visa-links';
 import { DealCard } from '@/components/ui/deal-card';
 import { NoFareFallback } from '@/components/ui/no-fare-fallback';
 import { Badge } from '@/components/ui/badge';
@@ -42,6 +43,7 @@ export default function DestinationPage({ params }: { params: { slug: string } }
   const servingAirports = airports.filter((a) => dest.ukAirports.includes(a.slug));
   const routesHere = getRoutesByDestination(dest.slug);
   const travellerTips = getTipsForScope({ destinationSlug: dest.slug });
+  const visaLink = getVisaLinkForCountry(dest.country);
 
   return (
     <>
@@ -126,8 +128,24 @@ export default function DestinationPage({ params }: { params: { slug: string } }
                 <h3 className="font-display text-lg text-ink-900">Visa & entry</h3>
               </div>
               <p className="mt-3 text-sm leading-relaxed text-ink-600">{dest.visaNote}</p>
+              {visaLink && (
+                <div className="mt-5">
+                  <a
+                    href={visaLink.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={`${visaLink.buttonLabel} — ${visaLink.sourceName} (opens in a new tab)`}
+                    className="inline-flex items-center gap-1.5 rounded-sm bg-ink-900 px-4 py-2.5 text-sm font-semibold text-sand-50 transition-colors hover:bg-brass-600"
+                  >
+                    {visaLink.buttonLabel}
+                    <ArrowUpRight className="h-4 w-4" strokeWidth={2.25} />
+                  </a>
+                  <p className="mt-2 text-[11px] text-ink-400">{visaLink.sourceName} · opens in a new tab</p>
+                </div>
+              )}
               <p className="mt-4 text-xs text-ink-400">
-                Always confirm current requirements with the relevant embassy or high commission before booking.
+                Visa requirements can vary depending on your nationality. Always check the latest official guidance
+                before travelling.
               </p>
             </div>
           </div>
