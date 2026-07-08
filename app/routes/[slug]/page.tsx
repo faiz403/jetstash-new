@@ -26,7 +26,7 @@ import { FareWatchForm } from '@/components/route/fare-watch-form';
 import { WhatsAppShareButton } from '@/components/route/whatsapp-share-button';
 import { JsonLd, breadcrumbSchema } from '@/components/seo/json-ld';
 import { siteConfig } from '@/lib/site-config';
-import { skyscannerRouteUrl } from '@/lib/partners';
+import { getRouteBookingUrl, getPrimaryBookingProvider } from '@/lib/booking-providers';
 import { getDestinationImage } from '@/lib/brand-images';
 import { HeroBackdrop } from '@/components/ui/hero-backdrop';
 
@@ -116,9 +116,9 @@ export default function RoutePage({ params }: { params: { slug: string } }) {
 
           <div className="mt-7 flex flex-wrap items-center gap-3">
             <a
-              href={skyscannerRouteUrl(airport, dest)}
+              href={getRouteBookingUrl(airport, dest)}
               target="_blank"
-              rel="nofollow sponsored noopener noreferrer"
+              rel={getPrimaryBookingProvider().rel}
               className="inline-flex h-12 items-center justify-center gap-1.5 rounded-sm bg-brass px-6 text-sm font-semibold text-ink-900 transition-all hover:bg-brass-400 hover:shadow-brass-glow active:scale-[0.985]"
             >
               Check live prices for this route
@@ -129,7 +129,7 @@ export default function RoutePage({ params }: { params: { slug: string } }) {
               text={`${airport.city} to ${dest.city}: ${route.flightTime}, ${route.frequency}. ${route.bookingWindowNote}`}
             />
           </div>
-          <p className="mt-2.5 text-xs text-ink-400">Partner link, opens Skyscanner in a new tab. Booking there never costs you more.</p>
+          <p className="mt-2.5 text-xs text-ink-400">Partner link, opens {getPrimaryBookingProvider().name} in a new tab. Booking there never costs you more.</p>
         </div>
       </section>
 

@@ -1,9 +1,11 @@
-import { deals, type Deal } from '@/data/deals';
+import { deals } from '@/data/deals';
 import { routes, getRouteAirport, getRouteDestination } from '@/data/routes';
-import { destinations } from '@/data/destinations';
+import { destinations, getDestinationBySlug } from '@/data/destinations';
+import { getAirportBySlug } from '@/data/airports';
 import { getObservationsByRoute } from '@/data/fare-observations';
 import { routeWarnings } from '@/data/route-warnings';
 import { imageCoverage } from '@/lib/brand-images';
+import { BOOKING_PROVIDERS, PRIMARY_PROVIDER_ID } from '@/lib/booking-providers';
 
 /**
  * Founder Command Centre insights — every figure here is derived from the
@@ -42,8 +44,6 @@ const DEAL_ATTENTION_DAYS = 35;
 const OBS_WATCH_DAYS = 30;
 const OBS_ATTENTION_DAYS = 45;
 const SERVICE_END_WATCH_DAYS = 90;
-const DATED_URL_WATCH_DAYS = 60;
-const DATED_URL_ATTENTION_DAYS = 14;
 
 function daysBetween(fromIso: string, now: Date): number {
   const from = new Date(`${fromIso}T00:00:00Z`);
@@ -111,7 +111,7 @@ function routesNeedingFareChecks(now: Date): FounderSection {
         : `${stale.length} route${stale.length === 1 ? '' : 's'} with ageing checks · ${noHistory.length} of ${routes.length} routes have no fare history yet (${withHistory} tracked).`,
     items,
     action:
-      'Check the fare on Skyscanner/airline, then append a new entry to data/fare-observations.ts (never overwrite) and update the matching deal in data/deals.ts with the same date.',
+      'Check the fare on TravelUp or the airline\'s own site, then append a new entry to data/fare-observations.ts (never overwrite) and update the matching deal in data/deals.ts with the same date.',
   };
 }
 
@@ -144,28 +144,23 @@ function dealsNeedingRecheck(now: Date): FounderSection {
   };
 }
 
-// ── 3. Missing affiliate IDs ─────────────────────────────────────────────
-const TRACKING_MARKERS = ['associateid', 'utm_', 'ref=', 'partner=', 'affid', 'irclickid'];
-
-function hasTracking(url: string): boolean {
-  const lower = url.toLowerCase();
-  return TRACKING_MARKERS.some((marker) => lower.includes(marker));
-}
-
+// ── 3. Booking provider configuration ────────────────────────────────────
 function affiliateStatus(): FounderSection {
-  const untracked = deals.filter((d) => !hasTracking(d.partnerUrl));
+  const primary = BOOKING_PROVIDERS[PRIMARY_PROVIDER_ID];
+  const hasTracking = Object.keys(primary.affiliateParams).length > 0;
+  const skyscanner = BOOKING_PROVIDERS.skyscanner;
 
   return {
     id: 'affiliate',
-    title: 'Missing affiliate IDs',
-    status: untracked.length > 0 ? 'setup' : 'ok',
-    headline:
-      untracked.length === 0
-        ? 'Every partner link carries a tracking parameter.'
-        : `${untracked.length} of ${deals.length} deal links have no affiliate tracking, so every click-through is currently unpaid. Route-page links (lib/partners.ts) are also untracked.`,
+    title: 'Booking provider configuration',
+    status: hasTracking ? 'ok' : 'setup',
+    headline: hasTracking
+      ? `Primary provider is ${primary.name}, and every outbound link carries its affiliate tracking parameters.`
+      : `Primary provider is ${primary.name}, but it has no affiliate tracking parameters yet — every click-through is currently unpaid. Skyscanner stays disabled (application declined pre-launch).`,
     items: [],
-    action:
-      'Apply to Skyscanner Partners (or chosen programme), then add the tracking parameter in lib/partners.ts for route links and to every partnerUrl in data/deals.ts.',
+    action: hasTracking
+      ? 'Everything reads from lib/booking-providers.ts — no other file needs touching.'
+      : `Once ${primary.name} issues real affiliate tracking parameters, add them to BOOKING_PROVIDERS.${PRIMARY_PROVIDER_ID}.affiliateParams in lib/booking-providers.ts. Also verify the deep-link query names (origin/destination/cabinClass) against ${primary.name}'s real integration docs before launch. To re-enable ${skyscanner.name} later, flip its enabled flag and add its params in the same file.`,
   };
 }
 
@@ -229,45 +224,27 @@ function travelClubStatus(): FounderSection {
 }
 
 // ── 7. Broken or placeholder links ───────────────────────────────────────
-const EXPECTED_PARTNER_PREFIX = 'https://www.skyscanner.net/transport/flights/';
-
-/** Skyscanner date segments are YYMMDD; deals embed an outbound/return pair. */
-function parseEmbeddedOutboundDate(url: string): string | null {
-  const match = url.match(/\/(\d{6})\/(\d{6})\//);
-  if (!match) return null;
-  const [, out] = match;
-  return `20${out.slice(0, 2)}-${out.slice(2, 4)}-${out.slice(4, 6)}`;
-}
-
-function linkHealth(now: Date): FounderSection {
+// Booking URLs are now generated from lib/booking-providers.ts rather than
+// hand-typed per deal, so the class of bug this section used to catch
+// (malformed partner URLs, stale embedded dates) is architecturally gone.
+// What's still worth checking: every deal's fromAirportSlug/toDestinationSlug
+// must resolve to a real Airport/Destination, or its booking link silently
+// falls back to a generic (non-route) search — see getDealBookingUrl.
+function linkHealth(): FounderSection {
   const items: FounderItem[] = [];
 
   for (const deal of deals) {
-    if (!deal.partnerUrl.startsWith(EXPECTED_PARTNER_PREFIX)) {
+    const airport = getAirportBySlug(deal.fromAirportSlug);
+    const destination = getDestinationBySlug(deal.toDestinationSlug);
+    if (!airport || !destination) {
       items.push({
         label: `${deal.fromCity} → ${deal.toCity} (${deal.cabin})`,
-        detail: `Unexpected partner URL shape: ${deal.partnerUrl}`,
+        detail: !airport
+          ? `fromAirportSlug "${deal.fromAirportSlug}" does not match any Airport — this deal's booking link silently falls back to a generic search.`
+          : `toDestinationSlug "${deal.toDestinationSlug}" does not match any Destination — this deal's booking link silently falls back to a generic search.`,
         status: 'attention',
       });
     }
-  }
-
-  const dated = deals
-    .map((deal) => ({ deal, outbound: parseEmbeddedOutboundDate(deal.partnerUrl) }))
-    .filter((d): d is { deal: Deal; outbound: string } => d.outbound !== null);
-
-  if (dated.length > 0) {
-    // All dated URLs share the same example date pair, so report once.
-    const daysAway = -daysBetween(dated[0].outbound, now);
-    const status: FounderStatus = daysAway <= DATED_URL_ATTENTION_DAYS ? 'attention' : daysAway <= DATED_URL_WATCH_DAYS ? 'watch' : 'ok';
-    items.push({
-      label: `${dated.length} business-class links carry a fixed travel date`,
-      detail:
-        daysAway < 0
-          ? `Embedded outbound date ${formatShortDate(dated[0].outbound)} has PASSED. These searches now open with an invalid date. Refresh now.`
-          : `Embedded outbound date is ${formatShortDate(dated[0].outbound)} (${daysAway} days away). The date exists so cabinclass=business is honoured; refresh it when it gets close so links stay "a few months out".`,
-      status,
-    });
   }
 
   return {
@@ -275,11 +252,11 @@ function linkHealth(now: Date): FounderSection {
     title: 'Broken or placeholder links',
     status: worst(items.map((i) => i.status)),
     headline:
-      items.every((i) => i.status === 'ok')
-        ? `All ${deals.length} partner links are well-formed; the only date-bearing links are comfortably in the future.`
-        : 'Some partner links need a look. Details below.',
+      items.length === 0
+        ? `All ${deals.length} deals resolve to a real airport and destination, so every booking link is route-specific.`
+        : `${items.length} deal${items.length === 1 ? '' : 's'} have a slug that doesn't resolve — their booking link degrades to a generic search. Details below.`,
     items,
-    action: 'Dated business-class URLs are README launch item 7. Update the YYMMDD pair in data/deals.ts every few months.',
+    action: 'Fix the fromAirportSlug/toDestinationSlug in data/deals.ts to match a real entry in data/airports.ts / data/destinations.ts.',
   };
 }
 
@@ -372,12 +349,11 @@ export interface ChecklistItem {
   verifiedBy: 'auto' | 'manual';
 }
 
-function launchChecklist(now: Date): { section: FounderSection; checklist: ChecklistItem[]; doneCount: number } {
+function launchChecklist(): { section: FounderSection; checklist: ChecklistItem[]; doneCount: number } {
   const brevoReady = Boolean(process.env.BREVO_API_KEY && process.env.BREVO_LIST_ID);
   const resendReady = Boolean(process.env.RESEND_API_KEY);
-  const anyTracking = deals.some((d) => hasTracking(d.partnerUrl));
-  const datedUrl = deals.map((d) => parseEmbeddedOutboundDate(d.partnerUrl)).find((d) => d !== null);
-  const datedUrlFresh = datedUrl ? -daysBetween(datedUrl, now) > DATED_URL_WATCH_DAYS : true;
+  const primaryProvider = BOOKING_PROVIDERS[PRIMARY_PROVIDER_ID];
+  const hasTracking = Object.keys(primaryProvider.affiliateParams).length > 0;
   const photoCoverage = imageCoverage();
   const photosComplete = photoCoverage.destinations >= destinations.length;
 
@@ -416,16 +392,18 @@ function launchChecklist(now: Date): { section: FounderSection; checklist: Check
       verifiedBy: 'manual',
     },
     {
-      label: 'Affiliate tracking IDs on partner links',
-      detail: anyTracking ? 'At least one partner link carries a tracking parameter.' : 'No partner link carries any tracking parameter yet.',
-      done: anyTracking,
+      label: 'Affiliate tracking parameters on booking links',
+      detail: hasTracking
+        ? `${primaryProvider.name} (the primary provider) carries affiliate tracking parameters.`
+        : `${primaryProvider.name} (the primary provider) has no affiliate tracking parameters yet — see lib/booking-providers.ts.`,
+      done: hasTracking,
       verifiedBy: 'auto',
     },
     {
-      label: 'Business-class URL dates roughly "a few months out"',
-      detail: datedUrl ? `Embedded date is ${formatShortDate(datedUrl)}.` : 'No dated URLs found.',
-      done: datedUrlFresh,
-      verifiedBy: 'auto',
+      label: `${primaryProvider.name} deep-link schema verified`,
+      detail: `The origin/destination/cabinClass query names in lib/booking-providers.ts are a best-effort convention, not confirmed against ${primaryProvider.name}'s real integration docs. Verify before launch.`,
+      done: false,
+      verifiedBy: 'manual',
     },
     {
       label: 'Brevo custom contact attributes created',
@@ -466,7 +444,7 @@ export interface FounderSnapshot {
 }
 
 export function getFounderSnapshot(now: Date): FounderSnapshot {
-  const { section: launchSection, checklist, doneCount } = launchChecklist(now);
+  const { section: launchSection, checklist, doneCount } = launchChecklist();
 
   const sections: FounderSection[] = [
     routesNeedingFareChecks(now),
@@ -475,7 +453,7 @@ export function getFounderSnapshot(now: Date): FounderSnapshot {
     photographyStatus(),
     quoteRequestStatus(),
     travelClubStatus(),
-    linkHealth(now),
+    linkHealth(),
     warningsForReview(now),
     staleContent(now),
     launchSection,

@@ -1,6 +1,7 @@
 import { Deal, DealCabin, formatChecked } from '@/data/deals';
 import { getRouteByAirportAndDestination } from '@/data/routes';
 import { getObservationsByRoute } from '@/data/fare-observations';
+import { getDealBookingUrl } from '@/lib/booking-providers';
 import { Plane, ArrowUpRight, TrendingUp } from 'lucide-react';
 import { Badge } from './badge';
 import { DestinationVisual } from './destination-visual';
@@ -59,7 +60,7 @@ export function DealCard({ deal }: { deal: Deal }) {
         )}
 
         <a
-          href={deal.partnerUrl}
+          href={getDealBookingUrl(deal)}
           target="_blank"
           rel="nofollow sponsored noopener noreferrer"
           className="mt-5 inline-flex items-center justify-center gap-1.5 rounded-sm bg-ink-900 px-4 py-3 text-sm font-semibold text-sand-50 transition-all duration-200 hover:bg-brass-600 active:scale-[0.985]"
