@@ -18,6 +18,20 @@ import { BOOKING_PROVIDERS, PRIMARY_PROVIDER_ID } from '@/lib/booking-providers'
 
 export type FounderStatus = 'attention' | 'watch' | 'ok' | 'setup';
 
+/**
+ * Business-priority tier — the lens this dashboard leads with, ahead of
+ * the more technical FounderStatus:
+ *   'blocker'      — broken or dishonest right now. A visitor hits an
+ *                     error, or the site claims something that isn't true.
+ *                     Fix before treating the site as genuinely live.
+ *   'revenue'       — works today, but leaves money or conversion on the
+ *                     table (unpaid clicks, unresearched fares, unrouted
+ *                     leads). No visitor-facing breakage.
+ *   'nice-to-have'  — polish or enrichment with no deadline and no
+ *                     functional/revenue impact either way.
+ */
+export type BusinessPriority = 'blocker' | 'revenue' | 'nice-to-have';
+
 export interface FounderItem {
   label: string;
   detail: string;
@@ -30,6 +44,7 @@ export interface FounderSection {
   id: string;
   title: string;
   status: FounderStatus;
+  priority: BusinessPriority;
   /** One-sentence answer to "what's the state here?" */
   headline: string;
   items: FounderItem[];
@@ -88,6 +103,7 @@ function fareObservationCoverage(): FounderSection {
   return {
     id: 'fare-checks',
     title: 'Fare observation coverage',
+    priority: 'nice-to-have',
     status: noHistory.length > 0 ? 'watch' : 'ok',
     headline:
       noHistory.length === 0
@@ -108,6 +124,7 @@ function affiliateStatus(): FounderSection {
   return {
     id: 'affiliate',
     title: 'Booking provider configuration',
+    priority: 'revenue',
     status: hasTracking && primary.supportsDeepLink ? 'ok' : 'setup',
     headline: !primary.supportsDeepLink
       ? `Primary provider is ${primary.name}. Deep-linking is OFF — a guessed URL shape landed users on a TravelUp error page in production, so every booking link falls back to their real homepage instead. No affiliate tracking parameters yet either, so every click-through is currently unpaid. Skyscanner stays disabled (application declined pre-launch).`
@@ -131,6 +148,7 @@ function photographyStatus(): FounderSection {
   return {
     id: 'photography',
     title: 'Missing real photography',
+    priority: 'nice-to-have',
     status: allCovered ? 'ok' : coverage.total > 0 ? 'watch' : 'setup',
     headline:
       coverage.total === 0
@@ -150,6 +168,7 @@ function quoteRequestStatus(): FounderSection {
   return {
     id: 'quotes',
     title: 'Quote requests',
+    priority: 'blocker',
     status: connected ? 'ok' : 'setup',
     headline: connected
       ? `Connected via Resend. Every quote request is emailed to ${inbox}. There is no request log or count here: the inbox is the source of truth, so check it directly.`
@@ -167,6 +186,7 @@ function travelClubStatus(): FounderSection {
   return {
     id: 'travel-club',
     title: 'Travel Club signups',
+    priority: 'blocker',
     status: connected ? 'ok' : 'setup',
     headline: connected
       ? 'Connected via Brevo. Signups save with airport/interest preferences. Subscriber counts and segments live in the Brevo dashboard; this page does not duplicate them.'
@@ -205,6 +225,7 @@ function linkHealth(): FounderSection {
   return {
     id: 'links',
     title: 'Broken or placeholder links',
+    priority: 'blocker',
     status: worst(items.map((i) => i.status)),
     headline:
       items.length === 0
@@ -215,16 +236,12 @@ function linkHealth(): FounderSection {
   };
 }
 
-// ── 8. Route warnings needing review ─────────────────────────────────────
-function warningsForReview(now: Date): FounderSection {
-  const items: FounderItem[] = routeWarnings
-    .filter((w) => w.status === 'active')
-    .map((w) => ({
-      label: `${routeLabel(w.routeSlug)}: ${w.title}`,
-      detail: `Severity: ${w.severity}. Still accurate? If resolved, flip status to 'resolved' in data/route-warnings.ts (never delete).`,
-      status: w.severity === 'critical' ? 'attention' : 'watch',
-      href: `/routes/${w.routeSlug}`,
-    }));
+// ── 7b. Time-bound service changes ───────────────────────────────────────
+// The one category with a real forcing date: unlike a re-verify backlog
+// item, an announced withdrawal WILL make the site wrong the day it passes
+// if nothing's done — no code change needed to trigger the false claim.
+function serviceChangesStatus(now: Date): FounderSection {
+  const items: FounderItem[] = [];
 
   for (const route of routes) {
     if (!route.directServiceEndDate) continue;
@@ -247,13 +264,43 @@ function warningsForReview(now: Date): FounderSection {
   }
 
   return {
-    id: 'warnings',
-    title: 'Route warnings needing review',
+    id: 'service-changes',
+    title: 'Time-bound service changes',
+    priority: 'blocker',
     status: worst(items.map((i) => i.status)),
     headline:
       items.length === 0
-        ? 'No active warnings and no approaching service-end dates.'
-        : `${items.length} item${items.length === 1 ? '' : 's'} to re-verify against current airline schedules.`,
+        ? 'No announced direct-service withdrawals within the next 90 days.'
+        : `${items.length} announced service change${items.length === 1 ? '' : 's'} with a real date — nothing wrong yet, but the site will start claiming a direct service that no longer exists the day this passes unaddressed.`,
+    items,
+    action: 'Follow the README "Time-bound direct services" procedure before the date passes: flip the route to connecting-only and move the withdrawal note into its history.',
+  };
+}
+
+// ── 8. Route warnings needing review ─────────────────────────────────────
+// A calm re-verify backlog, same philosophy as fare observation coverage:
+// every warning here already describes the site's copy as hedged/honest
+// today (no direct claim being made that isn't true) — the task is just to
+// periodically confirm that's still the case as schedules drift.
+function warningsForReview(): FounderSection {
+  const items: FounderItem[] = routeWarnings
+    .filter((w) => w.status === 'active')
+    .map((w) => ({
+      label: `${routeLabel(w.routeSlug)}: ${w.title}`,
+      detail: `Severity: ${w.severity}. Still accurate? If resolved, flip status to 'resolved' in data/route-warnings.ts (never delete).`,
+      status: 'watch' as FounderStatus,
+      href: `/routes/${w.routeSlug}`,
+    }));
+
+  return {
+    id: 'warnings',
+    title: 'Route warnings to re-verify',
+    priority: 'nice-to-have',
+    status: items.length > 0 ? 'watch' : 'ok',
+    headline:
+      items.length === 0
+        ? 'No active route warnings.'
+        : `${items.length} item${items.length === 1 ? '' : 's'} worth re-verifying against current airline schedules. No deadline — the site's copy already hedges each of these honestly today.`,
     items,
     action: 'Verify each against the airline\'s own booking system. The site\'s standard is schedules, not press releases.',
   };
@@ -290,6 +337,7 @@ function staleContent(): FounderSection {
   return {
     id: 'stale-content',
     title: 'Pages with stale content',
+    priority: 'nice-to-have',
     status: worst(items.map((i) => i.status)),
     headline: 'Date-bearing content on public pages, oldest signals first.',
     items,
@@ -301,6 +349,7 @@ export interface ChecklistItem {
   label: string;
   detail: string;
   done: boolean;
+  priority: BusinessPriority;
   /** 'auto' = derived from code/env at render time; 'manual' = judgement recorded here. */
   verifiedBy: 'auto' | 'manual';
 }
@@ -318,6 +367,7 @@ function launchChecklist(): { section: FounderSection; checklist: ChecklistItem[
       label: 'Real production build passes',
       detail: 'npm run build compiles all 90+ pages; verified on every commit and by Vercel deploys.',
       done: true,
+      priority: 'blocker',
       verifiedBy: 'manual',
     },
     {
@@ -327,18 +377,21 @@ function launchChecklist(): { section: FounderSection; checklist: ChecklistItem[
           ? `All ${destinations.length} destinations still use the generated panel (deliberate, and it ships fine, but photography converts better).`
           : `${photoCoverage.destinations} of ${destinations.length} destinations now have real Signature Collection photography; the rest still use the generated panel.`,
       done: photosComplete,
+      priority: 'nice-to-have',
       verifiedBy: 'auto',
     },
     {
       label: 'Newsletter wired up (Brevo env vars)',
       detail: brevoReady ? 'BREVO_API_KEY and BREVO_LIST_ID are set in this environment.' : 'BREVO_API_KEY / BREVO_LIST_ID not set in this environment.',
       done: brevoReady,
+      priority: 'blocker',
       verifiedBy: 'auto',
     },
     {
       label: 'Contact form wired up (Resend env vars)',
       detail: resendReady ? 'RESEND_API_KEY is set in this environment.' : 'RESEND_API_KEY not set in this environment.',
       done: resendReady,
+      priority: 'blocker',
       verifiedBy: 'auto',
     },
     {
@@ -346,6 +399,7 @@ function launchChecklist(): { section: FounderSection; checklist: ChecklistItem[
       detail:
         'Deal cards now show an honest range/check from data/fare-observations.ts instead of a hardcoded price, which removes the staleness risk — but the £ figures currently logged are still the original example numbers, not independently verified market fares. Replace them with genuinely researched checks over time (no deadline; log via the Fare observation coverage section above).',
       done: false,
+      priority: 'revenue',
       verifiedBy: 'manual',
     },
     {
@@ -354,6 +408,7 @@ function launchChecklist(): { section: FounderSection; checklist: ChecklistItem[
         ? `${primaryProvider.name} (the primary provider) carries affiliate tracking parameters.`
         : `${primaryProvider.name} (the primary provider) has no affiliate tracking parameters yet — see lib/booking-providers.ts.`,
       done: hasTracking,
+      priority: 'revenue',
       verifiedBy: 'auto',
     },
     {
@@ -362,18 +417,21 @@ function launchChecklist(): { section: FounderSection; checklist: ChecklistItem[
         ? `Deep-linking is on — confirmed against ${primaryProvider.name}'s real integration docs.`
         : `Deep-linking is OFF. A guessed origin/destination/cabinClass URL shape landed users on a ${primaryProvider.name} error page in production, so every booking link falls back to their homepage. Sign up for their affiliate programme to get the real schema, then update lib/booking-providers.ts.`,
       done: primaryProvider.supportsDeepLink,
+      priority: 'revenue',
       verifiedBy: 'auto',
     },
     {
       label: 'Brevo custom contact attributes created',
       detail: 'NEAREST_AIRPORT, TRAVEL_INTEREST + five WATCH_* attributes. Cannot be verified from code, so confirm in the Brevo dashboard and tick off mentally.',
       done: false,
+      priority: 'revenue',
       verifiedBy: 'manual',
     },
     {
       label: 'Quote-request leads route somewhere real',
       detail: 'Decide: one founder inbox, shared inbox, or partner-agent rotation. Then set CONTACT_TO_EMAIL accordingly (README item 9).',
       done: false,
+      priority: 'revenue',
       verifiedBy: 'manual',
     },
   ];
@@ -386,6 +444,11 @@ function launchChecklist(): { section: FounderSection; checklist: ChecklistItem[
     section: {
       id: 'launch',
       title: 'Launch checklist',
+      // Not grouped with the other sections — it's a flat mirror of the
+      // README spanning all three priorities itself (each item carries its
+      // own), rendered as its own full-width block. This tag is unused for
+      // grouping but required by the shared interface.
+      priority: 'blocker',
       status: doneCount === checklist.length ? 'ok' : 'setup',
       headline: `${doneCount} of ${checklist.length} complete. Mirrors the README "Required before launch" section, which stays the source of truth.`,
       items: [],
@@ -395,7 +458,9 @@ function launchChecklist(): { section: FounderSection; checklist: ChecklistItem[
 
 // ── Snapshot ─────────────────────────────────────────────────────────────
 export interface FounderSnapshot {
-  sections: FounderSection[];
+  /** Every section (not the launch checklist), grouped by business priority — what this dashboard leads with. */
+  grouped: Record<BusinessPriority, FounderSection[]>;
+  launchSection: FounderSection;
   checklist: ChecklistItem[];
   checklistDone: number;
   /** The ordered "what needs my attention today" digest. */
@@ -406,42 +471,40 @@ export function getFounderSnapshot(now: Date): FounderSnapshot {
   const { section: launchSection, checklist, doneCount } = launchChecklist();
 
   const sections: FounderSection[] = [
-    fareObservationCoverage(),
-    affiliateStatus(),
-    photographyStatus(),
     quoteRequestStatus(),
     travelClubStatus(),
     linkHealth(),
-    warningsForReview(now),
+    serviceChangesStatus(now),
+    affiliateStatus(),
+    fareObservationCoverage(),
+    photographyStatus(),
+    warningsForReview(),
     staleContent(),
-    launchSection,
   ];
 
-  // Today digest: every section reporting attention leads; setup items that
-  // block revenue or honesty come next; watch items only if the list is short.
-  const today: FounderItem[] = [];
-  for (const section of sections) {
-    if (section.status === 'attention') {
-      today.push({
-        label: section.title,
-        detail: section.headline,
-        status: 'attention',
-        href: `#${section.id}`,
-      });
-    }
-  }
-  for (const section of sections) {
-    if (section.status === 'setup') {
-      today.push({ label: section.title, detail: section.headline, status: 'setup', href: `#${section.id}` });
-    }
-  }
-  if (today.length < 5) {
-    for (const section of sections) {
-      if (section.status === 'watch') {
-        today.push({ label: section.title, detail: section.headline, status: 'watch', href: `#${section.id}` });
-      }
-    }
-  }
+  const grouped: Record<BusinessPriority, FounderSection[]> = {
+    blocker: sections.filter((s) => s.priority === 'blocker'),
+    revenue: sections.filter((s) => s.priority === 'revenue'),
+    'nice-to-have': sections.filter((s) => s.priority === 'nice-to-have'),
+  };
 
-  return { sections, checklist, checklistDone: doneCount, today: today.slice(0, 6) };
+  // Today digest: business priority leads — every not-ok blocker section
+  // first, then every not-ok revenue section, then nice-to-have only if
+  // there's still room. Technical status only breaks ties within a tier.
+  // This is what "prioritise the business, not just the loudest technical
+  // alarm" means in practice.
+  const priorityOrder: BusinessPriority[] = ['blocker', 'revenue', 'nice-to-have'];
+  const statusRank: Record<FounderStatus, number> = { attention: 0, setup: 1, watch: 2, ok: 3 };
+  const notOk = sections
+    .filter((s) => s.status !== 'ok')
+    .sort((a, b) => {
+      const byPriority = priorityOrder.indexOf(a.priority) - priorityOrder.indexOf(b.priority);
+      return byPriority !== 0 ? byPriority : statusRank[a.status] - statusRank[b.status];
+    });
+
+  const today: FounderItem[] = notOk
+    .slice(0, 6)
+    .map((section) => ({ label: section.title, detail: section.headline, status: section.status, href: `#${section.id}` }));
+
+  return { grouped, launchSection, checklist, checklistDone: doneCount, today };
 }
