@@ -136,7 +136,11 @@ export function NewsletterSection() {
               )}
               {status === 'error' && (
                 <p className="mt-2 text-sm text-terracotta-400">
-                  Something went wrong. Please try again or email us at hello@jetstash.co.uk.
+                  Something went wrong. Please try again, or use our{' '}
+                  <a href="/contact" className="underline underline-offset-2 hover:text-terracotta-300">
+                    contact form
+                  </a>
+                  .
                 </p>
               )}
               <p className="mt-3 text-xs text-ink-400">

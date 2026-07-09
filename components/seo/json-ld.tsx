@@ -23,7 +23,10 @@ export function organizationSchema() {
     url: siteConfig.url,
     description: siteConfig.description,
     logo: `${siteConfig.url}/icon.png`,
-    email: 'hello@jetstash.co.uk',
+    // No `email` field: there is no working public inbox yet. Structured
+    // data gets cached/indexed long-term, so this stays omitted rather
+    // than pointing at an address that doesn't exist — add it back once
+    // a real mailbox is live. Visitors are directed to /contact instead.
   };
 }
 

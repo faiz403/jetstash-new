@@ -13,12 +13,12 @@ export function Footer() {
               <span className="font-display text-2xl text-sand-50">{siteConfig.name}</span>
             </span>
             <p className="mt-3 max-w-xs text-sm leading-relaxed text-ink-300">{siteConfig.tagline}.</p>
-            <a
-              href="mailto:hello@jetstash.co.uk"
+            <Link
+              href="/contact"
               className="mt-4 inline-block text-sm text-ink-200 underline decoration-ink-500 underline-offset-4 transition-colors hover:text-brass-300 hover:decoration-brass-300"
             >
-              hello@jetstash.co.uk
-            </a>
+              Get in touch
+            </Link>
             <p className="mt-5 max-w-sm text-xs leading-relaxed text-ink-400">
               Every fare on this site is an example checked by a person on a stated date. Never a live price
               claim, never invented urgency. That standard is the product.

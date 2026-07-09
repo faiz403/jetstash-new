@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import { ArrowUpRight, ShieldCheck, Users, Crown, BadgeCheck, CalendarCheck, Plane, Compass, BookOpen, Globe, type LucideIcon } from 'lucide-react';
 import Link from 'next/link';
 import { RouteMapHero } from '@/components/sections/route-map-hero';
@@ -14,6 +15,20 @@ import { getGuideBySlug } from '@/data/guides';
 import { getDestinationImage, getHeroImage, getAirportImage } from '@/lib/brand-images';
 import { DestinationVisual } from '@/components/ui/destination-visual';
 import { HeroBackdrop } from '@/components/ui/hero-backdrop';
+import { siteConfig } from '@/lib/site-config';
+
+// A plain string here would run through the root layout's "%s | JetStash"
+// title template, duplicating the brand name — title.absolute keeps this
+// exact brand-first framing explicit at the page level (matching every
+// other page having its own metadata) without changing what's rendered.
+// openGraph/twitter are deliberately left unset so they inherit the root
+// layout's images/type/siteName untouched — Next resolves their title and
+// description from these fields automatically.
+export const metadata: Metadata = {
+  title: { absolute: `${siteConfig.name}: ${siteConfig.tagline}` },
+  description: siteConfig.description,
+  alternates: { canonical: siteConfig.url },
+};
 
 export default function HomePage() {
   // Explicit commercial selection, not array order: Dubai leads with the lowest price
