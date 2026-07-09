@@ -5,6 +5,15 @@ export const siteConfig = {
   tagline: "The UK's travel intelligence platform for South Asia, the Gulf and beyond",
   description:
     'JetStash tracks route history, fare patterns and booking windows from UK airports to Pakistan, India, the Gulf, Turkey, Morocco and the wider Mediterranean, with dedicated hubs for family travel, Umrah and business class.',
+  /**
+   * Default inbox for lead-capture form submissions (contact form, quote
+   * requests) — /app/api/contact and /app/api/quote-request both read
+   * this as their fallback. The CONTACT_TO_EMAIL environment variable, if
+   * set in Vercel, overrides this without a code change. This is the one
+   * place to edit either way — never hardcode a routing address in a
+   * route file directly.
+   */
+  contactEmail: 'faiz24485@gmail.com',
 };
 
 // The nav is the brand's spine: the four core corridors in commercial order

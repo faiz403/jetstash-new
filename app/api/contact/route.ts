@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { isValidEmail, sendResendEmail } from '@/lib/email';
+import { siteConfig } from '@/lib/site-config';
 
 /**
  * Contact form endpoint. Sends via Resend (resend.com) — set RESEND_API_KEY
@@ -21,14 +22,14 @@ export async function POST(req: NextRequest) {
   if (!apiKey) {
     console.warn('Contact form submission received but no email provider is configured:', { name, email });
     return NextResponse.json(
-      { error: 'The contact form is not yet fully configured. Please email hello@jetstash.co.uk directly.' },
+      { error: `The contact form is not yet fully configured. Please email ${siteConfig.contactEmail} directly.` },
       { status: 503 }
     );
   }
 
   const result = await sendResendEmail({
     apiKey,
-    to: process.env.CONTACT_TO_EMAIL ?? 'hello@jetstash.co.uk',
+    to: process.env.CONTACT_TO_EMAIL ?? siteConfig.contactEmail,
     subject: `New contact form message from ${name}`,
     text: `From: ${name} (${email})\n\n${message}`,
     replyTo: email,

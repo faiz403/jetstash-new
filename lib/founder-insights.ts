@@ -6,6 +6,7 @@ import { fareObservations, getObservationsByRoute } from '@/data/fare-observatio
 import { routeWarnings } from '@/data/route-warnings';
 import { imageCoverage } from '@/lib/brand-images';
 import { BOOKING_PROVIDERS, PRIMARY_PROVIDER_ID } from '@/lib/booking-providers';
+import { siteConfig } from '@/lib/site-config';
 
 /**
  * Founder Command Centre insights — every figure here is derived from the
@@ -164,7 +165,7 @@ function photographyStatus(): FounderSection {
 // ── 5 & 6. Quote requests / Travel Club — env-connected services ─────────
 function quoteRequestStatus(): FounderSection {
   const connected = Boolean(process.env.RESEND_API_KEY);
-  const inbox = process.env.CONTACT_TO_EMAIL ?? 'hello@jetstash.co.uk';
+  const inbox = process.env.CONTACT_TO_EMAIL ?? siteConfig.contactEmail;
 
   return {
     id: 'quotes',
@@ -430,8 +431,8 @@ function launchChecklist(): { section: FounderSection; checklist: ChecklistItem[
     },
     {
       label: 'Quote-request leads route somewhere real',
-      detail: 'Decide: one founder inbox, shared inbox, or partner-agent rotation. Then set CONTACT_TO_EMAIL accordingly (README item 9).',
-      done: false,
+      detail: `Routes to ${siteConfig.contactEmail} by default (lib/site-config.ts), overridable via CONTACT_TO_EMAIL in Vercel — a real inbox, not a placeholder. Revisit if this should become a shared inbox or partner-agent rotation later.`,
+      done: true,
       priority: 'revenue',
       verifiedBy: 'manual',
     },

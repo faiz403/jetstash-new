@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { isQuoteTripType, isQuoteRegion, TRIP_TYPE_OPTIONS, QUOTE_REGION_OPTIONS } from '@/lib/quote-request-options';
 import { isValidEmail, sendResendEmail } from '@/lib/email';
+import { siteConfig } from '@/lib/site-config';
 
 /**
  * Umrah / family trip / group travel quote-request endpoint.
@@ -47,7 +48,7 @@ export async function POST(req: NextRequest) {
   if (!apiKey) {
     console.warn('Quote request received but no email provider is configured:', { name, email, tripType, region });
     return NextResponse.json(
-      { error: 'Quote requests are not yet fully configured. Please email hello@jetstash.co.uk directly.' },
+      { error: `Quote requests are not yet fully configured. Please email ${siteConfig.contactEmail} directly.` },
       { status: 503 }
     );
   }
@@ -66,7 +67,7 @@ export async function POST(req: NextRequest) {
 
   const result = await sendResendEmail({
     apiKey,
-    to: process.env.CONTACT_TO_EMAIL ?? 'hello@jetstash.co.uk',
+    to: process.env.CONTACT_TO_EMAIL ?? siteConfig.contactEmail,
     subject: `New quote request: ${tripTypeLabel(tripType)} (${regionLabel(region)})`,
     text: lines.join('\n'),
     replyTo: email,
