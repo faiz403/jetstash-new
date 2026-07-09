@@ -18,7 +18,7 @@ export function NoFareFallback({ cityLabel }: { cityLabel: string }) {
         We haven't logged a tracked fare for {cityLabel} yet. Check live prices with our travel partners.
       </p>
       <a
-        href={getGeneralBookingUrl()}
+        href={getGeneralBookingUrl(cityLabel)}
         target="_blank"
         rel={provider.rel}
         className="mt-5 inline-flex items-center gap-1.5 rounded-sm bg-ink-900 px-5 py-3 text-sm font-semibold text-sand-50 transition-all hover:bg-brass-600 active:scale-[0.985]"

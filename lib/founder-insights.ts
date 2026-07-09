@@ -118,21 +118,22 @@ function fareObservationCoverage(): FounderSection {
 // ── 3. Booking provider configuration ────────────────────────────────────
 function affiliateStatus(): FounderSection {
   const primary = BOOKING_PROVIDERS[PRIMARY_PROVIDER_ID];
-  const hasTracking = Object.keys(primary.affiliateParams).length > 0;
   const skyscanner = BOOKING_PROVIDERS.skyscanner;
 
   return {
     id: 'affiliate',
     title: 'Booking provider configuration',
     priority: 'revenue',
-    status: hasTracking && primary.supportsDeepLink ? 'ok' : 'setup',
-    headline: !primary.supportsDeepLink
-      ? `Primary provider is ${primary.name}. Deep-linking is OFF — a guessed URL shape landed users on a TravelUp error page in production, so every booking link falls back to their real homepage instead. No affiliate tracking parameters yet either, so every click-through is currently unpaid. Skyscanner stays disabled (application declined pre-launch).`
-      : hasTracking
-        ? `Primary provider is ${primary.name}, deep-linking is on, and every outbound link carries its affiliate tracking parameters.`
-        : `Primary provider is ${primary.name} with deep-linking on, but it has no affiliate tracking parameters yet — every click-through is currently unpaid.`,
+    status: !primary.hasTracking ? 'setup' : primary.supportsDeepLink ? 'ok' : 'watch',
+    headline: !primary.hasTracking
+      ? `Primary provider is ${primary.name}, but it has no real tracking link yet — every click-through is unpaid. Skyscanner stays disabled (application declined pre-launch).`
+      : !primary.supportsDeepLink
+        ? `Primary provider is ${primary.name}, tracked via a real CJ link (see lib/booking-providers.ts) — every click-through now earns commission. Deep-linking is still off though (a guessed URL shape broke in production once already), so links land on TravelUp's own default page rather than a specific destination.`
+        : `Primary provider is ${primary.name}, tracked and deep-linking to manually verified destination pages.`,
     items: [],
-    action: `Sign up for ${primary.name}'s affiliate programme (via Commission Junction: https://signup.cj.com/member/signup/publisher/?cid=6248437, or their own page at travelup.com/en-us/company/affiliate-programme) to get real tracking parameters and their actual deep-link URL structure. Add the tracking parameters to BOOKING_PROVIDERS.${PRIMARY_PROVIDER_ID}.affiliateParams and, once the real query/path schema is confirmed, update getRouteBookingUrl and flip supportsDeepLink to true in lib/booking-providers.ts. To re-enable ${skyscanner.name} later, flip its enabled flag and add its params in the same file.`,
+    action: !primary.hasTracking
+      ? `Sign up for ${primary.name}'s affiliate programme (via Commission Junction: https://signup.cj.com/member/signup/publisher/?cid=6248437) to get a real tracking link, then set it as BOOKING_PROVIDERS.${PRIMARY_PROVIDER_ID}.baseUrl in lib/booking-providers.ts.`
+      : `Optional, no deadline: manually visit travelup.com, confirm a real destination URL works, add it to VERIFIED_DEEP_LINKS in lib/booking-providers.ts, then flip supportsDeepLink to true once at least one entry is confirmed. To re-enable ${skyscanner.name} later, flip its enabled flag and add its real tracking link in the same file.`,
   };
 }
 
@@ -358,7 +359,7 @@ function launchChecklist(): { section: FounderSection; checklist: ChecklistItem[
   const brevoReady = Boolean(process.env.BREVO_API_KEY && process.env.BREVO_LIST_ID);
   const resendReady = Boolean(process.env.RESEND_API_KEY);
   const primaryProvider = BOOKING_PROVIDERS[PRIMARY_PROVIDER_ID];
-  const hasTracking = Object.keys(primaryProvider.affiliateParams).length > 0;
+  const hasTracking = primaryProvider.hasTracking;
   const photoCoverage = imageCoverage();
   const photosComplete = photoCoverage.destinations >= destinations.length;
 
@@ -403,19 +404,19 @@ function launchChecklist(): { section: FounderSection; checklist: ChecklistItem[
       verifiedBy: 'manual',
     },
     {
-      label: 'Affiliate tracking parameters on booking links',
+      label: 'Real tracking link on booking links',
       detail: hasTracking
-        ? `${primaryProvider.name} (the primary provider) carries affiliate tracking parameters.`
-        : `${primaryProvider.name} (the primary provider) has no affiliate tracking parameters yet — see lib/booking-providers.ts.`,
+        ? `${primaryProvider.name} (the primary provider) is a real, commission-earning CJ tracking link.`
+        : `${primaryProvider.name} (the primary provider) has no real tracking link yet — see lib/booking-providers.ts.`,
       done: hasTracking,
       priority: 'revenue',
       verifiedBy: 'auto',
     },
     {
-      label: `${primaryProvider.name} deep-link schema confirmed`,
+      label: `${primaryProvider.name} deep-link destinations verified`,
       detail: primaryProvider.supportsDeepLink
-        ? `Deep-linking is on — confirmed against ${primaryProvider.name}'s real integration docs.`
-        : `Deep-linking is OFF. A guessed origin/destination/cabinClass URL shape landed users on a ${primaryProvider.name} error page in production, so every booking link falls back to their homepage. Sign up for their affiliate programme to get the real schema, then update lib/booking-providers.ts.`,
+        ? `Deep-linking is on — at least one VERIFIED_DEEP_LINKS entry has been manually confirmed.`
+        : `Deep-linking is OFF. A guessed URL shape broke in production once already, so links use the tracked homepage/search fallback (still commission-earning) rather than a specific destination. Manually visit travelup.com, confirm a real destination URL, add it to VERIFIED_DEEP_LINKS in lib/booking-providers.ts, then flip supportsDeepLink to true.`,
       done: primaryProvider.supportsDeepLink,
       priority: 'revenue',
       verifiedBy: 'auto',
