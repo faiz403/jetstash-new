@@ -51,7 +51,7 @@ export function FareWatchForm({ defaultAirportSlug, defaultDestinationSlug }: Fa
       </p>
 
       {status === 'success' ? (
-        <div className="mt-5 flex items-center gap-3 rounded-sm border border-brass/30 bg-brass-50 p-4">
+        <div role="status" aria-live="polite" className="mt-5 flex items-center gap-3 rounded-sm border border-brass/30 bg-brass-50 p-4">
           <CheckCircle2 className="h-5 w-5 flex-shrink-0 text-brass-600" />
           <p className="text-sm text-ink-700">You're watching this route. We'll be in touch when it's worth booking.</p>
         </div>
@@ -125,7 +125,7 @@ export function FareWatchForm({ defaultAirportSlug, defaultDestinationSlug }: Fa
             </button>
           </div>
           {status === 'error' && (
-            <p className="text-xs text-terracotta-600">{errorMsg || 'Something went wrong. Please try again or use the contact page.'}</p>
+            <p role="alert" aria-live="assertive" className="text-xs text-terracotta-600">{errorMsg || 'Something went wrong. Please try again or use the contact page.'}</p>
           )}
           <p className="text-xs text-ink-400">
             No spam. Unsubscribe any time. See our{' '}

@@ -30,7 +30,7 @@ export function ContactForm() {
 
   if (status === 'success') {
     return (
-      <div className="mt-8 flex items-center gap-3 rounded-md border border-brass/30 bg-brass-50 p-5">
+      <div role="status" aria-live="polite" className="mt-8 flex items-center gap-3 rounded-md border border-brass/30 bg-brass-50 p-5">
         <CheckCircle2 className="h-6 w-6 flex-shrink-0 text-brass-600" />
         <p className="text-sm text-ink-700">Thanks. We&apos;ve got your message and will reply soon.</p>
       </div>
@@ -40,7 +40,7 @@ export function ContactForm() {
   return (
     <form onSubmit={handleSubmit} className="mt-8 flex flex-col gap-5">
       {status === 'error' && (
-        <div className="flex items-center gap-3 rounded-md border border-terracotta-200 bg-terracotta-50 p-4">
+        <div role="alert" aria-live="assertive" className="flex items-center gap-3 rounded-md border border-terracotta-200 bg-terracotta-50 p-4">
           <AlertCircle className="h-5 w-5 flex-shrink-0 text-terracotta-600" />
           <p className="text-sm text-terracotta-700">{errorMsg}</p>
         </div>

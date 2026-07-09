@@ -51,7 +51,7 @@ export function NewsletterSection() {
 
             <div>
               {status === 'success' ? (
-                <div className="rounded-sm border border-brass/30 bg-brass-50/10 p-5">
+                <div role="status" aria-live="polite" className="rounded-sm border border-brass/30 bg-brass-50/10 p-5">
                   <div className="flex items-center gap-3">
                     <CheckCircle2 className="h-6 w-6 flex-shrink-0 text-brass-300" />
                     <p className="text-sm text-sand-100">You&apos;re on the list. Welcome to Travel Club.</p>
@@ -135,7 +135,7 @@ export function NewsletterSection() {
                 </form>
               )}
               {status === 'error' && (
-                <p className="mt-2 text-sm text-terracotta-400">
+                <p role="alert" aria-live="assertive" className="mt-2 text-sm text-terracotta-400">
                   Something went wrong. Please try again, or use our{' '}
                   <a href="/contact" className="underline underline-offset-2 hover:text-terracotta-300">
                     contact form
