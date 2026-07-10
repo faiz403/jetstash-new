@@ -58,7 +58,7 @@ export function PageHero({
           <dl className="stagger-in stagger-4 mt-8 flex animate-fade-up flex-wrap gap-x-10 gap-y-4 border-t border-white/10 pt-6">
             {stats.map((stat) => (
               <div key={stat.label} className="flex flex-col">
-                <dt className="order-last text-xs font-semibold uppercase tracking-wide text-ink-400">{stat.label}</dt>
+                <dt className="order-last text-xs font-semibold uppercase tracking-wide text-ink-300">{stat.label}</dt>
                 <dd className="font-display text-3xl text-brass-300">{stat.value}</dd>
               </div>
             ))}

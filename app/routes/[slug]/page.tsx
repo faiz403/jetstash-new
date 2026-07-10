@@ -91,7 +91,7 @@ export default function RoutePage({ params }: { params: { slug: string } }) {
       <section className="relative overflow-hidden bg-ink-900 py-16 sm:py-20">
         <HeroBackdrop image={(() => { const img = getDestinationImage(dest.slug); return img ? { ...img, alt: '' } : null; })()} />
         <div className="relative mx-auto max-w-content px-5 sm:px-8">
-          <nav aria-label="Breadcrumb" className="mb-5 flex items-center gap-1.5 text-xs text-ink-400">
+          <nav aria-label="Breadcrumb" className="mb-5 flex items-center gap-1.5 text-xs text-ink-300">
             <Link href="/" className="hover:text-brass-300">Home</Link>
             <span>/</span>
             <Link href={`/airports/${airport.slug}`} className="hover:text-brass-300">{airport.name}</Link>
@@ -129,7 +129,7 @@ export default function RoutePage({ params }: { params: { slug: string } }) {
               text={`${airport.city} to ${dest.city}: ${route.flightTime}, ${route.frequency}. ${route.bookingWindowNote}`}
             />
           </div>
-          <p className="mt-2.5 text-xs text-ink-400">Partner link, opens {getPrimaryBookingProvider().name} in a new tab. Booking there never costs you more.</p>
+          <p className="mt-2.5 text-xs text-ink-300">Partner link, opens {getPrimaryBookingProvider().name} in a new tab. Booking there never costs you more.</p>
         </div>
       </section>
 

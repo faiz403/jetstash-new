@@ -162,8 +162,8 @@ export function RouteMapHero() {
             <span className="text-[11px] font-semibold uppercase tracking-[0.28em] text-brass-200">The JetStash Route Atlas</span>
             <h2 className="mt-2 font-display text-2xl text-sand-50 sm:text-4xl">Manchester to the destinations that matter</h2>
           </div>
-          <p className="hidden text-[13px] text-ink-400 lg:block">Hover a destination to light its route</p>
-          <p className="text-[13px] text-ink-400 lg:hidden">Select a destination to light its route</p>
+          <p className="hidden text-[13px] text-ink-300 lg:block">Hover a destination to light its route</p>
+          <p className="text-[13px] text-ink-300 lg:hidden">Select a destination to light its route</p>
         </div>
 
         {/* mobile chip selector — the map's tap targets are too fine below sm */}
@@ -413,7 +413,7 @@ export function RouteMapHero() {
 
       {/* caption + legend */}
       <div className="relative flex flex-col gap-2 px-6 pb-6 pt-4 sm:flex-row sm:items-center sm:justify-between sm:px-10 sm:pb-7">
-        <p className="text-xs text-ink-400">
+        <p className="text-xs text-ink-300">
           Drawn for beauty, checked for honesty. Positions are approximate; every route is real.
         </p>
         <p className="hidden items-center gap-2 text-xs text-ink-300 sm:flex">

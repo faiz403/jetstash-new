@@ -107,7 +107,7 @@ export default function HomePage() {
             <CalendarCheck className="mt-0.5 h-5 w-5 shrink-0 text-brass-300" strokeWidth={2} />
             <div>
               <p className="text-sm font-semibold text-sand-50">Checked by a person, dated</p>
-              <p className="mt-1 text-xs leading-relaxed text-ink-400">
+              <p className="mt-1 text-xs leading-relaxed text-ink-300">
                 Every fare shows the date a member of our team actually checked it. Never a live-price claim.
               </p>
             </div>
@@ -116,7 +116,7 @@ export default function HomePage() {
             <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-brass-300" strokeWidth={2} />
             <div>
               <p className="text-sm font-semibold text-sand-50">No invented urgency</p>
-              <p className="mt-1 text-xs leading-relaxed text-ink-400">
+              <p className="mt-1 text-xs leading-relaxed text-ink-300">
                 No countdown timers, no &ldquo;2 seats left&rdquo;, no fake reviews. If we can&apos;t verify it, we don&apos;t say it.
               </p>
             </div>
@@ -125,7 +125,7 @@ export default function HomePage() {
             <Users className="mt-0.5 h-5 w-5 shrink-0 text-brass-300" strokeWidth={2} />
             <div>
               <p className="text-sm font-semibold text-sand-50">Built for these routes</p>
-              <p className="mt-1 text-xs leading-relaxed text-ink-400">
+              <p className="mt-1 text-xs leading-relaxed text-ink-300">
                 Route history, booking windows and peak-period warnings, specific to each airport pairing.{' '}
                 <Link href="/about" className="font-medium text-brass-300 underline underline-offset-2 hover:text-brass-200">
                   Our standards
@@ -504,7 +504,7 @@ export default function HomePage() {
             <Globe className="mt-0.5 h-6 w-6 shrink-0 text-brass-300" strokeWidth={1.75} />
             <div>
               <p className="font-display text-xl text-sand-50">Your journey starts here.</p>
-              <p className="mt-1 max-w-md text-sm text-ink-400">
+              <p className="mt-1 max-w-md text-sm text-ink-300">
                 Explore flights from UK airports to the destinations that matter, and find the route guide built
                 for how you actually travel.
               </p>

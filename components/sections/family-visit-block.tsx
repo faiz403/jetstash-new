@@ -42,7 +42,7 @@ export function FamilyVisitBlock({ content, city }: { content: FamilyVisitConten
 
           <div className="rounded-md border border-white/10 bg-ink-800 p-6">
             <h3 className="font-display text-lg text-sand-50">When demand peaks</h3>
-            <p className="mt-1 text-xs text-ink-400">Book 2–3 months ahead of these windows where dates are fixed</p>
+            <p className="mt-1 text-xs text-ink-300">Book 2–3 months ahead of these windows where dates are fixed</p>
             <div className="mt-3 flex flex-wrap gap-2">
               {getPeakPeriodsByIds(content.peakPeriodIds).map((period) => (
                 <Badge key={period.id} variant="dark">{period.label}</Badge>
@@ -51,7 +51,7 @@ export function FamilyVisitBlock({ content, city }: { content: FamilyVisitConten
           </div>
         </div>
 
-        <p className="mt-6 max-w-2xl text-xs text-ink-400">
+        <p className="mt-6 max-w-2xl text-xs text-ink-300">
           Visa and identity document requirements change. Always confirm directly with the relevant high
           commission, embassy, or NADRA/OCI portal before booking, rather than relying on a previous trip.
         </p>

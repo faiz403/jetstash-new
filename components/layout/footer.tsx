@@ -19,11 +19,11 @@ export function Footer() {
             >
               Get in touch
             </Link>
-            <p className="mt-5 max-w-sm text-xs leading-relaxed text-ink-400">
+            <p className="mt-5 max-w-sm text-xs leading-relaxed text-ink-300">
               Every fare on this site is an example checked by a person on a stated date. Never a live price
               claim, never invented urgency. That standard is the product.
             </p>
-            <p className="mt-4 max-w-sm text-xs leading-relaxed text-ink-400">
+            <p className="mt-4 max-w-sm text-xs leading-relaxed text-ink-300">
               JetStash earns a commission on some bookings made through partner links. This never affects the price
               you pay. See our{' '}
               <Link href="/affiliate-disclosure" className="underline hover:text-brass-300">
@@ -38,7 +38,7 @@ export function Footer() {
           <FooterColumn title="Company" links={footerNav.company} />
         </div>
 
-        <div className="mt-12 flex flex-col gap-3 border-t border-white/5 pt-8 text-xs text-ink-400 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mt-12 flex flex-col gap-3 border-t border-white/5 pt-8 text-xs text-ink-300 sm:flex-row sm:items-center sm:justify-between">
           <p>© {new Date().getFullYear()} JetStash. All rights reserved.</p>
           <p className="max-w-xl">
             Prices shown across this site are indicative and subject to change. Always confirm the final price
@@ -53,7 +53,7 @@ export function Footer() {
 function FooterColumn({ title, links }: { title: string; links: { label: string; href: string }[] }) {
   return (
     <nav aria-label={title}>
-      <h3 className="text-xs font-semibold uppercase tracking-wide text-ink-400">{title}</h3>
+      <h3 className="text-xs font-semibold uppercase tracking-wide text-ink-300">{title}</h3>
       <ul className="mt-4 flex flex-col gap-3">
         {links.map((link) => (
           <li key={link.href}>

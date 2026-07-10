@@ -60,7 +60,7 @@ export default function QuoteRequestPage({
                   <span className="mr-1.5 font-display text-brass-300">{i + 1}.</span>
                   {step.title}
                 </p>
-                <p className="mt-1 text-xs leading-relaxed text-ink-400">{step.body}</p>
+                <p className="mt-1 text-xs leading-relaxed text-ink-300">{step.body}</p>
               </div>
             </div>
           ))}

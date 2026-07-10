@@ -53,7 +53,7 @@ export function RegionHubPage({
           </div>
           <h1 className="stagger-in stagger-2 mt-4 max-w-2xl animate-fade-up font-display text-4xl leading-[1.08] tracking-tight text-sand-50 sm:text-5xl">{title}</h1>
           <p className="stagger-in stagger-3 mt-4 max-w-xl animate-fade-up text-lg leading-relaxed text-ink-300">{intro}</p>
-          <p className="stagger-in stagger-4 mt-5 flex animate-fade-up items-center gap-2 text-sm text-ink-400">
+          <p className="stagger-in stagger-4 mt-5 flex animate-fade-up items-center gap-2 text-sm text-ink-300">
             <Plane className="h-4 w-4" strokeWidth={2} />
             Flying from: {airportsServed.join(', ')}
           </p>

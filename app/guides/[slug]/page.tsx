@@ -45,7 +45,7 @@ export default function GuidePage({ params }: { params: { slug: string } }) {
       <section className="relative overflow-hidden bg-ink-900 py-16 sm:py-20">
         <HeroBackdrop image={getGuideImage(guide.slug)} />
         <div className="relative mx-auto max-w-content px-5 sm:px-8">
-          <nav aria-label="Breadcrumb" className="mb-5 flex items-center gap-1.5 text-xs text-ink-400">
+          <nav aria-label="Breadcrumb" className="mb-5 flex items-center gap-1.5 text-xs text-ink-300">
             <Link href="/" className="shrink-0 hover:text-brass-300">Home</Link>
             <span>/</span>
             <Link href="/guides" className="shrink-0 hover:text-brass-300">Travel Guides</Link>

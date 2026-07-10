@@ -63,7 +63,7 @@ export default function AirportPage({ params }: { params: { slug: string } }) {
           {airport.code}
         </span>
         <div className="relative mx-auto max-w-content px-5 sm:px-8">
-          <nav aria-label="Breadcrumb" className="mb-5 flex items-center gap-1.5 text-xs text-ink-400">
+          <nav aria-label="Breadcrumb" className="mb-5 flex items-center gap-1.5 text-xs text-ink-300">
             <Link href="/" className="hover:text-brass-300">Home</Link>
             <span>/</span>
             <Link href="/airports" className="hover:text-brass-300">Airports</Link>
