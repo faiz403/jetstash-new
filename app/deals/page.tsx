@@ -5,6 +5,7 @@ import { DealsExplorer } from '@/components/sections/deals-explorer';
 import { deals, formatChecked } from '@/data/deals';
 import { fareObservations } from '@/data/fare-observations';
 import { siteConfig } from '@/lib/site-config';
+import { JsonLd, dealsListSchema } from '@/components/seo/json-ld';
 
 export const metadata: Metadata = {
   title: 'Tracked Fares: UK to Pakistan, India, the Gulf & Umrah',
@@ -23,6 +24,7 @@ export default function DealsPage() {
 
   return (
     <>
+      <JsonLd data={dealsListSchema(deals)} />
       <PageHero
         heroKey="deals"
         eyebrow="Tracked fares"

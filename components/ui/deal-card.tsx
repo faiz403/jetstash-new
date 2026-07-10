@@ -43,10 +43,10 @@ export function DealCard({ deal }: { deal: Deal }) {
       </div>
 
       <div className="flex items-center justify-between border-b border-ink-100 px-5 py-3">
-        <span className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-ink-400">
+        <h3 className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-ink-400">
           <Plane className="h-3.5 w-3.5" strokeWidth={2.25} />
           {deal.fromCity} → {deal.toCity}
-        </span>
+        </h3>
         <span className="text-xs font-medium text-ink-500">{cabinLabel[deal.cabin]}</span>
       </div>
 

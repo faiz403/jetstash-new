@@ -20,7 +20,7 @@ const sections: { title: string; body: React.ReactNode }[] = [
   },
   {
     title: 'Third parties',
-    body: 'We use a third-party email service provider to send Travel Club emails and manage the subscriber list. We do not sell or share your email address with any other third party for marketing purposes.',
+    body: 'We use a third-party email service provider to send Travel Club emails and manage the subscriber list, and Vercel to host this site. If a form submission fails to send (for example, if our email provider is briefly unavailable), the name and email you submitted may appear in Vercel\'s server logs for debugging — standard infrastructure logging, not a separate marketing or analytics system. We do not sell or share your email address with any other third party for marketing purposes.',
   },
   {
     title: 'Your rights',
@@ -52,7 +52,7 @@ export default function PrivacyPolicyPage() {
 
       <section className="bg-white py-16 sm:py-24">
         <div className="mx-auto max-w-2xl px-5 sm:px-8">
-          <p className="text-sm text-ink-400">Last updated: June 2026</p>
+          <p className="text-sm text-ink-400">Last updated: July 2026</p>
           <div className="mt-8 flex flex-col gap-10">
             {sections.map((section, i) => (
               <div key={section.title} className="grid gap-3 border-l-2 border-brass-200 pl-6 sm:grid-cols-[2.5rem_1fr] sm:gap-5">

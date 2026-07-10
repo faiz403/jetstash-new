@@ -52,3 +52,24 @@ export function breadcrumbSchema(items: { name: string; href: string }[]) {
     })),
   };
 }
+
+/**
+ * Deliberately NOT a Product/Offer schema: that would require a specific
+ * price, and this site never claims one (see data/deals.ts's header
+ * comment) — a stale or wrong structured-data price is a real Google
+ * Merchant penalty risk, not just a content-integrity one. An ItemList of
+ * the tracked routes is the honest structured-data shape for this page:
+ * real names and URLs, no price claim either way.
+ */
+export function dealsListSchema(items: { fromCity: string; toCity: string; cabin: string; toDestinationSlug: string }[]) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    itemListElement: items.map((item, i) => ({
+      '@type': 'ListItem',
+      position: i + 1,
+      name: `${item.fromCity} to ${item.toCity} (${item.cabin})`,
+      url: `${siteConfig.url}/destinations/${item.toDestinationSlug}`,
+    })),
+  };
+}

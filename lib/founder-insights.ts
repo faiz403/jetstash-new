@@ -323,7 +323,7 @@ function staleContent(): FounderSection {
   });
 
   items.push({
-    label: 'Privacy policy: "Last updated: June 2026"',
+    label: 'Privacy policy: "Last updated: July 2026"',
     detail: 'Hand-dated. Re-read it whenever data handling changes (new provider, analytics, etc.) and update the date honestly.',
     status: 'ok',
     href: '/privacy-policy',
