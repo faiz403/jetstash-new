@@ -31,8 +31,8 @@ import type { Deal, DealCabin } from '@/data/deals';
  *   - `url` — CJ's deep-link override: redirects to a *specific* TravelUp
  *     page instead of their configured default. Only ever set from
  *     VERIFIED_DEEP_LINKS below, and only once a provider's
- *     supportsDeepLink is true — see that constant's comment for why it's
- *     empty today.
+ *     supportsDeepLink is true — see that constant's comment for how its
+ *     entries were verified.
  *
  * Every "Check live price[s]" / booking CTA in the app reads its outbound
  * URL from this file — nothing else should construct a provider URL by
@@ -77,7 +77,7 @@ export const BOOKING_PROVIDERS: Record<BookingProviderId, BookingProvider> = {
     // Real CJ tracking link — PID 101818709, AID 15363607, on kqzyfj.com.
     // See file header. Do not replace with a guessed travelup.com subpath.
     baseUrl: 'https://www.kqzyfj.com/click-101818709-15363607',
-    supportsDeepLink: false,
+    supportsDeepLink: true,
     affiliateParams: {},
     hasTracking: true,
     enabled: true,
@@ -103,17 +103,38 @@ export const PRIMARY_PROVIDER_ID: BookingProviderId = 'travelup';
 /**
  * Manually verified TravelUp destination URLs, keyed by destination slug —
  * the ONLY source getRouteBookingUrl will ever deep-link to via CJ's
- * `url=` override. Empty until someone actually visits travelup.com,
- * performs a real search or opens a real destination page, and confirms
- * the exact URL works — never add an entry from a guessed pattern (a
- * guessed `/flights/search?origin=...` shape broke in production the one
- * time that was tried; see git history). Populating this is independent
- * of supportsDeepLink staying off: even with entries here, nothing
- * changes until the provider's supportsDeepLink flag is also flipped to
- * true.
+ * `url=` override. Never add an entry from a guessed pattern (a guessed
+ * `/flights/search?origin=...` shape broke in production the one time
+ * that was tried; see git history) — every entry below was confirmed by
+ * actually visiting travelup.com, following its own Asia/Africa/Europe
+ * destination-country pages (or, for Jeddah/Istanbul/Marrakech, cross-
+ * checked against travelup.com/sitemap.xml) to the real
+ * `/en-gb/flight-offers/{city}-{iata}` page, and reading back that page's
+ * own rendered title (e.g. "Cheap Flights to Lahore (LHE)...") to confirm
+ * it resolves — not assumed from the URL shape alone.
+ *
+ * 'abu-dhabi' is deliberately included even though no destination in
+ * data/destinations.ts currently has that slug — the URL itself is
+ * confirmed real, but the entry is inert (getRouteBookingUrl only ever
+ * looks up VERIFIED_DEEP_LINKS[destination.slug], and no destination or
+ * route resolves to 'abu-dhabi' today). It starts working the day Abu
+ * Dhabi is added as a destination, with no change needed here.
  */
 const VERIFIED_DEEP_LINKS: Partial<Record<string, string>> = {
-  // 'lahore': 'https://www.travelup.com/en-gb/flight-offers/lahore-lhe',
+  lahore: 'https://www.travelup.com/en-gb/flight-offers/lahore-lhe',
+  islamabad: 'https://www.travelup.com/en-gb/flight-offers/islamabad-isb',
+  karachi: 'https://www.travelup.com/en-gb/flight-offers/karachi-khi',
+  delhi: 'https://www.travelup.com/en-gb/flight-offers/delhi-del',
+  mumbai: 'https://www.travelup.com/en-gb/flight-offers/mumbai-bom',
+  ahmedabad: 'https://www.travelup.com/en-gb/flight-offers/ahmedabad-amd',
+  amritsar: 'https://www.travelup.com/en-gb/flight-offers/amritsar-atq',
+  dubai: 'https://www.travelup.com/en-gb/flight-offers/dubai-dxb',
+  // Inert — see comment above. Verified real; no matching destination yet.
+  'abu-dhabi': 'https://www.travelup.com/en-gb/flight-offers/abu-dhabi-auh',
+  doha: 'https://www.travelup.com/en-gb/flight-offers/doha-doh',
+  jeddah: 'https://www.travelup.com/en-gb/flight-offers/jeddah-jed',
+  istanbul: 'https://www.travelup.com/en-gb/flight-offers/istanbul-ist',
+  marrakech: 'https://www.travelup.com/en-gb/flight-offers/marrakech-rak',
 };
 
 export function getPrimaryBookingProvider(): BookingProvider {
@@ -149,10 +170,11 @@ function buildSid(parts: (string | undefined)[]): string {
 
 /**
  * Outbound booking URL for a specific departure airport → destination pair
- * — used on route guide pages. Deep-links only to a VERIFIED_DEEP_LINKS
- * entry when the provider's supportsDeepLink is true; otherwise (today,
- * always) resolves to the tracked homepage/search fallback, tagged with a
- * sid identifying this route (and cabin, when known) for analytics.
+ * — used on route guide pages. Deep-links to the matching VERIFIED_DEEP_LINKS
+ * entry when the provider's supportsDeepLink is true and one exists for this
+ * destination; otherwise resolves to the tracked homepage/search fallback.
+ * Always tagged with a sid identifying this route (and cabin, when known)
+ * for analytics, regardless of which URL it resolves to.
  */
 export function getRouteBookingUrl(airport: Airport, destination: Destination, cabin?: DealCabin): string {
   const provider = getPrimaryBookingProvider();
