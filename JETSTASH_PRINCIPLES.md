@@ -306,8 +306,22 @@ they can't drift apart when an option is added.
 Brevo specifics worth knowing: `upsertBrevoContact` treats a 400 with `code: 'duplicate_parameter'`
 as success (existing contact re-added to the list is not a failure); any other 400 is real and
 surfaces. Brevo **silently drops** any custom contact attribute that hasn't been created in its own
-dashboard first (`NEAREST_AIRPORT`, `TRAVEL_INTEREST`, and the five `WATCH_*` fields) — this can't
-be verified from code, which is why `/founder`'s Travel Club section flags it as a manual check.
+dashboard first — and does so *without erroring the request*, so the app keeps reporting success
+while quietly losing data. This exact thing happened in production: env vars were confirmed live,
+but all seven required attributes (`NEAREST_AIRPORT`, `TRAVEL_INTEREST`, `WATCH_AIRPORT`,
+`WATCH_DESTINATION`, `WATCH_ROUTE`, `WATCH_REGION`, `WATCH_INTENT`) were missing from the connected
+Brevo account, and real signups had already been saving with every preference field discarded.
+
+The fix is `lib/brevo-attributes.json` (the canonical list, consumed both by `lib/brevo-attributes.ts`
+as `BREVO_ATTRIBUTE_NAMES` for the two Brevo routes, and directly by
+`scripts/setup-brevo-attributes.mjs`) — never hardcode an attribute name as a literal object key in
+a route. Run `npm run brevo:setup` (idempotent — safe to re-run, only creates what's missing) any
+time a new attribute is added to the JSON list, or when connecting a fresh Brevo account. It's a
+deliberately manual, explicit step — not a `predev`/`prebuild` hook — because it mutates a real
+third-party account and needs the real `BREVO_API_KEY` in the shell running it; it should never run
+silently as a side effect of `npm install` or `npm run dev`. Whether the attributes *currently
+exist* still can't be verified from code at request time (no read-only check is wired into
+`/founder`) — only that the code *would* create them correctly if run.
 
 ## 9. Content integrity — the rules this codebase enforces as a bug class
 

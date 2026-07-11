@@ -4,6 +4,7 @@ import { getDestinationBySlug } from '@/data/destinations';
 import { getRouteByAirportAndDestination } from '@/data/routes';
 import { isValidEmail, upsertBrevoContact } from '@/lib/email';
 import { isFareWatchIntent } from '@/lib/fare-watch-options';
+import { BREVO_ATTRIBUTE_NAMES } from '@/lib/brevo-attributes';
 
 /**
  * Per-route fare-watch signup endpoint.
@@ -17,10 +18,10 @@ import { isFareWatchIntent } from '@/lib/fare-watch-options';
  * with that route can be emailed manually.
  *
  * Requires four Brevo custom contact attributes in addition to the
- * existing NEAREST_AIRPORT / TRAVEL_INTEREST ones (Contacts → Settings →
- * Contact Attributes → Add attribute, type "Text") before this will save
- * correctly: WATCH_AIRPORT, WATCH_DESTINATION, WATCH_ROUTE, WATCH_REGION,
- * WATCH_INTENT. Brevo silently drops attributes it doesn't recognise.
+ * existing NEAREST_AIRPORT / TRAVEL_INTEREST ones — run `npm run brevo:setup`
+ * (see scripts/setup-brevo-attributes.mjs) to create all seven, defined in
+ * lib/brevo-attributes.ts, before this will save correctly. Brevo silently
+ * drops attributes it doesn't recognise.
  */
 
 export async function POST(req: NextRequest) {
@@ -62,12 +63,12 @@ export async function POST(req: NextRequest) {
   }
 
   const attributes: Record<string, string> = {
-    WATCH_AIRPORT: airport.slug,
-    WATCH_DESTINATION: destination.slug,
-    WATCH_REGION: destination.region,
+    [BREVO_ATTRIBUTE_NAMES.WATCH_AIRPORT]: airport.slug,
+    [BREVO_ATTRIBUTE_NAMES.WATCH_DESTINATION]: destination.slug,
+    [BREVO_ATTRIBUTE_NAMES.WATCH_REGION]: destination.region,
   };
-  if (matchedRoute) attributes.WATCH_ROUTE = matchedRoute.slug;
-  if (intent) attributes.WATCH_INTENT = intent;
+  if (matchedRoute) attributes[BREVO_ATTRIBUTE_NAMES.WATCH_ROUTE] = matchedRoute.slug;
+  if (intent) attributes[BREVO_ATTRIBUTE_NAMES.WATCH_INTENT] = intent;
 
   const result = await upsertBrevoContact({ apiKey, listId, email, attributes });
   if (!result.ok) {

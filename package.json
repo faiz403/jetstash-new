@@ -8,7 +8,8 @@
     "prebuild": "node scripts/generate-image-manifest.mjs",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "brevo:setup": "node scripts/setup-brevo-attributes.mjs"
   },
   "dependencies": {
     "clsx": "^2.1.1",

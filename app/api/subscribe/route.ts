@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getAirportBySlug } from '@/data/airports';
 import { isValidEmail, upsertBrevoContact } from '@/lib/email';
 import { isTravelInterest } from '@/lib/travel-club-options';
+import { BREVO_ATTRIBUTE_NAMES } from '@/lib/brevo-attributes';
 
 /**
  * Newsletter / Travel Club subscribe endpoint.
@@ -29,10 +30,11 @@ import { isTravelInterest } from '@/lib/travel-club-options';
  * Add your provider's API key as a Vercel environment variable
  * (Project Settings → Environment Variables) — never hardcode it in source.
  *
- * If using Brevo: create two custom contact attributes —
- * NEAREST_AIRPORT and TRAVEL_INTEREST (Contacts → Settings → Contact
- * Attributes → Add attribute, type "Text") — before this will populate
- * correctly, otherwise Brevo silently drops fields it doesn't recognise.
+ * If using Brevo: run `npm run brevo:setup` (see scripts/setup-brevo-attributes.mjs)
+ * to create the required custom contact attributes — NEAREST_AIRPORT and
+ * TRAVEL_INTEREST, defined in lib/brevo-attributes.ts — before this will
+ * populate correctly, otherwise Brevo silently drops fields it doesn't
+ * recognise.
  */
 
 export async function POST(req: NextRequest) {
@@ -69,8 +71,8 @@ export async function POST(req: NextRequest) {
   }
 
   const attributes: Record<string, string> = {};
-  if (nearestAirport) attributes.NEAREST_AIRPORT = nearestAirport;
-  if (interest) attributes.TRAVEL_INTEREST = interest;
+  if (nearestAirport) attributes[BREVO_ATTRIBUTE_NAMES.NEAREST_AIRPORT] = nearestAirport;
+  if (interest) attributes[BREVO_ATTRIBUTE_NAMES.TRAVEL_INTEREST] = interest;
 
   const result = await upsertBrevoContact({ apiKey, listId, email, attributes });
   if (!result.ok) {
