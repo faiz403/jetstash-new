@@ -6,6 +6,17 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 JetStash — a Next.js 14 (App Router) marketing/content site for a UK travel hub covering Pakistan, India, the Gulf, Umrah, family holidays and business class, plus Mediterranean/North African routes. There is no database or CMS: all content (destinations, routes, airports, example fares) lives in typed TypeScript data files under `/data`. Pages are statically generated from that data.
 
+## Keep JETSTASH_PRINCIPLES.md current
+
+`JETSTASH_PRINCIPLES.md` (repo root) is the long-form handbook: architecture, content model,
+design system, affiliate strategy, content-integrity rules, deployment process, and the reasoning
+behind past decisions. Before any significant architectural change, check whether it needs
+updating. If the change alters a long-term business decision, a coding standard, the affiliate
+strategy, a design principle, or an architectural rule, update the relevant section of the handbook
+**in the same PR** as the code change — not as a follow-up. Do **not** touch it for temporary
+experiments, one-off content edits, or ordinary bug fixes; it documents standing decisions, not
+day-to-day changes.
+
 ## Commands
 
 ```bash
