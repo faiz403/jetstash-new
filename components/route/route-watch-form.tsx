@@ -20,13 +20,14 @@ import { ROUTE_WATCH_INTENT_OPTIONS } from '@/lib/route-watch-options';
 interface RouteWatchFormProps {
   defaultAirportSlug?: string;
   defaultDestinationSlug?: string;
+  defaultIntent?: string;
 }
 
-export function RouteWatchForm({ defaultAirportSlug, defaultDestinationSlug }: RouteWatchFormProps) {
+export function RouteWatchForm({ defaultAirportSlug, defaultDestinationSlug, defaultIntent }: RouteWatchFormProps) {
   const [email, setEmail] = useState('');
   const [airportSlug, setAirportSlug] = useState(defaultAirportSlug ?? '');
   const [destinationSlug, setDestinationSlug] = useState(defaultDestinationSlug ?? '');
-  const [intent, setIntent] = useState('');
+  const [intent, setIntent] = useState(defaultIntent ?? '');
   const [status, setStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
   const [errorMsg, setErrorMsg] = useState('');
 

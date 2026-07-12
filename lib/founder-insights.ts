@@ -8,6 +8,8 @@ import { imageCoverage } from '@/lib/brand-images';
 import { BOOKING_PROVIDERS, PRIMARY_PROVIDER_ID } from '@/lib/booking-providers';
 import { BOOK_BY_PRIORITY_ROUTE_SLUGS, OBSERVATION_FRESH_DAYS } from '@/lib/booking-intelligence';
 import { computeAllReadinessSnapshots, VERDICT_COPY } from '@/lib/travel-intelligence-engine';
+import { travelReadyRules, isRuleStale } from '@/data/travel-ready-rules';
+import { TRAVEL_READY_SUPPORTED_COUNTRIES } from '@/lib/travel-ready-check';
 import { siteConfig } from '@/lib/site-config';
 
 /**
@@ -406,6 +408,59 @@ function bookByCadenceStatus(now: Date): FounderSection {
   };
 }
 
+// ── 8b. Travel Ready Check — rules ops ───────────────────────────────────
+// Rule freshness is a trust/compliance concern, not pure commercial cadence
+// like Book-By's fare checks — hence 'revenue' priority rather than
+// 'nice-to-have'. The public UI already degrades safely on its own (a
+// stale rule shows "official confirmation required" instead of continuing
+// to look current, per JETSTASH_PRINCIPLES.md §14.3) — this section is the
+// founder's reminder to actually go re-verify, not a sign anything is
+// currently dishonest.
+const RULE_REVIEW_WATCH_DAYS = 30;
+
+function travelReadyOpsStatus(now: Date): FounderSection {
+  const nowIso = now.toISOString().slice(0, 10);
+  const items: FounderItem[] = [];
+
+  for (const rule of travelReadyRules) {
+    const daysToReview = Math.floor(
+      (new Date(`${rule.reviewDueDate}T00:00:00Z`).getTime() - new Date(`${nowIso}T00:00:00Z`).getTime()) / 86_400_000
+    );
+    if (isRuleStale(rule, nowIso)) {
+      items.push({
+        label: `${rule.country} · ${rule.ruleType}`,
+        detail: `Past its review date (due ${formatShortDate(rule.reviewDueDate)}) — the public check now shows "official confirmation required" for this rule rather than presenting it as current.`,
+        status: 'attention',
+        href: '/travel-ready-check',
+      });
+    } else if (daysToReview <= RULE_REVIEW_WATCH_DAYS) {
+      items.push({
+        label: `${rule.country} · ${rule.ruleType}`,
+        detail: `Due for re-verification in ${daysToReview} day${daysToReview === 1 ? '' : 's'} (${formatShortDate(rule.reviewDueDate)}) — re-check the official source before it lapses.`,
+        status: 'watch',
+        href: '/travel-ready-check',
+      });
+    }
+  }
+
+  const coveredCountries = new Set(travelReadyRules.map((r) => r.country)).size;
+  const status = worst(items.map((i) => i.status));
+
+  return {
+    id: 'travel-ready-ops',
+    title: 'Travel Ready Check — rules ops',
+    priority: 'revenue',
+    status,
+    headline:
+      items.length === 0
+        ? `All ${travelReadyRules.length} rules across ${coveredCountries}/${TRAVEL_READY_SUPPORTED_COUNTRIES.length} supported countries are fresh.`
+        : `${items.length} of ${travelReadyRules.length} rules need attention across ${coveredCountries}/${TRAVEL_READY_SUPPORTED_COUNTRIES.length} supported countries. Coverage is deliberately limited to British passport holders plus NICOP/POC and OCI document holders — every other nationality gets an honest "not enough information", not a guess.`,
+    items,
+    action:
+      'Re-check the rule\'s official source directly (never a blog or forum), update requirement/officialSource if anything changed, then bump lastVerifiedDate to today and reviewDueDate 6 months out in data/travel-ready-rules.ts.',
+  };
+}
+
 // ── 9. Pages with stale content ──────────────────────────────────────────
 function staleContent(): FounderSection {
   const items: FounderItem[] = [];
@@ -579,6 +634,7 @@ export function getFounderSnapshot(now: Date): FounderSnapshot {
     engineAlertQueue(now),
     fareObservationCoverage(),
     bookByCadenceStatus(now),
+    travelReadyOpsStatus(now),
     photographyStatus(),
     warningsForReview(),
     staleContent(),

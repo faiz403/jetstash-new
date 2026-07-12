@@ -6,8 +6,9 @@ import type { RouteWarning } from '@/data/route-warnings';
  * The Travel Intelligence Engine — the single composition layer that
  * resolves every intelligence module into one customer-facing answer to
  * "Am I ready to book?" (JETSTASH_PRINCIPLES.md §14.2). Book-By Countdown,
- * route warnings, and — once built — Travel Ready Check all compose here;
- * nothing outside this file resolves multiple signals into a verdict.
+ * route warnings, and Travel Ready Check (§14.3, lib/travel-ready-check.ts)
+ * all compose here; nothing outside this file resolves multiple signals
+ * into a verdict.
  *
  * "One recommendation" means one verdict, never one blended score. Signals
  * resolve via a priority decision tree (the most serious true fact wins),
@@ -38,10 +39,10 @@ export interface EngineReason {
 }
 
 /**
- * Reserved composition point for Travel Ready Check (JETSTASH_PRINCIPLES.md
- * §14.2) — always null until that module exists. Defining the shape now,
- * ahead of the module that fills it, is what "future intelligence modules
- * plug in without a rewrite" means concretely.
+ * The Travel Ready Check signal (JETSTASH_PRINCIPLES.md §14.3) — computed
+ * entirely client-side by lib/travel-ready-check.ts from a visitor's own
+ * inputs, then threaded into computeReadiness()'s optional 3rd parameter.
+ * Null whenever no check has been completed for this route yet.
  */
 export interface TravelReadySignal {
   severity: 'info' | 'caution' | 'critical';
@@ -81,31 +82,50 @@ function bookByToReason(bookBy: BookBySnapshot): EngineReason {
   };
 }
 
+function travelReadyToReason(signal: TravelReadySignal): EngineReason {
+  return {
+    source: 'travel-ready-check',
+    severity: signal.severity,
+    label: signal.label,
+    detail: signal.detail,
+  };
+}
+
 /**
  * The engine's readiness verdict for one route, or null when the route has
  * no Book-By coverage (outside the V1 priority set) — the engine composes
  * existing modules, it doesn't invent a verdict for a route none of them
  * cover yet.
+ *
+ * `travelReadySignal` is optional and defaults to null (today's behaviour
+ * for every build-time/initial-mount call site). It's supplied by
+ * components/route/route-readiness-panel.tsx once a visitor completes a
+ * Travel Ready Check for this route, entirely client-side — the engine
+ * itself never computes this signal (JETSTASH_PRINCIPLES.md §14.3).
  */
-export function computeReadiness(routeSlug: string, now: Date): EngineSnapshot | null {
+export function computeReadiness(
+  routeSlug: string,
+  now: Date,
+  travelReadySignal: TravelReadySignal | null = null
+): EngineSnapshot | null {
   const bookBy = computeBookBySnapshot(routeSlug, now);
   if (!bookBy) return null;
 
   const activeWarnings = getActiveWarningsByRoute(routeSlug);
   const criticalWarnings = activeWarnings.filter((w) => w.severity === 'critical');
   const cautionWarnings = activeWarnings.filter((w) => w.severity === 'caution');
-
-  // Reserved for Travel Ready Check — always null until that module ships.
-  const travelReadySignal: TravelReadySignal | null = null;
+  const travelReadyCritical = travelReadySignal?.severity === 'critical';
+  const travelReadyCaution = travelReadySignal?.severity === 'caution';
 
   const reasons: EngineReason[] = [
     bookByToReason(bookBy),
     ...activeWarnings.map((w) => warningToReason(w, routeSlug)),
+    ...(travelReadySignal ? [travelReadyToReason(travelReadySignal)] : []),
   ];
 
   // Priority decision tree — worst true fact wins, never blended.
   let verdict: ReadinessVerdict;
-  if (criticalWarnings.length > 0) {
+  if (criticalWarnings.length > 0 || travelReadyCritical) {
     verdict = 'wait-critical';
   } else if (bookBy.state === 'too-early' || bookBy.state === 'pre-surge') {
     // 'pre-surge' means no route-specific window exists yet but the surge
@@ -117,7 +137,7 @@ export function computeReadiness(routeSlug: string, now: Date): EngineSnapshot |
     // disagree with the headline sitting directly beneath it.
     verdict = 'not-yet';
   } else if (bookBy.state === 'window-open') {
-    verdict = cautionWarnings.length > 0 ? 'ready-with-caution' : 'ready';
+    verdict = cautionWarnings.length > 0 || travelReadyCaution ? 'ready-with-caution' : 'ready';
   } else {
     // 'surge' | 'late' | 'inside-period' — timing itself says act soon.
     verdict = 'book-soon';

@@ -39,6 +39,7 @@ This codebase was written without the ability to run `npm install` or a real bui
 7. **Manually verify a real TravelUp destination URL and turn deep-linking on.** A first attempt guessed a `/flights/search?origin=...` URL shape for route-specific links; in production this landed users on a TravelUp error page and lost their search. `BOOKING_PROVIDERS.travelup.supportsDeepLink` is deliberately still `false`, so every booking link safely resolves to TravelUp's own default landing page via the tracking link above (still commission-earning, just not destination-specific) rather than a broken deep link. To turn it on: visit `travelup.com` in a real browser, confirm a real destination URL works (e.g. their `/en-gb/flight-offers/{city}-{iata}` pages, if that pattern holds), add it to `VERIFIED_DEEP_LINKS` in `lib/booking-providers.ts`, then flip `supportsDeepLink` to `true`. Never add an entry from a guessed pattern.
 8. ~~Create the Route Watch Brevo attributes.~~ **Done** (see item 3 — confirmed together with the newsletter attributes). `/app/api/route-watch/route.ts` reuses `BREVO_API_KEY`/`BREVO_LIST_ID` and writes `WATCH_AIRPORT`, `WATCH_DESTINATION`, `WATCH_ROUTE`, `WATCH_REGION`, `WATCH_INTENT`. Note `WATCH_ROUTE` holds a small comma-delimited list, not a single value, per the Travel Intelligence Engine's multi-route model (JETSTASH_PRINCIPLES.md §14.2) — deliberately reusing the existing attribute rather than adding a new one that would need re-provisioning.
 9. ~~Route quote-request leads somewhere real.~~ **Done.** `/app/api/quote-request/route.ts` and `/app/api/contact/route.ts` both reuse `RESEND_API_KEY`/`CONTACT_TO_EMAIL` (no new env vars) and now default to `siteConfig.contactEmail` in `lib/site-config.ts` — a real inbox, not a placeholder — when `CONTACT_TO_EMAIL` isn't set in Vercel. Every Umrah/family/group quote request lands in one inbox for manual follow-up; revisit whether that should become a rotation of partner agents or a shared inbox as volume grows.
+10. **Keep Travel Ready Check's rule content current.** `data/travel-ready-rules.ts`'s 15 rules across 7 countries were verified against live GOV.UK/official-portal pages in July 2026 with a 6-month review window — this is content, not code, and visa/passport rules change with little notice (Pakistan suspended visa-on-arrival for most nationalities on 1 January 2026 with no advance notice). See "Travel Ready Check — maintaining `data/travel-ready-rules.ts`" above for the re-verification procedure, and `/founder`'s "Travel Ready Check — rules ops" section for what's currently due.
 
 ## Environment variables
 
@@ -179,6 +180,19 @@ The `Route` interface in `data/routes.ts` has two fields for this:
 - **`connectingAlternative`** — populated for any route where a realistic 1-stop (or 2-stop) alternative matters, whether the route is currently direct (as a "what happens after the direct service ends" fallback) or already connecting-only (as the main "how this route works" content). The route page renders this as a dedicated section, with the heading and framing copy changing based on whether `isDirect` is currently true or false.
 
 **When the withdrawal date passes:** update the route entry — flip `isDirect` to `false`, remove `directServiceEndDate`/`directServiceEndNote`, and rewrite `intro`/`frequency`/`airlineSlugs` to describe the connecting-only reality, using `connectingAlternative`'s data as the basis. Don't leave a route marked direct with a past end date — that's the exact stale-claim pattern this whole system exists to avoid.
+
+## Travel Ready Check — maintaining `data/travel-ready-rules.ts`
+
+Travel Ready Check (JETSTASH_PRINCIPLES.md §14.3) answers "can I actually travel on these dates with the documents I have?" — passport validity and visa guidance for 7 destinations (Pakistan, India, Saudi Arabia, UAE, Qatar, Turkey, Morocco), British passport holders plus NICOP/POC and OCI document holders. Every fact lives in `data/travel-ready-rules.ts`, never scattered across components.
+
+**To add or refresh a rule:**
+
+1. Fetch the live official source yourself — GOV.UK foreign travel advice (`gov.uk/foreign-travel-advice/<country>/entry-requirements`) for passport validity, or the destination's own official visa portal for visa-requirement specifics. Never a blog, forum, or travel agency page, even if it looks current.
+2. Update `requirement`, `minDaysValidityBeyondEntry`, `visaRequired`, `typicalProcessingDays` (only if the official source states a firm figure — leave it unset otherwise) and `caveat` to match what you actually read.
+3. Set `lastVerifiedDate` to today and `reviewDueDate` 6 months out. Never bump these without re-checking the live source first — that's the exact stale-claim pattern §9 exists to prevent, applied to a compliance-adjacent feature where it matters more.
+4. To add a new supported country, add its rules here **and** add it to `TRAVEL_READY_SUPPORTED_COUNTRIES` in `lib/travel-ready-check.ts` — the two must move together, or the destination selector and the decision tree disagree about coverage.
+
+Once `reviewDueDate` passes, `isRuleStale()` makes the affected check degrade to "official confirmation required" automatically — check `/founder`'s "Travel Ready Check — rules ops" section for what's coming due.
 
 ## Data model & accumulation conventions
 

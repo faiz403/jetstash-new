@@ -600,9 +600,11 @@ separate opt-ins — that would recreate the "four separate tools" problem in th
 even after fixing it on the page.
 
 **Future modules plug in via a reserved slot on the engine's snapshot, never a rewrite.** Travel
-Ready Check doesn't exist yet; the engine's snapshot type carries a `travelReadySignal` field that
-is always `null` until it ships. This is what "future intelligence modules" means concretely — the
-composition point already exists before the module that fills it does.
+Ready Check (§14.3, shipped July 2026) was the first module to fill this slot: `computeReadiness()`
+gained an optional 3rd `travelReadySignal` parameter, defaulting to `null` for every existing call
+site, with zero changes to `EngineSnapshot`, `TravelReadySignal`, or `VERDICT_COPY`. This is what
+"future intelligence modules" means concretely — the composition point already existed before the
+module that filled it did, and the next one plugs in the same way.
 
 **Detection is automatable now; sending stays human.** The long-term objective is that the engine
 detects, decides, drafts, segments, and eventually sends most of this with minimal human
@@ -616,3 +618,82 @@ trust.
 architecture, but it's built by repurposing the already-provisioned `WATCH_ROUTE` attribute to hold
 a small delimited list, not by adding a new attribute — adding one without a working way to create
 it in Brevo would silently reproduce the exact drift bug already fixed once this year (§8).
+
+### 14.3 Travel Ready Check — document/entry readiness (shipped July 2026)
+
+**The connected but different question.** Book-By Countdown answers "when should I book?" Travel
+Ready Check answers "can I actually travel on these dates with the documents I have?" Same engine,
+same "am I ready to book?" customer-facing question, one more input — never a fourth, disconnected
+tool. It never gives a legal guarantee, never claims definite eligibility, never presents visa or
+passport guidance without an official source attached, and never hides that a rule has aged past
+the point it's confident relying on.
+
+**One central rules layer, nothing scattered.** `data/travel-ready-rules.ts` is the only place a
+visa or passport fact lives — no destination page, component, or API route hand-writes one. Every
+`TravelReadyRule` carries `country` (matching `Destination.country`), `nationalityScope`,
+`ruleType`, a plain-English `requirement`, an official `officialSource` (title + URL — GOV.UK
+foreign travel advice or the destination's own visa portal, never a blog, forum, or travel agency
+page), `lastVerifiedDate`, and `reviewDueDate` (6 months out). `lib/visa-links.ts`'s per-country
+"here's an official link" pointer is unchanged and still used elsewhere; this is the separate,
+machine-readable table the decision tree actually evaluates.
+
+**Stale rules degrade automatically, never silently.** `isRuleStale(rule, nowIso)` returns true once
+`reviewDueDate` passes. `lib/travel-ready-check.ts`'s decision tree treats a stale rule the same as
+"we can't confirm this" — the affected check renders "official confirmation required" instead of
+continuing to present a months-old fact as current. This is the same content-integrity discipline
+§9 already applies to route and festival-date claims, now applied to a compliance-adjacent feature
+where staleness is a higher-stakes failure mode.
+
+**One verdict from an ordered decision tree, never a blended score.** `evaluateTravelReadiness()` in
+`lib/travel-ready-check.ts` evaluates every applicable check (passport validity, then visa/entry
+permission) and returns one of six verdicts — `ready-to-continue`, `check-passport-validity`,
+`visa-or-entry-permission-needed`, `document-timing-may-affect-booking`,
+`official-confirmation-required`, or `not-enough-information` — via the same "worst true fact wins"
+priority already used by the engine and by `lib/founder-insights.ts`'s `worst()`. Every check
+evaluated stays individually visible in the result's `checks` array regardless of which one decided
+the top-line verdict.
+
+**V1 coverage is 7 countries, British passport holders first.** Pakistan, India, Saudi Arabia, UAE,
+Qatar, Turkey, Morocco — chosen because they're already the exact 7 countries `lib/visa-links.ts`
+covers, and because all 5 `BOOK_BY_PRIORITY_ROUTE_SLUGS` routes happen to serve them. NICOP/POC
+(Pakistan) and OCI (India) document holders get their own exemption rules, sourced the same way.
+Every other nationality, and every destination outside these 7 countries, returns
+`not-enough-information` — an honest "not yet covered", never a guess. Where an official source
+doesn't publish a firm visa-processing-time figure (Pakistan, Saudi Arabia), the rule leaves
+`typicalProcessingDays` unset rather than inventing one; the decision tree falls back to a plainly
+labelled *JetStash general guidance* buffer (`GENERIC_DOCUMENT_SAFETY_DAYS`, 6 weeks) rather than
+presenting an unsourced number as an official rule.
+
+**Engine integration is additive, not a rewrite.** `computeReadiness(routeSlug, now,
+travelReadySignal?)` gained an optional 3rd parameter (default `null`, preserving every existing
+call site's behaviour). `components/route/route-readiness-panel.tsx` is the only place that supplies
+a real one — it lifts the Travel Ready Check result client-side, entirely in the visitor's browser,
+and re-derives the Book-By panel's badge with it folded into the same priority tree (`critical` →
+`wait-critical`, `caution` → `ready-with-caution`, alongside route warnings). On the 5 Book-By
+priority routes this produces one merged panel; on every other route serving a supported country,
+Travel Ready Check renders as its own standalone card (no engine badge exists there to merge with);
+everywhere else, nothing new renders at all.
+
+**Privacy boundary.** No API route and no server persistence exist for the check itself — it's a
+pure function of form inputs, computed and thrown away in the browser, mirroring the site's
+no-database architecture (CLAUDE.md). Passport numbers, dates of birth, and other document numbers
+are never asked for or collected. The only data that ever reaches Brevo is what Route Watch already
+collected before this feature existed (email, route, destination, intent) — nothing typed into the
+Travel Ready form itself is ever sent anywhere.
+
+**Route Watch integration reuses the existing pipeline, no new attribute.** `RouteWatchIntent`
+(`lib/route-watch-options.ts`) gained one new value, `'document-timing'` — the same
+`WATCH_INTENT` Brevo attribute already provisioned, never a new one (§8's drift lesson, reapplied).
+
+**Founder ops section.** `lib/founder-insights.ts`'s `travelReadyOpsStatus()` flags rules within 30
+days of `reviewDueDate` (`watch`) and rules already past it (`attention` — the public UI has already
+degraded safely, but it's real backlog worth clearing). Priority is `revenue`, not `nice-to-have` —
+unlike fare-observation cadence, an unrefreshed visa/passport rule is a trust and compliance concern,
+not pure commercial polish.
+
+**What's deliberately not built.** No document upload, no OCR, no passport scanning, no live
+immigration API integration, no numeric "Travel Confidence Score" (rejected once already in §14 for
+the same fabricated-precision reason), and no attempt at every nationality or every destination.
+Automate detection, verdict generation, staleness suppression, and engine composition; keep rule
+content changes — a genuine change in official guidance — as a human, sourced edit to
+`data/travel-ready-rules.ts`, the same standing rule §13 already applies to every other data file.

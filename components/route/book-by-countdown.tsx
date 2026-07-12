@@ -10,7 +10,7 @@ import {
   OBSERVATION_FRESH_DAYS,
   type BookBySnapshot,
 } from '@/lib/booking-intelligence';
-import { computeReadiness, VERDICT_COPY, type EngineSnapshot } from '@/lib/travel-intelligence-engine';
+import { computeReadiness, VERDICT_COPY, type EngineSnapshot, type TravelReadySignal } from '@/lib/travel-intelligence-engine';
 import { getRouteBySlug, getRouteAirport, getRouteDestination } from '@/data/routes';
 import { getRouteBookingUrl, getPrimaryBookingProvider } from '@/lib/booking-providers';
 
@@ -52,9 +52,16 @@ const VERDICT_BADGE_STYLES: Record<EngineSnapshot['verdict'], string> = {
 export function BookByCountdown({
   initialSnapshot,
   initialEngineSnapshot,
+  travelReadySignal = null,
 }: {
   initialSnapshot: BookBySnapshot;
   initialEngineSnapshot: EngineSnapshot | null;
+  /**
+   * Supplied by components/route/route-readiness-panel.tsx once a visitor
+   * completes a Travel Ready Check for this route (JETSTASH_PRINCIPLES.md
+   * §14.3) — re-derives the verdict badge above without a server round trip.
+   */
+  travelReadySignal?: TravelReadySignal | null;
 }) {
   const [snapshot, setSnapshot] = useState<BookBySnapshot | null>(initialSnapshot);
   const [engineSnapshot, setEngineSnapshot] = useState<EngineSnapshot | null>(initialEngineSnapshot);
@@ -63,9 +70,9 @@ export function BookByCountdown({
   useEffect(() => {
     const now = new Date();
     setSnapshot(computeBookBySnapshot(initialSnapshot.routeSlug, now));
-    setEngineSnapshot(computeReadiness(initialSnapshot.routeSlug, now));
+    setEngineSnapshot(computeReadiness(initialSnapshot.routeSlug, now, travelReadySignal));
     setMounted(true);
-  }, [initialSnapshot.routeSlug]);
+  }, [initialSnapshot.routeSlug, travelReadySignal]);
 
   if (!snapshot) return null;
 
@@ -105,7 +112,8 @@ export function BookByCountdown({
   const observationIsOld = observation ? observation.ageDays > OBSERVATION_FRESH_DAYS : false;
 
   const verdict = engineSnapshot?.verdict;
-  const warningReasons = engineSnapshot?.reasons.filter((r) => r.source === 'route-warning') ?? [];
+  const warningReasons =
+    engineSnapshot?.reasons.filter((r) => r.source === 'route-warning' || r.source === 'travel-ready-check') ?? [];
 
   return (
     <section aria-label={`When to book ${airport.city} to ${destination.city}`} className="rounded-md border border-ink-100 bg-white p-6 shadow-card sm:p-8">

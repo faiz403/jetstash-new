@@ -24,12 +24,14 @@ import { TravellerTipList } from '@/components/route/traveller-tip-list';
 import { CommunityNotesPanel } from '@/components/route/community-notes-panel';
 import { RouteWatchForm } from '@/components/route/route-watch-form';
 import { WhatsAppShareButton } from '@/components/route/whatsapp-share-button';
-import { BookByCountdown } from '@/components/route/book-by-countdown';
+import { RouteReadinessPanel } from '@/components/route/route-readiness-panel';
+import { TravelReadyCheck } from '@/components/travel-ready/travel-ready-check';
 import { JsonLd, breadcrumbSchema } from '@/components/seo/json-ld';
 import { siteConfig } from '@/lib/site-config';
 import { getRouteBookingUrl, getPrimaryBookingProvider } from '@/lib/booking-providers';
 import { computeBookBySnapshot, buildBookByShareText } from '@/lib/booking-intelligence';
 import { computeReadiness } from '@/lib/travel-intelligence-engine';
+import { TRAVEL_READY_SUPPORTED_COUNTRIES } from '@/lib/travel-ready-check';
 import { getDestinationImage } from '@/lib/brand-images';
 import { HeroBackdrop } from '@/components/ui/hero-backdrop';
 
@@ -172,12 +174,25 @@ export default function RoutePage({ params }: { params: { slug: string } }) {
         </section>
       )}
 
-      {bookBySnapshot && (
+      {bookBySnapshot ? (
         <section className="bg-sand-50 py-10 sm:py-12">
           <div className="mx-auto max-w-content px-5 sm:px-8">
-            <BookByCountdown initialSnapshot={bookBySnapshot} initialEngineSnapshot={engineSnapshot} />
+            <RouteReadinessPanel
+              initialSnapshot={bookBySnapshot}
+              initialEngineSnapshot={engineSnapshot}
+              destinationSlug={dest.slug}
+              airportSlug={airport.slug}
+            />
           </div>
         </section>
+      ) : (
+        TRAVEL_READY_SUPPORTED_COUNTRIES.includes(dest.country) && (
+          <section className="bg-sand-50 py-10 sm:py-12">
+            <div className="mx-auto max-w-content px-5 sm:px-8">
+              <TravelReadyCheck defaultDestinationSlug={dest.slug} airportSlugForCta={airport.slug} />
+            </div>
+          </section>
+        )
       )}
 
       <section className="bg-white py-14 sm:py-16">

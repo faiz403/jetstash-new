@@ -106,6 +106,19 @@ export default function HomePage() {
       {/* ───────────────────────── NEXT TRAVEL MOMENT — Book-By Countdown entry point ───────────────────────── */}
       <NextTravelMomentRibbon snapshots={bookBySnapshots} />
 
+      {/* ───────────────────────── TRAVEL READY CHECK — restrained entry point ───────────────────────── */}
+      <section className="border-t border-white/5 bg-ink-950 py-4">
+        <div className="mx-auto max-w-content px-5 sm:px-8">
+          <p className="text-center text-xs text-ink-300 sm:text-sm">
+            Ready to book isn&apos;t the same as ready to travel.{' '}
+            <Link href="/travel-ready-check" className="font-semibold text-brass-300 underline underline-offset-2 hover:text-brass-200">
+              Check your passport and visa readiness
+            </Link>
+            .
+          </p>
+        </div>
+      </section>
+
       {/* ───────────────────────── HOW WE WORK — trust strip, every claim true ───────────────────────── */}
       <section className="border-b border-white/5 bg-ink-950 py-8">
         <div className="mx-auto grid max-w-content gap-6 px-5 sm:grid-cols-3 sm:px-8">
