@@ -6,11 +6,17 @@ import { fareObservations, getObservationsByRoute, getLatestObservation } from '
 import { routeWarnings } from '@/data/route-warnings';
 import { imageCoverage } from '@/lib/brand-images';
 import { BOOKING_PROVIDERS, PRIMARY_PROVIDER_ID } from '@/lib/booking-providers';
-import { BOOK_BY_PRIORITY_ROUTE_SLUGS, OBSERVATION_FRESH_DAYS } from '@/lib/booking-intelligence';
+import { BOOK_BY_PRIORITY_ROUTE_SLUGS } from '@/lib/booking-intelligence';
 import { computeAllReadinessSnapshots, VERDICT_COPY } from '@/lib/travel-intelligence-engine';
 import { travelReadyRules, isRuleStale } from '@/data/travel-ready-rules';
 import { TRAVEL_READY_SUPPORTED_COUNTRIES } from '@/lib/travel-ready-check';
 import { siteConfig } from '@/lib/site-config';
+import {
+  OBSERVATION_FRESH_DAYS,
+  OBSERVATION_STALE_DAYS,
+  SERVICE_END_WATCH_DAYS,
+  RULE_REVIEW_WATCH_DAYS,
+} from '@/lib/freshness-thresholds';
 
 /**
  * Founder Command Centre insights — every figure here is derived from the
@@ -57,11 +63,8 @@ export interface FounderSection {
   action?: string;
 }
 
-// ── Thresholds (days). Fare observations don't go stale (a historical
-// range/check is honest at any age), so there is deliberately no watch/
-// attention threshold for them any more — only for route service-end dates,
-// which are genuine deadlines.
-const SERVICE_END_WATCH_DAYS = 90;
+// Freshness/review thresholds live in lib/freshness-thresholds.ts, the single
+// place every "how old is too old" number is defined — imported above.
 
 function daysBetween(fromIso: string, now: Date): number {
   const from = new Date(`${fromIso}T00:00:00Z`);
@@ -352,7 +355,11 @@ function warningsForReview(): FounderSection {
 // just means it falls back to calendar-only guidance with no price context,
 // never a false claim. This section exists purely to support the weekly
 // logging workflow the feature depends on, not to manufacture urgency about
-// it — priority is 'nice-to-have' and status never escalates to 'attention'.
+// it — priority stays 'nice-to-have' throughout. Status escalates to
+// 'attention' only once an observation passes OBSERVATION_STALE_DAYS
+// (significantly, not just due for a refresh) — the panel above still
+// degrades honestly either way, this is purely a founder-side signal that a
+// priority route's price context has been quietly stale for a while.
 function bookByCadenceStatus(now: Date): FounderSection {
   const nowIso = now.toISOString().slice(0, 10);
   const items: FounderItem[] = [];
@@ -374,7 +381,14 @@ function bookByCadenceStatus(now: Date): FounderSection {
     }
 
     const ageDays = daysBetween(latest.observedDate, now);
-    if (ageDays > OBSERVATION_FRESH_DAYS) {
+    if (ageDays > OBSERVATION_STALE_DAYS) {
+      items.push({
+        label,
+        detail: `Latest observation is ${ageDays} days old (checked ${formatShortDate(latest.observedDate)}) — significantly overdue for a priority route, not just due a refresh.`,
+        status: 'attention',
+        href: `/routes/${routeSlug}`,
+      });
+    } else if (ageDays > OBSERVATION_FRESH_DAYS) {
       items.push({
         label,
         detail: `Latest observation is ${ageDays} days old (checked ${formatShortDate(latest.observedDate)}) — due a fresh weekly check.`,
@@ -397,7 +411,7 @@ function bookByCadenceStatus(now: Date): FounderSection {
     id: 'bookby-cadence',
     title: 'Book-By Countdown data cadence',
     priority: 'nice-to-have',
-    status: items.length > 0 ? 'watch' : 'ok',
+    status: items.length > 0 ? worst(items.map((i) => i.status)) : 'ok',
     headline:
       items.length === 0
         ? `All ${BOOK_BY_PRIORITY_ROUTE_SLUGS.length} priority routes have a fresh (≤${OBSERVATION_FRESH_DAYS}-day) observation recording a departure date.`
@@ -416,7 +430,6 @@ function bookByCadenceStatus(now: Date): FounderSection {
 // to look current, per JETSTASH_PRINCIPLES.md §14.3) — this section is the
 // founder's reminder to actually go re-verify, not a sign anything is
 // currently dishonest.
-const RULE_REVIEW_WATCH_DAYS = 30;
 
 function travelReadyOpsStatus(now: Date): FounderSection {
   const nowIso = now.toISOString().slice(0, 10);

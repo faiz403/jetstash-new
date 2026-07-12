@@ -29,11 +29,19 @@ import { TravelReadyCheck } from '@/components/travel-ready/travel-ready-check';
 import { JsonLd, breadcrumbSchema } from '@/components/seo/json-ld';
 import { siteConfig } from '@/lib/site-config';
 import { getRouteBookingUrl, getPrimaryBookingProvider } from '@/lib/booking-providers';
-import { computeBookBySnapshot, buildBookByShareText } from '@/lib/booking-intelligence';
+import { computeBookBySnapshot } from '@/lib/booking-intelligence';
 import { computeReadiness } from '@/lib/travel-intelligence-engine';
 import { TRAVEL_READY_SUPPORTED_COUNTRIES } from '@/lib/travel-ready-check';
 import { getDestinationImage } from '@/lib/brand-images';
 import { HeroBackdrop } from '@/components/ui/hero-backdrop';
+import { TrackedOutboundLink } from '@/components/ui/tracked-outbound-link';
+
+// Pure ISR — computeBookBySnapshot/computeReadiness are already pure functions of `now`, so
+// periodically regenerating this static page keeps the server-rendered snapshot (what SEO
+// crawlers and no-JS visitors see) from drifting more than 6 hours stale between deploys. The
+// client still recomputes against the visitor's real clock on mount regardless (see
+// components/route/book-by-countdown.tsx) — this only tightens the build-time baseline.
+export const revalidate = 21600;
 
 export async function generateStaticParams() {
   return routes.map((r) => ({ slug: r.slug }));
@@ -87,6 +95,10 @@ export default function RoutePage({ params }: { params: { slug: string } }) {
   // Travel Intelligence Engine's readiness verdict for the same route —
   // composed from bookBySnapshot plus active warnings (§14.2).
   const engineSnapshot = computeReadiness(route.slug, new Date());
+  // True only where Book-By Countdown's own panel already states this route's structured
+  // booking-window guidance (e.g. Manchester–Lahore, Manchester–Islamabad) — for every other
+  // route this section remains the primary "when to book" content, not a restated duplicate.
+  const evidenceReframe = Boolean(bookBySnapshot) && bookingWindows.length > 0;
 
   return (
     <>
@@ -126,23 +138,30 @@ export default function RoutePage({ params }: { params: { slug: string } }) {
           </div>
 
           <div className="mt-7 flex flex-wrap items-center gap-3">
-            <a
+            <TrackedOutboundLink
+              event="travelup_click"
+              properties={{ context: 'route-hero', route: route.slug }}
               href={getRouteBookingUrl(airport, dest)}
               target="_blank"
               rel={getPrimaryBookingProvider().rel}
-              className="inline-flex h-12 items-center justify-center gap-1.5 rounded-sm bg-brass px-6 text-sm font-semibold text-ink-900 transition-all hover:bg-brass-400 hover:shadow-brass-glow active:scale-[0.985]"
+              className={
+                bookBySnapshot
+                  ? 'inline-flex h-12 items-center justify-center gap-1.5 rounded-sm border border-white/20 px-6 text-sm font-semibold text-sand-50 transition-colors hover:bg-white/10 active:scale-[0.985]'
+                  : 'inline-flex h-12 items-center justify-center gap-1.5 rounded-sm bg-brass px-6 text-sm font-semibold text-ink-900 transition-all hover:bg-brass-400 hover:shadow-brass-glow active:scale-[0.985]'
+              }
             >
               Check live prices for this route
               <ArrowUpRight className="h-4 w-4" strokeWidth={2.25} />
-            </a>
-            <WhatsAppShareButton
-              url={`${siteConfig.url}/routes/${route.slug}`}
-              text={
-                bookBySnapshot
-                  ? buildBookByShareText(bookBySnapshot)
-                  : `${airport.city} to ${dest.city}: ${route.flightTime}, ${route.frequency}. ${route.bookingWindowNote}`
-              }
-            />
+            </TrackedOutboundLink>
+            {/* When a Book-By panel exists below, its own state-aware CTA is the one dominant
+                recommendation — the WhatsApp share moves there too (built from the same snapshot),
+                so this hero doesn't duplicate either action. */}
+            {!bookBySnapshot && (
+              <WhatsAppShareButton
+                url={`${siteConfig.url}/routes/${route.slug}`}
+                text={`${airport.city} to ${dest.city}: ${route.flightTime}, ${route.frequency}. ${route.bookingWindowNote}`}
+              />
+            )}
           </div>
           <p className="mt-2.5 text-xs text-ink-300">Partner link, opens {getPrimaryBookingProvider().name} in a new tab. Booking there never costs you more.</p>
         </div>
@@ -199,8 +218,22 @@ export default function RoutePage({ params }: { params: { slug: string } }) {
         <div className="mx-auto max-w-content px-5 sm:px-8">
           <div className="grid gap-10 lg:grid-cols-[1.2fr_0.8fr]">
             <div>
-              <h2 className="font-display text-2xl text-ink-900">When to book this route</h2>
-              <p className="mt-4 leading-relaxed text-ink-600">{route.bookingWindowNote}</p>
+              {/* When Book-By Countdown already covers this route's structured guidance above,
+                  this section becomes the supporting evidence for that recommendation rather than
+                  a second, competing "when to book" narrative restating the same facts. */}
+              {evidenceReframe ? (
+                <>
+                  <h2 className="font-display text-2xl text-ink-900">The evidence behind that guidance</h2>
+                  <p className="mt-4 leading-relaxed text-ink-600">
+                    The exact booking window is in the panel above — here&apos;s the underlying pattern it&apos;s drawn from.
+                  </p>
+                </>
+              ) : (
+                <>
+                  <h2 className="font-display text-2xl text-ink-900">When to book this route</h2>
+                  <p className="mt-4 leading-relaxed text-ink-600">{route.bookingWindowNote}</p>
+                </>
+              )}
               {bookingWindows.length > 0 && (
                 <div className="mt-7">
                   <BookingWindowPanel windows={bookingWindows} />

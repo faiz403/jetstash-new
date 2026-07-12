@@ -1,18 +1,22 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { ArrowUpRight, BellRing, CalendarClock } from 'lucide-react';
+import { ArrowUpRight, BellRing, CalendarClock, BadgeCheck } from 'lucide-react';
 import {
   computeBookBySnapshot,
   bookByHeadline,
+  buildBookByShareText,
   formatBookByDate,
   formatEventDate,
-  OBSERVATION_FRESH_DAYS,
   type BookBySnapshot,
 } from '@/lib/booking-intelligence';
 import { computeReadiness, VERDICT_COPY, type EngineSnapshot, type TravelReadySignal } from '@/lib/travel-intelligence-engine';
 import { getRouteBySlug, getRouteAirport, getRouteDestination } from '@/data/routes';
 import { getRouteBookingUrl, getPrimaryBookingProvider } from '@/lib/booking-providers';
+import { WhatsAppShareButton } from '@/components/route/whatsapp-share-button';
+import { siteConfig } from '@/lib/site-config';
+import { OBSERVATION_FRESH_DAYS } from '@/lib/freshness-thresholds';
+import { track } from '@/lib/analytics';
 
 /**
  * The Book-By Countdown panel — the route page's "when to book" intelligence
@@ -73,6 +77,12 @@ export function BookByCountdown({
     setEngineSnapshot(computeReadiness(initialSnapshot.routeSlug, now, travelReadySignal));
     setMounted(true);
   }, [initialSnapshot.routeSlug, travelReadySignal]);
+
+  useEffect(() => {
+    track('bookby_panel_view', { route: initialSnapshot.routeSlug, state: initialSnapshot.state });
+    // fire once per mount, not on every recompute
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   if (!snapshot) return null;
 
@@ -172,7 +182,7 @@ export function BookByCountdown({
             </div>
           )}
         </div>
-        <div className="mt-2 flex justify-between text-[11px] text-ink-400">
+        <div className="mt-2 flex flex-wrap justify-between gap-x-3 gap-y-1 text-[11px] text-ink-400">
           <span>
             {snapshot.recommendedWindow
               ? `Window opens ${formatBookByDate(snapshot.recommendedWindow.openDate)}`
@@ -202,17 +212,35 @@ export function BookByCountdown({
       </div>
 
       {/* ── Latest verified fare context / honest degradation ─────────────── */}
-      <p className="mt-5 text-sm text-ink-600">
-        {observation ? (
-          <>
-            Last checked fare: <span className="font-semibold text-ink-900">£{observation.price.toLocaleString('en-GB')}</span>{' '}
-            {observation.priceNote} ({observation.source}, {observation.cabin}) — checked {formatBookByDate(observation.observedDate)}.
-            {observationIsOld && ' An older check, shown for context only — not an indication of today’s price.'}
-          </>
-        ) : (
-          'No fare checks logged for this route yet — the guidance above is calendar-based, from this route’s stated booking pattern.'
-        )}
-      </p>
+      {observation ? (
+        <div
+          className={`mt-5 flex items-start gap-2.5 rounded-sm border px-4 py-3 ${
+            observationIsOld ? 'border-ink-100 bg-ink-50/60' : 'border-brass/30 bg-brass-50'
+          }`}
+        >
+          <BadgeCheck
+            className={`mt-0.5 h-4 w-4 shrink-0 ${observationIsOld ? 'text-ink-400' : 'text-brass-600'}`}
+            strokeWidth={2}
+          />
+          <div>
+            <span
+              className={`text-[11px] font-semibold uppercase tracking-wide ${observationIsOld ? 'text-ink-400' : 'text-brass-700'}`}
+            >
+              Verified check{observationIsOld ? ' · aged' : ''}
+            </span>
+            <p className="mt-1 text-sm text-ink-600">
+              <span className="font-semibold text-ink-900">£{observation.price.toLocaleString('en-GB')}</span>{' '}
+              {observation.priceNote} ({observation.source}, {observation.cabin}) — checked {formatBookByDate(observation.observedDate)}.
+              {observationIsOld && ' An older check, shown for context only — not an indication of today’s price.'} See the full
+              fare history below.
+            </p>
+          </div>
+        </div>
+      ) : (
+        <p className="mt-5 text-sm text-ink-600">
+          No fare checks logged for this route yet — the guidance above is calendar-based, from this route’s stated booking pattern.
+        </p>
+      )}
 
       {/* ── State-dependent CTAs ──────────────────────────────────────────── */}
       <div className="mt-6 flex flex-wrap items-center gap-3">
@@ -221,6 +249,7 @@ export function BookByCountdown({
             <a
               href="#route-watch"
               data-analytics="bookby-watch"
+              onClick={() => track('bookby_watch_click', { route: snapshot.routeSlug, state: snapshot.state })}
               className="inline-flex h-12 items-center justify-center gap-1.5 rounded-sm bg-ink-900 px-6 text-sm font-semibold text-sand-50 transition-all hover:bg-brass-600 active:scale-[0.985]"
             >
               <BellRing className="h-4 w-4" strokeWidth={2.25} />
@@ -231,6 +260,7 @@ export function BookByCountdown({
               target="_blank"
               rel={provider.rel}
               data-analytics={`bookby-cta-${snapshot.state}`}
+              onClick={() => track('bookby_cta_click', { route: snapshot.routeSlug, state: snapshot.state })}
               className="inline-flex items-center gap-1.5 text-sm font-semibold text-ink-900 underline decoration-ink-300 underline-offset-4 transition-colors hover:text-brass-600 hover:decoration-brass-600"
             >
               Check live price anyway
@@ -244,6 +274,7 @@ export function BookByCountdown({
               target="_blank"
               rel={provider.rel}
               data-analytics={`bookby-cta-${snapshot.state}`}
+              onClick={() => track('bookby_cta_click', { route: snapshot.routeSlug, state: snapshot.state })}
               className={
                 brassBook
                   ? 'inline-flex h-12 items-center justify-center gap-1.5 rounded-sm bg-brass px-6 text-sm font-semibold text-ink-900 transition-all hover:bg-brass-400 hover:shadow-brass-glow active:scale-[0.985]'
@@ -256,6 +287,7 @@ export function BookByCountdown({
             <a
               href="#route-watch"
               data-analytics="bookby-watch"
+              onClick={() => track('bookby_watch_click', { route: snapshot.routeSlug, state: snapshot.state })}
               className="inline-flex h-12 items-center justify-center gap-1.5 rounded-sm border border-ink-200 px-5 text-sm font-semibold text-ink-900 transition-colors hover:bg-ink-50 active:scale-[0.985]"
             >
               <BellRing className="h-4 w-4" strokeWidth={2} />
@@ -263,6 +295,11 @@ export function BookByCountdown({
             </a>
           </>
         )}
+        <WhatsAppShareButton
+          url={`${siteConfig.url}/routes/${route.slug}`}
+          text={buildBookByShareText(snapshot)}
+          variant="light"
+        />
       </div>
       <p className="mt-2.5 text-xs text-ink-400">
         Partner link, opens {provider.name} in a new tab. Booking there never costs you more.

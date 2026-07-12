@@ -32,6 +32,11 @@ export const metadata: Metadata = {
   alternates: { canonical: siteConfig.url },
 };
 
+// Same reasoning as app/routes/[slug]/page.tsx — computeAllBookBySnapshots() is a pure function
+// of `now`, so ISR keeps the homepage's build-time Book-By ribbon from drifting stale between
+// deploys without changing any logic.
+export const revalidate = 21600;
+
 export default function HomePage() {
   // Explicit commercial selection, not array order: Dubai leads with the lowest price
   // anchor and broadest appeal, then the India and Pakistan flagship routes.
@@ -78,7 +83,8 @@ export default function HomePage() {
             </h1>
             <p className="stagger-in stagger-3 mt-5 max-w-lg animate-fade-up text-lg leading-relaxed text-ink-300">
               Routes, destination guides and travel inspiration from UK airports to Pakistan, India, Turkey,
-              Morocco and the Gulf, checked by people and dated. No countdown timers, no invented urgency, ever.
+              Morocco and the Gulf, checked by people and dated. No manufactured scarcity, no fake price
+              pressure — ever.
             </p>
             <div className="stagger-in stagger-4 mt-7 flex animate-fade-up flex-wrap items-center gap-x-7 gap-y-4">
               <LinkButton href="/destinations" size="lg">
@@ -134,9 +140,11 @@ export default function HomePage() {
           <div className="flex items-start gap-3">
             <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-brass-300" strokeWidth={2} />
             <div>
-              <p className="text-sm font-semibold text-sand-50">No invented urgency</p>
+              <p className="text-sm font-semibold text-sand-50">No manufactured urgency</p>
               <p className="mt-1 text-xs leading-relaxed text-ink-300">
-                No countdown timers, no &ldquo;2 seats left&rdquo;, no fake reviews. If we can&apos;t verify it, we don&apos;t say it.
+                No fake countdowns, no &ldquo;2 seats left&rdquo;, no invented price pressure. Book-By Countdown above is
+                evidence-based booking guidance, not a dark pattern — every date traces to a real festival, fare or
+                booking-window record.
               </p>
             </div>
           </div>
@@ -449,7 +457,7 @@ export default function HomePage() {
             <WhyCard
               icon={ShieldCheck}
               title="Honest travel guidance"
-              description="Visa timing, booking windows and route history, checked by a person and dated. Never a countdown timer or invented urgency."
+              description="Visa timing, booking windows and route history, checked by a person and dated. Booking guidance is evidence-based, never manufactured urgency."
             />
             <WhyCard
               icon={Compass}

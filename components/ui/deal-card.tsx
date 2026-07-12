@@ -4,9 +4,11 @@ import { getRouteByAirportAndDestination } from '@/data/routes';
 import { getDestinationBySlug } from '@/data/destinations';
 import { getObservationsByRoute, getFareRangeSummary } from '@/data/fare-observations';
 import { getDealBookingUrl } from '@/lib/booking-providers';
+import { getFareFreshnessState, daysBetweenIso, OBSERVATION_STALE_DAYS } from '@/lib/freshness-thresholds';
 import { Plane, ArrowUpRight, TrendingUp } from 'lucide-react';
 import { Badge } from './badge';
 import { DestinationVisual } from './destination-visual';
+import { TrackedOutboundLink } from './tracked-outbound-link';
 
 const cabinLabel: Record<DealCabin, string> = {
   Economy: 'Economy',
@@ -25,6 +27,9 @@ export function DealCard({ deal }: { deal: Deal }) {
   const destination = getDestinationBySlug(deal.toDestinationSlug);
   const flightTime = matchedRoute?.flightTime ?? destination?.flightTimeFromUK;
   const directness = matchedRoute ? (matchedRoute.isDirect ? 'Direct' : 'Via connection') : undefined;
+  const nowIso = new Date().toISOString().slice(0, 10);
+  const freshness = range ? getFareFreshnessState(daysBetweenIso(range.latestDate, nowIso)) : null;
+  const isStale = freshness === 'stale';
 
   return (
     <article className="group relative flex flex-col overflow-hidden rounded-md border border-ink-100 bg-white shadow-card transition-all duration-300 hover:-translate-y-1 hover:shadow-card-hover">
@@ -54,7 +59,7 @@ export function DealCard({ deal }: { deal: Deal }) {
         {range ? (
           <>
             <div className="flex items-baseline gap-2">
-              <span className="font-display text-3xl tracking-tight text-ink-900 tabular-nums">
+              <span className={`font-display text-3xl tracking-tight tabular-nums ${isStale ? 'text-ink-500' : 'text-ink-900'}`}>
                 {range.count > 1
                   ? `£${range.min.toLocaleString('en-GB')}–£${range.max.toLocaleString('en-GB')}`
                   : `£${range.min.toLocaleString('en-GB')}`}
@@ -64,11 +69,16 @@ export function DealCard({ deal }: { deal: Deal }) {
             <p className="mt-1 text-sm font-medium text-ink-500">{deal.airline}</p>
 
             <div className="mt-4 flex items-center gap-1.5 text-xs text-ink-400">
-              <span className="h-1.5 w-1.5 rounded-full bg-brass-400" />
+              <span className={`h-1.5 w-1.5 rounded-full ${isStale ? 'bg-ink-300' : 'bg-brass-400'}`} />
               {range.count > 1
                 ? `From ${range.count} checks since ${formatChecked(range.earliestDate)}`
                 : `One check, ${formatChecked(range.latestDate)}`}
             </div>
+            {isStale && (
+              <p className="mt-1 text-xs text-ink-400">
+                This check is over {Math.floor(OBSERVATION_STALE_DAYS / 30)} months old — check live price for anything current.
+              </p>
+            )}
           </>
         ) : (
           <>
@@ -102,7 +112,9 @@ export function DealCard({ deal }: { deal: Deal }) {
           </div>
         )}
 
-        <a
+        <TrackedOutboundLink
+          event="travelup_click"
+          properties={{ context: 'deal-card', destination: deal.toDestinationSlug, cabin: deal.cabin }}
           href={getDealBookingUrl(deal)}
           target="_blank"
           rel="nofollow sponsored noopener noreferrer"
@@ -110,7 +122,7 @@ export function DealCard({ deal }: { deal: Deal }) {
         >
           Check live price
           <ArrowUpRight className="h-4 w-4" strokeWidth={2.25} />
-        </a>
+        </TrackedOutboundLink>
         <p className="mt-2 text-center text-[11px] text-ink-400">
           Partner link. Prices change quickly, confirm the final price before booking
         </p>

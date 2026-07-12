@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, FormEvent } from 'react';
+import { useState, useRef, FormEvent } from 'react';
 import { ShieldCheck, ArrowUpRight, BellRing, CheckCircle2, AlertTriangle, HelpCircle } from 'lucide-react';
 import { destinations, getDestinationBySlug } from '@/data/destinations';
 import { getAirportBySlug } from '@/data/airports';
@@ -14,6 +14,7 @@ import {
 import type { TravelReadySignal } from '@/lib/travel-intelligence-engine';
 import { getRouteBookingUrl, getGeneralBookingUrl, getPrimaryBookingProvider } from '@/lib/booking-providers';
 import { RouteWatchForm } from '@/components/route/route-watch-form';
+import { track } from '@/lib/analytics';
 
 /**
  * Travel Ready Check — answers "can I actually travel on these dates with
@@ -82,9 +83,16 @@ export function TravelReadyCheck({
   const [returnDate, setReturnDate] = useState('');
   const [passportExpiryDate, setPassportExpiryDate] = useState('');
   const [result, setResult] = useState<TravelReadyResult | null>(null);
+  const startedRef = useRef(false);
 
   const destination = destinationSlug ? getDestinationBySlug(destinationSlug) : undefined;
   const country = destination?.country;
+
+  function markStarted() {
+    if (startedRef.current) return;
+    startedRef.current = true;
+    track('travel_ready_check_started');
+  }
 
   function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -102,6 +110,8 @@ export function TravelReadyCheck({
     );
     setResult(outcome);
     onResult?.(outcome.engineSignal);
+    track('travel_ready_check_completed', { destination: destinationSlug });
+    track('travel_ready_check_verdict', { verdict: outcome.verdict, destination: destinationSlug });
   }
 
   function handleReset() {
@@ -141,6 +151,7 @@ export function TravelReadyCheck({
               required
               value={destinationSlug}
               onChange={(e) => {
+                markStarted();
                 setDestinationSlug(e.target.value);
                 // A document exemption (e.g. NICOP) only makes sense for the
                 // country it was selected for — never carry it over silently
@@ -260,7 +271,12 @@ export function TravelReadyCheck({
           </p>
         </form>
       ) : (
-        <div className="mt-6" data-analytics={`ready-check-verdict-${result.verdict}`}>
+        <div
+          className="mt-6"
+          role="status"
+          aria-live="polite"
+          data-analytics={`ready-check-verdict-${result.verdict}`}
+        >
           <div className="flex flex-wrap items-center gap-2.5">
             <span
               className={`inline-flex items-center rounded-full border px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide ${TONE_STYLES[VERDICT_TONE[result.verdict]]}`}
@@ -294,6 +310,7 @@ export function TravelReadyCheck({
                         target="_blank"
                         rel="noopener noreferrer"
                         data-analytics="ready-check-source-click"
+                        onClick={() => track('ready_check_source_click', { source: check.officialSource!.title })}
                         className="underline underline-offset-2 hover:text-terracotta-600"
                       >
                         {check.officialSource.title}
@@ -316,6 +333,7 @@ export function TravelReadyCheck({
                 target="_blank"
                 rel={provider.rel}
                 data-analytics="ready-check-book-cta"
+                onClick={() => track('ready_check_book_cta_click', { destination: destinationSlug })}
                 className="inline-flex h-12 items-center justify-center gap-1.5 rounded-sm bg-brass px-6 text-sm font-semibold text-ink-900 transition-all hover:bg-brass-400 hover:shadow-brass-glow active:scale-[0.985]"
               >
                 Check live price
@@ -325,6 +343,7 @@ export function TravelReadyCheck({
               <a
                 href="#route-watch"
                 data-analytics="ready-check-watch"
+                onClick={() => track('ready_check_watch_click', { destination: destinationSlug, verdict: result.verdict })}
                 className="inline-flex h-12 items-center justify-center gap-1.5 rounded-sm bg-ink-900 px-6 text-sm font-semibold text-sand-50 transition-all hover:bg-brass-600 active:scale-[0.985]"
               >
                 <BellRing className="h-4 w-4" strokeWidth={2.25} />

@@ -43,9 +43,6 @@ export const BOOK_BY_PRIORITY_ROUTE_SLUGS: readonly string[] = [
  */
 export const SURGE_WEEKS = 4;
 
-/** An observation older than this renders with an explicit age caveat instead of as fresh context. */
-export const OBSERVATION_FRESH_DAYS = 60;
-
 export type BookByState =
   /** Before the route's recommended window opens. */
   | 'too-early'

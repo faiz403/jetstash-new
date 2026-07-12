@@ -47,8 +47,9 @@ This codebase was written without the ability to run `npm install` or a real bui
 |---|---|---|
 | `BREVO_API_KEY` | `/app/api/subscribe/route.ts` | Newsletter signups to actually save |
 | `BREVO_LIST_ID` | `/app/api/subscribe/route.ts` | Newsletter signups to actually save |
-| `RESEND_API_KEY` | `/app/api/contact/route.ts` | Contact form to actually send |
-| `CONTACT_TO_EMAIL` | `/app/api/contact/route.ts`, `/app/api/quote-request/route.ts` | Optional — overrides `siteConfig.contactEmail` as the delivery address for contact/quote-request messages |
+| `RESEND_API_KEY` | `/app/api/contact/route.ts`, `/app/api/cron/fare-check-reminder/route.ts` | Contact form to actually send; weekly fare-check reminder email |
+| `CONTACT_TO_EMAIL` | `/app/api/contact/route.ts`, `/app/api/quote-request/route.ts`, `/app/api/cron/fare-check-reminder/route.ts` | Optional — overrides `siteConfig.contactEmail` as the delivery address for contact/quote-request messages and the fare-check reminder |
+| `CRON_SECRET` | `/app/api/cron/fare-check-reminder/route.ts` | Optional but recommended — Vercel sets this automatically for its own Cron Jobs (see `vercel.json`); the route checks it if present, so anyone else hitting the URL directly gets a 401 |
 
 ## Project structure
 
@@ -183,7 +184,7 @@ The `Route` interface in `data/routes.ts` has two fields for this:
 
 ## Travel Ready Check — maintaining `data/travel-ready-rules.ts`
 
-Travel Ready Check (JETSTASH_PRINCIPLES.md §14.3) answers "can I actually travel on these dates with the documents I have?" — passport validity and visa guidance for 7 destinations (Pakistan, India, Saudi Arabia, UAE, Qatar, Turkey, Morocco), British passport holders plus NICOP/POC and OCI document holders. Every fact lives in `data/travel-ready-rules.ts`, never scattered across components.
+Travel Ready Check (JETSTASH_PRINCIPLES.md §14.3) answers "can I actually travel on these dates with the documents I have?" — passport validity and visa guidance across 7 countries (Pakistan, India, Saudi Arabia, UAE, Qatar, Turkey, Morocco), British passport holders plus NICOP/POC and OCI document holders. Every fact lives in `data/travel-ready-rules.ts`, never scattered across components.
 
 **To add or refresh a rule:**
 
@@ -202,6 +203,7 @@ JetStash's differentiator versus a generic comparison site is accumulated, real 
 - **Only add an entry once it's a real, sourced fact.** Every seeded entry in these files was migrated from prose that was already stated elsewhere in the codebase (a route's `intro`/`bookingWindowNote`, an airport's old `practicalNotes`) — none of it was invented to fill a gap. Keep it that way: a plausible-sounding fare, warning, or tip is exactly the kind of fabricated content this project's "No fabricated content" rule (above) exists to prevent.
 - **Reference canonical tables instead of retyping strings.** `data/airlines.ts` and `data/peak-periods.ts` exist because free-text airline names and peak-period labels had already drifted (e.g. `'UK summer holidays (Jul–Aug)'` vs `'UK summer holidays'`) across `routes.ts` and `destinations.ts`. New routes should reference `airlineSlugs`/`peakPeriodIds`, adding a new canonical entry first if one genuinely doesn't exist yet — never re-typing a new label inline.
 - **Empty is honest.** `data/community-notes.ts` ships empty on purpose — there's no submission pipeline yet, and fabricating "traveller" testimonials would violate the same rule as a fabricated price. `components/route/community-notes-panel.tsx` renders a plain "not yet" state rather than pretending otherwise; follow that pattern for any other section that doesn't have real content yet.
+- **Freshness thresholds live in one place.** `lib/freshness-thresholds.ts` defines `OBSERVATION_FRESH_DAYS`/`OBSERVATION_STALE_DAYS`/`SERVICE_END_WATCH_DAYS`/`RULE_REVIEW_WATCH_DAYS` and the `getFareFreshnessState()` helper every fare-rendering component uses — change a threshold there, not in the component that happens to render it. A copy-paste `FareObservation` template lives at the top of `data/fare-observations.ts` for fast logging, and a weekly Vercel Cron (`app/api/cron/fare-check-reminder/route.ts`) emails a reminder for any priority route past due — see JETSTASH_PRINCIPLES.md §14.4 for why automated fare *collection* itself isn't currently safe.
 
 ## Future expansion opportunities
 

@@ -26,6 +26,13 @@ export interface FareObservation {
  * changes; add a new one with a later observedDate so the trend stays
  * visible. DealCard reads this via getFareRangeSummary(), never a
  * hardcoded price — see data/deals.ts's header comment.
+ *
+ * Fast-logging template — copy, fill in, paste as a new entry below (never
+ * edit an existing one). `departureDate` is required going forward for the
+ * 5 Book-By priority routes (README's "Travel Ready Check" section and
+ * `/founder`'s cadence tracker both assume it from here on):
+ *
+ *   { id: 'obs-<route>-<cabin>-<n>', routeSlug: '<route-slug>', cabin: 'Economy', observedDate: '2026-01-01', price: 0, priceNote: 'return, per person', source: '<airline>', departureDate: '2026-01-01' },
  */
 export const fareObservations: FareObservation[] = [
   { id: 'obs-man-lhe-economy-1', routeSlug: 'manchester-lahore', cabin: 'Economy', observedDate: '2026-06-15', price: 489, priceNote: 'return, per person', source: 'PIA' },

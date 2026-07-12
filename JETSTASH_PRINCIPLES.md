@@ -697,3 +697,102 @@ the same fabricated-precision reason), and no attempt at every nationality or ev
 Automate detection, verdict generation, staleness suppression, and engine composition; keep rule
 content changes — a genuine change in official guidance — as a human, sourced edit to
 `data/travel-ready-rules.ts`, the same standing rule §13 already applies to every other data file.
+
+### 14.4 Quality pass — freshness states, analytics, and one coherent system (July 2026)
+
+An independent review of the live site found real gaps, addressed in one pass: a literal wording
+contradiction between the homepage's anti-urgency copy and Book-By Countdown itself, route pages
+that stacked overlapping tools instead of reading as one recommendation, and fare-freshness handling
+that was inconsistent across the three places fares actually render. What follows are the standing
+decisions from that pass — read this before touching homepage positioning copy, route-page section
+order, or anything that shows a fare's age.
+
+**Fake urgency vs. evidence-based guidance is a wording distinction, not a feature distinction.**
+The homepage's "no invented urgency" claims (hero, trust strip, "why JetStash" card) were rewritten
+to name what's actually rejected — manufactured scarcity, fake countdowns, invented price pressure —
+rather than "no countdown timers," which read as contradicting Book-By Countdown itself. Book-By's
+dates are explicitly framed as evidence (a real festival, fare, or booking-window record), never a
+dark pattern. Any future homepage copy touching urgency/honesty should keep that distinction
+explicit rather than reaching for a blanket "no countdowns" claim again.
+
+**Fare freshness is a 3-tier state, not a binary, and it's centralised.** `lib/freshness-thresholds.ts`
+is now the single place every "how old is too old" number lives (`OBSERVATION_FRESH_DAYS` = 60,
+`OBSERVATION_STALE_DAYS` = 180, `SERVICE_END_WATCH_DAYS`, `RULE_REVIEW_WATCH_DAYS`) — previously
+scattered across `lib/booking-intelligence.ts` and two locally-defined constants in
+`lib/founder-insights.ts`. `getFareFreshnessState(ageDays)` returns `'fresh' | 'ageing' | 'stale'`;
+every customer-facing fare surface (`components/ui/deal-card.tsx`,
+`components/route/fare-history-panel.tsx`, `components/route/book-by-countdown.tsx`) visibly
+de-emphasises `'stale'` observations (muted styling, an explicit "this is old" line) rather than
+rendering every age identically — never hidden or deleted, per §4.3's append-only rule, just
+visually honest about age. `lib/founder-insights.ts`'s `bookByCadenceStatus()` escalates a priority
+route to `'attention'` once its latest observation passes `OBSERVATION_STALE_DAYS`, distinct from the
+routine `'watch'` for merely due-for-a-refresh.
+
+**Automated fare *collection* is not currently safe — this is a real ceiling, not a missed fix.**
+Researched and confirmed: JetStash's only live connection is the TravelUp/Commission Junction
+affiliate link (click-tracking only; CJ affiliate terms don't grant a price-feed/display license),
+and scraping any airline or booking site is already prohibited by §9. A real live-fare API (Amadeus,
+Duffel, Skyscanner Partners, etc.) would need a new commercial relationship, terms review, and likely
+recurring cost — none of which exists today. Data freshness therefore cannot reach a perfect score
+through code alone; revisit this the moment such a provider is actually contracted, not before. Until
+then: a copy-paste `FareObservation` template lives at the top of `data/fare-observations.ts`, and a
+weekly Vercel Cron (`app/api/cron/fare-check-reminder/route.ts`, `vercel.json`) emails a summary of
+overdue priority routes — reusing `bookByCadenceStatus()` so the email and `/founder` can never
+disagree — so the one remaining manual step (an actual live-fare check) stops being easy to forget.
+
+**Route pages read as one recommendation, not stacked tools.** On the 5 Book-By priority routes: the
+hero's outbound CTA is now secondary/outline styled (Book-By's own state-aware CTA is the one
+dominant recommendation); the WhatsApp share button moved from the hero into Book-By's own CTA row
+(it's built from the same `buildBookBySnapshot`-derived text, so it belongs where that guidance
+lives); and where `route.bookingWindowNote` prose was a near-verbatim restatement of Book-By's own
+guidance (Manchester–Lahore, Manchester–Islamabad specifically — confirmed by direct text
+comparison, not true of the other 3 priority routes), that section is retitled "The evidence behind
+that guidance" and its lead prose shortened, keeping the structured `BookingWindowPanel` cards as
+supporting evidence rather than repeating the recommendation a second time. Non-priority routes are
+unaffected — nothing competes with their single CTA.
+
+**Route Watch's customer-facing copy now names what it's connected to, in plain language.** Its
+intro and success-state copy explicitly reference "the same checks that power this page's guidance"
+— never the internal term "Travel Intelligence Engine," which stays code-comment-only (confirmed via
+full-repo grep: the one UI-rendered occurrence is on `/founder`, gated and noindexed, not the public
+site). This is the general rule for customer-facing terminology: internal architecture names are for
+comments and docs; visitors read plain descriptions of what happens next.
+
+**Analytics: Vercel Web Analytics + Speed Insights, not a heavier stack.** `data-analytics="..."`
+markup existed site-wide with zero consumer — confirmed via full-repo grep (no dependency, no
+mounted component, no listener). `@vercel/analytics` + `@vercel/speed-insights` were chosen because
+they're platform-native (no new vendor relationship beyond existing Vercel hosting), cookieless, and
+near-zero bundle cost — deliberately not Google Analytics/GTM or a self-hosted alternative, which
+would add cookie-consent implications or new infrastructure for no proportional benefit. `lib/analytics.ts`
+is the one `track()` wrapper every event goes through. Event catalog (all context, never anything that
+identifies a person or a document):
+
+| Event | Fired from | Properties |
+|---|---|---|
+| `bookby_panel_view` | Book-By Countdown, on mount | `route`, `state` |
+| `bookby_cta_click` | Book-By's live-price CTA | `route`, `state` |
+| `bookby_watch_click` | Book-By's "Watch this route" | `route`, `state` |
+| `whatsapp_share_click` | Any WhatsApp share button | `url` |
+| `travel_ready_check_started` | First destination selection | — |
+| `travel_ready_check_completed` | Form submit | `destination` |
+| `travel_ready_check_verdict` | Form submit | `verdict`, `destination` |
+| `ready_check_source_click` | An official-source link | `source` |
+| `ready_check_book_cta_click` | Travel Ready's live-price CTA | `destination` |
+| `ready_check_watch_click` | Travel Ready's "Watch this route" | `destination`, `verdict` |
+| `route_watch_signup` | Route Watch success | `airport`, `destination`, `intent` |
+| `travelup_click` | Any outbound TravelUp link | `context`, `route`/`destination` |
+
+New events follow this table's shape — short snake_case name, route/destination/state context only.
+
+**Route pages are ISR now, not pure SSG.** `export const revalidate = 21600` (6h) on
+`app/routes/[slug]/page.tsx` and `app/page.tsx` — zero logic change, since `computeBookBySnapshot`/
+`computeReadiness` are already pure functions of `now`; this only tightens how stale the
+server-rendered HTML (what SEO crawlers and no-JS visitors see) can get between deploys. The client
+already recomputes against the visitor's real clock on mount regardless.
+
+**No new structured-data schema for Book-By — a deliberate ceiling, not an oversight.**
+`Event`/`Offer`/`Flight` schema.org types were considered and rejected: none truthfully describe
+"evidence-based booking-window guidance for a route with many flight instances and no fixed price"
+without either misrepresenting a peak period as a literal Event or repeating the exact Offer/Product
+mistake §9.2 already forbids (stale-price Google Merchant risk). Don't add one later just to check a
+box — only if a schema.org type is found that's actually true of what the panel says.

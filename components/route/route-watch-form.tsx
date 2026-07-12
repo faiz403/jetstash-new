@@ -5,6 +5,7 @@ import { BellRing, CheckCircle2 } from 'lucide-react';
 import { airports } from '@/data/airports';
 import { destinations } from '@/data/destinations';
 import { ROUTE_WATCH_INTENT_OPTIONS } from '@/lib/route-watch-options';
+import { track } from '@/lib/analytics';
 
 /**
  * Route Watch — the subscription surface for the Travel Intelligence Engine
@@ -45,6 +46,7 @@ export function RouteWatchForm({ defaultAirportSlug, defaultDestinationSlug, def
       if (!res.ok) throw new Error(data.error ?? 'Something went wrong.');
       setStatus('success');
       setEmail('');
+      track('route_watch_signup', { airport: airportSlug, destination: destinationSlug, intent: intent || 'none' });
     } catch (err) {
       setStatus('error');
       setErrorMsg(err instanceof Error ? err.message : 'Something went wrong. Please try again.');
@@ -58,15 +60,19 @@ export function RouteWatchForm({ defaultAirportSlug, defaultDestinationSlug, def
         <h3 className="font-display text-lg text-ink-900">Route Watch</h3>
       </div>
       <p className="mt-1.5 text-sm text-ink-500">
-        One sign-up, and we watch everything that matters for this route — timing, fare history, and real
-        operational changes, not just price. A person checks what's genuinely worth telling you, and lets you know.
-        Not an automated live feed.
+        Watch this route, and we'll tell you when something genuinely worth knowing changes — the same checks that
+        power the booking-window guidance and travel-readiness checks on this page, not a separate price ping. A
+        person reviews what's worth sending before anything goes out. Track up to 3 routes on one sign-up.
       </p>
 
       {status === 'success' ? (
         <div role="status" aria-live="polite" className="mt-5 flex items-center gap-3 rounded-sm border border-brass/30 bg-brass-50 p-4">
           <CheckCircle2 className="h-5 w-5 flex-shrink-0 text-brass-600" />
-          <p className="text-sm text-ink-700">You're on Route Watch for this route. We'll be in touch when something's genuinely worth knowing.</p>
+          <p className="text-sm text-ink-700">
+            You're watching this route. We'll only get in touch when the same checks behind this page's guidance turn
+            up something genuinely worth knowing — a sensible time to book, a document to sort, or a real change to
+            how this route runs.
+          </p>
         </div>
       ) : (
         <form onSubmit={handleSubmit} className="mt-5 flex flex-col gap-3">
