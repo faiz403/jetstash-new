@@ -14,31 +14,31 @@
   {
     "name": "WATCH_AIRPORT",
     "type": "text",
-    "usedBy": "app/api/fare-watch",
-    "description": "Fare-watch signup — departure airport slug being watched."
+    "usedBy": "app/api/route-watch",
+    "description": "Route Watch signup — departure airport slug being watched."
   },
   {
     "name": "WATCH_DESTINATION",
     "type": "text",
-    "usedBy": "app/api/fare-watch",
-    "description": "Fare-watch signup — destination slug being watched."
+    "usedBy": "app/api/route-watch",
+    "description": "Route Watch signup — destination slug being watched."
   },
   {
     "name": "WATCH_ROUTE",
     "type": "text",
-    "usedBy": "app/api/fare-watch",
-    "description": "Fare-watch signup — matched route slug, when the airport/destination pair resolves to one."
+    "usedBy": "app/api/route-watch",
+    "description": "Route Watch signup — comma-delimited list of watched route slugs (capped small; see MAX_WATCHED_ROUTES in app/api/route-watch/route.ts), not a single value."
   },
   {
     "name": "WATCH_REGION",
     "type": "text",
-    "usedBy": "app/api/fare-watch",
-    "description": "Fare-watch signup — destination region group."
+    "usedBy": "app/api/route-watch",
+    "description": "Route Watch signup — destination region group."
   },
   {
     "name": "WATCH_INTENT",
     "type": "text",
-    "usedBy": "app/api/fare-watch",
-    "description": "Fare-watch signup — traveller intent (see lib/fare-watch-options.ts)."
+    "usedBy": "app/api/route-watch",
+    "description": "Route Watch signup — traveller intent (see lib/route-watch-options.ts)."
   }
 ]

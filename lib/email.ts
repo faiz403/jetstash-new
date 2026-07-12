@@ -71,6 +71,31 @@ export async function upsertBrevoContact({
   }
 }
 
+/**
+ * Reads a contact's current custom attributes by email — used by Route
+ * Watch to merge a newly-watched route into WATCH_ROUTE's existing value
+ * rather than overwriting it (JETSTASH_PRINCIPLES.md §14.2's multi-route
+ * model). Returns null for a contact that doesn't exist yet (a genuinely
+ * new signup, not an error) or on any fetch failure — callers treat both
+ * as "nothing to merge with" and proceed with a fresh value.
+ */
+export async function getBrevoContact(
+  apiKey: string,
+  email: string
+): Promise<{ attributes: Record<string, string> } | null> {
+  try {
+    const res = await fetch(`https://api.brevo.com/v3/contacts/${encodeURIComponent(email)}`, {
+      headers: { 'api-key': apiKey, Accept: 'application/json' },
+    });
+    if (!res.ok) return null; // 404 (new contact) or any other failure — safe to treat as "no existing value".
+    const body = await res.json();
+    return { attributes: (body.attributes ?? {}) as Record<string, string> };
+  } catch (err) {
+    console.error('Brevo contact lookup failed:', err);
+    return null;
+  }
+}
+
 interface ResendEmailResult {
   ok: true;
 }

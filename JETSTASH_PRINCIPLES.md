@@ -67,7 +67,7 @@ components/
                 RouteMapHero, NewsletterSection, ContactForm, QuoteRequestForm,
                 DealsExplorer, FamilyVisitBlock
   route/        WarningBanner, RouteTimeline, FareHistoryPanel, BookingWindowPanel,
-                TravellerTipList, CommunityNotesPanel, FareWatchForm, WhatsappShareButton
+                TravellerTipList, CommunityNotesPanel, RouteWatchForm, WhatsappShareButton
   seo/          JsonLd + schema builders
 data/           Typed content arrays — the single source of truth. See §4.
 lib/
@@ -76,7 +76,7 @@ lib/
   brand-images.ts         Image manifest resolver — see §6.4
   email.ts                Brevo/Resend HTTP helpers used by the four API routes
   utils.ts                cn() className merge helper
-  quote-request-options.ts, fare-watch-options.ts, travel-club-options.ts
+  quote-request-options.ts, route-watch-options.ts, travel-club-options.ts
                            Shared option lists + validators for form/API pairs — see §8
   visa-links.ts            Official government visa/entry-requirement links, one per country
   founder-insights.ts      Derives every /founder section from /data + env — see §10
@@ -295,7 +295,7 @@ provider env vars aren't set — never silently pretend to succeed.**
 | Route | Provider | Env vars | Validates against |
 |---|---|---|---|
 | `api/subscribe` | Brevo (`upsertBrevoContact`) | `BREVO_API_KEY`, `BREVO_LIST_ID` | `getAirportBySlug` (airports.ts), `isTravelInterest` (travel-club-options.ts) |
-| `api/fare-watch` | Brevo (same list, reused) | Same two vars | `getAirportBySlug`, `getDestinationBySlug`, `isFareWatchIntent` (fare-watch-options.ts) |
+| `api/route-watch` | Brevo (same list, reused) | Same two vars | `getAirportBySlug`, `getDestinationBySlug`, `isRouteWatchIntent` (route-watch-options.ts) |
 | `api/contact` | Resend (`sendResendEmail`) | `RESEND_API_KEY`, optional `CONTACT_TO_EMAIL` | Email format only |
 | `api/quote-request` | Resend (same helpers) | Same two vars | `isQuoteTripType`, `isQuoteRegion` (quote-request-options.ts) |
 
@@ -401,8 +401,8 @@ Vercel, zero-config (Next.js auto-detected).
 
 | Variable | Used by | Required for |
 |---|---|---|
-| `BREVO_API_KEY` | `api/subscribe`, `api/fare-watch` | Newsletter/fare-watch signups to save |
-| `BREVO_LIST_ID` | `api/subscribe`, `api/fare-watch` | Same |
+| `BREVO_API_KEY` | `api/subscribe`, `api/route-watch` | Newsletter/Route Watch signups to save |
+| `BREVO_LIST_ID` | `api/subscribe`, `api/route-watch` | Same |
 | `RESEND_API_KEY` | `api/contact`, `api/quote-request` | Contact/quote forms to actually send |
 | `CONTACT_TO_EMAIL` | `api/contact`, `api/quote-request` | Optional — overrides `siteConfig.contactEmail` |
 
@@ -490,14 +490,15 @@ the affiliate click is the consequence of that trust, not the product itself.
   mid-February" — derived entirely from data JetStash already holds or verifies editorially
   (peak periods, booking windows, dated fare observations, a verified festival-dates table).
   Pattern guidance with a visible basis, never price prediction. V1 scope: five priority
-  routes only, state-dependent CTAs (window open → "check live price"; too early → fare-watch
+  routes only, state-dependent CTAs (window open → "check live price"; too early → Route Watch
   capture; surge zone → honest urgency), WhatsApp-shareable advice cards. Phased V2/V3 gates in
   §12's live-tracking decision. **V1 shipped July 2026 — architecture in §14.1.**
 - **Advice that defers a booking defers a commission — accept that trade.** When the honest
-  recommendation is "not yet", the fare-watch signup is the commercial bridge (deferred intent →
+  recommendation is "not yet", the Route Watch signup is the commercial bridge (deferred intent →
   owned re-engagement channel). Never bias advice toward the immediate click; the trust *is* the
-  moat. This makes Book-By Countdown and Travel Club one system — the fare-watch pipeline
-  (including its Brevo attributes, §8) is on the hero feature's critical path.
+  moat. This makes Book-By Countdown and Travel Club one system — the Route Watch pipeline
+  (including its Brevo attributes, §8) is on the hero feature's critical path. Both now compose
+  through the Travel Intelligence Engine (§14.2) rather than existing as two adjacent features.
 - **Travel Confidence Score does not ship as a standalone number.** A composite score is
   editorial weighting dressed as measurement — too close to the fabricated precision §9 exists to
   prevent. Its ingredients (route warnings, service stability, direct/connecting honesty) instead
@@ -573,3 +574,45 @@ check a fare on TravelUp or the airline's own site, then append a new `data/fare
 entry with `departureDate` set to the date you'd actually book for (typically the route's next
 upcoming peak-period occurrence from `peak-period-dates.ts`). Never overwrite an existing entry.
 No enforced deadline — `/founder`'s cadence section is the reminder, not a blocker.
+
+### 14.2 The Travel Intelligence Engine (standing architecture, July 2026)
+
+**Book-By Countdown, Route Watch, Travel Confidence, Travel Ready Check, and every future
+intelligence module are inputs into one engine, not separate products.** The customer-facing
+question is always the same one: *"Am I ready to book?"* — never "here are four unrelated tools."
+`lib/travel-intelligence-engine.ts` is the single composition layer; nothing outside it resolves
+multiple signals into a customer-facing verdict.
+
+**"One recommendation" means one verdict, never one blended score.** A weighted composite hiding
+a route warning behind a reassuring number would be exactly the fabricated-precision mistake §9
+exists to prevent — it's why Travel Confidence Score was already rejected as a standalone metric
+(§14). The engine instead resolves signals via a **priority decision tree** — the most serious true
+fact wins, nothing is averaged — mirroring the `worst()` pattern already proven in
+`lib/founder-insights.ts` for the Founder dashboard, now pointed outward at customers for the first
+time. Every verdict stays fully attributed: the underlying facts (a booking-window state, an active
+warning, eventually a document-readiness check) remain individually visible, never hidden inside
+the top-line answer.
+
+**Subscription is to Route Watch, singular — not to individual alert types.** A visitor subscribes
+once per route; the engine decides what's genuinely worth telling them, across every module that
+composes into it. Users never choose "price alerts vs. disruption alerts vs. visa alerts" as
+separate opt-ins — that would recreate the "four separate tools" problem in the subscription model
+even after fixing it on the page.
+
+**Future modules plug in via a reserved slot on the engine's snapshot, never a rewrite.** Travel
+Ready Check doesn't exist yet; the engine's snapshot type carries a `travelReadySignal` field that
+is always `null` until it ships. This is what "future intelligence modules" means concretely — the
+composition point already exists before the module that fills it does.
+
+**Detection is automatable now; sending stays human.** The long-term objective is that the engine
+detects, decides, drafts, segments, and eventually sends most of this with minimal human
+intervention — but every send today goes through founder review (the same trust model that governs
+every other honesty-critical claim on this site). The one documented exception worth revisiting
+later: a pure booking-window-opened transition is date arithmetic with zero editorial judgment in
+it, making it the single best future candidate for automated send once the system has earned that
+trust.
+
+**No new Brevo attributes without a provisioning path.** Multi-route watching is real in this
+architecture, but it's built by repurposing the already-provisioned `WATCH_ROUTE` attribute to hold
+a small delimited list, not by adding a new attribute — adding one without a working way to create
+it in Brevo would silently reproduce the exact drift bug already fixed once this year (§8).

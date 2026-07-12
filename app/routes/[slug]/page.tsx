@@ -22,13 +22,14 @@ import { FareHistoryPanel } from '@/components/route/fare-history-panel';
 import { BookingWindowPanel } from '@/components/route/booking-window-panel';
 import { TravellerTipList } from '@/components/route/traveller-tip-list';
 import { CommunityNotesPanel } from '@/components/route/community-notes-panel';
-import { FareWatchForm } from '@/components/route/fare-watch-form';
+import { RouteWatchForm } from '@/components/route/route-watch-form';
 import { WhatsAppShareButton } from '@/components/route/whatsapp-share-button';
 import { BookByCountdown } from '@/components/route/book-by-countdown';
 import { JsonLd, breadcrumbSchema } from '@/components/seo/json-ld';
 import { siteConfig } from '@/lib/site-config';
 import { getRouteBookingUrl, getPrimaryBookingProvider } from '@/lib/booking-providers';
 import { computeBookBySnapshot, buildBookByShareText } from '@/lib/booking-intelligence';
+import { computeReadiness } from '@/lib/travel-intelligence-engine';
 import { getDestinationImage } from '@/lib/brand-images';
 import { HeroBackdrop } from '@/components/ui/hero-backdrop';
 
@@ -81,6 +82,9 @@ export default function RoutePage({ params }: { params: { slug: string } }) {
   // Build-time snapshot for the Book-By panel (priority routes only) — the
   // client component recomputes state against the visitor's clock on mount.
   const bookBySnapshot = computeBookBySnapshot(route.slug, new Date());
+  // Travel Intelligence Engine's readiness verdict for the same route —
+  // composed from bookBySnapshot plus active warnings (§14.2).
+  const engineSnapshot = computeReadiness(route.slug, new Date());
 
   return (
     <>
@@ -171,7 +175,7 @@ export default function RoutePage({ params }: { params: { slug: string } }) {
       {bookBySnapshot && (
         <section className="bg-sand-50 py-10 sm:py-12">
           <div className="mx-auto max-w-content px-5 sm:px-8">
-            <BookByCountdown initialSnapshot={bookBySnapshot} />
+            <BookByCountdown initialSnapshot={bookBySnapshot} initialEngineSnapshot={engineSnapshot} />
           </div>
         </section>
       )}
@@ -329,8 +333,8 @@ export default function RoutePage({ params }: { params: { slug: string } }) {
           )}
           {/* id anchors the Book-By panel's "Watch this route" CTA; the global
               scroll-padding-top keeps it clear of the sticky header. */}
-          <div id="fare-watch" className="mt-8 max-w-xl">
-            <FareWatchForm defaultAirportSlug={airport.slug} defaultDestinationSlug={dest.slug} />
+          <div id="route-watch" className="mt-8 max-w-xl">
+            <RouteWatchForm defaultAirportSlug={airport.slug} defaultDestinationSlug={dest.slug} />
           </div>
         </div>
       </section>

@@ -32,12 +32,12 @@ This codebase was written without the ability to run `npm install` or a real bui
 
 1. **Run a real build and fix whatever the compiler finds.** `npm install && npm run build` locally or let Vercel's first deploy do it. Note for Windows: run the build from the *correctly-cased* project path (`C:\Users\<you>\Documents\...`, capital D). Building from a lowercase-`documents` working directory makes webpack resolve two differently-cased copies of every module, which loads React twice and fails prerendering with `Cannot read properties of null (reading 'useContext')`.
 2. **Replace generated destination panels with real photography.** All destination imagery is currently rendered locally by `components/ui/destination-mark.tsx` — an on-brand generated panel (zero external requests, never a broken image). This is deliberate and ships fine, but real photography will always convert better; the complete shot list, art direction and naming convention live in `docs/visual-identity.md` — drop correctly named files into `/public/images/` and the brand-image system picks them up on the next build, no code changes.
-3. **Wire up the newsletter.** `/app/api/subscribe/route.ts` is written for Brevo (free up to 300 emails/day) and needs `BREVO_API_KEY` and `BREVO_LIST_ID` set as environment variables — **done**, both are set in Vercel Production. The form also captures a nearest-airport preference, which needs a custom Brevo contact attribute called `NEAREST_AIRPORT` to actually save — **not yet done**: as of this audit pass, 0 of the required attributes exist in the connected Brevo account, despite the environment variables being live, so every signup so far has been saving with its preference data silently dropped. Run `npm run brevo:setup` (see `scripts/setup-brevo-attributes.mjs`, canonical list in `lib/brevo-attributes.json`) to create it — and the fare-watch attributes below — in one pass; or create it manually (Contacts → Settings → Contact Attributes → Add attribute, type "Text") if you'd rather not run a script against production. Until it exists, Brevo silently drops the field rather than erroring.
+3. ~~Wire up the newsletter.~~ **Done.** `/app/api/subscribe/route.ts` is wired to Brevo (free up to 300 emails/day); `BREVO_API_KEY` and `BREVO_LIST_ID` are set in Vercel Production. The form captures a nearest-airport and travel-interest preference via the `NEAREST_AIRPORT`/`TRAVEL_INTEREST` custom contact attributes — all seven required attributes (these two plus the five `WATCH_*` below) were confirmed created in Brevo and live-tested end to end (a real signup, attributes verified stored correctly via the Brevo API) in July 2026. If you ever connect a fresh Brevo account, run `npm run brevo:setup` (canonical list in `lib/brevo-attributes.json`) to recreate them — Brevo silently drops any attribute it doesn't recognise rather than erroring, so this is worth re-confirming after any account change.
 4. **Wire up the contact form.** `/app/api/contact/route.ts` is written for Resend (resend.com) but needs `RESEND_API_KEY` set. Same fail-clearly behaviour until configured. `CONTACT_TO_EMAIL` is optional — both this route and `/app/api/quote-request/route.ts` fall back to `siteConfig.contactEmail` (`lib/site-config.ts`) when it's unset.
 5. **Log genuinely researched fare checks.** `/data/deals.ts` no longer carries a price at all — deal cards derive an honest range/single-check from `/data/fare-observations.ts` (`getFareRangeSummary`), or fall back to route facts when nothing's logged yet. That removes the staleness risk, but the £ figures currently in `/data/fare-observations.ts` are still the original example numbers, not independently verified fares. There's no deadline to do this (see `/founder`'s "Fare observation coverage" section) — append real researched checks over time as a new `FareObservation` entry per route/cabin, never overwriting an existing one.
 6. ~~Sign up for TravelUp's real affiliate programme and add the tracking parameters.~~ **Done.** Every outbound booking link ("Check live price[s]", "Search live prices") is generated centrally by `lib/booking-providers.ts` and now uses TravelUp's real Commission Junction tracking link (`https://www.kqzyfj.com/click-101818709-15363607` — PID 101818709, AID 15363607), tagged with a per-route/page `sid` for click attribution. Every click-through now earns commission. To re-enable Skyscanner in future, flip its `enabled` flag and add its real tracking link in the same file — nothing else in the app needs to change.
 7. **Manually verify a real TravelUp destination URL and turn deep-linking on.** A first attempt guessed a `/flights/search?origin=...` URL shape for route-specific links; in production this landed users on a TravelUp error page and lost their search. `BOOKING_PROVIDERS.travelup.supportsDeepLink` is deliberately still `false`, so every booking link safely resolves to TravelUp's own default landing page via the tracking link above (still commission-earning, just not destination-specific) rather than a broken deep link. To turn it on: visit `travelup.com` in a real browser, confirm a real destination URL works (e.g. their `/en-gb/flight-offers/{city}-{iata}` pages, if that pattern holds), add it to `VERIFIED_DEEP_LINKS` in `lib/booking-providers.ts`, then flip `supportsDeepLink` to `true`. Never add an entry from a guessed pattern.
-8. **Create the fare-watch Brevo attributes.** `/app/api/fare-watch/route.ts` reuses `BREVO_API_KEY`/`BREVO_LIST_ID` (no new env vars, both already set) but needs five custom Brevo contact attributes created first: `WATCH_AIRPORT`, `WATCH_DESTINATION`, `WATCH_ROUTE`, `WATCH_REGION`, `WATCH_INTENT`. **Not yet done** — run `npm run brevo:setup` (same script and canonical list as item 3 — `lib/brevo-attributes.json`) to create all seven required attributes across both forms in one pass. Until these exist, Brevo silently drops the fields it doesn't recognise rather than erroring.
+8. ~~Create the Route Watch Brevo attributes.~~ **Done** (see item 3 — confirmed together with the newsletter attributes). `/app/api/route-watch/route.ts` reuses `BREVO_API_KEY`/`BREVO_LIST_ID` and writes `WATCH_AIRPORT`, `WATCH_DESTINATION`, `WATCH_ROUTE`, `WATCH_REGION`, `WATCH_INTENT`. Note `WATCH_ROUTE` holds a small comma-delimited list, not a single value, per the Travel Intelligence Engine's multi-route model (JETSTASH_PRINCIPLES.md §14.2) — deliberately reusing the existing attribute rather than adding a new one that would need re-provisioning.
 9. ~~Route quote-request leads somewhere real.~~ **Done.** `/app/api/quote-request/route.ts` and `/app/api/contact/route.ts` both reuse `RESEND_API_KEY`/`CONTACT_TO_EMAIL` (no new env vars) and now default to `siteConfig.contactEmail` in `lib/site-config.ts` — a real inbox, not a placeholder — when `CONTACT_TO_EMAIL` isn't set in Vercel. Every Umrah/family/group quote request lands in one inbox for manual follow-up; revisit whether that should become a rotation of partner agents or a shared inbox as volume grows.
 
 ## Environment variables
@@ -63,7 +63,7 @@ app/                  Routes (Next.js App Router)
   api/subscribe/      Newsletter API route
   api/contact/        Contact form API route
   api/quote-request/  Umrah/family/group quote-request API route (Resend)
-  api/fare-watch/     Per-route fare-watch signup API route (Brevo)
+  api/route-watch/     Per-route Route Watch signup API route (Brevo)
   sitemap.ts          Dynamic sitemap.xml
   robots.ts           robots.txt
 
@@ -73,7 +73,7 @@ components/
   sections/           RouteMapHero, NewsletterSection, QuoteRequestForm, RegionHubPage template,
                        BookingMomentStrip, NextTravelMomentRibbon (Book-By Countdown — see below)
   route/               warning-banner, route-timeline, fare-history-panel, booking-window-panel,
-                       traveller-tip-list, community-notes-panel, fare-watch-form, whatsapp-share-button,
+                       traveller-tip-list, community-notes-panel, route-watch-form, whatsapp-share-button,
                        book-by-countdown (the "when to book" panel — priority routes only)
 
 data/
@@ -96,24 +96,32 @@ lib/
   site-config.ts             Nav structure, region groupings, site metadata
   brand-images.ts             Real-photography resolver, backed by lib/image-manifest.json
   booking-intelligence.ts     Book-By Countdown's single derivation layer — see JETSTASH_PRINCIPLES.md §14
+  travel-intelligence-engine.ts  Composes Book-By + route warnings into one readiness verdict — §14.2
   utils.ts                   Tailwind className merge helper
   quote-request-options.ts   Shared trip-type/region options for the quote-request form + API route
 ```
 
-## Book-By Countdown — the "when to book" hero feature
+## Book-By Countdown & the Travel Intelligence Engine
 
 Route pages (five priority routes only — see `BOOK_BY_PRIORITY_ROUTE_SLUGS` in
 `lib/booking-intelligence.ts`) show a "When to book" panel: the next relevant festival/peak period,
 a book-by date derived from that route's own stated booking-window guidance (or, where none exists,
 the universal "fares rise sharply in the final 3–4 weeks" rule already stated in
 `data/peak-periods.ts`), a visual timeline, the latest logged fare for context, and a
-state-dependent CTA (book now / watch this route / honest urgency). Never a live-price claim —
+state-dependent CTA (book now / Route Watch / honest urgency). Never a live-price claim —
 see JETSTASH_PRINCIPLES.md §14 for the full product decision and §14.1 for the architecture.
+
+The panel also carries a small readiness-verdict badge ("Ready to book" / "Not yet" / "Check before
+booking"...) — this is the customer-facing surface of `lib/travel-intelligence-engine.ts`, which
+composes the booking-window state with any active route warning into one attributed answer to "Am I
+ready to book?" (JETSTASH_PRINCIPLES.md §14.2). It's a priority decision tree, never a blended
+score — every fact behind the badge stays individually visible.
 
 **The weekly workflow this depends on:** for each priority route, check a fare on TravelUp or the
 airline's own site, then append a new `data/fare-observations.ts` entry with `departureDate` set to
-the date you'd actually book for. `/founder`'s "Book-By Countdown data cadence" section (nice-to-have,
-never a launch blocker — the panel degrades honestly on its own) tracks which routes are due a check.
+the date you'd actually book for. `/founder`'s "Book-By Countdown data cadence" and "Travel
+Intelligence Engine — alert queue" sections (both nice-to-have, never a launch blocker — every
+surface degrades honestly on its own) track what's due a check or worth a Route Watch send.
 
 ## Design system
 

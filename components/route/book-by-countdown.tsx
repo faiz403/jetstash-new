@@ -10,6 +10,7 @@ import {
   OBSERVATION_FRESH_DAYS,
   type BookBySnapshot,
 } from '@/lib/booking-intelligence';
+import { computeReadiness, VERDICT_COPY, type EngineSnapshot } from '@/lib/travel-intelligence-engine';
 import { getRouteBySlug, getRouteAirport, getRouteDestination } from '@/data/routes';
 import { getRouteBookingUrl, getPrimaryBookingProvider } from '@/lib/booking-providers';
 
@@ -17,6 +18,15 @@ import { getRouteBookingUrl, getPrimaryBookingProvider } from '@/lib/booking-pro
  * The Book-By Countdown panel — the route page's "when to book" intelligence
  * surface (JETSTASH_PRINCIPLES.md §14). Renders only for the V1 priority
  * routes; every date and state comes from lib/booking-intelligence.ts.
+ *
+ * This is also the customer-facing surface for the Travel Intelligence
+ * Engine's readiness verdict (§14.2) — the small badge in the header row is
+ * the engine's one-line answer to "Am I ready to book?", composed from this
+ * panel's own booking-window state plus any active route warning. The
+ * badge is additive to the existing, already-tested timeline/CTA logic
+ * below it, never a replacement — the CTA still reasons purely from
+ * booking-window state, since a warning changes what to be aware of, not
+ * whether checking a live price is the right action.
  *
  * Rendering model: the server page computes `initialSnapshot` at build time,
  * so the static HTML carries the full advice for SEO and no-JS visitors
@@ -31,12 +41,29 @@ function t(iso: string): number {
   return new Date(`${iso}T12:00:00Z`).getTime();
 }
 
-export function BookByCountdown({ initialSnapshot }: { initialSnapshot: BookBySnapshot }) {
+const VERDICT_BADGE_STYLES: Record<EngineSnapshot['verdict'], string> = {
+  'wait-critical': 'border-terracotta-300 bg-terracotta-50 text-terracotta-700',
+  'not-yet': 'border-ink-200 bg-ink-50 text-ink-600',
+  'book-soon': 'border-brass/40 bg-brass-50 text-brass-700',
+  ready: 'border-brass/40 bg-brass-50 text-brass-700',
+  'ready-with-caution': 'border-brass/40 bg-brass-50 text-brass-700',
+};
+
+export function BookByCountdown({
+  initialSnapshot,
+  initialEngineSnapshot,
+}: {
+  initialSnapshot: BookBySnapshot;
+  initialEngineSnapshot: EngineSnapshot | null;
+}) {
   const [snapshot, setSnapshot] = useState<BookBySnapshot | null>(initialSnapshot);
+  const [engineSnapshot, setEngineSnapshot] = useState<EngineSnapshot | null>(initialEngineSnapshot);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setSnapshot(computeBookBySnapshot(initialSnapshot.routeSlug, new Date()));
+    const now = new Date();
+    setSnapshot(computeBookBySnapshot(initialSnapshot.routeSlug, now));
+    setEngineSnapshot(computeReadiness(initialSnapshot.routeSlug, now));
     setMounted(true);
   }, [initialSnapshot.routeSlug]);
 
@@ -77,18 +104,36 @@ export function BookByCountdown({ initialSnapshot }: { initialSnapshot: BookBySn
   const observation = snapshot.latestObservation;
   const observationIsOld = observation ? observation.ageDays > OBSERVATION_FRESH_DAYS : false;
 
+  const verdict = engineSnapshot?.verdict;
+  const warningReasons = engineSnapshot?.reasons.filter((r) => r.source === 'route-warning') ?? [];
+
   return (
     <section aria-label={`When to book ${airport.city} to ${destination.city}`} className="rounded-md border border-ink-100 bg-white p-6 shadow-card sm:p-8">
-      <div className="flex items-center gap-2.5">
-        <CalendarClock className="h-4.5 w-4.5 text-terracotta-600" strokeWidth={2} />
-        <span className="text-xs font-semibold uppercase tracking-wide text-terracotta-600">
-          When to book · {snapshot.event.periodLabel} {formatEventDate(snapshot.event)}
-        </span>
+      <div className="flex flex-wrap items-center justify-between gap-2.5">
+        <div className="flex items-center gap-2.5">
+          <CalendarClock className="h-4.5 w-4.5 text-terracotta-600" strokeWidth={2} />
+          <span className="text-xs font-semibold uppercase tracking-wide text-terracotta-600">
+            When to book · {snapshot.event.periodLabel} {formatEventDate(snapshot.event)}
+          </span>
+        </div>
+        {verdict && (
+          <span
+            className={`inline-flex items-center rounded-full border px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide ${VERDICT_BADGE_STYLES[verdict]}`}
+          >
+            {VERDICT_COPY[verdict].label}
+          </span>
+        )}
       </div>
 
       <h2 className="mt-3 max-w-2xl font-display text-2xl leading-snug text-ink-900 sm:text-[1.7rem]">
         {bookByHeadline(snapshot)}
       </h2>
+
+      {warningReasons.length > 0 && (
+        <p className="mt-2 text-sm text-terracotta-700">
+          {warningReasons.length === 1 ? warningReasons[0].label : `${warningReasons.length} active notes on this route`} — see below before you book.
+        </p>
+      )}
 
       {mounted && snapshot.daysToEvent > 0 && (
         <p className="mt-2 text-sm text-ink-500">
@@ -166,7 +211,7 @@ export function BookByCountdown({ initialSnapshot }: { initialSnapshot: BookBySn
         {watchPrimary ? (
           <>
             <a
-              href="#fare-watch"
+              href="#route-watch"
               data-analytics="bookby-watch"
               className="inline-flex h-12 items-center justify-center gap-1.5 rounded-sm bg-ink-900 px-6 text-sm font-semibold text-sand-50 transition-all hover:bg-brass-600 active:scale-[0.985]"
             >
@@ -201,7 +246,7 @@ export function BookByCountdown({ initialSnapshot }: { initialSnapshot: BookBySn
               <ArrowUpRight className="h-4 w-4" strokeWidth={2.25} />
             </a>
             <a
-              href="#fare-watch"
+              href="#route-watch"
               data-analytics="bookby-watch"
               className="inline-flex h-12 items-center justify-center gap-1.5 rounded-sm border border-ink-200 px-5 text-sm font-semibold text-ink-900 transition-colors hover:bg-ink-50 active:scale-[0.985]"
             >

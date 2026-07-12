@@ -7,6 +7,7 @@ import { routeWarnings } from '@/data/route-warnings';
 import { imageCoverage } from '@/lib/brand-images';
 import { BOOKING_PROVIDERS, PRIMARY_PROVIDER_ID } from '@/lib/booking-providers';
 import { BOOK_BY_PRIORITY_ROUTE_SLUGS, OBSERVATION_FRESH_DAYS } from '@/lib/booking-intelligence';
+import { computeAllReadinessSnapshots, VERDICT_COPY } from '@/lib/travel-intelligence-engine';
 import { siteConfig } from '@/lib/site-config';
 
 /**
@@ -82,6 +83,39 @@ function routeLabel(routeSlug: string): string {
   const airport = getRouteAirport(route);
   const dest = getRouteDestination(route);
   return airport && dest ? `${airport.city} → ${dest.city}` : routeSlug;
+}
+
+// ── 0. Travel Intelligence Engine — alert queue ──────────────────────────
+// Detection is automated (JETSTASH_PRINCIPLES.md §14.2); sending stays
+// human. This surfaces every priority route whose engine verdict currently
+// warrants a look for a possible Route Watch send — never auto-sent, never
+// escalated past 'watch', because a verdict worth reviewing is not the same
+// as a site defect.
+function engineAlertQueue(now: Date): FounderSection {
+  const snapshots = computeAllReadinessSnapshots(now);
+  const items: FounderItem[] = snapshots
+    .filter((s) => s.verdict === 'wait-critical' || s.verdict === 'ready-with-caution')
+    .map((s) => ({
+      label: `${routeLabel(s.routeSlug)}: ${VERDICT_COPY[s.verdict].label}`,
+      detail:
+        s.reasons.find((r) => r.source === 'route-warning')?.detail ??
+        'Engine verdict changed — review whether this is worth a Route Watch send.',
+      status: 'watch' as FounderStatus,
+      href: `/routes/${s.routeSlug}`,
+    }));
+
+  return {
+    id: 'engine-queue',
+    title: 'Travel Intelligence Engine — alert queue',
+    priority: 'nice-to-have',
+    status: items.length > 0 ? 'watch' : 'ok',
+    headline:
+      items.length === 0
+        ? `No active warnings on any of the ${snapshots.length} engine-covered routes — nothing flagged for review.`
+        : `${items.length} of ${snapshots.length} engine-covered routes have a verdict worth reviewing for a Route Watch send. No deadline — nothing sends itself.`,
+    items,
+    action: 'Review each route, confirm the underlying fact is still accurate, and send a Route Watch email to that route\'s watchers via Brevo if it\'s genuinely worth their attention — same manual-send model as Travel Club.',
+  };
 }
 
 // ── 1. Fare observation coverage ─────────────────────────────────────────
@@ -542,6 +576,7 @@ export function getFounderSnapshot(now: Date): FounderSnapshot {
     linkHealth(),
     serviceChangesStatus(now),
     affiliateStatus(),
+    engineAlertQueue(now),
     fareObservationCoverage(),
     bookByCadenceStatus(now),
     photographyStatus(),

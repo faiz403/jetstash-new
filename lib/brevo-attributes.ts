@@ -9,7 +9,7 @@ import attributeList from './brevo-attributes.json';
  * Two consumers read this list so they can never drift apart the way they
  * did in practice (all seven were missing from the connected Brevo account
  * despite matching README/code documentation exactly):
- *   - app/api/subscribe/route.ts and app/api/fare-watch/route.ts use
+ *   - app/api/subscribe/route.ts and app/api/route-watch/route.ts use
  *     BREVO_ATTRIBUTE_NAMES as the object keys when building the
  *     `attributes` payload sent to Brevo's contacts API.
  *   - scripts/setup-brevo-attributes.mjs creates any of these that don't
