@@ -424,6 +424,19 @@ change.
 
 Recorded so these aren't re-litigated by accident:
 
+- **Continuous live fare tracking (e.g. 10-minute polling) — evaluated and rejected (July 2026).**
+  Re-examined from first principles against the mid-2026 API market: the customer value ("when
+  should I book", "is this fare typical") is *pattern* intelligence that changes on a scale of days
+  to weeks, so sub-daily polling was an imported metasearch assumption, never a requirement.
+  Relevant market facts at time of decision: Amadeus Self-Service was decommissioned 17 July 2026;
+  Kiwi Tequila is closed to new small partners; Travelpayouts/Aviasales' cached Data API is free
+  for affiliates but its data must not be displayed as JetStash-observed fares (grey-zone with CJ
+  monetization — internal-signal use only, pending written confirmation); Duffel is booking
+  infrastructure, wrong fit for display-only pricing. The standing model instead: dated,
+  human-verified fare observations (§4.2), optionally automation-*assisted* (a free cached-data
+  signal prompting a human to verify and log) once traffic justifies it, and genuine live
+  verification only behind a real revenue gate (~£500+/mo affiliate revenue). Displayed prices are
+  always "checked on <date>", never "live".
 - **Hotels, Car Hire, Airport Lounges, Airport Parking** — deliberately deferred. Each needs either
   a live inventory/booking integration or genuine local-market knowledge this codebase doesn't have
   yet. Shipping placeholder content for these now would repeat the classic early-stage travel-site
@@ -464,3 +477,99 @@ A quick-reference checklist for common changes:
   a shared `lib/*-options.ts` module the form and the route both import.
 - **Any new claim about a real-world fact** (price, schedule, statistic) → it must be traceable to
   a `/data` entry or explicitly marked as a placeholder. When in doubt, don't ship the claim yet.
+
+## 14. Product direction — "check JetStash first" (decision record, July 2026)
+
+A standing strategic decision, recorded so future work builds toward it rather than around it:
+**JetStash is a decision-intelligence product, not an affiliate content site.** The goal of every
+major feature is to give travellers a genuine reason to visit JetStash *before* any booking site —
+the affiliate click is the consequence of that trust, not the product itself.
+
+- **The approved hero feature is Book-By Countdown** (working name; public framing "the JetStash
+  Booking Window"): festival-anchored booking guidance — "flying for Eid al-Adha? book by
+  mid-February" — derived entirely from data JetStash already holds or verifies editorially
+  (peak periods, booking windows, dated fare observations, a verified festival-dates table).
+  Pattern guidance with a visible basis, never price prediction. V1 scope: five priority
+  routes only, state-dependent CTAs (window open → "check live price"; too early → fare-watch
+  capture; surge zone → honest urgency), WhatsApp-shareable advice cards. Phased V2/V3 gates in
+  §12's live-tracking decision. **V1 shipped July 2026 — architecture in §14.1.**
+- **Advice that defers a booking defers a commission — accept that trade.** When the honest
+  recommendation is "not yet", the fare-watch signup is the commercial bridge (deferred intent →
+  owned re-engagement channel). Never bias advice toward the immediate click; the trust *is* the
+  moat. This makes Book-By Countdown and Travel Club one system — the fare-watch pipeline
+  (including its Brevo attributes, §8) is on the hero feature's critical path.
+- **Travel Confidence Score does not ship as a standalone number.** A composite score is
+  editorial weighting dressed as measurement — too close to the fabricated precision §9 exists to
+  prevent. Its ingredients (route warnings, service stability, direct/connecting honesty) instead
+  surface as an explainable confidence strip inside the Book-By panel, with visible criteria.
+- **The data moat compounds independently of any UI: start collecting now.** (a) A verified
+  festival-dates table (real Gregorian dates per year, same verification standard as route
+  claims — `peak-periods.ts` deliberately only says "shifts yearly" today). (b) Fare observations
+  should record the *departure date the fare was for* (proposed additive optional field on
+  `FareObservation`) — without days-to-departure, the days-out price curves that make V3 possible
+  can never be computed from the log. (c) CJ sid-level click data to learn which routes convert.
+  Observation history cannot be backfilled; every logged week widens the un-copyable part.
+
+### 14.1 V1 architecture (shipped July 2026)
+
+**One derivation layer, everything else reads from it.** `lib/booking-intelligence.ts` is the only
+place that computes a booking state, a book-by date, or event countdown maths — the route panel,
+destination strip, homepage ribbon, route-map layer, WhatsApp share text, and the Founder cadence
+section all call `computeBookBySnapshot()` / `computeBookBySnapshotsForDestination()` /
+`computeAllBookBySnapshots()` rather than deriving dates themselves. `BOOK_BY_PRIORITY_ROUTE_SLUGS`
+in that file is the single list gating which five routes any Book-By surface renders for
+(`manchester-lahore`, `manchester-islamabad`, `london-heathrow-delhi`, `london-heathrow-jeddah`,
+`birmingham-amritsar`) — add a route to V1 by editing that one array, not by hunting through pages.
+
+**New data files:**
+- `data/peak-period-dates.ts` — verified Gregorian dates per year for each `peak-periods.ts` id
+  (2026–2028). Every entry carries a `precision` (`'confirmed'` | `'estimated-lunar'` |
+  `'approximate-seasonal'`) and a `dateNote` explaining the uncertainty — Islamic dates are
+  astronomical estimates pending real moon-sighting confirmation, and every surface that renders
+  them keeps that visible (`formatEventDate()` prefixes "expected"/"around" accordingly). Follows
+  the same verify-before-adding standard as route claims (§9.3); a `sourceNote` on every entry
+  records where it was checked. Add next year's dates before the current ones run out.
+- `data/fare-observations.ts` gained an optional `departureDate` field on `FareObservation` — the
+  departure the fare was quoted for, needed to compute days-to-departure for future price curves
+  (Phase 2/3). Backward-compatible; never backfilled onto historic entries.
+- `data/booking-windows.ts` gained `role` (`'recommended'` | `'avoid'` | `'typical'`) and
+  `appliesToPeriodIds` — so the engine only applies a route's stated "book 12+ weeks out" advice to
+  the peak period it's actually about (Eid), never silently reused for an unrelated period like UK
+  summer holidays.
+
+**Rendering split — build-time snapshot + client recompute.** Route pages compute a
+`BookBySnapshot` server-side at build time (`computeBookBySnapshot(routeSlug, new Date())`) so the
+static HTML carries full advice for SEO and no-JS visitors. `components/route/book-by-countdown.tsx`
+is a client component that recomputes the same snapshot against the visitor's real clock after
+mount — this is what activates the "today" marker and live day-counts without ever risking a stale
+build-time snapshot being shown as current. Every date the *server* render shows is absolute
+("book by 14 February 2027"), never a day-count, so a page built weeks ago is still correct.
+
+**Where it renders:**
+- `components/route/book-by-countdown.tsx` — the full panel, route pages only, priority routes only.
+- `components/sections/booking-moment-strip.tsx` — destination pages, one line per priority route
+  serving that destination, server-rendered only (no client JS, no day-counts).
+- `components/sections/next-travel-moment-ribbon.tsx` — homepage, the soonest event across all
+  priority routes plus how many currently have an open window.
+- `components/sections/route-map-hero.tsx` — gained an optional `bookBySnapshots` prop; a
+  destination marker gets one quiet pulsing brass ring (the existing `animate-pulse-dot` motif,
+  already used by `<DestinationMark />`) when its Manchester route has an open window. Only
+  `manchester-lahore`/`manchester-islamabad` can ever trigger it — the map only shows Manchester
+  departures — so the indicator stays rare by construction, not by a manual toggle. No other visual
+  change to the map.
+
+**CTA click attribution.** `getRouteBookingUrl()` in `lib/booking-providers.ts` gained an optional
+`sidContext` parameter — the Book-By panel passes `bookby-${state}` so CJ sid data can show which
+booking state actually drove a click, without touching the URL a visitor lands on.
+
+**Founder cadence tracking.** `lib/founder-insights.ts`'s `bookByCadenceStatus()` section (priority
+`nice-to-have`, status never escalates past `'watch'`) flags priority routes whose latest
+observation is older than `OBSERVATION_FRESH_DAYS` (60) or lacks a `departureDate` — support for the
+weekly logging workflow below, not a launch gate, because the panel already degrades honestly
+(calendar-only guidance, no price context) when data is thin.
+
+**The weekly logging workflow this feature depends on:** for each of the five priority routes,
+check a fare on TravelUp or the airline's own site, then append a new `data/fare-observations.ts`
+entry with `departureDate` set to the date you'd actually book for (typically the route's next
+upcoming peak-period occurrence from `peak-period-dates.ts`). Never overwrite an existing entry.
+No enforced deadline — `/founder`'s cadence section is the reminder, not a blocker.

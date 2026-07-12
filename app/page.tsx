@@ -2,9 +2,11 @@ import type { Metadata } from 'next';
 import { ArrowUpRight, ShieldCheck, Users, Crown, BadgeCheck, CalendarCheck, Plane, Compass, BookOpen, Globe, type LucideIcon } from 'lucide-react';
 import Link from 'next/link';
 import { RouteMapHero } from '@/components/sections/route-map-hero';
+import { NextTravelMomentRibbon } from '@/components/sections/next-travel-moment-ribbon';
 import { HubCard } from '@/components/ui/hub-card';
 import { DealCard } from '@/components/ui/deal-card';
 import { NewsletterSection } from '@/components/sections/newsletter-section';
+import { computeAllBookBySnapshots } from '@/lib/booking-intelligence';
 import { LinkButton } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { deals, getDealsByCategory, formatChecked } from '@/data/deals';
@@ -55,6 +57,7 @@ export default function HomePage() {
   const featuredGuides = featuredGuideSlugs
     .map((slug) => getGuideBySlug(slug))
     .filter((g): g is NonNullable<typeof g> => Boolean(g));
+  const bookBySnapshots = computeAllBookBySnapshots(new Date());
 
   return (
     <>
@@ -96,9 +99,12 @@ export default function HomePage() {
       {/* ───────────────────────── INTERACTIVE MANCHESTER ROUTE MAP ───────────────────────── */}
       <section className="border-t border-white/5 bg-ink-950 py-16 sm:py-20">
         <div className="mx-auto max-w-content px-5 sm:px-8">
-          <RouteMapHero />
+          <RouteMapHero bookBySnapshots={bookBySnapshots} />
         </div>
       </section>
+
+      {/* ───────────────────────── NEXT TRAVEL MOMENT — Book-By Countdown entry point ───────────────────────── */}
+      <NextTravelMomentRibbon snapshots={bookBySnapshots} />
 
       {/* ───────────────────────── HOW WE WORK — trust strip, every claim true ───────────────────────── */}
       <section className="border-b border-white/5 bg-ink-950 py-8">

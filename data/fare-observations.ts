@@ -9,6 +9,15 @@ export interface FareObservation {
   price: number;
   priceNote: string;
   source: string; // airline the fare was observed on
+  /**
+   * ISO date of the outbound departure the fare was quoted FOR — record it
+   * on every new observation. Without it, "how many days before departure
+   * was this fare seen" can never be computed, and that days-out dimension
+   * is what the Book-By Countdown's future price curves are built from
+   * (JETSTASH_PRINCIPLES.md §14). Optional only because historic entries
+   * predate the field — never backfill a guessed date onto an old entry.
+   */
+  departureDate?: string;
 }
 
 /**

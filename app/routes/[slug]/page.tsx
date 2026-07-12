@@ -24,9 +24,11 @@ import { TravellerTipList } from '@/components/route/traveller-tip-list';
 import { CommunityNotesPanel } from '@/components/route/community-notes-panel';
 import { FareWatchForm } from '@/components/route/fare-watch-form';
 import { WhatsAppShareButton } from '@/components/route/whatsapp-share-button';
+import { BookByCountdown } from '@/components/route/book-by-countdown';
 import { JsonLd, breadcrumbSchema } from '@/components/seo/json-ld';
 import { siteConfig } from '@/lib/site-config';
 import { getRouteBookingUrl, getPrimaryBookingProvider } from '@/lib/booking-providers';
+import { computeBookBySnapshot, buildBookByShareText } from '@/lib/booking-intelligence';
 import { getDestinationImage } from '@/lib/brand-images';
 import { HeroBackdrop } from '@/components/ui/hero-backdrop';
 
@@ -76,6 +78,9 @@ export default function RoutePage({ params }: { params: { slug: string } }) {
   const travellerTips = getTipsForScope({ routeSlug: route.slug, destinationSlug: dest.slug });
   const communityNotes = getCommunityNotesForScope({ routeSlug: route.slug, destinationSlug: dest.slug });
   const airportAdvice = getNotesByAirport(airport.slug).slice(0, 2);
+  // Build-time snapshot for the Book-By panel (priority routes only) — the
+  // client component recomputes state against the visitor's clock on mount.
+  const bookBySnapshot = computeBookBySnapshot(route.slug, new Date());
 
   return (
     <>
@@ -126,7 +131,11 @@ export default function RoutePage({ params }: { params: { slug: string } }) {
             </a>
             <WhatsAppShareButton
               url={`${siteConfig.url}/routes/${route.slug}`}
-              text={`${airport.city} to ${dest.city}: ${route.flightTime}, ${route.frequency}. ${route.bookingWindowNote}`}
+              text={
+                bookBySnapshot
+                  ? buildBookByShareText(bookBySnapshot)
+                  : `${airport.city} to ${dest.city}: ${route.flightTime}, ${route.frequency}. ${route.bookingWindowNote}`
+              }
             />
           </div>
           <p className="mt-2.5 text-xs text-ink-300">Partner link, opens {getPrimaryBookingProvider().name} in a new tab. Booking there never costs you more.</p>
@@ -155,6 +164,14 @@ export default function RoutePage({ params }: { params: { slug: string } }) {
         <section className="bg-sand-50 py-10 sm:py-12">
           <div className="mx-auto max-w-content px-5 sm:px-8">
             <WarningBanner warnings={activeWarnings} />
+          </div>
+        </section>
+      )}
+
+      {bookBySnapshot && (
+        <section className="bg-sand-50 py-10 sm:py-12">
+          <div className="mx-auto max-w-content px-5 sm:px-8">
+            <BookByCountdown initialSnapshot={bookBySnapshot} />
           </div>
         </section>
       )}
@@ -310,7 +327,9 @@ export default function RoutePage({ params }: { params: { slug: string } }) {
               <NoFareFallback cityLabel={`${airport.city} to ${dest.city}`} />
             </div>
           )}
-          <div className="mt-8 max-w-xl">
+          {/* id anchors the Book-By panel's "Watch this route" CTA; the global
+              scroll-padding-top keeps it clear of the sticky header. */}
+          <div id="fare-watch" className="mt-8 max-w-xl">
             <FareWatchForm defaultAirportSlug={airport.slug} defaultDestinationSlug={dest.slug} />
           </div>
         </div>

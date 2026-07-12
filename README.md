@@ -70,9 +70,11 @@ app/                  Routes (Next.js App Router)
 components/
   ui/                 Button, Badge, DealCard, HubCard — shared primitives
   layout/             Header, Footer
-  sections/           RouteMapHero, NewsletterSection, QuoteRequestForm, RegionHubPage template
+  sections/           RouteMapHero, NewsletterSection, QuoteRequestForm, RegionHubPage template,
+                       BookingMomentStrip, NextTravelMomentRibbon (Book-By Countdown — see below)
   route/               warning-banner, route-timeline, fare-history-panel, booking-window-panel,
-                       traveller-tip-list, community-notes-panel, fare-watch-form, whatsapp-share-button
+                       traveller-tip-list, community-notes-panel, fare-watch-form, whatsapp-share-button,
+                       book-by-countdown (the "when to book" panel — priority routes only)
 
 data/
   airports.ts             UK departure airports
@@ -81,9 +83,10 @@ data/
   deals.ts                Every current example fare shown across the site
   airlines.ts              Canonical airline reference (data/routes.ts links by slug)
   peak-periods.ts          Canonical demand-period reference (routes/destinations link by id)
+  peak-period-dates.ts     Verified Gregorian dates per year for each peak period (Book-By Countdown)
   route-timeline.ts        Real, dated history of changes to specific routes
   route-warnings.ts        Append-only warning log per route
-  fare-observations.ts     Append-only fare history per route
+  fare-observations.ts     Append-only fare history per route (optional departureDate per entry)
   booking-windows.ts       Structured booking-window guidance, additive to route prose
   airport-notes.ts         Practical, hub-specific advice per airport
   traveller-tips.ts        Curated tips scoped to a route/destination/airport
@@ -91,10 +94,26 @@ data/
 
 lib/
   site-config.ts             Nav structure, region groupings, site metadata
-  images.ts                  Placeholder image helper (read the warning in this file)
+  brand-images.ts             Real-photography resolver, backed by lib/image-manifest.json
+  booking-intelligence.ts     Book-By Countdown's single derivation layer — see JETSTASH_PRINCIPLES.md §14
   utils.ts                   Tailwind className merge helper
   quote-request-options.ts   Shared trip-type/region options for the quote-request form + API route
 ```
+
+## Book-By Countdown — the "when to book" hero feature
+
+Route pages (five priority routes only — see `BOOK_BY_PRIORITY_ROUTE_SLUGS` in
+`lib/booking-intelligence.ts`) show a "When to book" panel: the next relevant festival/peak period,
+a book-by date derived from that route's own stated booking-window guidance (or, where none exists,
+the universal "fares rise sharply in the final 3–4 weeks" rule already stated in
+`data/peak-periods.ts`), a visual timeline, the latest logged fare for context, and a
+state-dependent CTA (book now / watch this route / honest urgency). Never a live-price claim —
+see JETSTASH_PRINCIPLES.md §14 for the full product decision and §14.1 for the architecture.
+
+**The weekly workflow this depends on:** for each priority route, check a fare on TravelUp or the
+airline's own site, then append a new `data/fare-observations.ts` entry with `departureDate` set to
+the date you'd actually book for. `/founder`'s "Book-By Countdown data cadence" section (nice-to-have,
+never a launch blocker — the panel degrades honestly on its own) tracks which routes are due a check.
 
 ## Design system
 

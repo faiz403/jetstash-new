@@ -11,6 +11,8 @@ import { getVisaLinkForCountry } from '@/lib/visa-links';
 import { DealCard } from '@/components/ui/deal-card';
 import { NoFareFallback } from '@/components/ui/no-fare-fallback';
 import { Badge } from '@/components/ui/badge';
+import { BookingMomentStrip } from '@/components/sections/booking-moment-strip';
+import { computeBookBySnapshotsForDestination } from '@/lib/booking-intelligence';
 import { FamilyVisitBlock } from '@/components/sections/family-visit-block';
 import { TravellerTipList } from '@/components/route/traveller-tip-list';
 import { siteConfig } from '@/lib/site-config';
@@ -44,6 +46,9 @@ export default function DestinationPage({ params }: { params: { slug: string } }
   const routesHere = getRoutesByDestination(dest.slug);
   const travellerTips = getTipsForScope({ destinationSlug: dest.slug });
   const visaLink = getVisaLinkForCountry(dest.country);
+  // Book-By intelligence strip — renders only for destinations served by a
+  // V1 priority route (lib/booking-intelligence.ts). Absolute dates only.
+  const bookBySnapshots = computeBookBySnapshotsForDestination(dest.slug, new Date());
 
   return (
     <>
@@ -88,6 +93,14 @@ export default function DestinationPage({ params }: { params: { slug: string } }
           </div>
         </div>
       </section>
+
+      {bookBySnapshots.length > 0 && (
+        <section className="bg-white pt-10 sm:pt-12">
+          <div className="mx-auto max-w-content px-5 sm:px-8">
+            <BookingMomentStrip snapshots={bookBySnapshots} />
+          </div>
+        </section>
+      )}
 
       <section className="bg-white py-16 sm:py-20">
         <div className="mx-auto max-w-content px-5 sm:px-8">

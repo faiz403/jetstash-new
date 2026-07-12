@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowUpRight } from 'lucide-react';
+import type { BookBySnapshot } from '@/lib/booking-intelligence';
 
 /**
  * The JetStash Route Atlas — the site's signature feature.
@@ -129,9 +130,20 @@ function DestinationLabel({ d, active }: { d: AtlasDestination; active: boolean 
   );
 }
 
-export function RouteMapHero() {
+export function RouteMapHero({ bookBySnapshots = [] }: { bookBySnapshots?: BookBySnapshot[] }) {
   const [activeSlug, setActiveSlug] = useState<string>('lahore');
   const active = DESTINATIONS.find((d) => d.slug === activeSlug) ?? DESTINATIONS[0];
+
+  // Book-By intelligence layer (JETSTASH_PRINCIPLES.md §14): destinations
+  // reached by a Manchester priority route whose booking window is
+  // currently open. Only manchester-lahore / manchester-islamabad can ever
+  // populate this — the map only shows Manchester departures — so the
+  // indicator stays rare and meaningful rather than lighting up broadly.
+  const openWindowSlugs = new Set(
+    bookBySnapshots
+      .filter((s) => s.state === 'window-open' && s.routeSlug.startsWith('manchester-'))
+      .map((s) => s.routeSlug.slice('manchester-'.length))
+  );
 
   return (
     <div className="relative overflow-hidden rounded-lg border border-white/10 bg-gradient-to-b from-ink-900 to-ink-950">
@@ -332,6 +344,7 @@ export function RouteMapHero() {
             {/* destinations */}
             {DESTINATIONS.map((d) => {
               const isActive = d.slug === activeSlug;
+              const windowOpen = openWindowSlugs.has(d.slug);
               return (
                 <g key={`dest-${d.slug}`}>
                   <circle
@@ -344,6 +357,23 @@ export function RouteMapHero() {
                   />
                   {isActive && (
                     <circle cx={d.x} cy={d.y} r="8" fill="none" stroke="#E0B158" strokeWidth="1.2" strokeOpacity="0.8" className="pointer-events-none" />
+                  )}
+                  {/* Book-By: a booking window is open on this route — one
+                      quiet pulsing ring, the same motif DestinationMark
+                      already uses for "something real is happening here". */}
+                  {windowOpen && (
+                    <circle
+                      cx={d.x}
+                      cy={d.y}
+                      r="13"
+                      fill="none"
+                      stroke="#C8932E"
+                      strokeWidth="1.4"
+                      strokeOpacity="0.55"
+                      className="pointer-events-none animate-pulse-dot"
+                      style={{ transformOrigin: `${d.x}px ${d.y}px` }}
+                      aria-hidden="true"
+                    />
                   )}
                   <circle
                     cx={d.x}
@@ -362,7 +392,11 @@ export function RouteMapHero() {
                     className="cursor-pointer"
                     tabIndex={0}
                     role="button"
-                    aria-label={`Show the Manchester to ${d.label} route`}
+                    aria-label={
+                      windowOpen
+                        ? `Show the Manchester to ${d.label} route — booking window open now`
+                        : `Show the Manchester to ${d.label} route`
+                    }
                     onMouseEnter={() => setActiveSlug(d.slug)}
                     onFocus={() => setActiveSlug(d.slug)}
                     onClick={() => setActiveSlug(d.slug)}
@@ -421,6 +455,12 @@ export function RouteMapHero() {
           Direct
           <span className="ml-3 inline-block w-8 border-t-[1.6px] border-dashed border-brass/60" aria-hidden="true" />
           Via connection
+          {openWindowSlugs.size > 0 && (
+            <>
+              <span className="ml-3 inline-block h-2.5 w-2.5 rounded-full border border-brass/70" aria-hidden="true" />
+              Booking window open
+            </>
+          )}
         </p>
       </div>
     </div>

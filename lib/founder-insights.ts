@@ -2,10 +2,11 @@ import { deals } from '@/data/deals';
 import { routes, getRouteAirport, getRouteDestination } from '@/data/routes';
 import { destinations, getDestinationBySlug } from '@/data/destinations';
 import { getAirportBySlug } from '@/data/airports';
-import { fareObservations, getObservationsByRoute } from '@/data/fare-observations';
+import { fareObservations, getObservationsByRoute, getLatestObservation } from '@/data/fare-observations';
 import { routeWarnings } from '@/data/route-warnings';
 import { imageCoverage } from '@/lib/brand-images';
 import { BOOKING_PROVIDERS, PRIMARY_PROVIDER_ID } from '@/lib/booking-providers';
+import { BOOK_BY_PRIORITY_ROUTE_SLUGS, OBSERVATION_FRESH_DAYS } from '@/lib/booking-intelligence';
 import { siteConfig } from '@/lib/site-config';
 
 /**
@@ -308,6 +309,69 @@ function warningsForReview(): FounderSection {
   };
 }
 
+// ── 8b. Book-By Countdown data cadence ───────────────────────────────────
+// A calm enrichment backlog, same philosophy as fare observation coverage —
+// nothing here is launch-critical, because the Book-By panel (§14 of
+// JETSTASH_PRINCIPLES.md) degrades honestly on its own: thin or absent data
+// just means it falls back to calendar-only guidance with no price context,
+// never a false claim. This section exists purely to support the weekly
+// logging workflow the feature depends on, not to manufacture urgency about
+// it — priority is 'nice-to-have' and status never escalates to 'attention'.
+function bookByCadenceStatus(now: Date): FounderSection {
+  const nowIso = now.toISOString().slice(0, 10);
+  const items: FounderItem[] = [];
+
+  for (const routeSlug of BOOK_BY_PRIORITY_ROUTE_SLUGS) {
+    const label = routeLabel(routeSlug);
+    const observations = getObservationsByRoute(routeSlug);
+    const latest = getLatestObservation(routeSlug);
+    const hasDepartureDate = observations.some((o) => Boolean(o.departureDate));
+
+    if (!latest) {
+      items.push({
+        label,
+        detail: 'No fare observations logged yet for this priority route — its Book-By panel shows calendar-only guidance with no price context.',
+        status: 'watch',
+        href: `/routes/${routeSlug}`,
+      });
+      continue;
+    }
+
+    const ageDays = daysBetween(latest.observedDate, now);
+    if (ageDays > OBSERVATION_FRESH_DAYS) {
+      items.push({
+        label,
+        detail: `Latest observation is ${ageDays} days old (checked ${formatShortDate(latest.observedDate)}) — due a fresh weekly check.`,
+        status: 'watch',
+        href: `/routes/${routeSlug}`,
+      });
+    } else if (!hasDepartureDate) {
+      items.push({
+        label,
+        detail: 'Observations are fresh, but none record departureDate yet — add it on the next logged check so days-out price curves can start accumulating (Phase 2/3, see JETSTASH_PRINCIPLES.md §14).',
+        status: 'watch',
+        href: `/routes/${routeSlug}`,
+      });
+    }
+  }
+
+  const okCount = BOOK_BY_PRIORITY_ROUTE_SLUGS.length - items.length;
+
+  return {
+    id: 'bookby-cadence',
+    title: 'Book-By Countdown data cadence',
+    priority: 'nice-to-have',
+    status: items.length > 0 ? 'watch' : 'ok',
+    headline:
+      items.length === 0
+        ? `All ${BOOK_BY_PRIORITY_ROUTE_SLUGS.length} priority routes have a fresh (≤${OBSERVATION_FRESH_DAYS}-day) observation recording a departure date.`
+        : `${okCount} of ${BOOK_BY_PRIORITY_ROUTE_SLUGS.length} priority routes are fully current · ${items.length} worth a weekly check. No deadline — the panel degrades honestly on its own; this is enrichment, not a launch blocker.`,
+    items,
+    action:
+      'Weekly logging workflow: check a fare on TravelUp or the airline\'s own site for each priority route, then append a new data/fare-observations.ts entry — set departureDate to the date you\'d actually book for (typically the route\'s next upcoming peak period). Never overwrite an existing entry.',
+  };
+}
+
 // ── 9. Pages with stale content ──────────────────────────────────────────
 function staleContent(): FounderSection {
   const items: FounderItem[] = [];
@@ -479,6 +543,7 @@ export function getFounderSnapshot(now: Date): FounderSnapshot {
     serviceChangesStatus(now),
     affiliateStatus(),
     fareObservationCoverage(),
+    bookByCadenceStatus(now),
     photographyStatus(),
     warningsForReview(),
     staleContent(),

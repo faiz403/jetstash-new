@@ -40,6 +40,8 @@ There is no test suite. TypeScript's `strict: true` plus `npm run build` is the 
 
 Each data file exports lookup helpers (e.g. `getRoutesByDestination`, `getDealsByRegionGroup`, `getAirportBySlug`) — use these instead of filtering the raw arrays inline.
 
+**Book-By Countdown** (`lib/booking-intelligence.ts`) — the hero feature: festival-anchored booking guidance ("book by 14 February") for five priority routes only (`BOOK_BY_PRIORITY_ROUTE_SLUGS` in that file). It's the *only* place that computes a booking state or book-by date — every surface (`components/route/book-by-countdown.tsx`, `booking-moment-strip.tsx`, `next-travel-moment-ribbon.tsx`, the route-map's brass indicator) calls into it rather than deriving dates itself. Dates come from `data/peak-period-dates.ts` (verified, precision-tagged — Islamic dates are astronomical estimates and every render keeps that visible) and `data/booking-windows.ts` (restructured from each route's own stated prose). Never a live-price claim or a predicted price — see JETSTASH_PRINCIPLES.md §14 for the full standing rules and §14.1 for the architecture.
+
 **Routing (`/app`)** — App Router with static generation:
 - Region hub pages (`app/pakistan`, `app/india`, `app/gulf`, `app/umrah`, plus `app/family-holidays`, `app/business-class`) are thin pages that pass region-specific copy/data into the shared `RegionHubPage` template (`components/sections/region-hub-page.tsx`).
 - `app/destinations/[slug]`, `app/routes/[slug]`, `app/airports/[slug]` are dynamic pages using `generateStaticParams` against the corresponding `/data` array.

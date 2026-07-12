@@ -176,9 +176,19 @@ function buildSid(parts: (string | undefined)[]): string {
  * Always tagged with a sid identifying this route (and cabin, when known)
  * for analytics, regardless of which URL it resolves to.
  */
-export function getRouteBookingUrl(airport: Airport, destination: Destination, cabin?: DealCabin): string {
+export function getRouteBookingUrl(
+  airport: Airport,
+  destination: Destination,
+  cabin?: DealCabin,
+  /**
+   * Optional extra sid segment identifying WHICH surface drove the click
+   * (e.g. 'bookby-window-open') — JetStash's own CJ click attribution,
+   * never visible to the visitor or the destination site.
+   */
+  sidContext?: string
+): string {
   const provider = getPrimaryBookingProvider();
-  const sid = buildSid(['route', airport.slug, destination.slug, cabin]);
+  const sid = buildSid(['route', airport.slug, destination.slug, cabin, sidContext]);
   const params: Record<string, string> = { ...provider.affiliateParams, sid };
   const verifiedUrl = provider.supportsDeepLink ? VERIFIED_DEEP_LINKS[destination.slug] : undefined;
   if (verifiedUrl) params.url = verifiedUrl;
