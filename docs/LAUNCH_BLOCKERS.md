@@ -20,11 +20,19 @@ section for the full URL-by-URL evidence table. Per the founder's explicit instr
 is not closed merely because deployment succeeded** — each blocker below is updated individually
 with what was actually confirmed live, and several remain open or only partially verified.
 
-## Status summary (every blocker, split by state — updated after the second production-verification pass, 2026-07-13)
+**Final code-correction update (2026-07-13, ~18:30 Europe/London (BST)):** commit
+`5bef94aecb09cedd53d80b60b79b9a76c54653d1` ("fix: enforce verified deal tags and Travel Ready review
+dates") was pushed to `main` and deployed to `jetstash.co.uk` (Vercel deployment
+`dpl_CwUZFaB8F3Us7Ai4xX9ZGNiRzt5u`, status Ready). This corrected the deal-tag directness bypass
+found during the previous read-only pass (TR-009) and added the previously-omitted Travel Ready
+review-due date (new blocker TR-018) — both closed and production-verified this pass. See the "Third
+code-correction pass" record near the end of this file and `docs/TRUTH_RESET_PHASE_1.md`'s matching
+section for full evidence.
 
-**Open (genuinely unresolved — no code fix exists, and none is possible without new evidence, new product work, or a code change out of scope for a read-only verification pass):**
-- **TR-017** (P1): Birmingham–Mumbai is a confirmed real connecting corridor with no `Route` record in JetStash's data — a product-coverage gap, not something a data correction can close. Requires a future product-phase addition. Not affected by this deployment.
-- **TR-009, newly found residual gap** (P1): `lhr-isb-economy`'s live production card shows an unsupported "DIRECT FLIGHT" tag with no verification caveat — `deal.tag` renders unconditionally, bypassing `getDisplayDirectness()` entirely, because no `Route` record exists for this pair. Discovered this pass via individual live inspection; requires a future code change (this pass is read-only). See TR-009 below for full detail.
+## Status summary (every blocker, split by state — updated after the final code-correction pass, 2026-07-13)
+
+**Open (genuinely unresolved — no code fix exists, and none is possible without new evidence or new product work):**
+- **TR-017** (P1): Birmingham–Mumbai is a confirmed real connecting corridor with no `Route` record in JetStash's data — a product-coverage gap, not something a data correction can close. Requires a future product-phase addition. Explicitly out of scope for every pass so far, including this one.
 - Manchester–Karachi, Birmingham–Lahore, Birmingham–Islamabad directness remain genuinely unresolved — no qualifying primary source found across three rounds of searching (see TR-006/TR-007). **Production-confirmed** to correctly display "VERIFICATION PENDING" (not Direct, not Connecting, no unsupported frequency) rather than guessing — this closes the *display-safety* mechanism (see TR-015) but does not resolve the underlying directness question, which remains open pending a real primary-source check.
 - BA–Jeddah's specific secondary termination claim (24 Apr 2026) is not explicitly disproven — only unsupported by every primary source reached this session (see TR-010). BA itself is now verified direct and production-confirmed; this residual item is about the specific termination-date claim, not BA's current operation.
 - Saudia's status on Heathrow–Jeddah is unverified (see TR-010) — a genuine, disclosed gap, not resolved this pass. **Production-confirmed** that Saudia is correctly excluded from the verified-airline presentation rather than riding on BA's evidence.
@@ -32,19 +40,17 @@ with what was actually confirmed live, and several remain open or only partially
 - Full route-verification backlog (every route beyond the 9 investigated across this Truth Reset) — unchanged; a future verification pass is still required.
 - Reminder-email behaviour (TR-011's fix) — the corrected email copy is deployed, but **an actual production email send has still not been observed** (no send-history is accessible from this environment); genuinely unverified in production, not claimed otherwise.
 
-**Production-verified (confirmed working on `jetstash.co.uk` across both verification passes, 2026-07-13):**
-TR-001, TR-003, TR-004, TR-005, TR-006 (display-safety only, see Open above), TR-007 (display-safety only, see Open above), TR-008, TR-010 (BA side), TR-012, TR-015, TR-016 (all 4 of the journeys this pass specifically targeted — UAE, Pakistan+NICOP, India-no-OCI/no-visa, expiring passport — confirmed correct and non-contradictory live; the 7 checked in the prior pass remain confirmed; 0 of the 11 required journeys remain untested). See `docs/TRUTH_RESET_PHASE_1.md`'s production verification sections for the exact URL-by-URL evidence.
+**Production-verified (confirmed working on `jetstash.co.uk` across all three verification passes, 2026-07-13):**
+TR-001, TR-002 (all 18 fare observations individually audited this pass — see TR-002's own section), TR-003, TR-004, TR-005, TR-006 (display-safety only, see Open above), TR-007 (display-safety only, see Open above), TR-008, TR-009 (closed this pass — see below), TR-010 (BA side), TR-012, TR-015, TR-016 (all 11 of the 11 required journeys now confirmed across the two Travel Ready passes), TR-018 (new, closed this pass). See `docs/TRUTH_RESET_PHASE_1.md`'s production verification sections for the exact URL-by-URL evidence.
 
-**Confirmed indirectly, not individually tested (the specific gating logic itself was not exercised live in either pass):**
-TR-002 (fare-observation completeness gate) — the aggregate result (`/deals` showing "Fare checks logged: 18" against "All deals 0" tracked) is consistent with the gate working, and was reconfirmed in this pass, but no attempt was made in either pass to log a new incomplete observation and watch it stay hidden — that would require a code/data change, out of scope for a read-only pass. This is unchanged from pass 1; not upgraded to fully production-verified.
-
-**Production-verified with a newly found residual defect (partially closed — do not read as fully resolved):**
-TR-009 — the original BA-attribution defect is fixed and production-confirmed (both remaining visible records show PIA, not BA; the 2 Karachi records are confirmed absent entirely). A new, previously undocumented defect was found live on `lhr-isb-economy` (the unverified "Direct flight" tag, detailed above and in TR-009's own section) — **TR-009 stays open** because of this.
+**Closed this pass (code changed, tested, deployed, and production-verified):**
+- **TR-009** — the systemic deal-tag directness bypass. Root cause: `deal.tag` rendered as the card's top badge unconditionally, independent of `getDisplayDirectness()`. Fixed by splitting `tag` into curation-only `categoryTag` plus a new computed `getDealDirectnessLabel()` gate; 8 new tests; production-confirmed `lhr-isb-economy` no longer shows "Direct flight" and no previously-contradictory card does either. Full detail in TR-009's own section.
+- **TR-018** (new) — Travel Ready results omitted the rule's `reviewDueDate`. Fixed by threading it through `TravelReadyCheckItem` and rendering "— review due [date]" without exposing the internal field name; production-confirmed for all 5 required countries (Pakistan, India, UAE, Qatar, Saudi Arabia). Full detail in TR-018's own section.
 
 **Closed, no code changed (investigated, found not to be a real defect):**
 TR-013 (the specific cross-origin data-leakage mechanism alleged does not exist in this codebase's architecture — see the dedicated TR-013 section below). Not a deployment-dependent item.
 
-**Exact blocker count:** 17 blockers filed in total (TR-001 through TR-017, no TR-015 gap — every number 001–017 is in use). Of these: **1 open P1 product-coverage gap** (TR-017), **1 open P1 newly-found display defect** (TR-009's `lhr-isb-economy` tag), **1 open, disclosed underlying-fact gap despite a production-verified display-safety fix** (TR-006/TR-007's directness question), **1 open residual claim within an otherwise production-verified blocker** (TR-010's Saudia status + BA's specific termination-date claim), **1 unchanged pre-existing limitation** (TR-014), **12 fully production-verified** (TR-001, 003, 004, 005, 006†, 007†, 008, 010‡, 012, 015, 016 — †/‡ display-safety/BA-side only per above), **1 confirmed indirectly only, gate itself not individually exercised** (TR-002), **1 closed with no code change** (TR-013). Do not read "production-verified" as "launch ready" — see the final report's completion status. TR-009 counted separately as partially-verified-with-a-new-open-defect, not in either the fully-closed or fully-open buckets.
+**Exact blocker count:** 18 blockers filed in total (TR-001 through TR-018 — TR-018 added this pass). Of these: **1 open P1 product-coverage gap** (TR-017), **1 open, disclosed underlying-fact gap despite a production-verified display-safety fix** (TR-006/TR-007's directness question), **1 open residual claim within an otherwise production-verified blocker** (TR-010's Saudia status + BA's specific termination-date claim), **1 unchanged pre-existing limitation** (TR-014), **1 genuinely unverifiable in this environment** (TR-011's actual email send), **14 fully production-verified** (TR-001, 002, 003, 004, 005, 006†, 007†, 008, 009, 010‡, 012, 015, 016, 018 — †/‡ display-safety/BA-side only per above), **1 closed with no code change** (TR-013). Do not read "production-verified" as "launch ready" — see the final report's completion status. The route-verification backlog behind TR-015 remains explicitly open regardless of TR-009/TR-018's closure.
 
 ---
 
@@ -70,7 +76,15 @@ TR-013 (the specific cross-origin data-leakage mechanism alleged does not exist 
 - **Founder decision:** **Approved.** Every fare observation without complete outbound and return travel dates stays hidden from the public product. Do not weaken this requirement or restore example prices merely to avoid a sparse-looking site.
 - **Status:** Founder-approved and implemented locally as a completeness gate.
 - **Commit:** `da04b1ba900e3c9aa8bf8c48d4e309a53e82b92f`.
-- **Production verification:** `https://jetstash.co.uk/deals`, checked 2026-07-13 ~13:00 Europe/London (BST), commit `da04b1b`. Observed: "All deals 0" tracked fares shown site-wide (consistent with none of the 18 existing observations having complete dates). No regression found. **Not individually re-tested** by attempting to log a new incomplete observation and confirming it stays hidden — confirmed indirectly via the aggregate 0-tracked count, not a direct positive/negative test of the gate itself in production.
+- **Production verification (pass 1, 2026-07-13 ~13:00 Europe/London (BST), commit `da04b1b`):** `https://jetstash.co.uk/deals`. Observed: "All deals 0" tracked fares shown site-wide. Not individually re-tested per-observation at that point — confirmed only via the aggregate 0-tracked count.
+- **TR-002 direct production audit (pass 2, 2026-07-13, commit `5bef94a`) — all 18 observations enumerated individually, not just the aggregate count:**
+  - Confirmed `fareObservations.length === 18` (exact count, via `tests/route-and-fare-integrity.test.ts`'s new enumeration test) and that every one of the 18 individually fails `isPubliclyPublishable` (none has both `departureDate` and `returnDate`).
+  - For every distinct route+cabin pair represented across the 18 (16 pairs), `getFareRangeSummary()` returns `null` — confirmed individually per pair, not just in aggregate — so none can appear as a price, a range, or fare history.
+  - For every route represented, `getLatestPublishableObservation()` (the function Book-By's "last checked fare" reads) returns `undefined` — confirmed individually per route — so none of the 18 can surface as a Book-By last-checked price either.
+  - `hasTrackedFare()` returns `false` individually for every deal whose route has one of the 18 observations (not just the sitewide aggregate).
+  - **Live production confirmation:** `https://jetstash.co.uk/deals`, checked 2026-07-13 ~18:40 Europe/London (BST), commit `5bef94a`. "FARE CHECKS LOGGED: 18" (the honest, unaffected historical count) against "All deals 0" tracked in every category filter, "showing 34 route search cards instead." No search card contains an incomplete example price — every card without a publishable observation shows "No fare checks logged yet," never a partial/incomplete figure. No regression found.
+- **Status:** **Production-verified** — all 18 records individually audited both in code (test enumeration) and confirmed live, per the founder's explicit condition that TR-002 may only become production-verified after all 18 are checked.
+- **Commit:** `da04b1ba900e3c9aa8bf8c48d4e309a53e82b92f` (original gate) / `5bef94aecb09cedd53d80b60b79b9a76c54653d1` (this pass's audit tests, no gate logic changed — it was already correct).
 
 ### TR-003 — Fare history mixes Economy and Business as one "N fares tracked" history
 - **Severity:** P1 (misleading content)
@@ -140,6 +154,15 @@ TR-013 (the specific cross-origin data-leakage mechanism alleged does not exist 
   - `lhr-business-lhe` (Heathrow–Lahore): airline correctly shows **PIA, not British Airways**. No "DIRECT FLIGHT" tag (this entry has no `tag` field). No fare shown, not counted as tracked. One observation, not treated as a defect: the card's flight-time line reads "Typical flight time: 8h direct from Manchester" — a destination-level fallback fact (no Heathrow-specific `Route` exists to source from), and it does not literally claim Heathrow service is direct, but it is contextually easy to misread on a Heathrow-labelled card.
   - **Deals-page totals:** "Fare checks logged: 18" (the honest, unaffected historical count) vs. "All deals 0" tracked in the active category filter — confirmed neither of these two remaining cards is counted toward "tracked," and the 34-search-card fallback count is unaffected by their presence. No inflation found.
   - **TR-009 is not closed.** The BA-attribution defect is fixed and production-confirmed for the 2 remaining visible records; the newly found unverified "Direct flight" tag on `lhr-isb-economy` is a live, open defect requiring a future code change (either remove the tag when no backing `Route`/verification exists, or gate `deal.tag` through the same verification check `getDisplayDirectness()` already provides).
+
+- **Root cause of the deal-tag bypass (found during code audit for this correction):** `data/deals.ts`'s `Deal.tag` field was a single free-form string used for two unrelated purposes — genuine category/marketing copy ("Umrah package", "City break", "Family all-inclusive", "Flight only", "Family holiday") and a literal static claim `'Direct flight'` on 6 entries. `components/ui/deal-card.tsx` rendered `deal.tag` unconditionally as the card's top-right badge, with no reference to `getRouteByAirportAndDestination`/`getDisplayDirectness` at all — the route-verification system existed and was correctly used for the small inline "· Direct"/"· Verification pending" text elsewhere on the same card, but the top badge bypassed it entirely. This meant a deal's directness claim could be true, contradicted by its own inline text ("DIRECT FLIGHT" badge next to "Verification pending" text), or entirely fabricated (no matching `Route` record at all, as on `lhr-isb-economy`) — three different failure modes from one design flaw.
+- **Every affected public card found (repository-wide search, not limited to the one reported card):** grepped every `.ts`/`.tsx` file for `deal.tag`, `\.tag\b`, `Direct flight`, `DIRECT FLIGHT`, `Connecting`, and "static directness labels" generally. Confirmed `deal.tag` is read in exactly one place (`deal-card.tsx`) and 6 of `data/deals.ts`'s 36 entries carried the static `'Direct flight'` tag: `man-lhe-economy` (Manchester–Lahore, verified direct — correct claim, but structurally unverified before this fix), `lhr-isb-economy` (Heathrow–Islamabad, **no Route record** — the reported bug), `lhr-del-economy` (Heathrow–Delhi, unverified route — contradicted its own "Verification pending" inline text), `bhx-atq-economy` (Birmingham–Amritsar, same contradiction), `man-dxb-economy` (Manchester–Dubai, same contradiction), `lhr-doh-economy` (Heathrow–Doha, same contradiction). Every other route/hub page (`app/routes/[slug]/page.tsx`'s comparison cards, `app/airports/[slug]/page.tsx`, `app/page.tsx`'s popular-routes list, `components/sections/region-hub-page.tsx`, `app/routes/page.tsx`) already computed directness live from a real `Route` object via `getDisplayDirectness()` — confirmed by direct code inspection, not assumed — so the bypass was fully contained to the deal-card top badge.
+- **Fix implemented:** split `Deal.tag` into `categoryTag` (curation-only, unchanged behaviour for the 7 non-directness tags) and a new exported pure function `getDealDirectnessLabel(deal, nowIso)` in `data/deals.ts` that mirrors `getDisplayDirectness()` exactly — returns `'Direct flight'` only for a matching, current-verified-direct `Route`; `'Connecting'` only for a matching, evidenced-connecting `Route`; `undefined` (no badge) whenever there is no matching `Route` record or the route is unverified/expired. `deal-card.tsx`'s top badge now computes `deal.categoryTag ?? getDealDirectnessLabel(deal, nowIso)` — a category tag (when present) still takes display priority over a computed directness label, so package/Umrah cards are unaffected; a plain flight-category card's badge is now always either the live-computed truth or nothing.
+- **Automated validation added:** 8 new tests in `tests/route-and-fare-integrity.test.ts` — the 7 the founder specified by name (lhr-isb-economy no longer shows Direct flight; no-Route means no badge; unverified means no badge; expired verification means no Direct; verified-direct may show Direct flight; verified-connecting may show Connecting; every current public deal individually validated against its own route's `getDisplayDirectness()` result) plus one additional systemic sweep confirming no deal's `categoryTag` is ever literally `'Direct flight'`/`'Connecting'`. All 8 pass.
+- **Status:** **Closed.** Fix implemented, tested (81/81 full suite passing), and production-verified.
+- **Commit:** `5bef94aecb09cedd53d80b60b79b9a76c54653d1` — "fix: enforce verified deal tags and Travel Ready review dates".
+- **Production verification (2026-07-13, ~18:40 Europe/London (BST), commit `5bef94a`):** `https://jetstash.co.uk/deals` — full-card sweep of all 34 rendered cards confirmed: `lhr-isb-economy` no longer shows any "Direct flight" badge (the reported defect is gone); the badge now appears **only** on the 3 cards backed by a currently verified-direct route (Manchester–Lahore ×2 cabins, Manchester–Islamabad, Heathrow–Mumbai — all correctly still showing "Direct flight"); every previously-contradictory card (Heathrow–Delhi ×2, Birmingham–Amritsar ×2, Manchester–Dubai ×2, Heathrow–Doha ×2, Gatwick–Ahmedabad ×2) now shows no top badge at all, only the pre-existing correct inline "Verification pending" text — the badge/inline contradiction is gone. Category tags (Umrah package, City break, Family all-inclusive, Flight only, Family holiday) render unchanged on their respective cards. No regression found.
+- **One pre-existing, out-of-scope observation recorded, not fixed this pass:** the two Jeddah Umrah-package cards (`umrah-package-jed`, its Business equivalent) show inline "Saudia · Direct" — the route-level directness claim is correct (Heathrow–Jeddah is genuinely verified direct via British Airways), but the deal's own `airline` field names Saudia, which per TR-010 has no independent verification on this route. This is a pre-existing airline-attribution accuracy question within a category-tagged card, distinct from the directness-bypass mechanism this blocker was about — not touched under this task's narrow scope, flagged here for a future pass.
 
 ### TR-010 — British Airways / Jeddah route status — corrected three times, now genuinely primary-sourced and per-airline
 - **Severity:** P0 (factual accuracy) → resolved for BA, one disclosed residual gap for Saudia
@@ -218,6 +241,23 @@ TR-013 (the specific cross-origin data-leakage mechanism alleged does not exist 
 - **Status:** Founder-approved and implemented as designed. The mechanism itself is now production-verified; the underlying verification backlog it exposes is not resolved by this deployment and remains open (see Status Summary).
 - **Commit:** `da04b1ba900e3c9aa8bf8c48d4e309a53e82b92f`.
 - **Production verification:** Confirmed live at `https://jetstash.co.uk/routes/manchester-karachi`, `/routes/birmingham-lahore`, `/routes/birmingham-islamabad` (all show "VERIFICATION PENDING"), 2026-07-13 ~13:00 Europe/London (BST), commit `da04b1b`. No regression found. **This does not close TR-015's own "Resolution required" line** — a real verification pass for the remaining unreviewed routes site-wide is still outstanding; this deployment only confirms the suppression mechanism itself works correctly in production.
+
+### TR-018 (new) — Travel Ready Check results omitted the rule's review-due date
+- **Date discovered:** 2026-07-13 (founder-directed final correction pass)
+- **Severity:** P1 (transparency/trust — the underlying rule always carried a `reviewDueDate`; it just wasn't surfaced to the visitor)
+- **Affected:** `lib/travel-ready-check.ts`'s `TravelReadyCheckItem`; `components/travel-ready/travel-ready-check.tsx`'s result rendering — every check across all 7 supported countries (Pakistan, India, Saudi Arabia, UAE, Qatar, Turkey, Morocco).
+- **Evidence:** Every rule in `data/travel-ready-rules.ts` has always carried `reviewDueDate` (currently `2027-01-12` for all 19 rules, 6 months after each `lastVerifiedDate` per the module's own standing convention) and an `isRuleStale()` helper that already used it internally — but the value was never threaded into `TravelReadyCheckItem` or rendered in the UI. A visitor saw "verified 12 Jul 2026" with no way to know how long that verification stays current.
+- **Resolution:** Added `reviewDueDate?: string` to `TravelReadyCheckItem`; every one of the 10 `checks.push(...)` call sites in `lib/travel-ready-check.ts` that already passes `officialSource`/`lastVerifiedDate` now also passes the source rule's own `reviewDueDate` unmodified — no new interval was invented anywhere. `components/travel-ready/travel-ready-check.tsx` now renders it as `— review due {formatShortDate(...)}` immediately after the existing verified-date line, using the same human-readable "12 January 2027" format already used for `lastVerifiedDate` — the internal field name `reviewDueDate`/`reviewDue` is never exposed in copy.
+- **Tests added:** 6 new tests in `tests/travel-ready-check.test.ts` — one per required country (Pakistan, India, UAE, Qatar, Saudi Arabia) confirming every check with an `officialSource` also carries a `reviewDueDate`, plus one confirming the value always equals the underlying rule's own `reviewDueDate` (never a separately computed figure).
+- **Status:** **Closed — production-verified.**
+- **Commit:** `5bef94aecb09cedd53d80b60b79b9a76c54653d1` — "fix: enforce verified deal tags and Travel Ready review dates".
+- **Production verification (2026-07-13, ~18:45 Europe/London (BST), commit `5bef94a`):** all 5 required countries individually tested live at `https://jetstash.co.uk/travel-ready-check` with the same fixed inputs (dep 2026-09-01, ret 2026-09-15, expiry 2027-06-01, British passport, no exemption document held) —
+  - **Pakistan (Lahore):** both checks show "— verified 12 Jul 2026 — review due 12 Jan 2027".
+  - **India (Delhi):** both checks show "— verified 12 Jul 2026 — review due 12 Jan 2027".
+  - **UAE (Dubai):** both checks show "— verified 12 Jul 2026 — review due 12 Jan 2027".
+  - **Qatar (Doha):** both checks show "— verified 12 Jul 2026 — review due 12 Jan 2027".
+  - **Saudi Arabia (Jeddah):** both checks show "— verified 12 Jul 2026 — review due 12 Jan 2027".
+  - No internal field name ("reviewDue"/"reviewDueDate") appeared anywhere in the rendered copy in any of the 5 checks. Official source links remained real hyperlinks; result limitation wording (`check.detail`) unaffected. No regression found.
 
 ---
 
@@ -329,3 +369,43 @@ section above and in `docs/TRUTH_RESET_PHASE_1.md`'s matching production-verific
   operates the already-deployed production UI's own existing event handlers exactly as a real click
   would, and does not alter any application code or behaviour. Disclosed here for transparency, not
   because it affects the validity of the results obtained.
+
+---
+
+## Third code-correction pass (2026-07-13, ~18:00–19:00 Europe/London (BST)) — the deal-tag bypass and Travel Ready review-date omission
+
+Scope: unlike the two prior passes, this one was **authorised to change code** — narrowly, for the
+two defects named by the founder (TR-009's systemic tag bypass, the review-date omission). No other
+surface was touched; TR-017, the route-verification backlog, Mumbai Book-By, and homepage work were
+explicitly out of scope and not started.
+
+- **Root cause and every affected card:** see TR-009's own section above for the full account —
+  6 of `data/deals.ts`'s 36 entries carried a static `'Direct flight'` tag rendered unconditionally by
+  `deal-card.tsx`, bypassing `getDisplayDirectness()` entirely.
+- **Fix:** `Deal.tag` split into curation-only `categoryTag` plus a new exported `getDealDirectnessLabel()`
+  pure function in `data/deals.ts`, mirroring `getDisplayDirectness()` exactly; `deal-card.tsx`'s badge
+  now computes `deal.categoryTag ?? getDealDirectnessLabel(deal, nowIso)`.
+- **Travel Ready review dates:** `TravelReadyCheckItem.reviewDueDate` added, populated from each rule's
+  own existing `reviewDueDate` at all 10 call sites in `lib/travel-ready-check.ts`; rendered in
+  `components/travel-ready/travel-ready-check.tsx` as "— review due [date]", never exposing the
+  internal field name.
+- **Tests added:** 8 in `tests/route-and-fare-integrity.test.ts` (the 7 the founder specified by name,
+  plus one systemic sweep) and 6 in `tests/travel-ready-check.test.ts` (one per required country plus
+  one verifying the date is never invented). Full suite: **81/81 passing** (up from 61).
+- **Quality gates:** focused + full test suite (81/81), `npx tsc --noEmit` (0 errors), `npm run lint`
+  (0 warnings/errors), `npm run build` (103/103 static pages), `git diff --check` (clean, only
+  pre-existing autocrlf notices), `git status --short` (exactly the 6 intended files plus the
+  untouched `public/concepts/`) — all confirmed before commit.
+- **Code commit:** `5bef94aecb09cedd53d80b60b79b9a76c54653d1` — "fix: enforce verified deal tags and
+  Travel Ready review dates". Pushed to `origin/main` (`49a6ccb..5bef94a`).
+- **Deployment:** Vercel deployment `dpl_CwUZFaB8F3Us7Ai4xX9ZGNiRzt5u`, created
+  `2026-07-13T18:32:09+03:00` (43 seconds after the commit's own timestamp), status **Ready**, target
+  **Production**, aliased to `jetstash.co.uk`/`www.jetstash.co.uk` — confirmed the current live
+  deployment. Same CLI SHA-exposure limitation as before, disclosed, not treated as resolved.
+- **Production verification:** full 12-point Section 5 checklist confirmed live — see TR-009 and
+  TR-018's own sections above, and `docs/TRUTH_RESET_PHASE_1.md`'s matching section, for the complete
+  URL-by-URL evidence. One pre-existing, out-of-scope observation recorded (the Jeddah Umrah-package
+  cards' Saudia/BA airline-attribution question) but not fixed, per the narrow authorisation.
+- **Git status at time of this record:** working tree clean except this in-progress documentation
+  update (`docs/LAUNCH_BLOCKERS.md`, `docs/TRUTH_RESET_PHASE_1.md`) and the pre-existing untracked
+  `public/concepts/`. HEAD at `5bef94a`, matching `origin/main`.

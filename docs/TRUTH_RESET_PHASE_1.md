@@ -455,3 +455,131 @@ Result: status **CHECK PASSPORT VALIDITY** — confirmed to take priority over t
 - The only available correlating signal is timestamp proximity: commit `2825e50`'s own commit timestamp is `2026-07-13T15:51:40+03:00`; the deployment was created 41 seconds later. **Per the founder's explicit instruction, this timestamp correlation is not described as stronger proof than deployment metadata** — it is recorded here as a disclosed limitation and a weak circumstantial signal only.
 
 **Discrepancies found in this pass:** one — the newly discovered `lhr-isb-economy` unverified "Direct flight" tag under TR-009, detailed above. No other discrepancies or regressions found in anything else checked this pass.
+
+## Third pass — final code correction (2026-07-13, ~18:00–19:00 Europe/London (BST)): fixing the deal-tag directness bypass and the Travel Ready review-date omission
+
+Unlike the two prior passes, this one was explicitly authorised to change code — narrowly, for the two
+defects the founder named: TR-009's systemic tag bypass (found read-only in the second pass) and the
+Travel Ready review-date omission. TR-017, the wider route-verification backlog, Mumbai Book-By, and
+homepage work were explicitly out of scope and none were started.
+
+### Section 1 — root cause and the systemic fix
+
+**Root cause:** `data/deals.ts`'s `Deal` interface had a single free-form `tag?: string` field used for
+two unrelated purposes — genuine curation copy ("Umrah package", "City break", "Family all-inclusive",
+"Flight only", "Family holiday") and a literal static claim `'Direct flight'` on 6 entries.
+`components/ui/deal-card.tsx` rendered `deal.tag` as the card's top-right badge unconditionally, with
+no reference at all to `getRouteByAirportAndDestination`/`getDisplayDirectness` — even though the same
+component already correctly used that verification system for a smaller inline text elsewhere on the
+same card. One field, two purposes, one of which bypassed the entire verification system.
+
+**Every affected public card found**, via a repository-wide search for `deal.tag`, `\.tag\b`, `'Direct flight'`,
+`'DIRECT FLIGHT'`, `'Connecting'`, and static directness logic generally — confirmed `deal.tag` is read
+in exactly one place in the whole codebase (`deal-card.tsx`), and exactly 6 of 36 `Deal` entries carried
+the static tag:
+
+| Deal id | Route | Underlying route state (before fix) | Card behaviour (before fix) |
+|---|---|---|---|
+| `man-lhe-economy` | Manchester–Lahore | verified direct | Correct claim, but structurally unverified (luck, not the gate, made it right) |
+| `lhr-isb-economy` | Heathrow–Islamabad | **no Route record at all** | The reported bug — "Direct flight" with zero backing evidence |
+| `lhr-del-economy` | Heathrow–Delhi | unverified | Contradicted its own "Verification pending" inline text on the same card |
+| `bhx-atq-economy` | Birmingham–Amritsar | unverified | Same self-contradiction |
+| `man-dxb-economy` | Manchester–Dubai | unverified | Same self-contradiction |
+| `lhr-doh-economy` | Heathrow–Doha | unverified | Same self-contradiction |
+
+Every other public directness display in the codebase (route pages' own hero badge, comparison cards on
+`app/routes/[slug]/page.tsx`, `app/airports/[slug]/page.tsx`'s route-hub cards, `app/page.tsx`'s
+popular-routes list, `components/sections/region-hub-page.tsx`, `app/routes/page.tsx`) was confirmed,
+by direct code reading, to already compute directness live from a real `Route` object via
+`getDisplayDirectness()` — the bypass was fully contained to the deal-card top badge.
+
+**Fix:** `Deal.tag` renamed to `categoryTag` (curation-only, behaviour unchanged for the 7 non-directness
+tags). A new exported pure function, `getDealDirectnessLabel(deal, nowIso)`, added to `data/deals.ts`:
+looks up the matching `Route` via the same `getRouteByAirportAndDestination` the component already used,
+returns `'Direct flight'` only when `getDisplayDirectness()` returns `'direct'`, `'Connecting'` only when
+it returns `'connecting'`, and `undefined` (no badge) for every other case — including no matching Route,
+unverified, and expired verification. `deal-card.tsx`'s top badge now computes
+`deal.categoryTag ?? getDealDirectnessLabel(deal, nowIso)` — a category tag still takes priority when
+present (so Umrah/package cards are visually unchanged), and a plain flight-category card's badge is now
+always either the live-computed truth or nothing at all.
+
+**Automated validation added** — 8 new tests in `tests/route-and-fare-integrity.test.ts`, the 7 the
+founder specified by exact behaviour (lhr-isb-economy shows no Direct flight; no Route means no badge;
+unverified means no badge; expired verification means no Direct; verified-direct may show Direct flight;
+verified-connecting may show Connecting; every current public deal individually validated against its
+own route's `getDisplayDirectness()` result) plus one systemic sweep confirming no `categoryTag` in the
+live dataset is ever literally `'Direct flight'`/`'Connecting'`.
+
+### Section 2 — Travel Ready review dates
+
+Every rule in `data/travel-ready-rules.ts` has always carried `reviewDueDate` (currently `2027-01-12`
+for all 19 rules — 6 months after each `lastVerifiedDate`, per that module's own standing convention)
+and `isRuleStale()` already used it internally, but the value was never threaded into the public result.
+Added `reviewDueDate?: string` to `TravelReadyCheckItem`; all 10 `checks.push(...)` call sites in
+`lib/travel-ready-check.ts` that already pass `officialSource`/`lastVerifiedDate` now also pass the
+source rule's own `reviewDueDate`, unmodified — no new interval invented anywhere, per the founder's
+explicit instruction. `components/travel-ready/travel-ready-check.tsx` renders it as
+`— review due {formatShortDate(...)}` immediately after the existing verified-date line, in the same
+human-readable format already used elsewhere ("12 January 2027") — the internal field name is never
+exposed. 6 new tests added in `tests/travel-ready-check.test.ts`, one per required country plus one
+confirming the rendered value always equals the rule's own field.
+
+### Section 3 — TR-002 direct production audit (all 18 observations enumerated individually)
+
+- Confirmed `fareObservations.length === 18` exactly, and each of the 18 individually fails
+  `isPubliclyPublishable` (locked in as a test, not just asserted).
+- For all 16 distinct route+cabin pairs the 18 observations cover, `getFareRangeSummary()` returns
+  `null` for every one — individually checked, not just in aggregate.
+- For every route represented, `getLatestPublishableObservation()` (the function Book-By's "last checked
+  fare" reads) returns `undefined` for every one — confirming none of the 18 can surface as a Book-By
+  last-checked price either.
+- `hasTrackedFare()` returns `false` individually for every deal whose route carries one of the 18.
+- Live production confirmation (see Section 4 URL table below): `/deals` shows "FARE CHECKS LOGGED: 18"
+  against "All deals 0" tracked in every category, "showing 34 route search cards instead," and no
+  search card anywhere shows an incomplete example price.
+
+### Section 4 — quality gates, commit, deployment, and production verification
+
+- **Full test suite:** 81/81 passing (up from 61 — 20 new tests this pass: 8 deal-directness + 6
+  Travel Ready review-date + 6 already counted from the prior pass's own additions were already in the
+  61 baseline).
+- **`npx tsc --noEmit`:** 0 errors.
+- **`npm run lint`:** 0 warnings, 0 errors.
+- **`npm run build`:** succeeded, 103/103 static pages, no build errors.
+- **`git diff --check`:** clean, only pre-existing autocrlf notices.
+- **`git status --short`** before staging: exactly the 6 intentionally modified files
+  (`components/travel-ready/travel-ready-check.tsx`, `components/ui/deal-card.tsx`, `data/deals.ts`,
+  `lib/travel-ready-check.ts`, `tests/route-and-fare-integrity.test.ts`,
+  `tests/travel-ready-check.test.ts`) plus the untouched `public/concepts/`.
+- **Commit:** `5bef94aecb09cedd53d80b60b79b9a76c54653d1` — "fix: enforce verified deal tags and Travel
+  Ready review dates". Pushed to `origin/main` (`49a6ccb..5bef94a`).
+- **Deployment:** Vercel deployment `dpl_CwUZFaB8F3Us7Ai4xX9ZGNiRzt5u`, created
+  `2026-07-13T18:32:09+03:00` (43 seconds after the commit's own timestamp), status **Ready**, target
+  **Production**, aliased to `jetstash.co.uk`/`www.jetstash.co.uk`. Same CLI SHA-exposure limitation as
+  the prior two passes — `--json`/`-d`/`--meta`/`-m` still expose no git SHA field; timestamp proximity
+  recorded as a disclosed, weak circumstantial signal only, not treated as stronger than metadata.
+
+**Production URLs checked, with exact results:**
+
+| # | URL | Check | Result |
+|---|---|---|---|
+| 1 | `/deals` | Full 34-card sweep for directness badges | Confirmed: `lhr-isb-economy` no longer shows any "Direct flight" badge. The badge appears only on the 3 verified-direct cards (Manchester–Lahore ×2 cabins, Manchester–Islamabad, Heathrow–Mumbai). Every previously self-contradictory card (Heathrow–Delhi ×2, Birmingham–Amritsar ×2, Manchester–Dubai ×2, Heathrow–Doha ×2, Gatwick–Ahmedabad ×2) now shows no top badge, only the pre-existing correct inline "Verification pending" text. Category tags (Umrah package, City break, Family all-inclusive, Flight only, Family holiday) unchanged. |
+| 2 | `/travel-ready-check` (Pakistan, Lahore) | Review date visible | Confirmed: both checks show "— verified 12 Jul 2026 — review due 12 Jan 2027". |
+| 3 | `/travel-ready-check` (India, Delhi) | Review date visible | Confirmed: both checks show "— verified 12 Jul 2026 — review due 12 Jan 2027". |
+| 4 | `/travel-ready-check` (UAE, Dubai) | Review date visible | Confirmed: both checks show "— verified 12 Jul 2026 — review due 12 Jan 2027". |
+| 5 | `/travel-ready-check` (Qatar, Doha) | Review date visible | Confirmed: both checks show "— verified 12 Jul 2026 — review due 12 Jan 2027". |
+| 6 | `/travel-ready-check` (Saudi Arabia, Jeddah) | Review date visible | Confirmed: both checks show "— verified 12 Jul 2026 — review due 12 Jan 2027". |
+| 7 | `/deals` | TR-002: all 18 observations remain suppressed | Confirmed: "FARE CHECKS LOGGED: 18" vs "All deals 0" tracked in every category, "showing 34 route search cards instead," no incomplete price on any card. |
+| 8 | `/deals`, `/travel-ready-check` | Console errors | Confirmed: zero console errors on both pages. |
+| 9 | `/deals`, `/travel-ready-check` | 375px mobile overflow | Confirmed via `document.documentElement.scrollWidth === window.innerWidth`: no overflow on either page. |
+
+**One pre-existing, out-of-scope observation recorded, not fixed this pass:** the two Jeddah
+Umrah-package deal cards (`umrah-package-jed` and its Business equivalent) show inline "Saudia ·
+Direct" — the route-level directness claim is correct (Heathrow–Jeddah is genuinely verified direct via
+British Airways per TR-010), but the deal's own `airline` field names Saudia, which has no independent
+verification on this route. This is a pre-existing airline-attribution accuracy question inside a
+category-tagged card, distinct from the directness-bypass mechanism this pass fixed — not touched under
+this task's narrow authorisation, flagged here for a future pass.
+
+**Discrepancies found in this pass:** none, beyond the one pre-existing observation noted above (which
+is not a discrepancy relative to this pass's own changes — it predates this pass entirely).
