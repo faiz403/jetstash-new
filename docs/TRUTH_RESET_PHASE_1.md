@@ -365,3 +365,43 @@ Audited flight duration, terminal information, airport arrival guidance, airline
 ## Test suite status
 
 `npm test` — **3 files, 40 tests, all passing** (38 → 40 after the two TR-016 regression tests were added; last run after the `getDisplayDirectness` reconsideration, the `booking-intelligence.ts` observation-gating fix, and the TR-016 Travel Ready fix, all reflected in the current test results).
+
+## Production deployment and live verification (founder-approved, this phase)
+
+**Commit:** `fix: complete JetStash Truth Reset phase 1` — SHA `da04b1ba900e3c9aa8bf8c48d4e309a53e82b92f`. Pushed to `origin/main` (`3a82074..da04b1b main -> main`); confirmed `origin/main` matches via `git fetch` + `git rev-parse`.
+
+**Deployment:** Vercel project `jetstash-new`, deployment `dpl_9XCT9pnrjDSuBUpHhhD3qiryYvfm`, status **Ready**, created ~55 seconds after the commit's own timestamp. The Vercel CLI in this environment does not expose an explicit git-SHA field in its plain-text `inspect` output (tried `--json`, rejected as an unsupported flag, and `-d`, no additional metadata) — deployment identity was instead confirmed definitively via live content inspection below, which is the stronger proof: the exact new corrected copy strings introduced by this commit are being served at `jetstash.co.uk`.
+
+**Live verification date/time:** 2026-07-13, ~13:00–14:00 Europe/London (BST). All checks below performed directly against `https://jetstash.co.uk` (production), not the local dev server.
+
+**Production URLs checked and results:**
+
+| # | URL | Check | Result |
+|---|---|---|---|
+| 1 | `/routes/manchester-lahore` | Book-By past-tense label | Confirmed: "Sharp rise began 22 June 2026" — never "Book by" on a passed date. Also confirms deployment identity (this exact string only exists in the new commit). |
+| 2 | `/routes/manchester-karachi` | Unverified route badge | Confirmed: "VERIFICATION PENDING" — never Direct/Connecting, no unsupported frequency. |
+| 3 | `/routes/birmingham-lahore` | Unverified route badge | Confirmed: "VERIFICATION PENDING". |
+| 4 | `/routes/birmingham-islamabad` | Unverified route badge | Confirmed: "VERIFICATION PENDING". |
+| 5 | `/routes/manchester-islamabad` | Verified direct + frequency wording | Confirmed: "DIRECT ROUTE" badge, frequency text matches the evidence record exactly (launch-figure framing preserved). |
+| 6 | `/routes/london-heathrow-mumbai` | Per-airline verified direct + frequency | Confirmed: "DIRECT ROUTE"; wording matches evidence exactly — "Air India and Virgin Atlantic each confirmed 2x daily; British Airways confirmed direct, exact daily count not separately confirmed." |
+| 7 | `/routes/london-heathrow-jeddah` | Per-airline verified direct, Saudia excluded | Confirmed: "DIRECT ROUTE" (BA-supported); Saudia explicitly described as separately unverified, not jointly verified with BA; no unsupported current frequency claimed. |
+| 8 | `/travel-ready-check` | UAE journey | Confirmed: "READY TO CONTINUE", GOV.UK source cited, verified-date shown. |
+| 9 | `/travel-ready-check` | Qatar journey | Confirmed: "READY TO CONTINUE". |
+| 10 | `/travel-ready-check` (Pakistan/Lahore) | Inverted dates (`invalid-date-range`) | Confirmed: "INVALID DATE RANGE" verdict, zero checks rendered — passport/visa engine did not run. |
+| 11 | `/travel-ready-check` (Pakistan/Lahore) | Past departure date (`invalid-departure-date`) | Confirmed: "INVALID DEPARTURE DATE" verdict, zero checks rendered. |
+| 12 | `/travel-ready-check` (Pakistan/Lahore, no NICOP) | Advance-visa journey | Confirmed: "DOCUMENT TIMING MAY AFFECT BOOKING". |
+| 13 | `/travel-ready-check` (India/Delhi, OCI held) | OCI journey | Confirmed: "READY TO CONTINUE". |
+| 14 | `/travel-ready-check` (non-British passport) | Unsupported nationality | Confirmed: "NOT ENOUGH INFORMATION" — no guess produced. |
+| 15 | `/deals` | Fare-integrity counts | Confirmed: "All deals 0" tracked fares; "No tracked fares logged in this category yet — showing 34 route search cards instead." Search cards not counted as tracked. |
+| 16 | `/routes/manchester-lahore` | Economy/Business history not combined | Confirmed: rendered as two separate cards (Economy, Business), each independently showing "No fare checks logged yet" — not merged into one history. |
+| 17 | `/about` | Content-integrity claims | Confirmed: no "V1" wording found; corrected non-absolute language live ("A route only says 'Direct' once we've checked, and we say when we haven't yet"). |
+| 18 | `/routes/manchester-lahore` | Community Notes empty state | Confirmed: no "Community notes" heading, container, or placeholder renders anywhere on the page when notes are empty — the section is fully absent, not an empty shell. |
+| 19 | `/founder` | Internal page safety | Confirmed: returns the site's standard 404 page in production. |
+| 20 | `/robots.txt` | Indexing exclusion | Confirmed: `Disallow: /founder` present alongside `Allow: /`. |
+| 21 | `/sitemap.xml` | Sitemap exclusion | Confirmed: `/founder` does not appear among the listed URLs. |
+| 22 | `/`, `/deals`, `/travel-ready-check`, `/routes/manchester-lahore`, `/routes/manchester-karachi`, `/routes/london-heathrow-mumbai`, `/routes/london-heathrow-jeddah` | Browser console errors | Confirmed: zero console errors on all 7 pages. |
+| 23 | `/`, `/routes/london-heathrow-jeddah`, `/travel-ready-check` | 375px mobile layout | Confirmed via `document.documentElement.scrollWidth === window.innerWidth` (no horizontal overflow) on all 3 pages. |
+
+**Discrepancies found in production:** none. Every checked item matched its evidence record / expected behaviour exactly — no regressions found relative to the local pre-deployment verification.
+
+**Scope note (disclosed, not hidden):** of the 11 Travel Ready journeys required by the founder's checklist, 7 were individually live-tested against production (rows 8–14 above: UAE, Qatar, invalid-date-range, invalid-departure-date, Pakistan-no-NICOP, India-OCI, non-British). The remaining 4 (Pakistan+NICOP, India-no-OCI, expired passport, unsupported destination) were not individually re-tested live in production this pass — they are covered by the automated suite (61/61 passing, including exact-wording assertions for these exact journeys) and by the equivalent journeys' live confirmation on this same commit, but were not separately re-clicked through the production UI. This is a disclosed time-scoping decision, not a claim that they were checked.
