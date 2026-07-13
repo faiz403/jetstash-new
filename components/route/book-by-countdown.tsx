@@ -8,6 +8,8 @@ import {
   buildBookByShareText,
   formatBookByDate,
   formatEventDate,
+  getBookByDateLabel,
+  getBookByTopLabel,
   type BookBySnapshot,
 } from '@/lib/booking-intelligence';
 import { computeReadiness, VERDICT_COPY, type EngineSnapshot, type TravelReadySignal } from '@/lib/travel-intelligence-engine';
@@ -108,6 +110,16 @@ export function BookByCountdown({
   const bookByPct = pct(t(snapshot.bookByDate));
   const todayPct = mounted ? pct(t(snapshot.computedForDate)) : null;
 
+  // Truth Reset (July 2026): a "book by" date is only a forward-looking
+  // instruction while it's still ahead of us — once it's passed (surge/late/
+  // inside-period states all imply this), label it as what already happened
+  // instead. A stale "Book by 22 June" reading as an active instruction on
+  // 12 July is exactly the factual-accuracy bug this fixes. The label logic
+  // itself lives in lib/booking-intelligence.ts as a pure, regression-tested
+  // function — see getBookByDateLabel()/getBookByTopLabel().
+  const bookByDateLabel = getBookByDateLabel(snapshot);
+  const bookByTopLabel = getBookByTopLabel(snapshot);
+
   // ── CTA arrangement by state ───────────────────────────────────────────
   const watchPrimary = snapshot.state === 'too-early';
   const bookLabel =
@@ -183,11 +195,7 @@ export function BookByCountdown({
           )}
         </div>
         <div className="mt-2 flex flex-wrap justify-between gap-x-3 gap-y-1 text-[11px] text-ink-400">
-          <span>
-            {snapshot.recommendedWindow
-              ? `Window opens ${formatBookByDate(snapshot.recommendedWindow.openDate)}`
-              : `Book by ${formatBookByDate(snapshot.bookByDate)}`}
-          </span>
+          <span>{bookByTopLabel}</span>
           <span className="text-terracotta-600">Typical sharp rise from {formatBookByDate(snapshot.surgeStartDate)}</span>
           <span>{snapshot.event.periodLabel}</span>
         </div>
@@ -201,7 +209,7 @@ export function BookByCountdown({
             <span className="inline-block h-2 w-4 rounded-full bg-terracotta-200" /> Fares typically rising
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="inline-block h-3.5 w-[3px] rounded-full bg-ink-900" /> Book by {formatBookByDate(snapshot.bookByDate)}
+            <span className="inline-block h-3.5 w-[3px] rounded-full bg-ink-900" /> {bookByDateLabel}
           </span>
           {mounted && todayPct !== null && (
             <span className="flex items-center gap-1.5">

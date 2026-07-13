@@ -1,3 +1,6 @@
+import { getRouteByAirportAndDestination } from './routes';
+import { getFareRangeSummary } from './fare-observations';
+
 export type DealCabin = 'Economy' | 'Premium Economy' | 'Business';
 export type DealCategory = 'flight' | 'package' | 'business' | 'umrah';
 
@@ -42,6 +45,12 @@ export const deals: Deal[] = [
     tag: 'Direct flight',
   },
   {
+    // Truth Reset (July 2026): airline corrected from 'British Airways' to 'PIA'.
+    // No source found for a current direct BA Heathrow–Islamabad service; PIA
+    // relaunched this exact route direct from 29 March 2026 (3x weekly),
+    // confirmed via independent aviation-news reporting, cross-checked against
+    // multiple outlets. No Route entry exists yet for this pair — flagged for
+    // a future data addition once flight-time/frequency specifics are sourced.
     id: 'lhr-isb-economy',
     category: 'flight',
     cabin: 'Economy',
@@ -50,7 +59,7 @@ export const deals: Deal[] = [
     fromCity: 'London Heathrow',
     toCity: 'Islamabad',
     toCountry: 'Pakistan',
-    airline: 'British Airways',
+    airline: 'PIA',
     tag: 'Direct flight',
   },
   {
@@ -124,6 +133,12 @@ export const deals: Deal[] = [
     airline: 'Virgin Atlantic',
   },
   {
+    // Truth Reset (July 2026): airline corrected from 'British Airways' to 'PIA'.
+    // No source found for a current direct BA Heathrow–Lahore service; PIA
+    // relaunched this exact route direct from 30 March 2026 (weekly), confirmed
+    // via independent aviation-news reporting, cross-checked against multiple
+    // outlets. No Route entry exists yet for this pair — flagged for a future
+    // data addition once flight-time/frequency specifics are sourced.
     id: 'lhr-business-lhe',
     category: 'business',
     cabin: 'Business',
@@ -132,7 +147,7 @@ export const deals: Deal[] = [
     fromCity: 'London Heathrow',
     toCity: 'Lahore',
     toCountry: 'Pakistan',
-    airline: 'British Airways',
+    airline: 'PIA',
   },
   {
     id: 'man-lhe-business',
@@ -309,17 +324,22 @@ export const deals: Deal[] = [
     toCountry: 'India',
     airline: 'British Airways',
   },
-  {
-    id: 'lhr-khi-economy',
-    category: 'flight',
-    cabin: 'Economy',
-    fromAirportSlug: 'london-heathrow',
-    toDestinationSlug: 'karachi',
-    fromCity: 'London Heathrow',
-    toCity: 'Karachi',
-    toCountry: 'Pakistan',
-    airline: 'British Airways',
-  },
+  // Truth Reset (July 2026): hidden from the public array, not deleted — no
+  // source found for any airline currently operating a direct London
+  // Heathrow–Karachi service (British Airways was the previously-claimed
+  // operator; no evidence supports this). Preserved here for history; restore
+  // only once a confirmed current operator/route is sourced.
+  // {
+  //   id: 'lhr-khi-economy',
+  //   category: 'flight',
+  //   cabin: 'Economy',
+  //   fromAirportSlug: 'london-heathrow',
+  //   toDestinationSlug: 'karachi',
+  //   fromCity: 'London Heathrow',
+  //   toCity: 'Karachi',
+  //   toCountry: 'Pakistan',
+  //   airline: 'British Airways',
+  // },
   {
     id: 'man-khi-economy',
     category: 'flight',
@@ -364,17 +384,18 @@ export const deals: Deal[] = [
     toCountry: 'Pakistan',
     airline: 'PIA',
   },
-  {
-    id: 'lhr-khi-business',
-    category: 'business',
-    cabin: 'Business',
-    fromAirportSlug: 'london-heathrow',
-    toDestinationSlug: 'karachi',
-    fromCity: 'London Heathrow',
-    toCity: 'Karachi',
-    toCountry: 'Pakistan',
-    airline: 'British Airways',
-  },
+  // Truth Reset (July 2026): hidden — see identical note above lhr-khi-economy.
+  // {
+  //   id: 'lhr-khi-business',
+  //   category: 'business',
+  //   cabin: 'Business',
+  //   fromAirportSlug: 'london-heathrow',
+  //   toDestinationSlug: 'karachi',
+  //   fromCity: 'London Heathrow',
+  //   toCity: 'Karachi',
+  //   toCountry: 'Pakistan',
+  //   airline: 'British Airways',
+  // },
   {
     id: 'bhx-atq-business',
     category: 'business',
@@ -457,6 +478,21 @@ export function getDealsByRegionGroup(slugs: string[]) {
 
 export function getDealsByCategory(category: DealCategory) {
   return deals.filter((d) => d.category === category);
+}
+
+/**
+ * Truth Reset (July 2026): whether this deal currently has a genuinely
+ * publishable checked fare behind it (see getFareRangeSummary /
+ * isPubliclyPublishable in data/fare-observations.ts) — never assume it does
+ * just because the deal object exists. A deal with no matching route, or a
+ * route with only incomplete observations, has no tracked fare and must not
+ * be counted as one anywhere (Deals page totals, category counts, homepage
+ * counts, structured data).
+ */
+export function hasTrackedFare(deal: Deal): boolean {
+  const route = getRouteByAirportAndDestination(deal.fromAirportSlug, deal.toDestinationSlug);
+  if (!route) return false;
+  return getFareRangeSummary(route.slug, deal.cabin) !== null;
 }
 
 /** Renders a human "15 June 2026" date string for observed-fare dates (e.g. "One check, 15 June 2026"). Never implies a live or verified price. */

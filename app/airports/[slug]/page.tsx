@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { Plane, ArrowUpRight, Info, MapPin } from 'lucide-react';
 import { airports, getAirportBySlug } from '@/data/airports';
 import { getDealsByAirport } from '@/data/deals';
-import { getRoutesByAirport, getRouteDestination } from '@/data/routes';
+import { getRoutesByAirport, getRouteDestination, getDisplayDirectness } from '@/data/routes';
 import { getNotesByAirport } from '@/data/airport-notes';
 import { getTipsForScope } from '@/data/traveller-tips';
 import { DealCard } from '@/components/ui/deal-card';
@@ -113,6 +113,7 @@ export default function AirportPage({ params }: { params: { slug: string } }) {
                 {routesHere.map((route) => {
                   const dest = getRouteDestination(route);
                   if (!dest) return null;
+                  const directness = getDisplayDirectness(route, new Date().toISOString().slice(0, 10));
                   return (
                     <Link
                       key={route.slug}
@@ -124,7 +125,9 @@ export default function AirportPage({ params }: { params: { slug: string } }) {
                         {dest.country}
                       </span>
                       <h3 className="mt-2 font-display text-xl text-ink-900">{airport.city} → {dest.city}</h3>
-                      <p className="mt-1.5 text-sm text-ink-500">{route.flightTime} · {route.isDirect ? 'Direct' : 'Connecting'}</p>
+                      <p className="mt-1.5 text-sm text-ink-500">
+                        {route.flightTime} · {directness === 'direct' ? 'Direct' : directness === 'unverified' ? 'Verification pending' : 'Connecting'}
+                      </p>
                       <span className="mt-4 flex items-center gap-1.5 text-sm font-semibold text-ink-900">
                         View route guide
                         <ArrowUpRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" strokeWidth={2.25} />

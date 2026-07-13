@@ -41,6 +41,8 @@ const VERDICT_TONE: Record<TravelReadyVerdict, 'critical' | 'caution' | 'ready' 
   'document-timing-may-affect-booking': 'caution',
   'official-confirmation-required': 'caution',
   'not-enough-information': 'neutral',
+  'invalid-date-range': 'neutral',
+  'invalid-departure-date': 'neutral',
 };
 
 const CHECK_ICON: Record<'pass' | 'fail' | 'caution' | 'unknown', string> = {
@@ -166,8 +168,8 @@ export function TravelReadyCheck({
               ))}
             </select>
             <p className="mt-1.5 text-xs text-ink-400">
-              V1 covers Pakistan, India, Saudi Arabia, UAE, Qatar, Turkey and Morocco only — every other destination
-              is marked as not yet covered rather than guessed.
+              Currently covers Pakistan, India, Saudi Arabia, UAE, Qatar, Turkey and Morocco only — every other
+              destination is marked as not yet covered rather than guessed.
             </p>
           </div>
 
@@ -285,9 +287,10 @@ export function TravelReadyCheck({
               {(result.verdict === 'check-passport-validity' || result.verdict === 'visa-or-entry-permission-needed') && (
                 <AlertTriangle className="mr-1 h-3.5 w-3.5" />
               )}
-              {(result.verdict === 'official-confirmation-required' || result.verdict === 'not-enough-information') && (
-                <HelpCircle className="mr-1 h-3.5 w-3.5" />
-              )}
+              {(result.verdict === 'official-confirmation-required' ||
+                result.verdict === 'not-enough-information' ||
+                result.verdict === 'invalid-date-range' ||
+                result.verdict === 'invalid-departure-date') && <HelpCircle className="mr-1 h-3.5 w-3.5" />}
               {result.verdict.replace(/-/g, ' ')}
             </span>
           </div>

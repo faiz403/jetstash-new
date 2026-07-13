@@ -11,7 +11,7 @@ import { LinkButton } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { deals, getDealsByCategory, formatChecked } from '@/data/deals';
 import { fareObservations } from '@/data/fare-observations';
-import { routes, getRouteAirport, getRouteDestination } from '@/data/routes';
+import { routes, getRouteAirport, getRouteDestination, getDisplayDirectness } from '@/data/routes';
 import { getDestinationBySlug } from '@/data/destinations';
 import { getGuideBySlug } from '@/data/guides';
 import { getDestinationImage, getHeroImage, getAirportImage } from '@/lib/brand-images';
@@ -226,6 +226,7 @@ export default function HomePage() {
               const airport = getRouteAirport(route);
               const dest = getRouteDestination(route);
               if (!airport || !dest) return null;
+              const directness = getDisplayDirectness(route, new Date().toISOString().slice(0, 10));
               return (
                 <Link
                   key={route.slug}
@@ -240,7 +241,9 @@ export default function HomePage() {
                       {String(i + 1).padStart(2, '0')}
                     </span>
                   </div>
-                  <span className="mt-3 text-xs font-semibold uppercase tracking-wide text-ink-400">{route.isDirect ? 'Direct' : 'Connecting'}</span>
+                  <span className="mt-3 text-xs font-semibold uppercase tracking-wide text-ink-400">
+                    {directness === 'direct' ? 'Direct' : directness === 'unverified' ? 'Verification pending' : 'Connecting'}
+                  </span>
                   <h3 className="mt-1.5 font-display text-lg text-ink-900">{airport.city} → {dest.city}</h3>
                   <p className="mt-1 text-xs text-ink-500">{route.flightTime}</p>
                   <span className="mt-3 flex items-center gap-1 text-xs font-semibold text-ink-900">

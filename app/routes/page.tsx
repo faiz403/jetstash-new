@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { ArrowUpRight, MapPin, Plane } from 'lucide-react';
 import { PageHero } from '@/components/sections/page-hero';
-import { routes, getRouteAirport, getRouteDestination, type Route } from '@/data/routes';
+import { routes, getRouteAirport, getRouteDestination, getDisplayDirectness, type Route } from '@/data/routes';
 import { airports } from '@/data/airports';
 import type { RegionGroup } from '@/data/destinations';
 
@@ -34,7 +34,11 @@ export default function RoutesIndexPage() {
     })
     .filter((g) => g.routesInRegion.length > 0);
 
-  const directCount = routes.filter((r) => r.isDirect).length;
+  const todayIso = new Date().toISOString().slice(0, 10);
+  // Truth Reset (July 2026): only currently-verified direct routes count here —
+  // a route claiming isDirect with no fresh verification record must not
+  // inflate this headline stat. See getDisplayDirectness() in data/routes.ts.
+  const directCount = routes.filter((r) => getDisplayDirectness(r, todayIso) === 'direct').length;
   const airportCount = airports.filter((a) => routes.some((r) => r.airportSlug === a.slug)).length;
 
   return (
@@ -60,6 +64,7 @@ export default function RoutesIndexPage() {
                 const airport = getRouteAirport(route);
                 const dest = getRouteDestination(route);
                 if (!airport || !dest) return null;
+                const directness = getDisplayDirectness(route, todayIso);
                 return (
                   <Link
                     key={route.slug}
@@ -73,13 +78,13 @@ export default function RoutesIndexPage() {
                       </span>
                       <span
                         className={
-                          route.isDirect
+                          directness === 'direct'
                             ? 'inline-flex items-center gap-1.5 rounded-full bg-brass-50 px-2.5 py-0.5 text-xs font-semibold text-brass-700'
                             : 'inline-flex items-center rounded-full bg-ink-50 px-2.5 py-0.5 text-xs font-semibold text-ink-500'
                         }
                       >
-                        {route.isDirect && <Plane className="h-3 w-3" strokeWidth={2.5} />}
-                        {route.isDirect ? 'Direct' : 'Connecting'}
+                        {directness === 'direct' && <Plane className="h-3 w-3" strokeWidth={2.5} />}
+                        {directness === 'direct' ? 'Direct' : directness === 'unverified' ? 'Verification pending' : 'Connecting'}
                       </span>
                     </div>
                     <h3 className="mt-3 font-display text-xl text-ink-900">

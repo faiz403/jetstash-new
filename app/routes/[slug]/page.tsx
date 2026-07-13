@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { Plane, Calendar, Clock, ArrowUpRight, AlertCircle, GitCompareArrows, CalendarClock, History, MapPinned, MessageSquareText } from 'lucide-react';
-import { routes, getRouteBySlug, getRouteAirport, getRouteDestination, getRoutesByDestination, getRouteAirlines, getRoutePeakPeriods } from '@/data/routes';
+import { routes, getRouteBySlug, getRouteAirport, getRouteDestination, getRoutesByDestination, getRouteAirlines, getRoutePeakPeriods, getDisplayDirectness } from '@/data/routes';
 import { getDealsByDestination } from '@/data/deals';
 import { getTimelineByRoute } from '@/data/route-timeline';
 import { getActiveWarningsByRoute } from '@/data/route-warnings';
@@ -73,6 +73,9 @@ export default function RoutePage({ params }: { params: { slug: string } }) {
 
   const airport = getRouteAirport(route);
   const dest = getRouteDestination(route);
+  // Truth Reset (July 2026): never render route.isDirect directly — a
+  // "Direct" badge requires a current, unexpired verification record.
+  const directness = getDisplayDirectness(route, new Date().toISOString().slice(0, 10));
   if (!airport || !dest) {
     notFound();
     return null;
@@ -122,7 +125,9 @@ export default function RoutePage({ params }: { params: { slug: string } }) {
             <span className="text-ink-200">{dest.city}</span>
           </nav>
           <div className="stagger-in stagger-1 animate-fade-up">
-            <Badge variant="dark">{route.isDirect ? 'Direct route' : 'Connecting route'}</Badge>
+            <Badge variant="dark">
+              {directness === 'direct' ? 'Direct route' : directness === 'unverified' ? 'Verification pending' : 'Connecting route'}
+            </Badge>
           </div>
           <h1 className="stagger-in stagger-2 mt-4 animate-fade-up font-display text-4xl leading-[1.05] tracking-tight text-sand-50 sm:text-5xl">
             {airport.city} to {dest.city}
@@ -340,7 +345,10 @@ export default function RoutePage({ params }: { params: { slug: string } }) {
                     className="group flex flex-col rounded-md border border-ink-100 bg-white p-6 transition-all hover:-translate-y-1 hover:shadow-card-hover"
                   >
                     <span className="text-xs font-semibold uppercase tracking-wide text-ink-400">
-                      {altRoute.isDirect ? 'Direct' : 'Connecting'}
+                      {(() => {
+                        const altDirectness = getDisplayDirectness(altRoute, new Date().toISOString().slice(0, 10));
+                        return altDirectness === 'direct' ? 'Direct' : altDirectness === 'unverified' ? 'Verification pending' : 'Connecting';
+                      })()}
                     </span>
                     <h3 className="mt-1.5 font-display text-xl text-ink-900">{altAirport.city} → {dest.city}</h3>
                     <p className="mt-1 text-sm text-ink-500">{altRoute.flightTime} · {getRouteAirlines(altRoute).map((a) => a.name).join(', ')}</p>
@@ -423,18 +431,20 @@ export default function RoutePage({ params }: { params: { slug: string } }) {
         </section>
       )}
 
-      <section className="bg-sand-50 py-14 sm:py-16">
-        <div className="mx-auto max-w-content px-5 sm:px-8">
-          <div className="flex items-center gap-2.5">
-            <MessageSquareText className="h-5 w-5 text-terracotta-600" strokeWidth={2} />
-            <span className="text-xs font-semibold uppercase tracking-wide text-terracotta-600">Community notes</span>
+      {communityNotes.length > 0 && (
+        <section className="bg-sand-50 py-14 sm:py-16">
+          <div className="mx-auto max-w-content px-5 sm:px-8">
+            <div className="flex items-center gap-2.5">
+              <MessageSquareText className="h-5 w-5 text-terracotta-600" strokeWidth={2} />
+              <span className="text-xs font-semibold uppercase tracking-wide text-terracotta-600">Community notes</span>
+            </div>
+            <h2 className="mt-2 font-display text-2xl text-ink-900 sm:text-3xl">What real travellers say about this route</h2>
+            <div className="mt-8">
+              <CommunityNotesPanel notes={communityNotes} />
+            </div>
           </div>
-          <h2 className="mt-2 font-display text-2xl text-ink-900 sm:text-3xl">What real travellers say about this route</h2>
-          <div className="mt-8">
-            <CommunityNotesPanel notes={communityNotes} />
-          </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       <section className="bg-white py-14 sm:py-16">
         <div className="mx-auto max-w-content px-5 sm:px-8">

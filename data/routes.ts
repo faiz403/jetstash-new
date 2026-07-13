@@ -3,6 +3,61 @@ import { destinations } from './destinations';
 import { getAirlinesBySlugs } from './airlines';
 import { getPeakPeriodsByIds } from './peak-periods';
 
+/**
+ * Truth Reset (July 2026): a route must never display a "Direct" badge
+ * purely because `isDirect: true` was set once — that boolean now only
+ * describes the route's general shape (does a direct option exist at all).
+ * What's actually safe to *show publicly as current* is governed by
+ * `verification` below, via `getDisplayDirectness()`. A route with no
+ * `verification` record, an expired `reviewDueDate`, or a non-'verified'
+ * status renders as "Verification pending" regardless of `isDirect`.
+ */
+export type RouteVerificationStatus = 'verified' | 'unverified' | 'paused' | 'seasonal';
+
+export interface RouteVerification {
+  status: RouteVerificationStatus;
+  /** Organisation the claim was checked against — e.g. an airline's own booking system, an aviation-industry news source for a network change, or a UK airport's own timetable. */
+  sourceName: string;
+  sourceUrl?: string;
+  /** ISO date this was actually checked. */
+  verifiedDate: string;
+  /** Past this date, the verification is treated as expired — see getDisplayDirectness(). */
+  reviewDueDate: string;
+  /** Plain-language context — required for 'unverified'/'paused'/'seasonal', explaining what's uncertain. */
+  note?: string;
+}
+
+/**
+ * Truth Reset (July 2026, founder correction): route-level `verification`
+ * above answers "is this route direct at all" — it does NOT mean every
+ * airline in `airlineSlugs` is individually confirmed. A source proving one
+ * airline flies a route must never be read as verifying every other airline
+ * listed on it (e.g. a British Airways press release proves BA, never
+ * Saudia). Where a route lists more than one airline and the evidence for
+ * each airline differs, record each airline's own claim here — see
+ * `getAirlineDisplayStatus()`. A route with no `airlineVerifications` entry
+ * for a given airline falls back to the route-level `verification` for
+ * badge purposes, but never implies that specific airline's frequency or
+ * schedule is confirmed.
+ */
+export interface AirlineVerification {
+  airlineSlug: string; // references data/airlines.ts
+  status: RouteVerificationStatus;
+  /** Organisation the claim was checked against, for THIS airline specifically. */
+  sourceName: string;
+  sourceUrl?: string;
+  /** ISO date this was actually checked. */
+  verifiedDate: string;
+  /** Past this date, the verification is treated as expired. */
+  reviewDueDate: string;
+  /** Effective period the source's evidence actually covers, e.g. "current at access" or "ends 31 Aug 2026". */
+  effectivePeriod: string;
+  /** What exactly this source supports — e.g. "Confirms direct service exists." Never inflate this to imply frequency unless the source states one. */
+  supportedClaim: string;
+  /** What remains unconfirmed for this airline specifically (frequency, exact schedule, etc). */
+  remainingUncertainty?: string;
+}
+
 export interface Route {
   slug: string; // e.g. "manchester-lahore"
   airportSlug: string;
@@ -11,6 +66,10 @@ export interface Route {
   frequency: string; // e.g. "Daily direct" or "4x weekly via Dubai"
   airlineSlugs: string[]; // references data/airlines.ts
   isDirect: boolean;
+  /** Optional until every route has one — see getDisplayDirectness()'s fallback behaviour for routes without it. */
+  verification?: RouteVerification;
+  /** Per-airline evidence, only where it differs from a single route-level claim — see AirlineVerification's doc comment. Optional; most routes have one uncontested operator and don't need this. */
+  airlineVerifications?: AirlineVerification[];
   intro: string;
   bookingWindowNote: string;
   peakPeriodIds: string[]; // references data/peak-periods.ts
@@ -48,11 +107,19 @@ export const routes: Route[] = [
     airportSlug: 'manchester',
     destinationSlug: 'lahore',
     flightTime: '8h direct',
-    frequency: 'Several times weekly, direct',
+    frequency: 'Direct — current frequency not confirmed by an official schedule, see note',
     airlineSlugs: ['pia'],
     isDirect: true,
+    verification: {
+      status: 'verified',
+      sourceName: "Manchester Airport's own media centre: \"A dozen new routes are launching from Manchester Airport this summer\" (mediacentre.manchesterairport.co.uk, 19 May 2026)",
+      sourceUrl: 'https://mediacentre.manchesterairport.co.uk/a-dozen-new-routes-are-launching-from-manchester-airport-this-summer--from-med-beach-hotspots-to-major-global-hubs/',
+      verifiedDate: '2026-07-13',
+      reviewDueDate: '2026-08-13',
+      note: 'Re-verified against a genuine primary source (founder-supplied): Manchester Airport\'s own media centre confirms "Pakistan International Airlines will build upon the successful launch of its Islamabad service by adding Lahore as its second destination from Manchester from 3 July" 2026 — confirms direct status, PIA as operator, and the 3 July 2026 start date. This article does not state a frequency, and no current official schedule was found confirming one, so no frequency is published (a prior "weekly" claim, and before that "several times weekly," both rested on secondary aviation-news reporting only — not republished as fact). PIA\'s own site (piac.com.pk) remains Cloudflare-blocked to this session\'s tooling.',
+    },
     intro:
-      'The flagship Pakistan corridor from the North of England. PIA runs direct Manchester to Lahore services, and for the North West\'s Punjabi community it\'s usually the most convenient option going: no Gulf connection, no extra layover, no risk of luggage going missing at a transfer.',
+      'The flagship Pakistan corridor from the North of England. PIA runs direct Manchester to Lahore services (confirmed via Manchester Airport\'s own announcement, launched 3 July 2026), and for the North West\'s Punjabi community it\'s usually the most convenient option going: no Gulf connection, no extra layover, no risk of luggage going missing at a transfer.',
     bookingWindowNote:
       'Outside Eid and the summer school holidays, fares hold reasonably steady 8 to 10 weeks out. Within 3 weeks of Eid, expect a sharp jump, so book that window at least 3 months ahead if your dates are fixed.',
     peakPeriodIds: ['eid-al-fitr', 'eid-al-adha', 'uk-summer-holidays', 'wedding-season'],
@@ -62,11 +129,19 @@ export const routes: Route[] = [
     airportSlug: 'manchester',
     destinationSlug: 'islamabad',
     flightTime: '7h 45m direct',
-    frequency: 'Several times weekly, direct',
+    frequency: 'Launched twice weekly (Tue/Sat) from 25 Oct 2025 — current frequency not confirmed by an official schedule, see note',
     airlineSlugs: ['pia'],
     isDirect: true,
+    verification: {
+      status: 'verified',
+      sourceName: "Manchester Airport's own media centre: \"Hundreds of thousands of people to benefit as Pakistan International Airlines launches new route from Manchester Airport\" (mediacentre.manchesterairport.co.uk, 6 Oct 2025), corroborated by Manchester Airport's 19 May 2026 article describing the route as an ongoing \"successful\" service",
+      sourceUrl: 'https://mediacentre.manchesterairport.co.uk/hundreds-of-thousands-of-people-to-benefit-as-pakistan-international-airlines-launches-new-route-from-manchester-airport/',
+      verifiedDate: '2026-07-13',
+      reviewDueDate: '2026-08-13',
+      note: 'Re-verified against genuine primary sources (founder-supplied): Manchester Airport\'s own media centre confirms PIA launched this route "on Tuesdays and Saturdays from 25 October [2025] with a view to increasing the frequency" — confirming direct status, PIA as operator, and the launch frequency of twice weekly. The later 19 May 2026 article, while primarily about the Lahore launch, independently corroborates the Islamabad service\'s continued existence by calling it a "successful launch" that Lahore builds on — but neither article confirms whether the frequency actually increased from the stated launch figure. A previously recorded "4x weekly" figure rested on secondary aviation-news reporting only and is not republished as a current fact; "twice weekly" is recorded here strictly as the documented October 2025 launch frequency, not as today\'s frequency. PIA\'s own site (piac.com.pk) remains Cloudflare-blocked to this session\'s tooling — no current schedule could be directly checked.',
+    },
     intro:
-      'Manchester to Islamabad direct services are the practical choice for families based across Yorkshire, Lancashire and the wider North West heading to Punjab or onward to Khyber Pakhtunkhwa.',
+      'Manchester to Islamabad direct services (confirmed via Manchester Airport\'s own announcement, launched 25 October 2025) are the practical choice for families based across Yorkshire, Lancashire and the wider North West heading to Punjab or onward to Khyber Pakhtunkhwa.',
     bookingWindowNote:
       'The pattern is similar to the Lahore route: stable pricing most of the year, then sharp rises close to Eid and major family events. This route also tends to sell out faster than Lahore in peak weeks, simply because it runs fewer weekly frequencies.',
     peakPeriodIds: ['eid-al-fitr', 'eid-al-adha', 'uk-summer-holidays'],
@@ -131,12 +206,35 @@ export const routes: Route[] = [
     slug: 'london-heathrow-jeddah',
     airportSlug: 'london-heathrow',
     destinationSlug: 'jeddah',
-    flightTime: '6h direct',
-    frequency: 'Several times weekly, direct',
+    flightTime: '6h 15m direct (per BA\'s own destination page)',
+    frequency: 'British Airways confirmed direct, frequency unconfirmed. Saudia\'s current status is separately unverified — see note.',
     airlineSlugs: ['saudia', 'british-airways'],
     isDirect: true,
+    airlineVerifications: [
+      {
+        airlineSlug: 'british-airways',
+        status: 'verified',
+        sourceName: "British Airways' own current destination/booking page, \"Direct Flights to Jeddah Deals (JED) 2026 | Book now with BA\" (britishairways.com/content/flights/saudi-arabia/jeddah) — live and current at time of access, presenting Jeddah as an active BA destination with a working flight-search widget, cabin options and a stated 6h15m flight time.",
+        sourceUrl: 'https://www.britishairways.com/content/flights/saudi-arabia/jeddah',
+        verifiedDate: '2026-07-13',
+        reviewDueDate: '2026-08-13',
+        effectivePeriod: 'Current at access',
+        supportedClaim: 'Confirms BA publicly markets and sells direct Heathrow–Jeddah flights. Does not state a current frequency, and BA\'s own schedule-search tool could not be made to render this session (a recurring cookie-consent technical-issue block), so none is published.',
+        remainingUncertainty: 'A specific secondary source (Head for Points, 10 Apr 2026) claims BA terminated this route on 24 April 2026 — unreconciled with BA\'s own live marketing page. BA\'s own Aug 2025 press release described Jeddah increasing to 5x weekly, and BA\'s own Mar 2026 Middle East cuts release does not list Jeddah among affected routes. Treated as a genuine, disclosed conflict, not resolved either way — see docs/LAUNCH_BLOCKERS.md TR-010.',
+      },
+      {
+        airlineSlug: 'saudia',
+        status: 'unverified',
+        sourceName: 'No qualifying primary source obtained this session — the BA source above proves BA\'s own operation only, per the founder\'s explicit instruction that one airline\'s evidence must never verify another.',
+        verifiedDate: '2026-07-13',
+        reviewDueDate: '2026-08-13',
+        effectivePeriod: 'n/a — not verified',
+        supportedClaim: 'None. Saudia was previously treated as "long-standing, not in dispute" without an independent current-source check this session — that assumption is corrected here rather than carried forward unverified.',
+        remainingUncertainty: 'Saudia\'s own site, Jeddah Airport\'s own site, or an equivalent official schedule source has not been checked. Do not treat Saudia as confirmed until one is obtained.',
+      },
+    ],
     intro:
-      'The primary direct Umrah arrival route from the UK. Most flight-inclusive Umrah packages are built around this exact corridor, with onward ground transport to Makkah.',
+      'The primary direct Umrah arrival route from the UK. British Airways operates this route directly — confirmed via BA\'s own current "Direct Flights to Jeddah" destination page, though its current frequency isn\'t confirmed by a live schedule this session. Saudia has historically been the main Umrah-arrival operator here, but this session could not independently confirm Saudia\'s current status against an official source — check directly with both airlines before booking. Most flight-inclusive Umrah packages are built around the Jeddah corridor, with onward ground transport to Makkah.',
     bookingWindowNote:
       'Ramadan and the weeks immediately before Hajj season are by far the steepest pricing windows on this route. Outside them, pricing is comparatively settled.',
     peakPeriodIds: ['ramadan', 'pre-hajj', 'school-half-terms-umrah'],
@@ -145,28 +243,42 @@ export const routes: Route[] = [
     slug: 'manchester-karachi',
     airportSlug: 'manchester',
     destinationSlug: 'karachi',
-    flightTime: '8h 30m direct',
-    frequency: 'Several times weekly, direct',
+    flightTime: '8h 30m direct (unverified — see note)',
+    frequency: 'Unverified — confirm directly with PIA before booking',
     airlineSlugs: ['pia'],
     isDirect: true,
+    verification: {
+      status: 'unverified',
+      sourceName: 'Secondary investigation lead only (not a primary source): PIA UK network reporting across multiple independent Pakistani aviation news outlets, July 2026.',
+      verifiedDate: '2026-07-13',
+      reviewDueDate: '2026-08-13',
+      note: 'Current 2026 secondary reporting describes PIA\'s direct Manchester services as Lahore and Islamabad only — no source found confirming an active direct Manchester–Karachi service, and no primary source (PIA\'s own site is Cloudflare-blocked) could be reached to confirm this either way. This may connect via Islamabad or Lahore instead. Kept unverified pending a confirmed primary source; re-check PIA\'s own booking system directly.',
+    },
     intro:
-      'PIA operates direct Manchester to Karachi services alongside its Lahore and Islamabad routes, giving the North of England a genuine third direct option into Pakistan\'s commercial capital and Sindh province.',
+      'PIA has flown Manchester to Karachi in the past, but current 2026 route reporting describes PIA\'s direct Manchester services as Lahore and Islamabad only — we can\'t currently confirm an active direct Manchester–Karachi service. Check PIA\'s own booking system directly for the current routing; a connection via Islamabad or Lahore is realistic.',
     bookingWindowNote:
-      'PIA\'s UK network has expanded significantly through 2025 and 2026 after a long suspension, and frequency is still settling. Confirm the current weekly schedule before assuming daily availability, and book 2 to 3 months ahead of Eid or wedding season.',
+      'PIA\'s UK network has expanded significantly through 2025 and 2026 after a long suspension. Confirm the current routing and schedule directly with PIA before assuming this is a direct service, and book 2 to 3 months ahead of Eid or wedding season regardless of routing.',
     peakPeriodIds: ['eid-al-fitr', 'eid-al-adha', 'wedding-season', 'uk-summer-holidays'],
   },
   {
     slug: 'birmingham-lahore',
     airportSlug: 'birmingham',
     destinationSlug: 'lahore',
-    flightTime: '8h direct',
-    frequency: 'Weekly direct, more via connection',
+    flightTime: 'Unverified — see note',
+    frequency: 'Unverified — confirm directly with PIA before booking',
     airlineSlugs: ['pia'],
     isDirect: true,
+    verification: {
+      status: 'unverified',
+      sourceName: 'Secondary investigation lead only (not a primary source): PIA UK network reporting across multiple independent Pakistani aviation news outlets, July 2026.',
+      verifiedDate: '2026-07-13',
+      reviewDueDate: '2026-08-13',
+      note: 'Current 2026 secondary reporting describes PIA\'s direct Lahore services as ex-Manchester and ex-Heathrow only, with no mention of a Birmingham–Lahore direct service — but no primary source (PIA\'s own site is Cloudflare-blocked; Birmingham Airport\'s own destinations page could not be located) could be reached to confirm this either way. Kept unverified pending a confirmed primary source; check PIA\'s own booking system before assuming Lahore is served direct from Birmingham.',
+    },
     intro:
-      'Birmingham\'s direct PIA service to Lahore gives the Midlands\' large Punjabi community a non-stop option alongside the existing Islamabad route, sparing you either a drive to Manchester or a Gulf connection.',
+      'Current 2026 route reporting describes PIA\'s direct Lahore services as ex-Manchester and ex-Heathrow only — we can\'t currently confirm a direct Birmingham–Lahore PIA service. Birmingham\'s confirmed PIA direct route is to Islamabad; a connection via there, Manchester, or a Gulf hub is realistic. Check PIA\'s own booking system directly before booking.',
     bookingWindowNote:
-      'This direct service is newer and runs at a lower weekly frequency than the Manchester equivalent, so confirm seat availability well ahead of Eid or wedding season and have a Gulf-connecting fare priced as a fallback.',
+      'Confirm the current routing and airline directly before booking — do not assume a direct Birmingham–Lahore option exists. Book 2 to 3 months ahead of Eid or wedding season regardless of routing.',
     peakPeriodIds: ['eid-al-fitr', 'eid-al-adha', 'wedding-season', 'uk-summer-holidays'],
   },
   {
@@ -174,13 +286,20 @@ export const routes: Route[] = [
     airportSlug: 'birmingham',
     destinationSlug: 'islamabad',
     flightTime: '7h 50m direct',
-    frequency: 'Several times weekly, direct',
+    frequency: 'Frequency unconfirmed this check — direct service itself has reasonable support',
     airlineSlugs: ['pia'],
     isDirect: true,
+    verification: {
+      status: 'unverified',
+      sourceName: 'Secondary investigation leads only (not primary sources), conflicting: PIA UK network reporting vs. a flight-listing aggregator, July 2026.',
+      verifiedDate: '2026-07-13',
+      reviewDueDate: '2026-08-13',
+      note: 'Genuinely conflicting secondary evidence: some current reporting describes Birmingham as a direct PIA point to Islamabad alongside Manchester and Heathrow; one flight-listing aggregator instead showed no current direct service. No primary source (PIA\'s own site is Cloudflare-blocked; Birmingham Airport\'s own destinations page could not be located) could be reached to resolve the conflict. Per the conservative-classification standard, marked unverified pending a direct check of PIA\'s own booking system rather than resolved either way from secondary sources.',
+    },
     intro:
-      'Birmingham to Islamabad is PIA\'s longest-established direct route from the Midlands, predating the airline\'s newer Lahore service, and it remains the most reliable non-stop option for Midlands-based families.',
+      'Birmingham to Islamabad has historically been one of PIA\'s established Midlands routes. Current 2026 reporting is mixed on whether it\'s still operating direct — check PIA\'s own booking system directly for the current routing before assuming a non-stop service.',
     bookingWindowNote:
-      'As the more established of Birmingham\'s two direct Pakistan routes, this one tends to hold marginally more availability during peak weeks than the newer Lahore service, though it\'s still worth booking 2 to 3 months ahead of Eid.',
+      'Confirm the current routing directly with PIA before booking. If travelling for Eid, book 2 to 3 months ahead regardless of whether the route is direct or connecting.',
     peakPeriodIds: ['eid-al-fitr', 'eid-al-adha', 'uk-summer-holidays'],
   },
   {
@@ -216,11 +335,46 @@ export const routes: Route[] = [
     airportSlug: 'london-heathrow',
     destinationSlug: 'mumbai',
     flightTime: '9h direct',
-    frequency: 'Daily direct',
+    frequency: 'Air India and Virgin Atlantic each confirmed 2x daily; British Airways confirmed direct, exact daily count not separately confirmed — see note',
     airlineSlugs: ['british-airways', 'air-india', 'virgin-atlantic'],
     isDirect: true,
+    airlineVerifications: [
+      {
+        airlineSlug: 'british-airways',
+        status: 'verified',
+        sourceName: "British Airways' own \"Direct flights to India\" page (britishairways.com/content/flights/india), stated as \"Last updated: 1 July 2026\"",
+        sourceUrl: 'https://www.britishairways.com/content/flights/india',
+        verifiedDate: '2026-07-13',
+        reviewDueDate: '2026-08-13',
+        effectivePeriod: 'Current as of the page\'s own "Last updated: 1 July 2026" stamp',
+        supportedClaim: 'Confirms BA flies direct London Heathrow/Gatwick to Mumbai among 5 India destinations. Does NOT confirm a Mumbai-specific frequency — the page states only an aggregate "up to 70 flights from the UK a week" across all 5 cities combined.',
+        remainingUncertainty: 'The previously published "3 daily BA" figure came from a 1 Jun 2025 press release and is not reconfirmed by any current source — removed from public copy. Mumbai-specific BA frequency is unconfirmed.',
+      },
+      {
+        airlineSlug: 'air-india',
+        status: 'verified',
+        sourceName: 'Air India\'s own newsroom press release, "Air India elevates Mumbai-London Heathrow services with brand-new B787-9..." (airindia.com), dated 1 Jul 2026',
+        sourceUrl: 'https://www.airindia.com/in/en/newsroom/press-release/Air-India-elevates-Mumbai-London-Heathrow-services-with-brand-new-B787-9-featuring-new-premium-cabins.html',
+        verifiedDate: '2026-07-13',
+        reviewDueDate: '2026-08-13',
+        effectivePeriod: 'Effective 1 Jul 2026 (press release\'s own effective date)',
+        supportedClaim: 'Confirms flights AI131/AI130 on the new Boeing 787-9, and explicitly states "Air India\'s second daily service between Mumbai and London Heathrow will continue to be served by its... Boeing 777-300ER" — i.e. two daily Air India flights, both named.',
+        remainingUncertainty: 'None significant — this is a dated, current, airline-issued primary source naming both daily flight numbers.',
+      },
+      {
+        airlineSlug: 'virgin-atlantic',
+        status: 'verified',
+        sourceName: "Virgin Atlantic's own Mumbai destination page (virginatlantic.com/where-we-fly/asia/india/mumbai)",
+        sourceUrl: 'https://www.virginatlantic.com/where-we-fly/asia/india/mumbai',
+        verifiedDate: '2026-07-13',
+        reviewDueDate: '2026-08-13',
+        effectivePeriod: 'Current at access',
+        supportedClaim: 'States directly: "We fly direct to Mumbai twice a day" — confirms 2x daily Heathrow–Mumbai.',
+        remainingUncertainty: 'None significant for the frequency claim itself.',
+      },
+    ],
     intro:
-      'Heathrow to Mumbai has genuine multi-carrier competition, with British Airways, Air India and Virgin Atlantic all operating direct services. Comparing all three rather than booking the first result is consistently worthwhile.',
+      'Heathrow to Mumbai has genuine multi-carrier competition. Air India and Virgin Atlantic each confirmed via their own current sources to run twice daily; British Airways also operates the route direct, though its exact daily count isn\'t separately confirmed. Comparing all three rather than booking the first result is consistently worthwhile.',
     bookingWindowNote:
       'Less sensitive to booking window than the Punjab and Pakistan routes. Diwali and the December to January window remain the two periods when fares rise sharply, and February to April and September to October offer the most reliable value.',
     peakPeriodIds: ['diwali', 'christmas-new-year', 'uk-summer-holidays'],
@@ -342,17 +496,25 @@ export const routes: Route[] = [
     airportSlug: 'manchester',
     destinationSlug: 'delhi',
     flightTime: '9h 30m direct (currently)',
-    frequency: 'Currently 3 to 4x weekly direct, reducing; confirm before booking',
+    frequency: '3x weekly direct (reduced from 5x weekly in Feb 2026); ending 31 Aug 2026',
     airlineSlugs: ['indigo'],
     isDirect: true,
+    verification: {
+      status: 'verified',
+      sourceName: "IndiGo official press releases: \"IndiGo Adjusts Wide-body Network to Enhance Operational Resilience and Schedule Reliability\" (4 Feb 2026) and \"Amidst unfavorable cost and operational environment, IndiGo temporarily discontinues flights to / from Manchester starting 31 August 2026\" (2 Jun 2026)",
+      sourceUrl: 'https://www.goindigo.in/press-releases/indigo-adjusts-wide-body-network-to-enhance-operational-resilience-and-schedule-reliability.html',
+      verifiedDate: '2026-07-13',
+      reviewDueDate: '2026-08-31',
+      note: 'Primary-sourced directly from IndiGo\'s own press office (both releases fetched and read directly, not via secondary reporting). The Feb 2026 release gives the exact post-cut schedule (Delhi–Manchester 6E0033/6E0034, Mon/Thu/Sun and Mon/Wed/Thu). The Jun 2026 release confirms discontinuation "starting 31 August 2026" and describes it as "temporary," attributed to airspace-constraint-driven cost pressure — but also states one of six Boeing 787-9s is being returned to lessor Norse Atlantic Airways, and unlike the other routes suspended the same week (which got an explicit 1 Oct 2026 resumption date), IndiGo announced no resumption date for Manchester specifically. Treat "temporary" as the airline\'s own characterisation, not a confirmed return date.',
+    },
     intro:
-      'IndiGo launched the first non-stop Manchester to Delhi service in 25 years in November 2025, flying a two-class Boeing 787-9 leased from Norse Atlantic Airways. It\'s currently the only airline flying this route direct, and frequency has already been reduced once on operational grounds, so always confirm the live schedule rather than assuming a fixed weekly pattern.',
+      'IndiGo launched the first non-stop Manchester to Delhi service in 25 years in November 2025, flying a two-class Boeing 787-9 leased from Norse Atlantic Airways. It\'s currently the only airline flying this route direct. IndiGo cut frequency from 5x to 3x weekly in February 2026 citing airspace-related operational strain, and announced in June 2026 that it will discontinue the route entirely from 31 August 2026 — described by IndiGo as temporary, though no resumption date has been given.',
     bookingWindowNote:
-      'Because this is a single-airline direct service with announced frequency cuts, treat any specific date as unconfirmed until checked. If your dates are flexible, compare the direct fare against the well-established one-stop Gulf-carrier options below before committing. The direct service isn\'t necessarily the cheaper or more reliable choice on every date.',
+      'This direct service ends 31 August 2026 per IndiGo\'s own announcement. If your dates are flexible, compare the direct fare against the well-established one-stop Gulf-carrier options below before committing — especially for travel after that date.',
     peakPeriodIds: ['diwali', 'christmas-new-year', 'uk-summer-holidays'],
-    directServiceEndDate: '2026-09-01',
+    directServiceEndDate: '2026-08-31',
     directServiceEndNote:
-      'IndiGo has announced it will withdraw from Manchester entirely from 31 August 2026, ending both the Delhi and Mumbai direct services. If you are travelling after this date, plan around the one-stop alternative below rather than the direct route.',
+      'IndiGo has announced it will discontinue Manchester service entirely from 31 August 2026, ending both the Delhi and Mumbai direct services — described by IndiGo as temporary, with no resumption date announced. If you are travelling after this date, plan around the one-stop alternative below rather than the direct route.',
     connectingAlternative: {
       typicalStops: 1,
       hubAirports: ['Dubai', 'Doha', 'Abu Dhabi', 'Istanbul'],
@@ -365,17 +527,25 @@ export const routes: Route[] = [
     airportSlug: 'manchester',
     destinationSlug: 'mumbai',
     flightTime: '9h 45m direct (currently)',
-    frequency: 'Currently around 4x weekly direct; confirm before booking',
+    frequency: '4x weekly direct (Mon/Tue/Sat/Sun ex-Manchester, per Feb 2026 schedule); ending 31 Aug 2026',
     airlineSlugs: ['indigo'],
     isDirect: true,
+    verification: {
+      status: 'verified',
+      sourceName: "IndiGo official press releases: \"IndiGo Adjusts Wide-body Network to Enhance Operational Resilience and Schedule Reliability\" (4 Feb 2026) and \"Amidst unfavorable cost and operational environment, IndiGo temporarily discontinues flights to / from Manchester starting 31 August 2026\" (2 Jun 2026)",
+      sourceUrl: 'https://www.goindigo.in/press-releases/indigo-adjusts-wide-body-network-to-enhance-operational-resilience-and-schedule-reliability.html',
+      verifiedDate: '2026-07-13',
+      reviewDueDate: '2026-08-31',
+      note: 'Primary-sourced directly from IndiGo\'s own press office (both releases fetched and read directly, not via secondary reporting). The Feb 2026 release gives the exact post-cut schedule (Mumbai–Manchester 6E0031/6E0032, departing Manchester Mon/Tue/Sat/Sun). The Jun 2026 release confirms discontinuation "starting 31 August 2026" and describes it as "temporary" — but also states one of six Boeing 787-9s is being returned to lessor Norse Atlantic Airways, and unlike the other routes suspended the same week (explicit 1 Oct 2026 resumption), IndiGo announced no resumption date for Manchester. Treat "temporary" as the airline\'s own characterisation, not a confirmed return date.',
+    },
     intro:
-      'IndiGo\'s Mumbai to Manchester service, launched in July 2025, was the airline\'s first ever long-haul route and remains the only non-stop link between Manchester and India\'s financial capital. As with the Delhi route, it\'s a single-airline direct service rather than a long-established one, and scheduling has already shifted once since launch.',
+      'IndiGo\'s Mumbai to Manchester service, launched in July 2025, was the airline\'s first ever long-haul route and remains the only non-stop link between Manchester and India\'s financial capital. As with the Delhi route, it\'s a single-airline direct service rather than a long-established one. IndiGo announced in June 2026 that it will discontinue the route entirely from 31 August 2026 — described by IndiGo as temporary, though no resumption date has been given.',
     bookingWindowNote:
-      'Treat the direct schedule as worth double-checking close to your travel date rather than assumed fixed. The well-established one-stop Gulf-carrier options below run far more frequently and are worth comparing on price and convenience, not just kept as a fallback.',
+      'This direct service ends 31 August 2026 per IndiGo\'s own announcement. The well-established one-stop Gulf-carrier options below run far more frequently and are worth comparing on price and convenience, especially for travel after that date.',
     peakPeriodIds: ['diwali', 'christmas-new-year', 'uk-summer-holidays'],
-    directServiceEndDate: '2026-09-01',
+    directServiceEndDate: '2026-08-31',
     directServiceEndNote:
-      'IndiGo has announced it will withdraw from Manchester entirely from 31 August 2026, ending both the Mumbai and Delhi direct services. If you are travelling after this date, plan around the one-stop alternative below rather than the direct route.',
+      'IndiGo has announced it will discontinue Manchester service entirely from 31 August 2026, ending both the Mumbai and Delhi direct services — described by IndiGo as temporary, with no resumption date announced. If you are travelling after this date, plan around the one-stop alternative below rather than the direct route.',
     connectingAlternative: {
       typicalStops: 1,
       hubAirports: ['Dubai', 'Doha', 'Abu Dhabi'],
@@ -477,4 +647,55 @@ export function getRouteAirlines(route: Route) {
 
 export function getRoutePeakPeriods(route: Route) {
   return getPeakPeriodsByIds(route.peakPeriodIds);
+}
+
+export type DisplayDirectness = 'direct' | 'connecting' | 'unverified';
+
+function isVerificationCurrent(v: { status: RouteVerificationStatus; reviewDueDate: string } | undefined, nowIso: string): boolean {
+  if (!v) return false;
+  if (v.status !== 'verified') return false;
+  if (v.reviewDueDate < nowIso) return false;
+  return true;
+}
+
+/** Look up one airline's own verification record on a route, if one was recorded. */
+export function getAirlineVerification(route: Route, airlineSlug: string): AirlineVerification | undefined {
+  return route.airlineVerifications?.find((v) => v.airlineSlug === airlineSlug);
+}
+
+/**
+ * Per-airline display gate (founder correction, Truth Reset continuation) —
+ * a route-level `verification` proves the route itself is direct, never
+ * that every airline in `airlineSlugs` is individually confirmed. This
+ * returns 'verified' only when THAT SPECIFIC airline has its own current,
+ * 'verified' record — never because a different airline on the same route
+ * was verified, and never because the route overall shows "Direct".
+ */
+export function getAirlineDisplayStatus(route: Route, airlineSlug: string, nowIso: string): 'verified' | 'unverified' {
+  return isVerificationCurrent(getAirlineVerification(route, airlineSlug), nowIso) ? 'verified' : 'unverified';
+}
+
+/**
+ * The single gate every public "Direct route" badge must go through
+ * (Truth Reset, July 2026) — never render `route.isDirect` directly.
+ * Returns 'direct' when either the route-level record is fresh and
+ * 'verified', OR at least one airline on the route has its own fresh,
+ * 'verified' record supporting a direct operation (founder correction:
+ * "a route may display Direct only when at least one current airline claim
+ * supports a direct operation" — this is the same requirement, expressed
+ * either at route level for single-operator routes or per-airline for
+ * multi-operator ones). Returns 'connecting' only for routes that were
+ * never claimed direct (`isDirect: false`) — this codebase's standing rule
+ * is that a route under genuine dispute stays `isDirect: true` with an
+ * 'unverified' record rather than being flipped to `isDirect: false`, so
+ * 'connecting' here always reflects a recorded, uncontested shape decision,
+ * not a guess. 'unverified' covers everything else: a missing record, a
+ * non-'verified' status, or an expired `reviewDueDate` — never silently
+ * back to 'direct', and never conflated with 'connecting' either.
+ */
+export function getDisplayDirectness(route: Route, nowIso: string): DisplayDirectness {
+  if (!route.isDirect) return 'connecting';
+  const routeLevelCurrent = isVerificationCurrent(route.verification, nowIso);
+  const anyAirlineCurrent = (route.airlineVerifications ?? []).some((v) => isVerificationCurrent(v, nowIso));
+  return routeLevelCurrent || anyAirlineCurrent ? 'direct' : 'unverified';
 }

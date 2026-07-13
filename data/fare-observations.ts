@@ -18,6 +18,32 @@ export interface FareObservation {
    * predate the field — never backfill a guessed date onto an old entry.
    */
   departureDate?: string;
+  /**
+   * ISO date of the return the fare was quoted FOR (Truth Reset, July 2026).
+   * Required alongside `departureDate` for an observation to be publicly
+   * displayable — see `isPubliclyPublishable()`. A price with no travel
+   * dates doesn't say what it actually applies to; §2 of the Truth Reset
+   * treats that as a fare-integrity issue, not a cosmetic one.
+   */
+  returnDate?: string;
+}
+
+/**
+ * Truth Reset (July 2026): an observation is only safe to show publicly —
+ * as a "Verified Check", counted in any "N fares tracked" total, or included
+ * in a price range — once it records BOTH the departure and return dates it
+ * was quoted for. This is deliberately strict: as of this pass, **none** of
+ * the 18 observations below satisfy it (only some have `departureDate`, and
+ * `returnDate` didn't exist as a field before this pass), so every public
+ * fare display on the site will honestly degrade to "no fare checks logged
+ * yet" until fares are re-logged with both dates. That's an intentional,
+ * disclosed consequence of the accuracy standard, not a bug — see
+ * docs/LAUNCH_BLOCKERS.md (TR-002) for the founder-facing impact statement.
+ * Never delete an incomplete observation to "fix" this — append complete
+ * ones going forward instead.
+ */
+export function isPubliclyPublishable(o: FareObservation): boolean {
+  return Boolean(o.departureDate && o.returnDate);
 }
 
 /**
@@ -28,11 +54,11 @@ export interface FareObservation {
  * hardcoded price — see data/deals.ts's header comment.
  *
  * Fast-logging template — copy, fill in, paste as a new entry below (never
- * edit an existing one). `departureDate` is required going forward for the
- * 5 Book-By priority routes (README's "Travel Ready Check" section and
- * `/founder`'s cadence tracker both assume it from here on):
+ * edit an existing one). `departureDate` AND `returnDate` are both required
+ * for a new observation to ever appear publicly — see `isPubliclyPublishable`
+ * above:
  *
- *   { id: 'obs-<route>-<cabin>-<n>', routeSlug: '<route-slug>', cabin: 'Economy', observedDate: '2026-01-01', price: 0, priceNote: 'return, per person', source: '<airline>', departureDate: '2026-01-01' },
+ *   { id: 'obs-<route>-<cabin>-<n>', routeSlug: '<route-slug>', cabin: 'Economy', observedDate: '2026-01-01', price: 0, priceNote: 'return, per person', source: '<airline>', departureDate: '2026-01-01', returnDate: '2026-01-15' },
  */
 export const fareObservations: FareObservation[] = [
   { id: 'obs-man-lhe-economy-1', routeSlug: 'manchester-lahore', cabin: 'Economy', observedDate: '2026-06-15', price: 489, priceNote: 'return, per person', source: 'PIA' },
@@ -61,6 +87,7 @@ export function getObservationsByRoute(routeSlug: string) {
     .sort((a, b) => a.observedDate.localeCompare(b.observedDate));
 }
 
+/** Latest observation regardless of publish-completeness — for internal/founder cadence tracking only, never public display. */
 export function getLatestObservation(routeSlug: string) {
   const observations = getObservationsByRoute(routeSlug);
   return observations[observations.length - 1];
@@ -70,6 +97,17 @@ export function getObservationsByRouteAndCabin(routeSlug: string, cabin: DealCab
   return fareObservations
     .filter((o) => o.routeSlug === routeSlug && o.cabin === cabin)
     .sort((a, b) => a.observedDate.localeCompare(b.observedDate));
+}
+
+/** Same as getObservationsByRouteAndCabin, filtered to what's safe to show publicly (see isPubliclyPublishable). */
+export function getPublishableObservationsByRouteAndCabin(routeSlug: string, cabin: DealCabin) {
+  return getObservationsByRouteAndCabin(routeSlug, cabin).filter(isPubliclyPublishable);
+}
+
+/** Public-safe "last checked fare" for Book-By's Verified Check callout — never the internal getLatestObservation. */
+export function getLatestPublishableObservation(routeSlug: string) {
+  const publishable = getObservationsByRoute(routeSlug).filter(isPubliclyPublishable);
+  return publishable[publishable.length - 1];
 }
 
 export interface FareRangeSummary {
@@ -86,11 +124,12 @@ export interface FareRangeSummary {
  * Derives an honest price range from real logged observations — never a
  * "current price" claim. A single observation still returns a summary
  * (min === max), framed by the caller as "one check", not a range. Returns
- * null when nothing has been logged yet for this route/cabin, so callers
- * can fall back to non-perishable route facts instead of showing a price.
+ * null when nothing publishable has been logged yet for this route/cabin
+ * (see isPubliclyPublishable), so callers fall back to non-perishable route
+ * facts instead of showing a price.
  */
 export function getFareRangeSummary(routeSlug: string, cabin: DealCabin): FareRangeSummary | null {
-  const observations = getObservationsByRouteAndCabin(routeSlug, cabin);
+  const observations = getPublishableObservationsByRouteAndCabin(routeSlug, cabin);
   if (observations.length === 0) return null;
   const prices = observations.map((o) => o.price);
   return {

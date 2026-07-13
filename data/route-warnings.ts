@@ -40,9 +40,9 @@ export const routeWarnings: RouteWarning[] = [
     routeSlug: 'manchester-karachi',
     severity: 'caution',
     status: 'active',
-    title: 'Weekly frequency still settling after PIA\'s UK network expansion',
+    title: 'We can\'t currently confirm a direct Manchester–Karachi service',
     body:
-      'PIA\'s UK network has expanded significantly through 2025 and 2026 after a long suspension, and frequency is still settling. Confirm the current weekly schedule before assuming daily availability.',
+      'Current 2026 reporting on PIA\'s expanded UK network describes its direct Manchester services as Lahore and Islamabad only. Confirm the current routing directly with PIA before booking — a connecting itinerary via Islamabad or Lahore is realistic.',
   },
   {
     id: 'lgw-amd-reduced-frequency',

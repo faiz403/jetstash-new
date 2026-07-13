@@ -20,8 +20,8 @@ const standards = [
   },
   {
     icon: Route,
-    title: 'Route claims are verified against real schedules',
-    body: 'Whether a route is direct or connecting is checked against real airline schedules before it goes on the site, not assumed from marketing material. Where sources conflict, we model the route the conservative way and say so. When an airline withdraws a direct service, the route page says that too, with the date.',
+    title: 'A route only says "Direct" once we\'ve checked, and we say when we haven\'t yet',
+    body: 'A route page only claims direct service once that\'s been checked against a real airline schedule, with a source and date on record — never assumed from marketing material. Where we haven\'t completed that check yet, the page says "verification pending" rather than presenting an unconfirmed claim as settled. Where sources conflict, we model the route the conservative way and say so. When an airline withdraws a direct service, the route page says that too, with the date.',
   },
   {
     icon: ShieldCheck,

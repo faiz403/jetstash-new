@@ -38,7 +38,11 @@ export type TravelReadyVerdict =
   | 'visa-or-entry-permission-needed'
   | 'document-timing-may-affect-booking'
   | 'official-confirmation-required'
-  | 'not-enough-information';
+  | 'not-enough-information'
+  /** Return date is before the departure date — an input error, not a travel-readiness judgement. Never reaches the rule engine. */
+  | 'invalid-date-range'
+  /** Departure date is in the past relative to `now` — an input error, not a travel-readiness judgement. Never reaches the rule engine. */
+  | 'invalid-departure-date';
 
 /** What the traveller told us they already hold, if anything. */
 export type ExemptionDocument = 'nicop-poc' | 'oci' | 'visa-or-permit' | 'none';
@@ -112,6 +116,24 @@ function notEnoughInformation(reason: string): TravelReadyResult {
   };
 }
 
+/**
+ * Founder correction: an invalid date entry (return before departure, or a
+ * departure date already in the past) must produce its own specific
+ * validation verdict and must NEVER reach the passport/visa rule engine
+ * below — "a definite result" or "a non-empty headline" alone isn't
+ * sufficient; the wording must name the actual problem.
+ */
+function invalidDateResult(verdict: 'invalid-date-range' | 'invalid-departure-date', headline: string, nextAction: string): TravelReadyResult {
+  return {
+    verdict,
+    headline,
+    checks: [],
+    nextAction,
+    disclaimer: DISCLAIMER,
+    engineSignal: null,
+  };
+}
+
 export function evaluateTravelReadiness(input: TravelReadyCheckInput, now: Date): TravelReadyResult {
   const destination = getDestinationBySlug(input.destinationSlug);
   if (!destination) return notEnoughInformation('We don’t recognise that destination.');
@@ -124,6 +146,23 @@ export function evaluateTravelReadiness(input: TravelReadyCheckInput, now: Date)
   }
 
   const nowIso = now.toISOString().slice(0, 10);
+
+  // ── Date validation — gates the rule engine entirely, never blended with
+  // a passport/visa judgement ─────────────────────────────────────────────
+  if (input.departureDate && input.returnDate && input.returnDate < input.departureDate) {
+    return invalidDateResult(
+      'invalid-date-range',
+      'Your return date is before your departure date — check your dates before continuing.',
+      'Re-enter your departure and return dates so the return date falls on or after the departure date, then check again.'
+    );
+  }
+  if (input.departureDate && input.departureDate < nowIso) {
+    return invalidDateResult(
+      'invalid-departure-date',
+      'Your departure date is in the past — check your dates before continuing.',
+      'Re-enter a departure date that hasn’t already passed, then check again.'
+    );
+  }
 
   const exemptionScope: TravelReadyNationalityScope | null =
     input.exemptionDocument === 'nicop-poc'
@@ -251,6 +290,23 @@ export function evaluateTravelReadiness(input: TravelReadyCheckInput, now: Date)
         officialSource: visaRule.officialSource,
         lastVerifiedDate: visaRule.lastVerifiedDate,
       });
+    } else if (visaRule.typicalProcessingDays === 0) {
+      // Genuinely nothing to arrange in advance — issued automatically on
+      // arrival (e.g. UAE/Qatar visitor visas). Treating this the same as
+      // an unfiled advance-application visa (see the `caution`/`fail`
+      // branch below) produced a confirmed false-friction bug: it told
+      // travellers to "start your application now" for a visa that has no
+      // application step at all. Zero processing days is a pass, not a
+      // caution.
+      visaOutcome = 'pass';
+      checks.push({
+        id: 'visa-requirement',
+        label: 'Visa or entry permission',
+        status: 'pass',
+        detail: `${visaRule.requirement}${visaRule.caveat ? ` ${visaRule.caveat}` : ''}`,
+        officialSource: visaRule.officialSource,
+        lastVerifiedDate: visaRule.lastVerifiedDate,
+      });
     } else {
       const daysToDeparture = daysBetweenIso(nowIso, input.departureDate);
       if (visaRule.typicalProcessingDays !== undefined) {
@@ -300,6 +356,8 @@ export function evaluateTravelReadiness(input: TravelReadyCheckInput, now: Date)
     'document-timing-may-affect-booking': 'A document you still need to arrange may affect your timing — avoid a non-refundable fare for now.',
     'official-confirmation-required': 'One of our rules is due for a refresh — official confirmation is required before we can give you a clear answer.',
     'not-enough-information': 'Not enough information to assess this yet.',
+    'invalid-date-range': 'Your return date is before your departure date — check your dates before continuing.',
+    'invalid-departure-date': 'Your departure date is in the past — check your dates before continuing.',
   };
 
   const NEXT_ACTIONS: Record<TravelReadyVerdict, string> = {
@@ -309,6 +367,8 @@ export function evaluateTravelReadiness(input: TravelReadyCheckInput, now: Date)
     'document-timing-may-affect-booking': 'Start your application now. Consider a flexible or refundable fare until it’s confirmed.',
     'official-confirmation-required': 'Check the official source below directly — our last verification has aged past the point we’re confident relying on it.',
     'not-enough-information': 'Check official government guidance directly for your specific nationality and destination.',
+    'invalid-date-range': 'Re-enter your departure and return dates so the return date falls on or after the departure date, then check again.',
+    'invalid-departure-date': 'Re-enter a departure date that hasn’t already passed, then check again.',
   };
 
   const engineSignal: TravelReadySignal | null =

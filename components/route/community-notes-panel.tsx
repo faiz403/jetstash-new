@@ -1,4 +1,4 @@
-import { MessageSquareText, BadgeCheck } from 'lucide-react';
+import { BadgeCheck } from 'lucide-react';
 import type { CommunityNote } from '@/data/community-notes';
 
 function formatNoteDate(iso: string): string {
@@ -7,23 +7,16 @@ function formatNoteDate(iso: string): string {
 
 /**
  * Real traveller-submitted notes for this route/destination/airport. There
- * is currently no submission pipeline, so this almost always renders the
- * honest empty state below rather than fabricated testimonials — see
- * data/community-notes.ts.
+ * is currently no submission pipeline, so `notes` is almost always empty —
+ * per the Truth Reset's explicit instruction, an empty result renders
+ * nothing at all (no heading, no container, no "not yet" placeholder),
+ * rather than an honest-sounding empty state. The caller (route page) must
+ * not render this section's heading/container either when notes is empty —
+ * see the conditional wrapping in app/routes/[slug]/page.tsx.
  */
 export function CommunityNotesPanel({ notes }: { notes: CommunityNote[] }) {
   if (notes.length === 0) {
-    return (
-      <div className="flex flex-col items-center rounded-md border border-dashed border-ink-200 bg-white px-6 py-10 text-center">
-        <div className="flex h-11 w-11 items-center justify-center rounded-full bg-ink-50 text-ink-400">
-          <MessageSquareText className="h-5 w-5" strokeWidth={2} />
-        </div>
-        <p className="mt-4 max-w-sm text-sm leading-relaxed text-ink-600">
-          No community notes recorded for this route yet. This section will fill in with real traveller experiences
-          over time, not manufactured reviews.
-        </p>
-      </div>
-    );
+    return null;
   }
 
   return (

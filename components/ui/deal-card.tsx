@@ -1,11 +1,11 @@
 import Link from 'next/link';
 import { Deal, DealCabin, formatChecked } from '@/data/deals';
-import { getRouteByAirportAndDestination } from '@/data/routes';
+import { getRouteByAirportAndDestination, getDisplayDirectness } from '@/data/routes';
 import { getDestinationBySlug } from '@/data/destinations';
-import { getObservationsByRoute, getFareRangeSummary } from '@/data/fare-observations';
+import { getFareRangeSummary } from '@/data/fare-observations';
 import { getDealBookingUrl } from '@/lib/booking-providers';
 import { getFareFreshnessState, daysBetweenIso, OBSERVATION_STALE_DAYS } from '@/lib/freshness-thresholds';
-import { Plane, ArrowUpRight, TrendingUp } from 'lucide-react';
+import { Plane, ArrowUpRight } from 'lucide-react';
 import { Badge } from './badge';
 import { DestinationVisual } from './destination-visual';
 import { TrackedOutboundLink } from './tracked-outbound-link';
@@ -18,15 +18,14 @@ const cabinLabel: Record<DealCabin, string> = {
 
 export function DealCard({ deal }: { deal: Deal }) {
   const matchedRoute = getRouteByAirportAndDestination(deal.fromAirportSlug, deal.toDestinationSlug);
-  // Fare history context, not a marketing tag — reinforces this is a tracked route, not a one-off "today's deal".
-  const observations = matchedRoute ? getObservationsByRoute(matchedRoute.slug) : [];
   // The only source of truth for what this card shows as a price: a real
   // logged range/check, or nothing at all — never a hardcoded figure that
   // can go stale. See data/deals.ts's header comment.
   const range = matchedRoute ? getFareRangeSummary(matchedRoute.slug, deal.cabin) : null;
   const destination = getDestinationBySlug(deal.toDestinationSlug);
   const flightTime = matchedRoute?.flightTime ?? destination?.flightTimeFromUK;
-  const directness = matchedRoute ? (matchedRoute.isDirect ? 'Direct' : 'Via connection') : undefined;
+  const displayDirectness = matchedRoute ? getDisplayDirectness(matchedRoute, new Date().toISOString().slice(0, 10)) : undefined;
+  const directness = displayDirectness === 'direct' ? 'Direct' : displayDirectness === 'unverified' ? 'Verification pending' : displayDirectness === 'connecting' ? 'Via connection' : undefined;
   const nowIso = new Date().toISOString().slice(0, 10);
   const freshness = range ? getFareFreshnessState(daysBetweenIso(range.latestDate, nowIso)) : null;
   const isStale = freshness === 'stale';
@@ -105,11 +104,8 @@ export function DealCard({ deal }: { deal: Deal }) {
             )}
           </>
         )}
-        {observations.length > 1 && (
-          <div className="mt-1.5 flex items-center gap-1.5 text-xs text-ink-400">
-            <TrendingUp className="h-3.5 w-3.5" strokeWidth={2} />
-            {observations.length} fares tracked on this route. See the full history on the route guide
-          </div>
+        {range && range.count > 1 && (
+          <p className="mt-1.5 text-xs text-ink-400">See the full history on the route guide.</p>
         )}
 
         <TrackedOutboundLink

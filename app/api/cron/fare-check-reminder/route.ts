@@ -11,10 +11,16 @@ import { siteConfig } from '@/lib/site-config';
  * Reuses lib/founder-insights.ts's existing `bookby-cadence` section so the
  * email and the /founder dashboard can never disagree about what's overdue.
  *
- * Protected by CRON_SECRET (Vercel sets this automatically for its own Cron
- * Jobs when the env var is configured; see README's "Environment variables").
- * Fails clearly (logs, 503) if RESEND_API_KEY isn't set — same fail-clear
- * convention as every other email-sending route in this app.
+ * Truth Reset (July 2026, TR-011): the subject line used to say "N priority
+ * routes due a fare check" even when the real reason was a missing
+ * departureDate on an otherwise-fresh observation — a different problem
+ * needing a different action, not a stale price. The subject is now
+ * generic ("need fare-data attention") and the body groups routes by their
+ * actual reason so it never contradicts itself. The email also no longer
+ * links to /founder — that page correctly 404s in production by design (see
+ * app/founder/page.tsx's dashboardEnabled()) and must not be made public
+ * just to give this email a working link; the body includes each route's
+ * full detail text directly instead.
  */
 export async function GET(req: NextRequest) {
   const cronSecret = process.env.CRON_SECRET;
@@ -39,13 +45,39 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ sent: false, reason: 'RESEND_API_KEY not set.' }, { status: 503 });
   }
 
+  // Group by the actual reason (matched against bookByCadenceStatus's own
+  // known detail strings, lib/founder-insights.ts) so the email never claims
+  // "due a fare check" for a route that's actually fresh but missing a date
+  // field — those are different problems needing different actions.
+  const missingDate = overdue.filter((i) => i.detail.includes('none record departureDate yet'));
+  const staleOrOverdue = overdue.filter((i) => i.detail.includes('days old'));
+  const neverChecked = overdue.filter((i) => i.detail.includes('No fare observations logged yet'));
+
+  const sections: string[] = [];
+  if (staleOrOverdue.length > 0) {
+    sections.push(
+      `Fare check needed (observation is aging or overdue):\n${staleOrOverdue.map((i) => `- ${i.label}: ${i.detail}`).join('\n')}`
+    );
+  }
+  if (neverChecked.length > 0) {
+    sections.push(`No fare ever logged yet:\n${neverChecked.map((i) => `- ${i.label}: ${i.detail}`).join('\n')}`);
+  }
+  if (missingDate.length > 0) {
+    sections.push(
+      `Fresh, but missing departure/return dates (a data-completeness issue, not a stale price):\n${missingDate.map((i) => `- ${i.label}: ${i.detail}`).join('\n')}`
+    );
+  }
+
   const to = process.env.CONTACT_TO_EMAIL ?? siteConfig.contactEmail;
-  const lines = overdue.map((i) => `- ${i.label}: ${i.detail}`);
+  const subjectParts: string[] = [];
+  if (staleOrOverdue.length + neverChecked.length > 0) subjectParts.push(`${staleOrOverdue.length + neverChecked.length} due a check`);
+  if (missingDate.length > 0) subjectParts.push(`${missingDate.length} missing dates`);
+
   const result = await sendResendEmail({
     apiKey,
     to,
-    subject: `JetStash: ${overdue.length} priority route${overdue.length === 1 ? '' : 's'} due a fare check`,
-    text: `${lines.join('\n')}\n\nFull detail: ${siteConfig.url}/founder`,
+    subject: `JetStash: ${overdue.length} priority route${overdue.length === 1 ? '' : 's'} need fare-data attention (${subjectParts.join(', ')})`,
+    text: `${sections.join('\n\n')}\n\nThis is the complete detail — there's no further link, since the Founder dashboard is intentionally not public. Run locally (or with FOUNDER_DASHBOARD_ENABLED=true set) to review interactively.`,
     replyTo: to,
     failureMessage: 'Could not send the fare-check reminder email.',
   });

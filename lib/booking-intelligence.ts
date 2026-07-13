@@ -2,7 +2,7 @@ import { getRouteBySlug, getRouteAirport, getRouteDestination } from '@/data/rou
 import { getPeakPeriodById } from '@/data/peak-periods';
 import { getUpcomingOccurrences, type PeakDatePrecision } from '@/data/peak-period-dates';
 import { getBookingWindowsByRoute } from '@/data/booking-windows';
-import { getLatestObservation } from '@/data/fare-observations';
+import { getLatestPublishableObservation } from '@/data/fare-observations';
 
 /**
  * Book-By Countdown — the single derivation layer for every booking-
@@ -177,7 +177,7 @@ export function computeBookBySnapshot(routeSlug: string, now: Date): BookBySnaps
     state = 'pre-surge';
   }
 
-  const latest = getLatestObservation(routeSlug);
+  const latest = getLatestPublishableObservation(routeSlug);
   const latestObservation = latest
     ? {
         price: latest.price,
@@ -236,6 +236,40 @@ export function formatBookByDate(iso: string): string {
     month: 'long',
     year: 'numeric',
   });
+}
+
+/**
+ * TR-001 regression (Truth Reset, founder correction): the exact
+ * visitor-facing label for `bookByDate`, extracted as a pure function so it
+ * can be regression-tested without a DOM/rendering harness. A past
+ * `bookByDate` must NEVER be labelled "Book by" — that phrasing presents a
+ * date as an upcoming instruction, and once `computedForDate` has passed it,
+ * the label must switch to a past-tense form instead. Used verbatim by
+ * `BookByCountdown`'s legend row.
+ */
+export function getBookByDateLabel(snapshot: Pick<BookBySnapshot, 'bookByDate' | 'bookByBasis' | 'computedForDate'>): string {
+  const hasPassed = snapshot.bookByDate < snapshot.computedForDate;
+  if (!hasPassed) return `Book by ${formatBookByDate(snapshot.bookByDate)}`;
+  return snapshot.bookByBasis === 'route-recommendation'
+    ? `Recommended window closed ${formatBookByDate(snapshot.bookByDate)}`
+    : `Sharp rise began ${formatBookByDate(snapshot.bookByDate)}`;
+}
+
+/**
+ * The top-of-card label — same rule as `getBookByDateLabel`, but prefers
+ * "Window opens X" when there's a recommended window that hasn't opened yet
+ * (and `bookByDate` itself hasn't passed). Once `bookByDate` has passed,
+ * this always defers to the past-tense label — a "Window opens" framing on
+ * a date that's already gone would be exactly the same bug this fixes.
+ */
+export function getBookByTopLabel(
+  snapshot: Pick<BookBySnapshot, 'bookByDate' | 'bookByBasis' | 'computedForDate' | 'recommendedWindow'>
+): string {
+  const hasPassed = snapshot.bookByDate < snapshot.computedForDate;
+  if (!hasPassed && snapshot.recommendedWindow) {
+    return `Window opens ${formatBookByDate(snapshot.recommendedWindow.openDate)}`;
+  }
+  return getBookByDateLabel(snapshot);
 }
 
 /** "expected 10 March 2027" vs "8 November 2026" vs "around 20 July 2026" — precision stays visible. */
