@@ -1,4 +1,4 @@
-import { getRouteByAirportAndDestination } from './routes';
+import { getRouteByAirportAndDestination, getDisplayDirectness } from './routes';
 import { getFareRangeSummary } from './fare-observations';
 
 export type DealCabin = 'Economy' | 'Premium Economy' | 'Business';
@@ -17,6 +17,14 @@ export type DealCategory = 'flight' | 'package' | 'business' | 'umrah';
  * getFareRangeSummary(routeSlug, cabin). That keeps exactly one source of
  * truth for "what have we actually seen this fare cost" and means no card
  * can silently go stale the way a hardcoded price used to.
+ *
+ * `categoryTag` is curation-only marketing copy ("Umrah package", "City
+ * break") — it must never assert route directness. A "Direct flight"/
+ * "Connecting" claim is never stored as static data; it's always computed
+ * live from the route-verification system via getDealDirectnessLabel()
+ * below (Truth Reset, July 2026 — a static tag previously bypassed
+ * getDisplayDirectness() entirely and could show "Direct flight" on a deal
+ * with no matching Route record, or on a route that was actually unverified).
  */
 export interface Deal {
   id: string;
@@ -28,7 +36,28 @@ export interface Deal {
   toCity: string;
   toCountry: string;
   airline: string;
-  tag?: string;
+  categoryTag?: string;
+}
+
+export type DealDirectnessLabel = 'Direct flight' | 'Connecting' | undefined;
+
+/**
+ * The single gate every deal/search card's directness badge must go
+ * through — mirrors getDisplayDirectness() exactly. Returns 'Direct flight'
+ * only when a matching Route record exists AND its verification is current
+ * and unexpired; 'Connecting' only when a matching Route record exists and
+ * is evidenced as non-direct; undefined (no badge) whenever there is no
+ * matching Route record at all, or the route is unverified — an unknown
+ * route is never described as "Connecting", and an unverified route never
+ * shows "Direct flight".
+ */
+export function getDealDirectnessLabel(deal: Pick<Deal, 'fromAirportSlug' | 'toDestinationSlug'>, nowIso: string): DealDirectnessLabel {
+  const route = getRouteByAirportAndDestination(deal.fromAirportSlug, deal.toDestinationSlug);
+  if (!route) return undefined;
+  const displayDirectness = getDisplayDirectness(route, nowIso);
+  if (displayDirectness === 'direct') return 'Direct flight';
+  if (displayDirectness === 'connecting') return 'Connecting';
+  return undefined;
 }
 
 export const deals: Deal[] = [
@@ -42,7 +71,6 @@ export const deals: Deal[] = [
     toCity: 'Lahore',
     toCountry: 'Pakistan',
     airline: 'PIA',
-    tag: 'Direct flight',
   },
   {
     // Truth Reset (July 2026): airline corrected from 'British Airways' to 'PIA'.
@@ -60,7 +88,6 @@ export const deals: Deal[] = [
     toCity: 'Islamabad',
     toCountry: 'Pakistan',
     airline: 'PIA',
-    tag: 'Direct flight',
   },
   {
     id: 'lhr-del-economy',
@@ -72,7 +99,6 @@ export const deals: Deal[] = [
     toCity: 'Delhi',
     toCountry: 'India',
     airline: 'Virgin Atlantic',
-    tag: 'Direct flight',
   },
   {
     id: 'bhx-atq-economy',
@@ -84,7 +110,6 @@ export const deals: Deal[] = [
     toCity: 'Amritsar',
     toCountry: 'India',
     airline: 'Air India',
-    tag: 'Direct flight',
   },
   {
     id: 'man-dxb-economy',
@@ -96,7 +121,6 @@ export const deals: Deal[] = [
     toCity: 'Dubai',
     toCountry: 'United Arab Emirates',
     airline: 'Emirates',
-    tag: 'Direct flight',
   },
   {
     id: 'lhr-doh-economy',
@@ -108,7 +132,6 @@ export const deals: Deal[] = [
     toCity: 'Doha',
     toCountry: 'Qatar',
     airline: 'Qatar Airways',
-    tag: 'Direct flight',
   },
   {
     id: 'dxb-business-man',
@@ -170,7 +193,7 @@ export const deals: Deal[] = [
     toCity: 'Jeddah',
     toCountry: 'Saudi Arabia',
     airline: 'Saudia',
-    tag: 'Umrah package',
+    categoryTag: 'Umrah package',
   },
   {
     id: 'umrah-package-extended',
@@ -182,7 +205,7 @@ export const deals: Deal[] = [
     toCity: 'Madinah',
     toCountry: 'Saudi Arabia',
     airline: 'Saudia',
-    tag: 'Umrah package',
+    categoryTag: 'Umrah package',
   },
   {
     id: 'man-ist-package',
@@ -194,7 +217,7 @@ export const deals: Deal[] = [
     toCity: 'Istanbul',
     toCountry: 'Turkey',
     airline: 'Turkish Airlines',
-    tag: 'City break',
+    categoryTag: 'City break',
   },
   {
     id: 'bhx-ayt-package',
@@ -206,7 +229,7 @@ export const deals: Deal[] = [
     toCity: 'Antalya',
     toCountry: 'Turkey',
     airline: 'Jet2',
-    tag: 'Family all-inclusive',
+    categoryTag: 'Family all-inclusive',
   },
   {
     id: 'lgw-rak-package',
@@ -218,7 +241,7 @@ export const deals: Deal[] = [
     toCity: 'Marrakech',
     toCountry: 'Morocco',
     airline: 'easyJet',
-    tag: 'City break',
+    categoryTag: 'City break',
   },
   // Turkey & Morocco coverage additions (July 2026) — fill destination/cabin
   // coverage gaps, same curation-only rule as the header comment.
@@ -298,7 +321,7 @@ export const deals: Deal[] = [
     toCity: 'Barcelona',
     toCountry: 'Spain',
     airline: 'Ryanair',
-    tag: 'Flight only',
+    categoryTag: 'Flight only',
   },
   {
     id: 'brs-fao-package',
@@ -310,7 +333,7 @@ export const deals: Deal[] = [
     toCity: 'Faro',
     toCountry: 'Portugal',
     airline: 'TUI',
-    tag: 'Family holiday',
+    categoryTag: 'Family holiday',
   },
   // ─── Added to fill destination coverage gaps — see note below ───
   {

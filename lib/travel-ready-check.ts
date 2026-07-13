@@ -72,6 +72,8 @@ export interface TravelReadyCheckItem {
   detail: string;
   officialSource?: { title: string; url: string };
   lastVerifiedDate?: string;
+  /** The rule's own reviewDueDate, unmodified — never a newly invented interval. */
+  reviewDueDate?: string;
   stale?: boolean;
 }
 
@@ -204,6 +206,7 @@ export function evaluateTravelReadiness(input: TravelReadyCheckInput, now: Date)
       detail: 'This rule is due for re-verification — official confirmation required rather than relying on our last check.',
       officialSource: passportRule.officialSource,
       lastVerifiedDate: passportRule.lastVerifiedDate,
+      reviewDueDate: passportRule.reviewDueDate,
       stale: true,
     });
   } else {
@@ -221,6 +224,7 @@ export function evaluateTravelReadiness(input: TravelReadyCheckInput, now: Date)
         : `${passportRule.requirement} Your entered expiry date does not appear to satisfy this — check before booking.`,
       officialSource: passportRule.officialSource,
       lastVerifiedDate: passportRule.lastVerifiedDate,
+      reviewDueDate: passportRule.reviewDueDate,
     });
   }
 
@@ -237,6 +241,7 @@ export function evaluateTravelReadiness(input: TravelReadyCheckInput, now: Date)
         detail: 'This exemption rule is due for re-verification — official confirmation required.',
         officialSource: exemptionRule.officialSource,
         lastVerifiedDate: exemptionRule.lastVerifiedDate,
+        reviewDueDate: exemptionRule.reviewDueDate,
         stale: true,
       });
     } else {
@@ -248,6 +253,7 @@ export function evaluateTravelReadiness(input: TravelReadyCheckInput, now: Date)
         detail: exemptionRule.requirement,
         officialSource: exemptionRule.officialSource,
         lastVerifiedDate: exemptionRule.lastVerifiedDate,
+        reviewDueDate: exemptionRule.reviewDueDate,
       });
     }
   } else {
@@ -268,6 +274,7 @@ export function evaluateTravelReadiness(input: TravelReadyCheckInput, now: Date)
         detail: 'This rule is due for re-verification — official confirmation required rather than relying on our last check.',
         officialSource: visaRule.officialSource,
         lastVerifiedDate: visaRule.lastVerifiedDate,
+        reviewDueDate: visaRule.reviewDueDate,
         stale: true,
       });
     } else if (!visaRule.visaRequired) {
@@ -279,6 +286,7 @@ export function evaluateTravelReadiness(input: TravelReadyCheckInput, now: Date)
         detail: visaRule.requirement,
         officialSource: visaRule.officialSource,
         lastVerifiedDate: visaRule.lastVerifiedDate,
+        reviewDueDate: visaRule.reviewDueDate,
       });
     } else if (input.exemptionDocument === 'visa-or-permit') {
       visaOutcome = 'pass';
@@ -289,6 +297,7 @@ export function evaluateTravelReadiness(input: TravelReadyCheckInput, now: Date)
         detail: `${visaRule.requirement} You told us you already hold a visa or entry permit for this trip.`,
         officialSource: visaRule.officialSource,
         lastVerifiedDate: visaRule.lastVerifiedDate,
+        reviewDueDate: visaRule.reviewDueDate,
       });
     } else if (visaRule.typicalProcessingDays === 0) {
       // Genuinely nothing to arrange in advance — issued automatically on
@@ -306,6 +315,7 @@ export function evaluateTravelReadiness(input: TravelReadyCheckInput, now: Date)
         detail: `${visaRule.requirement}${visaRule.caveat ? ` ${visaRule.caveat}` : ''}`,
         officialSource: visaRule.officialSource,
         lastVerifiedDate: visaRule.lastVerifiedDate,
+        reviewDueDate: visaRule.reviewDueDate,
       });
     } else {
       const daysToDeparture = daysBetweenIso(nowIso, input.departureDate);
@@ -319,6 +329,7 @@ export function evaluateTravelReadiness(input: TravelReadyCheckInput, now: Date)
           detail: `${visaRule.requirement}${visaRule.caveat ? ` ${visaRule.caveat}` : ''} You haven’t told us you hold one yet.`,
           officialSource: visaRule.officialSource,
           lastVerifiedDate: visaRule.lastVerifiedDate,
+          reviewDueDate: visaRule.reviewDueDate,
         });
       } else {
         const tight = daysToDeparture < GENERIC_DOCUMENT_SAFETY_DAYS;
@@ -330,6 +341,7 @@ export function evaluateTravelReadiness(input: TravelReadyCheckInput, now: Date)
           detail: `${visaRule.requirement}${visaRule.caveat ? ` ${visaRule.caveat}` : ''} As general guidance (not an official rule), we’d suggest applying at least ${GENERIC_DOCUMENT_SAFETY_DAYS / 7} weeks before travel when no official processing time is published. You haven’t told us you hold one yet.`,
           officialSource: visaRule.officialSource,
           lastVerifiedDate: visaRule.lastVerifiedDate,
+          reviewDueDate: visaRule.reviewDueDate,
         });
       }
     }

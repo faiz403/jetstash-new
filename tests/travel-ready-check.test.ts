@@ -271,3 +271,110 @@ describe('Travel Ready Check — the 11 required journeys', () => {
     expect(result.verdict).toBe('not-enough-information');
   });
 });
+
+describe('Travel Ready review dates (founder final correction) — every supported check must carry the rule\'s own reviewDueDate, never an invented interval', () => {
+  it('Pakistan (Lahore, no NICOP) — every check with an officialSource also carries a reviewDueDate', () => {
+    const result = evaluateTravelReadiness(
+      {
+        destinationSlug: 'lahore',
+        isBritishPassport: true,
+        exemptionDocument: 'none',
+        departureDate: '2027-03-01',
+        returnDate: '2027-03-20',
+        passportExpiryDate: '2029-01-01',
+      },
+      NOW
+    );
+    expect(result.checks.length).toBeGreaterThan(0);
+    for (const check of result.checks) {
+      if (check.officialSource) {
+        expect(check.reviewDueDate, check.id).toBeDefined();
+      }
+    }
+  });
+
+  it('India (Delhi, valid OCI) — the document-exemption check carries a reviewDueDate', () => {
+    const result = evaluateTravelReadiness(
+      {
+        destinationSlug: 'delhi',
+        isBritishPassport: true,
+        exemptionDocument: 'oci',
+        departureDate: '2027-03-01',
+        returnDate: '2027-03-20',
+        passportExpiryDate: '2029-01-01',
+      },
+      NOW
+    );
+    const exemptionCheck = result.checks.find((c) => c.id === 'visa-requirement');
+    expect(exemptionCheck?.reviewDueDate).toBeDefined();
+  });
+
+  it('UAE (Dubai) — both the passport-validity and visa checks carry a reviewDueDate', () => {
+    const result = evaluateTravelReadiness(
+      {
+        destinationSlug: 'dubai',
+        isBritishPassport: true,
+        exemptionDocument: 'none',
+        departureDate: '2027-03-01',
+        returnDate: '2027-03-20',
+        passportExpiryDate: '2029-01-01',
+      },
+      NOW
+    );
+    const passportCheck = result.checks.find((c) => c.id === 'passport-validity');
+    const visaCheck = result.checks.find((c) => c.id === 'visa-requirement');
+    expect(passportCheck?.reviewDueDate).toBeDefined();
+    expect(visaCheck?.reviewDueDate).toBeDefined();
+  });
+
+  it('Qatar (Doha) — both checks carry a reviewDueDate', () => {
+    const result = evaluateTravelReadiness(
+      {
+        destinationSlug: 'doha',
+        isBritishPassport: true,
+        exemptionDocument: 'none',
+        departureDate: '2027-03-01',
+        returnDate: '2027-03-20',
+        passportExpiryDate: '2029-01-01',
+      },
+      NOW
+    );
+    for (const check of result.checks) {
+      expect(check.reviewDueDate, check.id).toBeDefined();
+    }
+  });
+
+  it('Saudi Arabia (Jeddah) — both checks carry a reviewDueDate', () => {
+    const result = evaluateTravelReadiness(
+      {
+        destinationSlug: 'jeddah',
+        isBritishPassport: true,
+        exemptionDocument: 'none',
+        departureDate: '2027-03-01',
+        returnDate: '2027-03-20',
+        passportExpiryDate: '2029-01-01',
+      },
+      NOW
+    );
+    for (const check of result.checks) {
+      expect(check.reviewDueDate, check.id).toBeDefined();
+    }
+  });
+
+  it('reviewDueDate always equals the underlying rule\'s own value — never a newly computed/invented interval (spot check against data/travel-ready-rules.ts\'s shared REVIEW_DUE constant)', () => {
+    const result = evaluateTravelReadiness(
+      {
+        destinationSlug: 'dubai',
+        isBritishPassport: true,
+        exemptionDocument: 'none',
+        departureDate: '2027-03-01',
+        returnDate: '2027-03-20',
+        passportExpiryDate: '2029-01-01',
+      },
+      NOW
+    );
+    for (const check of result.checks) {
+      expect(check.reviewDueDate).toBe('2027-01-12');
+    }
+  });
+});

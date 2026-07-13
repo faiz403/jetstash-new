@@ -1,7 +1,13 @@
 import { describe, it, expect } from 'vitest';
-import { getDisplayDirectness, getAirlineDisplayStatus, getAirlineVerification, getRouteBySlug } from '@/data/routes';
-import { getFareRangeSummary, isPubliclyPublishable, type FareObservation } from '@/data/fare-observations';
-import { deals, hasTrackedFare } from '@/data/deals';
+import { getDisplayDirectness, getAirlineDisplayStatus, getAirlineVerification, getRouteBySlug, getRouteByAirportAndDestination } from '@/data/routes';
+import {
+  getFareRangeSummary,
+  getLatestPublishableObservation,
+  isPubliclyPublishable,
+  fareObservations,
+  type FareObservation,
+} from '@/data/fare-observations';
+import { deals, hasTrackedFare, getDealDirectnessLabel } from '@/data/deals';
 
 const FIXED_TODAY = '2026-07-13';
 
@@ -204,5 +210,124 @@ describe('Section 5 (founder correction) — Verification pending is a distinct 
     const route = getRouteBySlug('manchester-mumbai')!;
     expect(getDisplayDirectness(route, '2026-08-01')).toBe('direct'); // before reviewDueDate
     expect(getDisplayDirectness(route, '2099-01-01')).toBe('unverified'); // long past reviewDueDate
+  });
+});
+
+describe('getDealDirectnessLabel (TR-009, final correction) — a deal/search card must never assert directness independently of the route-verification system', () => {
+  it('1. lhr-isb-economy does not display Direct flight — no Route record exists for London Heathrow–Islamabad', () => {
+    const deal = deals.find((d) => d.id === 'lhr-isb-economy')!;
+    expect(deal).toBeDefined();
+    expect(getRouteByAirportAndDestination(deal.fromAirportSlug, deal.toDestinationSlug)).toBeUndefined();
+    expect(getDealDirectnessLabel(deal, FIXED_TODAY)).toBeUndefined();
+  });
+
+  it('2. no matching Route record means no Direct or Connecting tag, for any airport/destination pair', () => {
+    const label = getDealDirectnessLabel({ fromAirportSlug: 'not-a-real-airport', toDestinationSlug: 'not-a-real-destination' }, FIXED_TODAY);
+    expect(label).toBeUndefined();
+    expect(label).not.toBe('Direct flight');
+    expect(label).not.toBe('Connecting');
+  });
+
+  it('3. an unverified route means no Direct or Connecting tag', () => {
+    // manchester-karachi is isDirect: true but unverified (Truth Reset) —
+    // must render neither claim, not fall back to "Connecting" either.
+    const label = getDealDirectnessLabel({ fromAirportSlug: 'manchester', toDestinationSlug: 'karachi' }, FIXED_TODAY);
+    expect(label).toBeUndefined();
+  });
+
+  it('4. an expired verification means no Direct tag', () => {
+    // manchester-mumbai is verified direct before its reviewDueDate, but
+    // expires (falls back to unverified) long after it — the deal-level
+    // label must track the same expiry, never keep showing Direct flight
+    // past the point getDisplayDirectness itself would demote it.
+    const label = getDealDirectnessLabel({ fromAirportSlug: 'manchester', toDestinationSlug: 'mumbai' }, '2099-01-01');
+    expect(label).toBeUndefined();
+    expect(label).not.toBe('Direct flight');
+  });
+
+  it('5. a currently verified direct route may display Direct flight', () => {
+    const label = getDealDirectnessLabel({ fromAirportSlug: 'manchester', toDestinationSlug: 'mumbai' }, FIXED_TODAY);
+    expect(label).toBe('Direct flight');
+  });
+
+  it('6. a verified connecting route may display Connecting', () => {
+    // leeds-bradford-amritsar is a genuinely evidenced connecting route
+    // (isDirect: false) — no deal currently references this pair, but the
+    // gate function must support it correctly regardless.
+    const label = getDealDirectnessLabel({ fromAirportSlug: 'leeds-bradford', toDestinationSlug: 'amritsar' }, FIXED_TODAY);
+    expect(label).toBe('Connecting');
+  });
+
+  it('7. every current public deal passes the validation — no deal\'s computed directness label ever contradicts getDisplayDirectness for its matched route', () => {
+    for (const deal of deals) {
+      const route = getRouteByAirportAndDestination(deal.fromAirportSlug, deal.toDestinationSlug);
+      const label = getDealDirectnessLabel(deal, FIXED_TODAY);
+      if (!route) {
+        // No matching Route record — must never claim Direct or Connecting.
+        expect(label, `deal ${deal.id} has no matching Route but computed a directness label`).toBeUndefined();
+        continue;
+      }
+      const displayDirectness = getDisplayDirectness(route, FIXED_TODAY);
+      if (displayDirectness === 'direct') {
+        expect(label, `deal ${deal.id} matches a verified-direct route but doesn't show Direct flight`).toBe('Direct flight');
+      } else if (displayDirectness === 'connecting') {
+        expect(label, `deal ${deal.id} matches an evidenced-connecting route but doesn't show Connecting`).toBe('Connecting');
+      } else {
+        expect(label, `deal ${deal.id} matches an unverified route but shows a directness label anyway`).toBeUndefined();
+      }
+    }
+  });
+
+  it('no deal in the public array carries a static tag asserting directness independently — categoryTag is curation-only, never "Direct flight"/"Connecting"', () => {
+    for (const deal of deals) {
+      expect(deal.categoryTag, `deal ${deal.id}`).not.toBe('Direct flight');
+      expect(deal.categoryTag, `deal ${deal.id}`).not.toBe('Connecting');
+    }
+  });
+});
+
+describe('TR-002 direct production audit — enumerate all 18 fare observations, none may be publicly displayable', () => {
+  it('exactly 18 observations exist in the append-only log', () => {
+    expect(fareObservations.length).toBe(18);
+  });
+
+  it('every one of the 18 observations individually fails isPubliclyPublishable (none has both departureDate and returnDate)', () => {
+    const incomplete = fareObservations.filter((o) => !isPubliclyPublishable(o));
+    expect(incomplete.length).toBe(fareObservations.length);
+    for (const o of fareObservations) {
+      expect(isPubliclyPublishable(o), `observation ${o.id}`).toBe(false);
+    }
+  });
+
+  it('getFareRangeSummary returns null for every route+cabin combination present in the 18 observations — none can appear as a price, a Verified Check, or fare history', () => {
+    const pairs = new Set(fareObservations.map((o) => `${o.routeSlug}|${o.cabin}`));
+    for (const pair of pairs) {
+      const [routeSlug, cabin] = pair.split('|') as [string, FareObservation['cabin']];
+      expect(getFareRangeSummary(routeSlug, cabin), `${routeSlug} / ${cabin}`).toBeNull();
+    }
+  });
+
+  it('getLatestPublishableObservation returns undefined for every route with an incomplete observation — Book-By\'s "last checked fare" cannot surface any of the 18', () => {
+    const routeSlugs = new Set(fareObservations.map((o) => o.routeSlug));
+    for (const routeSlug of routeSlugs) {
+      expect(getLatestPublishableObservation(routeSlug), routeSlug).toBeUndefined();
+    }
+  });
+
+  it('no deal in the public array counts as a tracked fare — Deals still reports zero tracked fares', () => {
+    const trackedCount = deals.filter(hasTrackedFare).length;
+    expect(trackedCount).toBe(0);
+  });
+
+  it('every deal whose route has one of the 18 incomplete observations still resolves to hasTrackedFare === false individually', () => {
+    const observedRouteSlugs = new Set(fareObservations.map((o) => o.routeSlug));
+    const affectedDeals = deals.filter((d) => {
+      const route = getRouteByAirportAndDestination(d.fromAirportSlug, d.toDestinationSlug);
+      return route && observedRouteSlugs.has(route.slug);
+    });
+    expect(affectedDeals.length).toBeGreaterThan(0); // sanity: this set is non-empty
+    for (const deal of affectedDeals) {
+      expect(hasTrackedFare(deal), deal.id).toBe(false);
+    }
   });
 });

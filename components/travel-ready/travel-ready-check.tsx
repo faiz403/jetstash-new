@@ -319,6 +319,7 @@ export function TravelReadyCheck({
                         {check.officialSource.title}
                       </a>
                       {check.lastVerifiedDate && ` — verified ${formatShortDate(check.lastVerifiedDate)}`}
+                      {check.reviewDueDate && ` — review due ${formatShortDate(check.reviewDueDate)}`}
                       {check.stale && ' (due for re-verification)'}
                     </p>
                   )}

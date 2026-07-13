@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Deal, DealCabin, formatChecked } from '@/data/deals';
+import { Deal, DealCabin, formatChecked, getDealDirectnessLabel } from '@/data/deals';
 import { getRouteByAirportAndDestination, getDisplayDirectness } from '@/data/routes';
 import { getDestinationBySlug } from '@/data/destinations';
 import { getFareRangeSummary } from '@/data/fare-observations';
@@ -17,6 +17,7 @@ const cabinLabel: Record<DealCabin, string> = {
 };
 
 export function DealCard({ deal }: { deal: Deal }) {
+  const nowIso = new Date().toISOString().slice(0, 10);
   const matchedRoute = getRouteByAirportAndDestination(deal.fromAirportSlug, deal.toDestinationSlug);
   // The only source of truth for what this card shows as a price: a real
   // logged range/check, or nothing at all — never a hardcoded figure that
@@ -24,9 +25,14 @@ export function DealCard({ deal }: { deal: Deal }) {
   const range = matchedRoute ? getFareRangeSummary(matchedRoute.slug, deal.cabin) : null;
   const destination = getDestinationBySlug(deal.toDestinationSlug);
   const flightTime = matchedRoute?.flightTime ?? destination?.flightTimeFromUK;
-  const displayDirectness = matchedRoute ? getDisplayDirectness(matchedRoute, new Date().toISOString().slice(0, 10)) : undefined;
+  const displayDirectness = matchedRoute ? getDisplayDirectness(matchedRoute, nowIso) : undefined;
   const directness = displayDirectness === 'direct' ? 'Direct' : displayDirectness === 'unverified' ? 'Verification pending' : displayDirectness === 'connecting' ? 'Via connection' : undefined;
-  const nowIso = new Date().toISOString().slice(0, 10);
+  // Truth Reset (July 2026): the top-right badge must never assert
+  // directness independently of the verification system — a category tag
+  // (Umrah package, City break) always takes precedence when present;
+  // otherwise the badge is computed live via getDealDirectnessLabel(),
+  // never a static "Direct flight" string from curation data. See TR-009.
+  const topBadge = deal.categoryTag ?? getDealDirectnessLabel(deal, nowIso);
   const freshness = range ? getFareFreshnessState(daysBetweenIso(range.latestDate, nowIso)) : null;
   const isStale = freshness === 'stale';
 
@@ -39,9 +45,9 @@ export function DealCard({ deal }: { deal: Deal }) {
           sublabel={deal.toCountry}
           className="transition-transform duration-500 group-hover:scale-[1.03]"
         />
-        {deal.tag && (
+        {topBadge && (
           <div className="absolute right-4 top-4">
-            <Badge variant={deal.cabin === 'Business' ? 'terracotta' : 'brass'}>{deal.tag}</Badge>
+            <Badge variant={deal.cabin === 'Business' ? 'terracotta' : 'brass'}>{topBadge}</Badge>
           </div>
         )}
       </div>
