@@ -583,3 +583,144 @@ this task's narrow authorisation, flagged here for a future pass.
 
 **Discrepancies found in this pass:** none, beyond the one pre-existing observation noted above (which
 is not a discrepancy relative to this pass's own changes — it predates this pass entirely).
+
+## Fourth pass — airline attribution verification gate (2026-07-14): fixing the Jeddah "Saudia · Direct" defect systemically
+
+The founder flagged that this was explicitly **not** out of scope despite touching the previous
+pass's own "pre-existing observation, not fixed" note: "The current Jeddah Umrah package cards
+publicly show 'Saudia · Direct' even though Saudia's Heathrow to Jeddah status remains unverified.
+This is not outside scope. It is a public airline attribution claim and must be defensible." This
+pass fixed it — narrowly in code scope (4 files), broadly in audit scope (all 34 public deals, not
+just the 2 Jeddah ones), per the founder's explicit instruction not to patch Jeddah alone.
+
+### Section 1 — audit of the systemic airline-attribution path
+
+A repository-wide search for `deal.airline`, `deal.airlineSlug`, airline names on deal/search cards,
+combined labels like "Saudia · Direct", and any airline data inferred independently of route
+verification confirmed: `Deal` has no `airlineSlug` field at all (only ever a free-text `airline:
+string`); `deal.airline` was read in exactly one place in the entire codebase
+(`components/ui/deal-card.tsx`), rendered directly with no reference to any verification check. Every
+other public airline mention (route detail pages' own `getRouteAirlines()` listing, comparison cards)
+operates on real `Route.airlineSlugs` data and was not touched by this defect — deal cards were the
+sole bypass, exactly mirroring TR-009's directness bypass in `deal.tag`.
+
+**Full audit of all 34 public deals against `getDealAirlineDisplayStatus()`:**
+
+| Deal | Route match | Airline named | Verified? |
+|---|---|---|---|
+| `man-lhe-economy`, `man-lhe-business` | manchester-lahore | PIA | **Yes** — single-airline route, route-level `verification` fallback applies |
+| `man-isb-business` | manchester-islamabad | PIA | **Yes** — same fallback |
+| `lhr-bom-economy` | london-heathrow-mumbai | British Airways | **Yes** — explicit per-airline `AirlineVerification` record |
+| `umrah-package-jed`, `lhr-jed-business` | london-heathrow-jeddah | Saudia | No — explicit `AirlineVerification` record with `status: 'unverified'` |
+| `umrah-package-extended` | manchester-madinah | Saudia | No — route is `isDirect: false` (connecting) with no verification for any airline; the route's own intro says a direct Saudia service "doesn't currently operate" |
+| `lhr-med-business` | *(none)* | Saudia | No — **no `london-heathrow-madinah` Route record exists at all** |
+| `lhr-isb-economy`, `lhr-business-lhe` | *(none)* | PIA | No — no matching Route record |
+| `lhr-del-economy`, `lhr-business-del` | london-heathrow-delhi | Virgin Atlantic | No — route has no verification/airlineVerifications at all |
+| `bhx-atq-economy`, `bhx-atq-business` | birmingham-amritsar | Air India | No — no verification record |
+| `man-dxb-economy`, `dxb-business-man` | manchester-dubai | Emirates | No — no verification record |
+| `lhr-doh-economy`, `lhr-doh-business` | london-heathrow-doha | Qatar Airways | No — no verification record |
+| `man-khi-economy` | manchester-karachi | PIA | No — route-level `verification.status` is itself `'unverified'` |
+| `lgw-amd-economy`, `lgw-amd-business` | london-gatwick-ahmedabad | Air India | No — no verification record |
+| 13 Turkey/Morocco/Spain/Portugal/Greece/Italy deals | *(none — these destinations were never modelled in `data/routes.ts`)* | Jet2, easyJet, TUI, Ryanair, SunExpress, Royal Air Maroc, Turkish Airlines | No — no matching Route record for any of them |
+
+**Result: 4 of 34 deals had a genuinely supportable airline claim; 30 did not.** This is a
+substantially larger scope than the single reported Jeddah defect — disclosed here in full, not
+narrowed quietly, per the founder's own instruction to audit systemically.
+
+### Section 2 — the Jeddah correction and the Saudia evidence search
+
+For both Jeddah cards, a dedicated primary-source search was attempted before applying the systemic
+fix, per the founder's explicit instruction (official Saudia, Heathrow Airport, or an authoritative
+schedule source only — no aggregators, snippets, blogs, or model memory):
+
+- `saudia.com`'s Jeddah destination page, and both its `flight-deals-from-london-to-jeddah` and
+  `flight-deals-to-jeddah` booking pages — all three attempts returned Saudia's own bot-detection
+  interruption page, no usable content obtained.
+- `heathrow.com/heathrow-blog/fly-direct-from-heathrow-to-saudi-arabia` — reachable, and states
+  "2 daily flights to Jeddah" under a Saudia Airlines section, dated 2 April 2025. **Excluded as a
+  qualifying source**: despite sitting on Heathrow Airport's own domain, the URL path is explicitly
+  `/heathrow-blog/` — a blog post, which the founder's instructions exclude by category regardless of
+  which domain hosts it. A stricter, literal reading was applied deliberately rather than stretching
+  the "Heathrow Airport" source-type allowance to include blog-format content.
+- A web search for a Saudia press release covering its 2026 London/Heathrow network surfaced no
+  primary source — only a schedule-data aggregator (AeroRoutes) and several travel-news blogs (Simple
+  Flying, Travel And Tour World, Wego, NomadLawyer), all explicitly excluded by the founder's rule.
+
+**No qualifying evidence was obtained.** Saudia's `data/routes.ts` record is unchanged — still
+`status: 'unverified'`, with its existing `sourceName`/`remainingUncertainty` text accurately
+reflecting that no independent source has been found across four separate research rounds this Truth
+Reset (Round 1's original secondary-only claim, Round 2's over-broad BA-covers-Saudia mistake, Round
+3's correction to per-airline unverified, and this Round 4 confirming the gap persists). The public
+correction made this pass is to what the site *claims* about Saudia (now nothing, instead of an
+unsupported "Saudia"), not to what is actually true about Saudia's service — those are deliberately
+tracked as separate facts in TR-010.
+
+Per the founder's explicit instruction, the route continues to display "Direct" on both Jeddah cards,
+because British Airways' own independent evidence remains sufficient for the route-level directness
+claim — Saudia's unverified status does not, and must not, pull the route's own directness down with
+it. Neutral wording along the lines of "Airline options vary" was considered but not used: since the
+systemic fix already produces an accurate, specific outcome ("Verification pending" — genuinely
+correct, since Saudia's status is pending further evidence, not permanently unknowable), inventing
+different wording for this one card would have been an unnecessary inconsistency against the rest of
+the newly-systemic gate.
+
+### Section 3 — systemic validation and tests
+
+`getDealAirlineDisplayStatus(route, airlineSlug, nowIso)` added to `data/routes.ts`: returns
+`'verified'` when an explicit `AirlineVerification` record exists and is current; as a narrow fallback
+**only** when a route has exactly one airline in `airlineSlugs` and no `airlineVerifications` array at
+all (meaning the route-level `verification` evidence is inherently about that single airline, with no
+other airline it could be mistaken for), that route-level record is used instead. Multi-airline routes
+never receive this fallback, regardless of whether one of their airlines happens to be the route's only
+verified one — preserving the standing rule that one airline's evidence must never verify another.
+`getDealAirlineLabel(deal, nowIso)` added to `data/deals.ts`: `undefined` (nothing shown) with no
+matching `Route`; the raw airline name only when verified; `'Verification pending'` otherwise, whether
+because the specific airline lacks a current record or because `deal.airline` isn't even in the
+`airlines.ts` registry at all.
+
+8 new tests added to `tests/route-and-fare-integrity.test.ts`, matching the founder's 7 required cases
+exactly by name, plus one confirming every current Saudia-named deal (Jeddah **and** Madinah) fails
+verification, not just the one originally reported. Full suite: **89/89 passing.**
+
+### Section 4 — quality gates, commit, deployment
+
+Full test suite 89/89, `npx tsc --noEmit` 0 errors, `npm run lint` 0 warnings/errors, `npm run build`
+103/103 static pages, `git diff --check` clean (only pre-existing autocrlf notices), `git status
+--short` showing exactly the 4 intentionally modified files (`components/ui/deal-card.tsx`,
+`data/deals.ts`, `data/routes.ts`, `tests/route-and-fare-integrity.test.ts`) plus the untouched
+`public/concepts/`. Commit `d1d38de1ac54c6f77988fa012bf3928a9c70662f` — "fix: enforce verified airline
+attribution on deal cards", pushed to `origin/main` (`f5d46bb..d1d38de`). Deployment
+`dpl_53yXzx44E5iRw7bGVGMJ7yuEiCmy`, created `2026-07-14T03:48:59+03:00` (52 seconds after the commit's
+own timestamp), status **Ready**, target **Production**, aliased to
+`jetstash.co.uk`/`www.jetstash.co.uk`.
+
+### Section 5 — production verification
+
+Full 34-card sweep of `https://jetstash.co.uk/deals` performed via direct DOM extraction (not a
+sampled subset):
+
+1. **Every Jeddah deal card inspected:** both `umrah-package-jed` (Economy) and `lhr-jed-business`
+   (Business) checked individually — confirmed.
+2. **No card displays Saudia as confirmed without qualifying evidence:** confirmed — neither Jeddah
+   card, nor the Madinah Umrah card, contains the string "Saudia" anywhere in its rendered text.
+3. **Heathrow–Jeddah still displays Direct using BA's independent evidence:** confirmed — both Jeddah
+   cards show "Direct" in their directness suffix, unaffected by Saudia's unverified attribution.
+4. **Every public deal card inspected for unsupported airline names:** confirmed via full-array
+   extraction of all 34 cards' text content — the 13 leisure-route cards with no matching `Route`
+   record show no airline name at all; the remaining unverified cards show "Verification pending"
+   instead of a raw airline name.
+5. **Verified airline names still display correctly:** confirmed — "PIA" on both Manchester–Lahore
+   cards and the Manchester–Islamabad card; "British Airways" on the Heathrow–Mumbai card.
+6. **Unverified airlines do not display as confirmed:** confirmed across all 30 affected deals.
+7. **Directness badges remain correct:** confirmed — the same direct/connecting/unverified pattern as
+   the previous pass, no regression; Jeddah and Mumbai still "Direct", Madinah (Manchester) still
+   "Via connection", the unverified South Asia/Gulf routes still "Verification pending", the no-Route
+   cards still show nothing.
+8. **No prices, counts, or card categories regressed:** confirmed — "18 logged / 0 tracked / 34 search
+   cards" unchanged; category tags (Umrah package, City break, Family all-inclusive, Flight only,
+   Family holiday) all render unchanged on their respective cards.
+9. **No console errors or mobile overflow:** confirmed — zero console errors on `/deals`; no
+   horizontal overflow at 375px (`document.documentElement.scrollWidth === window.innerWidth`).
+
+**Discrepancies found in this pass:** none. Every predicted outcome (derived from the code + data
+audit in Section 1, before touching production) matched the live result exactly.

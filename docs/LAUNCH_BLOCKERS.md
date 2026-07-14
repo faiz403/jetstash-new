@@ -29,28 +29,36 @@ review-due date (new blocker TR-018) — both closed and production-verified thi
 code-correction pass" record near the end of this file and `docs/TRUTH_RESET_PHASE_1.md`'s matching
 section for full evidence.
 
-## Status summary (every blocker, split by state — updated after the final code-correction pass, 2026-07-13)
+**Airline-attribution correction update (2026-07-14):** commit
+`d1d38de1ac54c6f77988fa012bf3928a9c70662f` ("fix: enforce verified airline attribution on deal cards")
+was pushed to `main` and deployed to `jetstash.co.uk` (Vercel deployment
+`dpl_53yXzx44E5iRw7bGVGMJ7yuEiCmy`, status Ready). This corrected the Jeddah Umrah-package cards
+publicly naming Saudia as the operating airline despite Saudia's own Heathrow–Jeddah status being
+unverified — and, per the founder's instruction to audit systemically rather than patch only Jeddah,
+found and corrected the same defect on 29 other deals sitewide. See TR-010's Round 4 entry and the
+"Fourth code-correction pass" record near the end of this file for full evidence.
+
+## Status summary (every blocker, split by state — updated after the airline-attribution correction pass, 2026-07-14)
 
 **Open (genuinely unresolved — no code fix exists, and none is possible without new evidence or new product work):**
 - **TR-017** (P1): Birmingham–Mumbai is a confirmed real connecting corridor with no `Route` record in JetStash's data — a product-coverage gap, not something a data correction can close. Requires a future product-phase addition. Explicitly out of scope for every pass so far, including this one.
 - Manchester–Karachi, Birmingham–Lahore, Birmingham–Islamabad directness remain genuinely unresolved — no qualifying primary source found across three rounds of searching (see TR-006/TR-007). **Production-confirmed** to correctly display "VERIFICATION PENDING" (not Direct, not Connecting, no unsupported frequency) rather than guessing — this closes the *display-safety* mechanism (see TR-015) but does not resolve the underlying directness question, which remains open pending a real primary-source check.
 - BA–Jeddah's specific secondary termination claim (24 Apr 2026) is not explicitly disproven — only unsupported by every primary source reached this session (see TR-010). BA itself is now verified direct and production-confirmed; this residual item is about the specific termination-date claim, not BA's current operation.
-- Saudia's status on Heathrow–Jeddah is unverified (see TR-010) — a genuine, disclosed gap, not resolved this pass. **Production-confirmed** that Saudia is correctly excluded from the verified-airline presentation rather than riding on BA's evidence.
+- **Saudia's underlying Heathrow–Jeddah service status remains genuinely unverified** (see TR-010's Round 4) — a fourth, dedicated primary-source search this pass (Saudia's own site, Heathrow Airport's own domain, a targeted press-release search) found no qualifying evidence; the one candidate reachable (`heathrow.com/heathrow-blog/...`) was excluded as a blog per the founder's own rule, even though it sits on Heathrow's domain. **What changed this pass is only what the site publicly claims about Saudia (now nothing), not the underlying truth of Saudia's operation, which is still unknown.**
 - TR-014 (data freshness / fare-collection automation ceiling) — unchanged, disclosed limitation, not a defect. No production check applies; this is a standing business/data dependency, not something a deployment resolves.
 - Full route-verification backlog (every route beyond the 9 investigated across this Truth Reset) — unchanged; a future verification pass is still required.
 - Reminder-email behaviour (TR-011's fix) — the corrected email copy is deployed, but **an actual production email send has still not been observed** (no send-history is accessible from this environment); genuinely unverified in production, not claimed otherwise.
 
-**Production-verified (confirmed working on `jetstash.co.uk` across all three verification passes, 2026-07-13):**
-TR-001, TR-002 (all 18 fare observations individually audited this pass — see TR-002's own section), TR-003, TR-004, TR-005, TR-006 (display-safety only, see Open above), TR-007 (display-safety only, see Open above), TR-008, TR-009 (closed this pass — see below), TR-010 (BA side), TR-012, TR-015, TR-016 (all 11 of the 11 required journeys now confirmed across the two Travel Ready passes), TR-018 (new, closed this pass). See `docs/TRUTH_RESET_PHASE_1.md`'s production verification sections for the exact URL-by-URL evidence.
+**Production-verified (confirmed working on `jetstash.co.uk` across all four verification passes, 2026-07-13 to 2026-07-14):**
+TR-001, TR-002, TR-003, TR-004, TR-005, TR-006 (display-safety only, see Open above), TR-007 (display-safety only, see Open above), TR-008, TR-009, TR-010 (BA side; the Jeddah public-attribution defect is now also closed — see Round 4 below, though Saudia's underlying status stays open), TR-012, TR-015, TR-016, TR-018. See `docs/TRUTH_RESET_PHASE_1.md`'s production verification sections for the exact URL-by-URL evidence.
 
 **Closed this pass (code changed, tested, deployed, and production-verified):**
-- **TR-009** — the systemic deal-tag directness bypass. Root cause: `deal.tag` rendered as the card's top badge unconditionally, independent of `getDisplayDirectness()`. Fixed by splitting `tag` into curation-only `categoryTag` plus a new computed `getDealDirectnessLabel()` gate; 8 new tests; production-confirmed `lhr-isb-economy` no longer shows "Direct flight" and no previously-contradictory card does either. Full detail in TR-009's own section.
-- **TR-018** (new) — Travel Ready results omitted the rule's `reviewDueDate`. Fixed by threading it through `TravelReadyCheckItem` and rendering "— review due [date]" without exposing the internal field name; production-confirmed for all 5 required countries (Pakistan, India, UAE, Qatar, Saudi Arabia). Full detail in TR-018's own section.
+- **TR-010, Round 4** — the Jeddah deal-card airline-attribution defect, audited and fixed systemically across all 34 public deals, not patched narrowly for Jeddah alone. Root cause: `deal.airline` rendered directly with no reference to airline-level verification — the same class of bypass TR-009 fixed for directness, but for the airline field. New `getDealAirlineDisplayStatus()` (`data/routes.ts`) and `getDealAirlineLabel()` (`data/deals.ts`) gate every card's airline label; 8 new tests; production-confirmed both Jeddah cards, the Madinah Umrah card, and 27 other previously-unsupported airline claims all now show "Verification pending" or nothing instead of an unearned airline name, while the 4 genuinely verified cards (PIA ×3, British Airways ×1) are unaffected. Full detail in TR-010's Round 4 entry.
 
 **Closed, no code changed (investigated, found not to be a real defect):**
 TR-013 (the specific cross-origin data-leakage mechanism alleged does not exist in this codebase's architecture — see the dedicated TR-013 section below). Not a deployment-dependent item.
 
-**Exact blocker count:** 18 blockers filed in total (TR-001 through TR-018 — TR-018 added this pass). Of these: **1 open P1 product-coverage gap** (TR-017), **1 open, disclosed underlying-fact gap despite a production-verified display-safety fix** (TR-006/TR-007's directness question), **1 open residual claim within an otherwise production-verified blocker** (TR-010's Saudia status + BA's specific termination-date claim), **1 unchanged pre-existing limitation** (TR-014), **1 genuinely unverifiable in this environment** (TR-011's actual email send), **14 fully production-verified** (TR-001, 002, 003, 004, 005, 006†, 007†, 008, 009, 010‡, 012, 015, 016, 018 — †/‡ display-safety/BA-side only per above), **1 closed with no code change** (TR-013). Do not read "production-verified" as "launch ready" — see the final report's completion status. The route-verification backlog behind TR-015 remains explicitly open regardless of TR-009/TR-018's closure.
+**Exact blocker count:** 18 blockers filed in total (TR-001 through TR-018). Of these: **1 open P1 product-coverage gap** (TR-017), **1 open, disclosed underlying-fact gap despite a production-verified display-safety fix** (TR-006/TR-007's directness question), **1 open residual fact gap within an otherwise production-verified blocker** (TR-010: BA's termination-date claim + Saudia's underlying, still-unverified service status — the public *attribution* defect is closed, the underlying *fact* is not, and these are deliberately tracked as different things), **1 unchanged pre-existing limitation** (TR-014), **1 genuinely unverifiable in this environment** (TR-011's actual email send), **14 fully production-verified** (TR-001, 002, 003, 004, 005, 006†, 007†, 008, 009, 010‡, 012, 015, 016, 018 — †/‡ display-safety/BA-attribution-side only per above), **1 closed with no code change** (TR-013). Do not read "production-verified" as "launch ready" — see the final report's completion status. The route-verification backlog behind TR-015, and Saudia's own service status behind TR-010, remain explicitly open regardless of the display-layer fixes closed this pass.
 
 ---
 
@@ -175,6 +183,16 @@ TR-013 (the specific cross-origin data-leakage mechanism alleged does not exist 
 - **Status:** BA's claim: fix implemented and locally re-verified with a genuine primary source. Saudia: genuinely open, not resolved this pass — see Status Summary. Residual uncertainty on BA (disclosed, not resolved): the specific secondary termination date (24 Apr 2026) has not been explicitly disproven, only unsupported by every primary source actually reachable this session.
 - **Commit:** `da04b1ba900e3c9aa8bf8c48d4e309a53e82b92f`.
 - **Production verification:** `https://jetstash.co.uk/routes/london-heathrow-jeddah`, checked 2026-07-13 ~13:00 Europe/London (BST), commit `da04b1b`. Observed: "DIRECT ROUTE" badge (BA-supported); Saudia explicitly and separately described as unverified, not presented as jointly verified with BA; no unsupported current frequency. No regression found. **Saudia's status itself remains open** — production correctly displays the gap rather than resolving it.
+
+- **Round 4 (2026-07-14, founder-directed final correction) — the Jeddah deal-card attribution defect, and the systemic airline-attribution gate it exposed:**
+  - **Defect found:** live production Jeddah Umrah-package deal cards (`umrah-package-jed`, `lhr-jed-business`) both displayed "Saudia · Direct" — the route's directness claim is genuinely evidenced (BA's own page), but the deal cards separately named Saudia as the operating airline with no verification behind that specific claim at all. `deal.airline` was rendered directly by `components/ui/deal-card.tsx`, with zero reference to any airline-verification check — the exact same class of bypass TR-009 fixed for directness, just for the airline field instead.
+  - **Root cause:** the per-airline verification model (`AirlineVerification`, `getAirlineVerification`, `getAirlineDisplayStatus` in `data/routes.ts`) existed and was already correctly recording Saudia as `'unverified'` on this exact route — but nothing in the deal-card rendering path ever consulted it. A verified route (directness) and a verified airline (attribution) were two genuinely separate claims in the data model, but only one of them was gated before this correction.
+  - **Every affected card found (audited all 34 public deals, not only Jeddah):** a repository-wide search for `deal.airline`, `deal.airlineSlug`, and every other public airline rendering confirmed `deal.airline` was read directly in exactly one place (`deal-card.tsx`), with no separate `airlineSlug` field on `Deal` at all. Of 34 public deals, only 4 named an airline that was actually verified on its matched route: `man-lhe-economy`/`man-lhe-business` (PIA, Manchester–Lahore), `man-isb-business` (PIA, Manchester–Islamabad), `lhr-bom-economy` (British Airways, Heathrow–Mumbai, explicit per-airline record). The other 30 named an airline with no current verification for that exact route — including, beyond the reported Jeddah cards, a second live Saudia claim on `umrah-package-extended` (Manchester–Madinah — a route the site's own copy says "once had a direct Saudia service... but it doesn't currently operate," making that claim doubly unsupported) and `lhr-med-business` (Heathrow–Madinah, which has **no matching Route record at all** — no `london-heathrow-madinah` entry exists in `data/routes.ts`).
+  - **Saudia evidence search (this pass, primary sources only, no aggregators/blogs/model memory):** attempted `saudia.com`'s own Jeddah/London destination and booking pages directly — every attempt returned the site's own bot-detection interruption page, no usable content. Attempted `heathrow.com/heathrow-blog/fly-direct-from-heathrow-to-saudi-arabia` (Heathrow Airport's own domain) — reachable and states "2 daily flights to Jeddah" under Saudia, dated 2 April 2025, but **excluded as a qualifying source**: the URL path is explicitly `/heathrow-blog/`, and the founder's own instruction excludes blogs regardless of which domain hosts them — a stricter, literal reading was applied rather than stretching the domain-based allowance. Web search for a Saudia press release on its London/Heathrow network in 2026 surfaced no primary source — only aggregator schedule-trackers (AeroRoutes) and travel-news blogs (Simple Flying, Travel And Tour World, Wego, NomadLawyer), all explicitly excluded. **No qualifying evidence was obtained.** Saudia's Heathrow–Jeddah status remains recorded as `'unverified'` in `data/routes.ts` — unchanged, not weakened, not strengthened.
+  - **Correction:** new `getDealAirlineDisplayStatus()` in `data/routes.ts` — a narrower sibling of `getAirlineDisplayStatus()` that additionally falls back to a route's own route-level `verification` only when that route has exactly one airline and no separate `airlineVerifications` array (i.e. the route-level evidence is inherently about that single airline, with no risk of one airline's evidence covering another — multi-airline routes never get this fallback). New `getDealAirlineLabel()` in `data/deals.ts`: returns `undefined` (no airline shown) when no matching Route exists; the raw airline name only when that exact airline is currently verified; `'Verification pending'` otherwise. `deal-card.tsx` now computes this live instead of rendering `deal.airline` directly, in both the priced and unpriced card branches, with the airline/directness suffix deduped so an unverified-both case doesn't read "Verification pending · Verification pending".
+  - **Tests added:** 8 new tests in `tests/route-and-fare-integrity.test.ts` — the 7 the founder specified by exact behaviour (Jeddah cards don't show Saudia; BA evidence doesn't verify Saudia; a verified airline displays correctly; an unverified airline doesn't display as confirmed; an expired airline claim doesn't display as current; a deal with no Route record can't assert an airline; every public deal individually validated) plus one confirming every current Saudia-named deal (Jeddah **and** Madinah) is unverified, not just the one reported card.
+  - **Production verification (2026-07-14, commit `d1d38de`):** full 34-card sweep of `/deals` confirmed — both Jeddah cards show "Verification pending · Direct" with **no "Saudia" anywhere**; Heathrow–Jeddah still correctly shows "Direct" (BA's independent evidence, unaffected); the Manchester–Madinah Umrah card also lost its Saudia attribution, now "Verification pending · Via connection"; the Heathrow–Madinah card (no Route record) shows neither an airline name nor a directness label. The 4 genuinely verified cards (Manchester–Lahore ×2, Manchester–Islamabad, Heathrow–Mumbai) still correctly show their airline. Every card that previously named a leisure/short-haul carrier with no matching `Route` record (Jet2, easyJet, TUI, Ryanair, SunExpress, Royal Air Maroc, Turkish Airlines — 13 cards across Turkey/Morocco/Spain/Portugal/Greece/Italy) now shows no airline attribution at all, per the founder's explicit "no matching Route record: no operating airline attribution" rule applied comprehensively, not narrowly to Jeddah. Fare stats unchanged ("18 logged / 0 tracked / 34 search cards"); category tags (Umrah package, City break, etc.) unaffected; zero console errors; no 375px overflow.
+  - **Status:** **The public attribution defect on the Jeddah cards is closed** — confirmed live, not merely deployed. **Saudia's underlying Heathrow–Jeddah service status remains genuinely unverified** — this correction fixed what the site publicly claims, not what is actually true; no qualifying evidence was found either way this pass. BA's own verification is unaffected and remains current.
 
 ### TR-017 — Birmingham–Mumbai is a confirmed connecting corridor missing from JetStash's data
 - **Date discovered:** 2026-07-13 (founder-directed correction, Section 1)
@@ -409,3 +427,51 @@ explicitly out of scope and not started.
 - **Git status at time of this record:** working tree clean except this in-progress documentation
   update (`docs/LAUNCH_BLOCKERS.md`, `docs/TRUTH_RESET_PHASE_1.md`) and the pre-existing untracked
   `public/concepts/`. HEAD at `5bef94a`, matching `origin/main`.
+
+---
+
+## Fourth code-correction pass (2026-07-14) — the airline-attribution verification gate
+
+Scope: the Jeddah Umrah-package cards' unsupported "Saudia" attribution, audited and fixed
+systemically across every public deal per the founder's explicit instruction not to patch Jeddah
+alone. TR-017, the wider route-verification backlog, Mumbai Book-By, and homepage work remained
+explicitly out of scope and were not started.
+
+- **Root cause and every affected card:** see TR-010's Round 4 entry above for the full account — 30
+  of 34 public deals named an airline with no current verification for that exact route; only 4
+  (PIA ×3, British Airways ×1) were genuinely supported.
+- **Saudia evidence search:** `saudia.com` bot-blocked on every attempt (destination page, both
+  booking-deal pages); the one reachable candidate (`heathrow.com/heathrow-blog/...`, "2 daily flights
+  to Jeddah" under Saudia, dated 2 April 2025) was excluded as a blog per the founder's own rule, even
+  though it's on Heathrow's own domain; a targeted press-release search surfaced only aggregators
+  (AeroRoutes) and travel-news blogs, all excluded. No qualifying evidence obtained — Saudia's
+  `data/routes.ts` record is unchanged, still `'unverified'`.
+- **Fix:** `getDealAirlineDisplayStatus()` added to `data/routes.ts` (a narrower sibling of the
+  existing `getAirlineDisplayStatus()`, adding a single-airline-route fallback to route-level
+  `verification` that never applies to multi-airline routes); `getDealAirlineLabel()` added to
+  `data/deals.ts`; `deal-card.tsx` now computes the airline label live in both card branches instead
+  of rendering `deal.airline` directly, with the airline/directness suffix deduped.
+- **Tests added:** 8 in `tests/route-and-fare-integrity.test.ts` — the 7 the founder specified by
+  exact behaviour, plus one confirming every current Saudia-named deal (Jeddah and Madinah) is
+  unverified. Full suite: **89/89 passing** (up from 81).
+- **Quality gates:** focused + full test suite (89/89), `npx tsc --noEmit` (0 errors), `npm run lint`
+  (0 warnings/errors), `npm run build` (103/103 static pages), `git diff --check` (clean, only
+  pre-existing autocrlf notices), `git status --short` (exactly the 4 intended files plus the
+  untouched `public/concepts/`) — all confirmed before commit.
+- **Code commit:** `d1d38de1ac54c6f77988fa012bf3928a9c70662f` — "fix: enforce verified airline
+  attribution on deal cards". Pushed to `origin/main` (`f5d46bb..d1d38de`).
+- **Deployment:** Vercel deployment `dpl_53yXzx44E5iRw7bGVGMJ7yuEiCmy`, created
+  `2026-07-14T03:48:59+03:00` (52 seconds after the commit's own timestamp), status **Ready**, target
+  **Production**, aliased to `jetstash.co.uk`/`www.jetstash.co.uk`.
+- **Production verification (2026-07-14, commit `d1d38de`):** full 34-card sweep of `https://jetstash.co.uk/deals`
+  confirmed — both Jeddah cards show "Verification pending · Direct" with no "Saudia" anywhere;
+  Heathrow–Jeddah still correctly shows "Direct" via BA's unaffected independent evidence; the
+  Manchester–Madinah Umrah card also lost its unsupported Saudia attribution; the 4 genuinely verified
+  cards (Manchester–Lahore ×2, Manchester–Islamabad, Heathrow–Mumbai) display unchanged; every
+  leisure-route card with no matching `Route` record (13 cards — Jet2, easyJet, TUI, Ryanair,
+  SunExpress, Royal Air Maroc, Turkish Airlines) now shows no airline attribution, per the founder's
+  explicit rule applied comprehensively. Fare stats ("18 logged / 0 tracked / 34 search cards") and
+  category tags unaffected. Zero console errors, no 375px overflow.
+- **Git status at time of this record:** working tree clean except this in-progress documentation
+  update (`docs/LAUNCH_BLOCKERS.md`, `docs/TRUTH_RESET_PHASE_1.md`) and the pre-existing untracked
+  `public/concepts/`. HEAD at `d1d38de`, matching `origin/main`.
