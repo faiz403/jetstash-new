@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { getDisplayDirectness, getAirlineDisplayStatus, getAirlineVerification, getRouteBySlug, getRouteByAirportAndDestination } from '@/data/routes';
+import { getDisplayDirectness, getAirlineDisplayStatus, getAirlineVerification, getRouteBySlug, getRouteByAirportAndDestination, getDealAirlineDisplayStatus } from '@/data/routes';
 import {
   getFareRangeSummary,
   getLatestPublishableObservation,
@@ -7,7 +7,8 @@ import {
   fareObservations,
   type FareObservation,
 } from '@/data/fare-observations';
-import { deals, hasTrackedFare, getDealDirectnessLabel } from '@/data/deals';
+import { deals, hasTrackedFare, getDealDirectnessLabel, getDealAirlineLabel } from '@/data/deals';
+import { airlines } from '@/data/airlines';
 
 const FIXED_TODAY = '2026-07-13';
 
@@ -328,6 +329,87 @@ describe('TR-002 direct production audit — enumerate all 18 fare observations,
     expect(affectedDeals.length).toBeGreaterThan(0); // sanity: this set is non-empty
     for (const deal of affectedDeals) {
       expect(hasTrackedFare(deal), deal.id).toBe(false);
+    }
+  });
+});
+
+describe('getDealAirlineLabel (TR-010, final correction) — a deal/search card must never assert an airline as confirmed independently of that airline\'s own verification record', () => {
+  it('1. Jeddah cards do not display Saudia without Saudia evidence', () => {
+    const jed1 = deals.find((d) => d.id === 'umrah-package-jed')!;
+    const jed2 = deals.find((d) => d.id === 'lhr-jed-business')!;
+    expect(jed1.airline).toBe('Saudia'); // the underlying curation field is unchanged — the fix is in what's *shown*
+    expect(jed2.airline).toBe('Saudia');
+    expect(getDealAirlineLabel(jed1, FIXED_TODAY)).not.toBe('Saudia');
+    expect(getDealAirlineLabel(jed2, FIXED_TODAY)).not.toBe('Saudia');
+    expect(getDealAirlineLabel(jed1, FIXED_TODAY)).toBe('Verification pending');
+    expect(getDealAirlineLabel(jed2, FIXED_TODAY)).toBe('Verification pending');
+  });
+
+  it('2. BA evidence does not verify Saudia — the two are independently gated on the same route', () => {
+    const route = getRouteBySlug('london-heathrow-jeddah')!;
+    expect(getDealAirlineDisplayStatus(route, 'british-airways', FIXED_TODAY)).toBe('verified');
+    expect(getDealAirlineDisplayStatus(route, 'saudia', FIXED_TODAY)).toBe('unverified');
+    // The route itself still shows Direct (BA's evidence is sufficient for route-level directness),
+    // proving directness and airline attribution are tracked as genuinely separate claims.
+    expect(getDisplayDirectness(route, FIXED_TODAY)).toBe('direct');
+  });
+
+  it('3. a currently verified airline displays correctly', () => {
+    const verifiedDirect = deals.find((d) => d.id === 'man-lhe-economy')!; // Manchester–Lahore, PIA, route-level verified, single-operator fallback applies
+    expect(getDealAirlineLabel(verifiedDirect, FIXED_TODAY)).toBe('PIA');
+    const perAirlineVerified = deals.find((d) => d.id === 'lhr-bom-economy')!; // Heathrow–Mumbai, British Airways, explicit airlineVerifications entry
+    expect(getDealAirlineLabel(perAirlineVerified, FIXED_TODAY)).toBe('British Airways');
+  });
+
+  it('4. an unverified airline does not display as confirmed', () => {
+    const unverified = deals.find((d) => d.id === 'man-dxb-economy')!; // Manchester–Dubai, Emirates, no verification record at all
+    const label = getDealAirlineLabel(unverified, FIXED_TODAY);
+    expect(label).not.toBe('Emirates');
+    expect(label).toBe('Verification pending');
+  });
+
+  it('5. an expired airline claim does not display as current', () => {
+    const route = getRouteBySlug('london-heathrow-mumbai')!;
+    // British Airways is verified before its reviewDueDate, but the same
+    // record must not keep reading as current long after it expires.
+    expect(getDealAirlineDisplayStatus(route, 'british-airways', '2026-08-01')).toBe('verified');
+    expect(getDealAirlineDisplayStatus(route, 'british-airways', '2099-01-01')).toBe('unverified');
+    const deal = deals.find((d) => d.id === 'lhr-bom-economy')!;
+    expect(getDealAirlineLabel(deal, '2099-01-01')).toBe('Verification pending');
+  });
+
+  it('6. a deal with no Route record cannot assert an operating airline', () => {
+    const noRoute = deals.find((d) => d.id === 'lhr-isb-economy')!; // London Heathrow–Islamabad, no matching Route record
+    expect(getRouteByAirportAndDestination(noRoute.fromAirportSlug, noRoute.toDestinationSlug)).toBeUndefined();
+    expect(getDealAirlineLabel(noRoute, FIXED_TODAY)).toBeUndefined();
+  });
+
+  it('7. every public deal passes the airline attribution validation — no deal ever shows its raw airline name unless that exact airline is currently verified on its matched route', () => {
+    for (const deal of deals) {
+      const route = getRouteByAirportAndDestination(deal.fromAirportSlug, deal.toDestinationSlug);
+      const label = getDealAirlineLabel(deal, FIXED_TODAY);
+      if (!route) {
+        expect(label, `deal ${deal.id} has no matching Route but asserted an airline`).toBeUndefined();
+        continue;
+      }
+      if (label === deal.airline) {
+        // Only permissible when this exact airline is independently verified
+        // — re-derive via the airline registry + gate directly, to prove no
+        // drift between getDealAirlineLabel and the underlying gate function.
+        const record = airlines.find((a) => a.name === deal.airline);
+        expect(record, `deal ${deal.id}'s airline "${deal.airline}" is not in the airlines.ts registry`).toBeDefined();
+        expect(getDealAirlineDisplayStatus(route, record!.slug, FIXED_TODAY), `deal ${deal.id}`).toBe('verified');
+      } else {
+        expect(label, `deal ${deal.id}`).toBe('Verification pending');
+      }
+    }
+  });
+
+  it('every Saudia-named deal in the current public array is unverified as of this pass (Jeddah and Madinah both) — confirms the systemic sweep caught both, not just the reported Jeddah card', () => {
+    const saudiaDeals = deals.filter((d) => d.airline === 'Saudia');
+    expect(saudiaDeals.length).toBeGreaterThan(0);
+    for (const deal of saudiaDeals) {
+      expect(getDealAirlineLabel(deal, FIXED_TODAY), deal.id).not.toBe('Saudia');
     }
   });
 });

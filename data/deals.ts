@@ -1,5 +1,6 @@
-import { getRouteByAirportAndDestination, getDisplayDirectness } from './routes';
+import { getRouteByAirportAndDestination, getDisplayDirectness, getDealAirlineDisplayStatus } from './routes';
 import { getFareRangeSummary } from './fare-observations';
+import { airlines } from './airlines';
 
 export type DealCabin = 'Economy' | 'Premium Economy' | 'Business';
 export type DealCategory = 'flight' | 'package' | 'business' | 'umrah';
@@ -25,6 +26,16 @@ export type DealCategory = 'flight' | 'package' | 'business' | 'umrah';
  * below (Truth Reset, July 2026 — a static tag previously bypassed
  * getDisplayDirectness() entirely and could show "Direct flight" on a deal
  * with no matching Route record, or on a route that was actually unverified).
+ *
+ * `airline` is likewise curation, not a verified claim on its own — a
+ * verified route never automatically verifies every airline associated with
+ * it (a British Airways source proves BA, never Saudia on the same route).
+ * The card's publicly displayed airline label is always computed live via
+ * getDealAirlineLabel() below, never `deal.airline` rendered directly (Truth
+ * Reset, July 2026 — the raw field previously bypassed airline verification
+ * entirely, letting "Saudia" display as the operating airline on Jeddah
+ * Umrah-package cards despite Saudia's own Heathrow–Jeddah status being
+ * explicitly unverified).
  */
 export interface Deal {
   id: string;
@@ -58,6 +69,36 @@ export function getDealDirectnessLabel(deal: Pick<Deal, 'fromAirportSlug' | 'toD
   if (displayDirectness === 'direct') return 'Direct flight';
   if (displayDirectness === 'connecting') return 'Connecting';
   return undefined;
+}
+
+/**
+ * The single gate every deal/search card's airline label must go through
+ * (Truth Reset, final correction pass). Route directness and airline
+ * attribution are separate claims — a route showing "Direct flight" does
+ * not mean the named airline is confirmed to be the one flying it.
+ *
+ * Returns:
+ * - `undefined` (no airline shown at all) when there is no matching Route
+ *   record for this deal's airport/destination pair — "no matching Route
+ *   record" means no operating airline can be attributed either, exactly
+ *   the same rule getDealDirectnessLabel() already applies to directness.
+ * - `deal.airline` unchanged when a matching Route exists AND that exact
+ *   airline has its own current, unexpired verification (see
+ *   getDealAirlineDisplayStatus() in data/routes.ts for the single-airline
+ *   fallback it applies) — never because a different airline on the same
+ *   route, or the route's own directness, was verified.
+ * - `'Verification pending'` when a matching Route exists but this airline
+ *   is not currently verified on it — including when `deal.airline` isn't
+ *   even in the airlines.ts registry, since an unregistered airline can
+ *   never be confirmed by this system.
+ */
+export function getDealAirlineLabel(deal: Pick<Deal, 'fromAirportSlug' | 'toDestinationSlug' | 'airline'>, nowIso: string): string | undefined {
+  const route = getRouteByAirportAndDestination(deal.fromAirportSlug, deal.toDestinationSlug);
+  if (!route) return undefined;
+  const airlineRecord = airlines.find((a) => a.name === deal.airline);
+  if (!airlineRecord) return 'Verification pending';
+  const status = getDealAirlineDisplayStatus(route, airlineRecord.slug, nowIso);
+  return status === 'verified' ? deal.airline : 'Verification pending';
 }
 
 export const deals: Deal[] = [

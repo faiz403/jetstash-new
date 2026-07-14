@@ -676,6 +676,33 @@ export function getAirlineDisplayStatus(route: Route, airlineSlug: string, nowIs
 }
 
 /**
+ * Deal-card airline attribution gate (founder correction, final Truth Reset
+ * pass) — a narrower sibling of getAirlineDisplayStatus() for the one case
+ * that function deliberately never covers on its own: a route with exactly
+ * one airline in `airlineSlugs` and no separate `airlineVerifications`
+ * array, where the route-level `verification` record's own evidence is
+ * inherently about that single airline (e.g. Manchester–Lahore's route-level
+ * source is literally "PIA runs direct Manchester to Lahore services" — the
+ * airline is embedded in the only evidence that exists, just never
+ * duplicated into an `airlineVerifications` entry). This fallback is
+ * deliberately narrow: a route with more than one airline in `airlineSlugs`
+ * NEVER falls back to route-level verification here, even if it happens to
+ * have one, because that would risk exactly the mistake this whole model
+ * exists to prevent — one airline's evidence silently verifying another. If
+ * `route.airlineVerifications` exists at all (meaning airlines were
+ * deliberately split), no fallback applies even for a single matching
+ * airline, since the split itself signals the evidence needs airline-level
+ * precision.
+ */
+export function getDealAirlineDisplayStatus(route: Route, airlineSlug: string, nowIso: string): 'verified' | 'unverified' {
+  if (isVerificationCurrent(getAirlineVerification(route, airlineSlug), nowIso)) return 'verified';
+  const isSoleUnsplitAirline =
+    !route.airlineVerifications && route.airlineSlugs.length === 1 && route.airlineSlugs[0] === airlineSlug;
+  if (isSoleUnsplitAirline && isVerificationCurrent(route.verification, nowIso)) return 'verified';
+  return 'unverified';
+}
+
+/**
  * The single gate every public "Direct route" badge must go through
  * (Truth Reset, July 2026) — never render `route.isDirect` directly.
  * Returns 'direct' when either the route-level record is fresh and

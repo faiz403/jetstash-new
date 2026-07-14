@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Deal, DealCabin, formatChecked, getDealDirectnessLabel } from '@/data/deals';
+import { Deal, DealCabin, formatChecked, getDealDirectnessLabel, getDealAirlineLabel } from '@/data/deals';
 import { getRouteByAirportAndDestination, getDisplayDirectness } from '@/data/routes';
 import { getDestinationBySlug } from '@/data/destinations';
 import { getFareRangeSummary } from '@/data/fare-observations';
@@ -33,6 +33,14 @@ export function DealCard({ deal }: { deal: Deal }) {
   // otherwise the badge is computed live via getDealDirectnessLabel(),
   // never a static "Direct flight" string from curation data. See TR-009.
   const topBadge = deal.categoryTag ?? getDealDirectnessLabel(deal, nowIso);
+  // Truth Reset (final correction): route directness and airline attribution
+  // are separate claims — a verified-direct route never automatically
+  // verifies the specific airline named on the card. `deal.airline` must
+  // never render directly; the publicly shown label is always computed live
+  // via getDealAirlineLabel(), which returns undefined (nothing shown) with
+  // no matching Route record, or 'Verification pending' when that exact
+  // airline isn't currently verified on the matched route. See TR-010.
+  const airlineLabel = getDealAirlineLabel(deal, nowIso);
   const freshness = range ? getFareFreshnessState(daysBetweenIso(range.latestDate, nowIso)) : null;
   const isStale = freshness === 'stale';
 
@@ -71,7 +79,7 @@ export function DealCard({ deal }: { deal: Deal }) {
               </span>
               <span className="text-sm text-ink-400">{range.priceNote}</span>
             </div>
-            <p className="mt-1 text-sm font-medium text-ink-500">{deal.airline}</p>
+            {airlineLabel && <p className="mt-1 text-sm font-medium text-ink-500">{airlineLabel}</p>}
 
             <div className="mt-4 flex items-center gap-1.5 text-xs text-ink-400">
               <span className={`h-1.5 w-1.5 rounded-full ${isStale ? 'bg-ink-300' : 'bg-brass-400'}`} />
@@ -90,10 +98,13 @@ export function DealCard({ deal }: { deal: Deal }) {
             <p className="font-display text-xl leading-snug text-ink-900">
               {matchedRoute ? flightTime : `Typical flight time: ${flightTime ?? 'varies'}`}
             </p>
-            <p className="mt-1 text-sm font-medium text-ink-500">
-              {deal.airline}
-              {directness ? ` · ${directness}` : ''}
-            </p>
+            {(() => {
+              // Deduped, since an unverified airline and an unverified route
+              // both read "Verification pending" — showing it twice would be
+              // redundant, not more informative.
+              const parts = [airlineLabel, directness].filter((v, i, arr) => v && arr.indexOf(v) === i) as string[];
+              return parts.length > 0 ? <p className="mt-1 text-sm font-medium text-ink-500">{parts.join(' · ')}</p> : null;
+            })()}
 
             <div className="mt-4 flex items-center gap-1.5 text-xs text-ink-400">
               <span className="h-1.5 w-1.5 rounded-full bg-ink-300" />
