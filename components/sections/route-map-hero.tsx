@@ -130,9 +130,38 @@ function DestinationLabel({ d, active }: { d: AtlasDestination; active: boolean 
   );
 }
 
-export function RouteMapHero({ bookBySnapshots = [] }: { bookBySnapshots?: BookBySnapshot[] }) {
-  const [activeSlug, setActiveSlug] = useState<string>('lahore');
+export function RouteMapHero({
+  bookBySnapshots = [],
+  initialActiveSlug = 'lahore',
+  lockedSlug,
+  onDestinationActivate,
+}: {
+  bookBySnapshots?: BookBySnapshot[];
+  /** Which destination the atlas opens focused on — defaults to today's homepage behaviour. */
+  initialActiveSlug?: string;
+  /**
+   * When set, a real activation (click/tap/Enter/Space — never hover) on any
+   * other destination snaps the map back to this slug instead of lighting
+   * the destination that was activated. Hover/focus preview stays completely
+   * free either way, matching every other destination's existing behaviour —
+   * only a genuine selection attempt is constrained. Omit for the default,
+   * fully free-exploration homepage behaviour.
+   */
+  lockedSlug?: string;
+  /** Fires on every click/tap/Enter/Space activation, allowed or not, so a caller can react (e.g. show its own message) without owning the map's internal state. */
+  onDestinationActivate?: (slug: string) => void;
+}) {
+  const [activeSlug, setActiveSlug] = useState<string>(initialActiveSlug);
   const active = DESTINATIONS.find((d) => d.slug === activeSlug) ?? DESTINATIONS[0];
+
+  function activateDestination(slug: string) {
+    onDestinationActivate?.(slug);
+    if (lockedSlug && slug !== lockedSlug) {
+      setActiveSlug(lockedSlug);
+      return;
+    }
+    setActiveSlug(slug);
+  }
 
   // Book-By intelligence layer (JETSTASH_PRINCIPLES.md §14): destinations
   // reached by a Manchester priority route whose booking window is
@@ -185,7 +214,7 @@ export function RouteMapHero({ bookBySnapshots = [] }: { bookBySnapshots?: BookB
             return (
               <button
                 key={`chip-${d.slug}`}
-                onClick={() => setActiveSlug(d.slug)}
+                onClick={() => activateDestination(d.slug)}
                 aria-pressed={isActive}
                 className={
                   isActive
@@ -399,9 +428,12 @@ export function RouteMapHero({ bookBySnapshots = [] }: { bookBySnapshots?: BookB
                     }
                     onMouseEnter={() => setActiveSlug(d.slug)}
                     onFocus={() => setActiveSlug(d.slug)}
-                    onClick={() => setActiveSlug(d.slug)}
+                    onClick={() => activateDestination(d.slug)}
                     onKeyDown={(e) => {
-                      if (e.key === 'Enter' || e.key === ' ') setActiveSlug(d.slug);
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        activateDestination(d.slug);
+                      }
                     }}
                   />
                   <DestinationLabel d={d} active={isActive} />
