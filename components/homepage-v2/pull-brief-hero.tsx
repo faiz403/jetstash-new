@@ -63,7 +63,7 @@ export function PullBriefHero() {
         </div>
       )}
 
-      <div className="relative mx-auto max-w-content px-5 pb-10 pt-5 sm:px-8 sm:pb-14 sm:pt-6">
+      <div className="relative mx-auto max-w-content px-5 pb-16 pt-5 sm:px-8 sm:pb-16 sm:pt-6">
         <div className="flex items-center gap-3">
           <Wordmark />
           <span className="text-[10px] font-semibold uppercase tracking-[0.28em] text-ink-300">Journey Brief</span>
@@ -80,24 +80,26 @@ export function PullBriefHero() {
           </p>
         </div>
 
-        {/* Type-to-aim: secondary, not a search box — it aims the pull. */}
+        {/* Secondary affordance — the map opens Manchester → Mumbai; this is an
+            honest way to reach any other route's guide, not a promise that
+            every destination can be pulled. */}
         <form onSubmit={onSubmit} className="mt-3 max-w-[15rem]">
-          <label htmlFor="hv2-aim" className="sr-only">
-            Where are you going?
+          <label htmlFor="hv2-aim" className="block text-[11px] font-medium text-ink-400">
+            Looking for another route?
           </label>
           <input
             id="hv2-aim"
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Aim at a destination…"
+            placeholder="Search a destination…"
             autoComplete="off"
-            className="h-9 w-full rounded-sm border border-white/10 bg-white/[0.04] px-3 text-[13px] text-sand-50 placeholder:text-ink-500 focus-visible:border-brass/60"
+            className="mt-1.5 h-9 w-full rounded-sm border border-white/10 bg-white/[0.04] px-3 text-[13px] text-sand-50 placeholder:text-ink-500 focus-visible:border-brass/60"
           />
           <p aria-live="polite" className="mt-2 min-h-[1.25rem] text-[13px] leading-relaxed text-ink-300">
             {aimedFlagship && (
               <>
-                <span className="text-brass-200">Manchester → Mumbai found on the map</span> — press Enter to pull its Brief.
+                <span className="text-brass-200">Manchester → Mumbai is ready on the map</span> — press Enter to pull its Brief.
               </>
             )}
             {match && !aimedFlagship && (

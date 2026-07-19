@@ -108,3 +108,17 @@ h1, h2 {
   24% { stroke-dashoffset: 0; opacity: 0; }
   100% { stroke-dashoffset: 0; opacity: 0; }
 }
+
+/* Pull a Brief — idle handle cue: a brass ring pulses outward from the pull
+   handle so the signature interaction is unmistakable within the first
+   second, without moving the handle itself. The global prefers-reduced-motion
+   rule above collapses it entirely. */
+.pb-tab-halo {
+  opacity: 0;
+  animation: pbTabHalo 2.6s ease-out infinite;
+}
+@keyframes pbTabHalo {
+  0% { transform: scale(0.85); opacity: 0.6; }
+  70% { opacity: 0; }
+  100% { transform: scale(1.75); opacity: 0; }
+}

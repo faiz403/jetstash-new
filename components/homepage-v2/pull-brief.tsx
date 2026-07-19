@@ -416,7 +416,7 @@ export function PullBrief({ aimedSlug }: { aimedSlug: string | null }) {
       <noscript>
         <style>{`
           .pb-stage .pb-map { display: none; }
-          .pb-stage .pb-brief { position: static !important; opacity: 1 !important; width: 100% !important; }
+          .pb-stage .pb-brief { position: static !important; opacity: 1 !important; width: 100% !important; max-height: none !important; overflow: visible !important; }
           .pb-stage .pb-brief [data-pin], .pb-stage .pb-verdict { opacity: 1 !important; transform: none !important; }
           .pb-stage .pb-tab { display: none; }
         `}</style>
@@ -508,17 +508,26 @@ export function PullBrief({ aimedSlug }: { aimedSlug: string | null }) {
               // plain click event carries the open instead (instant crossfade).
               if (reducedRef.current && phaseRef.current === 'rest') open(0);
             }}
-            className="pb-tab group absolute z-10 flex h-14 w-14 -translate-x-1/2 -translate-y-1/2 cursor-grab touch-none items-center justify-center rounded-full active:cursor-grabbing"
+            className="pb-tab group absolute z-10 flex h-16 w-16 -translate-x-1/2 -translate-y-1/2 cursor-grab touch-none items-center justify-center rounded-full active:cursor-grabbing"
             style={{ left: tabLeft, top: tabTop }}
           >
+            {/* Idle cue: a brass ring pulses outward from the handle so the
+                signature interaction is unmistakable in the first second.
+                Reduced motion collapses it via the global rule in globals.css. */}
             <span
               aria-hidden="true"
-              className={`flex h-11 w-11 items-center justify-center rounded-full border-2 bg-ink-900/85 shadow-brass-glow transition-[transform,border-color,color] duration-150 group-active:scale-90 ${
-                aimed ? 'border-brass-300 text-brass-100' : 'border-brass-400/80 text-brass-200 group-hover:border-brass-300'
+              className="pb-tab-halo pointer-events-none absolute inset-0 m-auto h-14 w-14 rounded-full border-2 border-brass-300"
+            />
+            {/* Solid brass handle — the primary object on the stage, reading as
+                the one thing to grab. */}
+            <span
+              aria-hidden="true"
+              className={`relative flex h-14 w-14 items-center justify-center rounded-full shadow-brass-glow transition-[transform,background-color] duration-150 group-active:scale-90 ${
+                aimed ? 'bg-brass-300 text-ink-900' : 'bg-brass text-ink-900 group-hover:bg-brass-300'
               }`}
             >
               <ArrowRight
-                className="h-5 w-5 rotate-90 transition-transform duration-150 group-hover:translate-y-0.5"
+                className="h-6 w-6 rotate-90 transition-transform duration-150 group-hover:translate-y-0.5"
                 strokeWidth={2.5}
               />
             </span>
@@ -526,7 +535,7 @@ export function PullBrief({ aimedSlug }: { aimedSlug: string | null }) {
                 can never clip off the right edge where Mumbai sits. */}
             <span
               aria-hidden="true"
-              className="pointer-events-none absolute right-full top-1/2 mr-2 -translate-y-1/2 whitespace-nowrap text-xs font-semibold uppercase tracking-[0.18em] text-brass-100"
+              className="pointer-events-none absolute right-full top-1/2 mr-2.5 flex -translate-y-1/2 items-center whitespace-nowrap rounded-full bg-ink-900/80 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-brass-100 ring-1 ring-brass-400/30"
             >
               Pull your Brief
             </span>
@@ -539,7 +548,9 @@ export function PullBrief({ aimedSlug }: { aimedSlug: string | null }) {
         ref={briefRef}
         role="region"
         aria-label="Journey Brief: Manchester to Mumbai"
-        className="pb-brief pointer-events-none sm:absolute sm:bottom-[2%] sm:left-[19%] sm:right-2 sm:top-[4%]"
+        className={`pb-brief pointer-events-none transition-[max-height] duration-500 ease-out max-sm:overflow-hidden ${
+          settled ? 'max-sm:max-h-[1200px]' : 'max-sm:max-h-0'
+        } sm:absolute sm:bottom-[2%] sm:left-[19%] sm:right-2 sm:top-[4%]`}
       >
         {/* Compact journey bar — appears at settle. */}
         <div ref={barRef} className="mb-4 flex flex-wrap items-center gap-3 opacity-0 transition-opacity duration-200">
