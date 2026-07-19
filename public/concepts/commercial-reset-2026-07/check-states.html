@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>JetStash Check — Result States (Commercial Reset, Revision 2)</title>
+<!--
+  DESIGN CONCEPT, REVISION 2 — not a site page. Six named JetStash Check
+  states, stacked and individually labelled. No backend wiring. Revision 2:
+  verdict headlines moved off Fraunces onto Public Sans 700; status pills
+  replaced with the ink/brass dot-and-text system defined on the brand
+  board (no green/red backgrounds); tightened radius and spacing.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Public+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --ink-950: #06080B; --ink-900: #0C0F14; --ink-700: #2A2F3A; --ink-500: #565C68; --ink-400: #7C818C;
+    --sand-50: #FBF9F5; --sand-100: #F3EEE4; --sand-200: #E6DFCF;
+    --brass-300: #DDB574; --brass-500: #B9863A; --brass-600: #96692B;
+    --font-display: 'Fraunces', Georgia, serif; --font-sans: 'Public Sans', Arial, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: var(--font-sans); background: var(--sand-100); color: var(--ink-900); -webkit-font-smoothing: antialiased; line-height: 1.5; }
+  .proto-banner { background: var(--ink-900); color: var(--sand-100); font-size: 11.5px; font-weight: 600; text-align: center; padding: 7px 16px; border-bottom: 1px solid var(--brass-500); }
+  .toc { background: var(--ink-900); color: var(--sand-50); padding: 14px 20px; position: sticky; top: 0; z-index: 10; }
+  .toc .wrap { max-width: 720px; margin: 0 auto; display: flex; flex-wrap: wrap; gap: 7px; }
+  .toc a { font-size: 11.5px; font-weight: 600; color: var(--sand-100); text-decoration: none; border: 1px solid rgba(255,255,255,0.18); border-radius: 100px; padding: 6px 11px; }
+
+  .state-block { max-width: 460px; margin: 0 auto; padding: 36px 20px; }
+  .state-block .kicker { font-size: 11px; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase; color: var(--brass-600); }
+  .state-block h2 { font-family: var(--font-sans); font-weight: 800; font-size: 12px; text-transform: uppercase; letter-spacing: 0.03em; margin: 4px 0 16px; color: var(--ink-700); }
+
+  .panel { background: var(--sand-50); border: 1px solid var(--sand-200); border-radius: 8px; padding: 17px; }
+  .field { display: flex; flex-direction: column; gap: 5px; margin-bottom: 10px; }
+  .field label { font-size: 11px; font-weight: 600; color: var(--ink-500); }
+  .field select, .field input { height: 42px; border-radius: 6px; border: 1px solid var(--sand-200); padding: 0 10px; font-family: var(--font-sans); font-size: 13.5px; width: 100%; }
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; font-weight: 700; font-size: 13.5px; border-radius: 6px; padding: 11px 16px; text-decoration: none; border: none; cursor: pointer; width: 100%; }
+  .btn--primary { background: var(--brass-500); color: var(--ink-950); }
+  .btn--ghost { background: transparent; color: var(--ink-900); border: 1px solid rgba(12,15,20,0.2); }
+
+  .state-tag { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 12px; }
+  .state-tag .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .state-tag--direct { color: var(--ink-900); } .state-tag--direct .dot { background: var(--brass-500); }
+  .state-tag--pending { color: var(--ink-500); } .state-tag--pending .dot { border: 1.5px solid var(--ink-400); background: transparent; }
+  .verdict-headline { font-family: var(--font-sans); font-weight: 700; font-size: 17.5px; margin: 0 0 12px; line-height: 1.32; color: var(--ink-950); }
+  .evidence-row { display: flex; gap: 8px; align-items: flex-start; padding: 10px 0; border-top: 1px solid var(--sand-100); }
+  .evidence-row:first-of-type { border-top: none; }
+  .evidence-row .dot-sm { width: 5px; height: 5px; border-radius: 50%; background: var(--brass-500); margin-top: 7px; flex-shrink: 0; }
+  .evidence-row p { margin: 0; font-size: 12.5px; line-height: 1.5; color: var(--ink-700); }
+  .evidence-row .src { font-size: 11px; color: var(--ink-400); margin-top: 3px; }
+  .cta-row { display: flex; flex-direction: column; gap: 8px; margin-top: 14px; }
+
+  .no-fare-note { background: var(--sand-100); border: 1px dashed var(--sand-200); border-radius: 6px; padding: 11px; font-size: 12px; color: var(--ink-500); margin-top: 10px; line-height: 1.5; }
+
+  .quote-fields { display: grid; gap: 10px; margin-top: 12px; }
+  .biz-tag { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 12px; color: var(--brass-600); }
+</style>
+</head>
+<body>
+<div class="proto-banner">PROTOTYPE — JetStash Check result states, revision 2, Commercial Reset Phase 1</div>
+<nav class="toc"><div class="wrap">
+  <a href="#state-1">1. Default</a>
+  <a href="#state-2">2. Verified route</a>
+  <a href="#state-3">3. Verification pending</a>
+  <a href="#state-4">4. Business Class</a>
+  <a href="#state-5">5. Zero publishable fare</a>
+  <a href="#state-6">6. Route Watch</a>
+</div></nav>
+
+<div id="state-1" class="state-block">
+  <span class="kicker">State 1 of 6</span>
+  <h2>Default, before a check is run</h2>
+  <div class="panel">
+    <div class="field"><label>UK departure airport</label><select><option>Select airport</option><option>Manchester</option><option>London Heathrow</option></select></div>
+    <div class="field"><label>Destination</label><select><option>Select destination</option><option>Mumbai</option><option>Lahore</option></select></div>
+    <div class="field"><label>Approx. travel month</label><input type="month" placeholder="Select month" /></div>
+    <div class="field"><label>Cabin</label><select><option>Economy</option><option>Business</option></select></div>
+    <button class="btn btn--primary">Check my route</button>
+  </div>
+</div>
+
+<div id="state-2" class="state-block">
+  <span class="kicker">State 2 of 6</span>
+  <h2>Verified route — Heathrow to Mumbai, Economy</h2>
+  <div class="panel">
+    <span class="state-tag state-tag--direct"><span class="dot"></span>Direct</span>
+    <p class="verdict-headline">This route is verified direct, with three independently confirmed airlines.</p>
+    <div class="evidence-row"><span class="dot-sm"></span><div><p><strong>Air India</strong> confirmed 2&times; daily, flights AI131/AI130 named.</p><p class="src">Air India's own 1 Jul 2026 press release &middot; verified 12 Jul 2026</p></div></div>
+    <div class="evidence-row"><span class="dot-sm"></span><div><p><strong>Virgin Atlantic</strong> confirmed 2&times; daily ("we fly direct to Mumbai twice a day").</p><p class="src">Virgin Atlantic's own destination page &middot; verified 12 Jul 2026</p></div></div>
+    <div class="evidence-row"><span class="dot-sm"></span><div><p><strong>British Airways</strong> confirmed direct. Exact daily frequency not separately published by BA, so none is claimed here.</p><p class="src">British Airways' own "Direct flights to India" page &middot; verified 12 Jul 2026</p></div></div>
+    <div class="cta-row">
+      <a href="#" class="btn btn--primary">Check live price</a>
+      <a href="#" class="btn btn--ghost">Watch this route instead</a>
+    </div>
+  </div>
+</div>
+
+<div id="state-3" class="state-block">
+  <span class="kicker">State 3 of 6</span>
+  <h2>Verification pending — Manchester to Karachi, Economy</h2>
+  <div class="panel">
+    <span class="state-tag state-tag--pending"><span class="dot"></span>Verification pending</span>
+    <p class="verdict-headline">We can't currently confirm this route runs direct.</p>
+    <div class="evidence-row"><span class="dot-sm" style="background:var(--ink-400);"></span><p>Current reporting describes PIA's direct Manchester services as Lahore and Islamabad only. No source found confirming an active direct Manchester&ndash;Karachi service. This may connect via Islamabad or Lahore instead.</p></div>
+    <p class="no-fare-note">What this state deliberately does not say: no flight duration is shown as direct, and no airline is named as the confirmed operator. Verification pending never appears beside an unsupported Direct claim.</p>
+    <div class="cta-row">
+      <a href="#" class="btn btn--ghost">Watch this route</a>
+    </div>
+  </div>
+</div>
+
+<div id="state-4" class="state-block">
+  <span class="kicker">State 4 of 6</span>
+  <h2>Business Class selected — enquiry path</h2>
+  <div class="panel">
+    <span class="biz-tag"><span class="dot" style="width:8px;height:8px;border-radius:50%;background:var(--brass-500);"></span>Business Class</span>
+    <p class="verdict-headline">Long-haul business fares move on different patterns to economy.</p>
+    <p style="font-size:12.5px;color:var(--ink-500);line-height:1.5;margin:0 0 12px;">Tell us the route and roughly when you're travelling. A person gets back to you with real options. This has no confirmed fulfilment partner behind it today (see docs/COMMERCIAL_RESET_PHASE_1.md &sect;5, decision required).</p>
+    <div class="quote-fields">
+      <div class="field"><label>Route</label><input value="Manchester to Dubai" readonly /></div>
+      <div class="field"><label>Approx. dates</label><input type="text" placeholder="e.g. late October 2026" /></div>
+      <div class="field"><label>Email</label><input type="email" placeholder="you@example.com" /></div>
+    </div>
+    <div class="cta-row"><button class="btn btn--primary">Request a quote</button></div>
+  </div>
+</div>
+
+<div id="state-5" class="state-block">
+  <span class="kicker">State 5 of 6</span>
+  <h2>Zero publishable fare — Manchester to Lahore, Economy</h2>
+  <div class="panel">
+    <span class="state-tag state-tag--direct"><span class="dot"></span>Direct</span>
+    <p class="verdict-headline">PIA, direct, launched 3 July 2026.</p>
+    <div class="no-fare-note">No fare checks logged yet for this route and cabin with complete travel dates, so no price is shown here. This is never labelled "Featured fares". A route with no checked fare gets an honest fact-based card instead, not an empty promise.</div>
+    <div class="cta-row">
+      <a href="#" class="btn btn--primary">Check live price</a>
+      <a href="#" class="btn btn--ghost">Watch this route</a>
+    </div>
+  </div>
+</div>
+
+<div id="state-6" class="state-block">
+  <span class="kicker">State 6 of 6</span>
+  <h2>Route Watch signup — not ready to book</h2>
+  <div class="panel">
+    <p class="verdict-headline">Watch Manchester to Mumbai</p>
+    <p style="font-size:12.5px;color:var(--ink-500);line-height:1.5;margin:0 0 12px;">This direct service ends 31 August 2026 (IndiGo's own announcement). We'll tell you if anything genuinely worth knowing changes before then. A person reviews what's worth sending, not an automated price ping.</p>
+    <div class="field"><label>Email</label><input type="email" placeholder="you@example.com" /></div>
+    <button class="btn btn--primary">Watch this route</button>
+  </div>
+</div>
+
+</body>
+</html>

@@ -36,7 +36,7 @@ import type { BookBySnapshot } from '@/lib/booking-intelligence';
  * map's tap targets with the established chip selector.
  */
 
-interface AtlasDestination {
+export interface AtlasDestination {
   slug: string;
   label: string;
   country: string;
@@ -52,12 +52,15 @@ interface AtlasDestination {
   lp: 'left' | 'right' | 'above' | 'below';
 }
 
-const ORIGIN = { x: 214, y: 254 };
-const CLIMB_OUT: [number, number] = [360, 196];
+// Exported (read-only) so homepage-v2's Pull a Brief gesture shares this
+// exact geometry instead of duplicating coordinates — single source of truth
+// for the atlas. Purely additive; nothing in this component changed.
+export const ORIGIN = { x: 214, y: 254 };
+export const CLIMB_OUT: [number, number] = [360, 196];
 
 // Abu Dhabi has no destination page yet, so its gateway links to the Gulf
 // hub — swap the href once an Abu Dhabi guide exists.
-const DESTINATIONS: AtlasDestination[] = [
+export const DESTINATIONS: AtlasDestination[] = [
   { slug: 'lahore', label: 'Lahore', country: 'Pakistan', x: 1410, y: 668, c2: [851, 348], direct: true, href: '/destinations/lahore', lp: 'left' },
   { slug: 'islamabad', label: 'Islamabad', country: 'Pakistan', x: 1392, y: 610, c2: [838, 317], direct: true, href: '/destinations/islamabad', lp: 'left' },
   { slug: 'karachi', label: 'Karachi', country: 'Pakistan', x: 1304, y: 786, c2: [812, 412], direct: true, href: '/destinations/karachi', lp: 'left' },
@@ -73,7 +76,7 @@ const DESTINATIONS: AtlasDestination[] = [
   { slug: 'marrakech', label: 'Marrakech', country: 'Morocco', x: 123, y: 661, c2: [104, 443], westbound: true, direct: true, href: '/destinations/marrakech', lp: 'right' },
 ];
 
-function routePath(d: AtlasDestination): string {
+export function routePath(d: AtlasDestination): string {
   const c1 = d.westbound ? '240 292' : `${CLIMB_OUT[0]} ${CLIMB_OUT[1]}`;
   return `M ${ORIGIN.x} ${ORIGIN.y} C ${c1}, ${d.c2[0]} ${d.c2[1]}, ${d.x} ${d.y}`;
 }
@@ -135,10 +138,19 @@ export function RouteMapHero({
   initialActiveSlug = 'lahore',
   lockedSlug,
   onDestinationActivate,
+  animateActiveRoute = false,
 }: {
   bookBySnapshots?: BookBySnapshot[];
   /** Which destination the atlas opens focused on — defaults to today's homepage behaviour. */
   initialActiveSlug?: string;
+  /**
+   * When true, the lit route draws in from origin to destination (and
+   * re-draws when the active destination changes) — the Journey Brief
+   * signature interaction. Default false: every existing surface renders
+   * the lit route statically, exactly as before. Reduced motion collapses
+   * the draw via the global media rule in globals.css.
+   */
+  animateActiveRoute?: boolean;
   /**
    * When set, a real activation (click/tap/Enter/Space — never hover) on any
    * other destination snaps the map back to this slug instead of lighting
@@ -315,10 +327,16 @@ export function RouteMapHero({
               ))}
             </g>
 
-            {/* the lit route */}
-            <g fill="none" strokeLinecap="round">
+            {/* the lit route — keyed by destination when animating so a new
+                selection re-draws the arc from Manchester outward */}
+            <g fill="none" strokeLinecap="round" key={animateActiveRoute ? `lit-${active.slug}` : 'lit'}>
               <path d={routePath(active)} stroke="#C8932E" strokeWidth="7" strokeOpacity="0.14" filter="url(#atlas-soft-blur)" />
-              <path d={routePath(active)} stroke="url(#atlas-active-route)" strokeWidth="2" />
+              <path
+                d={routePath(active)}
+                stroke="url(#atlas-active-route)"
+                strokeWidth="2"
+                className={animateActiveRoute ? 'route-draw-in' : undefined}
+              />
             </g>
 
             {/* the departure: one aircraft leading the climb-out */}

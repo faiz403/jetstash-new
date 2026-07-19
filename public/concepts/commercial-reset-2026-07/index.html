@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>JetStash — Commercial Reset Homepage Concept (Revision 2)</title>
+<!--
+  DESIGN CONCEPT, REVISION 2 — not a site page. Isolated prototype for the
+  Commercial Reset premium visual quality pass. Not wired to the Next.js
+  app, no backend calls.
+
+  What changed from revision 1, and why:
+  - Canvas flipped from dark-hero-with-photo to a light, warm-ivory
+    dominant background. A dark hero with a gold accent is the exact
+    "generic premium travel site" pattern this pass was asked to avoid.
+    Visual hierarchy is now built through genuine contrast (one dark,
+    precise "console" panel for the product action against a light page),
+    not decoration.
+  - Removed every gradient and glow effect (the hero's radial-gradient
+    ambient wash, card-hover glow shadows).
+  - Removed the green/purple status-pill colours from revision 1. Every
+    verification state now reads through ink + brass only, plus a distinct
+    icon and distinct wording per state — colour is never the only signal.
+  - Route-card titles, verdict text and prices moved off Fraunces onto
+    Public Sans; Fraunces is now used only for the two true page-level
+    headings (the hero statement and each section's own heading).
+  - Border radius tightened (14px/10px to 8px/6px), padding tightened,
+    borders thinned to 1px hairlines where a card boundary is still needed.
+  - Logomark refined: thinner, more precise strokes; tested small.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Public+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --ink-950: #06080B;
+    --ink-900: #0C0F14;
+    --ink-800: #171B22;
+    --ink-700: #2A2F3A;
+    --ink-500: #565C68;
+    --ink-400: #7C818C;
+    --ink-300: #A6ABB4;
+    --ink-100: #E7E8EA;
+    --sand-50: #FBF9F5;
+    --sand-100: #F3EEE4;
+    --sand-200: #E6DFCF;
+    --brass-300: #DDB574;
+    --brass-500: #B9863A;
+    --brass-600: #96692B;
+    --font-display: 'Fraunces', Georgia, serif;
+    --font-sans: 'Public Sans', Arial, sans-serif;
+    --radius-sm: 6px;
+    --radius-md: 8px;
+    --max: 1180px;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: var(--font-sans);
+    background: var(--sand-50);
+    color: var(--ink-900);
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+    line-height: 1.5;
+  }
+  .wrap { max-width: var(--max); margin: 0 auto; padding: 0 20px; }
+  a { color: inherit; }
+  p { max-width: 62ch; }
+  .eyebrow {
+    font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--brass-600);
+  }
+  .eyebrow--onDark { color: var(--brass-300); }
+
+  /* ── Prototype banner ── */
+  .proto-banner {
+    background: var(--ink-900); color: var(--sand-100); font-size: 11.5px; font-weight: 600;
+    text-align: center; padding: 7px 16px; letter-spacing: 0.01em; border-bottom: 1px solid var(--brass-500);
+  }
+
+  /* ── Header ── */
+  header.site {
+    position: sticky; top: 0; z-index: 40; background: var(--ink-900);
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+  header.site .wrap { display: flex; align-items: center; justify-content: space-between; height: 58px; }
+  .wordmark { display: flex; align-items: center; gap: 9px; text-decoration: none; }
+  .wordmark span { font-family: var(--font-sans); font-weight: 700; font-size: 18px; color: var(--sand-50); letter-spacing: -0.005em; }
+  nav.primary-nav { display: none; gap: 24px; }
+  nav.primary-nav a { font-size: 13.5px; color: var(--ink-300); text-decoration: none; font-weight: 500; }
+  nav.primary-nav a:hover { color: var(--sand-50); }
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    font-family: var(--font-sans); font-weight: 700; font-size: 13.5px; border-radius: var(--radius-sm);
+    padding: 10px 16px; text-decoration: none; border: none; cursor: pointer; white-space: nowrap;
+  }
+  .btn--primary { background: var(--brass-500); color: var(--ink-950); }
+  .btn--primary:hover { background: var(--brass-300); }
+  .btn--ghost-dark { background: transparent; color: var(--sand-50); border: 1px solid rgba(255,255,255,0.22); }
+  .btn--ghost-light { background: transparent; color: var(--ink-900); border: 1px solid rgba(12,15,20,0.2); }
+  .btn--sm { padding: 8px 13px; font-size: 12.5px; }
+  .btn--block { width: 100%; }
+
+  /* ── Hero ── */
+  .hero { background: var(--sand-50); padding: 34px 0 30px; }
+  .hero h1 {
+    font-family: var(--font-display); font-weight: 600; font-size: 28px; line-height: 1.14; margin: 12px 0 10px;
+    letter-spacing: -0.01em; max-width: 480px; color: var(--ink-950);
+  }
+  .hero p.sub { font-size: 14.5px; line-height: 1.55; color: var(--ink-500); max-width: 420px; margin: 0 0 22px; }
+  .trust-line { display: flex; gap: 6px; align-items: center; font-size: 12px; color: var(--ink-500); margin-top: 14px; }
+  .trust-line svg { flex-shrink: 0; }
+
+  /* ── Check console (the dark, high-contrast focal object) ── */
+  .check-card {
+    background: var(--ink-950); border-radius: var(--radius-md); padding: 18px;
+  }
+  .check-card .cc-label { font-size: 11px; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase; color: var(--brass-300); margin-bottom: 12px; display: block; }
+  .check-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+  .field { display: flex; flex-direction: column; gap: 5px; }
+  .field label { font-size: 11px; font-weight: 600; color: var(--ink-300); }
+  .field select, .field input {
+    height: 42px; border-radius: var(--radius-sm); border: 1px solid rgba(255,255,255,0.14); background: rgba(255,255,255,0.04);
+    padding: 0 10px; font-family: var(--font-sans); font-size: 13.5px; color: var(--sand-50); width: 100%;
+  }
+  .field select option { background: var(--ink-900); color: var(--sand-50); }
+  .cabin-toggle { display: flex; gap: 4px; background: rgba(255,255,255,0.04); padding: 3px; border-radius: var(--radius-sm); border: 1px solid rgba(255,255,255,0.1); }
+  .cabin-toggle button {
+    flex: 1; border: none; background: transparent; padding: 8px 6px; border-radius: 4px; font-size: 12px;
+    font-weight: 700; color: var(--ink-300); font-family: var(--font-sans); cursor: pointer;
+  }
+  .cabin-toggle button.active { background: var(--brass-500); color: var(--ink-950); }
+  .check-card .btn { margin-top: 13px; }
+
+  /* ── Three commercial paths ── */
+  .paths { padding: 24px 0; background: var(--sand-50); border-top: 1px solid var(--sand-200); }
+  .paths h2 { font-family: var(--font-sans); font-weight: 800; font-size: 12px; text-transform: uppercase; letter-spacing: 0.07em; color: var(--ink-500); margin: 0 0 12px; }
+  .path-grid { display: grid; grid-template-columns: 1fr; gap: 1px; background: var(--sand-200); border: 1px solid var(--sand-200); border-radius: var(--radius-md); overflow: hidden; }
+  .path-card {
+    background: var(--sand-50); padding: 15px 16px;
+    display: flex; flex-direction: column; gap: 5px;
+  }
+  .path-card h3 { font-family: var(--font-sans); font-weight: 700; font-size: 15.5px; margin: 0; color: var(--ink-950); }
+  .path-card p { font-size: 12.5px; color: var(--ink-500); line-height: 1.45; margin: 0 0 8px; }
+  .path-card .btn { align-self: flex-start; }
+
+  /* ── Route intelligence examples ── */
+  .routes { padding: 28px 0; background: var(--sand-50); border-top: 1px solid var(--sand-200); }
+  .section-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
+  .section-head h2 { font-family: var(--font-display); font-weight: 600; font-size: 20px; margin: 4px 0 0; color: var(--ink-950); }
+  .section-head .see-all { font-size: 12.5px; font-weight: 700; text-decoration: none; color: var(--ink-900); }
+  .route-cards { display: grid; grid-template-columns: 1fr; gap: 1px; background: var(--sand-200); border: 1px solid var(--sand-200); border-radius: var(--radius-md); overflow: hidden; }
+  .route-card { background: var(--sand-50); padding: 14px 16px; }
+  .rc-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+  .rc-route { font-family: var(--font-sans); font-weight: 700; font-size: 14.5px; color: var(--ink-950); }
+
+  .state-tag { display: inline-flex; align-items: center; gap: 5px; font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap; color: var(--ink-500); }
+  .state-tag .dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+  .state-tag--direct .dot { background: var(--brass-500); }
+  .state-tag--direct { color: var(--ink-900); }
+  .state-tag--pending .dot { background: transparent; border: 1.4px solid var(--ink-400); }
+  .state-tag--timebound .dot { background: var(--brass-500); }
+  .state-tag--timebound { color: var(--ink-900); }
+  .state-tag--coverage .dot { background: transparent; border: 1.4px dashed var(--ink-400); }
+
+  .rc-meta { font-size: 12px; color: var(--ink-400); margin-top: 4px; }
+  .rc-detail { font-size: 12.5px; color: var(--ink-500); margin-top: 8px; line-height: 1.5; }
+  .rc-source { margin-top: 8px; }
+  .rc-source summary { font-size: 11.5px; color: var(--ink-400); cursor: pointer; font-weight: 600; }
+  .rc-source .src-body { font-size: 11.5px; color: var(--ink-400); margin-top: 4px; line-height: 1.5; }
+  .rc-cta { margin-top: 10px; display: flex; gap: 8px; flex-wrap: wrap; }
+
+  /* ── What JetStash checks ── */
+  .checks-explain { padding: 28px 0; background: var(--ink-950); }
+  .checks-explain h2 { font-family: var(--font-display); font-weight: 600; font-size: 20px; margin: 0 0 14px; color: var(--sand-50); }
+  .checks-list { display: grid; grid-template-columns: 1fr; gap: 12px; }
+  .check-item { display: flex; gap: 10px; align-items: flex-start; }
+  .check-item svg { margin-top: 2px; flex-shrink: 0; }
+  .check-item p { margin: 0; font-size: 13px; line-height: 1.5; color: var(--ink-300); }
+  .check-item strong { color: var(--sand-50); font-weight: 700; }
+
+  /* ── Route Watch ── */
+  .watch { padding: 26px 0; background: var(--sand-100); border-top: 1px solid var(--sand-200); }
+  .watch h2 { font-family: var(--font-display); font-weight: 600; font-size: 20px; margin: 0 0 6px; color: var(--ink-950); }
+  .watch p { font-size: 13px; color: var(--ink-500); max-width: 440px; margin: 0 0 16px; line-height: 1.5; }
+  .watch-form { display: flex; flex-direction: column; gap: 8px; }
+  .watch-form .row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .watch-form select, .watch-form input {
+    height: 42px; border-radius: var(--radius-sm); border: 1px solid var(--sand-200); background: var(--sand-50);
+    padding: 0 10px; color: var(--ink-900); font-family: var(--font-sans); font-size: 13px; width: 100%;
+  }
+
+  /* ── Hubs ── */
+  .hubs { padding: 24px 0 30px; background: var(--sand-50); }
+  .hubs h2 { font-family: var(--font-sans); font-weight: 800; font-size: 12px; text-transform: uppercase; letter-spacing: 0.07em; color: var(--ink-500); margin: 0 0 12px; }
+  .hub-row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .hub-chip { border: 1px solid var(--sand-200); background: var(--sand-50); border-radius: var(--radius-sm); padding: 8px 14px; font-size: 12.5px; font-weight: 600; text-decoration: none; color: var(--ink-900); }
+
+  /* ── Footer ── */
+  footer.site { background: var(--ink-950); color: var(--ink-300); padding: 20px 0; }
+  footer.site .foot-row { display: flex; flex-direction: column; gap: 10px; font-size: 11.5px; }
+  footer.site .foot-links { display: flex; gap: 14px; flex-wrap: wrap; }
+  footer.site .foot-links a { text-decoration: none; color: var(--ink-300); }
+  footer.site .disclosure { color: var(--ink-500); line-height: 1.5; max-width: 620px; font-size: 11px; }
+
+  @media (min-width: 768px) {
+    nav.primary-nav { display: flex; }
+    .wrap { padding: 0 32px; }
+    .hero .wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 44px; align-items: center; }
+    .hero h1 { font-size: 40px; max-width: none; }
+    .hero p.sub { max-width: none; }
+    .path-grid { grid-template-columns: repeat(3, 1fr); }
+    .route-cards { grid-template-columns: repeat(2, 1fr); }
+    .checks-list { grid-template-columns: repeat(2, 1fr); }
+    .watch-form .row { grid-template-columns: repeat(3, 1fr); }
+    footer.site .foot-row { flex-direction: row; justify-content: space-between; align-items: center; }
+  }
+  @media (min-width: 1024px) {
+    .route-cards { grid-template-columns: repeat(4, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<div class="proto-banner">PROTOTYPE — Commercial Reset concept, revision 2. Interactions are illustrative, not wired to a backend.</div>
+
+<header class="site">
+  <div class="wrap">
+    <a href="#" class="wordmark" aria-label="JetStash home">
+      <svg width="24" height="24" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+        <path d="M7 23 L16 7 L25 23" stroke="#DDB574" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        <path d="M7 23 L16 27.5 L25 23" stroke="#B9863A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        <circle cx="16" cy="7" r="1.7" fill="#FBF9F5"/>
+      </svg>
+      <span>JetStash</span>
+    </a>
+    <nav class="primary-nav" aria-label="Main">
+      <a href="#">India</a>
+      <a href="#">Pakistan</a>
+      <a href="#">Umrah</a>
+      <a href="#">Gulf</a>
+      <a href="#">Business Class</a>
+    </nav>
+    <a href="#check" class="btn btn--primary btn--sm">Check my route</a>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="wrap">
+    <div>
+      <span class="eyebrow">The JetStash Check</span>
+      <h1>Your route, checked before you book.</h1>
+      <p class="sub">Route status, the airline actually verified to fly it, when to book, and whether your documents will be ready. One check, before you spend anything.</p>
+      <div class="trust-line">
+        <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M8 1.5 L13.5 3.8 V7.5 C13.5 11 11.2 13.6 8 14.5 C4.8 13.6 2.5 11 2.5 7.5 V3.8 L8 1.5Z" stroke="#565C68" stroke-width="1.2" stroke-linejoin="round"/><path d="M5.5 8 L7.2 9.7 L10.5 6.2" stroke="#565C68" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Every claim below is dated and independently sourced &mdash; see how for each route
+      </div>
+    </div>
+    <div class="check-card" id="check">
+      <span class="cc-label">Check my route</span>
+      <div class="check-grid">
+        <div class="field">
+          <label for="dep">UK departure airport</label>
+          <select id="dep" data-analytics="homepage_route_check_started">
+            <option>Manchester</option>
+            <option>London Heathrow</option>
+            <option>Birmingham</option>
+            <option>London Gatwick</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="dest">Destination</label>
+          <select id="dest">
+            <option>Mumbai</option>
+            <option>Lahore</option>
+            <option>Delhi</option>
+            <option>Jeddah</option>
+            <option>Dubai</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="month">Approx. travel month</label>
+          <input id="month" type="month" value="2026-10" />
+        </div>
+        <div class="field">
+          <label>Cabin</label>
+          <div class="cabin-toggle" role="group" aria-label="Cabin">
+            <button type="button" class="active">Economy</button>
+            <button type="button">Business</button>
+          </div>
+        </div>
+      </div>
+      <button type="button" class="btn btn--primary btn--block" data-analytics="homepage_route_check_completed">Check my route</button>
+    </div>
+  </div>
+</section>
+
+<section class="paths">
+  <div class="wrap">
+    <h2>Three ways to move forward</h2>
+    <div class="path-grid">
+      <div class="path-card">
+        <h3>Search economy fares</h3>
+        <p>Compare live prices for this route through our partner, once you know it's worth booking.</p>
+        <a href="#" class="btn btn--ghost-light btn--sm" data-analytics="live_price_clicked">Check live price</a>
+      </div>
+      <div class="path-card">
+        <h3>Request a Business Class quote</h3>
+        <p>Tell us the route and dates. A person gets back to you, not an automated fare feed.</p>
+        <a href="#" class="btn btn--ghost-light btn--sm" data-analytics="business_quote_started">Request a quote</a>
+      </div>
+      <div class="path-card">
+        <h3>Request an Umrah quote</h3>
+        <p>Group size, dates and hotel distance from Haram. Real pricing from a person.</p>
+        <a href="#" class="btn btn--ghost-light btn--sm" data-analytics="umrah_quote_started">Request a quote</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="routes">
+  <div class="wrap">
+    <div class="section-head">
+      <div>
+        <span class="eyebrow">Routes we track</span>
+        <h2>Genuinely supported, not a catalogue</h2>
+      </div>
+      <a href="#" class="see-all">All routes &rarr;</a>
+    </div>
+    <div class="route-cards">
+
+      <div class="route-card">
+        <div class="rc-top">
+          <span class="rc-route">Heathrow &rarr; Mumbai</span>
+          <span class="state-tag state-tag--direct"><span class="dot"></span>Direct</span>
+        </div>
+        <p class="rc-meta">British Airways &middot; Air India &middot; Virgin Atlantic</p>
+        <p class="rc-detail">Air India and Virgin Atlantic each independently confirmed 2&times; daily on their own sources. British Airways independently confirmed direct; exact daily frequency not separately published, so none is claimed here.</p>
+        <details class="rc-source">
+          <summary>How we checked this</summary>
+          <p class="src-body">Each airline verified against its own current source. One airline's evidence is never used to confirm another. Full evidence on the route page.</p>
+        </details>
+        <div class="rc-cta"><a href="#" class="btn btn--ghost-light btn--sm">View route</a></div>
+      </div>
+
+      <div class="route-card">
+        <div class="rc-top">
+          <span class="rc-route">Manchester &rarr; Mumbai</span>
+          <span class="state-tag state-tag--timebound"><span class="dot"></span>Direct to 31 Aug 2026</span>
+        </div>
+        <p class="rc-meta">IndiGo</p>
+        <p class="rc-detail">IndiGo's own announcement confirms this direct service ends 31 August 2026. Shown honestly here, not hidden. Compare against the one-stop Gulf-carrier alternative if travelling after that date.</p>
+        <details class="rc-source">
+          <summary>How we checked this</summary>
+          <p class="src-body">IndiGo's own June 2026 announcement of the withdrawal date.</p>
+        </details>
+        <div class="rc-cta"><a href="#" class="btn btn--ghost-light btn--sm">View route</a></div>
+      </div>
+
+      <div class="route-card">
+        <div class="rc-top">
+          <span class="rc-route">Manchester &rarr; Lahore</span>
+          <span class="state-tag state-tag--direct"><span class="dot"></span>Direct</span>
+        </div>
+        <p class="rc-meta">PIA</p>
+        <p class="rc-detail">Confirmed via Manchester Airport's own announcement. No official frequency published, so none is claimed.</p>
+        <details class="rc-source">
+          <summary>How we checked this</summary>
+          <p class="src-body">Manchester Airport's own media centre, launch confirmed 3 July 2026.</p>
+        </details>
+        <div class="rc-cta"><a href="#" class="btn btn--ghost-light btn--sm">View route</a></div>
+      </div>
+
+      <div class="route-card">
+        <div class="rc-top">
+          <span class="rc-route">Birmingham &rarr; Mumbai</span>
+          <span class="state-tag state-tag--coverage"><span class="dot"></span>Coverage requested</span>
+        </div>
+        <p class="rc-meta">Confirmed connecting corridor</p>
+        <p class="rc-detail">Birmingham Airport's own page confirms this is a real, bookable connecting route (via Amsterdam, Delhi, Dubai, Istanbul or Paris). We don't have a full route guide for it yet. Watch it and we'll build one properly.</p>
+        <div class="rc-cta"><a href="#" class="btn btn--primary btn--sm" data-analytics="unsupported_route_requested">Watch this route</a></div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<section class="checks-explain">
+  <div class="wrap">
+    <span class="eyebrow eyebrow--onDark">What JetStash checks</span>
+    <h2>Four things, every time</h2>
+    <div class="checks-list">
+      <div class="check-item">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="#DDB574" stroke-width="1.3"/><path d="M5.5 8 L7.2 9.7 L10.5 6.2" stroke="#DDB574" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <p><strong>Is it actually direct?</strong> A route only shows Direct once a current, named source confirms it, for that specific airline, not just the route.</p>
+      </div>
+      <div class="check-item">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="#DDB574" stroke-width="1.3"/><path d="M8 4.5 V8 L10.5 9.5" stroke="#DDB574" stroke-width="1.3" stroke-linecap="round"/></svg>
+        <p><strong>When's the fare likely to move?</strong> Booking-window guidance tied to a real festival or fare record, never a countdown timer.</p>
+      </div>
+      <div class="check-item">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><rect x="3" y="2" width="10" height="12" rx="1.4" stroke="#DDB574" stroke-width="1.3"/><path d="M5.5 6 H10.5 M5.5 9 H10.5" stroke="#DDB574" stroke-width="1.3" stroke-linecap="round"/></svg>
+        <p><strong>Will your documents be ready?</strong> Passport validity and visa timing checked against your actual travel dates.</p>
+      </div>
+      <div class="check-item">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M8 2 L8 10 M4.5 6.5 L8 10 L11.5 6.5" stroke="#DDB574" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 13 H13" stroke="#DDB574" stroke-width="1.3" stroke-linecap="round"/></svg>
+        <p><strong>Has a fare actually been checked?</strong> If nobody's logged a complete, dated fare check yet, we say so, never a stale or invented price.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="watch">
+  <div class="wrap">
+    <span class="eyebrow">Not ready to book yet</span>
+    <h2>Watch this route</h2>
+    <p>Tell us your route. We'll tell you when it's genuinely worth acting on. A person reviews what's worth sending, not an automated price ping.</p>
+    <form class="watch-form" onsubmit="return false">
+      <div class="row">
+        <select aria-label="Departure airport" data-analytics="route_watch_started"><option>Manchester</option><option>London Heathrow</option></select>
+        <select aria-label="Destination"><option>Mumbai</option><option>Lahore</option></select>
+        <input type="email" placeholder="you@example.com" aria-label="Email address" />
+      </div>
+      <button type="submit" class="btn btn--primary" data-analytics="route_watch_submitted" style="align-self:flex-start">Watch this route</button>
+    </form>
+  </div>
+</section>
+
+<section class="hubs">
+  <div class="wrap">
+    <h2>Specialist hubs</h2>
+    <div class="hub-row">
+      <a href="#" class="hub-chip">India</a>
+      <a href="#" class="hub-chip">Pakistan</a>
+      <a href="#" class="hub-chip">Umrah &amp; Saudi Arabia</a>
+      <a href="#" class="hub-chip">The Gulf</a>
+      <a href="#" class="hub-chip">Business Class</a>
+      <a href="#" class="hub-chip">Travel Ready Check</a>
+    </div>
+  </div>
+</section>
+
+<footer class="site">
+  <div class="wrap">
+    <div class="foot-row">
+      <span>&copy; 2026 JetStash.</span>
+      <div class="foot-links">
+        <a href="#">About</a>
+        <a href="#">Affiliate disclosure</a>
+        <a href="#">Privacy policy</a>
+        <a href="#">Contact</a>
+      </div>
+    </div>
+    <p class="disclosure">Every fare shown is an example checked by a person on a stated date. JetStash earns a commission on some bookings made through partner links; this never affects the price you pay.</p>
+  </div>
+</footer>
+
+</body>
+</html>

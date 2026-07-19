@@ -76,3 +76,35 @@ h1, h2 {
 @keyframes routeDraw {
   to { stroke-dashoffset: 0; }
 }
+
+/* Solid draw-in for the Route Atlas's active arc (RouteMapHero's optional
+   animateActiveRoute prop — the Journey Brief signature interaction). The
+   dash length comfortably exceeds the longest arc so the line reads as one
+   unbroken stroke drawing from origin to destination. The global
+   prefers-reduced-motion rule above collapses this to an instant reveal. */
+.route-draw-in {
+  stroke-dasharray: 2400;
+  stroke-dashoffset: 2400;
+  animation: routeDrawSolid 1.5s cubic-bezier(0.65, 0, 0.35, 1) 0.2s forwards;
+}
+@keyframes routeDrawSolid {
+  to { stroke-dashoffset: 0; }
+}
+
+/* Pull a Brief, idle invitation: a soft light travels the flagship thread
+   once every six seconds — the Slide-to-Unlock shimmer, translated. The
+   component hides it the instant the gesture begins; the reduced-motion
+   rule above collapses it entirely. */
+.pb-shimmer {
+  stroke-dasharray: 48 1400;
+  stroke-dashoffset: 1448;
+  animation: pbShimmer 6s linear infinite;
+  opacity: 0;
+}
+@keyframes pbShimmer {
+  0% { stroke-dashoffset: 1448; opacity: 0; }
+  4% { opacity: 0.5; }
+  20% { opacity: 0.5; }
+  24% { stroke-dashoffset: 0; opacity: 0; }
+  100% { stroke-dashoffset: 0; opacity: 0; }
+}

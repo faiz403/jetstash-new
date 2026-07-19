@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>JetStash — Manchester Route Atlas · Design Concept v2</title>
+<!--
+  DESIGN CONCEPT v2 — not a site page.
+  Direction: premium airline editorial. Changes from v1:
+
+  1. GROUND STRIP — the Signature Manchester photograph (terminal, tower,
+     runway lights at dusk), mirrored, blurred and faded to ~10-16%, used
+     only as a lower band that dissolves into ink before the cartography
+     begins. Its baked-in sky graphics are masked out entirely; only the
+     airport-at-dusk band survives, as pure atmosphere.
+  2. THE DEPARTURE — all eastern routes now leave Manchester as a single
+     climbing stream on one initial heading (as real departures do), then
+     fan to their destinations. Marrakech departs gently south as the lone
+     western route.
+  3. ONE AIRCRAFT — a single crafted brass aircraft leads the climb-out,
+     upper-left, heading toward Europe. The v1 mid-route glyph is removed.
+
+  Geometry, coordinates, hover model, honesty rules unchanged from v1.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@400;500;600&family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  html, body { margin: 0; padding: 0; background: #06080C; }
+  .stage { display: flex; justify-content: center; padding: 40px 0; }
+  svg { display: block; }
+</style>
+</head>
+<body>
+<div class="stage">
+<svg width="1600" height="1000" viewBox="0 0 1600 1000" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Editorial route map of flights departing Manchester across Europe, North Africa, the Gulf and South Asia">
+  <defs>
+    <linearGradient id="panelBase" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0C0F16"/>
+      <stop offset="1" stop-color="#07090D"/>
+    </linearGradient>
+    <radialGradient id="dawn" cx="0.5" cy="-0.15" r="1.05">
+      <stop offset="0" stop-color="#C8932E" stop-opacity="0.16"/>
+      <stop offset="0.45" stop-color="#C8932E" stop-opacity="0.05"/>
+      <stop offset="1" stop-color="#C8932E" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="clusterWarmth" cx="0.85" cy="0.72" r="0.5">
+      <stop offset="0" stop-color="#C8932E" stop-opacity="0.07"/>
+      <stop offset="1" stop-color="#C8932E" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="fadeGrad" cx="0.5" cy="0.54" r="0.72">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="0.72" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#000000"/>
+    </radialGradient>
+    <mask id="coastFade">
+      <rect x="0" y="0" width="1600" height="1000" fill="url(#fadeGrad)"/>
+    </mask>
+    <!-- Ground strip: visible only across the panel's lower band, dissolving
+         upward into ink long before the cartography's core zone -->
+    <linearGradient id="photoBand" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#000000"/>
+      <stop offset="0.48" stop-color="#000000"/>
+      <stop offset="0.66" stop-color="#555555"/>
+      <stop offset="0.85" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#e8e8e8"/>
+    </linearGradient>
+    <mask id="photoMask">
+      <rect x="0" y="0" width="1600" height="1000" fill="url(#photoBand)"/>
+    </mask>
+    <clipPath id="panelClip">
+      <rect width="1600" height="1000" rx="28"/>
+    </clipPath>
+    <filter id="photoBlur" x="-5%" y="-5%" width="110%" height="110%">
+      <feGaussianBlur stdDeviation="9"/>
+    </filter>
+    <radialGradient id="dotGlow" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#C8932E" stop-opacity="0.85"/>
+      <stop offset="0.5" stop-color="#C8932E" stop-opacity="0.25"/>
+      <stop offset="1" stop-color="#C8932E" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="manGlow" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#F7F2E9" stop-opacity="0.55"/>
+      <stop offset="0.5" stop-color="#E0B158" stop-opacity="0.18"/>
+      <stop offset="1" stop-color="#C8932E" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="featuredRoute" x1="214" y1="254" x2="1410" y2="668" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#F7F2E9" stop-opacity="0.95"/>
+      <stop offset="0.45" stop-color="#E0B158"/>
+      <stop offset="1" stop-color="#C8932E"/>
+    </linearGradient>
+    <filter id="softBlur" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="4.5"/>
+    </filter>
+    <filter id="grain">
+      <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" stitchTiles="stitch"/>
+    </filter>
+  </defs>
+
+  <!-- ————————————————— canvas ————————————————— -->
+  <rect width="1600" height="1000" rx="28" fill="url(#panelBase)"/>
+
+  <!-- ground strip: Manchester Airport at dusk, mirrored so the sunset sits
+       beneath the map's quietest corner; sky (and its baked graphics) fully
+       masked away -->
+  <g clip-path="url(#panelClip)" mask="url(#photoMask)" opacity="0.16">
+    <image href="/images/airports/manchester.webp" x="0" y="100" width="1600" height="900"
+           preserveAspectRatio="xMidYMid slice" filter="url(#photoBlur)"
+           transform="translate(1600 0) scale(-1 1)"/>
+  </g>
+
+  <rect width="1600" height="1000" rx="28" fill="url(#dawn)"/>
+  <rect width="1600" height="1000" rx="28" fill="url(#clusterWarmth)"/>
+  <rect width="1600" height="1000" rx="28" fill="none" stroke="#F7F2E9" stroke-opacity="0.08"/>
+
+  <!-- ————————————————— cartography ————————————————— -->
+  <g mask="url(#coastFade)">
+    <g stroke="#F7F2E9" stroke-opacity="0.045" fill="none" stroke-width="1">
+      <path d="M 60 356 Q 800 322 1540 356"/>
+      <path d="M 60 620 Q 800 594 1540 620"/>
+      <path d="M 60 868 Q 800 848 1540 868"/>
+      <path d="M 420 170 Q 434 570 412 970"/>
+      <path d="M 800 170 Q 812 570 796 970"/>
+      <path d="M 1180 170 Q 1190 570 1176 970"/>
+    </g>
+
+    <g stroke="#F7F2E9" stroke-opacity="0.13" fill="none" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M 159 318 Q 172 316 186 313 Q 208 310 228 306 Q 252 302 270 298 Q 268 294 260 291 Q 270 282 276 270 Q 262 268 254 265 Q 250 252 247 243 Q 236 234 227 226 Q 219 212 213 200 Q 215 192 216 185 Q 218 177 219 170 M 159 180 Q 158 200 161 220 Q 178 224 192 228 Q 197 243 201 256 Q 188 257 177 257 Q 170 272 165 287 Q 184 290 202 293 Q 189 294 177 296 Q 167 307 159 318 Z"/>
+      <path d="M 151 243 Q 154 258 154 272 Q 134 281 115 291 Q 101 284 91 276 Q 91 257 93 239 Q 106 230 120 222 Q 137 232 151 243 Z"/>
+      <path d="M 279 300 Q 262 314 249 330 Q 214 338 177 349 Q 200 370 230 393 Q 231 405 232 417 Q 226 430 221 442 Q 167 439 112 436 Q 105 470 101 505 Q 102 517 104 529 Q 105 545 107 561 Q 128 566 150 570 Q 158 574 165 578 M 180 566 Q 213 542 249 516 Q 266 498 284 479 Q 297 460 312 442 Q 322 443 332 443 Q 360 433 389 423 Q 417 446 446 470 Q 460 480 474 490 Q 487 516 501 542 Q 509 524 517 505 Q 528 502 539 499 Q 547 488 556 477 Q 565 505 575 533 Q 586 550 598 568 Q 612 555 627 542 Q 645 528 663 514 Q 663 506 664 499 Q 685 492 706 486 Q 729 478 753 471 Q 786 476 820 481 Q 849 483 878 486 Q 891 481 905 477"/>
+      <path d="M 675 535 Q 682 548 690 561 Q 711 561 732 562 Q 754 569 776 577 Q 797 572 819 568 Q 813 593 808 618 Q 798 640 789 663 Q 778 666 768 670 Q 755 664 743 663 Q 731 665 720 668 Q 697 667 674 667 Q 658 661 642 656 Q 603 654 565 652 Q 551 667 537 682 Q 515 664 493 646 Q 475 641 457 637 Q 432 627 408 618 Q 409 591 410 564 Q 398 563 387 562 Q 342 563 297 564 Q 268 574 240 585 Q 221 588 202 592 Q 180 587 158 583 M 163 590 Q 152 603 142 616 Q 135 620 129 624 Q 112 643 95 663 Q 96 673 98 683 Q 91 698 84 713 Q 72 739 60 765"/>
+      <path d="M 762 693 Q 772 715 783 737 Q 795 765 808 793 Q 821 825 834 858 Q 844 881 855 905 Q 866 932 878 960"/>
+      <path d="M 800 702 Q 812 729 824 756 Q 830 784 837 812 Q 850 832 863 853 Q 879 879 895 905 Q 909 930 923 955"/>
+      <path d="M 1009 698 Q 1018 708 1028 719 Q 1033 736 1039 754 Q 1044 764 1049 774 Q 1055 768 1060 762 Q 1060 770 1061 778 Q 1076 788 1091 799 Q 1104 788 1118 778 Q 1127 769 1137 761 Q 1145 783 1154 806 Q 1170 819 1186 832 Q 1193 847 1201 862"/>
+      <path d="M 1017 687 Q 1032 714 1047 741 Q 1063 748 1080 756 Q 1096 755 1112 754 Q 1128 749 1145 745 Q 1160 758 1175 771 Q 1196 775 1217 780 Q 1240 780 1264 780 Q 1283 784 1302 788 Q 1314 800 1327 813 Q 1339 821 1351 830 Q 1370 837 1389 845 Q 1391 858 1394 871 Q 1395 883 1396 895 Q 1400 909 1405 923 Q 1409 939 1414 955"/>
+      <path stroke-opacity="0.05" d="M 1036 421 Q 1060 444 1080 468 Q 1090 496 1097 525 Q 1088 546 1078 566 Q 1063 563 1049 561 Q 1036 538 1026 514 Q 1025 488 1025 462 Q 1030 441 1036 421 Z"/>
+    </g>
+    <g fill="none" stroke="#F7F2E9" stroke-opacity="0.06" stroke-width="1">
+      <ellipse cx="487" cy="553" rx="16" ry="9" transform="rotate(-14 487 553)"/>
+      <ellipse cx="641" cy="594" rx="14" ry="4" transform="rotate(-8 641 594)"/>
+      <ellipse cx="772" cy="596" rx="10" ry="4"/>
+    </g>
+  </g>
+
+  <!-- ————————————————— routes: one departure stream, then the fan ————————————————— -->
+  <!-- Every eastern route leaves Manchester on the same initial climb heading
+       (control point 360,196) before turning on course — a departure, not a hub-and-spoke diagram -->
+  <g fill="none" stroke="#C8932E" stroke-width="1.2" stroke-linecap="round">
+    <path stroke-opacity="0.32" d="M 214 254 C 240 292, 104 443, 123 661"/>             <!-- Marrakech (lone westbound) -->
+    <path stroke-opacity="0.32" d="M 214 254 C 360 196, 560 300, 706 486"/>             <!-- Istanbul -->
+    <path stroke-opacity="0.32" d="M 214 254 C 360 196, 696 417, 1050 782"/>            <!-- Doha -->
+    <path stroke-opacity="0.32" d="M 214 254 C 360 196, 728 408, 1124 770"/>            <!-- Dubai -->
+    <path stroke-opacity="0.32" d="M 214 254 C 360 196, 720 428, 1098 806"/>            <!-- Abu Dhabi -->
+    <path stroke-opacity="0.32" d="M 214 254 C 360 196, 812 412, 1304 786"/>            <!-- Karachi -->
+    <path stroke-opacity="0.32" d="M 214 254 C 360 196, 863 468, 1397 894"/>            <!-- Mumbai -->
+    <path stroke-opacity="0.32" d="M 214 254 C 360 196, 838 317, 1392 610"/>            <!-- Islamabad -->
+    <path stroke-opacity="0.32" d="M 214 254 C 360 196, 881 373, 1464 717"/>            <!-- Delhi -->
+    <path stroke-opacity="0.30" stroke-dasharray="2 7" d="M 214 254 C 360 196, 621 463, 866 849"/>   <!-- Jeddah -->
+    <path stroke-opacity="0.30" stroke-dasharray="2 7" d="M 214 254 C 360 196, 855 430, 1392 821"/>  <!-- Ahmedabad -->
+    <path stroke-opacity="0.30" stroke-dasharray="2 7" d="M 214 254 C 360 196, 866 334, 1440 641"/>  <!-- Amritsar -->
+  </g>
+
+  <!-- featured route (hover state): Manchester → Lahore -->
+  <g fill="none" stroke-linecap="round">
+    <path d="M 214 254 C 360 196, 851 348, 1410 668" stroke="#C8932E" stroke-width="7" stroke-opacity="0.14" filter="url(#softBlur)"/>
+    <path d="M 214 254 C 360 196, 851 348, 1410 668" stroke="url(#featuredRoute)" stroke-width="2"/>
+  </g>
+
+  <!-- ————————————————— the departure: one aircraft leading the climb-out ————————————————— -->
+  <g transform="translate(352 202) rotate(-17)">
+    <circle r="26" fill="url(#manGlow)" opacity="0.5"/>
+    <g fill="#E0B158">
+      <path d="M -22 0 L 6 -3.2 L 20 -0.8 Q 24 0 20 0.8 L 6 3.2 L -22 0 Z"/>
+      <path d="M -3 -1.8 L 7 -14 L 12 -14 L 5 -2 Z"/>
+      <path d="M -3 1.8 L 7 14 L 12 14 L 5 2 Z"/>
+      <path d="M -19 -1 L -13 -6.8 L -9.6 -6.8 L -14 -0.8 Z"/>
+      <path d="M -19 1 L -13 6.8 L -9.6 6.8 L -14 0.8 Z"/>
+    </g>
+  </g>
+
+  <!-- featured route callout (above the lit route) -->
+  <g>
+    <rect x="1040" y="352" width="262" height="92" rx="12" fill="#0A0D13" fill-opacity="0.88" stroke="#F7F2E9" stroke-opacity="0.12"/>
+    <text x="1064" y="382" font-family="'Public Sans', Arial, sans-serif" font-size="10" font-weight="600" letter-spacing="2.4" fill="#E0B158">MANCHESTER → LAHORE</text>
+    <text x="1064" y="408" font-family="Fraunces, Georgia, serif" font-size="20" fill="#F7F2E9">8h direct · PIA</text>
+    <text x="1064" y="430" font-family="'Public Sans', Arial, sans-serif" font-size="11" font-weight="600" fill="#C8932E">View route guide ↗</text>
+  </g>
+
+  <!-- ————————————————— origin: Manchester ————————————————— -->
+  <g>
+    <circle cx="214" cy="254" r="34" fill="url(#manGlow)"/>
+    <circle cx="214" cy="254" r="16" fill="none" stroke="#F7F2E9" stroke-opacity="0.3"/>
+    <circle cx="214" cy="254" r="9" fill="none" stroke="#E0B158" stroke-width="1.3"/>
+    <circle cx="214" cy="254" r="3.8" fill="#F7F2E9"/>
+    <text x="196" y="286" text-anchor="end" font-family="Fraunces, Georgia, serif" font-size="21" fill="#F7F2E9">Manchester</text>
+    <text x="196" y="304" text-anchor="end" font-family="'Public Sans', Arial, sans-serif" font-size="9" font-weight="600" letter-spacing="2.2" fill="#E0B158">MAN · UK DEPARTURES</text>
+  </g>
+
+  <!-- ————————————————— destinations ————————————————— -->
+  <g font-family="Fraunces, Georgia, serif" font-size="16">
+    <g>
+      <circle cx="123" cy="661" r="14" fill="url(#dotGlow)" opacity="0.6"/>
+      <circle cx="123" cy="661" r="2.8" fill="#C8932E" fill-opacity="0.85"/>
+      <text x="139" y="656" fill="#F7F2E9" fill-opacity="0.68">Marrakech</text>
+      <text x="140" y="672" font-family="'Public Sans', Arial, sans-serif" font-size="8.5" font-weight="600" letter-spacing="1.8" fill="#6B7280">MOROCCO</text>
+    </g>
+    <g>
+      <circle cx="706" cy="486" r="14" fill="url(#dotGlow)" opacity="0.6"/>
+      <circle cx="706" cy="486" r="2.8" fill="#C8932E" fill-opacity="0.85"/>
+      <text x="706" y="459" text-anchor="middle" fill="#F7F2E9" fill-opacity="0.68">Istanbul</text>
+      <text x="706" y="444" text-anchor="middle" font-family="'Public Sans', Arial, sans-serif" font-size="8.5" font-weight="600" letter-spacing="1.8" fill="#6B7280">TURKEY</text>
+    </g>
+    <g>
+      <circle cx="866" cy="849" r="14" fill="url(#dotGlow)" opacity="0.6"/>
+      <circle cx="866" cy="849" r="2.8" fill="#C8932E" fill-opacity="0.85"/>
+      <text x="848" y="845" text-anchor="end" fill="#F7F2E9" fill-opacity="0.68">Jeddah</text>
+      <text x="848" y="861" text-anchor="end" font-family="'Public Sans', Arial, sans-serif" font-size="8.5" font-weight="600" letter-spacing="1.8" fill="#6B7280">SAUDI ARABIA</text>
+    </g>
+    <g>
+      <circle cx="1050" cy="782" r="14" fill="url(#dotGlow)" opacity="0.6"/>
+      <circle cx="1050" cy="782" r="2.8" fill="#C8932E" fill-opacity="0.85"/>
+      <text x="1034" y="778" text-anchor="end" fill="#F7F2E9" fill-opacity="0.68">Doha</text>
+      <text x="1034" y="794" text-anchor="end" font-family="'Public Sans', Arial, sans-serif" font-size="8.5" font-weight="600" letter-spacing="1.8" fill="#6B7280">QATAR</text>
+    </g>
+    <g>
+      <circle cx="1124" cy="770" r="14" fill="url(#dotGlow)" opacity="0.6"/>
+      <circle cx="1124" cy="770" r="2.8" fill="#C8932E" fill-opacity="0.85"/>
+      <text x="1140" y="762" fill="#F7F2E9" fill-opacity="0.68">Dubai</text>
+      <text x="1141" y="778" font-family="'Public Sans', Arial, sans-serif" font-size="8.5" font-weight="600" letter-spacing="1.8" fill="#6B7280">UAE</text>
+    </g>
+    <g>
+      <circle cx="1098" cy="806" r="14" fill="url(#dotGlow)" opacity="0.6"/>
+      <circle cx="1098" cy="806" r="2.8" fill="#C8932E" fill-opacity="0.85"/>
+      <text x="1094" y="832" text-anchor="middle" fill="#F7F2E9" fill-opacity="0.68">Abu Dhabi</text>
+      <text x="1094" y="848" text-anchor="middle" font-family="'Public Sans', Arial, sans-serif" font-size="8.5" font-weight="600" letter-spacing="1.8" fill="#6B7280">UAE</text>
+    </g>
+    <g>
+      <circle cx="1304" cy="786" r="14" fill="url(#dotGlow)" opacity="0.6"/>
+      <circle cx="1304" cy="786" r="2.8" fill="#C8932E" fill-opacity="0.85"/>
+      <text x="1288" y="775" text-anchor="end" fill="#F7F2E9" fill-opacity="0.68">Karachi</text>
+      <text x="1288" y="791" text-anchor="end" font-family="'Public Sans', Arial, sans-serif" font-size="8.5" font-weight="600" letter-spacing="1.8" fill="#6B7280">PAKISTAN</text>
+    </g>
+    <g>
+      <circle cx="1392" cy="821" r="14" fill="url(#dotGlow)" opacity="0.6"/>
+      <circle cx="1392" cy="821" r="2.8" fill="#C8932E" fill-opacity="0.85"/>
+      <text x="1376" y="817" text-anchor="end" fill="#F7F2E9" fill-opacity="0.68">Ahmedabad</text>
+      <text x="1376" y="833" text-anchor="end" font-family="'Public Sans', Arial, sans-serif" font-size="8.5" font-weight="600" letter-spacing="1.8" fill="#6B7280">INDIA</text>
+    </g>
+    <g>
+      <circle cx="1397" cy="894" r="14" fill="url(#dotGlow)" opacity="0.6"/>
+      <circle cx="1397" cy="894" r="2.8" fill="#C8932E" fill-opacity="0.85"/>
+      <text x="1381" y="890" text-anchor="end" fill="#F7F2E9" fill-opacity="0.68">Mumbai</text>
+      <text x="1381" y="906" text-anchor="end" font-family="'Public Sans', Arial, sans-serif" font-size="8.5" font-weight="600" letter-spacing="1.8" fill="#6B7280">INDIA</text>
+    </g>
+    <g>
+      <circle cx="1392" cy="610" r="14" fill="url(#dotGlow)" opacity="0.6"/>
+      <circle cx="1392" cy="610" r="2.8" fill="#C8932E" fill-opacity="0.85"/>
+      <text x="1376" y="606" text-anchor="end" fill="#F7F2E9" fill-opacity="0.68">Islamabad</text>
+      <text x="1376" y="622" text-anchor="end" font-family="'Public Sans', Arial, sans-serif" font-size="8.5" font-weight="600" letter-spacing="1.8" fill="#6B7280">PAKISTAN</text>
+    </g>
+    <g>
+      <circle cx="1440" cy="641" r="14" fill="url(#dotGlow)" opacity="0.6"/>
+      <circle cx="1440" cy="641" r="2.8" fill="#C8932E" fill-opacity="0.85"/>
+      <text x="1456" y="637" fill="#F7F2E9" fill-opacity="0.68">Amritsar</text>
+      <text x="1457" y="653" font-family="'Public Sans', Arial, sans-serif" font-size="8.5" font-weight="600" letter-spacing="1.8" fill="#6B7280">INDIA</text>
+    </g>
+    <g>
+      <circle cx="1464" cy="717" r="14" fill="url(#dotGlow)" opacity="0.6"/>
+      <circle cx="1464" cy="717" r="2.8" fill="#C8932E" fill-opacity="0.85"/>
+      <text x="1480" y="713" fill="#F7F2E9" fill-opacity="0.68">Delhi</text>
+      <text x="1481" y="729" font-family="'Public Sans', Arial, sans-serif" font-size="8.5" font-weight="600" letter-spacing="1.8" fill="#6B7280">INDIA</text>
+    </g>
+    <g>
+      <circle cx="1410" cy="668" r="20" fill="url(#dotGlow)"/>
+      <circle cx="1410" cy="668" r="8" fill="none" stroke="#E0B158" stroke-width="1.2" stroke-opacity="0.8"/>
+      <circle cx="1410" cy="668" r="4" fill="#E0B158"/>
+      <text x="1394" y="664" text-anchor="end" font-size="17" fill="#F7F2E9">Lahore</text>
+      <text x="1394" y="680" text-anchor="end" font-family="'Public Sans', Arial, sans-serif" font-size="8.5" font-weight="600" letter-spacing="1.8" fill="#E0B158">PAKISTAN</text>
+    </g>
+  </g>
+
+  <!-- ————————————————— header ————————————————— -->
+  <g>
+    <text x="64" y="86" font-family="'Public Sans', Arial, sans-serif" font-size="11" font-weight="600" letter-spacing="3.2" fill="#E0B158">THE JETSTASH ROUTE ATLAS</text>
+    <text x="62" y="130" font-family="Fraunces, Georgia, serif" font-size="40" fill="#F7F2E9">Manchester to the destinations that matter</text>
+    <text x="1536" y="124" text-anchor="end" font-family="'Public Sans', Arial, sans-serif" font-size="12.5" fill="#6B7280">Hover a destination to light its route</text>
+  </g>
+
+  <!-- ————————————————— caption / legend ————————————————— -->
+  <g font-family="'Public Sans', Arial, sans-serif" font-size="11.5">
+    <text x="64" y="962" fill="#9CA3B0">Drawn for beauty, checked for honesty. Positions are approximate; every route is real.</text>
+    <g>
+      <line x1="1330" y1="958" x2="1362" y2="958" stroke="#C8932E" stroke-width="1.6" stroke-opacity="0.75"/>
+      <text x="1370" y="962" fill="#9CA3B0">Direct</text>
+      <line x1="1424" y1="958" x2="1456" y2="958" stroke="#C8932E" stroke-width="1.6" stroke-opacity="0.6" stroke-dasharray="2 6" stroke-linecap="round"/>
+      <text x="1464" y="962" fill="#9CA3B0">Via connection</text>
+    </g>
+  </g>
+
+  <g transform="translate(1512 880)" stroke="#C8932E" stroke-opacity="0.4" fill="none">
+    <circle r="13"/>
+    <path d="M 0 -13 L 0 -20" stroke-width="1.4"/>
+    <path d="M 0 -6 L 3 3 L 0 1 L -3 3 Z" fill="#C8932E" fill-opacity="0.5" stroke="none"/>
+  </g>
+  <text x="1512" y="916" text-anchor="middle" font-family="'Public Sans', Arial, sans-serif" font-size="8" font-weight="600" letter-spacing="2" fill="#6B7280">N</text>
+
+  <rect width="1600" height="1000" rx="28" filter="url(#grain)" opacity="0.04" style="mix-blend-mode: overlay"/>
+</svg>
+</div>
+</body>
+</html>
