@@ -1,13 +1,6 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { PullBriefHero } from '@/components/homepage-v2/pull-brief-hero';
-import {
-  CommercialPaths,
-  FlagshipJourneys,
-  WhatWeCheck,
-  RouteWatchInvite,
-  ClosingBand,
-} from '@/components/homepage-v2/homepage-sections';
+import { JourneyDeskHome } from '@/components/homepage-v2/journey-desk-home';
 
 /**
  * Homepage v2 — protected prototype (founder-only).
@@ -42,14 +35,5 @@ export default function HomepageV2Page() {
     notFound();
   }
 
-  return (
-    <>
-      <PullBriefHero />
-      <CommercialPaths />
-      <FlagshipJourneys />
-      <WhatWeCheck />
-      <RouteWatchInvite />
-      <ClosingBand />
-    </>
-  );
+  return <JourneyDeskHome />;
 }
