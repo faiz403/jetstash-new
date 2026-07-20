@@ -11,9 +11,6 @@ import {
   type AtlasDestination,
 } from '@/components/sections/route-map-hero';
 import {
-  BOOK_BY_UNAVAILABLE_COPY,
-  BUSINESS_CLASS_COPY,
-  ECONOMY_COPY,
   EVIDENCE_BUNDLE,
   WITHDRAWAL_BOUNDARY_DATE,
 } from '@/lib/journey-brief-manchester-mumbai';
@@ -82,15 +79,19 @@ function formatDate(iso: string): string {
   return new Date(`${iso}T12:00:00Z`).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
 }
 
+// Ordered as the reveal should read: what we've verified first, then the
+// things we deliberately won't fake, then what becomes yours when you add your
+// details, and finally the evidence trail. Every "pending" line is framed as a
+// promise of honesty, never an apology for missing data.
 const PINS: { key: string; label: string; state: 'ready' | 'flag' | 'pending'; detail: string }[] = [
-  { key: 'route', label: 'Route status', state: 'ready', detail: 'Direct service on record, operated by IndiGo.' },
-  { key: 'change', label: 'Service change', state: 'flag', detail: `Announced to pause from ${formatDate(WITHDRAWAL_BOUNDARY_DATE)}.` },
-  { key: 'bookby', label: 'Book By timing', state: 'pending', detail: BOOK_BY_UNAVAILABLE_COPY.headline },
-  { key: 'ready', label: 'Travel Ready', state: 'pending', detail: 'Add your dates and passport to check entry readiness.' },
-  { key: 'economy', label: 'Economy', state: 'pending', detail: ECONOMY_COPY.headline },
-  { key: 'business', label: 'Business Class', state: 'pending', detail: BUSINESS_CLASS_COPY.headline },
-  { key: 'baggage', label: 'Baggage', state: 'pending', detail: 'Allowance not verified for this fare yet — confirm with IndiGo.' },
-  { key: 'evidence', label: 'Evidence', state: 'ready', detail: `Last checked ${formatDate(EVIDENCE_BUNDLE.primarySource.accessedDate)} · next review ${formatDate(EVIDENCE_BUNDLE.nextReviewDate)}.` },
+  { key: 'route', label: 'Route status', state: 'ready', detail: 'Direct, flown by IndiGo — confirmed from the airline’s own schedule.' },
+  { key: 'change', label: 'Service change', state: 'flag', detail: `This direct route stops running after ${formatDate(WITHDRAWAL_BOUNDARY_DATE)}.` },
+  { key: 'economy', label: 'Fares', state: 'pending', detail: 'We won’t show you a price we haven’t checked ourselves this week.' },
+  { key: 'baggage', label: 'Baggage', state: 'pending', detail: 'We’ll confirm the baggage allowance with the airline rather than guess.' },
+  { key: 'business', label: 'Business Class', state: 'pending', detail: 'We’ll only confirm Business Class once the airline does.' },
+  { key: 'bookby', label: 'Best time to book', state: 'pending', detail: 'We’ll tell you when to book once we’ve tracked this route’s prices.' },
+  { key: 'ready', label: 'Travel Ready', state: 'pending', detail: 'Add your dates and passport and we’ll check if you’re ready to fly.' },
+  { key: 'evidence', label: 'Evidence', state: 'ready', detail: `Last checked ${formatDate(EVIDENCE_BUNDLE.primarySource.accessedDate)} · next check ${formatDate(EVIDENCE_BUNDLE.nextReviewDate)}.` },
 ];
 
 function PinIcon({ state }: { state: 'ready' | 'flag' | 'pending' }) {
@@ -567,14 +568,15 @@ export function PullBrief({ aimedSlug }: { aimedSlug: string | null }) {
           </span>
         </div>
 
-        {/* Verdict — the first thing a pull makes legible. */}
+        {/* Verdict — lead with the strongest verified insight, then the evidence. */}
         <div ref={verdictRef} className="pb-verdict max-w-2xl" style={{ opacity: 0 }}>
           <h3 className="font-display text-xl leading-tight text-sand-50 sm:text-2xl">
-            Manchester to Mumbai, understood before you book.
+            Book soon — these are the last direct Manchester to Mumbai flights, ending {formatDate(WITHDRAWAL_BOUNDARY_DATE)}.
           </h3>
           <p className="mt-1.5 text-[13px] leading-relaxed text-ink-200">
-            {EVIDENCE_BUNDLE.route.airline} direct, on record · announced to pause from {formatDate(WITHDRAWAL_BOUNDARY_DATE)} ·
-            checked {formatDate(EVIDENCE_BUNDLE.primarySource.accessedDate)}
+            Flown by {EVIDENCE_BUNDLE.route.airline}. We checked the airline&apos;s own schedule on{' '}
+            {formatDate(EVIDENCE_BUNDLE.primarySource.accessedDate)}, and we&apos;ll check again on{' '}
+            {formatDate(EVIDENCE_BUNDLE.nextReviewDate)}.
           </p>
         </div>
 

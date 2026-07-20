@@ -172,7 +172,7 @@ export function WhatWeCheck() {
   return (
     <section className="bg-ink-900 py-14 sm:py-20">
       <div className="mx-auto max-w-content px-5 sm:px-8">
-        <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-brass-300">What a Journey Brief checks</span>
+        <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-brass-300">What we check before you book</span>
         <h2 className="mt-2 max-w-2xl font-display text-3xl leading-tight text-sand-50 sm:text-4xl">
           Everything below is checked, dated and sourced
         </h2>

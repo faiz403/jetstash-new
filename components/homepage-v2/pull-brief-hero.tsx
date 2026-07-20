@@ -66,6 +66,8 @@ export function PullBriefHero() {
       <div className="relative mx-auto max-w-content px-5 pb-16 pt-5 sm:px-8 sm:pb-16 sm:pt-6">
         <div className="flex items-center gap-3">
           <Wordmark />
+          {/* TEMPORARY placeholder — the featured-label (Change 1) that sets the
+              homepage's mental model is being decided separately. Leave as-is. */}
           <span className="text-[10px] font-semibold uppercase tracking-[0.28em] text-ink-300">Journey Brief</span>
         </div>
 
@@ -75,8 +77,8 @@ export function PullBriefHero() {
           <h1 className="font-display text-xl leading-tight tracking-tight text-sand-50 sm:text-[1.7rem]">
             Everything that matters before you book.
           </h1>
-          <p className="mt-1 text-sm text-ink-300">
-            Pull your route open into one clear Journey Brief.
+          <p className="mt-2 text-sm leading-relaxed text-ink-300">
+            We check flights from the UK to Pakistan, India, the Gulf and Umrah — the route, the timing and the paperwork, before you book.
           </p>
         </div>
 
@@ -104,9 +106,9 @@ export function PullBriefHero() {
             )}
             {match && !aimedFlagship && (
               <>
-                Manchester → {match.label.split(',')[0]}: a full Journey Brief isn&apos;t evidence-ready yet.{' '}
+                We&apos;re still building the full check for Manchester → {match.label.split(',')[0]}.{' '}
                 <Link href={match.href} className="font-semibold text-brass-300 underline underline-offset-2 hover:text-brass-200">
-                  Open the guide
+                  Open the route guide
                   <ArrowUpRight className="ml-0.5 inline h-3.5 w-3.5" strokeWidth={2.25} />
                 </Link>
               </>
