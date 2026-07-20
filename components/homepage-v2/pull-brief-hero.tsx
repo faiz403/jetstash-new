@@ -66,9 +66,12 @@ export function PullBriefHero() {
       <div className="relative mx-auto max-w-content px-5 pb-16 pt-5 sm:px-8 sm:pb-16 sm:pt-6">
         <div className="flex items-center gap-3">
           <Wordmark />
-          {/* TEMPORARY placeholder — the featured-label (Change 1) that sets the
-              homepage's mental model is being decided separately. Leave as-is. */}
-          <span className="text-[10px] font-semibold uppercase tracking-[0.28em] text-ink-300">Journey Brief</span>
+          {/* Featured-route label — frames the route as one featured example, not
+              the whole product. The route itself (Manchester → Mumbai) is shown on
+              the map below, so it isn't repeated here. "Journey Brief" is
+              deliberately absent: it's the name of what opens on the pull, earned
+              at the reveal, not a term to decode on arrival. */}
+          <span className="text-[10px] font-semibold uppercase tracking-[0.28em] text-ink-300">Featured route</span>
         </div>
 
         {/* Framing line — small, so it introduces the interaction rather than
