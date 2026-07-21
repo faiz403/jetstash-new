@@ -177,11 +177,16 @@ export function PullBrief({ aimedSlug }: { aimedSlug: string | null }) {
         el.style.opacity = String(r);
         el.style.transform = `translateY(${12 * (1 - r)}px)`;
       });
-      briefRef.current.style.pointerEvents = p > 0.9 ? '' : 'none';
+      // Must be 'auto', not '': the container carries the `pointer-events-none`
+      // class, so clearing the inline value falls back to that class (still
+      // none) and leaves the Brief's controls untappable when open.
+      briefRef.current.style.pointerEvents = p > 0.9 ? 'auto' : 'none';
     }
     if (barRef.current) {
       barRef.current.style.opacity = p >= 0.98 ? '1' : '0';
-      barRef.current.style.pointerEvents = p >= 0.98 ? '' : 'none';
+      // 'auto' (not '') for the same reason as the Brief container above —
+      // this is what makes "Change journey" tappable once settled.
+      barRef.current.style.pointerEvents = p >= 0.98 ? 'auto' : 'none';
     }
     if (truthRef.current) {
       // The surfaced truth fades as the Brief is pulled open (the reveal
