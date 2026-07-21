@@ -163,7 +163,7 @@ export function FlagshipJourneys() {
 const CHECKS = [
   { icon: Plane, title: 'Route status & airline', body: 'Whether a route runs direct, on which airline, verified from that carrier’s own source.' },
   { icon: CalendarClock, title: 'Announced service changes', body: 'Route pauses and withdrawals surfaced honestly, with the date and where we read it.' },
-  { icon: ShieldCheck, title: 'Booking-window timing', body: 'When to book, traced to a real festival, fare or booking-window record — never fake urgency.' },
+  { icon: ShieldCheck, title: 'Booking-window timing', body: 'When to book, traced to a real festival, fare or booking-window record. Never fake urgency.' },
   { icon: FileCheck2, title: 'Travel-ready documents', body: 'Passport validity and visa guidance for your trip, sourced from official government pages.' },
   { icon: Receipt, title: 'Fares, dated by a person', body: 'Every fare shows the date a person actually checked it. Never a live-price claim, never a half-built price.' },
 ];
@@ -208,8 +208,8 @@ export function RouteWatchInvite() {
               Not ready to book? We&apos;ll tell you when something genuinely changes.
             </h2>
             <p className="mt-2 text-sm leading-relaxed text-ink-600">
-              A person reviews what&apos;s worth sending — a service change, a sensible time to book, a document to sort.
-              Reviewed and sent manually, never an automated price ping.
+              A person reviews what&apos;s worth sending, whether that&apos;s a service change, a sensible time to book or
+              a document to sort. Reviewed and sent manually, never an automated price ping.
             </p>
           </div>
           <Link
@@ -238,8 +238,10 @@ export function ClosingBand() {
             The first place to check before you book. One clear Journey Brief, checked and dated.
           </p>
         </div>
+        {/* Back to the hero's handover — never the founder-gated prototype,
+            which 404s in production. */}
         <Link
-          href="/founder/journey-brief/manchester-mumbai"
+          href="#your-journey"
           className="inline-flex h-12 items-center justify-center gap-1.5 rounded-sm bg-brass px-6 text-sm font-semibold text-ink-900 transition-all hover:bg-brass-400"
         >
           Check my trip

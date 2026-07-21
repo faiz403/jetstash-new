@@ -91,22 +91,43 @@ h1, h2 {
   to { stroke-dashoffset: 0; }
 }
 
-/* Pull a Brief, idle invitation: a soft light travels the flagship thread
-   once every six seconds — the Slide-to-Unlock shimmer, translated. The
-   component hides it the instant the gesture begins; the reduced-motion
-   rule above collapses it entirely. */
+/* Pull a Brief — the truth surfacing, once. On load a single filament of
+   light travels the flagship thread Manchester → Mumbai (a climb and an
+   arrival, not a swipe), then fades as it reaches the destination — the light
+   finding the one fact that matters, timed to the verdict resolving below
+   (.pb-truth-in). It runs a single time, never loops: the standing invitation
+   to interact is the handle's own halo, not this. The component hides it the
+   instant the gesture begins; reduced motion removes it. */
 .pb-shimmer {
   stroke-dasharray: 48 1400;
   stroke-dashoffset: 1448;
-  animation: pbShimmer 6s linear infinite;
   opacity: 0;
+  animation: pbShimmer 1.4s cubic-bezier(0.65, 0, 0.35, 1) 0.5s 1 forwards;
 }
 @keyframes pbShimmer {
   0% { stroke-dashoffset: 1448; opacity: 0; }
-  4% { opacity: 0.5; }
-  20% { opacity: 0.5; }
-  24% { stroke-dashoffset: 0; opacity: 0; }
+  12% { opacity: 0.55; }
+  82% { opacity: 0.55; }
   100% { stroke-dashoffset: 0; opacity: 0; }
+}
+
+/* Pull a Brief — the surfaced verdict. Once the light lands, the one dated
+   fact resolves into being (a slow settle — "it was always true") and stays.
+   `both` keeps it hidden through the delay and present afterward; its parent
+   handles the interactive fade when the Brief is pulled open. Reduced motion
+   shows it immediately, unmoved (rule below). */
+.pb-truth-in {
+  animation: pbTruthIn 800ms cubic-bezier(0.16, 1, 0.3, 1) 1.85s 1 both;
+}
+@keyframes pbTruthIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* No travelling light; the verdict is simply present, unmoved. */
+  .pb-shimmer { animation: none; opacity: 0; }
+  .pb-truth-in { animation: none; }
 }
 
 /* Pull a Brief — idle handle cue: a brass ring pulses outward from the pull
@@ -121,4 +142,19 @@ h1, h2 {
   0% { transform: scale(0.85); opacity: 0.6; }
   70% { opacity: 0; }
   100% { transform: scale(1.75); opacity: 0; }
+}
+
+/* Custom select control — the native OS chevron is replaced with a brass one
+   so the From/To dropdowns belong to the dark hero instead of showing browser
+   chrome. Only the closed control's appearance changes; the native option
+   list and open/close behaviour are untouched, so it works the same on desktop
+   and mobile (the OS picker still opens as normal). The Tailwind class carries
+   `appearance-none`; these prefixes cover older Safari/Firefox. */
+.pb-select {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8' fill='none'%3E%3Cpath d='M1 1.5 6 6.5 11 1.5' stroke='%23C8932E' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.85rem center;
+  background-size: 12px 8px;
 }

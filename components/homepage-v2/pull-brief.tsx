@@ -79,12 +79,17 @@ function formatDate(iso: string): string {
   return new Date(`${iso}T12:00:00Z`).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
 }
 
+/** The one dated fact this route holds — surfaced at rest below the thread and
+ *  shown in full inside the Brief. One source of truth for both, so the words
+ *  can never drift apart. */
+const VERDICT_LINE = `Book soon. These are the last direct Manchester to Mumbai flights, ending ${formatDate(WITHDRAWAL_BOUNDARY_DATE)}.`;
+
 // Ordered as the reveal should read: what we've verified first, then the
 // things we deliberately won't fake, then what becomes yours when you add your
 // details, and finally the evidence trail. Every "pending" line is framed as a
 // promise of honesty, never an apology for missing data.
 const PINS: { key: string; label: string; state: 'ready' | 'flag' | 'pending'; detail: string }[] = [
-  { key: 'route', label: 'Route status', state: 'ready', detail: 'Direct, flown by IndiGo — confirmed from the airline’s own schedule.' },
+  { key: 'route', label: 'Route status', state: 'ready', detail: 'Direct, flown by IndiGo. Confirmed from the airline’s own schedule.' },
   { key: 'change', label: 'Service change', state: 'flag', detail: `This direct route stops running after ${formatDate(WITHDRAWAL_BOUNDARY_DATE)}.` },
   { key: 'economy', label: 'Fares', state: 'pending', detail: 'We won’t show you a price we haven’t checked ourselves this week.' },
   { key: 'baggage', label: 'Baggage', state: 'pending', detail: 'We’ll confirm the baggage allowance with the airline rather than guess.' },
@@ -123,6 +128,7 @@ export function PullBrief({ aimedSlug }: { aimedSlug: string | null }) {
   const briefRef = useRef<HTMLDivElement | null>(null);
   const verdictRef = useRef<HTMLDivElement | null>(null);
   const barRef = useRef<HTMLDivElement | null>(null);
+  const truthRef = useRef<HTMLDivElement | null>(null);
 
   const drag = useRef({ active: false, startY: 0, lastY: 0, lastT: 0, velocity: 0, moved: false, downT: 0 });
 
@@ -176,6 +182,12 @@ export function PullBrief({ aimedSlug }: { aimedSlug: string | null }) {
     if (barRef.current) {
       barRef.current.style.opacity = p >= 0.98 ? '1' : '0';
       barRef.current.style.pointerEvents = p >= 0.98 ? '' : 'none';
+    }
+    if (truthRef.current) {
+      // The surfaced truth fades as the Brief is pulled open (the reveal
+      // carries the verdict in full). Clearing the inline value at rest lets
+      // its one-time entrance animation play and keeps it present.
+      truthRef.current.style.opacity = p > 0.001 ? String(Math.max(0, 1 - p * 4)) : '';
     }
     function tensionOffset(b: number) {
       return b * (1 - p);
@@ -425,7 +437,9 @@ export function PullBrief({ aimedSlug }: { aimedSlug: string | null }) {
 
       {/* ── The Desk: map + morphing thread ──────────────────────────────── */}
       <div className="pb-map relative">
-        <div className="relative mx-auto aspect-[1330/764] w-full max-w-[920px]">
+        {/* Width cap tightens on short viewports (common laptops) so the whole
+            stage — pull handle included — stays inside the first screen. */}
+        <div className="relative mx-auto aspect-[1330/764] w-full max-w-[920px] [@media(max-height:820px)]:max-w-[640px]">
           <svg
             viewBox={`${VB.x} ${VB.y} ${VB.w} ${VB.h}`}
             className="absolute inset-0 h-full w-full"
@@ -480,7 +494,10 @@ export function PullBrief({ aimedSlug }: { aimedSlug: string | null }) {
                 strokeWidth={aimed ? 4.4 : 3.6}
                 className={aimed ? 'pb-thread-aimed' : undefined}
               />
-              {/* Idle invitation: a light travels the thread every 6s (rest only). */}
+              {/* On load, a single filament of light travels the thread once,
+                  Manchester → Mumbai, then fades at the destination as the
+                  verdict resolves below — the light finding the fact. Not a
+                  loop; hidden the instant the gesture begins (applyP). */}
               <path
                 ref={shimmerRef}
                 d={pathAt(ARC, SPINE, 0)}
@@ -498,7 +515,7 @@ export function PullBrief({ aimedSlug }: { aimedSlug: string | null }) {
             ref={tabRef}
             type="button"
             aria-expanded={settled}
-            aria-label="Pull the Manchester to Mumbai Journey Brief"
+            aria-label="Pull open the Manchester to Mumbai check"
             onPointerDown={onPointerDown}
             onPointerMove={onPointerMove}
             onPointerUp={onPointerUp}
@@ -538,10 +555,23 @@ export function PullBrief({ aimedSlug }: { aimedSlug: string | null }) {
               aria-hidden="true"
               className="pointer-events-none absolute right-full top-1/2 mr-2.5 flex -translate-y-1/2 items-center whitespace-nowrap rounded-full bg-ink-900/80 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-brass-100 ring-1 ring-brass-400/30"
             >
-              Pull your Brief
+              Pull the answer
             </span>
           </button>
         </div>
+      </div>
+
+      {/* ── The surfaced truth — the one dated fact this route holds, lit once
+          on load (the light lands, then this resolves) and left present at
+          rest. A visual echo (aria-hidden) of the verdict the pull opens in
+          full below, which screen readers already carry; the outer div's
+          opacity is faded by applyP while the Brief is open, so the fact is
+          never shown twice. Nesting keeps the one-time entrance (inner) and
+          the interactive fade (outer) from fighting. ────────────────────── */}
+      <div ref={truthRef} className="mx-auto mt-3 max-w-xl text-center sm:mt-4">
+        <p aria-hidden="true" className="pb-truth-in text-balance font-display text-[15px] leading-snug text-sand-100 sm:text-base">
+          {VERDICT_LINE}
+        </p>
       </div>
 
       {/* ── The Brief: verdict + pins, revealed by the pull ──────────────── */}
@@ -561,17 +591,20 @@ export function PullBrief({ aimedSlug }: { aimedSlug: string | null }) {
             <button
               type="button"
               onClick={close}
-              className="text-[13px] font-semibold text-brass-300 underline decoration-brass-300/40 underline-offset-4 hover:text-brass-200"
+              className="text-[13px] font-semibold text-brass-300 underline decoration-brass-300/40 underline-offset-4 transition-colors duration-150 hover:text-brass-200"
             >
               Change journey
             </button>
           </span>
         </div>
 
-        {/* Verdict — lead with the strongest verified insight, then the evidence. */}
+        {/* Verdict — lead with the strongest verified insight, then the evidence.
+            "Journey Brief" is introduced here, at the moment the visitor is
+            holding one — never as unexplained arrival terminology. */}
         <div ref={verdictRef} className="pb-verdict max-w-2xl" style={{ opacity: 0 }}>
-          <h3 className="font-display text-xl leading-tight text-sand-50 sm:text-2xl">
-            Book soon — these are the last direct Manchester to Mumbai flights, ending {formatDate(WITHDRAWAL_BOUNDARY_DATE)}.
+          <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-brass-200">Your Journey Brief</p>
+          <h3 className="mt-2 font-display text-xl leading-tight text-sand-50 sm:text-2xl">
+            {VERDICT_LINE}
           </h3>
           <p className="mt-1.5 text-[13px] leading-relaxed text-ink-200">
             Flown by {EVIDENCE_BUNDLE.route.airline}. We checked the airline&apos;s own schedule on{' '}
@@ -599,11 +632,13 @@ export function PullBrief({ aimedSlug }: { aimedSlug: string | null }) {
         </ul>
 
         <div className="mt-4" data-pin style={{ opacity: 0 }}>
+          {/* The public route page — never the founder-gated prototype, which
+              404s in production. */}
           <Link
-            href="/founder/journey-brief/manchester-mumbai"
+            href="/routes/manchester-mumbai"
             className="inline-flex h-11 items-center justify-center gap-1.5 rounded-sm bg-brass px-5 text-sm font-semibold text-ink-900 transition-all hover:bg-brass-400 active:scale-[0.985]"
           >
-            Open the full Journey Brief
+            Open the full route check
             <ArrowRight className="h-4 w-4" strokeWidth={2.25} />
           </Link>
         </div>

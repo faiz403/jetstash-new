@@ -796,3 +796,25 @@ already recomputes against the visitor's real clock on mount regardless.
 without either misrepresenting a peak period as a literal Event or repeating the exact Offer/Product
 mistake §9.2 already forbids (stale-price Google Merchant risk). Don't add one later just to check a
 box — only if a schema.org type is found that's actually true of what the panel says.
+
+### 14.3 Homepage = the pre-booking second opinion (decision record, July 2026)
+
+The public homepage's job is locked: **present JetStash as the independent second opinion a
+traveller gets before committing money — "catch what matters before you commit" — never as a
+flight-finding surface.** Concretely:
+
+- **Sequence:** quiet promise ("Before you book, get a second opinion.") → the featured
+  Manchester→Mumbai proof (the pull reveals the single most important verified fact, then
+  evidence, then the honest not-verified-yet states) → a "Now check your journey" handover
+  (From/To over the real `data/routes.ts` tracked routes; untracked pairings say plainly that
+  the full check is still being built and link to the real destination guide) → What We Check →
+  Route Watch → closing band.
+- **Deliberately absent from the homepage** (pages still exist elsewhere): deal feeds,
+  destination-inspiration cards, route catalogues, cabin upsell paths. The bar for any homepage
+  section is: *would this change a sensible person's booking decision?*
+- **Language:** "Journey Brief" is introduced at the reveal (where the visitor is holding one),
+  never as unexplained arrival terminology. The pull handle says "Pull the answer". No internal
+  vocabulary (corridor, desk, evidence-ready, verification state) in visitor-facing homepage copy.
+- **Never link the homepage to `/founder/*` routes** — they 404 in production (this bug shipped
+  once, via the reveal CTA and closing band both pointing at the founder-gated Journey Brief
+  prototype; both now point at `/routes/manchester-mumbai` / the hero handover instead).
