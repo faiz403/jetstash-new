@@ -16,8 +16,9 @@ const INK_LIGHT = '#9CA3B0';
 const BRASS = '#C8932E';
 const SAND = '#F7F2E9';
 
-export default function OgImage({ params }: { params: { slug: string } }) {
-  const route = getRouteBySlug(params.slug);
+export default async function OgImage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const route = getRouteBySlug(slug);
   const airport = route ? getRouteAirport(route) : undefined;
   const dest = route ? getRouteDestination(route) : undefined;
 

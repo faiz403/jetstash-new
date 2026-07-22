@@ -20,8 +20,9 @@ export async function generateStaticParams() {
   return airports.map((a) => ({ slug: a.slug }));
 }
 
-export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
-  const airport = getAirportBySlug(params.slug);
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const { slug } = await params;
+  const airport = getAirportBySlug(slug);
   if (!airport) return {};
   return {
     title: `Flights from ${airport.name} (${airport.code}): Pakistan, India & Gulf Routes`,
@@ -30,8 +31,9 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   };
 }
 
-export default function AirportPage({ params }: { params: { slug: string } }) {
-  const airport = getAirportBySlug(params.slug);
+export default async function AirportPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const airport = getAirportBySlug(slug);
   if (!airport) {
     notFound();
     return null;

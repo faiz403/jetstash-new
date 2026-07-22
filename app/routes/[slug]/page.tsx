@@ -51,8 +51,9 @@ function formatEndDate(iso: string): string {
   return new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
 }
 
-export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
-  const route = getRouteBySlug(params.slug);
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const { slug } = await params;
+  const route = getRouteBySlug(slug);
   if (!route) return {};
   const airport = getRouteAirport(route);
   const dest = getRouteDestination(route);
@@ -64,8 +65,9 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   };
 }
 
-export default function RoutePage({ params }: { params: { slug: string } }) {
-  const route = getRouteBySlug(params.slug);
+export default async function RoutePage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const route = getRouteBySlug(slug);
   if (!route) {
     notFound();
     return null;
