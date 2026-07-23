@@ -421,6 +421,36 @@ export const routes: Route[] = [
     peakPeriodIds: ['ramadan', 'pre-hajj', 'school-half-terms-umrah'],
   },
   {
+    slug: 'birmingham-mumbai',
+    airportSlug: 'birmingham',
+    destinationSlug: 'mumbai',
+    flightTime: 'Journey duration varies by connection and has not been independently established.',
+    frequency: 'Connecting options exist; exact schedules and frequency have not been independently verified — check directly with the airline or a booking site.',
+    // Only the airlines Birmingham Airport's own Mumbai page actually names
+    // AND that already exist in data/airlines.ts — the source also lists
+    // Air France, KLM, Lufthansa and Swiss, which are omitted here because
+    // they have no registry entry, not because the source doesn't name
+    // them. See the route-level verification note below: the source names
+    // these airlines and separately names hub cities, but never maps any
+    // specific airline to any specific hub — no such mapping is asserted
+    // anywhere in this route's copy either.
+    airlineSlugs: ['air-india', 'emirates', 'qatar-airways', 'saudia', 'turkish-airlines'],
+    isDirect: false,
+    verification: {
+      status: 'verified',
+      sourceName: "Birmingham Airport's own official Mumbai destination page (airport.birminghamairport.co.uk)",
+      sourceUrl: 'https://airport.birminghamairport.co.uk/destinations/where-we-fly/mumbai/',
+      verifiedDate: '2026-07-23',
+      reviewDueDate: '2026-08-23',
+      note: 'This source confirms only that no direct Birmingham–Mumbai flight currently exists ("There are currently no direct flights to Mumbai"), and separately names hub cities (Amsterdam, Delhi, Dubai, Istanbul, Paris) and airlines (Air France, Air India, Emirates, KLM, Lufthansa, Qatar Airways, Turkish Airlines, Saudia, Swiss) it associates with reaching Mumbai from Birmingham. It does not map any specific airline to any specific hub, and does not establish total journey duration, frequency, demand periods, fare behaviour, or self-transfer risk for any named itinerary — none of those are claimed anywhere in this route\'s public copy. Does not by itself change the public "Connecting route" display, which already follows from isDirect: false regardless of this record.',
+    },
+    intro:
+      'Birmingham has no direct service to Mumbai. Birmingham Airport\'s own destination page confirms this, and separately lists Air India, Emirates, Qatar Airways, Saudia and Turkish Airlines among the airlines connecting Birmingham to Mumbai and hub cities including Amsterdam, Delhi, Dubai, Istanbul and Paris — the source does not say which airline uses which hub, so treat any specific routing as unconfirmed and compare options directly before booking.',
+    bookingWindowNote:
+      'Every itinerary on this route involves at least one connection, so total journey time, layover length, baggage-transfer conditions and ticket flexibility matter as much as the headline fare. Compare these details directly with the airline or a booking site — this route does not currently have an independently verified duration, frequency or fare pattern to base timing advice on.',
+    peakPeriodIds: [],
+  },
+  {
     slug: 'glasgow-dubai',
     airportSlug: 'glasgow',
     destinationSlug: 'dubai',
@@ -767,6 +797,33 @@ function pendingRouteCopy(airportCity: string | undefined, destCity: string | un
   };
 }
 
+/**
+ * Longest a social/OG detail line is allowed to be before falling back to a
+ * short generic label instead. Not every route's own `flightTime` is safe
+ * to render on a 1200×630 image at a glance-readable size — several honest
+ * hedged fields (and, most sharply, a route like Birmingham–Mumbai whose
+ * `flightTime` is itself a full disclaimer sentence, not a duration) run
+ * well past what fits on one line with no wrapping. This is a general,
+ * per-route check, not a special case for any one slug.
+ */
+const MAX_SOCIAL_DETAIL_LENGTH = 50;
+
+/**
+ * A concise, centrally-derived line for metadata/OG surfaces — deliberately
+ * separate from the full `flightTime`/`frequency` fields used on the route
+ * page itself, which are allowed to be as long and as hedged as the truth
+ * requires. `frequency` in particular is excluded here entirely: several
+ * routes' frequency strings carry a full confirmation caveat (e.g.
+ * manchester-islamabad's is well over 100 characters) that reads fine as
+ * page copy but was never designed to fit a social-image line, direct or
+ * connecting. Never invents a duration, schedule, or airline fact — the
+ * fallback labels name only the route's status, nothing more specific.
+ */
+function buildSocialDetail(status: 'direct' | 'connecting', flightTime: string, statusLabel: string): string {
+  if (flightTime.length <= MAX_SOCIAL_DETAIL_LENGTH) return flightTime;
+  return status === 'direct' ? `${statusLabel} — see route guide for details` : 'Connecting — compare options before booking';
+}
+
 interface RoutePresentationBase {
   /** The one canonical short label for this status — 'Direct', 'Connecting', or 'Verification pending'. Every surface should use this instead of re-deriving its own ternary. */
   statusLabel: string;
@@ -788,8 +845,21 @@ interface RoutePresentationBase {
   summary: string;
   /** Safe <meta description>: the existing route.intro-derived summary for direct/connecting, or a short claim-free sentence for pending. */
   metadataDescription: string;
+  /**
+   * Safe <title>: content-aware, not a fixed template. "Booking Windows &
+   * Peak Periods" is only used when the route actually has peak-period
+   * content (route.peakPeriodIds is non-empty) — a route like
+   * Birmingham–Mumbai, with no peak-period data, gets a truthful generic
+   * title instead. Checked generically per-route, not special-cased to any
+   * one slug, so any future sparse route gets the same treatment.
+   */
+  metadataTitle: string;
   /** Safe WhatsApp/share message body (URL is appended separately by the share component). Omits booking-window, demand, fare-urgency, airline and routing claims entirely when pending. */
   shareText: string;
+  /** Concise line for the Open Graph/social image — see buildSocialDetail's doc comment. Never the full flightTime+frequency pairing (frequency alone can run past 100 characters on some routes), and never longer than fits a single image line. */
+  socialDetail: string;
+  /** Concise, universally-truthful footer line for the Open Graph/social image. Never advertises a specific section (e.g. "Peak periods", "Fare history") that may not exist for this route. */
+  socialFooter: string;
 }
 
 /**
@@ -866,15 +936,19 @@ export function getRoutePresentation(route: Route, nowIso: string): RoutePresent
 
   if (status === 'unverified') {
     const copy = pendingRouteCopy(airport?.city, dest?.city);
+    const statusLabel = 'Verification pending';
     return {
       status,
-      statusLabel: 'Verification pending',
+      statusLabel,
       flightTime: null,
       frequency: null,
       airlineSlugs: [],
       summary: copy.summary,
       metadataDescription: copy.metadataDescription,
+      metadataTitle: `${pair}: Route Verification in Progress`,
       shareText: copy.shareText,
+      socialDetail: statusLabel,
+      socialFooter: 'Route verification in progress · jetstash.co.uk',
       canShowBookingGuidance: false,
       canShowPeakPeriods: false,
       canShowConnectingAlternative: false,
@@ -887,6 +961,15 @@ export function getRoutePresentation(route: Route, nowIso: string): RoutePresent
       ? route.airlineSlugs.filter((slug) => getRouteAirlineDisplayStatus(route, slug, nowIso) === 'verified')
       : route.airlineSlugs;
 
+  // Content-aware title: "Booking Windows & Peak Periods" is only truthful
+  // when the route actually has peak-period data behind it. Checked against
+  // route.peakPeriodIds generically, not special-cased to Birmingham–Mumbai
+  // — any future route with no peak-period content gets the same fallback.
+  const hasPeakPeriodContent = route.peakPeriodIds.length > 0;
+  const metadataTitle = hasPeakPeriodContent
+    ? `${pair} Flights: Booking Windows & Peak Periods`
+    : `${pair} Flights: ${status === 'direct' ? 'Route Guide' : 'Connection Guide'}`;
+
   return {
     status,
     statusLabel,
@@ -895,7 +978,10 @@ export function getRoutePresentation(route: Route, nowIso: string): RoutePresent
     airlineSlugs,
     summary: route.intro,
     metadataDescription: `${route.intro.slice(0, 150)}...`,
+    metadataTitle,
     shareText: `${pair}: ${route.flightTime}, ${route.frequency}. ${route.bookingWindowNote}`,
+    socialDetail: buildSocialDetail(status, route.flightTime, statusLabel),
+    socialFooter: 'Travel intelligence · jetstash.co.uk',
     canShowBookingGuidance: true,
     canShowPeakPeriods: true,
     canShowConnectingAlternative: true,

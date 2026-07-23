@@ -24,21 +24,20 @@ export default async function OgImage({ params }: { params: Promise<{ slug: stri
 
   const from = airport?.city ?? 'UK';
   const to = dest?.city ?? 'the world';
-  // Verification-pending leakage fix: never read route.flightTime/frequency
-  // raw here — getRoutePresentation() returns null for both on a pending
-  // route, so this image can never assert a duration or frequency the route
-  // page itself wouldn't. A single statusLabel line replaces the usual
-  // "X · Y" pairing rather than joining two nulls or repeating one string
-  // twice — premium presentation fix, not just a leak fix.
+  // Verification-pending leakage fix + presentation-integrity fix: both the
+  // detail line and the footer come straight from getRoutePresentation()'s
+  // own socialDetail/socialFooter — never route.flightTime/frequency raw,
+  // never a fixed "Booking windows · Peak periods · Fare history" tagline
+  // that a sparse route (no peak-period data, no fare history) can't back
+  // up, and never the full flightTime+frequency pairing, which for several
+  // routes (long hedged frequency strings, or a route like Birmingham–
+  // Mumbai whose flightTime is itself a disclaimer sentence) would run well
+  // past what fits on a 1200×630 image with no wrapping. See
+  // buildSocialDetail's doc comment in data/routes.ts.
   const nowIso = new Date().toISOString().slice(0, 10);
   const presentation = route ? getRoutePresentation(route, nowIso) : null;
-  const detail = presentation ? (presentation.status === 'unverified' ? presentation.statusLabel : `${presentation.flightTime} · ${presentation.frequency}`) : '';
-  // The footer tagline implies booking-window/peak-period/fare-history
-  // content exists on the page — true for direct/connecting routes, but
-  // those sections are deliberately suppressed for a pending route, so the
-  // tagline must not claim they're there.
-  const footer =
-    presentation?.status === 'unverified' ? 'Route verification in progress · jetstash.co.uk' : 'Booking windows · Peak periods · Fare history · jetstash.co.uk';
+  const detail = presentation?.socialDetail ?? '';
+  const footer = presentation?.socialFooter ?? 'Travel intelligence · jetstash.co.uk';
 
   return new ImageResponse(
     (

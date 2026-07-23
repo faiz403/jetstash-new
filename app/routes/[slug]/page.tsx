@@ -63,12 +63,12 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   // Verification-pending leakage fix: metadata must never build its
   // description from raw route.intro — getRoutePresentation() returns a
   // restrained, claim-free description for a pending route instead.
+  // Presentation-integrity fix: the title is content-aware too — see
+  // metadataTitle's doc comment — never a fixed template that can promise
+  // sections (Peak Periods, Fare History) a sparse route doesn't have.
   const presentation = getRoutePresentation(route, nowIso);
   return {
-    title:
-      presentation.status === 'unverified'
-        ? `${airport.city} to ${dest.city}: Route Verification in Progress`
-        : `${airport.city} to ${dest.city} Flights: Booking Windows & Peak Periods`,
+    title: presentation.metadataTitle,
     description: presentation.metadataDescription,
     alternates: { canonical: `${siteConfig.url}/routes/${route.slug}` },
   };
