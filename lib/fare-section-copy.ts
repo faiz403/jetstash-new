@@ -5,7 +5,7 @@
  * rejects extra exports from a page module; see tests for the "has
  * observations" case, which has no live example in current data yet.
  */
-export function getFareSectionCopy(hasObservations: boolean, hasDeals: boolean): { heading: string; caption: string } {
+export function getFareSectionCopy(hasObservations: boolean, hasDeals: boolean): { heading: string; caption: string | null } {
   if (hasObservations) {
     return {
       heading: 'Fare history & current example',
@@ -18,8 +18,10 @@ export function getFareSectionCopy(hasObservations: boolean, hasDeals: boolean):
       caption: "We haven't logged fare history for this route yet, so there's no price shown below — just the route facts we do have, plus a live price check.",
     };
   }
+  // NoFareFallback below already explains this route-specifically and gives
+  // a live-search CTA — no caption here, or the two say the same thing twice.
   return {
     heading: 'No tracked fare yet',
-    caption: "We haven't logged a tracked fare for this route yet. Search live prices with our travel partners below.",
+    caption: null,
   };
 }

@@ -17,8 +17,10 @@ import { fareObservations } from '@/data/fare-observations';
 import { generateMetadata } from '@/app/routes/[slug]/page';
 import RoutePage from '@/app/routes/[slug]/page';
 import DestinationPage from '@/app/destinations/[slug]/page';
+import AirportPage from '@/app/airports/[slug]/page';
 import { getFareSectionCopy } from '@/lib/fare-section-copy';
 import { FamilyVisitBlock } from '@/components/sections/family-visit-block';
+import { NoFareFallback } from '@/components/ui/no-fare-fallback';
 
 const FIXED_TODAY = '2026-07-23';
 
@@ -479,10 +481,10 @@ describe('Cross-surface leakage fix — fare section heading is content-aware, n
     expect(copy.caption).toMatch(/haven't logged fare history/);
   });
 
-  it('with neither deals nor fare history: "No tracked fare yet", matching what NoFareFallback actually shows below it', () => {
+  it('with neither deals nor fare history: "No tracked fare yet" with a null caption — NoFareFallback below it already explains this route-specifically, so a caption here would just repeat it', () => {
     const copy = getFareSectionCopy(false, false);
     expect(copy.heading).toBe('No tracked fare yet');
-    expect(copy.caption).not.toMatch(/history|example/i);
+    expect(copy.caption).toBeNull();
   });
 
   it('birmingham-mumbai (no observations, no deals) renders the "No tracked fare yet" heading end-to-end on the real page', async () => {
@@ -500,5 +502,76 @@ describe('Cross-surface leakage fix — fare section heading is content-aware, n
     const text = collectStrings(element).join(' ');
     expect(text).toMatch(/What we know about this route/);
     expect(text).not.toMatch(/Fare history & current example/);
+  });
+
+  it('birmingham-mumbai\'s fare section itself contributes no explanatory no-fare prose now that its caption is null — NoFareFallback (rendered separately below it, see the next assertion) is the only place that message lives', async () => {
+    const element = await RoutePage({ params: Promise.resolve({ slug: 'birmingham-mumbai' }) });
+    const text = collectStrings(element).join(' ');
+    expect(text).not.toMatch(/haven'?t logged a tracked fare/i);
+  });
+
+  it('NoFareFallback itself still carries the route-specific explanation and live-search CTA, unchanged', () => {
+    const fallback = NoFareFallback({ cityLabel: 'Birmingham to Mumbai' });
+    const text = collectStrings(fallback).join(' ');
+    expect(text).toMatch(/haven'?t logged a tracked fare/i);
+    expect(text).toMatch(/Birmingham to Mumbai/);
+    expect(text).toMatch(/Search live prices/i);
+  });
+});
+
+describe('Cross-surface leakage fix — airport-scoped notes no longer render as route evidence', () => {
+  it('Birmingham\'s airport-note text (Gulf-connections and train-station notes) does not render on birmingham-mumbai', async () => {
+    const element = await RoutePage({ params: Promise.resolve({ slug: 'birmingham-mumbai' }) });
+    const text = collectStrings(element).join(' ');
+    expect(text).not.toMatch(/South Asia routes connect via the Gulf/i);
+    expect(text).not.toMatch(/direct Air India service to Amritsar/i);
+    expect(text).not.toMatch(/Dubai, Doha or Sharjah/i);
+    expect(text).not.toMatch(/under 15 minutes/i);
+    expect(text).not.toMatch(/faster and cheaper than driving/i);
+  });
+
+  it('Manchester\'s airport-note text (Terminal 2 and PIA check-in notes) does not render on manchester-lahore', async () => {
+    const element = await RoutePage({ params: Promise.resolve({ slug: 'manchester-lahore' }) });
+    const text = collectStrings(element).join(' ');
+    expect(text).not.toMatch(/Terminal 2 handles most long-haul South Asia and Gulf routes/i);
+    expect(text).not.toMatch(/Allow 3 hours for PIA departures/i);
+  });
+
+  it('the same Birmingham notes still render in full on the Birmingham airport page itself', async () => {
+    const element = await AirportPage({ params: Promise.resolve({ slug: 'birmingham' }) });
+    const text = collectStrings(element).join(' ');
+    expect(text).toMatch(/South Asia routes connect via the Gulf/i);
+    expect(text).toMatch(/under 15 minutes/i);
+  });
+
+  it('the same Manchester notes still render in full on the Manchester airport page itself', async () => {
+    const element = await AirportPage({ params: Promise.resolve({ slug: 'manchester' }) });
+    const text = collectStrings(element).join(' ');
+    expect(text).toMatch(/Terminal 2 handles most long-haul South Asia and Gulf routes/i);
+    expect(text).toMatch(/Allow 3 hours for PIA departures/i);
+  });
+
+  it('birmingham-mumbai retains a neutral, route-neutral airport-guide link instead — no schedule, airline, terminal, transport-time or price claim', async () => {
+    const element = await RoutePage({ params: Promise.resolve({ slug: 'birmingham-mumbai' }) });
+    // {airport.city}/{airport.name} interpolation splits the heading/CTA
+    // across separate JSX text nodes, so joined text carries extra spaces
+    // around them — \s* tolerates that without weakening what's asserted.
+    const text = collectStrings(element).join(' ').replace(/\s+/g, ' ');
+    expect(text).toMatch(/Flying from\s*Birmingham\s*\?/);
+    expect(text).toMatch(/Terminal, transport and practical information for your departure airport\./);
+    expect(text).toMatch(/View\s*Birmingham Airport\s*guide/);
+  });
+
+  it('the airport-guide link on manchester-lahore names Manchester, not Birmingham — the copy is genuinely airport-derived, not hardcoded', async () => {
+    const element = await RoutePage({ params: Promise.resolve({ slug: 'manchester-lahore' }) });
+    const text = collectStrings(element).join(' ').replace(/\s+/g, ' ');
+    expect(text).toMatch(/Flying from\s*Manchester\s*\?/);
+    expect(text).toMatch(/View\s*Manchester Airport\s*guide/);
+  });
+
+  it('destination FamilyVisitBlock remains absent from birmingham-mumbai — both leakage classes fixed together, neither regressed by the other', async () => {
+    const element = await RoutePage({ params: Promise.resolve({ slug: 'birmingham-mumbai' }) });
+    const types = collectElementTypes(element);
+    expect(types.has(FamilyVisitBlock)).toBe(false);
   });
 });

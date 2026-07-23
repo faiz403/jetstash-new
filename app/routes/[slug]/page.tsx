@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { Plane, Calendar, Clock, ArrowUpRight, AlertCircle, GitCompareArrows, CalendarClock, History, MapPinned, MessageSquareText } from 'lucide-react';
+import { Plane, Calendar, Clock, ArrowUpRight, AlertCircle, GitCompareArrows, CalendarClock, History, MessageSquareText } from 'lucide-react';
 import { routes, getRouteBySlug, getRouteAirport, getRouteDestination, getRoutesByDestination, getRoutePeakPeriods, getRoutePresentation } from '@/data/routes';
 import { getAirlinesBySlugs } from '@/data/airlines';
 import { getDealsByDestination } from '@/data/deals';
@@ -11,7 +11,6 @@ import { getPublishableObservationsByRoute } from '@/data/fare-observations';
 import { getBookingWindowsByRoute } from '@/data/booking-windows';
 import { getTipsForScope } from '@/data/traveller-tips';
 import { getCommunityNotesForScope } from '@/data/community-notes';
-import { getNotesByAirport } from '@/data/airport-notes';
 import { DealCard } from '@/components/ui/deal-card';
 import { NoFareFallback } from '@/components/ui/no-fare-fallback';
 import { Badge } from '@/components/ui/badge';
@@ -109,7 +108,6 @@ export default async function RoutePage({ params }: { params: Promise<{ slug: st
   const bookingWindows = getBookingWindowsByRoute(route.slug);
   const travellerTips = getTipsForScope({ routeSlug: route.slug, destinationSlug: dest.slug });
   const communityNotes = getCommunityNotesForScope({ routeSlug: route.slug, destinationSlug: dest.slug });
-  const airportAdvice = getNotesByAirport(airport.slug).slice(0, 2);
   // Build-time snapshot for the Book-By panel (priority routes only) — the
   // client component recomputes state against the visitor's clock on mount.
   const bookBySnapshot = computeBookBySnapshot(route.slug, new Date());
@@ -443,7 +441,7 @@ export default async function RoutePage({ params }: { params: Promise<{ slug: st
       <section className="bg-white py-14 sm:py-16">
         <div className="mx-auto max-w-content px-5 sm:px-8">
           <h2 className="font-display text-2xl text-ink-900 sm:text-3xl">{fareSectionCopy.heading}</h2>
-          <p className="mt-2 max-w-xl text-sm text-ink-500">{fareSectionCopy.caption}</p>
+          {fareSectionCopy.caption && <p className="mt-2 max-w-xl text-sm text-ink-500">{fareSectionCopy.caption}</p>}
           {fareObservations.length > 0 && (
             <div className="mt-8">
               <FareHistoryPanel observations={fareObservations} />
@@ -479,30 +477,24 @@ export default async function RoutePage({ params }: { params: Promise<{ slug: st
         </section>
       )}
 
-      {airportAdvice.length > 0 && (
-        <section className="bg-white py-14 sm:py-16">
-          <div className="mx-auto max-w-content px-5 sm:px-8">
-            <div className="flex items-center gap-2.5">
-              <MapPinned className="h-5 w-5 text-terracotta-600" strokeWidth={2} />
-              <span className="text-xs font-semibold uppercase tracking-wide text-terracotta-600">Before you fly from {airport.city}</span>
-            </div>
-            <div className="mt-6 grid gap-5 sm:grid-cols-2">
-              {airportAdvice.map((note) => (
-                <div key={note.id} className="rounded-md border border-ink-100 bg-sand-50 p-5">
-                  <h3 className="font-display text-base text-ink-900">{note.title}</h3>
-                  <p className="mt-1.5 text-sm leading-relaxed text-ink-500">{note.body}</p>
-                </div>
-              ))}
+      {/* Airport notes are airport-scoped editorial content, not route evidence — same leakage class as destination familyVisitContent. A neutral link keeps discoverability without importing airport-specific claims onto a route page. */}
+      <section className="bg-white py-14 sm:py-16">
+        <div className="mx-auto max-w-content px-5 sm:px-8">
+          <div className="flex flex-col gap-4 rounded-md border border-ink-100 bg-sand-50 p-7 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h2 className="font-display text-xl text-ink-900">Flying from {airport.city}?</h2>
+              <p className="mt-1 text-sm text-ink-500">Terminal, transport and practical information for your departure airport.</p>
             </div>
             <Link
               href={`/airports/${airport.slug}`}
-              className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-ink-900 hover:text-terracotta-600"
+              className="inline-flex shrink-0 items-center justify-center gap-1.5 rounded-sm bg-ink-900 px-5 py-3 text-sm font-semibold text-sand-50 transition-all hover:bg-ink-700 active:scale-[0.985]"
             >
-              Full {airport.name} guide <ArrowUpRight className="h-4 w-4" strokeWidth={2.25} />
+              View {airport.name} guide
+              <ArrowUpRight className="h-4 w-4" strokeWidth={2.25} />
             </Link>
           </div>
-        </section>
-      )}
+        </div>
+      </section>
 
       {communityNotes.length > 0 && (
         <section className="bg-sand-50 py-14 sm:py-16">
