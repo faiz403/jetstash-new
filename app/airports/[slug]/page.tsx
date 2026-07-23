@@ -4,7 +4,9 @@ import Link from 'next/link';
 import { Plane, ArrowUpRight, Info, MapPin } from 'lucide-react';
 import { airports, getAirportBySlug } from '@/data/airports';
 import { getDealsByAirport } from '@/data/deals';
-import { getRoutesByAirport, getRouteDestination, getRoutePresentation } from '@/data/routes';
+import { getRoutesByAirport, getRouteDestination } from '@/data/routes';
+import { routeStatusEvents } from '@/data/route-status-events';
+import { getEffectiveRoutePresentation } from '@/lib/route-status-copy';
 import { getNotesByAirport } from '@/data/airport-notes';
 import { getTipsForScope } from '@/data/traveller-tips';
 import { DealCard } from '@/components/ui/deal-card';
@@ -15,6 +17,11 @@ import { JsonLd, breadcrumbSchema } from '@/components/seo/json-ld';
 import { siteConfig } from '@/lib/site-config';
 import { getAirportImage } from '@/lib/brand-images';
 import { HeroBackdrop } from '@/components/ui/hero-backdrop';
+
+// Pure ISR, matching the route detail pages — this page renders
+// getEffectiveRoutePresentation() and DealCard, both of which must
+// regenerate without a deploy once a ledger event's effective date passes.
+export const revalidate = 21600;
 
 export async function generateStaticParams() {
   return airports.map((a) => ({ slug: a.slug }));
@@ -119,7 +126,7 @@ export default async function AirportPage({ params }: { params: Promise<{ slug: 
                 {routesHere.map((route) => {
                   const dest = getRouteDestination(route);
                   if (!dest) return null;
-                  const presentation = getRoutePresentation(route, new Date().toISOString().slice(0, 10));
+                  const presentation = getEffectiveRoutePresentation(route, routeStatusEvents, new Date().toISOString().slice(0, 10));
                   return (
                     <Link
                       key={route.slug}
@@ -132,7 +139,9 @@ export default async function AirportPage({ params }: { params: Promise<{ slug: 
                       </span>
                       <h3 className="mt-2 font-display text-xl text-ink-900">{airport.city} → {dest.city}</h3>
                       <p className="mt-1.5 text-sm text-ink-500">
-                        {presentation.status === 'unverified' ? presentation.statusLabel : `${presentation.flightTime} · ${presentation.statusLabel}`}
+                        {presentation.status === 'unverified' || presentation.status === 'service-ended'
+                          ? presentation.statusLabel
+                          : `${presentation.flightTime} · ${presentation.statusLabel}`}
                       </p>
                       <span className="mt-4 flex items-center gap-1.5 text-sm font-semibold text-ink-900">
                         View route guide

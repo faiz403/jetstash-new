@@ -1,7 +1,5 @@
 import Link from 'next/link';
-import Image from 'next/image';
 import { ArrowUpRight, ArrowRight, Plane, Crown, Compass, BellRing, CalendarClock, ShieldCheck, FileCheck2, Receipt } from 'lucide-react';
-import { getDestinationImage } from '@/lib/brand-images';
 import { ROUTE_WATCH_INITIAL_COPY } from '@/lib/route-watch-config';
 
 /**
@@ -74,86 +72,6 @@ export function CommercialPaths() {
               </Link>
             </div>
           </article>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-/* ── Three flagship image-led journeys — lead to intelligence, not a catalogue ── */
-const FLAGSHIPS = [
-  {
-    imageSlug: 'mumbai',
-    from: 'Manchester',
-    to: 'Mumbai',
-    evidence: 'IndiGo · direct · time-limited',
-    line: 'A full Journey Brief, with the honest 31 August 2026 service change built in.',
-    href: '/founder/journey-brief/manchester-mumbai',
-    cta: 'Open the Journey Brief',
-  },
-  {
-    imageSlug: 'mumbai',
-    from: 'London Heathrow',
-    to: 'Mumbai',
-    evidence: 'Air India · Virgin Atlantic · British Airways — direct',
-    line: 'The most evidenced India route we cover, confirmed per airline from each carrier’s own source.',
-    href: '/routes/london-heathrow-mumbai',
-    cta: 'Open the route guide',
-  },
-  {
-    imageSlug: 'lahore',
-    from: 'Manchester',
-    to: 'Lahore',
-    evidence: 'PIA · direct',
-    line: 'The flagship Pakistan corridor from the North — current frequency shown only where an official schedule confirms it.',
-    href: '/routes/manchester-lahore',
-    cta: 'Open the route guide',
-  },
-];
-
-export function FlagshipJourneys() {
-  return (
-    // A dark cinematic band, not a white card grid — the photography carries
-    // the section, editorial-spread style, between two lighter neighbours.
-    <section className="border-y border-white/5 bg-ink-950 py-16 sm:py-24">
-      <div className="mx-auto max-w-content px-5 sm:px-8">
-        <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-brass-300">Journeys we know well</span>
-        <h2 className="mt-2 max-w-2xl font-display text-3xl leading-tight text-sand-50 sm:text-4xl">
-          Three routes, each with real evidence behind it
-        </h2>
-        <div className="mt-10 grid gap-6 md:grid-cols-3">
-          {FLAGSHIPS.map((f, i) => {
-            const img = getDestinationImage(f.imageSlug);
-            return (
-              <Link
-                key={`${f.from}-${f.to}-${i}`}
-                href={f.href}
-                className="group relative flex min-h-[24rem] flex-col justify-end overflow-hidden rounded-lg border border-white/10 transition-all duration-300 hover:-translate-y-1 hover:border-brass/40 lg:min-h-[28rem]"
-              >
-                {img ? (
-                  <Image
-                    src={img.src}
-                    alt={img.alt}
-                    fill
-                    sizes="(max-width: 768px) 100vw, 33vw"
-                    className="object-cover transition-transform duration-700 group-hover:scale-[1.04]"
-                  />
-                ) : (
-                  <div className="absolute inset-0 bg-ink-900" />
-                )}
-                <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-ink-950 via-ink-950/50 to-ink-950/5" />
-                <div className="relative p-6 sm:p-7">
-                  <span className="text-[11px] font-semibold uppercase tracking-wide text-brass-200">{f.evidence}</span>
-                  <h3 className="mt-2 font-display text-2xl leading-tight text-sand-50 sm:text-[1.7rem]">{f.from} → {f.to}</h3>
-                  <p className="mt-2 text-[13px] leading-relaxed text-ink-200">{f.line}</p>
-                  <span className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-brass-300">
-                    {f.cta}
-                    <ArrowUpRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" strokeWidth={2.25} />
-                  </span>
-                </div>
-              </Link>
-            );
-          })}
         </div>
       </div>
     </section>

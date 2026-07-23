@@ -1,6 +1,8 @@
 import Link from 'next/link';
 import { Deal, DealCabin, formatChecked, getDealDirectnessLabel, getDealAirlineLabel } from '@/data/deals';
-import { getRouteByAirportAndDestination, getRoutePresentation } from '@/data/routes';
+import { getRouteByAirportAndDestination } from '@/data/routes';
+import { routeStatusEvents } from '@/data/route-status-events';
+import { getEffectiveRoutePresentation } from '@/lib/route-status-copy';
 import { getDestinationBySlug } from '@/data/destinations';
 import { getFareRangeSummary } from '@/data/fare-observations';
 import { getDealBookingUrl } from '@/lib/booking-providers';
@@ -25,16 +27,22 @@ export function DealCard({ deal }: { deal: Deal }) {
   const range = matchedRoute ? getFareRangeSummary(matchedRoute.slug, deal.cabin, nowIso) : null;
   const destination = getDestinationBySlug(deal.toDestinationSlug);
   // Verification-pending leakage fix: a matched route's own flightTime must
-  // never render raw — getRoutePresentation() returns null instead when the
-  // route's directness is 'unverified', so this card can never show a real
-  // duration next to a "Verification pending" badge. Falling back to the
-  // destination's generic flightTimeFromUK only happens when there's no
+  // never render raw — getEffectiveRoutePresentation() returns null flight
+  // facts for both 'unverified' and 'service-ended', so this card can never
+  // show a real duration next to a suppressed-status badge. Falling back to
+  // the destination's generic flightTimeFromUK only happens when there's no
   // matched route at all, which is unrelated to route-level verification
-  // and always safe.
-  const presentation = matchedRoute ? getRoutePresentation(matchedRoute, nowIso) : undefined;
-  const flightTime = presentation ? (presentation.status === 'unverified' ? null : presentation.flightTime) : destination?.flightTimeFromUK;
-  const directness =
-    presentation?.status === 'direct' ? 'Direct' : presentation?.status === 'unverified' ? 'Verification pending' : presentation?.status === 'connecting' ? 'Via connection' : undefined;
+  // and always safe. Reconciled against the Route Status V1 ledger, so a
+  // managed corridor past its withdrawal boundary is never shown as if
+  // still direct.
+  const presentation = matchedRoute ? getEffectiveRoutePresentation(matchedRoute, routeStatusEvents, nowIso) : undefined;
+  const flightTime = presentation ? presentation.flightTime : destination?.flightTimeFromUK;
+  // Presentation-integrity fix: never re-derive label text via a local
+  // ternary — presentation.statusLabel is the one canonical label (see
+  // RoutePresentationBase's doc comment in data/routes.ts), so a new status
+  // value (e.g. 'service-ended') can never silently fall through as
+  // `undefined` here.
+  const directness = presentation?.statusLabel;
   // Truth Reset (July 2026): the top-right badge must never assert
   // directness independently of the verification system — a category tag
   // (Umrah package, City break) always takes precedence when present;
@@ -104,13 +112,13 @@ export function DealCard({ deal }: { deal: Deal }) {
         ) : (
           <>
             <p className="font-display text-xl leading-snug text-ink-900">
-              {presentation?.status === 'unverified'
-                ? 'Verification pending'
+              {presentation?.status === 'unverified' || presentation?.status === 'service-ended'
+                ? presentation.statusLabel
                 : matchedRoute
                   ? flightTime
                   : `Typical flight time: ${flightTime ?? 'varies'}`}
             </p>
-            {presentation?.status !== 'unverified' &&
+            {presentation?.status !== 'unverified' && presentation?.status !== 'service-ended' &&
               (() => {
                 // Deduped, since an unverified airline and an unverified route
                 // both read "Verification pending" — showing it twice would be

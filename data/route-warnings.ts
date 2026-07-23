@@ -30,11 +30,13 @@ export const routeWarnings: RouteWarning[] = [
       'A 2025 PIA announcement and an earlier start-up airline both failed to establish a stable, ongoing direct schedule. The start-up collapsed under a CAA investigation after cancelling booked passengers. Verify any "direct from Leeds Bradford" claim directly with the airline\'s own booking system before committing to it.',
   },
   // NOTE: the Manchester–Delhi and Manchester–Mumbai IndiGo withdrawal is
-  // deliberately NOT duplicated here — it's already modelled authoritatively
-  // by Route.directServiceEndDate/directServiceEndNote in data/routes.ts,
-  // which renders its own dedicated banner on those route pages. Adding a
-  // second hand-authored copy here would risk the two drifting out of sync
-  // (e.g. if the date changes) and shows a redundant duplicate banner today.
+  // deliberately NOT duplicated here — it's modelled authoritatively by the
+  // Route Status V1 ledger (data/route-status-events.ts), consumed via
+  // getRouteStatus()/getEffectiveRoutePresentation() in data/routes.ts,
+  // which renders its own dedicated, sourced panel on those route pages
+  // (see app/routes/[slug]/page.tsx). Adding a second hand-authored copy
+  // here would recreate exactly the second-source-of-truth risk the ledger
+  // exists to prevent.
   {
     id: 'man-khi-frequency-settling',
     routeSlug: 'manchester-karachi',

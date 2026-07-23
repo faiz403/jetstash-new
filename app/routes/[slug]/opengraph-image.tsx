@@ -1,5 +1,7 @@
 import { ImageResponse } from 'next/og';
-import { getRouteBySlug, getRouteAirport, getRouteDestination, getRoutePresentation } from '@/data/routes';
+import { getRouteBySlug, getRouteAirport, getRouteDestination } from '@/data/routes';
+import { routeStatusEvents } from '@/data/route-status-events';
+import { getEffectiveRoutePresentation } from '@/lib/route-status-copy';
 
 // @vercel/og's Node runtime fails to resolve its bundled font on some
 // platforms (ERR_INVALID_URL); the edge runtime is its supported home.
@@ -25,17 +27,20 @@ export default async function OgImage({ params }: { params: Promise<{ slug: stri
   const from = airport?.city ?? 'UK';
   const to = dest?.city ?? 'the world';
   // Verification-pending leakage fix + presentation-integrity fix: both the
-  // detail line and the footer come straight from getRoutePresentation()'s
-  // own socialDetail/socialFooter — never route.flightTime/frequency raw,
-  // never a fixed "Booking windows · Peak periods · Fare history" tagline
-  // that a sparse route (no peak-period data, no fare history) can't back
-  // up, and never the full flightTime+frequency pairing, which for several
-  // routes (long hedged frequency strings, or a route like Birmingham–
-  // Mumbai whose flightTime is itself a disclaimer sentence) would run well
-  // past what fits on a 1200×630 image with no wrapping. See
-  // buildSocialDetail's doc comment in data/routes.ts.
+  // detail line and the footer come straight from
+  // getEffectiveRoutePresentation()'s own socialDetail/socialFooter — never
+  // route.flightTime/frequency raw, never a fixed "Booking windows · Peak
+  // periods · Fare history" tagline that a sparse route (no peak-period
+  // data, no fare history) can't back up, and never the full
+  // flightTime+frequency pairing, which for several routes (long hedged
+  // frequency strings, or a route like Birmingham–Mumbai whose flightTime
+  // is itself a disclaimer sentence) would run well past what fits on a
+  // 1200×630 image with no wrapping. See buildSocialDetail's doc comment in
+  // data/routes.ts. Reconciled against the Route Status V1 ledger so the
+  // OG image never shows stale direct-service facts past a withdrawal
+  // boundary either.
   const nowIso = new Date().toISOString().slice(0, 10);
-  const presentation = route ? getRoutePresentation(route, nowIso) : null;
+  const presentation = route ? getEffectiveRoutePresentation(route, routeStatusEvents, nowIso) : null;
   const detail = presentation?.socialDetail ?? '';
   const footer = presentation?.socialFooter ?? 'Travel intelligence · jetstash.co.uk';
 

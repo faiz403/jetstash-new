@@ -2,6 +2,11 @@ import type { Metadata } from 'next';
 import { RegionHubPage } from '@/components/sections/region-hub-page';
 import { getDestinationsByRegion } from '@/data/destinations';
 
+// Pure ISR, matching the route detail pages — RegionHubPage renders
+// getEffectiveRoutePresentation() and DealCard, both of which must
+// regenerate without a deploy once a ledger event's effective date passes.
+export const revalidate = 21600;
+
 export const metadata: Metadata = {
   alternates: { canonical: '/pakistan' },
   title: 'Pakistan Travel Hub: Flights from the UK',

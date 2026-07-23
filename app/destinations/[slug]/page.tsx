@@ -20,6 +20,12 @@ import { DestinationVisual } from '@/components/ui/destination-visual';
 import { HeroBackdrop } from '@/components/ui/hero-backdrop';
 import { JsonLd, breadcrumbSchema } from '@/components/seo/json-ld';
 
+// Pure ISR, matching the route detail pages — this page renders DealCard and
+// Book-By snapshots (computeBookBySnapshotsForDestination), both of which
+// must regenerate without a deploy once a ledger event's effective date
+// passes.
+export const revalidate = 21600;
+
 export async function generateStaticParams() {
   return destinations.map((d) => ({ slug: d.slug }));
 }

@@ -1,8 +1,10 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { Plane, Calendar, Clock, ArrowUpRight, AlertCircle, GitCompareArrows, CalendarClock, History, MessageSquareText } from 'lucide-react';
-import { routes, getRouteBySlug, getRouteAirport, getRouteDestination, getRoutesByDestination, getRoutePeakPeriods, getRoutePresentation } from '@/data/routes';
+import { Plane, Calendar, Clock, ArrowUpRight, AlertCircle, GitCompareArrows, History, MessageSquareText, ShieldCheck } from 'lucide-react';
+import { routes, getRouteBySlug, getRouteAirport, getRouteDestination, getRoutesByDestination, getRoutePeakPeriods, getRouteStatus } from '@/data/routes';
+import { routeStatusEvents } from '@/data/route-status-events';
+import { getRouteStatusCopy, getEffectiveRoutePresentation, formatRouteStatusDate } from '@/lib/route-status-copy';
 import { getAirlinesBySlugs } from '@/data/airlines';
 import { getDealsByDestination } from '@/data/deals';
 import { getTimelineByRoute } from '@/data/route-timeline';
@@ -47,10 +49,6 @@ export async function generateStaticParams() {
   return routes.map((r) => ({ slug: r.slug }));
 }
 
-function formatEndDate(iso: string): string {
-  return new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
-}
-
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
   const route = getRouteBySlug(slug);
@@ -60,12 +58,14 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   if (!airport || !dest) return {};
   const nowIso = new Date().toISOString().slice(0, 10);
   // Verification-pending leakage fix: metadata must never build its
-  // description from raw route.intro — getRoutePresentation() returns a
-  // restrained, claim-free description for a pending route instead.
+  // description from raw route.intro — getEffectiveRoutePresentation()
+  // returns a restrained, claim-free description for a pending or
+  // service-ended route instead, reconciled against the Route Status V1
+  // ledger for the two managed corridors.
   // Presentation-integrity fix: the title is content-aware too — see
   // metadataTitle's doc comment — never a fixed template that can promise
   // sections (Peak Periods, Fare History) a sparse route doesn't have.
-  const presentation = getRoutePresentation(route, nowIso);
+  const presentation = getEffectiveRoutePresentation(route, routeStatusEvents, nowIso);
   return {
     title: presentation.metadataTitle,
     description: presentation.metadataDescription,
@@ -87,11 +87,19 @@ export default async function RoutePage({ params }: { params: Promise<{ slug: st
   // Verification-pending leakage fix: the single reusable source of truth
   // for everything this page renders about the route — duration, frequency,
   // airlines, hero copy, share text, and whether booking-guidance/peak-
-  // period/connecting-alternative sections may render at all. Pending
-  // routes get their own branch here, never treated as a variant of
-  // 'connecting' — see RoutePresentation's doc comment in data/routes.ts.
-  const presentation = getRoutePresentation(route, nowIso);
+  // period/connecting-alternative sections may render at all. Pending and
+  // service-ended routes get their own branches here, never treated as a
+  // variant of 'connecting' — see RoutePresentation's doc comment and
+  // getEffectiveRoutePresentation's adapter doc comment in data/routes.ts.
+  const presentation = getEffectiveRoutePresentation(route, routeStatusEvents, nowIso);
   const presentationAirlines = getAirlinesBySlugs(presentation.airlineSlugs);
+  // Ledger-managed routes only (getRouteStatus returns null otherwise) —
+  // the evidence-validated view model behind the Route Status panel below.
+  // A previously-verified direct service that has ended, or an announced
+  // change whose date has passed without reverification, gets its exact
+  // sourced explanation here; every other route renders no panel at all.
+  const routeStatus = getRouteStatus(route, routeStatusEvents, nowIso);
+  const routeStatusCopy = routeStatus ? getRouteStatusCopy(route, routeStatus, routeStatusEvents, nowIso) : null;
   if (!airport || !dest) {
     notFound();
     return null;
@@ -141,9 +149,12 @@ export default async function RoutePage({ params }: { params: Promise<{ slug: st
             <span className="text-ink-200">{dest.city}</span>
           </nav>
           <div className="stagger-in stagger-1 animate-fade-up">
-            <Badge variant="dark">
-              {presentation.status === 'direct' ? 'Direct route' : presentation.status === 'unverified' ? 'Verification pending' : 'Connecting route'}
-            </Badge>
+            {/* Presentation-integrity fix: never re-derive label text via a
+                local ternary — presentation.statusLabel is the one canonical
+                label (see RoutePresentationBase's doc comment), so a new
+                status value (e.g. 'service-ended') can never silently fall
+                through to the wrong badge. */}
+            <Badge variant="dark">{presentation.statusLabel}</Badge>
           </div>
           <h1 className="stagger-in stagger-2 mt-4 animate-fade-up font-display text-4xl leading-[1.05] tracking-tight text-sand-50 sm:text-5xl">
             {airport.city} to {dest.city}
@@ -162,6 +173,13 @@ export default async function RoutePage({ params }: { params: Promise<{ slug: st
                 <AlertCircle className="mt-0.5 h-4.5 w-4.5 shrink-0 text-brass-300" strokeWidth={2} />
                 <p className="text-sm leading-relaxed text-ink-200">
                   Flight time, frequency and airline aren&apos;t published for this route until they&apos;re independently confirmed.
+                </p>
+              </div>
+            ) : presentation.status === 'service-ended' ? (
+              <div className="flex max-w-lg items-start gap-3 rounded-md border border-white/15 bg-white/5 px-4 py-3.5">
+                <ShieldCheck className="mt-0.5 h-4.5 w-4.5 shrink-0 text-terracotta-300" strokeWidth={2} />
+                <p className="text-sm leading-relaxed text-ink-200">
+                  A previously-verified direct service on this route has ended. Flight time, frequency and airline facts from that service are no longer shown — check current options directly with airlines.
                 </p>
               </div>
             ) : (
@@ -196,7 +214,7 @@ export default async function RoutePage({ params }: { params: Promise<{ slug: st
                 so this hero doesn't duplicate either action. */}
             {!bookBySnapshot && (
               // Verification-pending leakage fix: presentation.shareText is
-              // fully pre-built by getRoutePresentation() — for a pending
+              // fully pre-built by getEffectiveRoutePresentation() — for a pending
               // route it omits booking timing, demand, fare urgency, airline
               // and routing claims entirely rather than appending
               // route.bookingWindowNote raw.
@@ -210,23 +228,92 @@ export default async function RoutePage({ params }: { params: Promise<{ slug: st
         </div>
       </section>
 
-      {route.directServiceEndDate && (
-        <section className="bg-terracotta-50 py-8 sm:py-10">
-          <div className="mx-auto max-w-content px-5 sm:px-8">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-sm bg-terracotta-100 text-terracotta-700">
-                <CalendarClock className="h-4.5 w-4.5" strokeWidth={2} />
-              </div>
-              <div>
-                <h2 className="font-display text-lg text-ink-900">
-                  Direct service scheduled to end {formatEndDate(route.directServiceEndDate)}
-                </h2>
-                <p className="mt-1.5 max-w-2xl text-sm leading-relaxed text-ink-700">{route.directServiceEndNote}</p>
+      {/* Route Status V1 — renders only for ledger-managed routes
+          (routeStatusCopy is null otherwise). Every word here is sourced:
+          a positive or transition-boundary variant always carries at least
+          one resolved citation, and every rendered service notice carries
+          its OWN validated citations too (see getRouteStatusCopy's
+          fail-closed contract in lib/route-status-copy.ts) — this panel
+          never renders a status claim, or a per-airline notice, without its
+          evidence directly beside it. A plain 'verified-direct' result with
+          no service notices renders no panel at all — nothing unusual to
+          disclose beyond the hero's own "Direct" badge. Final audit fix:
+          'verified-direct' WITH a non-empty serviceNotices list (e.g.
+          another airline's service is ended/in transition while this one
+          stays verified) now renders too — it was previously excluded here
+          entirely, silently dropping those notices from the public page. */}
+      {routeStatusCopy &&
+        (routeStatusCopy.kind === 'withdrawal-announced' ||
+          routeStatusCopy.kind === 'service-ended' ||
+          routeStatusCopy.kind === 'transition-boundary-pending' ||
+          (routeStatusCopy.kind === 'verified-direct' && routeStatusCopy.serviceNotices.length > 0)) && (
+          <section className="bg-terracotta-50 py-8 sm:py-10">
+            <div className="mx-auto max-w-content px-5 sm:px-8">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-sm bg-terracotta-100 text-terracotta-700">
+                  <ShieldCheck className="h-4.5 w-4.5" strokeWidth={2} />
+                </div>
+                <div>
+                  <h2 className="font-display text-lg text-ink-900">
+                    {routeStatusCopy.kind === 'verified-direct' ? 'Route status' : routeStatusCopy.badgeLabel}
+                  </h2>
+                  <p className="mt-1.5 max-w-2xl text-sm leading-relaxed text-ink-700">
+                    {routeStatusCopy.kind === 'transition-boundary-pending'
+                      ? routeStatusCopy.body
+                      : routeStatusCopy.kind === 'verified-direct'
+                        ? 'This route is currently verified direct. One airline on this route has a separate update below.'
+                        : routeStatusCopy.explanation}
+                  </p>
+                  {routeStatusCopy.kind !== 'transition-boundary-pending' && routeStatusCopy.serviceNotices.length > 0 && (
+                    <ul className="mt-3 flex flex-col gap-2 text-sm text-ink-600">
+                      {routeStatusCopy.serviceNotices.map((notice) => (
+                        <li key={`${notice.airlineSlug}-${notice.kind}`}>
+                          <p>
+                            {notice.airlineName}: {notice.kind === 'status-reverification-pending'
+                              ? `announced change date passed, not yet reverified (from ${formatRouteStatusDate(notice.effectiveFrom)})`
+                              : notice.kind === 'service-ended'
+                                ? `direct service ended (from ${formatRouteStatusDate(notice.effectiveFrom)})`
+                                : `withdrawal announced, with effect from ${formatRouteStatusDate(notice.effectiveFrom)}`}
+                          </p>
+                          <ul className="mt-0.5 flex flex-col gap-0.5 text-xs text-ink-500">
+                            {notice.citations.map((citation, i) => (
+                              <li key={i}>
+                                Source: {citation.url ? (
+                                  <a href={citation.url} target="_blank" rel="noopener noreferrer" className="underline decoration-terracotta-300 underline-offset-2 hover:text-terracotta-700">
+                                    {citation.publisher}
+                                  </a>
+                                ) : (
+                                  citation.publisher
+                                )}
+                                {citation.accessedAt ? ` · checked ${formatRouteStatusDate(citation.accessedAt)}` : ''}
+                              </li>
+                            ))}
+                          </ul>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                  {routeStatusCopy.kind !== 'verified-direct' && (
+                    <ul className="mt-2 flex flex-col gap-1 text-xs text-ink-500">
+                      {routeStatusCopy.citations.map((citation, i) => (
+                        <li key={i}>
+                          Source: {citation.url ? (
+                            <a href={citation.url} target="_blank" rel="noopener noreferrer" className="underline decoration-terracotta-300 underline-offset-2 hover:text-terracotta-700">
+                              {citation.publisher}
+                            </a>
+                          ) : (
+                            citation.publisher
+                          )}
+                          {citation.accessedAt ? ` · checked ${formatRouteStatusDate(citation.accessedAt)}` : ''}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
               </div>
             </div>
-          </div>
-        </section>
-      )}
+          </section>
+        )}
 
       {activeWarnings.length > 0 && (
         <section className="bg-sand-50 py-10 sm:py-12">
@@ -406,8 +493,11 @@ export default async function RoutePage({ params }: { params: Promise<{ slug: st
                 if (!altAirport) return null;
                 // Verification-pending leakage fix: comparison cards must go
                 // through the same reusable gate as the route's own page —
-                // never read altRoute.flightTime or its airlines raw.
-                const altPresentation = getRoutePresentation(altRoute, nowIso);
+                // never read altRoute.flightTime or its airlines raw. Uses
+                // the Route Status V1 adapter so a ledger-managed alternative
+                // route (e.g. Manchester–Delhi shown from the Mumbai page)
+                // never shows stale 'Direct' facts past its own boundary.
+                const altPresentation = getEffectiveRoutePresentation(altRoute, routeStatusEvents, nowIso);
                 const altAirlines = getAirlinesBySlugs(altPresentation.airlineSlugs);
                 return (
                   <Link
@@ -422,9 +512,11 @@ export default async function RoutePage({ params }: { params: Promise<{ slug: st
                     <p className="mt-1 text-sm text-ink-500">
                       {altPresentation.status === 'unverified'
                         ? 'Verification in progress — check directly before booking'
-                        : altAirlines.length > 0
-                          ? `${altPresentation.flightTime} · ${altAirlines.map((a) => a.name).join(', ')}`
-                          : altPresentation.flightTime}
+                        : altPresentation.status === 'service-ended'
+                          ? 'Direct service ended — check current options before booking'
+                          : altAirlines.length > 0
+                            ? `${altPresentation.flightTime} · ${altAirlines.map((a) => a.name).join(', ')}`
+                            : altPresentation.flightTime}
                     </p>
                     <span className="mt-4 flex items-center gap-1.5 text-sm font-semibold text-ink-900">
                       Compare this route

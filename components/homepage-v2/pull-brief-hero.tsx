@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { ArrowRight, ArrowUpRight } from 'lucide-react';
 import { getAirportImage } from '@/lib/brand-images';
+import type { FlagshipStatusCopy } from '@/lib/flagship-status-copy';
 import { PullBrief } from './pull-brief';
 
 /**
@@ -49,7 +50,7 @@ function Wordmark() {
 const selectClass =
   'pb-select mt-1.5 h-11 w-full appearance-none rounded-sm border border-white/15 bg-white/[0.04] pl-3 pr-9 text-sm text-sand-50 focus-visible:border-brass/60';
 
-export function PullBriefHero({ handover }: { handover: HandoverData }) {
+export function PullBriefHero({ handover, flagshipStatusCopy }: { handover: HandoverData; flagshipStatusCopy: FlagshipStatusCopy }) {
   const router = useRouter();
   const [fromSlug, setFromSlug] = useState(FEATURED.from);
   const [toSlug, setToSlug] = useState(FEATURED.to);
@@ -108,7 +109,7 @@ export function PullBriefHero({ handover }: { handover: HandoverData }) {
 
         {/* ── The featured proof — pull to reveal what matters most. ─────────── */}
         <div id="featured-stage" className="mt-4 scroll-mt-24 sm:mt-5">
-          <PullBrief aimedSlug={isFeatured ? 'mumbai' : null} />
+          <PullBrief aimedSlug={isFeatured ? 'mumbai' : null} statusCopy={flagshipStatusCopy} />
         </div>
 
         {/* ── The handover — after the proof, the visitor's own journey. ─────── */}

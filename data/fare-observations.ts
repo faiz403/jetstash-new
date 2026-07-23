@@ -1,5 +1,10 @@
 import type { DealCabin } from './deals';
-import { getRouteBySlug, getDisplayDirectness, type Route } from './routes';
+import { getRouteBySlug, type Route } from './routes';
+import { routeStatusEvents } from './route-status-events';
+// lib/route-status-copy.ts imports FROM data/routes.ts — importing it here
+// (data/fare-observations.ts also imports from data/routes.ts, never the
+// reverse) does not create a cycle.
+import { getEffectiveRoutePresentation } from '@/lib/route-status-copy';
 
 export interface FareObservation {
   id: string;
@@ -114,8 +119,13 @@ export function getObservationsByRouteAndCabin(routeSlug: string, cabin: DealCab
  *     wrong route object reused from an earlier loop iteration), which
  *     would otherwise silently judge an observation's publishability
  *     against a route it has nothing to do with.
- *  4. That route is currently evidenced (its directness is not
- *     'unverified'/pending).
+ *  4. That route's EFFECTIVE status (getEffectiveRoutePresentation(), which
+ *     reconciles the legacy verification model with the Route Status V1
+ *     ledger for the two managed corridors) is 'direct' or 'connecting' —
+ *     never 'unverified' or 'service-ended' (final audit fix: previously
+ *     checked only the legacy getDisplayDirectness(), which could still
+ *     read 'direct' for a ledger-managed route whose direct service has
+ *     since ended or is pending reverification).
  * A missing route is treated the same as an unevidenced one: nothing can be
  * safely attributed to a pair with no Route record at all.
  *
@@ -130,7 +140,8 @@ export function isObservationPublishable(observation: FareObservation, route: Ro
   if (!isPubliclyPublishable(observation)) return false;
   if (!route) return false;
   if (route.slug !== observation.routeSlug) return false;
-  return getDisplayDirectness(route, nowIso) !== 'unverified';
+  const status = getEffectiveRoutePresentation(route, routeStatusEvents, nowIso).status;
+  return status === 'direct' || status === 'connecting';
 }
 
 /** Same as getObservationsByRouteAndCabin, filtered to what's safe to show publicly — see isObservationPublishable. */

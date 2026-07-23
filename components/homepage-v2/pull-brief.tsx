@@ -10,10 +10,7 @@ import {
   routePath,
   type AtlasDestination,
 } from '@/components/sections/route-map-hero';
-import {
-  EVIDENCE_BUNDLE,
-  WITHDRAWAL_BOUNDARY_DATE,
-} from '@/lib/journey-brief-manchester-mumbai';
+import type { FlagshipStatusCopy } from '@/lib/flagship-status-copy';
 import {
   type CubicPath,
   pathAt,
@@ -75,29 +72,34 @@ const SPINE: CubicPath = {
   p1: [180, 925],
 };
 
-function formatDate(iso: string): string {
-  return new Date(`${iso}T12:00:00Z`).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
-}
-
-/** The one dated fact this route holds — surfaced at rest below the thread and
- *  shown in full inside the Brief. One source of truth for both, so the words
- *  can never drift apart. */
-const VERDICT_LINE = `Book soon. These are the last direct Manchester to Mumbai flights, ending ${formatDate(WITHDRAWAL_BOUNDARY_DATE)}.`;
+// FlagshipStatusCopy is defined in lib/flagship-status-copy.ts (imported
+// above) — computed server-side from the Route Status V1 ledger via
+// buildFlagshipStatusCopy()/mapViewModelToFlagshipCopy() and passed in as a
+// prop. This component never re-derives or hand-authors a claim about the
+// withdrawal itself — see the Route Status V1 implementation addendum §3:
+// "Feed this surface from the same safe Route Status presentation model. Do
+// not create an independent second truth system."
 
 // Ordered as the reveal should read: what we've verified first, then the
 // things we deliberately won't fake, then what becomes yours when you add your
 // details, and finally the evidence trail. Every "pending" line is framed as a
-// promise of honesty, never an apology for missing data.
-const PINS: { key: string; label: string; state: 'ready' | 'flag' | 'pending'; detail: string }[] = [
-  { key: 'route', label: 'Route status', state: 'ready', detail: 'Direct, flown by IndiGo. Confirmed from the airline’s own schedule.' },
-  { key: 'change', label: 'Service change', state: 'flag', detail: `This direct route stops running after ${formatDate(WITHDRAWAL_BOUNDARY_DATE)}.` },
-  { key: 'economy', label: 'Fares', state: 'pending', detail: 'We won’t show you a price we haven’t checked ourselves this week.' },
-  { key: 'baggage', label: 'Baggage', state: 'pending', detail: 'We’ll confirm the baggage allowance with the airline rather than guess.' },
-  { key: 'business', label: 'Business Class', state: 'pending', detail: 'We’ll only confirm Business Class once the airline does.' },
-  { key: 'bookby', label: 'Best time to book', state: 'pending', detail: 'We’ll tell you when to book once we’ve tracked this route’s prices.' },
-  { key: 'ready', label: 'Travel Ready', state: 'pending', detail: 'Add your dates and passport and we’ll check if you’re ready to fly.' },
-  { key: 'evidence', label: 'Evidence', state: 'ready', detail: `Last checked ${formatDate(EVIDENCE_BUNDLE.primarySource.accessedDate)} · next check ${formatDate(EVIDENCE_BUNDLE.nextReviewDate)}.` },
-];
+// promise of honesty, never an apology for missing data. The Evidence pin uses
+// statusCopy.evidenceDetail — the only evidence text this component renders;
+// it carries no independent airline/date/review claim of its own (see the
+// Route Status V1 evidence-leak fix: FlagshipStatusCopy is the single source
+// of truth here, never lib/journey-brief-manchester-mumbai's separate bundle).
+function buildPins(statusCopy: FlagshipStatusCopy): { key: string; label: string; state: 'ready' | 'flag' | 'pending'; detail: string }[] {
+  return [
+    { key: 'route', label: 'Route status', state: 'ready', detail: statusCopy.routeDetail },
+    { key: 'change', label: 'Service change', state: 'flag', detail: statusCopy.changeDetail },
+    { key: 'economy', label: 'Fares', state: 'pending', detail: 'We won’t show you a price we haven’t checked ourselves this week.' },
+    { key: 'baggage', label: 'Baggage', state: 'pending', detail: 'We’ll confirm the baggage allowance with the airline rather than guess.' },
+    { key: 'business', label: 'Business Class', state: 'pending', detail: 'We’ll only confirm Business Class once the airline does.' },
+    { key: 'bookby', label: 'Best time to book', state: 'pending', detail: 'We’ll tell you when to book once we’ve tracked this route’s prices.' },
+    { key: 'ready', label: 'Travel Ready', state: 'pending', detail: 'Add your dates and passport and we’ll check if you’re ready to fly.' },
+    { key: 'evidence', label: 'Evidence', state: 'ready', detail: statusCopy.evidenceDetail },
+  ];
+}
 
 function PinIcon({ state }: { state: 'ready' | 'flag' | 'pending' }) {
   if (state === 'ready') return <CheckCircle2 className="h-4 w-4 shrink-0 text-brass-400" strokeWidth={2} aria-hidden="true" />;
@@ -107,10 +109,11 @@ function PinIcon({ state }: { state: 'ready' | 'flag' | 'pending' }) {
 
 type Phase = 'rest' | 'tension' | 'unroll' | 'settled';
 
-export function PullBrief({ aimedSlug }: { aimedSlug: string | null }) {
+export function PullBrief({ aimedSlug, statusCopy }: { aimedSlug: string | null; statusCopy: FlagshipStatusCopy }) {
   /* Discrete phase drives React; continuous progress never touches state. */
   const [settled, setSettled] = useState(false);
   const [announce, setAnnounce] = useState('');
+  const PINS = useMemo(() => buildPins(statusCopy), [statusCopy]);
 
   const phaseRef = useRef<Phase>('rest');
   const pRef = useRef(0);
@@ -575,7 +578,7 @@ export function PullBrief({ aimedSlug }: { aimedSlug: string | null }) {
           the interactive fade (outer) from fighting. ────────────────────── */}
       <div ref={truthRef} className="mx-auto mt-3 max-w-xl text-center sm:mt-4">
         <p aria-hidden="true" className="pb-truth-in text-balance font-display text-[15px] leading-snug text-sand-100 sm:text-base">
-          {VERDICT_LINE}
+          {statusCopy.verdictLine}
         </p>
       </div>
 
@@ -609,13 +612,9 @@ export function PullBrief({ aimedSlug }: { aimedSlug: string | null }) {
         <div ref={verdictRef} className="pb-verdict max-w-2xl" style={{ opacity: 0 }}>
           <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-brass-200">Your Journey Brief</p>
           <h3 className="mt-2 font-display text-xl leading-tight text-sand-50 sm:text-2xl">
-            {VERDICT_LINE}
+            {statusCopy.verdictLine}
           </h3>
-          <p className="mt-1.5 text-[13px] leading-relaxed text-ink-200">
-            Flown by {EVIDENCE_BUNDLE.route.airline}. We checked the airline&apos;s own schedule on{' '}
-            {formatDate(EVIDENCE_BUNDLE.primarySource.accessedDate)}, and we&apos;ll check again on{' '}
-            {formatDate(EVIDENCE_BUNDLE.nextReviewDate)}.
-          </p>
+          <p className="mt-1.5 text-[13px] leading-relaxed text-ink-200">{statusCopy.evidenceDetail}</p>
         </div>
 
         {/* Pins, in journey order, each in its honest state. */}

@@ -34,11 +34,15 @@ export const routeTimelineEvents: RouteTimelineEvent[] = [
   {
     id: 'man-del-2026-withdrawal',
     routeSlug: 'manchester-delhi',
-    date: '2026-09-01',
+    // The date this announcement was made (matches the Route Status ledger's
+    // announcedAt in data/route-status-events.ts), not the future effective
+    // date it names — a timeline records when a dated fact became known, and
+    // an announced effective date is not itself proof of what happens on it.
+    date: '2026-06-02',
     type: 'withdrawal-announced',
-    title: 'IndiGo withdrawal from Manchester takes effect on 1 September 2026',
+    title: 'IndiGo announces Manchester withdrawal, with effect from 31 August 2026',
     description:
-      'IndiGo has announced it will withdraw from Manchester entirely from this date, ending both the Delhi and Mumbai direct services. Frequency was already reduced once before this announcement.',
+      "IndiGo announced it will discontinue Manchester service, with effect from 31 August 2026 — affecting both the Delhi and Mumbai direct services. Described by IndiGo as temporary, with no resumption date given. Frequency was already reduced once before this announcement. See the route's current status above for whether this has taken effect.",
   },
   {
     id: 'man-bom-2025-launch',
@@ -52,11 +56,12 @@ export const routeTimelineEvents: RouteTimelineEvent[] = [
   {
     id: 'man-bom-2026-withdrawal',
     routeSlug: 'manchester-mumbai',
-    date: '2026-09-01',
+    // See man-del-2026-withdrawal's comment: this is the announcement date, not the future effective date.
+    date: '2026-06-02',
     type: 'withdrawal-announced',
-    title: 'IndiGo withdrawal from Manchester takes effect on 1 September 2026',
+    title: 'IndiGo announces Manchester withdrawal, with effect from 31 August 2026',
     description:
-      'IndiGo has announced it will withdraw from Manchester entirely from this date, ending both the Mumbai and Delhi direct services.',
+      "IndiGo announced it will discontinue Manchester service, with effect from 31 August 2026 — affecting both the Mumbai and Delhi direct services. Described by IndiGo as temporary, with no resumption date given. See the route's current status above for whether this has taken effect.",
   },
   {
     id: 'man-khi-2025-26-expansion',

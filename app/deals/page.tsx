@@ -7,6 +7,11 @@ import { fareObservations } from '@/data/fare-observations';
 import { siteConfig } from '@/lib/site-config';
 import { JsonLd, dealsListSchema } from '@/components/seo/json-ld';
 
+// Pure ISR, matching the route detail pages — this page (via DealsExplorer)
+// renders DealCard, which must regenerate without a deploy once fare/route
+// facts change.
+export const revalidate = 21600;
+
 export const metadata: Metadata = {
   title: 'Tracked Fares: UK to Pakistan, India, the Gulf & Umrah',
   description:

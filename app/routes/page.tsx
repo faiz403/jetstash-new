@@ -2,9 +2,16 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { ArrowUpRight, MapPin, Plane } from 'lucide-react';
 import { PageHero } from '@/components/sections/page-hero';
-import { routes, getRouteAirport, getRouteDestination, getDisplayDirectness, getRoutePresentation, type Route } from '@/data/routes';
+import { routes, getRouteAirport, getRouteDestination, type Route } from '@/data/routes';
+import { routeStatusEvents } from '@/data/route-status-events';
+import { getEffectiveRoutePresentation } from '@/lib/route-status-copy';
 import { airports } from '@/data/airports';
 import type { RegionGroup } from '@/data/destinations';
+
+// Pure ISR, matching the route detail pages — every card here renders
+// getEffectiveRoutePresentation(), which must regenerate without a deploy
+// once a ledger event's effective date passes.
+export const revalidate = 21600;
 
 export const metadata: Metadata = {
   alternates: { canonical: '/routes' },
@@ -37,8 +44,12 @@ export default function RoutesIndexPage() {
   const todayIso = new Date().toISOString().slice(0, 10);
   // Truth Reset (July 2026): only currently-verified direct routes count here —
   // a route claiming isDirect with no fresh verification record must not
-  // inflate this headline stat. See getDisplayDirectness() in data/routes.ts.
-  const directCount = routes.filter((r) => getDisplayDirectness(r, todayIso) === 'direct').length;
+  // inflate this headline stat. Final audit fix: goes through
+  // getEffectiveRoutePresentation() rather than the legacy
+  // getDisplayDirectness() directly, so a ledger-managed corridor past its
+  // withdrawal boundary (or ended) is correctly excluded even though the
+  // legacy, inclusive check would still count it.
+  const directCount = routes.filter((r) => getEffectiveRoutePresentation(r, routeStatusEvents, todayIso).status === 'direct').length;
   const airportCount = airports.filter((a) => routes.some((r) => r.airportSlug === a.slug)).length;
 
   return (
@@ -65,7 +76,7 @@ export default function RoutesIndexPage() {
                 const dest = getRouteDestination(route);
                 if (!airport || !dest) return null;
                 // Verification-pending leakage fix: never read route.flightTime raw.
-                const presentation = getRoutePresentation(route, todayIso);
+                const presentation = getEffectiveRoutePresentation(route, routeStatusEvents, todayIso);
                 return (
                   <Link
                     key={route.slug}
@@ -94,7 +105,9 @@ export default function RoutesIndexPage() {
                       {dest.city}
                     </h3>
                     <p className="mt-1.5 text-sm text-ink-500">
-                      {presentation.status === 'unverified' ? presentation.statusLabel : presentation.flightTime}
+                      {presentation.status === 'unverified' || presentation.status === 'service-ended'
+                        ? presentation.statusLabel
+                        : presentation.flightTime}
                     </p>
                     <span className="mt-4 flex items-center gap-1.5 text-sm font-semibold text-ink-900 transition-colors group-hover:text-terracotta-600">
                       View route guide
