@@ -131,7 +131,7 @@ export const destinations: Destination[] = [
       'Mumbai moves at its own pace: Bollywood, the Gateway of India, and a financial district that never quite sleeps. It\'s a common stopover for travellers connecting south or onward to the Gulf, and now directly reachable from Manchester as well as London.',
     bestFor: ['Business travel', 'City breaks', 'Family visits'],
     flightTimeFromUK: '9h direct from London Heathrow or Manchester',
-    ukAirports: ['london-heathrow', 'manchester'],
+    ukAirports: ['london-heathrow', 'manchester', 'birmingham'],
     visaNote: 'e-Visa required for UK passport holders, apply at least 4 days before travel.',
     familyVisitContent: {
       travelPattern:

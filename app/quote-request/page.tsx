@@ -31,13 +31,14 @@ const steps = [
   },
 ];
 
-export default function QuoteRequestPage({
+export default async function QuoteRequestPage({
   searchParams,
 }: {
-  searchParams: { tripType?: string; region?: string };
+  searchParams: Promise<{ tripType?: string; region?: string }>;
 }) {
-  const initialTripType = isQuoteTripType(searchParams.tripType) ? searchParams.tripType : undefined;
-  const initialRegion = isQuoteRegion(searchParams.region) ? searchParams.region : undefined;
+  const { tripType, region } = await searchParams;
+  const initialTripType = isQuoteTripType(tripType) ? tripType : undefined;
+  const initialRegion = isQuoteRegion(region) ? region : undefined;
 
   return (
     <>

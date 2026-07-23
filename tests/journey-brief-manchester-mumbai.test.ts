@@ -137,7 +137,7 @@ describe('No fabricated fare ever appears for this route', () => {
   });
 
   it('getFareRangeSummary returns nothing to render as a price', () => {
-    expect(getFareRangeSummary('manchester-mumbai', 'Economy')).toBeNull();
+    expect(getFareRangeSummary('manchester-mumbai', 'Economy', '2026-07-23')).toBeNull();
   });
 
   it('the Economy prototype copy contains no currency figure', () => {

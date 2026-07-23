@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { computeBookBySnapshot, getBookByDateLabel, getBookByTopLabel, SURGE_WEEKS } from '@/lib/booking-intelligence';
+import { computeBookBySnapshot, computeBookByState, getBookByDateLabel, getBookByTopLabel, SURGE_WEEKS } from '@/lib/booking-intelligence';
 import { getUpcomingOccurrences } from '@/data/peak-period-dates';
 import { getBookingWindowsByRoute } from '@/data/booking-windows';
 import { getRouteBySlug } from '@/data/routes';
@@ -67,15 +67,17 @@ describe('computeBookBySnapshot — Manchester–Lahore, UK summer holidays 2026
   });
 });
 
-describe('computeBookBySnapshot — Manchester–Islamabad, Eid al-Fitr 2027 (has a recommended window)', () => {
-  // manchester-islamabad's peakPeriodIds are eid-al-fitr/eid-al-adha/uk-summer-holidays
-  // only (no wedding-season) — unlike manchester-lahore, this means Eid al-Fitr 2027
-  // is genuinely the *soonest* occurrence throughout its whole run-up window, so
-  // computeBookBySnapshot's own "soonest upcoming occurrence" pick matches what this
-  // test expects. (manchester-lahore also has wedding-season 2026-27, which falls
-  // chronologically between "now" and Eid al-Fitr 2027 during the run-up period this
-  // suite needs to test, so it would be picked instead — a test-fixture-selection
-  // detail, not a production bug.)
+describe('computeBookByState — Manchester–Islamabad\'s Eid al-Fitr 2027 dates (has a recommended window), tested via the pure state calculation directly', () => {
+  // Deliberately NOT going through computeBookBySnapshot here: Eid al-Fitr
+  // 2027 falls well after manchester-islamabad's real reviewDueDate
+  // (2026-08-13), so computeBookBySnapshot correctly (and deterministically)
+  // returns null for any `now` in 2027 on this route, per its own
+  // verification-currency check — that's the fix working as intended, not
+  // a fixture problem. The state-boundary math this suite actually cares
+  // about is independent of route verification, so it's exercised via
+  // computeBookByState() directly, with dates still drawn from this
+  // route's real peak-period/booking-window data (only the verification
+  // gate is bypassed, not the underlying date fixtures).
   const routeSlug = 'manchester-islamabad';
   const occurrence = getUpcomingOccurrences(getRouteBySlug(routeSlug)!.peakPeriodIds, '2026-08-01').find(
     (o) => o.peakPeriodId === 'eid-al-fitr'
@@ -86,39 +88,32 @@ describe('computeBookBySnapshot — Manchester–Islamabad, Eid al-Fitr 2027 (ha
   const openDate = addDaysIso(occurrence.startDate, -window.weeksBeforeDeparture.max * 7);
   const closeDate = addDaysIso(occurrence.startDate, -window.weeksBeforeDeparture.min * 7);
   const surgeStart = addDaysIso(occurrence.startDate, -SURGE_WEEKS * 7);
+  const recommendedWindow = { openDate, closeDate };
 
   it('too-early: before the recommended window opens', () => {
     const before = addDaysIso(openDate, -5);
-    const snapshot = computeBookBySnapshot(routeSlug, new Date(`${before}T12:00:00Z`));
-    expect(snapshot!.state).toBe('too-early');
+    expect(computeBookByState(before, occurrence.startDate, recommendedWindow, surgeStart)).toBe('too-early');
   });
 
   it('window-open: the exact day the recommended window opens', () => {
-    const snapshot = computeBookBySnapshot(routeSlug, new Date(`${openDate}T12:00:00Z`));
-    expect(snapshot!.state).toBe('window-open');
+    expect(computeBookByState(openDate, occurrence.startDate, recommendedWindow, surgeStart)).toBe('window-open');
   });
 
   it('window-open: the exact day the recommended window closes (inclusive boundary)', () => {
-    const snapshot = computeBookBySnapshot(routeSlug, new Date(`${closeDate}T12:00:00Z`));
-    expect(snapshot!.state).toBe('window-open');
+    expect(computeBookByState(closeDate, occurrence.startDate, recommendedWindow, surgeStart)).toBe('window-open');
   });
 
   it('late: the day after the recommended window closes', () => {
     const dayAfterClose = addDaysIso(closeDate, 1);
-    const snapshot = computeBookBySnapshot(routeSlug, new Date(`${dayAfterClose}T12:00:00Z`));
-    expect(snapshot!.state).toBe('late');
-    expect(snapshot!.bookByDate).toBe(closeDate);
-    expect(snapshot!.bookByBasis).toBe('route-recommendation');
+    expect(computeBookByState(dayAfterClose, occurrence.startDate, recommendedWindow, surgeStart)).toBe('late');
   });
 
   it('surge: once inside the final-weeks surge zone, regardless of the recommended window', () => {
-    const snapshot = computeBookBySnapshot(routeSlug, new Date(`${surgeStart}T12:00:00Z`));
-    expect(snapshot!.state).toBe('surge');
+    expect(computeBookByState(surgeStart, occurrence.startDate, recommendedWindow, surgeStart)).toBe('surge');
   });
 
   it('inside-period: the event day itself', () => {
-    const snapshot = computeBookBySnapshot(routeSlug, new Date(`${occurrence.startDate}T12:00:00Z`));
-    expect(snapshot!.state).toBe('inside-period');
+    expect(computeBookByState(occurrence.startDate, occurrence.startDate, recommendedWindow, surgeStart)).toBe('inside-period');
   });
 });
 
@@ -129,6 +124,26 @@ describe('computeBookBySnapshot — unsupported inputs return null rather than g
 
   it('returns null for a slug that does not exist at all', () => {
     expect(computeBookBySnapshot('not-a-real-route', new Date('2026-07-12T12:00:00Z'))).toBeNull();
+  });
+
+  describe('verification-pending leakage fix (audit finding): a priority route whose verification has since expired — fully deterministic on the `now` parameter, no system-clock mocking needed', () => {
+    const route = getRouteBySlug('manchester-lahore')!;
+
+    it('sanity: the fixture route\'s real reviewDueDate is 2026-08-13', () => {
+      expect(route.verification?.reviewDueDate).toBe('2026-08-13');
+    });
+
+    it('2026-07-23 (before reviewDueDate): still produces a snapshot normally', () => {
+      expect(computeBookBySnapshot('manchester-lahore', new Date('2026-07-23T12:00:00Z'))).not.toBeNull();
+    });
+
+    it('2026-08-14 (the day after reviewDueDate): stops producing a snapshot, even though the route is still in BOOK_BY_PRIORITY_ROUTE_SLUGS and still has upcoming peak-period occurrences', () => {
+      expect(computeBookBySnapshot('manchester-lahore', new Date('2026-08-14T12:00:00Z'))).toBeNull();
+    });
+
+    it('a far-future date: still null — expiry does not un-expire with more time passing', () => {
+      expect(computeBookBySnapshot('manchester-lahore', new Date('2099-06-01T12:00:00Z'))).toBeNull();
+    });
   });
 });
 

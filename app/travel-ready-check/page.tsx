@@ -15,15 +15,16 @@ export const metadata: Metadata = {
 // count) from silently standing in for the real destination count across those 7 countries.
 const supportedDestinationCount = destinations.filter((d) => TRAVEL_READY_SUPPORTED_COUNTRIES.includes(d.country)).length;
 
-export default function TravelReadyCheckPage({
+export default async function TravelReadyCheckPage({
   searchParams,
 }: {
-  searchParams: { destination?: string };
+  searchParams: Promise<{ destination?: string }>;
 }) {
+  const { destination } = await searchParams;
   // Only trust the query param when it resolves to a destination this feature actually supports —
   // an unsupported or garbage slug falls back to no prefill rather than silently seeding state
   // with a value the form's own <select> has no matching option for.
-  const requestedDestination = searchParams.destination ? getDestinationBySlug(searchParams.destination) : undefined;
+  const requestedDestination = destination ? getDestinationBySlug(destination) : undefined;
   const defaultDestinationSlug =
     requestedDestination && TRAVEL_READY_SUPPORTED_COUNTRIES.includes(requestedDestination.country)
       ? requestedDestination.slug

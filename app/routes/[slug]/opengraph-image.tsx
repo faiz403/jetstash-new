@@ -1,5 +1,5 @@
 import { ImageResponse } from 'next/og';
-import { getRouteBySlug, getRouteAirport, getRouteDestination } from '@/data/routes';
+import { getRouteBySlug, getRouteAirport, getRouteDestination, getRoutePresentation } from '@/data/routes';
 
 // @vercel/og's Node runtime fails to resolve its bundled font on some
 // platforms (ERR_INVALID_URL); the edge runtime is its supported home.
@@ -16,15 +16,28 @@ const INK_LIGHT = '#9CA3B0';
 const BRASS = '#C8932E';
 const SAND = '#F7F2E9';
 
-export default function OgImage({ params }: { params: { slug: string } }) {
-  const route = getRouteBySlug(params.slug);
+export default async function OgImage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const route = getRouteBySlug(slug);
   const airport = route ? getRouteAirport(route) : undefined;
   const dest = route ? getRouteDestination(route) : undefined;
 
   const from = airport?.city ?? 'UK';
   const to = dest?.city ?? 'the world';
-  // flightTime and frequency strings already say direct/connecting — don't repeat it.
-  const detail = route ? `${route.flightTime} · ${route.frequency}` : '';
+  // Verification-pending leakage fix + presentation-integrity fix: both the
+  // detail line and the footer come straight from getRoutePresentation()'s
+  // own socialDetail/socialFooter — never route.flightTime/frequency raw,
+  // never a fixed "Booking windows · Peak periods · Fare history" tagline
+  // that a sparse route (no peak-period data, no fare history) can't back
+  // up, and never the full flightTime+frequency pairing, which for several
+  // routes (long hedged frequency strings, or a route like Birmingham–
+  // Mumbai whose flightTime is itself a disclaimer sentence) would run well
+  // past what fits on a 1200×630 image with no wrapping. See
+  // buildSocialDetail's doc comment in data/routes.ts.
+  const nowIso = new Date().toISOString().slice(0, 10);
+  const presentation = route ? getRoutePresentation(route, nowIso) : null;
+  const detail = presentation?.socialDetail ?? '';
+  const footer = presentation?.socialFooter ?? 'Travel intelligence · jetstash.co.uk';
 
   return new ImageResponse(
     (
@@ -73,7 +86,7 @@ export default function OgImage({ params }: { params: { slug: string } }) {
         </div>
 
         <div style={{ display: 'flex', color: INK_LIGHT, fontSize: 24 }}>
-          Booking windows · Peak periods · Fare history · jetstash.co.uk
+          {footer}
         </div>
       </div>
     ),

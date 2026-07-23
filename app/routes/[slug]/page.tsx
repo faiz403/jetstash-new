@@ -1,21 +1,20 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { Plane, Calendar, Clock, ArrowUpRight, AlertCircle, GitCompareArrows, CalendarClock, History, MapPinned, MessageSquareText } from 'lucide-react';
-import { routes, getRouteBySlug, getRouteAirport, getRouteDestination, getRoutesByDestination, getRouteAirlines, getRoutePeakPeriods, getDisplayDirectness } from '@/data/routes';
+import { Plane, Calendar, Clock, ArrowUpRight, AlertCircle, GitCompareArrows, CalendarClock, History, MessageSquareText } from 'lucide-react';
+import { routes, getRouteBySlug, getRouteAirport, getRouteDestination, getRoutesByDestination, getRoutePeakPeriods, getRoutePresentation } from '@/data/routes';
+import { getAirlinesBySlugs } from '@/data/airlines';
 import { getDealsByDestination } from '@/data/deals';
 import { getTimelineByRoute } from '@/data/route-timeline';
 import { getActiveWarningsByRoute } from '@/data/route-warnings';
-import { getObservationsByRoute } from '@/data/fare-observations';
+import { getPublishableObservationsByRoute } from '@/data/fare-observations';
 import { getBookingWindowsByRoute } from '@/data/booking-windows';
 import { getTipsForScope } from '@/data/traveller-tips';
 import { getCommunityNotesForScope } from '@/data/community-notes';
-import { getNotesByAirport } from '@/data/airport-notes';
 import { DealCard } from '@/components/ui/deal-card';
 import { NoFareFallback } from '@/components/ui/no-fare-fallback';
 import { Badge } from '@/components/ui/badge';
 import { RouteStat } from '@/components/ui/route-stat';
-import { FamilyVisitBlock } from '@/components/sections/family-visit-block';
 import { WarningBanner } from '@/components/route/warning-banner';
 import { RouteTimeline } from '@/components/route/route-timeline';
 import { FareHistoryPanel } from '@/components/route/fare-history-panel';
@@ -33,6 +32,7 @@ import { computeBookBySnapshot } from '@/lib/booking-intelligence';
 import { computeReadiness } from '@/lib/travel-intelligence-engine';
 import { TRAVEL_READY_SUPPORTED_COUNTRIES } from '@/lib/travel-ready-check';
 import { getDestinationImage } from '@/lib/brand-images';
+import { getFareSectionCopy } from '@/lib/fare-section-copy';
 import { HeroBackdrop } from '@/components/ui/hero-backdrop';
 import { TrackedOutboundLink } from '@/components/ui/tracked-outbound-link';
 
@@ -51,21 +51,31 @@ function formatEndDate(iso: string): string {
   return new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
 }
 
-export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
-  const route = getRouteBySlug(params.slug);
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const { slug } = await params;
+  const route = getRouteBySlug(slug);
   if (!route) return {};
   const airport = getRouteAirport(route);
   const dest = getRouteDestination(route);
   if (!airport || !dest) return {};
+  const nowIso = new Date().toISOString().slice(0, 10);
+  // Verification-pending leakage fix: metadata must never build its
+  // description from raw route.intro — getRoutePresentation() returns a
+  // restrained, claim-free description for a pending route instead.
+  // Presentation-integrity fix: the title is content-aware too — see
+  // metadataTitle's doc comment — never a fixed template that can promise
+  // sections (Peak Periods, Fare History) a sparse route doesn't have.
+  const presentation = getRoutePresentation(route, nowIso);
   return {
-    title: `${airport.city} to ${dest.city} Flights: Booking Windows & Peak Periods`,
-    description: `${route.intro.slice(0, 150)}...`,
+    title: presentation.metadataTitle,
+    description: presentation.metadataDescription,
     alternates: { canonical: `${siteConfig.url}/routes/${route.slug}` },
   };
 }
 
-export default function RoutePage({ params }: { params: { slug: string } }) {
-  const route = getRouteBySlug(params.slug);
+export default async function RoutePage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const route = getRouteBySlug(slug);
   if (!route) {
     notFound();
     return null;
@@ -73,9 +83,15 @@ export default function RoutePage({ params }: { params: { slug: string } }) {
 
   const airport = getRouteAirport(route);
   const dest = getRouteDestination(route);
-  // Truth Reset (July 2026): never render route.isDirect directly — a
-  // "Direct" badge requires a current, unexpired verification record.
-  const directness = getDisplayDirectness(route, new Date().toISOString().slice(0, 10));
+  const nowIso = new Date().toISOString().slice(0, 10);
+  // Verification-pending leakage fix: the single reusable source of truth
+  // for everything this page renders about the route — duration, frequency,
+  // airlines, hero copy, share text, and whether booking-guidance/peak-
+  // period/connecting-alternative sections may render at all. Pending
+  // routes get their own branch here, never treated as a variant of
+  // 'connecting' — see RoutePresentation's doc comment in data/routes.ts.
+  const presentation = getRoutePresentation(route, nowIso);
+  const presentationAirlines = getAirlinesBySlugs(presentation.airlineSlugs);
   if (!airport || !dest) {
     notFound();
     return null;
@@ -83,15 +99,15 @@ export default function RoutePage({ params }: { params: { slug: string } }) {
 
   const dealsHere = getDealsByDestination(dest.slug).filter((d) => d.fromAirportSlug === airport.slug);
   const alternativeRoutes = getRoutesByDestination(dest.slug).filter((r) => r.slug !== route.slug);
-  const airlines = getRouteAirlines(route);
   const peakPeriods = getRoutePeakPeriods(route);
   const activeWarnings = getActiveWarningsByRoute(route.slug);
   const timelineEvents = getTimelineByRoute(route.slug);
-  const fareObservations = getObservationsByRoute(route.slug);
+  const fareObservations = getPublishableObservationsByRoute(route.slug, nowIso);
+  // Fare copy must reflect the data actually available — see getFareSectionCopy.
+  const fareSectionCopy = getFareSectionCopy(fareObservations.length > 0, dealsHere.length > 0);
   const bookingWindows = getBookingWindowsByRoute(route.slug);
   const travellerTips = getTipsForScope({ routeSlug: route.slug, destinationSlug: dest.slug });
   const communityNotes = getCommunityNotesForScope({ routeSlug: route.slug, destinationSlug: dest.slug });
-  const airportAdvice = getNotesByAirport(airport.slug).slice(0, 2);
   // Build-time snapshot for the Book-By panel (priority routes only) — the
   // client component recomputes state against the visitor's clock on mount.
   const bookBySnapshot = computeBookBySnapshot(route.slug, new Date());
@@ -126,19 +142,36 @@ export default function RoutePage({ params }: { params: { slug: string } }) {
           </nav>
           <div className="stagger-in stagger-1 animate-fade-up">
             <Badge variant="dark">
-              {directness === 'direct' ? 'Direct route' : directness === 'unverified' ? 'Verification pending' : 'Connecting route'}
+              {presentation.status === 'direct' ? 'Direct route' : presentation.status === 'unverified' ? 'Verification pending' : 'Connecting route'}
             </Badge>
           </div>
           <h1 className="stagger-in stagger-2 mt-4 animate-fade-up font-display text-4xl leading-[1.05] tracking-tight text-sand-50 sm:text-5xl">
             {airport.city} to {dest.city}
           </h1>
-          <p className="stagger-in stagger-3 mt-4 max-w-2xl animate-fade-up text-lg leading-relaxed text-ink-300">{route.intro}</p>
+          {/* Verification-pending leakage fix: route.intro must never render
+              raw here — presentation.summary is centrally-authored neutral
+              copy for a pending route, so this never depends on an intro
+              string being hedged correctly by whoever added the route. */}
+          <p className="stagger-in stagger-3 mt-4 max-w-2xl animate-fade-up text-lg leading-relaxed text-ink-300">{presentation.summary}</p>
 
           <div className="stagger-in stagger-4 mt-7 flex animate-fade-up flex-wrap gap-6">
-            <RouteStat icon={<Clock className="h-4 w-4" strokeWidth={2} />} label="Flight time" value={route.flightTime} />
-            <RouteStat icon={<Calendar className="h-4 w-4" strokeWidth={2} />} label="Frequency" value={route.frequency} />
-            {airlines.length > 0 && (
-              <RouteStat icon={<Plane className="h-4 w-4" strokeWidth={2} />} label="Airlines" value={airlines.map((a) => a.name).join(', ')} />
+            {presentation.status === 'unverified' ? (
+              // Premium presentation fix: one concise notice instead of
+              // three stat rows carrying a duplicated placeholder sentence.
+              <div className="flex max-w-lg items-start gap-3 rounded-md border border-white/15 bg-white/5 px-4 py-3.5">
+                <AlertCircle className="mt-0.5 h-4.5 w-4.5 shrink-0 text-brass-300" strokeWidth={2} />
+                <p className="text-sm leading-relaxed text-ink-200">
+                  Flight time, frequency and airline aren&apos;t published for this route until they&apos;re independently confirmed.
+                </p>
+              </div>
+            ) : (
+              <>
+                <RouteStat icon={<Clock className="h-4 w-4" strokeWidth={2} />} label="Flight time" value={presentation.flightTime} />
+                <RouteStat icon={<Calendar className="h-4 w-4" strokeWidth={2} />} label="Frequency" value={presentation.frequency} />
+                {presentationAirlines.length > 0 && (
+                  <RouteStat icon={<Plane className="h-4 w-4" strokeWidth={2} />} label="Airlines" value={presentationAirlines.map((a) => a.name).join(', ')} />
+                )}
+              </>
             )}
           </div>
 
@@ -162,9 +195,14 @@ export default function RoutePage({ params }: { params: { slug: string } }) {
                 recommendation — the WhatsApp share moves there too (built from the same snapshot),
                 so this hero doesn't duplicate either action. */}
             {!bookBySnapshot && (
+              // Verification-pending leakage fix: presentation.shareText is
+              // fully pre-built by getRoutePresentation() — for a pending
+              // route it omits booking timing, demand, fare urgency, airline
+              // and routing claims entirely rather than appending
+              // route.bookingWindowNote raw.
               <WhatsAppShareButton
                 url={`${siteConfig.url}/routes/${route.slug}`}
-                text={`${airport.city} to ${dest.city}: ${route.flightTime}, ${route.frequency}. ${route.bookingWindowNote}`}
+                text={presentation.shareText}
               />
             )}
           </div>
@@ -223,29 +261,51 @@ export default function RoutePage({ params }: { params: { slug: string } }) {
         <div className="mx-auto max-w-content px-5 sm:px-8">
           <div className="grid gap-10 lg:grid-cols-[1.2fr_0.8fr]">
             <div>
-              {/* When Book-By Countdown already covers this route's structured guidance above,
-                  this section becomes the supporting evidence for that recommendation rather than
-                  a second, competing "when to book" narrative restating the same facts. */}
-              {evidenceReframe ? (
+              {/* Verification-pending leakage fix: booking-window guidance —
+                  route.bookingWindowNote and any logged booking-window
+                  records — is a route-specific factual claim about when to
+                  book *this* service. It must never render for a route
+                  whose own service isn't independently evidenced, and this
+                  is structural (canShowBookingGuidance), not a per-route
+                  copy edit — it applies to any future pending route too. */}
+              {presentation.canShowBookingGuidance ? (
                 <>
-                  <h2 className="font-display text-2xl text-ink-900">The evidence behind that guidance</h2>
-                  <p className="mt-4 leading-relaxed text-ink-600">
-                    The exact booking window is in the panel above — here&apos;s the underlying pattern it&apos;s drawn from.
-                  </p>
+                  {/* When Book-By Countdown already covers this route's structured guidance above,
+                      this section becomes the supporting evidence for that recommendation rather than
+                      a second, competing "when to book" narrative restating the same facts. */}
+                  {evidenceReframe ? (
+                    <>
+                      <h2 className="font-display text-2xl text-ink-900">The evidence behind that guidance</h2>
+                      <p className="mt-4 leading-relaxed text-ink-600">
+                        The exact booking window is in the panel above — here&apos;s the underlying pattern it&apos;s drawn from.
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      <h2 className="font-display text-2xl text-ink-900">When to book this route</h2>
+                      <p className="mt-4 leading-relaxed text-ink-600">{route.bookingWindowNote}</p>
+                    </>
+                  )}
+                  {bookingWindows.length > 0 && (
+                    <div className="mt-7">
+                      <BookingWindowPanel windows={bookingWindows} />
+                    </div>
+                  )}
                 </>
               ) : (
                 <>
-                  <h2 className="font-display text-2xl text-ink-900">When to book this route</h2>
-                  <p className="mt-4 leading-relaxed text-ink-600">{route.bookingWindowNote}</p>
+                  <h2 className="font-display text-2xl text-ink-900">Booking guidance not yet available</h2>
+                  <p className="mt-4 leading-relaxed text-ink-600">
+                    We don&apos;t publish booking-window timing for a route until its service is independently confirmed. Check directly with airlines serving {airport.city} for the current position.
+                  </p>
                 </>
               )}
-              {bookingWindows.length > 0 && (
-                <div className="mt-7">
-                  <BookingWindowPanel windows={bookingWindows} />
-                </div>
-              )}
             </div>
-            {peakPeriods.length > 0 && (
+            {/* Verification-pending leakage fix: peak-period guidance
+                carries an implicit "fares on this route behave like this"
+                claim, ruled out by the same reasoning as booking guidance —
+                canShowPeakPeriods is false for every pending route. */}
+            {presentation.canShowPeakPeriods && peakPeriods.length > 0 && (
               <div className="rounded-md border border-ink-100 bg-sand-50 p-6">
                 <div className="flex items-center gap-2">
                   <AlertCircle className="h-4.5 w-4.5 text-terracotta-600" strokeWidth={2} />
@@ -268,16 +328,22 @@ export default function RoutePage({ params }: { params: { slug: string } }) {
         </div>
       </section>
 
-      {route.connectingAlternative && (
+      {/* Verification-pending leakage fix: pending must never be mapped to
+          the 'connecting' branch here — canShowConnectingAlternative is
+          false for every pending route, regardless of what
+          route.connectingAlternative happens to contain, so stops/hubs/
+          journey-time/airline facts for an unevidenced route can never
+          render. This is its own gate, not derived from route.isDirect. */}
+      {presentation.canShowConnectingAlternative && route.connectingAlternative && (
         <section className="bg-sand-50 py-14 sm:py-16">
           <div className="mx-auto max-w-content px-5 sm:px-8">
             <h2 className="font-display text-2xl text-ink-900 sm:text-3xl">
-              {route.isDirect ? 'The realistic 1-stop alternative' : 'How this connecting route usually works'}
+              {presentation.status === 'direct' ? 'The realistic 1-stop alternative' : 'How this connecting route usually works'}
             </h2>
             <p className="mt-2 max-w-2xl text-sm text-ink-500">
-              {route.isDirect
+              {presentation.status === 'direct'
                 ? 'Worth knowing even if you book the direct flight. Useful as a fallback, and this is what the route looks like once the direct service is unavailable.'
-                : 'No direct service currently exists on this route. Here is the realistic connecting pattern most travellers use.'}
+                : 'No confirmed direct service currently exists on this route. Here is the realistic connecting pattern most travellers use.'}
             </p>
             <div className="mt-7 grid gap-5 sm:grid-cols-3">
               <div className="rounded-md border border-ink-100 bg-white p-5">
@@ -320,7 +386,7 @@ export default function RoutePage({ params }: { params: { slug: string } }) {
         </section>
       )}
 
-      {dest.familyVisitContent && <FamilyVisitBlock content={dest.familyVisitContent} city={dest.city} />}
+      {/* Destination-scoped family guidance must not render on route pages — see the "More about {dest.city}" card below for the link to it. */}
 
       {alternativeRoutes.length > 0 && (
         <section className="bg-sand-50 py-14 sm:py-16">
@@ -338,6 +404,11 @@ export default function RoutePage({ params }: { params: { slug: string } }) {
               {alternativeRoutes.map((altRoute) => {
                 const altAirport = getRouteAirport(altRoute);
                 if (!altAirport) return null;
+                // Verification-pending leakage fix: comparison cards must go
+                // through the same reusable gate as the route's own page —
+                // never read altRoute.flightTime or its airlines raw.
+                const altPresentation = getRoutePresentation(altRoute, nowIso);
+                const altAirlines = getAirlinesBySlugs(altPresentation.airlineSlugs);
                 return (
                   <Link
                     key={altRoute.slug}
@@ -345,13 +416,16 @@ export default function RoutePage({ params }: { params: { slug: string } }) {
                     className="group flex flex-col rounded-md border border-ink-100 bg-white p-6 transition-all hover:-translate-y-1 hover:shadow-card-hover"
                   >
                     <span className="text-xs font-semibold uppercase tracking-wide text-ink-400">
-                      {(() => {
-                        const altDirectness = getDisplayDirectness(altRoute, new Date().toISOString().slice(0, 10));
-                        return altDirectness === 'direct' ? 'Direct' : altDirectness === 'unverified' ? 'Verification pending' : 'Connecting';
-                      })()}
+                      {altPresentation.statusLabel}
                     </span>
                     <h3 className="mt-1.5 font-display text-xl text-ink-900">{altAirport.city} → {dest.city}</h3>
-                    <p className="mt-1 text-sm text-ink-500">{altRoute.flightTime} · {getRouteAirlines(altRoute).map((a) => a.name).join(', ')}</p>
+                    <p className="mt-1 text-sm text-ink-500">
+                      {altPresentation.status === 'unverified'
+                        ? 'Verification in progress — check directly before booking'
+                        : altAirlines.length > 0
+                          ? `${altPresentation.flightTime} · ${altAirlines.map((a) => a.name).join(', ')}`
+                          : altPresentation.flightTime}
+                    </p>
                     <span className="mt-4 flex items-center gap-1.5 text-sm font-semibold text-ink-900">
                       Compare this route
                       <ArrowUpRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" strokeWidth={2.25} />
@@ -366,11 +440,8 @@ export default function RoutePage({ params }: { params: { slug: string } }) {
 
       <section className="bg-white py-14 sm:py-16">
         <div className="mx-auto max-w-content px-5 sm:px-8">
-          <h2 className="font-display text-2xl text-ink-900 sm:text-3xl">Fare history & current example</h2>
-          <p className="mt-2 max-w-xl text-sm text-ink-500">
-            Every fare below is an example checked on the date shown, not a live quote. The history is what makes
-            it worth tracking over time.
-          </p>
+          <h2 className="font-display text-2xl text-ink-900 sm:text-3xl">{fareSectionCopy.heading}</h2>
+          {fareSectionCopy.caption && <p className="mt-2 max-w-xl text-sm text-ink-500">{fareSectionCopy.caption}</p>}
           {fareObservations.length > 0 && (
             <div className="mt-8">
               <FareHistoryPanel observations={fareObservations} />
@@ -406,30 +477,24 @@ export default function RoutePage({ params }: { params: { slug: string } }) {
         </section>
       )}
 
-      {airportAdvice.length > 0 && (
-        <section className="bg-white py-14 sm:py-16">
-          <div className="mx-auto max-w-content px-5 sm:px-8">
-            <div className="flex items-center gap-2.5">
-              <MapPinned className="h-5 w-5 text-terracotta-600" strokeWidth={2} />
-              <span className="text-xs font-semibold uppercase tracking-wide text-terracotta-600">Before you fly from {airport.city}</span>
-            </div>
-            <div className="mt-6 grid gap-5 sm:grid-cols-2">
-              {airportAdvice.map((note) => (
-                <div key={note.id} className="rounded-md border border-ink-100 bg-sand-50 p-5">
-                  <h3 className="font-display text-base text-ink-900">{note.title}</h3>
-                  <p className="mt-1.5 text-sm leading-relaxed text-ink-500">{note.body}</p>
-                </div>
-              ))}
+      {/* Airport notes are airport-scoped editorial content, not route evidence — same leakage class as destination familyVisitContent. A neutral link keeps discoverability without importing airport-specific claims onto a route page. */}
+      <section className="bg-white py-14 sm:py-16">
+        <div className="mx-auto max-w-content px-5 sm:px-8">
+          <div className="flex flex-col gap-4 rounded-md border border-ink-100 bg-sand-50 p-7 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h2 className="font-display text-xl text-ink-900">Flying from {airport.city}?</h2>
+              <p className="mt-1 text-sm text-ink-500">Terminal, transport and practical information for your departure airport.</p>
             </div>
             <Link
               href={`/airports/${airport.slug}`}
-              className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-ink-900 hover:text-terracotta-600"
+              className="inline-flex shrink-0 items-center justify-center gap-1.5 rounded-sm bg-ink-900 px-5 py-3 text-sm font-semibold text-sand-50 transition-all hover:bg-ink-700 active:scale-[0.985]"
             >
-              Full {airport.name} guide <ArrowUpRight className="h-4 w-4" strokeWidth={2.25} />
+              View {airport.name} guide
+              <ArrowUpRight className="h-4 w-4" strokeWidth={2.25} />
             </Link>
           </div>
-        </section>
-      )}
+        </div>
+      </section>
 
       {communityNotes.length > 0 && (
         <section className="bg-sand-50 py-14 sm:py-16">

@@ -24,8 +24,9 @@ export async function generateStaticParams() {
   return destinations.map((d) => ({ slug: d.slug }));
 }
 
-export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
-  const dest = getDestinationBySlug(params.slug);
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const { slug } = await params;
+  const dest = getDestinationBySlug(slug);
   if (!dest) return {};
   return {
     title: `Flights to ${dest.city}, ${dest.country} from the UK`,
@@ -34,8 +35,9 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   };
 }
 
-export default function DestinationPage({ params }: { params: { slug: string } }) {
-  const dest = getDestinationBySlug(params.slug);
+export default async function DestinationPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const dest = getDestinationBySlug(slug);
   if (!dest) {
     notFound();
     return null;

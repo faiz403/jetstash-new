@@ -5,27 +5,24 @@ import { getRouteByAirportAndDestination } from '@/data/routes';
 import { isValidEmail, upsertBrevoContact, getBrevoContact } from '@/lib/email';
 import { isRouteWatchIntent } from '@/lib/route-watch-options';
 import { BREVO_ATTRIBUTE_NAMES } from '@/lib/brevo-attributes';
+import { MAX_WATCHED_ROUTES } from '@/lib/route-watch-config';
 
 /**
- * Route Watch signup endpoint — the subscription surface for the Travel
- * Intelligence Engine (JETSTASH_PRINCIPLES.md §14.2). Same provider as
- * /api/subscribe — Brevo, reusing BREVO_API_KEY and BREVO_LIST_ID.
+ * Route Watch signup endpoint — stores a subscriber's route preferences in
+ * Brevo (same provider/env vars as /api/subscribe) for a person to review
+ * and email about later. No automated detection runs here today.
  *
  * One subscription can cover more than one route: WATCH_ROUTE holds a
  * small comma-delimited list (capped at MAX_WATCHED_ROUTES) rather than a
- * single value. This is deliberately NOT a new Brevo attribute — adding
- * one without a working provisioning path would silently reproduce the
- * exact attribute-drift bug already fixed once this year (see
- * lib/brevo-attributes.json, CLAUDE.md). Repurposing the existing,
- * already-provisioned field needs no new setup.
+ * single value. Deliberately NOT a new Brevo attribute — reuses the
+ * existing, already-provisioned field to avoid the attribute-drift bug
+ * described in CLAUDE.md.
  *
  * Requires the same seven Brevo custom contact attributes as
  * /api/subscribe — run `npm run brevo:setup` (lib/brevo-attributes.json)
  * if they're not yet created. Brevo silently drops attributes it doesn't
  * recognise.
  */
-
-const MAX_WATCHED_ROUTES = 3;
 
 export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => null);
@@ -65,10 +62,9 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // Merge the new route into any routes this contact already watches,
-  // rather than overwriting — the multi-route model from
-  // JETSTASH_PRINCIPLES.md §14.2. A lookup failure (new contact, or a
-  // transient Brevo read error) is treated as "nothing to merge with".
+  // Merge into any routes this contact already watches rather than
+  // overwriting. A lookup failure (new contact, transient Brevo error) is
+  // treated as "nothing to merge with".
   const existing = await getBrevoContact(apiKey, email);
   const existingRoutes = (existing?.attributes[BREVO_ATTRIBUTE_NAMES.WATCH_ROUTE] ?? '')
     .split(',')

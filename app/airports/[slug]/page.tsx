@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { Plane, ArrowUpRight, Info, MapPin } from 'lucide-react';
 import { airports, getAirportBySlug } from '@/data/airports';
 import { getDealsByAirport } from '@/data/deals';
-import { getRoutesByAirport, getRouteDestination, getDisplayDirectness } from '@/data/routes';
+import { getRoutesByAirport, getRouteDestination, getRoutePresentation } from '@/data/routes';
 import { getNotesByAirport } from '@/data/airport-notes';
 import { getTipsForScope } from '@/data/traveller-tips';
 import { DealCard } from '@/components/ui/deal-card';
@@ -20,8 +20,9 @@ export async function generateStaticParams() {
   return airports.map((a) => ({ slug: a.slug }));
 }
 
-export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
-  const airport = getAirportBySlug(params.slug);
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const { slug } = await params;
+  const airport = getAirportBySlug(slug);
   if (!airport) return {};
   return {
     title: `Flights from ${airport.name} (${airport.code}): Pakistan, India & Gulf Routes`,
@@ -30,8 +31,9 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   };
 }
 
-export default function AirportPage({ params }: { params: { slug: string } }) {
-  const airport = getAirportBySlug(params.slug);
+export default async function AirportPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const airport = getAirportBySlug(slug);
   if (!airport) {
     notFound();
     return null;
@@ -105,7 +107,11 @@ export default function AirportPage({ params }: { params: { slug: string } }) {
         <div className="mx-auto max-w-content px-5 sm:px-8">
           {routesHere.length > 0 ? (
             <>
-              <h2 className="font-display text-2xl text-ink-900 sm:text-3xl">Direct routes from {airport.name}</h2>
+              {/* Verification-pending leakage fix: this list mixes direct,
+                  connecting, and pending routes — the heading must not
+                  blanket-claim "Direct" when it isn't; each card's own
+                  badge (below) carries the actual per-route status. */}
+              <h2 className="font-display text-2xl text-ink-900 sm:text-3xl">Routes from {airport.name}</h2>
               <p className="mt-2 max-w-xl text-sm text-ink-500">
                 Each route below has its own guide: booking windows, peak periods and airline coverage specific to that exact pairing.
               </p>
@@ -113,7 +119,7 @@ export default function AirportPage({ params }: { params: { slug: string } }) {
                 {routesHere.map((route) => {
                   const dest = getRouteDestination(route);
                   if (!dest) return null;
-                  const directness = getDisplayDirectness(route, new Date().toISOString().slice(0, 10));
+                  const presentation = getRoutePresentation(route, new Date().toISOString().slice(0, 10));
                   return (
                     <Link
                       key={route.slug}
@@ -126,7 +132,7 @@ export default function AirportPage({ params }: { params: { slug: string } }) {
                       </span>
                       <h3 className="mt-2 font-display text-xl text-ink-900">{airport.city} → {dest.city}</h3>
                       <p className="mt-1.5 text-sm text-ink-500">
-                        {route.flightTime} · {directness === 'direct' ? 'Direct' : directness === 'unverified' ? 'Verification pending' : 'Connecting'}
+                        {presentation.status === 'unverified' ? presentation.statusLabel : `${presentation.flightTime} · ${presentation.statusLabel}`}
                       </p>
                       <span className="mt-4 flex items-center gap-1.5 text-sm font-semibold text-ink-900">
                         View route guide

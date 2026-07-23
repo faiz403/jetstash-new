@@ -27,7 +27,7 @@
     "name": "WATCH_ROUTE",
     "type": "text",
     "usedBy": "app/api/route-watch",
-    "description": "Route Watch signup — comma-delimited list of watched route slugs (capped small; see MAX_WATCHED_ROUTES in app/api/route-watch/route.ts), not a single value."
+    "description": "Route Watch signup — comma-delimited list of watched route slugs (capped small; see MAX_WATCHED_ROUTES in lib/route-watch-config.ts), not a single value."
   },
   {
     "name": "WATCH_REGION",

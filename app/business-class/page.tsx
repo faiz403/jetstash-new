@@ -7,7 +7,8 @@ import { NoFareFallback } from '@/components/ui/no-fare-fallback';
 import { NewsletterSection } from '@/components/sections/newsletter-section';
 import { HeroBackdrop } from '@/components/ui/hero-backdrop';
 import { getDealsByCategory, getDealsByDestination } from '@/data/deals';
-import { routes, getRouteAirport, getRouteDestination, getRouteAirlines } from '@/data/routes';
+import { routes, getRouteAirport, getRouteDestination, getDisplayDirectness, getRoutePresentation } from '@/data/routes';
+import { getAirlinesBySlugs } from '@/data/airlines';
 
 export const metadata: Metadata = {
   alternates: { canonical: '/business-class' },
@@ -30,10 +31,16 @@ const decisionPoints = [
 ];
 
 export default function BusinessClassPage() {
+  const nowIso = new Date().toISOString().slice(0, 10);
   const businessDeals = getDealsByCategory('business');
+  // Verification-pending leakage fix: this section's own heading asserts
+  // "Direct routes" — it must only ever include routes whose directness is
+  // currently evidenced as 'direct', never an 'unverified'/pending one that
+  // happens to have a business deal attached.
   const businessCapableRoutes = routes.filter((r) => {
     const airport = getRouteAirport(r);
     if (!airport) return false;
+    if (getDisplayDirectness(r, nowIso) !== 'direct') return false;
     return getDealsByDestination(r.destinationSlug).some(
       (d) => d.cabin === 'Business' && d.fromAirportSlug === r.airportSlug
     );
@@ -90,6 +97,11 @@ export default function BusinessClassPage() {
               const airport = getRouteAirport(route);
               const dest = getRouteDestination(route);
               if (!airport || !dest) return null;
+              // Already filtered to 'direct' routes above, but go through the
+              // same reusable gate as every other surface regardless — never
+              // read route.flightTime or its airlines raw.
+              const presentation = getRoutePresentation(route, nowIso);
+              const factAirlines = getAirlinesBySlugs(presentation.airlineSlugs);
               return (
                 <Link
                   key={route.slug}
@@ -97,7 +109,13 @@ export default function BusinessClassPage() {
                   className="group flex flex-col rounded-md border border-ink-100 bg-white p-6 shadow-card transition-all hover:-translate-y-1 hover:shadow-card-hover"
                 >
                   <h3 className="font-display text-xl text-ink-900">{airport.city} → {dest.city}</h3>
-                  <p className="mt-1.5 text-sm text-ink-500">{route.flightTime} · {getRouteAirlines(route).map((a) => a.name).join(', ')}</p>
+                  <p className="mt-1.5 text-sm text-ink-500">
+                    {presentation.status === 'unverified'
+                      ? presentation.statusLabel
+                      : factAirlines.length > 0
+                        ? `${presentation.flightTime} · ${factAirlines.map((a) => a.name).join(', ')}`
+                        : presentation.flightTime}
+                  </p>
                   <span className="mt-4 flex items-center gap-1.5 text-sm font-semibold text-ink-900">
                     View route guide <ArrowUpRight className="h-4 w-4" strokeWidth={2.25} />
                   </span>

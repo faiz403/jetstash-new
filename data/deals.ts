@@ -551,12 +551,15 @@ export function getDealsByCategory(category: DealCategory) {
  * just because the deal object exists. A deal with no matching route, or a
  * route with only incomplete observations, has no tracked fare and must not
  * be counted as one anywhere (Deals page totals, category counts, homepage
- * counts, structured data).
+ * counts, structured data). Also gated on the route's own directness (see
+ * getFareRangeSummary) — a route that's currently 'unverified'/pending
+ * never counts as having a tracked fare, even if a date-complete
+ * observation exists for it.
  */
-export function hasTrackedFare(deal: Deal): boolean {
+export function hasTrackedFare(deal: Deal, nowIso: string): boolean {
   const route = getRouteByAirportAndDestination(deal.fromAirportSlug, deal.toDestinationSlug);
   if (!route) return false;
-  return getFareRangeSummary(route.slug, deal.cabin) !== null;
+  return getFareRangeSummary(route.slug, deal.cabin, nowIso) !== null;
 }
 
 /** Renders a human "15 June 2026" date string for observed-fare dates (e.g. "One check, 15 June 2026"). Never implies a live or verified price. */

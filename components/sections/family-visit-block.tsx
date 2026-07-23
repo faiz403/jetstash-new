@@ -41,8 +41,9 @@ export function FamilyVisitBlock({ content, city }: { content: FamilyVisitConten
           </div>
 
           <div className="rounded-md border border-white/10 bg-ink-800 p-6">
-            <h3 className="font-display text-lg text-sand-50">When demand peaks</h3>
-            <p className="mt-1 text-xs text-ink-300">Book 2–3 months ahead of these windows where dates are fixed</p>
+            <h3 className="font-display text-lg text-sand-50">Key travel periods</h3>
+            {/* No specific booking-window or fare-demand claim — not evidenced per route. */}
+            <p className="mt-1 text-xs text-ink-300">Worth planning around if your dates fall within one of these windows</p>
             <div className="mt-3 flex flex-wrap gap-2">
               {getPeakPeriodsByIds(content.peakPeriodIds).map((period) => (
                 <Badge key={period.id} variant="dark">{period.label}</Badge>

@@ -2,6 +2,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { ArrowUpRight, ArrowRight, Plane, Crown, Compass, BellRing, CalendarClock, ShieldCheck, FileCheck2, Receipt } from 'lucide-react';
 import { getDestinationImage } from '@/lib/brand-images';
+import { ROUTE_WATCH_INITIAL_COPY } from '@/lib/route-watch-config';
 
 /**
  * Homepage v2 — server-rendered sections below the signature hero (protected
@@ -194,7 +195,7 @@ export function WhatWeCheck() {
   );
 }
 
-/* ── Honest Route Watch invitation — reviewed and sent by a person ── */
+/* ── Route Watch invitation — copy shared with the form via lib/route-watch-config.ts ── */
 export function RouteWatchInvite() {
   return (
     <section className="bg-sand-50 py-14 sm:py-20">
@@ -205,15 +206,12 @@ export function RouteWatchInvite() {
               <BellRing className="h-4 w-4" strokeWidth={2} /> Route Watch
             </span>
             <h2 className="mt-2 font-display text-2xl leading-tight text-ink-900">
-              Not ready to book? We&apos;ll tell you when something genuinely changes.
+              Not ready to book? Keep the route on your radar.
             </h2>
-            <p className="mt-2 text-sm leading-relaxed text-ink-600">
-              A person reviews what&apos;s worth sending, whether that&apos;s a service change, a sensible time to book or
-              a document to sort. Reviewed and sent manually, never an automated price ping.
-            </p>
+            <p className="mt-2 text-sm leading-relaxed text-ink-600">{ROUTE_WATCH_INITIAL_COPY}</p>
           </div>
           <Link
-            href="/routes/manchester-mumbai"
+            href="/routes/manchester-mumbai#route-watch"
             className="inline-flex h-12 shrink-0 items-center justify-center gap-1.5 rounded-sm bg-ink-900 px-6 text-sm font-semibold text-sand-50 transition-colors hover:bg-brass-600"
           >
             Watch a route

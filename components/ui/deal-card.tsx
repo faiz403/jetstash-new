@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { Deal, DealCabin, formatChecked, getDealDirectnessLabel, getDealAirlineLabel } from '@/data/deals';
-import { getRouteByAirportAndDestination, getDisplayDirectness } from '@/data/routes';
+import { getRouteByAirportAndDestination, getRoutePresentation } from '@/data/routes';
 import { getDestinationBySlug } from '@/data/destinations';
 import { getFareRangeSummary } from '@/data/fare-observations';
 import { getDealBookingUrl } from '@/lib/booking-providers';
@@ -22,11 +22,19 @@ export function DealCard({ deal }: { deal: Deal }) {
   // The only source of truth for what this card shows as a price: a real
   // logged range/check, or nothing at all — never a hardcoded figure that
   // can go stale. See data/deals.ts's header comment.
-  const range = matchedRoute ? getFareRangeSummary(matchedRoute.slug, deal.cabin) : null;
+  const range = matchedRoute ? getFareRangeSummary(matchedRoute.slug, deal.cabin, nowIso) : null;
   const destination = getDestinationBySlug(deal.toDestinationSlug);
-  const flightTime = matchedRoute?.flightTime ?? destination?.flightTimeFromUK;
-  const displayDirectness = matchedRoute ? getDisplayDirectness(matchedRoute, nowIso) : undefined;
-  const directness = displayDirectness === 'direct' ? 'Direct' : displayDirectness === 'unverified' ? 'Verification pending' : displayDirectness === 'connecting' ? 'Via connection' : undefined;
+  // Verification-pending leakage fix: a matched route's own flightTime must
+  // never render raw — getRoutePresentation() returns null instead when the
+  // route's directness is 'unverified', so this card can never show a real
+  // duration next to a "Verification pending" badge. Falling back to the
+  // destination's generic flightTimeFromUK only happens when there's no
+  // matched route at all, which is unrelated to route-level verification
+  // and always safe.
+  const presentation = matchedRoute ? getRoutePresentation(matchedRoute, nowIso) : undefined;
+  const flightTime = presentation ? (presentation.status === 'unverified' ? null : presentation.flightTime) : destination?.flightTimeFromUK;
+  const directness =
+    presentation?.status === 'direct' ? 'Direct' : presentation?.status === 'unverified' ? 'Verification pending' : presentation?.status === 'connecting' ? 'Via connection' : undefined;
   // Truth Reset (July 2026): the top-right badge must never assert
   // directness independently of the verification system — a category tag
   // (Umrah package, City break) always takes precedence when present;
@@ -96,15 +104,20 @@ export function DealCard({ deal }: { deal: Deal }) {
         ) : (
           <>
             <p className="font-display text-xl leading-snug text-ink-900">
-              {matchedRoute ? flightTime : `Typical flight time: ${flightTime ?? 'varies'}`}
+              {presentation?.status === 'unverified'
+                ? 'Verification pending'
+                : matchedRoute
+                  ? flightTime
+                  : `Typical flight time: ${flightTime ?? 'varies'}`}
             </p>
-            {(() => {
-              // Deduped, since an unverified airline and an unverified route
-              // both read "Verification pending" — showing it twice would be
-              // redundant, not more informative.
-              const parts = [airlineLabel, directness].filter((v, i, arr) => v && arr.indexOf(v) === i) as string[];
-              return parts.length > 0 ? <p className="mt-1 text-sm font-medium text-ink-500">{parts.join(' · ')}</p> : null;
-            })()}
+            {presentation?.status !== 'unverified' &&
+              (() => {
+                // Deduped, since an unverified airline and an unverified route
+                // both read "Verification pending" — showing it twice would be
+                // redundant, not more informative.
+                const parts = [airlineLabel, directness].filter((v, i, arr) => v && arr.indexOf(v) === i) as string[];
+                return parts.length > 0 ? <p className="mt-1 text-sm font-medium text-ink-500">{parts.join(' · ')}</p> : null;
+              })()}
 
             <div className="mt-4 flex items-center gap-1.5 text-xs text-ink-400">
               <span className="h-1.5 w-1.5 rounded-full bg-ink-300" />
@@ -115,7 +128,7 @@ export function DealCard({ deal }: { deal: Deal }) {
                 href={`/routes/${matchedRoute.slug}`}
                 className="mt-1.5 inline-flex items-center gap-1 text-xs text-ink-400 transition-colors hover:text-ink-600"
               >
-                Booking-window guidance on the route guide
+                {presentation?.status === 'unverified' ? 'More on the route guide' : 'Booking-window guidance on the route guide'}
                 <ArrowUpRight className="h-3 w-3" strokeWidth={2.25} />
               </Link>
             )}

@@ -17,8 +17,9 @@ const INK_LIGHT = '#9CA3B0';
 const BRASS = '#C8932E';
 const SAND = '#F7F2E9';
 
-export default function OgImage({ params }: { params: { slug: string } }) {
-  const dest = getDestinationBySlug(params.slug);
+export default async function OgImage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const dest = getDestinationBySlug(slug);
 
   const city = dest?.city ?? 'Destinations';
   const country = dest?.country ?? '';

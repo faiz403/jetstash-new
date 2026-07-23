@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { LinkButton } from '@/components/ui/button';
 import { Destination } from '@/data/destinations';
 import { getDealsByRegionGroup } from '@/data/deals';
-import { getRoutesByDestination, getRouteAirport, getDisplayDirectness } from '@/data/routes';
+import { getRoutesByDestination, getRouteAirport, getRoutePresentation } from '@/data/routes';
 import { DestinationVisual } from '@/components/ui/destination-visual';
 import { HeroBackdrop } from '@/components/ui/hero-backdrop';
 import type { QuoteRegion } from '@/lib/quote-request-options';
@@ -150,7 +150,9 @@ export function RegionHubPage({
                 const airport = getRouteAirport(route);
                 const dest = destinationsInRegion.find((d) => d.slug === route.destinationSlug);
                 if (!airport || !dest) return null;
-                const directness = getDisplayDirectness(route, new Date().toISOString().slice(0, 10));
+                // Verification-pending leakage fix: one gate for both the
+                // badge and the flightTime shown below it, never route.flightTime raw.
+                const presentation = getRoutePresentation(route, new Date().toISOString().slice(0, 10));
                 return (
                   <Link
                     key={route.slug}
@@ -158,10 +160,12 @@ export function RegionHubPage({
                     className="group flex flex-col rounded-md border border-ink-100 bg-sand-50 p-5 transition-all hover:-translate-y-1 hover:shadow-card-hover"
                   >
                     <span className="text-xs font-semibold uppercase tracking-wide text-ink-400">
-                      {directness === 'direct' ? 'Direct' : directness === 'unverified' ? 'Verification pending' : 'Connecting'}
+                      {presentation.statusLabel}
                     </span>
                     <h3 className="mt-1.5 font-display text-lg text-ink-900">{airport.city} → {dest.city}</h3>
-                    <p className="mt-1 text-xs text-ink-500">{route.flightTime}</p>
+                    <p className="mt-1 text-xs text-ink-500">
+                      {presentation.status === 'unverified' ? presentation.statusLabel : presentation.flightTime}
+                    </p>
                     <span className="mt-3 flex items-center gap-1 text-xs font-semibold text-ink-900">
                       View route <ArrowUpRight className="h-3.5 w-3.5" strokeWidth={2.25} />
                     </span>
