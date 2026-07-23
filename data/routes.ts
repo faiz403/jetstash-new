@@ -824,6 +824,20 @@ function buildSocialDetail(status: 'direct' | 'connecting', flightTime: string, 
   return status === 'direct' ? `${statusLabel} — see route guide for details` : 'Connecting — compare options before booking';
 }
 
+/**
+ * Share text must stay concise and avoid unsupported facts — never the raw
+ * frequency/bookingWindowNote (long, hedged prose that also caused doubled
+ * punctuation), and flightTime only when short enough to read as a clean
+ * fragment.
+ */
+function buildShareText(status: 'direct' | 'connecting', pair: string, flightTime: string): string {
+  if (status === 'connecting') {
+    return `${pair} is a connecting route — no confirmed direct service currently exists. Compare total journey time, schedules and ticket conditions before booking.`;
+  }
+  const durationFragment = flightTime.length <= MAX_SOCIAL_DETAIL_LENGTH ? ` (${flightTime})` : '';
+  return `${pair} has a direct option${durationFragment}. Compare current prices, confirm the exact schedule and check ticket conditions before booking.`;
+}
+
 interface RoutePresentationBase {
   /** The one canonical short label for this status — 'Direct', 'Connecting', or 'Verification pending'. Every surface should use this instead of re-deriving its own ternary. */
   statusLabel: string;
@@ -979,7 +993,7 @@ export function getRoutePresentation(route: Route, nowIso: string): RoutePresent
     summary: route.intro,
     metadataDescription: `${route.intro.slice(0, 150)}...`,
     metadataTitle,
-    shareText: `${pair}: ${route.flightTime}, ${route.frequency}. ${route.bookingWindowNote}`,
+    shareText: buildShareText(status, pair, route.flightTime),
     socialDetail: buildSocialDetail(status, route.flightTime, statusLabel),
     socialFooter: 'Travel intelligence · jetstash.co.uk',
     canShowBookingGuidance: true,

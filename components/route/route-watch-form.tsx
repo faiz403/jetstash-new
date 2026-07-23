@@ -5,17 +5,14 @@ import { BellRing, CheckCircle2 } from 'lucide-react';
 import { airports } from '@/data/airports';
 import { destinations } from '@/data/destinations';
 import { ROUTE_WATCH_INTENT_OPTIONS } from '@/lib/route-watch-options';
+import { ROUTE_WATCH_INITIAL_COPY, ROUTE_WATCH_SUCCESS_COPY } from '@/lib/route-watch-config';
 import { track } from '@/lib/analytics';
 
 /**
- * Route Watch — the subscription surface for the Travel Intelligence Engine
- * (JETSTASH_PRINCIPLES.md §14.2). One subscription per route, not a
- * per-alert-type opt-in list: the engine decides what's genuinely worth
- * telling a subscriber, across booking-window timing, fare history, and
- * active route facts, not price alone. Copy stays honest about what that
- * means today — a person reviews what the engine surfaces and sends when
- * something's genuinely worth it, same curated model as Travel Club, just
- * broader in scope than "fare dropped".
+ * Route Watch — stores a subscriber's route preferences in Brevo; a person
+ * reviews and emails when there's a genuinely meaningful update. No
+ * automated detection exists yet — copy comes from lib/route-watch-config.ts
+ * so it can't drift from what this actually does.
  */
 
 interface RouteWatchFormProps {
@@ -59,20 +56,12 @@ export function RouteWatchForm({ defaultAirportSlug, defaultDestinationSlug, def
         <BellRing className="h-4.5 w-4.5 text-terracotta-600" strokeWidth={2} />
         <h3 className="font-display text-lg text-ink-900">Route Watch</h3>
       </div>
-      <p className="mt-1.5 text-sm text-ink-500">
-        Watch this route, and we'll tell you when something genuinely worth knowing changes — the same checks that
-        power the booking-window guidance and travel-readiness checks on this page, not a separate price ping. A
-        person reviews what's worth sending before anything goes out. Track up to 3 routes on one sign-up.
-      </p>
+      <p className="mt-1.5 text-sm text-ink-500">{ROUTE_WATCH_INITIAL_COPY}</p>
 
       {status === 'success' ? (
         <div role="status" aria-live="polite" className="mt-5 flex items-center gap-3 rounded-sm border border-brass/30 bg-brass-50 p-4">
           <CheckCircle2 className="h-5 w-5 flex-shrink-0 text-brass-600" />
-          <p className="text-sm text-ink-700">
-            You're watching this route. We'll only get in touch when the same checks behind this page's guidance turn
-            up something genuinely worth knowing — a sensible time to book, a document to sort, or a real change to
-            how this route runs.
-          </p>
+          <p className="text-sm text-ink-700">{ROUTE_WATCH_SUCCESS_COPY}</p>
         </div>
       ) : (
         <form onSubmit={handleSubmit} className="mt-5 flex flex-col gap-3">

@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { isValidElement } from 'react';
 import {
   getRouteBySlug,
   getRouteByAirportAndDestination,
@@ -14,8 +15,60 @@ import { getAirlinesBySlugs } from '@/data/airlines';
 import { deals } from '@/data/deals';
 import { fareObservations } from '@/data/fare-observations';
 import { generateMetadata } from '@/app/routes/[slug]/page';
+import RoutePage from '@/app/routes/[slug]/page';
+import DestinationPage from '@/app/destinations/[slug]/page';
+import { getFareSectionCopy } from '@/lib/fare-section-copy';
+import { FamilyVisitBlock } from '@/components/sections/family-visit-block';
 
 const FIXED_TODAY = '2026-07-23';
+
+/**
+ * Recursively walks a tree of React elements (as returned by calling a
+ * server-component function directly, without a renderer) and collects
+ * every distinct `type` encountered. Only descends into `props.children`,
+ * which is enough to find elements authored directly in a component's own
+ * JSX — it deliberately does not (and cannot, without a renderer) invoke
+ * child components to inspect what they themselves would render, so this
+ * only proves "this component's own JSX does/doesn't reference X", which is
+ * exactly the leak this fix targets (a route page directly authoring a
+ * FamilyVisitBlock element), not a claim about deeper indirect rendering.
+ */
+function collectElementTypes(node: unknown, found: Set<unknown> = new Set()): Set<unknown> {
+  if (Array.isArray(node)) {
+    for (const child of node) collectElementTypes(child, found);
+    return found;
+  }
+  if (isValidElement(node)) {
+    found.add(node.type);
+    const children = (node.props as { children?: unknown } | null)?.children;
+    if (children !== undefined) collectElementTypes(children, found);
+  }
+  return found;
+}
+
+/**
+ * Same traversal as collectElementTypes, but collects every string leaf
+ * found in props.children instead of every element type — used to check
+ * visible text content (e.g. a heading) without JSON.stringify, which
+ * throws on this tree (React elements built by calling a server-component
+ * function directly can carry circular references, e.g. through a module's
+ * own `default` export, that JSON.stringify can't walk).
+ */
+function collectStrings(node: unknown, out: string[] = []): string[] {
+  if (typeof node === 'string') {
+    out.push(node);
+    return out;
+  }
+  if (Array.isArray(node)) {
+    for (const child of node) collectStrings(child, out);
+    return out;
+  }
+  if (isValidElement(node)) {
+    const children = (node.props as { children?: unknown } | null)?.children;
+    if (children !== undefined) collectStrings(children, out);
+  }
+  return out;
+}
 
 describe('TR-017 — Birmingham–Mumbai route existence and slug relationships', () => {
   it('a route record exists at the expected slug', () => {
@@ -300,5 +353,152 @@ describe('TR-017 — presentation integrity: metadata and social copy must refle
     const route = getRouteBySlug('manchester-lahore')!;
     const p = getRoutePresentation(route, FIXED_TODAY);
     expect(p.socialDetail).toBe(route.flightTime);
+  });
+});
+
+describe('Cross-surface leakage fix — destination-level family content no longer renders on route pages', () => {
+  it('Mumbai actually carries familyVisitContent, so the following "absent" assertions are meaningful, not vacuous', () => {
+    expect(getDestinationBySlug('mumbai')!.familyVisitContent).toBeDefined();
+  });
+
+  it('the birmingham-mumbai route page never includes a FamilyVisitBlock element in its own JSX', async () => {
+    const element = await RoutePage({ params: Promise.resolve({ slug: 'birmingham-mumbai' }) });
+    const types = collectElementTypes(element);
+    expect(types.has(FamilyVisitBlock)).toBe(false);
+  });
+
+  it('manchester-mumbai — a different airport, same destination — also never includes FamilyVisitBlock: this is a systemic fix on the shared route-page template, not a patch scoped to Birmingham–Mumbai', async () => {
+    const element = await RoutePage({ params: Promise.resolve({ slug: 'manchester-mumbai' }) });
+    const types = collectElementTypes(element);
+    expect(types.has(FamilyVisitBlock)).toBe(false);
+  });
+
+  it('a route whose destination has no familyVisitContent at all (manchester-dubai — Dubai) predictably also has no FamilyVisitBlock — same code path, different reason', async () => {
+    expect(getDestinationBySlug('dubai')!.familyVisitContent).toBeUndefined();
+    const element = await RoutePage({ params: Promise.resolve({ slug: 'manchester-dubai' }) });
+    const types = collectElementTypes(element);
+    expect(types.has(FamilyVisitBlock)).toBe(false);
+  });
+
+  it('the Mumbai destination page itself still renders FamilyVisitBlock — the fix removes the route-page leak, it does not remove the block from the context where it belongs', async () => {
+    const element = await DestinationPage({ params: Promise.resolve({ slug: 'mumbai' }) });
+    const types = collectElementTypes(element);
+    expect(types.has(FamilyVisitBlock)).toBe(true);
+  });
+});
+
+describe('Cross-surface leakage fix — FamilyVisitBlock no longer asserts a fixed demand/booking-window claim', () => {
+  it('rendering the block for a destination with real peak-period content no longer claims a specific booking window or "demand peaks" — that language is gone regardless of which destination is passed in', () => {
+    const mumbai = getDestinationBySlug('mumbai')!;
+    expect(mumbai.familyVisitContent).toBeDefined();
+    expect(mumbai.familyVisitContent!.peakPeriodIds.length).toBeGreaterThan(0);
+    const element = FamilyVisitBlock({ content: mumbai.familyVisitContent!, city: mumbai.city });
+    const text = collectStrings(element).join(' ');
+    expect(text).not.toMatch(/When demand peaks/i);
+    expect(text).not.toMatch(/book\s+\d[–-]\d\s+months?\s+ahead/i);
+    expect(text).toMatch(/Key travel periods/);
+  });
+
+  it('the period labels themselves (real calendar/planning data from data/peak-periods.ts) still render — only the surrounding claim was neutralised, not the underlying content', () => {
+    const mumbai = getDestinationBySlug('mumbai')!;
+    const element = FamilyVisitBlock({ content: mumbai.familyVisitContent!, city: mumbai.city });
+    const text = collectStrings(element).join(' ');
+    expect(text).toMatch(/Diwali/i);
+  });
+
+  it('data/destinations.ts source content is unchanged by this fix — only the shared component copy changed, not any destination\'s own facts (the Manchester-specific Mumbai packingNote and the other flagged entries are a separate, reported concern, not touched here)', () => {
+    const mumbai = getDestinationBySlug('mumbai')!;
+    expect(mumbai.familyVisitContent!.packingNote).toMatch(/Manchester direct service/);
+  });
+});
+
+describe('Cross-surface leakage fix — WhatsApp/share text is concise, honest, and free of doubled punctuation', () => {
+  it('birmingham-mumbai shareText has no doubled terminal punctuation and does not splice in the full frequency or bookingWindowNote text verbatim', () => {
+    const route = getRouteBySlug('birmingham-mumbai')!;
+    const p = getRoutePresentation(route, FIXED_TODAY);
+    expect(p.shareText).not.toMatch(/[.,]{2,}/);
+    expect(p.shareText).not.toContain(route.frequency);
+    expect(p.shareText).not.toContain(route.bookingWindowNote);
+    expect(p.shareText.length).toBeLessThan(220);
+  });
+
+  it('the decoded WhatsApp message, built exactly as WhatsAppShareButton builds it, stays honest and free of doubled punctuation end-to-end', () => {
+    const route = getRouteBySlug('birmingham-mumbai')!;
+    const p = getRoutePresentation(route, FIXED_TODAY);
+    const url = 'https://jetstash.co.uk/routes/birmingham-mumbai';
+    const message = `${p.shareText}\n\nFull route guide: ${url}`;
+    const href = `https://wa.me/?text=${encodeURIComponent(message)}`;
+    const decoded = decodeURIComponent(href.split('?text=')[1]);
+    expect(decoded).toBe(message);
+    expect(decoded).not.toMatch(/[.,]{2,}/);
+    expect(decoded.length).toBeLessThan(320);
+  });
+
+  it('birmingham-mumbai shareText states its connecting status honestly and invents no duration/frequency', () => {
+    const route = getRouteBySlug('birmingham-mumbai')!;
+    const p = getRoutePresentation(route, FIXED_TODAY);
+    expect(p.shareText.toLowerCase()).toMatch(/connecting route/);
+    expect(p.shareText).not.toMatch(/\d+h(\s?\d+m)?/);
+    expect(p.shareText).not.toMatch(/\bdaily\b/i);
+  });
+
+  it('a direct route with a short flightTime (manchester-lahore) names that real duration in shareText, but still never leaks frequency or bookingWindowNote', () => {
+    const route = getRouteBySlug('manchester-lahore')!;
+    const p = getRoutePresentation(route, FIXED_TODAY);
+    expect(p.shareText).toContain(route.flightTime);
+    expect(p.shareText).not.toContain(route.frequency);
+    expect(p.shareText).not.toContain(route.bookingWindowNote);
+  });
+
+  it('pending-route share protection is unchanged by this fix — still the short, claim-free pending message, untouched by buildShareText', () => {
+    const route = getRouteBySlug('birmingham-mumbai')!;
+    const hypotheticalPending = { ...route, isDirect: true, verification: undefined };
+    const p = getRoutePresentation(hypotheticalPending, FIXED_TODAY);
+    expect(p.shareText).toMatch(/verification in progress/i);
+    expect(p.shareText.length).toBeLessThan(120);
+  });
+});
+
+describe('Cross-surface leakage fix — fare section heading is content-aware, not a fixed "history" claim', () => {
+  // getFareSectionCopy covers all three states directly, including "has
+  // observations" — which, as of this fix, has no example in real data:
+  // every entry in data/fare-observations.ts is missing the
+  // departureDate/returnDate pair isPubliclyPublishable requires, so
+  // getPublishableObservationsByRoute is currently [] for every route. See
+  // that function's doc comment in app/routes/[slug]/page.tsx.
+  it('with fare history: keeps the "Fare history & current example" heading and its "checked on the date shown" caption', () => {
+    const copy = getFareSectionCopy(true, true);
+    expect(copy.heading).toBe('Fare history & current example');
+    expect(copy.caption).toMatch(/checked on the date shown/);
+  });
+
+  it('with deals but no publishable fare history: a truthful "what we know" heading, no "history" or "example" claim', () => {
+    const copy = getFareSectionCopy(false, true);
+    expect(copy.heading).toBe('What we know about this route');
+    expect(copy.heading).not.toMatch(/history|example/i);
+    expect(copy.caption).toMatch(/haven't logged fare history/);
+  });
+
+  it('with neither deals nor fare history: "No tracked fare yet", matching what NoFareFallback actually shows below it', () => {
+    const copy = getFareSectionCopy(false, false);
+    expect(copy.heading).toBe('No tracked fare yet');
+    expect(copy.caption).not.toMatch(/history|example/i);
+  });
+
+  it('birmingham-mumbai (no observations, no deals) renders the "No tracked fare yet" heading end-to-end on the real page', async () => {
+    expect(fareObservations.filter((o) => o.routeSlug === 'birmingham-mumbai')).toHaveLength(0);
+    expect(deals.filter((d) => d.fromAirportSlug === 'birmingham' && d.toDestinationSlug === 'mumbai')).toHaveLength(0);
+    const element = await RoutePage({ params: Promise.resolve({ slug: 'birmingham-mumbai' }) });
+    const text = collectStrings(element).join(' ');
+    expect(text).toMatch(/No tracked fare yet/);
+    expect(text).not.toMatch(/Fare history & current example/);
+  });
+
+  it('manchester-lahore (deals exist, but its logged observations lack the dates isPubliclyPublishable requires) renders the "What we know about this route" heading end-to-end, not the history heading', async () => {
+    expect(deals.some((d) => d.fromAirportSlug === 'manchester' && d.toDestinationSlug === 'lahore')).toBe(true);
+    const element = await RoutePage({ params: Promise.resolve({ slug: 'manchester-lahore' }) });
+    const text = collectStrings(element).join(' ');
+    expect(text).toMatch(/What we know about this route/);
+    expect(text).not.toMatch(/Fare history & current example/);
   });
 });

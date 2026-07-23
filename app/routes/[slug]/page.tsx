@@ -16,7 +16,6 @@ import { DealCard } from '@/components/ui/deal-card';
 import { NoFareFallback } from '@/components/ui/no-fare-fallback';
 import { Badge } from '@/components/ui/badge';
 import { RouteStat } from '@/components/ui/route-stat';
-import { FamilyVisitBlock } from '@/components/sections/family-visit-block';
 import { WarningBanner } from '@/components/route/warning-banner';
 import { RouteTimeline } from '@/components/route/route-timeline';
 import { FareHistoryPanel } from '@/components/route/fare-history-panel';
@@ -34,6 +33,7 @@ import { computeBookBySnapshot } from '@/lib/booking-intelligence';
 import { computeReadiness } from '@/lib/travel-intelligence-engine';
 import { TRAVEL_READY_SUPPORTED_COUNTRIES } from '@/lib/travel-ready-check';
 import { getDestinationImage } from '@/lib/brand-images';
+import { getFareSectionCopy } from '@/lib/fare-section-copy';
 import { HeroBackdrop } from '@/components/ui/hero-backdrop';
 import { TrackedOutboundLink } from '@/components/ui/tracked-outbound-link';
 
@@ -104,6 +104,8 @@ export default async function RoutePage({ params }: { params: Promise<{ slug: st
   const activeWarnings = getActiveWarningsByRoute(route.slug);
   const timelineEvents = getTimelineByRoute(route.slug);
   const fareObservations = getPublishableObservationsByRoute(route.slug, nowIso);
+  // Fare copy must reflect the data actually available — see getFareSectionCopy.
+  const fareSectionCopy = getFareSectionCopy(fareObservations.length > 0, dealsHere.length > 0);
   const bookingWindows = getBookingWindowsByRoute(route.slug);
   const travellerTips = getTipsForScope({ routeSlug: route.slug, destinationSlug: dest.slug });
   const communityNotes = getCommunityNotesForScope({ routeSlug: route.slug, destinationSlug: dest.slug });
@@ -386,7 +388,7 @@ export default async function RoutePage({ params }: { params: Promise<{ slug: st
         </section>
       )}
 
-      {dest.familyVisitContent && <FamilyVisitBlock content={dest.familyVisitContent} city={dest.city} />}
+      {/* Destination-scoped family guidance must not render on route pages — see the "More about {dest.city}" card below for the link to it. */}
 
       {alternativeRoutes.length > 0 && (
         <section className="bg-sand-50 py-14 sm:py-16">
@@ -440,11 +442,8 @@ export default async function RoutePage({ params }: { params: Promise<{ slug: st
 
       <section className="bg-white py-14 sm:py-16">
         <div className="mx-auto max-w-content px-5 sm:px-8">
-          <h2 className="font-display text-2xl text-ink-900 sm:text-3xl">Fare history & current example</h2>
-          <p className="mt-2 max-w-xl text-sm text-ink-500">
-            Every fare below is an example checked on the date shown, not a live quote. The history is what makes
-            it worth tracking over time.
-          </p>
+          <h2 className="font-display text-2xl text-ink-900 sm:text-3xl">{fareSectionCopy.heading}</h2>
+          <p className="mt-2 max-w-xl text-sm text-ink-500">{fareSectionCopy.caption}</p>
           {fareObservations.length > 0 && (
             <div className="mt-8">
               <FareHistoryPanel observations={fareObservations} />

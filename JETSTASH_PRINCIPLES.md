@@ -496,9 +496,13 @@ the affiliate click is the consequence of that trust, not the product itself.
 - **Advice that defers a booking defers a commission — accept that trade.** When the honest
   recommendation is "not yet", the Route Watch signup is the commercial bridge (deferred intent →
   owned re-engagement channel). Never bias advice toward the immediate click; the trust *is* the
-  moat. This makes Book-By Countdown and Travel Club one system — the Route Watch pipeline
-  (including its Brevo attributes, §8) is on the hero feature's critical path. Both now compose
-  through the Travel Intelligence Engine (§14.2) rather than existing as two adjacent features.
+  moat. Book-By Countdown and Route Watch are strategically connected on that basis — deferred
+  intent captured by one is the re-engagement channel for the other — not because they share a
+  runtime today. Only Book-By Countdown currently composes through the Travel Intelligence Engine
+  (§14.2); Route Watch and Travel Club remain separate Brevo-backed, human-operated workflows (the
+  Route Watch pipeline, including its Brevo attributes, §8, is on the hero feature's critical path
+  commercially, not technically). They may integrate with the engine later — see §14.2's "Future
+  modules plug in via a reserved slot" — but do not today.
 - **Travel Confidence Score does not ship as a standalone number.** A composite score is
   editorial weighting dressed as measurement — too close to the fabricated precision §9 exists to
   prevent. Its ingredients (route warnings, service stability, direct/connecting honesty) instead
@@ -577,11 +581,12 @@ No enforced deadline — `/founder`'s cadence section is the reminder, not a blo
 
 ### 14.2 The Travel Intelligence Engine (standing architecture, July 2026)
 
-**Book-By Countdown, Route Watch, Travel Confidence, Travel Ready Check, and every future
-intelligence module are inputs into one engine, not separate products.** The customer-facing
-question is always the same one: *"Am I ready to book?"* — never "here are four unrelated tools."
-`lib/travel-intelligence-engine.ts` is the single composition layer; nothing outside it resolves
-multiple signals into a customer-facing verdict.
+**Book-By Countdown and Travel Ready Check compose through one engine, not as separate
+products — Route Watch and future intelligence modules are the planned next inputs, not yet wired
+in.** The customer-facing question is always the same one: *"Am I ready to book?"* — never "here
+are four unrelated tools." `lib/travel-intelligence-engine.ts` is the single composition layer for
+the signals that are wired in today; nothing outside it resolves multiple signals into a
+customer-facing verdict.
 
 **"One recommendation" means one verdict, never one blended score.** A weighted composite hiding
 a route warning behind a reassuring number would be exactly the fabricated-precision mistake §9
@@ -594,10 +599,12 @@ warning, eventually a document-readiness check) remain individually visible, nev
 the top-line answer.
 
 **Subscription is to Route Watch, singular — not to individual alert types.** A visitor subscribes
-once per route; the engine decides what's genuinely worth telling them, across every module that
-composes into it. Users never choose "price alerts vs. disruption alerts vs. visa alerts" as
-separate opt-ins — that would recreate the "four separate tools" problem in the subscription model
-even after fixing it on the page.
+once per route. Today that's a preference stored in Brevo for a person to review; it is not yet an
+engine decision across composed modules (see "No detection pipeline runs today" below). Users never
+choose "price alerts vs. disruption alerts vs. visa alerts" as separate opt-ins — that would recreate
+the "four separate tools" problem in the subscription model even after fixing it on the page.
+**Future direction**: once more modules are wired into the engine, review may draw on their combined
+signals rather than a person checking each one — an approved direction, not a shipped capability.
 
 **Future modules plug in via a reserved slot on the engine's snapshot, never a rewrite.** Travel
 Ready Check (§14.3, shipped July 2026) was the first module to fill this slot: `computeReadiness()`
@@ -606,13 +613,17 @@ site, with zero changes to `EngineSnapshot`, `TravelReadySignal`, or `VERDICT_CO
 "future intelligence modules" means concretely — the composition point already existed before the
 module that filled it did, and the next one plugs in the same way.
 
-**Detection is automatable now; sending stays human.** The long-term objective is that the engine
-detects, decides, drafts, segments, and eventually sends most of this with minimal human
-intervention — but every send today goes through founder review (the same trust model that governs
-every other honesty-critical claim on this site). The one documented exception worth revisiting
-later: a pure booking-window-opened transition is date arithmetic with zero editorial judgment in
-it, making it the single best future candidate for automated send once the system has earned that
-trust.
+**No detection pipeline runs today; every send is a human workflow.** Route Watch currently only
+stores a subscriber's route preferences in Brevo. Some intelligence signals (Book-By state, Travel
+Ready verdicts) can already be computed when the relevant page or `/founder` view runs, and founder
+views may surface items worth a look — but no scheduled monitoring or automatic detection pipeline is
+operating, and no Route Watch email is ever sent automatically; every send requires a real person to
+review and act. **Future direction (approved, not shipped)**: the long-term objective is that the
+engine eventually detects, decides, drafts, and segments most of this with minimal human
+intervention, with founder review remaining the gate for any honesty-critical claim. The one
+documented candidate for a future automated send: a pure booking-window-opened transition is date
+arithmetic with zero editorial judgment in it, making it the best candidate once the system has
+earned that trust.
 
 **No new Brevo attributes without a provisioning path.** Multi-route watching is real in this
 architecture, but it's built by repurposing the already-provisioned `WATCH_ROUTE` attribute to hold
@@ -751,12 +762,16 @@ that guidance" and its lead prose shortened, keeping the structured `BookingWind
 supporting evidence rather than repeating the recommendation a second time. Non-priority routes are
 unaffected — nothing competes with their single CTA.
 
-**Route Watch's customer-facing copy now names what it's connected to, in plain language.** Its
-intro and success-state copy explicitly reference "the same checks that power this page's guidance"
-— never the internal term "Travel Intelligence Engine," which stays code-comment-only (confirmed via
-full-repo grep: the one UI-rendered occurrence is on `/founder`, gated and noindexed, not the public
-site). This is the general rule for customer-facing terminology: internal architecture names are for
-comments and docs; visitors read plain descriptions of what happens next.
+**Route Watch's customer-facing copy states only what's true today, not what it may connect to
+later.** Copy is centralised in `lib/route-watch-config.ts` and shared verbatim by the homepage
+invitation and the form, so the two surfaces can't drift apart: preferences are stored for
+meaningful, human-reviewed updates, and it's explicit that this is not an automatic price-drop
+alert — no claim about booking timing, documents, or an automated engine, since none of those
+currently drive a Route Watch send. The internal term "Travel Intelligence Engine" stays
+code-comment-only, never customer-facing (confirmed via full-repo grep: the one UI-rendered
+occurrence is on `/founder`, gated and noindexed, not the public site). General rule for
+customer-facing terminology: internal architecture names are for comments and docs; visitors read
+plain, accurate descriptions of what happens today, not the target architecture.
 
 **Analytics: Vercel Web Analytics + Speed Insights, not a heavier stack.** `data-analytics="..."`
 markup existed site-wide with zero consumer — confirmed via full-repo grep (no dependency, no
