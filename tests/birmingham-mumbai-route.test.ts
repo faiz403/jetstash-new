@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { isValidElement } from 'react';
 import {
+  routes,
   getRouteBySlug,
   getRouteByAirportAndDestination,
   getRoutesByAirport,
@@ -444,10 +445,11 @@ describe('Cross-surface leakage fix — WhatsApp/share text is concise, honest, 
     expect(p.shareText).not.toMatch(/\bdaily\b/i);
   });
 
-  it('a direct route with a short flightTime (manchester-lahore) names that real duration in shareText, but still never leaks frequency or bookingWindowNote', () => {
+  it('a direct route with a short flightTime (manchester-lahore, "8h direct") names that real duration in shareText with the redundant "direct" word stripped, but still never leaks frequency or bookingWindowNote', () => {
     const route = getRouteBySlug('manchester-lahore')!;
+    expect(route.flightTime).toBe('8h direct');
     const p = getRoutePresentation(route, FIXED_TODAY);
-    expect(p.shareText).toContain(route.flightTime);
+    expect(p.shareText).toContain('has a direct option — 8h.');
     expect(p.shareText).not.toContain(route.frequency);
     expect(p.shareText).not.toContain(route.bookingWindowNote);
   });
@@ -458,6 +460,90 @@ describe('Cross-surface leakage fix — WhatsApp/share text is concise, honest, 
     const p = getRoutePresentation(hypotheticalPending, FIXED_TODAY);
     expect(p.shareText).toMatch(/verification in progress/i);
     expect(p.shareText.length).toBeLessThan(120);
+  });
+});
+
+describe('Direct-route share-text formatting fix — no nested parentheses, no redundant "direct"', () => {
+  it('manchester-mumbai ("9h 45m direct (currently)") produces the exact corrected message — no nested parentheses, "direct" dropped, "currently" preserved', () => {
+    const route = getRouteBySlug('manchester-mumbai')!;
+    expect(route.flightTime).toBe('9h 45m direct (currently)');
+    const p = getRoutePresentation(route, FIXED_TODAY);
+    expect(p.shareText).toBe(
+      'Manchester to Mumbai has a direct option — 9h 45m (currently). Compare current prices, confirm the exact schedule and check ticket conditions before booking.'
+    );
+  });
+
+  it('the decoded WhatsApp message for manchester-mumbai matches exactly, built the same way WhatsAppShareButton builds it', () => {
+    const route = getRouteBySlug('manchester-mumbai')!;
+    const p = getRoutePresentation(route, FIXED_TODAY);
+    const url = 'https://jetstash.co.uk/routes/manchester-mumbai';
+    const message = `${p.shareText}\n\nFull route guide: ${url}`;
+    const href = `https://wa.me/?text=${encodeURIComponent(message)}`;
+    const decoded = decodeURIComponent(href.split('?text=')[1]);
+    expect(decoded).toBe(
+      'Manchester to Mumbai has a direct option — 9h 45m (currently). Compare current prices, confirm the exact schedule and check ticket conditions before booking.\n\nFull route guide: https://jetstash.co.uk/routes/manchester-mumbai'
+    );
+  });
+
+  it('a direct route without any existing parenthetical qualifier (manchester-lahore, "8h direct") produces a clean fragment with no parentheses at all', () => {
+    const route = getRouteBySlug('manchester-lahore')!;
+    const p = getRoutePresentation(route, FIXED_TODAY);
+    expect(p.shareText).toBe(
+      'Manchester to Lahore has a direct option — 8h. Compare current prices, confirm the exact schedule and check ticket conditions before booking.'
+    );
+    expect(p.shareText).not.toMatch(/[()]/);
+  });
+
+  it('a direct route with an existing attribution qualifier (london-heathrow-jeddah, "6h 15m direct (per BA\'s own destination page)") preserves the attribution and drops only the word "direct"', () => {
+    const route = getRouteBySlug('london-heathrow-jeddah')!;
+    expect(route.flightTime).toBe("6h 15m direct (per BA's own destination page)");
+    const p = getRoutePresentation(route, FIXED_TODAY);
+    expect(p.status).toBe('direct');
+    expect(p.shareText).toContain("6h 15m (per BA's own destination page)");
+    expect(p.shareText).not.toContain('direct (per');
+  });
+
+  it('connecting-route share text is unaffected by this fix — birmingham-mumbai\'s message is unchanged', () => {
+    const route = getRouteBySlug('birmingham-mumbai')!;
+    const p = getRoutePresentation(route, FIXED_TODAY);
+    expect(p.shareText).toBe(
+      'Birmingham to Mumbai is a connecting route — no confirmed direct service currently exists. Compare total journey time, schedules and ticket conditions before booking.'
+    );
+  });
+
+  it('verification-pending share text stays neutral and untouched by this fix', () => {
+    const route = getRouteBySlug('birmingham-mumbai')!;
+    const hypotheticalPending = { ...route, isDirect: true, verification: undefined };
+    const p = getRoutePresentation(hypotheticalPending, FIXED_TODAY);
+    expect(p.shareText).toMatch(/verification in progress/i);
+    expect(p.shareText).not.toMatch(/direct option/);
+  });
+
+  it('no direct-route shareText has doubled punctuation, anywhere in the routes list', () => {
+    for (const route of routes) {
+      const p = getRoutePresentation(route, FIXED_TODAY);
+      if (p.status !== 'direct') continue;
+      expect(p.shareText, `${route.slug}: "${p.shareText}"`).not.toMatch(/[.,]{2,}/);
+    }
+  });
+
+  it('no direct-route shareText contains nested parentheses — one open paren is never followed by a second before its own close', () => {
+    for (const route of routes) {
+      const p = getRoutePresentation(route, FIXED_TODAY);
+      if (p.status !== 'direct') continue;
+      expect(p.shareText, `${route.slug}: "${p.shareText}"`).not.toMatch(/\([^)]*\(/);
+    }
+  });
+
+  it('no direct-route shareText repeats "direct" inside its own duration fragment — never "direct option — ... direct"', () => {
+    for (const route of routes) {
+      const p = getRoutePresentation(route, FIXED_TODAY);
+      if (p.status !== 'direct') continue;
+      const fragmentMatch = p.shareText.match(/has a direct option( — (.*?))?\./);
+      expect(fragmentMatch, `${route.slug}: shareText should match the direct-option template`).toBeTruthy();
+      const fragment = fragmentMatch?.[2] ?? '';
+      expect(fragment, `${route.slug}: fragment "${fragment}"`).not.toMatch(/\bdirect\b/);
+    }
   });
 });
 
