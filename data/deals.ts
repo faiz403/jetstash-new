@@ -1,6 +1,11 @@
-import { getRouteByAirportAndDestination, getDisplayDirectness, getDealAirlineDisplayStatus } from './routes';
+import { getRouteByAirportAndDestination, getDealAirlineDisplayStatus } from './routes';
+import { routeStatusEvents } from './route-status-events';
 import { getFareRangeSummary } from './fare-observations';
 import { airlines } from './airlines';
+// lib/route-status-copy.ts imports FROM data/routes.ts — importing it here
+// (data/deals.ts also imports from data/routes.ts, never the reverse) does
+// not create a cycle.
+import { getEffectiveRoutePresentation } from '@/lib/route-status-copy';
 
 export type DealCabin = 'Economy' | 'Premium Economy' | 'Business';
 export type DealCategory = 'flight' | 'package' | 'business' | 'umrah';
@@ -54,51 +59,82 @@ export type DealDirectnessLabel = 'Direct flight' | 'Connecting' | undefined;
 
 /**
  * The single gate every deal/search card's directness badge must go
- * through — mirrors getDisplayDirectness() exactly. Returns 'Direct flight'
- * only when a matching Route record exists AND its verification is current
- * and unexpired; 'Connecting' only when a matching Route record exists and
- * is evidenced as non-direct; undefined (no badge) whenever there is no
- * matching Route record at all, or the route is unverified — an unknown
- * route is never described as "Connecting", and an unverified route never
+ * through — goes through getEffectiveRoutePresentation(), the Route Status
+ * V1-aware adapter, rather than the legacy getDisplayDirectness() directly
+ * (final audit fix), so a ledger-managed corridor that has ended or is
+ * pending reverification never keeps showing "Direct flight" on the
+ * strength of the legacy, inclusive check alone. Returns 'Direct flight'
+ * only when the effective presentation is 'direct'; 'Connecting' only when
+ * it's 'connecting' — a shape independently supported by the existing
+ * non-ledger route model, unaffected by the ledger; undefined (no badge)
+ * whenever there is no matching Route record at all, or the effective
+ * status is 'unverified' or 'service-ended' — an unknown route is never
+ * described as "Connecting", and neither a pending nor an ended route ever
  * shows "Direct flight".
  */
 export function getDealDirectnessLabel(deal: Pick<Deal, 'fromAirportSlug' | 'toDestinationSlug'>, nowIso: string): DealDirectnessLabel {
   const route = getRouteByAirportAndDestination(deal.fromAirportSlug, deal.toDestinationSlug);
   if (!route) return undefined;
-  const displayDirectness = getDisplayDirectness(route, nowIso);
-  if (displayDirectness === 'direct') return 'Direct flight';
-  if (displayDirectness === 'connecting') return 'Connecting';
+  const status = getEffectiveRoutePresentation(route, routeStatusEvents, nowIso).status;
+  if (status === 'direct') return 'Direct flight';
+  if (status === 'connecting') return 'Connecting';
   return undefined;
 }
 
 /**
  * The single gate every deal/search card's airline label must go through
- * (Truth Reset, final correction pass). Route directness and airline
- * attribution are separate claims — a route showing "Direct flight" does
- * not mean the named airline is confirmed to be the one flying it.
+ * (Truth Reset, final correction pass; final audit fix). Route directness
+ * and airline attribution are separate claims — a route showing "Direct
+ * flight" does not mean the named airline is confirmed to be the one
+ * flying it.
+ *
+ * Still gated on getDealAirlineDisplayStatus() — the exact per-airline
+ * check, unchanged — as the primary rule (deliberately NOT unified with
+ * getEffectiveRoutePresentation()'s own `airlineSlugs` for a 'connecting'
+ * route, which is correct to show every airline unfiltered there as
+ * researched informational content; a deal card's individual
+ * airline-confirmation claim is a stricter, separate question that must
+ * stay strict regardless of route shape). Layered on top (final audit
+ * fix, two checks):
+ * 1. When the route's EFFECTIVE status has been suppressed to 'unverified'
+ *    or 'service-ended', the airline is never shown as confirmed even if
+ *    the underlying, ledger-blind AirlineVerification record is
+ *    technically still fresh — the whole route's evidence has been pulled
+ *    by the ledger.
+ * 2. For a 'direct' effective status specifically, the named airline must
+ *    ALSO still appear in the effective presentation's own `airlineSlugs`
+ *    — getEffectiveRoutePresentation() removes an airline carrying a
+ *    'service-ended' or 'status-reverification-pending' notice from that
+ *    list even while the route as a whole stays verified-direct on another
+ *    airline's evidence, and a deal card must never disagree with that.
+ *    Deliberately NOT applied to 'connecting' routes, where `airlineSlugs`
+ *    is unfiltered by design (see above) and would otherwise reintroduce
+ *    exactly the drift this function's strict gate exists to avoid.
  *
  * Returns:
  * - `undefined` (no airline shown at all) when there is no matching Route
- *   record for this deal's airport/destination pair — "no matching Route
- *   record" means no operating airline can be attributed either, exactly
- *   the same rule getDealDirectnessLabel() already applies to directness.
- * - `deal.airline` unchanged when a matching Route exists AND that exact
- *   airline has its own current, unexpired verification (see
- *   getDealAirlineDisplayStatus() in data/routes.ts for the single-airline
- *   fallback it applies) — never because a different airline on the same
- *   route, or the route's own directness, was verified.
- * - `'Verification pending'` when a matching Route exists but this airline
- *   is not currently verified on it — including when `deal.airline` isn't
- *   even in the airlines.ts registry, since an unregistered airline can
- *   never be confirmed by this system.
+ *   record for this deal's airport/destination pair.
+ * - `deal.airline` unchanged when a matching Route exists, the route's
+ *   effective presentation is not suppressed, that exact airline has its
+ *   own current, unexpired verification (see getDealAirlineDisplayStatus()
+ *   in data/routes.ts for the single-airline fallback it applies), and —
+ *   for a 'direct' route — the airline is still present in the effective
+ *   presentation's `airlineSlugs`.
+ * - `'Verification pending'` otherwise — including when `deal.airline`
+ *   isn't even in the airlines.ts registry, since an unregistered airline
+ *   can never be confirmed by this system.
  */
 export function getDealAirlineLabel(deal: Pick<Deal, 'fromAirportSlug' | 'toDestinationSlug' | 'airline'>, nowIso: string): string | undefined {
   const route = getRouteByAirportAndDestination(deal.fromAirportSlug, deal.toDestinationSlug);
   if (!route) return undefined;
   const airlineRecord = airlines.find((a) => a.name === deal.airline);
   if (!airlineRecord) return 'Verification pending';
+  const presentation = getEffectiveRoutePresentation(route, routeStatusEvents, nowIso);
+  if (presentation.status === 'unverified' || presentation.status === 'service-ended') return 'Verification pending';
   const status = getDealAirlineDisplayStatus(route, airlineRecord.slug, nowIso);
-  return status === 'verified' ? deal.airline : 'Verification pending';
+  if (status !== 'verified') return 'Verification pending';
+  if (presentation.status === 'direct' && !presentation.airlineSlugs.includes(airlineRecord.slug)) return 'Verification pending';
+  return deal.airline;
 }
 
 export const deals: Deal[] = [

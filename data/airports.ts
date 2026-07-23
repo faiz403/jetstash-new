@@ -28,7 +28,7 @@ export const airports: Airport[] = [
     longHaulRoutes: ['Islamabad', 'Lahore', 'Dubai', 'Doha', 'Abu Dhabi', 'Karachi', 'Delhi', 'Mumbai'],
     shortHaulHighlights: ['Istanbul', 'Antalya', 'Dalaman', 'Marrakech', 'Barcelona'],
     whyThisAirport:
-      'Manchester is the only airport in the North of England with genuine daily-frequency direct services to Pakistan, which shapes travel patterns for the large Pakistani-heritage communities across Greater Manchester, Lancashire and West Yorkshire. For most of this audience, Manchester beats connecting via London on both price and journey time, even once you\'ve factored in the drive to the airport. It\'s also currently the only Northern UK airport with direct flights to both Delhi and Mumbai, run by IndiGo since 2025, though this direct India service has an announced end date of 1 September 2026. Check the relevant route guide for current status and the realistic one-stop alternative before booking, particularly for travel after that date.',
+      'Manchester is the only airport in the North of England with genuine daily-frequency direct services to Pakistan, which shapes travel patterns for the large Pakistani-heritage communities across Greater Manchester, Lancashire and West Yorkshire. For most of this audience, Manchester beats connecting via London on both price and journey time, even once you\'ve factored in the drive to the airport. It has also served Delhi and Mumbai direct with IndiGo since 2025 — see the Manchester–Delhi and Manchester–Mumbai route guides for current verified status before booking.',
     servesCommunities: ['Manchester', 'Bolton', 'Rochdale', 'Oldham', 'Blackburn', 'Bradford (via M62 corridor)'],
     hasDirectLongHaul: true,
   },

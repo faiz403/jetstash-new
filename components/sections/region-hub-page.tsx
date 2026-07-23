@@ -6,7 +6,9 @@ import { Badge } from '@/components/ui/badge';
 import { LinkButton } from '@/components/ui/button';
 import { Destination } from '@/data/destinations';
 import { getDealsByRegionGroup } from '@/data/deals';
-import { getRoutesByDestination, getRouteAirport, getRoutePresentation } from '@/data/routes';
+import { getRoutesByDestination, getRouteAirport } from '@/data/routes';
+import { routeStatusEvents } from '@/data/route-status-events';
+import { getEffectiveRoutePresentation } from '@/lib/route-status-copy';
 import { DestinationVisual } from '@/components/ui/destination-visual';
 import { HeroBackdrop } from '@/components/ui/hero-backdrop';
 import type { QuoteRegion } from '@/lib/quote-request-options';
@@ -152,7 +154,7 @@ export function RegionHubPage({
                 if (!airport || !dest) return null;
                 // Verification-pending leakage fix: one gate for both the
                 // badge and the flightTime shown below it, never route.flightTime raw.
-                const presentation = getRoutePresentation(route, new Date().toISOString().slice(0, 10));
+                const presentation = getEffectiveRoutePresentation(route, routeStatusEvents, new Date().toISOString().slice(0, 10));
                 return (
                   <Link
                     key={route.slug}
@@ -164,7 +166,9 @@ export function RegionHubPage({
                     </span>
                     <h3 className="mt-1.5 font-display text-lg text-ink-900">{airport.city} → {dest.city}</h3>
                     <p className="mt-1 text-xs text-ink-500">
-                      {presentation.status === 'unverified' ? presentation.statusLabel : presentation.flightTime}
+                      {presentation.status === 'unverified' || presentation.status === 'service-ended'
+                        ? presentation.statusLabel
+                        : presentation.flightTime}
                     </p>
                     <span className="mt-3 flex items-center gap-1 text-xs font-semibold text-ink-900">
                       View route <ArrowUpRight className="h-3.5 w-3.5" strokeWidth={2.25} />

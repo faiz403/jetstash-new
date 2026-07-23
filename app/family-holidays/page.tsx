@@ -10,6 +10,10 @@ import { getDealsByCategory } from '@/data/deals';
 import { DestinationVisual } from '@/components/ui/destination-visual';
 import { HeroBackdrop } from '@/components/ui/hero-backdrop';
 
+// Pure ISR, matching the route detail pages — this page renders DealCard,
+// which must regenerate without a deploy once fare/route facts change.
+export const revalidate = 21600;
+
 export const metadata: Metadata = {
   alternates: { canonical: '/family-holidays' },
   title: 'Family Holidays: All-Inclusive & Long-Haul Trips from the UK',

@@ -1,5 +1,6 @@
 import { deals } from '@/data/deals';
-import { routes, getRouteAirport, getRouteDestination } from '@/data/routes';
+import { routes, getRouteAirport, getRouteDestination, getRouteStatus } from '@/data/routes';
+import { routeStatusEvents } from '@/data/route-status-events';
 import { destinations, getDestinationBySlug } from '@/data/destinations';
 import { getAirportBySlug } from '@/data/airports';
 import { fareObservations, getObservationsByRoute, getLatestObservation } from '@/data/fare-observations';
@@ -279,27 +280,44 @@ function linkHealth(): FounderSection {
 }
 
 // ── 7b. Time-bound service changes ───────────────────────────────────────
-// The one category with a real forcing date: unlike a re-verify backlog
-// item, an announced withdrawal WILL make the site wrong the day it passes
-// if nothing's done — no code change needed to trigger the false claim.
+// Every time-bound direct-service change is modelled in the Route Status V1
+// ledger (data/route-status-events.ts), never in a per-route field — this
+// section reads getRouteStatus() for every route the ledger manages,
+// instead of iterating a since-removed directServiceEndDate field. An
+// announcement alone is never proof of occurrence: a route whose announced
+// date has passed still needs a founder to separately verify and record
+// what actually happened (service-ended, cancelled, or rescheduled) — this
+// section flags exactly that gap, it never assumes the outcome.
 function serviceChangesStatus(now: Date): FounderSection {
   const items: FounderItem[] = [];
+  const nowIso = now.toISOString().slice(0, 10);
 
   for (const route of routes) {
-    if (!route.directServiceEndDate) continue;
-    const daysAway = -daysBetween(route.directServiceEndDate, now);
-    if (daysAway < 0) {
+    const status = getRouteStatus(route, routeStatusEvents, nowIso);
+    if (!status) continue;
+
+    if (status.status === 'withdrawal-announced') {
+      const daysAway = -daysBetween(status.effectiveFrom, now);
+      if (daysAway <= SERVICE_END_WATCH_DAYS) {
+        items.push({
+          label: `${routeLabel(route.slug)}: announced change with effect from ${formatShortDate(status.effectiveFrom)}`,
+          detail: `${daysAway} days away. Once this date passes, verify with the airline whether the service actually ended, was postponed, or continues, and record the outcome as a new dated event in the Route Status ledger.`,
+          status: 'watch',
+          href: `/routes/${route.slug}`,
+        });
+      }
+    } else if (status.status === 'verification-pending' && status.pendingReason.kind === 'transition-boundary-reached') {
       items.push({
-        label: `${routeLabel(route.slug)}: direct service end date has passed`,
-        detail: `Ended ${formatShortDate(route.directServiceEndDate)}. Follow the README "Time-bound direct services" update procedure: flip the route to connecting and move the end note into the timeline.`,
+        label: `${routeLabel(route.slug)}: announced change date has passed, not yet reverified`,
+        detail: `Effective from ${formatShortDate(status.pendingReason.effectiveFrom)}. The route is correctly showing as pending — verify with the airline whether the service actually ended, was postponed, or continues, and append the outcome as a new dated event in the ledger. The announcement alone is never recorded as proof of occurrence.`,
         status: 'attention',
         href: `/routes/${route.slug}`,
       });
-    } else if (daysAway <= SERVICE_END_WATCH_DAYS) {
+    } else if (status.status === 'verification-pending' && status.pendingReason.kind === 'conflicting-ledger-evidence') {
       items.push({
-        label: `${routeLabel(route.slug)}: direct service ends ${formatShortDate(route.directServiceEndDate)}`,
-        detail: `${daysAway} days away. When the date passes, apply the README "Time-bound direct services" procedure so the route stays honest.`,
-        status: 'watch',
+        label: `${routeLabel(route.slug)}: Route Status ledger has conflicting evidence`,
+        detail: `Diagnostic: ${status.pendingReason.diagnostic}. The route is correctly showing as pending, but the underlying ledger entries need review — see data/route-status-events.ts.`,
+        status: 'attention',
         href: `/routes/${route.slug}`,
       });
     }
@@ -312,10 +330,11 @@ function serviceChangesStatus(now: Date): FounderSection {
     status: worst(items.map((i) => i.status)),
     headline:
       items.length === 0
-        ? 'No announced direct-service withdrawals within the next 90 days.'
-        : `${items.length} announced service change${items.length === 1 ? '' : 's'} with a real date — nothing wrong yet, but the site will start claiming a direct service that no longer exists the day this passes unaddressed.`,
+        ? 'No announced service changes need attention right now.'
+        : `${items.length} ledger-managed service change${items.length === 1 ? '' : 's'} need${items.length === 1 ? 's' : ''} a founder look — either a reverification is due, or the ledger data itself needs review.`,
     items,
-    action: 'Follow the README "Time-bound direct services" procedure before the date passes: flip the route to connecting-only and move the withdrawal note into its history.',
+    action:
+      'Verify the real outcome using primary evidence once an announced date passes, then append the appropriate service-ended, withdrawal-rescheduled, or withdrawal-cancelled event to the Route Status ledger (data/route-status-events.ts) — see README "Time-bound direct services". Never infer a connecting service from a withdrawal; that requires its own independent evidence.',
   };
 }
 

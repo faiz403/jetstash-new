@@ -7,8 +7,15 @@ import { NoFareFallback } from '@/components/ui/no-fare-fallback';
 import { NewsletterSection } from '@/components/sections/newsletter-section';
 import { HeroBackdrop } from '@/components/ui/hero-backdrop';
 import { getDealsByCategory, getDealsByDestination } from '@/data/deals';
-import { routes, getRouteAirport, getRouteDestination, getDisplayDirectness, getRoutePresentation } from '@/data/routes';
+import { routes, getRouteAirport, getRouteDestination } from '@/data/routes';
+import { routeStatusEvents } from '@/data/route-status-events';
+import { getEffectiveRoutePresentation } from '@/lib/route-status-copy';
 import { getAirlinesBySlugs } from '@/data/airlines';
+
+// Pure ISR, matching the route detail pages — this page renders
+// getEffectiveRoutePresentation() and DealCard, both of which must
+// regenerate without a deploy once a ledger event's effective date passes.
+export const revalidate = 21600;
 
 export const metadata: Metadata = {
   alternates: { canonical: '/business-class' },
@@ -36,11 +43,15 @@ export default function BusinessClassPage() {
   // Verification-pending leakage fix: this section's own heading asserts
   // "Direct routes" — it must only ever include routes whose directness is
   // currently evidenced as 'direct', never an 'unverified'/pending one that
-  // happens to have a business deal attached.
+  // happens to have a business deal attached. Reconciled against the Route
+  // Status V1 ledger via getEffectiveRoutePresentation() so a managed
+  // corridor whose direct service has ended or is pending reverification
+  // never keeps appearing here on the strength of the legacy, inclusive
+  // getDisplayDirectness() check alone.
   const businessCapableRoutes = routes.filter((r) => {
     const airport = getRouteAirport(r);
     if (!airport) return false;
-    if (getDisplayDirectness(r, nowIso) !== 'direct') return false;
+    if (getEffectiveRoutePresentation(r, routeStatusEvents, nowIso).status !== 'direct') return false;
     return getDealsByDestination(r.destinationSlug).some(
       (d) => d.cabin === 'Business' && d.fromAirportSlug === r.airportSlug
     );
@@ -100,7 +111,7 @@ export default function BusinessClassPage() {
               // Already filtered to 'direct' routes above, but go through the
               // same reusable gate as every other surface regardless — never
               // read route.flightTime or its airlines raw.
-              const presentation = getRoutePresentation(route, nowIso);
+              const presentation = getEffectiveRoutePresentation(route, routeStatusEvents, nowIso);
               const factAirlines = getAirlinesBySlugs(presentation.airlineSlugs);
               return (
                 <Link
@@ -110,7 +121,7 @@ export default function BusinessClassPage() {
                 >
                   <h3 className="font-display text-xl text-ink-900">{airport.city} → {dest.city}</h3>
                   <p className="mt-1.5 text-sm text-ink-500">
-                    {presentation.status === 'unverified'
+                    {presentation.status === 'unverified' || presentation.status === 'service-ended'
                       ? presentation.statusLabel
                       : factAirlines.length > 0
                         ? `${presentation.flightTime} · ${factAirlines.map((a) => a.name).join(', ')}`

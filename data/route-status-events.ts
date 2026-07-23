@@ -39,6 +39,14 @@
  *     in a later phase, derived from event type + verification state.
  */
 
+/**
+ * Compile-time-enforced non-empty array — a "must have at least one" claim
+ * (e.g. a verified-direct basis, or the citations behind a positive status)
+ * is a type error at every construction site if it's ever built as `[]`,
+ * not just a runtime convention. See the Route Status V1 micro-errata.
+ */
+export type NonEmptyArray<T> = readonly [T, ...T[]];
+
 // ── Source attribution ──────────────────────────────────────────────────
 
 /**

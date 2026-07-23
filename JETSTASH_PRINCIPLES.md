@@ -101,7 +101,8 @@ destinations, 26 routes, 11 UK airports, 9 guides.
 |---|---|---|
 | `airports.ts` | `Airport`, `getAirportBySlug` | UK departure airports. `compareAirportSlugs` names a realistic alternative for airports with no curated direct route. |
 | `destinations.ts` | `Destination`, `RegionGroup`, `getDestinationBySlug` | All destinations across `pakistan`/`india`/`gulf`/`mediterranean`/`north-africa`. Umrah destinations (Jeddah, Madinah) use `region: 'gulf'` — the `/umrah` hub filters by `regionGroups.umrah.destinationSlugs` in `site-config.ts`, not a distinct region value. `familyVisitContent` is optional, present only where visiting relatives is a primary travel pattern. |
-| `routes.ts` | `Route`, `getRouteByAirportAndDestination`, `getRoutesByDestination`, `getRouteAirport`, `getRouteDestination` | Airport→destination route guides. `directServiceEndDate`/`directServiceEndNote` model a currently-direct service with an announced end date; `connectingAlternative` describes the realistic 1/2-stop fallback. See §4.1. |
+| `routes.ts` | `Route`, `getRouteByAirportAndDestination`, `getRoutesByDestination`, `getRouteAirport`, `getRouteDestination`, `getRouteStatus`, `getEffectiveRoutePresentation` | Airport→destination route guides, plus the Route Status V1 derivation that reads time-bound direct-service changes from the ledger (`route-status-events.ts`) — never from a field on `Route`. `connectingAlternative` describes the realistic 1/2-stop fallback, kept as separate editorial content. See §4.1. |
+| `route-status-events.ts` | `RouteStatusEvent`, `SourceRef`, `getRouteStatus`'s ledger, `validateStatusLedger` | Append-only, fully sourced evidence ledger for withdrawal/service-ended/reschedule/cancellation events — the single source of truth for any time-bound direct-service change. See §4.1. |
 | `deals.ts` | `Deal`, `DealCabin`, `DealCategory`, `getDealsByRegionGroup` | Curation only — which airport→destination+cabin combos to feature as a card. **No price field, deliberately** — see §4.2. |
 | `fare-observations.ts` | `FareObservation`, `getObservationsByRoute`, `getLatestObservation`, `getFareRangeSummary` | Append-only fare history — the *only* source of truth for any price shown anywhere. |
 | `airlines.ts` | `Airline`, `getAirlineBySlug`, `getAirlinesBySlugs` | Canonical airline reference. `Route.airlineSlugs` references this instead of retyping names. |
@@ -114,21 +115,38 @@ destinations, 26 routes, 11 UK airports, 9 guides.
 | `community-notes.ts` | `CommunityNote`, `getCommunityNotesForScope` | Real traveller-submitted notes. **Seeded empty on purpose** — no submission pipeline exists yet; see §9.4. |
 | `guides.ts` | `Guide` | Long-form editorial guides, one per URL at `/guides/[slug]` for long-tail SEO. |
 
-### 4.1 Time-bound direct services
+### 4.1 Time-bound direct services — the Route Status V1 ledger
 
 A plain `isDirect: true/false` boolean can't honestly represent a route that's direct *today* with
-a publicly announced end date (e.g. IndiGo's Manchester–Delhi/Mumbai services, both ending
-1 September 2026). `Route` has two fields for this:
+a publicly announced change (e.g. IndiGo's Manchester–Delhi/Mumbai services, both changed with
+effect from 31 August 2026). An announcement is never proof of what happens on the date it names,
+so this is modelled as an append-only, fully sourced evidence ledger — `data/route-status-events.ts`
+— never as a field on `Route` itself:
 
-- `directServiceEndDate` (ISO date) + `directServiceEndNote` — set only when a currently-direct
-  service has an announced withdrawal date. The route page renders a visible notice.
+- `getRouteStatus(route, routeStatusEvents, nowIso)` derives the route's current status
+  (`verified-direct` / `withdrawal-announced` / `service-ended` / `verification-pending`) purely
+  from the ledger, with no wall-clock read and strict (non-inclusive) freshness — see the file's own
+  header comment for the full invariants, including why an announced date passing produces a
+  neutral `verification-pending` result, never a silent `service-ended`.
+- `getEffectiveRoutePresentation()` is the one adapter every public surface calls, reconciling this
+  derivation with the pre-existing `getRoutePresentation()`/`getDisplayDirectness()` presentation
+  layer so the two can never silently disagree.
+- `lib/route-status-copy.ts`'s `getRouteStatusCopy()` turns a result into customer-facing words,
+  independently re-validating every cited event/source at render time and failing closed to a
+  neutral, evidence-free pending view whenever that validation can't be completed.
 - `connectingAlternative` — the realistic fallback, whether the route is currently direct (framed
-  as "what happens after") or already connecting-only (framed as "how this route works").
+  as "what happens after") or already connecting-only (framed as "how this route works") — remains
+  entirely separate, editorial content. "Direct service ended" and "a connecting journey exists" are
+  two separate facts requiring separate evidence: a `service-ended` ledger event never authorises
+  populating or implying a current connecting-service claim.
 
-**When the withdrawal date passes:** flip `isDirect` to `false`, remove
-`directServiceEndDate`/`directServiceEndNote`, rewrite `intro`/`frequency`/`airlineSlugs` for the
-connecting-only reality using `connectingAlternative` as the basis, and move the withdrawal note
-into `route-timeline.ts`. Never leave a route marked direct with a past end date.
+**Appending a new withdrawal/service-ended event:** add a new, fully sourced `RouteStatusEvent` to
+the ledger (see that file's header comment). Do **not** edit `route.isDirect`, `route.airlineSlugs`,
+`route.frequency`, or `route.connectingAlternative` as part of this — the ledger event alone drives
+the safe public presentation, and the airline-scoped derivation depends on `route.airlineSlugs`
+staying as the historical direct-operator record for the event to resolve against. A previously
+direct-today route that has genuinely ended needs no route-record edit at all: the effective
+presentation degrades automatically once a verified `service-ended` event is appended.
 
 ### 4.2 Why `Deal` has no price field
 
@@ -463,9 +481,10 @@ A quick-reference checklist for common changes:
   `FareObservation` once you've actually checked a fare — optional, no deadline.
 - **A fare changes** → append a new `FareObservation` with a later `observedDate`. Never edit the
   old one.
-- **A route's direct service gets a withdrawal announcement** → set
-  `directServiceEndDate`/`directServiceEndNote`, populate `connectingAlternative` if not already
-  present. When the date passes, follow §4.1's procedure exactly.
+- **A route's direct service gets a withdrawal announcement** → append a new, fully sourced
+  `RouteStatusEvent` to `data/route-status-events.ts` (never a field on `Route`) — see §4.1. Verify
+  and record the actual outcome (ended, cancelled, or rescheduled) once the announced date passes;
+  never assume it from the date alone.
 - **A new page/section needs a hero image** → add a `heroKey`, drop
   `public/images/heroes/<key>.*` per `docs/visual-identity.md`'s naming convention — no code
   change needed for the fallback to upgrade.

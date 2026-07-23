@@ -1,8 +1,11 @@
 import { airports } from '@/data/airports';
 import { routes } from '@/data/routes';
+import { buildFlagshipStatusCopy } from '@/lib/flagship-status-copy';
 import { getDestinationBySlug } from '@/data/destinations';
 import { PullBriefHero, type HandoverData } from '@/components/homepage-v2/pull-brief-hero';
 import { WhatWeCheck, RouteWatchInvite, ClosingBand } from '@/components/homepage-v2/homepage-sections';
+
+const FLAGSHIP_ROUTE_SLUG = 'manchester-mumbai';
 
 /**
  * The public homepage: JetStash as the pre-booking second opinion.
@@ -47,10 +50,11 @@ export function JourneyDeskHome() {
   for (const r of routes) routeIndex[`${r.airportSlug}|${r.destinationSlug}`] = r.slug;
 
   const handover: HandoverData = { origins, destinations, routeIndex };
+  const flagshipStatusCopy = buildFlagshipStatusCopy(FLAGSHIP_ROUTE_SLUG);
 
   return (
     <>
-      <PullBriefHero handover={handover} />
+      <PullBriefHero handover={handover} flagshipStatusCopy={flagshipStatusCopy} />
       <WhatWeCheck />
       <RouteWatchInvite />
       <ClosingBand />

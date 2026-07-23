@@ -1,4 +1,6 @@
-import { getRouteBySlug, getRouteAirport, getRouteDestination, getDisplayDirectness } from '@/data/routes';
+import { getRouteBySlug, getRouteAirport, getRouteDestination } from '@/data/routes';
+import { routeStatusEvents } from '@/data/route-status-events';
+import { getEffectiveRoutePresentation } from '@/lib/route-status-copy';
 import { getPeakPeriodById } from '@/data/peak-periods';
 import { getUpcomingOccurrences, type PeakDatePrecision } from '@/data/peak-period-dates';
 import { getBookingWindowsByRoute } from '@/data/booking-windows';
@@ -165,10 +167,17 @@ export function computeBookByState(
  * calculation in this function, per this file's own stated contract
  * ("everything is a pure function of (routeSlug, now)") — never the real
  * wall clock. A route whose stored `reviewDueDate` is in the past relative
- * to `now` is correctly treated as unverified as of that `now`, exactly
- * like the route page's own getDisplayDirectness() would; this is
+ * to `now` is correctly treated as unverified as of that `now`; this is
  * deterministic, not a live lookup, so it produces the same result for the
  * same inputs regardless of when the test (or the real deploy) runs.
+ *
+ * Final audit fix: goes through getEffectiveRoutePresentation() rather than
+ * the legacy getDisplayDirectness() directly. None of the current
+ * BOOK_BY_PRIORITY_ROUTE_SLUGS are ledger-managed today, but if that ever
+ * changes, this must not keep publishing Book-By guidance for a route whose
+ * effective status has become 'unverified' (pending reverification) or
+ * 'service-ended' merely because the legacy, inclusive gate still reads
+ * 'direct'.
  */
 export function computeBookBySnapshot(routeSlug: string, now: Date): BookBySnapshot | null {
   if (!isBookByRoute(routeSlug)) return null;
@@ -179,7 +188,8 @@ export function computeBookBySnapshot(routeSlug: string, now: Date): BookBySnaps
   if (!airport || !destination) return null;
 
   const nowIso = now.toISOString().slice(0, 10);
-  if (getDisplayDirectness(route, nowIso) === 'unverified') return null;
+  const effectiveStatus = getEffectiveRoutePresentation(route, routeStatusEvents, nowIso).status;
+  if (effectiveStatus === 'unverified' || effectiveStatus === 'service-ended') return null;
 
   const upcoming = getUpcomingOccurrences(route.peakPeriodIds, nowIso);
   if (upcoming.length === 0) return null;
