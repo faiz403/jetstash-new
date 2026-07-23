@@ -102,6 +102,21 @@ export type RouteStatusViewModel =
     }
   | { kind: 'neutral-pending'; badgeLabel: string; body: string };
 
+/**
+ * The single Route Status date formatter — the canonical source every
+ * Route Status surface (this file's own callers, lib/flagship-status-copy.ts,
+ * and any component rendering a citation's `accessedAt` or a notice's
+ * `effectiveFrom`) must render a customer-facing date through. UK long-form
+ * ("23 July 2026"), never raw ISO ("2026-07-23"). Purely a display
+ * transform — the underlying stored ISO value, all freshness/boundary
+ * comparisons, and the evidence ledger itself are completely unaffected;
+ * every comparison in this file and in data/routes.ts keeps comparing raw
+ * ISO strings exactly as before.
+ */
+export function formatRouteStatusDate(iso: string): string {
+  return new Date(`${iso}T12:00:00Z`).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+}
+
 const NEUTRAL_PENDING_BODY = "We can't currently confirm this route's direct service — check directly with the airline before booking.";
 
 function neutralPending(): RouteStatusViewModel {

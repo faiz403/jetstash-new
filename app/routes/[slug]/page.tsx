@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { Plane, Calendar, Clock, ArrowUpRight, AlertCircle, GitCompareArrows, History, MessageSquareText, ShieldCheck } from 'lucide-react';
 import { routes, getRouteBySlug, getRouteAirport, getRouteDestination, getRoutesByDestination, getRoutePeakPeriods, getRouteStatus } from '@/data/routes';
 import { routeStatusEvents } from '@/data/route-status-events';
-import { getRouteStatusCopy, getEffectiveRoutePresentation } from '@/lib/route-status-copy';
+import { getRouteStatusCopy, getEffectiveRoutePresentation, formatRouteStatusDate } from '@/lib/route-status-copy';
 import { getAirlinesBySlugs } from '@/data/airlines';
 import { getDealsByDestination } from '@/data/deals';
 import { getTimelineByRoute } from '@/data/route-timeline';
@@ -270,10 +270,10 @@ export default async function RoutePage({ params }: { params: Promise<{ slug: st
                         <li key={`${notice.airlineSlug}-${notice.kind}`}>
                           <p>
                             {notice.airlineName}: {notice.kind === 'status-reverification-pending'
-                              ? `announced change date passed, not yet reverified (from ${notice.effectiveFrom})`
+                              ? `announced change date passed, not yet reverified (from ${formatRouteStatusDate(notice.effectiveFrom)})`
                               : notice.kind === 'service-ended'
-                                ? `direct service ended (from ${notice.effectiveFrom})`
-                                : `withdrawal announced, with effect from ${notice.effectiveFrom}`}
+                                ? `direct service ended (from ${formatRouteStatusDate(notice.effectiveFrom)})`
+                                : `withdrawal announced, with effect from ${formatRouteStatusDate(notice.effectiveFrom)}`}
                           </p>
                           <ul className="mt-0.5 flex flex-col gap-0.5 text-xs text-ink-500">
                             {notice.citations.map((citation, i) => (
@@ -285,7 +285,7 @@ export default async function RoutePage({ params }: { params: Promise<{ slug: st
                                 ) : (
                                   citation.publisher
                                 )}
-                                {citation.accessedAt ? ` · checked ${citation.accessedAt}` : ''}
+                                {citation.accessedAt ? ` · checked ${formatRouteStatusDate(citation.accessedAt)}` : ''}
                               </li>
                             ))}
                           </ul>
@@ -304,7 +304,7 @@ export default async function RoutePage({ params }: { params: Promise<{ slug: st
                           ) : (
                             citation.publisher
                           )}
-                          {citation.accessedAt ? ` · checked ${citation.accessedAt}` : ''}
+                          {citation.accessedAt ? ` · checked ${formatRouteStatusDate(citation.accessedAt)}` : ''}
                         </li>
                       ))}
                     </ul>

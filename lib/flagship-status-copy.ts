@@ -1,7 +1,14 @@
 import { getRouteBySlug, getRouteStatus } from '@/data/routes';
 import { getAirlinesBySlugs } from '@/data/airlines';
 import { routeStatusEvents, type RouteStatusEvent } from '@/data/route-status-events';
-import { getRouteStatusCopy, getEffectiveRoutePresentation, type RouteStatusViewModel, type ResolvedServiceNotice, type ResolvedCitation } from '@/lib/route-status-copy';
+import {
+  getRouteStatusCopy,
+  getEffectiveRoutePresentation,
+  formatRouteStatusDate,
+  type RouteStatusViewModel,
+  type ResolvedServiceNotice,
+  type ResolvedCitation,
+} from '@/lib/route-status-copy';
 
 /**
  * The featured homepage thread's safe, sourced copy — see the Route Status
@@ -33,19 +40,15 @@ const FALLBACK: FlagshipStatusCopy = {
   evidenceDetail: 'Current direct-service evidence is awaiting verification.',
 };
 
-function formatDate(iso: string): string {
-  return new Date(`${iso}T12:00:00Z`).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
-}
-
-/** null (never a fabricated date) when the citation carries no accessedAt. */
+/** null (never a fabricated date) when the citation carries no accessedAt. Uses the shared lib/route-status-copy.ts formatter — see that file's doc comment. */
 function formatCitationDate(citation: ResolvedCitation | undefined): string | null {
   if (!citation?.accessedAt) return null;
-  return formatDate(citation.accessedAt);
+  return formatRouteStatusDate(citation.accessedAt);
 }
 
 function describeNotice(notice: ResolvedServiceNotice): string {
   const publisher = notice.citations[0]?.publisher ?? notice.airlineName;
-  const date = formatDate(notice.effectiveFrom);
+  const date = formatRouteStatusDate(notice.effectiveFrom);
   if (notice.kind === 'service-ended') {
     return `${notice.airlineName}'s direct service has ended (${publisher}, from ${date}). Check current options directly with the airline.`;
   }
@@ -96,7 +99,7 @@ export function mapViewModelToFlagshipCopy(viewModel: RouteStatusViewModel, airl
       return {
         routeDetail: `Direct, flown by ${airlineList}. Direct service currently verified.`,
         changeDetail: viewModel.explanation,
-        verdictLine: `${publisher} has announced a change to this service, with effect from ${formatDate(viewModel.effectiveFrom)} — check before booking travel from that date.`,
+        verdictLine: `${publisher} has announced a change to this service, with effect from ${formatRouteStatusDate(viewModel.effectiveFrom)} — check before booking travel from that date.`,
         evidenceDetail,
       };
     }
