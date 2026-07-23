@@ -1,6 +1,15 @@
 import { airports } from './airports';
 import { destinations } from './destinations';
 import { getPeakPeriodsByIds } from './peak-periods';
+import {
+  type RouteStatusEvent,
+  type RouteStatusScope,
+  getEventsForRoute,
+  getActiveEvents,
+  groupByServiceId,
+  isCurrentClaimValid,
+  scopesMatch,
+} from './route-status-events';
 
 /**
  * Truth Reset (July 2026): a route must never display a "Direct" badge
@@ -530,11 +539,11 @@ export const routes: Route[] = [
     isDirect: true,
     verification: {
       status: 'verified',
-      sourceName: "IndiGo official press releases: \"IndiGo Adjusts Wide-body Network to Enhance Operational Resilience and Schedule Reliability\" (4 Feb 2026) and \"Amidst unfavorable cost and operational environment, IndiGo temporarily discontinues flights to / from Manchester starting 31 August 2026\" (2 Jun 2026)",
+      sourceName: "IndiGo official press release: \"IndiGo Adjusts Wide-body Network to Enhance Operational Resilience and Schedule Reliability\" (4 Feb 2026)",
       sourceUrl: 'https://www.goindigo.in/press-releases/indigo-adjusts-wide-body-network-to-enhance-operational-resilience-and-schedule-reliability.html',
-      verifiedDate: '2026-07-13',
+      verifiedDate: '2026-07-23',
       reviewDueDate: '2026-08-31',
-      note: 'Primary-sourced directly from IndiGo\'s own press office (both releases fetched and read directly, not via secondary reporting). The Feb 2026 release gives the exact post-cut schedule (Delhi–Manchester 6E0033/6E0034, Mon/Thu/Sun and Mon/Wed/Thu). The Jun 2026 release confirms discontinuation "starting 31 August 2026" and describes it as "temporary," attributed to airspace-constraint-driven cost pressure — but also states one of six Boeing 787-9s is being returned to lessor Norse Atlantic Airways, and unlike the other routes suspended the same week (which got an explicit 1 Oct 2026 resumption date), IndiGo announced no resumption date for Manchester specifically. Treat "temporary" as the airline\'s own characterisation, not a confirmed return date.',
+      note: 'Primary-sourced directly from IndiGo\'s own press office. This release describes the reduced post-cut schedule (Delhi–Manchester 6E0033/6E0034, Mon/Thu/Sun and Mon/Wed/Thu, effective from 7 and 19 Feb 2026) — it supports the current-schedule claim only. IndiGo\'s separate 2 June 2026 announcement discontinuing Manchester service from 31 August 2026 is a different claim, tracked as its own sourced event in data/route-status-events.ts (Route Status ledger) rather than duplicated or blended into this record.',
     },
     intro:
       'IndiGo launched the first non-stop Manchester to Delhi service in 25 years in November 2025, flying a two-class Boeing 787-9 leased from Norse Atlantic Airways. It\'s currently the only airline flying this route direct. IndiGo cut frequency from 5x to 3x weekly in February 2026 citing airspace-related operational strain, and announced in June 2026 that it will discontinue the route entirely from 31 August 2026 — described by IndiGo as temporary, though no resumption date has been given.',
@@ -561,11 +570,11 @@ export const routes: Route[] = [
     isDirect: true,
     verification: {
       status: 'verified',
-      sourceName: "IndiGo official press releases: \"IndiGo Adjusts Wide-body Network to Enhance Operational Resilience and Schedule Reliability\" (4 Feb 2026) and \"Amidst unfavorable cost and operational environment, IndiGo temporarily discontinues flights to / from Manchester starting 31 August 2026\" (2 Jun 2026)",
+      sourceName: "IndiGo official press release: \"IndiGo Adjusts Wide-body Network to Enhance Operational Resilience and Schedule Reliability\" (4 Feb 2026)",
       sourceUrl: 'https://www.goindigo.in/press-releases/indigo-adjusts-wide-body-network-to-enhance-operational-resilience-and-schedule-reliability.html',
-      verifiedDate: '2026-07-13',
+      verifiedDate: '2026-07-23',
       reviewDueDate: '2026-08-31',
-      note: 'Primary-sourced directly from IndiGo\'s own press office (both releases fetched and read directly, not via secondary reporting). The Feb 2026 release gives the exact post-cut schedule (Mumbai–Manchester 6E0031/6E0032, departing Manchester Mon/Tue/Sat/Sun). The Jun 2026 release confirms discontinuation "starting 31 August 2026" and describes it as "temporary" — but also states one of six Boeing 787-9s is being returned to lessor Norse Atlantic Airways, and unlike the other routes suspended the same week (explicit 1 Oct 2026 resumption), IndiGo announced no resumption date for Manchester. Treat "temporary" as the airline\'s own characterisation, not a confirmed return date.',
+      note: 'Primary-sourced directly from IndiGo\'s own press office. This release describes the reduced post-cut schedule (Mumbai–Manchester 6E0031/6E0032, departing Manchester Mon/Tue/Sat/Sun) — it supports the current-schedule claim only. IndiGo\'s separate 2 June 2026 announcement discontinuing Manchester service from 31 August 2026 is a different claim, tracked as its own sourced event in data/route-status-events.ts (Route Status ledger) rather than duplicated or blended into this record.',
     },
     intro:
       'IndiGo\'s Mumbai to Manchester service, launched in July 2025, was the airline\'s first ever long-haul route and remains the only non-stop link between Manchester and India\'s financial capital. As with the Delhi route, it\'s a single-airline direct service rather than a long-established one. IndiGo announced in June 2026 that it will discontinue the route entirely from 31 August 2026 — described by IndiGo as temporary, though no resumption date has been given.',
@@ -1018,4 +1027,291 @@ export function getRoutePresentation(route: Route, nowIso: string): RoutePresent
     canShowPeakPeriods: true,
     canShowConnectingAlternative: true,
   };
+}
+
+// ── Route Status V1 (Phase 1: derivation only — no page/component wiring) ──
+
+/**
+ * The only four labels a ledger-managed route can carry in V1. No
+ * 'connecting' — neither isDirect:false nor connectingAlternative may
+ * prove a current connecting service operates, and there is no separately
+ * sourced current-connecting-service model yet. A route with zero ledger
+ * events is simply not managed by Route Status at all — see
+ * getRouteStatus()'s null return.
+ */
+export type RouteStatusLabel = 'verified-direct' | 'withdrawal-announced' | 'service-ended' | 'verification-pending';
+
+/**
+ * A structural fact only — no baked-in customer-facing copy. Attached to
+ * the route's overall 'verified-direct' result when one airline's service
+ * is withdrawing/ended but another airline's own current, explicit
+ * verification proves it still operates the route direct.
+ */
+export interface ServiceLevelNotice {
+  airlineSlug: string;
+  kind: 'withdrawal-announced' | 'service-ended';
+  effectiveFrom: string;
+}
+
+export interface RouteStatusResult {
+  status: RouteStatusLabel;
+  /** Present for 'withdrawal-announced' and 'service-ended'. */
+  effectiveFrom?: string;
+  serviceNotices: ServiceLevelNotice[];
+  /** True when a same-service lifecycle-ordering ambiguity forced 'verification-pending'. */
+  ambiguous?: boolean;
+}
+
+type PlanEvent = Extract<RouteStatusEvent, { type: 'withdrawal-announced' | 'withdrawal-rescheduled' | 'withdrawal-cancelled' }>;
+type EndedEvent = Extract<RouteStatusEvent, { type: 'service-ended' }>;
+
+type ServiceLifecycleState =
+  | { kind: 'none' }
+  | { kind: 'ambiguous' }
+  | { kind: 'planned'; effectiveFrom: string }
+  | { kind: 'ended'; effectiveFrom: string };
+
+/**
+ * Resolves the latest decision among two or more still-current plan events
+ * for the SAME service (an announcement plus a later cancellation or
+ * reschedule, say). Order is established only by an explicit
+ * relatedEventId chain within the set, or — failing that — by a later
+ * announcedAt date. Two same-day decisions with no relatedEventId link
+ * between them cannot be ordered and must not be picked by event-id or
+ * array-position convention — that case returns 'ambiguous'.
+ */
+function determineLatestPlan(plans: PlanEvent[]): PlanEvent | 'ambiguous' {
+  if (plans.length === 1) return plans[0];
+
+  const byId = new Map(plans.map((p) => [p.id, p] as const));
+  const referencedIds = new Set(
+    plans
+      .map((p) => p.relatedEventId)
+      .filter((id): id is string => Boolean(id) && byId.has(id as string))
+  );
+  // An event referenced by another event IN THIS SET is earlier in the
+  // chain; whatever remains un-referenced is the terminal (latest) node.
+  // Defensive by construction: never call reduce()/index [0] on an empty
+  // array. A well-formed, validated ledger can't produce zero terminal
+  // nodes (validateStatusLedger's lifecycle-cycle check rules that out),
+  // but this function must stay safe even if malformed data reaches
+  // derivation directly, bypassing validation (e.g. a relatedEventId cycle
+  // among these plans) — that case falls straight through to 'ambiguous'
+  // rather than throwing.
+  const terminal = plans.filter((p) => !referencedIds.has(p.id));
+  if (terminal.length === 0) return 'ambiguous';
+  if (terminal.length === 1) return terminal[0];
+
+  const maxAnnouncedAt = terminal.reduce((max, p) => (p.announcedAt > max ? p.announcedAt : max), terminal[0].announcedAt);
+  const atMax = terminal.filter((p) => p.announcedAt === maxAnnouncedAt);
+  if (atMax.length === 1) return atMax[0];
+
+  // Same announcedAt, no relatedEventId chain distinguishing them: order
+  // genuinely cannot be established from the evidence on hand.
+  return 'ambiguous';
+}
+
+/**
+ * Resolves ONE service's lifecycle in isolation — never combined with any
+ * other service on the route. Occurrence (a fresh, verified 'service-ended')
+ * always beats a plan: an announced withdrawal is not proof the service
+ * actually ended, no matter how long ago effectiveFrom passed.
+ */
+function resolveServiceLifecycle(serviceEvents: RouteStatusEvent[], nowIso: string): ServiceLifecycleState {
+  const ended = serviceEvents.filter(
+    (e): e is EndedEvent => e.type === 'service-ended' && isCurrentClaimValid(e.currentClaimValidBefore, nowIso) && nowIso >= e.effectiveFrom
+  );
+  if (ended.length > 1) return { kind: 'ambiguous' }; // more than one live 'ended' claim for one service is a data contradiction, not a pick
+  if (ended.length === 1) return { kind: 'ended', effectiveFrom: ended[0].effectiveFrom };
+
+  const plans = serviceEvents.filter(
+    (e): e is PlanEvent =>
+      (e.type === 'withdrawal-announced' || e.type === 'withdrawal-rescheduled' || e.type === 'withdrawal-cancelled') &&
+      isCurrentClaimValid(e.currentClaimValidBefore, nowIso)
+  );
+  if (plans.length === 0) return { kind: 'none' };
+
+  const latest = determineLatestPlan(plans);
+  if (latest === 'ambiguous') return { kind: 'ambiguous' };
+  if (latest.type === 'withdrawal-cancelled') return { kind: 'none' };
+  const effectiveFrom = latest.type === 'withdrawal-rescheduled' ? latest.newEffectiveFrom : latest.effectiveFrom;
+  return { kind: 'planned', effectiveFrom };
+}
+
+/** Strict (non-inclusive) current-verification check — deliberately separate from isVerificationCurrent(), which is inclusive and must never drive a Route Status result. */
+function isRouteVerificationCurrentStrict(route: Route, nowIso: string): boolean {
+  return route.verification?.status === 'verified' && isCurrentClaimValid(route.verification.reviewDueDate, nowIso);
+}
+
+/** Strict per-airline current-verification check. Only explicit, current AirlineVerification evidence counts — route-level verification on a multi-airline route never identifies which airline it is. */
+function isAirlineVerificationCurrentStrict(route: Route, airlineSlug: string, nowIso: string): boolean {
+  const v = getAirlineVerification(route, airlineSlug);
+  return v?.status === 'verified' && isCurrentClaimValid(v.reviewDueDate, nowIso);
+}
+
+/**
+ * Whether `airlineSlug` can be treated as the route's verifiably sole
+ * direct operator. True only for the trivial, by-construction case (the
+ * route's airlineSlugs list itself names exactly one airline). Never true
+ * by elimination on a multi-airline route — there is no "verified NOT
+ * direct" fact in this data model, so absence of evidence about other
+ * airlines is never read as proof they don't operate.
+ */
+function isVerifiablySoleOperator(route: Route, airlineSlug: string): boolean {
+  return route.airlineSlugs.length === 1 && route.airlineSlugs[0] === airlineSlug;
+}
+
+/** Whether some airline OTHER than `airlineSlug` has its own explicit, current, verified direct evidence. */
+function anotherAirlineExplicitlyDirect(route: Route, airlineSlug: string, nowIso: string): boolean {
+  return route.airlineSlugs.filter((a) => a !== airlineSlug).some((a) => isAirlineVerificationCurrentStrict(route, a, nowIso));
+}
+
+/**
+ * The Route Status V1 derivation — pure, deterministic, no wall-clock read
+ * (matches getDisplayDirectness()/computeBookBySnapshot()'s contract).
+ *
+ * Returns null for any route with zero ledger events: that route is simply
+ * not managed by Route Status and continues through the existing
+ * getRoutePresentation()/getDisplayDirectness() behaviour completely
+ * unchanged (binding override: "ledger-managed routes only").
+ *
+ * Every active event is resolved per its OWN serviceId in isolation
+ * (resolveServiceLifecycle) — a change to one airline's service never
+ * silently combines with another's. Route-scoped events (not attributable
+ * to a single airline) take precedence when present, since they describe
+ * the whole route rather than one operator's slice of it.
+ *
+ * getDisplayDirectness()'s inclusive freshness is never consulted here —
+ * every current-claim check in this function uses the strict
+ * isCurrentClaimValid() (nowIso < validBefore) instead.
+ */
+export function getRouteStatus(route: Route, allEvents: RouteStatusEvent[], nowIso: string): RouteStatusResult | null {
+  const routeEvents = getEventsForRoute(route.slug, allEvents);
+  if (routeEvents.length === 0) return null;
+
+  const active = getActiveEvents(routeEvents);
+  const byService = groupByServiceId(active);
+
+  const services: Array<{ scope: RouteStatusScope; state: ServiceLifecycleState }> = [];
+  for (const serviceEvents of byService.values()) {
+    // Defends against a caller bypassing validateStatusLedger(): a
+    // serviceId's ACTIVE (supersession-filtered) events must agree on one
+    // scope before events[0].scope is trusted — otherwise input order
+    // could decide whether the service is treated as route-scoped or
+    // airline-scoped. A real validated ledger can't reach this branch (see
+    // validateStatusLedger's 'inconsistent-active-service-scope' check),
+    // but this function must stay safe even if it does.
+    const distinctScopes: RouteStatusScope[] = [];
+    for (const e of serviceEvents) {
+      if (!distinctScopes.some((s) => scopesMatch(s, e.scope))) {
+        distinctScopes.push(e.scope);
+      }
+    }
+    if (distinctScopes.length > 1) {
+      return { status: 'verification-pending', serviceNotices: [], ambiguous: true };
+    }
+    services.push({ scope: serviceEvents[0].scope, state: resolveServiceLifecycle(serviceEvents, nowIso) });
+  }
+
+  if (services.some((s) => s.state.kind === 'ambiguous')) {
+    return { status: 'verification-pending', serviceNotices: [], ambiguous: true };
+  }
+
+  // Route-scoped: never picked by array order. A route-scoped serviceId
+  // that's currently 'ended' or 'planned' is one candidate lifecycle for
+  // the whole route's status — if MORE THAN ONE distinct route-scoped
+  // serviceId is simultaneously active, there is no order to fall back on
+  // (a relatedEventId chain can only ever link events within the SAME
+  // serviceId, so two different active serviceIds can never be "one
+  // explicitly ordered lifecycle"), so this is always an unresolved
+  // ambiguity, never a pick.
+  const routeScoped = services.filter((s) => s.scope.kind === 'route');
+  const activeRouteScoped = routeScoped.filter((s) => s.state.kind === 'ended' || s.state.kind === 'planned');
+  if (activeRouteScoped.length > 1) {
+    return { status: 'verification-pending', serviceNotices: [], ambiguous: true };
+  }
+  if (activeRouteScoped.length === 1) {
+    const state = activeRouteScoped[0].state;
+    if (state.kind === 'ended') {
+      return { status: 'service-ended', effectiveFrom: state.effectiveFrom, serviceNotices: [] };
+    }
+    if (state.kind === 'planned') {
+      // A withdrawal notice must not substitute for fresh current-service
+      // evidence: even a currently-active plan cannot assert
+      // 'withdrawal-announced' unless the route's own direct-service
+      // verification is itself still fresh.
+      const hasFreshDirectEvidence = isRouteVerificationCurrentStrict(route, nowIso);
+      if (nowIso < state.effectiveFrom && hasFreshDirectEvidence) {
+        return { status: 'withdrawal-announced', effectiveFrom: state.effectiveFrom, serviceNotices: [] };
+      }
+      // Transition reached, or the underlying direct-service evidence isn't
+      // fresh — announcement is not proof of occurrence.
+      return { status: 'verification-pending', serviceNotices: [] };
+    }
+  }
+
+  const airlineScoped = services.filter(
+    (s): s is { scope: { kind: 'airline'; airlineSlug: string }; state: ServiceLifecycleState } => s.scope.kind === 'airline'
+  );
+
+  // Airline-scoped: never picked by array order, and never by an implicit
+  // "ended beats planned across different airlines" rule either — that
+  // would silently let one airline's occurrence dominate an unrelated
+  // airline's still-open plan. If more than one distinct airline-scoped
+  // service (ended, planned, or one of each) is simultaneously active,
+  // that is an unresolved ambiguity: V1 does not aggregate notices or
+  // infer which operator remains when two operators' lifecycles are both
+  // live at once.
+  const activeAirlineScoped = airlineScoped.filter((s) => s.state.kind === 'ended' || s.state.kind === 'planned');
+  if (activeAirlineScoped.length > 1) {
+    return { status: 'verification-pending', serviceNotices: [], ambiguous: true };
+  }
+  if (activeAirlineScoped.length === 1) {
+    const { airlineSlug } = activeAirlineScoped[0].scope;
+    const state = activeAirlineScoped[0].state;
+    if (state.kind === 'ended') {
+      const effectiveFrom = state.effectiveFrom;
+      if (isVerifiablySoleOperator(route, airlineSlug)) {
+        return { status: 'service-ended', effectiveFrom, serviceNotices: [] };
+      }
+      if (anotherAirlineExplicitlyDirect(route, airlineSlug, nowIso)) {
+        return {
+          status: 'verified-direct',
+          serviceNotices: [{ airlineSlug, kind: 'service-ended', effectiveFrom }],
+        };
+      }
+      // Multi-airline route, no explicit evidence the remaining operator set is known — never guess.
+      return { status: 'verification-pending', serviceNotices: [] };
+    }
+    if (state.kind === 'planned') {
+      const effectiveFrom = state.effectiveFrom;
+      if (isVerifiablySoleOperator(route, airlineSlug)) {
+        // A withdrawal notice must not substitute for fresh current-service
+        // evidence — the sole-operator structure identifies WHO the operator
+        // is, but not that their direct service is currently verified.
+        const hasFreshDirectEvidence =
+          isRouteVerificationCurrentStrict(route, nowIso) || isAirlineVerificationCurrentStrict(route, airlineSlug, nowIso);
+        if (nowIso < effectiveFrom && hasFreshDirectEvidence) {
+          return { status: 'withdrawal-announced', effectiveFrom, serviceNotices: [] };
+        }
+        return { status: 'verification-pending', serviceNotices: [] };
+      }
+      if (anotherAirlineExplicitlyDirect(route, airlineSlug, nowIso)) {
+        return {
+          status: 'verified-direct',
+          serviceNotices: [{ airlineSlug, kind: 'withdrawal-announced', effectiveFrom }],
+        };
+      }
+      return { status: 'verification-pending', serviceNotices: [] };
+    }
+  }
+
+  // No active plan or ended state on any service — base current verification.
+  // Deliberately never 'connecting': a ledger-managed route with no active
+  // change simply asserts whether its direct service is currently verified.
+  const anyAirlineCurrent = route.airlineSlugs.some((a) => isAirlineVerificationCurrentStrict(route, a, nowIso));
+  if (route.isDirect && (isRouteVerificationCurrentStrict(route, nowIso) || anyAirlineCurrent)) {
+    return { status: 'verified-direct', serviceNotices: [] };
+  }
+  return { status: 'verification-pending', serviceNotices: [] };
 }
