@@ -24,7 +24,8 @@ export function DealsExplorer() {
   // Truth Reset (July 2026): "tracked" means a genuine checked-and-publishable
   // fare exists (hasTrackedFare) — a card with no checked price is a route
   // search card, not a tracked fare, and must never inflate this count.
-  const trackedCount = filtered.filter(hasTrackedFare).length;
+  const nowIso = new Date().toISOString().slice(0, 10);
+  const trackedCount = filtered.filter((d) => hasTrackedFare(d, nowIso)).length;
   const searchOnlyCount = filtered.length - trackedCount;
 
   return (
@@ -33,7 +34,7 @@ export function DealsExplorer() {
         <div className="flex flex-wrap gap-2 border-b border-ink-100 pb-6" role="group" aria-label="Filter fares by category">
           {filters.map((f) => {
             const scoped = f.value === 'all' ? deals : deals.filter((d) => d.category === f.value);
-            const count = scoped.filter(hasTrackedFare).length;
+            const count = scoped.filter((d) => hasTrackedFare(d, nowIso)).length;
             return (
               <button
                 key={f.value}

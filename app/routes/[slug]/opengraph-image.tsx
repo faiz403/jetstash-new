@@ -1,5 +1,5 @@
 import { ImageResponse } from 'next/og';
-import { getRouteBySlug, getRouteAirport, getRouteDestination } from '@/data/routes';
+import { getRouteBySlug, getRouteAirport, getRouteDestination, getRoutePresentation } from '@/data/routes';
 
 // @vercel/og's Node runtime fails to resolve its bundled font on some
 // platforms (ERR_INVALID_URL); the edge runtime is its supported home.
@@ -24,8 +24,21 @@ export default async function OgImage({ params }: { params: Promise<{ slug: stri
 
   const from = airport?.city ?? 'UK';
   const to = dest?.city ?? 'the world';
-  // flightTime and frequency strings already say direct/connecting — don't repeat it.
-  const detail = route ? `${route.flightTime} · ${route.frequency}` : '';
+  // Verification-pending leakage fix: never read route.flightTime/frequency
+  // raw here — getRoutePresentation() returns null for both on a pending
+  // route, so this image can never assert a duration or frequency the route
+  // page itself wouldn't. A single statusLabel line replaces the usual
+  // "X · Y" pairing rather than joining two nulls or repeating one string
+  // twice — premium presentation fix, not just a leak fix.
+  const nowIso = new Date().toISOString().slice(0, 10);
+  const presentation = route ? getRoutePresentation(route, nowIso) : null;
+  const detail = presentation ? (presentation.status === 'unverified' ? presentation.statusLabel : `${presentation.flightTime} · ${presentation.frequency}`) : '';
+  // The footer tagline implies booking-window/peak-period/fare-history
+  // content exists on the page — true for direct/connecting routes, but
+  // those sections are deliberately suppressed for a pending route, so the
+  // tagline must not claim they're there.
+  const footer =
+    presentation?.status === 'unverified' ? 'Route verification in progress · jetstash.co.uk' : 'Booking windows · Peak periods · Fare history · jetstash.co.uk';
 
   return new ImageResponse(
     (
@@ -74,7 +87,7 @@ export default async function OgImage({ params }: { params: Promise<{ slug: stri
         </div>
 
         <div style={{ display: 'flex', color: INK_LIGHT, fontSize: 24 }}>
-          Booking windows · Peak periods · Fare history · jetstash.co.uk
+          {footer}
         </div>
       </div>
     ),

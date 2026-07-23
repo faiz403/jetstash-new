@@ -99,21 +99,21 @@ describe('Fare-observation completeness gating (TR-002) — Verified Check must 
     // docs/LAUNCH_BLOCKERS.md — locking it in as a test means a future
     // change can't silently start showing incomplete fares again without
     // this test failing first.
-    expect(getFareRangeSummary('manchester-lahore', 'Economy')).toBeNull();
+    expect(getFareRangeSummary('manchester-lahore', 'Economy', FIXED_TODAY)).toBeNull();
   });
 });
 
 describe('Deal counts (TR-004) — a card with no tracked fare must not count as one', () => {
   it('no current deal has a tracked fare, since no fare observation in the dataset is publicly complete yet', () => {
     // Same intentional, disclosed consequence as above, at the Deals-page level.
-    const trackedCount = deals.filter(hasTrackedFare).length;
+    const trackedCount = deals.filter((d) => hasTrackedFare(d, FIXED_TODAY)).length;
     expect(trackedCount).toBe(0);
   });
 
   it('hasTrackedFare returns false for a deal whose airport-destination pair has no Route entry at all', () => {
     const dealWithNoRoute = deals.find((d) => d.fromAirportSlug === 'london-heathrow' && d.toDestinationSlug === 'islamabad');
     expect(dealWithNoRoute).toBeDefined();
-    expect(hasTrackedFare(dealWithNoRoute!)).toBe(false);
+    expect(hasTrackedFare(dealWithNoRoute!, FIXED_TODAY)).toBe(false);
   });
 
   it('the two previously-live London Heathrow–Karachi (British Airways) deals are no longer in the public array', () => {
@@ -304,19 +304,19 @@ describe('TR-002 direct production audit — enumerate all 18 fare observations,
     const pairs = new Set(fareObservations.map((o) => `${o.routeSlug}|${o.cabin}`));
     for (const pair of pairs) {
       const [routeSlug, cabin] = pair.split('|') as [string, FareObservation['cabin']];
-      expect(getFareRangeSummary(routeSlug, cabin), `${routeSlug} / ${cabin}`).toBeNull();
+      expect(getFareRangeSummary(routeSlug, cabin, FIXED_TODAY), `${routeSlug} / ${cabin}`).toBeNull();
     }
   });
 
   it('getLatestPublishableObservation returns undefined for every route with an incomplete observation — Book-By\'s "last checked fare" cannot surface any of the 18', () => {
     const routeSlugs = new Set(fareObservations.map((o) => o.routeSlug));
     for (const routeSlug of routeSlugs) {
-      expect(getLatestPublishableObservation(routeSlug), routeSlug).toBeUndefined();
+      expect(getLatestPublishableObservation(routeSlug, FIXED_TODAY), routeSlug).toBeUndefined();
     }
   });
 
   it('no deal in the public array counts as a tracked fare — Deals still reports zero tracked fares', () => {
-    const trackedCount = deals.filter(hasTrackedFare).length;
+    const trackedCount = deals.filter((d) => hasTrackedFare(d, FIXED_TODAY)).length;
     expect(trackedCount).toBe(0);
   });
 
@@ -328,7 +328,7 @@ describe('TR-002 direct production audit — enumerate all 18 fare observations,
     });
     expect(affectedDeals.length).toBeGreaterThan(0); // sanity: this set is non-empty
     for (const deal of affectedDeals) {
-      expect(hasTrackedFare(deal), deal.id).toBe(false);
+      expect(hasTrackedFare(deal, FIXED_TODAY), deal.id).toBe(false);
     }
   });
 });

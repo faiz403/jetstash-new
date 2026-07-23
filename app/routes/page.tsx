@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { ArrowUpRight, MapPin, Plane } from 'lucide-react';
 import { PageHero } from '@/components/sections/page-hero';
-import { routes, getRouteAirport, getRouteDestination, getDisplayDirectness, type Route } from '@/data/routes';
+import { routes, getRouteAirport, getRouteDestination, getDisplayDirectness, getRoutePresentation, type Route } from '@/data/routes';
 import { airports } from '@/data/airports';
 import type { RegionGroup } from '@/data/destinations';
 
@@ -64,7 +64,8 @@ export default function RoutesIndexPage() {
                 const airport = getRouteAirport(route);
                 const dest = getRouteDestination(route);
                 if (!airport || !dest) return null;
-                const directness = getDisplayDirectness(route, todayIso);
+                // Verification-pending leakage fix: never read route.flightTime raw.
+                const presentation = getRoutePresentation(route, todayIso);
                 return (
                   <Link
                     key={route.slug}
@@ -78,13 +79,13 @@ export default function RoutesIndexPage() {
                       </span>
                       <span
                         className={
-                          directness === 'direct'
+                          presentation.status === 'direct'
                             ? 'inline-flex items-center gap-1.5 rounded-full bg-brass-50 px-2.5 py-0.5 text-xs font-semibold text-brass-700'
                             : 'inline-flex items-center rounded-full bg-ink-50 px-2.5 py-0.5 text-xs font-semibold text-ink-500'
                         }
                       >
-                        {directness === 'direct' && <Plane className="h-3 w-3" strokeWidth={2.5} />}
-                        {directness === 'direct' ? 'Direct' : directness === 'unverified' ? 'Verification pending' : 'Connecting'}
+                        {presentation.status === 'direct' && <Plane className="h-3 w-3" strokeWidth={2.5} />}
+                        {presentation.statusLabel}
                       </span>
                     </div>
                     <h3 className="mt-3 font-display text-xl text-ink-900">
@@ -92,7 +93,9 @@ export default function RoutesIndexPage() {
                       <span className="inline-block text-brass-500 transition-transform duration-300 group-hover:translate-x-0.5">→</span>{' '}
                       {dest.city}
                     </h3>
-                    <p className="mt-1.5 text-sm text-ink-500">{route.flightTime}</p>
+                    <p className="mt-1.5 text-sm text-ink-500">
+                      {presentation.status === 'unverified' ? presentation.statusLabel : presentation.flightTime}
+                    </p>
                     <span className="mt-4 flex items-center gap-1.5 text-sm font-semibold text-ink-900 transition-colors group-hover:text-terracotta-600">
                       View route guide
                       <ArrowUpRight

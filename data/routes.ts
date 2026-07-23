@@ -1,6 +1,5 @@
 import { airports } from './airports';
 import { destinations } from './destinations';
-import { getAirlinesBySlugs } from './airlines';
 import { getPeakPeriodsByIds } from './peak-periods';
 
 /**
@@ -641,17 +640,13 @@ export function getRouteDestination(route: Route) {
   return destinations.find((d) => d.slug === route.destinationSlug);
 }
 
-export function getRouteAirlines(route: Route) {
-  return getAirlinesBySlugs(route.airlineSlugs);
-}
-
 export function getRoutePeakPeriods(route: Route) {
   return getPeakPeriodsByIds(route.peakPeriodIds);
 }
 
 export type DisplayDirectness = 'direct' | 'connecting' | 'unverified';
 
-function isVerificationCurrent(v: { status: RouteVerificationStatus; reviewDueDate: string } | undefined, nowIso: string): boolean {
+export function isVerificationCurrent(v: { status: RouteVerificationStatus; reviewDueDate: string } | undefined, nowIso: string): boolean {
   if (!v) return false;
   if (v.status !== 'verified') return false;
   if (v.reviewDueDate < nowIso) return false;
@@ -725,4 +720,184 @@ export function getDisplayDirectness(route: Route, nowIso: string): DisplayDirec
   const routeLevelCurrent = isVerificationCurrent(route.verification, nowIso);
   const anyAirlineCurrent = (route.airlineVerifications ?? []).some((v) => isVerificationCurrent(v, nowIso));
   return routeLevelCurrent || anyAirlineCurrent ? 'direct' : 'unverified';
+}
+
+/**
+ * Alias for getDealAirlineDisplayStatus() (below) used from non-deal route
+ * surfaces (the route page's own Airlines stat, getRoutePresentation()).
+ * Same exact gate, no duplicated logic — deal cards were simply the first
+ * surface this was built for, but "is this specific airline individually
+ * confirmed on this specific route, with the sole-unsplit-airline fallback
+ * for a single uncontested operator" is the same question regardless of
+ * which surface is asking.
+ */
+export function getRouteAirlineDisplayStatus(route: Route, airlineSlug: string, nowIso: string): 'verified' | 'unverified' {
+  return getDealAirlineDisplayStatus(route, airlineSlug, nowIso);
+}
+
+/**
+ * Deliberately no "facts confidence" or "evidence" concept lives here.
+ * getDisplayDirectness() returning 'connecting' for an `isDirect: false`
+ * route is correct for the public "Connecting route" badge (Truth Reset: a
+ * connecting route is a recorded, uncontested SHAPE decision, not a guess)
+ * — but it does not mean the route's specific duration, frequency, or named
+ * airline were independently verified, and even a 'direct' route's own
+ * `verification` record does not mean *every* field is confirmed (see
+ * AirlineVerification's doc comment for the airline case; the same applies
+ * to frequency — several 'direct' routes' own `frequency` string explicitly
+ * says the current frequency isn't confirmed by an official schedule, e.g.
+ * manchester-lahore). An earlier version of this file exposed a
+ * `factsConfidence: 'verified' | 'editorial-estimate'` field that collapsed
+ * all of that into one label per route and called a 'direct' route's whole
+ * fact bundle "verified" — which was false, and unused by any UI besides.
+ * It was removed rather than renamed, since no currently-accurate single
+ * label covers "direct service is evidenced, frequency may not be, airline
+ * attribution is handled separately" — see getRouteAirlineDisplayStatus for
+ * the one sub-claim (airline attribution) that already has its own honest,
+ * per-field gate. A future connecting-route claim (e.g. Birmingham–Mumbai)
+ * should be evidenced and gated field-by-field the same way, not through a
+ * single bundled confidence flag.
+ */
+function pendingRouteCopy(airportCity: string | undefined, destCity: string | undefined) {
+  const pair = airportCity && destCity ? `${airportCity} to ${destCity}` : 'This route';
+  return {
+    summary: `We don't currently have confirmed service details for ${pair} — the operating airline, schedule and duration are still being checked. Confirm directly with airlines serving ${airportCity ?? 'this departure airport'} before booking, or compare other routes below.`,
+    metadataDescription: `${pair}: route details are currently being verified. Check the latest options directly before booking.`,
+    shareText: `${pair}: route verification in progress — check the latest options directly.`,
+  };
+}
+
+interface RoutePresentationBase {
+  /** The one canonical short label for this status — 'Direct', 'Connecting', or 'Verification pending'. Every surface should use this instead of re-deriving its own ternary. */
+  statusLabel: string;
+  /**
+   * Airline slugs safe to name as an operator on this route right now.
+   * - 'unverified' (pending) routes: always empty — nothing can be
+   *   attributed to a service that isn't itself confirmed to exist.
+   * - 'direct' routes: only individually-verified airlines (via
+   *   getRouteAirlineDisplayStatus, including its sole-unsplit-airline
+   *   fallback) — a route showing "Direct" never implies every named
+   *   airline is confirmed (see AirlineVerification's doc comment).
+   * - 'connecting' routes: every listed airline, unfiltered — this
+   *   dataset's existing, accepted convention treats a connecting route's
+   *   airline list as researched informational content, not an individual
+   *   confirmed-operator claim. Unchanged by this fix.
+   */
+  airlineSlugs: string[];
+  /** Safe hero/summary copy: route.intro for direct/connecting routes (unchanged, already hand-authored honestly), or centrally-authored neutral copy for pending routes that never depends on an intro string being hedged correctly. */
+  summary: string;
+  /** Safe <meta description>: the existing route.intro-derived summary for direct/connecting, or a short claim-free sentence for pending. */
+  metadataDescription: string;
+  /** Safe WhatsApp/share message body (URL is appended separately by the share component). Omits booking-window, demand, fare-urgency, airline and routing claims entirely when pending. */
+  shareText: string;
+}
+
+/**
+ * Discriminated on `status` so every consumer gets real compile-time
+ * narrowing — inside `status !== 'unverified'`, TypeScript already knows
+ * flightTime/frequency are `string`, not `string | null`, with no non-null
+ * assertions needed anywhere. This is deliberate: a route fact leak is
+ * exactly the kind of mistake a type system should catch, not just a
+ * runtime convention.
+ */
+export type RoutePresentation =
+  | (RoutePresentationBase & {
+      status: 'unverified';
+      flightTime: null;
+      frequency: null;
+      /**
+       * False exactly when status is 'unverified' (pending). This means
+       * "not blocked by pending status" — it is a pending-suppression flag,
+       * not a claim that the booking-window content itself (for a
+       * 'connecting' route in particular) has been independently verified.
+       * route.bookingWindowNote / logged booking-window records are a
+       * route-specific factual claim about when to book *this* service,
+       * which cannot be safely shown at all for a route that isn't itself
+       * confirmed to exist.
+       */
+      canShowBookingGuidance: false;
+      /** Same "not pending" meaning as canShowBookingGuidance, applied to peak-period guidance — false only because the route itself isn't evidenced to exist, not a statement about how well-evidenced the peak-period content is otherwise. */
+      canShowPeakPeriods: false;
+      /** Same "not pending" meaning as canShowBookingGuidance — false for pending routes because route.connectingAlternative (stops, hubs, journey time, airlines) must never render for a route whose own service isn't evidenced, regardless of what data happens to be recorded on it. */
+      canShowConnectingAlternative: false;
+    })
+  | (RoutePresentationBase & {
+      status: 'direct' | 'connecting';
+      flightTime: string;
+      frequency: string;
+      /**
+       * True whenever status is not 'unverified' — i.e. this route is
+       * allowed to show booking-window guidance because it is not in the
+       * verification-pending state, NOT because the guidance content
+       * itself has been independently verified. For a 'connecting' route
+       * in particular, this content has always been researched editorial
+       * copy (see route.bookingWindowNote's own doc comment), never
+       * source-verified fact-by-fact — that is unchanged by this flag and
+       * unchanged by this fix. Only the pending case is newly suppressed.
+       */
+      canShowBookingGuidance: true;
+      /** Same "not pending" meaning as canShowBookingGuidance, applied to peak-period guidance. */
+      canShowPeakPeriods: true;
+      /** Same "not pending" meaning as canShowBookingGuidance, applied to route.connectingAlternative. */
+      canShowConnectingAlternative: true;
+    });
+
+/**
+ * The single reusable source of truth for everything a customer-facing
+ * surface renders about a route: not just duration/frequency/airline, but
+ * hero copy, metadata, share text, and whether booking-guidance/peak-period/
+ * connecting-alternative sections may render at all. Every surface that
+ * would otherwise read route.intro, route.flightTime, route.frequency,
+ * route.airlineSlugs, route.bookingWindowNote, route.peakPeriodIds, or
+ * route.connectingAlternative directly should go through this instead.
+ *
+ * Pending ('unverified') routes get their own branch entirely — they are
+ * never treated as a variant of 'connecting'. Nothing here depends on a
+ * route's author remembering to hedge free-text copy: the pending branch's
+ * summary/metadataDescription/shareText are generated centrally from the
+ * airport/destination names only, so a brand-new pending route is safe by
+ * construction the moment isDirect/verification make it 'unverified'.
+ */
+export function getRoutePresentation(route: Route, nowIso: string): RoutePresentation {
+  const status = getDisplayDirectness(route, nowIso);
+  const airport = getRouteAirport(route);
+  const dest = getRouteDestination(route);
+  const pair = airport && dest ? `${airport.city} to ${dest.city}` : 'This route';
+
+  if (status === 'unverified') {
+    const copy = pendingRouteCopy(airport?.city, dest?.city);
+    return {
+      status,
+      statusLabel: 'Verification pending',
+      flightTime: null,
+      frequency: null,
+      airlineSlugs: [],
+      summary: copy.summary,
+      metadataDescription: copy.metadataDescription,
+      shareText: copy.shareText,
+      canShowBookingGuidance: false,
+      canShowPeakPeriods: false,
+      canShowConnectingAlternative: false,
+    };
+  }
+
+  const statusLabel = status === 'direct' ? 'Direct' : 'Connecting';
+  const airlineSlugs =
+    status === 'direct'
+      ? route.airlineSlugs.filter((slug) => getRouteAirlineDisplayStatus(route, slug, nowIso) === 'verified')
+      : route.airlineSlugs;
+
+  return {
+    status,
+    statusLabel,
+    flightTime: route.flightTime,
+    frequency: route.frequency,
+    airlineSlugs,
+    summary: route.intro,
+    metadataDescription: `${route.intro.slice(0, 150)}...`,
+    shareText: `${pair}: ${route.flightTime}, ${route.frequency}. ${route.bookingWindowNote}`,
+    canShowBookingGuidance: true,
+    canShowPeakPeriods: true,
+    canShowConnectingAlternative: true,
+  };
 }

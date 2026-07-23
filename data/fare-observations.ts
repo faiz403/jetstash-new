@@ -1,4 +1,5 @@
 import type { DealCabin } from './deals';
+import { getRouteBySlug, getDisplayDirectness, type Route } from './routes';
 
 export interface FareObservation {
   id: string;
@@ -99,14 +100,54 @@ export function getObservationsByRouteAndCabin(routeSlug: string, cabin: DealCab
     .sort((a, b) => a.observedDate.localeCompare(b.observedDate));
 }
 
-/** Same as getObservationsByRouteAndCabin, filtered to what's safe to show publicly (see isPubliclyPublishable). */
-export function getPublishableObservationsByRouteAndCabin(routeSlug: string, cabin: DealCabin) {
-  return getObservationsByRouteAndCabin(routeSlug, cabin).filter(isPubliclyPublishable);
+/**
+ * Pure predicate: is this exact observation safe to show publicly right
+ * now? Requires ALL of:
+ *  1. Date-completeness (isPubliclyPublishable).
+ *  2. A defined route.
+ *  3. `route.slug === observation.routeSlug` — the route passed in must
+ *     actually be the one this observation was logged against, not merely
+ *     any route object the caller happened to have on hand. Every current
+ *     call site already looks the route up by the observation's own
+ *     routeSlug, so this can't be hit in practice today — it's a defensive
+ *     check against a future caller passing a mismatched pair (e.g. the
+ *     wrong route object reused from an earlier loop iteration), which
+ *     would otherwise silently judge an observation's publishability
+ *     against a route it has nothing to do with.
+ *  4. That route is currently evidenced (its directness is not
+ *     'unverified'/pending).
+ * A missing route is treated the same as an unevidenced one: nothing can be
+ * safely attributed to a pair with no Route record at all.
+ *
+ * Deliberately takes an explicit `route` rather than looking one up
+ * internally from a slug, so this is fully unit-testable against a
+ * synthetic Route + FareObservation fixture — including the specific case
+ * of a date-complete observation attached to a pending route — without
+ * needing (or risking) a real, fabricated entry in the production dataset.
+ * See tests/verification-pending-leakage.test.ts.
+ */
+export function isObservationPublishable(observation: FareObservation, route: Route | undefined, nowIso: string): boolean {
+  if (!isPubliclyPublishable(observation)) return false;
+  if (!route) return false;
+  if (route.slug !== observation.routeSlug) return false;
+  return getDisplayDirectness(route, nowIso) !== 'unverified';
 }
 
-/** Public-safe "last checked fare" for Book-By's Verified Check callout — never the internal getLatestObservation. */
-export function getLatestPublishableObservation(routeSlug: string) {
-  const publishable = getObservationsByRoute(routeSlug).filter(isPubliclyPublishable);
+/** Same as getObservationsByRouteAndCabin, filtered to what's safe to show publicly — see isObservationPublishable. */
+export function getPublishableObservationsByRouteAndCabin(routeSlug: string, cabin: DealCabin, nowIso: string) {
+  const route = getRouteBySlug(routeSlug);
+  return getObservationsByRouteAndCabin(routeSlug, cabin).filter((o) => isObservationPublishable(o, route, nowIso));
+}
+
+/** Same as getPublishableObservationsByRouteAndCabin, across every cabin for the route — for surfaces like FareHistoryPanel that group by cabin themselves. */
+export function getPublishableObservationsByRoute(routeSlug: string, nowIso: string) {
+  const route = getRouteBySlug(routeSlug);
+  return getObservationsByRoute(routeSlug).filter((o) => isObservationPublishable(o, route, nowIso));
+}
+
+/** Public-safe "last checked fare" for Book-By's Verified Check callout — never the internal getLatestObservation. Gated on both date-completeness and route evidence — see isObservationPublishable. */
+export function getLatestPublishableObservation(routeSlug: string, nowIso: string) {
+  const publishable = getPublishableObservationsByRoute(routeSlug, nowIso);
   return publishable[publishable.length - 1];
 }
 
@@ -128,8 +169,8 @@ export interface FareRangeSummary {
  * (see isPubliclyPublishable), so callers fall back to non-perishable route
  * facts instead of showing a price.
  */
-export function getFareRangeSummary(routeSlug: string, cabin: DealCabin): FareRangeSummary | null {
-  const observations = getPublishableObservationsByRouteAndCabin(routeSlug, cabin);
+export function getFareRangeSummary(routeSlug: string, cabin: DealCabin, nowIso: string): FareRangeSummary | null {
+  const observations = getPublishableObservationsByRouteAndCabin(routeSlug, cabin, nowIso);
   if (observations.length === 0) return null;
   const prices = observations.map((o) => o.price);
   return {

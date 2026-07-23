@@ -1,4 +1,4 @@
-import { getRouteBySlug, getRouteAirport, getRouteDestination } from '@/data/routes';
+import { getRouteBySlug, getRouteAirport, getRouteDestination, getDisplayDirectness } from '@/data/routes';
 import { getPeakPeriodById } from '@/data/peak-periods';
 import { getUpcomingOccurrences, type PeakDatePrecision } from '@/data/peak-period-dates';
 import { getBookingWindowsByRoute } from '@/data/booking-windows';
@@ -122,9 +122,53 @@ export function isBookByRoute(routeSlug: string): boolean {
 }
 
 /**
+ * Pure state-machine calculation, extracted from computeBookBySnapshot so
+ * the boundary logic can be tested with explicit date fixtures, independent
+ * of any route's own verification currency. `nowIso` is the only clock
+ * input, matching this whole file's "pure function of (routeSlug, now)"
+ * contract — never reads the wall clock itself.
+ */
+export function computeBookByState(
+  nowIso: string,
+  occurrenceStartDate: string,
+  recommendedWindow: { openDate: string; closeDate: string } | null,
+  surgeStartDate: string
+): BookByState {
+  if (nowIso >= occurrenceStartDate) return 'inside-period';
+  if (nowIso >= surgeStartDate) return 'surge';
+  if (recommendedWindow) {
+    if (nowIso < recommendedWindow.openDate) return 'too-early';
+    if (nowIso <= recommendedWindow.closeDate) return 'window-open';
+    return 'late';
+  }
+  return 'pre-surge';
+}
+
+/**
  * The full intelligence snapshot for one priority route, or null when the
- * route isn't in the V1 rollout / has no upcoming dated occurrence — every
- * surface renders nothing in that case rather than degrading to a guess.
+ * route isn't in the V1 rollout / has no upcoming dated occurrence / isn't
+ * currently evidenced as of `now` — every surface renders nothing in that
+ * case rather than degrading to a guess.
+ *
+ * Verification-pending leakage fix (audit finding): the priority-route
+ * allowlist alone doesn't mean a route stays safe forever — if a currently-
+ * verified priority route's verification record ever expires or is
+ * downgraded, every Book-By surface site-wide (route panel, destination
+ * strip, homepage ribbon, route-map layer, WhatsApp share text, Founder
+ * cadence section — this file's own header comment lists them) would
+ * otherwise keep rendering full booking-window guidance for it, bypassing
+ * the route page's own canShowBookingGuidance gate entirely, since that
+ * gate is only consulted in the page's *fallback* branch. Checking
+ * directness here, once, protects every one of those surfaces at the root.
+ *
+ * Deliberately checked against the SAME `nowIso` used for every other
+ * calculation in this function, per this file's own stated contract
+ * ("everything is a pure function of (routeSlug, now)") — never the real
+ * wall clock. A route whose stored `reviewDueDate` is in the past relative
+ * to `now` is correctly treated as unverified as of that `now`, exactly
+ * like the route page's own getDisplayDirectness() would; this is
+ * deterministic, not a live lookup, so it produces the same result for the
+ * same inputs regardless of when the test (or the real deploy) runs.
  */
 export function computeBookBySnapshot(routeSlug: string, now: Date): BookBySnapshot | null {
   if (!isBookByRoute(routeSlug)) return null;
@@ -135,6 +179,8 @@ export function computeBookBySnapshot(routeSlug: string, now: Date): BookBySnaps
   if (!airport || !destination) return null;
 
   const nowIso = now.toISOString().slice(0, 10);
+  if (getDisplayDirectness(route, nowIso) === 'unverified') return null;
+
   const upcoming = getUpcomingOccurrences(route.peakPeriodIds, nowIso);
   if (upcoming.length === 0) return null;
 
@@ -164,20 +210,9 @@ export function computeBookBySnapshot(routeSlug: string, now: Date): BookBySnaps
     ? 'route-recommendation'
     : 'surge-avoidance';
 
-  let state: BookByState;
-  if (nowIso >= occurrence.startDate) {
-    state = 'inside-period';
-  } else if (nowIso >= surgeStartDate) {
-    state = 'surge';
-  } else if (recommendedWindow) {
-    if (nowIso < recommendedWindow.openDate) state = 'too-early';
-    else if (nowIso <= recommendedWindow.closeDate) state = 'window-open';
-    else state = 'late';
-  } else {
-    state = 'pre-surge';
-  }
+  const state = computeBookByState(nowIso, occurrence.startDate, recommendedWindow, surgeStartDate);
 
-  const latest = getLatestPublishableObservation(routeSlug);
+  const latest = getLatestPublishableObservation(routeSlug, nowIso);
   const latestObservation = latest
     ? {
         price: latest.price,
