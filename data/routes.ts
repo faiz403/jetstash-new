@@ -825,16 +825,34 @@ function buildSocialDetail(status: 'direct' | 'connecting', flightTime: string, 
 }
 
 /**
+ * Strips the redundant word "direct" from a direct route's flightTime
+ * before it's folded into share text — the sentence around it ("has a
+ * direct option") already establishes directness, so keeping it produced
+ * "direct option (9h 45m direct (currently))". Any parenthetical qualifier
+ * (a hedge like "(currently)", or an attribution like "(per BA's own
+ * destination page)") is preserved verbatim. A no-op for any flightTime
+ * that doesn't contain the word, so this never mangles a value it wasn't
+ * written to expect.
+ */
+function cleanDirectDurationFragment(flightTime: string): string {
+  return flightTime.replace(/\bdirect\b\s*/, '').replace(/\s+/g, ' ').trim();
+}
+
+/**
  * Share text must stay concise and avoid unsupported facts — never the raw
  * frequency/bookingWindowNote (long, hedged prose that also caused doubled
  * punctuation), and flightTime only when short enough to read as a clean
- * fragment.
+ * fragment. The duration fragment is joined with an em dash rather than
+ * wrapped in its own parentheses — flightTime can already carry a
+ * parenthetical qualifier, and nesting one pair inside another read badly
+ * (see cleanDirectDurationFragment).
  */
 function buildShareText(status: 'direct' | 'connecting', pair: string, flightTime: string): string {
   if (status === 'connecting') {
     return `${pair} is a connecting route — no confirmed direct service currently exists. Compare total journey time, schedules and ticket conditions before booking.`;
   }
-  const durationFragment = flightTime.length <= MAX_SOCIAL_DETAIL_LENGTH ? ` (${flightTime})` : '';
+  const cleaned = flightTime.length <= MAX_SOCIAL_DETAIL_LENGTH ? cleanDirectDurationFragment(flightTime) : '';
+  const durationFragment = cleaned ? ` — ${cleaned}` : '';
   return `${pair} has a direct option${durationFragment}. Compare current prices, confirm the exact schedule and check ticket conditions before booking.`;
 }
 
