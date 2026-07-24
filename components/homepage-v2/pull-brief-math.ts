@@ -148,3 +148,55 @@ export function snapBackBow(t: number, initialBow: number): number {
   const u = clamp01(t);
   return initialBow * Math.pow(1 - u, 2) * Math.cos(u * Math.PI * 1.25);
 }
+
+/**
+ * The Manchester→Mumbai journey scene: three photographs staged across the
+ * same pull progress `p` as one continuous transport, not three independent
+ * crossfades — Manchester (the origin) recedes early, the Manchester–Mumbai
+ * composite bridges the middle of the pull, and Mumbai (the destination)
+ * arrives late and stays as the open Journey Brief's backdrop. Every curve
+ * here is a pure function of `p`, built on easeInOutCubic above — no timers,
+ * no independent animation loop.
+ */
+export const JOURNEY_ORIGIN_FADE_END = 0.55;
+export const JOURNEY_BRIDGE_RISE_START = 0.15;
+export const JOURNEY_BRIDGE_PEAK_START = 0.4;
+export const JOURNEY_BRIDGE_PEAK_END = 0.6;
+export const JOURNEY_BRIDGE_FALL_END = 0.85;
+export const JOURNEY_DESTINATION_RISE_START = 0.5;
+
+/** Smooth 0→1 ramp between [start, end] (eased); flat outside the range. */
+function edgeRamp(p: number, start: number, end: number): number {
+  const u = clamp01(p);
+  if (u <= start) return 0;
+  if (u >= end) return 1;
+  return easeInOutCubic((u - start) / (end - start));
+}
+
+/** Manchester Airport: dominant at rest, fully receded by JOURNEY_ORIGIN_FADE_END. */
+export function journeyOriginOpacity(p: number): number {
+  return 1 - edgeRamp(p, 0, JOURNEY_ORIGIN_FADE_END);
+}
+
+/** The Manchester–Mumbai composite: the visual bridge through the middle of the pull. */
+export function journeyBridgeOpacity(p: number): number {
+  return (
+    edgeRamp(p, JOURNEY_BRIDGE_RISE_START, JOURNEY_BRIDGE_PEAK_START) *
+    (1 - edgeRamp(p, JOURNEY_BRIDGE_PEAK_END, JOURNEY_BRIDGE_FALL_END))
+  );
+}
+
+/** Mumbai: hidden at rest, arrives late and remains as the open Brief's backdrop. */
+export function journeyDestinationOpacity(p: number): number {
+  return edgeRamp(p, JOURNEY_DESTINATION_RISE_START, 1);
+}
+
+/** Origin steps back gently as it recedes — a soft dolly-out, not a jump cut. */
+export function journeyOriginScale(p: number): number {
+  return lerp(1.045, 1, edgeRamp(p, 0, JOURNEY_ORIGIN_FADE_END));
+}
+
+/** Destination arrives slightly closer than rest, settling to its final scale. */
+export function journeyDestinationScale(p: number): number {
+  return lerp(0.97, 1, edgeRamp(p, JOURNEY_DESTINATION_RISE_START, 1));
+}
