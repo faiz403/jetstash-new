@@ -1,4 +1,12 @@
-export type QuoteTripType = 'umrah' | 'family-trip' | 'group-travel';
+export type QuoteTripType =
+  | 'solo'
+  | 'couple'
+  | 'family-trip'
+  | 'group-travel'
+  | 'business'
+  | 'student'
+  | 'umrah'
+  | 'other';
 
 export type QuoteRegion =
   | 'pakistan'
@@ -10,10 +18,31 @@ export type QuoteRegion =
   | 'southern-europe'
   | 'other';
 
+/**
+ * Ordered for scanability, not alphabetically: broadly-applicable personal
+ * travel patterns first (a solo/couple/family/group visitor should recognise
+ * themselves immediately), then the two smaller commercial/personal segments,
+ * then Umrah (JetStash's own distinct vertical, not a generic "trip type"),
+ * then Other last as the universal escape hatch — never omit Other, or a
+ * legitimate enquiry with no matching option has nowhere to go.
+ *
+ * `value`s for 'umrah', 'family-trip' and 'group-travel' are pre-existing and
+ * deliberately unchanged — app/umrah/page.tsx, app/family-holidays/page.tsx,
+ * components/sections/region-hub-page.tsx and
+ * components/homepage-v2/homepage-sections.tsx all deep-link here via
+ * `?tripType=umrah` / `?tripType=family-trip`; only the *labels* were
+ * shortened (dropping the redundant "package"/"trip"/"travel" suffix once
+ * every option sits inside a field already called "Trip type").
+ */
 export const TRIP_TYPE_OPTIONS: { value: QuoteTripType; label: string }[] = [
-  { value: 'umrah', label: 'Umrah package' },
-  { value: 'family-trip', label: 'Family trip' },
-  { value: 'group-travel', label: 'Group travel' },
+  { value: 'solo', label: 'Solo traveller' },
+  { value: 'couple', label: 'Couple / Honeymoon' },
+  { value: 'family-trip', label: 'Family' },
+  { value: 'group-travel', label: 'Group' },
+  { value: 'business', label: 'Business' },
+  { value: 'student', label: 'Student' },
+  { value: 'umrah', label: 'Umrah' },
+  { value: 'other', label: 'Other' },
 ];
 
 export const QUOTE_REGION_OPTIONS: { value: QuoteRegion; label: string }[] = [
