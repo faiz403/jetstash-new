@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'fs';
 import { join } from 'path';
-import { getAirportImage, getDestinationImage, getHeroImage } from '@/lib/brand-images';
+import { getDestinationImage, getHeroImage } from '@/lib/brand-images';
 import {
   JOURNEY_ORIGIN_FADE_END,
   JOURNEY_BRIDGE_RISE_START,
@@ -125,14 +125,8 @@ describe('journey scene curves (pull-brief-math.ts) — pure functions of the ex
   });
 });
 
-describe('all three images resolve through the real brand-image system', () => {
-  it('getAirportImage("manchester") resolves — the origin scene', () => {
-    const image = getAirportImage('manchester');
-    expect(image).not.toBeNull();
-    expect(image?.src).toBe('/images/airports/manchester.webp');
-  });
-
-  it('getHeroImage("manchester-mumbai-journey") resolves — the bridge scene', () => {
+describe('all images resolve through the real brand-image system', () => {
+  it('getHeroImage("manchester-mumbai-journey") resolves — used for both the origin (rest) and bridge scenes', () => {
     const image = getHeroImage('manchester-mumbai-journey');
     expect(image).not.toBeNull();
     expect(image?.src).toBe('/images/heroes/manchester-mumbai-journey.webp');
@@ -144,11 +138,17 @@ describe('all three images resolve through the real brand-image system', () => {
     expect(image?.src).toBe('/images/destinations/mumbai.webp');
   });
 
-  it('PullBriefHero resolves all three via the brand-image resolvers, never a hardcoded /images path', () => {
-    expect(pullBriefHeroSrc).toMatch(/getAirportImage\(\s*['"]manchester['"]\s*\)/);
-    expect(pullBriefHeroSrc).toMatch(/getHeroImage\(\s*['"]manchester-mumbai-journey['"]\s*\)/);
+  it('PullBriefHero resolves the origin scene via the same composite as the bridge, never the Manchester Airport stock photo (map-overlay/BA-branding issue), and never a hardcoded /images path', () => {
+    const originAssignment = pullBriefHeroSrc.match(/const originImg = ([^;]+);/)?.[1] ?? '';
+    expect(originAssignment).toMatch(/getHeroImage\(\s*['"]manchester-mumbai-journey['"]\s*\)/);
+    expect(pullBriefHeroSrc).not.toMatch(/getAirportImage/);
     expect(pullBriefHeroSrc).toMatch(/getDestinationImage\(\s*['"]mumbai['"]\s*\)/);
     expect(pullBriefHeroSrc).not.toMatch(/['"]\/images\//);
+  });
+
+  it('the origin and bridge props both resolve to the same composite image (getHeroImage called twice, once per prop)', () => {
+    const calls = pullBriefHeroSrc.match(/getHeroImage\(\s*['"]manchester-mumbai-journey['"]\s*\)/g) ?? [];
+    expect(calls).toHaveLength(2);
   });
 
   it('PullBriefHero passes all three resolved images into PullBrief as props, rather than PullBrief resolving its own images', () => {
