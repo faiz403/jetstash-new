@@ -79,8 +79,8 @@ describe('Sitemap — /travel-ready-check is discoverable to crawlers', () => {
 });
 
 describe('Footer — Travel Ready Check is a real navigation link, not just a page that exists', () => {
-  it('appears once in the Travel footer column, pointing at the real page', () => {
-    const matches = footerNav.travel.filter((link) => link.href === '/travel-ready-check');
+  it('appears once in the product-led Explore footer column, pointing at the real page', () => {
+    const matches = footerNav.explore.filter((link) => link.href === '/travel-ready-check');
     expect(matches).toHaveLength(1);
     expect(matches[0].label).toMatch(/travel ready check/i);
   });
@@ -213,8 +213,8 @@ describe('No unrelated behaviour changed', () => {
     expect(typeof WhatWeCheck).toBe('function');
   });
 
-  it('footer still has exactly the same non-Travel-Ready links it had before (no accidental removals)', () => {
-    const labels = footerNav.travel.map((l) => l.label);
+  it('the product and specialist links survive the footer reorganisation (no accidental removals)', () => {
+    const labels = [...footerNav.explore, ...footerNav.specialist].map((l) => l.label);
     for (const expected of ['Family Holidays', 'Business Class', 'Request a Quote', 'All Deals', 'All Routes', 'All Destinations', 'Travel Guides', 'UK Airports']) {
       expect(labels).toContain(expected);
     }

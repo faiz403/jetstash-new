@@ -8,7 +8,7 @@ import { siteConfig } from '@/lib/site-config';
 export const metadata: Metadata = {
   title: 'About JetStash: How We Work',
   description:
-    'JetStash is a UK travel platform for routes to Pakistan, India, the Gulf and Umrah. Read the editorial standards behind every fare and route claim on the site.',
+    'JetStash is a UK travel intelligence platform for international journeys, built with specialist depth in South Asia and the Gulf. Read the editorial standards behind every fare and route claim on the site.',
   alternates: { canonical: `${siteConfig.url}/about` },
 };
 
@@ -46,8 +46,8 @@ export default function AboutPage() {
       <PageHero
         heroKey="about"
         eyebrow="About JetStash"
-        title="The routes that matter most deserve more than a footnote."
-        description="Most UK travel sites treat flights to Pakistan, India, the Gulf and Saudi Arabia as an edge case, a few pages bolted onto a site built around Spain. JetStash starts from the opposite assumption: for millions of people in the UK, these are the trips that actually matter."
+        title="The journeys people make deserve more than a footnote."
+        description="JetStash was built because journeys to South Asia, the Gulf and Saudi Arabia were too often treated as an edge case. We apply that same standard of care wherever we publish travel intelligence."
       />
 
       <section className="bg-white py-16 sm:py-20">

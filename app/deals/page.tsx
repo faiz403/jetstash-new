@@ -13,9 +13,9 @@ import { JsonLd, dealsListSchema } from '@/components/seo/json-ld';
 export const revalidate = 21600;
 
 export const metadata: Metadata = {
-  title: 'Tracked Fares: UK to Pakistan, India, the Gulf & Umrah',
+  title: 'Tracked Fares from UK Airports',
   description:
-    'Fares from UK airports to Pakistan, India, the Gulf and Umrah, tracked from hand-checked observations logged over time. Never a live price claim.',
+    'Hand-checked fare observations across JetStash’s current international route coverage, with deepest coverage in South Asia and the Gulf. Never a live price claim.',
   alternates: { canonical: `${siteConfig.url}/deals` },
 };
 

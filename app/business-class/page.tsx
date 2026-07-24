@@ -19,9 +19,9 @@ export const revalidate = 21600;
 
 export const metadata: Metadata = {
   alternates: { canonical: '/business-class' },
-  title: 'Business Class Deals: Gulf & South Asia Routes from the UK',
+  title: 'Business Class from UK Airports',
   description:
-    'Example business class fares from UK airports to Dubai, Doha, Delhi, Lahore and beyond, for illustration alongside live partner pricing.',
+    'Business class guidance and hand-checked examples from UK airports, with current route coverage strongest across South Asia and the Gulf.',
 };
 
 const cabinFeatures = [
@@ -69,9 +69,9 @@ export default function BusinessClassPage() {
             Long-haul, done properly
           </h1>
           <p className="stagger-in stagger-3 mt-4 max-w-xl animate-fade-up text-lg leading-relaxed text-ink-300">
-            Business class fares to the Gulf, Pakistan and India move on different patterns to economy. Fuel
-            surcharges, seasonal corporate demand, and airline-specific sales all shift the picture. We track the
-            routes that UK travellers actually book.
+            Business class fares move on different patterns to economy. Fuel surcharges, seasonal corporate demand
+            and airline-specific sales all shift the picture. Our current route intelligence is strongest across South
+            Asia and the Gulf.
           </p>
         </div>
       </section>

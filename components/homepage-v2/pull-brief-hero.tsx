@@ -4,7 +4,7 @@ import { useMemo, useState, type FormEvent } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ArrowRight, ArrowUpRight } from 'lucide-react';
-import { getAirportImage, getDestinationImage, getHeroImage } from '@/lib/brand-images';
+import { getDestinationImage, getHeroImage } from '@/lib/brand-images';
 import type { FlagshipStatusCopy } from '@/lib/flagship-status-copy';
 import { PullBrief } from './pull-brief';
 
@@ -61,7 +61,7 @@ export function PullBriefHero({ handover, flagshipStatusCopy }: { handover: Hand
   const isFeatured = fromSlug === FEATURED.from && toSlug === FEATURED.to;
   const routeSlug = handover.routeIndex[`${fromSlug}|${toSlug}`];
 
-  const originImg = getAirportImage('manchester');
+  const originImg = getHeroImage('manchester-mumbai-journey');
   const journeyImg = getHeroImage('manchester-mumbai-journey');
   const destinationImg = getDestinationImage('mumbai');
 
@@ -95,8 +95,8 @@ export function PullBriefHero({ handover, flagshipStatusCopy }: { handover: Hand
             Before you book, get a second opinion.
           </h1>
           <p className="mt-2.5 max-w-lg text-sm leading-relaxed text-ink-300 sm:text-[15px]">
-            We check the route, the timing and the paperwork for UK journeys to Pakistan, India, the Gulf and
-            Umrah. Then we tell you what actually matters.
+            We check the route, the timing and the paperwork for international journeys from UK airports. Our
+            deepest current coverage is South Asia and the Gulf — then we tell you what actually matters.
           </p>
         </div>
 

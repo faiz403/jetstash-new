@@ -7,7 +7,7 @@ import { isQuoteTripType, isQuoteRegion } from '@/lib/quote-request-options';
 import { siteConfig } from '@/lib/site-config';
 
 export const metadata: Metadata = {
-  title: 'Request a Quote: Umrah, Family & Group Travel',
+  title: 'Request a Quote: Family, Group & Specialist Travel',
   description:
     'Request a real quote for an Umrah package, family trip or group booking to Pakistan, India, Bangladesh, the Gulf, Turkey, Morocco or Southern Europe, followed up by a person, not an automated price.',
   alternates: { canonical: `${siteConfig.url}/quote-request` },
@@ -46,7 +46,7 @@ export default async function QuoteRequestPage({
         heroKey="quote-request"
         eyebrow="Real quotes, from a person"
         title="Tell us the trip. We'll price it properly."
-        description="For Umrah packages, family trips and group travel: Pakistan, India, Bangladesh, the Gulf, Turkey, Morocco and Southern Europe. A real person follows up with real pricing, not an instant automated number."
+        description="For family, group and specialist journeys from UK airports, including Umrah and current coverage across Pakistan, India, Bangladesh, the Gulf, Turkey, Morocco and Southern Europe. A real person follows up with real pricing, not an instant automated number."
       />
 
       <section className="border-b border-white/5 bg-ink-950 py-10">

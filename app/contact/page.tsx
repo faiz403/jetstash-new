@@ -38,7 +38,7 @@ export default function ContactPage() {
               </div>
               <h3 className="mt-4 font-display text-lg text-ink-900">Looking for real pricing?</h3>
               <p className="mt-2 text-sm leading-relaxed text-ink-500">
-                For Umrah packages, family trips and group bookings, the quote request form gets you a
+                For specialist, family and group journeys — including Umrah — the quote request form gets you a
                 researched answer from a person, faster than a general enquiry.
               </p>
               <Link
