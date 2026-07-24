@@ -152,8 +152,8 @@ export function PullBriefHero({ handover, flagshipStatusCopy }: { handover: Hand
           <p aria-live="polite" className="mt-3 min-h-[1.5rem] text-[13px] leading-relaxed text-ink-300">
             {isFeatured && (
               <>
-                <span className="text-brass-200">This is the featured route above.</span> Press Check to pull its
-                answer open.
+                <span className="text-brass-200">This is the featured route above.</span> Press Check to open this
+                route check.
               </>
             )}
             {!isFeatured && routeSlug && (

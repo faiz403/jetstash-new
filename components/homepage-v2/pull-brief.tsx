@@ -659,7 +659,7 @@ export function PullBrief({
               aria-hidden="true"
               className="pointer-events-none absolute right-full top-1/2 mr-2.5 flex -translate-y-1/2 items-center whitespace-nowrap rounded-full bg-ink-900/80 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-brass-100 ring-1 ring-brass-400/30"
             >
-              Pull the answer
+              Pull to check this route
             </span>
           </button>
         </div>
