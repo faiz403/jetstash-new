@@ -4,7 +4,7 @@
 
 **Production branch:** `main`
 
-**Application release baseline:** `498f980425b2907d09544e80244cba0a88a3b2d7`
+**Application release baseline:** `0c3bffe3d23f06f110a5e6968b0605eaab7ea803`
 
 **Production site:** `https://jetstash.co.uk`
 
@@ -12,6 +12,7 @@
 
 - Route Status V1 is shipped and live.
 - The Manchester-to-Mumbai homepage visual is shipped and live.
+- The premium Guide image collection is shipped and live.
 - The Birmingham-to-Mumbai connecting guide and verification-pending leakage protection are live.
 - Travel Ready Check is built and live.
 - Travel Ready Check discoverability is complete on the reviewed feature branch: relevant
@@ -41,7 +42,6 @@ fill an empty state.
 ## QUEUED
 
 - `VIS-001` — complete premium photography for supported UK airports.
-- `VIS-002` — create a consistent premium hero-image collection for travel guides.
 - `AFF-001` — review Expedia, booking partners, CJ opportunities and luggage partners.
 - `CONV-001` — use real analytics to test homepage conversion hierarchy; no redesign based only on
   opinion.
