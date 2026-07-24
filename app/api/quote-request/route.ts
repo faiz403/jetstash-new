@@ -4,7 +4,8 @@ import { isValidEmail, sendResendEmail } from '@/lib/email';
 import { siteConfig } from '@/lib/site-config';
 
 /**
- * Umrah / family trip / group travel quote-request endpoint.
+ * Quote-request endpoint — any trip type (solo, couple, family, group,
+ * business, student, Umrah or other).
  *
  * Same provider as /api/contact — Resend (resend.com). Reuses RESEND_API_KEY
  * and CONTACT_TO_EMAIL rather than requiring separate environment variables.
@@ -26,7 +27,8 @@ function regionLabel(value: string): string {
 
 export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => null);
-  const { name, email, phone, tripType, region, travellerCount, travelWindow, budgetNote, message } = body ?? {};
+  const { name, email, phone, tripType, tripTypeOther, region, travellerCount, travelWindow, budgetNote, message } =
+    body ?? {};
 
   if (!name || !email || !tripType || !region) {
     return NextResponse.json(
@@ -53,8 +55,15 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  // A free-text elaboration only ever matters for the 'other' escape hatch —
+  // sent for every other trip type, it would just be stale leftover state.
+  const tripTypeDetail =
+    tripType === 'other' && typeof tripTypeOther === 'string' && tripTypeOther.trim()
+      ? ` (${tripTypeOther.trim()})`
+      : '';
+
   const lines = [
-    `Trip type: ${tripTypeLabel(tripType)}`,
+    `Trip type: ${tripTypeLabel(tripType)}${tripTypeDetail}`,
     `Region: ${regionLabel(region)}`,
     phone ? `Phone: ${phone}` : null,
     travellerCount ? `Number of travellers: ${travellerCount}` : null,
