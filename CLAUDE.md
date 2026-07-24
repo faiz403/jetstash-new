@@ -4,11 +4,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Check project status before proposing work
 
-Read `docs/project-control/STATUS.md`, `COMPLETED.md`, `ROADMAP.md` and `DECISIONS.md` before
-starting or proposing a task. These files are the current authority for what is done, what comes
-next and which ideas have been accepted or rejected. Do not repeat a task recorded as `DONE`
-without new evidence of a regression or changed requirement. Update the tracker in the same PR
-when meaningful work changes project status.
+Read `docs/project-control/STATUS.md`, `COMPLETED.md`, `ROADMAP.md`, `DECISIONS.md` and
+`ROUTE_COVERAGE.md` before starting or proposing a task. These files are the current authority for
+what is done, what comes next, which ideas have been accepted or rejected, and how route evidence
+may be expanded. Do not repeat a task recorded as `DONE` without new evidence of a regression or
+changed requirement. Update the tracker in the same PR when meaningful work changes project status.
 
 ## What this is
 

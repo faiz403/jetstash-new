@@ -1,10 +1,10 @@
 # JetStash Current Status
 
-**Last reconciled:** 24 July 2026
+**Last reconciled:** 25 July 2026
 
 **Production branch:** `main`
 
-**Application release baseline:** `d1f12a17235bf69572034cd9f278e4007577bb73`
+**Application release baseline:** `50e6c6d40b92d8c3f201814a12340160351d70bd`
 
 **Production site:** `https://jetstash.co.uk`
 
@@ -46,6 +46,13 @@ The current partner state is reconciled: TravelUp is the only live provider, wit
 tracking link and directly verified destination deep links. Expedia and other potential partners
 must remain unenabled until JetStash has approval, a genuine tracking link and a scoped validation
 of the customer journey.
+
+### COV-001 — Build verified route coverage deliberately
+
+Route coverage now has a durable operating queue in `ROUTE_COVERAGE.md`. It starts from the five
+existing Book By priority routes and known trust risks, rather than inventing a demand ranking
+without analytics. Each cycle must add independently sourced service evidence or a date-complete
+fare observation; never fill a route simply to remove a pending state.
 
 ## NEXT
 
