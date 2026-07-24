@@ -41,6 +41,7 @@ export const footerNav = {
     { label: 'Family Holidays', href: '/family-holidays' },
     { label: 'Business Class', href: '/business-class' },
     { label: 'Request a Quote', href: '/quote-request' },
+    { label: 'Travel Ready Check', href: '/travel-ready-check' },
     { label: 'All Deals', href: '/deals' },
     { label: 'All Routes', href: '/routes' },
     { label: 'All Destinations', href: '/destinations' },
