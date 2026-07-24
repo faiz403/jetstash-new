@@ -295,13 +295,12 @@ constructs a booking URL by hand.
 - **Skyscanner**: present in `BOOKING_PROVIDERS` but `enabled: false` — their affiliate
   application was declined while the site is pre-launch. To re-enable: flip `enabled`, add the
   real tracking link, and repoint `PRIMARY_PROVIDER_ID`.
-- **Deep-linking is deliberately off** (`supportsDeepLink: false`). A first attempt guessed a
-  `/flights/search?origin=...` URL shape; in production it landed users on a TravelUp error page
-  and lost their search (see git history — "Fix broken TravelUp deep links"). Every booking link
-  today safely resolves to TravelUp's own default landing page, still real and commission-earning,
-  just not destination-specific. To turn it on: manually visit `travelup.com`, confirm a real
-  destination URL works, add it to `VERIFIED_DEEP_LINKS` keyed by destination slug, **only then**
-  flip `supportsDeepLink` to `true`. Never add an entry from a guessed pattern.
+- **TravelUp destination deep-linking is enabled** (`supportsDeepLink: true`). The CJ `url=`
+  override is set only from `VERIFIED_DEEP_LINKS`, whose destination pages have been checked
+  directly. A previous guessed `/flights/search?origin=...` URL shape landed users on a TravelUp
+  error page (see git history — "Fix broken TravelUp deep links"); never infer a replacement URL
+  from a pattern. Before adding or replacing an entry, open the exact TravelUp page, confirm it
+  resolves as intended, and recheck existing entries periodically.
 - **Click attribution**: every link carries a `sid` (CJ's SubID field) built from
   page/route/cabin context via `buildSid()` — JetStash's own analytics, invisible to the visitor,
   never affecting where TravelUp sends them.
