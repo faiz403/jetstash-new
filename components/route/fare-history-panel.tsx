@@ -51,15 +51,18 @@ export function FareHistoryPanel({ observations }: { observations: FareObservati
               {chronological.map((obs) => {
                 const isStale = getFareFreshnessState(daysBetweenIso(obs.observedDate, nowIso)) === 'stale';
                 return (
-                  <div key={obs.id} className="flex items-center justify-between px-6 py-3.5">
+                  <div key={obs.id} className="flex flex-col gap-3 px-6 py-3.5 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                       <p className="text-sm font-medium text-ink-700">{obs.cabin} · {obs.source}</p>
                       <p className="text-xs text-ink-400">
                         Checked {formatChecked(obs.observedDate)}
                         {isStale && ' · old check, for history only'}
                       </p>
+                      <p className="mt-1 text-xs text-ink-500">
+                        Travel dates: {formatChecked(obs.departureDate!)} – {formatChecked(obs.returnDate!)}
+                      </p>
                     </div>
-                    <div className="text-right">
+                    <div className="sm:text-right">
                       <p className={`font-display text-lg ${isStale ? 'text-ink-500' : 'text-ink-900'}`}>
                         £{obs.price.toLocaleString('en-GB')}
                       </p>
