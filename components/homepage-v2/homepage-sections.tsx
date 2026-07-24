@@ -79,11 +79,17 @@ export function CommercialPaths() {
 }
 
 /* ── Concise "What JetStash checks" ── */
-const CHECKS = [
+const CHECKS: { icon: typeof Plane; title: string; body: string; href?: string; linkLabel?: string }[] = [
   { icon: Plane, title: 'Route status & airline', body: 'Whether a route runs direct, on which airline, verified from that carrier’s own source.' },
   { icon: CalendarClock, title: 'Announced service changes', body: 'Route pauses and withdrawals surfaced honestly, with the date and where we read it.' },
   { icon: ShieldCheck, title: 'Booking-window timing', body: 'When to book, traced to a real festival, fare or booking-window record. Never fake urgency.' },
-  { icon: FileCheck2, title: 'Travel-ready documents', body: 'Passport validity and visa guidance for your trip, sourced from official government pages.' },
+  {
+    icon: FileCheck2,
+    title: 'Travel-ready documents',
+    body: 'Passport validity and visa guidance for your trip, sourced from official government pages.',
+    href: '/travel-ready-check',
+    linkLabel: 'Check your travel readiness',
+  },
   { icon: Receipt, title: 'Fares, dated by a person', body: 'Every fare shows the date a person actually checked it. Never a live-price claim, never a half-built price.' },
 ];
 
@@ -104,6 +110,15 @@ export function WhatWeCheck() {
               <div>
                 <p className="text-sm font-semibold text-sand-50">{c.title}</p>
                 <p className="mt-1 text-[13px] leading-relaxed text-ink-300">{c.body}</p>
+                {c.href && (
+                  <Link
+                    href={c.href}
+                    className="mt-1.5 inline-flex items-center gap-1 text-[13px] font-semibold text-brass-300 hover:text-brass-200"
+                  >
+                    {c.linkLabel}
+                    <ArrowUpRight className="h-3.5 w-3.5" strokeWidth={2.25} />
+                  </Link>
+                )}
               </div>
             </div>
           ))}
