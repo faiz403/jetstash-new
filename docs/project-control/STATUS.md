@@ -4,7 +4,7 @@
 
 **Production branch:** `main`
 
-**Application release baseline:** `68d4cd2dfbde50e906cf3193d328b2b373b9dc1a`
+**Application release baseline:** `d1f12a17235bf69572034cd9f278e4007577bb73`
 
 **Production site:** `https://jetstash.co.uk`
 
@@ -21,6 +21,9 @@
 - JetStash is positioned across its platform surfaces as UK travel intelligence for international
   journeys, with specialist route depth stated honestly as South Asia and the Gulf.
 - Route Watch and Travel Club use honest, human-reviewed language.
+- TravelUp's CJ tracking link and directly verified destination deep links are live. New partner
+  integrations remain disabled until they have explicit approval, a real tracking link and direct
+  journey validation.
 - The Founder Dashboard is unavailable in production and non-indexable.
 - Operational submission flows were founder-confirmed as already tested; do not repeat the entire
   audit unless a relevant API route, environment variable or provider configuration changes.
@@ -37,6 +40,13 @@ The pilot is under way. Only fresh, date-complete observations checked directly 
 pages can be published. Historic incomplete entries remain private; the work is to build a
 longitudinal record over time, not manufacture a price history in one session.
 
+### AFF-001 — Improve affiliate coverage
+
+The current partner state is reconciled: TravelUp is the only live provider, with a real CJ
+tracking link and directly verified destination deep links. Expedia and other potential partners
+must remain unenabled until JetStash has approval, a genuine tracking link and a scoped validation
+of the customer journey.
+
 ## NEXT
 
 ### FARE-001 — Restore genuine fare intelligence
@@ -48,7 +58,6 @@ a fare merely to fill an empty state.
 ## QUEUED
 
 - `VIS-001` — complete real, licensed premium photography for supported UK airports.
-- `AFF-001` — review Expedia, booking partners, CJ opportunities and luggage partners.
 - `CONV-001` — use real analytics to test homepage conversion hierarchy; no redesign based only on
   opinion.
 - `ARR-001` — research and specify Arrive By for urgent, deadline-critical travel without making
@@ -68,7 +77,8 @@ a fare merely to fill an empty state.
 ## Known risks
 
 - Genuine fare intelligence remains thin and must never be filled with invented prices.
-- TravelUp deep linking remains disabled until a destination URL is verified manually.
+- TravelUp is a single booking-partner dependency. Recheck verified destination pages periodically;
+  do not add a partner or deep link without approval and direct validation.
 - Travel Ready rules and Route Status evidence require scheduled re-verification as source facts
   change.
 - Homepage conversion quality cannot be claimed from visual review alone; it requires real funnel

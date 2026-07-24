@@ -77,11 +77,11 @@ remaining work:
    Commission Junction tracking link with a per-route/page `sid`. A tracked click does **not**
    itself guarantee revenue; a qualifying conversion remains subject to attribution and programme
    terms. To re-enable another provider, configure and verify it in the same central file.
-7. **Manually verify a real TravelUp destination URL before enabling deep links.** A guessed
-   route-specific URL previously landed on an error page. `supportsDeepLink` deliberately remains
-   `false`, so booking links use TravelUp's working tracked landing page instead of a broken
-   destination URL. Enable it only after a real destination URL is verified in a browser and added
-   to `VERIFIED_DEEP_LINKS`; never infer a URL pattern.
+7. ~~Manually verify a real TravelUp destination URL before enabling deep links.~~ **Done.**
+   `supportsDeepLink` is `true`, and destination-specific booking links use CJ's `url=` override
+   only from the directly checked `VERIFIED_DEEP_LINKS` map in `lib/booking-providers.ts`. A
+   guessed route-specific URL previously landed on an error page: never infer a URL pattern;
+   directly confirm the exact page before adding or replacing an entry, and recheck it periodically.
 8. ~~Create the Route Watch Brevo attributes.~~ **Done** (see item 3 — confirmed together with the newsletter attributes). `/app/api/route-watch/route.ts` reuses `BREVO_API_KEY`/`BREVO_LIST_ID` and writes `WATCH_AIRPORT`, `WATCH_DESTINATION`, `WATCH_ROUTE`, `WATCH_REGION`, `WATCH_INTENT`. Note `WATCH_ROUTE` holds a comma-delimited list of up to 3 route slugs, not a single value — the shared cap is defined in `lib/route-watch-config.ts` (`MAX_WATCHED_ROUTES`) — deliberately reusing the existing attribute rather than adding a new one that would need re-provisioning. This is a storage mechanism only; it does not imply Travel Intelligence Engine integration.
 9. ~~Route quote-request leads somewhere real.~~ **Done.** `/app/api/quote-request/route.ts` and `/app/api/contact/route.ts` both reuse `RESEND_API_KEY`/`CONTACT_TO_EMAIL` (no new env vars) and now default to `siteConfig.contactEmail` in `lib/site-config.ts` — a real inbox, not a placeholder — when `CONTACT_TO_EMAIL` isn't set in Vercel. Every Umrah/family/group quote request lands in one inbox for manual follow-up; revisit whether that should become a rotation of partner agents or a shared inbox as volume grows.
 10. **Keep Travel Ready Check's rule content current.** `data/travel-ready-rules.ts`'s 15 rules across 7 countries were verified against live GOV.UK/official-portal pages in July 2026 with a 6-month review window — this is content, not code, and visa/passport rules change with little notice (Pakistan suspended visa-on-arrival for most nationalities on 1 January 2026 with no advance notice). See "Travel Ready Check — maintaining `data/travel-ready-rules.ts`" above for the re-verification procedure, and `/founder`'s "Travel Ready Check — rules ops" section for what's currently due.

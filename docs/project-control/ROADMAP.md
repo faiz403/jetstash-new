@@ -8,7 +8,7 @@ This roadmap contains unfinished work only. Completed work belongs in `COMPLETED
 |---:|---|---|---|---|
 | 1 | `FARE-001` | ACTIVE | Restore genuine fare intelligence. | Fresh observations with departure date, return date, cabin, source and observed date for priority routes, accumulated honestly over time. |
 | 2 | `VIS-001` | QUEUED | Complete real, licensed UK airport photography. | Premium airport-specific assets for Birmingham, Heathrow, Gatwick and other supported UK airports. |
-| 3 | `AFF-001` | QUEUED | Improve affiliate coverage. | Current partner state documented; only verified, working integrations enabled. |
+| 3 | `AFF-001` | ACTIVE | Improve affiliate coverage. | Current partner state reconciled; only approved, tracked integrations with directly validated customer journeys are enabled. Expedia and other candidates remain off until approved. |
 | 4 | `CONV-001` | QUEUED | Validate homepage conversion. | Funnel analytics reviewed; changes made only where data identifies a real drop-off. |
 
 ## Product-development roadmap
