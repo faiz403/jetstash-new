@@ -26,7 +26,9 @@ evidence shows a regression, changed requirement or stale external fact.
 | `PHOTO-001` | Completed destination photography using the JetStash Signature Collection direction. | Founder confirmed | Live |
 | `PC-001` | Added permanent project-control status, completed, roadmap and decision records and made them mandatory reading for future agents. | Repository and production verified: PR #6, merge `4dae272` | Live |
 | `DOC-001` | Reconciled the three core documents with Next.js `15.5.21`, the current Vitest suite, Route Status ownership, homepage ISR architecture and the automatic Vercel workflow. | Repository verified; 439/439 tests passed across 16 files on 24 July 2026 | Live |
-| `TRC-001` | Improved Travel Ready Check discoverability through contextual links in document and visa surfaces, the homepage, footer and sitemap, without main-navigation clutter. | Repository verified: `db12797`, `fa7734b`, `072c041`; 457/457 tests passed and Vercel Preview succeeded | Preview verified; live on merge |
+| `TRC-001` | Improved Travel Ready Check discoverability through contextual links in document and visa surfaces, the homepage, footer and sitemap, without main-navigation clutter. | Repository verified: `db12797`, `fa7734b`, `072c041`; 457/457 tests passed and Vercel Preview succeeded | Live |
+| `BRAND-001` | Repositioned JetStash as UK travel intelligence for international journeys, while retaining South Asia and Gulf route depth as explicit specialist coverage. | Repository verified: `05f47d6`; 475/475 tests passed, Vercel Preview and production smoke tests succeeded | Live: merged through PR #12 at `24fc761` |
+| `GUIDE-001` | Made the Guides hub visually discoverable with a compact editorial hero and image-led guide cards, preserving the international positioning copy. | Repository verified: `ccd12ca`, `feb579d`, `d021a95`; 480/480 tests passed, Vercel Preview and production smoke tests succeeded | Live: merged through PR #13 at `68d4cd2` |
 
 ## Earlier foundations retained
 

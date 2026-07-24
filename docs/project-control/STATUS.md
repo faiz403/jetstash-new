@@ -4,7 +4,7 @@
 
 **Production branch:** `main`
 
-**Application release baseline:** `0cee2754bc3f341f6573d0462516b83c57c08c2a`
+**Application release baseline:** `68d4cd2dfbde50e906cf3193d328b2b373b9dc1a`
 
 **Production site:** `https://jetstash.co.uk`
 
@@ -12,12 +12,14 @@
 
 - Route Status V1 is shipped and live.
 - The Manchester-to-Mumbai homepage visual is shipped and live.
-- The premium Guide image collection is shipped and live.
+- The premium Guide image collection and visual Guides discovery hub are shipped and live.
 - The Birmingham-to-Mumbai connecting guide and verification-pending leakage protection are live.
 - Travel Ready Check is built and live.
-- Travel Ready Check discoverability is complete on the reviewed feature branch: relevant
+- Travel Ready Check discoverability is live: relevant
   homepage, footer, sitemap, destination, family-visit and regional document surfaces now link
   contextually without adding main-navigation clutter.
+- JetStash is positioned across its platform surfaces as UK travel intelligence for international
+  journeys, with specialist route depth stated honestly as South Asia and the Gulf.
 - Route Watch and Travel Club use honest, human-reviewed language.
 - The Founder Dashboard is unavailable in production and non-indexable.
 - Operational submission flows were founder-confirmed as already tested; do not repeat the entire
@@ -29,14 +31,7 @@
 
 ## ACTIVE
 
-### `BRAND-001` — International platform positioning
-
-Reposition the platform-level experience as UK travel intelligence for international journeys, with
-specialist depth in South Asia and the Gulf rather than an implied regional-only audience. This work
-updates global messaging, desktop/mobile navigation, footer hierarchy, parent-page SEO and the
-Destinations directory without weakening country-specific hubs or overstating current coverage.
-
-**Current branch:** `feat/international-brand-positioning` — awaiting preview review and merge approval.
+No active delivery task. Select the next task from `ROADMAP.md` before beginning new implementation.
 
 ## NEXT
 
@@ -48,7 +43,7 @@ fill an empty state.
 
 ## QUEUED
 
-- `VIS-001` — complete premium photography for supported UK airports.
+- `VIS-001` — complete real, licensed premium photography for supported UK airports.
 - `AFF-001` — review Expedia, booking partners, CJ opportunities and luggage partners.
 - `CONV-001` — use real analytics to test homepage conversion hierarchy; no redesign based only on
   opinion.
