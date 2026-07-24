@@ -29,7 +29,9 @@ export interface FareObservation {
    * Required alongside `departureDate` for an observation to be publicly
    * displayable — see `isPubliclyPublishable()`. A price with no travel
    * dates doesn't say what it actually applies to; §2 of the Truth Reset
-   * treats that as a fare-integrity issue, not a cosmetic one.
+ * treats that as a fare-integrity issue, not a cosmetic one. The historic
+ * entries remain incomplete by design; new, fully dated observations are
+ * appended below when they meet the standard.
    */
   returnDate?: string;
 }
@@ -38,8 +40,8 @@ export interface FareObservation {
  * Truth Reset (July 2026): an observation is only safe to show publicly —
  * as a "Verified Check", counted in any "N fares tracked" total, or included
  * in a price range — once it records BOTH the departure and return dates it
- * was quoted for. This is deliberately strict: as of this pass, **none** of
- * the 18 observations below satisfy it (only some have `departureDate`, and
+ * was quoted for. This is deliberately strict: **none of the original 18**
+ * observations satisfy it (only some have `departureDate`, and
  * `returnDate` didn't exist as a field before this pass), so every public
  * fare display on the site will honestly degrade to "no fare checks logged
  * yet" until fares are re-logged with both dates. That's an intentional,
@@ -85,6 +87,7 @@ export const fareObservations: FareObservation[] = [
   { id: 'obs-lgw-amd-economy-1', routeSlug: 'london-gatwick-ahmedabad', cabin: 'Economy', observedDate: '2026-06-17', price: 412, priceNote: 'return, per person', source: 'Air India' },
   { id: 'obs-lgw-amd-business-1', routeSlug: 'london-gatwick-ahmedabad', cabin: 'Business', observedDate: '2026-06-17', price: 1620, priceNote: 'return, per person', source: 'Air India' },
   { id: 'obs-lhr-bom-economy-1', routeSlug: 'london-heathrow-mumbai', cabin: 'Economy', observedDate: '2026-06-16', price: 498, priceNote: 'return, per person', source: 'British Airways' },
+  { id: 'obs-lhr-bom-economy-2', routeSlug: 'london-heathrow-mumbai', cabin: 'Economy', observedDate: '2026-07-24', price: 491, priceNote: 'return, per person, Economy; starting fare', source: 'Virgin Atlantic', departureDate: '2026-09-08', returnDate: '2026-10-01' },
 ];
 
 export function getObservationsByRoute(routeSlug: string) {
@@ -168,6 +171,8 @@ export interface FareRangeSummary {
   max: number;
   earliestDate: string;
   latestDate: string;
+  /** Distinct airlines or providers the displayed observation(s) came from. Never substitute a deal's curation airline here. */
+  sources: string[];
   /** Taken from the most recent observation — the most representative note for the range shown. */
   priceNote: string;
 }
@@ -190,6 +195,7 @@ export function getFareRangeSummary(routeSlug: string, cabin: DealCabin, nowIso:
     max: Math.max(...prices),
     earliestDate: observations[0].observedDate,
     latestDate: observations[observations.length - 1].observedDate,
+    sources: [...new Set(observations.map((o) => o.source))],
     priceNote: observations[observations.length - 1].priceNote,
   };
 }

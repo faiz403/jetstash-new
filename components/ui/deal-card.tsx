@@ -59,6 +59,14 @@ export function DealCard({ deal }: { deal: Deal }) {
   const airlineLabel = getDealAirlineLabel(deal, nowIso);
   const freshness = range ? getFareFreshnessState(daysBetweenIso(range.latestDate, nowIso)) : null;
   const isStale = freshness === 'stale';
+  // The airline named by a Deal is separate curation data. Once a fare is
+  // shown, its attribution must come only from the observation(s) that
+  // produced that number — never from the deal's generic airline label.
+  const fareSourceLabel = range
+    ? range.sources.length === 1
+      ? `Fare checked with ${range.sources[0]}`
+      : `Fare checks with ${range.sources.join(' and ')}`
+    : null;
 
   return (
     <article className="group relative flex flex-col overflow-hidden rounded-md border border-ink-100 bg-white shadow-card transition-all duration-300 hover:-translate-y-1 hover:shadow-card-hover">
@@ -95,7 +103,7 @@ export function DealCard({ deal }: { deal: Deal }) {
               </span>
               <span className="text-sm text-ink-400">{range.priceNote}</span>
             </div>
-            {airlineLabel && <p className="mt-1 text-sm font-medium text-ink-500">{airlineLabel}</p>}
+            {fareSourceLabel && <p className="mt-1 text-sm font-medium text-ink-500">{fareSourceLabel}</p>}
 
             <div className="mt-4 flex items-center gap-1.5 text-xs text-ink-400">
               <span className={`h-1.5 w-1.5 rounded-full ${isStale ? 'bg-ink-300' : 'bg-brass-400'}`} />

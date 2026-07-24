@@ -31,15 +31,19 @@
 
 ## ACTIVE
 
-No active delivery task. Select the next task from `ROADMAP.md` before beginning new implementation.
+### FARE-001 — Restore genuine fare intelligence
+
+The pilot is under way. Only fresh, date-complete observations checked directly on airline-owned
+pages can be published. Historic incomplete entries remain private; the work is to build a
+longitudinal record over time, not manufacture a price history in one session.
 
 ## NEXT
 
 ### FARE-001 — Restore genuine fare intelligence
 
-Add fresh, dated, manually verified fare observations for priority routes. Every observation must
-carry departure date, return date, cabin, source and observed date; do not create a fare merely to
-fill an empty state.
+Continue adding fresh, dated, manually verified fare observations for priority routes. Every
+observation must carry departure date, return date, cabin, source and observed date; do not create
+a fare merely to fill an empty state.
 
 ## QUEUED
 
