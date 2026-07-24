@@ -22,8 +22,9 @@ business meetings and religious travel. A traveller enters their starting locati
 and required arrival time; JetStash works backwards to show the fastest and easiest plausible
 journeys, including conservative airport, immigration, baggage and onward-ground-time allowances.
 
-**Current status:** approved concept, research/specification queued, implementation deferred until
-the necessary schedule and ground-transport data can support honest estimates.
+**Current status:** research/specification complete — see [`docs/arrive-by.md`](../arrive-by.md).
+Implementation remains deferred until the necessary schedule and ground-transport data can support
+honest, evidence-complete estimates.
 
 **Non-negotiable boundary:** it must never promise that a traveller will arrive on time. It must
 label assumptions, uncertainty, connection risk and the point after which the journey is no longer

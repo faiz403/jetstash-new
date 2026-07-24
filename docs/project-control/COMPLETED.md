@@ -25,6 +25,7 @@ evidence shows a regression, changed requirement or stale external fact.
 | `PHOTO-001` | Completed destination photography using the JetStash Signature Collection direction. | Founder confirmed | Live |
 | `PC-001` | Added permanent project-control status, completed, roadmap and decision records and made them mandatory reading for future agents. | Repository and production verified: PR #6, merge `4dae272` | Live |
 | `DOC-001` | Reconciled the three core documents with Next.js `15.5.21`, the current Vitest suite, Route Status ownership, homepage ISR architecture and the automatic Vercel workflow. | Repository verified; 439/439 tests passed across 16 files on 24 July 2026 | Live |
+| `ARR-001` | Produced the evidence-gated Arrive By feasibility specification, including source contracts, uncertainty states, privacy boundaries, time-ledger rules and staged delivery gates. | [`docs/arrive-by.md`](../arrive-by.md); official source viability reviewed on 24 July 2026 | Live on merge; implementation remains deferred |
 
 ## Earlier foundations retained
 

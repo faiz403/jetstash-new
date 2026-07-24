@@ -14,6 +14,8 @@
 - The Manchester-to-Mumbai homepage visual is shipped and live.
 - The Birmingham-to-Mumbai connecting guide and verification-pending leakage protection are live.
 - Travel Ready Check is built and live.
+- Arrive By now has an evidence-gated product specification. Full implementation remains deferred
+  until every enabled journey segment has a trustworthy source and an approved failure mode.
 - Route Watch and Travel Club use honest, human-reviewed language.
 - The Founder Dashboard is unavailable in production and non-indexable.
 - Operational submission flows were founder-confirmed as already tested; do not repeat the entire
@@ -42,8 +44,6 @@ homepage, footer and relevant route/destination surfaces. Do not clutter the mai
 - `AFF-001` — review Expedia, booking partners, CJ opportunities and luggage partners.
 - `CONV-001` — use real analytics to test homepage conversion hierarchy; no redesign based only on
   opinion.
-- `ARR-001` — research and specify Arrive By for urgent, deadline-critical travel without making
-  unsupported schedule or arrival promises.
 
 ## Do not reopen without new evidence
 
@@ -53,6 +53,8 @@ homepage, footer and relevant route/destination surfaces. Do not clutter the mai
 - Direct-route WhatsApp punctuation.
 - Route Status V1 foundation, presentation and date formatting.
 - The Manchester-to-Mumbai homepage visual.
+- Arrive By research/specification; full implementation still requires source contracts and a
+  corridor-by-corridor delivery decision.
 - Founder Dashboard production protection.
 - Destination photography.
 
