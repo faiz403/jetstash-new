@@ -115,7 +115,7 @@ export function NewsletterSection() {
                     </div>
                     <div>
                       <label htmlFor="interest" className="text-xs text-ink-400">
-                        What you're tracking <span className="text-ink-500">(optional)</span>
+                        Current alert coverage <span className="text-ink-500">(optional)</span>
                       </label>
                       <select
                         id="interest"
@@ -123,7 +123,7 @@ export function NewsletterSection() {
                         onChange={(e) => setInterest(e.target.value)}
                         className="mt-1.5 h-11 w-full rounded-sm border border-white/15 bg-white/5 px-3 text-sm text-sand-50 focus-visible:border-brass"
                       >
-                        <option value="" className="bg-ink-900">Select region</option>
+                        <option value="" className="bg-ink-900">Choose an area we actively monitor</option>
                         {TRAVEL_INTEREST_OPTIONS.map((opt) => (
                           <option key={opt.value} value={opt.value} className="bg-ink-900">
                             {opt.label}

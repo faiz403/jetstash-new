@@ -2,9 +2,9 @@ export const siteConfig = {
   name: 'JetStash',
   domain: 'jetstash.co.uk',
   url: 'https://jetstash.co.uk',
-  tagline: "The UK's travel intelligence platform for South Asia, the Gulf and beyond",
+  tagline: "UK travel intelligence for international journeys",
   description:
-    'JetStash tracks route history, fare patterns and booking windows from UK airports to Pakistan, India, the Gulf, Turkey, Morocco and the wider Mediterranean, with dedicated hubs for family travel, Umrah and business class.',
+    'JetStash helps UK travellers make better international booking decisions with route status, fare patterns, booking timing and travel-readiness guidance. Our deepest verified coverage is currently South Asia and the Gulf, alongside selected destination guidance in Turkey, Morocco and the Mediterranean.',
   /**
    * Default inbox for lead-capture form submissions (contact form, quote
    * requests) — /app/api/contact and /app/api/quote-request both read
@@ -16,37 +16,36 @@ export const siteConfig = {
   contactEmail: 'faiz24485@gmail.com',
 };
 
-// The nav is the brand's spine: the four core corridors in commercial order
-// (matching the homepage hub ordering), then the full destination catalogue
-// (the only nav path to Turkey, Morocco and the Mediterranean), then the two
-// revenue verticals. Family Holidays stays in the footer and hub cross-links.
+// The nav is the brand's spine: lead with the travel-intelligence product,
+// then let the destination catalogue reveal the specialist hubs. This keeps
+// Pakistan, India, the Gulf and Umrah prominent without implying they are the
+// whole of JetStash.
 export const mainNav = [
-  { label: 'India', href: '/india' },
-  { label: 'Pakistan', href: '/pakistan' },
-  { label: 'Umrah', href: '/umrah' },
-  { label: 'Gulf', href: '/gulf' },
+  { label: 'Routes', href: '/routes' },
   { label: 'Destinations', href: '/destinations' },
-  { label: 'Business Class', href: '/business-class' },
+  { label: 'UK Airports', href: '/airports' },
+  { label: 'Travel Ready', href: '/travel-ready-check' },
+  { label: 'Guides', href: '/guides' },
   { label: 'Deals', href: '/deals' },
 ];
 
 export const footerNav = {
-  regions: [
+  explore: [
+    { label: 'All Routes', href: '/routes' },
+    { label: 'All Destinations', href: '/destinations' },
+    { label: 'UK Airports', href: '/airports' },
+    { label: 'Travel Ready Check', href: '/travel-ready-check' },
+    { label: 'Travel Guides', href: '/guides' },
+  ],
+  specialist: [
     { label: 'Pakistan Hub', href: '/pakistan' },
     { label: 'India Hub', href: '/india' },
     { label: 'Gulf Hub', href: '/gulf' },
     { label: 'Umrah & Saudi', href: '/umrah' },
-  ],
-  travel: [
-    { label: 'Family Holidays', href: '/family-holidays' },
     { label: 'Business Class', href: '/business-class' },
+    { label: 'Family Holidays', href: '/family-holidays' },
     { label: 'Request a Quote', href: '/quote-request' },
-    { label: 'Travel Ready Check', href: '/travel-ready-check' },
     { label: 'All Deals', href: '/deals' },
-    { label: 'All Routes', href: '/routes' },
-    { label: 'All Destinations', href: '/destinations' },
-    { label: 'Travel Guides', href: '/guides' },
-    { label: 'UK Airports', href: '/airports' },
   ],
   company: [
     { label: 'About JetStash', href: '/about' },

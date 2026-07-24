@@ -95,8 +95,8 @@ export function PullBriefHero({ handover, flagshipStatusCopy }: { handover: Hand
             Before you book, get a second opinion.
           </h1>
           <p className="mt-2.5 max-w-lg text-sm leading-relaxed text-ink-300 sm:text-[15px]">
-            We check the route, the timing and the paperwork for UK journeys to Pakistan, India, the Gulf and
-            Umrah. Then we tell you what actually matters.
+            We check the route, the timing and the paperwork for international journeys from UK airports. Our
+            deepest current coverage is South Asia and the Gulf — then we tell you what actually matters.
           </p>
         </div>
 

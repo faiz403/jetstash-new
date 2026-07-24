@@ -15,8 +15,9 @@ export const revalidate = 21600;
 
 export const metadata: Metadata = {
   alternates: { canonical: '/routes' },
-  title: 'All Routes: UK Airports to Pakistan, India & the Gulf',
-  description: 'Every flight route covered by JetStash, with booking windows and peak periods specific to each airport-destination pairing.',
+  title: 'Route Guides from UK Airports',
+  description:
+    'Airport-to-destination route guides with service status, booking timing and honest direct-or-connecting guidance. Current route coverage is deepest in South Asia and the Gulf.',
 };
 
 const regionLabels: Record<RegionGroup, string> = {
@@ -57,8 +58,8 @@ export default function RoutesIndexPage() {
       <PageHero
         heroKey="routes"
         eyebrow="Route guides"
-        title="Every route has its own story"
-        description="Airport-to-destination pairings across Pakistan, India, the Gulf and Umrah, each with its own booking pattern, peak periods and honest direct-or-connecting answer."
+        title="International route guides from UK airports"
+        description="Every airport-to-destination pairing has its own booking pattern, peak periods and honest direct-or-connecting answer. Current route coverage is deepest in South Asia and the Gulf."
         stats={[
           { value: String(routes.length), label: 'Route guides' },
           { value: String(directCount), label: 'Direct routes' },
