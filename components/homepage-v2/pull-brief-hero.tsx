@@ -2,10 +2,9 @@
 
 import { useMemo, useState, type FormEvent } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { ArrowRight, ArrowUpRight } from 'lucide-react';
-import { getAirportImage } from '@/lib/brand-images';
+import { getAirportImage, getDestinationImage, getHeroImage } from '@/lib/brand-images';
 import type { FlagshipStatusCopy } from '@/lib/flagship-status-copy';
 import { PullBrief } from './pull-brief';
 
@@ -62,7 +61,9 @@ export function PullBriefHero({ handover, flagshipStatusCopy }: { handover: Hand
   const isFeatured = fromSlug === FEATURED.from && toSlug === FEATURED.to;
   const routeSlug = handover.routeIndex[`${fromSlug}|${toSlug}`];
 
-  const manchesterImg = getAirportImage('manchester');
+  const originImg = getAirportImage('manchester');
+  const journeyImg = getHeroImage('manchester-mumbai-journey');
+  const destinationImg = getDestinationImage('mumbai');
 
   function onSubmit(e: FormEvent) {
     e.preventDefault();
@@ -76,15 +77,7 @@ export function PullBriefHero({ handover, flagshipStatusCopy }: { handover: Hand
   }
 
   return (
-    <section className="relative overflow-hidden bg-ink-950">
-      {/* Dusk-room photography, heavily recessed — the thread is the subject. */}
-      {manchesterImg && (
-        <div aria-hidden="true" className="absolute inset-0">
-          <Image src={manchesterImg.src} alt="" fill priority sizes="100vw" className="object-cover opacity-40" />
-          <div className="absolute inset-0 bg-gradient-to-b from-ink-950/80 via-ink-950/88 to-ink-950" />
-        </div>
-      )}
-
+    <section className="relative overflow-hidden bg-gradient-to-b from-ink-950 via-ink-950 to-[#141225]">
       <div className="relative mx-auto max-w-content px-5 pb-14 pt-5 sm:px-8 sm:pb-16 sm:pt-6">
         <div className="flex items-center gap-3">
           <Wordmark />
@@ -109,7 +102,13 @@ export function PullBriefHero({ handover, flagshipStatusCopy }: { handover: Hand
 
         {/* ── The featured proof — pull to reveal what matters most. ─────────── */}
         <div id="featured-stage" className="mt-4 scroll-mt-24 sm:mt-5">
-          <PullBrief aimedSlug={isFeatured ? 'mumbai' : null} statusCopy={flagshipStatusCopy} />
+          <PullBrief
+            aimedSlug={isFeatured ? 'mumbai' : null}
+            statusCopy={flagshipStatusCopy}
+            originImage={originImg}
+            journeyImage={journeyImg}
+            destinationImage={destinationImg}
+          />
         </div>
 
         {/* ── The handover — after the proof, the visitor's own journey. ─────── */}

@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { ArrowRight, CalendarClock, CheckCircle2, Circle } from 'lucide-react';
 import {
   ORIGIN,
@@ -10,6 +11,7 @@ import {
   routePath,
   type AtlasDestination,
 } from '@/components/sections/route-map-hero';
+import type { BrandImage } from '@/lib/brand-images';
 import type { FlagshipStatusCopy } from '@/lib/flagship-status-copy';
 import {
   type CubicPath,
@@ -27,6 +29,11 @@ import {
   magnetAssist,
   mapRecede,
   snapBackBow,
+  journeyOriginOpacity,
+  journeyBridgeOpacity,
+  journeyDestinationOpacity,
+  journeyOriginScale,
+  journeyDestinationScale,
 } from './pull-brief-math';
 
 /**
@@ -109,7 +116,22 @@ function PinIcon({ state }: { state: 'ready' | 'flag' | 'pending' }) {
 
 type Phase = 'rest' | 'tension' | 'unroll' | 'settled';
 
-export function PullBrief({ aimedSlug, statusCopy }: { aimedSlug: string | null; statusCopy: FlagshipStatusCopy }) {
+export function PullBrief({
+  aimedSlug,
+  statusCopy,
+  originImage,
+  journeyImage,
+  destinationImage,
+}: {
+  aimedSlug: string | null;
+  statusCopy: FlagshipStatusCopy;
+  /** Manchester Airport, resolved server-side via getAirportImage('manchester') — dominant at rest, receded by the middle of the pull. This component never resolves its own images; each is null (renders nothing) if the asset isn't present, matching every other brand-image call site's fallback contract. */
+  originImage: BrandImage | null;
+  /** The Manchester→Mumbai composite photograph, resolved server-side via getHeroImage('manchester-mumbai-journey') — the visual bridge through the middle of the pull. */
+  journeyImage: BrandImage | null;
+  /** Mumbai, resolved server-side via getDestinationImage('mumbai') — arrives late in the pull and remains as the open Journey Brief's backdrop. */
+  destinationImage: BrandImage | null;
+}) {
   /* Discrete phase drives React; continuous progress never touches state. */
   const [settled, setSettled] = useState(false);
   const [announce, setAnnounce] = useState('');
@@ -122,6 +144,9 @@ export function PullBrief({ aimedSlug, statusCopy }: { aimedSlug: string | null;
   const reducedRef = useRef(false);
 
   const stageRef = useRef<HTMLDivElement | null>(null);
+  const sceneOriginRef = useRef<HTMLDivElement | null>(null);
+  const sceneBridgeRef = useRef<HTMLDivElement | null>(null);
+  const sceneDestinationRef = useRef<HTMLDivElement | null>(null);
   const flagPathRef = useRef<SVGPathElement | null>(null);
   const glowPathRef = useRef<SVGPathElement | null>(null);
   const shimmerRef = useRef<SVGPathElement | null>(null);
@@ -161,6 +186,23 @@ export function PullBrief({ aimedSlug, statusCopy }: { aimedSlug: string | null;
       const m = mapRecede(p);
       mapLayerRef.current.style.opacity = String(1 - 0.72 * m);
       mapLayerRef.current.style.transform = `scale(${1 - 0.08 * m})`;
+    }
+    // The journey scene: Manchester recedes, the composite bridges the
+    // middle of the pull, Mumbai arrives as the open Brief's backdrop — one
+    // continuous transport, driven by the same `p` as everything else here
+    // (journeyOrigin/Bridge/DestinationOpacity, pull-brief-math.ts). Peak
+    // amplitudes are capped below 1 (never full-strength) so the route
+    // thread, labels and — once open — the Brief stay the dominant object.
+    if (sceneOriginRef.current) {
+      sceneOriginRef.current.style.opacity = String(journeyOriginOpacity(p) * 0.62);
+      sceneOriginRef.current.style.transform = `scale(${journeyOriginScale(p)})`;
+    }
+    if (sceneBridgeRef.current) {
+      sceneBridgeRef.current.style.opacity = String(journeyBridgeOpacity(p) * 0.58);
+    }
+    if (sceneDestinationRef.current) {
+      sceneDestinationRef.current.style.opacity = String(journeyDestinationOpacity(p) * 0.62);
+      sceneDestinationRef.current.style.transform = `scale(${journeyDestinationScale(p)})`;
     }
     if (tabRef.current) {
       tabRef.current.style.opacity = String(Math.max(0, 1 - p * 4));
@@ -448,6 +490,60 @@ export function PullBrief({ aimedSlug, statusCopy }: { aimedSlug: string | null;
         {/* Width cap tightens on short viewports (common laptops) so the whole
             stage — pull handle included — stays inside the first screen. */}
         <div className="relative mx-auto aspect-[1330/764] w-full max-w-[920px] [@media(max-height:820px)]:max-w-[640px]">
+          {/* The journey scene — decorative, never the accessible description
+              (the SVG's own aria-label already carries that). Three photographs
+              staged across the same pull progress as one continuous transport:
+              Manchester (dominant at rest) recedes into the Manchester–Mumbai
+              composite (the middle bridge), which in turn gives way to Mumbai
+              (the open Brief's backdrop) — see applyP()'s scene block for the
+              curves. Each layer renders only when its asset resolves; stays
+              behind the SVG purely through DOM order (both are
+              unpositioned-by-z-index absolute layers, so later wins). Bridge
+              and destination start at opacity 0 inline (not just via applyP)
+              so there's no pre-hydration flash of the wrong scene. */}
+          {(originImage || journeyImage || destinationImage) && (
+            <div aria-hidden="true" className="pointer-events-none absolute inset-0" style={{ transition: 'none' }}>
+              {originImage && (
+                <div ref={sceneOriginRef} className="absolute inset-0" style={{ transformOrigin: '50% 50%', transition: 'none' }}>
+                  <Image
+                    src={originImage.src}
+                    alt=""
+                    fill
+                    priority
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 90vw, 920px"
+                    className="object-cover object-center"
+                  />
+                </div>
+              )}
+              {journeyImage && (
+                <div ref={sceneBridgeRef} className="absolute inset-0" style={{ transformOrigin: '50% 50%', transition: 'none', opacity: 0 }}>
+                  <Image
+                    src={journeyImage.src}
+                    alt=""
+                    fill
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 90vw, 920px"
+                    className="object-cover object-center"
+                  />
+                </div>
+              )}
+              {destinationImage && (
+                <div ref={sceneDestinationRef} className="absolute inset-0" style={{ transformOrigin: '50% 50%', transition: 'none', opacity: 0 }}>
+                  <Image
+                    src={destinationImage.src}
+                    alt=""
+                    fill
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 90vw, 920px"
+                    className="object-cover object-center"
+                  />
+                </div>
+              )}
+              {/* Constant darkening (not p-driven — the Brief's own pin/bar
+                  backgrounds carry the rest of the contrast once open) so
+                  every scene state stays legible against the labels and,
+                  later, the Brief. */}
+              <div className="absolute inset-0 bg-gradient-to-b from-ink-950/15 via-ink-950/25 to-ink-950/65" />
+            </div>
+          )}
           <svg
             viewBox={`${VB.x} ${VB.y} ${VB.w} ${VB.h}`}
             className="absolute inset-0 h-full w-full"
