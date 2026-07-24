@@ -2,6 +2,13 @@
 
 A Next.js 14 (App Router) rebuild of JetStash — the UK's travel hub for Pakistan, India, the Gulf, Umrah travel, family holidays and business class, alongside Mediterranean and North African routes.
 
+## Project status and roadmap
+
+Start with [`docs/project-control/`](docs/project-control/README.md) for the current production
+baseline, completed-work ledger, active roadmap and decision log. It supersedes stale task-status
+claims in older phase reports; `JETSTASH_PRINCIPLES.md` remains the authority for standing product
+and architecture rules.
+
 ## Stack
 
 - **Next.js 14** (App Router, static generation for destination/airport pages)

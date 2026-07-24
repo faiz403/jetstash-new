@@ -2,6 +2,14 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Check project status before proposing work
+
+Read `docs/project-control/STATUS.md`, `COMPLETED.md`, `ROADMAP.md` and `DECISIONS.md` before
+starting or proposing a task. These files are the current authority for what is done, what comes
+next and which ideas have been accepted or rejected. Do not repeat a task recorded as `DONE`
+without new evidence of a regression or changed requirement. Update the tracker in the same PR
+when meaningful work changes project status.
+
 ## What this is
 
 JetStash — a Next.js 14 (App Router) marketing/content site for a UK travel hub covering Pakistan, India, the Gulf, Umrah, family holidays and business class, plus Mediterranean/North African routes. There is no database or CMS: all content (destinations, routes, airports, example fares) lives in typed TypeScript data files under `/data`. Pages are statically generated from that data.
