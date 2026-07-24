@@ -34,17 +34,25 @@ describe('International brand positioning', () => {
     );
   });
 
-  it('frames the homepage as international while naming current depth honestly', () => {
-    const normalised = homepageSource.replace(/\s+/g, ' ');
-    expect(normalised).toContain('international journeys from UK airports. Our deepest current coverage is South Asia and the Gulf');
-    expect(normalised).not.toContain('UK journeys to Pakistan, India, the Gulf and Umrah');
+  it('frames the homepage as international while naming current depth honestly, without an em dash or a vague worldwide/global claim', () => {
+    const paragraphMatch = homepageSource.match(/We check the route[\s\S]*?actually matters\./);
+    expect(paragraphMatch).not.toBeNull();
+    const paragraph = paragraphMatch![0].replace(/\s+/g, ' ');
+    expect(paragraph).toContain('international journeys from UK airports');
+    expect(paragraph).toContain('deepest verified coverage across South Asia and the Gulf');
+    expect(paragraph).not.toContain('UK journeys to Pakistan, India, the Gulf and Umrah');
+    expect(paragraph).not.toMatch(/—/);
+    expect(paragraph).not.toMatch(/\b(worldwide|global)\b/i);
   });
 
-  it('shows all four real coverage areas before country-level destination sections', () => {
+  it('shows all four real coverage areas before country-level destination sections, each linking to an anchor that actually covers what the card names', () => {
     for (const area of ['South Asia', 'Gulf & Saudi', 'Mediterranean & Southern Europe', 'North Africa']) {
       expect(destinationsSource).toContain(`title: '${area}'`);
     }
-    for (const anchor of ['#india', '#umrah', '#mediterranean', '#northAfrica']) {
+    // South Asia (Pakistan + India) and Gulf & Saudi (Gulf + Umrah) get their
+    // own combined-region anchors — see tests/destination-region-anchors.test.ts
+    // for the full detail of why #india/#umrah alone were wrong.
+    for (const anchor of ['#south-asia', '#gulf-saudi', '#mediterranean', '#northAfrica']) {
       expect(destinationsSource).toContain(`href: '${anchor}'`);
     }
     expect(destinationsSource).toContain('id={key}');

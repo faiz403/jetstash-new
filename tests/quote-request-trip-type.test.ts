@@ -176,16 +176,36 @@ describe('"Other" is a real escape hatch, not a dead end', () => {
 });
 
 describe('surrounding page copy no longer contradicts the expanded option set', () => {
-  it('the /quote-request hero and metadata no longer claim the form is only for Umrah/family/group', () => {
-    expect(pageSrc.toLowerCase()).not.toMatch(/for umrah packages, family trips and group travel/);
+  it('the /quote-request metadata title no longer names only a subset of trip types', () => {
+    expect(pageSrc).not.toMatch(/title:\s*'Request a Quote[^']*(?:Umrah|Family|Group)[^']*'/);
+    expect(pageSrc).toContain("title: 'Request a Travel Quote'");
   });
 
-  it('the hero description now names the broader set of trip types the field actually supports', () => {
+  it('the title relies on the root layout\'s "%s | JetStash" template rather than hand-appending the brand name again', () => {
+    const titleLine = pageSrc.match(/title: '([^']+)'/)?.[1] ?? '';
+    expect(titleLine.toLowerCase()).not.toContain('jetstash');
+  });
+
+  it('the /quote-request hero and metadata no longer claim the form is only for Umrah/family/group', () => {
+    expect(pageSrc.toLowerCase()).not.toMatch(/for umrah packages, family trips and group travel/);
+    expect(pageSrc.toLowerCase()).not.toMatch(/for family, group and specialist journeys/);
+  });
+
+  it('the hero description stays inclusive by not naming any subset of trip types at all — the picker below already lists every option, so the prose doesn\'t need to repeat or truncate that list', () => {
     const heroDescMatch = pageSrc.match(/description="([^"]+)"/);
     expect(heroDescMatch).not.toBeNull();
-    const desc = heroDescMatch![1].toLowerCase();
-    expect(desc).toMatch(/solo/);
-    expect(desc).toMatch(/business/);
+    const desc = heroDescMatch![1];
+    // None of the 8 option labels (or the old "family/group/Umrah only" framing) appear here.
+    for (const word of ['solo', 'couple', 'family', 'group', 'business', 'student', 'umrah']) {
+      expect(desc.toLowerCase()).not.toContain(word);
+    }
+  });
+
+  it('the hero description still reads as premium and human, not a fragment or a bare list', () => {
+    const heroDescMatch = pageSrc.match(/description="([^"]+)"/);
+    const desc = heroDescMatch![1];
+    expect(desc).toMatch(/^[A-Z][\s\S]*\.$/); // a real sentence, capitalised, full stop
+    expect(desc.split('.').filter(Boolean).length).toBeGreaterThanOrEqual(2); // more than one sentence
   });
 });
 

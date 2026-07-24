@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { Fragment } from 'react';
 import Link from 'next/link';
 import { ArrowUpRight } from 'lucide-react';
 import { PageHero } from '@/components/sections/page-hero';
@@ -22,13 +23,13 @@ const coverageAreas = [
     title: 'South Asia',
     detail: 'Pakistan and India',
     body: 'Our deepest route intelligence: booking timing, service status and travel-ready guidance.',
-    href: '#india',
+    href: '#south-asia',
   },
   {
     title: 'Gulf & Saudi',
     detail: 'Dubai, Doha, Jeddah and Madinah',
     body: 'Route guidance, travel readiness and specialist support for Umrah journeys.',
-    href: '#umrah',
+    href: '#gulf-saudi',
   },
   {
     title: 'Mediterranean & Southern Europe',
@@ -95,10 +96,19 @@ export default function DestinationsIndexPage() {
         const group = regionGroups[key];
         const items = destinations.filter((d) => group.destinationSlugs.includes(d.slug));
         if (items.length === 0) return null;
+        // South Asia (India + Pakistan) and Gulf & Saudi (Gulf + Umrah) are each
+        // two separate sections below — the coverage cards above need their own
+        // accurate anchor rather than silently landing on just one of the two
+        // countries. These invisible targets sit immediately before the first
+        // section of each pair; every existing per-country anchor (#india,
+        // #pakistan, #umrah, #gulf) is untouched.
         return (
-          <section id={key} key={key} className="border-b border-ink-100 bg-white py-14 last:border-0 sm:py-16">
-            <div className="mx-auto max-w-content px-5 sm:px-8">
-              <h2 className="font-display text-2xl text-ink-900 sm:text-3xl">{group.label}</h2>
+          <Fragment key={key}>
+            {key === 'india' && <div id="south-asia" className="scroll-mt-24" />}
+            {key === 'umrah' && <div id="gulf-saudi" className="scroll-mt-24" />}
+            <section id={key} className="border-b border-ink-100 bg-white py-14 last:border-0 sm:py-16">
+              <div className="mx-auto max-w-content px-5 sm:px-8">
+                <h2 className="font-display text-2xl text-ink-900 sm:text-3xl">{group.label}</h2>
               <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
                 {items.map((dest) => {
                   const routeCount = getRoutesByDestination(dest.slug).length;
@@ -135,7 +145,8 @@ export default function DestinationsIndexPage() {
                 })}
               </div>
             </div>
-          </section>
+            </section>
+          </Fragment>
         );
       })}
     </>
