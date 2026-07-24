@@ -4,7 +4,7 @@
 
 **Production branch:** `main`
 
-**Production baseline:** `498f980425b2907d09544e80244cba0a88a3b2d7`
+**Application release baseline:** `498f980425b2907d09544e80244cba0a88a3b2d7`
 
 **Production site:** `https://jetstash.co.uk`
 
@@ -19,27 +19,15 @@
 - Operational submission flows were founder-confirmed as already tested; do not repeat the entire
   audit unless a relevant API route, environment variable or provider configuration changes.
 - Destination photography is founder-confirmed complete.
-- The root `CLAUDE.md` and `README.md` still contain stale Next.js 14 / no-test wording and need a
-  focused accuracy refresh.
+- Permanent project-control records are linked from `CLAUDE.md` and `README.md`.
+- `CLAUDE.md`, `README.md` and `JETSTASH_PRINCIPLES.md` reflect Next.js `15.5.21`, the current
+  Vitest suite, Route Status ownership, homepage architecture and automatic Vercel deployment.
 
 ## ACTIVE
 
-### PC-001 — Establish permanent project tracking
-
-Create this project-control folder, link it from the agent and repository entry points, and make
-the completed ledger the first check before new work begins.
-
-**Completion condition:** the folder is reviewed, merged and becomes part of `main`.
+No implementation task is currently active.
 
 ## NEXT
-
-### DOC-001 — Refresh core documentation
-
-Correct `CLAUDE.md`, `README.md` and any affected parts of `JETSTASH_PRINCIPLES.md` so they reflect
-Next.js `15.5.21`, the current Vitest suite, Route Status V1, the current homepage architecture and
-the actual production workflow.
-
-This is first because stale agent instructions are already causing planning mistakes.
 
 ### TRC-001 — Improve Travel Ready Check discoverability
 

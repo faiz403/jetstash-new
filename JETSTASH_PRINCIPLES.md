@@ -1,25 +1,27 @@
 # JetStash Principles Handbook
 
 A single reference for how JetStash is built, why it's built that way, and the rules that keep
-future changes consistent with what's already here. This is not a duplicate of `README.md` (which
-is the operational launch checklist) or `CLAUDE.md` (the terse agent-facing brief) — it's the
+future changes consistent with what's already here. This is not a duplicate of `README.md` (the
+operator-facing setup and production guide) or `CLAUDE.md` (the terse agent-facing brief) — it's the
 longer-form "why" behind both, written for anyone (human or agent) picking up work on this
 codebase without prior context. Where a rule has a canonical source file, this document points to
 it rather than forking a second copy that can drift.
 
-**Read this alongside:** `CLAUDE.md` (quick agent brief), `README.md` (launch checklist, env vars,
-data model conventions), `docs/visual-identity.md` (photography system), `docs/travel-club-email-sequence.md`
-(manual email templates).
+**Read this alongside:** `docs/project-control/` (current status, completed ledger, roadmap and
+decisions), `CLAUDE.md` (quick agent brief), `README.md` (setup, production workflow, env vars and
+data conventions), `docs/visual-identity.md` (photography system), and
+`docs/travel-club-email-sequence.md` (manual email templates).
 
 ---
 
 ## 1. What JetStash is
 
-A Next.js 14 (App Router) content and lead-generation site for UK travellers flying to Pakistan,
-India, the Gulf, on Umrah trips, and to the wider Mediterranean/North Africa — with dedicated
-verticals for family visits and business class. There is **no database and no CMS**. Every fact on
-the site — every airport, destination, route, fare, warning, and tip — lives in a typed TypeScript
-array under `/data`, and pages are statically generated from that data at build time.
+A Next.js `15.5.21` App Router travel-intelligence and lead-generation site for UK travellers
+flying to Pakistan, India and the Gulf, on Umrah trips, and to the wider Mediterranean/North
+Africa — with dedicated verticals for family visits and business class. There is **no database and
+no CMS**. Travel facts live in typed TypeScript modules under `/data`. Public pages are
+pre-rendered, and status-sensitive surfaces use six-hour ISR so sourced service changes can take
+effect without a code deployment.
 
 Two business models sit on top of that content:
 1. **Affiliate commission** on outbound flight-booking clicks (TravelUp via Commission Junction).
@@ -33,22 +35,28 @@ routes have no fare data?") is always derived from real code/env state, never a 
 
 ## 2. Stack & commands
 
-- **Next.js 14.2** (App Router), **React 18**, **TypeScript 5** (`strict: true`)
+- **Next.js 15.5.21** (App Router), **React 18**, **TypeScript 5** (`strict: true`)
 - **Tailwind CSS 3** with a fully custom token system (no default palette in use)
 - **Fraunces** (display serif) + **Public Sans** (body) via `next/font/google`
 - `lucide-react` for icons, `clsx` + `tailwind-merge` (via `lib/utils.ts`'s `cn()`) for class merging
-- No ORM, no database client, no auth library — there is nothing to run except `next dev`/`next build`
+- **Vitest 4** for integrity, status, copy and interaction regression coverage
+- No ORM, no database client, no public auth library
 
 ```bash
 npm install
 npm run dev      # localhost:3000 — runs generate-image-manifest.mjs first (predev hook)
-npm run build    # THE real correctness check — ESLint is disabled during builds (next.config.js)
+npx tsc --noEmit # strict TypeScript check
 npm run lint     # run separately; next build will not catch lint issues
+npm test -- --run
+npm run build    # production build and prerender/ISR verification
 npm run start
 ```
 
-There is no test suite. `strict: true` TypeScript plus a real `npm run build` is the primary
-correctness signal for any non-trivial change to `/data` or page components.
+The suite contained **439 passing tests across 16 files** when this handbook was reconciled on
+24 July 2026. Treat that as a dated snapshot, not a fixed target: run the suite and report the
+current total. Significant application or data changes require TypeScript, lint, Vitest and the
+production build; documentation-only changes use proportional Markdown/link/whitespace checks
+plus the Vercel Preview.
 
 **Windows-specific build trap:** always build from the correctly-cased path
 (`C:\Users\<you>\Documents\...`, capital D). A lowercase-`documents` working directory makes
@@ -60,6 +68,7 @@ prerendering with `Cannot read properties of null (reading 'useContext')`.
 ```
 app/            Routes (Next.js App Router) — see §5
 components/
+  homepage-v2/  Public Journey Desk, pull interaction and flagship visual
   ui/           Button, Badge, DealCard, HubCard, DestinationVisual, DestinationMark,
                 HeroBackdrop, NoFareFallback, RouteStat, Logomark — shared primitives
   layout/       Header, Footer
@@ -74,7 +83,9 @@ lib/
   site-config.ts          Nav structure, region groupings, site metadata, contact email
   booking-providers.ts    Affiliate/booking-link architecture — see §7
   brand-images.ts         Image manifest resolver — see §6.4
-  email.ts                Brevo/Resend HTTP helpers used by the four API routes
+  route-status-copy.ts    Evidence validation, public status copy/presentation — see §4.1
+  flagship-status-copy.ts Homepage mapping from the canonical Route Status view model
+  email.ts                Brevo/Resend helpers used by submission and reminder routes
   utils.ts                cn() className merge helper
   quote-request-options.ts, route-watch-options.ts, travel-club-options.ts
                            Shared option lists + validators for form/API pairs — see §8
@@ -85,6 +96,7 @@ scripts/
   generate-image-manifest.mjs   Scans public/images/** into lib/image-manifest.json
                                   (prebuild/predev hook)
 docs/
+  project-control/                Current status, completed ledger, roadmap and decisions
   visual-identity.md              Photography art direction + naming convention
   travel-club-email-sequence.md   Manual email templates for Travel Club
 public/images/{heroes,destinations,airports,guides}/   Real photography, by slug/key
@@ -94,14 +106,14 @@ public/images/{heroes,destinations,airports,guides}/   Real photography, by slug
 
 ## 4. Content model (`/data`)
 
-Fourteen typed arrays, cross-referenced by **slug**, never nested. Current volumes: 24
-destinations, 26 routes, 11 UK airports, 9 guides.
+Typed data modules, cross-referenced by **slug**, never nested. Avoid hardcoding inventory counts
+in documentation because the append-only content model is expected to grow.
 
 | File | Exports | Purpose |
 |---|---|---|
 | `airports.ts` | `Airport`, `getAirportBySlug` | UK departure airports. `compareAirportSlugs` names a realistic alternative for airports with no curated direct route. |
 | `destinations.ts` | `Destination`, `RegionGroup`, `getDestinationBySlug` | All destinations across `pakistan`/`india`/`gulf`/`mediterranean`/`north-africa`. Umrah destinations (Jeddah, Madinah) use `region: 'gulf'` — the `/umrah` hub filters by `regionGroups.umrah.destinationSlugs` in `site-config.ts`, not a distinct region value. `familyVisitContent` is optional, present only where visiting relatives is a primary travel pattern. |
-| `routes.ts` | `Route`, `getRouteByAirportAndDestination`, `getRoutesByDestination`, `getRouteAirport`, `getRouteDestination`, `getRouteStatus`, `getEffectiveRoutePresentation` | Airport→destination route guides, plus the Route Status V1 derivation that reads time-bound direct-service changes from the ledger (`route-status-events.ts`) — never from a field on `Route`. `connectingAlternative` describes the realistic 1/2-stop fallback, kept as separate editorial content. See §4.1. |
+| `routes.ts` | `Route`, route lookups, `getRouteStatus` | Airport→destination route guides plus the pure Route Status derivation that reads time-bound direct-service changes from `route-status-events.ts` — never from a field on `Route`. `connectingAlternative` remains separate editorial content. See §4.1. |
 | `route-status-events.ts` | `RouteStatusEvent`, `SourceRef`, `getRouteStatus`'s ledger, `validateStatusLedger` | Append-only, fully sourced evidence ledger for withdrawal/service-ended/reschedule/cancellation events — the single source of truth for any time-bound direct-service change. See §4.1. |
 | `deals.ts` | `Deal`, `DealCabin`, `DealCategory`, `getDealsByRegionGroup` | Curation only — which airport→destination+cabin combos to feature as a card. **No price field, deliberately** — see §4.2. |
 | `fare-observations.ts` | `FareObservation`, `getObservationsByRoute`, `getLatestObservation`, `getFareRangeSummary` | Append-only fare history — the *only* source of truth for any price shown anywhere. |
@@ -128,12 +140,12 @@ so this is modelled as an append-only, fully sourced evidence ledger — `data/r
   from the ledger, with no wall-clock read and strict (non-inclusive) freshness — see the file's own
   header comment for the full invariants, including why an announced date passing produces a
   neutral `verification-pending` result, never a silent `service-ended`.
-- `getEffectiveRoutePresentation()` is the one adapter every public surface calls, reconciling this
-  derivation with the pre-existing `getRoutePresentation()`/`getDisplayDirectness()` presentation
-  layer so the two can never silently disagree.
-- `lib/route-status-copy.ts`'s `getRouteStatusCopy()` turns a result into customer-facing words,
+- `lib/route-status-copy.ts` owns `getEffectiveRoutePresentation()`, the one adapter every public
+  surface calls. It reconciles the derivation with the pre-existing
+  `getRoutePresentation()`/`getDisplayDirectness()` layer so the two cannot silently disagree.
+- The same module's `getRouteStatusCopy()` turns a result into customer-facing words,
   independently re-validating every cited event/source at render time and failing closed to a
-  neutral, evidence-free pending view whenever that validation can't be completed.
+  neutral, evidence-free pending view whenever validation cannot be completed.
 - `connectingAlternative` — the realistic fallback, whether the route is currently direct (framed
   as "what happens after") or already connecting-only (framed as "how this route works") — remains
   entirely separate, editorial content. "Direct service ended" and "a connecting journey exists" are
@@ -403,32 +415,40 @@ It's organised by **business priority**, not technical severity:
 
 Sections: quote-request/Travel Club connectivity, broken/placeholder deal links, time-bound
 service changes (the one category with a real forcing date), affiliate/booking-provider status,
-fare-observation coverage, missing photography, route warnings due for re-verification, stale
-dated content, and a launch checklist mirroring the README's "Required before launch" section.
+fare-observation coverage, missing airport/guide photography, route warnings due for
+re-verification and stale dated content. Current task status belongs in
+`docs/project-control/`; the dashboard derives operational signals and must not become a second
+roadmap.
 When adding a new operational concern worth tracking, add a section here rather than a one-off
 TODO comment — it keeps "what needs attention" centrally derivable instead of scattered.
 
 ## 11. Deployment
 
-Vercel, zero-config (Next.js auto-detected).
+The GitHub repository and Vercel project are already connected. Every pushed branch receives a
+Preview deployment; merging to `main` automatically starts a Production deployment with no
+separate manual promotion gate.
 
-1. Push to a GitHub repository (already the case — remote `origin`, branch `main`).
-2. In Vercel: **Add New Project** → import the repo.
-3. Set environment variables in **Project Settings → Environment Variables** before any deploy
-   that needs them:
+1. Push a feature branch and record the exact head commit.
+2. Verify the Vercel Preview and the quality gates appropriate to the change.
+3. Merge only with explicit approval.
+4. Monitor the Production deployment for the exact merge commit until it succeeds or fails.
+5. After an application change, smoke-test `jetstash.co.uk`; for documentation-only changes,
+   exact commit/deployment identity is sufficient unless the build reports a problem.
+
+Environment variables are managed in **Vercel Project Settings → Environment Variables**:
 
 | Variable | Used by | Required for |
 |---|---|---|
 | `BREVO_API_KEY` | `api/subscribe`, `api/route-watch` | Newsletter/Route Watch signups to save |
 | `BREVO_LIST_ID` | `api/subscribe`, `api/route-watch` | Same |
-| `RESEND_API_KEY` | `api/contact`, `api/quote-request` | Contact/quote forms to actually send |
-| `CONTACT_TO_EMAIL` | `api/contact`, `api/quote-request` | Optional — overrides `siteConfig.contactEmail` |
+| `RESEND_API_KEY` | `api/contact`, `api/quote-request`, `api/cron/fare-check-reminder` | Contact/quote delivery and reminder email |
+| `CONTACT_TO_EMAIL` | contact, quote and reminder routes | Optional — overrides `siteConfig.contactEmail` |
+| `CRON_SECRET` | `api/cron/fare-check-reminder` | Optional but recommended request authentication |
 
-4. Connect the domain (`jetstash.co.uk`) under **Project Settings → Domains**.
-5. Before treating any deploy as launch-ready, also confirm the Brevo custom contact attributes
-   exist (`NEAREST_AIRPORT`, `TRAVEL_INTEREST`, `WATCH_AIRPORT`, `WATCH_DESTINATION`,
-   `WATCH_ROUTE`, `WATCH_REGION`, `WATCH_INTENT`) — Brevo silently drops attributes it doesn't
-   recognise, and this can't be checked from code.
+The production domain is `jetstash.co.uk`. After a Brevo account/configuration change, confirm the
+custom contact attributes still exist (`NEAREST_AIRPORT`, `TRAVEL_INTEREST`, `WATCH_AIRPORT`,
+`WATCH_DESTINATION`, `WATCH_ROUTE`, `WATCH_REGION`, `WATCH_INTENT`) — Brevo silently drops
+unrecognised attributes, and this cannot be proved from application code alone.
 
 No remote image hosts are configured (`next.config.js`) — all imagery is either local files under
 `public/images/` or the locally rendered `<DestinationMark />` fallback, so there's nothing to add

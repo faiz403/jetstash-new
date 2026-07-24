@@ -23,6 +23,8 @@ evidence shows a regression, changed requirement or stale external fact.
 | `OPS-001` | Completed the production operational verification of the customer submission flows. | Founder confirmed on 24 July 2026. Durable per-flow evidence was not added to this ledger. | Treat as complete; re-test only after a relevant change |
 | `FOUNDER-001` | Protected the Founder Dashboard from production access and indexing. | Production verified: `/founder` returned HTTP 404; source gating and robots rules reviewed | Live |
 | `PHOTO-001` | Completed destination photography using the JetStash Signature Collection direction. | Founder confirmed | Live |
+| `PC-001` | Added permanent project-control status, completed, roadmap and decision records and made them mandatory reading for future agents. | Repository and production verified: PR #6, merge `4dae272` | Live |
+| `DOC-001` | Reconciled the three core documents with Next.js `15.5.21`, the current Vitest suite, Route Status ownership, homepage ISR architecture and the automatic Vercel workflow. | Repository verified; 439/439 tests passed across 16 files on 24 July 2026 | Live |
 
 ## Earlier foundations retained
 
