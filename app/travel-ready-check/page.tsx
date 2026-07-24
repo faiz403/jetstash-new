@@ -6,7 +6,8 @@ import { destinations, getDestinationBySlug } from '@/data/destinations';
 
 export const metadata: Metadata = {
   alternates: { canonical: '/travel-ready-check' },
-  title: 'Travel Ready Check — JetStash',
+  // Root layout's title template already appends " | JetStash" — no manual suffix here.
+  title: 'Travel Ready Check',
   description:
     'Check passport validity and visa guidance for your specific trip to Pakistan, India, Saudi Arabia, UAE, Qatar, Turkey or Morocco, sourced from official government pages.',
 };

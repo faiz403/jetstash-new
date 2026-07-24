@@ -36,7 +36,17 @@ export function DealCard({ deal }: { deal: Deal }) {
   // managed corridor past its withdrawal boundary is never shown as if
   // still direct.
   const presentation = matchedRoute ? getEffectiveRoutePresentation(matchedRoute, routeStatusEvents, nowIso) : undefined;
-  const flightTime = presentation ? presentation.flightTime : destination?.flightTimeFromUK;
+  // Wrong-airport leakage fix: destinations.ts's flightTimeFromUK is a single
+  // string that usually names one specific UK airport (e.g. Islamabad's "7h
+  // 45m direct from Manchester") rather than describing the deal's own
+  // departure airport. Without a matched route, only fall back to it when
+  // this destination's own data actually claims the deal's airport flies
+  // there at all — otherwise a Heathrow deal card could show a duration
+  // that's explicitly labelled as being from Manchester. Still imperfect
+  // when a destination lists multiple airports under one airport-specific
+  // string, but it removes the case that actually leaked to production.
+  const canUseDestinationFallback = !matchedRoute && !!destination?.ukAirports.includes(deal.fromAirportSlug);
+  const flightTime = presentation ? presentation.flightTime : canUseDestinationFallback ? destination?.flightTimeFromUK : undefined;
   // Presentation-integrity fix: never re-derive label text via a local
   // ternary — presentation.statusLabel is the one canonical label (see
   // RoutePresentationBase's doc comment in data/routes.ts), so a new status

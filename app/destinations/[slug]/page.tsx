@@ -142,7 +142,10 @@ export default async function DestinationPage({ params }: { params: Promise<{ sl
                   );
                 })}
               </div>
-              <p className="mt-3 text-sm text-ink-500">Typical flight time: {dest.flightTimeFromUK}</p>
+              <p className="mt-3 text-sm text-ink-500">
+                General guide, not a confirmed schedule: {dest.flightTimeFromUK}. See the route guides
+                above for each airport's current verified service.
+              </p>
             </div>
 
             <div className="rounded-md border border-ink-100 bg-sand-50 p-7">
