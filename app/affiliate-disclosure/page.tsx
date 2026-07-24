@@ -20,7 +20,7 @@ const sections: { title: string; body: React.ReactNode }[] = [
   },
   {
     title: 'It never changes what we say',
-    body: 'We aim to show fares and routes based on what\'s genuinely useful to UK travellers heading to Pakistan, India, the Gulf and beyond, not based on which partner pays the highest commission. Where we feature a specific operator or fare, it\'s because we believe it\'s relevant, not because of the size of the commission involved.',
+    body: 'We aim to show fares and routes based on what\'s genuinely useful to UK travellers on the international routes we cover, not based on which partner pays the highest commission. Where we feature a specific operator or fare, it\'s because we believe it\'s relevant, not because of the size of the commission involved.',
   },
   {
     title: 'Prices are indicative, always',

@@ -32,7 +32,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const airport = getAirportBySlug(slug);
   if (!airport) return {};
   return {
-    title: `Flights from ${airport.name} (${airport.code}): Pakistan, India & Gulf Routes`,
+    title: `Flights from ${airport.name} (${airport.code}): Route Guides & Fares`,
     description: airport.description,
     alternates: { canonical: `${siteConfig.url}/airports/${airport.slug}` },
   };

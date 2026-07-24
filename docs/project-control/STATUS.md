@@ -4,7 +4,7 @@
 
 **Production branch:** `main`
 
-**Application release baseline:** `498f980425b2907d09544e80244cba0a88a3b2d7`
+**Application release baseline:** `0cee2754bc3f341f6573d0462516b83c57c08c2a`
 
 **Production site:** `https://jetstash.co.uk`
 
@@ -28,7 +28,14 @@
 
 ## ACTIVE
 
-No implementation task is currently active.
+### `BRAND-001` — International platform positioning
+
+Reposition the platform-level experience as UK travel intelligence for international journeys, with
+specialist depth in South Asia and the Gulf rather than an implied regional-only audience. This work
+updates global messaging, desktop/mobile navigation, footer hierarchy, parent-page SEO and the
+Destinations directory without weakening country-specific hubs or overstating current coverage.
+
+**Current branch:** `feat/international-brand-positioning` — awaiting preview review and merge approval.
 
 ## NEXT
 

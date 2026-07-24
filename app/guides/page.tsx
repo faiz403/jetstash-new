@@ -7,7 +7,7 @@ import { guides } from '@/data/guides';
 export const metadata: Metadata = {
   alternates: { canonical: '/guides' },
   title: 'Travel Guides',
-  description: 'Practical guides for UK travellers heading to Pakistan, India, the Gulf and beyond.',
+  description: 'Practical travel intelligence for international journeys from UK airports: documents, booking timing, route choices and fare decisions.',
 };
 
 export default function GuidesPage() {
@@ -17,7 +17,7 @@ export default function GuidesPage() {
         heroKey="guides"
         eyebrow="Travel guides"
         title="The detail that actually affects your booking"
-        description="Visa timing, festival pricing, direct-versus-connecting maths: the questions people on these routes actually ask, answered without filler."
+        description="Visa timing, festival pricing and direct-versus-connecting maths: the questions that shape an international booking, answered without filler."
         stats={[{ value: String(guides.length), label: 'Guides' }]}
       />
 
