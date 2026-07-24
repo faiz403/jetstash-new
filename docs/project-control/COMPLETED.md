@@ -17,6 +17,7 @@ evidence shows a regression, changed requirement or stale external fact.
 | `STATUS-002` | Shipped Route Status presentation across the homepage and route surfaces, ISR coverage, evidence validation and airline suppression. | Repository verified: `c48f387`, merged through PR #4 | Live |
 | `STATUS-003` | Standardised customer-facing Route Status dates in UK long-form and added regression coverage. | Repository verified: `7eee01d`, merged through PR #4 | Live |
 | `VIS-001A` | Added the dark Manchester-to-Mumbai homepage journey visual and pull interaction. | Repository verified: `63a1515`, merged through PR #5 at `498f980` | Live |
+| `VIS-002` | Added the consistent, dark editorial Guide image collection across all nine guide pages. | Repository verified: `c825dd9` and `5fb2d5d`, merged through PR #10 at `0c3bffe` | Live |
 | `READY-001` | Built and shipped Travel Ready Check with official-source rules, freshness dates and honest unsupported-combination behaviour. | Repository and production verified; see `JETSTASH_PRINCIPLES.md` §14.3 | Live |
 | `WATCH-001` | Connected Travel Club and Route Watch to Brevo, created the required attributes and live-tested signup storage. | Repository verified in `README.md`; production test recorded there | Live |
 | `LEADS-001` | Connected quote-request and contact routes to the real inbox workflow. | Repository verified in `README.md` | Live |

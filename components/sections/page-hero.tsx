@@ -20,6 +20,7 @@ export function PageHero({
   stats,
   heroKey,
   children,
+  size = 'default',
 }: {
   eyebrow?: string;
   title: React.ReactNode;
@@ -29,9 +30,11 @@ export function PageHero({
   /** Key into public/images/heroes/ for an optional photographic backdrop. */
   heroKey?: string;
   children?: React.ReactNode;
+  /** A shallower arrival moment for index pages where discovery should begin above the fold. */
+  size?: 'default' | 'compact';
 }) {
   return (
-    <section className="relative overflow-hidden bg-ink-900 py-16 sm:py-20">
+    <section className={`relative overflow-hidden bg-ink-900 ${size === 'compact' ? 'py-12 sm:py-14' : 'py-16 sm:py-20'}`}>
       <HeroBackdrop heroKey={heroKey} />
       <div
         className="absolute -right-24 top-1/2 hidden h-[420px] w-[420px] -translate-y-1/2 rounded-full border border-white/[0.04] lg:block"
