@@ -104,10 +104,9 @@ describe('Fare-observation completeness gating (TR-002) — Verified Check must 
 });
 
 describe('Deal counts (TR-004) — a card with no tracked fare must not count as one', () => {
-  it('no current deal has a tracked fare, since no fare observation in the dataset is publicly complete yet', () => {
-    // Same intentional, disclosed consequence as above, at the Deals-page level.
-    const trackedCount = deals.filter((d) => hasTrackedFare(d, FIXED_TODAY)).length;
-    expect(trackedCount).toBe(0);
+  it('counts only the London Heathrow–Mumbai deal with the complete, primary-source pilot observation', () => {
+    const trackedDeals = deals.filter((d) => hasTrackedFare(d, FIXED_TODAY));
+    expect(trackedDeals.map((d) => d.id)).toEqual(['lhr-bom-economy']);
   });
 
   it('hasTrackedFare returns false for a deal whose airport-destination pair has no Route entry at all', () => {
@@ -287,47 +286,62 @@ describe('getDealDirectnessLabel (TR-009, final correction) — a deal/search ca
   });
 });
 
-describe('TR-002 direct production audit — enumerate all 18 fare observations, none may be publicly displayable', () => {
-  it('exactly 18 observations exist in the append-only log', () => {
-    expect(fareObservations.length).toBe(18);
+describe('FARE-001 pilot — historic examples stay private; only fully dated, evidenced observations publish', () => {
+  it('keeps the 18 historic observations and appends one complete pilot observation', () => {
+    expect(fareObservations).toHaveLength(19);
   });
 
-  it('every one of the 18 observations individually fails isPubliclyPublishable (none has both departureDate and returnDate)', () => {
+  it('keeps every historic observation incomplete and private', () => {
     const incomplete = fareObservations.filter((o) => !isPubliclyPublishable(o));
-    expect(incomplete.length).toBe(fareObservations.length);
-    for (const o of fareObservations) {
+    expect(incomplete).toHaveLength(18);
+    for (const o of incomplete) {
       expect(isPubliclyPublishable(o), `observation ${o.id}`).toBe(false);
     }
   });
 
-  it('getFareRangeSummary returns null for every route+cabin combination present in the 18 observations — none can appear as a price, a Verified Check, or fare history', () => {
-    const pairs = new Set(fareObservations.map((o) => `${o.routeSlug}|${o.cabin}`));
-    for (const pair of pairs) {
-      const [routeSlug, cabin] = pair.split('|') as [string, FareObservation['cabin']];
-      expect(getFareRangeSummary(routeSlug, cabin, FIXED_TODAY), `${routeSlug} / ${cabin}`).toBeNull();
-    }
+  it('publishes the single exact Virgin Atlantic example, including its source, cabin and travel dates', () => {
+    const published = fareObservations.filter(isPubliclyPublishable);
+    expect(published).toEqual([
+      expect.objectContaining({
+        id: 'obs-lhr-bom-economy-2',
+        routeSlug: 'london-heathrow-mumbai',
+        cabin: 'Economy',
+        observedDate: '2026-07-24',
+        price: 491,
+        priceNote: 'return, per person, Economy; starting fare',
+        source: 'Virgin Atlantic',
+        departureDate: '2026-09-08',
+        returnDate: '2026-10-01',
+      }),
+    ]);
   });
 
-  it('getLatestPublishableObservation returns undefined for every route with an incomplete observation — Book-By\'s "last checked fare" cannot surface any of the 18', () => {
-    const routeSlugs = new Set(fareObservations.map((o) => o.routeSlug));
-    for (const routeSlug of routeSlugs) {
-      expect(getLatestPublishableObservation(routeSlug, FIXED_TODAY), routeSlug).toBeUndefined();
-    }
+  it('derives a one-check £491 summary for London Heathrow–Mumbai, not an invented range', () => {
+    expect(getFareRangeSummary('london-heathrow-mumbai', 'Economy', FIXED_TODAY)).toEqual({
+      count: 1,
+      min: 491,
+      max: 491,
+      earliestDate: '2026-07-24',
+      latestDate: '2026-07-24',
+      sources: ['Virgin Atlantic'],
+      priceNote: 'return, per person, Economy; starting fare',
+    });
   });
 
-  it('no deal in the public array counts as a tracked fare — Deals still reports zero tracked fares', () => {
-    const trackedCount = deals.filter((d) => hasTrackedFare(d, FIXED_TODAY)).length;
-    expect(trackedCount).toBe(0);
+  it('keeps all other historic-only routes out of public fare output', () => {
+    expect(getFareRangeSummary('manchester-lahore', 'Economy', FIXED_TODAY)).toBeNull();
+    expect(getLatestPublishableObservation('manchester-lahore', FIXED_TODAY)).toBeUndefined();
   });
 
-  it('every deal whose route has one of the 18 incomplete observations still resolves to hasTrackedFare === false individually', () => {
-    const observedRouteSlugs = new Set(fareObservations.map((o) => o.routeSlug));
+  it('keeps every deal without a complete observation untracked', () => {
+    const observedRouteSlugs = new Set(fareObservations.filter((o) => !isPubliclyPublishable(o)).map((o) => o.routeSlug));
     const affectedDeals = deals.filter((d) => {
       const route = getRouteByAirportAndDestination(d.fromAirportSlug, d.toDestinationSlug);
       return route && observedRouteSlugs.has(route.slug);
     });
     expect(affectedDeals.length).toBeGreaterThan(0); // sanity: this set is non-empty
     for (const deal of affectedDeals) {
+      if (deal.id === 'lhr-bom-economy') continue;
       expect(hasTrackedFare(deal, FIXED_TODAY), deal.id).toBe(false);
     }
   });
