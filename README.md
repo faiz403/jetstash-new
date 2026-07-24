@@ -1,6 +1,8 @@
 # JetStash 2.0
 
-A Next.js 14 (App Router) rebuild of JetStash — the UK's travel hub for Pakistan, India, the Gulf, Umrah travel, family holidays and business class, alongside Mediterranean and North African routes.
+A Next.js `15.5.21` App Router platform that gives UK travellers an evidence-backed second opinion
+before they book journeys to Pakistan, India, the Gulf and Umrah, with supporting family-holiday
+and business-class content.
 
 ## Project status and roadmap
 
@@ -11,10 +13,11 @@ and architecture rules.
 
 ## Stack
 
-- **Next.js 14** (App Router, static generation for destination/airport pages)
+- **Next.js 15.5.21** (App Router, pre-rendering and targeted six-hour ISR)
 - **TypeScript**
 - **Tailwind CSS** with a custom brand token system (`tailwind.config.js`)
 - **Fraunces** (display serif) + **Public Sans** (body) via `next/font/google`
+- **Vitest 4** — 439 tests across 16 files as of 24 July 2026
 - No database — content lives in typed data files under `/data`
 
 ## Local setup
@@ -22,28 +25,63 @@ and architecture rules.
 ```bash
 npm install
 npm run dev
+npx tsc --noEmit
+npm run lint
+npm test -- --run
+npm run build
 ```
 
 Open http://localhost:3000.
 
 ## Deploying to Vercel
 
-1. Push this project to a GitHub repository.
-2. In Vercel, "Add New Project" → import the repo. Vercel detects Next.js automatically — no config needed.
-3. Add environment variables (see below) in **Project Settings → Environment Variables** before your first production deploy that needs them.
-4. Connect your domain (`jetstash.co.uk`) under **Project Settings → Domains**.
+The GitHub repository and Vercel project are already connected:
 
-## Required before launch — read this
+1. Push a feature branch. Vercel automatically creates a Preview deployment.
+2. Open a pull request against `main` and verify the exact head commit and Preview result.
+3. Merge only with explicit approval. A merge to `main` automatically triggers a Production
+   deployment; there is no separate manual promotion gate.
+4. Monitor Vercel for the exact merge commit until it reaches a terminal state.
+5. Confirm `jetstash.co.uk` after an application change. For documentation-only changes, commit
+   and deployment identity are sufficient unless the build reports a problem.
 
-This codebase was written without the ability to run `npm install` or a real build in the environment it was produced in (no network access to the npm registry). Before treating this as launch-ready:
+## Production readiness and ongoing operations
 
-1. **Run a real build and fix whatever the compiler finds.** `npm install && npm run build` locally or let Vercel's first deploy do it. Note for Windows: run the build from the *correctly-cased* project path (`C:\Users\<you>\Documents\...`, capital D). Building from a lowercase-`documents` working directory makes webpack resolve two differently-cased copies of every module, which loads React twice and fails prerendering with `Cannot read properties of null (reading 'useContext')`.
-2. **Replace generated destination panels with real photography.** All destination imagery is currently rendered locally by `components/ui/destination-mark.tsx` — an on-brand generated panel (zero external requests, never a broken image). This is deliberate and ships fine, but real photography will always convert better; the complete shot list, art direction and naming convention live in `docs/visual-identity.md` — drop correctly named files into `/public/images/` and the brand-image system picks them up on the next build, no code changes.
-3. ~~Wire up the newsletter.~~ **Done.** `/app/api/subscribe/route.ts` is wired to Brevo (free up to 300 emails/day); `BREVO_API_KEY` and `BREVO_LIST_ID` are set in Vercel Production. The form captures a nearest-airport and travel-interest preference via the `NEAREST_AIRPORT`/`TRAVEL_INTEREST` custom contact attributes — all seven required attributes (these two plus the five `WATCH_*` below) were confirmed created in Brevo and live-tested end to end (a real signup, attributes verified stored correctly via the Brevo API) in July 2026. If you ever connect a fresh Brevo account, run `npm run brevo:setup` (canonical list in `lib/brevo-attributes.json`) to recreate them — Brevo silently drops any attribute it doesn't recognise rather than erroring, so this is worth re-confirming after any account change.
-4. **Wire up the contact form.** `/app/api/contact/route.ts` is written for Resend (resend.com) but needs `RESEND_API_KEY` set. Same fail-clearly behaviour until configured. `CONTACT_TO_EMAIL` is optional — both this route and `/app/api/quote-request/route.ts` fall back to `siteConfig.contactEmail` (`lib/site-config.ts`) when it's unset.
+JetStash is live. Current status belongs in `docs/project-control/`, not in an accumulating launch
+checklist. The following are either standing operating requirements or explicitly recorded
+remaining work:
+
+1. **Run proportional quality gates before every merge.** Application/data changes require strict
+   TypeScript, lint, all Vitest tests and a production build. Documentation-only changes require
+   Markdown/link/whitespace checks and a successful Vercel Preview. The current suite passed
+   **439/439 tests across 16 files** on 24 July 2026.
+2. ~~Complete destination photography.~~ **Done** (founder-confirmed July 2026). Airport and guide
+   photography remain separately queued in `docs/project-control/ROADMAP.md`. The implementation
+   system remains file-driven: add correctly named assets under `/public/images/`, regenerate
+   `lib/image-manifest.json`, and render through the shared brand-image components.
+3. ~~Wire up the newsletter.~~ **Done.** `/app/api/subscribe/route.ts` is wired to Brevo; the
+   required credentials are configured in Vercel Production. The form captures nearest-airport
+   and travel-interest preferences via the `NEAREST_AIRPORT`/`TRAVEL_INTEREST` attributes. All
+   seven required attributes (these two plus the five `WATCH_*` attributes below) were confirmed
+   in Brevo and live-tested end to end in July 2026. After an account change, run
+   `npm run brevo:setup` using the canonical list in `lib/brevo-attributes.json`; Brevo can silently
+   drop unrecognised attributes.
+4. ~~Wire up and test the contact/quote workflow.~~ **Done** (founder-confirmed July 2026).
+   `/app/api/contact/route.ts` and `/app/api/quote-request/route.ts` use Resend and fail clearly
+   with `503` if `RESEND_API_KEY` is unavailable. `CONTACT_TO_EMAIL` is optional; both fall back to
+   `siteConfig.contactEmail`. Re-test after an API-route, provider or environment change rather
+   than repeating the complete audit routinely.
 5. **Log genuinely researched fare checks.** `/data/deals.ts` no longer carries a price at all — deal cards derive an honest range/single-check from `/data/fare-observations.ts` (`getFareRangeSummary`), or fall back to route facts when nothing's logged yet. That removes the staleness risk, but the £ figures currently in `/data/fare-observations.ts` are still the original example numbers, not independently verified fares. There's no deadline to do this (see `/founder`'s "Fare observation coverage" section) — append real researched checks over time as a new `FareObservation` entry per route/cabin, never overwriting an existing one.
-6. ~~Sign up for TravelUp's real affiliate programme and add the tracking parameters.~~ **Done.** Every outbound booking link ("Check live price[s]", "Search live prices") is generated centrally by `lib/booking-providers.ts` and now uses TravelUp's real Commission Junction tracking link (`https://www.kqzyfj.com/click-101818709-15363607` — PID 101818709, AID 15363607), tagged with a per-route/page `sid` for click attribution. Every click-through now earns commission. To re-enable Skyscanner in future, flip its `enabled` flag and add its real tracking link in the same file — nothing else in the app needs to change.
-7. **Manually verify a real TravelUp destination URL and turn deep-linking on.** A first attempt guessed a `/flights/search?origin=...` URL shape for route-specific links; in production this landed users on a TravelUp error page and lost their search. `BOOKING_PROVIDERS.travelup.supportsDeepLink` is deliberately still `false`, so every booking link safely resolves to TravelUp's own default landing page via the tracking link above (still commission-earning, just not destination-specific) rather than a broken deep link. To turn it on: visit `travelup.com` in a real browser, confirm a real destination URL works (e.g. their `/en-gb/flight-offers/{city}-{iata}` pages, if that pattern holds), add it to `VERIFIED_DEEP_LINKS` in `lib/booking-providers.ts`, then flip `supportsDeepLink` to `true`. Never add an entry from a guessed pattern.
+6. ~~Sign up for TravelUp's affiliate programme and add the tracking parameters.~~ **Done.**
+   Outbound booking links are generated centrally by `lib/booking-providers.ts` and use the
+   Commission Junction tracking link with a per-route/page `sid`. A tracked click does **not**
+   itself guarantee revenue; a qualifying conversion remains subject to attribution and programme
+   terms. To re-enable another provider, configure and verify it in the same central file.
+7. **Manually verify a real TravelUp destination URL before enabling deep links.** A guessed
+   route-specific URL previously landed on an error page. `supportsDeepLink` deliberately remains
+   `false`, so booking links use TravelUp's working tracked landing page instead of a broken
+   destination URL. Enable it only after a real destination URL is verified in a browser and added
+   to `VERIFIED_DEEP_LINKS`; never infer a URL pattern.
 8. ~~Create the Route Watch Brevo attributes.~~ **Done** (see item 3 — confirmed together with the newsletter attributes). `/app/api/route-watch/route.ts` reuses `BREVO_API_KEY`/`BREVO_LIST_ID` and writes `WATCH_AIRPORT`, `WATCH_DESTINATION`, `WATCH_ROUTE`, `WATCH_REGION`, `WATCH_INTENT`. Note `WATCH_ROUTE` holds a comma-delimited list of up to 3 route slugs, not a single value — the shared cap is defined in `lib/route-watch-config.ts` (`MAX_WATCHED_ROUTES`) — deliberately reusing the existing attribute rather than adding a new one that would need re-provisioning. This is a storage mechanism only; it does not imply Travel Intelligence Engine integration.
 9. ~~Route quote-request leads somewhere real.~~ **Done.** `/app/api/quote-request/route.ts` and `/app/api/contact/route.ts` both reuse `RESEND_API_KEY`/`CONTACT_TO_EMAIL` (no new env vars) and now default to `siteConfig.contactEmail` in `lib/site-config.ts` — a real inbox, not a placeholder — when `CONTACT_TO_EMAIL` isn't set in Vercel. Every Umrah/family/group quote request lands in one inbox for manual follow-up; revisit whether that should become a rotation of partner agents or a shared inbox as volume grows.
 10. **Keep Travel Ready Check's rule content current.** `data/travel-ready-rules.ts`'s 15 rules across 7 countries were verified against live GOV.UK/official-portal pages in July 2026 with a 6-month review window — this is content, not code, and visa/passport rules change with little notice (Pakistan suspended visa-on-arrival for most nationalities on 1 January 2026 with no advance notice). See "Travel Ready Check — maintaining `data/travel-ready-rules.ts`" above for the re-verification procedure, and `/founder`'s "Travel Ready Check — rules ops" section for what's currently due.
@@ -52,9 +90,9 @@ This codebase was written without the ability to run `npm install` or a real bui
 
 | Variable | Used by | Required for |
 |---|---|---|
-| `BREVO_API_KEY` | `/app/api/subscribe/route.ts` | Newsletter signups to actually save |
-| `BREVO_LIST_ID` | `/app/api/subscribe/route.ts` | Newsletter signups to actually save |
-| `RESEND_API_KEY` | `/app/api/contact/route.ts`, `/app/api/cron/fare-check-reminder/route.ts` | Contact form to actually send; weekly fare-check reminder email |
+| `BREVO_API_KEY` | `/app/api/subscribe/route.ts`, `/app/api/route-watch/route.ts` | Travel Club and Route Watch signups to save |
+| `BREVO_LIST_ID` | `/app/api/subscribe/route.ts`, `/app/api/route-watch/route.ts` | Destination list for those signups |
+| `RESEND_API_KEY` | `/app/api/contact/route.ts`, `/app/api/quote-request/route.ts`, `/app/api/cron/fare-check-reminder/route.ts` | Contact/quote delivery and weekly fare-check reminder |
 | `CONTACT_TO_EMAIL` | `/app/api/contact/route.ts`, `/app/api/quote-request/route.ts`, `/app/api/cron/fare-check-reminder/route.ts` | Optional — overrides `siteConfig.contactEmail` as the delivery address for contact/quote-request messages and the fare-check reminder |
 | `CRON_SECRET` | `/app/api/cron/fare-check-reminder/route.ts` | Optional but recommended — Vercel sets this automatically for its own Cron Jobs (see `vercel.json`); the route checks it if present, so anyone else hitting the URL directly gets a 401 |
 
@@ -62,10 +100,12 @@ This codebase was written without the ability to run `npm install` or a real bui
 
 ```
 app/                  Routes (Next.js App Router)
-  page.tsx            Homepage
+  page.tsx            ISR homepage: Journey Desk / pre-booking second opinion
   pakistan/ india/ gulf/ umrah/     Region hub pages
   family-holidays/ business-class/ travel-club/
   deals/              All fares, with client-side filtering
+  routes/[slug]/      Evidence-backed route guides and Route Status panels
+  travel-ready-check/ Passport/visa readiness tool
   quote-request/      Umrah/family/group trip quote-request form
   destinations/[slug] Dynamic destination pages (generateStaticParams)
   airports/[slug]     Dynamic airport pages (generateStaticParams)
@@ -73,10 +113,12 @@ app/                  Routes (Next.js App Router)
   api/contact/        Contact form API route
   api/quote-request/  Umrah/family/group quote-request API route (Resend)
   api/route-watch/     Per-route Route Watch signup API route (Brevo)
+  api/cron/            Weekly fare-check reminder
   sitemap.ts          Dynamic sitemap.xml
   robots.ts           robots.txt
 
 components/
+  homepage-v2/        Public Journey Desk, pull interaction and Manchester→Mumbai visual
   ui/                 Button, Badge, DealCard, HubCard — shared primitives
   layout/             Header, Footer
   sections/           RouteMapHero, NewsletterSection, QuoteRequestForm, RegionHubPage template,
@@ -88,8 +130,9 @@ components/
 data/
   airports.ts             UK departure airports
   destinations.ts         All destinations across every region
-  routes.ts               Airport-to-destination route guides
-  deals.ts                Every current example fare shown across the site
+  routes.ts               Route guides plus pure Route Status derivation
+  route-status-events.ts  Append-only sourced service-change ledger
+  deals.ts                Deal-card curation metadata; deliberately no prices
   airlines.ts              Canonical airline reference (data/routes.ts links by slug)
   peak-periods.ts          Canonical demand-period reference (routes/destinations link by id)
   peak-period-dates.ts     Verified Gregorian dates per year for each peak period (Book-By Countdown)
@@ -104,6 +147,8 @@ data/
 lib/
   site-config.ts             Nav structure, region groupings, site metadata
   brand-images.ts             Real-photography resolver, backed by lib/image-manifest.json
+  route-status-copy.ts        Evidence validation, public copy and effective presentation
+  flagship-status-copy.ts     Homepage mapping from the canonical Route Status view model
   booking-intelligence.ts     Book-By Countdown's single derivation layer — see JETSTASH_PRINCIPLES.md §14
   travel-intelligence-engine.ts  Composes Book-By + route warnings into one readiness verdict — §14.2
   utils.ts                   Tailwind className merge helper
@@ -182,7 +227,13 @@ If you update `data/routes.ts` or `data/airports.ts` in future, verify new route
 
 Some direct routes have a publicly announced service change — for example, IndiGo's Manchester–Delhi and Manchester–Mumbai services, both launched in 2025, with a change IndiGo has announced with effect from 31 August 2026. A plain `isDirect: true/false` boolean can't represent this honestly: the route is genuinely direct *today*, and an announcement is not proof of what happens on the date it names.
 
-This is modelled in the append-only Route Status ledger, `data/route-status-events.ts` — never as a field on the `Route` record itself. `getRouteStatus(route, routeStatusEvents, nowIso)` (`data/routes.ts`) derives the route's current status from the ledger (`verified-direct`, `withdrawal-announced`, `service-ended`, or `verification-pending`), and `getEffectiveRoutePresentation()` is the one adapter every public surface calls to render it consistently. The route page (`app/routes/[slug]/page.tsx`) renders a sourced, evidence-cited panel from `lib/route-status-copy.ts`'s `getRouteStatusCopy()` whenever a route is ledger-managed and its status isn't a routine "verified direct."
+This is modelled in the append-only Route Status ledger, `data/route-status-events.ts` — never as
+a field on the `Route` record itself. `getRouteStatus(route, routeStatusEvents, nowIso)`
+(`data/routes.ts`) derives the route's current status from the ledger (`verified-direct`,
+`withdrawal-announced`, `service-ended`, or `verification-pending`).
+`lib/route-status-copy.ts` owns both `getEffectiveRoutePresentation()`—the canonical adapter every
+public surface calls—and `getRouteStatusCopy()`, which produces validated, evidence-cited customer
+copy for the route page and other surfaces.
 
 Previously, a currently-direct route with an announced end date was modelled via `Route.directServiceEndDate`/`directServiceEndNote` fields, rendering a banner directly from route data. Those fields have been removed entirely: keeping them as a second, parallel mechanism alongside the ledger would recreate exactly the second-source-of-truth risk the ledger exists to prevent. Every route with a scheduled service change — direct or otherwise — is modelled in the ledger now.
 

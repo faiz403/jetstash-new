@@ -6,14 +6,12 @@ This roadmap contains unfinished work only. Completed work belongs in `COMPLETED
 
 | Order | ID | Status | Work | Definition of done |
 |---:|---|---|---|---|
-| 1 | `PC-001` | ACTIVE | Establish project-control records. | Merged folder, linked from agent/repository entry points. |
-| 2 | `DOC-001` | NEXT | Refresh `CLAUDE.md`, `README.md` and relevant principles. | Versions, tests, architecture and deployment wording match the repository. |
-| 3 | `TRC-001` | NEXT | Make Travel Ready Check easier to discover. | Existing surfaces audited; focused links added and tested without navigation clutter. |
-| 4 | `FARE-001` | QUEUED | Restore genuine fare intelligence. | Fresh observations with departure date, return date, cabin, source and observed date for priority routes. |
-| 5 | `VIS-001` | QUEUED | Complete UK airport photography. | Premium assets for Birmingham, Heathrow, Gatwick and other supported UK airports. |
-| 6 | `VIS-002` | QUEUED | Add guide photography. | Consistent premium hero treatment for the guide collection. |
-| 7 | `AFF-001` | QUEUED | Improve affiliate coverage. | Current partner state documented; only verified, working integrations enabled. |
-| 8 | `CONV-001` | QUEUED | Validate homepage conversion. | Funnel analytics reviewed; changes made only where data identifies a real drop-off. |
+| 1 | `TRC-001` | NEXT | Make Travel Ready Check easier to discover. | Existing surfaces audited; focused links added and tested without navigation clutter. |
+| 2 | `FARE-001` | QUEUED | Restore genuine fare intelligence. | Fresh observations with departure date, return date, cabin, source and observed date for priority routes. |
+| 3 | `VIS-001` | QUEUED | Complete UK airport photography. | Premium assets for Birmingham, Heathrow, Gatwick and other supported UK airports. |
+| 4 | `VIS-002` | QUEUED | Add guide photography. | Consistent premium hero treatment for the guide collection. |
+| 5 | `AFF-001` | QUEUED | Improve affiliate coverage. | Current partner state documented; only verified, working integrations enabled. |
+| 6 | `CONV-001` | QUEUED | Validate homepage conversion. | Funnel analytics reviewed; changes made only where data identifies a real drop-off. |
 
 ## Product-development roadmap
 
