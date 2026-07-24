@@ -395,7 +395,12 @@ describe('Cross-surface leakage fix — FamilyVisitBlock no longer asserts a fix
     const mumbai = getDestinationBySlug('mumbai')!;
     expect(mumbai.familyVisitContent).toBeDefined();
     expect(mumbai.familyVisitContent!.peakPeriodIds.length).toBeGreaterThan(0);
-    const element = FamilyVisitBlock({ content: mumbai.familyVisitContent!, city: mumbai.city });
+    const element = FamilyVisitBlock({
+      content: mumbai.familyVisitContent!,
+      city: mumbai.city,
+      country: mumbai.country,
+      destinationSlug: mumbai.slug,
+    });
     const text = collectStrings(element).join(' ');
     expect(text).not.toMatch(/When demand peaks/i);
     expect(text).not.toMatch(/book\s+\d[–-]\d\s+months?\s+ahead/i);
@@ -404,7 +409,12 @@ describe('Cross-surface leakage fix — FamilyVisitBlock no longer asserts a fix
 
   it('the period labels themselves (real calendar/planning data from data/peak-periods.ts) still render — only the surrounding claim was neutralised, not the underlying content', () => {
     const mumbai = getDestinationBySlug('mumbai')!;
-    const element = FamilyVisitBlock({ content: mumbai.familyVisitContent!, city: mumbai.city });
+    const element = FamilyVisitBlock({
+      content: mumbai.familyVisitContent!,
+      city: mumbai.city,
+      country: mumbai.country,
+      destinationSlug: mumbai.slug,
+    });
     const text = collectStrings(element).join(' ');
     expect(text).toMatch(/Diwali/i);
   });

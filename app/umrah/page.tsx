@@ -7,6 +7,7 @@ import { NoFareFallback } from '@/components/ui/no-fare-fallback';
 import { LinkButton } from '@/components/ui/button';
 import { getDestinationsByRegion } from '@/data/destinations';
 import { getDealsByCategory } from '@/data/deals';
+import { TRAVEL_READY_SUPPORTED_COUNTRIES } from '@/lib/travel-ready-check';
 import { DestinationVisual } from '@/components/ui/destination-visual';
 import { HeroBackdrop } from '@/components/ui/hero-backdrop';
 
@@ -172,9 +173,16 @@ export default function UmrahHubPage() {
                 Requirements change, so always confirm directly with your Umrah provider or the Saudi authorities
                 before booking.
               </p>
-              <LinkButton href="/contact" variant="ghost" size="sm" className="mt-5">
-                Ask us a question
-              </LinkButton>
+              <div className="mt-5 flex flex-wrap gap-3">
+                <LinkButton href="/contact" variant="ghost" size="sm">
+                  Ask us a question
+                </LinkButton>
+                {TRAVEL_READY_SUPPORTED_COUNTRIES.includes('Saudi Arabia') && (
+                  <LinkButton href="/travel-ready-check" variant="ghost" size="sm">
+                    Check your travel readiness
+                  </LinkButton>
+                )}
+              </div>
             </div>
           </div>
         </div>

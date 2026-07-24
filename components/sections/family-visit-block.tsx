@@ -1,9 +1,21 @@
-import { Users, FileCheck, Briefcase, Calendar } from 'lucide-react';
+import Link from 'next/link';
+import { Users, FileCheck, Briefcase, Calendar, ArrowUpRight } from 'lucide-react';
 import type { FamilyVisitContent } from '@/data/destinations';
 import { getPeakPeriodsByIds } from '@/data/peak-periods';
+import { TRAVEL_READY_SUPPORTED_COUNTRIES } from '@/lib/travel-ready-check';
 import { Badge } from '@/components/ui/badge';
 
-export function FamilyVisitBlock({ content, city }: { content: FamilyVisitContent; city: string }) {
+export function FamilyVisitBlock({
+  content,
+  city,
+  country,
+  destinationSlug,
+}: {
+  content: FamilyVisitContent;
+  city: string;
+  country: string;
+  destinationSlug: string;
+}) {
   return (
     <section className="bg-ink-900 py-16 sm:py-20">
       <div className="mx-auto max-w-content px-5 sm:px-8">
@@ -30,6 +42,15 @@ export function FamilyVisitBlock({ content, city }: { content: FamilyVisitConten
             </div>
             <h3 className="mt-4 font-display text-lg text-sand-50">Documents & entry</h3>
             <p className="mt-2 text-sm leading-relaxed text-ink-300">{content.documentNote}</p>
+            {TRAVEL_READY_SUPPORTED_COUNTRIES.includes(country) && (
+              <Link
+                href={`/travel-ready-check?destination=${destinationSlug}`}
+                className="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-brass-300 hover:text-brass-200"
+              >
+                Check your travel readiness
+                <ArrowUpRight className="h-3.5 w-3.5" strokeWidth={2.25} />
+              </Link>
+            )}
           </div>
 
           <div className="rounded-md border border-white/10 bg-ink-800 p-6">

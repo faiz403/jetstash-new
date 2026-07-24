@@ -9,6 +9,7 @@ import { getDealsByRegionGroup } from '@/data/deals';
 import { getRoutesByDestination, getRouteAirport } from '@/data/routes';
 import { routeStatusEvents } from '@/data/route-status-events';
 import { getEffectiveRoutePresentation } from '@/lib/route-status-copy';
+import { TRAVEL_READY_SUPPORTED_COUNTRIES } from '@/lib/travel-ready-check';
 import { DestinationVisual } from '@/components/ui/destination-visual';
 import { HeroBackdrop } from '@/components/ui/hero-backdrop';
 import type { QuoteRegion } from '@/lib/quote-request-options';
@@ -219,9 +220,16 @@ export function RegionHubPage({
                 Requirements change. Always confirm directly with the relevant embassy, high commission, or an
                 authorised visa service before booking.
               </p>
-              <LinkButton href="/contact" variant="ghost" size="sm" className="mt-5">
-                Ask us a question
-              </LinkButton>
+              <div className="mt-5 flex flex-wrap gap-3">
+                <LinkButton href="/contact" variant="ghost" size="sm">
+                  Ask us a question
+                </LinkButton>
+                {destinationsInRegion.some((d) => TRAVEL_READY_SUPPORTED_COUNTRIES.includes(d.country)) && (
+                  <LinkButton href="/travel-ready-check" variant="ghost" size="sm">
+                    Check your travel readiness
+                  </LinkButton>
+                )}
+              </div>
             </div>
           </div>
         </div>
