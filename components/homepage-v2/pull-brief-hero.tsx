@@ -4,7 +4,7 @@ import { useMemo, useState, type FormEvent } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ArrowRight, ArrowUpRight } from 'lucide-react';
-import { getAirportImage, getDestinationImage, getHeroImage } from '@/lib/brand-images';
+import { getDestinationImage, getHeroImage } from '@/lib/brand-images';
 import type { FlagshipStatusCopy } from '@/lib/flagship-status-copy';
 import { PullBrief } from './pull-brief';
 
@@ -61,7 +61,7 @@ export function PullBriefHero({ handover, flagshipStatusCopy }: { handover: Hand
   const isFeatured = fromSlug === FEATURED.from && toSlug === FEATURED.to;
   const routeSlug = handover.routeIndex[`${fromSlug}|${toSlug}`];
 
-  const originImg = getAirportImage('manchester');
+  const originImg = getHeroImage('manchester-mumbai-journey');
   const journeyImg = getHeroImage('manchester-mumbai-journey');
   const destinationImg = getDestinationImage('mumbai');
 
