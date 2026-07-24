@@ -7,6 +7,12 @@ import { getGuideImage } from '@/lib/brand-images';
 const guidesHubSrc = readFileSync(join(process.cwd(), 'app/guides/page.tsx'), 'utf8');
 
 describe('Guides hub visual discovery', () => {
+  it('keeps the directory discovery-first: a compact hero without a secondary stats strip', () => {
+    expect(guidesHubSrc).toMatch(/<PageHero[\s\S]*?size="compact"/);
+    expect(guidesHubSrc).not.toMatch(/stats=\{\[\{ value: String\(guides\.length\)/);
+    expect(guidesHubSrc).toContain('bg-white py-10 sm:py-12');
+  });
+
   it('has a manifest-backed editorial image for every published guide', () => {
     expect(guides).toHaveLength(9);
 

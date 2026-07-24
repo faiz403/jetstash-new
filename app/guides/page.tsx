@@ -20,10 +20,10 @@ export default function GuidesPage() {
         eyebrow="Travel guides"
         title="The detail that actually affects your booking"
         description="Visa timing, festival pricing, direct-versus-connecting maths: the questions people on these routes actually ask, answered without filler."
-        stats={[{ value: String(guides.length), label: 'Guides' }]}
+        size="compact"
       />
 
-      <section className="bg-white py-16 sm:py-20">
+      <section className="bg-white py-10 sm:py-12">
         <div className="mx-auto max-w-content px-5 sm:px-8">
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {guides.map((guide, i) => (
