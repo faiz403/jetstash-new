@@ -25,6 +25,7 @@ evidence shows a regression, changed requirement or stale external fact.
 | `PHOTO-001` | Completed destination photography using the JetStash Signature Collection direction. | Founder confirmed | Live |
 | `PC-001` | Added permanent project-control status, completed, roadmap and decision records and made them mandatory reading for future agents. | Repository and production verified: PR #6, merge `4dae272` | Live |
 | `DOC-001` | Reconciled the three core documents with Next.js `15.5.21`, the current Vitest suite, Route Status ownership, homepage ISR architecture and the automatic Vercel workflow. | Repository verified; 439/439 tests passed across 16 files on 24 July 2026 | Live |
+| `TRC-001` | Improved Travel Ready Check discoverability through contextual links in document and visa surfaces, the homepage, footer and sitemap, without main-navigation clutter. | Repository verified: `db12797`, `fa7734b`, `072c041`; 457/457 tests passed and Vercel Preview succeeded | Preview verified; live on merge |
 
 ## Earlier foundations retained
 

@@ -14,6 +14,9 @@
 - The Manchester-to-Mumbai homepage visual is shipped and live.
 - The Birmingham-to-Mumbai connecting guide and verification-pending leakage protection are live.
 - Travel Ready Check is built and live.
+- Travel Ready Check discoverability is complete on the reviewed feature branch: relevant
+  homepage, footer, sitemap, destination, family-visit and regional document surfaces now link
+  contextually without adding main-navigation clutter.
 - Route Watch and Travel Club use honest, human-reviewed language.
 - The Founder Dashboard is unavailable in production and non-indexable.
 - Operational submission flows were founder-confirmed as already tested; do not repeat the entire
@@ -29,14 +32,14 @@ No implementation task is currently active.
 
 ## NEXT
 
-### TRC-001 — Improve Travel Ready Check discoverability
+### FARE-001 — Restore genuine fare intelligence
 
-Audit existing entry points before changing anything. Add only the highest-value links from the
-homepage, footer and relevant route/destination surfaces. Do not clutter the main navigation.
+Add fresh, dated, manually verified fare observations for priority routes. Every observation must
+carry departure date, return date, cabin, source and observed date; do not create a fare merely to
+fill an empty state.
 
 ## QUEUED
 
-- `FARE-001` — add fresh, dated, manually verified fare observations for priority routes.
 - `VIS-001` — complete premium photography for supported UK airports.
 - `VIS-002` — create a consistent premium hero-image collection for travel guides.
 - `AFF-001` — review Expedia, booking partners, CJ opportunities and luggage partners.

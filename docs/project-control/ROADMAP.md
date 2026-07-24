@@ -6,12 +6,11 @@ This roadmap contains unfinished work only. Completed work belongs in `COMPLETED
 
 | Order | ID | Status | Work | Definition of done |
 |---:|---|---|---|---|
-| 1 | `TRC-001` | NEXT | Make Travel Ready Check easier to discover. | Existing surfaces audited; focused links added and tested without navigation clutter. |
-| 2 | `FARE-001` | QUEUED | Restore genuine fare intelligence. | Fresh observations with departure date, return date, cabin, source and observed date for priority routes. |
-| 3 | `VIS-001` | QUEUED | Complete UK airport photography. | Premium assets for Birmingham, Heathrow, Gatwick and other supported UK airports. |
-| 4 | `VIS-002` | QUEUED | Add guide photography. | Consistent premium hero treatment for the guide collection. |
-| 5 | `AFF-001` | QUEUED | Improve affiliate coverage. | Current partner state documented; only verified, working integrations enabled. |
-| 6 | `CONV-001` | QUEUED | Validate homepage conversion. | Funnel analytics reviewed; changes made only where data identifies a real drop-off. |
+| 1 | `FARE-001` | NEXT | Restore genuine fare intelligence. | Fresh observations with departure date, return date, cabin, source and observed date for priority routes. |
+| 2 | `VIS-001` | QUEUED | Complete UK airport photography. | Premium assets for Birmingham, Heathrow, Gatwick and other supported UK airports. |
+| 3 | `VIS-002` | QUEUED | Add guide photography. | Consistent premium hero treatment for the guide collection. |
+| 4 | `AFF-001` | QUEUED | Improve affiliate coverage. | Current partner state documented; only verified, working integrations enabled. |
+| 5 | `CONV-001` | QUEUED | Validate homepage conversion. | Funnel analytics reviewed; changes made only where data identifies a real drop-off. |
 
 ## Product-development roadmap
 
