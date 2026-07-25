@@ -12,6 +12,11 @@
 
 - Route Status V1 is shipped and live.
 - The Manchester-to-Mumbai homepage visual is shipped and live.
+- The July trust-crack fixes are shipped and live: duplicate metadata titles were removed,
+  deal-card durations are route-specific, and destination pages no longer present generic
+  airport-specific summaries as route facts.
+- The homepage flagship now derives its showcase or advisory presentation from the shared Route
+  Status ledger; uncertain or ended service is not presented as a confirmed reveal.
 - The premium Guide image collection and visual Guides discovery hub are shipped and live.
 - The Birmingham-to-Mumbai connecting guide and verification-pending leakage protection are live.
 - Travel Ready Check is built and live.
@@ -78,6 +83,8 @@ a fare merely to fill an empty state.
 - Direct-route WhatsApp punctuation.
 - Route Status V1 foundation, presentation and date formatting.
 - The Manchester-to-Mumbai homepage visual.
+- July trust-crack fixes from the live-site audit.
+- Ledger-driven homepage flagship showcase/advisory presentation.
 - Founder Dashboard production protection.
 - Destination photography.
 
