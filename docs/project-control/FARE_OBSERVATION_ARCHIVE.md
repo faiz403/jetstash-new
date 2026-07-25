@@ -1,0 +1,97 @@
+# Editorial Fare Observation Archive
+
+**Owner:** JetStash editorial workflow
+**Status:** Active — first archive batch to be built from fresh manual checks
+**Canonical data file:** `data/fare-observations.ts`
+
+## Purpose
+
+JetStash is not claiming to know what a fare was on a day nobody checked. The archive starts now
+and compounds through dated, repeatable observations. Each record answers a narrow question:
+
+> What fare did JetStash observe, for these exact travel dates and search conditions, on this date?
+
+This is evidence, not a live-price feed and not a promise that the fare is still available.
+
+## What may be observed
+
+A human editor may manually check a return fare on:
+
+- Google Flights (`observedVia: 'google-flights'`)
+- TravelUp (`observedVia: 'travelup'`)
+- the airline's own booking page (`observedVia: 'airline'`)
+
+Google Flights, TravelUp and other booking surfaces are fare-observation sources only. They do not
+prove that an airline operates a route, flies a given frequency or will honour a connection. Those
+service claims still require primary airline, airport or official sources and belong in the Route
+Status evidence ledger.
+
+Automated browser polling, price scraping, API harvesting and retrospective backfill are not part
+of this archive. A price seen today may be recorded today; it cannot be presented as a price that
+was seen on an earlier date unless JetStash actually recorded it then.
+
+## Standard search configuration
+
+Use the same configuration for comparable observations unless the record explicitly states why it
+differs:
+
+- one adult, return journey, economy;
+- GBP display, with the source's taxes and mandatory fees included where shown;
+- exact outbound and return dates recorded in the entry;
+- all relevant airports for the route's named departure airport, not a silently widened UK search;
+- baggage allowance recorded as shown (`included`, the stated allowance, or `not stated`);
+- lowest visible fare only when the result is a bookable itinerary, not an advert or an estimate.
+
+Business-class observations are welcome, but must be kept as a separate cabin record. Do not mix
+cabin, passenger count, baggage assumptions or airport scope when comparing a series.
+
+## Required record fields
+
+Every new `FareObservation` must include:
+
+- route slug and cabin;
+- `observedDate` — the date the result was actually checked;
+- `departureDate` and `returnDate` — the dates the fare was quoted for;
+- `source` — the airline or provider named by the result;
+- `observedVia` — Google Flights, TravelUp or airline page;
+- `currency` — currently GBP for the archive;
+- `price` and a plain `priceNote` such as `return, per person`;
+- `baggage` — what the result states, or `not stated`;
+- `sourceUrl` where a stable manual-check URL can be retained safely.
+
+Append records; never edit an old observation because a fare changed. If a search returns no
+publishable fare, record nothing and leave the route's honest empty state intact.
+
+## Cadence and queue
+
+Start with one economy observation for each Tier A route in
+`docs/project-control/ROUTE_COVERAGE.md`, checked once per week. Add a second check in a week only
+when a route is entering a known peak period or the first result was unusually constrained. After
+the first month, review whether the cadence is producing useful comparisons before expanding the
+queue.
+
+The first archive batch should therefore cover, in order:
+
+1. Manchester → Lahore
+2. Manchester → Islamabad
+3. Heathrow → Delhi
+4. Birmingham → Amritsar
+5. Heathrow → Jeddah
+
+Then add Heathrow → Mumbai, Manchester → Dubai, Heathrow → Doha and Birmingham → Mumbai when their
+route evidence and search context are ready. This is an operating queue, not a popularity claim.
+
+## Review standard
+
+Before a record can influence a public fare range or Book-By context:
+
+1. confirm both travel dates are present;
+2. confirm the source, observation method, cabin, currency and baggage treatment are explicit;
+3. confirm the route slug matches the actual departure and destination searched;
+4. confirm the source result was manually checked on `observedDate`;
+5. keep the wording as an observation (`observed`, `starting from`, `checked on`), never a live-price
+   promise or prediction.
+
+The archive becomes commercially valuable through repetition: one check is a fact, several checks
+are context, and a long series can eventually support cautious booking-window guidance. It must
+never be made to look mature before the underlying record is mature.

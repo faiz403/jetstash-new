@@ -71,7 +71,7 @@ remaining work:
    with `503` if `RESEND_API_KEY` is unavailable. `CONTACT_TO_EMAIL` is optional; both fall back to
    `siteConfig.contactEmail`. Re-test after an API-route, provider or environment change rather
    than repeating the complete audit routinely.
-5. **Log genuinely researched fare checks.** `/data/deals.ts` no longer carries a price at all — deal cards derive an honest range/single-check from `/data/fare-observations.ts` (`getFareRangeSummary`), or fall back to route facts when nothing's logged yet. That removes the staleness risk, but the £ figures currently in `/data/fare-observations.ts` are still the original example numbers, not independently verified fares. There's no deadline to do this (see `/founder`'s "Fare observation coverage" section) — append real researched checks over time as a new `FareObservation` entry per route/cabin, never overwriting an existing one.
+5. **Begin building the editorial fare observation archive.** `/data/deals.ts` no longer carries a price at all — deal cards derive an honest range/single-check from `/data/fare-observations.ts` (`getFareRangeSummary`), or fall back to route facts when nothing's logged yet. The £ figures currently in `/data/fare-observations.ts` are still the original example numbers, not independently verified fares. Follow `docs/project-control/FARE_OBSERVATION_ARCHIVE.md` and append real, same-day checks over time as new `FareObservation` entries per route/cabin; never overwrite or retrospectively reconstruct an old observation.
 6. ~~Sign up for TravelUp's affiliate programme and add the tracking parameters.~~ **Done.**
    Outbound booking links are generated centrally by `lib/booking-providers.ts` and use the
    Commission Junction tracking link with a per-route/page `sid`. A tracked click does **not**
@@ -171,8 +171,7 @@ composes the booking-window state with any active route warning into one attribu
 ready to book?" (JETSTASH_PRINCIPLES.md §14.2). It's a priority decision tree, never a blended
 score — every fact behind the badge stays individually visible.
 
-**The weekly workflow this depends on:** for each priority route, check a fare on TravelUp or the
-airline's own site, then append a new `data/fare-observations.ts` entry with `departureDate` set to
+**The weekly workflow this depends on:** for each priority route, manually check a fare on Google Flights, TravelUp or the airline's own site, then append a new `data/fare-observations.ts` entry with `departureDate` set to
 the date you'd actually book for. `/founder`'s "Book-By Countdown data cadence" and "Travel
 Intelligence Engine — alert queue" sections (both nice-to-have, never a launch blocker — every
 surface degrades honestly on its own) track what's due a check or worth a Route Watch send.
