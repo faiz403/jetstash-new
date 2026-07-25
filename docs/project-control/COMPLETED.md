@@ -29,6 +29,8 @@ evidence shows a regression, changed requirement or stale external fact.
 | `TRC-001` | Improved Travel Ready Check discoverability through contextual links in document and visa surfaces, the homepage, footer and sitemap, without main-navigation clutter. | Repository verified: `db12797`, `fa7734b`, `072c041`; 457/457 tests passed and Vercel Preview succeeded | Live |
 | `BRAND-001` | Repositioned JetStash as UK travel intelligence for international journeys, while retaining South Asia and Gulf route depth as explicit specialist coverage. | Repository verified: `05f47d6`; 475/475 tests passed, Vercel Preview and production smoke tests succeeded | Live: merged through PR #12 at `24fc761` |
 | `GUIDE-001` | Made the Guides hub visually discoverable with a compact editorial hero and image-led guide cards, preserving the international positioning copy. | Repository verified: `ccd12ca`, `feb579d`, `d021a95`; 480/480 tests passed, Vercel Preview and production smoke tests succeeded | Live: merged through PR #13 at `68d4cd2` |
+| `TRUTH-004` | Closed the July live-site trust cracks: removed duplicated SEO titles, stopped deal cards borrowing airport-specific durations from generic destination data, and replaced destination schedule claims with neutral airport-specific guidance. | Repository verified: PR #20, merge `53504e0`; 531/531 tests passed, production build and live smoke checks succeeded | Live |
+| `STATUS-004` | Made the homepage flagship choose a cinematic showcase or immediate advisory state from the shared Route Status ledger, with editorial route selection kept separate from operational facts. | Repository verified: PR #20, merge `53504e0`; 531/531 tests passed, Vercel Production deployment Ready | Live |
 
 ## Earlier foundations retained
 
