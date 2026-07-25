@@ -7,11 +7,10 @@ import { join } from 'path';
  *  1. Several pages hand-appended "JetStash" in their own metadata title,
  *     doubling up with the root layout's "%s | JetStash" template (e.g.
  *     "Contact JetStash | JetStash").
- *  2. Deal cards without a matched Route could fall back to a destination's
- *     generic flightTimeFromUK string even when that string names a UK
- *     airport different from the deal's own departure airport (observed
- *     live: a London Heathrow -> Islamabad card reading "7h 45m direct
- *     from Manchester").
+ *  2. Deal cards without an exact verified Route could fall back to a
+ *     destination-wide flightTimeFromUK summary that did not apply to the
+ *     card's own departure airport (observed live: a London Heathrow ->
+ *     Islamabad card reading "7h 45m direct from Manchester").
  *  3. Destination pages stated flightTimeFromUK as an unqualified fact,
  *     contradicting a same-destination route page that had genuinely not
  *     verified directness/frequency yet (Manchester-Dubai).
@@ -63,29 +62,28 @@ describe('no page metadata title hand-appends the brand name', () => {
   });
 });
 
-describe('deal card never shows one UK airport\'s flight time under a different airport\'s card', () => {
+describe('deal card only shows durations from an exact eligible route', () => {
   const dealCardSrc = readFileSync(join(process.cwd(), 'components/ui/deal-card.tsx'), 'utf8');
 
-  it('gates the destination-level flightTimeFromUK fallback on the destination actually listing the deal\'s departure airport', () => {
-    expect(dealCardSrc).toMatch(/destination\?\.ukAirports\.includes\(deal\.fromAirportSlug\)/);
+  it('never reads destination-level flightTimeFromUK as a card fallback', () => {
+    expect(dealCardSrc).not.toMatch(/const flightTime = [^;]*flightTimeFromUK/);
   });
 
-  it('never falls back to flightTimeFromUK when a route is matched (route-level presentation must win)', () => {
-    const fallbackLine = dealCardSrc.match(/const canUseDestinationFallback = [^;]+;/)?.[0] ?? '';
-    expect(fallbackLine).toMatch(/!matchedRoute/);
+  it('uses the route-status presentation as its sole duration source', () => {
+    expect(dealCardSrc).toContain('const flightTime = presentation?.flightTime;');
   });
 });
 
-describe('destination pages frame flightTimeFromUK as general guidance, not a confirmed schedule', () => {
+describe('destination pages do not present generic durations as route facts', () => {
   const pageSrc = readFileSync(join(process.cwd(), 'app/destinations/[slug]/page.tsx'), 'utf8');
 
   it('no longer states the figure as a bare "Typical flight time" fact', () => {
     expect(pageSrc).not.toMatch(/>Typical flight time: \{dest\.flightTimeFromUK\}</);
   });
 
-  it('explicitly says the figure is not a confirmed schedule and points to the route guides for verified service', () => {
-    expect(pageSrc).toMatch(/not a confirmed schedule/i);
-    expect(pageSrc).toContain('{dest.flightTimeFromUK}');
+  it('uses neutral airport-specific guidance and points to route guides for verified service', () => {
+    expect(pageSrc).not.toContain('{dest.flightTimeFromUK}');
+    expect(pageSrc).toMatch(/vary by UK departure airport/i);
     expect(pageSrc).toMatch(/route guides/i);
   });
 });

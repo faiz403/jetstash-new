@@ -12,7 +12,7 @@ import {
   type AtlasDestination,
 } from '@/components/sections/route-map-hero';
 import type { BrandImage } from '@/lib/brand-images';
-import type { FlagshipStatusCopy } from '@/lib/flagship-status-copy';
+import type { FlagshipStatusCopy, HomepageFlagshipPresentationMode } from '@/lib/flagship-status-copy';
 import {
   type CubicPath,
   pathAt,
@@ -61,16 +61,6 @@ import {
 // endpoint labels, so the one-object transformation is unaffected.
 const VB = { x: 150, y: 172, w: 1330, h: 764 };
 
-const FLAGSHIP_SLUG = 'mumbai';
-const flagship = DESTINATIONS.find((d) => d.slug === FLAGSHIP_SLUG)!;
-
-const ARC: CubicPath = {
-  p0: [ORIGIN.x, ORIGIN.y],
-  c1: [CLIMB_OUT[0], CLIMB_OUT[1]],
-  c2: [flagship.c2[0], flagship.c2[1]],
-  p1: [flagship.x, flagship.y],
-};
-
 /** The straightened form: a vertical spine on the left of the stage. */
 const SPINE: CubicPath = {
   p0: [180, 215],
@@ -116,15 +106,86 @@ function PinIcon({ state }: { state: 'ready' | 'flag' | 'pending' }) {
 
 type Phase = 'rest' | 'tension' | 'unroll' | 'settled';
 
+interface RelatedVerifiedRoute {
+  slug: string;
+  label: string;
+  originLabel: string;
+}
+
+function PullBriefAdvisory({
+  statusCopy,
+  routeSlug,
+  originLabel,
+  destinationLabel,
+  destinationHref,
+  relatedVerifiedRoutes,
+}: {
+  statusCopy: FlagshipStatusCopy;
+  routeSlug: string;
+  originLabel: string;
+  destinationLabel: string;
+  destinationHref: string;
+  relatedVerifiedRoutes: RelatedVerifiedRoute[];
+}) {
+  const related = relatedVerifiedRoutes[0];
+  return (
+    <section className="relative overflow-hidden rounded-md border border-brass-400/25 bg-[radial-gradient(circle_at_15%_0%,rgba(200,147,46,0.16),transparent_38%),linear-gradient(135deg,#191727,#080912)] px-5 py-7 shadow-[0_24px_70px_-45px_rgba(0,0,0,0.95)] sm:px-8 sm:py-9">
+      <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-brass-200">Route status</p>
+      <h2 className="mt-2 max-w-3xl font-display text-xl leading-tight text-sand-50 sm:text-2xl">{statusCopy.verdictLine}</h2>
+      {statusCopy.changeDetail !== statusCopy.verdictLine && <p className="mt-3 max-w-2xl text-sm leading-relaxed text-ink-200">{statusCopy.changeDetail}</p>}
+      <p className="mt-3 text-xs leading-relaxed text-ink-300">{statusCopy.evidenceDetail}</p>
+      <div className="mt-5 flex flex-wrap gap-3">
+        <Link
+          href={`/routes/${routeSlug}`}
+          className="inline-flex h-11 items-center justify-center gap-1.5 rounded-sm bg-brass px-5 text-sm font-semibold text-ink-900 transition-all hover:bg-brass-400 active:scale-[0.985]"
+        >
+          Open the full route check
+          <ArrowRight className="h-4 w-4" strokeWidth={2.25} />
+        </Link>
+        <Link
+          href={destinationHref}
+          className="inline-flex h-11 items-center justify-center rounded-sm border border-white/15 px-5 text-sm font-semibold text-sand-50 transition-colors hover:border-brass-300/60 hover:text-brass-100"
+        >
+          Explore {destinationLabel} options
+        </Link>
+      </div>
+      {related && (
+        <p className="mt-5 max-w-2xl border-t border-white/10 pt-4 text-sm leading-relaxed text-ink-200">
+          Also currently verified from {related.originLabel}:{' '}
+          <Link href={`/routes/${related.slug}`} className="font-semibold text-brass-200 underline decoration-brass-300/40 underline-offset-4 hover:text-brass-100">
+            {related.label}
+          </Link>
+          .
+        </p>
+      )}
+      <p className="mt-5 text-xs text-ink-400">{originLabel} → {destinationLabel} is reviewed from the same Route Status evidence as every route guide.</p>
+    </section>
+  );
+}
+
 export function PullBrief({
   aimedSlug,
   statusCopy,
+  presentationMode,
+  routeSlug,
+  originLabel,
+  destinationSlug,
+  destinationLabel,
+  destinationHref,
+  relatedVerifiedRoutes,
   originImage,
   journeyImage,
   destinationImage,
 }: {
   aimedSlug: string | null;
   statusCopy: FlagshipStatusCopy;
+  presentationMode: HomepageFlagshipPresentationMode;
+  routeSlug: string;
+  originLabel: string;
+  destinationSlug: string;
+  destinationLabel: string;
+  destinationHref: string;
+  relatedVerifiedRoutes: RelatedVerifiedRoute[];
   /** Manchester Airport, resolved server-side via getAirportImage('manchester') — dominant at rest, receded by the middle of the pull. This component never resolves its own images; each is null (renders nothing) if the asset isn't present, matching every other brand-image call site's fallback contract. */
   originImage: BrandImage | null;
   /** The Manchester→Mumbai composite photograph, resolved server-side via getHeroImage('manchester-mumbai-journey') — the visual bridge through the middle of the pull. */
@@ -132,6 +193,12 @@ export function PullBrief({
   /** Mumbai, resolved server-side via getDestinationImage('mumbai') — arrives late in the pull and remains as the open Journey Brief's backdrop. */
   destinationImage: BrandImage | null;
 }) {
+  const flagship = useMemo(() => DESTINATIONS.find((destination) => destination.slug === destinationSlug), [destinationSlug]);
+  if (!flagship) throw new Error(`Homepage flagship destination is not plotted in the Route Atlas: ${destinationSlug}`);
+  const arc = useMemo<CubicPath>(
+    () => ({ p0: [ORIGIN.x, ORIGIN.y], c1: [CLIMB_OUT[0], CLIMB_OUT[1]], c2: [flagship.c2[0], flagship.c2[1]], p1: [flagship.x, flagship.y] }),
+    [flagship]
+  );
   /* Discrete phase drives React; continuous progress never touches state. */
   const [settled, setSettled] = useState(false);
   const [announce, setAnnounce] = useState('');
@@ -160,16 +227,16 @@ export function PullBrief({
 
   const drag = useRef({ active: false, startY: 0, lastY: 0, lastT: 0, velocity: 0, moved: false, downT: 0 });
 
-  const aimed = aimedSlug === FLAGSHIP_SLUG;
+  const aimed = aimedSlug === destinationSlug;
 
   /* ── Apply a progress value to every layer, imperatively ─────────────── */
   const applyP = useCallback((p: number, bow = 0) => {
     pRef.current = p;
     bowRef.current = bow;
-    const d = pathAt(ARC, SPINE, p, bow);
+    const d = pathAt(arc, SPINE, p, bow);
     flagPathRef.current?.setAttribute('d', d);
     glowPathRef.current?.setAttribute('d', d);
-    const [ex, ey] = endPointAt(ARC, SPINE, p);
+    const [ex, ey] = endPointAt(arc, SPINE, p);
     if (nodeRef.current) {
       nodeRef.current.setAttribute('cx', String(ex));
       nodeRef.current.setAttribute('cy', String(ey + tensionOffset(bow)));
@@ -242,7 +309,7 @@ export function PullBrief({
     function tensionOffset(b: number) {
       return b * (1 - p);
     }
-  }, []);
+  }, [arc]);
 
   /* ── Programmatic tween (fling / auto-open / rollback) ───────────────── */
   const tweenTo = useCallback(
@@ -299,7 +366,7 @@ export function PullBrief({
       tweenTo(1, reducedRef.current ? 0 : ms, easing, () => {
         phaseRef.current = 'settled';
         setSettled(true);
-        setAnnounce('Journey Brief opened: Manchester to Mumbai, 8 items.');
+        setAnnounce(`Journey Brief opened: ${originLabel} to ${destinationLabel}, 8 items.`);
         // The landing: a small dip-and-settle so the spine arrives with
         // weight, plus a soft settle tick where haptics exist.
         if (!reducedRef.current && briefRef.current?.animate) {
@@ -316,7 +383,7 @@ export function PullBrief({
         barRef.current?.querySelector<HTMLButtonElement>('button')?.focus();
       });
     },
-    [tweenTo]
+    [tweenTo, originLabel, destinationLabel]
   );
 
   const close = useCallback(() => {
@@ -468,10 +535,23 @@ export function PullBrief({
   }, [open]);
 
   /* Rest-state paths for non-flagship threads, memoised once. */
-  const restThreads = useMemo(() => DESTINATIONS.filter((d) => d.slug !== FLAGSHIP_SLUG), []);
+  const restThreads = useMemo(() => DESTINATIONS.filter((destination) => destination.slug !== destinationSlug), [destinationSlug]);
 
   const tabLeft = `${((flagship.x - VB.x) / VB.w) * 100}%`;
   const tabTop = `${((flagship.y - VB.y) / VB.h) * 100}%`;
+
+  if (presentationMode === 'advisory') {
+    return (
+      <PullBriefAdvisory
+        statusCopy={statusCopy}
+        routeSlug={routeSlug}
+        originLabel={originLabel}
+        destinationLabel={destinationLabel}
+        destinationHref={destinationHref}
+        relatedVerifiedRoutes={relatedVerifiedRoutes}
+      />
+    );
+  }
 
   return (
     <div ref={stageRef} className="pb-stage relative" data-hydrated="false">
@@ -548,7 +628,7 @@ export function PullBrief({
             viewBox={`${VB.x} ${VB.y} ${VB.w} ${VB.h}`}
             className="absolute inset-0 h-full w-full"
             role="img"
-            aria-label="Journey Map: routes departing Manchester. The Manchester to Mumbai route can be pulled open into a Journey Brief."
+            aria-label={`Journey Map: routes departing ${originLabel}. The ${originLabel} to ${destinationLabel} route can be pulled open into a Journey Brief.`}
           >
             <defs>
               <linearGradient id="pb-active" gradientUnits="userSpaceOnUse" x1={ORIGIN.x} y1={ORIGIN.y} x2={flagship.x} y2={flagship.y}>
@@ -581,19 +661,19 @@ export function PullBrief({
                   clips them: Manchester reads rightward from its node,
                   Mumbai sits clear above its node (the pull-tab is below). */}
               <text x={ORIGIN.x + 18} y={ORIGIN.y + 44} textAnchor="start" fontFamily="var(--font-display), Georgia, serif" fontSize="26" fill="#F7F2E9">
-                Manchester
+                {originLabel}
               </text>
               <text x={flagship.x} y={flagship.y - 150} textAnchor="middle" fontFamily="var(--font-display), Georgia, serif" fontSize="26" fill="#F7F2E9">
-                Mumbai
+                {destinationLabel}
               </text>
             </g>
 
             {/* The flagship thread — the object that transforms. Bold and bright. */}
             <g fill="none" strokeLinecap="round">
-              <path ref={glowPathRef} d={pathAt(ARC, SPINE, 0)} stroke="#C8932E" strokeWidth="11" strokeOpacity="0.22" filter="url(#pb-soft)" />
+              <path ref={glowPathRef} d={pathAt(arc, SPINE, 0)} stroke="#C8932E" strokeWidth="11" strokeOpacity="0.22" filter="url(#pb-soft)" />
               <path
                 ref={flagPathRef}
-                d={pathAt(ARC, SPINE, 0)}
+                d={pathAt(arc, SPINE, 0)}
                 stroke="url(#pb-active)"
                 strokeWidth={aimed ? 4.4 : 3.6}
                 className={aimed ? 'pb-thread-aimed' : undefined}
@@ -604,7 +684,7 @@ export function PullBrief({
                   loop; hidden the instant the gesture begins (applyP). */}
               <path
                 ref={shimmerRef}
-                d={pathAt(ARC, SPINE, 0)}
+                d={pathAt(arc, SPINE, 0)}
                 stroke="#F7F2E9"
                 strokeWidth="3.6"
                 className="pb-shimmer"
@@ -619,7 +699,7 @@ export function PullBrief({
             ref={tabRef}
             type="button"
             aria-expanded={settled}
-            aria-label="Pull open the Manchester to Mumbai check"
+            aria-label={`Pull open the ${originLabel} to ${destinationLabel} check`}
             onPointerDown={onPointerDown}
             onPointerMove={onPointerMove}
             onPointerUp={onPointerUp}
@@ -682,7 +762,7 @@ export function PullBrief({
       <div
         ref={briefRef}
         role="region"
-        aria-label="Journey Brief: Manchester to Mumbai"
+        aria-label={`Journey Brief: ${originLabel} to ${destinationLabel}`}
         className={`pb-brief pointer-events-none transition-[max-height] duration-500 ease-out max-sm:overflow-hidden ${
           settled ? 'max-sm:max-h-[1200px]' : 'max-sm:max-h-0'
         } sm:absolute sm:bottom-[2%] sm:left-[19%] sm:right-2 sm:top-[4%]`}
@@ -690,7 +770,7 @@ export function PullBrief({
         {/* Compact journey bar — appears at settle. */}
         <div ref={barRef} className="mb-4 flex flex-wrap items-center gap-3 opacity-0 transition-opacity duration-200">
           <span className="inline-flex items-center gap-2.5 rounded-full border border-brass/30 bg-ink-900/80 py-1.5 pl-4 pr-3">
-            <span className="font-display text-base leading-none text-sand-50">Manchester → Mumbai</span>
+            <span className="font-display text-base leading-none text-sand-50">{originLabel} → {destinationLabel}</span>
             <span aria-hidden="true" className="h-4 w-px bg-white/15" />
             <button
               type="button"
@@ -735,7 +815,7 @@ export function PullBrief({
           {/* The public route page — never the founder-gated prototype, which
               404s in production. */}
           <Link
-            href="/routes/manchester-mumbai"
+            href={`/routes/${routeSlug}`}
             className="inline-flex h-11 items-center justify-center gap-1.5 rounded-sm bg-brass px-5 text-sm font-semibold text-ink-900 transition-all hover:bg-brass-400 active:scale-[0.985]"
           >
             Open the full route check

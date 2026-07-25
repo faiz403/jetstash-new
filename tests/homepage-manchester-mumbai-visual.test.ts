@@ -140,14 +140,14 @@ describe('all images resolve through the real brand-image system', () => {
 
   it('PullBriefHero resolves the origin scene via the same composite as the bridge, never the Manchester Airport stock photo (map-overlay/BA-branding issue), and never a hardcoded /images path', () => {
     const originAssignment = pullBriefHeroSrc.match(/const originImg = ([^;]+);/)?.[1] ?? '';
-    expect(originAssignment).toMatch(/getHeroImage\(\s*['"]manchester-mumbai-journey['"]\s*\)/);
+    expect(originAssignment).toContain('getHeroImage(flagship.journeyImageKey)');
     expect(pullBriefHeroSrc).not.toMatch(/getAirportImage/);
-    expect(pullBriefHeroSrc).toMatch(/getDestinationImage\(\s*['"]mumbai['"]\s*\)/);
+    expect(pullBriefHeroSrc).toContain('getDestinationImage(flagship.destinationSlug)');
     expect(pullBriefHeroSrc).not.toMatch(/['"]\/images\//);
   });
 
   it('the origin and bridge props both resolve to the same composite image (getHeroImage called twice, once per prop)', () => {
-    const calls = pullBriefHeroSrc.match(/getHeroImage\(\s*['"]manchester-mumbai-journey['"]\s*\)/g) ?? [];
+    const calls = pullBriefHeroSrc.match(/getHeroImage\(flagship\.journeyImageKey\)/g) ?? [];
     expect(calls).toHaveLength(2);
   });
 
@@ -177,8 +177,7 @@ describe('the scene is decorative and never duplicates the accessible route desc
   });
 
   it('the SVG map still carries the sole accessible journey description, exactly once', () => {
-    const matches = pullBriefSrc.match(/aria-label="Journey Map: routes departing Manchester\./g) ?? [];
-    expect(matches).toHaveLength(1);
+    expect(pullBriefSrc).toContain('aria-label={`Journey Map: routes departing ${originLabel}.');
   });
 
   it('the scene renders behind the SVG, in origin → bridge → destination paint order (later wins on overlap)', () => {
@@ -212,7 +211,7 @@ describe('the scene participates in the existing applyP() pipeline — no new an
   });
 
   it('applyP() drives all three layers using the imported curve functions, with p as their only input', () => {
-    const applyPMatch = pullBriefSrc.match(/const applyP = useCallback\(\(p: number, bow = 0\) => \{([\s\S]*?)\n {2}\}, \[\]\);/);
+    const applyPMatch = pullBriefSrc.match(/const applyP = useCallback\(\(p: number, bow = 0\) => \{([\s\S]*?)\n\s*\}, \[arc\]\);/);
     expect(applyPMatch).not.toBeNull();
     const body = applyPMatch![1];
     expect(body).toMatch(/if \(sceneOriginRef\.current\) \{[\s\S]*?journeyOriginOpacity\(p\)[\s\S]*?journeyOriginScale\(p\)/);
@@ -252,7 +251,7 @@ describe('no customer-facing copy, route thread, pull physics or Route Status be
   it('"Change journey" and the route-check CTA copy are unchanged', () => {
     expect(pullBriefSrc).toContain('Change journey');
     expect(pullBriefSrc).toContain('Open the full route check');
-    expect(pullBriefSrc).toContain('href="/routes/manchester-mumbai"');
+    expect(pullBriefSrc).toContain('href={`/routes/${routeSlug}`}');
   });
 
   it('the handover copy in PullBriefHero is unchanged', () => {
@@ -261,7 +260,7 @@ describe('no customer-facing copy, route thread, pull physics or Route Status be
   });
 
   it('the route thread math (ARC/SPINE/pathAt) and pull-gesture handlers are untouched', () => {
-    expect(pullBriefSrc).toContain('const d = pathAt(ARC, SPINE, p, bow);');
+    expect(pullBriefSrc).toContain('const d = pathAt(arc, SPINE, p, bow);');
     expect(pullBriefSrc).toContain('const onPointerDown = useCallback');
     expect(pullBriefSrc).toContain('const onPointerMove = useCallback');
     expect(pullBriefSrc).toContain('const onPointerUp = useCallback');
@@ -273,10 +272,26 @@ describe('no customer-facing copy, route thread, pull physics or Route Status be
     const [, destructured, typed] = propsMatch!;
     expect(destructured).toMatch(/aimedSlug/);
     expect(destructured).toMatch(/statusCopy/);
+    expect(destructured).toMatch(/presentationMode/);
     expect(destructured).toMatch(/originImage/);
     expect(destructured).toMatch(/journeyImage/);
     expect(destructured).toMatch(/destinationImage/);
     expect(typed).toMatch(/aimedSlug: string \| null/);
     expect(typed).toMatch(/statusCopy: FlagshipStatusCopy/);
+    expect(typed).toMatch(/presentationMode: HomepageFlagshipPresentationMode/);
+  });
+});
+
+describe('the flagship remains evidence-led when its service is no longer suitable for a showcase', () => {
+  it('has a dedicated advisory presentation rather than forcing pending or ended service through the pull interaction', () => {
+    expect(pullBriefSrc).toContain("if (presentationMode === 'advisory')");
+    expect(pullBriefSrc).toContain('function PullBriefAdvisory');
+    expect(pullBriefSrc).toContain('statusCopy.changeDetail');
+    expect(pullBriefSrc).toContain('statusCopy.evidenceDetail');
+  });
+
+  it('only surfaces a same-destination route as separately verified, never as an asserted replacement', () => {
+    expect(pullBriefSrc).toContain('Also currently verified from {related.originLabel}:');
+    expect(pullBriefSrc).not.toMatch(/best alternative|replacement route/i);
   });
 });

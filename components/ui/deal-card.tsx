@@ -3,7 +3,6 @@ import { Deal, DealCabin, formatChecked, getDealDirectnessLabel, getDealAirlineL
 import { getRouteByAirportAndDestination } from '@/data/routes';
 import { routeStatusEvents } from '@/data/route-status-events';
 import { getEffectiveRoutePresentation } from '@/lib/route-status-copy';
-import { getDestinationBySlug } from '@/data/destinations';
 import { getFareRangeSummary } from '@/data/fare-observations';
 import { getDealBookingUrl } from '@/lib/booking-providers';
 import { getFareFreshnessState, daysBetweenIso, OBSERVATION_STALE_DAYS } from '@/lib/freshness-thresholds';
@@ -25,28 +24,13 @@ export function DealCard({ deal }: { deal: Deal }) {
   // logged range/check, or nothing at all — never a hardcoded figure that
   // can go stale. See data/deals.ts's header comment.
   const range = matchedRoute ? getFareRangeSummary(matchedRoute.slug, deal.cabin, nowIso) : null;
-  const destination = getDestinationBySlug(deal.toDestinationSlug);
-  // Verification-pending leakage fix: a matched route's own flightTime must
-  // never render raw — getEffectiveRoutePresentation() returns null flight
-  // facts for both 'unverified' and 'service-ended', so this card can never
-  // show a real duration next to a suppressed-status badge. Falling back to
-  // the destination's generic flightTimeFromUK only happens when there's no
-  // matched route at all, which is unrelated to route-level verification
-  // and always safe. Reconciled against the Route Status V1 ledger, so a
-  // managed corridor past its withdrawal boundary is never shown as if
-  // still direct.
+  // A duration belongs to a specific airport-to-destination route, never to
+  // a destination in general. This presentation removes duration facts when
+  // the route is unverified or the service has ended.
   const presentation = matchedRoute ? getEffectiveRoutePresentation(matchedRoute, routeStatusEvents, nowIso) : undefined;
-  // Wrong-airport leakage fix: destinations.ts's flightTimeFromUK is a single
-  // string that usually names one specific UK airport (e.g. Islamabad's "7h
-  // 45m direct from Manchester") rather than describing the deal's own
-  // departure airport. Without a matched route, only fall back to it when
-  // this destination's own data actually claims the deal's airport flies
-  // there at all — otherwise a Heathrow deal card could show a duration
-  // that's explicitly labelled as being from Manchester. Still imperfect
-  // when a destination lists multiple airports under one airport-specific
-  // string, but it removes the case that actually leaked to production.
-  const canUseDestinationFallback = !matchedRoute && !!destination?.ukAirports.includes(deal.fromAirportSlug);
-  const flightTime = presentation ? presentation.flightTime : canUseDestinationFallback ? destination?.flightTimeFromUK : undefined;
+  // Never fall back to destination flight summaries: they can name a UK
+  // airport other than the card's actual departure airport.
+  const flightTime = presentation?.flightTime;
   // Presentation-integrity fix: never re-derive label text via a local
   // ternary — presentation.statusLabel is the one canonical label (see
   // RoutePresentationBase's doc comment in data/routes.ts), so a new status
@@ -129,13 +113,11 @@ export function DealCard({ deal }: { deal: Deal }) {
           </>
         ) : (
           <>
-            <p className="font-display text-xl leading-snug text-ink-900">
-              {presentation?.status === 'unverified' || presentation?.status === 'service-ended'
-                ? presentation.statusLabel
-                : matchedRoute
-                  ? flightTime
-                  : `Typical flight time: ${flightTime ?? 'varies'}`}
-            </p>
+            {(presentation?.status === 'unverified' || presentation?.status === 'service-ended' || flightTime) && (
+              <p className="font-display text-xl leading-snug text-ink-900">
+                {presentation?.status === 'unverified' || presentation?.status === 'service-ended' ? presentation.statusLabel : flightTime}
+              </p>
+            )}
             {presentation?.status !== 'unverified' && presentation?.status !== 'service-ended' &&
               (() => {
                 // Deduped, since an unverified airline and an unverified route

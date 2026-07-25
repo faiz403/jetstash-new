@@ -143,8 +143,8 @@ export default async function DestinationPage({ params }: { params: Promise<{ sl
                 })}
               </div>
               <p className="mt-3 text-sm text-ink-500">
-                General guide, not a confirmed schedule: {dest.flightTimeFromUK}. See the route guides
-                above for each airport's current verified service.
+                Flight times and direct-service availability vary by UK departure airport. Explore the route guides
+                above for current, verified service details.
               </p>
             </div>
 

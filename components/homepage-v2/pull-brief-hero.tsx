@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ArrowRight, ArrowUpRight } from 'lucide-react';
 import { getDestinationImage, getHeroImage } from '@/lib/brand-images';
-import type { FlagshipStatusCopy } from '@/lib/flagship-status-copy';
+import type { FlagshipStatusPresentation } from '@/lib/flagship-status-copy';
 import { PullBrief } from './pull-brief';
 
 /**
@@ -36,6 +36,24 @@ export interface HandoverData {
   routeIndex: Record<string, string>;
 }
 
+/** Prepared on the server from HOMEPAGE_FLAGSHIP.routeSlug. */
+export interface HomepageFlagshipData {
+  routeSlug: string;
+  airportSlug: string;
+  destinationSlug: string;
+  originLabel: string;
+  destinationLabel: string;
+  destinationHref: string;
+  journeyImageKey: string;
+}
+
+/** A same-destination route that is currently verified by the Route Status ledger. */
+export interface RelatedVerifiedRoute {
+  slug: string;
+  label: string;
+  originLabel: string;
+}
+
 const FEATURED = { from: 'manchester', to: 'mumbai' };
 
 function Wordmark() {
@@ -49,31 +67,41 @@ function Wordmark() {
 const selectClass =
   'pb-select mt-1.5 h-11 w-full appearance-none rounded-sm border border-white/15 bg-white/[0.04] pl-3 pr-9 text-sm text-sand-50 focus-visible:border-brass/60';
 
-export function PullBriefHero({ handover, flagshipStatusCopy }: { handover: HandoverData; flagshipStatusCopy: FlagshipStatusCopy }) {
+export function PullBriefHero({
+  handover,
+  flagship,
+  flagshipStatusPresentation,
+  relatedVerifiedRoutes,
+}: {
+  handover: HandoverData;
+  flagship: HomepageFlagshipData;
+  flagshipStatusPresentation: FlagshipStatusPresentation;
+  relatedVerifiedRoutes: RelatedVerifiedRoute[];
+}) {
   const router = useRouter();
-  const [fromSlug, setFromSlug] = useState(FEATURED.from);
-  const [toSlug, setToSlug] = useState(FEATURED.to);
+  const [fromSlug, setFromSlug] = useState(flagship.airportSlug);
+  const [toSlug, setToSlug] = useState(flagship.destinationSlug);
 
   const fromLabel = handover.origins.find((o) => o.slug === fromSlug)?.label ?? fromSlug;
   const toLabel = handover.destinations.find((d) => d.slug === toSlug)?.label ?? toSlug;
   const toCity = toLabel.split(',')[0];
 
-  const isFeatured = fromSlug === FEATURED.from && toSlug === FEATURED.to;
+  const isFeatured = fromSlug === flagship.airportSlug && toSlug === flagship.destinationSlug;
   const routeSlug = handover.routeIndex[`${fromSlug}|${toSlug}`];
 
-  const originImg = getHeroImage('manchester-mumbai-journey');
-  const journeyImg = getHeroImage('manchester-mumbai-journey');
-  const destinationImg = getDestinationImage('mumbai');
+  const originImg = getHeroImage(flagship.journeyImageKey);
+  const journeyImg = getHeroImage(flagship.journeyImageKey);
+  const destinationImg = getDestinationImage(flagship.destinationSlug);
 
   function onSubmit(e: FormEvent) {
     e.preventDefault();
-    if (isFeatured) {
+    if (isFeatured && flagshipStatusPresentation.mode === 'showcase') {
       // The featured journey is the stage above — open it rather than leaving the page.
       window.dispatchEvent(new Event('jetstash:pull-flagship'));
       document.getElementById('featured-stage')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       return;
     }
-    router.push(routeSlug ? `/routes/${routeSlug}` : `/destinations/${toSlug}`);
+    router.push(isFeatured ? `/routes/${flagship.routeSlug}` : routeSlug ? `/routes/${routeSlug}` : `/destinations/${toSlug}`);
   }
 
   return (
@@ -103,8 +131,15 @@ export function PullBriefHero({ handover, flagshipStatusCopy }: { handover: Hand
         {/* ── The featured proof — pull to reveal what matters most. ─────────── */}
         <div id="featured-stage" className="mt-4 scroll-mt-24 sm:mt-5">
           <PullBrief
-            aimedSlug={isFeatured ? 'mumbai' : null}
-            statusCopy={flagshipStatusCopy}
+            aimedSlug={isFeatured ? flagship.destinationSlug : null}
+            statusCopy={flagshipStatusPresentation.copy}
+            presentationMode={flagshipStatusPresentation.mode}
+            routeSlug={flagship.routeSlug}
+            originLabel={flagship.originLabel}
+            destinationSlug={flagship.destinationSlug}
+            destinationLabel={flagship.destinationLabel}
+            destinationHref={flagship.destinationHref}
+            relatedVerifiedRoutes={relatedVerifiedRoutes}
             originImage={originImg}
             journeyImage={journeyImg}
             destinationImage={destinationImg}
@@ -150,10 +185,15 @@ export function PullBriefHero({ handover, flagshipStatusCopy }: { handover: Hand
 
           {/* Honest state for the current selection — updates as they choose. */}
           <p aria-live="polite" className="mt-3 min-h-[1.5rem] text-[13px] leading-relaxed text-ink-300">
-            {isFeatured && (
+            {isFeatured && flagshipStatusPresentation.mode === 'showcase' && (
               <>
                 <span className="text-brass-200">This is the featured route above.</span> Press Check to open this
                 route check.
+              </>
+            )}
+            {isFeatured && flagshipStatusPresentation.mode === 'advisory' && (
+              <>
+                <span className="text-brass-200">This route has an important current status update.</span> Press Check to open the route guide.
               </>
             )}
             {!isFeatured && routeSlug && (
