@@ -62,6 +62,13 @@ The baseline profile is:
 - GBP, taxes and mandatory fees included where shown;
 - a 14-night trip unless the route profile specifies a different customer-representative stay;
 - one fixed weekly observation day (fortnightly only where the route is explicitly marked so);
+- **a fixed 8-week booking horizon**: the outbound departure date searched is always roughly 8
+  weeks after `observedDate`, unless the route profile states a different horizon. Chosen because
+  several routes' own `bookingWindowNote` already describe 8–10 weeks out as where fares "hold
+  reasonably steady" — the point in the booking curve least distorted by last-minute volatility,
+  and therefore the most comparable week to week. Without a fixed horizon, two weekly checks on
+  the same route could search different points on the price curve and look like a real fare
+  movement when only the lead time changed;
 - the route's named departure airport, without silently widening the search to all UK airports.
 
 A route profile may override the baseline only for a documented reason—for example a materially
@@ -130,3 +137,10 @@ Before a record can influence a public fare range or Book-By context:
 The archive becomes commercially valuable through repetition: one check is a fact, several checks
 are context, and a long series can eventually support cautious booking-window guidance. It must
 never be made to look mature before the underlying record is mature.
+
+## Known limitation (tracked, non-blocking)
+
+Baggage is currently recorded as `included`, a stated allowance, or `not stated` — there is no
+distinct state for a fare that explicitly includes *no* checked bag versus a result that simply
+doesn't mention baggage at all. Both currently record as `not stated`. Worth a fourth `excluded`
+state in a future pass; not required before the archive can start.
