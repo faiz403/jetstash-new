@@ -33,6 +33,19 @@ export interface FlagshipStatusCopy {
   evidenceDetail: string;
 }
 
+/**
+ * The homepage uses the same Route Status view model as the route page, but
+ * a pull-to-reveal interaction only makes sense when there is a live service
+ * fact to reveal. The mode is deliberately derived from that model rather
+ * than from a homepage-specific date or editorial claim.
+ */
+export type HomepageFlagshipPresentationMode = 'showcase' | 'advisory';
+
+export interface FlagshipStatusPresentation {
+  mode: HomepageFlagshipPresentationMode;
+  copy: FlagshipStatusCopy;
+}
+
 const FALLBACK: FlagshipStatusCopy = {
   routeDetail: "We can't currently confirm this route's direct service — check directly with the airline before booking.",
   changeDetail: "We can't currently confirm this route's direct service — check directly with the airline before booking.",
@@ -133,6 +146,32 @@ export function mapViewModelToFlagshipCopy(viewModel: RouteStatusViewModel, airl
 }
 
 /**
+ * A withdrawal announcement still has a current, verified direct service to
+ * showcase. Once its effective date has passed without fresh confirmation,
+ * or once service has ended, the homepage must become an immediate advisory
+ * rather than making a theatrical reveal out of uncertainty.
+ */
+export function deriveHomepageFlagshipPresentationMode(viewModel: RouteStatusViewModel): HomepageFlagshipPresentationMode {
+  return viewModel.kind === 'verified-direct' || viewModel.kind === 'withdrawal-announced' ? 'showcase' : 'advisory';
+}
+
+/** Builds the homepage presentation and copy from one validated ledger result. */
+export function buildFlagshipStatusPresentation(
+  routeSlug: string,
+  allEvents: RouteStatusEvent[] = routeStatusEvents,
+  nowIso: string = new Date().toISOString().slice(0, 10)
+): FlagshipStatusPresentation {
+  const route = getRouteBySlug(routeSlug);
+  if (!route) return { mode: 'advisory', copy: FALLBACK };
+  const status = getRouteStatus(route, allEvents, nowIso);
+  if (!status) return { mode: 'advisory', copy: FALLBACK };
+  const viewModel = getRouteStatusCopy(route, status, allEvents, nowIso);
+  const presentationAirlineSlugs = getEffectiveRoutePresentation(route, allEvents, nowIso).airlineSlugs;
+  const airlineNames = getAirlinesBySlugs(presentationAirlineSlugs).map((a) => a.name);
+  return { mode: deriveHomepageFlagshipPresentationMode(viewModel), copy: mapViewModelToFlagshipCopy(viewModel, airlineNames) };
+}
+
+/**
  * The full pipeline: looks up the named route, derives its Route Status,
  * resolves and validates the customer-facing view model, and maps it to
  * FlagshipStatusCopy — the one function the homepage server component
@@ -140,12 +179,5 @@ export function mapViewModelToFlagshipCopy(viewModel: RouteStatusViewModel, airl
  * so the client bundle stays free of the ledger/copy-layer data files.
  */
 export function buildFlagshipStatusCopy(routeSlug: string, allEvents: RouteStatusEvent[] = routeStatusEvents, nowIso: string = new Date().toISOString().slice(0, 10)): FlagshipStatusCopy {
-  const route = getRouteBySlug(routeSlug);
-  if (!route) return FALLBACK;
-  const status = getRouteStatus(route, allEvents, nowIso);
-  if (!status) return FALLBACK;
-  const viewModel = getRouteStatusCopy(route, status, allEvents, nowIso);
-  const presentationAirlineSlugs = getEffectiveRoutePresentation(route, allEvents, nowIso).airlineSlugs;
-  const airlineNames = getAirlinesBySlugs(presentationAirlineSlugs).map((a) => a.name);
-  return mapViewModelToFlagshipCopy(viewModel, airlineNames);
+  return buildFlagshipStatusPresentation(routeSlug, allEvents, nowIso).copy;
 }

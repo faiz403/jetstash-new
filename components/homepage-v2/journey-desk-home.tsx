@@ -1,11 +1,12 @@
-import { airports } from '@/data/airports';
+import { airports, getAirportBySlug } from '@/data/airports';
 import { routes } from '@/data/routes';
-import { buildFlagshipStatusCopy } from '@/lib/flagship-status-copy';
+import { routeStatusEvents } from '@/data/route-status-events';
+import { getEffectiveRoutePresentation } from '@/lib/route-status-copy';
+import { buildFlagshipStatusPresentation } from '@/lib/flagship-status-copy';
+import { HOMEPAGE_FLAGSHIP } from '@/lib/homepage-flagship';
 import { getDestinationBySlug } from '@/data/destinations';
-import { PullBriefHero, type HandoverData } from '@/components/homepage-v2/pull-brief-hero';
+import { PullBriefHero, type HandoverData, type HomepageFlagshipData, type RelatedVerifiedRoute } from '@/components/homepage-v2/pull-brief-hero';
 import { WhatWeCheck, RouteWatchInvite, ClosingBand } from '@/components/homepage-v2/homepage-sections';
-
-const FLAGSHIP_ROUTE_SLUG = 'manchester-mumbai';
 
 /**
  * The public homepage: JetStash as the pre-booking second opinion.
@@ -50,11 +51,41 @@ export function JourneyDeskHome() {
   for (const r of routes) routeIndex[`${r.airportSlug}|${r.destinationSlug}`] = r.slug;
 
   const handover: HandoverData = { origins, destinations, routeIndex };
-  const flagshipStatusCopy = buildFlagshipStatusCopy(FLAGSHIP_ROUTE_SLUG);
+  const flagshipRoute = routes.find((route) => route.slug === HOMEPAGE_FLAGSHIP.routeSlug);
+  if (!flagshipRoute) throw new Error(`Homepage flagship route not found: ${HOMEPAGE_FLAGSHIP.routeSlug}`);
+  const flagshipAirport = getAirportBySlug(flagshipRoute.airportSlug);
+  const flagshipDestination = getDestinationBySlug(flagshipRoute.destinationSlug);
+  if (!flagshipAirport || !flagshipDestination) throw new Error(`Homepage flagship route has incomplete place data: ${flagshipRoute.slug}`);
+
+  const flagship: HomepageFlagshipData = {
+    routeSlug: flagshipRoute.slug,
+    airportSlug: flagshipRoute.airportSlug,
+    destinationSlug: flagshipRoute.destinationSlug,
+    originLabel: flagshipAirport.city,
+    destinationLabel: flagshipDestination.city,
+    destinationHref: `/destinations/${flagshipDestination.slug}`,
+    journeyImageKey: HOMEPAGE_FLAGSHIP.journeyImageKey,
+  };
+  const nowIso = new Date().toISOString().slice(0, 10);
+  const flagshipStatusPresentation = buildFlagshipStatusPresentation(flagship.routeSlug, routeStatusEvents, nowIso);
+  const relatedVerifiedRoutes: RelatedVerifiedRoute[] = routes
+    .filter((route) => route.destinationSlug === flagship.destinationSlug && route.slug !== flagship.routeSlug)
+    .flatMap((route) => {
+      const presentation = getEffectiveRoutePresentation(route, routeStatusEvents, nowIso);
+      const airport = getAirportBySlug(route.airportSlug);
+      return presentation.status === 'direct' && airport
+        ? [{ slug: route.slug, label: `${airport.city} → ${flagship.destinationLabel}`, originLabel: airport.city }]
+        : [];
+    });
 
   return (
     <>
-      <PullBriefHero handover={handover} flagshipStatusCopy={flagshipStatusCopy} />
+      <PullBriefHero
+        handover={handover}
+        flagship={flagship}
+        flagshipStatusPresentation={flagshipStatusPresentation}
+        relatedVerifiedRoutes={relatedVerifiedRoutes}
+      />
       <WhatWeCheck />
       <RouteWatchInvite />
       <ClosingBand />

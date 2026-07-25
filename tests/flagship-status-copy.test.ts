@@ -1,10 +1,12 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { mapViewModelToFlagshipCopy, buildFlagshipStatusCopy } from '@/lib/flagship-status-copy';
-import { getRouteStatus, type Route } from '@/data/routes';
+import { mapViewModelToFlagshipCopy, buildFlagshipStatusCopy, buildFlagshipStatusPresentation, deriveHomepageFlagshipPresentationMode } from '@/lib/flagship-status-copy';
+import { getRouteStatus, getRouteBySlug, type Route } from '@/data/routes';
 import { getRouteStatusCopy, type RouteStatusViewModel } from '@/lib/route-status-copy';
 import { routeStatusEvents, type RouteStatusEvent, type SourceRef } from '@/data/route-status-events';
+import { HOMEPAGE_FLAGSHIP } from '@/lib/homepage-flagship';
+import { DESTINATIONS } from '@/components/sections/route-map-hero';
 
 /**
  * Route Status V1 final audit §4 — the homepage's featured thread must
@@ -174,6 +176,61 @@ describe('mapViewModelToFlagshipCopy — pure mapper, regression cases', () => {
     expect(copy.changeDetail).not.toContain('2026-07-01');
     expect(copy.changeDetail).not.toBe('No active service-change notice for this route.');
     assertNoHardcodedLiterals(copy);
+  });
+});
+
+describe('homepage flagship presentation mode', () => {
+  it('uses the cinematic showcase only for a currently verified service or an announced future change', () => {
+    const verified: RouteStatusViewModel = { kind: 'verified-direct', badgeLabel: 'Direct', citations: [{ publisher: 'Fixture' }], serviceNotices: [] };
+    const announced: RouteStatusViewModel = {
+      kind: 'withdrawal-announced',
+      badgeLabel: 'Service change announced',
+      headline: 'Fixture',
+      explanation: 'Fixture explanation.',
+      announcedAt: '2026-01-01',
+      effectiveFrom: '2026-12-01',
+      citations: [{ publisher: 'Fixture' }],
+      serviceNotices: [],
+    };
+    expect(deriveHomepageFlagshipPresentationMode(verified)).toBe('showcase');
+    expect(deriveHomepageFlagshipPresentationMode(announced)).toBe('showcase');
+  });
+
+  it('turns uncertainty and ended service into an immediate advisory rather than a pull-to-reveal payoff', () => {
+    const transition: RouteStatusViewModel = {
+      kind: 'transition-boundary-pending',
+      badgeLabel: 'Verification pending',
+      body: 'Fixture transition body.',
+      publisher: 'Fixture',
+      effectiveFrom: '2026-06-01',
+      drivingEventId: 'fixture',
+      citations: [{ publisher: 'Fixture' }],
+    };
+    const ended: RouteStatusViewModel = {
+      kind: 'service-ended',
+      badgeLabel: 'Service ended',
+      headline: 'Fixture',
+      explanation: 'Fixture explanation.',
+      effectiveFrom: '2026-06-01',
+      citations: [{ publisher: 'Fixture' }],
+      serviceNotices: [],
+    };
+    const pending: RouteStatusViewModel = { kind: 'neutral-pending', badgeLabel: 'Verification pending', body: 'Fixture pending body.' };
+    expect(deriveHomepageFlagshipPresentationMode(transition)).toBe('advisory');
+    expect(deriveHomepageFlagshipPresentationMode(ended)).toBe('advisory');
+    expect(deriveHomepageFlagshipPresentationMode(pending)).toBe('advisory');
+  });
+
+  it('derives the real flagship mode from the ledger on both sides of its known change boundary', () => {
+    expect(buildFlagshipStatusPresentation('manchester-mumbai', routeStatusEvents, '2026-07-23').mode).toBe('showcase');
+    expect(buildFlagshipStatusPresentation('manchester-mumbai', routeStatusEvents, '2026-08-31').mode).toBe('advisory');
+  });
+
+  it('keeps the editorial choice minimal while requiring real route and atlas compatibility', () => {
+    const route = getRouteBySlug(HOMEPAGE_FLAGSHIP.routeSlug);
+    expect(route).toBeDefined();
+    expect(route?.airportSlug).toBe('manchester');
+    expect(DESTINATIONS.some((destination) => destination.slug === route?.destinationSlug)).toBe(true);
   });
 });
 

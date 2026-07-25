@@ -6,7 +6,8 @@ import { ContactForm } from '@/components/sections/contact-form';
 import { siteConfig } from '@/lib/site-config';
 
 export const metadata: Metadata = {
-  title: 'Contact JetStash',
+  // Root layout's title template already appends " | JetStash" — no manual suffix here.
+  title: 'Contact',
   description: 'Questions about a route, a fare, or anything else on JetStash: send us a message.',
   alternates: { canonical: `${siteConfig.url}/contact` },
 };

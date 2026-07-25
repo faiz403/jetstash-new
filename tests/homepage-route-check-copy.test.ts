@@ -27,7 +27,7 @@ describe('the pull-handle label reads as a concrete route check, not a vague "an
   });
 
   it('the label stays inside the same pull-tab button as the accessible name — this is still one wired control, not a relocated label', () => {
-    const ariaLabelIndex = pullBriefSrc.indexOf('aria-label="Pull open the Manchester to Mumbai check"');
+    const ariaLabelIndex = pullBriefSrc.indexOf('aria-label={`Pull open the ${originLabel} to ${destinationLabel} check`}');
     const labelIndex = pullBriefSrc.indexOf('Pull to check this route');
     const buttonCloseIndex = pullBriefSrc.indexOf('</button>', ariaLabelIndex);
     expect(ariaLabelIndex).toBeGreaterThan(-1);
@@ -36,7 +36,7 @@ describe('the pull-handle label reads as a concrete route check, not a vague "an
   });
 
   it('the accessible name (aria-label) is untouched — already clear, no concrete accessibility improvement identified', () => {
-    expect(pullBriefSrc).toContain('aria-label="Pull open the Manchester to Mumbai check"');
+    expect(pullBriefSrc).toContain('aria-label={`Pull open the ${originLabel} to ${destinationLabel} check`}');
   });
 
   it('the visible label stays decorative (aria-hidden) — the aria-label above remains the sole accessible name', () => {
