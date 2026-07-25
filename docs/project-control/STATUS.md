@@ -39,11 +39,13 @@
 
 ## ACTIVE
 
-### FARE-001 — Restore genuine fare intelligence
+### FARE-001 — Begin building the editorial fare observation archive
 
-The pilot is under way. Only fresh, date-complete observations checked directly on airline-owned
-pages can be published. Historic incomplete entries remain private; the work is to build a
-longitudinal record over time, not manufacture a price history in one session.
+The archive is now being built editorially. A human may record a fare observed on Google Flights,
+TravelUp or an airline booking page, provided the source, check date, outbound date, return date,
+cabin, currency and baggage treatment are captured. Google Flights is an observation source only:
+service facts still require primary airline, airport or official sources. Historic incomplete
+entries remain private; a past price cannot be reconstructed honestly after the fact.
 
 ### AFF-001 — Improve affiliate coverage
 
@@ -61,11 +63,12 @@ fare observation; never fill a route simply to remove a pending state.
 
 ## NEXT
 
-### FARE-001 — Restore genuine fare intelligence
+### FARE-001 — Begin building the editorial fare observation archive
 
-Continue adding fresh, dated, manually verified fare observations for priority routes. Every
-observation must carry departure date, return date, cabin, source and observed date; do not create
-a fare merely to fill an empty state.
+Follow FARE_OBSERVATION_ARCHIVE.md: check the priority queue on a fixed editorial cadence and
+append fresh observations. Every new observation must carry departure date, return date, cabin,
+source, observation method, currency, baggage treatment and observed date. Never backfill a price
+for a day that was not actually checked, and never create a fare merely to fill an empty state.
 
 ## QUEUED
 
@@ -90,7 +93,8 @@ a fare merely to fill an empty state.
 
 ## Known risks
 
-- Genuine fare intelligence remains thin and must never be filled with invented prices.
+- The editorial fare archive is at its starting point; it must grow through real dated checks, not
+  retrospective estimates or automated scraping.
 - TravelUp is a single booking-partner dependency. Recheck verified destination pages periodically;
   do not add a partner or deep link without approval and direct validation.
 - Travel Ready rules and Route Status evidence require scheduled re-verification as source facts

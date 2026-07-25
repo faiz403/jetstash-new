@@ -14,7 +14,20 @@ export interface FareObservation {
   observedDate: string;
   price: number;
   priceNote: string;
-  source: string; // airline the fare was observed on
+  /** Provider or airline named by the result; never imply a live price. */
+  source: string;
+  /** Where the manual observation was made; required for new observations. Optional only so historic entries that predate this field stay valid. */
+  observedVia?: 'airline' | 'travelup' | 'google-flights';
+  /** URL used for the manual check, when stable and safe to retain; required for new observations where one exists. */
+  sourceUrl?: string;
+  /** Currency shown by the source — GBP only, see FARE_OBSERVATION_ARCHIVE.md's "Standard search configuration"; required for new observations. Optional only because existing entries predate this field. */
+  currency?: 'GBP';
+  /** Baggage allowance shown by the source, or 'not stated'; required for new observations. Optional only because existing entries predate this field. */
+  baggage?: string;
+  /** Versioned route profile used for this check; required for new observations. */
+  profileId?: string;
+  /** Why this check was made; required for new observations. */
+  observationReason?: 'routine-weekly' | 'routine-fortnightly' | 'school-holiday' | 'religious-peak' | 'airline-sale' | 'emergency-recheck' | 'route-status-recheck' | 'other';
   /**
    * ISO date of the outbound departure the fare was quoted FOR — record it
    * on every new observation. Without it, "how many days before departure
@@ -66,7 +79,7 @@ export function isPubliclyPublishable(o: FareObservation): boolean {
  * for a new observation to ever appear publicly — see `isPubliclyPublishable`
  * above:
  *
- *   { id: 'obs-<route>-<cabin>-<n>', routeSlug: '<route-slug>', cabin: 'Economy', observedDate: '2026-01-01', price: 0, priceNote: 'return, per person', source: '<airline>', departureDate: '2026-01-01', returnDate: '2026-01-15' },
+ *   { id: 'obs-<route>-<cabin>-<n>', routeSlug: '<route-slug>', cabin: 'Economy', observedDate: '2026-01-01', price: 0, priceNote: 'return, per person', observedVia: 'google-flights', source: '<airline or provider shown>', sourceUrl: '<manual-check-url>', currency: 'GBP', baggage: '<allowance as shown, or not stated>', profileId: '<route-profile-id>', observationReason: 'routine-weekly', departureDate: '2026-01-01', returnDate: '2026-01-15' },
  */
 export const fareObservations: FareObservation[] = [
   { id: 'obs-man-lhe-economy-1', routeSlug: 'manchester-lahore', cabin: 'Economy', observedDate: '2026-06-15', price: 489, priceNote: 'return, per person', source: 'PIA' },

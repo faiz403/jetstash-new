@@ -20,7 +20,7 @@ evidence before calling any future expansion a top-10 or top-15 demand list.
 |---|---|---|
 | Service truth | A current primary airline, airport or official schedule source supports the claim, with a source URL, checked date and review date. | Carry forward an old frequency or infer one airline's service from another's page. |
 | Route Status | A dated, attributable source describes a material service change. | Treat a predicted change or an unsourced timetable scrape as settled fact. |
-| Fare intelligence | A fresh observation records source, cabin, observed date, departure date and return date. | Reuse or edit historic observations to make a graph look fuller. |
+| Fare intelligence | A fresh manual observation records the result source, where it was checked, cabin, observed date, departure date, return date, currency and baggage treatment. | Reuse or edit historic observations to make a graph look fuller, or present an observation as a live price. |
 | Booking guidance | Existing route-specific evidence or calendar guidance applies to the route and event. | Turn thin observations into a price prediction. |
 | Travel readiness | An official rule has a source and a review cadence. | Treat a general buffer as an official processing promise. |
 
@@ -53,7 +53,7 @@ marketing; it is to make each one source-complete and add real, dated observatio
 1. Pick **one Tier A route** needing a source check and **one** needing a date-complete fare.
 2. Verify service facts directly from an airline, airport, government or other primary source.
 3. Capture the exact supported claim, source URL, checked date, review date and remaining uncertainty.
-4. Add a new fare observation only when it records outbound and return dates. Append; never rewrite history.
+4. Add a new fare observation only when it records outbound and return dates and the fixed search context. Append; never rewrite history. Google Flights, TravelUp and airline booking pages may be used for manual fare observations; service claims still need primary sources.
 5. Run typecheck, lint, tests and a production build for code/data changes. Inspect affected rendered pages.
 6. Update this record and `STATUS.md` only when the live state has actually changed.
 
@@ -74,7 +74,7 @@ have all of the following:
 
 ## What this does not authorise
 
-- No schedule scraping, price scraping or automated fare collection.
+- No automated schedule or price scraping, automated fare collection or retrospective price backfill. Manual editorial checks are allowed only when the result is recorded on the same day with its travel dates and source context.
 - No expansion to a route just because a competitor lists it.
 - No unlabelled estimate, inferred connection time or passenger arrival promise.
 - No claim that the queue is a universal popularity ranking.
