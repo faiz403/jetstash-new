@@ -36,7 +36,9 @@ Use the same configuration for comparable observations unless the record explici
 differs:
 
 - one adult, return journey, economy;
-- GBP display, with the source's taxes and mandatory fees included where shown;
+- GBP display only. Configure the source to show GBP before reading the fare — never record a
+  result in another currency and convert it. If a source cannot be set to GBP, do not log an
+  observation from it for this archive;
 - exact outbound and return dates recorded in the entry;
 - all relevant airports for the route's named departure airport, not a silently widened UK search;
 - baggage allowance recorded as shown (`included`, the stated allowance, or `not stated`);
@@ -86,6 +88,14 @@ Every new `FareObservation` must include:
 
 Append records; never edit an old observation because a fare changed. If a search returns no
 publishable fare, record nothing and leave the route's honest empty state intact.
+
+`observedVia`, `sourceUrl`, `currency`, `baggage`, `profileId` and `observationReason` are typed
+as optional in `FareObservation` only so the eighteen historic entries that predate this
+methodology remain valid TypeScript — that is a migration accommodation, not a relaxation of the
+standard above. Every observation created under this archive must populate all of them. Nothing
+currently stops a new entry from omitting them; if that gap starts being exploited in practice,
+add a validation helper or constructor that enforces it for new records without rewriting
+history, rather than tightening the type itself and breaking the historic rows.
 
 ## Cadence and queue
 
