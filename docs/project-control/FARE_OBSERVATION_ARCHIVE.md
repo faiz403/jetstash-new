@@ -45,6 +45,31 @@ differs:
 Business-class observations are welcome, but must be kept as a separate cabin record. Do not mix
 cabin, passenger count, baggage assumptions or airport scope when comparing a series.
 
+## Observation methodology (binding)
+
+Every priority route gets a named, versioned observation profile before its first archive entry.
+Profiles may differ by route when the real customer journey differs, but a route's profile must
+remain stable across its series so the observations are comparable. Changing a profile starts a
+new series and must be recorded explicitly.
+
+The baseline profile is:
+
+- one adult, no children;
+- return economy;
+- one checked bag where the source lets us select it; otherwise record `not stated`;
+- GBP, taxes and mandatory fees included where shown;
+- a 14-night trip unless the route profile specifies a different customer-representative stay;
+- one fixed weekly observation day (fortnightly only where the route is explicitly marked so);
+- the route's named departure airport, without silently widening the search to all UK airports.
+
+A route profile may override the baseline only for a documented reason—for example a materially
+different typical stay or baggage norm. It must include a stable `profileId` such as
+`manchester-lahore-economy-1adult-23kg-v1`.
+
+Every observation must also state one `observationReason`: `routine-weekly`,
+`routine-fortnightly`, `school-holiday`, `religious-peak`, `airline-sale`, `emergency-recheck`,
+`route-status-recheck` or `other` (with the reason explained in `priceNote`). This lets future
+analysis distinguish a normal movement from a seasonal or operational event.
 ## Required record fields
 
 Every new `FareObservation` must include:

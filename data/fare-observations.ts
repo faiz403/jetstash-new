@@ -24,6 +24,10 @@ export interface FareObservation {
   currency?: 'GBP';
   /** Baggage allowance shown by the source, if stated. */
   baggage?: string;
+  /** Versioned route profile used for this check; required for new observations. */
+  profileId?: string;
+  /** Why this check was made; required for new observations. */
+  observationReason?: 'routine-weekly' | 'routine-fortnightly' | 'school-holiday' | 'religious-peak' | 'airline-sale' | 'emergency-recheck' | 'route-status-recheck' | 'other';
   /**
    * ISO date of the outbound departure the fare was quoted FOR — record it
    * on every new observation. Without it, "how many days before departure
@@ -75,7 +79,7 @@ export function isPubliclyPublishable(o: FareObservation): boolean {
  * for a new observation to ever appear publicly — see `isPubliclyPublishable`
  * above:
  *
- *   { id: 'obs-<route>-<cabin>-<n>', routeSlug: '<route-slug>', cabin: 'Economy', observedDate: '2026-01-01', price: 0, priceNote: 'return, per person', observedVia: 'google-flights', source: '<airline or provider shown>', sourceUrl: '<manual-check-url>', currency: 'GBP', baggage: '<allowance as shown, or not stated>', departureDate: '2026-01-01', returnDate: '2026-01-15' },
+ *   { id: 'obs-<route>-<cabin>-<n>', routeSlug: '<route-slug>', cabin: 'Economy', observedDate: '2026-01-01', price: 0, priceNote: 'return, per person', observedVia: 'google-flights', source: '<airline or provider shown>', sourceUrl: '<manual-check-url>', currency: 'GBP', baggage: '<allowance as shown, or not stated>', profileId: '<route-profile-id>', observationReason: 'routine-weekly', departureDate: '2026-01-01', returnDate: '2026-01-15' },
  */
 export const fareObservations: FareObservation[] = [
   { id: 'obs-man-lhe-economy-1', routeSlug: 'manchester-lahore', cabin: 'Economy', observedDate: '2026-06-15', price: 489, priceNote: 'return, per person', source: 'PIA' },
