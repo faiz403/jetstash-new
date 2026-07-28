@@ -129,6 +129,16 @@ const CONTEXT_PATH_KEYS: (keyof typeof COUNTRY_PATHS)[] = ['gb', 'ie', 'lk', 'om
 // is smallest in `countries`), not a value tuned for any one country.
 const MAX_EMPHASIS_SCALE = 3.2;
 const BASE_COUNTRY_HALO_R = 11;
+const INACTIVE_COUNTRY_HALO_R = 7.7;
+
+// The visible glow must never let two countries merge into one blob — the
+// Gulf (UAE/Qatar/Saudi Arabia) and Iberia (Spain/Portugal) sit close
+// enough in real geometry that an unconstrained emphasis-scaled glow
+// overlaps. Same "generic, never per-country" principle as the hit-radius
+// cap below, sized with its own floor and margin because the glow is a
+// much larger visual element than the invisible hit target.
+const MIN_COUNTRY_HALO_R = 3.2;
+const COUNTRY_HALO_MARGIN = 1;
 
 // Country hit-circles must never overlap. Several real country centroids
 // sit close together (the Gulf: UAE/Qatar/Saudi Arabia; Iberia: Spain/
@@ -166,9 +176,34 @@ const DEST_HIT_MARGIN = 0.8;
 // displaced label back to its true dot so the connection stays honest.
 const LABEL_MIN_GAP = 3.2;
 
+// Country labels default to floating just above their marker. When another
+// country's marker sits within a "crowding" distance — the Gulf and
+// Iberia clusters today, but this is pure geometry, never a named list —
+// the label is pushed away from the average position of every crowding
+// neighbour instead, far enough that adjacent country names stay legible.
+// A country with no nearby crowder gets back exactly the original default
+// position, so this only ever changes labels that actually need it.
+const LABEL_CROWD_RADIUS = 20;
+const LABEL_PUSH_DISTANCE = 8;
+
 function computeSafeRadius(nearestDist: number, base: number, min: number, margin: number): number {
   const safe = nearestDist / 2 - margin;
   return Math.min(base, Math.max(min, safe));
+}
+
+// Halo glow needs a different bound than the hit-radius above: only one
+// country is ever "active" (large glow) at a time, so the binding
+// constraint is a country's ACTIVE glow against its neighbour's RESTING
+// glow, not two equal circles meeting in the middle. Capping every
+// country's active radius at nearestDist / (1 + inactiveRatio) - margin
+// guarantees active(c) + inactive(neighbour) <= nearestDist for any pair,
+// with margin * (1 + inactiveRatio) to spare — proof: both radii are
+// bounded using nearestDist(c) <= actualDistance and nearestDist(n) <=
+// actualDistance, so their capped sum can never exceed actualDistance
+// minus that slack, however the countries are arranged.
+function computeSafeHaloRadius(nearestDist: number, rawActive: number, min: number, margin: number, inactiveRatio: number): number {
+  const safe = nearestDist / (1 + inactiveRatio) - margin;
+  return Math.min(rawActive, Math.max(min, safe));
 }
 
 function nearestDistance<T extends { slug: string; x: number; y: number }>(point: T, all: T[]): number {
@@ -255,6 +290,43 @@ export function AtlasFeelTest({
     const result: Record<string, number> = {};
     for (const c of countries) {
       result[c.slug] = computeSafeRadius(nearestDistance(c, countries), BASE_COUNTRY_HIT_R, MIN_COUNTRY_HIT_R, COUNTRY_HIT_MARGIN);
+    }
+    return result;
+  }, [countries]);
+
+  // Visible glow radius, capped so two crowded countries' halos (Gulf,
+  // Iberia) can never merge into one blob — see computeSafeHaloRadius for
+  // the proof. The inactive radius is always derived as a fixed fraction
+  // of the (already-capped) active radius, so the active/inactive size
+  // contrast survives crowding instead of collapsing to the same size.
+  const countryHaloRadius = useMemo(() => {
+    const inactiveRatio = INACTIVE_COUNTRY_HALO_R / BASE_COUNTRY_HALO_R;
+    const result: Record<string, { active: number; inactive: number }> = {};
+    for (const c of countries) {
+      const rawActive = BASE_COUNTRY_HALO_R * countryEmphasis[c.slug].scale;
+      const active = computeSafeHaloRadius(nearestDistance(c, countries), rawActive, MIN_COUNTRY_HALO_R, COUNTRY_HALO_MARGIN, inactiveRatio);
+      result[c.slug] = { active, inactive: active * inactiveRatio };
+    }
+    return result;
+  }, [countries, countryEmphasis]);
+
+  // Label push vector, driven purely by real marker distance — replaces
+  // any hardcoded per-country label offset. A country with no crowding
+  // neighbour gets a zero vector, i.e. exactly its original position.
+  const countryLabelPush = useMemo(() => {
+    const result: Record<string, { dx: number; dy: number }> = {};
+    for (const c of countries) {
+      const crowders = countries.filter((o) => o.slug !== c.slug && Math.hypot(o.x - c.x, o.y - c.y) < LABEL_CROWD_RADIUS);
+      if (crowders.length === 0) {
+        result[c.slug] = { dx: 0, dy: 0 };
+        continue;
+      }
+      const avgX = crowders.reduce((sum, o) => sum + o.x, 0) / crowders.length;
+      const avgY = crowders.reduce((sum, o) => sum + o.y, 0) / crowders.length;
+      const awayX = c.x - avgX;
+      const awayY = c.y - avgY;
+      const dist = Math.hypot(awayX, awayY) || 1;
+      result[c.slug] = { dx: (awayX / dist) * LABEL_PUSH_DISTANCE, dy: (awayY / dist) * LABEL_PUSH_DISTANCE };
     }
     return result;
   }, [countries]);
@@ -351,58 +423,18 @@ export function AtlasFeelTest({
         <p className="text-[13px] text-ink-300 sm:hidden">Select a country, then a destination, to see its route.</p>
         <p className="hidden text-[13px] text-ink-300 sm:block">Hover a country to explore its destinations.</p>
 
-        {/* mobile chip selector — the map's fine hit-targets don't work below
-            sm, same reasoning and pattern as route-map-hero.tsx's own mobile
-            fallback. Both rows call the exact same activateCountry/
-            setActiveDestSlug used by the desktop hover handlers, so tapping
-            drives the identical state transition hovering does — no second
-            interaction model, just a different input method. */}
-        <div className="mt-3 flex flex-col gap-2 sm:hidden">
-          <div className="-mx-6 flex gap-2 overflow-x-auto px-6 pb-1 no-scrollbar" role="group" aria-label="Choose a country">
-            {countries.map((c) => {
-              const isActive = c.slug === activeCountrySlug;
-              return (
-                <button
-                  key={`country-chip-${c.slug}`}
-                  type="button"
-                  onClick={() => activateCountry(c.slug)}
-                  aria-pressed={isActive}
-                  className={
-                    isActive
-                      ? 'shrink-0 rounded-full bg-brass px-4 py-2 text-sm font-semibold text-ink-900'
-                      : 'shrink-0 rounded-full border border-white/15 bg-white/5 px-4 py-2 text-sm font-medium text-ink-200'
-                  }
-                >
-                  {c.label}
-                </button>
-              );
-            })}
-          </div>
-          <div className="-mx-6 flex gap-2 overflow-x-auto px-6 pb-1 no-scrollbar" role="group" aria-label={`Choose a destination in ${activeCountry.label}`}>
-            {activeCountry.destinations.map((d) => {
-              const isActive = d.slug === activeDestSlug;
-              return (
-                <button
-                  key={`dest-chip-${d.slug}`}
-                  type="button"
-                  onClick={() => setActiveDestSlug(d.slug)}
-                  aria-pressed={isActive}
-                  className={
-                    isActive
-                      ? 'shrink-0 rounded-full bg-brass-100 px-3.5 py-1.5 text-[13px] font-semibold text-ink-900'
-                      : 'shrink-0 rounded-full border border-white/10 bg-white/[0.03] px-3.5 py-1.5 text-[13px] font-medium text-ink-300'
-                  }
-                >
-                  {d.label}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
         <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_22rem] lg:gap-10">
           <div className="min-w-0">
-        <svg viewBox="418 230 336 220" className="hidden h-auto w-full sm:block" role="img" aria-label={`${airportName}'s real network across every current JetStash destination`}>
+        {/* Below sm the map's own label text (set in SVG units, not px) would
+            be crushed down to a few CSS pixels if the svg were simply
+            stretched to the narrow viewport width — so instead it keeps a
+            fixed pixel width close to what it already renders at on desktop
+            (~800px, the same per-unit scale already shipped and reviewed),
+            inside a horizontally scrollable strip. The chip selectors above
+            remain the primary mobile interaction; this makes the map itself
+            visible and pannable rather than invisible. */}
+        <div className="-mx-6 overflow-x-auto px-6 sm:mx-0 sm:overflow-visible sm:px-0">
+        <svg viewBox="418 230 336 220" className="h-auto w-[800px] max-w-none sm:w-full" role="img" aria-label={`${airportName}'s real network across every current JetStash destination`}>
           <defs>
             <radialGradient id="ft-origin-glow" cx="0.5" cy="0.5" r="0.5">
               <stop offset="0" stopColor="#F7F2E9" stopOpacity="0.75" />
@@ -499,27 +531,22 @@ export function AtlasFeelTest({
           {countries.map((c) => {
             const isActive = c.slug === activeCountrySlug;
             const colour = CONFIDENCE_COLOUR[c.confidence];
-            const emphasisScale = countryEmphasis[c.slug].scale;
-            // The UAE and Qatar are genuinely adjacent on the source map, so
-            // their labels get a stacked callout offset. Qatar's real
-            // centroid sits beside Saudi Arabia's label, so a simple
-            // horizontal nudge still makes the word disappear at desktop
-            // scale. The marker and hit target stay on the real country
-            // position; only the text moves to keep Doha's country
-            // unambiguous.
-            const labelX = c.slug === 'qatar' ? c.x - 1 : c.slug === 'uae' ? c.x + 5 : c.x;
-            const labelY = c.slug === 'qatar' ? c.y - 12 : c.slug === 'uae' ? c.y - 7 : c.y - (isActive ? 14 : 10.5);
-            const labelAnchor = c.slug === 'qatar' ? 'end' : c.slug === 'uae' ? 'start' : 'middle';
+            const push = countryLabelPush[c.slug];
+            const isPushed = push.dx !== 0 || push.dy !== 0;
+            const labelX = c.x + push.dx;
+            const labelY = c.y - (isActive ? 14 : 10.5) + push.dy;
+            const labelAnchor = 'middle' as const;
             return (
               <g key={c.slug}>
                 {/* halo spread scales with the same size-derived factor as the
                     landmass glow, so a physically small country's marker
-                    carries equivalent visual weight — this is purely visual,
-                    the separate transparent hit-circle below is untouched */}
+                    carries equivalent visual weight — capped by countryHaloRadius
+                    so crowded countries (Gulf, Iberia) never merge into one
+                    blob; the separate transparent hit-circle below is untouched */}
                 <circle
                   cx={c.x}
                   cy={c.y}
-                  r={(isActive ? BASE_COUNTRY_HALO_R : 7.7) * emphasisScale}
+                  r={isActive ? countryHaloRadius[c.slug].active : countryHaloRadius[c.slug].inactive}
                   fill={colour.stroke}
                   opacity={isActive ? 0.16 : 0.08}
                   pointerEvents="none"
@@ -527,7 +554,7 @@ export function AtlasFeelTest({
                   style={{ transformOrigin: `${c.x}px ${c.y}px` }}
                 />
                 <circle cx={c.x} cy={c.y} r={isActive ? 2.3 : 1.6} fill={colour.stroke} pointerEvents="none" className="transition-all duration-500" />
-                {(c.slug === 'qatar' || c.slug === 'uae') && (
+                {isPushed && (
                   <line x1={c.x} y1={c.y - 1.5} x2={labelX} y2={labelY + 1.2} stroke={colour.stroke} strokeWidth="0.18" strokeOpacity="0.45" pointerEvents="none" />
                 )}
                 <text x={labelX} y={labelY} textAnchor={labelAnchor} fontFamily="var(--font-display), Georgia, serif" fontSize={isActive ? 5.5 : 4} fontWeight={isActive ? 600 : 500} fill="#F7F2E9" stroke="#080A0F" strokeWidth="1.4" strokeOpacity="0.85" paintOrder="stroke" opacity={isActive ? 1 : 0.85} pointerEvents="auto" className="cursor-pointer transition-all duration-500" tabIndex={0} role="button" aria-label={`${c.label} — ${colour.label}`} onMouseEnter={() => activateCountry(c.slug)} onPointerEnter={() => activateCountry(c.slug)} onPointerDown={() => activateCountry(c.slug)} onFocus={() => activateCountry(c.slug)} onClick={() => activateCountry(c.slug)}>
@@ -584,13 +611,65 @@ export function AtlasFeelTest({
                   onFocus={() => setActiveDestSlug(d.slug)}
                   onClick={() => setActiveDestSlug(d.slug)}
                 />
-                <text x={d.x + 2.7} y={labelY + 0.9} fontFamily="var(--font-sans), Arial, sans-serif" fontSize={isActive ? 3 : 2.5} fontWeight={isActive ? 600 : 400} fill="#F7F2E9" opacity={isActive ? 1 : 0.65}>
+                <text x={d.x + 2.7} y={labelY + 0.9} fontFamily="var(--font-sans), Arial, sans-serif" fontSize={isActive ? 3 : 2.5} fontWeight={isActive ? 600 : 400} fill="#F7F2E9" stroke="#080A0F" strokeWidth="0.9" strokeOpacity="0.85" paintOrder="stroke" opacity={isActive ? 1 : 0.65}>
                   {d.label}
                 </text>
               </g>
             );
           })}
         </svg>
+        </div>
+
+        {/* mobile chip selector — the map's fine hit-targets don't work below
+            sm, same reasoning and pattern as route-map-hero.tsx's own mobile
+            fallback. Both rows call the exact same activateCountry/
+            setActiveDestSlug used by the desktop hover handlers, so tapping
+            drives the identical state transition hovering does — no second
+            interaction model, just a different input method. Sits right
+            below the map (not above it) so the map is visible first and the
+            chips read as "select within what you're looking at". */}
+        <div className="mt-3 flex flex-col gap-2 sm:hidden">
+          <div className="-mx-6 flex gap-2 overflow-x-auto px-6 pb-1 no-scrollbar" role="group" aria-label="Choose a country">
+            {countries.map((c) => {
+              const isActive = c.slug === activeCountrySlug;
+              return (
+                <button
+                  key={`country-chip-${c.slug}`}
+                  type="button"
+                  onClick={() => activateCountry(c.slug)}
+                  aria-pressed={isActive}
+                  className={
+                    isActive
+                      ? 'shrink-0 rounded-full bg-brass px-4 py-2 text-sm font-semibold text-ink-900'
+                      : 'shrink-0 rounded-full border border-white/15 bg-white/5 px-4 py-2 text-sm font-medium text-ink-200'
+                  }
+                >
+                  {c.label}
+                </button>
+              );
+            })}
+          </div>
+          <div className="-mx-6 flex gap-2 overflow-x-auto px-6 pb-1 no-scrollbar" role="group" aria-label={`Choose a destination in ${activeCountry.label}`}>
+            {activeCountry.destinations.map((d) => {
+              const isActive = d.slug === activeDestSlug;
+              return (
+                <button
+                  key={`dest-chip-${d.slug}`}
+                  type="button"
+                  onClick={() => setActiveDestSlug(d.slug)}
+                  aria-pressed={isActive}
+                  className={
+                    isActive
+                      ? 'shrink-0 rounded-full bg-brass-100 px-3.5 py-1.5 text-[13px] font-semibold text-ink-900'
+                      : 'shrink-0 rounded-full border border-white/10 bg-white/[0.03] px-3.5 py-1.5 text-[13px] font-medium text-ink-300'
+                  }
+                >
+                  {d.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
 
         {/* Legend — every state actually shown on screen, not just country
             confidence. A visitor sees "Seasonal" and "Route intelligence not
