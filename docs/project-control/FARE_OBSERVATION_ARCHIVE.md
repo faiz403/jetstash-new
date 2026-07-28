@@ -1,7 +1,7 @@
 # Editorial Fare Observation Archive
 
 **Owner:** JetStash editorial workflow
-**Status:** Active — first archive batch to be built from fresh manual checks
+**Status:** Active - first priority-route batch recorded on 28 July 2026; weekly series now begins
 **Canonical data file:** `data/fare-observations.ts`
 
 ## Purpose
@@ -13,7 +13,22 @@ and compounds through dated, repeatable observations. Each record answers a narr
 
 This is evidence, not a live-price feed and not a promise that the fare is still available.
 
-## What may be observed
+## First recorded batch
+
+On 28 July 2026, JetStash manually checked the five Tier A priority routes using the baseline
+profile (one adult, return Economy, GBP, 14-night stay, roughly eight weeks out):
+
+- Manchester to Lahore - GBP 578, Etihad, 22 September to 6 October 2026
+- Manchester to Islamabad - GBP 562, Etihad, 22 September to 6 October 2026
+- Heathrow to Delhi - GBP 432, IndiGo (operated under lease from Norse), 22 September to 6 October 2026
+- Birmingham to Amritsar - GBP 733, KLM and IndiGo, 22 September to 6 October 2026
+- Heathrow to Jeddah - GBP 575, Royal Jordanian, 22 September to 6 October 2026
+
+These are dated editorial observations from Google Flights, not claims that the fares remain available
+or that they represent the cheapest fare across every search result. The next check should repeat the
+same profiles and travel dates/horizon on the next scheduled weekly observation day.
+
+# What may be observed
 
 A human editor may manually check a return fare on:
 

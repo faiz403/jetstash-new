@@ -592,12 +592,11 @@ describe('Cross-surface leakage fix — fare section heading is content-aware, n
     expect(text).not.toMatch(/Fare history & current example/);
   });
 
-  it('manchester-lahore (deals exist, but its logged observations lack the dates isPubliclyPublishable requires) renders the "What we know about this route" heading end-to-end, not the history heading', async () => {
+  it('manchester-lahore now has a dated editorial observation and renders the fare-history heading end-to-end', async () => {
     expect(deals.some((d) => d.fromAirportSlug === 'manchester' && d.toDestinationSlug === 'lahore')).toBe(true);
     const element = await RoutePage({ params: Promise.resolve({ slug: 'manchester-lahore' }) });
     const text = collectStrings(element).join(' ');
-    expect(text).toMatch(/What we know about this route/);
-    expect(text).not.toMatch(/Fare history & current example/);
+    expect(text).toMatch(/Fare history & current example/);
   });
 
   it('birmingham-mumbai\'s fare section itself contributes no explanatory no-fare prose now that its caption is null — NoFareFallback (rendered separately below it, see the next assertion) is the only place that message lives', async () => {
