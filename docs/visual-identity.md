@@ -141,7 +141,7 @@ filenames matched to slugs and it stays correct.
 public/images/
   heroes/        <key>.jpg          page hero backdrops (keys listed in Part IV)
   destinations/  <slug>.jpg         one per destination (24)
-  airports/      <slug>.jpg         one per UK airport (11)
+  airports/      <slug>.webp        one per supported UK airport (11)
   guides/        <slug>.jpg         one per guide (9, optional tier)
 ```
 
@@ -291,7 +291,7 @@ The last two rows are genuinely new — `heroKey="destinations"` and `heroKey="t
 are both live in code with no file and, until this document, no brief at all. They need actual
 art direction, not just a status label; flagged rather than invented here.
 
-### UK airport pages (`airports/<slug>.jpg`)
+### UK airport pages (`airports/<slug>.webp`)
 
 Purpose: tell the story of that specific airport, not aviation in general.
 Responsibility: **the airport as the community's doorstep** — always from a human vantage point
@@ -301,21 +301,20 @@ unbranded. Alt derives as "{Airport name}". See Design Decision DD-001.
 | Slug | Subject & local anchor | Aircraft positioning | Note | Lifecycle status |
 |---|---|---|---|---|
 | `manchester` | Viewing park fence line at sunset, families silhouetted, Pennine haze behind | Wide-body rotating on take-off, centre-right, climbing left-to-right | The brand's flagship airport image | In Production |
-| `birmingham` | Approach over suburban Midlands rooftops and gardens at golden hour | Low on final, gear down, upper-centre, small | Rooftop chimneys lower third | Planned |
-| `london-heathrow` | Myrtle Avenue-style green with picnicking plane-watchers, west London haze | Heavy wide-body overhead on approach, high in frame | The classic — kept calm, not looming | Planned |
-| `london-gatwick` | Sussex field edge with oak tree, terminal glowing far beyond | Climbing out above the tree line, distant | Rural-meets-runway contrast | Planned |
-| `birmingham-east-midlands` | Flat East Midlands horizon, freight sheds catching last light | One aircraft on distant roll, silhouette | Honest about its cargo character (documented exception to the passenger-community framing) | Planned |
-| `leeds-bradford` | High Yorkshire ridge line, dry-stone wall leading to the airfield plateau | Lifting off into a big Pennine sky, left third | Highest airport in England — show it | Planned |
-| `glasgow` | Wet apron reflections, Kilpatrick Hills behind in amber haze | Turboprop and jet nose-to-tail at gates, far side | Scottish light: soft, silver-gold | Planned |
-| `bristol` | Rolling North Somerset fields, hot-air-balloon speck on the horizon | Departing jet banking gently right, small | Balloon nods to Bristol without cliché | Planned |
-| `liverpool` | Mersey estuary glinting beyond the runway threshold | On short final over the water, centre | Water light does the work | Planned |
-| `newcastle` | Northumberland fields, distant Cheviot line, golden stubble | Climbing north, tail catching sun, right third | Big-sky composition | Planned |
-| `edinburgh` | Firth of Forth shimmer with the bridges as silhouettes far off | Descending over the water toward camera-left | Bridges tiny — landmark discipline | Planned |
+| `birmingham` | Airport terminal and control tower at golden hour | Aircraft climbing east, right of frame | Terminal left, clear airport label | In Production |
+| `london-heathrow` | Terminal 5-style roof and control tower at golden hour | Aircraft climbing east, right of frame | Terminal left, clear airport label | In Production |
+| `london-gatwick` | Gatwick terminal and control tower at golden hour | Aircraft climbing east, right of frame | Terminal left, clear airport label | In Production |
+| `birmingham-east-midlands` | East Midlands terminal and control tower at golden hour | Aircraft climbing east, right of frame | Terminal left, clear airport label | In Production |
+| `leeds-bradford` | Leeds Bradford terminal and control tower against Yorkshire hills | Aircraft climbing east, right of frame | Terminal left, clear airport label | In Production |
+| `glasgow` | Glasgow terminal and control tower with distant hills | Aircraft climbing east, right of frame | Terminal left, clear airport label | In Production |
+| `bristol` | Bristol terminal and control tower above rolling fields | Aircraft climbing east, right of frame | Terminal left, clear airport label | In Production |
+| `liverpool` | Liverpool terminal and control tower with coastal light | Aircraft climbing east, right of frame | Terminal left, clear airport label | In Production |
+| `newcastle` | Newcastle terminal and control tower under a broad sky | Aircraft climbing east, right of frame | Terminal left, clear airport label | In Production |
+| `edinburgh` | Edinburgh terminal and control tower with Scottish hills | Aircraft climbing east, right of frame | Terminal left, clear airport label | In Production |
 
-Note: `glasgow`'s "wet apron reflections" and `liverpool`'s "runway threshold" lean closer to
-airside language than the rest of this table's community-vantage framing — worth a deliberate
-check against the doorstep rule when these are actually produced, not just carried forward
-unexamined.
+All airport visuals use the same deliberate composition: the labelled terminal/control tower sits
+left, the unbranded aircraft climbs east on the right, and the frame is exported at 1672×941. This
+keeps the collection recognisable as JetStash rather than a set of unrelated stock images.
 
 ### Destination pages (`destinations/<slug>.jpg`)
 
@@ -373,20 +372,20 @@ live `getHeroImage` / `getDestinationImage` / `getAirportImage` / `getGuideImage
 site in the codebase, and the actual file inventory in `public/images/**`. Not assumed from any
 one source alone.
 
-**Fully documented, wired and photographed:**
+**Fully documented, wired and visually complete:**
 - Destination imagery — 24/24
 - Guide imagery — 9/9
 - Region heroes — `pakistan`, `india`, `gulf`, `umrah`
 
-**Documented and wired, no file yet (Placeholder — silently rendering the generated fallback,
-not broken, but not real photography either):** `family-holidays`, `business-class`,
+**Documented and wired, no file yet (Placeholder — silently rendering the generated fallback):** `family-holidays`, `business-class`,
 `travel-club`, `deals`, `routes`, `guides` (hero), `airports` (hero), `about`, `contact`,
-`quote-request` — 10 of the 15 documented hero briefs. Airport photography: 10 of 11 UK airports
-(all but Manchester) — this specific gap is already tracked as `VIS-001` in `ROADMAP.md`, not new.
+`quote-request` — 10 of the 15 documented hero briefs. Individual airport artwork is complete for
+all 11 supported airports as a consistent generated/WebP visual system; the airport hub hero remains
+a separate placeholder.
 
 **Documented, not wired, no file (genuinely inert):** `homepage`.
 
-**Wired and photographed, not documented before this refactor:**
+**Wired and visually complete, not documented before this refactor:**
 `heroes/manchester-mumbai-journey` — now covered in Part III.
 
 **Wired, not documented before this refactor, no file (also Placeholder):** `destinations` hub
@@ -493,16 +492,16 @@ implementation detail rather than the more dramatic original phrasing.
   regardless of the photo).
 - **Therefore: drop a correctly named file into the right folder, deploy, done.** Delete the file
   to revert to the generated panel. No code changes, ever.
-- The Founder Command Centre (`/founder`) counts real-photo coverage from the same manifest, so
-  "Missing real photography" stays accurate automatically.
+- The Founder Command Centre (`/founder`) counts file-backed visual coverage from the same manifest,
+  so "Missing documented visual assets" stays accurate automatically.
 
 ### Production order (impact-ranked)
 
 1. `heroes/homepage.jpg` + the four region heroes (pakistan, india, gulf, umrah — already done)
 2. The 11 destination images for South Asia + Gulf (already done — the revenue core)
-3. `airports/manchester.jpg` (already done), `london-heathrow.jpg`, `birmingham.jpg`
+3. `airports/manchester.webp` plus the remaining supported airport WebP assets (complete)
 4. Remaining destinations (already done — Turkey, Morocco, Mediterranean)
-5. Remaining airports and vertical heroes
+5. Remaining vertical heroes
 6. Guide backdrops (already done)
 7. New from this refactor: `destinations` hub hero, `travel-ready-check` hub hero — need briefs
    written before they can be produced
@@ -519,7 +518,7 @@ discussion that produced it.
 | **Responsibility** | The specific product job a visual asset performs — why it exists, distinct from how it looks. See Part I, principle 1. |
 | **Visual language** | The shared stylistic vocabulary an asset draws on — for photography, the Ink & Brass grade and golden-hour rules; for interactive systems, the restraint and motion principles in Part III. |
 | **Lifecycle status** | Where an asset sits in production, not just whether it's finished today. One of: Planned, Placeholder, In Production, Deprecated, Internal — see Part IV for the full definitions. |
-| **Placeholder** | A documented, code-wired asset with no real file yet — currently rendering the generated fallback panel or gradient. Not broken; intentionally incomplete with a known future state. |
+| **Placeholder** | A documented, code-wired asset with no file yet — currently rendering the generated fallback panel or gradient. Not broken; intentionally incomplete with a known future state. |
 | **Editorial photography** | Static imagery governed by Part II — one frame, one landmark, one light direction, no motion to reason about. |
 | **Interactive visual system** | A motion- or state-based visual component governed by Part III — accountable to information hierarchy, state transitions and live-data honesty rather than composition and light. |
 | **Golden hour** | Warm, low-sun light within roughly 40 minutes of sunrise or sunset — the only lighting condition editorial photography uses (Part II, rule 3). |

@@ -32,7 +32,9 @@
 - The Founder Dashboard is unavailable in production and non-indexable.
 - Operational submission flows were founder-confirmed as already tested; do not repeat the entire
   audit unless a relevant API route, environment variable or provider configuration changes.
-- Destination photography is founder-confirmed complete.
+- The UK airport visual collection is live: all 11 supported airports have consistent, airport-labelled
+  1672×941 WebP artwork. These are designed/generated brand visuals, not documentary or licensed
+  photography, and are not described as such to customers.
 - Permanent project-control records are linked from `CLAUDE.md` and `README.md`.
 - `CLAUDE.md`, `README.md` and `JETSTASH_PRINCIPLES.md` reflect Next.js `15.5.21`, the current
   Vitest suite, Route Status ownership, homepage architecture and automatic Vercel deployment.
@@ -72,7 +74,6 @@ for a day that was not actually checked, and never create a fare merely to fill 
 
 ## QUEUED
 
-- `VIS-001` — complete real, licensed premium photography for supported UK airports.
 - `CONV-001` — use real analytics to test homepage conversion hierarchy; no redesign based only on
   opinion.
 - `ARR-001` — research and specify Arrive By for urgent, deadline-critical travel without making
@@ -89,7 +90,7 @@ for a day that was not actually checked, and never create a fare merely to fill 
 - July trust-crack fixes from the live-site audit.
 - Ledger-driven homepage flagship showcase/advisory presentation.
 - Founder Dashboard production protection.
-- Destination photography.
+- Airport visual collection.
 
 ## Known risks
 

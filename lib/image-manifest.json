@@ -1,6 +1,16 @@
 {
   "images": [
+    "airports/birmingham-east-midlands.webp",
+    "airports/birmingham.webp",
+    "airports/bristol.webp",
+    "airports/edinburgh.webp",
+    "airports/glasgow.webp",
+    "airports/leeds-bradford.webp",
+    "airports/liverpool.webp",
+    "airports/london-gatwick.webp",
+    "airports/london-heathrow.webp",
     "airports/manchester.webp",
+    "airports/newcastle.webp",
     "destinations/agadir.webp",
     "destinations/ahmedabad.webp",
     "destinations/amritsar.webp",
