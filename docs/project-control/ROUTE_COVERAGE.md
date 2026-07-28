@@ -35,8 +35,8 @@ marketing; it is to make each one source-complete and add real, dated observatio
 |---|---|---|
 | Manchester → Lahore | Direct service verified through Manchester Airport; review due 13 August 2026. | Recheck the current service before the review date; log a new date-complete fare when a primary source is available. |
 | Manchester → Islamabad | Direct service verified through Manchester Airport; launch frequency is documented, current frequency is not. Review due 13 August 2026. | Recheck current service and frequency separately; do not publish an inferred frequency. |
-| Heathrow → Delhi | Existing direct-service copy remains verification-pending. | Obtain current primary evidence for each airline or remove unsupported detail; add the first date-complete fare observation. |
-| Birmingham → Amritsar | Existing direct-service copy remains verification-pending. | Obtain a current primary airline or airport source before publishing directness, duration or frequency; add a fare only after travel dates are recorded. |
+| Heathrow → Delhi | British Airways direct service is verified; other operators remain separately scoped. | Recheck BA before 28 August 2026 and obtain separate primary evidence before naming another airline; continue dated fare observations. |
+| Birmingham → Amritsar | Air India’s current booking page shows connection options and no direct flight. | Keep the connecting-only framing; add a fare only after travel dates are recorded. |
 | Heathrow → Jeddah | British Airways direct service is individually verified; Saudia remains unverified. | Resolve only with a Saudia or airport primary source; preserve the existing airline-specific uncertainty until then. |
 
 ### Tier B — strengthen proven, high-value corridors
@@ -44,9 +44,21 @@ marketing; it is to make each one source-complete and add real, dated observatio
 | Route | Current evidence state | Next evidence action |
 |---|---|---|
 | Heathrow → Mumbai | Strongest current multi-airline route evidence; one date-complete public fare is logged. | Add another independently checked dated fare before treating its range as meaningful; assess Book By eligibility only after its evidence is sufficient. |
-| Manchester → Dubai | Public route facts are verification-pending while broader destination wording can imply a direct service. | Resolve the contradiction first; source the corridor from an official airline or airport page before enriching it. |
-| Heathrow → Doha | Public route facts are verification-pending. | Verify airline, directness and current frequency from a primary source before adding fare or booking guidance. |
+| Manchester → Dubai | Emirates direct service is verified at 21 flights per week, with seasonal variation disclosed. | Recheck Emirates before 28 August 2026; do not generalise the figure to other operators. |
+| Heathrow → Doha | Qatar Airways direct route is verified; exact frequency and duration remain unclaimed. | Recheck the official route page before 28 August 2026; do not publish an inferred frequency. |
 | Birmingham → Mumbai | Confirmed connecting corridor, not direct. | Maintain the connecting-only framing; improve practical connection intelligence only with primary or operator evidence. |
+
+### Explicitly unresolved direct-service disputes
+
+These are the only three direct-route records still intentionally fail-closed after the July
+coverage pass. They are not silently treated as connecting routes: the available evidence does not
+prove either a current direct service or its absence.
+
+| Route | What current primary material supports | Safe customer-facing posture | Next evidence action |
+|---|---|---|---|
+| Manchester → Karachi | PIA's current public material confirms the resumed Islamabad–Manchester service, but publishes no route-specific Manchester–Karachi direct claim. | Keep directness unverified; do not publish a duration, frequency or airline fact as established. | Check PIA's live booking result or a current Manchester Airport/PIA schedule entry for MAN–KHI. |
+| Birmingham → Lahore | PIA's current public material identifies Heathrow–Lahore service; Birmingham Airport's live destination directory does not list Lahore. | Keep directness unverified; do not infer a connection or cancellation from absence alone. | Check PIA's live booking result or a current BHX/PIA schedule entry for BHX–LHE. |
+| Birmingham → Islamabad | PIA publicly confirms Islamabad–Manchester and Heathrow operations, but not Birmingham–Islamabad; Birmingham Airport's live destination directory does not list Islamabad. | Keep directness unverified; do not convert conflicting secondary reports into a direct claim. | Check PIA's live booking result or a current BHX/PIA schedule entry for BHX–ISB. |
 
 ## Weekly operating rhythm
 
