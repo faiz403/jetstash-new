@@ -6,7 +6,7 @@ This roadmap contains unfinished work only. Completed work belongs in `COMPLETED
 
 | Order | ID | Status | Work | Definition of done |
 |---:|---|---|---|---|
-| 1 | `FARE-001` | ACTIVE | Begin building the editorial fare observation archive. Methodology finalized (see `FARE_OBSERVATION_ARCHIVE.md`); zero observations logged under it yet. | Fresh, manually checked observations for priority routes with travel dates, cabin, source, observation method, currency, baggage treatment and a fixed 8-week booking horizon, accumulated honestly over time. |
+| 1 | `FARE-001` | ACTIVE | Build the editorial fare observation archive. Methodology is finalized and the first five-observation batch is now logged under it. | Fresh, manually checked observations for priority routes with travel dates, cabin, source, observation method, currency, baggage treatment and a fixed 8-week booking horizon, accumulated honestly over time. |
 | 2 | `COV-001` | ACTIVE | Build verified route coverage deliberately. | The route queue is evidence-led, each change is sourced and reviewed, and price context appears only from date-complete observations. |
 | 3 | `VIS-001` | QUEUED | Complete real, licensed UK airport photography. | Premium airport-specific assets for Birmingham, Heathrow, Gatwick and other supported UK airports. |
 | 4 | `AFF-001` | ACTIVE | Improve affiliate coverage. | Current partner state reconciled; only approved, tracked integrations with directly validated customer journeys are enabled. Expedia and other candidates remain off until approved. |
