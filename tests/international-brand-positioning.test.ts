@@ -39,7 +39,8 @@ describe('International brand positioning', () => {
     expect(paragraphMatch).not.toBeNull();
     const paragraph = paragraphMatch![0].replace(/\s+/g, ' ');
     expect(paragraph).toContain('international journeys from UK airports');
-    expect(paragraph).toContain('deepest verified coverage across South Asia and the Gulf');
+    expect(paragraph).toContain('Our verified coverage runs deepest across South Asia and the Gulf');
+    expect(paragraph).toContain('selected journeys across Turkey, Morocco and the Mediterranean');
     expect(paragraph).not.toContain('UK journeys to Pakistan, India, the Gulf and Umrah');
     expect(paragraph).not.toMatch(/—/);
     expect(paragraph).not.toMatch(/\b(worldwide|global)\b/i);
