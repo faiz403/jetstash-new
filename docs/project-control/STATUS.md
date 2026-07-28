@@ -1,6 +1,6 @@
 # JetStash Current Status
 
-**Last reconciled:** 25 July 2026
+**Last reconciled:** 28 July 2026
 
 **Production branch:** `main`
 
@@ -33,6 +33,17 @@
 - Operational submission flows were founder-confirmed as already tested; do not repeat the entire
   audit unless a relevant API route, environment variable or provider configuration changes.
 - Destination photography is founder-confirmed complete.
+- The editorial fare observation methodology is finalized and shipped
+  (`docs/project-control/FARE_OBSERVATION_ARCHIVE.md`, versioned observation profiles, a fixed
+  8-week booking horizon, GBP-only policy, `observedVia`/`profileId`/`observationReason` on
+  `FareObservation`). The first five editorial observations were logged on 28 July 2026; the
+  archive remains an active series and must grow through fresh dated checks.
+- The Visual Identity System v2 documentation refactor is shipped (`docs/visual-identity.md`,
+  `VISUAL_REVIEW_CHECKLIST.md`): Visual Principles, Editorial Photography, Interactive Visual
+  Systems and an Asset Catalogue with Lifecycle status per entry. This is the documentation
+  structure only — its own audit found 10 of 15 hero briefs and 10 of 11 UK airports are still
+  Placeholder (no real photography yet), and the homepage hero brief has no code reference at
+  all. See `VIS-001` below, which this refactor does not complete.
 - Permanent project-control records are linked from `CLAUDE.md` and `README.md`.
 - `CLAUDE.md`, `README.md` and `JETSTASH_PRINCIPLES.md` reflect Next.js `15.5.21`, the current
   Vitest suite, Route Status ownership, homepage architecture and automatic Vercel deployment.
@@ -41,9 +52,10 @@
 
 ### FARE-001 — Begin building the editorial fare observation archive
 
-The archive is now being built editorially. A human may record a fare observed on Google Flights,
-TravelUp or an airline booking page, provided the source, check date, outbound date, return date,
-cabin, currency and baggage treatment are captured. Google Flights is an observation source only:
+The methodology is finalized (see "Current truth" above) and the first five-observation batch is
+logged. A human may record a fare observed on Google Flights, TravelUp or an airline booking page, provided
+the source, check date, outbound date, return date, cabin, currency and baggage treatment are
+captured, against a fixed 8-week booking horizon. Google Flights is an observation source only:
 service facts still require primary airline, airport or official sources. Historic incomplete
 entries remain private; a past price cannot be reconstructed honestly after the fact.
 
@@ -56,10 +68,14 @@ of the customer journey.
 
 ### COV-001 — Build verified route coverage deliberately
 
-Route coverage now has a durable operating queue in `ROUTE_COVERAGE.md`. It starts from the five
-existing Book By priority routes and known trust risks, rather than inventing a demand ranking
-without analytics. Each cycle must add independently sourced service evidence or a date-complete
-fare observation; never fill a route simply to remove a pending state.
+Route coverage now has a durable operating queue in `ROUTE_COVERAGE.md`. The 28 July pass resolved
+the qualifying direct-service records for Heathrow–Delhi, Manchester–Dubai, Heathrow–Doha,
+Manchester–Doha, Glasgow–Dubai, Edinburgh–Dubai, Newcastle–Dubai, Gatwick–Ahmedabad and
+Gatwick–Amritsar, and corrected Birmingham–Amritsar to connecting using current Air India
+evidence. Manchester–Karachi, Birmingham–Lahore and Birmingham–Islamabad remain explicitly
+unresolved PIA disputes because no current route-specific primary source supports either outcome.
+Each cycle must add independently sourced service evidence or a date-complete fare observation;
+never fill a route simply to remove a pending state.
 
 ## NEXT
 
@@ -90,6 +106,11 @@ for a day that was not actually checked, and never create a fare merely to fill 
 - Ledger-driven homepage flagship showcase/advisory presentation.
 - Founder Dashboard production protection.
 - Destination photography.
+- The editorial fare observation methodology (do not redesign the schema or profile rules —
+  reopen only if the methodology itself proves unworkable in practice, not to skip it).
+- The Visual Identity System v2 documentation structure (do not restructure again without new
+  evidence the four-part split isn't working — populating the Placeholder/Planned assets it
+  already tracks is not a reason to reopen it).
 
 ## Known risks
 
