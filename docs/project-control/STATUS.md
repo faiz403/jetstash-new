@@ -93,8 +93,8 @@ for a day that was not actually checked, and never create a fare merely to fill 
 
 - `CONV-001` — use real analytics to test homepage conversion hierarchy; no redesign based only on
   opinion.
-- `ARR-001` — research and specify Arrive By for urgent, deadline-critical travel without making
-  unsupported schedule or arrival promises.
+- `ARR-001` — specification complete in `ARRIVE_BY_SPEC.md`; implementation remains deferred until
+  schedule and ground-transport sources can support honest estimates.
 
 ## Do not reopen without new evidence
 

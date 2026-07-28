@@ -71,7 +71,8 @@ Use cohesive, owned-feeling JetStash photography and visual direction instead of
 
 ## Deferred
 
-- Full Arrive By implementation, pending trustworthy schedule and ground-transport inputs.
+- Full Arrive By implementation, pending trustworthy schedule and ground-transport inputs. The
+  evidence-gated product specification is complete in `ARRIVE_BY_SPEC.md`.
 - Flight-deal automation.
 - Broad SEO expansion beyond priority pages.
 - Advanced newsletter growth mechanics.
