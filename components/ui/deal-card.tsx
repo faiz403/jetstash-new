@@ -3,7 +3,6 @@ import { Deal, DealCabin, formatChecked, getDealDirectnessLabel, getDealAirlineL
 import { getRouteByAirportAndDestination } from '@/data/routes';
 import { routeStatusEvents } from '@/data/route-status-events';
 import { getEffectiveRoutePresentation } from '@/lib/route-status-copy';
-import { getDestinationBySlug } from '@/data/destinations';
 import { getFareRangeSummary } from '@/data/fare-observations';
 import { getDealBookingUrl } from '@/lib/booking-providers';
 import { getFareFreshnessState, daysBetweenIso, OBSERVATION_STALE_DAYS } from '@/lib/freshness-thresholds';
@@ -25,18 +24,13 @@ export function DealCard({ deal }: { deal: Deal }) {
   // logged range/check, or nothing at all — never a hardcoded figure that
   // can go stale. See data/deals.ts's header comment.
   const range = matchedRoute ? getFareRangeSummary(matchedRoute.slug, deal.cabin, nowIso) : null;
-  const destination = getDestinationBySlug(deal.toDestinationSlug);
-  // Verification-pending leakage fix: a matched route's own flightTime must
-  // never render raw — getEffectiveRoutePresentation() returns null flight
-  // facts for both 'unverified' and 'service-ended', so this card can never
-  // show a real duration next to a suppressed-status badge. Falling back to
-  // the destination's generic flightTimeFromUK only happens when there's no
-  // matched route at all, which is unrelated to route-level verification
-  // and always safe. Reconciled against the Route Status V1 ledger, so a
-  // managed corridor past its withdrawal boundary is never shown as if
-  // still direct.
+  // A duration belongs to a specific airport-to-destination route, never to
+  // a destination in general. This presentation removes duration facts when
+  // the route is unverified or the service has ended.
   const presentation = matchedRoute ? getEffectiveRoutePresentation(matchedRoute, routeStatusEvents, nowIso) : undefined;
-  const flightTime = presentation ? presentation.flightTime : destination?.flightTimeFromUK;
+  // Never fall back to destination flight summaries: they can name a UK
+  // airport other than the card's actual departure airport.
+  const flightTime = presentation?.flightTime;
   // Presentation-integrity fix: never re-derive label text via a local
   // ternary — presentation.statusLabel is the one canonical label (see
   // RoutePresentationBase's doc comment in data/routes.ts), so a new status
@@ -59,6 +53,14 @@ export function DealCard({ deal }: { deal: Deal }) {
   const airlineLabel = getDealAirlineLabel(deal, nowIso);
   const freshness = range ? getFareFreshnessState(daysBetweenIso(range.latestDate, nowIso)) : null;
   const isStale = freshness === 'stale';
+  // The airline named by a Deal is separate curation data. Once a fare is
+  // shown, its attribution must come only from the observation(s) that
+  // produced that number — never from the deal's generic airline label.
+  const fareSourceLabel = range
+    ? range.sources.length === 1
+      ? `Fare checked with ${range.sources[0]}`
+      : `Fare checks with ${range.sources.join(' and ')}`
+    : null;
 
   return (
     <article className="group relative flex flex-col overflow-hidden rounded-md border border-ink-100 bg-white shadow-card transition-all duration-300 hover:-translate-y-1 hover:shadow-card-hover">
@@ -95,7 +97,7 @@ export function DealCard({ deal }: { deal: Deal }) {
               </span>
               <span className="text-sm text-ink-400">{range.priceNote}</span>
             </div>
-            {airlineLabel && <p className="mt-1 text-sm font-medium text-ink-500">{airlineLabel}</p>}
+            {fareSourceLabel && <p className="mt-1 text-sm font-medium text-ink-500">{fareSourceLabel}</p>}
 
             <div className="mt-4 flex items-center gap-1.5 text-xs text-ink-400">
               <span className={`h-1.5 w-1.5 rounded-full ${isStale ? 'bg-ink-300' : 'bg-brass-400'}`} />
@@ -111,13 +113,11 @@ export function DealCard({ deal }: { deal: Deal }) {
           </>
         ) : (
           <>
-            <p className="font-display text-xl leading-snug text-ink-900">
-              {presentation?.status === 'unverified' || presentation?.status === 'service-ended'
-                ? presentation.statusLabel
-                : matchedRoute
-                  ? flightTime
-                  : `Typical flight time: ${flightTime ?? 'varies'}`}
-            </p>
+            {(presentation?.status === 'unverified' || presentation?.status === 'service-ended' || flightTime) && (
+              <p className="font-display text-xl leading-snug text-ink-900">
+                {presentation?.status === 'unverified' || presentation?.status === 'service-ended' ? presentation.statusLabel : flightTime}
+              </p>
+            )}
             {presentation?.status !== 'unverified' && presentation?.status !== 'service-ended' &&
               (() => {
                 // Deduped, since an unverified airline and an unverified route

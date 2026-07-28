@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { getDisplayDirectness, getAirlineDisplayStatus, getAirlineVerification, getRouteBySlug, getRouteByAirportAndDestination, getDealAirlineDisplayStatus } from '@/data/routes';
+import { getDisplayDirectness, getAirlineDisplayStatus, getAirlineVerification, getRouteBySlug, getRouteByAirportAndDestination, getDealAirlineDisplayStatus, getRoutePresentation } from '@/data/routes';
 import {
   getFareRangeSummary,
   getLatestPublishableObservation,
@@ -11,6 +11,7 @@ import { deals, hasTrackedFare, getDealDirectnessLabel, getDealAirlineLabel } fr
 import { airlines } from '@/data/airlines';
 
 const FIXED_TODAY = '2026-07-13';
+const RESOLUTION_TODAY = '2026-07-28';
 
 describe('getDisplayDirectness — a route must never show Direct without a current, verified record', () => {
   it('a route with isDirect: true but no verification record renders as unverified, never direct', () => {
@@ -58,7 +59,7 @@ describe('getDisplayDirectness — a route must never show Direct without a curr
   it('a genuinely connecting route (isDirect: false) always shows connecting, verification or not', () => {
     const route = getRouteBySlug('leeds-bradford-amritsar')!;
     expect(route.isDirect).toBe(false);
-    expect(getDisplayDirectness(route, FIXED_TODAY)).toBe('connecting');
+    expect(getDisplayDirectness(route, RESOLUTION_TODAY)).toBe('connecting');
   });
 });
 
@@ -94,20 +95,23 @@ describe('Fare-observation completeness gating (TR-002) — Verified Check must 
     expect(isPubliclyPublishable(rest as FareObservation)).toBe(false);
   });
 
-  it('getFareRangeSummary returns null for manchester-lahore Economy — every current real observation predates the date-completeness requirement', () => {
-    // This is the disclosed, intentional consequence of TR-002 recorded in
-    // docs/LAUNCH_BLOCKERS.md — locking it in as a test means a future
-    // change can't silently start showing incomplete fares again without
-    // this test failing first.
-    expect(getFareRangeSummary('manchester-lahore', 'Economy', FIXED_TODAY)).toBeNull();
+  it('getFareRangeSummary returns the exact dated Manchester–Lahore observation', () => {
+    expect(getFareRangeSummary('manchester-lahore', 'Economy', FIXED_TODAY)).toEqual({
+      count: 1,
+      min: 578,
+      max: 578,
+      earliestDate: '2026-07-28',
+      latestDate: '2026-07-28',
+      sources: ['Etihad'],
+      priceNote: 'return, per person, one adult; taxes and required fees included; baggage not stated and optional bag charges may apply',
+    });
   });
 });
 
 describe('Deal counts (TR-004) — a card with no tracked fare must not count as one', () => {
-  it('no current deal has a tracked fare, since no fare observation in the dataset is publicly complete yet', () => {
-    // Same intentional, disclosed consequence as above, at the Deals-page level.
-    const trackedCount = deals.filter((d) => hasTrackedFare(d, FIXED_TODAY)).length;
-    expect(trackedCount).toBe(0);
+  it('counts exactly the deals with fully dated observations', () => {
+    const trackedDeals = deals.filter((d) => hasTrackedFare(d, FIXED_TODAY));
+    expect(trackedDeals.map((d) => d.id)).toEqual(['man-lhe-economy', 'lhr-del-economy', 'bhx-atq-economy', 'umrah-package-jed', 'lhr-bom-economy']);
   });
 
   it('hasTrackedFare returns false for a deal whose airport-destination pair has no Route entry at all', () => {
@@ -287,47 +291,84 @@ describe('getDealDirectnessLabel (TR-009, final correction) — a deal/search ca
   });
 });
 
-describe('TR-002 direct production audit — enumerate all 18 fare observations, none may be publicly displayable', () => {
-  it('exactly 18 observations exist in the append-only log', () => {
-    expect(fareObservations.length).toBe(18);
+describe('FARE-001 pilot — historic examples stay private; only fully dated, evidenced observations publish', () => {
+  it('keeps historic observations and appends the first editorial observation batch', () => {
+    expect(fareObservations).toHaveLength(24);
   });
 
-  it('every one of the 18 observations individually fails isPubliclyPublishable (none has both departureDate and returnDate)', () => {
+  it('keeps every historic observation incomplete and private', () => {
     const incomplete = fareObservations.filter((o) => !isPubliclyPublishable(o));
-    expect(incomplete.length).toBe(fareObservations.length);
-    for (const o of fareObservations) {
+    expect(incomplete).toHaveLength(18);
+    for (const o of incomplete) {
       expect(isPubliclyPublishable(o), `observation ${o.id}`).toBe(false);
     }
   });
 
-  it('getFareRangeSummary returns null for every route+cabin combination present in the 18 observations — none can appear as a price, a Verified Check, or fare history', () => {
-    const pairs = new Set(fareObservations.map((o) => `${o.routeSlug}|${o.cabin}`));
-    for (const pair of pairs) {
-      const [routeSlug, cabin] = pair.split('|') as [string, FareObservation['cabin']];
-      expect(getFareRangeSummary(routeSlug, cabin, FIXED_TODAY), `${routeSlug} / ${cabin}`).toBeNull();
+  it('publishes the exact dated observations from the first priority-route batch', () => {
+    const published = fareObservations.filter(isPubliclyPublishable);
+    expect(published.map((o) => o.id)).toEqual(['obs-lhr-bom-economy-2', 'obs-man-lhe-economy-20260728-8w-v1', 'obs-man-isb-economy-20260728-8w-v1', 'obs-lhr-del-economy-20260728-8w-v1', 'obs-bhx-atq-economy-20260728-8w-v1', 'obs-lhr-jed-economy-20260728-8w-v1']);
+    expect(published).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        id: 'obs-lhr-bom-economy-2',
+        routeSlug: 'london-heathrow-mumbai',
+        cabin: 'Economy',
+        observedDate: '2026-07-24',
+        price: 491,
+        source: 'Virgin Atlantic',
+        departureDate: '2026-09-08',
+        returnDate: '2026-10-01',
+      }),
+      expect.objectContaining({
+        id: 'obs-man-lhe-economy-20260728-8w-v1',
+        routeSlug: 'manchester-lahore',
+        cabin: 'Economy',
+        observedDate: '2026-07-28',
+        price: 578,
+        source: 'Etihad',
+        observedVia: 'google-flights',
+        currency: 'GBP',
+        baggage: 'not stated; optional charges may apply',
+        departureDate: '2026-09-22',
+        returnDate: '2026-10-06',
+      }),
+    ]));
+    const newEntries = [
+      ['obs-man-isb-economy-20260728-8w-v1', 'manchester-islamabad', 562, 'Etihad'],
+      ['obs-lhr-del-economy-20260728-8w-v1', 'london-heathrow-delhi', 432, 'IndiGo (operated under lease from Norse)'],
+      ['obs-bhx-atq-economy-20260728-8w-v1', 'birmingham-amritsar', 733, 'KLM and IndiGo'],
+      ['obs-lhr-jed-economy-20260728-8w-v1', 'london-heathrow-jeddah', 575, 'Royal Jordanian'],
+    ] as const;
+    for (const [id, routeSlug, price, source] of newEntries) {
+      expect(published.find((o) => o.id === id)).toEqual(expect.objectContaining({ routeSlug, price, source, observedVia: 'google-flights', currency: 'GBP', baggage: 'not stated; optional charges may apply', departureDate: '2026-09-22', returnDate: '2026-10-06' }));
     }
   });
 
-  it('getLatestPublishableObservation returns undefined for every route with an incomplete observation — Book-By\'s "last checked fare" cannot surface any of the 18', () => {
-    const routeSlugs = new Set(fareObservations.map((o) => o.routeSlug));
-    for (const routeSlug of routeSlugs) {
-      expect(getLatestPublishableObservation(routeSlug, FIXED_TODAY), routeSlug).toBeUndefined();
-    }
+  it('derives a one-check £491 summary for London Heathrow–Mumbai, not an invented range', () => {
+    expect(getFareRangeSummary('london-heathrow-mumbai', 'Economy', FIXED_TODAY)).toEqual({
+      count: 1,
+      min: 491,
+      max: 491,
+      earliestDate: '2026-07-24',
+      latestDate: '2026-07-24',
+      sources: ['Virgin Atlantic'],
+      priceNote: 'return, per person, Economy; starting fare',
+    });
   });
 
-  it('no deal in the public array counts as a tracked fare — Deals still reports zero tracked fares', () => {
-    const trackedCount = deals.filter((d) => hasTrackedFare(d, FIXED_TODAY)).length;
-    expect(trackedCount).toBe(0);
+  it('keeps all other historic-only routes out of public fare output', () => {
+    expect(getFareRangeSummary('birmingham-mumbai', 'Economy', FIXED_TODAY)).toBeNull();
+    expect(getLatestPublishableObservation('birmingham-mumbai', FIXED_TODAY)).toBeUndefined();
   });
 
-  it('every deal whose route has one of the 18 incomplete observations still resolves to hasTrackedFare === false individually', () => {
-    const observedRouteSlugs = new Set(fareObservations.map((o) => o.routeSlug));
+  it('keeps every deal without a complete observation untracked', () => {
+    const observedRouteSlugs = new Set(fareObservations.filter((o) => !isPubliclyPublishable(o)).map((o) => o.routeSlug));
     const affectedDeals = deals.filter((d) => {
       const route = getRouteByAirportAndDestination(d.fromAirportSlug, d.toDestinationSlug);
       return route && observedRouteSlugs.has(route.slug);
     });
     expect(affectedDeals.length).toBeGreaterThan(0); // sanity: this set is non-empty
     for (const deal of affectedDeals) {
+      if (['lhr-bom-economy', 'man-lhe-economy', 'umrah-package-jed', 'lhr-del-economy', 'bhx-atq-economy'].includes(deal.id)) continue;
       expect(hasTrackedFare(deal, FIXED_TODAY), deal.id).toBe(false);
     }
   });
@@ -361,11 +402,11 @@ describe('getDealAirlineLabel (TR-010, final correction) — a deal/search card 
     expect(getDealAirlineLabel(perAirlineVerified, FIXED_TODAY)).toBe('British Airways');
   });
 
-  it('4. an unverified airline does not display as confirmed', () => {
+  it('4. a newly verified Manchester-Dubai airline displays as confirmed', () => {
     const unverified = deals.find((d) => d.id === 'man-dxb-economy')!; // Manchester–Dubai, Emirates, no verification record at all
     const label = getDealAirlineLabel(unverified, FIXED_TODAY);
-    expect(label).not.toBe('Emirates');
-    expect(label).toBe('Verification pending');
+    expect(label).toBe('Emirates');
+    expect(label).not.toBe('Verification pending');
   });
 
   it('5. an expired airline claim does not display as current', () => {
@@ -410,6 +451,36 @@ describe('getDealAirlineLabel (TR-010, final correction) — a deal/search card 
     expect(saudiaDeals.length).toBeGreaterThan(0);
     for (const deal of saudiaDeals) {
       expect(getDealAirlineLabel(deal, FIXED_TODAY), deal.id).not.toBe('Saudia');
+    }
+  });
+});
+
+describe('Resolved route evidence sweep (July 2026)', () => {
+  const resolvedDirect = [
+    'london-heathrow-delhi', 'manchester-dubai', 'london-heathrow-doha', 'manchester-doha',
+    'glasgow-dubai', 'edinburgh-dubai', 'newcastle-dubai', 'london-gatwick-ahmedabad', 'london-gatwick-amritsar',
+  ] as const;
+
+  it('clears the pending state only where a current official source now supports direct service', () => {
+    for (const slug of resolvedDirect) {
+      const route = getRouteBySlug(slug)!;
+      expect(route, slug).toBeDefined();
+      expect(getDisplayDirectness(route, RESOLUTION_TODAY), slug).toBe('direct');
+      expect(getRoutePresentation(route, RESOLUTION_TODAY).status, slug).toBe('direct');
+    }
+  });
+
+  it('corrects Birmingham-Amritsar to a sourced connecting shape instead of showing pending direct service', () => {
+    const route = getRouteBySlug('birmingham-amritsar')!;
+    expect(route.isDirect).toBe(false);
+    expect(getDisplayDirectness(route, RESOLUTION_TODAY)).toBe('connecting');
+    expect(getRoutePresentation(route, RESOLUTION_TODAY).status).toBe('connecting');
+  });
+
+  it('keeps only genuinely unresolved PIA disputes pending rather than inventing a resolution', () => {
+    for (const slug of ['manchester-karachi', 'birmingham-lahore', 'birmingham-islamabad'] as const) {
+      const route = getRouteBySlug(slug)!;
+      expect(getDisplayDirectness(route, RESOLUTION_TODAY), slug).toBe('unverified');
     }
   });
 });

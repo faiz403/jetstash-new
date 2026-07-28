@@ -395,7 +395,12 @@ describe('Cross-surface leakage fix — FamilyVisitBlock no longer asserts a fix
     const mumbai = getDestinationBySlug('mumbai')!;
     expect(mumbai.familyVisitContent).toBeDefined();
     expect(mumbai.familyVisitContent!.peakPeriodIds.length).toBeGreaterThan(0);
-    const element = FamilyVisitBlock({ content: mumbai.familyVisitContent!, city: mumbai.city });
+    const element = FamilyVisitBlock({
+      content: mumbai.familyVisitContent!,
+      city: mumbai.city,
+      country: mumbai.country,
+      destinationSlug: mumbai.slug,
+    });
     const text = collectStrings(element).join(' ');
     expect(text).not.toMatch(/When demand peaks/i);
     expect(text).not.toMatch(/book\s+\d[–-]\d\s+months?\s+ahead/i);
@@ -404,7 +409,12 @@ describe('Cross-surface leakage fix — FamilyVisitBlock no longer asserts a fix
 
   it('the period labels themselves (real calendar/planning data from data/peak-periods.ts) still render — only the surrounding claim was neutralised, not the underlying content', () => {
     const mumbai = getDestinationBySlug('mumbai')!;
-    const element = FamilyVisitBlock({ content: mumbai.familyVisitContent!, city: mumbai.city });
+    const element = FamilyVisitBlock({
+      content: mumbai.familyVisitContent!,
+      city: mumbai.city,
+      country: mumbai.country,
+      destinationSlug: mumbai.slug,
+    });
     const text = collectStrings(element).join(' ');
     expect(text).toMatch(/Diwali/i);
   });
@@ -582,12 +592,11 @@ describe('Cross-surface leakage fix — fare section heading is content-aware, n
     expect(text).not.toMatch(/Fare history & current example/);
   });
 
-  it('manchester-lahore (deals exist, but its logged observations lack the dates isPubliclyPublishable requires) renders the "What we know about this route" heading end-to-end, not the history heading', async () => {
+  it('manchester-lahore now has a dated editorial observation and renders the fare-history heading end-to-end', async () => {
     expect(deals.some((d) => d.fromAirportSlug === 'manchester' && d.toDestinationSlug === 'lahore')).toBe(true);
     const element = await RoutePage({ params: Promise.resolve({ slug: 'manchester-lahore' }) });
     const text = collectStrings(element).join(' ');
-    expect(text).toMatch(/What we know about this route/);
-    expect(text).not.toMatch(/Fare history & current example/);
+    expect(text).toMatch(/Fare history & current example/);
   });
 
   it('birmingham-mumbai\'s fare section itself contributes no explanatory no-fare prose now that its caption is null — NoFareFallback (rendered separately below it, see the next assertion) is the only place that message lives', async () => {

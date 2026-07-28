@@ -16,6 +16,8 @@ Every new development or strategy session must read these files before proposing
 2. [`COMPLETED.md`](./COMPLETED.md) — the append-only record of finished work;
 3. [`ROADMAP.md`](./ROADMAP.md) — active, queued and deferred work;
 4. [`DECISIONS.md`](./DECISIONS.md) — approved, evolved, deferred and rejected ideas.
+5. [`ROUTE_COVERAGE.md`](./ROUTE_COVERAGE.md) — the evidence-led queue and operating rules for
+   expanding route intelligence.
 
 Historical phase reports elsewhere in `/docs` remain valuable evidence, but they do not override
 this folder when their task status is stale. `JETSTASH_PRINCIPLES.md` remains the authority for
@@ -60,9 +62,9 @@ not silently erase the historical record.
 
 ## Current baseline
 
-This tracker was reconciled on **24 July 2026** against:
+This tracker was reconciled on **25 July 2026** against:
 
-- GitHub `main` at `498f980425b2907d09544e80244cba0a88a3b2d7`;
+- GitHub `main` at `50e6c6d40b92d8c3f201814a12340160351d70bd`;
 - the live JetStash homepage after Route Status V1 and the Manchester-to-Mumbai visual shipped;
 - existing repository documentation and Git history; and
 - founder confirmations captured during the July 2026 working sessions.

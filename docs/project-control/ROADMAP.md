@@ -6,12 +6,11 @@ This roadmap contains unfinished work only. Completed work belongs in `COMPLETED
 
 | Order | ID | Status | Work | Definition of done |
 |---:|---|---|---|---|
-| 1 | `TRC-001` | NEXT | Make Travel Ready Check easier to discover. | Existing surfaces audited; focused links added and tested without navigation clutter. |
-| 2 | `FARE-001` | QUEUED | Restore genuine fare intelligence. | Fresh observations with departure date, return date, cabin, source and observed date for priority routes. |
-| 3 | `VIS-001` | QUEUED | Complete UK airport photography. | Premium assets for Birmingham, Heathrow, Gatwick and other supported UK airports. |
-| 4 | `VIS-002` | QUEUED | Add guide photography. | Consistent premium hero treatment for the guide collection. |
-| 5 | `AFF-001` | QUEUED | Improve affiliate coverage. | Current partner state documented; only verified, working integrations enabled. |
-| 6 | `CONV-001` | QUEUED | Validate homepage conversion. | Funnel analytics reviewed; changes made only where data identifies a real drop-off. |
+| 1 | `FARE-001` | ACTIVE | Build the editorial fare observation archive. Methodology is finalized and the first five-observation batch is now logged under it. | Fresh, manually checked observations for priority routes with travel dates, cabin, source, observation method, currency, baggage treatment and a fixed 8-week booking horizon, accumulated honestly over time. |
+| 2 | `COV-001` | ACTIVE | Build verified route coverage deliberately. | The route queue is evidence-led, each change is sourced and reviewed, and price context appears only from date-complete observations. |
+| 3 | `VIS-001` | COMPLETE | Complete the UK airport visual collection. | Premium, airport-specific WebP artwork for every supported UK airport, using one consistent 1672×941 composition. |
+| 4 | `AFF-001` | ACTIVE | Improve affiliate coverage. | Current partner state reconciled; only approved, tracked integrations with directly validated customer journeys are enabled. Expedia and other candidates remain off until approved. |
+| 5 | `CONV-001` | QUEUED | Validate homepage conversion. | Funnel analytics reviewed; changes made only where data identifies a real drop-off. |
 
 ## Product-development roadmap
 
@@ -22,8 +21,9 @@ business meetings and religious travel. A traveller enters their starting locati
 and required arrival time; JetStash works backwards to show the fastest and easiest plausible
 journeys, including conservative airport, immigration, baggage and onward-ground-time allowances.
 
-**Current status:** approved concept, research/specification queued, implementation deferred until
-the necessary schedule and ground-transport data can support honest estimates.
+**Current status:** the evidence-gated specification is complete in `ARRIVE_BY_SPEC.md`.
+Implementation remains deferred until the necessary schedule and ground-transport data can support
+honest estimates.
 
 **Non-negotiable boundary:** it must never promise that a traveller will arrive on time. It must
 label assumptions, uncertainty, connection risk and the point after which the journey is no longer

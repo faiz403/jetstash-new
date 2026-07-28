@@ -33,9 +33,9 @@ export function Footer() {
             </p>
           </div>
 
-          <FooterColumn title="Regions" links={footerNav.regions} />
-          <FooterColumn title="Travel" links={footerNav.travel} />
-          <FooterColumn title="Company" links={footerNav.company} />
+          <FooterColumn title="Explore" links={footerNav.explore} />
+          <FooterColumn title="Specialist journeys" links={footerNav.specialist} />
+          <FooterColumn title="About" links={footerNav.company} />
         </div>
 
         <div className="mt-12 flex flex-col gap-3 border-t border-white/5 pt-8 text-xs text-ink-300 sm:flex-row sm:items-center sm:justify-between">

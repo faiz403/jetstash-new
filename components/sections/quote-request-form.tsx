@@ -1,7 +1,19 @@
 'use client';
 
 import { useState, FormEvent } from 'react';
-import { CheckCircle2, AlertCircle } from 'lucide-react';
+import {
+  CheckCircle2,
+  AlertCircle,
+  User,
+  Heart,
+  Users,
+  UsersRound,
+  Briefcase,
+  GraduationCap,
+  Moon,
+  MoreHorizontal,
+  type LucideIcon,
+} from 'lucide-react';
 import { TRIP_TYPE_OPTIONS, QUOTE_REGION_OPTIONS, QuoteTripType, QuoteRegion } from '@/lib/quote-request-options';
 
 interface QuoteRequestFormProps {
@@ -9,11 +21,25 @@ interface QuoteRequestFormProps {
   initialRegion?: QuoteRegion;
 }
 
+/** One glyph per trip type — purely a scanning aid (labels alone are always
+ * sufficient; nothing here is communicated by icon shape alone). */
+const TRIP_TYPE_ICONS: Record<QuoteTripType, LucideIcon> = {
+  solo: User,
+  couple: Heart,
+  'family-trip': Users,
+  'group-travel': UsersRound,
+  business: Briefcase,
+  student: GraduationCap,
+  umrah: Moon,
+  other: MoreHorizontal,
+};
+
 const emptyForm = {
   name: '',
   email: '',
   phone: '',
   tripType: '' as QuoteTripType | '',
+  tripTypeOther: '',
   region: '' as QuoteRegion | '',
   travellerCount: '',
   travelWindow: '',
@@ -22,7 +48,7 @@ const emptyForm = {
 };
 
 export function QuoteRequestForm({ initialTripType, initialRegion }: QuoteRequestFormProps) {
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<typeof emptyForm>({
     ...emptyForm,
     tripType: initialTripType ?? '',
     region: initialRegion ?? '',
@@ -81,24 +107,31 @@ export function QuoteRequestForm({ initialTripType, initialRegion }: QuoteReques
         <TextField label="Number of travellers (optional)" id="travellerCount" value={form.travellerCount} onChange={(v) => setForm({ ...form, travellerCount: v })} />
       </div>
 
-      <div className="grid gap-5 sm:grid-cols-2">
-        <SelectField
-          label="Trip type"
-          id="tripType"
-          value={form.tripType}
-          onChange={(v) => setForm({ ...form, tripType: v as QuoteTripType })}
-          options={TRIP_TYPE_OPTIONS}
-          required
+      <TripTypePicker
+        value={form.tripType}
+        onChange={(v) =>
+          setForm({ ...form, tripType: v, tripTypeOther: v === 'other' ? form.tripTypeOther : '' })
+        }
+      />
+
+      {form.tripType === 'other' && (
+        <TextField
+          label="Tell us in a few words (optional)"
+          id="tripTypeOther"
+          value={form.tripTypeOther}
+          onChange={(v) => setForm({ ...form, tripTypeOther: v })}
+          placeholder="e.g. medical travel, visiting friends, a pilgrimage tour"
         />
-        <SelectField
-          label="Region"
-          id="region"
-          value={form.region}
-          onChange={(v) => setForm({ ...form, region: v as QuoteRegion })}
-          options={QUOTE_REGION_OPTIONS}
-          required
-        />
-      </div>
+      )}
+
+      <SelectField
+        label="Region"
+        id="region"
+        value={form.region}
+        onChange={(v) => setForm({ ...form, region: v as QuoteRegion })}
+        options={QUOTE_REGION_OPTIONS}
+        required
+      />
 
       <TextField
         label="Approximate travel dates (optional)"
@@ -213,5 +246,57 @@ function SelectField({
         ))}
       </select>
     </div>
+  );
+}
+
+/**
+ * Every option is visible at once — no dropdown to open before a visitor can
+ * confirm there's a fit for their own trip. Native <input type="radio">
+ * under a visually-hidden (sr-only) label so the browser's own radio-group
+ * semantics, keyboard nav (arrow keys) and required-group validation all
+ * come free; the pill styling is purely a skin on top. The input stays
+ * sr-only rather than display:none so it's still reachable by Tab —
+ * has-[:focus-visible] then paints the visible ring on the label that
+ * actually wraps it, since the real focus target is invisible.
+ */
+function TripTypePicker({
+  value,
+  onChange,
+}: {
+  value: QuoteTripType | '';
+  onChange: (v: QuoteTripType) => void;
+}) {
+  return (
+    <fieldset>
+      <legend className="text-sm font-semibold text-ink-700">Trip type</legend>
+      <div className="mt-1.5 flex flex-wrap gap-2">
+        {TRIP_TYPE_OPTIONS.map((opt) => {
+          const Icon = TRIP_TYPE_ICONS[opt.value];
+          const checked = value === opt.value;
+          return (
+            <label
+              key={opt.value}
+              className={`flex h-11 cursor-pointer items-center gap-1.5 rounded-full border px-4 text-sm font-medium transition-colors has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-brass ${
+                checked
+                  ? 'border-brass bg-brass text-ink-900'
+                  : 'border-ink-200 bg-white text-ink-700 hover:border-brass/50 hover:bg-sand-50'
+              }`}
+            >
+              <input
+                type="radio"
+                name="tripType"
+                value={opt.value}
+                checked={checked}
+                onChange={() => onChange(opt.value)}
+                required
+                className="sr-only"
+              />
+              <Icon className="h-4 w-4" strokeWidth={2} aria-hidden="true" />
+              {opt.label}
+            </label>
+          );
+        })}
+      </div>
+    </fieldset>
   );
 }

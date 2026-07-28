@@ -14,7 +14,20 @@ export interface FareObservation {
   observedDate: string;
   price: number;
   priceNote: string;
-  source: string; // airline the fare was observed on
+  /** Provider or airline named by the result; never imply a live price. */
+  source: string;
+  /** Where the manual observation was made; required for new observations. Optional only so historic entries that predate this field stay valid. */
+  observedVia?: 'airline' | 'travelup' | 'google-flights';
+  /** URL used for the manual check, when stable and safe to retain; required for new observations where one exists. */
+  sourceUrl?: string;
+  /** Currency shown by the source — GBP only, see FARE_OBSERVATION_ARCHIVE.md's "Standard search configuration"; required for new observations. Optional only because existing entries predate this field. */
+  currency?: 'GBP';
+  /** Baggage allowance shown by the source, or 'not stated'; required for new observations. Optional only because existing entries predate this field. */
+  baggage?: string;
+  /** Versioned route profile used for this check; required for new observations. */
+  profileId?: string;
+  /** Why this check was made; required for new observations. */
+  observationReason?: 'routine-weekly' | 'routine-fortnightly' | 'school-holiday' | 'religious-peak' | 'airline-sale' | 'emergency-recheck' | 'route-status-recheck' | 'other';
   /**
    * ISO date of the outbound departure the fare was quoted FOR — record it
    * on every new observation. Without it, "how many days before departure
@@ -29,7 +42,9 @@ export interface FareObservation {
    * Required alongside `departureDate` for an observation to be publicly
    * displayable — see `isPubliclyPublishable()`. A price with no travel
    * dates doesn't say what it actually applies to; §2 of the Truth Reset
-   * treats that as a fare-integrity issue, not a cosmetic one.
+ * treats that as a fare-integrity issue, not a cosmetic one. The historic
+ * entries remain incomplete by design; new, fully dated observations are
+ * appended below when they meet the standard.
    */
   returnDate?: string;
 }
@@ -38,8 +53,8 @@ export interface FareObservation {
  * Truth Reset (July 2026): an observation is only safe to show publicly —
  * as a "Verified Check", counted in any "N fares tracked" total, or included
  * in a price range — once it records BOTH the departure and return dates it
- * was quoted for. This is deliberately strict: as of this pass, **none** of
- * the 18 observations below satisfy it (only some have `departureDate`, and
+ * was quoted for. This is deliberately strict: **none of the original 18**
+ * observations satisfy it (only some have `departureDate`, and
  * `returnDate` didn't exist as a field before this pass), so every public
  * fare display on the site will honestly degrade to "no fare checks logged
  * yet" until fares are re-logged with both dates. That's an intentional,
@@ -64,7 +79,7 @@ export function isPubliclyPublishable(o: FareObservation): boolean {
  * for a new observation to ever appear publicly — see `isPubliclyPublishable`
  * above:
  *
- *   { id: 'obs-<route>-<cabin>-<n>', routeSlug: '<route-slug>', cabin: 'Economy', observedDate: '2026-01-01', price: 0, priceNote: 'return, per person', source: '<airline>', departureDate: '2026-01-01', returnDate: '2026-01-15' },
+ *   { id: 'obs-<route>-<cabin>-<n>', routeSlug: '<route-slug>', cabin: 'Economy', observedDate: '2026-01-01', price: 0, priceNote: 'return, per person', observedVia: 'google-flights', source: '<airline or provider shown>', sourceUrl: '<manual-check-url>', currency: 'GBP', baggage: '<allowance as shown, or not stated>', profileId: '<route-profile-id>', observationReason: 'routine-weekly', departureDate: '2026-01-01', returnDate: '2026-01-15' },
  */
 export const fareObservations: FareObservation[] = [
   { id: 'obs-man-lhe-economy-1', routeSlug: 'manchester-lahore', cabin: 'Economy', observedDate: '2026-06-15', price: 489, priceNote: 'return, per person', source: 'PIA' },
@@ -85,7 +100,12 @@ export const fareObservations: FareObservation[] = [
   { id: 'obs-lgw-amd-economy-1', routeSlug: 'london-gatwick-ahmedabad', cabin: 'Economy', observedDate: '2026-06-17', price: 412, priceNote: 'return, per person', source: 'Air India' },
   { id: 'obs-lgw-amd-business-1', routeSlug: 'london-gatwick-ahmedabad', cabin: 'Business', observedDate: '2026-06-17', price: 1620, priceNote: 'return, per person', source: 'Air India' },
   { id: 'obs-lhr-bom-economy-1', routeSlug: 'london-heathrow-mumbai', cabin: 'Economy', observedDate: '2026-06-16', price: 498, priceNote: 'return, per person', source: 'British Airways' },
-];
+  { id: 'obs-lhr-bom-economy-2', routeSlug: 'london-heathrow-mumbai', cabin: 'Economy', observedDate: '2026-07-24', price: 491, priceNote: 'return, per person, Economy; starting fare', source: 'Virgin Atlantic', departureDate: '2026-09-08', returnDate: '2026-10-01' },
+  { id: 'obs-man-lhe-economy-20260728-8w-v1', routeSlug: 'manchester-lahore', cabin: 'Economy', observedDate: '2026-07-28', price: 578, priceNote: 'return, per person, one adult; taxes and required fees included; baggage not stated and optional bag charges may apply', source: 'Etihad', observedVia: 'google-flights', sourceUrl: 'https://www.google.com/travel/flights/search?tfs=CBwQAhooEgoyMDI2LTA5LTIyagwIAhIIL20vMDUyYndyDAgDEggvbS8weG50NRooEgoyMDI2LTEwLTA2agwIAhIIL20vMHhudDVyDAgCEggvbS8wNTJid0ABSAFwAYIBCwj___________8BmAEB', currency: 'GBP', baggage: 'not stated; optional charges may apply', profileId: 'manchester-lahore-economy-1adult-23kg-v1', observationReason: 'routine-weekly', departureDate: '2026-09-22', returnDate: '2026-10-06' },
+  { id: 'obs-man-isb-economy-20260728-8w-v1', routeSlug: 'manchester-islamabad', cabin: 'Economy', observedDate: '2026-07-28', price: 562, priceNote: 'return, per person, one adult; taxes and required fees included; baggage not stated and optional bag charges may apply', source: 'Etihad', observedVia: 'google-flights', sourceUrl: 'https://www.google.com/travel/flights?q=flights%20from%20Manchester%20to%20Islamabad%20September%2022%202026%20return%20October%206%202026', currency: 'GBP', baggage: 'not stated; optional charges may apply', profileId: 'manchester-islamabad-economy-1adult-23kg-v1', observationReason: 'routine-weekly', departureDate: '2026-09-22', returnDate: '2026-10-06' },
+  { id: 'obs-lhr-del-economy-20260728-8w-v1', routeSlug: 'london-heathrow-delhi', cabin: 'Economy', observedDate: '2026-07-28', price: 432, priceNote: 'return, per person, one adult; taxes and required fees included; baggage not stated and optional bag charges may apply', source: 'IndiGo (operated under lease from Norse)', observedVia: 'google-flights', sourceUrl: 'https://www.google.com/travel/flights?q=flights%20from%20London%20Heathrow%20to%20Delhi%20September%2022%202026%20return%20October%206%202026', currency: 'GBP', baggage: 'not stated; optional charges may apply', profileId: 'london-heathrow-delhi-economy-1adult-23kg-v1', observationReason: 'routine-weekly', departureDate: '2026-09-22', returnDate: '2026-10-06' },
+  { id: 'obs-bhx-atq-economy-20260728-8w-v1', routeSlug: 'birmingham-amritsar', cabin: 'Economy', observedDate: '2026-07-28', price: 733, priceNote: 'return, per person, one adult; taxes and required fees included; baggage not stated and optional bag charges may apply', source: 'KLM and IndiGo', observedVia: 'google-flights', sourceUrl: 'https://www.google.com/travel/flights?q=flights%20from%20Birmingham%20to%20Amritsar%20September%2022%202026%20return%20October%206%202026', currency: 'GBP', baggage: 'not stated; optional charges may apply', profileId: 'birmingham-amritsar-economy-1adult-23kg-v1', observationReason: 'routine-weekly', departureDate: '2026-09-22', returnDate: '2026-10-06' },
+  { id: 'obs-lhr-jed-economy-20260728-8w-v1', routeSlug: 'london-heathrow-jeddah', cabin: 'Economy', observedDate: '2026-07-28', price: 575, priceNote: 'return, per person, one adult; taxes and required fees included; baggage not stated and optional bag charges may apply', source: 'Royal Jordanian', observedVia: 'google-flights', sourceUrl: 'https://www.google.com/travel/flights?q=flights%20from%20London%20Heathrow%20to%20Jeddah%20September%2022%202026%20return%20October%206%202026', currency: 'GBP', baggage: 'not stated; optional charges may apply', profileId: 'london-heathrow-jeddah-economy-1adult-23kg-v1', observationReason: 'routine-weekly', departureDate: '2026-09-22', returnDate: '2026-10-06' },];
 
 export function getObservationsByRoute(routeSlug: string) {
   return fareObservations
@@ -168,6 +188,8 @@ export interface FareRangeSummary {
   max: number;
   earliestDate: string;
   latestDate: string;
+  /** Distinct airlines or providers the displayed observation(s) came from. Never substitute a deal's curation airline here. */
+  sources: string[];
   /** Taken from the most recent observation — the most representative note for the range shown. */
   priceNote: string;
 }
@@ -190,6 +212,7 @@ export function getFareRangeSummary(routeSlug: string, cabin: DealCabin, nowIso:
     max: Math.max(...prices),
     earliestDate: observations[0].observedDate,
     latestDate: observations[observations.length - 1].observedDate,
+    sources: [...new Set(observations.map((o) => o.source))],
     priceNote: observations[observations.length - 1].priceNote,
   };
 }

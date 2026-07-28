@@ -8,9 +8,11 @@ import { airports } from '@/data/airports';
 import { getRoutesByDestination } from '@/data/routes';
 import { getTipsForScope } from '@/data/traveller-tips';
 import { getVisaLinkForCountry } from '@/lib/visa-links';
+import { TRAVEL_READY_SUPPORTED_COUNTRIES } from '@/lib/travel-ready-check';
 import { DealCard } from '@/components/ui/deal-card';
 import { NoFareFallback } from '@/components/ui/no-fare-fallback';
 import { Badge } from '@/components/ui/badge';
+import { LinkButton } from '@/components/ui/button';
 import { BookingMomentStrip } from '@/components/sections/booking-moment-strip';
 import { computeBookBySnapshotsForDestination } from '@/lib/booking-intelligence';
 import { FamilyVisitBlock } from '@/components/sections/family-visit-block';
@@ -140,7 +142,10 @@ export default async function DestinationPage({ params }: { params: Promise<{ sl
                   );
                 })}
               </div>
-              <p className="mt-3 text-sm text-ink-500">Typical flight time: {dest.flightTimeFromUK}</p>
+              <p className="mt-3 text-sm text-ink-500">
+                Flight times and direct-service availability vary by UK departure airport. Explore the route guides
+                above for current, verified service details.
+              </p>
             </div>
 
             <div className="rounded-md border border-ink-100 bg-sand-50 p-7">
@@ -164,6 +169,16 @@ export default async function DestinationPage({ params }: { params: Promise<{ sl
                   <p className="mt-2 text-[11px] text-ink-400">{visaLink.sourceName} · opens in a new tab</p>
                 </div>
               )}
+              {TRAVEL_READY_SUPPORTED_COUNTRIES.includes(dest.country) && (
+                <div className="mt-5 border-t border-ink-200 pt-5">
+                  <p className="text-sm leading-relaxed text-ink-600">
+                    Want a private check against your own passport and travel dates?
+                  </p>
+                  <LinkButton href={`/travel-ready-check?destination=${dest.slug}`} variant="ghost" size="sm" className="mt-3">
+                    Check your travel readiness
+                  </LinkButton>
+                </div>
+              )}
               <p className="mt-4 text-xs text-ink-400">
                 Visa requirements can vary depending on your nationality. Always check the latest official guidance
                 before travelling.
@@ -173,7 +188,9 @@ export default async function DestinationPage({ params }: { params: Promise<{ sl
         </div>
       </section>
 
-      {dest.familyVisitContent && <FamilyVisitBlock content={dest.familyVisitContent} city={dest.city} />}
+      {dest.familyVisitContent && (
+        <FamilyVisitBlock content={dest.familyVisitContent} city={dest.city} country={dest.country} destinationSlug={dest.slug} />
+      )}
 
       {travellerTips.length > 0 && (
         <section className="bg-white py-16 sm:py-20">

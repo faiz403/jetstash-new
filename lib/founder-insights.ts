@@ -175,7 +175,9 @@ function affiliateStatus(): FounderSection {
     items: [],
     action: !primary.hasTracking
       ? `Sign up for ${primary.name}'s affiliate programme (via Commission Junction: https://signup.cj.com/member/signup/publisher/?cid=6248437) to get a real tracking link, then set it as BOOKING_PROVIDERS.${PRIMARY_PROVIDER_ID}.baseUrl in lib/booking-providers.ts.`
-      : `Optional, no deadline: manually visit travelup.com, confirm a real destination URL works, add it to VERIFIED_DEEP_LINKS in lib/booking-providers.ts, then flip supportsDeepLink to true once at least one entry is confirmed. To re-enable ${skyscanner.name} later, flip its enabled flag and add its real tracking link in the same file.`,
+      : !primary.supportsDeepLink
+        ? `Optional, no deadline: manually visit travelup.com, confirm a real destination URL works, add it to VERIFIED_DEEP_LINKS in lib/booking-providers.ts, then flip supportsDeepLink to true once at least one entry is confirmed. To re-enable ${skyscanner.name} later, flip its enabled flag and add its real tracking link in the same file.`
+        : `Maintain the verified TravelUp destination map: directly confirm an exact page before adding or replacing a VERIFIED_DEEP_LINKS entry, and recheck existing entries periodically. Never infer a URL pattern. To re-enable ${skyscanner.name} later, obtain fresh approval and a real tracking link, then configure it in the same file.`,
   };
 }
 

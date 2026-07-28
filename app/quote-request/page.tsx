@@ -7,9 +7,10 @@ import { isQuoteTripType, isQuoteRegion } from '@/lib/quote-request-options';
 import { siteConfig } from '@/lib/site-config';
 
 export const metadata: Metadata = {
-  title: 'Request a Quote: Umrah, Family & Group Travel',
+  // Root layout's title template already appends " | JetStash" — no manual suffix here.
+  title: 'Request a Travel Quote',
   description:
-    'Request a real quote for an Umrah package, family trip or group booking to Pakistan, India, Bangladesh, the Gulf, Turkey, Morocco or Southern Europe, followed up by a person, not an automated price.',
+    'Request a real quote for any trip — solo, couple, family, group, business, student or Umrah — to Pakistan, India, Bangladesh, the Gulf, Turkey, Morocco or Southern Europe, followed up by a person, not an automated price.',
   alternates: { canonical: `${siteConfig.url}/quote-request` },
 };
 
@@ -46,7 +47,7 @@ export default async function QuoteRequestPage({
         heroKey="quote-request"
         eyebrow="Real quotes, from a person"
         title="Tell us the trip. We'll price it properly."
-        description="For Umrah packages, family trips and group travel: Pakistan, India, Bangladesh, the Gulf, Turkey, Morocco and Southern Europe. A real person follows up with real pricing, not an instant automated number."
+        description="Tell us where you're travelling, who's going and what matters most. JetStash will review the journey and come back with a personalised quote, from a real person, not an automated price."
       />
 
       <section className="border-b border-white/5 bg-ink-950 py-10">

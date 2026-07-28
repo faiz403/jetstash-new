@@ -5,8 +5,9 @@ import { NewsletterSection } from '@/components/sections/newsletter-section';
 
 export const metadata: Metadata = {
   alternates: { canonical: '/travel-club' },
-  title: 'JetStash Travel Club',
-  description: 'Join JetStash Travel Club for hand-picked fare tips on flights from the UK to Pakistan, India, the Gulf and beyond, curated for the route you actually care about.',
+  // Root layout's title template already appends " | JetStash" — no manual suffix here.
+  title: 'Travel Club',
+  description: 'Human-curated route and fare intelligence for international journeys from UK airports, focused on the routes JetStash actively verifies.',
 };
 
 export default function TravelClubPage() {

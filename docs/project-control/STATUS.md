@@ -1,10 +1,10 @@
 # JetStash Current Status
 
-**Last reconciled:** 24 July 2026
+**Last reconciled:** 28 July 2026
 
 **Production branch:** `main`
 
-**Application release baseline:** `498f980425b2907d09544e80244cba0a88a3b2d7`
+**Application release baseline:** `50e6c6d40b92d8c3f201814a12340160351d70bd`
 
 **Production site:** `https://jetstash.co.uk`
 
@@ -12,38 +12,89 @@
 
 - Route Status V1 is shipped and live.
 - The Manchester-to-Mumbai homepage visual is shipped and live.
+- The July trust-crack fixes are shipped and live: duplicate metadata titles were removed,
+  deal-card durations are route-specific, and destination pages no longer present generic
+  airport-specific summaries as route facts.
+- The homepage flagship now derives its showcase or advisory presentation from the shared Route
+  Status ledger; uncertain or ended service is not presented as a confirmed reveal.
+- The premium Guide image collection and visual Guides discovery hub are shipped and live.
 - The Birmingham-to-Mumbai connecting guide and verification-pending leakage protection are live.
 - Travel Ready Check is built and live.
+- Travel Ready Check discoverability is live: relevant
+  homepage, footer, sitemap, destination, family-visit and regional document surfaces now link
+  contextually without adding main-navigation clutter.
+- JetStash is positioned across its platform surfaces as UK travel intelligence for international
+  journeys, with specialist route depth stated honestly as South Asia and the Gulf.
 - Route Watch and Travel Club use honest, human-reviewed language.
+- TravelUp's CJ tracking link and directly verified destination deep links are live. New partner
+  integrations remain disabled until they have explicit approval, a real tracking link and direct
+  journey validation.
 - The Founder Dashboard is unavailable in production and non-indexable.
 - Operational submission flows were founder-confirmed as already tested; do not repeat the entire
   audit unless a relevant API route, environment variable or provider configuration changes.
+- The UK airport visual collection is live: all 11 supported airports have consistent, airport-labelled
+  1672×941 WebP artwork. These are designed/generated brand visuals, not documentary or licensed
+  photography, and are not described as such to customers.
 - Destination photography is founder-confirmed complete.
+- The editorial fare observation methodology is finalized and shipped
+  (`docs/project-control/FARE_OBSERVATION_ARCHIVE.md`, versioned observation profiles, a fixed
+  8-week booking horizon, GBP-only policy, `observedVia`/`profileId`/`observationReason` on
+  `FareObservation`). The first five editorial observations were logged on 28 July 2026; the
+  archive remains an active series and must grow through fresh dated checks.
+- The Visual Identity System v2 documentation refactor is shipped (`docs/visual-identity.md`,
+  `VISUAL_REVIEW_CHECKLIST.md`): Visual Principles, Editorial Photography, Interactive Visual
+  Systems and an Asset Catalogue with Lifecycle status per entry. This is the documentation
+  structure only — its audit now records the completed airport visual collection and the remaining
+  Placeholder entries are now limited to unrelated vertical and hub heroes; all 11 supported
+  airports have consistent generated/WebP artwork.
 - Permanent project-control records are linked from `CLAUDE.md` and `README.md`.
 - `CLAUDE.md`, `README.md` and `JETSTASH_PRINCIPLES.md` reflect Next.js `15.5.21`, the current
   Vitest suite, Route Status ownership, homepage architecture and automatic Vercel deployment.
 
 ## ACTIVE
 
-No implementation task is currently active.
+### FARE-001 — Begin building the editorial fare observation archive
+
+The methodology is finalized (see "Current truth" above) and the first five-observation batch is
+logged. A human may record a fare observed on Google Flights, TravelUp or an airline booking page, provided
+the source, check date, outbound date, return date, cabin, currency and baggage treatment are
+captured, against a fixed 8-week booking horizon. Google Flights is an observation source only:
+service facts still require primary airline, airport or official sources. Historic incomplete
+entries remain private; a past price cannot be reconstructed honestly after the fact.
+
+### AFF-001 — Improve affiliate coverage
+
+The current partner state is reconciled: TravelUp is the only live provider, with a real CJ
+tracking link and directly verified destination deep links. Expedia and other potential partners
+must remain unenabled until JetStash has approval, a genuine tracking link and a scoped validation
+of the customer journey.
+
+### COV-001 — Build verified route coverage deliberately
+
+Route coverage now has a durable operating queue in `ROUTE_COVERAGE.md`. The 28 July pass resolved
+the qualifying direct-service records for Heathrow–Delhi, Manchester–Dubai, Heathrow–Doha,
+Manchester–Doha, Glasgow–Dubai, Edinburgh–Dubai, Newcastle–Dubai, Gatwick–Ahmedabad and
+Gatwick–Amritsar, and corrected Birmingham–Amritsar to connecting using current Air India
+evidence. Manchester–Karachi, Birmingham–Lahore and Birmingham–Islamabad remain explicitly
+unresolved PIA disputes because no current route-specific primary source supports either outcome.
+Each cycle must add independently sourced service evidence or a date-complete fare observation;
+never fill a route simply to remove a pending state.
 
 ## NEXT
 
-### TRC-001 — Improve Travel Ready Check discoverability
+### FARE-001 — Begin building the editorial fare observation archive
 
-Audit existing entry points before changing anything. Add only the highest-value links from the
-homepage, footer and relevant route/destination surfaces. Do not clutter the main navigation.
+Follow FARE_OBSERVATION_ARCHIVE.md: check the priority queue on a fixed editorial cadence and
+append fresh observations. Every new observation must carry departure date, return date, cabin,
+source, observation method, currency, baggage treatment and observed date. Never backfill a price
+for a day that was not actually checked, and never create a fare merely to fill an empty state.
 
 ## QUEUED
 
-- `FARE-001` — add fresh, dated, manually verified fare observations for priority routes.
-- `VIS-001` — complete premium photography for supported UK airports.
-- `VIS-002` — create a consistent premium hero-image collection for travel guides.
-- `AFF-001` — review Expedia, booking partners, CJ opportunities and luggage partners.
 - `CONV-001` — use real analytics to test homepage conversion hierarchy; no redesign based only on
   opinion.
-- `ARR-001` — research and specify Arrive By for urgent, deadline-critical travel without making
-  unsupported schedule or arrival promises.
+- `ARR-001` — specification complete in `ARRIVE_BY_SPEC.md`; implementation remains deferred until
+  schedule and ground-transport sources can support honest estimates.
 
 ## Do not reopen without new evidence
 
@@ -53,13 +104,23 @@ homepage, footer and relevant route/destination surfaces. Do not clutter the mai
 - Direct-route WhatsApp punctuation.
 - Route Status V1 foundation, presentation and date formatting.
 - The Manchester-to-Mumbai homepage visual.
+- July trust-crack fixes from the live-site audit.
+- Ledger-driven homepage flagship showcase/advisory presentation.
 - Founder Dashboard production protection.
+- Airport visual collection.
 - Destination photography.
+- The editorial fare observation methodology (do not redesign the schema or profile rules —
+  reopen only if the methodology itself proves unworkable in practice, not to skip it).
+- The Visual Identity System v2 documentation structure (do not restructure again without new
+  evidence the four-part split isn't working — populating the Placeholder/Planned assets it
+  already tracks is not a reason to reopen it).
 
 ## Known risks
 
-- Genuine fare intelligence remains thin and must never be filled with invented prices.
-- TravelUp deep linking remains disabled until a destination URL is verified manually.
+- The editorial fare archive is at its starting point; it must grow through real dated checks, not
+  retrospective estimates or automated scraping.
+- TravelUp is a single booking-partner dependency. Recheck verified destination pages periodically;
+  do not add a partner or deep link without approval and direct validation.
 - Travel Ready rules and Route Status evidence require scheduled re-verification as source facts
   change.
 - Homepage conversion quality cannot be claimed from visual review alone; it requires real funnel

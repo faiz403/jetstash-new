@@ -25,6 +25,15 @@ hide the decision. “Premium” is not permission to accept unclear conversion 
 Competitors can copy interface ideas. They cannot instantly copy years of sourced route, document,
 service and fare history.
 
+### International platform, specialist depth
+
+JetStash is a UK travel-intelligence platform for international journeys, not a regional-only or
+ethnic travel website. South Asia and the Gulf are the current deepest verified route corridors and
+must remain prominent specialist strengths, but they must not define the entire first impression.
+Platform navigation, global SEO and parent pages should lead with routes, destinations, UK airports
+and travel tools. Never claim worldwide route intelligence before the underlying coverage exists;
+describe current depth plainly and distinguish route intelligence from lighter destination guidance.
+
 ### Route Status is a flagship capability
 
 Service withdrawals, resumptions, frequency reductions, seasonal returns and significant schedule
@@ -62,7 +71,8 @@ Use cohesive, owned-feeling JetStash photography and visual direction instead of
 
 ## Deferred
 
-- Full Arrive By implementation, pending trustworthy schedule and ground-transport inputs.
+- Full Arrive By implementation, pending trustworthy schedule and ground-transport inputs. The
+  evidence-gated product specification is complete in `ARRIVE_BY_SPEC.md`.
 - Flight-deal automation.
 - Broad SEO expansion beyond priority pages.
 - Advanced newsletter growth mechanics.
