@@ -21,4 +21,12 @@ describe('public homepage Route Atlas integration', () => {
       expect(atlasBuilderSource).toContain(`airportSlug: '${slug}'`);
     }
   });
+
+  it('keeps the geographic Atlas visible on mobile while retaining touch selectors', () => {
+    const atlasSource = fs.readFileSync(path.join(root, 'components/founder/atlas-feel-test.tsx'), 'utf8');
+    expect(atlasSource).toContain('viewBox="418 230 336 220" className="block h-auto w-full"');
+    expect(atlasSource).not.toContain('className="hidden h-auto w-full sm:block"');
+    expect(atlasSource).toContain('aria-label="Choose a country"');
+    expect(atlasSource).toContain('aria-label={`Choose a destination in ${activeCountry.label}`}');
+  });
 });

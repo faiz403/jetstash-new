@@ -351,12 +351,11 @@ export function AtlasFeelTest({
         <p className="text-[13px] text-ink-300 sm:hidden">Select a country, then a destination, to see its route.</p>
         <p className="hidden text-[13px] text-ink-300 sm:block">Hover a country to explore its destinations.</p>
 
-        {/* mobile chip selector — the map's fine hit-targets don't work below
-            sm, same reasoning and pattern as route-map-hero.tsx's own mobile
-            fallback. Both rows call the exact same activateCountry/
-            setActiveDestSlug used by the desktop hover handlers, so tapping
-            drives the identical state transition hovering does — no second
-            interaction model, just a different input method. */}
+        {/* Touch-friendly selectors remain available below sm because the map's
+            fine hit-targets are difficult to use at phone scale. The map itself
+            stays visible at every breakpoint; these chips provide a reliable
+            way to drive the same activateCountry/setActiveDestSlug state on
+            small screens without hiding the geographic story. */}
         <div className="mt-3 flex flex-col gap-2 sm:hidden">
           <div className="-mx-6 flex gap-2 overflow-x-auto px-6 pb-1 no-scrollbar" role="group" aria-label="Choose a country">
             {countries.map((c) => {
@@ -402,7 +401,7 @@ export function AtlasFeelTest({
 
         <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_22rem] lg:gap-10">
           <div className="min-w-0">
-        <svg viewBox="418 230 336 220" className="hidden h-auto w-full sm:block" role="img" aria-label={`${airportName}'s real network across every current JetStash destination`}>
+        <svg viewBox="418 230 336 220" className="block h-auto w-full" role="img" aria-label={`${airportName}'s real network across every current JetStash destination`}>
           <defs>
             <radialGradient id="ft-origin-glow" cx="0.5" cy="0.5" r="0.5">
               <stop offset="0" stopColor="#F7F2E9" stopOpacity="0.75" />
