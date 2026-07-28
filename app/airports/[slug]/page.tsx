@@ -63,15 +63,17 @@ export default async function AirportPage({ params }: { params: Promise<{ slug: 
           { name: airport.name, href: `/airports/${airport.slug}` },
         ])}
       />
-      <section className="relative overflow-hidden bg-ink-900 py-16 sm:py-20">
-        <HeroBackdrop image={(() => { const img = getAirportImage(airport.slug); return img ? { ...img, alt: '' } : null; })()} />
+      <section className="relative overflow-hidden bg-ink-900">
+        <div className="relative aspect-[16/9] overflow-hidden sm:absolute sm:inset-0 sm:aspect-auto">
+          <HeroBackdrop image={(() => { const img = getAirportImage(airport.slug); return img ? { ...img, alt: '' } : null; })()} />
+        </div>
         <span
-          className="pointer-events-none absolute -right-6 -top-10 hidden select-none font-display text-[12rem] leading-none text-sand-50/[0.04] lg:block"
+          className="pointer-events-none absolute -right-6 top-8 hidden select-none font-display text-[12rem] leading-none text-sand-50/[0.04] lg:block"
           aria-hidden="true"
         >
           {airport.code}
         </span>
-        <div className="relative mx-auto max-w-content px-5 sm:px-8">
+        <div className="relative mx-auto max-w-content px-5 pb-16 pt-8 sm:px-8 sm:py-20">
           <nav aria-label="Breadcrumb" className="mb-5 flex items-center gap-1.5 text-xs text-ink-300">
             <Link href="/" className="hover:text-brass-300">Home</Link>
             <span>/</span>
