@@ -21,4 +21,28 @@ describe('public homepage Route Atlas integration', () => {
       expect(atlasBuilderSource).toContain(`airportSlug: '${slug}'`);
     }
   });
+
+  it('keeps the geographic Atlas visible on mobile while retaining touch selectors', () => {
+    const atlasSource = fs.readFileSync(path.join(root, 'components/founder/atlas-feel-test.tsx'), 'utf8');
+    expect(atlasSource).toContain('viewBox="418 230 336 220" className="block h-auto w-full"');
+    expect(atlasSource).not.toContain('className="hidden h-auto w-full sm:block"');
+    expect(atlasSource).toContain('aria-label="Choose a country"');
+    expect(atlasSource).toContain('aria-label={`Choose a destination in ${activeCountry.label}`}');
+  });
+
+  it('uses the Signature Collection photography on every airport collection card', () => {
+    const airportIndexSource = fs.readFileSync(path.join(root, 'app/airports/page.tsx'), 'utf8');
+    expect(airportIndexSource).toContain("import Image from 'next/image';");
+    expect(airportIndexSource).toContain("import { getAirportImage } from '@/lib/brand-images';");
+    expect(airportIndexSource).toContain('const airportImage = getAirportImage(airport.slug);');
+    expect(airportIndexSource).toContain('className="object-cover transition-transform duration-700 group-hover:scale-[1.03]"');
+    expect(airportIndexSource).not.toContain('text-[6.5rem]');
+  });
+
+  it('shows the complete airport photograph before the detail copy on mobile', () => {
+    const airportDetailSource = fs.readFileSync(path.join(root, 'app/airports/[slug]/page.tsx'), 'utf8');
+    expect(airportDetailSource).toContain('className="relative aspect-[16/9] overflow-hidden sm:absolute sm:inset-0 sm:aspect-auto"');
+    expect(airportDetailSource).toContain('<HeroBackdrop image={');
+    expect(airportDetailSource).toContain('pb-16 pt-8 sm:px-8 sm:py-20');
+  });
 });

@@ -430,7 +430,7 @@ export function AtlasFeelTest({
             stretched to the narrow viewport width — so instead it keeps a
             fixed pixel width close to what it already renders at on desktop
             (~800px, the same per-unit scale already shipped and reviewed),
-            inside a horizontally scrollable strip. The chip selectors above
+            inside a horizontally scrollable strip. The chip selectors below
             remain the primary mobile interaction; this makes the map itself
             visible and pannable rather than invisible. */}
         <div className="-mx-6 overflow-x-auto px-6 sm:mx-0 sm:overflow-visible sm:px-0">
