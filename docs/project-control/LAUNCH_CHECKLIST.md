@@ -47,11 +47,16 @@ wider organic promotion.
       during this PR.
 - [ ] **B1.** Draft JetStash Terms & Conditions and route to professional legal review before
       publishing. Do not draft from a generic template and treat that as sufficient.
-- [ ] **C1.** Either add a verified TravelUp deep link for the Madinah route (verify a real
-      destination-specific page exists by visiting it directly, following the same method already
-      documented in `lib/booking-providers.ts`), or update the Madinah route page's CTA wording so
-      it accurately describes landing on TravelUp's generic search rather than implying a
-      Madinah-specific page.
+- [x] **C1.** ~~Fix the Madinah affiliate-link wording~~ **Done, PR pending review** — no genuine
+      route-specific TravelUp page could be verified for Madinah (unlike every other route
+      destination), so per the decision rule the generic tracked link was kept and the CTA/caption
+      wording was corrected instead, on both Madinah route pages (`manchester-madinah`,
+      `birmingham-madinah`) and both Madinah deal cards. New `hasVerifiedDeepLink()` helper in
+      `lib/booking-providers.ts` drives the route-hero wording generically (safe today — Madinah is
+      the only route destination without a deep link); the deal-card fix is deliberately scoped to
+      `deal.toDestinationSlug === 'madinah'` only, since the same gap exists for several
+      Mediterranean/North-Africa deals and fixing those too would be a broader refactor outside
+      this task's scope — flagged as a separate follow-up, not fixed here.
 - [ ] **D1.** Assess the 3 high-severity `npm audit` advisories (PostCSS, sharp — both transitive
       via `next`) and document a safe remediation path. **Never run `npm audit fix --force`** —
       it downgrades Next.js to `9.3.3`, an unrelated breaking regression. The fix is most likely a

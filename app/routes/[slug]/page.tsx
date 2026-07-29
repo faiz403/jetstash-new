@@ -29,7 +29,7 @@ import { RouteReadinessPanel } from '@/components/route/route-readiness-panel';
 import { TravelReadyCheck } from '@/components/travel-ready/travel-ready-check';
 import { JsonLd, breadcrumbSchema } from '@/components/seo/json-ld';
 import { siteConfig } from '@/lib/site-config';
-import { getRouteBookingUrl, getPrimaryBookingProvider } from '@/lib/booking-providers';
+import { getRouteBookingUrl, getPrimaryBookingProvider, hasVerifiedDeepLink } from '@/lib/booking-providers';
 import { computeBookBySnapshot } from '@/lib/booking-intelligence';
 import { computeReadiness } from '@/lib/travel-intelligence-engine';
 import { TRAVEL_READY_SUPPORTED_COUNTRIES } from '@/lib/travel-ready-check';
@@ -206,7 +206,7 @@ export default async function RoutePage({ params }: { params: Promise<{ slug: st
                   : 'inline-flex h-12 items-center justify-center gap-1.5 rounded-sm bg-brass px-6 text-sm font-semibold text-ink-900 transition-all hover:bg-brass-400 hover:shadow-brass-glow active:scale-[0.985]'
               }
             >
-              Check live prices for this route
+              {hasVerifiedDeepLink(dest.slug) ? 'Check live prices for this route' : `Check live prices with ${getPrimaryBookingProvider().name}`}
               <ArrowUpRight className="h-4 w-4" strokeWidth={2.25} />
             </TrackedOutboundLink>
             {/* When a Book-By panel exists below, its own state-aware CTA is the one dominant
@@ -224,7 +224,11 @@ export default async function RoutePage({ params }: { params: Promise<{ slug: st
               />
             )}
           </div>
-          <p className="mt-2.5 text-xs text-ink-300">Partner link, opens {getPrimaryBookingProvider().name} in a new tab. Booking there never costs you more.</p>
+          <p className="mt-2.5 text-xs text-ink-300">
+            {hasVerifiedDeepLink(dest.slug)
+              ? `Partner link, opens ${getPrimaryBookingProvider().name} in a new tab. Booking there never costs you more.`
+              : `Partner link, opens ${getPrimaryBookingProvider().name}'s general site, not a pre-filled search for this route. Booking there never costs you more.`}
+          </p>
         </div>
       </section>
 
