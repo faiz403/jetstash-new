@@ -57,31 +57,14 @@ wider organic promotion.
       `deal.toDestinationSlug === 'madinah'` only, since the same gap exists for several
       Mediterranean/North-Africa deals and fixing those too would be a broader refactor outside
       this task's scope — flagged as a separate follow-up, not fixed here.
-- [x] **D1.** ~~Assess the npm audit advisories~~ **Investigated and resolved for organic-launch
-      purposes, 29 July 2026** — see PR. `npm audit fix` was run **without** `--force`.
-      `brace-expansion` `5.0.7` (nested under `@typescript-eslint/typescript-estree`) was patched
-      to `5.0.8`, the version the official advisory (GHSA-mh99-v99m-4gvg) marks as fixed. A second,
-      legacy `brace-expansion` copy (`1.1.17`, reached via `eslint@8.57.1` → `minimatch@3.1.5`)
-      remains — no patched release exists in that 1.x line; the advisory was only ever fixed in
-      5.x. Fully removing it would require a major `eslint` upgrade (`eslint@10.8.0`), which is
-      **deferred**, not attempted, since it has no customer or revenue benefit before launch. The
-      top-level development `postcss` and `nanoid` copies also received safe patch-level updates
-      (`postcss` to `8.5.25`, past `8.5.18`, the version GHSA-r28c-9q8g-f849 marks as fixed).
-      Next.js's own nested `postcss` (`8.4.31`) and `sharp` (`0.34.5`) advisories remain — no
-      Next.js release, including the latest, bundles patched versions of either. **Do not run
-      `npm audit fix --force`** — it suggests downgrading to `next@9.3.3`, an unrelated breaking
-      regression, not a real fix. No dependency overrides were added.
-      **Accepted and monitored, not fully eliminated:** JetStash has no attacker-controlled CSS or
-      image-processing input path today — no user-uploaded images, no remote image URLs, no user
-      styles or theming, nothing that would let a visitor's input reach `postcss` or `sharp` at
-      runtime. Both remaining production-tree advisories (`postcss`, `sharp`, both nested under
-      `next`) and the one remaining dev-only `brace-expansion` instance are being monitored, not
-      chased further, for this reason. **Reassess immediately** if JetStash later accepts
-      user-uploaded images, remote image URLs, user-supplied styles, or any other untrusted
-      CSS/image input — monitor upstream Next.js, sharp, PostCSS and ESLint releases for a version
-      that resolves these without a breaking change.
-- [ ] **E1.** Fix the 404 (not-found) page's missing `<title>` metadata export so the browser tab
-      doesn't keep showing the homepage title.
+- [x] **D1.** Investigated 29 July 2026. Applied safe, non-forced lockfile patches: `brace-expansion`
+      5.0.7 → 5.0.8; legacy `brace-expansion` 1.1.15 → 1.1.17 (still affected — no patched 1.x
+      release identified); top-level development `postcss` 8.5.16 → 8.5.25; `nanoid` 3.3.15 →
+      3.3.16. Remaining affected: Next.js's nested PostCSS, Sharp, and the dev-only legacy
+      brace-expansion chain — no approved non-breaking remediation was available during this
+      review. **Do not use `npm audit fix --force`.** JetStash currently has no user-uploaded
+      images, remote user-controlled image URLs, or user-controlled CSS input. Monitor upstream
+      releases and reassess if untrusted image or CSS input is introduced.
 - [ ] **E1.** Fix the 404 (not-found) page's missing `<title>` metadata export so the browser tab
       doesn't keep showing the homepage title.
 
