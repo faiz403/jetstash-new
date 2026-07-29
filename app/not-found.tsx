@@ -1,7 +1,15 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { ArrowUpRight } from 'lucide-react';
 import { LinkButton } from '@/components/ui/button';
 import { routes, getRouteAirport, getRouteDestination } from '@/data/routes';
+
+// Next.js's not-found.tsx convention doesn't inherit a page-specific title on
+// its own — without this export the tab falls back to the root layout's
+// default title (the homepage's), not a 404-specific one.
+export const metadata: Metadata = {
+  title: 'Page Not Found',
+};
 
 // Same flagship spread the homepage features — one route per major region, India first.
 const suggestedRouteSlugs = ['london-heathrow-delhi', 'manchester-lahore', 'manchester-dubai', 'london-heathrow-jeddah'];
