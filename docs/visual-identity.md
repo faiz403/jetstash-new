@@ -274,16 +274,16 @@ already state.
 | `india` | Humayun's Tomb, Delhi, seen across its char bagh garden | Distant contrail crossing upper-left | Dome on right third line; garden geometry leads the eye | In Production |
 | `gulf` | Dubai Creek with traditional abras crossing, skyline soft in haze behind | Descending far beyond the skyline, small | Creek water lower third catching gold light | In Production |
 | `umrah` | The Makkah skyline at dusk-gold from a respectful elevated distance, Abraj Al Bait clock tower in haze | None (deliberate — reverence; see DD-006) | Skyline in lower quarter, vast calm sky above | In Production |
-| `family-holidays` | Wide empty beach at golden hour, two distant families walking at the waterline, gentle surf | High and small, climbing out over the sea | Horizon on lower-third line | Placeholder |
-| `business-class` | Aircraft wing over golden cloud from a window seat, warm cabin light edge in frame corner | The wing itself — closest the brand ever gets to the aircraft (documented exception, Part II) | Wing diagonal from lower-left; sky calm above | Placeholder |
-| `travel-club` | Dawn airport apron seen through a rain-flecked terminal window, warm interior reflection | One aircraft at a distant gate, tail catching first light | Strong upper negative space | Placeholder |
-| `deals` | Departures board style abstraction: warm-lit terminal architecture, long shadows, one traveller with a trolley walking away | Visible through the terminal glass, taxiing | Architecture lines converge lower-right | Placeholder |
-| `routes` | Great-circle view: coastline and city lights fading into golden haze from altitude | Wingtip entering frame corner | Curvature of coast echoes the site's route-arc motif | Placeholder |
-| `guides` | Flat-lay-free alternative: open kraft notebook, boarding pass and passport on a warm wooden café table by a window, airport beyond | Blurred through the window glass | Objects lower half; window light upper half | Placeholder |
-| `airports` | UK airport pier at sunrise, wet tarmac reflecting amber sky | Two aircraft nose-to-tail at gates, unbranded | Reflections double the golden light | Placeholder |
-| `about` | Empty premium cabin row bathed in window light, seatbelt neat on the seat | Interior — implied | Honest, quiet, unstaged | Placeholder |
-| `contact` | Warm-lit writing desk by a window at dusk, city and distant airfield lights outside | Landing lights of one aircraft descending, tiny | Desk lower-left; sky negative space | Placeholder |
-| `quote-request` | Family luggage lined in a hallway at dawn, front door open to warm light | None — the trip is about to begin | Doorway light on right third | Placeholder |
+| `family-holidays` | Wide empty beach at golden hour, two distant families walking at the waterline, gentle surf | High and small, climbing out over the sea | Horizon on lower-third line | In Production |
+| `business-class` | Aircraft wing over golden cloud from a window seat, warm cabin light edge in frame corner | The wing itself — closest the brand ever gets to the aircraft (documented exception, Part II) | Wing diagonal from lower-left; sky calm above | In Production |
+| `travel-club` | Dawn airport apron seen through a rain-flecked terminal window, warm interior reflection | One aircraft at a distant gate, tail catching first light | Strong upper negative space | In Production |
+| `deals` | Departures board style abstraction: warm-lit terminal architecture, long shadows, one traveller with a trolley walking away | Visible through the terminal glass, taxiing | Architecture lines converge lower-right | In Production |
+| `routes` | Great-circle view: coastline and city lights fading into golden haze from altitude | Wingtip entering frame corner | Curvature of coast echoes the site's route-arc motif | In Production |
+| `guides` | Flat-lay-free alternative: open kraft notebook, boarding pass and passport on a warm wooden café table by a window, airport beyond | Blurred through the window glass | Objects lower half; window light upper half | In Production |
+| `airports` | UK airport pier at sunrise, wet tarmac reflecting amber sky | Two aircraft nose-to-tail at gates, unbranded | Reflections double the golden light | In Production |
+| `about` | Empty premium cabin row bathed in window light, seatbelt neat on the seat | Interior — implied | Honest, quiet, unstaged | In Production |
+| `contact` | Warm-lit writing desk by a window at dusk, city and distant airfield lights outside | Landing lights of one aircraft descending, tiny | Desk lower-left; sky negative space | In Production |
+| `quote-request` | Family luggage lined in a hallway at dawn, front door open to warm light | None — the trip is about to begin | Doorway light on right third | In Production |
 | `destinations` (hub) | *Not yet specified — documented here for the first time as part of this refactor.* | — | — | Planned (code-wired, no brief existed before this document) |
 | `travel-ready-check` (hub) | *Not yet specified — documented here for the first time as part of this refactor.* | — | — | Planned (code-wired, no brief existed before this document) |
 
@@ -377,11 +377,10 @@ one source alone.
 - Guide imagery — 9/9
 - Region heroes — `pakistan`, `india`, `gulf`, `umrah`
 
-**Documented and wired, no file yet (Placeholder — silently rendering the generated fallback):** `family-holidays`, `business-class`,
-`travel-club`, `deals`, `routes`, `guides` (hero), `airports` (hero), `about`, `contact`,
-`quote-request` — 10 of the 15 documented hero briefs. Individual airport artwork is complete for
-all 11 supported airports as a consistent generated/WebP visual system; the airport hub hero remains
-a separate placeholder.
+**Documented and wired, now in production:** `family-holidays`, `business-class`, `travel-club`,
+`deals`, `routes`, `guides` (hero), `airports` (hero), `about`, `contact`, `quote-request` — all 10
+of the previously documented hero briefs. Individual airport artwork is complete for all 11
+supported airports as a consistent generated/WebP visual system.
 
 **Documented, not wired, no file (genuinely inert):** `homepage`.
 
