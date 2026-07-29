@@ -45,8 +45,18 @@ wider organic promotion.
       (`report-to`/`report-uri`, or another deliberate monitoring method) so production violations
       across all traffic can be observed over time before enforcement, not just the pages checked
       during this PR.
-- [ ] **B1.** Draft JetStash Terms & Conditions and route to professional legal review before
-      publishing. Do not draft from a generic template and treat that as sufficient.
+- [x] **B1.** ~~Draft JetStash Terms & Conditions~~ **Repository working draft complete** — see
+      `docs/legal/TERMS_DRAFT.md` (PR #39, merged). This is a repository-only working draft: it is
+      not published, linked, served or presented as binding Terms on jetstash.co.uk, and no
+      `/terms` route exists on the site.
+- [ ] **B2.** Finalise and publish JetStash Terms & Conditions. Requires: confirmed trading/legal
+      identity; confirmed operator and contact details suitable for public publication;
+      professional legal review of `docs/legal/TERMS_DRAFT.md`; and an explicit, separate decision
+      to publish and link a public Terms page. These are external/legal dependencies, not a current
+      repository-development task, and **do not block controlled organic launch**. **Do not
+      publish public Terms, and do not recreate a `/terms` route, until all of the above are
+      complete** — professional legal review in particular is not something this checklist can mark
+      done on the repository's own authority.
 - [x] **C1.** ~~Fix the Madinah affiliate-link wording~~ **Done, PR pending review** — no genuine
       route-specific TravelUp page could be verified for Madinah (unlike every other route
       destination), so per the decision rule the generic tracked link was kept and the CTA/caption
