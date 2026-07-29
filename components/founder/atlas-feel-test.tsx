@@ -380,10 +380,13 @@ export function AtlasFeelTest({
   // it rather than leaving the page unable to compile.)
 
   return (
-    <div className="min-h-screen bg-ink-950">
+    // scroll-mt-24 keeps the sticky header clear when the homepage's "Explore
+    // the Route Atlas" CTA jumps straight here.
+    <div id="route-atlas" className="min-h-screen scroll-mt-24 bg-ink-950">
       <header className="border-b border-white/10 px-6 py-6 sm:px-10">
         <span className="text-[11px] font-semibold uppercase tracking-[0.28em] text-brass-200">The JetStash Route Atlas</span>
-        <h1 className="mt-2 max-w-4xl font-display text-xl text-sand-50">{airportName}&rsquo;s international network, mapped with the route intelligence behind every destination.</h1>
+        {/* h2, not h1 — the homepage opening hero above now owns the page's h1. */}
+        <h2 className="mt-2 max-w-4xl font-display text-xl text-sand-50">{airportName}&rsquo;s international network, mapped with the route intelligence behind every destination.</h2>
         <p className="mt-1 text-xs text-ink-400">
           Choose a departure airport, then follow the light to explore its destinations. Geography: CC BY 4.0 (MapSVG, via VictorCazanave/svg-maps).
         </p>
