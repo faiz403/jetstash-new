@@ -640,10 +640,16 @@ export function AtlasFeelTest({
                   aria-pressed={isActive}
                   className={
                     isActive
-                      ? 'shrink-0 rounded-full bg-brass px-4 py-2 text-sm font-semibold text-ink-900'
-                      : 'shrink-0 rounded-full border border-white/15 bg-white/5 px-4 py-2 text-sm font-medium text-ink-200'
+                      ? 'shrink-0 inline-flex items-center gap-1.5 rounded-full bg-brass px-4 py-2 text-sm font-semibold text-ink-900'
+                      : 'shrink-0 inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/5 px-4 py-2 text-sm font-medium text-ink-200'
                   }
                 >
+                  {/* Same confidence colour already explained in the legend below —
+                      applied here too so the chip row itself carries the same "how
+                      well do we know this" signal the desktop map's halo colour
+                      gives for free, instead of every country reading as equal
+                      weight until tapped. */}
+                  <span className="inline-block h-1.5 w-1.5 shrink-0 rounded-full" style={{ backgroundColor: CONFIDENCE_COLOUR[c.confidence].stroke }} aria-hidden="true" />
                   {c.label}
                 </button>
               );
@@ -660,10 +666,11 @@ export function AtlasFeelTest({
                   aria-pressed={isActive}
                   className={
                     isActive
-                      ? 'shrink-0 rounded-full bg-brass-100 px-3.5 py-1.5 text-[13px] font-semibold text-ink-900'
-                      : 'shrink-0 rounded-full border border-white/10 bg-white/[0.03] px-3.5 py-1.5 text-[13px] font-medium text-ink-300'
+                      ? 'shrink-0 inline-flex items-center gap-1.5 rounded-full bg-brass-100 px-3.5 py-1.5 text-[13px] font-semibold text-ink-900'
+                      : 'shrink-0 inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.03] px-3.5 py-1.5 text-[13px] font-medium text-ink-300'
                   }
                 >
+                  <span className="inline-block h-1.5 w-1.5 shrink-0 rounded-full" style={{ backgroundColor: DESTINATION_COLOUR[d.evidenceState].fill }} aria-hidden="true" />
                   {d.label}
                 </button>
               );
