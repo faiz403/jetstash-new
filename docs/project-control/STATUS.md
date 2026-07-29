@@ -1,17 +1,32 @@
 # JetStash Current Status
 
-**Last reconciled:** 28 July 2026
+**Last reconciled:** 29 July 2026
 
 **Production branch:** `main`
 
-**Application release baseline:** `50e6c6d40b92d8c3f201814a12340160351d70bd`
+**Application release baseline:** `8b1de036a51e3ec41f03a832ed89327f99428052`
+
+**Launch readiness:** see `LAUNCH_READINESS_AUDIT_2026-07-29.md` and `LAUNCH_CHECKLIST.md` — ready
+for public organic launch after a short hardening pass; paid advertising remains blocked until
+analytics/conversion events are verified in the real dashboard.
 
 **Production site:** `https://jetstash.co.uk`
 
 ## Current truth
 
 - Route Status V1 is shipped and live.
-- The Manchester-to-Mumbai homepage visual is shipped and live.
+- The Route Atlas (PR #27, plus mobile/crowding/density follow-ups in PR #28, #29, #30, #34)
+  replaced the Manchester-to-Mumbai pull-brief hero as the public homepage. The pull-brief hero and
+  its supporting `lib/homepage-flagship.ts`/`lib/flagship-status-copy.ts`/`pull-brief*.tsx` code
+  remain in the repository but are no longer reachable from any live route — see `COMPLETED.md`
+  `ATLAS-001` and the housekeeping item in `LAUNCH_CHECKLIST.md` for the dead-code cleanup.
+- The Journey Check Form (PR #32) gives visitors who already know their route a fast path straight
+  to the route guide, alongside the Atlas's browse/discovery experience.
+- The homepage "JetStash Difference" section (PR #33) states the differentiation reasoning
+  explicitly rather than leaving it implicit in the Atlas alone.
+- The UK page-hero visual collection (PR #31) is live across about, airports, business-class,
+  contact, deals, family-holidays, guides, quote-request, routes and travel-club — confirmed wired
+  through `getHeroBackdrop`/`HeroBackdrop`, not yet individually visually spot-checked.
 - The July trust-crack fixes are shipped and live: duplicate metadata titles were removed,
   deal-card durations are route-specific, and destination pages no longer present generic
   airport-specific summaries as route facts.
@@ -30,8 +45,12 @@
   integrations remain disabled until they have explicit approval, a real tracking link and direct
   journey validation.
 - The Founder Dashboard is unavailable in production and non-indexable.
-- Operational submission flows were founder-confirmed as already tested; do not repeat the entire
-  audit unless a relevant API route, environment variable or provider configuration changes.
+- Contact, Quote Request and Newsletter submission flows were freshly re-verified live on 29 July
+  2026 (real submissions, real Resend/Brevo delivery confirmation), not merely re-asserted from the
+  24 July confirmation. That pass found and fixed one real defect: the newsletter form was showing
+  a generic error message regardless of the actual failure reason (PR #35). Treat the 29 July pass
+  as the current evidence; do not repeat it wholesale unless a relevant API route, environment
+  variable or provider configuration changes.
 - The UK airport visual collection is live: all 11 supported airports have consistent, airport-labelled
   1672×941 WebP artwork. These are designed/generated brand visuals, not documentary or licensed
   photography, and are not described as such to customers.
@@ -92,23 +111,29 @@ for a day that was not actually checked, and never create a fare merely to fill 
 ## QUEUED
 
 - `CONV-001` — use real analytics to test homepage conversion hierarchy; no redesign based only on
-  opinion.
+  opinion. See `LAUNCH_CHECKLIST.md` item F — this is also the paid-advertising analytics blocker.
 - `ARR-001` — specification complete in `ARRIVE_BY_SPEC.md`; implementation remains deferred until
   schedule and ground-transport sources can support honest estimates.
+- The full `LAUNCH_CHECKLIST.md` queue (items A–J) — organic-launch hardening, paid-advertising
+  readiness and post-launch housekeeping, in the order agreed with the founder on 29 July 2026.
 
 ## Do not reopen without new evidence
 
-- The July 2026 operational form/email audit.
+- The July 2026 operational form/email audit (superseded by the 29 July re-verification above,
+  itself not to be repeated wholesale without a relevant change).
 - Verification-pending route leakage.
 - Birmingham-to-Mumbai route creation.
 - Direct-route WhatsApp punctuation.
 - Route Status V1 foundation, presentation and date formatting.
-- The Manchester-to-Mumbai homepage visual.
+- The Route Atlas homepage integration (PR #27–#30, #34) — confirmed complete, interactive and
+  live; do not treat as a prototype or as uncertain.
 - July trust-crack fixes from the live-site audit.
 - Ledger-driven homepage flagship showcase/advisory presentation.
 - Founder Dashboard production protection.
 - Airport visual collection.
 - Destination photography.
+- The page-hero visual collection (PR #31).
+- Contact, Quote Request and Newsletter delivery (re-verified live 29 July 2026).
 - The editorial fare observation methodology (do not redesign the schema or profile rules —
   reopen only if the methodology itself proves unworkable in practice, not to skip it).
 - The Visual Identity System v2 documentation structure (do not restructure again without new
@@ -118,10 +143,18 @@ for a day that was not actually checked, and never create a fare merely to fill 
 ## Known risks
 
 - The editorial fare archive is at its starting point; it must grow through real dated checks, not
-  retrospective estimates or automated scraping.
+  retrospective estimates or automated scraping — see `LAUNCH_CHECKLIST.md` item G.
 - TravelUp is a single booking-partner dependency. Recheck verified destination pages periodically;
-  do not add a partner or deep link without approval and direct validation.
+  do not add a partner or deep link without approval and direct validation. The Madinah route has
+  fare data but no verified deep link yet — see `LAUNCH_CHECKLIST.md` item C.
 - Travel Ready rules and Route Status evidence require scheduled re-verification as source facts
   change.
 - Homepage conversion quality cannot be claimed from visual review alone; it requires real funnel
-  data.
+  data — see `LAUNCH_CHECKLIST.md` item F.
+- No CSP/X-Frame-Options/X-Content-Type-Options/Referrer-Policy headers are set, and `npm audit`
+  reports 3 high-severity transitive advisories (PostCSS, sharp, via `next`) — see
+  `LAUNCH_CHECKLIST.md` items A and D. Do not run `npm audit fix --force`; it downgrades Next.js.
+- No Terms & Conditions page exists — see `LAUNCH_CHECKLIST.md` item B.
+- `fix/trust-cracks-july` and `fix/verification-pending-leakage` are confirmed-safe-to-delete local
+  branches (verified 29 July 2026: no content in either is missing from `main`) — see
+  `LAUNCH_CHECKLIST.md` item I.
