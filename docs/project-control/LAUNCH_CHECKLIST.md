@@ -57,10 +57,14 @@ wider organic promotion.
       `deal.toDestinationSlug === 'madinah'` only, since the same gap exists for several
       Mediterranean/North-Africa deals and fixing those too would be a broader refactor outside
       this task's scope — flagged as a separate follow-up, not fixed here.
-- [ ] **D1.** Assess the 3 high-severity `npm audit` advisories (PostCSS, sharp — both transitive
-      via `next`) and document a safe remediation path. **Never run `npm audit fix --force`** —
-      it downgrades Next.js to `9.3.3`, an unrelated breaking regression. The fix is most likely a
-      future Next.js minor release that bundles patched versions; check before assuming one exists.
+- [x] **D1.** Investigated 29 July 2026. Applied safe, non-forced lockfile patches: `brace-expansion`
+      5.0.7 → 5.0.8; legacy `brace-expansion` 1.1.15 → 1.1.17 (still affected — no patched 1.x
+      release identified); top-level development `postcss` 8.5.16 → 8.5.25; `nanoid` 3.3.15 →
+      3.3.16. Remaining affected: Next.js's nested PostCSS, Sharp, and the dev-only legacy
+      brace-expansion chain — no approved non-breaking remediation was available during this
+      review. **Do not use `npm audit fix --force`.** JetStash currently has no user-uploaded
+      images, remote user-controlled image URLs, or user-controlled CSS input. Monitor upstream
+      releases and reassess if untrusted image or CSS input is introduced.
 - [ ] **E1.** Fix the 404 (not-found) page's missing `<title>` metadata export so the browser tab
       doesn't keep showing the homepage title.
 
