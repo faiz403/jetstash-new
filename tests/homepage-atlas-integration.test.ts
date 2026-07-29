@@ -22,10 +22,13 @@ describe('public homepage Route Atlas integration', () => {
     }
   });
 
-  it('keeps the geographic Atlas visible on mobile while retaining touch selectors', () => {
+  it('keeps the geographic Atlas visible on mobile at a legible fixed width, with touch selectors below it', () => {
     const atlasSource = fs.readFileSync(path.join(root, 'components/founder/atlas-feel-test.tsx'), 'utf8');
-    expect(atlasSource).toContain('viewBox="418 230 336 220" className="block h-auto w-full"');
     expect(atlasSource).not.toContain('className="hidden h-auto w-full sm:block"');
+    // Fluid full-width shrinks every label below legibility on a phone —
+    // the map keeps a fixed pixel width (matching its desktop per-unit
+    // scale) inside a horizontally scrollable strip instead.
+    expect(atlasSource).toContain('viewBox="418 230 336 220" className="h-auto w-[800px] max-w-none sm:w-full"');
     expect(atlasSource).toContain('aria-label="Choose a country"');
     expect(atlasSource).toContain('aria-label={`Choose a destination in ${activeCountry.label}`}');
   });
