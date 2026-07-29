@@ -4,7 +4,7 @@ import { getRouteByAirportAndDestination } from '@/data/routes';
 import { routeStatusEvents } from '@/data/route-status-events';
 import { getEffectiveRoutePresentation } from '@/lib/route-status-copy';
 import { getFareRangeSummary } from '@/data/fare-observations';
-import { getDealBookingUrl } from '@/lib/booking-providers';
+import { getDealBookingUrl, getPrimaryBookingProvider } from '@/lib/booking-providers';
 import { getFareFreshnessState, daysBetweenIso, OBSERVATION_STALE_DAYS } from '@/lib/freshness-thresholds';
 import { Plane, ArrowUpRight } from 'lucide-react';
 import { Badge } from './badge';
@@ -158,7 +158,15 @@ export function DealCard({ deal }: { deal: Deal }) {
           <ArrowUpRight className="h-4 w-4" strokeWidth={2.25} />
         </TrackedOutboundLink>
         <p className="mt-2 text-center text-[11px] text-ink-400">
-          Partner link. Prices change quickly, confirm the final price before booking
+          {/* Madinah-only: no verified TravelUp deep link exists for this destination yet
+              (lib/booking-providers.ts VERIFIED_DEEP_LINKS), so the link above opens
+              TravelUp's general site rather than a pre-filled search — say so here rather
+              than let the generic caption below imply otherwise. Several Mediterranean/
+              North-Africa deals have the same gap; fixing those is a separate, larger task,
+              not folded into this Madinah-specific correction. See LAUNCH_CHECKLIST.md item C1. */}
+          {deal.toDestinationSlug === 'madinah'
+            ? `Partner link, opens ${getPrimaryBookingProvider().name}'s general site, not a pre-filled Madinah search. Prices change quickly, confirm the final price before booking`
+            : 'Partner link. Prices change quickly, confirm the final price before booking'}
         </p>
       </div>
     </article>

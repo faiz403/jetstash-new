@@ -137,6 +137,20 @@ const VERIFIED_DEEP_LINKS: Partial<Record<string, string>> = {
   marrakech: 'https://www.travelup.com/en-gb/flight-offers/marrakech-rak',
 };
 
+/**
+ * Whether the primary provider will actually deep-link to a destination-
+ * specific page for this destination, per VERIFIED_DEEP_LINKS above.
+ * Surfaces (route hero, deal cards, etc.) that describe their CTA as
+ * "for this route" should check this first — if it's false, the link
+ * still works and still earns commission, it just lands on the provider's
+ * general search/homepage rather than a destination-specific page, and
+ * copy shouldn't claim otherwise. See LAUNCH_CHECKLIST.md item C1.
+ */
+export function hasVerifiedDeepLink(destinationSlug: string): boolean {
+  const provider = getPrimaryBookingProvider();
+  return provider.supportsDeepLink && Boolean(VERIFIED_DEEP_LINKS[destinationSlug]);
+}
+
 export function getPrimaryBookingProvider(): BookingProvider {
   const provider = BOOKING_PROVIDERS[PRIMARY_PROVIDER_ID];
   if (!provider.enabled) {
