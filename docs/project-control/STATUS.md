@@ -72,15 +72,29 @@ analytics/conversion events are verified in the real dashboard.
 
 ## ACTIVE
 
+### LAUNCH-001 — Seven-day controlled organic launch
+
+**Product freeze in effect.** The founder's own decision, 30 July 2026: the immediate goal is no
+longer "finish the website" — it's the first genuine users, the first useful feedback, and the
+first £1 of revenue, from a small, trusted soft launch rather than a wide public push. No
+redesigns, new features, or speculative housekeeping for the duration unless a real user hits a
+real, reproducible problem. See `SOFT_LAUNCH_PACK_2026-07-30.md` for the six selected routes
+(Manchester–Lahore, Manchester–Islamabad, Heathrow–Delhi, Heathrow–Mumbai, Manchester–Dubai,
+Heathrow–Jeddah — each chosen for having both logged fare evidence and a verified TravelUp deep
+link today), tracked-link convention, per-audience message drafts, FAQ, feedback template and the
+seven-day plan. Draft only as of this entry — nothing sent yet; sending is the founder's own
+action, not something done from this repository.
+
 ### HERO-002 — Homepage opening hero above the Route Atlas
 
-Customer-visible pre-launch priority, raised from a real mobile review on a Samsung Galaxy Z Fold
-7: the homepage currently opens directly with the Route Atlas, asking a new visitor to understand
-the map before JetStash has explained what it is, why it exists, how it differs from a comparison
-or affiliate site, and what to do next. Adding a compact premium hero (approved copy, reusing
-`PageHero` and the existing `heroes/routes.webp` asset) plus a short "why JetStash is different"
-proof strip, both above the Atlas, which remains unchanged and un-redesigned as the homepage's
-signature feature immediately below. In progress — see PR.
+**Done** — see `COMPLETED.md`. Customer-visible pre-launch priority, raised from a real mobile
+review on a Samsung Galaxy Z Fold 7: the homepage previously opened directly with the Route Atlas,
+asking a new visitor to understand the map before JetStash had explained what it is, why it
+exists, how it differs from a comparison or affiliate site, and what to do next. Shipped a compact
+premium hero (approved copy, reusing `PageHero` and the existing `heroes/routes.webp` asset) plus a
+short "why JetStash is different" proof strip, both above the Atlas, which remains unchanged and
+un-redesigned as the homepage's
+signature feature immediately below.
 
 ### FARE-001 — Begin building the editorial fare observation archive
 
