@@ -61,7 +61,9 @@ Use cohesive, owned-feeling JetStash photography and visual direction instead of
 
 ## Evolved
 
-- Generic homepage hero → cinematic Journey Desk and Manchester-to-Mumbai pull experience.
+- Generic homepage hero → cinematic Journey Desk and Manchester-to-Mumbai pull experience → the
+  interactive Route Atlas (29 July 2026), an evidence-backed network map replacing the pull
+  experience as the public homepage's primary discovery surface.
 - Simple airport list → interactive Manchester route experience.
 - Basic travel guide → Journey Brief.
 - Basic document checker → Travel Ready Check.

@@ -10,7 +10,7 @@ This roadmap contains unfinished work only. Completed work belongs in `COMPLETED
 | 2 | `COV-001` | ACTIVE | Build verified route coverage deliberately. | The route queue is evidence-led, each change is sourced and reviewed, and price context appears only from date-complete observations. |
 | 3 | `VIS-001` | COMPLETE | Complete the UK airport visual collection. | Premium, airport-specific WebP artwork for every supported UK airport, using one consistent 1672×941 composition. |
 | 4 | `AFF-001` | ACTIVE | Improve affiliate coverage. | Current partner state reconciled; only approved, tracked integrations with directly validated customer journeys are enabled. Expedia and other candidates remain off until approved. |
-| 5 | `CONV-001` | QUEUED | Validate homepage conversion. | Funnel analytics reviewed; changes made only where data identifies a real drop-off. |
+| 5 | `CONV-001` | QUEUED | Validate homepage conversion. | Funnel analytics reviewed; changes made only where data identifies a real drop-off. Same underlying gap as `LAUNCH_CHECKLIST.md` item F, the paid-advertising analytics blocker. |
 
 ## Product-development roadmap
 
@@ -43,6 +43,13 @@ defensible asset is the longitudinal data. Never turn it into unsupported price 
 
 Expand from a route guide into a trusted briefing that can eventually support the pre-booking,
 pre-travel, in-journey and after-arrival lifecycle. Build one evidence-backed layer at a time.
+
+**Note (29 July 2026):** the public homepage's discovery/browse surface for this idea is now the
+Route Atlas (`components/founder/atlas-feel-test.tsx`, wired into `journey-desk-home.tsx`), not the
+retired `pull-brief*.tsx` components. Any future Journey Brief work should build on the Atlas and
+the route-page architecture; the old pull-brief hero and its supporting
+`lib/homepage-flagship.ts`/`lib/flagship-status-copy.ts` are dead code pending cleanup (see
+`LAUNCH_CHECKLIST.md` item H), not a foundation to extend.
 
 ### Travel Confidence
 
