@@ -1,13 +1,16 @@
 # JetStash Terms & Conditions — Draft
 
-**Status: Draft for professional legal review — not published.**
+**Status: Repository working draft for professional legal review — not published on the JetStash
+website.**
 
-This document is an internal working draft only. It is not linked from any public page, footer,
-navigation menu or sitemap, and no route on the live site serves this content. Nothing in this
-document should be treated as JetStash's current legally binding terms, because JetStash does not
-currently have published terms. Do not publish, link, or reference this document publicly until it
-has been reviewed and approved by a qualified professional and the unresolved items below have been
-resolved by the founder.
+This document sits in this GitHub repository, which is public — nothing in this file is
+confidential or private. What "not published" means here is narrower and specific: this draft must
+not be linked from, served by, or presented as binding terms on jetstash.co.uk. It is not linked
+from any public page, footer, navigation menu or sitemap, and no route on the live site serves this
+content. Nothing in this document should be treated as JetStash's current legally binding terms,
+because JetStash does not currently have published terms on its website. Do not wire this content
+into the live site until it has been reviewed and approved by a qualified professional and the
+unresolved items below have been resolved by the founder.
 
 **Founder-confirmed context (29 July 2026):** JetStash has not been incorporated or formally
 registered as a company. The founder is the sole person operating it. No company number, registered
@@ -22,9 +25,9 @@ The substantive draft below deliberately leaves the following open. None of it h
 the founder, and none of it should be guessed, inferred or filled in without explicit founder input
 and professional legal advice:
 
-- **Likely initial structure:** on the information available, JetStash likely operates as a **sole
-  trader trading as "JetStash"** rather than an incorporated company — but this is an assumption
-  for the legal reviewer to confirm, not a stated fact.
+- **Likely initial structure:** JetStash may initially operate as a sole trader trading as
+  "JetStash", subject to confirmation before trading income begins — this is an assumption for the
+  legal reviewer to confirm, not a stated fact.
 - **Founder's full legal operator name** — the name that would need to appear as the trading
   entity's operator. Not included anywhere in this draft.
 - **A suitable public business/contact address** — a real postal address is often expected in
@@ -32,8 +35,9 @@ and professional legal advice:
   service, or another arrangement is a decision for the founder, not this draft. No address of any
   kind is included below.
 - **Jurisdiction** — the substantive draft assumes England and Wales as a working placeholder,
-  consistent with the site being UK-only and GBP-priced, but this has not been confirmed as correct
-  or sufficient by a legal professional.
+  consistent with JetStash being designed primarily for a UK audience and focused on international
+  journeys departing from UK airports, priced in GBP, but this has not been confirmed as correct or
+  sufficient by a legal professional.
 - **Contact email for legal notices** — the operational forms inbox is not necessarily the right
   address to name in binding legal terms; this draft does not assume one.
 - **Final liability wording** — the liability section below is a reasonable starting point, not
