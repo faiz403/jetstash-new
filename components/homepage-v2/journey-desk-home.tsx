@@ -6,7 +6,7 @@ import { getDestinationBySlug } from '@/data/destinations';
 import { AtlasFeelTest } from '@/components/founder/atlas-feel-test';
 import { buildAtlasAirports } from '@/lib/atlas-network-data';
 import { JourneyCheckForm, type JourneyCheckData } from '@/components/homepage-v2/journey-check-form';
-import { WhatWeCheck, RouteWatchInvite, ClosingBand } from '@/components/homepage-v2/homepage-sections';
+import { WhyJetStash, WhatWeCheck, RouteWatchInvite, ClosingBand } from '@/components/homepage-v2/homepage-sections';
 
 /**
  * The public homepage's flagship experience: the Route Atlas, for browsing
@@ -43,6 +43,8 @@ export function JourneyDeskHome() {
   return (
     <>
       <AtlasFeelTest airports={buildAtlasAirports()} defaultAirportSlug="manchester" />
+
+      <WhyJetStash />
 
       <section className="border-t border-white/10 bg-ink-950 px-5 py-10 sm:px-8 sm:py-14">
         <div className="mx-auto max-w-content">

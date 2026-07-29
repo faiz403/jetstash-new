@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { ArrowUpRight, ArrowRight, Plane, Crown, Compass, BellRing, CalendarClock, ShieldCheck, FileCheck2, Receipt } from 'lucide-react';
+import { ArrowUpRight, ArrowRight, Plane, Crown, Compass, BellRing, CalendarClock, ShieldCheck, FileCheck2, Receipt, SearchCheck, Clock3, Route } from 'lucide-react';
 import { ROUTE_WATCH_INITIAL_COPY } from '@/lib/route-watch-config';
 
 /**
@@ -72,6 +72,69 @@ export function CommercialPaths() {
               </Link>
             </div>
           </article>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ── Why JetStash exists — the short story behind the product ── */
+const DIFFERENCE_POINTS = [
+  {
+    icon: SearchCheck,
+    title: 'Route first',
+    body: 'We check whether the service, airline and route details are actually supported before a fare gets your attention.',
+  },
+  {
+    icon: Clock3,
+    title: 'Timing with context',
+    body: 'Booking windows, dated fare checks and document lead times sit beside the route—not hidden behind a cheap-looking price.',
+  },
+  {
+    icon: Route,
+    title: 'Booking last',
+    body: 'When the picture is clear, we point you to the next sensible step. Travel intelligence first. Booking second.',
+  },
+] as const;
+
+export function WhyJetStash() {
+  return (
+    <section className="bg-sand-50 py-16 sm:py-24">
+      <div className="mx-auto grid max-w-content gap-10 px-5 sm:px-8 lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)] lg:items-center lg:gap-16">
+        <div>
+          <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-terracotta-600">The JetStash difference</span>
+          <h2 className="mt-3 max-w-xl font-display text-3xl leading-[1.08] text-ink-900 sm:text-4xl">
+            A fare is not the whole journey.
+          </h2>
+          <p className="mt-4 max-w-lg text-base leading-relaxed text-ink-600 sm:text-lg">
+            A booking journey often starts with a price. JetStash starts with what you need to know before that price can make sense:
+            what is running, what has changed, and what the journey actually involves.
+          </p>
+          <Link
+            href="/routes"
+            className="mt-6 inline-flex items-center gap-1.5 text-sm font-semibold text-ink-900 underline decoration-brass-400 decoration-2 underline-offset-4 transition-colors hover:text-terracotta-600"
+          >
+            See the intelligence behind a route
+            <ArrowUpRight className="h-4 w-4" strokeWidth={2.25} />
+          </Link>
+        </div>
+
+        <div className="rounded-lg border border-ink-200 bg-white p-6 shadow-card sm:p-8">
+          <div className="grid gap-6 sm:grid-cols-3 sm:gap-5">
+            {DIFFERENCE_POINTS.map(({ icon: Icon, title, body }, index) => (
+              <div key={title} className="relative">
+                {index > 0 && <span className="absolute -left-2.5 top-0 hidden h-full w-px bg-ink-100 sm:block" aria-hidden="true" />}
+                <span className="flex h-10 w-10 items-center justify-center rounded-sm bg-ink-900 text-brass-300">
+                  <Icon className="h-5 w-5" strokeWidth={2} aria-hidden="true" />
+                </span>
+                <h3 className="mt-4 font-display text-xl text-ink-900">{title}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-ink-600">{body}</p>
+              </div>
+            ))}
+          </div>
+          <p className="mt-7 border-t border-ink-100 pt-5 text-sm font-semibold text-ink-900">
+            Checked, dated and honest about what is not known yet.
+          </p>
         </div>
       </div>
     </section>
