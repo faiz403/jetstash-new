@@ -52,8 +52,11 @@ export function JourneyDeskHome() {
       {/* id="your-journey" restores ClosingBand's "Check my trip" anchor, which previously
           pointed nowhere live (the only element that ever had this id was in the retired,
           unused pull-brief-hero.tsx) — now also the opening hero's primary CTA target.
-          scroll-mt-24 keeps the sticky header from covering the section on arrival. */}
-      <section id="your-journey" className="scroll-mt-24 border-t border-white/10 bg-ink-950 px-5 py-10 sm:px-8 sm:py-14">
+          No per-element scroll-margin needed: app/globals.css already sets a global
+          scroll-padding-top: 6rem tuned to the 80px sticky header (see its own comment
+          there) — adding scroll-mt-24 here as well stacked both offsets and overshot to
+          ~192px instead of the intended small gap below the header. */}
+      <section id="your-journey" className="border-t border-white/10 bg-ink-950 px-5 py-10 sm:px-8 sm:py-14">
         <div className="mx-auto max-w-content">
           <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
             <div className="max-w-2xl">

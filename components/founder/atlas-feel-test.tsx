@@ -380,9 +380,11 @@ export function AtlasFeelTest({
   // it rather than leaving the page unable to compile.)
 
   return (
-    // scroll-mt-24 keeps the sticky header clear when the homepage's "Explore
-    // the Route Atlas" CTA jumps straight here.
-    <div id="route-atlas" className="min-h-screen scroll-mt-24 bg-ink-950">
+    // No per-element scroll-margin needed for the homepage's "Explore the Route
+    // Atlas" CTA: app/globals.css already sets a global scroll-padding-top: 6rem
+    // tuned to the 80px sticky header. Adding scroll-mt-24 here too stacked both
+    // offsets and overshot to ~192px instead of a small gap below the header.
+    <div id="route-atlas" className="min-h-screen bg-ink-950">
       <header className="border-b border-white/10 px-6 py-6 sm:px-10">
         <span className="text-[11px] font-semibold uppercase tracking-[0.28em] text-brass-200">The JetStash Route Atlas</span>
         {/* h2, not h1 — the homepage opening hero above now owns the page's h1. */}

@@ -27,6 +27,20 @@ const PROOF_POINTS = [
   { icon: Receipt, label: 'Price with context' },
 ] as const;
 
+// Short-viewport-only tightening (e.g. 320x720): reduces PageHero's own section
+// padding and both CTA buttons down to the existing "md" size tokens, freeing enough
+// height for the trust line to sit fully inside the initial viewport. 800px sits
+// between the 720px case this targets and the 844px+ heights of every other tested
+// mobile width, so it doesn't touch anything but the shortest viewport. Headline,
+// body copy and CTA wording are untouched — only spacing shrinks.
+//
+// Written as full literal class strings, not built from a shared constant via
+// template-literal interpolation — Tailwind's JIT scanner does static text
+// extraction from source files and can't see a class name assembled at runtime,
+// so an interpolated `${VAR}:py-8` silently never generates any CSS at all.
+const SHORT_VIEWPORT_HERO_PADDING = '[@media(max-height:800px)]:py-8';
+const SHORT_VIEWPORT_BUTTON = '[@media(max-height:800px)]:h-11 [@media(max-height:800px)]:px-5 [@media(max-height:800px)]:text-[15px]';
+
 export function HomepageOpeningHero() {
   return (
     <PageHero
@@ -35,16 +49,21 @@ export function HomepageOpeningHero() {
       description="JetStash checks routes, travel requirements, timing, baggage and dated fare evidence for international journeys from UK airports."
       heroKey="routes"
       size="compact"
+      className={SHORT_VIEWPORT_HERO_PADDING}
     >
       <div className="flex flex-wrap items-center gap-3">
-        <LinkButton href="#your-journey" variant="primary" size="lg">
+        <LinkButton href="#your-journey" variant="primary" size="lg" className={SHORT_VIEWPORT_BUTTON}>
           Check my journey
         </LinkButton>
-        <LinkButton href="#route-atlas" variant="outline" size="lg">
+        <LinkButton href="#route-atlas" variant="outline" size="lg" className={SHORT_VIEWPORT_BUTTON}>
           Explore the Route Atlas
         </LinkButton>
       </div>
-      <p className="mt-3 text-xs text-ink-400">Checked, dated and sourced. Booking links come last.</p>
+      {/* text-ink-300, not the site's usual ink-400 for this kind of small print — still
+          visually secondary, but ink-400 was too low-contrast over the dimmed photo on
+          both mobile and desktop. ink-300 matches PageHero's own description text, already
+          proven readable over this exact HeroBackdrop treatment elsewhere on the site. */}
+      <p className="mt-3 text-xs text-ink-300">Checked, dated and sourced. Booking links come last.</p>
 
       <div className="mt-6 flex flex-wrap gap-2 border-t border-white/10 pt-6" role="list" aria-label="Why JetStash is different">
         {PROOF_POINTS.map(({ icon: Icon, label }) => (
@@ -58,7 +77,7 @@ export function HomepageOpeningHero() {
           </span>
         ))}
       </div>
-      <p className="mt-3 text-xs text-ink-400">When the journey is clear, JetStash points you to a booking partner.</p>
+      <p className="mt-3 text-xs text-ink-300">When the journey is clear, JetStash points you to a booking partner.</p>
     </PageHero>
   );
 }

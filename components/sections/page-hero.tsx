@@ -1,5 +1,6 @@
 import { Badge } from '@/components/ui/badge';
 import { HeroBackdrop } from '@/components/ui/hero-backdrop';
+import { cn } from '@/lib/utils';
 
 /**
  * PageHero — the shared premium hero for every secondary page.
@@ -21,6 +22,7 @@ export function PageHero({
   heroKey,
   children,
   size = 'default',
+  className,
 }: {
   eyebrow?: string;
   title: React.ReactNode;
@@ -32,9 +34,14 @@ export function PageHero({
   children?: React.ReactNode;
   /** A shallower arrival moment for index pages where discovery should begin above the fold. */
   size?: 'default' | 'compact';
+  /** Optional extra classes on the outer <section>, merged via cn() so a caller can
+   * override the default padding (e.g. a short-viewport-only reduction) without every
+   * other PageHero-based page being affected. Leave unset to keep the default exactly
+   * as before. */
+  className?: string;
 }) {
   return (
-    <section className={`relative overflow-hidden bg-ink-900 ${size === 'compact' ? 'py-12 sm:py-14' : 'py-16 sm:py-20'}`}>
+    <section className={cn('relative overflow-hidden bg-ink-900', size === 'compact' ? 'py-12 sm:py-14' : 'py-16 sm:py-20', className)}>
       <HeroBackdrop heroKey={heroKey} />
       <div
         className="absolute -right-24 top-1/2 hidden h-[420px] w-[420px] -translate-y-1/2 rounded-full border border-white/[0.04] lg:block"
