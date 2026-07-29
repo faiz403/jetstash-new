@@ -65,8 +65,11 @@ wider organic promotion.
       review. **Do not use `npm audit fix --force`.** JetStash currently has no user-uploaded
       images, remote user-controlled image URLs, or user-controlled CSS input. Monitor upstream
       releases and reassess if untrusted image or CSS input is introduced.
-- [ ] **E1.** Fix the 404 (not-found) page's missing `<title>` metadata export so the browser tab
-      doesn't keep showing the homepage title.
+- [x] **E1.** ~~Fix the 404 page's missing title~~ **Done 29 July 2026** — `app/not-found.tsx` had
+      no `metadata` export, so the tab fell back to the root layout's default title (the
+      homepage's). Added `title: 'Page Not Found'`, resolving through the layout's `%s | JetStash`
+      template to "Page Not Found | JetStash". No layout, copy or behaviour change; still a genuine
+      HTTP 404. Verified live in dev and covered by `tests/not-found-page-title.test.ts`.
 
 ## F–G — Paid-advertising readiness
 
