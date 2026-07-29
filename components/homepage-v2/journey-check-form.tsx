@@ -45,8 +45,7 @@ export function JourneyCheckForm({ origins, destinations, routeIndex }: JourneyC
 
   return (
     <div>
-      <h3 className="text-sm font-semibold text-sand-50">Already know your journey?</h3>
-      <form onSubmit={onSubmit} className="mt-3 grid gap-3 sm:grid-cols-[1fr_1fr_auto] sm:items-end">
+      <form onSubmit={onSubmit} className="grid gap-3 sm:grid-cols-[1fr_1fr_auto] sm:items-end">
         <div>
           <label htmlFor="jc-from" className="text-[11px] font-semibold uppercase tracking-wide text-ink-300">
             Flying from
