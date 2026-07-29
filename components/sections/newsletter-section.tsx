@@ -10,6 +10,7 @@ export function NewsletterSection() {
   const [nearestAirport, setNearestAirport] = useState('');
   const [interest, setInterest] = useState('');
   const [status, setStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
+  const [errorMsg, setErrorMsg] = useState('');
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -25,11 +26,13 @@ export function NewsletterSection() {
           interest: interest || undefined,
         }),
       });
-      if (!res.ok) throw new Error('Request failed');
+      const data = await res.json().catch(() => null);
+      if (!res.ok) throw new Error(data?.error ?? 'Something went wrong. Please try again.');
       setStatus('success');
       setEmail('');
-    } catch {
+    } catch (err) {
       setStatus('error');
+      setErrorMsg(err instanceof Error ? err.message : 'Something went wrong. Please try again.');
     }
   }
 
@@ -136,7 +139,7 @@ export function NewsletterSection() {
               )}
               {status === 'error' && (
                 <p role="alert" aria-live="assertive" className="mt-2 text-sm text-terracotta-400">
-                  Something went wrong. Please try again, or use our{' '}
+                  {errorMsg} Or use our{' '}
                   <a href="/contact" className="underline underline-offset-2 hover:text-terracotta-300">
                     contact form
                   </a>
