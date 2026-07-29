@@ -35,11 +35,16 @@ Full detail, scoring, and evidence: `LAUNCH_READINESS_AUDIT_2026-07-29.md`.
 Not launch blockers in the sense that anything is broken today — these close real gaps before
 wider organic promotion.
 
-- [ ] **A1.** Add safe security headers (`X-Content-Type-Options`, `X-Frame-Options` or
-      `frame-ancestors`, `Referrer-Policy`) via `next.config.js`. Introduce Content-Security-Policy
-      in **report-only mode first** (`Content-Security-Policy-Report-Only`), verify nothing breaks
-      (embedded images, fonts, scripts), then switch to enforcing. Do not enable a blocking CSP
-      without the report-only verification step.
+- [x] **A1.** ~~Add safe security headers~~ **Done 29 July 2026** — PR #37, merge `1c2e3f1`.
+      `X-Content-Type-Options`, `X-Frame-Options: DENY` and `Referrer-Policy` are enforced;
+      `Content-Security-Policy-Report-Only` is live in report-only mode. Verified: `tsc`, lint,
+      549/549 tests, production build all clean; zero console CSP violations on the homepage
+      (Atlas — heaviest dynamic-inline-style user) and `/contact` in dev.
+      **Before switching to enforced CSP:** founder-flagged follow-up — browser-console spot
+      checks only cover pages actually visited manually. Set up a real reporting mechanism
+      (`report-to`/`report-uri`, or another deliberate monitoring method) so production violations
+      across all traffic can be observed over time before enforcement, not just the pages checked
+      during this PR.
 - [ ] **B1.** Draft JetStash Terms & Conditions and route to professional legal review before
       publishing. Do not draft from a generic template and treat that as sufficient.
 - [ ] **C1.** Either add a verified TravelUp deep link for the Madinah route (verify a real
