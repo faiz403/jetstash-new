@@ -26,8 +26,7 @@ the founder, and none of it should be guessed, inferred or filled in without exp
 and professional legal advice:
 
 - **Likely initial structure:** JetStash may initially operate as a sole trader trading as
-  "JetStash", subject to confirmation before trading income begins — this is an assumption for the
-  legal reviewer to confirm, not a stated fact.
+  ‘JetStash’, subject to confirmation before trading income begins.
 - **Founder's full legal operator name** — the name that would need to appear as the trading
   entity's operator. Not included anywhere in this draft.
 - **A suitable public business/contact address** — a real postal address is often expected in
