@@ -1,10 +1,12 @@
 import type { Metadata } from 'next';
+import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowUpRight, MapPin, Plane } from 'lucide-react';
 import { PageHero } from '@/components/sections/page-hero';
 import { routes, getRouteAirport, getRouteDestination, type Route } from '@/data/routes';
 import { routeStatusEvents } from '@/data/route-status-events';
 import { getEffectiveRoutePresentation } from '@/lib/route-status-copy';
+import { getAirportImage } from '@/lib/brand-images';
 import { airports } from '@/data/airports';
 import type { RegionGroup } from '@/data/destinations';
 
@@ -78,45 +80,73 @@ export default function RoutesIndexPage() {
                 if (!airport || !dest) return null;
                 // Verification-pending leakage fix: never read route.flightTime raw.
                 const presentation = getEffectiveRoutePresentation(route, routeStatusEvents, todayIso);
+                // Deliberately the departure airport, not the destination: this index answers
+                // "where am I flying from" (travellers scan by nearest airport first), and the
+                // route guide it links to answers "where am I going" with the destination photo —
+                // so the same image never appears twice in a row across the click.
+                const airportImage = getAirportImage(airport.slug);
                 return (
                   <Link
                     key={route.slug}
                     href={`/routes/${route.slug}`}
-                    className="group relative flex flex-col overflow-hidden rounded-md border border-ink-100 p-6 shadow-card transition-all hover:-translate-y-1 hover:border-brass-200 hover:shadow-card-hover"
+                    className="group relative flex flex-col overflow-hidden rounded-md border border-ink-100 shadow-card transition-all hover:-translate-y-1 hover:border-brass-200 hover:shadow-card-hover"
                   >
-                    <div className="flex items-center justify-between gap-3">
-                      <span className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-ink-400">
-                        <MapPin className="h-3.5 w-3.5" strokeWidth={2.25} />
-                        {dest.country}
-                      </span>
-                      <span
-                        className={
-                          presentation.status === 'direct'
-                            ? 'inline-flex items-center gap-1.5 rounded-full bg-brass-50 px-2.5 py-0.5 text-xs font-semibold text-brass-700'
-                            : 'inline-flex items-center rounded-full bg-ink-50 px-2.5 py-0.5 text-xs font-semibold text-ink-500'
-                        }
-                      >
-                        {presentation.status === 'direct' && <Plane className="h-3 w-3" strokeWidth={2.5} />}
-                        {presentation.statusLabel}
+                    <div className="relative aspect-[16/9] overflow-hidden bg-ink-950">
+                      {airportImage ? (
+                        <Image
+                          src={airportImage.src}
+                          alt={airportImage.alt}
+                          fill
+                          sizes="(min-width: 1024px) 31vw, (min-width: 640px) 48vw, 100vw"
+                          className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+                        />
+                      ) : (
+                        <div className="flex h-full items-center justify-center font-display text-5xl text-sand-50/20" aria-hidden="true">
+                          {airport.code}
+                        </div>
+                      )}
+                      <div className="absolute inset-0 bg-gradient-to-t from-ink-950/75 via-ink-950/10 to-transparent" aria-hidden="true" />
+                      {/* Full airport.name (e.g. "London Heathrow"), never airport.city — several
+                          airports share a city name, and the photo alone can't disambiguate. */}
+                      <span className="absolute bottom-3 left-4 text-xs font-semibold uppercase tracking-[0.14em] text-sand-50">
+                        {airport.name}
                       </span>
                     </div>
-                    <h3 className="mt-3 font-display text-xl text-ink-900">
-                      {airport.city}{' '}
-                      <span className="inline-block text-brass-500 transition-transform duration-300 group-hover:translate-x-0.5">→</span>{' '}
-                      {dest.city}
-                    </h3>
-                    <p className="mt-1.5 text-sm text-ink-500">
-                      {presentation.status === 'unverified' || presentation.status === 'service-ended'
-                        ? presentation.statusLabel
-                        : presentation.flightTime}
-                    </p>
-                    <span className="mt-4 flex items-center gap-1.5 text-sm font-semibold text-ink-900 transition-colors group-hover:text-terracotta-600">
-                      View route guide
-                      <ArrowUpRight
-                        className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
-                        strokeWidth={2.25}
-                      />
-                    </span>
+                    <div className="flex flex-1 flex-col p-6">
+                      <div className="flex items-center justify-between gap-3">
+                        <span className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-ink-400">
+                          <MapPin className="h-3.5 w-3.5" strokeWidth={2.25} />
+                          {dest.country}
+                        </span>
+                        <span
+                          className={
+                            presentation.status === 'direct'
+                              ? 'inline-flex items-center gap-1.5 rounded-full bg-brass-50 px-2.5 py-0.5 text-xs font-semibold text-brass-700'
+                              : 'inline-flex items-center rounded-full bg-ink-50 px-2.5 py-0.5 text-xs font-semibold text-ink-500'
+                          }
+                        >
+                          {presentation.status === 'direct' && <Plane className="h-3 w-3" strokeWidth={2.5} />}
+                          {presentation.statusLabel}
+                        </span>
+                      </div>
+                      <h3 className="mt-3 font-display text-xl text-ink-900">
+                        {airport.city}{' '}
+                        <span className="inline-block text-brass-500 transition-transform duration-300 group-hover:translate-x-0.5">→</span>{' '}
+                        {dest.city}
+                      </h3>
+                      <p className="mt-1.5 text-sm text-ink-500">
+                        {presentation.status === 'unverified' || presentation.status === 'service-ended'
+                          ? presentation.statusLabel
+                          : presentation.flightTime}
+                      </p>
+                      <span className="mt-4 flex items-center gap-1.5 text-sm font-semibold text-ink-900 transition-colors group-hover:text-terracotta-600">
+                        View route guide
+                        <ArrowUpRight
+                          className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+                          strokeWidth={2.25}
+                        />
+                      </span>
+                    </div>
                   </Link>
                 );
               })}
