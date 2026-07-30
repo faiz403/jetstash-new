@@ -383,6 +383,44 @@ export function getRouteStatusCopy(route: Route, result: RouteStatusResult, allE
 }
 
 /**
+ * Overrides only `shareText` for a route in the 'withdrawal-announced'
+ * state — every other field (summary, metadataDescription, flightTime,
+ * frequency, airlineSlugs...) is left exactly as the base presentation
+ * returns it, matching this codebase's standing pattern (see
+ * data/routes.ts's manchester-mumbai/manchester-delhi `intro` comments) of
+ * never duplicating the ledger's own current-change claim inside
+ * route.intro — the Route Status panel below the hero is the one place on
+ * the PAGE ITSELF that asserts a withdrawal, so `intro` deliberately stays
+ * silent and points there instead.
+ *
+ * A WhatsApp message is a standalone text blob, detached from that panel
+ * the moment it's sent — so unlike the page, it must carry the warning
+ * itself, or the warning silently disappears the instant someone shares
+ * the route. That silent disappearance is the exact leak this function
+ * closes (trust-leak fix, found on Manchester-Mumbai but architectural,
+ * not route-specific — applies to any current or future ledger-managed
+ * route this viewModel kind is reached for, e.g. manchester-delhi today).
+ *
+ * Reuses `viewModel.headline` verbatim — the same validated, sourced,
+ * dated sentence the Route Status panel itself renders — rather than
+ * inventing new prose or re-deriving the airline/date from raw ledger
+ * fields.
+ */
+function buildWithdrawalAnnouncedPresentation(
+  route: Route,
+  presentation: RoutePresentation,
+  viewModel: Extract<RouteStatusViewModel, { kind: 'withdrawal-announced' }>
+): RoutePresentation {
+  const pair = getRoutePairLabel(route);
+  const directClause =
+    presentation.status === 'direct'
+      ? `${pair} currently has a direct option.`
+      : `${pair} does not currently have a confirmed direct option.`;
+  const shareText = `${directClause} ${viewModel.headline} — check the latest JetStash route status and booking guidance before relying on it.`;
+  return { ...presentation, shareText };
+}
+
+/**
  * The single reusable adapter every public surface must call instead of
  * getRoutePresentation() directly, for consistency between the pre-existing
  * (inclusive-freshness) presentation layer and the Route Status V1 ledger's
@@ -399,20 +437,27 @@ export function getRouteStatusCopy(route: Route, result: RouteStatusResult, allE
  * presentation layer used a looser check than the copy layer.
  *
  *   - viewModel 'verified-direct' / 'withdrawal-announced' (evidence
- *     validated): the legacy presentation is safe to reuse as-is — both
- *     statuses require strict freshness, which is a STRICTLY narrower
- *     condition than getDisplayDirectness()'s own inclusive check, so
- *     whenever the ledger's validated evidence supports either status the
- *     legacy gate independently agrees. For 'verified-direct' specifically,
- *     any airline carrying a 'service-ended' or 'status-reverification-
- *     pending' notice (final audit fix) is additionally removed from
- *     `airlineSlugs` — the route as a whole stays "Direct" on another
- *     airline's evidence, but the affected airline's own attribution must
- *     not linger in the safe airline list once its service has ended or
- *     gone unreconfirmed past its announced date. A 'withdrawal-announced'
- *     notice does NOT remove the airline — that state is reached only while
- *     the affected airline's own plan is still pre-boundary, so retaining
- *     it is not a stale claim.
+ *     validated): both statuses require strict freshness, which is a
+ *     STRICTLY narrower condition than getDisplayDirectness()'s own
+ *     inclusive check, so whenever the ledger's validated evidence supports
+ *     either status the legacy gate independently agrees — the legacy
+ *     presentation's flightTime/frequency/airlineSlugs/summary are safe to
+ *     reuse as-is for both. `shareText` is the one exception: for
+ *     'withdrawal-announced' it is NOT reused as-is, since the legacy
+ *     builder has no concept of a ledger withdrawal and would otherwise
+ *     ship an unqualified "has a direct option" WhatsApp message even
+ *     while the page's own Route Status panel is warning about a
+ *     withdrawal — see buildWithdrawalAnnouncedPresentation(). For
+ *     'verified-direct' specifically, any airline carrying a
+ *     'service-ended' or 'status-reverification-pending' notice (final
+ *     audit fix) is additionally removed from `airlineSlugs` — the route as
+ *     a whole stays "Direct" on another airline's evidence, but the
+ *     affected airline's own attribution must not linger in the safe
+ *     airline list once its service has ended or gone unreconfirmed past
+ *     its announced date. A 'withdrawal-announced' notice does NOT remove
+ *     the airline — that state is reached only while the affected
+ *     airline's own plan is still pre-boundary, so retaining it is not a
+ *     stale claim.
  *   - viewModel 'service-ended': a dedicated, evidence-suppressed
  *     presentation — see buildServiceEndedPresentation. Never mapped to
  *     'unverified': "Service ended" and "Verification pending" are
@@ -431,6 +476,7 @@ export function getEffectiveRoutePresentation(route: Route, allEvents: RouteStat
   if (viewModel.kind === 'neutral-pending' || viewModel.kind === 'transition-boundary-pending') return buildUnverifiedPresentation(route);
 
   const presentation = getRoutePresentation(route, nowIso);
+  if (viewModel.kind === 'withdrawal-announced') return buildWithdrawalAnnouncedPresentation(route, presentation, viewModel);
   if (viewModel.kind !== 'verified-direct') return presentation;
 
   const suppressedAirlineSlugs = new Set(
