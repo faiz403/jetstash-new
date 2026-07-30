@@ -24,11 +24,14 @@ import { siteConfig } from '@/lib/site-config';
  */
 export async function GET(req: NextRequest) {
   const cronSecret = process.env.CRON_SECRET;
-  if (cronSecret) {
-    const auth = req.headers.get('authorization');
-    if (auth !== `Bearer ${cronSecret}`) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+  if (!cronSecret || cronSecret.trim().length === 0) {
+    console.error('Fare-check reminder cron is not configured: CRON_SECRET is required.');
+    return NextResponse.json({ error: 'Service unavailable' }, { status: 503 });
+  }
+
+  const auth = req.headers.get('authorization');
+  if (auth !== `Bearer ${cronSecret}`) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   const snapshot = getFounderSnapshot(new Date());
