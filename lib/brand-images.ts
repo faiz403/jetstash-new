@@ -57,6 +57,7 @@ const DESTINATION_ALT: Record<string, string> = {
   delhi: "Aircraft descending over Delhi's Mughal-era domes and minaret at sunset",
   mumbai: "Aircraft flying over Mumbai's Gateway of India and waterfront at sunset",
   ahmedabad: "Aircraft flying over Ahmedabad's riverside clock tower and bridge at sunset",
+  bengaluru: "Aircraft descending over Bengaluru's skyline, with the domed Vidhana Soudha legislature building at sunset",
   istanbul: 'Aircraft descending over a grand domed mosque on the Bosphorus, Istanbul, at sunset',
   antalya: "Aircraft descending over Antalya's cliffside waterfalls and Mediterranean coastline at sunset",
   bodrum: "Aircraft flying over Bodrum Castle and its yacht harbour at sunset",

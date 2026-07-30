@@ -320,20 +320,17 @@ keeps the collection recognisable as JetStash rather than a set of unrelated sto
 
 Purpose: anchor arrival at a specific, real, recognisable place.
 Responsibility: **arrival** — one iconic landmark, aircraft as a small guest, golden hour. Alt
-derives as "{tagline} — {city}, {country}". 24 of the 25 destinations below are **In Production** —
-`bengaluru`, added 30 July 2026 alongside the Heathrow–Bengaluru route, is **Placeholder**: fully
-wired through `getDestinationImage('bengaluru')` and rendering the generated `<DestinationMark />`
-fallback correctly today, but with no real photograph commissioned yet. Treat this as a release
-blocker for treating the destination as visually complete, not as a bug — see `STATUS.md` DEST-001
-and the PR that added it for the exact required brief (2560×1440 WebP, cinematic golden-hour
-treatment, a recognisable Bengaluru setting or landmark, real commercial aircraft where
-compositionally appropriate, clean sky for typography, no text/logos/route lines).
+derives as "{tagline} — {city}, {country}". All 25 destinations below are **In Production** —
+`bengaluru`, added 30 July 2026 alongside the Heathrow–Bengaluru route, received its approved
+photograph on 30 July 2026 (`public/images/destinations/bengaluru.webp`, 2560×1440, converted from
+the founder-supplied source via a minimal centre crop, no stretching or creative alteration) and is
+no longer a release blocker — see `STATUS.md` DEST-001.
 
 **Pakistan**: `lahore` (Badshahi Mosque), `islamabad` (Faisal Mosque / Margalla Hills), `karachi`
 (Mazar-e-Quaid).
 **India**: `delhi` (Humayun's Tomb), `mumbai` (Gateway of India), `amritsar` (Golden Temple — no
 aircraft, reverence, see DD-006), `ahmedabad` (Sabarmati riverfront / Ellis Bridge), `bengaluru`
-(Placeholder — no landmark photographed yet).
+(Vidhana Soudha, with a commercial aircraft on approach — founder-supplied photograph).
 **Gulf & Saudi Arabia**: `dubai` (Burj Khalifa from the desert edge), `doha` (Museum of Islamic
 Art), `jeddah` (Al-Balad old town), `madinah` (Prophet's Mosque — no aircraft, reverence).
 **Turkey**: `istanbul` (Süleymaniye Mosque), `antalya` (Kaleiçi old harbour), `dalaman` (Ölüdeniz
