@@ -320,13 +320,17 @@ keeps the collection recognisable as JetStash rather than a set of unrelated sto
 
 Purpose: anchor arrival at a specific, real, recognisable place.
 Responsibility: **arrival** — one iconic landmark, aircraft as a small guest, golden hour. Alt
-derives as "{tagline} — {city}, {country}". All 24 are **In Production** — this is the one
-category fully realized end to end, matching the founder-confirmed status in `STATUS.md`.
+derives as "{tagline} — {city}, {country}". All 25 destinations below are **In Production** —
+`bengaluru`, added 30 July 2026 alongside the Heathrow–Bengaluru route, received its approved
+photograph on 30 July 2026 (`public/images/destinations/bengaluru.webp`, 2560×1440, converted from
+the founder-supplied source via a minimal centre crop, no stretching or creative alteration) and is
+no longer a release blocker — see `STATUS.md` DEST-001.
 
 **Pakistan**: `lahore` (Badshahi Mosque), `islamabad` (Faisal Mosque / Margalla Hills), `karachi`
 (Mazar-e-Quaid).
 **India**: `delhi` (Humayun's Tomb), `mumbai` (Gateway of India), `amritsar` (Golden Temple — no
-aircraft, reverence, see DD-006), `ahmedabad` (Sabarmati riverfront / Ellis Bridge).
+aircraft, reverence, see DD-006), `ahmedabad` (Sabarmati riverfront / Ellis Bridge), `bengaluru`
+(Vidhana Soudha, with a commercial aircraft on approach — founder-supplied photograph).
 **Gulf & Saudi Arabia**: `dubai` (Burj Khalifa from the desert edge), `doha` (Museum of Islamic
 Art), `jeddah` (Al-Balad old town), `madinah` (Prophet's Mosque — no aircraft, reverence).
 **Turkey**: `istanbul` (Süleymaniye Mosque), `antalya` (Kaleiçi old harbour), `dalaman` (Ölüdeniz

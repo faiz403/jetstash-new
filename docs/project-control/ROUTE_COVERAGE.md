@@ -48,6 +48,12 @@ marketing; it is to make each one source-complete and add real, dated observatio
 | Heathrow → Doha | Qatar Airways direct route is verified; exact frequency and duration remain unclaimed. | Recheck the official route page before 28 August 2026; do not publish an inferred frequency. |
 | Birmingham → Mumbai | Confirmed connecting corridor, not direct. | Maintain the connecting-only framing; improve practical connection intelligence only with primary or operator evidence. |
 
+### Newly added — first destination expansion since launch
+
+| Route | Current evidence state | Next evidence action |
+|---|---|---|
+| Heathrow → Bengaluru | Two independently verified daily direct operators: British Airways (own 12 Nov 2025 press release, "the airline operates a daily service on its 777-200 fleet"; review due 30 August 2026) and Virgin Atlantic (own route page, "We fly to Bengaluru daily", 10h; review due 30 August 2026). Air India remains unverified — its official pages give contradictory information about a direct service, and Air India's own site was again unreachable to this session's tooling. | Resolve Air India's contradictory official information once a current, unambiguous Air India primary source can be reached — do not name it until then. Add a date-complete fare observation once a real, dated check can be made — none is logged yet. Separately: `lib/atlas-network-data.ts`'s `buildDestinationPoint()` only reads the route-level `verification` field for the Atlas's evidenceState badge, not per-airline `airlineVerifications` — this makes Bengaluru read "pending" on the Atlas despite two verified operators, the same pre-existing behaviour Delhi and Mumbai already have in production. Worth a small, separate fix; not part of this route's own evidence gap. |
+
 ### Explicitly unresolved direct-service disputes
 
 These are the only three direct-route records still intentionally fail-closed after the July

@@ -85,6 +85,24 @@ link today), tracked-link convention, per-audience message drafts, FAQ, feedback
 seven-day plan. Draft only as of this entry — nothing sent yet; sending is the founder's own
 action, not something done from this repository.
 
+### DEST-001 — First destination expansion: Heathrow → Bengaluru
+
+An explicit founder decision, 30 July 2026, and an explicit exception to the LAUNCH-001 product
+freeze — not a violation of it (real evidence-led feature work the founder specifically
+commissioned, not speculative housekeeping). Adds Bengaluru as a destination and London
+Heathrow–Bengaluru as its first route, integrated through every existing shared system (route
+guide template, destination directory, Route Atlas, Journey Check, Travel Ready Check, sitemap) —
+no new system built. Direct service now verified via two independent airline sources: British
+Airways' own 12 Nov 2025 press release ("the airline operates a daily service on its 777-200
+fleet") and Virgin Atlantic's own route page ("We fly to Bengaluru daily", 10h). Air India remains
+excluded — its official pages give contradictory information about a direct service, and its own
+site was again unreachable this session; see `ROUTE_COVERAGE.md`. **The Bengaluru hero image
+blocker is now resolved**: the founder's approved photograph is live at
+`public/images/destinations/bengaluru.webp` (2560×1440 WebP, converted from the supplied source via
+a minimal centre crop, no stretching or creative alteration — see `docs/visual-identity.md`'s Asset
+Catalogue). No fare observation logged; none could be honestly recorded without a real, dated
+check. See PR for full detail.
+
 ### HERO-002 — Homepage opening hero above the Route Atlas
 
 **Done** — see `COMPLETED.md`. Customer-visible pre-launch priority, raised from a real mobile

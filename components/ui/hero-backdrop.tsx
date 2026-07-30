@@ -1,4 +1,5 @@
 import Image from 'next/image';
+import { cn } from '@/lib/utils';
 import { getHeroImage, type BrandImage } from '@/lib/brand-images';
 
 /**
@@ -14,7 +15,22 @@ import { getHeroImage, type BrandImage } from '@/lib/brand-images';
  *
  * Parent section must be `relative overflow-hidden` (all dark heroes are).
  */
-export function HeroBackdrop({ heroKey, image }: { heroKey?: string; image?: BrandImage | null }) {
+export function HeroBackdrop({
+  heroKey,
+  image,
+  objectPositionClassName,
+}: {
+  heroKey?: string;
+  image?: BrandImage | null;
+  /**
+   * Optional `object-position` utility class override (see e.g.
+   * ROUTE_HERO_FOCAL_POSITION in app/routes/[slug]/page.tsx) — omit for the
+   * default centred crop every hero has always used. Only ever set for a
+   * photo whose composition needs it; this prop changes nothing for any
+   * caller that doesn't pass it.
+   */
+  objectPositionClassName?: string;
+}) {
   const resolved = image ?? (heroKey ? getHeroImage(heroKey) : null);
 
   if (!resolved) {
@@ -29,7 +45,7 @@ export function HeroBackdrop({ heroKey, image }: { heroKey?: string; image?: Bra
         fill
         priority
         sizes="100vw"
-        className="object-cover"
+        className={cn('object-cover', objectPositionClassName)}
         aria-hidden="true"
       />
       <div className="absolute inset-0 bg-ink-950/75" />

@@ -38,6 +38,24 @@ import { getFareSectionCopy } from '@/lib/fare-section-copy';
 import { HeroBackdrop } from '@/components/ui/hero-backdrop';
 import { TrackedOutboundLink } from '@/components/ui/tracked-outbound-link';
 
+/**
+ * Route-hero focal-position overrides, keyed by destination slug. HeroBackdrop's default
+ * object-cover crop (no object-position, i.e. centred) is invisible for a centrally-composed
+ * photo, but loses one of two focal points for a photo composed toward the frame edges — this
+ * hero's box is 100vw wide with content-driven height, so it crops vertically at desktop widths
+ * and horizontally at narrow ones. DestinationVisual's fixed near-16:9 boxes don't have this
+ * problem and are untouched. Kept here (an app/** file) rather than in lib/brand-images.ts —
+ * tailwind.config.js's `content` glob only scans app/** and components/**, so a class string
+ * living in lib/ is invisible to the JIT scanner and silently produces no CSS (confirmed the hard
+ * way; see git history). Empty for every destination except one so far — every existing route
+ * hero keeps its exact current, centred crop with zero visual change. Values are Tailwind
+ * `object-position` utility classes, mobile-first with breakpoint overrides, tuned by hand against
+ * the actual delivered photo at every required viewport.
+ */
+const ROUTE_HERO_FOCAL_POSITION: Record<string, string> = {
+  bengaluru: 'object-[57%_45%] sm:object-[55%_42%] md:object-[48%_35%] lg:object-[52%_18%]',
+};
+
 // Pure ISR — computeBookBySnapshot/computeReadiness are already pure functions of `now`, so
 // periodically regenerating this static page keeps the server-rendered snapshot (what SEO
 // crawlers and no-JS visitors see) from drifting more than 6 hours stale between deploys. The
@@ -139,7 +157,10 @@ export default async function RoutePage({ params }: { params: Promise<{ slug: st
       {/* Route heroes borrow the destination's photograph (dimmed, decorative) —
           one image per destination serves every surface, per docs/visual-identity.md. */}
       <section className="relative overflow-hidden bg-ink-900 py-16 sm:py-20">
-        <HeroBackdrop image={(() => { const img = getDestinationImage(dest.slug); return img ? { ...img, alt: '' } : null; })()} />
+        <HeroBackdrop
+          image={(() => { const img = getDestinationImage(dest.slug); return img ? { ...img, alt: '' } : null; })()}
+          objectPositionClassName={ROUTE_HERO_FOCAL_POSITION[dest.slug]}
+        />
         <div className="relative mx-auto max-w-content px-5 sm:px-8">
           <nav aria-label="Breadcrumb" className="mb-5 flex items-center gap-1.5 text-xs text-ink-300">
             <Link href="/" className="hover:text-brass-300">Home</Link>
