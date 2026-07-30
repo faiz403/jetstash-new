@@ -111,33 +111,45 @@ every existing shared system, with a new `bangladesh` region group (`RegionGroup
 in `lib/site-config.ts`) since neither city fits the existing Pakistan/India groupings — no new
 hub page, matching how Mediterranean and North Africa are handled today.
 
-Route evidence uncovered a genuinely volatile service history rather than a stable one: Manchester
-Airport's own press coverage of Biman Bangladesh Airlines' Dhaka/Sylhet service is internally
-inconsistent about which direction carries the Sylhet stop (its October 2019 and January 2020
-articles contradict each other), and the service has a documented pattern of launch, withdrawal
-and relaunch across 2012, 2020 and 2021, with a further suspension and reported resumption in 2026
-that could not be independently confirmed (Biman's own site returned a 403 error on every attempt).
-Of the four candidate routes investigated (Heathrow–Dhaka, Heathrow–Sylhet, Manchester–Dhaka,
-Manchester–Sylhet):
+Route evidence uncovered a genuinely volatile service history rather than a stable one, and a
+founder-directed amendment round (30 July 2026) corrected and re-checked it against fresh primary
+and current sources rather than the original secondary-news leads. Of the four candidate routes
+investigated (Heathrow–Dhaka, Heathrow–Sylhet, Manchester–Dhaka, Manchester–Sylhet):
 
-- **Manchester–Dhaka**: added as **Connecting** — every source agrees this has never been nonstop
-  (a scheduled Sylhet stop on the same Biman aircraft, direction disputed between sources).
-- **Manchester–Sylhet**: added as **Verification Pending** — sources disagree on whether this
-  specific leg is ever flown nonstop.
-- **Heathrow–Dhaka**: added as **Verification Pending** — Heathrow's own airline directory
-  confirms Biman operates from Terminal 4, but names no destination, frequency or date.
-- **Heathrow–Sylhet**: **not added** — zero evidence of any kind found for this specific pairing.
+- **Manchester–Dhaka**: **Connecting** (one-stop via Sylhet, same Biman aircraft throughout, never
+  presented as an ordinary multi-airline connection). Multiple independent current (July 2026)
+  Bangladeshi sources — BSS (the state news agency), Dhaka Tribune, The Business Standard, and
+  aviation trade publication AeroRoutes — consistently describe this exact one-stop-via-Sylhet
+  service on both legs, with the same flight number reported across the Sylhet and onward sectors,
+  resuming after a roughly four-month suspension with an initial frequency of twice weekly
+  (Tuesdays and Saturdays). Not yet confirmed against Biman's own site (403 error on every
+  attempt), so attributed to current news reporting, not an airline primary source.
+- **Manchester–Sylhet**: remains **Verification Pending** — a genuine, currently unresolved,
+  directly-checked contradiction: Manchester Airport's own Sylhet destination page states "We're
+  not flying to this location at the moment", while the Manchester–Dhaka evidence above describes
+  a scheduled Sylhet stop on every rotation of that same service.
+- **Heathrow–Dhaka**: remains **Verification Pending**, rechecked — Heathrow's own live
+  flight-tracking pages now confirm named, currently operating flights BG201/BG202 (Dhaka–London),
+  real evidence beyond the previous terminal-directory-only finding. Whether this specific service
+  is nonstop or (like Manchester) makes a scheduled Sylhet stop is unconfirmed by any primary
+  source, so no nonstop claim is made.
+- **Heathrow–Sylhet**: **added** as **Verification Pending** (correcting the original "zero
+  evidence" rejection, which was inaccurate) — Heathrow's own flight-tracking pages confirm the
+  same current BG201/BG202 service, and multiple independent flight-schedule sources describe a
+  Sylhet stop on it, mirroring the confirmed Manchester pattern; held pending rather than
+  confirmed, since no primary source has resolved the stop directly.
 
 Bangladesh entry-readiness rules added to Travel Ready Check: British-passport visa requirement,
 passport validity, and a new **NVR (No Visa Required) document-exemption** — a genuinely different
 mechanism from Pakistan's NICOP or India's OCI card (an endorsement applied for in advance through
 the Bangladesh High Commission, London, not a document already held), sourced to
-`bhclondon.org.uk/no-visa-required` and GOV.UK's Bangladesh entry-requirements page. **No approved
-image exists for either Dhaka or Sylhet** — see `docs/visual-identity.md`'s Asset Catalogue; both
-remain a release blocker for treating either destination as visually complete. No fare observation
-logged for any route; none could be honestly recorded without a real, dated check. No verified
-TravelUp deep link for either destination — travelup.com returned a 403 error on every attempt, so
-both fall back to the existing safe generic booking link. See PR for full detail.
+`bhclondon.org.uk/no-visa-required` and GOV.UK's Bangladesh entry-requirements page. Approved
+photography for both Dhaka and Sylhet has been converted, registered and deployed (2560×1440 WebP,
+`public/images/destinations/{dhaka,sylhet}.webp`) — neither destination remains a release blocker
+on imagery; see `docs/visual-identity.md`'s Asset Catalogue for the final entries. No fare
+observation logged for any route; none could be honestly recorded without a real, dated check. No
+verified TravelUp deep link for either destination — travelup.com returned a 403 error on every
+attempt, so both fall back to the existing safe generic booking link. See PR for full detail.
 
 ### HERO-002 — Homepage opening hero above the Route Atlas
 

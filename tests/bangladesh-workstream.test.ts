@@ -82,11 +82,11 @@ describe('BD-001 — Dhaka and Sylhet destination records', () => {
     expect(destinations.filter((d) => d.slug === 'sylhet')).toHaveLength(1);
   });
 
-  it('ukAirports reflects exactly the routes actually added — Dhaka has both, Sylhet has Manchester only', () => {
+  it('ukAirports reflects exactly the routes actually added — both destinations now have Heathrow and Manchester', () => {
     const dhaka = getDestinationBySlug('dhaka')!;
     const sylhet = getDestinationBySlug('sylhet')!;
     expect(dhaka.ukAirports.slice().sort()).toEqual(['london-heathrow', 'manchester'].sort());
-    expect(sylhet.ukAirports).toEqual(['manchester']);
+    expect(sylhet.ukAirports.slice().sort()).toEqual(['london-heathrow', 'manchester'].sort());
   });
 
   it('a new "bangladesh" region group exists and contains both destinations', () => {
@@ -102,20 +102,21 @@ describe('BD-001 — Dhaka and Sylhet destination records', () => {
   });
 });
 
-describe('BD-001 — exactly three routes added, at the expected slugs', () => {
-  it('london-heathrow-dhaka, manchester-dhaka and manchester-sylhet all exist', () => {
-    expect(getRouteBySlug('london-heathrow-dhaka')).toBeDefined();
-    expect(getRouteBySlug('manchester-dhaka')).toBeDefined();
-    expect(getRouteBySlug('manchester-sylhet')).toBeDefined();
+const ALL_BANGLADESH_ROUTE_SLUGS = ['london-heathrow-dhaka', 'london-heathrow-sylhet', 'manchester-dhaka', 'manchester-sylhet'];
+
+describe('BD-001 — all four routes added, at the expected slugs (amendment: Heathrow-Sylhet added, correcting the original rejection)', () => {
+  it('london-heathrow-dhaka, london-heathrow-sylhet, manchester-dhaka and manchester-sylhet all exist', () => {
+    for (const slug of ALL_BANGLADESH_ROUTE_SLUGS) {
+      expect(getRouteBySlug(slug)).toBeDefined();
+    }
   });
 
-  it('london-heathrow-sylhet does NOT exist — zero evidence was found for that pairing', () => {
-    expect(getRouteBySlug('london-heathrow-sylhet')).toBeUndefined();
-    expect(getRouteByAirportAndDestination('london-heathrow', 'sylhet')).toBeUndefined();
+  it('london-heathrow-sylhet resolves via getRouteByAirportAndDestination', () => {
+    expect(getRouteByAirportAndDestination('london-heathrow', 'sylhet')?.slug).toBe('london-heathrow-sylhet');
   });
 
   it('every added route resolves via getRouteByAirportAndDestination, matching getRouteBySlug', () => {
-    for (const slug of ['london-heathrow-dhaka', 'manchester-dhaka', 'manchester-sylhet']) {
+    for (const slug of ALL_BANGLADESH_ROUTE_SLUGS) {
       const bySlug = getRouteBySlug(slug)!;
       const byPair = getRouteByAirportAndDestination(bySlug.airportSlug, bySlug.destinationSlug);
       expect(byPair?.slug).toBe(slug);
@@ -126,11 +127,12 @@ describe('BD-001 — exactly three routes added, at the expected slugs', () => {
     const dhakaRoutes = getRoutesByDestination('dhaka').map((r) => r.slug).sort();
     const sylhetRoutes = getRoutesByDestination('sylhet').map((r) => r.slug).sort();
     expect(dhakaRoutes).toEqual(['london-heathrow-dhaka', 'manchester-dhaka'].sort());
-    expect(sylhetRoutes).toEqual(['manchester-sylhet']);
+    expect(sylhetRoutes).toEqual(['london-heathrow-sylhet', 'manchester-sylhet'].sort());
   });
 
   it('getRoutesByAirport includes the new routes for Heathrow and Manchester', () => {
     expect(getRoutesByAirport('london-heathrow').some((r) => r.slug === 'london-heathrow-dhaka')).toBe(true);
+    expect(getRoutesByAirport('london-heathrow').some((r) => r.slug === 'london-heathrow-sylhet')).toBe(true);
     expect(getRoutesByAirport('manchester').some((r) => r.slug === 'manchester-dhaka')).toBe(true);
     expect(getRoutesByAirport('manchester').some((r) => r.slug === 'manchester-sylhet')).toBe(true);
   });
@@ -146,7 +148,7 @@ describe('BD-001 — exactly three routes added, at the expected slugs', () => {
     const airline = getAirlinesBySlugs(['biman-bangladesh']);
     expect(airline).toHaveLength(1);
     expect(airline[0].iataCode).toBe('BG');
-    for (const slug of ['london-heathrow-dhaka', 'manchester-dhaka', 'manchester-sylhet']) {
+    for (const slug of ALL_BANGLADESH_ROUTE_SLUGS) {
       const route = getRouteBySlug(slug)!;
       expect(route.airlineSlugs).toEqual(['biman-bangladesh']);
     }
@@ -182,9 +184,10 @@ describe('BD-001 — Manchester to Dhaka: Connecting, never claimed nonstop', ()
     expect(allCopy).toMatch(/same aircraft|same biman/);
   });
 
-  it('no invented weekly frequency is asserted as current — the historical figure is explicitly hedged as unconfirmed-current', () => {
+  it('the twice-weekly frequency is attributed to current news reporting, not claimed as Biman\'s own confirmed schedule', () => {
     const route = getRouteBySlug('manchester-dhaka')!;
-    expect(route.frequency.toLowerCase()).toMatch(/historically|cannot be assumed active|withdrawn/);
+    expect(route.frequency.toLowerCase()).toMatch(/attributed to|current bangladeshi news|not yet reconfirmed/);
+    expect(route.frequency.toLowerCase()).toMatch(/two weekly|twice weekly/);
   });
 
   it('getRoutePresentation reports status "connecting"', () => {
@@ -201,23 +204,20 @@ describe('BD-001 — Manchester to Dhaka: Connecting, never claimed nonstop', ()
   });
 });
 
-describe('BD-001 — Manchester to Sylhet and Heathrow to Dhaka: Verification Pending, no facts leaked', () => {
-  it('manchester-sylhet is isDirect:true with no current verification — renders as Verification Pending', () => {
-    const route = getRouteBySlug('manchester-sylhet')!;
-    expect(route.isDirect).toBe(true);
-    expect(getDisplayDirectness(route, FIXED_TODAY)).toBe('unverified');
-    expect(getRoutePresentation(route, FIXED_TODAY).status).toBe('unverified');
-  });
+const PENDING_BANGLADESH_SLUGS = ['manchester-sylhet', 'london-heathrow-dhaka', 'london-heathrow-sylhet'];
 
-  it('london-heathrow-dhaka is isDirect:true with no current verification — renders as Verification Pending', () => {
-    const route = getRouteBySlug('london-heathrow-dhaka')!;
-    expect(route.isDirect).toBe(true);
-    expect(getDisplayDirectness(route, FIXED_TODAY)).toBe('unverified');
-    expect(getRoutePresentation(route, FIXED_TODAY).status).toBe('unverified');
+describe('BD-001 — Manchester-Sylhet, Heathrow-Dhaka and Heathrow-Sylhet: Verification Pending, no facts leaked', () => {
+  it('all three are isDirect:true with no current verification — render as Verification Pending', () => {
+    for (const slug of PENDING_BANGLADESH_SLUGS) {
+      const route = getRouteBySlug(slug)!;
+      expect(route.isDirect).toBe(true);
+      expect(getDisplayDirectness(route, FIXED_TODAY)).toBe('unverified');
+      expect(getRoutePresentation(route, FIXED_TODAY).status).toBe('unverified');
+    }
   });
 
   it('the pending presentation suppresses flightTime, frequency and airlines publicly — same fail-closed behaviour every other pending route already has', () => {
-    for (const slug of ['manchester-sylhet', 'london-heathrow-dhaka']) {
+    for (const slug of PENDING_BANGLADESH_SLUGS) {
       const route = getRouteBySlug(slug)!;
       const p = getRoutePresentation(route, FIXED_TODAY);
       expect(p.flightTime).toBeNull();
@@ -228,23 +228,33 @@ describe('BD-001 — Manchester to Sylhet and Heathrow to Dhaka: Verification Pe
   });
 
   it('each still carries a real, dated verification.note internally documenting exactly what was and wasn\'t found — not fabricated, not empty', () => {
-    const sylhet = getRouteBySlug('manchester-sylhet')!;
-    const dhaka = getRouteBySlug('london-heathrow-dhaka')!;
-    expect(sylhet.verification?.note?.length).toBeGreaterThan(50);
-    expect(dhaka.verification?.note?.length).toBeGreaterThan(50);
-    expect(sylhet.verification?.status).toBe('unverified');
-    expect(dhaka.verification?.status).toBe('unverified');
+    for (const slug of PENDING_BANGLADESH_SLUGS) {
+      const route = getRouteBySlug(slug)!;
+      expect(route.verification?.note?.length).toBeGreaterThan(50);
+      expect(route.verification?.status).toBe('unverified');
+    }
   });
 
-  it('the Heathrow-Dhaka note is honest that Heathrow\'s directory entry names no destination/frequency/date — the T4 listing alone is not treated as route-specific proof', () => {
+  it('the Heathrow-Dhaka note documents the rechecked live flight-tracking evidence (BG201/BG202) without claiming a confirmed stop pattern', () => {
     const route = getRouteBySlug('london-heathrow-dhaka')!;
-    expect(route.verification!.note!.toLowerCase()).toMatch(/terminal.assignment|names no destination/);
+    expect(route.verification!.note!).toMatch(/BG201|BG202/);
+    expect(route.verification!.note!.toLowerCase()).toMatch(/could not|unconfirmed|kept unverified/);
+  });
+
+  it('the Heathrow-Sylhet note explicitly corrects the earlier "zero evidence" rejection rather than silently changing it', () => {
+    const route = getRouteBySlug('london-heathrow-sylhet')!;
+    expect(route.verification!.note!.toLowerCase()).toMatch(/zero evidence.*inaccurate|founder-directed correction/);
+  });
+
+  it('the manchester-sylhet note documents the directly-fetched Manchester Airport "not flying" contradiction', () => {
+    const route = getRouteBySlug('manchester-sylhet')!;
+    expect(route.verification!.note!.toLowerCase()).toMatch(/not flying to this location/);
   });
 });
 
 describe('BD-001 — no fare invented, no unrelated destination or route added', () => {
   it('no fare observation exists for any Bangladesh route — none could be honestly logged this session', () => {
-    for (const slug of ['london-heathrow-dhaka', 'manchester-dhaka', 'manchester-sylhet']) {
+    for (const slug of ALL_BANGLADESH_ROUTE_SLUGS) {
       expect(fareObservations.filter((o) => o.routeSlug === slug)).toHaveLength(0);
     }
   });
@@ -285,6 +295,10 @@ describe('BD-001 — affiliate link falls back safely for both destinations, no 
     const manSyl = getRouteBookingUrl(manchester, sylhet);
     expect(decodeURIComponent(manSyl)).toMatch(/sid=route-manchester-sylhet/);
     expect(manSyl).not.toMatch(/[?&]url=/);
+
+    const lhrSyl = getRouteBookingUrl(heathrow, sylhet);
+    expect(decodeURIComponent(lhrSyl)).toMatch(/sid=route-london-heathrow-sylhet/);
+    expect(lhrSyl).not.toMatch(/[?&]url=/);
   });
 });
 
@@ -375,12 +389,12 @@ describe('BD-001 — Interactive Route Atlas integration', () => {
     expect(bangladesh!.destinations.every((d) => d.networkMembership === 'supported')).toBe(true);
   });
 
-  it('the Heathrow network includes a bangladesh country group with only Dhaka — no Sylhet point from Heathrow', () => {
+  it('the Heathrow network now includes a bangladesh country group with both Dhaka and Sylhet points (amendment: Sylhet added, correcting the earlier "zero evidence" exclusion)', () => {
     const airports = buildAtlasAirports();
     const heathrow = airports.find((a) => a.airportSlug === 'london-heathrow')!;
     const bangladesh = heathrow.countries.find((c) => c.slug === 'bangladesh');
     expect(bangladesh).toBeDefined();
-    expect(bangladesh!.destinations.map((d) => d.slug)).toEqual(['dhaka']);
+    expect(bangladesh!.destinations.map((d) => d.slug).sort()).toEqual(['dhaka', 'sylhet'].sort());
   });
 
   it('Dhaka and Sylhet sit further east than every India point on the map (larger x), matching real geography', () => {
@@ -403,14 +417,14 @@ describe('BD-001 — Interactive Route Atlas integration', () => {
 });
 
 describe('BD-001 — sitemap and static generation', () => {
-  it('both destination pages and all three route pages appear in the sitemap', () => {
+  it('both destination pages and all four route pages appear in the sitemap', () => {
     const entries = sitemap().map((e) => e.url);
     expect(entries.some((u) => u.endsWith('/destinations/dhaka'))).toBe(true);
     expect(entries.some((u) => u.endsWith('/destinations/sylhet'))).toBe(true);
     expect(entries.some((u) => u.endsWith('/routes/london-heathrow-dhaka'))).toBe(true);
+    expect(entries.some((u) => u.endsWith('/routes/london-heathrow-sylhet'))).toBe(true);
     expect(entries.some((u) => u.endsWith('/routes/manchester-dhaka'))).toBe(true);
     expect(entries.some((u) => u.endsWith('/routes/manchester-sylhet'))).toBe(true);
-    expect(entries.some((u) => u.endsWith('/routes/london-heathrow-sylhet'))).toBe(false);
   });
 });
 
@@ -439,13 +453,13 @@ describe('BD-001 — Journey Check selector', () => {
     expect(routeIndex['manchester|dhaka']).toBe('manchester-dhaka');
     expect(routeIndex['manchester|sylhet']).toBe('manchester-sylhet');
     expect(routeIndex['london-heathrow|dhaka']).toBe('london-heathrow-dhaka');
-    expect(routeIndex['london-heathrow|sylhet']).toBeUndefined();
+    expect(routeIndex['london-heathrow|sylhet']).toBe('london-heathrow-sylhet');
   });
 });
 
 describe('BD-001 — pages render end-to-end without crashing', () => {
-  it('all three route pages render', async () => {
-    for (const slug of ['london-heathrow-dhaka', 'manchester-dhaka', 'manchester-sylhet']) {
+  it('all four route pages render', async () => {
+    for (const slug of ALL_BANGLADESH_ROUTE_SLUGS) {
       const element = await RoutePage({ params: Promise.resolve({ slug }) });
       expect(element).toBeTruthy();
     }

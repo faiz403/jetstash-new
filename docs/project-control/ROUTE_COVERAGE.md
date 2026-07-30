@@ -57,19 +57,20 @@ marketing; it is to make each one source-complete and add real, dated observatio
 ### Newly added — Bangladesh workstream
 
 Four candidate routes were investigated (Heathrow–Dhaka, Heathrow–Sylhet, Manchester–Dhaka,
-Manchester–Sylhet); only three were added, on the evidence below. Manchester Airport's own press
-coverage of this Biman Bangladesh Airlines service is internally inconsistent about which direction
-carries the Sylhet stop (its October 2019 and January 2020 articles contradict each other), and the
-service has a documented history of launch, withdrawal and relaunch (2012, 2020, 2021, and a
-further 2026 suspension/reported resumption that could not be independently confirmed — Biman's own
-site returned a 403 error on every attempt this session).
+Manchester–Sylhet); all four are now represented, on the evidence below. A founder-directed
+amendment round (30 July 2026) corrected the original evidence read against fresh primary and
+current sources — including a direct fetch of Manchester Airport's own current Sylhet page and
+Heathrow's own live flight-tracking pages — rather than resting on the original secondary-news
+leads. The service has a documented history of launch, withdrawal and relaunch (2012, 2020, 2021,
+and a further 2026 suspension/resumption); Biman's own site (biman-airlines.com) has returned a 403
+error on every attempt across two research rounds this session.
 
 | Route | Current evidence state | Next evidence action |
 |---|---|---|
-| Manchester → Dhaka | Added as Connecting. Every source found agrees this has never been a nonstop service — Biman's own through-flight always makes a scheduled stop at Sylhet, on the same aircraft. Sources disagree on which direction carries the stop. | Confirm the current (post-2026-resumption) stop pattern directly with Biman or a fresh Manchester Airport announcement before treating either direction's stop-position as settled. |
-| Manchester → Sylhet | Added as Verification Pending. Manchester Airport's own October 2019 and January 2020 articles contradict each other on whether this specific leg is ever flown nonstop. | Resolve only with a single, internally-consistent, current primary source — do not average or guess between the two contradicting 2019/2020 accounts. |
-| Heathrow → Dhaka | Added as Verification Pending. Heathrow's own airline directory confirms Biman Bangladesh Airlines operates from Terminal 4, but names no destination, frequency, aircraft or effective date. | Check directly with Biman (site currently 403-blocked to this session's tooling) or a Heathrow/airline route-specific announcement. |
-| Heathrow → Sylhet | Not added. Zero evidence of any kind — official or otherwise — was found for this specific pairing. | Only add if a genuine primary source naming this exact route surfaces; do not infer it from the Manchester service. |
+| Manchester → Dhaka | Added as Connecting (one-stop via Sylhet, same Biman aircraft throughout, never presented as an ordinary connection). Multiple independent current (July 2026) Bangladeshi sources — BSS (state news agency), Dhaka Tribune, The Business Standard, AeroRoutes — consistently describe this exact stop on both legs, with the same flight number reported across the Sylhet and onward sectors, resuming after a ~4-month suspension at twice weekly (Tue/Sat). | Confirm this schedule directly against Biman's own site once reachable; none of the current sources are Biman's own official website. |
+| Manchester → Sylhet | Remains Verification Pending. A genuine, current, directly-fetched contradiction: Manchester Airport's own Sylhet page states "We're not flying to this location at the moment", while the Manchester–Dhaka evidence above describes a scheduled Sylhet stop on every rotation of that same service. | Resolve only once a source directly addresses whether a through-stop is separately listed as a standalone destination — do not infer either way. |
+| Heathrow → Dhaka | Remains Verification Pending, rechecked. Heathrow's own live flight-tracking pages confirm named, currently operating flights BG201 (Dhaka–London, Terminal 4) and BG202 (London–Dhaka, Terminal 3) — real evidence beyond the earlier terminal-directory-only finding. Whether this service is nonstop or (like Manchester) makes a scheduled Sylhet stop is unconfirmed by any primary source. | Check directly with Biman (403-blocked) or get Heathrow's flight-status detail (stop pattern) to render fully — this session's fetch tooling could not extract it. |
+| Heathrow → Sylhet | Added as Verification Pending, correcting the original "zero evidence" rejection, which was inaccurate. Heathrow's own flight-tracking pages confirm the same current BG201/BG202 service; multiple independent flight-schedule aggregators (flightmapper.net, Skyscanner, FlightsFrom.com) describe a Sylhet stop on it, mirroring the confirmed Manchester pattern — but no primary source has confirmed the stop directly. | Only upgrade once a genuine Biman or Heathrow route-specific primary source confirms the Sylhet stop and schedule; do not infer it from the aggregator pattern alone. |
 
 ### Explicitly unresolved direct-service disputes
 

@@ -363,17 +363,20 @@ function buildBirminghamNetwork(): AirportNetworkData {
 }
 
 /**
- * London Heathrow - 6 routes.ts entries (bengaluru, delhi, doha, jeddah,
- * mumbai, dhaka), the full set with adequate sourced network evidence per
- * the 2026-07-26 audit plus the 2026-07-30 Bengaluru and 2026-07-30
- * Bangladesh additions. london-heathrow-dhaka is Verification Pending
- * (Heathrow's own airline directory confirms Biman Bangladesh Airlines
- * operates from Terminal 4, but names no destination/frequency/date) -
- * included because real, if incomplete, network evidence exists, same
- * standard as every other point here. No Sylhet from Heathrow - zero
- * evidence of any kind was found for that specific pairing, so it is not
- * included at all, not even as pending. No
- * Lahore/Karachi/Dubai/Madinah/Casablanca - all real Heathrow
+ * London Heathrow - 7 routes.ts entries (bengaluru, delhi, doha, jeddah,
+ * mumbai, dhaka, sylhet), the full set with adequate sourced network
+ * evidence per the 2026-07-26 audit plus the 2026-07-30 Bengaluru and
+ * Bangladesh additions. london-heathrow-dhaka and london-heathrow-sylhet are
+ * both Verification Pending: Heathrow's own live flight-tracking pages
+ * confirm named flights BG201/BG202 (Dhaka-London) currently operate, and
+ * independent flight-schedule sources consistently describe that same
+ * flight as making a scheduled Sylhet stop, but no primary source has
+ * confirmed the stop directly - included because real, if incomplete,
+ * network evidence exists for both, same standard as every other point
+ * here. (An earlier version of this comment stated "zero evidence" for
+ * Sylhet from Heathrow - corrected 2026-07-30 per a founder-directed
+ * recheck; the real signal was there, just not primary-source-confirmed.)
+ * No Lahore/Karachi/Dubai/Madinah/Casablanca - all real Heathrow
  * destinations, none with a routes.ts entry, so none included.
  */
 function buildHeathrowNetwork(): AirportNetworkData {
@@ -404,13 +407,15 @@ function buildHeathrowNetwork(): AirportNetworkData {
   ].filter((p): p is DestinationPoint => p !== null);
 
   const bangladeshPoints = [
-    // Dhaka (23.8103N, 90.4125E): same regression method as Bengaluru
-    // above, cross-checked against the real mainland centroid computed
-    // directly from this project's own extracted Bangladesh SVG path data
-    // (lib/atlas-country-geometry.ts, 728.17/394.60) - the two independent
-    // methods land within ~7px of each other, which is the same margin the
-    // Bengaluru regression already validated against.
+    // Dhaka and Sylhet (23.8103N/90.4125E, 24.8949N/91.8687E): same
+    // regression method as Bengaluru above and as Manchester's own Dhaka/
+    // Sylhet points, cross-checked against the real mainland centroid
+    // computed directly from this project's own extracted Bangladesh SVG
+    // path data (lib/atlas-country-geometry.ts, 728.17/394.60) - the
+    // independent methods land within a few px of each other, the same
+    // margin the Bengaluru regression already validated against.
     buildDestinationPoint('london-heathrow', 'dhaka', 732.3, 401.2),
+    buildDestinationPoint('london-heathrow', 'sylhet', 735.75, 398.25),
   ].filter((p): p is DestinationPoint => p !== null);
 
   const countries: CountryData[] = [

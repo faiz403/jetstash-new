@@ -238,7 +238,7 @@ export const destinations: Destination[] = [
       'Sylhet, in Bangladesh\'s hilly north-east, is surrounded by tea estates and holds particular significance for the UK: the great majority of Britain\'s Bangladeshi community trace their roots to this region. It is overwhelmingly a family-visit destination rather than a general holiday one.',
     bestFor: ['Family visits', 'Heritage travel'],
     flightTimeFromUK: 'No current UK service can be confirmed as nonstop — see the route guide for the honest stop pattern.',
-    ukAirports: ['manchester'],
+    ukAirports: ['manchester', 'london-heathrow'],
     visaNote: 'Visa required for UK passport holders unless you hold a Bangladeshi NVR (No Visa Required) endorsement; limited visa-on-arrival exists at Dhaka only, at immigration officers\' discretion — Sylhet itself has no visa-on-arrival service.',
     familyVisitContent: {
       travelPattern:
