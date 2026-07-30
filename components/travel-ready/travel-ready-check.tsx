@@ -191,7 +191,7 @@ export function TravelReadyCheck({
             </div>
           </fieldset>
 
-          {(country === 'Pakistan' || country === 'India') && (
+          {(country === 'Pakistan' || country === 'India' || country === 'Bangladesh') && (
             <div>
               <label htmlFor="ready-exemption" className="text-xs text-ink-400">Do you hold any of these documents for this trip?</label>
               <select
@@ -203,11 +203,12 @@ export function TravelReadyCheck({
                 <option value="none">None of these</option>
                 {country === 'Pakistan' && <option value="nicop-poc">NICOP or Pakistan Origin Card (POC)</option>}
                 {country === 'India' && <option value="oci">OCI card (Overseas Citizen of India)</option>}
+                {country === 'Bangladesh' && <option value="nvr">NVR endorsement (No Visa Required) in my British passport</option>}
                 <option value="visa-or-permit">I already hold a visa or entry permit for this trip</option>
               </select>
             </div>
           )}
-          {country && country !== 'Pakistan' && country !== 'India' && (
+          {country && country !== 'Pakistan' && country !== 'India' && country !== 'Bangladesh' && (
             <div>
               <label htmlFor="ready-exemption-generic" className="text-xs text-ink-400">Do you already hold a visa or entry permit for this trip?</label>
               <select

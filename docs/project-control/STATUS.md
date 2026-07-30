@@ -103,6 +103,42 @@ a minimal centre crop, no stretching or creative alteration — see `docs/visual
 Catalogue). No fare observation logged; none could be honestly recorded without a real, dated
 check. See PR for full detail.
 
+### BD-001 — Bangladesh workstream: Dhaka and Sylhet
+
+An explicit founder decision, 30 July 2026, and an explicit exception to the LAUNCH-001 product
+freeze, on the same basis as DEST-001. Adds Dhaka and Sylhet as destinations, integrated through
+every existing shared system, with a new `bangladesh` region group (`RegionGroup`, `regionGroups`
+in `lib/site-config.ts`) since neither city fits the existing Pakistan/India groupings — no new
+hub page, matching how Mediterranean and North Africa are handled today.
+
+Route evidence uncovered a genuinely volatile service history rather than a stable one: Manchester
+Airport's own press coverage of Biman Bangladesh Airlines' Dhaka/Sylhet service is internally
+inconsistent about which direction carries the Sylhet stop (its October 2019 and January 2020
+articles contradict each other), and the service has a documented pattern of launch, withdrawal
+and relaunch across 2012, 2020 and 2021, with a further suspension and reported resumption in 2026
+that could not be independently confirmed (Biman's own site returned a 403 error on every attempt).
+Of the four candidate routes investigated (Heathrow–Dhaka, Heathrow–Sylhet, Manchester–Dhaka,
+Manchester–Sylhet):
+
+- **Manchester–Dhaka**: added as **Connecting** — every source agrees this has never been nonstop
+  (a scheduled Sylhet stop on the same Biman aircraft, direction disputed between sources).
+- **Manchester–Sylhet**: added as **Verification Pending** — sources disagree on whether this
+  specific leg is ever flown nonstop.
+- **Heathrow–Dhaka**: added as **Verification Pending** — Heathrow's own airline directory
+  confirms Biman operates from Terminal 4, but names no destination, frequency or date.
+- **Heathrow–Sylhet**: **not added** — zero evidence of any kind found for this specific pairing.
+
+Bangladesh entry-readiness rules added to Travel Ready Check: British-passport visa requirement,
+passport validity, and a new **NVR (No Visa Required) document-exemption** — a genuinely different
+mechanism from Pakistan's NICOP or India's OCI card (an endorsement applied for in advance through
+the Bangladesh High Commission, London, not a document already held), sourced to
+`bhclondon.org.uk/no-visa-required` and GOV.UK's Bangladesh entry-requirements page. **No approved
+image exists for either Dhaka or Sylhet** — see `docs/visual-identity.md`'s Asset Catalogue; both
+remain a release blocker for treating either destination as visually complete. No fare observation
+logged for any route; none could be honestly recorded without a real, dated check. No verified
+TravelUp deep link for either destination — travelup.com returned a 403 error on every attempt, so
+both fall back to the existing safe generic booking link. See PR for full detail.
+
 ### HERO-002 — Homepage opening hero above the Route Atlas
 
 **Done** — see `COMPLETED.md`. Customer-visible pre-launch priority, raised from a real mobile

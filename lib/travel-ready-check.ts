@@ -25,6 +25,7 @@ import type { TravelReadySignal } from '@/lib/travel-intelligence-engine';
 export const TRAVEL_READY_SUPPORTED_COUNTRIES: readonly string[] = [
   'Pakistan',
   'India',
+  'Bangladesh',
   'Saudi Arabia',
   'United Arab Emirates',
   'Qatar',
@@ -45,7 +46,7 @@ export type TravelReadyVerdict =
   | 'invalid-departure-date';
 
 /** What the traveller told us they already hold, if anything. */
-export type ExemptionDocument = 'nicop-poc' | 'oci' | 'visa-or-permit' | 'none';
+export type ExemptionDocument = 'nicop-poc' | 'oci' | 'nvr' | 'visa-or-permit' | 'none';
 
 /**
  * Every field here is either a plain enum/boolean or a date — deliberately
@@ -171,7 +172,9 @@ export function evaluateTravelReadiness(input: TravelReadyCheckInput, now: Date)
       ? 'nicop-poc-holder'
       : input.exemptionDocument === 'oci'
         ? 'oci-holder'
-        : null;
+        : input.exemptionDocument === 'nvr'
+          ? 'nvr-holder'
+          : null;
   // A stale-state exemptionDocument left over from a previous destination
   // (e.g. NICOP still selected after switching from Pakistan to India) must
   // not silently grant an exemption that doesn't exist for this country —
@@ -180,7 +183,7 @@ export function evaluateTravelReadiness(input: TravelReadyCheckInput, now: Date)
 
   if (!input.isBritishPassport && !exemptionRule) {
     return notEnoughInformation(
-      'Travel Ready Check currently supports British passport holders, plus NICOP/POC and OCI document holders for Pakistan and India. We don’t yet have verified guidance for other passports.'
+      'Travel Ready Check currently supports British passport holders, plus NICOP/POC document holders for Pakistan, OCI document holders for India, and NVR document holders for Bangladesh. We don’t yet have verified guidance for other passports.'
     );
   }
 

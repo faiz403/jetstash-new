@@ -25,13 +25,14 @@ export const metadata: Metadata = {
 const regionLabels: Record<RegionGroup, string> = {
   pakistan: 'Pakistan',
   india: 'India',
+  bangladesh: 'Bangladesh',
   gulf: 'The Gulf & Umrah',
   mediterranean: 'Mediterranean',
   'north-africa': 'North Africa',
 };
 
-// Matches the site-wide commercial ordering: India first, then Pakistan, then Gulf/Umrah.
-const regionOrder: RegionGroup[] = ['india', 'pakistan', 'gulf', 'mediterranean', 'north-africa'];
+// Matches the site-wide commercial ordering: India first, then Pakistan, then Bangladesh, then Gulf/Umrah.
+const regionOrder: RegionGroup[] = ['india', 'pakistan', 'bangladesh', 'gulf', 'mediterranean', 'north-africa'];
 
 export default function RoutesIndexPage() {
   const grouped = regionOrder

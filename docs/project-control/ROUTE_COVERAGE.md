@@ -54,6 +54,23 @@ marketing; it is to make each one source-complete and add real, dated observatio
 |---|---|---|
 | Heathrow → Bengaluru | Two independently verified daily direct operators: British Airways (own 12 Nov 2025 press release, "the airline operates a daily service on its 777-200 fleet"; review due 30 August 2026) and Virgin Atlantic (own route page, "We fly to Bengaluru daily", 10h; review due 30 August 2026). Air India remains unverified — its official pages give contradictory information about a direct service, and Air India's own site was again unreachable to this session's tooling. | Resolve Air India's contradictory official information once a current, unambiguous Air India primary source can be reached — do not name it until then. Add a date-complete fare observation once a real, dated check can be made — none is logged yet. Separately: `lib/atlas-network-data.ts`'s `buildDestinationPoint()` only reads the route-level `verification` field for the Atlas's evidenceState badge, not per-airline `airlineVerifications` — this makes Bengaluru read "pending" on the Atlas despite two verified operators, the same pre-existing behaviour Delhi and Mumbai already have in production. Worth a small, separate fix; not part of this route's own evidence gap. |
 
+### Newly added — Bangladesh workstream
+
+Four candidate routes were investigated (Heathrow–Dhaka, Heathrow–Sylhet, Manchester–Dhaka,
+Manchester–Sylhet); only three were added, on the evidence below. Manchester Airport's own press
+coverage of this Biman Bangladesh Airlines service is internally inconsistent about which direction
+carries the Sylhet stop (its October 2019 and January 2020 articles contradict each other), and the
+service has a documented history of launch, withdrawal and relaunch (2012, 2020, 2021, and a
+further 2026 suspension/reported resumption that could not be independently confirmed — Biman's own
+site returned a 403 error on every attempt this session).
+
+| Route | Current evidence state | Next evidence action |
+|---|---|---|
+| Manchester → Dhaka | Added as Connecting. Every source found agrees this has never been a nonstop service — Biman's own through-flight always makes a scheduled stop at Sylhet, on the same aircraft. Sources disagree on which direction carries the stop. | Confirm the current (post-2026-resumption) stop pattern directly with Biman or a fresh Manchester Airport announcement before treating either direction's stop-position as settled. |
+| Manchester → Sylhet | Added as Verification Pending. Manchester Airport's own October 2019 and January 2020 articles contradict each other on whether this specific leg is ever flown nonstop. | Resolve only with a single, internally-consistent, current primary source — do not average or guess between the two contradicting 2019/2020 accounts. |
+| Heathrow → Dhaka | Added as Verification Pending. Heathrow's own airline directory confirms Biman Bangladesh Airlines operates from Terminal 4, but names no destination, frequency, aircraft or effective date. | Check directly with Biman (site currently 403-blocked to this session's tooling) or a Heathrow/airline route-specific announcement. |
+| Heathrow → Sylhet | Not added. Zero evidence of any kind — official or otherwise — was found for this specific pairing. | Only add if a genuine primary source naming this exact route surfaces; do not infer it from the Manchester service. |
+
 ### Explicitly unresolved direct-service disputes
 
 These are the only three direct-route records still intentionally fail-closed after the July

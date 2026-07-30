@@ -443,6 +443,72 @@ export const routes: Route[] = [
     peakPeriodIds: ['diwali', 'christmas-new-year', 'uk-summer-holidays'],
   },
   {
+    slug: 'london-heathrow-dhaka',
+    airportSlug: 'london-heathrow',
+    destinationSlug: 'dhaka',
+    flightTime: 'Unverified — no current route-specific evidence found, see note',
+    frequency: 'Unverified — confirm directly with Biman Bangladesh Airlines before booking',
+    airlineSlugs: ['biman-bangladesh'],
+    isDirect: true,
+    verification: {
+      status: 'unverified',
+      sourceName: "Heathrow's own airline-directory page for Biman Bangladesh Airlines (heathrow.com/airline-contact-info/biman-bangladesh-airlines), which lists the airline as operating in Terminal 4",
+      sourceUrl: 'https://www.heathrow.com/airline-contact-info/biman-bangladesh-airlines',
+      verifiedDate: '2026-07-30',
+      reviewDueDate: '2026-08-30',
+      note: 'Heathrow\'s own site confirms Biman Bangladesh Airlines currently operates from Terminal 4, but this is a terminal-assignment listing only — it names no destination, frequency, aircraft, or effective date, so it cannot on its own support a "Dhaka" or "direct" claim. Biman\'s own site (biman-airlines.com) returned a 403 error to this session\'s tooling on every attempt, so its own current schedule could not be directly checked. Widely repeated third-party claims of a nonstop Heathrow-Dhaka Biman service exist (booking aggregators, an unofficial "heathrowairport-info.co.uk" domain distinct from heathrow.com) but are not treated as evidence here per this project\'s sourcing standard. Kept unverified pending a genuine Biman or Heathrow route-specific primary source.',
+    },
+    intro:
+      'Biman Bangladesh Airlines is listed by Heathrow\'s own airline directory as currently operating from Terminal 4, which is real evidence the airline has some active UK presence there — but no route-specific primary source (Biman\'s own site, blocked to this session; a Heathrow or airline press release) confirms a current Heathrow-Dhaka service, its stop pattern, or its frequency. Treat any "direct London to Dhaka" claim seen elsewhere as unconfirmed until checked directly with the airline.',
+    bookingWindowNote:
+      'No JetStash-logged fare history exists for this route, and the underlying service itself is unconfirmed. Check directly with Biman Bangladesh Airlines for the current routing and schedule before planning around any assumed booking window.',
+    peakPeriodIds: [],
+  },
+  {
+    slug: 'manchester-dhaka',
+    airportSlug: 'manchester',
+    destinationSlug: 'dhaka',
+    flightTime: "Around 10h with a scheduled stop at Sylhet — never nonstop on current or historical evidence, see note",
+    frequency: 'Historically up to 3x weekly when operating; the service has been withdrawn and relaunched more than once and cannot be assumed active without a current check',
+    airlineSlugs: ['biman-bangladesh'],
+    isDirect: false,
+    verification: {
+      status: 'verified',
+      sourceName: "Manchester Airport's own media centre, across three separate articles covering this service's launch, a 2021 relaunch and a 2026 resumption",
+      sourceUrl: 'https://mediacentre.manchesterairport.co.uk/biman-bangladesh-airlines-launches-manchester-services-as-new-partnerships-with-bangladeshi-cities-are-announced/',
+      verifiedDate: '2026-07-30',
+      reviewDueDate: '2026-08-30',
+      note: 'Every Manchester Airport source found (October 2019, January 2020, December 2021) agrees this has never been a nonstop Manchester-Dhaka service — the aircraft always makes a scheduled stop at Sylhet as part of the same Biman flight, with no separate airline or aircraft change involved. The sources disagree on which direction carries the stop: the January 2020 launch article states outbound (Manchester-Dhaka) goes via Sylhet with a direct Dhaka-Manchester return, while the October 2019 pre-launch article states the reverse (direct Manchester-Dhaka outbound, Sylhet stop on the return). Separately, third-party news (not treated as a primary source here) reports the service has been withdrawn and relaunched multiple times since 2020, most recently citing a "temporarily suspended" period earlier in 2026 and a stated resumption from 1 July 2026, which this session could not independently confirm against Biman\'s own site (403 error on every attempt) or a fresh Manchester Airport announcement. What is confirmed beyond dispute: this route, whenever it operates, is a one-stop Biman service via Sylhet, never nonstop, in either direction.',
+    },
+    intro:
+      'Manchester to Dhaka has never been a nonstop service on any evidence found: Biman Bangladesh Airlines\' own through-flight always makes a scheduled stop at Sylhet, on the same aircraft, before or after Dhaka depending on direction — Manchester Airport\'s own press coverage of this service is not fully consistent about which direction carries the stop. The service itself has a documented history of suspension and relaunch since it first began in January 2020, so its current operating status should be checked directly with Biman before booking, not assumed from this guide.',
+    bookingWindowNote:
+      'This route\'s service history has been too unstable for a reliable booking-window pattern. If currently operating, confirm the live schedule and exact stop pattern directly with Biman Bangladesh Airlines before booking, especially around Eid, when demand and disruption risk both rise.',
+    peakPeriodIds: ['eid-al-fitr', 'eid-al-adha', 'uk-summer-holidays'],
+  },
+  {
+    slug: 'manchester-sylhet',
+    airportSlug: 'manchester',
+    destinationSlug: 'sylhet',
+    flightTime: 'Unverified — sources disagree on whether this leg is ever nonstop, see note',
+    frequency: 'Historically up to 3x weekly when operating; the service has been withdrawn and relaunched more than once and cannot be assumed active without a current check',
+    airlineSlugs: ['biman-bangladesh'],
+    isDirect: true,
+    verification: {
+      status: 'unverified',
+      sourceName: "Manchester Airport's own media centre, across three separate articles covering this service's launch, a 2021 relaunch and a 2026 resumption",
+      sourceUrl: 'https://mediacentre.manchesterairport.co.uk/biman-bangladesh-airlines-launches-manchester-services-as-new-partnerships-with-bangladeshi-cities-are-announced/',
+      verifiedDate: '2026-07-30',
+      reviewDueDate: '2026-08-30',
+      note: 'Manchester Airport\'s own sources disagree on this specific leg: the January 2020 article describes a nonstop Sylhet-Manchester return sector as part of the same through-flight, while the October 2019 pre-launch article implies the Sylhet stop falls on the return leg instead, which would make outbound Manchester-Sylhet the nonstop sector. Both cannot be correct for the same original launch, and neither has been reconfirmed against the service\'s current (reportedly resumed July 2026) schedule. Kept unverified rather than guessing which account is accurate, or assuming the pattern has not changed again since either article was written.',
+    },
+    intro:
+      'Manchester to Sylhet has been served, on and off since January 2020, by Biman Bangladesh Airlines as one sector of a through-flight that also serves Dhaka — but Manchester Airport\'s own press coverage disagrees about whether the Manchester-Sylhet sector itself is flown nonstop or with a stop, and about which direction that applies to. Given the service\'s documented history of suspension and relaunch, check the current routing and stop pattern directly with Biman before booking.',
+    bookingWindowNote:
+      'This route\'s service history has been too unstable for a reliable booking-window pattern. If currently operating, confirm the live schedule and exact stop pattern directly with Biman Bangladesh Airlines before booking, especially around Eid, when demand and disruption risk both rise.',
+    peakPeriodIds: ['eid-al-fitr', 'eid-al-adha', 'uk-summer-holidays'],
+  },
+  {
     slug: 'manchester-doha',
     airportSlug: 'manchester',
     destinationSlug: 'doha',

@@ -110,6 +110,7 @@ const COUNTRY_TO_PATH_KEY: Record<string, keyof typeof COUNTRY_PATHS> = {
   india: 'in',
   uae: 'ae',
   pakistan: 'pk',
+  bangladesh: 'bd',
   qatar: 'qa',
   'saudi-arabia': 'sa',
   turkey: 'tr',

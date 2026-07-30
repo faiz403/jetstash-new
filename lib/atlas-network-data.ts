@@ -207,6 +207,18 @@ function buildManchesterNetwork(): AirportNetworkData {
     buildDestinationPoint('manchester', 'karachi', 686.32, 360),
   ].filter((p): p is DestinationPoint => p !== null);
 
+  const bangladeshPoints = [
+    // Dhaka (23.8103N, 90.4125E) and Sylhet (24.8949N, 91.8687E): same
+    // regression method as Bengaluru/the Heathrow Dhaka point above, cross-
+    // checked against the real mainland centroid computed directly from
+    // this project's own extracted Bangladesh SVG path data
+    // (lib/atlas-country-geometry.ts, 728.17/394.60) - both land within a
+    // few px of that independently-computed centroid, the same margin the
+    // Bengaluru regression already validated against.
+    buildDestinationPoint('manchester', 'dhaka', 732.3, 401.2),
+    buildDestinationPoint('manchester', 'sylhet', 735.75, 398.25),
+  ].filter((p): p is DestinationPoint => p !== null);
+
   const qatarPoints = [
     buildDestinationPoint('manchester', 'doha', 619.44, 389.82),
   ].filter((p): p is DestinationPoint => p !== null);
@@ -265,6 +277,7 @@ function buildManchesterNetwork(): AirportNetworkData {
     { slug: 'india', label: 'India', x: 722, y: 400, confidence: aggregateCountryConfidence(indiaPoints), destinations: indiaPoints },
     { slug: 'uae', label: 'United Arab Emirates', x: 628, y: 394, confidence: aggregateCountryConfidence(uaePoints), destinations: uaePoints },
     { slug: 'pakistan', label: 'Pakistan', x: 687.71, y: 357.09, confidence: aggregateCountryConfidence(pakistanPoints), destinations: pakistanPoints },
+    { slug: 'bangladesh', label: 'Bangladesh', x: 728.17, y: 394.6, confidence: aggregateCountryConfidence(bangladeshPoints), destinations: bangladeshPoints },
     { slug: 'qatar', label: 'Qatar', x: 618.56, y: 390.2, confidence: aggregateCountryConfidence(qatarPoints), destinations: qatarPoints },
     { slug: 'saudi-arabia', label: 'Saudi Arabia', x: 602.66, y: 395.32, confidence: aggregateCountryConfidence(saudiPoints), destinations: saudiPoints },
     { slug: 'turkey', label: 'Turkey', x: 575.31, y: 345.75, confidence: aggregateCountryConfidence(turkeyPoints), destinations: turkeyPoints },
@@ -350,9 +363,16 @@ function buildBirminghamNetwork(): AirportNetworkData {
 }
 
 /**
- * London Heathrow - 5 routes.ts entries (bengaluru, delhi, doha, jeddah,
- * mumbai), the full set with adequate sourced network evidence per the
- * 2026-07-26 audit plus the 2026-07-30 Bengaluru addition. No
+ * London Heathrow - 6 routes.ts entries (bengaluru, delhi, doha, jeddah,
+ * mumbai, dhaka), the full set with adequate sourced network evidence per
+ * the 2026-07-26 audit plus the 2026-07-30 Bengaluru and 2026-07-30
+ * Bangladesh additions. london-heathrow-dhaka is Verification Pending
+ * (Heathrow's own airline directory confirms Biman Bangladesh Airlines
+ * operates from Terminal 4, but names no destination/frequency/date) -
+ * included because real, if incomplete, network evidence exists, same
+ * standard as every other point here. No Sylhet from Heathrow - zero
+ * evidence of any kind was found for that specific pairing, so it is not
+ * included at all, not even as pending. No
  * Lahore/Karachi/Dubai/Madinah/Casablanca - all real Heathrow
  * destinations, none with a routes.ts entry, so none included.
  */
@@ -383,10 +403,21 @@ function buildHeathrowNetwork(): AirportNetworkData {
     buildDestinationPoint('london-heathrow', 'jeddah', 584.88, 400.03),
   ].filter((p): p is DestinationPoint => p !== null);
 
+  const bangladeshPoints = [
+    // Dhaka (23.8103N, 90.4125E): same regression method as Bengaluru
+    // above, cross-checked against the real mainland centroid computed
+    // directly from this project's own extracted Bangladesh SVG path data
+    // (lib/atlas-country-geometry.ts, 728.17/394.60) - the two independent
+    // methods land within ~7px of each other, which is the same margin the
+    // Bengaluru regression already validated against.
+    buildDestinationPoint('london-heathrow', 'dhaka', 732.3, 401.2),
+  ].filter((p): p is DestinationPoint => p !== null);
+
   const countries: CountryData[] = [
     { slug: 'india', label: 'India', x: 722, y: 400, confidence: aggregateCountryConfidence(indiaPoints), destinations: indiaPoints },
     { slug: 'qatar', label: 'Qatar', x: 618.56, y: 390.2, confidence: aggregateCountryConfidence(qatarPoints), destinations: qatarPoints },
     { slug: 'saudi-arabia', label: 'Saudi Arabia', x: 602.66, y: 395.32, confidence: aggregateCountryConfidence(saudiPoints), destinations: saudiPoints },
+    { slug: 'bangladesh', label: 'Bangladesh', x: 728.17, y: 394.6, confidence: aggregateCountryConfidence(bangladeshPoints), destinations: bangladeshPoints },
   ].filter((c) => c.destinations.length > 0);
 
   return { airportSlug: 'london-heathrow', airportName: 'London Heathrow', origin, defaultCountrySlug: 'india', countries };

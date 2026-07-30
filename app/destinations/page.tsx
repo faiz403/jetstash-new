@@ -15,13 +15,13 @@ export const metadata: Metadata = {
     'International destinations covered by JetStash, with deepest route intelligence in South Asia and the Gulf plus destination guidance across Turkey, Morocco and the Mediterranean.',
 };
 
-// Matches the site-wide commercial ordering: India first, then Pakistan, Umrah, Gulf.
-const groupOrder: (keyof typeof regionGroups)[] = ['india', 'pakistan', 'umrah', 'gulf', 'mediterranean', 'northAfrica'];
+// Matches the site-wide commercial ordering: India first, then Pakistan, Bangladesh, Umrah, Gulf.
+const groupOrder: (keyof typeof regionGroups)[] = ['india', 'pakistan', 'bangladesh', 'umrah', 'gulf', 'mediterranean', 'northAfrica'];
 
 const coverageAreas = [
   {
     title: 'South Asia',
-    detail: 'Pakistan and India',
+    detail: 'Pakistan, India and Bangladesh',
     body: 'Our deepest route intelligence: booking timing, service status and travel-ready guidance.',
     href: '#south-asia',
   },
