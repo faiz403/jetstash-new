@@ -162,32 +162,44 @@ describe('BD-001 — Manchester to Dhaka: Connecting, never claimed nonstop', ()
     expect(getDisplayDirectness(route, FIXED_TODAY)).toBe('connecting');
   });
 
-  it('verification is present and confirms the connecting/one-stop shape specifically, not a direct claim', () => {
+  it('uses Biman\'s current official notice to confirm the connecting, one-stop-via-Sylhet shape', () => {
     const route = getRouteBySlug('manchester-dhaka')!;
     expect(route.verification).toBeDefined();
     expect(route.verification!.status).toBe('verified');
-    expect(route.verification!.sourceUrl).toContain('mediacentre.manchesterairport.co.uk');
+    expect(route.verification!.sourceUrl).toBe('https://biman-airlines.com/');
+    expect(route.verification!.sourceName).toMatch(/via sylhet/i);
+    expect(route.verification!.sourceName).toMatch(/every tuesday & saturday/i);
   });
 
-  it('no field claims a nonstop/direct service as a positive fact — "never nonstop" is stated explicitly instead', () => {
+  it('no field claims a nonstop/direct service as a positive fact — its one-stop status is stated explicitly instead', () => {
     const route = getRouteBySlug('manchester-dhaka')!;
     const allCopy = [route.intro, route.bookingWindowNote, route.flightTime, route.frequency, route.verification!.note].join(' ').toLowerCase();
-    expect(allCopy).toMatch(/never nonstop|never been a nonstop/);
+    expect(allCopy).toMatch(/not a nonstop service/);
     expect(allCopy).toMatch(/sylhet/);
-    // "nonstop" only ever appears negated ("never nonstop"), never as a bare positive claim.
-    expect(allCopy).not.toMatch(/(?<!never )\bis nonstop\b/);
+    // "nonstop" only ever appears as a negative claim, never as a bare positive claim.
+    expect(allCopy).not.toMatch(/(?<!not a )\bis nonstop\b/);
   });
 
-  it('the stop is described as a scheduled stop on the same Biman aircraft, not a separate connecting airline', () => {
+  it('describes one stop via Sylhet without inventing aircraft, terminal or transfer arrangements', () => {
     const route = getRouteBySlug('manchester-dhaka')!;
-    const allCopy = [route.intro, route.verification!.note].join(' ').toLowerCase();
-    expect(allCopy).toMatch(/same aircraft|same biman/);
+    const allCopy = [route.intro, route.bookingWindowNote, route.flightTime, route.frequency, route.verification!.note].join(' ').toLowerCase();
+    expect(allCopy).toMatch(/one stop via sylhet/);
+    const aircraftPhrase = ['same', 'aircraft'].join('\\s*-?\\s*');
+    const stayOnAircraftPhrase = ['stay on the', 'aircraft'].join('\\s+');
+    const changeAircraftPhrase = ['change', 'aircraft'].join('\\s+');
+    const changeTerminalsPhrase = ['change', 'terminals'].join('\\s+');
+    const fixedTerminalPhrase = ['terminal', '\\d'].join('\\s+');
+    expect(allCopy).not.toMatch(new RegExp(aircraftPhrase));
+    expect(allCopy).not.toMatch(new RegExp(stayOnAircraftPhrase));
+    expect(allCopy).not.toMatch(new RegExp(changeAircraftPhrase));
+    expect(allCopy).not.toMatch(new RegExp(changeTerminalsPhrase));
+    expect(allCopy).not.toMatch(new RegExp(fixedTerminalPhrase));
   });
 
-  it('the twice-weekly frequency is attributed to current news reporting, not claimed as Biman\'s own confirmed schedule', () => {
+  it('attributes the Tuesday and Saturday frequency directly to Biman\'s current official notice', () => {
     const route = getRouteBySlug('manchester-dhaka')!;
-    expect(route.frequency.toLowerCase()).toMatch(/attributed to|current bangladeshi news|not yet reconfirmed/);
-    expect(route.frequency.toLowerCase()).toMatch(/two weekly|twice weekly/);
+    expect(route.frequency.toLowerCase()).toMatch(/every tuesday and saturday/);
+    expect(route.frequency.toLowerCase()).toMatch(/biman.*official notice/);
   });
 
   it('getRoutePresentation reports status "connecting"', () => {
@@ -235,10 +247,12 @@ describe('BD-001 — Manchester-Sylhet, Heathrow-Dhaka and Heathrow-Sylhet: Veri
     }
   });
 
-  it('the Heathrow-Dhaka note documents the rechecked live flight-tracking evidence (BG201/BG202) without claiming a confirmed stop pattern', () => {
+  it('the Heathrow-Dhaka note documents the rechecked live flight-tracking evidence (BG201/BG202) without claiming a confirmed stop pattern or fixed terminal', () => {
     const route = getRouteBySlug('london-heathrow-dhaka')!;
-    expect(route.verification!.note!).toMatch(/BG201|BG202/);
-    expect(route.verification!.note!.toLowerCase()).toMatch(/could not|unconfirmed|kept unverified/);
+    const copy = [route.intro, route.bookingWindowNote, route.flightTime, route.frequency, route.verification!.note].join(' ');
+    expect(copy).toMatch(/BG201|BG202/);
+    expect(copy.toLowerCase()).toMatch(/could not|unconfirmed|kept unverified/);
+    expect(copy).not.toMatch(/Terminal \d/);
   });
 
   it('the Heathrow-Sylhet note explicitly corrects the earlier "zero evidence" rejection rather than silently changing it', () => {

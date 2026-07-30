@@ -116,27 +116,25 @@ founder-directed amendment round (30 July 2026) corrected and re-checked it agai
 and current sources rather than the original secondary-news leads. Of the four candidate routes
 investigated (Heathrow–Dhaka, Heathrow–Sylhet, Manchester–Dhaka, Manchester–Sylhet):
 
-- **Manchester–Dhaka**: **Connecting** (one-stop via Sylhet, same Biman aircraft throughout, never
-  presented as an ordinary multi-airline connection). Multiple independent current (July 2026)
-  Bangladeshi sources — BSS (the state news agency), Dhaka Tribune, The Business Standard, and
-  aviation trade publication AeroRoutes — consistently describe this exact one-stop-via-Sylhet
-  service on both legs, with the same flight number reported across the Sylhet and onward sectors,
-  resuming after a roughly four-month suspension with an initial frequency of twice weekly
-  (Tuesdays and Saturdays). Not yet confirmed against Biman's own site (403 error on every
-  attempt), so attributed to current news reporting, not an airline primary source.
+- **Manchester–Dhaka**: **Connecting** (one stop via Sylhet, not nonstop). Biman Bangladesh
+  Airlines' current official notice states: “BIMAN BANGLADESH AIRLINES WILL RESUME
+  DHAKA-MANCHESTER-DHAKA (VIA SYLHET) FLIGHTS FROM 01 JULY 2026 (EVERY TUESDAY & SATURDAY).”
+  That is the primary evidence for the via-Sylhet route pattern and Tuesday/Saturday schedule.
+  It does not establish aircraft, terminal or transfer arrangements, so JetStash does not claim
+  any of them.
 - **Manchester–Sylhet**: remains **Verification Pending** — a genuine, currently unresolved,
   directly-checked contradiction: Manchester Airport's own Sylhet destination page states "We're
-  not flying to this location at the moment", while the Manchester–Dhaka evidence above describes
-  a scheduled Sylhet stop on every rotation of that same service.
+  not flying to this location at the moment", while Biman's official Manchester–Dhaka notice says
+  the service operates via Sylhet every Tuesday and Saturday.
 - **Heathrow–Dhaka**: remains **Verification Pending**, rechecked — Heathrow's own live
-  flight-tracking pages now confirm named, currently operating flights BG201/BG202 (Dhaka–London),
-  real evidence beyond the previous terminal-directory-only finding. Whether this specific service
+  flight-tracking pages now confirm named, currently operating flights BG201/BG202, real evidence
+  beyond the previous airline-directory-only finding. Whether this specific service
   is nonstop or (like Manchester) makes a scheduled Sylhet stop is unconfirmed by any primary
   source, so no nonstop claim is made.
 - **Heathrow–Sylhet**: **added** as **Verification Pending** (correcting the original "zero
   evidence" rejection, which was inaccurate) — Heathrow's own flight-tracking pages confirm the
   same current BG201/BG202 service, and multiple independent flight-schedule sources describe a
-  Sylhet stop on it, mirroring the confirmed Manchester pattern; held pending rather than
+  Sylhet stop on it; held pending rather than
   confirmed, since no primary source has resolved the stop directly.
 
 Bangladesh entry-readiness rules added to Travel Ready Check: British-passport visa requirement,
