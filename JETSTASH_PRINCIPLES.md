@@ -442,7 +442,7 @@ Environment variables are managed in **Vercel Project Settings → Environment V
 | `BREVO_LIST_ID` | `api/subscribe`, `api/route-watch` | Same |
 | `RESEND_API_KEY` | `api/contact`, `api/quote-request`, `api/cron/fare-check-reminder` | Contact/quote delivery and reminder email |
 | `CONTACT_TO_EMAIL` | contact, quote and reminder routes | Optional — overrides `siteConfig.contactEmail` |
-| `CRON_SECRET` | `api/cron/fare-check-reminder` | Optional but recommended request authentication |
+| `CRON_SECRET` | `api/cron/fare-check-reminder` | Required in Production request authentication. The endpoint fails closed when absent or empty; do not manually test production without controlling reminder-email side effects. |
 
 The production domain is `jetstash.co.uk`. After a Brevo account/configuration change, confirm the
 custom contact attributes still exist (`NEAREST_AIRPORT`, `TRAVEL_INTEREST`, `WATCH_AIRPORT`,

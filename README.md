@@ -94,7 +94,7 @@ remaining work:
 | `BREVO_LIST_ID` | `/app/api/subscribe/route.ts`, `/app/api/route-watch/route.ts` | Destination list for those signups |
 | `RESEND_API_KEY` | `/app/api/contact/route.ts`, `/app/api/quote-request/route.ts`, `/app/api/cron/fare-check-reminder/route.ts` | Contact/quote delivery and weekly fare-check reminder |
 | `CONTACT_TO_EMAIL` | `/app/api/contact/route.ts`, `/app/api/quote-request/route.ts`, `/app/api/cron/fare-check-reminder/route.ts` | Optional — overrides `siteConfig.contactEmail` as the delivery address for contact/quote-request messages and the fare-check reminder |
-| `CRON_SECRET` | `/app/api/cron/fare-check-reminder/route.ts` | Optional but recommended — Vercel sets this automatically for its own Cron Jobs (see `vercel.json`); the route checks it if present, so anyone else hitting the URL directly gets a 401 |
+| `CRON_SECRET` | `/app/api/cron/fare-check-reminder/route.ts` | Required in Production. The endpoint fails closed with a 503 when it is absent or empty; Vercel Cron sends it as `Authorization: Bearer <secret>`. Never manually call production unless email side effects are controlled. |
 
 ## Project structure
 
