@@ -350,9 +350,10 @@ function buildBirminghamNetwork(): AirportNetworkData {
 }
 
 /**
- * London Heathrow â€” 4 routes.ts entries (delhi, doha, jeddah, mumbai), the
- * full set with adequate sourced network evidence per the 2026-07-26 audit.
- * No Lahore/Karachi/Dubai/Madinah/Casablanca â€” all real Heathrow
+ * London Heathrow - 5 routes.ts entries (bengaluru, delhi, doha, jeddah,
+ * mumbai), the full set with adequate sourced network evidence per the
+ * 2026-07-26 audit plus the 2026-07-30 Bengaluru addition. No
+ * Lahore/Karachi/Dubai/Madinah/Casablanca - all real Heathrow
  * destinations, none with a routes.ts entry, so none included.
  */
 function buildHeathrowNetwork(): AirportNetworkData {
@@ -360,6 +361,16 @@ function buildHeathrowNetwork(): AirportNetworkData {
   const origin = { x: 476.6, y: 298.0 };
 
   const indiaPoints = [
+    // Bengaluru (12.9716N, 77.5946E): not fit by eye like the others -
+    // computed via linear regression against this file's own existing India
+    // points (Delhi/Mumbai/Ahmedabad/Amritsar), which are already accurate
+    // to within ~0.5px of their real lat/long on both axes. x = 690 +
+    // (lon - 72.57) x 2.371 (Ahmedabad anchor); y = 414 - 2.709 x (lat -
+    // 19.08) (Mumbai anchor) - both slopes cross-checked against all 4
+    // reference points before use. Bengaluru sits south of every other
+    // plotted India destination (larger y), which matches its real
+    // geography.
+    buildDestinationPoint('london-heathrow', 'bengaluru', 701.9, 430.6),
     buildDestinationPoint('london-heathrow', 'delhi', 701, 388),
     buildDestinationPoint('london-heathrow', 'mumbai', 690, 414),
   ].filter((p): p is DestinationPoint => p !== null);

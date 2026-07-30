@@ -405,6 +405,28 @@ export const routes: Route[] = [
     peakPeriodIds: ['diwali', 'christmas-new-year', 'uk-summer-holidays'],
   },
   {
+    slug: 'london-heathrow-bengaluru',
+    airportSlug: 'london-heathrow',
+    destinationSlug: 'bengaluru',
+    flightTime: "10h direct (Virgin Atlantic's own route page)",
+    frequency: "Virgin Atlantic markets a daily direct service (per Virgin Atlantic's own route page); other operators not independently verified this session — see note",
+    airlineSlugs: ['virgin-atlantic'],
+    isDirect: true,
+    verification: {
+      status: 'verified',
+      sourceName: "Virgin Atlantic's own Bengaluru destination page (virginatlantic.com/where-we-fly/asia/india/bengaluru)",
+      sourceUrl: 'https://www.virginatlantic.com/where-we-fly/asia/india/bengaluru',
+      verifiedDate: '2026-07-30',
+      reviewDueDate: '2026-08-30',
+      note: 'Virgin Atlantic\'s own route page states directly: "We fly to Bengaluru daily" from London Heathrow, with a stated flight time of 10 hours — confirms a direct service exists and is currently marketed by Virgin Atlantic. The page does not disclose whether Virgin Atlantic operates every rotation itself or via a codeshare/joint-venture partner, so this is recorded as a sold/marketed daily direct service, not an operating-carrier guarantee. British Airways and Air India both appear, from search evidence only (assigned Heathrow flight numbers BA118/BA119 and AI132/AI133, and an October 2024 Air India press release describing a non-stop Bengaluru-Heathrow launch), to also serve or sell this route — but neither airline\'s own primary source could be reached this session despite 7 attempts across multiple URL paths for British Airways (502 Bad Gateway, then repeated timeouts) and 3 for Air India (timeout, connection reset), unlike a prior session\'s successful fetch of both airlines\' sources for the Heathrow-Mumbai route on 2026-07-13 — this looks like a transient access issue, not a permanent block, and should be rechecked. Neither airline is named on this route until independently confirmed.',
+    },
+    intro:
+      'Virgin Atlantic\'s own route page currently markets a daily direct London Heathrow to Bengaluru service, with a stated flight time of around 10 hours. British Airways and Air India may also serve or sell this route — both have assigned Heathrow flight numbers, and Air India previously announced a non-stop Bengaluru service — but neither could be independently verified against their own primary source this session, so neither is named here yet.',
+    bookingWindowNote:
+      'This is a newly added route guide with no JetStash-logged fare history yet. Compare current prices directly with the airline and check the live schedule before booking, rather than assuming a fixed booking window.',
+    peakPeriodIds: ['diwali', 'christmas-new-year', 'uk-summer-holidays'],
+  },
+  {
     slug: 'manchester-doha',
     airportSlug: 'manchester',
     destinationSlug: 'doha',

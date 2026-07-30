@@ -48,6 +48,12 @@ marketing; it is to make each one source-complete and add real, dated observatio
 | Heathrow → Doha | Qatar Airways direct route is verified; exact frequency and duration remain unclaimed. | Recheck the official route page before 28 August 2026; do not publish an inferred frequency. |
 | Birmingham → Mumbai | Confirmed connecting corridor, not direct. | Maintain the connecting-only framing; improve practical connection intelligence only with primary or operator evidence. |
 
+### Newly added — first destination expansion since launch
+
+| Route | Current evidence state | Next evidence action |
+|---|---|---|
+| Heathrow → Bengaluru | Virgin Atlantic's own route page verifies a daily direct service (10h, review due 30 August 2026). British Airways and Air India both plausibly serve or sell this route (Heathrow flight numbers, prior Air India press coverage), but neither's own primary source could be reached this session — a transient access issue, not a confirmed absence, since a prior session did reach both for the Mumbai route. | Recheck British Airways and Air India directly once tooling access is restored, before naming either. Add a date-complete fare observation once a real, dated check can be made — none is logged yet. |
+
 ### Explicitly unresolved direct-service disputes
 
 These are the only three direct-route records still intentionally fail-closed after the July

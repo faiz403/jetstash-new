@@ -189,6 +189,20 @@ export const destinations: Destination[] = [
       peakPeriodIds: ['navratri', 'diwali', 'uk-summer-holidays'],
     },
   },
+  {
+    slug: 'bengaluru',
+    iataCode: 'BLR',
+    city: 'Bengaluru',
+    country: 'India',
+    region: 'india',
+    tagline: 'India\'s technology capital, on the Deccan Plateau',
+    description:
+      'Bengaluru (formerly Bangalore) is India\'s technology and start-up hub, Karnataka\'s state capital, and known for a milder climate than most of the country thanks to its Deccan Plateau elevation. It\'s a major destination for UK business and tech travel, alongside a growing base of onward leisure visitors.',
+    bestFor: ['Business travel', 'Tech industry', 'City breaks'],
+    flightTimeFromUK: '10h direct from London Heathrow',
+    ukAirports: ['london-heathrow'],
+    visaNote: 'e-Visa required for UK passport holders, apply at least 4 days before travel.',
+  },
   // Gulf
   {
     slug: 'dubai',
