@@ -92,12 +92,15 @@ freeze — not a violation of it (real evidence-led feature work the founder spe
 commissioned, not speculative housekeeping). Adds Bengaluru as a destination and London
 Heathrow–Bengaluru as its first route, integrated through every existing shared system (route
 guide template, destination directory, Route Atlas, Journey Check, Travel Ready Check, sitemap) —
-no new system built. Direct service verified via Virgin Atlantic's own route page only; British
-Airways and Air India could not be independently verified this session (their own sites were
-unreachable to this session's tooling — see `ROUTE_COVERAGE.md`) and are not named. No approved
-Bengaluru hero image exists yet — see `docs/visual-identity.md`'s Asset Catalogue and the PR for
-the exact release-blocker statement. No fare observation logged; none could be honestly recorded
-without a real, dated check. See PR for full detail.
+no new system built. Direct service now verified via two independent airline sources: British
+Airways' own 12 Nov 2025 press release ("the airline operates a daily service on its 777-200
+fleet") and Virgin Atlantic's own route page ("We fly to Bengaluru daily", 10h). Air India remains
+excluded — its official pages give contradictory information about a direct service, and its own
+site was again unreachable this session; see `ROUTE_COVERAGE.md`. No approved Bengaluru hero image
+exists yet — see `docs/visual-identity.md`'s Asset Catalogue and the PR for the exact
+release-blocker statement (still open as of this entry; the founder's proposed hero image did not
+come through as an actual attachment in this amendment round). No fare observation logged; none
+could be honestly recorded without a real, dated check. See PR for full detail.
 
 ### HERO-002 — Homepage opening hero above the Route Atlas
 

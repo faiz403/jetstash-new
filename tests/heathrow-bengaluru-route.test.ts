@@ -87,22 +87,27 @@ describe('DEST-001 — displays as direct, on real evidence only', () => {
     expect(getDisplayDirectness(route, FIXED_TODAY)).toBe('direct');
   });
 
-  it('a route-level verification record exists, sourced to Virgin Atlantic\'s own route page', () => {
+  it('per-airline verification records exist for British Airways and Virgin Atlantic, each independently sourced', () => {
     const route = getRouteBySlug('london-heathrow-bengaluru')!;
-    expect(route.verification).toBeDefined();
-    expect(route.verification!.status).toBe('verified');
-    expect(route.verification!.sourceUrl).toBe('https://www.virginatlantic.com/where-we-fly/asia/india/bengaluru');
+    expect(route.airlineVerifications).toBeDefined();
+    expect(route.airlineVerifications).toHaveLength(2);
+    const ba = route.airlineVerifications!.find((v) => v.airlineSlug === 'british-airways');
+    const vs = route.airlineVerifications!.find((v) => v.airlineSlug === 'virgin-atlantic');
+    expect(ba).toBeDefined();
+    expect(ba!.status).toBe('verified');
+    expect(ba!.sourceUrl).toBe('https://mediacentre.britishairways.com/pressrelease/details/24270');
+    expect(vs).toBeDefined();
+    expect(vs!.status).toBe('verified');
+    expect(vs!.sourceUrl).toBe('https://www.virginatlantic.com/where-we-fly/asia/india/bengaluru');
   });
 
-  it('only virgin-atlantic is named as an airline — British Airways and Air India are deliberately not claimed, since neither could be independently verified this session', () => {
+  it('British Airways and Virgin Atlantic are named as airlines; Air India is deliberately excluded — its official pages give contradictory information about a direct service', () => {
     const route = getRouteBySlug('london-heathrow-bengaluru')!;
-    expect(route.airlineSlugs).toEqual(['virgin-atlantic']);
-    const allCopy = [route.intro, route.bookingWindowNote, route.flightTime, route.frequency, route.verification?.note ?? ''].join(' ');
-    // British Airways and Air India may be *discussed* as unverified in the note/intro (they are,
-    // honestly, as a documented gap) but must never be added to airlineSlugs or asserted as verified.
-    expect(route.airlineSlugs).not.toContain('british-airways');
+    expect(route.airlineSlugs.slice().sort()).toEqual(['british-airways', 'virgin-atlantic'].sort());
     expect(route.airlineSlugs).not.toContain('air-india');
-    expect(allCopy).toMatch(/not independently verified|could not be independently verified/i);
+    const allCopy = [route.intro, route.bookingWindowNote, route.flightTime, route.frequency].join(' ');
+    expect(allCopy).toMatch(/air india/i);
+    expect(allCopy).toMatch(/contradictory/i);
   });
 
   it('every listed airline slug resolves to a real entry in data/airlines.ts', () => {
@@ -111,10 +116,29 @@ describe('DEST-001 — displays as direct, on real evidence only', () => {
     expect(resolved.length).toBe(route.airlineSlugs.length);
   });
 
-  it('flightTime and frequency attribute their claim to Virgin Atlantic specifically, not a blanket "daily" for every operator', () => {
+  it('British Airways\' evidence explicitly says "daily" and names the operating aircraft — not inferred from a booking page selling dates', () => {
     const route = getRouteBySlug('london-heathrow-bengaluru')!;
+    const ba = route.airlineVerifications!.find((v) => v.airlineSlug === 'british-airways')!;
+    expect(ba.supportedClaim.toLowerCase()).toMatch(/daily/);
+    expect(ba.supportedClaim.toLowerCase()).toMatch(/777-200/);
+    expect(ba.supportedClaim.toLowerCase()).toMatch(/the airline operates/);
+  });
+
+  it('Virgin Atlantic\'s evidence explicitly says "daily", and its weaker operating-carrier disclosure (vs British Airways\' explicit "the airline operates" wording) is recorded, not glossed over', () => {
+    const route = getRouteBySlug('london-heathrow-bengaluru')!;
+    const vs = route.airlineVerifications!.find((v) => v.airlineSlug === 'virgin-atlantic')!;
+    expect(vs.supportedClaim.toLowerCase()).toMatch(/daily/);
+    expect(vs.remainingUncertainty!.toLowerCase()).toMatch(/codeshare|joint-venture/);
+  });
+
+  it('frequency and flightTime never claim both airlines fly the exact same stated duration or an aggregate weekly count not actually stated by either source', () => {
+    const route = getRouteBySlug('london-heathrow-bengaluru')!;
+    // The flightTime figure (10h) is Virgin Atlantic's own stated duration only — British Airways'
+    // source never gave a duration, so flightTime must not imply it's a jointly-confirmed figure.
     expect(route.flightTime.toLowerCase()).toMatch(/virgin atlantic/);
-    expect(route.frequency.toLowerCase()).toMatch(/virgin atlantic/);
+    expect(route.flightTime.toLowerCase()).not.toMatch(/british airways/);
+    // No invented per-route weekly count (BA's source gives only a 5-city aggregate).
+    expect(route.frequency).not.toMatch(/\d+x\s*weekly/i);
   });
 
   it('no invented terminal, baggage or transfer-time claim appears anywhere in the route\'s copy', () => {
@@ -130,10 +154,10 @@ describe('DEST-001 — displays as direct, on real evidence only', () => {
     expect(getRoutePresentation(route, FIXED_TODAY).status).toBe('direct');
   });
 
-  it('getAirlineDisplayStatus is "unverified" for virgin-atlantic — attribution rests on the route-level verification record, not a per-airline airlineVerifications entry (this route has none, matching the single-operator pattern used elsewhere, e.g. manchester-dubai)', () => {
+  it('getAirlineDisplayStatus is "verified" for both British Airways and Virgin Atlantic, each backed by its own airlineVerifications entry', () => {
     const route = getRouteBySlug('london-heathrow-bengaluru')!;
-    expect(route.airlineVerifications).toBeUndefined();
-    expect(getAirlineDisplayStatus(route, 'virgin-atlantic', FIXED_TODAY)).toBe('unverified');
+    expect(getAirlineDisplayStatus(route, 'british-airways', FIXED_TODAY)).toBe('verified');
+    expect(getAirlineDisplayStatus(route, 'virgin-atlantic', FIXED_TODAY)).toBe('verified');
   });
 });
 
@@ -238,7 +262,7 @@ describe('DEST-001 — Travel Ready Check reuses the existing India rules, no du
 });
 
 describe('DEST-001 — Interactive Route Atlas integration', () => {
-  it('the Heathrow network includes a Bengaluru point under India, with verified evidence state', () => {
+  it('the Heathrow network includes a Bengaluru point under India, correctly resolved and network-supported', () => {
     const airports = buildAtlasAirports();
     const heathrow = airports.find((a) => a.airportSlug === 'london-heathrow');
     expect(heathrow).toBeDefined();
@@ -246,9 +270,20 @@ describe('DEST-001 — Interactive Route Atlas integration', () => {
     expect(india).toBeDefined();
     const bengaluru = india!.destinations.find((d) => d.slug === 'bengaluru');
     expect(bengaluru).toBeDefined();
-    expect(bengaluru!.evidenceState).toBe('verified');
     expect(bengaluru!.networkMembership).toBe('supported');
     expect(bengaluru!.routeHref).toBe('/routes/london-heathrow-bengaluru');
+  });
+
+  it('Bengaluru\'s Atlas evidenceState matches Delhi\'s and Mumbai\'s exactly — all three read "pending" because buildDestinationPoint() only checks the route-level `verification` field, not per-airline `airlineVerifications`. This is a pre-existing gap in lib/atlas-network-data.ts affecting every airlineVerifications-only route already live in production (Delhi, Mumbai) — not a regression introduced by adding Bengaluru, and out of scope for this route addition to fix on its own', () => {
+    const airports = buildAtlasAirports();
+    const heathrow = airports.find((a) => a.airportSlug === 'london-heathrow')!;
+    const india = heathrow.countries.find((c) => c.slug === 'india')!;
+    const bengaluru = india.destinations.find((d) => d.slug === 'bengaluru')!;
+    const delhi = india.destinations.find((d) => d.slug === 'delhi')!;
+    const mumbai = india.destinations.find((d) => d.slug === 'mumbai')!;
+    expect(bengaluru.evidenceState).toBe(delhi.evidenceState);
+    expect(bengaluru.evidenceState).toBe(mumbai.evidenceState);
+    expect(bengaluru.evidenceState).toBe('pending');
   });
 
   it('the existing Heathrow India points (Delhi, Mumbai) are still present alongside Bengaluru', () => {
