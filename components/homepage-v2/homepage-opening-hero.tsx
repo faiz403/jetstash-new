@@ -44,16 +44,16 @@ const SHORT_VIEWPORT_BUTTON = '[@media(max-height:800px)]:h-11 [@media(max-heigh
 export function HomepageOpeningHero() {
   return (
     <PageHero
-      eyebrow="UK travel intelligence"
-      title="Know the journey before you book the fare."
-      description="JetStash checks routes, travel requirements, timing, baggage and dated fare evidence for international journeys from UK airports."
+      eyebrow="Before you book a flight"
+      title="Check the whole journey before you book."
+      description="Choose your UK airport and destination. JetStash shows which routes are operating, what has changed, what travel requirements apply and when the information was last checked."
       heroKey="routes"
       size="compact"
       className={SHORT_VIEWPORT_HERO_PADDING}
     >
       <div className="flex flex-wrap items-center gap-3">
         <LinkButton href="#your-journey" variant="primary" size="lg" className={SHORT_VIEWPORT_BUTTON}>
-          Check my journey
+          Check a journey
         </LinkButton>
         <LinkButton href="#route-atlas" variant="outline" size="lg" className={SHORT_VIEWPORT_BUTTON}>
           Explore the Route Atlas
@@ -63,7 +63,7 @@ export function HomepageOpeningHero() {
           visually secondary, but ink-400 was too low-contrast over the dimmed photo on
           both mobile and desktop. ink-300 matches PageHero's own description text, already
           proven readable over this exact HeroBackdrop treatment elsewhere on the site. */}
-      <p className="mt-3 text-xs text-ink-300">Checked, dated and sourced. Booking links come last.</p>
+      <p className="mt-3 text-xs text-ink-300">Checked against airline and official sources. Booking links come last.</p>
 
       <div className="mt-6 flex flex-wrap gap-2 border-t border-white/10 pt-6" role="list" aria-label="Why JetStash is different">
         {PROOF_POINTS.map(({ icon: Icon, label }) => (
