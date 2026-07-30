@@ -320,17 +320,23 @@ keeps the collection recognisable as JetStash rather than a set of unrelated sto
 
 Purpose: anchor arrival at a specific, real, recognisable place.
 Responsibility: **arrival** — one iconic landmark, aircraft as a small guest, golden hour. Alt
-derives as "{tagline} — {city}, {country}". All 25 destinations below are **In Production** —
-`bengaluru`, added 30 July 2026 alongside the Heathrow–Bengaluru route, received its approved
-photograph on 30 July 2026 (`public/images/destinations/bengaluru.webp`, 2560×1440, converted from
-the founder-supplied source via a minimal centre crop, no stretching or creative alteration) and is
-no longer a release blocker — see `STATUS.md` DEST-001.
+derives as "{tagline} — {city}, {country}". All 27 destinations below are **In Production**.
+`bengaluru` received its approved photograph on 30 July 2026
+(`public/images/destinations/bengaluru.webp`, 2560×1440, converted from the founder-supplied source
+via a minimal centre crop, no stretching or creative alteration) — see `STATUS.md` DEST-001.
+`dhaka` and `sylhet`, added 30 July 2026 alongside the Bangladesh workstream, each received their
+approved photograph the same day (`public/images/destinations/dhaka.webp`,
+`public/images/destinations/sylhet.webp`, both 2560×1440, converted the same way, no stretching or
+creative alteration) — see `STATUS.md` BD-001. None of the three remain a release blocker.
 
 **Pakistan**: `lahore` (Badshahi Mosque), `islamabad` (Faisal Mosque / Margalla Hills), `karachi`
 (Mazar-e-Quaid).
 **India**: `delhi` (Humayun's Tomb), `mumbai` (Gateway of India), `amritsar` (Golden Temple — no
 aircraft, reverence, see DD-006), `ahmedabad` (Sabarmati riverfront / Ellis Bridge), `bengaluru`
 (Vidhana Soudha, with a commercial aircraft on approach — founder-supplied photograph).
+**Bangladesh**: `dhaka` (National Parliament House, reflected in the lake beside it — founder-
+supplied photograph), `sylhet` (tea gardens and a white domed shrine beside the river — founder-
+supplied photograph).
 **Gulf & Saudi Arabia**: `dubai` (Burj Khalifa from the desert edge), `doha` (Museum of Islamic
 Art), `jeddah` (Al-Balad old town), `madinah` (Prophet's Mosque — no aircraft, reverence).
 **Turkey**: `istanbul` (Süleymaniye Mosque), `antalya` (Kaleiçi old harbour), `dalaman` (Ölüdeniz

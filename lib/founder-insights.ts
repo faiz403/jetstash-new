@@ -488,7 +488,7 @@ function travelReadyOpsStatus(now: Date): FounderSection {
     headline:
       items.length === 0
         ? `All ${travelReadyRules.length} rules across ${coveredCountries}/${TRAVEL_READY_SUPPORTED_COUNTRIES.length} supported countries are fresh.`
-        : `${items.length} of ${travelReadyRules.length} rules need attention across ${coveredCountries}/${TRAVEL_READY_SUPPORTED_COUNTRIES.length} supported countries. Coverage is deliberately limited to British passport holders plus NICOP/POC and OCI document holders — every other nationality gets an honest "not enough information", not a guess.`,
+        : `${items.length} of ${travelReadyRules.length} rules need attention across ${coveredCountries}/${TRAVEL_READY_SUPPORTED_COUNTRIES.length} supported countries. Coverage is deliberately limited to British passport holders plus NICOP/POC (Pakistan), OCI (India) and NVR (Bangladesh) document holders — every other nationality gets an honest "not enough information", not a guess.`,
     items,
     action:
       'Re-check the rule\'s official source directly (never a blog or forum), update requirement/officialSource if anything changed, then bump lastVerifiedDate to today and reviewDueDate 6 months out in data/travel-ready-rules.ts.',

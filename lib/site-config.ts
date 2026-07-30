@@ -67,6 +67,11 @@ export const regionGroups = {
     slug: 'india',
     destinationSlugs: ['delhi', 'mumbai', 'ahmedabad', 'amritsar', 'bengaluru'],
   },
+  bangladesh: {
+    label: 'Bangladesh',
+    slug: 'bangladesh',
+    destinationSlugs: ['dhaka', 'sylhet'],
+  },
   gulf: {
     label: 'Gulf',
     slug: 'gulf',

@@ -53,6 +53,13 @@ export const visaLinks: VisaLink[] = [
     sourceName: 'Government of India e-Visa portal',
   },
   {
+    country: 'Bangladesh',
+    href: 'https://www.gov.uk/foreign-travel-advice/bangladesh/entry-requirements',
+    linkType: 'info',
+    buttonLabel: 'Check current entry requirements',
+    sourceName: 'GOV.UK foreign travel advice — Bangladesh entry requirements',
+  },
+  {
     country: 'Saudi Arabia',
     href: 'https://umrah.nusuk.sa/',
     linkType: 'apply',

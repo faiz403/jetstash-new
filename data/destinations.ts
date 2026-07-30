@@ -1,4 +1,4 @@
-export type RegionGroup = 'pakistan' | 'india' | 'gulf' | 'mediterranean' | 'north-africa';
+export type RegionGroup = 'pakistan' | 'india' | 'bangladesh' | 'gulf' | 'mediterranean' | 'north-africa';
 
 export interface FamilyVisitContent {
   /** What genuinely matters when this trip is a family/heritage visit rather than a holiday. */
@@ -202,6 +202,53 @@ export const destinations: Destination[] = [
     flightTimeFromUK: '10h direct from London Heathrow',
     ukAirports: ['london-heathrow'],
     visaNote: 'e-Visa required for UK passport holders, apply at least 4 days before travel.',
+  },
+  // Bangladesh
+  {
+    slug: 'dhaka',
+    iataCode: 'DAC',
+    city: 'Dhaka',
+    country: 'Bangladesh',
+    region: 'bangladesh',
+    tagline: 'Bangladesh\'s vast, fast-growing capital on the Buriganga',
+    description:
+      'Dhaka is Bangladesh\'s capital and by far its largest city — a dense, fast-moving hub of business, government and culture on the Buriganga river. For most UK travellers it is either the destination itself or the gateway for a wider family trip elsewhere in the country.',
+    bestFor: ['Family visits', 'Business travel', 'Heritage travel'],
+    flightTimeFromUK: 'No current UK service can be confirmed as nonstop — see the route guide for the honest stop pattern.',
+    ukAirports: ['london-heathrow', 'manchester'],
+    visaNote: 'Visa required for UK passport holders unless you hold a Bangladeshi NVR (No Visa Required) endorsement; limited visa-on-arrival exists at Dhaka only, at immigration officers\' discretion.',
+    familyVisitContent: {
+      travelPattern:
+        'Most UK-Dhaka travel is family-visit driven, often combined with business in the capital. Trips can run long, and it is common for a Dhaka arrival to be the first leg of a wider visit elsewhere in the country.',
+      documentNote:
+        'British nationals of Bangladeshi origin (and qualifying spouses/children) may hold an NVR endorsement in their British passport, applied for in advance through the Bangladesh High Commission — it is not something arranged at the airport. Everyone else needs a visa arranged before travel; a limited, discretionary visa-on-arrival exists at Dhaka only, and should not be relied on as a plan.',
+      packingNote:
+        'Check the current baggage allowance directly with whichever airline and fare you actually book — this route\'s UK service has changed shape more than once in recent years, and an allowance from an old booking should not be assumed to still apply.',
+      peakPeriodIds: ['eid-al-fitr', 'eid-al-adha', 'uk-summer-holidays'],
+    },
+  },
+  {
+    slug: 'sylhet',
+    iataCode: 'ZYL',
+    city: 'Sylhet',
+    country: 'Bangladesh',
+    region: 'bangladesh',
+    tagline: 'Tea gardens and the heartland of the UK\'s Bangladeshi diaspora',
+    description:
+      'Sylhet, in Bangladesh\'s hilly north-east, is surrounded by tea estates and holds particular significance for the UK: the great majority of Britain\'s Bangladeshi community trace their roots to this region. It is overwhelmingly a family-visit destination rather than a general holiday one.',
+    bestFor: ['Family visits', 'Heritage travel'],
+    flightTimeFromUK: 'No current UK service can be confirmed as nonstop — see the route guide for the honest stop pattern.',
+    ukAirports: ['manchester', 'london-heathrow'],
+    visaNote: 'Visa required for UK passport holders unless you hold a Bangladeshi NVR (No Visa Required) endorsement; limited visa-on-arrival exists at Dhaka only, at immigration officers\' discretion — Sylhet itself has no visa-on-arrival service.',
+    familyVisitContent: {
+      travelPattern:
+        'This is the single most VFR (visit-friends-and-relatives)-driven route JetStash covers from the UK: the large British-Bangladeshi communities across Greater Manchester and the North overwhelmingly trace their family roots to Sylhet, and trips are timed around family occasions rather than general holiday planning.',
+      documentNote:
+        'British nationals of Bangladeshi origin (and qualifying spouses/children) may hold an NVR endorsement in their British passport, applied for in advance through the Bangladesh High Commission — it is not something arranged at the airport. Everyone else needs a visa arranged before travel; Sylhet itself has no visa-on-arrival service, unlike Dhaka.',
+      packingNote:
+        'Check the current baggage allowance directly with whichever airline and fare you actually book — this route\'s UK service has changed shape more than once in recent years, and an allowance from an old booking should not be assumed to still apply.',
+      peakPeriodIds: ['eid-al-fitr', 'eid-al-adha', 'uk-summer-holidays'],
+    },
   },
   // Gulf
   {

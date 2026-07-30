@@ -6,13 +6,13 @@
  * used by destination pages, and this file is the machine-readable rules
  * table the decision tree actually evaluates.
  *
- * V1 covers 7 countries and 3 nationality scopes only — British passport
- * holders everywhere, plus NICOP/POC (Pakistan) and OCI (India) document
- * holders where the exemption is officially documented. Every other
- * nationality/destination combination has no rules here, which is what
- * drives `evaluateTravelReadiness()`'s honest `not-enough-information`
- * verdict — there is deliberately no separate "unsupported" list to
- * maintain in two places.
+ * V1 covers 8 countries and 4 nationality scopes only — British passport
+ * holders everywhere, plus NICOP/POC (Pakistan), OCI (India) and NVR
+ * (Bangladesh) document holders where the exemption is officially
+ * documented. Every other nationality/destination combination has no rules
+ * here, which is what drives `evaluateTravelReadiness()`'s honest
+ * `not-enough-information` verdict — there is deliberately no separate
+ * "unsupported" list to maintain in two places.
  *
  * Every entry was checked against a live official source on the date below
  * (GOV.UK foreign travel advice, or the destination's own official visa
@@ -33,7 +33,7 @@
  */
 
 export type TravelReadyRuleType = 'passport-validity' | 'visa-requirement' | 'document-exemption';
-export type TravelReadyNationalityScope = 'british-passport' | 'nicop-poc-holder' | 'oci-holder';
+export type TravelReadyNationalityScope = 'british-passport' | 'nicop-poc-holder' | 'oci-holder' | 'nvr-holder';
 
 export interface TravelReadyOfficialSource {
   title: string;
@@ -86,6 +86,11 @@ const INDIA_EVISA: TravelReadyOfficialSource = {
 const NUSUK: TravelReadyOfficialSource = {
   title: 'Nusuk, Saudi Ministry of Hajj and Umrah',
   url: 'https://umrah.nusuk.sa/',
+};
+
+const BANGLADESH_HC: TravelReadyOfficialSource = {
+  title: 'Bangladesh High Commission, London — No Visa Required (NVR) endorsement',
+  url: 'https://bhclondon.org.uk/no-visa-required',
 };
 
 export const travelReadyRules: TravelReadyRule[] = [
@@ -160,6 +165,44 @@ export const travelReadyRules: TravelReadyRule[] = [
     requirement: 'A valid Overseas Citizen of India (OCI) card, used together with your valid British passport, means you do not need a visa.',
     visaRequired: false,
     officialSource: GOVUK('India', 'india'),
+    lastVerifiedDate: VERIFIED,
+    reviewDueDate: REVIEW_DUE,
+  },
+
+  // ── Bangladesh ──────────────────────────────────────────────────────────
+  {
+    id: 'bd-passport-validity-british',
+    country: 'Bangladesh',
+    nationalityScope: 'british-passport',
+    ruleType: 'passport-validity',
+    requirement: 'Your passport must have at least 2 blank pages and no damage. For a visa application, it must also have an expiry date at least 6 months after the date your visa starts.',
+    minDaysValidityBeyondEntry: 182,
+    caveat: 'The 2-blank-page and no-damage requirements can’t be checked by this tool — confirm them yourself before travelling.',
+    officialSource: GOVUK('Bangladesh', 'bangladesh'),
+    lastVerifiedDate: VERIFIED,
+    reviewDueDate: REVIEW_DUE,
+  },
+  {
+    id: 'bd-visa-requirement-british',
+    country: 'Bangladesh',
+    nationalityScope: 'british-passport',
+    ruleType: 'visa-requirement',
+    requirement: 'A visa is required unless you hold a Bangladeshi NVR (No Visa Required) endorsement in your British passport.',
+    visaRequired: true,
+    caveat: 'A limited visa-on-arrival exists at Dhaka airport only — GOV.UK describes it as needing a return ticket and proof of funds, valid for 15 to 30 days on a single entry, and explicitly "not guaranteed": Bangladeshi immigration officers issue it at their own discretion. Treat it as a fallback, never a plan, and arrange a visa in advance where possible.',
+    officialSource: GOVUK('Bangladesh', 'bangladesh'),
+    lastVerifiedDate: VERIFIED,
+    reviewDueDate: REVIEW_DUE,
+  },
+  {
+    id: 'bd-nvr-exemption',
+    country: 'Bangladesh',
+    nationalityScope: 'nvr-holder',
+    ruleType: 'document-exemption',
+    requirement: 'A No Visa Required (NVR) endorsement in your British passport, issued in advance by the Bangladesh High Commission or an Assistant High Commission, means you do not need a separate visa.',
+    visaRequired: false,
+    caveat: 'NVR is not something arranged at the airport — it is an endorsement applied for in advance (the London High Commission states a £70 fee, with 5–7 working days for an in-person application or 21 days by post), open to British/EU nationals of Bangladeshi origin and, with supporting documents, their spouses and children. This is a genuinely different mechanism from Pakistan\'s NICOP or India\'s OCI card — it is a passport endorsement you must obtain beforehand, not a pre-existing document you simply hold.',
+    officialSource: BANGLADESH_HC,
     lastVerifiedDate: VERIFIED,
     reviewDueDate: REVIEW_DUE,
   },

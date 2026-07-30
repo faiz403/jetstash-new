@@ -103,6 +103,52 @@ a minimal centre crop, no stretching or creative alteration — see `docs/visual
 Catalogue). No fare observation logged; none could be honestly recorded without a real, dated
 check. See PR for full detail.
 
+### BD-001 — Bangladesh workstream: Dhaka and Sylhet
+
+An explicit founder decision, 30 July 2026, and an explicit exception to the LAUNCH-001 product
+freeze, on the same basis as DEST-001. Adds Dhaka and Sylhet as destinations, integrated through
+every existing shared system, with a new `bangladesh` region group (`RegionGroup`, `regionGroups`
+in `lib/site-config.ts`) since neither city fits the existing Pakistan/India groupings — no new
+hub page, matching how Mediterranean and North Africa are handled today.
+
+Route evidence uncovered a genuinely volatile service history rather than a stable one, and a
+founder-directed amendment round (30 July 2026) corrected and re-checked it against fresh primary
+and current sources rather than the original secondary-news leads. Of the four candidate routes
+investigated (Heathrow–Dhaka, Heathrow–Sylhet, Manchester–Dhaka, Manchester–Sylhet):
+
+- **Manchester–Dhaka**: **Connecting** (one stop via Sylhet, not nonstop). Biman Bangladesh
+  Airlines' current official notice states: “BIMAN BANGLADESH AIRLINES WILL RESUME
+  DHAKA-MANCHESTER-DHAKA (VIA SYLHET) FLIGHTS FROM 01 JULY 2026 (EVERY TUESDAY & SATURDAY).”
+  That is the primary evidence for the via-Sylhet route pattern and Tuesday/Saturday schedule.
+  It does not establish aircraft, terminal or transfer arrangements, so JetStash does not claim
+  any of them.
+- **Manchester–Sylhet**: remains **Verification Pending** — a genuine, currently unresolved,
+  directly-checked contradiction: Manchester Airport's own Sylhet destination page states "We're
+  not flying to this location at the moment", while Biman's official Manchester–Dhaka notice says
+  the service operates via Sylhet every Tuesday and Saturday.
+- **Heathrow–Dhaka**: remains **Verification Pending**, rechecked — Heathrow's own live
+  flight-tracking pages now confirm named, currently operating flights BG201/BG202, real evidence
+  beyond the previous airline-directory-only finding. Whether this specific service
+  is nonstop or (like Manchester) makes a scheduled Sylhet stop is unconfirmed by any primary
+  source, so no nonstop claim is made.
+- **Heathrow–Sylhet**: **added** as **Verification Pending** (correcting the original "zero
+  evidence" rejection, which was inaccurate) — Heathrow's own flight-tracking pages confirm the
+  same current BG201/BG202 service, and multiple independent flight-schedule sources describe a
+  Sylhet stop on it; held pending rather than
+  confirmed, since no primary source has resolved the stop directly.
+
+Bangladesh entry-readiness rules added to Travel Ready Check: British-passport visa requirement,
+passport validity, and a new **NVR (No Visa Required) document-exemption** — a genuinely different
+mechanism from Pakistan's NICOP or India's OCI card (an endorsement applied for in advance through
+the Bangladesh High Commission, London, not a document already held), sourced to
+`bhclondon.org.uk/no-visa-required` and GOV.UK's Bangladesh entry-requirements page. Approved
+photography for both Dhaka and Sylhet has been converted, registered and deployed (2560×1440 WebP,
+`public/images/destinations/{dhaka,sylhet}.webp`) — neither destination remains a release blocker
+on imagery; see `docs/visual-identity.md`'s Asset Catalogue for the final entries. No fare
+observation logged for any route; none could be honestly recorded without a real, dated check. No
+verified TravelUp deep link for either destination — travelup.com returned a 403 error on every
+attempt, so both fall back to the existing safe generic booking link. See PR for full detail.
+
 ### HERO-002 — Homepage opening hero above the Route Atlas
 
 **Done** — see `COMPLETED.md`. Customer-visible pre-launch priority, raised from a real mobile
