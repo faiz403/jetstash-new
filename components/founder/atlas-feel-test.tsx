@@ -621,7 +621,19 @@ export function AtlasFeelTest({
                 {isPushed && (
                   <line x1={c.x} y1={c.y - 1.5} x2={labelX} y2={labelY + 1.2} stroke={colour.stroke} strokeWidth="0.18" strokeOpacity="0.45" pointerEvents="none" />
                 )}
-                <text x={labelX} y={labelY} textAnchor={labelAnchor} fontFamily="var(--font-display), Georgia, serif" fontSize={isActive ? 5.5 : 4} fontWeight={isActive ? 600 : 500} fill="#F7F2E9" stroke="#080A0F" strokeWidth="1.4" strokeOpacity="0.85" paintOrder="stroke" opacity={isActive ? 1 : 0.85} pointerEvents="auto" className="cursor-pointer transition-all duration-500" tabIndex={0} role="button" aria-label={`${c.label} — ${colour.label}`} onMouseEnter={() => activateCountry(c.slug)} onPointerEnter={() => activateCountry(c.slug)} onPointerDown={() => activateCountry(c.slug)} onFocus={() => activateCountry(c.slug)} onClick={() => activateCountry(c.slug)}>
+                {/* Decorative label only — the hit-circle below is the one real
+                    keyboard-accessible control for this country. Both used to
+                    carry their own tabIndex/role/aria-label with identical
+                    handlers, which put two separate stops for the same action
+                    in the Tab order and announced it twice to a screen reader.
+                    aria-hidden here (not just dropping tabIndex/role) also
+                    keeps a screen reader's virtual-cursor browse mode from
+                    reading this raw text a second time right next to the
+                    circle's own accessible name, which already says the same
+                    thing. Pointer/hover handlers stay so a mouse user's
+                    cursor lands correctly even when it's over the glyphs
+                    themselves, which can sit outside the circle's radius. */}
+                <text x={labelX} y={labelY} textAnchor={labelAnchor} fontFamily="var(--font-display), Georgia, serif" fontSize={isActive ? 5.5 : 4} fontWeight={isActive ? 600 : 500} fill="#F7F2E9" stroke="#080A0F" strokeWidth="1.4" strokeOpacity="0.85" paintOrder="stroke" opacity={isActive ? 1 : 0.85} pointerEvents="auto" aria-hidden="true" className="cursor-pointer transition-all duration-500" onMouseEnter={() => activateCountry(c.slug)} onPointerEnter={() => activateCountry(c.slug)} onPointerDown={() => activateCountry(c.slug)} onClick={() => activateCountry(c.slug)}>
                   {c.slug === 'uae' ? 'UAE' : c.label}
                 </text>
                 <circle
@@ -639,6 +651,12 @@ export function AtlasFeelTest({
                   onPointerDown={() => activateCountry(c.slug)}
                   onFocus={() => activateCountry(c.slug)}
                   onClick={() => activateCountry(c.slug)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      activateCountry(c.slug);
+                    }
+                  }}
                 />
               </g>
             );
@@ -674,8 +692,20 @@ export function AtlasFeelTest({
                   onPointerDown={() => selectDestination(d.slug)}
                   onFocus={() => selectDestination(d.slug)}
                   onClick={() => selectDestination(d.slug)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      selectDestination(d.slug);
+                    }
+                  }}
                 />
-                <text x={d.x + 2.7} y={labelY + 0.9} fontFamily="var(--font-sans), Arial, sans-serif" fontSize={isActive ? 3 : 2.5} fontWeight={isActive ? 600 : 400} fill="#F7F2E9" stroke="#080A0F" strokeWidth="0.9" strokeOpacity="0.85" paintOrder="stroke" opacity={isActive ? 1 : 0.65}>
+                {/* Decorative only, same reasoning as the country label above —
+                    this text was never independently focusable (no tabIndex/
+                    role here already), but aria-hidden stops a screen
+                    reader's browse-mode virtual cursor from reading it as a
+                    second, redundant node next to the hit-circle's own
+                    aria-label. */}
+                <text x={d.x + 2.7} y={labelY + 0.9} fontFamily="var(--font-sans), Arial, sans-serif" fontSize={isActive ? 3 : 2.5} fontWeight={isActive ? 600 : 400} fill="#F7F2E9" stroke="#080A0F" strokeWidth="0.9" strokeOpacity="0.85" paintOrder="stroke" opacity={isActive ? 1 : 0.65} aria-hidden="true">
                   {d.label}
                 </text>
               </g>
