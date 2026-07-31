@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
-import { ArrowUpRight } from 'lucide-react';
+import { ArrowUpRight, ChevronRight } from 'lucide-react';
 import { COUNTRY_PATHS, getPathBBox } from '@/lib/atlas-country-geometry';
 import { Badge } from '@/components/ui/badge';
 
@@ -237,6 +237,16 @@ export function AtlasFeelTest({
     activeAirport.countries.find((c) => c.slug === activeAirport.defaultCountrySlug)?.destinations[0]?.slug ?? null
   );
 
+  // Mobile-only: the map sits inside a horizontally scrollable strip (see
+  // the wrapping div below) with no visible scrollbar, so nothing on
+  // narrow screens hints it continues to the right until a visitor
+  // happens to swipe. One-way flag, not a preference — softens once a
+  // visitor has actually scrolled past a small threshold (avoids
+  // flickering on iOS's elastic rubber-band bounce at scrollLeft: 0) and
+  // never needs to reset. No localStorage: this is about the current
+  // view, not a dismissed-forever preference.
+  const [hasScrolledMap, setHasScrolledMap] = useState(false);
+
   const activeCountry = countries.find((c) => c.slug === activeCountrySlug) ?? countries[0];
   const activeDest = activeCountry.destinations.find((d) => d.slug === activeDestSlug) ?? activeCountry.destinations[0];
 
@@ -391,7 +401,7 @@ export function AtlasFeelTest({
         {/* h2, not h1 — the homepage opening hero above now owns the page's h1. */}
         <h2 className="mt-2 max-w-4xl font-display text-xl text-sand-50">Explore where you can fly from your UK airport and see what JetStash has verified about each route.</h2>
         <p className="mt-1 text-xs text-ink-400">
-          Choose a departure airport, then follow the light to explore its destinations. Geography: CC BY 4.0 (MapSVG, via VictorCazanave/svg-maps).
+          Choose a departure airport, then follow the light to explore its destinations.
         </p>
 
         {/* Airport selector — same pill idiom as the mobile country/destination
@@ -439,7 +449,13 @@ export function AtlasFeelTest({
             inside a horizontally scrollable strip. The chip selectors below
             remain the primary mobile interaction; this makes the map itself
             visible and pannable rather than invisible. */}
-        <div className="-mx-6 overflow-x-auto px-6 sm:mx-0 sm:overflow-visible sm:px-0">
+        <div className="relative">
+        <div
+          className="-mx-6 overflow-x-auto px-6 sm:mx-0 sm:overflow-visible sm:px-0"
+          onScroll={(e) => {
+            if (!hasScrolledMap && e.currentTarget.scrollLeft > 12) setHasScrolledMap(true);
+          }}
+        >
         <svg viewBox="418 230 336 220" className="h-auto w-[800px] max-w-none sm:w-full" role="img" aria-label={`${airportName}'s real network across every current JetStash destination`}>
           <defs>
             <radialGradient id="ft-origin-glow" cx="0.5" cy="0.5" r="0.5">
@@ -626,6 +642,30 @@ export function AtlasFeelTest({
         </svg>
         </div>
 
+        {/* Mobile-only swipe cue: the map's own cut-off right edge already
+            hints there's more (it's genuinely wider than the viewport), but
+            with no visible scrollbar that's easy to miss on first glance —
+            this adds a second, explicit cue rather than relying on the
+            content edge alone. Softens away once a visitor has actually
+            scrolled (hasScrolledMap), rather than staying up forever.
+            sm:hidden on both: desktop's map fits its container exactly
+            (sm:w-full, sm:overflow-visible above), so there's nothing to
+            swipe and no cue is shown. No animation, so nothing here needs
+            the prefers-reduced-motion handling in globals.css. */}
+        {!hasScrolledMap && (
+          <>
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-y-0 right-0 w-10 bg-gradient-to-l from-ink-950 to-transparent sm:hidden"
+            />
+            <div className="pointer-events-none absolute bottom-2 right-2 inline-flex items-center gap-1 rounded-full bg-ink-950/80 px-2.5 py-1 text-[11px] font-medium text-ink-300 sm:hidden">
+              Swipe to explore more routes
+              <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
+            </div>
+          </>
+        )}
+        </div>
+
         {/* mobile chip selector — the map's fine hit-targets don't work below
             sm, same reasoning and pattern as route-map-hero.tsx's own mobile
             fallback. Both rows call the exact same activateCountry/
@@ -710,6 +750,17 @@ export function AtlasFeelTest({
             </span>
           </div>
         </div>
+
+        {/* Quiet technical footnote, deliberately separated from the
+            introduction above (which now stays focused on what the visitor
+            does, not how the map was built) and placed here instead —
+            beneath the map and legend, smaller and more muted than the
+            surrounding copy, so it reads as a footnote rather than
+            competing with it. Wording and attribution target preserved
+            exactly as before; only its position and size changed. */}
+        <p className="mt-4 border-t border-white/5 pt-3 text-[11px] text-ink-400">
+          Geography: CC BY 4.0 (MapSVG, via VictorCazanave/svg-maps).
+        </p>
           </div>
 
         {/* destination panel — composed as one deliberate reading order rather

@@ -62,8 +62,14 @@ export function HomepageOpeningHero() {
       {/* text-ink-300, not the site's usual ink-400 for this kind of small print — still
           visually secondary, but ink-400 was too low-contrast over the dimmed photo on
           both mobile and desktop. ink-300 matches PageHero's own description text, already
-          proven readable over this exact HeroBackdrop treatment elsewhere on the site. */}
-      <p className="mt-3 text-xs text-ink-300">Checked against airline and official sources. Booking links come last.</p>
+          proven readable over this exact HeroBackdrop treatment elsewhere on the site.
+          Mobile-only bump (base classes, overridden at sm:): a real trust statement
+          reading as slightly too small/faint on a phone. One modest step up in both
+          size and contrast — text-sm/ink-200, not bold or a bigger jump — reverting
+          to the exact proven desktop treatment at sm: and up. Wording unchanged. */}
+      <p className="mt-3 text-sm text-ink-200 sm:text-xs sm:text-ink-300">
+        Checked against airline and official sources. Booking links come last.
+      </p>
 
       <div className="mt-6 flex flex-wrap gap-2 border-t border-white/10 pt-6" role="list" aria-label="Why JetStash is different">
         {PROOF_POINTS.map(({ icon: Icon, label }) => (
