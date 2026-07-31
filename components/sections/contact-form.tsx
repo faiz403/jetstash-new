@@ -4,6 +4,7 @@ import { useState, FormEvent } from 'react';
 import { CheckCircle2, AlertCircle } from 'lucide-react';
 import { HoneypotField } from '@/components/forms/honeypot-field';
 import { HONEYPOT_FIELD_NAME } from '@/lib/form-security';
+import { track } from '@/lib/analytics';
 
 const MAX_NAME_LENGTH = 100;
 const MAX_EMAIL_LENGTH = 254;
@@ -29,6 +30,12 @@ export function ContactForm() {
       if (!res.ok) throw new Error(data.error ?? 'Something went wrong.');
       setStatus('success');
       setForm({ name: '', email: '', message: '' });
+      // The honeypot is only ever filled by a bot — a real visitor's own
+      // submission always has it empty, so this check alone keeps a
+      // silently-accepted bot submission (which the API also answers with
+      // {success:true}, deliberately, so it can't tell it was caught) from
+      // ever being counted as a real conversion.
+      if (!honeypot) track('contact_submit_success');
       setHoneypot('');
     } catch (err) {
       setStatus('error');

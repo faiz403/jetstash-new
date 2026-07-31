@@ -1,7 +1,7 @@
 'use client';
 
 import type { AnchorHTMLAttributes, ReactNode } from 'react';
-import { track } from '@/lib/analytics';
+import { track, type AnalyticsEvent } from '@/lib/analytics';
 
 /**
  * A plain outbound `<a>` with one added behaviour: fire an analytics event
@@ -16,7 +16,7 @@ export function TrackedOutboundLink({
   children,
   ...anchorProps
 }: {
-  event: string;
+  event: AnalyticsEvent;
   properties?: Record<string, string | number | boolean>;
   children: ReactNode;
 } & AnchorHTMLAttributes<HTMLAnchorElement>) {

@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, type FormEvent } from 'react';
+import { useRef, useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowRight } from 'lucide-react';
+import { track } from '@/lib/analytics';
 
 export interface JourneyCheckOption {
   slug: string;
@@ -32,14 +33,32 @@ export function JourneyCheckForm({ origins, destinations, routeIndex }: JourneyC
   const router = useRouter();
   const [fromSlug, setFromSlug] = useState(origins[0]?.slug ?? '');
   const [toSlug, setToSlug] = useState(destinations[0]?.slug ?? '');
+  // Fires 'started' once per mount on the first genuine change to either
+  // select — never on initial render, never repeated. Same guarded-ref
+  // pattern as travel-ready-check.tsx's own markStarted().
+  const startedRef = useRef(false);
 
   const routeSlug = routeIndex[`${fromSlug}|${toSlug}`];
   const fromLabel = origins.find((o) => o.slug === fromSlug)?.label ?? fromSlug;
   const toLabel = destinations.find((d) => d.slug === toSlug)?.label ?? toSlug;
   const toCity = toLabel.split(',')[0];
 
+  function markStarted() {
+    if (startedRef.current) return;
+    startedRef.current = true;
+    track('journey_check_started');
+  }
+
   function onSubmit(e: FormEvent) {
     e.preventDefault();
+    // Every combination resolves to a real page (see the component doc
+    // comment above), so a submit is always a valid, successful result —
+    // only the safe category differs, never the full destination text.
+    const resultCategory = routeSlug ? 'route' : 'destination_guide';
+    track('journey_check_completed', { resultCategory, origin: fromSlug, destination: toSlug });
+    // A route guide is specifically the tracked-route outcome — the
+    // destination-guide fallback is a different page, not "a route guide".
+    if (routeSlug) track('journey_check_route_opened', { route: routeSlug });
     router.push(routeSlug ? `/routes/${routeSlug}` : `/destinations/${toSlug}`);
   }
 
@@ -50,7 +69,15 @@ export function JourneyCheckForm({ origins, destinations, routeIndex }: JourneyC
           <label htmlFor="jc-from" className="text-[11px] font-semibold uppercase tracking-wide text-ink-300">
             Flying from
           </label>
-          <select id="jc-from" value={fromSlug} onChange={(e) => setFromSlug(e.target.value)} className={selectClass}>
+          <select
+            id="jc-from"
+            value={fromSlug}
+            onChange={(e) => {
+              markStarted();
+              setFromSlug(e.target.value);
+            }}
+            className={selectClass}
+          >
             {origins.map((o) => (
               <option key={o.slug} value={o.slug} className="bg-ink-900 text-sand-50">
                 {o.label}
@@ -62,7 +89,15 @@ export function JourneyCheckForm({ origins, destinations, routeIndex }: JourneyC
           <label htmlFor="jc-to" className="text-[11px] font-semibold uppercase tracking-wide text-ink-300">
             Going to
           </label>
-          <select id="jc-to" value={toSlug} onChange={(e) => setToSlug(e.target.value)} className={selectClass}>
+          <select
+            id="jc-to"
+            value={toSlug}
+            onChange={(e) => {
+              markStarted();
+              setToSlug(e.target.value);
+            }}
+            className={selectClass}
+          >
             {destinations.map((d) => (
               <option key={d.slug} value={d.slug} className="bg-ink-900 text-sand-50">
                 {d.label}

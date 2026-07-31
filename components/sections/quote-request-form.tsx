@@ -17,6 +17,7 @@ import {
 import { TRIP_TYPE_OPTIONS, QUOTE_REGION_OPTIONS, QuoteTripType, QuoteRegion } from '@/lib/quote-request-options';
 import { HoneypotField } from '@/components/forms/honeypot-field';
 import { HONEYPOT_FIELD_NAME } from '@/lib/form-security';
+import { track } from '@/lib/analytics';
 
 interface QuoteRequestFormProps {
   initialTripType?: QuoteTripType;
@@ -81,6 +82,12 @@ export function QuoteRequestForm({ initialTripType, initialRegion }: QuoteReques
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? 'Something went wrong.');
       setStatus('success');
+      // Trip type and region are already-validated enum values, not free
+      // text — safe product context, same category as a route/destination
+      // slug. The honeypot check mirrors contact-form.tsx: only a bot ever
+      // fills it, so this is what keeps a silently-accepted bot submission
+      // from counting as a real conversion.
+      if (!honeypot) track('quote_request_submit_success', { tripType: form.tripType, region: form.region });
       setForm(emptyForm);
       setHoneypot('');
     } catch (err) {
