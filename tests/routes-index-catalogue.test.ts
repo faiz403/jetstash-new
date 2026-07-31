@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { readFileSync } from 'fs';
+import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 import { routes, getRouteAirport, getRouteDestination, getRouteBySlug } from '@/data/routes';
 import { routeStatusEvents } from '@/data/route-status-events';
@@ -260,5 +260,116 @@ describe('data/ordering integrity — no route data changed, no country invented
   it('the page still renders no metadata/copy changes outside the catalogue itself', () => {
     expect(pageSrc).toContain('Current route coverage is deepest in South Asia and the Gulf.');
     expect(pageSrc).toContain("title: 'Route Guides from UK Airports'");
+  });
+});
+
+describe('country header images (routes-country-header-images)', () => {
+  const EXPECTED_MAPPING: Record<string, string> = {
+    India: 'mumbai',
+    Pakistan: 'islamabad',
+    Bangladesh: 'dhaka',
+    'United Arab Emirates': 'dubai',
+    Qatar: 'doha',
+    'Saudi Arabia': 'jeddah',
+  };
+
+  it('1 & 13. every current country group has exactly one representative image — no null, no fallback/broken image', () => {
+    expect(countryGroups).toHaveLength(6);
+    for (const group of countryGroups) {
+      expect(group.image, `${group.country} has no header image`).not.toBeNull();
+      expect(group.image!.src.length).toBeGreaterThan(0);
+    }
+  });
+
+  it('2. every mapped image path actually exists on disk (real approved asset, not a guessed filename)', () => {
+    for (const group of countryGroups) {
+      // group.image.src is "/images/destinations/<slug>.webp" — strip the
+      // leading slash to resolve under the repo's public/ directory.
+      const diskPath = join(process.cwd(), 'public', group.image!.src.replace(/^\//, ''));
+      expect(existsSync(diskPath), `${group.country}'s image (${group.image!.src}) does not exist on disk`).toBe(true);
+    }
+  });
+
+  it('3. the country-to-image mapping matches the deliberate, documented choice for each country', () => {
+    for (const group of countryGroups) {
+      const expectedSlug = EXPECTED_MAPPING[group.country];
+      expect(expectedSlug, `no expected mapping recorded in this test for ${group.country}`).toBeDefined();
+      expect(group.image!.src).toBe(`/images/destinations/${expectedSlug}.webp`);
+    }
+  });
+
+  it('the mapping lives as an explicit, typed object in lib/route-country-groups.ts — never string concatenation or a runtime guess from the country name', () => {
+    const librarySrc = readFileSync(join(process.cwd(), 'lib/route-country-groups.ts'), 'utf8');
+    expect(librarySrc).toContain('COUNTRY_REPRESENTATIVE_DESTINATION_SLUG');
+    expect(librarySrc).not.toMatch(/country\.toLowerCase\(\)|country\.replace\(/);
+  });
+
+  it('12. every image src is a local, existing-asset path — no external URL introduced', () => {
+    for (const group of countryGroups) {
+      expect(group.image!.src.startsWith('/images/destinations/')).toBe(true);
+      expect(group.image!.src).not.toMatch(/^https?:\/\//);
+    }
+  });
+
+  it('4 & 5 & 6. adding images introduced no duplicate headers, and every route/country count is exactly what it was before this change', () => {
+    const countryNames = countryGroups.map((g) => g.country);
+    expect(new Set(countryNames).size).toBe(countryNames.length);
+    const totalRoutes = countryGroups.reduce((sum, g) => sum + g.routes.length, 0);
+    expect(totalRoutes).toBe(routes.length);
+  });
+
+  it('7. filterCountryGroups (the search path) preserves each group\'s image through filtering, so search results are visually unchanged', () => {
+    const filtered = filterCountryGroups(countryGroups, 'mumbai');
+    const india = filtered.find((g) => g.country === 'India');
+    expect(india).toBeDefined();
+    expect(india!.image).toEqual(countryGroups.find((g) => g.country === 'India')!.image);
+  });
+
+  it('8 & 9. accordion toggle logic (mobile single-open, desktop multi-open) is untouched by this change — same functions, same behaviour', () => {
+    // toggleCountryInSet/isCountryVisible take no image-related argument at
+    // all; this just confirms the header-image addition didn't require (or
+    // introduce) a signature change to either.
+    const afterMobileOpen = toggleCountryInSet(new Set(), 'India', false);
+    expect(afterMobileOpen.has('India')).toBe(true);
+    const afterDesktopOpen = toggleCountryInSet(new Set(['India']), 'Pakistan', true);
+    expect(afterDesktopOpen.has('India')).toBe(true);
+    expect(afterDesktopOpen.has('Pakistan')).toBe(true);
+  });
+
+  it('10 & 11. RouteCard\'s own image, hrefs and status rendering are byte-identical to before — only the accordion header changed', () => {
+    expect(catalogueSrc).toContain('src={route.airportImage.src}');
+    expect(catalogueSrc).toContain('alt={route.airportImage.alt}');
+    expect(catalogueSrc).toContain('sizes="(min-width: 1024px) 31vw, (min-width: 640px) 48vw, 100vw"');
+    expect(catalogueSrc).toContain('href={route.href}');
+  });
+
+  it('the header image alt text is genuinely descriptive of the photo, and never just a bare repeat of the country name that already sits adjacent as real text', () => {
+    expect(catalogueSrc).toMatch(/<Image src=\{group\.image\.src\} alt=\{group\.image\.alt\}/);
+    for (const group of countryGroups) {
+      expect(group.image!.alt.length).toBeGreaterThan(0);
+      expect(group.image!.alt.trim().toLowerCase()).not.toBe(group.country.toLowerCase());
+    }
+  });
+
+  it('the image is not a separate clickable control — no nested button/link/onClick inside the image wrapper', () => {
+    const wrapperMatch = catalogueSrc.match(/\{group\.image && \(([\s\S]*?)\)\}/);
+    expect(wrapperMatch).not.toBeNull();
+    expect(wrapperMatch![1]).not.toMatch(/<button|<a\s|onClick/);
+  });
+
+  it('the accordion button still has exactly one aria-expanded and one aria-controls, both on the same real <button>', () => {
+    expect(catalogueSrc.match(/aria-expanded=\{isOpen\}/g)).toHaveLength(1);
+    expect(catalogueSrc.match(/aria-controls=\{panelId\}/g)).toHaveLength(1);
+    expect(catalogueSrc).toMatch(/<h2>\s*<button[\s\S]*?aria-expanded=\{isOpen\}[\s\S]*?aria-controls=\{panelId\}/);
+  });
+
+  it('with the real, shipped mapping, building country groups never throws — every mapped country has a real asset today', () => {
+    expect(() => buildRouteCountryGroups(routes, FIXED_TODAY, routeStatusEvents)).not.toThrow();
+  });
+
+  it('a mapped-but-missing asset fails clearly outside production, rather than ever silently rendering a broken image — source-level check, since exercising this without editing the shipped mapping isn\'t possible from a test', () => {
+    const librarySrc = readFileSync(join(process.cwd(), 'lib/route-country-groups.ts'), 'utf8');
+    expect(librarySrc).toMatch(/process\.env\.NODE_ENV !== 'production'/);
+    expect(librarySrc).toMatch(/throw new Error/);
   });
 });

@@ -45,7 +45,7 @@ export function filterCountryGroups(countryGroups: CountryGroup[], query: string
   const normalized = query.trim().toLowerCase();
   if (normalized.length === 0) return countryGroups;
   return countryGroups
-    .map((g) => ({ country: g.country, routes: g.routes.filter((r) => matchesRouteQuery(r, normalized)) }))
+    .map((g) => ({ country: g.country, image: g.image, routes: g.routes.filter((r) => matchesRouteQuery(r, normalized)) }))
     .filter((g) => g.routes.length > 0);
 }
 
@@ -202,10 +202,29 @@ function CountrySection({
             aria-controls={panelId}
             className="flex w-full items-center justify-between gap-3 py-1 text-left font-display text-2xl text-ink-900 transition-colors hover:text-brass-600 sm:text-3xl"
           >
-            <span className="flex items-baseline gap-3">
-              <span>{group.country}</span>
-              <span className="font-sans text-sm font-normal normal-case tracking-normal text-ink-400">
-                {count} {count === 1 ? 'route' : 'routes'}
+            <span className="flex min-w-0 items-center gap-3 sm:gap-4">
+              {/* Country header images (routes-country-header-images): a
+                  compact thumbnail using the same real, hand-written
+                  destination alt text every other Signature Collection photo
+                  on the site uses (lib/brand-images.ts) — genuinely
+                  descriptive of the photo itself (e.g. a named landmark),
+                  not a bare repeat of the country name already sitting
+                  immediately adjacent as real text, so nothing is announced
+                  twice to a screen reader. Never its own clickable element,
+                  so the accordion button keeps exactly one interactive
+                  target (no nested controls). Fixed size, not the
+                  aspect-[16/9] the route cards use below — a compact header
+                  thumbnail, never a hero. */}
+              {group.image && (
+                <span className="relative h-10 w-14 shrink-0 overflow-hidden rounded-md bg-ink-100 sm:h-12 sm:w-16">
+                  <Image src={group.image.src} alt={group.image.alt} fill sizes="64px" className="object-cover" />
+                </span>
+              )}
+              <span className="flex min-w-0 items-baseline gap-3">
+                <span className="truncate">{group.country}</span>
+                <span className="shrink-0 font-sans text-sm font-normal normal-case tracking-normal text-ink-400">
+                  {count} {count === 1 ? 'route' : 'routes'}
+                </span>
               </span>
             </span>
             <ChevronDown
