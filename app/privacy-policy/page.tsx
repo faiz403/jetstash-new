@@ -173,11 +173,13 @@ const sections: { title: string; body: React.ReactNode }[] = [
     title: 'Where your information is processed',
     body: (
       <p>
-        Vercel, Resend and Brevo may each process data outside the UK, including in the United States, as part of
-        how their services run. Where that happens, those providers are responsible for putting appropriate
-        safeguards in place under UK data protection law. We haven&apos;t independently reviewed each provider&apos;s
-        specific transfer mechanism, and recommend checking their own published privacy policies for the current
-        detail.
+        Some of the service providers we use, including Vercel, Resend, Brevo and Microsoft 365, may process
+        personal information outside the UK, including in the United States, as part of how their services run.
+        Where this happens, JetStash takes reasonable steps to use providers that apply appropriate protections,
+        and relies on the safeguards made available through their contractual and legal arrangements. The precise
+        arrangements may vary by provider and location, and we haven&apos;t independently completed a
+        transfer-risk assessment for each one. We recommend checking each provider&apos;s own published privacy
+        policy for their current detail.
       </p>
     ),
   },

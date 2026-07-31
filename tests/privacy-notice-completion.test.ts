@@ -109,6 +109,29 @@ describe('real data flows are represented, and only where supported', () => {
   });
 });
 
+describe('international-transfer wording keeps JetStash responsible as controller', () => {
+  it('does not say processors "are responsible for" their own safeguards (offloads controller responsibility)', () => {
+    expect(privacyProse).not.toMatch(/(are|is) responsible for (putting|their own|its own)/i);
+  });
+
+  it('states JetStash takes reasonable steps and relies on providers’ contractual/legal safeguards', () => {
+    expect(privacyProse).toMatch(/JetStash takes reasonable steps/i);
+    expect(privacyProse).toMatch(/relies on the safeguards made available through their contractual and legal arrangements/i);
+  });
+
+  it('does not claim a specific transfer mechanism (e.g. Standard Contractual Clauses) is in place', () => {
+    expect(privacyPage).not.toMatch(/standard contractual clauses|adequacy decision|binding corporate rules/i);
+  });
+
+  it('does not claim every provider’s transfer risk has been independently assessed', () => {
+    expect(privacyProse).toMatch(/haven't independently completed a transfer-risk assessment for each one/i);
+  });
+
+  it('does not claim absolute compliance or guaranteed protection', () => {
+    expect(privacyPage).not.toMatch(/guarantee(d|s)? (compliance|protection)|fully compliant|absolute(ly)? (safe|secure|compliant)/i);
+  });
+});
+
 describe('Travel Ready Check is described as client-side only', () => {
   it('states the tool runs in the browser and nothing entered is sent or stored', () => {
     expect(privacyProse).toMatch(/Travel Ready Check/);
