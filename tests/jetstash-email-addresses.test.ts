@@ -97,8 +97,16 @@ describe('every visible JetStash email address is a real mailto link, not plain 
 });
 
 describe('no jetstash.co.uk address is duplicated unnecessarily within a single file', () => {
-  it('each address appears as a mailto href at most once per file', () => {
+  // The privacy notice is a genuine exception: it's a long, multi-section
+  // reference document (operator identity, retention, rights, complaints,
+  // children), and repeating privacy@ in each section that names it is
+  // deliberate for scannability, not accidental duplication — see
+  // tests/privacy-notice-completion.test.ts for that page's own checks.
+  const SKIP_STRICT_DEDUPE = new Set(['privacyPage']);
+
+  it('each address appears as a mailto href at most once per file (outside the privacy notice)', () => {
     for (const [name, src] of Object.entries(PUBLIC_FILES)) {
+      if (SKIP_STRICT_DEDUPE.has(name)) continue;
       const hrefs = src.match(/mailto:[a-z]+@jetstash\.co\.uk/g) ?? [];
       const counts = new Map<string, number>();
       for (const href of hrefs) counts.set(href, (counts.get(href) ?? 0) + 1);
