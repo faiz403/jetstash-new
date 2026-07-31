@@ -27,7 +27,11 @@ const sections: { title: string; body: React.ReactNode }[] = [
     body: (
       <>
         You can unsubscribe from Travel Club emails at any time using the link in any email we send. To request
-        deletion of your data entirely, contact us via the{' '}
+        deletion of your data, ask what we hold, or raise any other privacy question, email{' '}
+        <a href="mailto:privacy@jetstash.co.uk" className="font-medium text-terracotta-600 underline">
+          privacy@jetstash.co.uk
+        </a>{' '}
+        directly, or use the{' '}
         <Link href="/contact" className="font-medium text-terracotta-600 underline">
           contact page
         </Link>

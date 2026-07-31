@@ -28,7 +28,12 @@ export default function ContactPage() {
             <h2 className="font-display text-2xl text-ink-900">Send a message</h2>
             <ContactForm />
             <p className="mt-6 text-sm text-ink-400">
-              This goes straight to our inbox — a real person reads and replies to every message.
+              This goes straight to our inbox — a real person reads and replies to every message. Prefer email?
+              Write to us directly at{' '}
+              <a href="mailto:contact@jetstash.co.uk" className="font-medium text-terracotta-600 underline">
+                contact@jetstash.co.uk
+              </a>
+              .
             </p>
           </div>
 

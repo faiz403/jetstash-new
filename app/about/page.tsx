@@ -83,6 +83,13 @@ export default function AboutPage() {
                   If a fare, schedule or claim on this site doesn&apos;t hold up, we want to know. Corrections make
                   the site better for everyone.
                 </p>
+                <p className="mt-2 text-sm leading-relaxed text-ink-300">
+                  Or email{' '}
+                  <a href="mailto:support@jetstash.co.uk" className="text-brass-300 underline hover:text-brass-200">
+                    support@jetstash.co.uk
+                  </a>{' '}
+                  directly.
+                </p>
               </div>
               <LinkButton href="/contact" size="sm" className="mt-5 self-start">
                 Tell us
