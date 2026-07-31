@@ -6,6 +6,7 @@ import { airports } from '@/data/airports';
 import { TRAVEL_INTEREST_OPTIONS } from '@/lib/travel-club-options';
 import { HoneypotField } from '@/components/forms/honeypot-field';
 import { HONEYPOT_FIELD_NAME } from '@/lib/form-security';
+import { track } from '@/lib/analytics';
 
 const MAX_EMAIL_LENGTH = 254;
 
@@ -35,6 +36,16 @@ export function NewsletterSection() {
       const data = await res.json().catch(() => null);
       if (!res.ok) throw new Error(data?.error ?? 'Something went wrong. Please try again.');
       setStatus('success');
+      // Both are already-validated, non-free-text values (an airport slug,
+      // an interest enum) — omitted entirely when the visitor left them
+      // blank rather than sent as an empty string. Honeypot check mirrors
+      // contact-form.tsx: only a bot ever fills it.
+      if (!honeypot) {
+        const properties: Record<string, string> = {};
+        if (nearestAirport) properties.nearestAirport = nearestAirport;
+        if (interest) properties.interest = interest;
+        track('newsletter_subscribe_success', properties);
+      }
       setEmail('');
       setHoneypot('');
     } catch (err) {

@@ -1,10 +1,11 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { ArrowUpRight, ChevronRight } from 'lucide-react';
 import { COUNTRY_PATHS, getPathBBox } from '@/lib/atlas-country-geometry';
 import { Badge } from '@/components/ui/badge';
+import { track } from '@/lib/analytics';
 
 /**
  * Atlas feel-test — genuinely fresh execution attempt. Does not import,
@@ -236,6 +237,15 @@ export function AtlasFeelTest({
   const [activeDestSlug, setActiveDestSlug] = useState<string | null>(
     activeAirport.countries.find((c) => c.slug === activeAirport.defaultCountrySlug)?.destinations[0]?.slug ?? null
   );
+  // Mirrors activeDestSlug for analytics dedup only. A single hover gesture
+  // dispatches several native events (mouseenter, pointerenter, pointerdown)
+  // in the same tick, each calling selectDestination before React has
+  // re-rendered — comparing against activeDestSlug (state, only visible
+  // after a render) let all of them pass the "did this change" check and
+  // fire three times for one hover. A ref updates synchronously, so the
+  // second and third handler in the same gesture see the first's write
+  // immediately and correctly skip.
+  const lastTrackedDestRef = useRef(activeDestSlug);
 
   // Mobile-only: the map sits inside a horizontally scrollable strip (see
   // the wrapping div below) with no visible scrollbar, so nothing on
@@ -256,10 +266,18 @@ export function AtlasFeelTest({
   // desktop hover/focus handlers on the map and the mobile chip selector
   // below, so both input methods drive the exact same state transition and
   // can never drift into two different interaction models.
+  //
+  // Deliberately untracked: the Atlas engagement vocabulary only covers
+  // origin and destination selection, not country selection, and the
+  // destination this resets to is an automatic default, not something the
+  // visitor actually chose — analytics for that only belongs in
+  // selectDestination below, called from the destination's own handlers.
   function activateCountry(slug: string) {
     const c = countries.find((x) => x.slug === slug);
+    const nextDest = c?.destinations[0]?.slug ?? null;
+    lastTrackedDestRef.current = nextDest;
     setActiveCountrySlug(slug);
-    setActiveDestSlug(c?.destinations[0]?.slug ?? null);
+    setActiveDestSlug(nextDest);
   }
 
   // Switching airport must feel like the same experience redrawing itself,
@@ -270,10 +288,34 @@ export function AtlasFeelTest({
   // same reset activateCountry already does when a country changes.
   function selectAirport(slug: string) {
     const a = airports.find((x) => x.airportSlug === slug) ?? airports[0];
+    // Only a genuine change of airport — re-clicking the already-selected
+    // pill is a no-op, not a new selection.
+    if (a.airportSlug !== selectedAirportSlug) {
+      track('atlas_origin_selected', { airport: a.airportSlug });
+    }
     setSelectedAirportSlug(slug);
     setActiveCountrySlug(a.defaultCountrySlug);
     const c = a.countries.find((x) => x.slug === a.defaultCountrySlug);
-    setActiveDestSlug(c?.destinations[0]?.slug ?? null);
+    const nextDest = c?.destinations[0]?.slug ?? null;
+    lastTrackedDestRef.current = nextDest;
+    setActiveDestSlug(nextDest);
+  }
+
+  // The one place a destination selection is both applied and measured —
+  // called only from the destination's own hover/focus/click/tap handlers
+  // below, never from activateCountry's or selectAirport's automatic
+  // default-destination reset (both keep lastTrackedDestRef in sync
+  // themselves), so switching country/airport never counts as the visitor
+  // picking a destination. Fires only on a genuine change from whatever is
+  // currently active, via the ref rather than activeDestSlug state — see
+  // lastTrackedDestRef's own comment for why: hovering fires several native
+  // events in one gesture, and only a synchronous ref reliably dedupes them.
+  function selectDestination(slug: string) {
+    if (lastTrackedDestRef.current !== slug) {
+      lastTrackedDestRef.current = slug;
+      track('atlas_destination_selected', { airport: selectedAirportSlug, destination: slug });
+    }
+    setActiveDestSlug(slug);
   }
 
   // Size-driven visual emphasis: computed from each country's real path
@@ -627,11 +669,11 @@ export function AtlasFeelTest({
                   tabIndex={0}
                   role="button"
                   aria-label={`${d.label} — ${DESTINATION_COLOUR[d.evidenceState].label}${d.networkMembership === 'seasonal' ? ' — seasonal service' : ''}`}
-                  onMouseEnter={() => setActiveDestSlug(d.slug)}
-                  onPointerEnter={() => setActiveDestSlug(d.slug)}
-                  onPointerDown={() => setActiveDestSlug(d.slug)}
-                  onFocus={() => setActiveDestSlug(d.slug)}
-                  onClick={() => setActiveDestSlug(d.slug)}
+                  onMouseEnter={() => selectDestination(d.slug)}
+                  onPointerEnter={() => selectDestination(d.slug)}
+                  onPointerDown={() => selectDestination(d.slug)}
+                  onFocus={() => selectDestination(d.slug)}
+                  onClick={() => selectDestination(d.slug)}
                 />
                 <text x={d.x + 2.7} y={labelY + 0.9} fontFamily="var(--font-sans), Arial, sans-serif" fontSize={isActive ? 3 : 2.5} fontWeight={isActive ? 600 : 400} fill="#F7F2E9" stroke="#080A0F" strokeWidth="0.9" strokeOpacity="0.85" paintOrder="stroke" opacity={isActive ? 1 : 0.65}>
                   {d.label}
@@ -708,7 +750,7 @@ export function AtlasFeelTest({
                 <button
                   key={`dest-chip-${d.slug}`}
                   type="button"
-                  onClick={() => setActiveDestSlug(d.slug)}
+                  onClick={() => selectDestination(d.slug)}
                   aria-pressed={isActive}
                   className={
                     isActive
@@ -811,7 +853,11 @@ export function AtlasFeelTest({
 
               <div className="mt-5 flex gap-5 border-t border-white/10 pt-4">
                 {activeDest.routeHref && (
-                  <Link href={activeDest.routeHref} className="inline-flex items-center gap-1 text-sm font-semibold text-brass-300 hover:text-brass-200">
+                  <Link
+                    href={activeDest.routeHref}
+                    onClick={() => track('atlas_route_opened', { route: activeDest.routeHref!.split('/').pop()! })}
+                    className="inline-flex items-center gap-1 text-sm font-semibold text-brass-300 hover:text-brass-200"
+                  >
                     Route guide <ArrowUpRight className="h-3.5 w-3.5" />
                   </Link>
                 )}
