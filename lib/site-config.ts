@@ -13,7 +13,7 @@ export const siteConfig = {
    * place to edit either way — never hardcode a routing address in a
    * route file directly.
    */
-  contactEmail: 'faiz24485@gmail.com',
+  contactEmail: 'contact@jetstash.co.uk',
 };
 
 // The nav is the brand's spine: lead with the travel-intelligence product,
