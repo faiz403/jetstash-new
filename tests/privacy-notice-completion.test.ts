@@ -114,17 +114,18 @@ describe('international-transfer wording keeps JetStash responsible as controlle
     expect(privacyProse).not.toMatch(/(are|is) responsible for (putting|their own|its own)/i);
   });
 
-  it('states JetStash takes reasonable steps and relies on providers’ contractual/legal safeguards', () => {
-    expect(privacyProse).toMatch(/JetStash takes reasonable steps/i);
-    expect(privacyProse).toMatch(/relies on the safeguards made available through their contractual and legal arrangements/i);
+  it('states JetStash takes reasonable and proportionate steps and relies on contractual/legal safeguards', () => {
+    expect(privacyProse).toMatch(/JetStash takes reasonable and proportionate steps/i);
+    expect(privacyProse).toMatch(/relies on the contractual and legal safeguards available for the relevant processing/i);
   });
 
   it('does not claim a specific transfer mechanism (e.g. Standard Contractual Clauses) is in place', () => {
     expect(privacyPage).not.toMatch(/standard contractual clauses|adequacy decision|binding corporate rules/i);
   });
 
-  it('does not claim every provider’s transfer risk has been independently assessed', () => {
-    expect(privacyProse).toMatch(/haven't independently completed a transfer-risk assessment for each one/i);
+  it('does not publicly flag unresolved transfer-risk-assessment work (tracked internally, not advertised)', () => {
+    expect(privacyProse).not.toMatch(/transfer-risk assessment/i);
+    expect(privacyProse).not.toMatch(/haven't independently (reviewed|completed)/i);
   });
 
   it('does not claim absolute compliance or guaranteed protection', () => {

@@ -174,12 +174,10 @@ const sections: { title: string; body: React.ReactNode }[] = [
     body: (
       <p>
         Some of the service providers we use, including Vercel, Resend, Brevo and Microsoft 365, may process
-        personal information outside the UK, including in the United States, as part of how their services run.
-        Where this happens, JetStash takes reasonable steps to use providers that apply appropriate protections,
-        and relies on the safeguards made available through their contractual and legal arrangements. The precise
-        arrangements may vary by provider and location, and we haven&apos;t independently completed a
-        transfer-risk assessment for each one. We recommend checking each provider&apos;s own published privacy
-        policy for their current detail.
+        personal information outside the UK. Where this happens, JetStash takes reasonable and proportionate steps
+        to use providers that apply appropriate protections and relies on the contractual and legal safeguards
+        available for the relevant processing. The arrangements may vary depending on the provider and the country
+        involved.
       </p>
     ),
   },
