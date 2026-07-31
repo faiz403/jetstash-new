@@ -7,6 +7,10 @@ import { destinations } from '@/data/destinations';
 import { ROUTE_WATCH_INTENT_OPTIONS } from '@/lib/route-watch-options';
 import { ROUTE_WATCH_INITIAL_COPY, ROUTE_WATCH_SUCCESS_COPY } from '@/lib/route-watch-config';
 import { track } from '@/lib/analytics';
+import { HoneypotField } from '@/components/forms/honeypot-field';
+import { HONEYPOT_FIELD_NAME } from '@/lib/form-security';
+
+const MAX_EMAIL_LENGTH = 254;
 
 /**
  * Route Watch — stores a subscriber's route preferences in Brevo; a person
@@ -26,6 +30,7 @@ export function RouteWatchForm({ defaultAirportSlug, defaultDestinationSlug, def
   const [airportSlug, setAirportSlug] = useState(defaultAirportSlug ?? '');
   const [destinationSlug, setDestinationSlug] = useState(defaultDestinationSlug ?? '');
   const [intent, setIntent] = useState(defaultIntent ?? '');
+  const [honeypot, setHoneypot] = useState('');
   const [status, setStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
   const [errorMsg, setErrorMsg] = useState('');
 
@@ -37,12 +42,19 @@ export function RouteWatchForm({ defaultAirportSlug, defaultDestinationSlug, def
       const res = await fetch('/api/route-watch', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, airportSlug, destinationSlug, intent: intent || undefined }),
+        body: JSON.stringify({
+          email,
+          airportSlug,
+          destinationSlug,
+          intent: intent || undefined,
+          [HONEYPOT_FIELD_NAME]: honeypot,
+        }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? 'Something went wrong.');
       setStatus('success');
       setEmail('');
+      setHoneypot('');
       track('route_watch_signup', { airport: airportSlug, destination: destinationSlug, intent: intent || 'none' });
     } catch (err) {
       setStatus('error');
@@ -65,6 +77,7 @@ export function RouteWatchForm({ defaultAirportSlug, defaultDestinationSlug, def
         </div>
       ) : (
         <form onSubmit={handleSubmit} className="mt-5 flex flex-col gap-3">
+          <HoneypotField value={honeypot} onChange={setHoneypot} />
           <div className="grid gap-3 sm:grid-cols-2">
             <div>
               <label htmlFor="watch-airport" className="text-xs text-ink-400">Departure airport</label>
@@ -119,6 +132,7 @@ export function RouteWatchForm({ defaultAirportSlug, defaultDestinationSlug, def
               id="watch-email"
               type="email"
               required
+              maxLength={MAX_EMAIL_LENGTH}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@example.com"

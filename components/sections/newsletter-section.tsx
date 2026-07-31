@@ -4,11 +4,16 @@ import { useState, FormEvent } from 'react';
 import { ArrowRight, CheckCircle2 } from 'lucide-react';
 import { airports } from '@/data/airports';
 import { TRAVEL_INTEREST_OPTIONS } from '@/lib/travel-club-options';
+import { HoneypotField } from '@/components/forms/honeypot-field';
+import { HONEYPOT_FIELD_NAME } from '@/lib/form-security';
+
+const MAX_EMAIL_LENGTH = 254;
 
 export function NewsletterSection() {
   const [email, setEmail] = useState('');
   const [nearestAirport, setNearestAirport] = useState('');
   const [interest, setInterest] = useState('');
+  const [honeypot, setHoneypot] = useState('');
   const [status, setStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
   const [errorMsg, setErrorMsg] = useState('');
 
@@ -24,12 +29,14 @@ export function NewsletterSection() {
           email,
           nearestAirport: nearestAirport || undefined,
           interest: interest || undefined,
+          [HONEYPOT_FIELD_NAME]: honeypot,
         }),
       });
       const data = await res.json().catch(() => null);
       if (!res.ok) throw new Error(data?.error ?? 'Something went wrong. Please try again.');
       setStatus('success');
       setEmail('');
+      setHoneypot('');
     } catch (err) {
       setStatus('error');
       setErrorMsg(err instanceof Error ? err.message : 'Something went wrong. Please try again.');
@@ -75,6 +82,7 @@ export function NewsletterSection() {
                 </div>
               ) : (
                 <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+                  <HoneypotField value={honeypot} onChange={setHoneypot} />
                   <div className="flex flex-col gap-3 sm:flex-row">
                     <label htmlFor="email" className="sr-only">
                       Email address
@@ -83,6 +91,7 @@ export function NewsletterSection() {
                       id="email"
                       type="email"
                       required
+                      maxLength={MAX_EMAIL_LENGTH}
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="you@example.com"

@@ -6,6 +6,13 @@ import { isValidEmail, upsertBrevoContact, getBrevoContact } from '@/lib/email';
 import { isRouteWatchIntent } from '@/lib/route-watch-options';
 import { BREVO_ATTRIBUTE_NAMES } from '@/lib/brevo-attributes';
 import { MAX_WATCHED_ROUTES } from '@/lib/route-watch-config';
+import {
+  checkRateLimit,
+  getClientIdentifier,
+  HONEYPOT_FIELD_NAME,
+  isHoneypotTriggered,
+  validateTextField,
+} from '@/lib/form-security';
 
 /**
  * Route Watch signup endpoint — stores a subscriber's route preferences in
@@ -24,23 +31,57 @@ import { MAX_WATCHED_ROUTES } from '@/lib/route-watch-config';
  * recognise.
  */
 
+const RATE_LIMIT_MAX = 5;
+const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000;
+const MAX_SLUG_LENGTH = 100;
+
 export async function POST(req: NextRequest) {
+  const rate = checkRateLimit(`route-watch:${getClientIdentifier(req)}`, RATE_LIMIT_MAX, RATE_LIMIT_WINDOW_MS);
+  if (rate.limited) {
+    return NextResponse.json({ error: 'Too many requests. Please try again shortly.' }, { status: 429 });
+  }
+
   const body = await req.json().catch(() => null);
+  if (isHoneypotTriggered(body?.[HONEYPOT_FIELD_NAME])) {
+    return NextResponse.json({ success: true });
+  }
+
   const email = body?.email;
   const airportSlug = body?.airportSlug;
   const destinationSlug = body?.destinationSlug;
-  const intent = typeof body?.intent === 'string' ? body.intent : undefined;
+  const intent = body?.intent;
 
   if (!isValidEmail(email)) {
     return NextResponse.json({ error: 'A valid email address is required.' }, { status: 400 });
   }
 
-  const airport = typeof airportSlug === 'string' ? getAirportBySlug(airportSlug) : undefined;
+  const airportSlugError = validateTextField(airportSlug, {
+    required: true,
+    maxLength: MAX_SLUG_LENGTH,
+    fieldName: 'Departure airport',
+  });
+  if (airportSlugError) {
+    return NextResponse.json({ error: airportSlugError }, { status: 400 });
+  }
+  const destinationSlugError = validateTextField(destinationSlug, {
+    required: true,
+    maxLength: MAX_SLUG_LENGTH,
+    fieldName: 'Destination',
+  });
+  if (destinationSlugError) {
+    return NextResponse.json({ error: destinationSlugError }, { status: 400 });
+  }
+  const intentError = validateTextField(intent, { required: false, maxLength: MAX_SLUG_LENGTH, fieldName: 'Intent' });
+  if (intentError) {
+    return NextResponse.json({ error: intentError }, { status: 400 });
+  }
+
+  const airport = getAirportBySlug(airportSlug);
   if (!airport) {
     return NextResponse.json({ error: 'Please choose a valid departure airport.' }, { status: 400 });
   }
 
-  const destination = typeof destinationSlug === 'string' ? getDestinationBySlug(destinationSlug) : undefined;
+  const destination = getDestinationBySlug(destinationSlug);
   if (!destination) {
     return NextResponse.json({ error: 'Please choose a valid destination.' }, { status: 400 });
   }

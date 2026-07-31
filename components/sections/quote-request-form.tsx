@@ -15,11 +15,22 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import { TRIP_TYPE_OPTIONS, QUOTE_REGION_OPTIONS, QuoteTripType, QuoteRegion } from '@/lib/quote-request-options';
+import { HoneypotField } from '@/components/forms/honeypot-field';
+import { HONEYPOT_FIELD_NAME } from '@/lib/form-security';
 
 interface QuoteRequestFormProps {
   initialTripType?: QuoteTripType;
   initialRegion?: QuoteRegion;
 }
+
+const MAX_NAME_LENGTH = 100;
+const MAX_EMAIL_LENGTH = 254;
+const MAX_PHONE_LENGTH = 30;
+const MAX_TRIP_TYPE_OTHER_LENGTH = 150;
+const MAX_TRAVELLER_COUNT_LENGTH = 40;
+const MAX_TRAVEL_WINDOW_LENGTH = 100;
+const MAX_BUDGET_NOTE_LENGTH = 150;
+const MAX_MESSAGE_LENGTH = 3000;
 
 /** One glyph per trip type — purely a scanning aid (labels alone are always
  * sufficient; nothing here is communicated by icon shape alone). */
@@ -53,6 +64,7 @@ export function QuoteRequestForm({ initialTripType, initialRegion }: QuoteReques
     tripType: initialTripType ?? '',
     region: initialRegion ?? '',
   });
+  const [honeypot, setHoneypot] = useState('');
   const [status, setStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
   const [errorMsg, setErrorMsg] = useState('');
 
@@ -64,12 +76,13 @@ export function QuoteRequestForm({ initialTripType, initialRegion }: QuoteReques
       const res = await fetch('/api/quote-request', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
+        body: JSON.stringify({ ...form, [HONEYPOT_FIELD_NAME]: honeypot }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? 'Something went wrong.');
       setStatus('success');
       setForm(emptyForm);
+      setHoneypot('');
     } catch (err) {
       setStatus('error');
       setErrorMsg(err instanceof Error ? err.message : 'Something went wrong. Please try again.');
@@ -98,13 +111,41 @@ export function QuoteRequestForm({ initialTripType, initialRegion }: QuoteReques
       )}
 
       <div className="grid gap-5 sm:grid-cols-2">
-        <TextField label="Name" id="name" value={form.name} onChange={(v) => setForm({ ...form, name: v })} required />
-        <TextField label="Email" id="email" type="email" value={form.email} onChange={(v) => setForm({ ...form, email: v })} required />
+        <TextField
+          label="Name"
+          id="name"
+          value={form.name}
+          onChange={(v) => setForm({ ...form, name: v })}
+          required
+          maxLength={MAX_NAME_LENGTH}
+        />
+        <TextField
+          label="Email"
+          id="email"
+          type="email"
+          value={form.email}
+          onChange={(v) => setForm({ ...form, email: v })}
+          required
+          maxLength={MAX_EMAIL_LENGTH}
+        />
       </div>
 
       <div className="grid gap-5 sm:grid-cols-2">
-        <TextField label="Phone (optional)" id="phone" type="tel" value={form.phone} onChange={(v) => setForm({ ...form, phone: v })} />
-        <TextField label="Number of travellers (optional)" id="travellerCount" value={form.travellerCount} onChange={(v) => setForm({ ...form, travellerCount: v })} />
+        <TextField
+          label="Phone (optional)"
+          id="phone"
+          type="tel"
+          value={form.phone}
+          onChange={(v) => setForm({ ...form, phone: v })}
+          maxLength={MAX_PHONE_LENGTH}
+        />
+        <TextField
+          label="Number of travellers (optional)"
+          id="travellerCount"
+          value={form.travellerCount}
+          onChange={(v) => setForm({ ...form, travellerCount: v })}
+          maxLength={MAX_TRAVELLER_COUNT_LENGTH}
+        />
       </div>
 
       <TripTypePicker
@@ -121,6 +162,7 @@ export function QuoteRequestForm({ initialTripType, initialRegion }: QuoteReques
           value={form.tripTypeOther}
           onChange={(v) => setForm({ ...form, tripTypeOther: v })}
           placeholder="e.g. medical travel, visiting friends, a pilgrimage tour"
+          maxLength={MAX_TRIP_TYPE_OTHER_LENGTH}
         />
       )}
 
@@ -139,6 +181,7 @@ export function QuoteRequestForm({ initialTripType, initialRegion }: QuoteReques
         value={form.travelWindow}
         onChange={(v) => setForm({ ...form, travelWindow: v })}
         placeholder="e.g. Ramadan 2027, or flexible"
+        maxLength={MAX_TRAVEL_WINDOW_LENGTH}
       />
 
       <TextField
@@ -147,6 +190,7 @@ export function QuoteRequestForm({ initialTripType, initialRegion }: QuoteReques
         value={form.budgetNote}
         onChange={(v) => setForm({ ...form, budgetNote: v })}
         placeholder="e.g. per person, or total for the group"
+        maxLength={MAX_BUDGET_NOTE_LENGTH}
       />
 
       <div>
@@ -156,11 +200,14 @@ export function QuoteRequestForm({ initialTripType, initialRegion }: QuoteReques
         <textarea
           id="message"
           rows={4}
+          maxLength={MAX_MESSAGE_LENGTH}
           value={form.message}
           onChange={(e) => setForm({ ...form, message: e.target.value })}
           className="mt-1.5 w-full rounded-sm border border-ink-200 px-4 py-3 text-ink-900 focus-visible:border-brass"
         />
       </div>
+
+      <HoneypotField value={honeypot} onChange={setHoneypot} />
 
       <button
         type="submit"
@@ -184,6 +231,7 @@ function TextField({
   type = 'text',
   required,
   placeholder,
+  maxLength,
 }: {
   label: string;
   id: string;
@@ -192,6 +240,7 @@ function TextField({
   type?: string;
   required?: boolean;
   placeholder?: string;
+  maxLength?: number;
 }) {
   return (
     <div>
@@ -202,6 +251,7 @@ function TextField({
         id={id}
         type={type}
         required={required}
+        maxLength={maxLength}
         value={value}
         placeholder={placeholder}
         onChange={(e) => onChange(e.target.value)}

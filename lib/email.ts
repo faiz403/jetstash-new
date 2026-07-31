@@ -1,7 +1,8 @@
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const MAX_EMAIL_LENGTH = 254; // RFC 5321 §4.5.3.1.3 practical mailbox-address limit.
 
 export function isValidEmail(value: unknown): value is string {
-  return typeof value === 'string' && EMAIL_PATTERN.test(value);
+  return typeof value === 'string' && value.length <= MAX_EMAIL_LENGTH && EMAIL_PATTERN.test(value);
 }
 
 interface BrevoContactResult {
