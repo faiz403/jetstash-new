@@ -1,7 +1,7 @@
 import { routes as defaultRoutes, getRouteAirport, getRouteDestination, type Route } from '@/data/routes';
 import { routeStatusEvents as defaultRouteStatusEvents, type RouteStatusEvent } from '@/data/route-status-events';
 import { getEffectiveRoutePresentation } from '@/lib/route-status-copy';
-import { getAirportImage } from '@/lib/brand-images';
+import { getAirportImage, getDestinationImage } from '@/lib/brand-images';
 import type { RegionGroup } from '@/data/destinations';
 
 /**
@@ -33,6 +33,8 @@ export interface RouteCardData {
 export interface CountryGroup {
   country: string;
   routes: RouteCardData[];
+  /** Compact representative photo for the collapsed accordion header — see COUNTRY_REPRESENTATIVE_DESTINATION_SLUG. Null for any country not yet given a deliberate choice, same graceful fallback every other image resolver in this codebase uses. */
+  image: { src: string; alt: string } | null;
 }
 
 // Matches the site-wide commercial ordering: India first, then Pakistan, then
@@ -40,6 +42,65 @@ export interface CountryGroup {
 // same priority app/routes/page.tsx already used for its region sections,
 // now used to order the finer-grained country groups instead.
 const regionOrder: RegionGroup[] = ['india', 'pakistan', 'bangladesh', 'gulf', 'mediterranean', 'north-africa'];
+
+/**
+ * `/routes` country-header images — a deliberate, explicit per-country
+ * choice, never inferred from a country string or "first route in the
+ * group" at runtime (both would be fragile against reordering). Each slug
+ * is an existing, already-approved data/destinations.ts entry with real
+ * Signature Collection photography (see lib/brand-images.ts) — no new
+ * image was generated, downloaded or introduced for this feature.
+ *
+ * Where a country has more than one photographed destination, the busier
+ * one in data/routes.ts was chosen as the more representative pick for a
+ * page whose header literally shows a route count (Mumbai: 3 routes vs
+ * Delhi's 2; Islamabad: 3 vs Lahore's 2). India's choice also matches the
+ * site's existing Manchester→Mumbai flagship narrative elsewhere
+ * (components/journey-brief/journey-brief-manchester-mumbai.tsx). Where
+ * two destinations tie (Saudi Arabia: Jeddah and Madinah both have 2),
+ * Jeddah was chosen as the more general representative of the country —
+ * Madinah is specifically the Umrah/religious-travel destination, and
+ * this header groups the whole country, not that narrower journey.
+ *
+ * Keys are the exact Destination.country strings — 'United Arab Emirates',
+ * not 'UAE' (see data/destinations.ts).
+ */
+export const COUNTRY_REPRESENTATIVE_DESTINATION_SLUG: Record<string, string> = {
+  India: 'mumbai',
+  Pakistan: 'islamabad',
+  Bangladesh: 'dhaka',
+  'United Arab Emirates': 'dubai',
+  Qatar: 'doha',
+  'Saudi Arabia': 'jeddah',
+};
+
+/**
+ * Resolves a country's header image via the explicit mapping above —
+ * never string concatenation or a country-name-derived slug guess. A
+ * country absent from the mapping (a future addition not yet given a
+ * deliberate choice) returns null, the same silent, graceful fallback
+ * every other image resolver in lib/brand-images.ts already uses — the
+ * header simply renders without an image rather than breaking.
+ *
+ * A country that IS mapped but whose target destination has no actual
+ * approved image file is a different problem — a real configuration
+ * mistake, not a legitimate "not yet photographed" case — so that throws
+ * outside production, per the requirement to fail clearly in development
+ * and tests rather than ever silently render a broken image. Production
+ * still degrades to no image rather than crashing a live page over a
+ * missing photo.
+ */
+function getCountryHeaderImage(country: string): { src: string; alt: string } | null {
+  const slug = COUNTRY_REPRESENTATIVE_DESTINATION_SLUG[country];
+  if (!slug) return null;
+  const image = getDestinationImage(slug);
+  if (!image && process.env.NODE_ENV !== 'production') {
+    throw new Error(
+      `/routes country header image mapping is broken: '${country}' maps to destination slug '${slug}', but lib/brand-images.ts has no approved image for that slug. Fix COUNTRY_REPRESENTATIVE_DESTINATION_SLUG in lib/route-country-groups.ts or add the missing asset.`
+    );
+  }
+  return image;
+}
 
 /**
  * Groups routes by `Destination.country` — a real, existing, reliable
@@ -79,6 +140,7 @@ export function buildRouteCountryGroups(
 
   return countryOrder.map((country) => ({
     country,
+    image: getCountryHeaderImage(country),
     routes: routesByCountry
       .get(country)!
       .map((route): RouteCardData | null => {
