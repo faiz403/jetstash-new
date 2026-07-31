@@ -295,7 +295,26 @@ function buildManchesterNetwork(): AirportNetworkData {
     airportSlug: 'manchester',
     airportName: 'Manchester',
     origin,
-    defaultCountrySlug: 'india',
+    // UAE (Dubai), not India (Mumbai) — Mumbai and Delhi are the only two
+    // Manchester routes with any route-status-events.ts entry at all, and
+    // both are currently 'withdrawal-announced' (see the events at the
+    // bottom of that file), so India was never a stable landing state, only
+    // ever the accident of being first in indiaPoints. Manchester-Dubai is
+    // the strongest verified, non-withdrawal alternative already in this
+    // network: verified directly on Emirates' own route page (the most
+    // recently checked of any Manchester route here), zero
+    // route-status-events, two real logged fare observations
+    // (data/fare-observations.ts, obs-man-dxb-economy-1/business-1), a
+    // verified TravelUp deep link (lib/booking-providers.ts), and one of
+    // the six routes STATUS.md's SOFT_LAUNCH_PACK already hand-picked for
+    // "logged fare evidence and a verified TravelUp deep link today". UAE
+    // is also architecturally the simplest possible default: exactly one
+    // destination, so there's no ordering ambiguity about which city shows
+    // first, unlike India or Pakistan's multi-destination arrays. Mumbai
+    // itself is untouched — still visible, still selectable, still showing
+    // its real withdrawal notice, just no longer what a first-time visitor
+    // sees before choosing anything.
+    defaultCountrySlug: 'uae',
     countries,
   };
 }
