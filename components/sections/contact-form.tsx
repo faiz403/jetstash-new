@@ -2,9 +2,16 @@
 
 import { useState, FormEvent } from 'react';
 import { CheckCircle2, AlertCircle } from 'lucide-react';
+import { HoneypotField } from '@/components/forms/honeypot-field';
+import { HONEYPOT_FIELD_NAME } from '@/lib/form-security';
+
+const MAX_NAME_LENGTH = 100;
+const MAX_EMAIL_LENGTH = 254;
+const MAX_MESSAGE_LENGTH = 5000;
 
 export function ContactForm() {
   const [form, setForm] = useState({ name: '', email: '', message: '' });
+  const [honeypot, setHoneypot] = useState('');
   const [status, setStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
   const [errorMsg, setErrorMsg] = useState('');
 
@@ -16,12 +23,13 @@ export function ContactForm() {
       const res = await fetch('/api/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
+        body: JSON.stringify({ ...form, [HONEYPOT_FIELD_NAME]: honeypot }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? 'Something went wrong.');
       setStatus('success');
       setForm({ name: '', email: '', message: '' });
+      setHoneypot('');
     } catch (err) {
       setStatus('error');
       setErrorMsg(err instanceof Error ? err.message : 'Something went wrong. Please try again.');
@@ -45,7 +53,14 @@ export function ContactForm() {
           <p className="text-sm text-terracotta-700">{errorMsg}</p>
         </div>
       )}
-      <Field label="Name" id="name" value={form.name} onChange={(v) => setForm({ ...form, name: v })} required />
+      <Field
+        label="Name"
+        id="name"
+        value={form.name}
+        onChange={(v) => setForm({ ...form, name: v })}
+        required
+        maxLength={MAX_NAME_LENGTH}
+      />
       <Field
         label="Email"
         id="email"
@@ -53,6 +68,7 @@ export function ContactForm() {
         value={form.email}
         onChange={(v) => setForm({ ...form, email: v })}
         required
+        maxLength={MAX_EMAIL_LENGTH}
       />
       <div>
         <label htmlFor="message" className="text-sm font-semibold text-ink-700">
@@ -62,11 +78,13 @@ export function ContactForm() {
           id="message"
           required
           rows={5}
+          maxLength={MAX_MESSAGE_LENGTH}
           value={form.message}
           onChange={(e) => setForm({ ...form, message: e.target.value })}
           className="mt-1.5 w-full rounded-sm border border-ink-200 px-4 py-3 text-ink-900 focus-visible:border-brass"
         />
       </div>
+      <HoneypotField value={honeypot} onChange={setHoneypot} />
       <button
         type="submit"
         disabled={status === 'submitting'}
@@ -85,6 +103,7 @@ function Field({
   onChange,
   type = 'text',
   required,
+  maxLength,
 }: {
   label: string;
   id: string;
@@ -92,6 +111,7 @@ function Field({
   onChange: (v: string) => void;
   type?: string;
   required?: boolean;
+  maxLength?: number;
 }) {
   return (
     <div>
@@ -102,6 +122,7 @@ function Field({
         id={id}
         type={type}
         required={required}
+        maxLength={maxLength}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         className="mt-1.5 h-12 w-full rounded-sm border border-ink-200 px-4 text-ink-900 focus-visible:border-brass"

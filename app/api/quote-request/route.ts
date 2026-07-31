@@ -2,6 +2,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import { isQuoteTripType, isQuoteRegion, TRIP_TYPE_OPTIONS, QUOTE_REGION_OPTIONS } from '@/lib/quote-request-options';
 import { isValidEmail, sendResendEmail } from '@/lib/email';
 import { siteConfig } from '@/lib/site-config';
+import {
+  checkRateLimit,
+  getClientIdentifier,
+  HONEYPOT_FIELD_NAME,
+  isHoneypotTriggered,
+  validateTextField,
+} from '@/lib/form-security';
 
 /**
  * Quote-request endpoint — any trip type (solo, couple, family, group,
@@ -17,6 +24,16 @@ import { siteConfig } from '@/lib/site-config';
  * form on this site.
  */
 
+const RATE_LIMIT_MAX = 5;
+const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000;
+const MAX_NAME_LENGTH = 100;
+const MAX_PHONE_LENGTH = 30;
+const MAX_TRIP_TYPE_OTHER_LENGTH = 150;
+const MAX_TRAVELLER_COUNT_LENGTH = 40;
+const MAX_TRAVEL_WINDOW_LENGTH = 100;
+const MAX_BUDGET_NOTE_LENGTH = 150;
+const MAX_MESSAGE_LENGTH = 3000;
+
 function tripTypeLabel(value: string): string {
   return TRIP_TYPE_OPTIONS.find((o) => o.value === value)?.label ?? value;
 }
@@ -26,11 +43,42 @@ function regionLabel(value: string): string {
 }
 
 export async function POST(req: NextRequest) {
+  const rate = checkRateLimit(`quote-request:${getClientIdentifier(req)}`, RATE_LIMIT_MAX, RATE_LIMIT_WINDOW_MS);
+  if (rate.limited) {
+    return NextResponse.json({ error: 'Too many requests. Please try again shortly.' }, { status: 429 });
+  }
+
   const body = await req.json().catch(() => null);
+  if (isHoneypotTriggered(body?.[HONEYPOT_FIELD_NAME])) {
+    return NextResponse.json({ success: true });
+  }
+
   const { name, email, phone, tripType, tripTypeOther, region, travellerCount, travelWindow, budgetNote, message } =
     body ?? {};
 
-  if (!name || !email || !tripType || !region) {
+  const fieldChecks: { value: unknown; opts: { required: boolean; maxLength: number; fieldName: string } }[] = [
+    { value: name, opts: { required: true, maxLength: MAX_NAME_LENGTH, fieldName: 'Name' } },
+    { value: phone, opts: { required: false, maxLength: MAX_PHONE_LENGTH, fieldName: 'Phone' } },
+    {
+      value: tripTypeOther,
+      opts: { required: false, maxLength: MAX_TRIP_TYPE_OTHER_LENGTH, fieldName: 'Trip type detail' },
+    },
+    {
+      value: travellerCount,
+      opts: { required: false, maxLength: MAX_TRAVELLER_COUNT_LENGTH, fieldName: 'Number of travellers' },
+    },
+    { value: travelWindow, opts: { required: false, maxLength: MAX_TRAVEL_WINDOW_LENGTH, fieldName: 'Travel dates' } },
+    { value: budgetNote, opts: { required: false, maxLength: MAX_BUDGET_NOTE_LENGTH, fieldName: 'Budget note' } },
+    { value: message, opts: { required: false, maxLength: MAX_MESSAGE_LENGTH, fieldName: 'Message' } },
+  ];
+  for (const { value, opts } of fieldChecks) {
+    const error = validateTextField(value, opts);
+    if (error) {
+      return NextResponse.json({ error }, { status: 400 });
+    }
+  }
+
+  if (!email || !tripType || !region) {
     return NextResponse.json(
       { error: 'Name, email, trip type and region are all required.' },
       { status: 400 }

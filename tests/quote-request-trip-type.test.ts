@@ -170,7 +170,11 @@ describe('"Other" is a real escape hatch, not a dead end', () => {
   });
 
   it('the API still requires a tripType to be chosen at all (Other included) — the escape hatch removes friction, not the categorisation signal', () => {
-    expect(routeSrc).toMatch(/!name \|\| !email \|\| !tripType \|\| !region/);
+    // Name's required-ness moved into the shared fieldChecks/validateTextField
+    // pass (added for server-side max-length enforcement); email/tripType/region
+    // stay in the original combined check.
+    expect(routeSrc).toMatch(/required: true.*fieldName: 'Name'/);
+    expect(routeSrc).toMatch(/!email \|\| !tripType \|\| !region/);
     expect(routeSrc).toMatch(/isQuoteTripType\(tripType\)/);
   });
 });
@@ -211,8 +215,11 @@ describe('surrounding page copy no longer contradicts the expanded option set', 
 
 describe('no unrelated behaviour changed', () => {
   it('name, email and region remain required exactly as before', () => {
-    expect(formSrc).toMatch(/label="Name" id="name"[\s\S]*?required/);
-    expect(formSrc).toMatch(/label="Email" id="email"[\s\S]*?required/);
+    // Reformatted onto multiple lines (added maxLength props for server-side
+    // field-limit hardening), so match label/id/required across whitespace
+    // rather than requiring them on one line.
+    expect(formSrc).toMatch(/label="Name"[\s\S]*?id="name"[\s\S]*?required/);
+    expect(formSrc).toMatch(/label="Email"[\s\S]*?id="email"[\s\S]*?required/);
   });
 
   it('the API route still fails clearly with a 503 when no email provider is configured, unchanged', () => {

@@ -3,6 +3,13 @@ import { getAirportBySlug } from '@/data/airports';
 import { isValidEmail, upsertBrevoContact } from '@/lib/email';
 import { isTravelInterest } from '@/lib/travel-club-options';
 import { BREVO_ATTRIBUTE_NAMES } from '@/lib/brevo-attributes';
+import {
+  checkRateLimit,
+  getClientIdentifier,
+  HONEYPOT_FIELD_NAME,
+  isHoneypotTriggered,
+  validateTextField,
+} from '@/lib/form-security';
 
 /**
  * Newsletter / Travel Club subscribe endpoint.
@@ -37,14 +44,44 @@ import { BREVO_ATTRIBUTE_NAMES } from '@/lib/brevo-attributes';
  * recognise.
  */
 
+const RATE_LIMIT_MAX = 5;
+const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000;
+const MAX_SLUG_LENGTH = 100;
+
 export async function POST(req: NextRequest) {
+  const rate = checkRateLimit(`subscribe:${getClientIdentifier(req)}`, RATE_LIMIT_MAX, RATE_LIMIT_WINDOW_MS);
+  if (rate.limited) {
+    return NextResponse.json({ error: 'Too many requests. Please try again shortly.' }, { status: 429 });
+  }
+
   const body = await req.json().catch(() => null);
+  if (isHoneypotTriggered(body?.[HONEYPOT_FIELD_NAME])) {
+    return NextResponse.json({ success: true });
+  }
+
   const email = body?.email;
-  const nearestAirport = typeof body?.nearestAirport === 'string' ? body.nearestAirport : undefined;
-  const interest = typeof body?.interest === 'string' ? body.interest : undefined;
+  const nearestAirport = body?.nearestAirport;
+  const interest = body?.interest;
 
   if (!isValidEmail(email)) {
     return NextResponse.json({ error: 'A valid email address is required.' }, { status: 400 });
+  }
+
+  const nearestAirportError = validateTextField(nearestAirport, {
+    required: false,
+    maxLength: MAX_SLUG_LENGTH,
+    fieldName: 'Nearest airport',
+  });
+  if (nearestAirportError) {
+    return NextResponse.json({ error: nearestAirportError }, { status: 400 });
+  }
+  const interestError = validateTextField(interest, {
+    required: false,
+    maxLength: MAX_SLUG_LENGTH,
+    fieldName: 'Interest',
+  });
+  if (interestError) {
+    return NextResponse.json({ error: interestError }, { status: 400 });
   }
 
   // Validate against the same sources the form is rendered from
