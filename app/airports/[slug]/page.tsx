@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { Plane, ArrowUpRight, Info, MapPin } from 'lucide-react';
 import { airports, getAirportBySlug } from '@/data/airports';
+import { truncateMetadataDescription } from '@/data/routes';
 import { getDealsByAirport } from '@/data/deals';
 import { getRoutesByAirport, getRouteDestination } from '@/data/routes';
 import { routeStatusEvents } from '@/data/route-status-events';
@@ -32,8 +33,20 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const airport = getAirportBySlug(slug);
   if (!airport) return {};
   return {
-    title: `Flights from ${airport.name} (${airport.code}): Route Guides & Fares`,
-    description: airport.description,
+    // Metadata audit (Aug 2026): was `Flights from ${airport.name}
+    // (${airport.code}): Route Guides & Fares` — the UK's longer official
+    // airport names (Newcastle International Airport, Liverpool John
+    // Lennon Airport...) pushed every one of these past 65 characters,
+    // several well past. Leading with the airport's own name (still its
+    // real, full, unaltered name — airport.name itself is untouched) and
+    // trimming "Route Guides" to "Flights" keeps the code and "Fares" —
+    // the two most search-relevant terms — while fitting the guideline
+    // for every airport in the network, not just the shorter-named ones.
+    title: `${airport.name} (${airport.code}): Flights & Fares`,
+    // Meta-only truncation — airport.description itself (the page's own
+    // visible lead paragraph, rendered unchanged just below) is never
+    // shortened; see truncateMetadataDescription's doc comment.
+    description: truncateMetadataDescription(airport.description),
     alternates: { canonical: `${siteConfig.url}/airports/${airport.slug}` },
   };
 }

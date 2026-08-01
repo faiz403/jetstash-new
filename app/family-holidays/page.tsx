@@ -16,7 +16,10 @@ export const revalidate = 21600;
 
 export const metadata: Metadata = {
   alternates: { canonical: '/family-holidays' },
-  title: 'Family Holidays: All-Inclusive & Long-Haul Trips from the UK',
+  // Metadata audit (Aug 2026): dropped "from the UK" — implied already
+  // (every JetStash page is UK-departure content) and the one trim needed
+  // to bring this title within the ~65-character guideline.
+  title: 'Family Holidays: All-Inclusive & Long-Haul Trips',
   description:
     'Family holiday guidance for UK travellers, covering all-inclusive resorts in Turkey and the Mediterranean alongside long-haul family trips to the Gulf and South Asia.',
 };

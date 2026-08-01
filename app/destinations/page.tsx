@@ -11,8 +11,9 @@ import { regionGroups } from '@/lib/site-config';
 export const metadata: Metadata = {
   alternates: { canonical: '/destinations' },
   title: 'All Destinations',
+  // Metadata audit (Aug 2026): trimmed from 178 characters.
   description:
-    'International destinations covered by JetStash, with deepest route intelligence in South Asia and the Gulf plus destination guidance across Turkey, Morocco and the Mediterranean.',
+    'International destinations JetStash covers, with deepest route intelligence in South Asia and the Gulf, plus guidance across Turkey, Morocco and the Mediterranean.',
 };
 
 // Matches the site-wide commercial ordering: India first, then Pakistan, Bangladesh, Umrah, Gulf.

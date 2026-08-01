@@ -3,8 +3,16 @@ export const siteConfig = {
   domain: 'jetstash.co.uk',
   url: 'https://jetstash.co.uk',
   tagline: "UK travel intelligence for international journeys",
+  // Metadata audit (Aug 2026): was 302 characters — the homepage's own
+  // <meta description> and, via the root layout, the site-wide default
+  // used on any page without one of its own. Shortened to one sentence
+  // that still states what JetStash does and where its verified coverage
+  // is deepest, without the second sentence's fuller region list (South
+  // Asia, the Gulf, Turkey, Morocco, the Mediterranean) — a search snippet
+  // isn't the place for an exhaustive list, and each region already has
+  // its own hub page description for that.
   description:
-    'JetStash helps UK travellers make better international booking decisions with route status, fare patterns, booking timing and travel-readiness guidance. Our deepest verified coverage is currently South Asia and the Gulf, alongside selected destination guidance in Turkey, Morocco and the Mediterranean.',
+    'JetStash helps UK travellers make better booking decisions: route status, fare patterns, booking timing and travel-readiness guidance, deepest in South Asia and the Gulf.',
   /**
    * Default inbox for lead-capture form submissions (contact form, quote
    * requests) — /app/api/contact and /app/api/quote-request both read
