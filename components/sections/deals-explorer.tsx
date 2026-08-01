@@ -13,6 +13,30 @@ const filters: { label: string; value: DealCategory | 'all' }[] = [
   { label: 'Umrah', value: 'umrah' },
 ];
 
+/**
+ * Which category filter tabs should actually render. A category tab whose
+ * live count is genuinely 0 (Packages and Business class today — every
+ * deal in each currently lacks a fully-dated, publishable fare observation,
+ * see hasTrackedFare) reads as broken or abandoned rather than honest, so
+ * it's hidden rather than shown with a "0" badge. Driven by the exact same
+ * hasTrackedFare gate the visible count badge already uses — never a
+ * hand-maintained exclusion list — so a category reappears on its own the
+ * moment fare-observations.ts gains one qualifying entry for it. "All
+ * deals" is always kept: it's the one escape hatch a visitor can always
+ * fall back to, and the page's own "no tracked fares yet" messaging
+ * already handles that view honestly if it ever has zero tracked fares
+ * too. Kept as a plain, pure, directly-testable function (matching this
+ * codebase's existing convention for derivation logic) rather than living
+ * inline in the component, so tests can call the exact function the page
+ * renders from instead of re-implementing the filter predicate.
+ */
+export function getVisibleFilters(nowIso: string): typeof filters {
+  return filters.filter((f) => {
+    if (f.value === 'all') return true;
+    return deals.some((d) => d.category === f.value && hasTrackedFare(d, nowIso));
+  });
+}
+
 export function DealsExplorer() {
   const [active, setActive] = useState<DealCategory | 'all'>('all');
 
@@ -28,11 +52,13 @@ export function DealsExplorer() {
   const trackedCount = filtered.filter((d) => hasTrackedFare(d, nowIso)).length;
   const searchOnlyCount = filtered.length - trackedCount;
 
+  const visibleFilters = useMemo(() => getVisibleFilters(nowIso), [nowIso]);
+
   return (
     <section className="bg-white py-12 sm:py-16">
       <div className="mx-auto max-w-content px-5 sm:px-8">
         <div className="flex flex-wrap gap-2 border-b border-ink-100 pb-6" role="group" aria-label="Filter fares by category">
-          {filters.map((f) => {
+          {visibleFilters.map((f) => {
             const scoped = f.value === 'all' ? deals : deals.filter((d) => d.category === f.value);
             const count = scoped.filter((d) => hasTrackedFare(d, nowIso)).length;
             return (
