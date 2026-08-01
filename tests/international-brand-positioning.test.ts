@@ -10,8 +10,11 @@ const routesSource = readFileSync(join(process.cwd(), 'app/routes/page.tsx'), 'u
 describe('International brand positioning', () => {
   it('leads the global brand with UK travel intelligence for international journeys', () => {
     expect(siteConfig.tagline).toBe("UK travel intelligence for international journeys");
-    expect(siteConfig.description).toContain('international booking decisions');
-    expect(siteConfig.description).toContain('deepest verified coverage is currently South Asia and the Gulf');
+    // Metadata audit (Aug 2026): siteConfig.description was shortened from
+    // 302 to 170 characters for the <meta description>/search-snippet limit —
+    // still names what JetStash does and where coverage is deepest, honestly.
+    expect(siteConfig.description).toContain('better booking decisions');
+    expect(siteConfig.description).toContain('deepest in South Asia and the Gulf');
   });
 
   it('keeps primary navigation product-led while specialist hubs remain discoverable elsewhere', () => {

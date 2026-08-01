@@ -1204,7 +1204,12 @@ export function buildUnverifiedPresentation(route: Route): RoutePresentation {
     airlineSlugs: [],
     summary: copy.summary,
     metadataDescription: copy.metadataDescription,
-    metadataTitle: `${pair}: Route Verification in Progress`,
+    // Metadata audit (Aug 2026): dropped "Route" — "Verification in
+    // Progress" alone is unambiguous on a page whose URL and h1 already
+    // say it's a route, and the shorter form keeps this title (and the
+    // handful of longer city pairs using it) comfortably within the
+    // ~65-character guideline.
+    metadataTitle: `${pair}: Verification in Progress`,
     shareText: copy.shareText,
     socialDetail: statusLabel,
     socialFooter: 'Route verification in progress · jetstash.co.uk',
@@ -1248,6 +1253,38 @@ export function buildServiceEndedPresentation(route: Route): RoutePresentation {
 }
 
 /**
+ * Metadata audit (Aug 2026): every direct/connecting route's
+ * metadataDescription used to be `${route.intro.slice(0, 150)}...` — a raw
+ * character-count slice that could land mid-word, and unconditionally
+ * appended "..." even on the (common) routes whose intro was already
+ * short enough that nothing was actually cut. Replaced with a real
+ * boundary-aware truncation: prefer ending on a genuine sentence (reads as
+ * a complete thought, no ellipsis needed), fall back to the last whole
+ * word before the limit, and never touch text that's already within
+ * range. `route.intro` itself — the full, hand-authored hero copy — is
+ * completely untouched; this only affects what ships in <meta
+ * description>.
+ */
+const MAX_METADATA_DESCRIPTION_LENGTH = 170;
+// A sentence- or word-boundary found before this fraction of the limit is
+// rejected as too short a fragment to be a useful summary on its own —
+// falls through to the next strategy instead of returning a near-empty string.
+const MIN_USEFUL_BOUNDARY_RATIO = 0.5;
+
+export function truncateMetadataDescription(text: string, maxLength: number = MAX_METADATA_DESCRIPTION_LENGTH): string {
+  if (text.length <= maxLength) return text;
+  const window = text.slice(0, maxLength);
+  const minBoundary = maxLength * MIN_USEFUL_BOUNDARY_RATIO;
+
+  const lastSentenceEnd = Math.max(window.lastIndexOf('. '), window.lastIndexOf('! '), window.lastIndexOf('? '));
+  if (lastSentenceEnd >= minBoundary) return window.slice(0, lastSentenceEnd + 1);
+
+  const lastSpace = window.lastIndexOf(' ');
+  const safe = lastSpace >= minBoundary ? window.slice(0, lastSpace) : window;
+  return `${safe.trimEnd()}…`;
+}
+
+/**
  * The single reusable source of truth for everything a customer-facing
  * surface renders about a route: not just duration/frequency/airline, but
  * hero copy, metadata, share text, and whether booking-guidance/peak-period/
@@ -1286,9 +1323,21 @@ export function getRoutePresentation(route: Route, nowIso: string): RoutePresent
   // when the route actually has peak-period data behind it. Checked against
   // route.peakPeriodIds generically, not special-cased to Birmingham–Mumbai
   // — any future route with no peak-period content gets the same fallback.
+  // Metadata audit (Aug 2026): dropped "Flights" from this branch
+  // specifically — the full "{pair} Flights: Booking Windows & Peak
+  // Periods" suffix, identical across every route with peak-period
+  // content, pushed nearly half the route network's titles past the
+  // ~65-character guideline. "Flights" was the one word removable without
+  // losing a route fact, a search term, or the origin/destination pair —
+  // "to" already signals a journey, and "Booking Windows & Peak Periods"
+  // alone still says exactly what the page covers. A handful of routes
+  // with an unusually long city pair (e.g. Manchester to Ahmedabad) still
+  // land a few characters past the guideline even after this — an
+  // accepted, documented exception (see tests/metadata-audit.test.ts)
+  // rather than a further cut that would start losing meaning.
   const hasPeakPeriodContent = route.peakPeriodIds.length > 0;
   const metadataTitle = hasPeakPeriodContent
-    ? `${pair} Flights: Booking Windows & Peak Periods`
+    ? `${pair}: Booking Windows & Peak Periods`
     : `${pair} Flights: ${status === 'direct' ? 'Route Guide' : 'Connection Guide'}`;
 
   return {
@@ -1298,7 +1347,7 @@ export function getRoutePresentation(route: Route, nowIso: string): RoutePresent
     frequency: route.frequency,
     airlineSlugs,
     summary: route.intro,
-    metadataDescription: `${route.intro.slice(0, 150)}...`,
+    metadataDescription: truncateMetadataDescription(route.intro),
     metadataTitle,
     shareText: buildShareText(status, pair, route.flightTime),
     socialDetail: buildSocialDetail(status, route.flightTime, statusLabel),

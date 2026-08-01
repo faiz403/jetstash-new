@@ -9,8 +9,13 @@ import { siteConfig } from '@/lib/site-config';
 export const metadata: Metadata = {
   // Root layout's title template already appends " | JetStash" — no manual suffix here.
   title: 'Request a Travel Quote',
+  // Metadata audit (Aug 2026): was 220 characters, listing every trip type
+  // (solo, couple, family, group, business, student, Umrah) and every
+  // region (7 named) — exactly the kind of exhaustive feature list a
+  // search snippet shouldn't carry. The form itself still offers every
+  // option unchanged; only this summary is more concise.
   description:
-    'Request a real quote for any trip — solo, couple, family, group, business, student or Umrah — to Pakistan, India, Bangladesh, the Gulf, Turkey, Morocco or Southern Europe, followed up by a person, not an automated price.',
+    'Request a real quote for any trip to Pakistan, India, the Gulf, Turkey, Morocco or beyond — followed up by a real person, not an automated price.',
   alternates: { canonical: `${siteConfig.url}/quote-request` },
 };
 

@@ -3,6 +3,7 @@ import {
   getRouteBySlug,
   getRoutePresentation,
   getDisplayDirectness,
+  truncateMetadataDescription,
   type Route,
 } from '@/data/routes';
 import {
@@ -266,7 +267,10 @@ describe('Metadata output — generateMetadata() never builds a pending route\'s
     const route = getRouteBySlug('manchester-lahore')!;
     expect(route.verification?.reviewDueDate).toBe('2026-08-13'); // sanity: fixture assumption still holds
     expect(meta.title).toMatch(/Booking Windows & Peak Periods/);
-    expect(meta.description).toBe(`${route.intro.slice(0, 150)}...`);
+    // Metadata audit (Aug 2026): was a raw `.slice(0, 150) + '...'` — replaced
+    // with truncateMetadataDescription's word/sentence-boundary-aware
+    // truncation (see data/routes.ts). Same source text, cleaner cut.
+    expect(meta.description).toBe(truncateMetadataDescription(route.intro));
   });
 
   it('regression: the SAME route produces the restrained pending metadata once the clock passes its reviewDueDate — proves generateMetadata does not depend on today\'s real date, only on the (mocked) clock at test time', async () => {

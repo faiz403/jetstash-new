@@ -15,8 +15,9 @@ export const revalidate = 21600;
 export const metadata: Metadata = {
   alternates: { canonical: '/routes' },
   title: 'Route Guides from UK Airports',
+  // Metadata audit (Aug 2026): trimmed from 175 characters.
   description:
-    'Airport-to-destination route guides with service status, booking timing and honest direct-or-connecting guidance. Current route coverage is deepest in South Asia and the Gulf.',
+    'Airport-to-destination route guides with service status, booking timing and honest direct-or-connecting guidance. Deepest coverage: South Asia and the Gulf.',
 };
 
 export default function RoutesIndexPage() {

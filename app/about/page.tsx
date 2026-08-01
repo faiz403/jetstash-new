@@ -8,8 +8,9 @@ import { siteConfig } from '@/lib/site-config';
 export const metadata: Metadata = {
   // Root layout's title template already appends " | JetStash" — no manual suffix here.
   title: 'How We Work',
+  // Metadata audit (Aug 2026): trimmed from 205 characters.
   description:
-    'JetStash is a UK travel intelligence platform for international journeys, built with specialist depth in South Asia and the Gulf. Read the editorial standards behind every fare and route claim on the site.',
+    'JetStash is a UK travel intelligence platform for international journeys, with specialist depth in South Asia and the Gulf. Read our editorial standards.',
   alternates: { canonical: `${siteConfig.url}/about` },
 };
 
