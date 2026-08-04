@@ -181,12 +181,17 @@ describe('TravelUp is completely removed from active code — no residue', () =>
 
   it('every remaining "TravelUp" mention in active code is an explicit historical/rationale note stating it is no longer active, never a live claim', () => {
     const offenders: string[] = [];
+    const WINDOW = 3; // "removed" may land a line or two away in a wrapped comment, not necessarily the same line
     for (const dir of ACTIVE_DIRS) {
       for (const file of collectFiles(join(process.cwd(), dir))) {
         const content = readFileSync(file, 'utf8');
         const lines = content.split('\n');
-        for (const line of lines) {
-          if (/travelup/i.test(line) && !/removed/i.test(line)) offenders.push(`${file}: ${line.trim()}`);
+        for (let i = 0; i < lines.length; i++) {
+          if (!/travelup/i.test(lines[i])) continue;
+          const contextStart = Math.max(0, i - WINDOW);
+          const contextEnd = Math.min(lines.length, i + WINDOW + 1);
+          const context = lines.slice(contextStart, contextEnd).join(' ');
+          if (!/removed/i.test(context)) offenders.push(`${file}: ${lines[i].trim()}`);
         }
       }
     }

@@ -1,13 +1,9 @@
 # JetStash — Seven-Day Controlled Organic Launch Pack
 
-> **Founder attention needed — 4 August 2026:** TravelUp has been removed entirely and replaced
-> with Trip.com as JetStash's sole active provider (see `STATUS.md` AFF-001). Every "TravelUp"
-> reference below is now stale — replace with Trip.com before sending anything. More importantly:
-> **3 of the 6 routes selected below (Heathrow–Delhi, Heathrow–Mumbai, Heathrow–Jeddah) now have no
-> booking CTA at all** — Trip.com's tools cannot produce a Heathrow-specific dateless link. If this
-> pack hasn't been sent yet, consider swapping those three for supported routes before using it.
-> This document has not been rewritten for Trip.com; treat all message drafts and the FAQ below as
-> needing a fresh pass, not ready to send as-is.
+> **Updated, 4 August 2026:** TravelUp has been removed entirely and replaced with Trip.com as
+> JetStash's sole active provider (see `STATUS.md` AFF-001). This pack's route selection and every
+> "TravelUp" reference have been corrected below — see the Change log at the bottom for exactly
+> what changed and why. Still nothing sent anywhere; still DRAFT for founder review.
 
 **Status: DRAFT for founder review.** The message copy below is a genuine starting point, not
 final text — read it, cut anything that doesn't sound like you, and personalise the parts that
@@ -26,41 +22,40 @@ user hitting a real, reproducible problem. Everything below is content and proce
 
 ## 1. The six launch routes
 
-Your original list named the right four categories (Pakistan, India, Gulf, Umrah). Two of the six
-specific routes are swapped from what you proposed, based on which routes actually have logged
-fare evidence and a verified TravelUp deep link today — the two things that make a route page look
-credible on a stranger's first visit rather than showing an honest-but-bare "no fare checked yet"
-state.
+Your original list named four categories (Pakistan, India, Gulf, Umrah). Following the 4 August
+2026 TravelUp → Trip.com migration, three of the originally selected six routes (Heathrow–Delhi,
+Heathrow–Mumbai, Heathrow–Jeddah) lost their booking CTA entirely — Trip.com's tools cannot produce
+a Heathrow-specific dateless link, and JetStash's standing rule is an exact airport-specific link
+or no CTA, never a generic fallback. You've directed the replacement selection below; Gulf and
+Umrah are not represented in this particular six for now as a result — Dubai and Jeddah/Madinah
+remain real, live, working parts of the site, just not part of this launch round's featured set.
 
-| Category | Route | Fare observations | Verified TravelUp deep link |
+| Category | Route | Fare observations | Trip.com CTA available |
 |---|---|---|---|
-| Pakistan | Manchester → Lahore | 3 | Yes |
-| Pakistan | Manchester → Islamabad | 2 | Yes |
-| India | **London Heathrow** → Delhi | 3 (most recent: 28 July) | Yes |
-| India | **London Heathrow** → Mumbai | 2 (most recent: 24 July) | Yes |
-| Gulf | Manchester → Dubai | 2 | Yes |
-| Umrah | **London Heathrow → Jeddah** | 3 | Yes |
+| Pakistan | Manchester → Lahore | 4 | Yes |
+| Pakistan | Manchester → Islamabad | 3 | Yes |
+| India | Manchester → Delhi | **0** | Yes |
+| India | Manchester → Mumbai | **0** | Yes |
+| India | Manchester → Ahmedabad | **0** | Yes |
+| India | Manchester → Amritsar | **0** | Yes |
 
-Two changes from your list, with the reason:
-
-- **Delhi and Mumbai: Heathrow, not Manchester or Birmingham.** Manchester–Delhi, Manchester–Mumbai
-  and Birmingham–Mumbai all currently have **zero** logged fare observations — a first-time visitor
-  from one of these routes would land on a page with no price shown at all. The Heathrow versions
-  of both have real, recent observations.
-- **Umrah: Jeddah, not Madinah.** Jeddah has 3 observations and a working route-specific TravelUp
-  link. Madinah has only 1 observation, and — following the fix shipped a few days ago — its
-  booking CTA now honestly says it opens TravelUp's general site rather than a Madinah-specific
-  search, because no such page could be verified. Jeddah is the stronger first impression of the
-  two; Madinah is still a real, working part of the site, just not the one to lead with.
+**Be aware before sending anything:** unlike the original selection (which specifically prioritised
+routes with logged fare evidence, to avoid a first-time visitor landing on a bare "no fare checked
+yet" page), four of these six — Delhi, Mumbai, Ahmedabad, Amritsar — currently have **zero** logged
+fare observations. Their route pages are honest and fully functional (booking-window guidance,
+route facts, Travel Ready Check, Trip.com CTA all work normally), but they'll show "no fare checks
+logged yet" rather than a real £ figure. If that's a concern before sending to any of these four
+communities, log at least one real fare observation per route first (`data/fare-observations.ts`,
+see `FARE_OBSERVATION_ARCHIVE.md`) — optional, your call, not something this correction did for you.
 
 Live route pages:
 
 - `https://jetstash.co.uk/routes/manchester-lahore`
 - `https://jetstash.co.uk/routes/manchester-islamabad`
-- `https://jetstash.co.uk/routes/london-heathrow-delhi`
-- `https://jetstash.co.uk/routes/london-heathrow-mumbai`
-- `https://jetstash.co.uk/routes/manchester-dubai`
-- `https://jetstash.co.uk/routes/london-heathrow-jeddah`
+- `https://jetstash.co.uk/routes/manchester-delhi`
+- `https://jetstash.co.uk/routes/manchester-mumbai`
+- `https://jetstash.co.uk/routes/manchester-ahmedabad`
+- `https://jetstash.co.uk/routes/manchester-amritsar`
 
 ---
 
@@ -107,15 +102,15 @@ documentation is not the same as seeing it work on this project's actual plan.
 Do not describe community-level attribution as operational until one of the two above is actually
 confirmed.
 
-**TravelUp / affiliate links:** every "Check live price(s)" button already carries CJ's own
-tracked link, with route, cabin and page context baked into CJ's `sid` field
-(`lib/booking-providers.ts`) — that's CJ's existing tracking infrastructure, not anything built for
-this launch. CJ, not Resend, is the system that would show clicks, actions and commissions; Resend
-is only how Contact/Quote Request form emails arrive, and has nothing to do with affiliate clicks.
-Whether that CJ reporting is actually visible, and at what level of detail, has not yet been
-checked in the real CJ dashboard. **A click through to TravelUp is not the same as a booking or a
+**Trip.com / affiliate links:** every "Compare flights on Trip.com" button carries a genuine,
+dashboard-generated Trip.com affiliate link (`Allianceid`/`SID`, `lib/booking-providers.ts`) — that's
+Trip.com's own tracking infrastructure, not anything built for this launch. Trip.com's affiliate
+dashboard, not Resend, is the system that would show clicks and commissions; Resend is only how
+Contact/Quote Request form emails arrive, and has nothing to do with affiliate clicks. Whether that
+dashboard reporting is actually visible, and at what level of detail, has not yet been checked in
+the real Trip.com dashboard. **A click through to Trip.com is not the same as a booking or a
 commission** — do not treat one as evidence of the other, and do not describe affiliate conversion
-measurement as working until you've confirmed it directly in CJ.
+measurement as working until you've confirmed it directly in Trip.com's dashboard.
 
 ---
 
@@ -152,38 +147,28 @@ the same honest ask: try it, don't just say it looks nice.
 > Would genuinely appreciate you trying it for a real trip you're actually thinking about, not just
 > looking at it — and telling me where it's confusing or wrong, not just whether it looks nice.
 
-### India community (Delhi / Mumbai)
+### India community (Delhi / Mumbai / Ahmedabad / Amritsar)
 
 > Sharing JetStash — a UK site I built for checking India routes before booking. Real route status,
 > passport/visa checks against the official government pages, and dated fares rather than a
 > live-price claim.
 >
-> Heathrow–Delhi: `https://jetstash.co.uk/routes/london-heathrow-delhi?utm_source=<GROUP-NAME>&utm_medium=whatsapp&utm_campaign=soft-launch-jul26`
-> Heathrow–Mumbai: `https://jetstash.co.uk/routes/london-heathrow-mumbai?utm_source=<GROUP-NAME>&utm_medium=whatsapp&utm_campaign=soft-launch-jul26`
+> Manchester–Delhi: `https://jetstash.co.uk/routes/manchester-delhi?utm_source=<GROUP-NAME>&utm_medium=whatsapp&utm_campaign=soft-launch-jul26`
+> Manchester–Mumbai: `https://jetstash.co.uk/routes/manchester-mumbai?utm_source=<GROUP-NAME>&utm_medium=whatsapp&utm_campaign=soft-launch-jul26`
+> Manchester–Ahmedabad: `https://jetstash.co.uk/routes/manchester-ahmedabad?utm_source=<GROUP-NAME>&utm_medium=whatsapp&utm_campaign=soft-launch-jul26`
+> Manchester–Amritsar: `https://jetstash.co.uk/routes/manchester-amritsar?utm_source=<GROUP-NAME>&utm_medium=whatsapp&utm_campaign=soft-launch-jul26`
 >
 > If you've got a real UK–India trip coming up, I'd rather you tried it on that than just looked at
 > it — and told me honestly where it falls short.
 
-### Gulf / Dubai-focused travellers
+### Gulf / Umrah — deferred this round
 
-> Built a UK travel-intelligence site called JetStash — checks routes, timing and dated fares for
-> journeys like Manchester–Dubai properly, instead of a comparison site's live-price claim.
->
-> `https://jetstash.co.uk/routes/manchester-dubai?utm_source=<GROUP-NAME>&utm_medium=whatsapp&utm_campaign=soft-launch-jul26`
->
-> There's also an interactive route map on the homepage if Dubai isn't your exact trip:
-> `https://jetstash.co.uk/?utm_source=<GROUP-NAME>&utm_medium=whatsapp&utm_campaign=soft-launch-jul26`
-
-### Umrah / religious travel community
-
-> Sharing JetStash — built it partly with Umrah travel in mind. It checks the latest evidence on
-> the route and airline for journeys like Heathrow–Jeddah, passport/visa requirements, and dated
-> fares rather than a live-price claim.
->
-> `https://jetstash.co.uk/routes/london-heathrow-jeddah?utm_source=<GROUP-NAME>&utm_medium=whatsapp&utm_campaign=soft-launch-jul26`
->
-> If you're actually planning an Umrah trip, I'd really value you trying it for real and telling me
-> what's missing or unclear.
+Manchester–Dubai and Heathrow–Jeddah are not part of this six-route selection (see section 1). Both
+are still real, live, working route pages — Dubai still has a working Trip.com CTA; Jeddah's lost
+its CTA in the TravelUp → Trip.com migration and now shows the honest "not available yet" state.
+Neither is being featured to a Gulf/Umrah-specific audience in this round. If you want to reach
+those communities this week anyway, the general UK travel message below still works, or point them
+directly at the homepage Route Atlas.
 
 ### General UK travel community
 
@@ -203,7 +188,7 @@ the same honest ask: try it, don't just say it looks nice.
 
 **"Is this a travel agency? Do you sell tickets?"**
 No — JetStash doesn't sell flights or take payment. When you're ready to book, it points you to a
-partner (currently TravelUp) to actually complete the booking. See the affiliate disclosure page
+partner (currently Trip.com) to actually complete the booking. See the affiliate disclosure page
 for exactly how that works: `https://jetstash.co.uk/affiliate-disclosure`
 
 **"How is this different from Skyscanner / Google Flights?"**
@@ -223,7 +208,7 @@ what you're interested in — nothing else, no selling your details. See
 `https://jetstash.co.uk/privacy-policy`.
 
 **"How do you make money?"**
-Commission from partner bookings (currently TravelUp) when you book through a link on the site —
+Commission from partner bookings (currently Trip.com) when you book through a link on the site —
 never anything that changes the price you pay. `https://jetstash.co.uk/affiliate-disclosure`
 
 **"Why isn't [my route] on there?"**
@@ -240,7 +225,7 @@ event is enough for a 7-day soft launch. Suggested columns:
 
 | Date | Source (which group/community) | Person (first name/handle only) | What they did | What they said | Action needed? |
 |---|---|---|---|---|---|
-| | | | (visited / used Atlas / ran Travel Ready Check / clicked TravelUp / signed up / asked a question) | | |
+| | | | (visited / used Atlas / ran Travel Ready Check / clicked Trip.com / signed up / asked a question) | | |
 
 Log this by hand from these places each day during the soft launch:
 1. **Vercel Analytics dashboard**, if day one confirms UTM sources are actually visible there —
@@ -249,8 +234,8 @@ Log this by hand from these places each day during the soft launch:
    good or bad.
 3. **Contact form / Quote Request / Newsletter signups** — these already arrive by email
    (Resend/Brevo); note any that came from this launch in the sheet too.
-4. **CJ dashboard**, once you've checked what it actually shows — clicks, actions and commissions
-   attributable to this launch, if visible at that level of detail.
+4. **Trip.com affiliate dashboard**, once you've checked what it actually shows — clicks, actions
+   and commissions attributable to this launch, if visible at that level of detail.
 
 ---
 
@@ -280,10 +265,10 @@ tag, but nobody has yet confirmed it's visible in the real dashboard:
 - UTM/community attribution in Vercel Analytics (see section 2)
 - Travel Ready Check start/completion — this one already has real `track()` calls in the code
   (`travel_ready_check_started`, `travel_ready_check_completed`, `travel_ready_check_verdict` in
-  `components/travel-ready/travel-ready-check.tsx`), and TravelUp CTA clicks are wrapped in a
-  `TrackedOutboundLink` that also fires a Vercel event — so both may already be visible in the
-  dashboard, but this pack does not claim that until you've actually looked
-- CJ affiliate clicks, actions and commissions (see section 2)
+  `components/travel-ready/travel-ready-check.tsx`), and Trip.com CTA clicks are wrapped in a
+  `TrackedOutboundLink` that also fires a Vercel event (`tripcom_click`) — so both may already be
+  visible in the dashboard, but this pack does not claim that until you've actually looked
+- Trip.com affiliate clicks, actions and commissions (see section 2)
 
 **Not currently instrumented** — checked directly: zero `track()` calls exist in this code today:
 - Route Atlas interaction (`components/founder/atlas-feel-test.tsx`)
@@ -304,8 +289,8 @@ people visited but didn't act on; and only then consider broadening beyond this 
 of that is scoped here — this document ends at day seven.
 
 **Automation candidates for later, not now:** once the manual week shows which signals actually
-matter, suitable candidates for automating include a daily analytics summary, a CJ click/commission
-summary (where the dashboard actually exposes one), a lead and form-enquiry log, broken-link
+matter, suitable candidates for automating include a daily analytics summary, a Trip.com
+click/commission summary (where the dashboard actually exposes one), a lead and form-enquiry log, broken-link
 monitoring, stale fare/source reminders, and a weekly founder report. None of this is built, scoped
 in detail, or started by this PR — automation is deliberately deferred until the manual seven-day
 test shows which of these would actually be worth building.
@@ -323,3 +308,15 @@ test shows which of these would actually be worth building.
   replaced "what to watch for" with a three-tier measurable/needs-verification/not-instrumented
   breakdown checked directly against the code; added a deferred automation-candidates note. The six
   selected routes and their URLs are unchanged. Still not sent anywhere.
+- **4 August 2026 (TravelUp → Trip.com correction)** — TravelUp removed entirely as JetStash's
+  provider (`STATUS.md` AFF-001); Trip.com is now sole active provider. Three of the six original
+  routes (Heathrow–Delhi, Heathrow–Mumbai, Heathrow–Jeddah) lost their booking CTA in that
+  migration, so the founder directed a full six-route replacement: Manchester–Lahore,
+  Manchester–Islamabad (unchanged), Manchester–Delhi, Manchester–Mumbai, Manchester–Ahmedabad,
+  Manchester–Amritsar (new). Manchester–Dubai is no longer part of this six-route selection either,
+  by the founder's direction — Gulf/Umrah audiences are deferred this round rather than covered by
+  a route inside the six (see section 5). All "TravelUp"/CJ references throughout replaced with
+  Trip.com's actual architecture (dashboard-generated `Allianceid`/`SID` links, no CJ SubID/deep-link
+  toggle, no per-click dynamic sid parameter). Flagged honestly: four of the six routes
+  (Delhi/Mumbai/Ahmedabad/Amritsar) currently have zero logged fare observations, unlike the
+  original selection's fare-evidence-first criterion — see section 1. Still not sent anywhere.
