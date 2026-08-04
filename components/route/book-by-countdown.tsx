@@ -14,7 +14,7 @@ import {
 } from '@/lib/booking-intelligence';
 import { computeReadiness, VERDICT_COPY, type EngineSnapshot, type TravelReadySignal } from '@/lib/travel-intelligence-engine';
 import { getRouteBySlug, getRouteAirport, getRouteDestination } from '@/data/routes';
-import { getRouteBookingUrl, getPrimaryBookingProvider } from '@/lib/booking-providers';
+import { getTripComRouteUrl, PROVIDER_REL } from '@/lib/booking-providers';
 import { WhatsAppShareButton } from '@/components/route/whatsapp-share-button';
 import { siteConfig } from '@/lib/site-config';
 import { OBSERVATION_FRESH_DAYS } from '@/lib/freshness-thresholds';
@@ -93,8 +93,10 @@ export function BookByCountdown({
   const destination = route ? getRouteDestination(route) : undefined;
   if (!route || !airport || !destination) return null;
 
-  const provider = getPrimaryBookingProvider();
-  const bookingUrl = getRouteBookingUrl(airport, destination, undefined, `bookby-${snapshot.state}`);
+  // Fail-closed by construction: null for any route not in booking-providers.ts's
+  // dashboard-verified map (2 of the 5 Book-By priority routes — the Heathrow ones —
+  // are unsupported today) — never a generic Trip.com fallback.
+  const bookingUrl = getTripComRouteUrl(route.slug);
 
   // ── Timeline geometry ──────────────────────────────────────────────────
   // Span: from the recommended window's opening (or 8 weeks before the
@@ -263,35 +265,42 @@ export function BookByCountdown({
               <BellRing className="h-4 w-4" strokeWidth={2.25} />
               Watch this route
             </a>
-            <a
-              href={bookingUrl}
-              target="_blank"
-              rel={provider.rel}
-              data-analytics={`bookby-cta-${snapshot.state}`}
-              onClick={() => track('bookby_cta_click', { route: snapshot.routeSlug, state: snapshot.state })}
-              className="inline-flex items-center gap-1.5 text-sm font-semibold text-ink-900 underline decoration-ink-300 underline-offset-4 transition-colors hover:text-brass-600 hover:decoration-brass-600"
-            >
-              Check live price anyway
-              <ArrowUpRight className="h-4 w-4" strokeWidth={2.25} />
-            </a>
+            {bookingUrl && (
+              <a
+                href={bookingUrl}
+                target="_blank"
+                rel={PROVIDER_REL}
+                data-analytics={`bookby-cta-${snapshot.state}`}
+                onClick={() => track('bookby_cta_click', { route: snapshot.routeSlug, state: snapshot.state })}
+                className="inline-flex items-center gap-1.5 text-sm font-semibold text-ink-900 underline decoration-ink-300 underline-offset-4 transition-colors hover:text-brass-600 hover:decoration-brass-600"
+              >
+                Check live price anyway
+                <ArrowUpRight className="h-4 w-4" strokeWidth={2.25} />
+              </a>
+            )}
           </>
         ) : (
           <>
-            <a
-              href={bookingUrl}
-              target="_blank"
-              rel={provider.rel}
-              data-analytics={`bookby-cta-${snapshot.state}`}
-              onClick={() => track('bookby_cta_click', { route: snapshot.routeSlug, state: snapshot.state })}
-              className={
-                brassBook
-                  ? 'inline-flex h-12 items-center justify-center gap-1.5 rounded-sm bg-brass px-6 text-sm font-semibold text-ink-900 transition-all hover:bg-brass-400 hover:shadow-brass-glow active:scale-[0.985]'
-                  : 'inline-flex h-12 items-center justify-center gap-1.5 rounded-sm bg-ink-900 px-6 text-sm font-semibold text-sand-50 transition-all hover:bg-brass-600 active:scale-[0.985]'
-              }
-            >
-              {bookLabel}
-              <ArrowUpRight className="h-4 w-4" strokeWidth={2.25} />
-            </a>
+            {bookingUrl ? (
+              <a
+                href={bookingUrl}
+                target="_blank"
+                rel={PROVIDER_REL}
+                data-analytics={`bookby-cta-${snapshot.state}`}
+                onClick={() => track('bookby_cta_click', { route: snapshot.routeSlug, state: snapshot.state })}
+                className={
+                  brassBook
+                    ? 'inline-flex h-12 items-center justify-center gap-1.5 rounded-sm bg-brass px-6 text-sm font-semibold text-ink-900 transition-all hover:bg-brass-400 hover:shadow-brass-glow active:scale-[0.985]'
+                    : 'inline-flex h-12 items-center justify-center gap-1.5 rounded-sm bg-ink-900 px-6 text-sm font-semibold text-sand-50 transition-all hover:bg-brass-600 active:scale-[0.985]'
+                }
+              >
+                {bookLabel}
+                <ArrowUpRight className="h-4 w-4" strokeWidth={2.25} />
+              </a>
+            ) : (
+              // Fail-closed, deliberately understated — no CTA, no generic Trip.com link.
+              <p className="text-sm text-ink-400">Direct flight comparison is not available for this airport yet.</p>
+            )}
             <a
               href="#route-watch"
               data-analytics="bookby-watch"
@@ -309,9 +318,11 @@ export function BookByCountdown({
           variant="light"
         />
       </div>
-      <p className="mt-2.5 text-xs text-ink-400">
-        Partner link, opens {provider.name} in a new tab. Booking there never costs you more.
-      </p>
+      {bookingUrl && (
+        <p className="mt-2.5 text-xs text-ink-400">
+          Check the itinerary, baggage allowance and booking terms before paying. Partner link, opens Trip.com in a new tab.
+        </p>
+      )}
 
       {/* ── Why this advice? ──────────────────────────────────────────────── */}
       <details className="group mt-5 rounded-sm border border-ink-100 bg-sand-50 px-4 py-3">

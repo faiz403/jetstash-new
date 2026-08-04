@@ -9,9 +9,9 @@ import {
   Plane,
   ShieldCheck,
 } from 'lucide-react';
-import { airports, getAirportBySlug } from '@/data/airports';
-import { destinations, getDestinationBySlug } from '@/data/destinations';
-import { getRouteBookingUrl, getPrimaryBookingProvider } from '@/lib/booking-providers';
+import { airports } from '@/data/airports';
+import { destinations } from '@/data/destinations';
+import { getTripComRouteUrl, PROVIDER_REL } from '@/lib/booking-providers';
 import { track } from '@/lib/analytics';
 import { RouteMapHero } from '@/components/sections/route-map-hero';
 import { Badge } from '@/components/ui/badge';
@@ -48,9 +48,6 @@ import {
  * (no infrastructure exists yet), with wording that discloses that plainly
  * without labelling it a "prototype".
  */
-
-const airport = getAirportBySlug('manchester')!;
-const destination = getDestinationBySlug('mumbai')!;
 
 function formatDate(iso: string): string {
   return new Date(`${iso}T12:00:00Z`).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
@@ -478,16 +475,18 @@ export function JourneyBriefManchesterMumbai() {
                   <p className="mt-2 font-display text-lg text-ink-900">{ECONOMY_COPY.headline}</p>
                   <p className="mt-1.5 text-sm leading-relaxed text-ink-600">{ECONOMY_COPY.body}</p>
                   <a
-                    href={getRouteBookingUrl(airport, destination)}
+                    // manchester-mumbai is always in booking-providers.ts's dashboard-verified
+                    // map — this flagship Journey Brief is hardcoded to that one route.
+                    href={getTripComRouteUrl('manchester-mumbai')!}
                     target="_blank"
-                    rel={getPrimaryBookingProvider().rel}
+                    rel={PROVIDER_REL}
                     onClick={() => track('journey_brief_live_price_click', { route: 'manchester-mumbai', cabin: 'economy' })}
                     className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-ink-900 underline underline-offset-2 hover:text-brass-600"
                   >
-                    Check live price
+                    Compare flights on Trip.com
                     <ArrowUpRight className="h-3.5 w-3.5" strokeWidth={2.25} />
                   </a>
-                  <p className="mt-1.5 text-[11px] text-ink-400">Partner link. Confirm the final price before booking.</p>
+                  <p className="mt-1.5 text-[11px] text-ink-400">Check the itinerary, baggage allowance and booking terms before paying.</p>
                 </div>
                 <div className={`rounded-md border bg-white p-5 ${cabinPreference === 'Business' ? 'border-brass/50' : 'border-ink-100'}`}>
                   <div className="flex items-center justify-between">

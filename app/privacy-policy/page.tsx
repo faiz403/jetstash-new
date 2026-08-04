@@ -274,7 +274,7 @@ const sections: { title: string; body: React.ReactNode }[] = [
     title: 'Other websites you link to from here',
     body: (
       <p>
-        This site links to airlines, booking partners such as TravelUp, and official government pages for visa and
+        This site links to airlines, booking partners such as Trip.com, and official government pages for visa and
         entry information. Once you leave jetstash.co.uk, that site&apos;s own privacy practices apply, not
         ours. We&apos;d encourage you to check them before sharing any personal information.
       </p>

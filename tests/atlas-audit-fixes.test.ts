@@ -73,8 +73,8 @@ describe('A. Manchester default route — stability', () => {
     expect(fareObservationsSrc).toMatch(/obs-man-dxb-business-1/);
   });
 
-  it('the new default has a verified TravelUp deep link', () => {
-    expect(bookingProvidersSrc).toMatch(/dubai:\s*'https:\/\/www\.travelup\.com/);
+  it('the new default has a verified Trip.com link', () => {
+    expect(bookingProvidersSrc).toMatch(/'manchester-dubai':\s*'https:\/\/www\.trip\.com/);
   });
 
   it('3. Mumbai remains in Manchester\'s India network, unchanged, still selectable', () => {

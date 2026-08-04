@@ -69,7 +69,7 @@ JetStash is not a travel agent, tour operator or booking platform, and does not 
 process bookings on the site itself. It is not ATOL or ABTA protected because it does not sell
 flights, package holidays or any other travel arrangement directly — that protection sits with the
 airline, agent or platform a visitor actually books with. When a visitor clicks through to a partner
-such as TravelUp and completes a booking, their contract is with that partner, not with JetStash.
+such as Trip.com and completes a booking, their contract is with that partner, not with JetStash.
 The partner's terms, payment handling, customer service, and financial protection (if any) apply,
 not JetStash's. Cross-reference the existing `/affiliate-disclosure` page for how that relationship
 works and what it does and doesn't influence. *(See "Final ATOL and ABTA wording" above.)*

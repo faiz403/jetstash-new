@@ -17,7 +17,7 @@ export interface FareObservation {
   /** Provider or airline named by the result; never imply a live price. */
   source: string;
   /** Where the manual observation was made; required for new observations. Optional only so historic entries that predate this field stay valid. */
-  observedVia?: 'airline' | 'travelup' | 'google-flights';
+  observedVia?: 'airline' | 'trip.com' | 'google-flights';
   /** URL used for the manual check, when stable and safe to retain; required for new observations where one exists. */
   sourceUrl?: string;
   /** Currency shown by the source — GBP only, see FARE_OBSERVATION_ARCHIVE.md's "Standard search configuration"; required for new observations. Optional only because existing entries predate this field. */

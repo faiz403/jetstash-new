@@ -8,11 +8,10 @@ import {
   getRoutePresentation,
 } from '@/data/routes';
 import { destinations, getDestinationBySlug } from '@/data/destinations';
-import { getAirportBySlug } from '@/data/airports';
 import { getAirlinesBySlugs } from '@/data/airlines';
 import { fareObservations } from '@/data/fare-observations';
 import { deals } from '@/data/deals';
-import { hasVerifiedDeepLink, getRouteBookingUrl } from '@/lib/booking-providers';
+import { getTripComRouteUrl, hasTripComRoute } from '@/lib/booking-providers';
 import { evaluateTravelReadiness, TRAVEL_READY_SUPPORTED_COUNTRIES } from '@/lib/travel-ready-check';
 import { getRule } from '@/data/travel-ready-rules';
 import { getVisaLinkForCountry } from '@/lib/visa-links';
@@ -285,34 +284,22 @@ describe('BD-001 — no fare invented, no unrelated destination or route added',
   });
 });
 
-describe('BD-001 — affiliate link falls back safely for both destinations, no unverified deep link claimed', () => {
-  it('hasVerifiedDeepLink returns false for both dhaka and sylhet — travelup.com returned 403 on every attempt this session', () => {
-    expect(hasVerifiedDeepLink('dhaka')).toBe(false);
-    expect(hasVerifiedDeepLink('sylhet')).toBe(false);
+describe('BD-001 — booking CTA fails closed for the Heathrow routes, resolves for the Manchester ones', () => {
+  it('the two London-Heathrow Bangladesh routes have no Trip.com link — no generic London fallback is used', () => {
+    expect(hasTripComRoute('london-heathrow-dhaka')).toBe(false);
+    expect(getTripComRouteUrl('london-heathrow-dhaka')).toBeNull();
+    expect(hasTripComRoute('london-heathrow-sylhet')).toBe(false);
+    expect(getTripComRouteUrl('london-heathrow-sylhet')).toBeNull();
   });
 
-  it('getRouteBookingUrl still resolves to a real, tracked TravelUp URL with correct route context for every added route, never crashing or pointing at the wrong destination', () => {
-    const heathrow = getAirportBySlug('london-heathrow')!;
-    const manchester = getAirportBySlug('manchester')!;
-    const dhaka = getDestinationBySlug('dhaka')!;
-    const sylhet = getDestinationBySlug('sylhet')!;
+  it('the two Manchester Bangladesh routes resolve to their real, dashboard-generated Trip.com URLs', () => {
+    const manDac = getTripComRouteUrl('manchester-dhaka');
+    expect(manDac).toContain('trip.com/flights/Manchester-to-Dhaka');
+    expect(manDac).toContain('dcity=MAN&acity=DAC');
 
-    const lhrDac = getRouteBookingUrl(heathrow, dhaka);
-    expect(lhrDac).toContain('kqzyfj.com/click-101818709-15363607');
-    expect(decodeURIComponent(lhrDac)).toMatch(/sid=route-london-heathrow-dhaka/);
-    expect(lhrDac).not.toMatch(/[?&]url=/);
-
-    const manDac = getRouteBookingUrl(manchester, dhaka);
-    expect(decodeURIComponent(manDac)).toMatch(/sid=route-manchester-dhaka/);
-    expect(manDac).not.toMatch(/[?&]url=/);
-
-    const manSyl = getRouteBookingUrl(manchester, sylhet);
-    expect(decodeURIComponent(manSyl)).toMatch(/sid=route-manchester-sylhet/);
-    expect(manSyl).not.toMatch(/[?&]url=/);
-
-    const lhrSyl = getRouteBookingUrl(heathrow, sylhet);
-    expect(decodeURIComponent(lhrSyl)).toMatch(/sid=route-london-heathrow-sylhet/);
-    expect(lhrSyl).not.toMatch(/[?&]url=/);
+    const manSyl = getTripComRouteUrl('manchester-sylhet');
+    expect(manSyl).toContain('trip.com/flights/Manchester-to-Sylhet');
+    expect(manSyl).toContain('dcity=MAN&acity=ZYL');
   });
 });
 

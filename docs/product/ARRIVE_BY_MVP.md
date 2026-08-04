@@ -42,7 +42,7 @@ window, not a promise.
 
 ## 3. Non-goals (Stage 1 and generally)
 
-- **Not live flight search.** No airline, airport, Google Flights, Skyscanner, or TravelUp API is
+- **Not live flight search.** No airline, airport, Google Flights, Skyscanner, or Trip.com API is
   called. No network request of any kind (`tests/arrive-by-integrity.test.ts` asserts this).
 - **Not a flight number or exact timetable generator.** The engine never fabricates a flight code,
   a specific seat, or a specific schedule slot (`tests/arrive-by-engine.test.ts`'s req-22 case).

@@ -88,7 +88,7 @@ prove either a current direct service or its absence.
 1. Pick **one Tier A route** needing a source check and **one** needing a date-complete fare.
 2. Verify service facts directly from an airline, airport, government or other primary source.
 3. Capture the exact supported claim, source URL, checked date, review date and remaining uncertainty.
-4. Add a new fare observation only when it records outbound and return dates and the fixed search context. Append; never rewrite history. Google Flights, TravelUp and airline booking pages may be used for manual fare observations; service claims still need primary sources.
+4. Add a new fare observation only when it records outbound and return dates and the fixed search context. Append; never rewrite history. Google Flights, Trip.com and airline booking pages may be used for manual fare observations; service claims still need primary sources.
 5. Run typecheck, lint, tests and a production build for code/data changes. Inspect affected rendered pages.
 6. Update this record and `STATUS.md` only when the live state has actually changed.
 

@@ -13,7 +13,7 @@ import { getAirportBySlug } from '@/data/airports';
 import { getAirlinesBySlugs } from '@/data/airlines';
 import { fareObservations } from '@/data/fare-observations';
 import { deals } from '@/data/deals';
-import { hasVerifiedDeepLink, getRouteBookingUrl } from '@/lib/booking-providers';
+import { getTripComRouteUrl, hasTripComRoute } from '@/lib/booking-providers';
 import { evaluateTravelReadiness, TRAVEL_READY_SUPPORTED_COUNTRIES } from '@/lib/travel-ready-check';
 import { regionGroups } from '@/lib/site-config';
 import { buildAtlasAirports } from '@/lib/atlas-network-data';
@@ -175,21 +175,10 @@ describe('DEST-001 — no fare invented, no route other than this one added', ()
   });
 });
 
-describe('DEST-001 — affiliate link falls back safely, no unverified deep link claimed', () => {
-  it('hasVerifiedDeepLink returns false for bengaluru — no TravelUp page could be confirmed this session', () => {
-    expect(hasVerifiedDeepLink('bengaluru')).toBe(false);
-  });
-
-  it('getRouteBookingUrl still resolves to a real, tracked TravelUp URL with correct route context, never crashing or pointing at the wrong destination', () => {
-    const airport = getAirportBySlug('london-heathrow')!;
-    const destination = getDestinationBySlug('bengaluru')!;
-    const url = getRouteBookingUrl(airport, destination);
-    expect(url).toContain('kqzyfj.com/click-101818709-15363607');
-    expect(url).toContain('sid=');
-    const decoded = decodeURIComponent(url);
-    expect(decoded).toMatch(/sid=route-london-heathrow-bengaluru/);
-    // No deep-link override param, since none is verified.
-    expect(url).not.toMatch(/[?&]url=/);
+describe('DEST-001 — booking CTA fails closed, no generic Trip.com link claimed', () => {
+  it('london-heathrow-bengaluru has no Trip.com link — Trip.com has no Heathrow-specific dateless link, and no generic London fallback is used', () => {
+    expect(hasTripComRoute('london-heathrow-bengaluru')).toBe(false);
+    expect(getTripComRouteUrl('london-heathrow-bengaluru')).toBeNull();
   });
 });
 
