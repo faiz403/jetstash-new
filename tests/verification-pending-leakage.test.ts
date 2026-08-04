@@ -393,7 +393,7 @@ describe('Fare-observation publication predicate — pure, synthetic-fixture-tes
   });
 
   it('a genuinely evidenced route\'s fare gating is unaffected by the route-evidence check — still governed purely by date-completeness (TR-002)', () => {
-    expect(getFareRangeSummary('manchester-lahore', 'Economy', FIXED_TODAY)).toEqual({ count: 1, min: 578, max: 578, earliestDate: '2026-07-28', latestDate: '2026-07-28', sources: ['Etihad'], priceNote: 'return, per person, one adult; taxes and required fees included; baggage not stated and optional bag charges may apply' });
+    expect(getFareRangeSummary('manchester-lahore', 'Economy', FIXED_TODAY)).toEqual({ count: 2, min: 578, max: 620, earliestDate: '2026-07-28', latestDate: '2026-08-04', sources: ['Etihad'], priceNote: 'return, per person, one adult; taxes and required fees included; baggage not stated and optional bag charges may apply' });
   });
 });
 

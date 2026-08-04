@@ -58,8 +58,8 @@ analytics/conversion events are verified in the real dashboard.
 - The editorial fare observation methodology is finalized and shipped
   (`docs/project-control/FARE_OBSERVATION_ARCHIVE.md`, versioned observation profiles, a fixed
   8-week booking horizon, GBP-only policy, `observedVia`/`profileId`/`observationReason` on
-  `FareObservation`). The first five editorial observations were logged on 28 July 2026; the
-  archive remains an active series and must grow through fresh dated checks.
+  `FareObservation`). Two five-route editorial batches are now logged: 28 July and 4 August 2026.
+  The archive remains an active series and must grow through fresh dated checks.
 - The Visual Identity System v2 documentation refactor is shipped (`docs/visual-identity.md`,
   `VISUAL_REVIEW_CHECKLIST.md`): Visual Principles, Editorial Photography, Interactive Visual
   Systems and an Asset Catalogue with Lifecycle status per entry. This is the documentation
@@ -162,8 +162,8 @@ signature feature immediately below.
 
 ### FARE-001 — Begin building the editorial fare observation archive
 
-The methodology is finalized (see "Current truth" above) and the first five-observation batch is
-logged. A human may record a fare observed on Google Flights, TravelUp or an airline booking page, provided
+The methodology is finalized (see "Current truth" above) and the first two five-observation batches
+are logged. A human may record a fare observed on Google Flights, TravelUp or an airline booking page, provided
 the source, check date, outbound date, return date, cabin, currency and baggage treatment are
 captured, against a fixed 8-week booking horizon. Google Flights is an observation source only:
 service facts still require primary airline, airport or official sources. Historic incomplete

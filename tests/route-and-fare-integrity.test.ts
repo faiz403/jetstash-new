@@ -95,13 +95,13 @@ describe('Fare-observation completeness gating (TR-002) — Verified Check must 
     expect(isPubliclyPublishable(rest as FareObservation)).toBe(false);
   });
 
-  it('getFareRangeSummary returns the exact dated Manchester–Lahore observation', () => {
+  it('getFareRangeSummary derives the exact dated Manchester–Lahore weekly series', () => {
     expect(getFareRangeSummary('manchester-lahore', 'Economy', FIXED_TODAY)).toEqual({
-      count: 1,
+      count: 2,
       min: 578,
-      max: 578,
+      max: 620,
       earliestDate: '2026-07-28',
-      latestDate: '2026-07-28',
+      latestDate: '2026-08-04',
       sources: ['Etihad'],
       priceNote: 'return, per person, one adult; taxes and required fees included; baggage not stated and optional bag charges may apply',
     });
@@ -292,8 +292,8 @@ describe('getDealDirectnessLabel (TR-009, final correction) — a deal/search ca
 });
 
 describe('FARE-001 pilot — historic examples stay private; only fully dated, evidenced observations publish', () => {
-  it('keeps historic observations and appends the first editorial observation batch', () => {
-    expect(fareObservations).toHaveLength(24);
+  it('keeps historic observations and appends both editorial observation batches', () => {
+    expect(fareObservations).toHaveLength(29);
   });
 
   it('keeps every historic observation incomplete and private', () => {
@@ -304,9 +304,21 @@ describe('FARE-001 pilot — historic examples stay private; only fully dated, e
     }
   });
 
-  it('publishes the exact dated observations from the first priority-route batch', () => {
+  it('publishes the exact dated observations from both priority-route batches', () => {
     const published = fareObservations.filter(isPubliclyPublishable);
-    expect(published.map((o) => o.id)).toEqual(['obs-lhr-bom-economy-2', 'obs-man-lhe-economy-20260728-8w-v1', 'obs-man-isb-economy-20260728-8w-v1', 'obs-lhr-del-economy-20260728-8w-v1', 'obs-bhx-atq-economy-20260728-8w-v1', 'obs-lhr-jed-economy-20260728-8w-v1']);
+    expect(published.map((o) => o.id)).toEqual([
+      'obs-lhr-bom-economy-2',
+      'obs-man-lhe-economy-20260728-8w-v1',
+      'obs-man-isb-economy-20260728-8w-v1',
+      'obs-lhr-del-economy-20260728-8w-v1',
+      'obs-bhx-atq-economy-20260728-8w-v1',
+      'obs-lhr-jed-economy-20260728-8w-v1',
+      'obs-man-lhe-economy-20260804-8w-v1',
+      'obs-man-isb-economy-20260804-8w-v1',
+      'obs-lhr-del-economy-20260804-8w-v1',
+      'obs-bhx-atq-economy-20260804-8w-v1',
+      'obs-lhr-jed-economy-20260804-8w-v1',
+    ]);
     expect(published).toEqual(expect.arrayContaining([
       expect.objectContaining({
         id: 'obs-lhr-bom-economy-2',
@@ -340,6 +352,16 @@ describe('FARE-001 pilot — historic examples stay private; only fully dated, e
     ] as const;
     for (const [id, routeSlug, price, source] of newEntries) {
       expect(published.find((o) => o.id === id)).toEqual(expect.objectContaining({ routeSlug, price, source, observedVia: 'google-flights', currency: 'GBP', baggage: 'not stated; optional charges may apply', departureDate: '2026-09-22', returnDate: '2026-10-06' }));
+    }
+    const secondBatchEntries = [
+      ['obs-man-lhe-economy-20260804-8w-v1', 'manchester-lahore', 620, 'Etihad'],
+      ['obs-man-isb-economy-20260804-8w-v1', 'manchester-islamabad', 621, 'Turkish Airlines'],
+      ['obs-lhr-del-economy-20260804-8w-v1', 'london-heathrow-delhi', 456, 'IndiGo (operated under lease from Norse)'],
+      ['obs-bhx-atq-economy-20260804-8w-v1', 'birmingham-amritsar', 829, 'Air France and Air India'],
+      ['obs-lhr-jed-economy-20260804-8w-v1', 'london-heathrow-jeddah', 487, 'Etihad'],
+    ] as const;
+    for (const [id, routeSlug, price, source] of secondBatchEntries) {
+      expect(published.find((o) => o.id === id)).toEqual(expect.objectContaining({ routeSlug, price, source, observedDate: '2026-08-04', observedVia: 'google-flights', currency: 'GBP', baggage: 'not stated; optional charges may apply', observationReason: 'routine-weekly', departureDate: '2026-09-29', returnDate: '2026-10-13' }));
     }
   });
 
