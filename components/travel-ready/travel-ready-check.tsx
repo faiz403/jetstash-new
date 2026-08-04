@@ -3,7 +3,6 @@
 import { useState, useRef, FormEvent } from 'react';
 import { ShieldCheck, ArrowUpRight, BellRing, CheckCircle2, AlertTriangle, HelpCircle } from 'lucide-react';
 import { destinations, getDestinationBySlug } from '@/data/destinations';
-import { getAirportBySlug } from '@/data/airports';
 import {
   evaluateTravelReadiness,
   TRAVEL_READY_SUPPORTED_COUNTRIES,
@@ -12,7 +11,8 @@ import {
   type TravelReadyVerdict,
 } from '@/lib/travel-ready-check';
 import type { TravelReadySignal } from '@/lib/travel-intelligence-engine';
-import { getRouteBookingUrl, getGeneralBookingUrl, getPrimaryBookingProvider } from '@/lib/booking-providers';
+import { getRouteByAirportAndDestination } from '@/data/routes';
+import { getTripComRouteUrl, PROVIDER_REL } from '@/lib/booking-providers';
 import { RouteWatchForm } from '@/components/route/route-watch-form';
 import { track } from '@/lib/analytics';
 
@@ -121,11 +121,13 @@ export function TravelReadyCheck({
     onResult?.(null);
   }
 
-  const provider = getPrimaryBookingProvider();
-  const bookingUrl =
-    airportSlugForCta && destination
-      ? getRouteBookingUrl(getAirportBySlug(airportSlugForCta)!, destination, undefined, `ready-check-${result?.verdict}`)
-      : getGeneralBookingUrl(`ready-check-${destinationSlug || 'general'}`);
+  // Fail-closed by construction: only ever set when embedded on a route page
+  // (airportSlugForCta given) AND that exact route has a dashboard-verified
+  // Trip.com link — the standalone /travel-ready-check page has no single
+  // route to point at, so it gets no booking CTA rather than a generic one.
+  const matchedRoute =
+    airportSlugForCta && destinationSlug ? getRouteByAirportAndDestination(airportSlugForCta, destinationSlug) : undefined;
+  const bookingUrl = matchedRoute ? getTripComRouteUrl(matchedRoute.slug) : null;
 
   return (
     <section
@@ -333,17 +335,22 @@ export function TravelReadyCheck({
 
           <div className="mt-6 flex flex-wrap items-center gap-3">
             {result.verdict === 'ready-to-continue' ? (
-              <a
-                href={bookingUrl}
-                target="_blank"
-                rel={provider.rel}
-                data-analytics="ready-check-book-cta"
-                onClick={() => track('ready_check_book_cta_click', { destination: destinationSlug })}
-                className="inline-flex h-12 items-center justify-center gap-1.5 rounded-sm bg-brass px-6 text-sm font-semibold text-ink-900 transition-all hover:bg-brass-400 hover:shadow-brass-glow active:scale-[0.985]"
-              >
-                Check live price
-                <ArrowUpRight className="h-4 w-4" strokeWidth={2.25} />
-              </a>
+              bookingUrl ? (
+                <a
+                  href={bookingUrl}
+                  target="_blank"
+                  rel={PROVIDER_REL}
+                  data-analytics="ready-check-book-cta"
+                  onClick={() => track('ready_check_book_cta_click', { destination: destinationSlug })}
+                  className="inline-flex h-12 items-center justify-center gap-1.5 rounded-sm bg-brass px-6 text-sm font-semibold text-ink-900 transition-all hover:bg-brass-400 hover:shadow-brass-glow active:scale-[0.985]"
+                >
+                  Compare flights on Trip.com
+                  <ArrowUpRight className="h-4 w-4" strokeWidth={2.25} />
+                </a>
+              ) : (
+                // Fail-closed, deliberately understated — no CTA, no generic Trip.com link.
+                <p className="text-sm text-ink-400">Direct flight comparison is not available for this airport yet.</p>
+              )
             ) : showInlineRouteWatch ? null : (
               <a
                 href="#route-watch"

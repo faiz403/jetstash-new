@@ -41,9 +41,14 @@ analytics/conversion events are verified in the real dashboard.
 - JetStash is positioned across its platform surfaces as UK travel intelligence for international
   journeys, with specialist route depth stated honestly as South Asia and the Gulf.
 - Route Watch and Travel Club use honest, human-reviewed language.
-- TravelUp's CJ tracking link and directly verified destination deep links are live. New partner
-  integrations remain disabled until they have explicit approval, a real tracking link and direct
-  journey validation.
+- TravelUp has been removed entirely (founder decision, 4 August 2026 — its generic-search CTA
+  reset the traveller's departure airport, e.g. Manchester silently becoming London, judged an
+  unacceptable user experience). Trip.com is now JetStash's sole active flight-comparison provider:
+  23 of 32 routes carry a genuine, dashboard-generated, dateless Trip.com affiliate link
+  (`lib/booking-providers.ts`); the 9 London-origin routes (Heathrow/Gatwick) have no booking CTA at
+  all, by design, since Trip.com's own tools cannot produce an airport-specific dateless link for
+  them and no generic fallback is used. New partner integrations remain disabled until they have
+  explicit approval, a real tracking link and direct journey validation.
 - The Founder Dashboard is unavailable in production and non-indexable.
 - Contact, Quote Request and Newsletter submission flows were freshly re-verified live on 29 July
   2026 (real submissions, real Resend/Brevo delivery confirmation), not merely re-asserted from the
@@ -78,10 +83,14 @@ analytics/conversion events are verified in the real dashboard.
 longer "finish the website" — it's the first genuine users, the first useful feedback, and the
 first £1 of revenue, from a small, trusted soft launch rather than a wide public push. No
 redesigns, new features, or speculative housekeeping for the duration unless a real user hits a
-real, reproducible problem. See `SOFT_LAUNCH_PACK_2026-07-30.md` for the six selected routes
-(Manchester–Lahore, Manchester–Islamabad, Heathrow–Delhi, Heathrow–Mumbai, Manchester–Dubai,
+real, reproducible problem. See `SOFT_LAUNCH_PACK_2026-07-30.md` for the six originally selected
+routes (Manchester–Lahore, Manchester–Islamabad, Heathrow–Delhi, Heathrow–Mumbai, Manchester–Dubai,
 Heathrow–Jeddah — each chosen for having both logged fare evidence and a verified TravelUp deep
-link today), tracked-link convention, per-audience message drafts, FAQ, feedback template and the
+link at the time). **Founder attention needed:** following the 4 August 2026 TravelUp → Trip.com
+migration, 3 of those 6 (Heathrow–Delhi, Heathrow–Mumbai, Heathrow–Jeddah) now have no booking CTA
+at all — Trip.com's tools cannot produce a Heathrow-specific dateless link. If soft-launch traffic
+is still being directed at those three routes, the messaging/FAQ referenced below may need a fresh
+look. Tracked-link convention, per-audience message drafts, FAQ, feedback template and the
 seven-day plan. Draft only as of this entry — nothing sent yet; sending is the founder's own
 action, not something done from this repository.
 
@@ -145,9 +154,11 @@ the Bangladesh High Commission, London, not a document already held), sourced to
 photography for both Dhaka and Sylhet has been converted, registered and deployed (2560×1440 WebP,
 `public/images/destinations/{dhaka,sylhet}.webp`) — neither destination remains a release blocker
 on imagery; see `docs/visual-identity.md`'s Asset Catalogue for the final entries. No fare
-observation logged for any route; none could be honestly recorded without a real, dated check. No
-verified TravelUp deep link for either destination — travelup.com returned a 403 error on every
-attempt, so both fall back to the existing safe generic booking link. See PR for full detail.
+observation logged for any route; none could be honestly recorded without a real, dated check.
+Following the 4 August 2026 Trip.com migration: `manchester-dhaka` and `manchester-sylhet` both
+have a genuine, route-specific Trip.com link; `london-heathrow-dhaka` and `london-heathrow-sylhet`
+have no booking CTA at all (Trip.com has no Heathrow-specific dateless link — see AFF-001 below).
+See PR for full detail.
 
 ### HERO-002 — Homepage opening hero above the Route Atlas
 
@@ -163,7 +174,7 @@ signature feature immediately below.
 ### FARE-001 — Begin building the editorial fare observation archive
 
 The methodology is finalized (see "Current truth" above) and the first two five-observation batches
-are logged. A human may record a fare observed on Google Flights, TravelUp or an airline booking page, provided
+are logged. A human may record a fare observed on Google Flights, Trip.com or an airline booking page, provided
 the source, check date, outbound date, return date, cabin, currency and baggage treatment are
 captured, against a fixed 8-week booking horizon. Google Flights is an observation source only:
 service facts still require primary airline, airport or official sources. Historic incomplete
@@ -171,10 +182,16 @@ entries remain private; a past price cannot be reconstructed honestly after the 
 
 ### AFF-001 — Improve affiliate coverage
 
-The current partner state is reconciled: TravelUp is the only live provider, with a real CJ
-tracking link and directly verified destination deep links. Expedia and other potential partners
-must remain unenabled until JetStash has approval, a genuine tracking link and a scoped validation
-of the customer journey.
+**Superseded 4 August 2026.** TravelUp has been removed entirely (its generic-search CTA reset the
+traveller's departure airport — an unacceptable user experience). Trip.com is now JetStash's sole
+active provider: 23 of 32 routes carry a genuine, dashboard-generated, dateless Trip.com affiliate
+link (`lib/booking-providers.ts`), each the exact unedited output of Trip.com's own Affiliate Link
+dashboard tool. The 9 London-origin routes (all Heathrow/Gatwick) have no booking CTA — Trip.com's
+tools cannot produce an airport-specific dateless link for Heathrow or Gatwick, only a generic
+"London" (LON) option, which is deliberately not used per JetStash's fail-closed rule: an exact
+airport-specific link, or no CTA at all. Expedia and other potential partners must remain unenabled
+until JetStash has approval, a genuine tracking link and a scoped validation of the customer
+journey.
 
 ### COV-001 — Build verified route coverage deliberately
 
@@ -232,9 +249,9 @@ for a day that was not actually checked, and never create a fare merely to fill 
 
 - The editorial fare archive is at its starting point; it must grow through real dated checks, not
   retrospective estimates or automated scraping — see `LAUNCH_CHECKLIST.md` item G.
-- TravelUp is a single booking-partner dependency. Recheck verified destination pages periodically;
-  do not add a partner or deep link without approval and direct validation. The Madinah route has
-  fare data but no verified deep link yet — see `LAUNCH_CHECKLIST.md` item C.
+- Trip.com is a single booking-partner dependency. 9 of 32 routes (all London-origin) have no
+  booking CTA at all, by design — see AFF-001 above. Do not add a partner or route link without
+  dashboard verification and direct validation; never guess or hand-edit a Trip.com URL.
 - Travel Ready rules and Route Status evidence require scheduled re-verification as source facts
   change.
 - Homepage conversion quality cannot be claimed from visual review alone; it requires real funnel

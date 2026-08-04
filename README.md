@@ -72,16 +72,21 @@ remaining work:
    `siteConfig.contactEmail`. Re-test after an API-route, provider or environment change rather
    than repeating the complete audit routinely.
 5. **Begin building the editorial fare observation archive.** `/data/deals.ts` no longer carries a price at all — deal cards derive an honest range/single-check from `/data/fare-observations.ts` (`getFareRangeSummary`), or fall back to route facts when nothing's logged yet. The £ figures currently in `/data/fare-observations.ts` are still the original example numbers, not independently verified fares. Follow `docs/project-control/FARE_OBSERVATION_ARCHIVE.md` and append real, same-day checks over time as new `FareObservation` entries per route/cabin; never overwrite or retrospectively reconstruct an old observation.
-6. ~~Sign up for TravelUp's affiliate programme and add the tracking parameters.~~ **Done.**
-   Outbound booking links are generated centrally by `lib/booking-providers.ts` and use the
-   Commission Junction tracking link with a per-route/page `sid`. A tracked click does **not**
-   itself guarantee revenue; a qualifying conversion remains subject to attribution and programme
-   terms. To re-enable another provider, configure and verify it in the same central file.
-7. ~~Manually verify a real TravelUp destination URL before enabling deep links.~~ **Done.**
-   `supportsDeepLink` is `true`, and destination-specific booking links use CJ's `url=` override
-   only from the directly checked `VERIFIED_DEEP_LINKS` map in `lib/booking-providers.ts`. A
-   guessed route-specific URL previously landed on an error page: never infer a URL pattern;
-   directly confirm the exact page before adding or replacing an entry, and recheck it periodically.
+6. ~~Sign up for TravelUp's affiliate programme and add the tracking parameters.~~ **Superseded, 4
+   August 2026.** TravelUp has been removed entirely — its generic-search CTA reset the traveller's
+   departure airport, judged an unacceptable user experience. Trip.com is now the sole active
+   provider. Outbound booking links are generated centrally by `lib/booking-providers.ts`, each the
+   exact, unedited URL from Trip.com's own Affiliate Link dashboard tool for that route. A tracked
+   click does **not** itself guarantee revenue; a qualifying conversion remains subject to
+   attribution and programme terms. To re-enable another provider, configure and verify it in the
+   same central file.
+7. ~~Manually verify a real TravelUp destination URL before enabling deep links.~~ **Superseded.**
+   Trip.com's links are route-specific by construction — there is no separate "deep link enabled"
+   toggle. 23 of 32 routes have a dashboard-verified link (`TRIPCOM_ROUTE_URLS` in
+   `lib/booking-providers.ts`); the other 9 (all London-origin) have no booking CTA at all, by
+   design — Trip.com's own tools can't produce a Heathrow/Gatwick-specific dateless link, and no
+   generic fallback is used. Never infer a URL pattern: every entry is generated through the
+   dashboard, confirmed to land correctly, then added directly.
 8. ~~Create the Route Watch Brevo attributes.~~ **Done** (see item 3 — confirmed together with the newsletter attributes). `/app/api/route-watch/route.ts` reuses `BREVO_API_KEY`/`BREVO_LIST_ID` and writes `WATCH_AIRPORT`, `WATCH_DESTINATION`, `WATCH_ROUTE`, `WATCH_REGION`, `WATCH_INTENT`. Note `WATCH_ROUTE` holds a comma-delimited list of up to 3 route slugs, not a single value — the shared cap is defined in `lib/route-watch-config.ts` (`MAX_WATCHED_ROUTES`) — deliberately reusing the existing attribute rather than adding a new one that would need re-provisioning. This is a storage mechanism only; it does not imply Travel Intelligence Engine integration.
 9. ~~Route quote-request leads somewhere real.~~ **Done.** `/app/api/quote-request/route.ts` and `/app/api/contact/route.ts` both reuse `RESEND_API_KEY`/`CONTACT_TO_EMAIL` (no new env vars) and now default to `siteConfig.contactEmail` in `lib/site-config.ts` — a real inbox, not a placeholder — when `CONTACT_TO_EMAIL` isn't set in Vercel. Every Umrah/family/group quote request lands in one inbox for manual follow-up; revisit whether that should become a rotation of partner agents or a shared inbox as volume grows.
 10. **Keep Travel Ready Check's rule content current.** `data/travel-ready-rules.ts`'s 15 rules across 7 countries were verified against live GOV.UK/official-portal pages in July 2026 with a 6-month review window — this is content, not code, and visa/passport rules change with little notice (Pakistan suspended visa-on-arrival for most nationalities on 1 January 2026 with no advance notice). See "Travel Ready Check — maintaining `data/travel-ready-rules.ts`" above for the re-verification procedure, and `/founder`'s "Travel Ready Check — rules ops" section for what's currently due.
@@ -171,7 +176,7 @@ composes the booking-window state with any active route warning into one attribu
 ready to book?" (JETSTASH_PRINCIPLES.md §14.2). It's a priority decision tree, never a blended
 score — every fact behind the badge stays individually visible.
 
-**The weekly workflow this depends on:** for each priority route, manually check a fare on Google Flights, TravelUp or the airline's own site, then append a new `data/fare-observations.ts` entry with `departureDate` set to
+**The weekly workflow this depends on:** for each priority route, manually check a fare on Google Flights, Trip.com or the airline's own site, then append a new `data/fare-observations.ts` entry with `departureDate` set to
 the date you'd actually book for. `/founder`'s "Book-By Countdown data cadence" and "Travel
 Intelligence Engine — alert queue" sections (both nice-to-have, never a launch blocker — every
 surface degrades honestly on its own) track what's due a check or worth a Route Watch send.

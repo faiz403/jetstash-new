@@ -4,7 +4,7 @@ import { getRouteByAirportAndDestination } from '@/data/routes';
 import { routeStatusEvents } from '@/data/route-status-events';
 import { getEffectiveRoutePresentation } from '@/lib/route-status-copy';
 import { getFareRangeSummary } from '@/data/fare-observations';
-import { getDealBookingUrl, getPrimaryBookingProvider } from '@/lib/booking-providers';
+import { getTripComRouteUrl, PROVIDER_REL } from '@/lib/booking-providers';
 import { getFareFreshnessState, daysBetweenIso, OBSERVATION_STALE_DAYS } from '@/lib/freshness-thresholds';
 import { Plane, ArrowUpRight } from 'lucide-react';
 import { Badge } from './badge';
@@ -61,6 +61,9 @@ export function DealCard({ deal }: { deal: Deal }) {
       ? `Fare checked with ${range.sources[0]}`
       : `Fare checks with ${range.sources.join(' and ')}`
     : null;
+  // Fail-closed by construction: null for any route not in booking-providers.ts's
+  // dashboard-verified map — never a generic Trip.com fallback.
+  const tripComUrl = matchedRoute ? getTripComRouteUrl(matchedRoute.slug) : null;
 
   return (
     <article className="group relative flex flex-col overflow-hidden rounded-md border border-ink-100 bg-white shadow-card transition-all duration-300 hover:-translate-y-1 hover:shadow-card-hover">
@@ -146,28 +149,27 @@ export function DealCard({ deal }: { deal: Deal }) {
           <p className="mt-1.5 text-xs text-ink-400">See the full history on the route guide.</p>
         )}
 
-        <TrackedOutboundLink
-          event="travelup_click"
-          properties={{ context: 'deal-card', destination: deal.toDestinationSlug, cabin: deal.cabin }}
-          href={getDealBookingUrl(deal)}
-          target="_blank"
-          rel="nofollow sponsored noopener noreferrer"
-          className="mt-5 inline-flex items-center justify-center gap-1.5 rounded-sm bg-ink-900 px-4 py-3 text-sm font-semibold text-sand-50 transition-all duration-200 hover:bg-brass-600 active:scale-[0.985]"
-        >
-          Check live price
-          <ArrowUpRight className="h-4 w-4" strokeWidth={2.25} />
-        </TrackedOutboundLink>
-        <p className="mt-2 text-center text-[11px] text-ink-400">
-          {/* Madinah-only: no verified TravelUp deep link exists for this destination yet
-              (lib/booking-providers.ts VERIFIED_DEEP_LINKS), so the link above opens
-              TravelUp's general site rather than a pre-filled search — say so here rather
-              than let the generic caption below imply otherwise. Several Mediterranean/
-              North-Africa deals have the same gap; fixing those is a separate, larger task,
-              not folded into this Madinah-specific correction. See LAUNCH_CHECKLIST.md item C1. */}
-          {deal.toDestinationSlug === 'madinah'
-            ? `Partner link, opens ${getPrimaryBookingProvider().name}'s general site, not a pre-filled Madinah search. Prices change quickly, confirm the final price before booking`
-            : 'Partner link. Prices change quickly, confirm the final price before booking'}
-        </p>
+        {tripComUrl ? (
+          <>
+            <TrackedOutboundLink
+              event="tripcom_click"
+              properties={{ route: matchedRoute!.slug, origin: deal.fromAirportSlug, destination: deal.toDestinationSlug, source: 'deal-card' }}
+              href={tripComUrl}
+              target="_blank"
+              rel={PROVIDER_REL}
+              className="mt-5 inline-flex items-center justify-center gap-1.5 rounded-sm bg-ink-900 px-4 py-3 text-sm font-semibold text-sand-50 transition-all duration-200 hover:bg-brass-600 active:scale-[0.985]"
+            >
+              Compare flights on Trip.com
+              <ArrowUpRight className="h-4 w-4" strokeWidth={2.25} />
+            </TrackedOutboundLink>
+            <p className="mt-2 text-center text-[11px] text-ink-400">
+              Check the itinerary, baggage allowance and booking terms before paying.
+            </p>
+          </>
+        ) : (
+          // Fail-closed, deliberately understated — no CTA, no generic Trip.com link.
+          <p className="mt-5 text-center text-xs text-ink-400">Direct flight comparison is not available for this airport yet.</p>
+        )}
       </div>
     </article>
   );

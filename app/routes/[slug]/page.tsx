@@ -29,7 +29,7 @@ import { RouteReadinessPanel } from '@/components/route/route-readiness-panel';
 import { TravelReadyCheck } from '@/components/travel-ready/travel-ready-check';
 import { JsonLd, breadcrumbSchema } from '@/components/seo/json-ld';
 import { siteConfig } from '@/lib/site-config';
-import { getRouteBookingUrl, getPrimaryBookingProvider, hasVerifiedDeepLink } from '@/lib/booking-providers';
+import { getTripComRouteUrl, PROVIDER_REL } from '@/lib/booking-providers';
 import { computeBookBySnapshot } from '@/lib/booking-intelligence';
 import { computeReadiness } from '@/lib/travel-intelligence-engine';
 import { TRAVEL_READY_SUPPORTED_COUNTRIES } from '@/lib/travel-ready-check';
@@ -144,6 +144,10 @@ export default async function RoutePage({ params }: { params: Promise<{ slug: st
   // booking-window guidance (e.g. Manchester–Lahore, Manchester–Islamabad) — for every other
   // route this section remains the primary "when to book" content, not a restated duplicate.
   const evidenceReframe = Boolean(bookBySnapshot) && bookingWindows.length > 0;
+  // Fail-closed by construction: null for any route not in booking-providers.ts's
+  // dashboard-verified map (the 9 London-origin routes today) — never a generic
+  // Trip.com fallback. See getTripComRouteUrl's doc comment.
+  const tripComUrl = getTripComRouteUrl(route.slug);
 
   return (
     <>
@@ -215,21 +219,27 @@ export default async function RoutePage({ params }: { params: Promise<{ slug: st
           </div>
 
           <div className="mt-7 flex flex-wrap items-center gap-3">
-            <TrackedOutboundLink
-              event="travelup_click"
-              properties={{ context: 'route-hero', route: route.slug }}
-              href={getRouteBookingUrl(airport, dest)}
-              target="_blank"
-              rel={getPrimaryBookingProvider().rel}
-              className={
-                bookBySnapshot
-                  ? 'inline-flex h-12 items-center justify-center gap-1.5 rounded-sm border border-white/20 px-6 text-sm font-semibold text-sand-50 transition-colors hover:bg-white/10 active:scale-[0.985]'
-                  : 'inline-flex h-12 items-center justify-center gap-1.5 rounded-sm bg-brass px-6 text-sm font-semibold text-ink-900 transition-all hover:bg-brass-400 hover:shadow-brass-glow active:scale-[0.985]'
-              }
-            >
-              {hasVerifiedDeepLink(dest.slug) ? 'Check live prices for this route' : `Check live prices with ${getPrimaryBookingProvider().name}`}
-              <ArrowUpRight className="h-4 w-4" strokeWidth={2.25} />
-            </TrackedOutboundLink>
+            {tripComUrl ? (
+              <TrackedOutboundLink
+                event="tripcom_click"
+                properties={{ route: route.slug, origin: airport.slug, destination: dest.slug, source: 'route-hero' }}
+                href={tripComUrl}
+                target="_blank"
+                rel={PROVIDER_REL}
+                className={
+                  bookBySnapshot
+                    ? 'inline-flex h-12 items-center justify-center gap-1.5 rounded-sm border border-white/20 px-6 text-sm font-semibold text-sand-50 transition-colors hover:bg-white/10 active:scale-[0.985]'
+                    : 'inline-flex h-12 items-center justify-center gap-1.5 rounded-sm bg-brass px-6 text-sm font-semibold text-ink-900 transition-all hover:bg-brass-400 hover:shadow-brass-glow active:scale-[0.985]'
+                }
+              >
+                Compare flights on Trip.com
+                <ArrowUpRight className="h-4 w-4" strokeWidth={2.25} />
+              </TrackedOutboundLink>
+            ) : (
+              // Fail-closed, deliberately understated: no CTA, no generic Trip.com
+              // link, no suggestion to broaden Heathrow/Gatwick to all of London.
+              <p className="text-sm text-ink-400">Direct flight comparison is not available for this airport yet.</p>
+            )}
             {/* When a Book-By panel exists below, its own state-aware CTA is the one dominant
                 recommendation — the WhatsApp share moves there too (built from the same snapshot),
                 so this hero doesn't duplicate either action. */}
@@ -245,11 +255,11 @@ export default async function RoutePage({ params }: { params: Promise<{ slug: st
               />
             )}
           </div>
-          <p className="mt-2.5 text-xs text-ink-300">
-            {hasVerifiedDeepLink(dest.slug)
-              ? `Partner link, opens ${getPrimaryBookingProvider().name} in a new tab. Booking there never costs you more.`
-              : `Partner link, opens ${getPrimaryBookingProvider().name}'s general site, not a pre-filled search for this route. Booking there never costs you more.`}
-          </p>
+          {tripComUrl && (
+            <p className="mt-2.5 text-xs text-ink-300">
+              Check the itinerary, baggage allowance and booking terms before paying. Partner link, opens Trip.com in a new tab.
+            </p>
+          )}
         </div>
       </section>
 
@@ -572,7 +582,7 @@ export default async function RoutePage({ params }: { params: Promise<{ slug: st
             </div>
           ) : (
             <div className="mt-8">
-              <NoFareFallback cityLabel={`${airport.city} to ${dest.city}`} />
+              <NoFareFallback cityLabel={`${airport.city} to ${dest.city}`} routeSlug={route.slug} />
             </div>
           )}
           {/* id anchors the Book-By panel's "Watch this route" CTA; the global

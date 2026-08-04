@@ -2,6 +2,13 @@
 
 **CEO strategy, brand recovery and homepage concept. Prepared 2026-07-14. Production not modified.**
 
+> **Superseded, 4 August 2026:** TravelUp — the "single affiliate partner" this analysis models
+> throughout (commission rates, funnel diagrams, revenue projections) — has been removed entirely
+> from JetStash. Trip.com is now the sole active provider, on a different affiliate/commission
+> structure. Every dollar figure and commission-rate unknown below refers to the TravelUp/CJ
+> relationship as it stood on 2026-07-14 and is a historical snapshot only, not current guidance —
+> see `JETSTASH_PRINCIPLES.md` §7 and `docs/project-control/STATUS.md` for the current state.
+
 ---
 
 ## 1. One-sentence commercial diagnosis

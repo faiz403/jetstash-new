@@ -305,9 +305,9 @@ function buildManchesterNetwork(): AirportNetworkData {
     // recently checked of any Manchester route here), zero
     // route-status-events, two real logged fare observations
     // (data/fare-observations.ts, obs-man-dxb-economy-1/business-1), a
-    // verified TravelUp deep link (lib/booking-providers.ts), and one of
+    // verified Trip.com link (lib/booking-providers.ts), and one of
     // the six routes STATUS.md's SOFT_LAUNCH_PACK already hand-picked for
-    // "logged fare evidence and a verified TravelUp deep link today". UAE
+    // "logged fare evidence and a verified deep link today". UAE
     // is also architecturally the simplest possible default: exactly one
     // destination, so there's no ordering ambiguity about which city shows
     // first, unlike India or Pakistan's multi-destination arrays. Mumbai

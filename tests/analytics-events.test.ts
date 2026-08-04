@@ -82,7 +82,7 @@ describe('AnalyticsEvent vocabulary — every event this repo actually fires is 
     'route_watch_signup',
     'journey_brief_started',
     'journey_brief_live_price_click',
-    'travelup_click',
+    'tripcom_click',
   ];
 
   // New in this PR — the 3 conversion events + 6 engagement events from the brief.

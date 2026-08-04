@@ -6,7 +6,7 @@ import { getAirportBySlug } from '@/data/airports';
 import { fareObservations, getObservationsByRoute, getLatestObservation } from '@/data/fare-observations';
 import { routeWarnings } from '@/data/route-warnings';
 import { imageCoverage } from '@/lib/brand-images';
-import { BOOKING_PROVIDERS, PRIMARY_PROVIDER_ID } from '@/lib/booking-providers';
+import { hasTripComRoute, PROVIDER_NAME } from '@/lib/booking-providers';
 import { BOOK_BY_PRIORITY_ROUTE_SLUGS } from '@/lib/booking-intelligence';
 import { computeAllReadinessSnapshots, VERDICT_COPY } from '@/lib/travel-intelligence-engine';
 import { travelReadyRules, isRuleStale } from '@/data/travel-ready-rules';
@@ -153,31 +153,24 @@ function fareObservationCoverage(): FounderSection {
         : `${withHistory} of ${routes.length} routes have at least one fare observation · ${noHistory.length} have none yet. No deadline — log one whenever convenient to add a price to that route's deal cards.`,
     items: noHistory,
     action:
-      'Optional, no deadline: check a fare on TravelUp or the airline\'s own site, then append a new entry to data/fare-observations.ts (never overwrite existing entries — it\'s an append-only history log).',
+      'Optional, no deadline: check a fare on Trip.com or the airline\'s own site, then append a new entry to data/fare-observations.ts (never overwrite existing entries — it\'s an append-only history log).',
   };
 }
 
 // ── 3. Booking provider configuration ────────────────────────────────────
 function affiliateStatus(): FounderSection {
-  const primary = BOOKING_PROVIDERS[PRIMARY_PROVIDER_ID];
-  const skyscanner = BOOKING_PROVIDERS.skyscanner;
+  const supportedCount = routes.filter((r) => hasTripComRoute(r.slug)).length;
+  const unsupportedCount = routes.length - supportedCount;
 
   return {
     id: 'affiliate',
     title: 'Booking provider configuration',
     priority: 'revenue',
-    status: !primary.hasTracking ? 'setup' : primary.supportsDeepLink ? 'ok' : 'watch',
-    headline: !primary.hasTracking
-      ? `Primary provider is ${primary.name}, but it has no real tracking link yet — every click-through is unpaid. Skyscanner stays disabled (application declined pre-launch).`
-      : !primary.supportsDeepLink
-        ? `Primary provider is ${primary.name}, tracked via a real CJ link (see lib/booking-providers.ts) — every click-through now earns commission. Deep-linking is still off though (a guessed URL shape broke in production once already), so links land on TravelUp's own default page rather than a specific destination.`
-        : `Primary provider is ${primary.name}, tracked and deep-linking to manually verified destination pages.`,
+    status: 'ok',
+    headline: `${PROVIDER_NAME} is the sole active provider (TravelUp removed — its generic-search CTA reset the traveller's departure airport). ${supportedCount} of ${routes.length} routes have a genuine, dashboard-generated affiliate link; the other ${unsupportedCount} are all London-origin routes where Trip.com's own tools have no Heathrow/Gatwick-specific dateless link — those fail closed with no booking CTA, by design, rather than falling back to a generic link.`,
     items: [],
-    action: !primary.hasTracking
-      ? `Sign up for ${primary.name}'s affiliate programme (via Commission Junction: https://signup.cj.com/member/signup/publisher/?cid=6248437) to get a real tracking link, then set it as BOOKING_PROVIDERS.${PRIMARY_PROVIDER_ID}.baseUrl in lib/booking-providers.ts.`
-      : !primary.supportsDeepLink
-        ? `Optional, no deadline: manually visit travelup.com, confirm a real destination URL works, add it to VERIFIED_DEEP_LINKS in lib/booking-providers.ts, then flip supportsDeepLink to true once at least one entry is confirmed. To re-enable ${skyscanner.name} later, flip its enabled flag and add its real tracking link in the same file.`
-        : `Maintain the verified TravelUp destination map: directly confirm an exact page before adding or replacing a VERIFIED_DEEP_LINKS entry, and recheck existing entries periodically. Never infer a URL pattern. To re-enable ${skyscanner.name} later, obtain fresh approval and a real tracking link, then configure it in the same file.`,
+    action:
+      'No action needed for the covered routes — every link is the exact, unedited output of Trip.com\'s Affiliate Link dashboard, never hand-typed or guessed (see lib/booking-providers.ts). If Trip.com later adds Heathrow/Gatwick-specific deep-linking, regenerate those routes\' links the same way through the dashboard and add them to TRIPCOM_ROUTE_URLS.',
   };
 }
 
@@ -248,8 +241,8 @@ function travelClubStatus(): FounderSection {
 // hand-typed per deal, so the class of bug this section used to catch
 // (malformed partner URLs, stale embedded dates) is architecturally gone.
 // What's still worth checking: every deal's fromAirportSlug/toDestinationSlug
-// must resolve to a real Airport/Destination, or its booking link silently
-// falls back to a generic (non-route) search — see getDealBookingUrl.
+// must resolve to a real Airport/Destination — otherwise its booking CTA
+// fails closed (no CTA at all, never a generic fallback search).
 function linkHealth(): FounderSection {
   const items: FounderItem[] = [];
 
@@ -260,8 +253,8 @@ function linkHealth(): FounderSection {
       items.push({
         label: `${deal.fromCity} → ${deal.toCity} (${deal.cabin})`,
         detail: !airport
-          ? `fromAirportSlug "${deal.fromAirportSlug}" does not match any Airport — this deal's booking link silently falls back to a generic search.`
-          : `toDestinationSlug "${deal.toDestinationSlug}" does not match any Destination — this deal's booking link silently falls back to a generic search.`,
+          ? `fromAirportSlug "${deal.fromAirportSlug}" does not match any Airport — this deal's booking CTA fails closed (no CTA shown).`
+          : `toDestinationSlug "${deal.toDestinationSlug}" does not match any Destination — this deal's booking CTA fails closed (no CTA shown).`,
         status: 'attention',
       });
     }
@@ -275,7 +268,7 @@ function linkHealth(): FounderSection {
     headline:
       items.length === 0
         ? `All ${deals.length} deals resolve to a real airport and destination, so every booking link is route-specific.`
-        : `${items.length} deal${items.length === 1 ? '' : 's'} have a slug that doesn't resolve — their booking link degrades to a generic search. Details below.`,
+        : `${items.length} deal${items.length === 1 ? '' : 's'} have a slug that doesn't resolve — their booking CTA fails closed instead of showing anything. Details below.`,
     items,
     action: 'Fix the fromAirportSlug/toDestinationSlug in data/deals.ts to match a real entry in data/airports.ts / data/destinations.ts.',
   };
@@ -439,7 +432,7 @@ function bookByCadenceStatus(now: Date): FounderSection {
         : `${okCount} of ${BOOK_BY_PRIORITY_ROUTE_SLUGS.length} priority routes are fully current · ${items.length} worth a weekly check. No deadline — the panel degrades honestly on its own; this is enrichment, not a launch blocker.`,
     items,
     action:
-      'Weekly logging workflow: check a fare on TravelUp or the airline\'s own site for each priority route, then append a new data/fare-observations.ts entry — set departureDate to the date you\'d actually book for (typically the route\'s next upcoming peak period). Never overwrite an existing entry.',
+      'Weekly logging workflow: check a fare on Trip.com or the airline\'s own site for each priority route, then append a new data/fare-observations.ts entry — set departureDate to the date you\'d actually book for (typically the route\'s next upcoming peak period). Never overwrite an existing entry.',
   };
 }
 
@@ -546,8 +539,7 @@ export interface ChecklistItem {
 function launchChecklist(): { section: FounderSection; checklist: ChecklistItem[]; doneCount: number } {
   const brevoReady = Boolean(process.env.BREVO_API_KEY && process.env.BREVO_LIST_ID);
   const resendReady = Boolean(process.env.RESEND_API_KEY);
-  const primaryProvider = BOOKING_PROVIDERS[PRIMARY_PROVIDER_ID];
-  const hasTracking = primaryProvider.hasTracking;
+  const tripComSupportedCount = routes.filter((r) => hasTripComRoute(r.slug)).length;
   const photoCoverage = imageCoverage();
   const photosComplete = photoCoverage.destinations >= destinations.length;
 
@@ -593,19 +585,15 @@ function launchChecklist(): { section: FounderSection; checklist: ChecklistItem[
     },
     {
       label: 'Real tracking link on booking links',
-      detail: hasTracking
-        ? `${primaryProvider.name} (the primary provider) is a real, commission-earning CJ tracking link.`
-        : `${primaryProvider.name} (the primary provider) has no real tracking link yet — see lib/booking-providers.ts.`,
-      done: hasTracking,
+      detail: `Every ${PROVIDER_NAME} URL in lib/booking-providers.ts is the exact, unedited output of Trip.com's own affiliate dashboard, carrying JetStash's genuine Allianceid/SID — never hand-typed or guessed.`,
+      done: true,
       priority: 'revenue',
       verifiedBy: 'auto',
     },
     {
-      label: `${primaryProvider.name} deep-link destinations verified`,
-      detail: primaryProvider.supportsDeepLink
-        ? `Deep-linking is on — at least one VERIFIED_DEEP_LINKS entry has been manually confirmed.`
-        : `Deep-linking is OFF. A guessed URL shape broke in production once already, so links use the tracked homepage/search fallback (still commission-earning) rather than a specific destination. Manually visit travelup.com, confirm a real destination URL, add it to VERIFIED_DEEP_LINKS in lib/booking-providers.ts, then flip supportsDeepLink to true.`,
-      done: primaryProvider.supportsDeepLink,
+      label: `${PROVIDER_NAME} route coverage`,
+      detail: `${tripComSupportedCount} of ${routes.length} routes have a dashboard-verified link. The rest are all London-origin routes where Trip.com's tools have no Heathrow/Gatwick-specific dateless link — those fail closed with no booking CTA, by design, not a gap to fill by guessing a URL.`,
+      done: true,
       priority: 'revenue',
       verifiedBy: 'auto',
     },

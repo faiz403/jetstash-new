@@ -4,7 +4,7 @@ import { formatEventDate, type BookBySnapshot } from '@/lib/booking-intelligence
 
 /**
  * Homepage "next travel moment" ribbon — the first, restrained statement of
- * JetStash's repositioned value proposition ("TravelUp shows a price,
+ * JetStash's repositioned value proposition ("Trip.com shows a price,
  * JetStash shows whether to act on it" — JETSTASH_PRINCIPLES.md §14). Leads
  * with the single soonest event across the priority routes and which of
  * those routes currently have an open booking window, then one link into

@@ -1,232 +1,117 @@
-import type { Airport } from '@/data/airports';
-import { getAirportBySlug } from '@/data/airports';
-import type { Destination } from '@/data/destinations';
-import { getDestinationBySlug } from '@/data/destinations';
-import type { Deal, DealCabin } from '@/data/deals';
-
 /**
  * Central outbound booking-provider configuration.
  *
- * Skyscanner declined JetStash's affiliate application while the site is
- * pre-launch, so it stays disabled below. TravelUp (approved) is the
- * primary provider, tracked via their real Commission Junction (CJ) link:
+ * Trip.com is JetStash's sole active public flight-comparison provider,
+ * replacing TravelUp (removed entirely — TravelUp's generic-search CTA
+ * frequently reset the traveller's intended departure airport, e.g.
+ * Manchester silently becoming London, which was judged an unacceptable
+ * user experience). Skyscanner remains declined pre-launch (see README) and
+ * has no configuration here — nothing currently reads a second provider.
  *
- *   https://www.kqzyfj.com/click-101818709-15363607
+ * Every URL in TRIPCOM_ROUTE_URLS below is the exact, unedited output of
+ * Trip.com's own Affiliate Link → Flights page dashboard tool for that
+ * specific origin airport → destination pair:
+ *   - Genuinely dateless — the Flights page tool has no date field at all,
+ *     confirmed structurally, not just by omission.
+ *   - Carries JetStash's real, stable affiliate identifiers, constant across
+ *     every entry: Allianceid=9804124, SID=327450313.
+ *   - `trip_sub3` is Trip.com's own internal Ad ID (confirmed against the
+ *     dashboard's "Previous links" history table), not a date or a guess.
  *
- * CJ tracking-link structure — extracted from that real link, nothing
- * guessed — is `click-{PID}-{AID}` on a CJ redirect domain:
- *   - Redirect domain: kqzyfj.com (one of CJ's standard redirect domains)
- *   - PID (JetStash's CJ publisher ID): 101818709
- *   - AID (TravelUp's CJ advertiser ID): 15363607
- * A bare click-PID-AID link redirects to whatever default destination
- * TravelUp configured for it on their end (their homepage/search entry
- * point) — that's the safe fallback every booking link uses today, and
- * it's a genuinely tracked, commission-earning click, unlike the old bare
- * https://www.travelup.com/ fallback it replaces. Two optional query
- * params layer on top of that same link, always via appendParams() below,
- * never hand-typed at a call site:
- *   - `sid` — CJ's SubID field, free text JetStash controls, for our own
- *     click attribution (which route/page/cabin drove the click). Doesn't
- *     change what the user sees on TravelUp's side.
- *   - `url` — CJ's deep-link override: redirects to a *specific* TravelUp
- *     page instead of their configured default. Only ever set from
- *     VERIFIED_DEEP_LINKS below, and only once a provider's
- *     supportsDeepLink is true — see that constant's comment for how its
- *     entries were verified.
+ * A route is deliberately ABSENT from this map — never filled with a
+ * guessed or hand-edited URL — when Trip.com's own tools cannot produce a
+ * genuine, airport-specific, dateless link for it. The nine London-origin
+ * routes (seven Heathrow, two Gatwick) are the current example: Trip.com's
+ * Flights page tool has no Heathrow- or Gatwick-specific entry, only a
+ * generic "London" resolving to the aggregate LON code, and while Trip.com's
+ * normal consumer search interface *can* select LHR/LGW specifically, doing
+ * so always requires a fixed date (confirmed live: a real LHR→Delhi search
+ * produced `ddate=...&rdate=...` even for a one-way trip), and dates cannot
+ * be stripped from an already-tracked Custom Link without hand-editing it.
+ * JetStash's standing rule: an exact airport-specific Trip.com link, or no
+ * provider CTA at all — never a broadened generic redirect. See
+ * getTripComRouteUrl()'s doc comment for how callers must honour that.
  *
- * Every "Check live price[s]" / booking CTA in the app reads its outbound
- * URL from this file — nothing else should construct a provider URL by
- * hand.
- *
- * To re-enable Skyscanner once approved: flip its `enabled` to `true`, add
- * its real tracking link, and point PRIMARY_PROVIDER_ID at it. To add a
- * new provider: add an entry to BOOKING_PROVIDERS with the same shape.
- * Nothing else in the app needs to change either way.
+ * Nothing outside this file should construct or edit a Trip.com URL by
+ * hand — every booking CTA in the app reads its outbound URL from here.
  */
 
-export type BookingProviderId = 'travelup' | 'skyscanner';
+export const PROVIDER_NAME = 'Trip.com';
 
-export interface BookingProvider {
-  id: BookingProviderId;
-  /** Shown in "Partner link, opens <name> in a new tab" captions. */
-  name: string;
-  /** The real tracking link every outbound URL is built from (a CJ click-PID-AID link for TravelUp). Never a guessed subpath. */
-  baseUrl: string;
-  /**
-   * Whether VERIFIED_DEEP_LINKS is trusted to override baseUrl's default
-   * destination for a given route, via CJ's `url=` param. False means
-   * every link resolves to baseUrl's own configured default landing —
-   * still real, still tracked, just not destination-specific. Only flip
-   * once at least one VERIFIED_DEEP_LINKS entry has been confirmed by
-   * manually visiting the real page.
-   */
-  supportsDeepLink: boolean;
-  /** Static tracking query parameters appended to every outbound link, in addition to the dynamic per-click sid. Empty if the link needs none beyond its own PID/AID. */
-  affiliateParams: Record<string, string>;
-  /** Whether baseUrl is a real, commission-earning tracking link (true) or an untracked plain URL (false) — read this, not affiliateParams, to check "is this provider actually earning money". */
-  hasTracking: boolean;
-  enabled: boolean;
-  /** rel attribute for the outbound <a> — matches Google's guidance for paid/affiliate links. */
-  rel: string;
-}
-
-export const BOOKING_PROVIDERS: Record<BookingProviderId, BookingProvider> = {
-  travelup: {
-    id: 'travelup',
-    name: 'TravelUp',
-    // Real CJ tracking link — PID 101818709, AID 15363607, on kqzyfj.com.
-    // See file header. Do not replace with a guessed travelup.com subpath.
-    baseUrl: 'https://www.kqzyfj.com/click-101818709-15363607',
-    supportsDeepLink: true,
-    affiliateParams: {},
-    hasTracking: true,
-    enabled: true,
-    rel: 'nofollow sponsored noopener noreferrer',
-  },
-  skyscanner: {
-    id: 'skyscanner',
-    name: 'Skyscanner',
-    baseUrl: 'https://www.skyscanner.net/transport/flights',
-    supportsDeepLink: false,
-    affiliateParams: {},
-    hasTracking: false,
-    // Declined JetStash's affiliate application while pre-launch (see
-    // README). Do not flip this to true without fresh approval.
-    enabled: false,
-    rel: 'nofollow sponsored noopener noreferrer',
-  },
-};
-
-/** The one line to change to swap the primary booking provider site-wide. */
-export const PRIMARY_PROVIDER_ID: BookingProviderId = 'travelup';
+/** rel attribute for every Trip.com outbound <a> — matches Google's guidance for paid/affiliate links. */
+export const PROVIDER_REL = 'nofollow sponsored noopener noreferrer';
 
 /**
- * Manually verified TravelUp destination URLs, keyed by destination slug —
- * the ONLY source getRouteBookingUrl will ever deep-link to via CJ's
- * `url=` override. Never add an entry from a guessed pattern (a guessed
- * `/flights/search?origin=...` shape broke in production the one time
- * that was tried; see git history) — every entry below was confirmed by
- * actually visiting travelup.com, following its own Asia/Africa/Europe
- * destination-country pages (or, for Jeddah/Istanbul/Marrakech, cross-
- * checked against travelup.com/sitemap.xml) to the real
- * `/en-gb/flight-offers/{city}-{iata}` page, and reading back that page's
- * own rendered title (e.g. "Cheap Flights to Lahore (LHE)...") to confirm
- * it resolves — not assumed from the URL shape alone.
- *
- * 'abu-dhabi' is deliberately included even though no destination in
- * data/destinations.ts currently has that slug — the URL itself is
- * confirmed real, but the entry is inert (getRouteBookingUrl only ever
- * looks up VERIFIED_DEEP_LINKS[destination.slug], and no destination or
- * route resolves to 'abu-dhabi' today). It starts working the day Abu
- * Dhabi is added as a destination, with no change needed here.
+ * Route-slug-keyed, exact dashboard-generated Trip.com Flights-page affiliate
+ * links — see file header for provenance. 23 of JetStash's 32 routes are
+ * covered; the other 9 (all London-origin) are intentionally absent.
  */
-const VERIFIED_DEEP_LINKS: Partial<Record<string, string>> = {
-  lahore: 'https://www.travelup.com/en-gb/flight-offers/lahore-lhe',
-  islamabad: 'https://www.travelup.com/en-gb/flight-offers/islamabad-isb',
-  karachi: 'https://www.travelup.com/en-gb/flight-offers/karachi-khi',
-  delhi: 'https://www.travelup.com/en-gb/flight-offers/delhi-del',
-  mumbai: 'https://www.travelup.com/en-gb/flight-offers/mumbai-bom',
-  ahmedabad: 'https://www.travelup.com/en-gb/flight-offers/ahmedabad-amd',
-  amritsar: 'https://www.travelup.com/en-gb/flight-offers/amritsar-atq',
-  dubai: 'https://www.travelup.com/en-gb/flight-offers/dubai-dxb',
-  // Inert — see comment above. Verified real; no matching destination yet.
-  'abu-dhabi': 'https://www.travelup.com/en-gb/flight-offers/abu-dhabi-auh',
-  doha: 'https://www.travelup.com/en-gb/flight-offers/doha-doh',
-  jeddah: 'https://www.travelup.com/en-gb/flight-offers/jeddah-jed',
-  istanbul: 'https://www.travelup.com/en-gb/flight-offers/istanbul-ist',
-  marrakech: 'https://www.travelup.com/en-gb/flight-offers/marrakech-rak',
+const TRIPCOM_ROUTE_URLS: Readonly<Record<string, string>> = {
+  'manchester-lahore':
+    'https://www.trip.com/flights/Manchester-to-Lahore/tickets-MAN-LHE?flighttype=S&dcity=MAN&acity=LHE&Allianceid=9804124&SID=327450313&trip_sub1=&trip_sub3=D19082226',
+  'manchester-islamabad':
+    'https://www.trip.com/flights/Manchester-to-Islamabad/tickets-MAN-ISB?flighttype=S&dcity=MAN&acity=ISB&Allianceid=9804124&SID=327450313&trip_sub1=&trip_sub3=D19082296',
+  'manchester-dubai':
+    'https://www.trip.com/flights/Manchester-to-Dubai/tickets-MAN-DXB?flighttype=S&dcity=MAN&acity=DXB&Allianceid=9804124&SID=327450313&trip_sub1=&trip_sub3=D19082331',
+  'manchester-karachi':
+    'https://www.trip.com/flights/Manchester-to-Karachi/tickets-MAN-KHI?flighttype=S&dcity=MAN&acity=KHI&Allianceid=9804124&SID=327450313&trip_sub1=&trip_sub3=D19082597',
+  'manchester-dhaka':
+    'https://www.trip.com/flights/Manchester-to-Dhaka/tickets-MAN-DAC?flighttype=S&dcity=MAN&acity=DAC&Allianceid=9804124&SID=327450313&trip_sub1=&trip_sub3=D19082380',
+  'manchester-sylhet':
+    'https://www.trip.com/flights/Manchester-to-Sylhet/tickets-MAN-ZYL?flighttype=S&dcity=MAN&acity=ZYL&Allianceid=9804124&SID=327450313&trip_sub1=&trip_sub3=D19082611',
+  'manchester-doha':
+    'https://www.trip.com/flights/Manchester-to-Doha/tickets-MAN-DOH?flighttype=S&dcity=MAN&acity=DOH&Allianceid=9804124&SID=327450313&trip_sub1=&trip_sub3=D19082646',
+  'manchester-jeddah':
+    'https://www.trip.com/flights/Manchester-to-Jeddah/tickets-MAN-JED?flighttype=S&dcity=MAN&acity=JED&Allianceid=9804124&SID=327450313&trip_sub1=&trip_sub3=D19082653',
+  'manchester-delhi':
+    'https://www.trip.com/flights/Manchester-to-New%20Delhi/tickets-MAN-DEL?flighttype=S&dcity=MAN&acity=DEL&Allianceid=9804124&SID=327450313&trip_sub1=&trip_sub3=D19082373',
+  'manchester-mumbai':
+    'https://www.trip.com/flights/Manchester-to-Mumbai/tickets-MAN-BOM?flighttype=S&dcity=MAN&acity=BOM&Allianceid=9804124&SID=327450313&trip_sub1=&trip_sub3=D19082688',
+  'manchester-amritsar':
+    'https://www.trip.com/flights/Manchester-to-Amritsar/tickets-MAN-ATQ?flighttype=S&dcity=MAN&acity=ATQ&Allianceid=9804124&SID=327450313&trip_sub1=&trip_sub3=D19082695',
+  'manchester-ahmedabad':
+    'https://www.trip.com/flights/Manchester-to-Ahmedabad/tickets-MAN-AMD?flighttype=S&dcity=MAN&acity=AMD&Allianceid=9804124&SID=327450313&trip_sub1=&trip_sub3=D19082702',
+  'manchester-madinah':
+    'https://www.trip.com/flights/Manchester-to-Medina/tickets-MAN-MED?flighttype=S&dcity=MAN&acity=MED&Allianceid=9804124&SID=327450313&trip_sub1=&trip_sub3=D19082737',
+  'birmingham-amritsar':
+    'https://www.trip.com/flights/Birmingham-to-Amritsar/tickets-BHX-ATQ?flighttype=S&dcity=BHX&acity=ATQ&Allianceid=9804124&SID=327450313&trip_sub1=&trip_sub3=D19082751',
+  'birmingham-lahore':
+    'https://www.trip.com/flights/Birmingham-to-Lahore/tickets-BHX-LHE?flighttype=S&dcity=BHX&acity=LHE&Allianceid=9804124&SID=327450313&trip_sub1=&trip_sub3=D19082786',
+  'birmingham-islamabad':
+    'https://www.trip.com/flights/Birmingham-to-Islamabad/tickets-BHX-ISB?flighttype=S&dcity=BHX&acity=ISB&Allianceid=9804124&SID=327450313&trip_sub1=&trip_sub3=D19082800',
+  'birmingham-madinah':
+    'https://www.trip.com/flights/Birmingham-to-Medina/tickets-BHX-MED?flighttype=S&dcity=BHX&acity=MED&Allianceid=9804124&SID=327450313&trip_sub1=&trip_sub3=D19082807',
+  'birmingham-mumbai':
+    'https://www.trip.com/flights/Birmingham-to-Mumbai/tickets-BHX-BOM?flighttype=S&dcity=BHX&acity=BOM&Allianceid=9804124&SID=327450313&trip_sub1=&trip_sub3=D19082814',
+  'leeds-bradford-amritsar':
+    'https://www.trip.com/flights/Leeds-to-Amritsar/tickets-LBA-ATQ?flighttype=S&dcity=LBA&acity=ATQ&Allianceid=9804124&SID=327450313&trip_sub1=&trip_sub3=D19082870',
+  'leeds-bradford-islamabad':
+    'https://www.trip.com/flights/Leeds-to-Islamabad/tickets-LBA-ISB?flighttype=S&dcity=LBA&acity=ISB&Allianceid=9804124&SID=327450313&trip_sub1=&trip_sub3=D19082884',
+  'glasgow-dubai':
+    'https://www.trip.com/flights/Glasgow-to-Dubai/tickets-GLA-DXB?flighttype=S&dcity=GLA&acity=DXB&Allianceid=9804124&SID=327450313&trip_sub1=&trip_sub3=D19082912',
+  'edinburgh-dubai':
+    'https://www.trip.com/flights/Edinburgh-to-Dubai/tickets-EDI-DXB?flighttype=S&dcity=EDI&acity=DXB&Allianceid=9804124&SID=327450313&trip_sub1=&trip_sub3=D19082919',
+  'newcastle-dubai':
+    'https://www.trip.com/flights/Newcastle%20upon%20Tyne-to-Dubai/tickets-NCL-DXB?flighttype=S&dcity=NCL&acity=DXB&Allianceid=9804124&SID=327450313&trip_sub1=&trip_sub3=D19082933',
 };
 
 /**
- * Whether the primary provider will actually deep-link to a destination-
- * specific page for this destination, per VERIFIED_DEEP_LINKS above.
- * Surfaces (route hero, deal cards, etc.) that describe their CTA as
- * "for this route" should check this first — if it's false, the link
- * still works and still earns commission, it just lands on the provider's
- * general search/homepage rather than a destination-specific page, and
- * copy shouldn't claim otherwise. See LAUNCH_CHECKLIST.md item C1.
+ * The one lookup every booking CTA in the app goes through. Returns the
+ * exact dashboard-generated Trip.com URL for a supported route, or `null`
+ * for any route not in TRIPCOM_ROUTE_URLS (the 9 London-origin routes today,
+ * and any future route that hasn't been through the same manual dashboard
+ * verification).
+ *
+ * Callers MUST fail closed on `null`: render no booking CTA at all, never a
+ * generic Trip.com homepage/search link, and never fall back to any other
+ * provider. See the file header for why — this is a deliberate business
+ * rule, not a gap to silently paper over.
  */
-export function hasVerifiedDeepLink(destinationSlug: string): boolean {
-  const provider = getPrimaryBookingProvider();
-  return provider.supportsDeepLink && Boolean(VERIFIED_DEEP_LINKS[destinationSlug]);
+export function getTripComRouteUrl(routeSlug: string): string | null {
+  return TRIPCOM_ROUTE_URLS[routeSlug] ?? null;
 }
 
-export function getPrimaryBookingProvider(): BookingProvider {
-  const provider = BOOKING_PROVIDERS[PRIMARY_PROVIDER_ID];
-  if (!provider.enabled) {
-    throw new Error(
-      `PRIMARY_PROVIDER_ID ("${PRIMARY_PROVIDER_ID}") points at a disabled provider in lib/booking-providers.ts.`
-    );
-  }
-  return provider;
-}
-
-function appendParams(url: string, params: Record<string, string>): string {
-  const entries = Object.entries(params).filter(([, value]) => value);
-  if (entries.length === 0) return url;
-  return `${url}${url.includes('?') ? '&' : '?'}${new URLSearchParams(entries).toString()}`;
-}
-
-/**
- * Builds a stable, readable CJ SubID from route/page context — JetStash's
- * own click attribution (which page/route/cabin drove this click), never
- * read by or sent to the destination page itself.
- */
-function buildSid(parts: (string | undefined)[]): string {
-  return parts
-    .filter((p): p is string => Boolean(p))
-    .join('-')
-    .toLowerCase()
-    .replace(/[^a-z0-9-]+/g, '-')
-    .replace(/-+/g, '-')
-    .replace(/^-|-$/g, '');
-}
-
-/**
- * Outbound booking URL for a specific departure airport → destination pair
- * — used on route guide pages. Deep-links to the matching VERIFIED_DEEP_LINKS
- * entry when the provider's supportsDeepLink is true and one exists for this
- * destination; otherwise resolves to the tracked homepage/search fallback.
- * Always tagged with a sid identifying this route (and cabin, when known)
- * for analytics, regardless of which URL it resolves to.
- */
-export function getRouteBookingUrl(
-  airport: Airport,
-  destination: Destination,
-  cabin?: DealCabin,
-  /**
-   * Optional extra sid segment identifying WHICH surface drove the click
-   * (e.g. 'bookby-window-open') — JetStash's own CJ click attribution,
-   * never visible to the visitor or the destination site.
-   */
-  sidContext?: string
-): string {
-  const provider = getPrimaryBookingProvider();
-  const sid = buildSid(['route', airport.slug, destination.slug, cabin, sidContext]);
-  const params: Record<string, string> = { ...provider.affiliateParams, sid };
-  const verifiedUrl = provider.supportsDeepLink ? VERIFIED_DEEP_LINKS[destination.slug] : undefined;
-  if (verifiedUrl) params.url = verifiedUrl;
-  return appendParams(provider.baseUrl, params);
-}
-
-/** Outbound booking URL for a Deal — resolves its airport/destination and defers to getRouteBookingUrl. */
-export function getDealBookingUrl(deal: Pick<Deal, 'fromAirportSlug' | 'toDestinationSlug' | 'cabin'>): string {
-  const airport = getAirportBySlug(deal.fromAirportSlug);
-  const destination = getDestinationBySlug(deal.toDestinationSlug);
-  if (!airport || !destination) {
-    return getGeneralBookingUrl(buildSid(['deal', deal.fromAirportSlug, deal.toDestinationSlug, deal.cabin]));
-  }
-  return getRouteBookingUrl(airport, destination, deal.cabin);
-}
-
-/**
- * Generic outbound booking link with no specific route — used by
- * NoFareFallback. Pass whatever page-identifying text is available
- * (e.g. the city/section label already shown to the visitor); it's
- * slugified into the sid automatically.
- */
-export function getGeneralBookingUrl(context = 'general'): string {
-  const provider = getPrimaryBookingProvider();
-  const sid = buildSid(['fallback', context]);
-  return appendParams(provider.baseUrl, { ...provider.affiliateParams, sid });
+/** Whether a route has a real, dashboard-verified Trip.com link — the fail-closed gate every CTA checks before rendering. */
+export function hasTripComRoute(routeSlug: string): boolean {
+  return routeSlug in TRIPCOM_ROUTE_URLS;
 }

@@ -57,16 +57,15 @@ wider organic promotion.
       publish public Terms, and do not recreate a `/terms` route, until all of the above are
       complete** — professional legal review in particular is not something this checklist can mark
       done on the repository's own authority.
-- [x] **C1.** ~~Fix the Madinah affiliate-link wording~~ **Done, PR pending review** — no genuine
-      route-specific TravelUp page could be verified for Madinah (unlike every other route
-      destination), so per the decision rule the generic tracked link was kept and the CTA/caption
-      wording was corrected instead, on both Madinah route pages (`manchester-madinah`,
-      `birmingham-madinah`) and both Madinah deal cards. New `hasVerifiedDeepLink()` helper in
-      `lib/booking-providers.ts` drives the route-hero wording generically (safe today — Madinah is
-      the only route destination without a deep link); the deal-card fix is deliberately scoped to
-      `deal.toDestinationSlug === 'madinah'` only, since the same gap exists for several
-      Mediterranean/North-Africa deals and fixing those too would be a broader refactor outside
-      this task's scope — flagged as a separate follow-up, not fixed here.
+- [x] **C1.** ~~Fix the Madinah affiliate-link wording~~ **Done (historical — superseded).** Original
+      fix: no genuine route-specific TravelUp page could be verified for Madinah (unlike every other
+      route destination), so per the decision rule the generic tracked link was kept and the
+      CTA/caption wording was corrected instead, on both Madinah route pages (`manchester-madinah`,
+      `birmingham-madinah`) and both Madinah deal cards, via a `hasVerifiedDeepLink()` helper in
+      `lib/booking-providers.ts`. **TravelUp has since been removed from JetStash entirely** and
+      replaced with Trip.com as the sole active provider; both Madinah routes now have a genuine,
+      dashboard-generated Trip.com link like every other supported route, so the special-casing this
+      item describes no longer exists in the code.
 - [x] **D1.** Investigated 29 July 2026. Applied safe, non-forced lockfile patches: `brace-expansion`
       5.0.7 → 5.0.8; legacy `brace-expansion` 1.1.15 → 1.1.17 (still affected — no patched 1.x
       release identified); top-level development `postcss` 8.5.16 → 8.5.25; `nanoid` 3.3.15 →

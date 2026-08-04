@@ -6,7 +6,7 @@ import { track, type AnalyticsEvent } from '@/lib/analytics';
 /**
  * A plain outbound `<a>` with one added behaviour: fire an analytics event
  * on click. Exists so server components (deal-card.tsx, the route hero in
- * app/routes/[slug]/page.tsx) can get a tracked TravelUp click without
+ * app/routes/[slug]/page.tsx) can get a tracked Trip.com click without
  * becoming client components themselves — this is the only client-side
  * logic they need, isolated to the smallest possible leaf.
  */

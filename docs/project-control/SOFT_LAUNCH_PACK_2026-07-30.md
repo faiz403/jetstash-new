@@ -1,5 +1,14 @@
 # JetStash — Seven-Day Controlled Organic Launch Pack
 
+> **Founder attention needed — 4 August 2026:** TravelUp has been removed entirely and replaced
+> with Trip.com as JetStash's sole active provider (see `STATUS.md` AFF-001). Every "TravelUp"
+> reference below is now stale — replace with Trip.com before sending anything. More importantly:
+> **3 of the 6 routes selected below (Heathrow–Delhi, Heathrow–Mumbai, Heathrow–Jeddah) now have no
+> booking CTA at all** — Trip.com's tools cannot produce a Heathrow-specific dateless link. If this
+> pack hasn't been sent yet, consider swapping those three for supported routes before using it.
+> This document has not been rewritten for Trip.com; treat all message drafts and the FAQ below as
+> needing a fresh pass, not ready to send as-is.
+
 **Status: DRAFT for founder review.** The message copy below is a genuine starting point, not
 final text — read it, cut anything that doesn't sound like you, and personalise the parts that
 should come from you directly before sending anything. Nothing in this document has been sent to

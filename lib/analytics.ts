@@ -40,7 +40,7 @@ export type AnalyticsEvent =
   | 'journey_brief_started'
   | 'journey_brief_live_price_click'
   // Outbound affiliate link
-  | 'travelup_click'
+  | 'tripcom_click'
   // Lead-capture conversions (Contact, Quote Request, Newsletter)
   | 'contact_submit_success'
   | 'quote_request_submit_success'

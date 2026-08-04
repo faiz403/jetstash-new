@@ -605,12 +605,12 @@ describe('Cross-surface leakage fix — fare section heading is content-aware, n
     expect(text).not.toMatch(/haven'?t logged a tracked fare/i);
   });
 
-  it('NoFareFallback itself still carries the route-specific explanation and live-search CTA, unchanged', () => {
-    const fallback = NoFareFallback({ cityLabel: 'Birmingham to Mumbai' });
+  it('NoFareFallback carries the route-specific explanation and the Trip.com CTA when given a supported routeSlug', () => {
+    const fallback = NoFareFallback({ cityLabel: 'Birmingham to Mumbai', routeSlug: 'birmingham-mumbai' });
     const text = collectStrings(fallback).join(' ');
     expect(text).toMatch(/haven'?t logged a tracked fare/i);
     expect(text).toMatch(/Birmingham to Mumbai/);
-    expect(text).toMatch(/Search live prices/i);
+    expect(text).toMatch(/Compare flights on Trip\.com/);
   });
 });
 
