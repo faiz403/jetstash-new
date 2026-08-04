@@ -1,7 +1,7 @@
 # Editorial Fare Observation Archive
 
 **Owner:** JetStash editorial workflow
-**Status:** Active - first priority-route batch recorded on 28 July 2026; weekly series now begins
+**Status:** Active - two priority-route batches recorded; latest check 4 August 2026
 **Canonical data file:** `data/fare-observations.ts`
 
 ## Purpose
@@ -25,8 +25,22 @@ profile (one adult, return Economy, GBP, 14-night stay, roughly eight weeks out)
 - Heathrow to Jeddah - GBP 575, Royal Jordanian, 22 September to 6 October 2026
 
 These are dated editorial observations from Google Flights, not claims that the fares remain available
-or that they represent the cheapest fare across every search result. The next check should repeat the
-same profiles and travel dates/horizon on the next scheduled weekly observation day.
+or that they represent the cheapest fare across every search result.
+
+## Second recorded batch
+
+On 4 August 2026, JetStash repeated the same five profiles at the fixed eight-week horizon. The
+travel dates advanced by one week to preserve comparability: 29 September to 13 October 2026.
+
+- Manchester to Lahore - GBP 620, Etihad
+- Manchester to Islamabad - GBP 621, Turkish Airlines
+- Heathrow to Delhi - GBP 456, IndiGo (operated under lease from Norse)
+- Birmingham to Amritsar - GBP 829, Air France and Air India
+- Heathrow to Jeddah - GBP 487, Etihad
+
+These are also dated Google Flights observations, not live-price promises. The next scheduled check
+must keep the same profiles, 14-night stay and fixed eight-week horizon while advancing the travel
+dates with the observation date.
 
 # What may be observed
 
