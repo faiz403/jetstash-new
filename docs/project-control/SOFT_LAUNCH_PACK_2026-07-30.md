@@ -39,20 +39,21 @@ categories.
 | Pakistan | Manchester → Lahore | Direct | 4 (most recent: 4 Aug 2026) | Yes |
 | Pakistan | Manchester → Islamabad | Direct | 3 (most recent: 4 Aug 2026) | Yes |
 | Gulf | Manchester → Dubai | Direct | 2 (16 Jun / 12 Jun 2026) | Yes |
-| Gulf | Manchester → Doha | Direct | **0** | Yes |
+| Gulf | Manchester → Doha | Direct | 1 (5 Aug 2026) | Yes |
 | India | Birmingham → Amritsar | Connecting (Air India's own booking page shows no direct option) | 4 (most recent: 4 Aug 2026) | Yes |
-| Umrah | Manchester → Madinah | Connecting (no current direct service; realistic routing via Istanbul) | 1 (9 Jun 2026) | Yes |
+| Umrah | Manchester → Madinah | Connecting (no current direct service; realistic routing via Istanbul) | 2 (most recent: 5 Aug 2026) | Yes |
 
 **Internal note, not for promotional use — be aware before sending anything:**
-- **Manchester–Doha has no logged fare observation at all.** Its route page is honest and fully
-  functional (booking-window guidance, route facts, Travel Ready Check, Trip.com CTA all work
-  normally), but shows "no fare checks logged yet" rather than a £ figure. It was still selected
-  over the alternatives because it's the cleanest, most confidently verified route among the
-  zero-observation candidates — no hedged or unverified language anywhere in its route facts.
-- **Manchester–Madinah's single observation (9 June 2026) is 56 days old as of this pack's
-  4 August 2026 update — close to the 60-day "fresh" threshold** (`OBSERVATION_FRESH_DAYS` in
-  `lib/freshness-thresholds.ts`). It's still within the fresh window today, but log a new
-  observation before this route sees real traffic if the week runs long.
+- **Update, 5 August 2026:** both evidence gaps flagged in the prior update have been closed. Manchester–Doha now has
+  its first logged fare observation (£411, Trip.com, one adult return economy, checked 5 August
+  2026). Manchester–Madinah now has a fresh flight-only observation (£473, Trip.com, same profile,
+  also checked 5 August 2026) alongside its original 9 June 2026 entry — that older entry is a
+  pre-methodology Umrah *package* price (flights + hotel, £1,149), a materially different product
+  from the new flight-only figure, and remains untouched as historical record; the two are not
+  interchangeable and the site never blends them into one displayed range (the "Umrah package" deal
+  card on `/deals` correctly shows no price rather than the flight fare — see `data/deals.ts`'s
+  `isBundledProductDeal`). Both new observations follow `FARE_OBSERVATION_ARCHIVE.md`'s fixed
+  8-week-horizon methodology.
 - Two zero-observation, verified-direct Pakistan routes (Manchester–Karachi, Birmingham–Islamabad)
   and one Gulf route (Manchester–Doha's own near-neighbours) were considered and set aside for this
   round — Manchester–Karachi in particular is excluded because JetStash's own data marks its direct
@@ -368,3 +369,15 @@ test shows which of these would actually be worth building.
   (honestly described as connecting, not direct); Gulf and Umrah audiences reinstated with
   Manchester–Dubai/Doha and Manchester–Madinah respectively, each honestly describing directness
   and fare-evidence status without overclaiming. Still not sent anywhere.
+- **5 August 2026 (fare observations closed)** — the two evidence gaps flagged above are closed:
+  Manchester–Doha logged its first fare observation (£411) and Manchester–Madinah logged a fresh
+  flight-only observation (£473), both via Trip.com on the standard 8-week-horizon profile
+  (`data/fare-observations.ts`, `docs/project-control/FARE_OBSERVATION_ARCHIVE.md`). While
+  correcting this, found and fixed a related product-integrity bug: the "Umrah package" deal cards
+  (`umrah-package-jed`, `umrah-package-extended`) were counting flight-only observations as
+  evidence for a bundled flight+hotel product's price — a materially different, higher-priced
+  product. `data/deals.ts` now gates `hasTrackedFare` on `isBundledProductDeal`, so a
+  package/Umrah-category deal only ever counts a tracked fare that's actually evidence for its own
+  product; the "Umrah" tab on `/deals` is honestly hidden until a real package-price observation
+  exists. Section 1's table and internal note updated to match; no promotional message copy
+  touched. Still not sent anywhere.

@@ -63,8 +63,17 @@ analytics/conversion events are verified in the real dashboard.
 - The editorial fare observation methodology is finalized and shipped
   (`docs/project-control/FARE_OBSERVATION_ARCHIVE.md`, versioned observation profiles, a fixed
   8-week booking horizon, GBP-only policy, `observedVia`/`profileId`/`observationReason` on
-  `FareObservation`). Two five-route editorial batches are now logged: 28 July and 4 August 2026.
-  The archive remains an active series and must grow through fresh dated checks.
+  `FareObservation`). Two five-route editorial batches are now logged (28 July and 4 August 2026),
+  plus a 5 August 2026 Trip.com-sourced pair closing the soft-launch pack's two flagged evidence
+  gaps: Manchester–Doha's first observation (£411) and a fresh Manchester–Madinah flight-only
+  observation (£473, alongside its untouched 9 June 2026 package-price entry). The archive remains
+  an active series and must grow through fresh dated checks.
+- Product-integrity fix (5 August 2026): `data/deals.ts`'s `hasTrackedFare` now gates on
+  `isBundledProductDeal` — a package/Umrah-category deal (bundled flight+hotel) no longer counts a
+  flight-only fare observation as evidence for its own price. Found while adding the Madinah
+  observation above: `umrah-package-jed` and `umrah-package-extended` were both showing a flight-only
+  fare under an "Umrah package" badge. Both deals, and the `/deals` page's Umrah filter tab, now
+  correctly show no tracked fare until the archive can log an actual package-price observation.
 - The Visual Identity System v2 documentation refactor is shipped (`docs/visual-identity.md`,
   `VISUAL_REVIEW_CHECKLIST.md`): Visual Principles, Editorial Photography, Interactive Visual
   Systems and an Asset Catalogue with Lifecycle status per entry. This is the documentation
@@ -175,8 +184,8 @@ signature feature immediately below.
 
 ### FARE-001 — Begin building the editorial fare observation archive
 
-The methodology is finalized (see "Current truth" above) and the first two five-observation batches
-are logged. A human may record a fare observed on Google Flights, Trip.com or an airline booking page, provided
+The methodology is finalized (see "Current truth" above); the first two five-observation batches
+are logged, plus the 5 August 2026 Trip.com-sourced Doha/Madinah pair. A human may record a fare observed on Google Flights, Trip.com or an airline booking page, provided
 the source, check date, outbound date, return date, cabin, currency and baggage treatment are
 captured, against a fixed 8-week booking horizon. Google Flights is an observation source only:
 service facts still require primary airline, airport or official sources. Historic incomplete

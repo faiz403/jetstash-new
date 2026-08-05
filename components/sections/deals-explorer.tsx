@@ -15,9 +15,12 @@ const filters: { label: string; value: DealCategory | 'all' }[] = [
 
 /**
  * Which category filter tabs should actually render. A category tab whose
- * live count is genuinely 0 (Packages and Business class today — every
- * deal in each currently lacks a fully-dated, publishable fare observation,
- * see hasTrackedFare) reads as broken or abandoned rather than honest, so
+ * live count is genuinely 0 (Packages, Business class and Umrah today —
+ * Packages and Business class currently lack a fully-dated, publishable
+ * fare observation for any of their deals; Umrah's deals are bundled
+ * flight+hotel products that a flight-only observation can never count as
+ * evidence for, see isBundledProductDeal in data/deals.ts — hasTrackedFare
+ * already encodes both cases) reads as broken or abandoned rather than honest, so
  * it's hidden rather than shown with a "0" badge. Driven by the exact same
  * hasTrackedFare gate the visible count badge already uses — never a
  * hand-maintained exclusion list — so a category reappears on its own the
