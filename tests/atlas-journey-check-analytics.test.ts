@@ -193,7 +193,10 @@ describe('Journey Check — journey_check_completed', () => {
 
   it('uses a safe predefined category (route vs destination_guide), never the full label/city text', () => {
     expect(onSubmitBody).toContain("const resultCategory = routeSlug ? 'route' : 'destination_guide';");
-    expect(onSubmitBody).toContain('track(\'journey_check_completed\', { resultCategory, origin: fromSlug, destination: toSlug });');
+    // Two properties is the standard Vercel Pro ceiling, so the origin and
+    // destination slugs are carried as one composite route slug instead of
+    // two separate fields — no information is lost.
+    expect(onSubmitBody).toContain('track(\'journey_check_completed\', { route: `${fromSlug}-${toSlug}`, resultCategory });');
     expect(onSubmitBody).not.toMatch(/resultCategory.*(fromLabel|toLabel|toCity)/);
   });
 

@@ -226,9 +226,11 @@ describe('Trip.com CTA is primary, singular, and correctly wired on the route he
     expect(routePageSrc).toContain('Check the itinerary, baggage allowance and booking terms before paying.');
   });
 
-  it('fires tripcom_click with route/origin/destination/source properties only', () => {
+  it('fires tripcom_click with exactly the two properties standard Vercel Pro can store — route and source, never origin/destination (both derivable from the route slug)', () => {
     expect(routePageSrc).toContain("event=\"tripcom_click\"");
-    expect(routePageSrc).toMatch(/properties=\{\{ route: route\.slug, origin: airport\.slug, destination: dest\.slug, source: 'route-hero' \}\}/);
+    expect(routePageSrc).toMatch(/properties=\{\{ route: route\.slug, source: 'route-hero' \}\}/);
+    expect(routePageSrc).not.toMatch(/properties=\{\{[^}]*origin:/);
+    expect(routePageSrc).not.toMatch(/properties=\{\{[^}]*destination:/);
   });
 
   it('renders the required clean unavailable state when no Trip.com URL exists', () => {

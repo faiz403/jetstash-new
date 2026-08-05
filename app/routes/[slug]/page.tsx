@@ -222,7 +222,7 @@ export default async function RoutePage({ params }: { params: Promise<{ slug: st
             {tripComUrl ? (
               <TrackedOutboundLink
                 event="tripcom_click"
-                properties={{ route: route.slug, origin: airport.slug, destination: dest.slug, source: 'route-hero' }}
+                properties={{ route: route.slug, source: 'route-hero' }}
                 href={tripComUrl}
                 target="_blank"
                 rel={PROVIDER_REL}
@@ -252,6 +252,8 @@ export default async function RoutePage({ params }: { params: Promise<{ slug: st
               <WhatsAppShareButton
                 url={`${siteConfig.url}/routes/${route.slug}`}
                 text={presentation.shareText}
+                route={route.slug}
+                source="route-hero"
               />
             )}
           </div>
