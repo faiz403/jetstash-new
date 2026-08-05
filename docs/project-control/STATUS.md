@@ -68,6 +68,15 @@ analytics/conversion events are verified in the real dashboard.
   gaps: Manchester–Doha's first observation (£411) and a fresh Manchester–Madinah flight-only
   observation (£473, alongside its untouched 9 June 2026 package-price entry). The archive remains
   an active series and must grow through fresh dated checks.
+- Evidence-safety correction (5 August 2026): an independent audit found unsupported certainty in
+  Book-By Countdown and related route copy ("expect a sharp jump," "fares hold reasonably steady,"
+  "fares typically rise sharply," "the most consistently quoted fastest option," two absolute
+  "no risk" claims). Fixed as a strings-only pass — Book-By is now explicitly framed sitewide as
+  conservative planning guidance, not fare prediction; no countdown maths, fare-observation display,
+  route verification/warning surface or Trip.com link was touched. See
+  `JETSTASH_PRINCIPLES.md` §14.5 for the full correction and what remains for a follow-up sweep
+  (non-QA routes carrying the same softer claim family), and `tests/book-by-evidence-safety.test.ts`
+  for the regression coverage.
 - Product-integrity fix (5 August 2026): `data/deals.ts`'s `hasTrackedFare` now gates on
   `isBundledProductDeal` — a package/Umrah-category deal (bundled flight+hotel) no longer counts a
   flight-only fare observation as evidence for its own price. Found while adding the Madinah

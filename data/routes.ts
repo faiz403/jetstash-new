@@ -115,9 +115,9 @@ export const routes: Route[] = [
       note: 'Re-verified against a genuine primary source (founder-supplied): Manchester Airport\'s own media centre confirms "Pakistan International Airlines will build upon the successful launch of its Islamabad service by adding Lahore as its second destination from Manchester from 3 July" 2026 — confirms direct status, PIA as operator, and the 3 July 2026 start date. This article does not state a frequency, and no current official schedule was found confirming one, so no frequency is published (a prior "weekly" claim, and before that "several times weekly," both rested on secondary aviation-news reporting only — not republished as fact). PIA\'s own site (piac.com.pk) remains Cloudflare-blocked to this session\'s tooling.',
     },
     intro:
-      'The flagship Pakistan corridor from the North of England. PIA runs direct Manchester to Lahore services (confirmed via Manchester Airport\'s own announcement, launched 3 July 2026), and for the North West\'s Punjabi community it\'s usually the most convenient option going: no Gulf connection, no extra layover, no risk of luggage going missing at a transfer.',
+      'The flagship Pakistan corridor from the North of England. PIA runs direct Manchester to Lahore services (confirmed via Manchester Airport\'s own announcement, launched 3 July 2026), and for the North West\'s Punjabi community it\'s usually the most convenient option going: no Gulf connection, no extra layover, and no transfer point where baggage could go astray.',
     bookingWindowNote:
-      'Outside Eid and the summer school holidays, fares hold reasonably steady 8 to 10 weeks out. Within 3 weeks of Eid, expect a sharp jump, so book that window at least 3 months ahead if your dates are fixed.',
+      'Outside Eid and the summer school holidays, this window tends to be less pressured. Fares on peak-period routes often move in the final weeks before Eid — if your dates are fixed, aim to book at least 3 months ahead. Planning guidance, not a fare prediction.',
     peakPeriodIds: ['eid-al-fitr', 'eid-al-adha', 'uk-summer-holidays', 'wedding-season'],
   },
   {
@@ -139,7 +139,7 @@ export const routes: Route[] = [
     intro:
       'Manchester to Islamabad direct services (confirmed via Manchester Airport\'s own announcement, launched 25 October 2025) are the practical choice for families based across Yorkshire, Lancashire and the wider North West heading to Punjab or onward to Khyber Pakhtunkhwa.',
     bookingWindowNote:
-      'The pattern is similar to the Lahore route: stable pricing most of the year, then sharp rises close to Eid and major family events. This route also tends to sell out faster than Lahore in peak weeks, simply because it runs fewer weekly frequencies.',
+      'The pattern is similar to the Lahore route: less pressured pricing most of the year, with fares often rising close to Eid and major family events. This route also runs fewer weekly frequencies than Lahore, so seats can fill faster in peak weeks.',
     peakPeriodIds: ['eid-al-fitr', 'eid-al-adha', 'uk-summer-holidays'],
   },
   {
@@ -166,7 +166,7 @@ export const routes: Route[] = [
     intro:
       'British Airways currently markets direct Heathrow to Delhi service, with its current network update stating Delhi continues three times daily. Other airlines may also appear in search results, but JetStash has not independently verified their current operation here.',
     bookingWindowNote:
-      'Diwali and the December to January window are the two demand spikes that matter most. Outside those, February to April and September to October are reliably the best value months.',
+      'Diwali and the December to January window are the two demand spikes that matter most. Outside those, February to April and September to October tend to be better value.',
     peakPeriodIds: ['diwali', 'christmas-new-year', 'uk-summer-holidays'],
   },
   {
@@ -202,7 +202,7 @@ export const routes: Route[] = [
     intro:
       'Emirates\' Manchester to Dubai service is one of the more reliably priced long-haul routes from the North, helped by strong competition from connecting Gulf carriers flying out of other UK airports.',
     bookingWindowNote:
-      'Less sensitive to booking window than the South Asia routes. Winter, when UK schools are off, carries the clearest premium; outside that, fares are comparatively stable.',
+      'Less sensitive to booking window than the South Asia routes. Winter, when UK schools are off, tends to carry the clearest premium; outside that, this route is generally less pressured.',
     peakPeriodIds: ['christmas-new-year', 'february-half-term', 'easter-holidays'],
   },
   {
@@ -261,7 +261,7 @@ export const routes: Route[] = [
     intro:
       'The primary direct Umrah arrival route from the UK. British Airways operates this route directly — confirmed via BA\'s own current "Direct Flights to Jeddah" destination page, though its current frequency isn\'t confirmed by a live schedule this session. Saudia has historically been the main Umrah-arrival operator here, but this session could not independently confirm Saudia\'s current status against an official source — check directly with both airlines before booking. Most flight-inclusive Umrah packages are built around the Jeddah corridor, with onward ground transport to Makkah.',
     bookingWindowNote:
-      'Ramadan and the weeks immediately before Hajj season are by far the steepest pricing windows on this route. Outside them, pricing is comparatively settled.',
+      'Ramadan and the weeks immediately before Hajj season are typically the highest-demand windows on this route. Outside them, pricing tends to be calmer.',
     peakPeriodIds: ['ramadan', 'pre-hajj', 'school-half-terms-umrah'],
   },
   {
@@ -549,7 +549,7 @@ export const routes: Route[] = [
     intro:
       'Qatar Airways offers a regular direct service from Manchester to Doha, giving the North of England access to the Gulf without travelling to London first. It works both as a destination and as a connecting gateway onward.',
     bookingWindowNote:
-      'High frequency keeps this route comparatively well priced year-round. UK school holidays carry the clearest premium; outside those windows, fares are more stable than on the South Asia routes.',
+      'High frequency on this route means more fare classes open at once. UK school holidays carry the clearest premium; outside those windows, this route is generally less pressured than the South Asia routes.',
     peakPeriodIds: ['christmas-new-year', 'february-half-term', 'easter-holidays'],
   },
   {
@@ -746,7 +746,7 @@ export const routes: Route[] = [
     intro:
       'IndiGo launched the first non-stop Manchester to Delhi service in 25 years in November 2025, flying a two-class Boeing 787-9 leased from Norse Atlantic Airways. It\'s currently the only airline flying this route direct. IndiGo cut frequency from 5x to 3x weekly in February 2026 citing airspace-related operational strain. See the Route Status panel below for the latest verified service status.',
     bookingWindowNote:
-      'Diwali and the December to January window are the two periods when fares rise sharply on this route. This is a single-airline direct service, so it\'s worth comparing against the well-established one-stop Gulf-carrier options on price and schedule regardless of season.',
+      'Diwali and the December to January window are the two periods when fares often rise on this route. This is a single-airline direct service, so it\'s worth comparing against the well-established one-stop Gulf-carrier options on price and schedule regardless of season.',
     peakPeriodIds: ['diwali', 'christmas-new-year', 'uk-summer-holidays'],
     connectingAlternative: {
       typicalStops: 1,
@@ -779,7 +779,7 @@ export const routes: Route[] = [
     intro:
       'IndiGo\'s Mumbai to Manchester service, launched in July 2025, was the airline\'s first ever long-haul route and remains the only non-stop link between Manchester and India\'s financial capital. As with the Delhi route, it\'s a single-airline direct service rather than a long-established one. See the Route Status panel below for the latest verified service status.',
     bookingWindowNote:
-      'Diwali and the December to January window are the two periods when fares rise sharply on this route. The well-established one-stop Gulf-carrier options below run far more frequently and are worth comparing on price and convenience regardless of season, since this is a single-airline direct service.',
+      'Diwali and the December to January window are the two periods when fares often rise on this route. The well-established one-stop Gulf-carrier options below run far more frequently and are worth comparing on price and convenience regardless of season, since this is a single-airline direct service.',
     peakPeriodIds: ['diwali', 'christmas-new-year', 'uk-summer-holidays'],
     connectingAlternative: {
       typicalStops: 1,
@@ -797,7 +797,7 @@ export const routes: Route[] = [
     airlineSlugs: ['qatar-airways', 'indigo', 'british-airways', 'air-india'],
     isDirect: false,
     intro:
-      'There is no direct Manchester to Amritsar service. Qatar Airways\' one-stop routing via Doha is the most consistently quoted fastest option, at around 13h 20m total, though other one-stop combinations via Delhi or London add meaningfully to journey time. Birmingham and Gatwick both have genuine direct Amritsar services, worth comparing against a Manchester connection if either is within reasonable travelling distance.',
+      'There is no direct Manchester to Amritsar service. Qatar Airways\' one-stop routing via Doha is currently the shortest one-stop option, at around 13h 20m total, though other one-stop combinations via Delhi or London add meaningfully to journey time. Birmingham and Gatwick both have genuine direct Amritsar services, worth comparing against a Manchester connection if either is within reasonable travelling distance.',
     bookingWindowNote:
       'Because every option here involves a connection, total journey time and layover length matter as much as the headline price. Compare the Doha one-stop against driving to Birmingham or Gatwick for their direct services, particularly for family travel with young children or elderly relatives.',
     peakPeriodIds: ['baisakhi', 'diwali', 'uk-summer-holidays'],
@@ -837,7 +837,7 @@ export const routes: Route[] = [
     airlineSlugs: ['turkish-airlines', 'saudia', 'egyptair', 'royal-jordanian'],
     isDirect: false,
     intro:
-      'Manchester once had a direct Saudia service to Madinah, but it doesn\'t currently operate. Turkish Airlines\' one-stop routing via Istanbul is now the fastest realistic option, at around 9h 15m total. EgyptAir via Cairo and Royal Jordanian via Amman are the other commonly used alternatives.',
+      'Manchester once had a direct Saudia service to Madinah, but it doesn\'t currently operate. Turkish Airlines\' one-stop routing via Istanbul is currently the shortest one-stop option, at around 9h 15m total. EgyptAir via Cairo and Royal Jordanian via Amman are the other commonly used alternatives.',
     bookingWindowNote:
       'For Umrah travel specifically, compare flying into Jeddah and travelling overland to Madinah against a direct-to-Madinah connection. Manchester\'s Jeddah service runs through the same Doha-based connection pattern as the wider network, and the total journey time difference is often smaller than expected.',
     peakPeriodIds: ['ramadan', 'pre-hajj', 'school-half-terms-umrah'],

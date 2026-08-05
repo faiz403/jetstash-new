@@ -859,6 +859,45 @@ without either misrepresenting a peak period as a literal Event or repeating the
 mistake §9.2 already forbids (stale-price Google Merchant risk). Don't add one later just to check a
 box — only if a schema.org type is found that's actually true of what the panel says.
 
+### 14.5 Evidence-safety correction — Book-By reframed as planning guidance, not fare prediction (August 2026)
+
+An independent pre-launch audit found unsupported certainty in Book-By and related route copy: phrases
+like "expect a sharp jump," "fares hold reasonably steady," "fares typically rise sharply," "the most
+consistently quoted fastest option" and two absolute "no risk" claims stated an editorial assumption as
+if it were a proven, route-specific pattern. JetStash's own fare archive (§14.1, `FARE_OBSERVATION_ARCHIVE.md`)
+is a handful of dated checks per route today — real evidence of what a fare was on a specific day, but
+nowhere near enough to prove a week-by-week price curve for any one route. The correction is a wording
+pass only, not a redesign:
+
+- **Book-By is conservative planning guidance, not a fare-prediction engine.** Every surface that used
+  to assert "fares typically rise sharply" now says fares "often move" or "often rise" in the final
+  weeks — a general travel-demand pattern the site documents, not a forecast for the specific route
+  being viewed. The panel's footer disclaimer and its "Why this advice?" detail both say so in plain
+  language: *"Planning guidance, not a fare prediction."*
+- **Trend language requires enough comparable observations before it can claim a pattern, and today's
+  archive doesn't have that for any single route.** Where a route's own booking-window guidance (a
+  "book 3+ months ahead" recommendation) is kept, it's framed as planning guidance and time to compare
+  options — never as a promise about price.
+- **No public route may imply guaranteed pricing or a risk-free itinerary.** "No risk of luggage going
+  missing at a transfer" (Manchester–Lahore) and "no risk of an aircraft swap downgrading the seat"
+  (`/business-class`) are restated as the underlying fact (no transfer point; no connection where a
+  swap could happen) without the absolute "no risk" framing. "Most consistently quoted fastest option"
+  and "fastest realistic option" (Manchester–Amritsar, Manchester–Madinah) become "currently the
+  shortest one-stop option" — the routing fact stands, the unevidenced certainty about market
+  consensus doesn't.
+- **The countdown date maths, fare-observation display, route verification/warning surfaces and
+  Trip.com links are untouched.** This was a strings-only pass across `lib/booking-intelligence.ts`,
+  `data/booking-windows.ts`, the relevant `data/routes.ts` entries for the 6 soft-launch/QA routes plus
+  the two Book-By priority Heathrow routes, `components/route/book-by-countdown.tsx`,
+  `components/sections/booking-moment-strip.tsx`, the sitewide "Peak demand periods" panel
+  (`app/routes/[slug]/page.tsx`), and the Pakistan/India hub pages' matching practical-note tiles.
+  `tests/book-by-evidence-safety.test.ts` regression-tests the banned-phrase list across every priority
+  route and state so this can't quietly regress.
+- **Not yet swept in this pass** (same claim family, lower-traffic surfaces, left for a follow-up):
+  `london-heathrow-mumbai`'s bookingWindowNote, several non-QA routes' softer comparative fare
+  language, `data/peak-periods.ts`'s internal (non-customer-facing) descriptions, and the Travel Club
+  email-sequence example template.
+
 ### 14.3 Homepage = the pre-booking second opinion (decision record, July 2026)
 
 The public homepage's job is locked: **present JetStash as the independent second opinion a

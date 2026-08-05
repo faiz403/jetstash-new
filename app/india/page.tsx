@@ -30,8 +30,8 @@ export default function IndiaHubPage() {
       visaNote="UK passport holders require a visa for India. The e-Visa (tourist or business) is processed online and should be applied for at least 4 days before travel, though earlier is recommended during busy periods. Overseas Citizen of India (OCI) cardholders do not require a separate visa."
       practicalNotes={[
         {
-          title: 'Diwali and the December–January window see the steepest fares',
-          body: 'Festival season and the Christmas–New Year period are the highest-demand windows on UK–India routes. Outside these windows, particularly February–April and September–October, fares are typically more reasonable.',
+          title: 'Diwali and the December–January window see the highest demand',
+          body: 'Festival season and the Christmas–New Year period are the highest-demand windows on UK–India routes, and fares often move during them. Outside these windows, particularly February–April and September–October, this is generally a lower-pressure time to book. Planning guidance, not a fare prediction.',
         },
         {
           title: 'Gatwick is the direct gateway for Gujarat and Punjab specifically',

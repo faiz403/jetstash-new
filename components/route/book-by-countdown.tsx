@@ -198,7 +198,7 @@ export function BookByCountdown({
         </div>
         <div className="mt-2 flex flex-wrap justify-between gap-x-3 gap-y-1 text-[11px] text-ink-400">
           <span>{bookByTopLabel}</span>
-          <span className="text-terracotta-600">Typical sharp rise from {formatBookByDate(snapshot.surgeStartDate)}</span>
+          <span className="text-terracotta-600">Fares often move from {formatBookByDate(snapshot.surgeStartDate)}</span>
           <span>{snapshot.event.periodLabel}</span>
         </div>
         <div className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-ink-400">
@@ -208,7 +208,7 @@ export function BookByCountdown({
             </span>
           )}
           <span className="flex items-center gap-1.5">
-            <span className="inline-block h-2 w-4 rounded-full bg-terracotta-200" /> Fares typically rising
+            <span className="inline-block h-2 w-4 rounded-full bg-terracotta-200" /> Fares often move here
           </span>
           <span className="flex items-center gap-1.5">
             <span className="inline-block h-3.5 w-[3px] rounded-full bg-ink-900" /> {bookByDateLabel}
@@ -350,7 +350,7 @@ export function BookByCountdown({
             </li>
           )}
           <li>
-            Fares on routes like this typically rise sharply within 3–4 weeks of a peak period — that&apos;s the shaded zone on the timeline, and the pattern this site documents per route rather than predicts.
+            The shaded zone on the timeline marks the final 3–4 weeks before a peak period, when fares on routes like this often move — a general planning pattern, not a forecast for this specific route. JetStash&apos;s own fare archive doesn&apos;t yet have enough dated observations on this route to predict when its price will change.
           </li>
           {observation && (
             <li>
@@ -361,7 +361,7 @@ export function BookByCountdown({
       </details>
 
       <p className="mt-4 text-xs text-ink-400">
-        Guidance, not a guarantee — based on this route&apos;s documented patterns and verified dates, not price prediction. Fares can move differently in any given year.
+        Planning guidance, not a fare prediction — based on documented peak-period timing and verified dates, not a forecast of this route&apos;s prices. Fares can move differently in any given year.
       </p>
     </section>
   );

@@ -28,7 +28,7 @@ export function BookingMomentStrip({ snapshots }: { snapshots: BookBySnapshot[] 
               </span>{' '}
               next big travel moment is {s.event.periodLabel}, {formatEventDate(s.event)}
               {s.state === 'window-open' && ' — the recommended booking window is open now'}
-              {(s.state === 'surge' || s.state === 'late') && ' — fares typically rise sharply from here'}
+              {(s.state === 'surge' || s.state === 'late') && ' — fares on peak-period routes often move from here'}
               .
             </p>
             <Link
