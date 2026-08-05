@@ -1,9 +1,10 @@
 # JetStash — Seven-Day Controlled Organic Launch Pack
 
 > **Updated, 4 August 2026:** TravelUp has been removed entirely and replaced with Trip.com as
-> JetStash's sole active provider (see `STATUS.md` AFF-001). This pack's route selection and every
-> "TravelUp" reference have been corrected below — see the Change log at the bottom for exactly
-> what changed and why. Still nothing sent anywhere; still DRAFT for founder review.
+> JetStash's sole active provider (see `STATUS.md` AFF-001). This pack's route selection has been
+> finalised following an evidence-based review of all 23 Trip.com-supported routes — see the Change
+> log at the bottom for exactly what changed and why. Still nothing sent anywhere; still DRAFT for
+> founder review.
 
 **Status: DRAFT for founder review.** The message copy below is a genuine starting point, not
 final text — read it, cut anything that doesn't sound like you, and personalise the parts that
@@ -23,39 +24,52 @@ user hitting a real, reproducible problem. Everything below is content and proce
 ## 1. The six launch routes
 
 Your original list named four categories (Pakistan, India, Gulf, Umrah). Following the 4 August
-2026 TravelUp → Trip.com migration, three of the originally selected six routes (Heathrow–Delhi,
+2026 TravelUp → Trip.com migration, three of the previously selected six routes (Heathrow–Delhi,
 Heathrow–Mumbai, Heathrow–Jeddah) lost their booking CTA entirely — Trip.com's tools cannot produce
-a Heathrow-specific dateless link, and JetStash's standing rule is an exact airport-specific link
-or no CTA, never a generic fallback. You've directed the replacement selection below; Gulf and
-Umrah are not represented in this particular six for now as a result — Dubai and Jeddah/Madinah
-remain real, live, working parts of the site, just not part of this launch round's featured set.
+a Heathrow-specific dateless link — and a subsequent interim selection (Delhi/Mumbai/Ahmedabad/
+Amritsar, all Manchester) traded fare evidence for coverage across zero-observation routes. Neither
+was right for a *first* controlled launch. This final selection is the outcome of an evidence-based
+review of all 23 Trip.com-supported routes, scored on: a valid Trip.com CTA, existing fare
+observations, no active withdrawal warning, completeness of route guidance, strength for a
+first-time visitor, and relevance to JetStash's audience. It restores all four of your original
+categories.
 
-| Category | Route | Fare observations | Trip.com CTA available |
-|---|---|---|---|
-| Pakistan | Manchester → Lahore | 4 | Yes |
-| Pakistan | Manchester → Islamabad | 3 | Yes |
-| India | Manchester → Delhi | **0** | Yes |
-| India | Manchester → Mumbai | **0** | Yes |
-| India | Manchester → Ahmedabad | **0** | Yes |
-| India | Manchester → Amritsar | **0** | Yes |
+| Category | Route | Directness | Fare observations | Trip.com CTA |
+|---|---|---|---|---|
+| Pakistan | Manchester → Lahore | Direct | 4 (most recent: 4 Aug 2026) | Yes |
+| Pakistan | Manchester → Islamabad | Direct | 3 (most recent: 4 Aug 2026) | Yes |
+| Gulf | Manchester → Dubai | Direct | 2 (16 Jun / 12 Jun 2026) | Yes |
+| Gulf | Manchester → Doha | Direct | **0** | Yes |
+| India | Birmingham → Amritsar | Connecting (Air India's own booking page shows no direct option) | 4 (most recent: 4 Aug 2026) | Yes |
+| Umrah | Manchester → Madinah | Connecting (no current direct service; realistic routing via Istanbul) | 1 (9 Jun 2026) | Yes |
 
-**Be aware before sending anything:** unlike the original selection (which specifically prioritised
-routes with logged fare evidence, to avoid a first-time visitor landing on a bare "no fare checked
-yet" page), four of these six — Delhi, Mumbai, Ahmedabad, Amritsar — currently have **zero** logged
-fare observations. Their route pages are honest and fully functional (booking-window guidance,
-route facts, Travel Ready Check, Trip.com CTA all work normally), but they'll show "no fare checks
-logged yet" rather than a real £ figure. If that's a concern before sending to any of these four
-communities, log at least one real fare observation per route first (`data/fare-observations.ts`,
-see `FARE_OBSERVATION_ARCHIVE.md`) — optional, your call, not something this correction did for you.
+**Internal note, not for promotional use — be aware before sending anything:**
+- **Manchester–Doha has no logged fare observation at all.** Its route page is honest and fully
+  functional (booking-window guidance, route facts, Travel Ready Check, Trip.com CTA all work
+  normally), but shows "no fare checks logged yet" rather than a £ figure. It was still selected
+  over the alternatives because it's the cleanest, most confidently verified route among the
+  zero-observation candidates — no hedged or unverified language anywhere in its route facts.
+- **Manchester–Madinah's single observation (9 June 2026) is 56 days old as of this pack's
+  4 August 2026 update — close to the 60-day "fresh" threshold** (`OBSERVATION_FRESH_DAYS` in
+  `lib/freshness-thresholds.ts`). It's still within the fresh window today, but log a new
+  observation before this route sees real traffic if the week runs long.
+- Two zero-observation, verified-direct Pakistan routes (Manchester–Karachi, Birmingham–Islamabad)
+  and one Gulf route (Manchester–Doha's own near-neighbours) were considered and set aside for this
+  round — Manchester–Karachi in particular is excluded because JetStash's own data marks its direct
+  service as **unverified** (no primary source currently confirms it), which is a materially weaker
+  first impression than an honestly-disclosed connection.
+- Neither of the two bullets above should appear in outbound messages unless a specific person
+  asks a specific question they're directly relevant to (see section 6's "why isn't my route on
+  there" pattern) — they're context for you, not talking points.
 
 Live route pages:
 
 - `https://jetstash.co.uk/routes/manchester-lahore`
 - `https://jetstash.co.uk/routes/manchester-islamabad`
-- `https://jetstash.co.uk/routes/manchester-delhi`
-- `https://jetstash.co.uk/routes/manchester-mumbai`
-- `https://jetstash.co.uk/routes/manchester-ahmedabad`
-- `https://jetstash.co.uk/routes/manchester-amritsar`
+- `https://jetstash.co.uk/routes/manchester-dubai`
+- `https://jetstash.co.uk/routes/manchester-doha`
+- `https://jetstash.co.uk/routes/birmingham-amritsar`
+- `https://jetstash.co.uk/routes/manchester-madinah`
 
 ---
 
@@ -147,28 +161,47 @@ the same honest ask: try it, don't just say it looks nice.
 > Would genuinely appreciate you trying it for a real trip you're actually thinking about, not just
 > looking at it — and telling me where it's confusing or wrong, not just whether it looks nice.
 
-### India community (Delhi / Mumbai / Ahmedabad / Amritsar)
+### India community (Amritsar, via Birmingham)
 
 > Sharing JetStash — a UK site I built for checking India routes before booking. Real route status,
 > passport/visa checks against the official government pages, and dated fares rather than a
 > live-price claim.
 >
-> Manchester–Delhi: `https://jetstash.co.uk/routes/manchester-delhi?utm_source=<GROUP-NAME>&utm_medium=whatsapp&utm_campaign=soft-launch-jul26`
-> Manchester–Mumbai: `https://jetstash.co.uk/routes/manchester-mumbai?utm_source=<GROUP-NAME>&utm_medium=whatsapp&utm_campaign=soft-launch-jul26`
-> Manchester–Ahmedabad: `https://jetstash.co.uk/routes/manchester-ahmedabad?utm_source=<GROUP-NAME>&utm_medium=whatsapp&utm_campaign=soft-launch-jul26`
-> Manchester–Amritsar: `https://jetstash.co.uk/routes/manchester-amritsar?utm_source=<GROUP-NAME>&utm_medium=whatsapp&utm_campaign=soft-launch-jul26`
+> Birmingham–Amritsar: `https://jetstash.co.uk/routes/birmingham-amritsar?utm_source=<GROUP-NAME>&utm_medium=whatsapp&utm_campaign=soft-launch-jul26`
+>
+> This one currently connects rather than flying direct — Air India's own booking page doesn't list
+> a direct option — so JetStash shows the real routing detail rather than a headline duration,
+> worth checking before you compare it elsewhere.
 >
 > If you've got a real UK–India trip coming up, I'd rather you tried it on that than just looked at
 > it — and told me honestly where it falls short.
 
-### Gulf / Umrah — deferred this round
+### Gulf community (Dubai / Doha)
 
-Manchester–Dubai and Heathrow–Jeddah are not part of this six-route selection (see section 1). Both
-are still real, live, working route pages — Dubai still has a working Trip.com CTA; Jeddah's lost
-its CTA in the TravelUp → Trip.com migration and now shows the honest "not available yet" state.
-Neither is being featured to a Gulf/Umrah-specific audience in this round. If you want to reach
-those communities this week anyway, the general UK travel message below still works, or point them
-directly at the homepage Route Atlas.
+> Built a UK travel-intelligence site called JetStash — checks routes, timing and dated fares for
+> journeys like Manchester–Dubai and Manchester–Doha properly, instead of a comparison site's
+> live-price claim.
+>
+> Manchester–Dubai: `https://jetstash.co.uk/routes/manchester-dubai?utm_source=<GROUP-NAME>&utm_medium=whatsapp&utm_campaign=soft-launch-jul26`
+> Manchester–Doha: `https://jetstash.co.uk/routes/manchester-doha?utm_source=<GROUP-NAME>&utm_medium=whatsapp&utm_campaign=soft-launch-jul26`
+>
+> There's also an interactive route map on the homepage if neither is your exact trip:
+> `https://jetstash.co.uk/?utm_source=<GROUP-NAME>&utm_medium=whatsapp&utm_campaign=soft-launch-jul26`
+
+### Umrah / religious travel community
+
+> Sharing JetStash — built it partly with Umrah travel in mind. It checks the latest evidence on
+> the route and airline for journeys like Manchester–Madinah, passport/visa requirements, and dated
+> fares rather than a live-price claim.
+>
+> `https://jetstash.co.uk/routes/manchester-madinah?utm_source=<GROUP-NAME>&utm_medium=whatsapp&utm_campaign=soft-launch-jul26`
+>
+> Manchester's direct Madinah service isn't currently running, so this one connects (realistically
+> via Istanbul) — JetStash shows the actual routing rather than a headline "direct" claim, worth
+> checking before you compare it elsewhere.
+>
+> If you're actually planning an Umrah trip, I'd really value you trying it for real and telling me
+> what's missing or unclear.
 
 ### General UK travel community
 
@@ -320,3 +353,18 @@ test shows which of these would actually be worth building.
   toggle, no per-click dynamic sid parameter). Flagged honestly: four of the six routes
   (Delhi/Mumbai/Ahmedabad/Amritsar) currently have zero logged fare observations, unlike the
   original selection's fare-evidence-first criterion — see section 1. Still not sent anywhere.
+- **4 August 2026 (final six-route selection)** — the interim Delhi/Mumbai/Ahmedabad/Amritsar
+  selection above traded fare evidence for route-count coverage and dropped Gulf/Umrah entirely;
+  neither was right for a first controlled launch. Replaced with the outcome of an evidence-based
+  review of all 23 Trip.com-supported routes (valid CTA, fare observations, active-withdrawal
+  status, guidance completeness, first-visitor strength, audience relevance — see section 1):
+  **Manchester–Lahore, Manchester–Islamabad, Manchester–Dubai, Birmingham–Amritsar,
+  Manchester–Madinah, Manchester–Doha.** Restores all four original categories (Pakistan, Gulf,
+  India, Umrah) that the two prior selections had each partly dropped. Manchester–Delhi and
+  Manchester–Mumbai are excluded on this pass specifically because both carry an active IndiGo
+  withdrawal-announced notice (`data/route-status-events.ts`, effective 31 August 2026) — a
+  materially weaker first impression than the two prior corrections had assessed. Per-audience
+  messages rewritten in section 5 to match: India audience now leads with Birmingham–Amritsar
+  (honestly described as connecting, not direct); Gulf and Umrah audiences reinstated with
+  Manchester–Dubai/Doha and Manchester–Madinah respectively, each honestly describing directness
+  and fare-evidence status without overclaiming. Still not sent anywhere.

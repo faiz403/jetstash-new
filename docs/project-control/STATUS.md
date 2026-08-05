@@ -83,16 +83,18 @@ analytics/conversion events are verified in the real dashboard.
 longer "finish the website" — it's the first genuine users, the first useful feedback, and the
 first £1 of revenue, from a small, trusted soft launch rather than a wide public push. No
 redesigns, new features, or speculative housekeeping for the duration unless a real user hits a
-real, reproducible problem. See `SOFT_LAUNCH_PACK_2026-07-30.md` for the six originally selected
-routes (Manchester–Lahore, Manchester–Islamabad, Heathrow–Delhi, Heathrow–Mumbai, Manchester–Dubai,
-Heathrow–Jeddah — each chosen for having both logged fare evidence and a verified TravelUp deep
-link at the time). **Founder attention needed:** following the 4 August 2026 TravelUp → Trip.com
-migration, 3 of those 6 (Heathrow–Delhi, Heathrow–Mumbai, Heathrow–Jeddah) now have no booking CTA
-at all — Trip.com's tools cannot produce a Heathrow-specific dateless link. If soft-launch traffic
-is still being directed at those three routes, the messaging/FAQ referenced below may need a fresh
-look. Tracked-link convention, per-audience message drafts, FAQ, feedback template and the
-seven-day plan. Draft only as of this entry — nothing sent yet; sending is the founder's own
-action, not something done from this repository.
+real, reproducible problem. See `SOFT_LAUNCH_PACK_2026-07-30.md` for full detail; its own Change
+log documents two corrections since the original draft (TravelUp → Trip.com's booking-CTA impact,
+then a full evidence-based re-selection). **Final six routes, approved 4 August 2026:**
+Manchester–Lahore, Manchester–Islamabad, Manchester–Dubai, Birmingham–Amritsar, Manchester–Madinah,
+Manchester–Doha — chosen from all 23 Trip.com-supported routes on valid CTA, fare evidence, no
+active withdrawal warning, guidance completeness, first-visitor strength and audience relevance
+(restores all four of the founder's original categories: Pakistan, Gulf, India, Umrah).
+Manchester–Delhi/Manchester–Mumbai are excluded from this selection specifically because both carry
+an active IndiGo withdrawal-announced notice (`data/route-status-events.ts`, effective 31 August
+2026). Tracked-link convention, per-audience message drafts, FAQ, feedback template and the
+seven-day plan are all in the pack itself. Draft only as of this entry — nothing sent yet; sending
+is the founder's own action, not something done from this repository.
 
 ### DEST-001 — First destination expansion: Heathrow → Bengaluru
 
