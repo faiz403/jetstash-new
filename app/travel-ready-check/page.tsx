@@ -9,7 +9,7 @@ export const metadata: Metadata = {
   // Root layout's title template already appends " | JetStash" — no manual suffix here.
   title: 'Travel Ready Check',
   description:
-    'Check passport validity and visa guidance for your specific trip to Pakistan, India, Saudi Arabia, UAE, Qatar, Turkey or Morocco, sourced from official government pages.',
+    'Passport validity and visa guidance for your trip to Pakistan, India, Bangladesh, Saudi Arabia, UAE, Qatar, Turkey or Morocco, sourced from official government pages.',
 };
 
 // Derived from the data, never hand-typed — this is what stopped "7 destinations" (the country

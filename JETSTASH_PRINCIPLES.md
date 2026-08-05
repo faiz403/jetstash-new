@@ -711,13 +711,14 @@ priority already used by the engine and by `lib/founder-insights.ts`'s `worst()`
 evaluated stays individually visible in the result's `checks` array regardless of which one decided
 the top-line verdict.
 
-**V1 coverage is 7 countries, British passport holders first.** Pakistan, India, Saudi Arabia, UAE,
-Qatar, Turkey, Morocco — chosen because they're already the exact 7 countries `lib/visa-links.ts`
-covers, and because all 5 `BOOK_BY_PRIORITY_ROUTE_SLUGS` routes happen to serve them. NICOP/POC
-(Pakistan) and OCI (India) document holders get their own exemption rules, sourced the same way.
-Every other nationality, and every destination outside these 7 countries, returns
-`not-enough-information` — an honest "not yet covered", never a guess. Where an official source
-doesn't publish a firm visa-processing-time figure (Pakistan, Saudi Arabia), the rule leaves
+**V1 coverage is 8 countries, British passport holders first.** Pakistan, India, Bangladesh, Saudi
+Arabia, UAE, Qatar, Turkey, Morocco — the original 7 were chosen because they're covered by
+`lib/visa-links.ts` and because all 5 `BOOK_BY_PRIORITY_ROUTE_SLUGS` routes happen to serve them;
+Bangladesh was added alongside the Dhaka/Sylhet destination workstream (see `STATUS.md`'s BD-001).
+NICOP/POC (Pakistan), OCI (India) and NVR (Bangladesh) document holders get their own exemption
+rules, sourced the same way. Every other nationality, and every destination outside these 8
+countries, returns `not-enough-information` — an honest "not yet covered", never a guess. Where an
+official source doesn't publish a firm visa-processing-time figure (Pakistan, Saudi Arabia), the rule leaves
 `typicalProcessingDays` unset rather than inventing one; the decision tree falls back to a plainly
 labelled *JetStash general guidance* buffer (`GENERIC_DOCUMENT_SAFETY_DAYS`, 6 weeks) rather than
 presenting an unsourced number as an official rule.

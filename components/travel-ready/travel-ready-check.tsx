@@ -170,8 +170,8 @@ export function TravelReadyCheck({
               ))}
             </select>
             <p className="mt-1.5 text-xs text-ink-400">
-              Currently covers Pakistan, India, Saudi Arabia, UAE, Qatar, Turkey and Morocco only — every other
-              destination is marked as not yet covered rather than guessed.
+              Currently covers Pakistan, India, Bangladesh, Saudi Arabia, UAE, Qatar, Turkey and Morocco only —
+              every other destination is marked as not yet covered rather than guessed.
             </p>
           </div>
 
