@@ -315,6 +315,8 @@ export function BookByCountdown({
         <WhatsAppShareButton
           url={`${siteConfig.url}/routes/${route.slug}`}
           text={buildBookByShareText(snapshot)}
+          route={route.slug}
+          source="book-by"
           variant="light"
         />
       </div>

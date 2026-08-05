@@ -55,7 +55,10 @@ export function RouteWatchForm({ defaultAirportSlug, defaultDestinationSlug, def
       setStatus('success');
       setEmail('');
       setHoneypot('');
-      track('route_watch_signup', { airport: airportSlug, destination: destinationSlug, intent: intent || 'none' });
+      // Composite route slug, not separate airport/destination fields: two
+      // custom properties is the Vercel Pro ceiling (see lib/analytics.ts),
+      // and both halves stay recoverable from the slug.
+      track('route_watch_signup', { route: `${airportSlug}-${destinationSlug}`, intent: intent || 'none' });
     } catch (err) {
       setStatus('error');
       setErrorMsg(err instanceof Error ? err.message : 'Something went wrong. Please try again.');

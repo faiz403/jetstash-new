@@ -16,10 +16,16 @@ import { track } from '@/lib/analytics';
 export function WhatsAppShareButton({
   url,
   text,
+  route,
+  source,
   variant = 'dark',
 }: {
   url: string;
   text: string;
+  /** Route slug for analytics only — never the shared URL, which must not be sent (see lib/analytics.ts). */
+  route: string;
+  /** Which surface this share sits on, so the hero and Book-By shares stay distinguishable. */
+  source: 'route-hero' | 'book-by';
   variant?: 'dark' | 'light';
 }) {
   const message = `${text}\n\nFull route guide: ${url}`;
@@ -36,7 +42,7 @@ export function WhatsAppShareButton({
       target="_blank"
       rel="noopener noreferrer"
       data-analytics="whatsapp-share"
-      onClick={() => track('whatsapp_share_click', { url })}
+      onClick={() => track('whatsapp_share_click', { route, source })}
       className={className}
     >
       <MessageCircle className="h-4 w-4" strokeWidth={2.25} />

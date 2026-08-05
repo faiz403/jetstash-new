@@ -55,7 +55,11 @@ export function JourneyCheckForm({ origins, destinations, routeIndex }: JourneyC
     // comment above), so a submit is always a valid, successful result —
     // only the safe category differs, never the full destination text.
     const resultCategory = routeSlug ? 'route' : 'destination_guide';
-    track('journey_check_completed', { resultCategory, origin: fromSlug, destination: toSlug });
+    // Composite route slug rather than separate origin/destination fields —
+    // two custom properties is the Vercel Pro ceiling (see lib/analytics.ts).
+    // Built from the two slugs directly, not routeSlug, so the pair is still
+    // recorded when the combination has no route guide (destination_guide).
+    track('journey_check_completed', { route: `${fromSlug}-${toSlug}`, resultCategory });
     // A route guide is specifically the tracked-route outcome — the
     // destination-guide fallback is a different page, not "a route guide".
     if (routeSlug) track('journey_check_route_opened', { route: routeSlug });

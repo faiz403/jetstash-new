@@ -156,7 +156,7 @@ export function DealCard({ deal }: { deal: Deal }) {
           <>
             <TrackedOutboundLink
               event="tripcom_click"
-              properties={{ route: matchedRoute!.slug, origin: deal.fromAirportSlug, destination: deal.toDestinationSlug, source: 'deal-card' }}
+              properties={{ route: matchedRoute!.slug, source: 'deal-card' }}
               href={tripComUrl}
               target="_blank"
               rel={PROVIDER_REL}
