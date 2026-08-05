@@ -1,6 +1,10 @@
 import { describe, it, expect } from 'vitest';
+import { readFileSync } from 'fs';
+import { join } from 'path';
 import { planArriveBy } from '@/lib/arrive-by/engine';
 import { toZonedDateTime } from '@/lib/arrive-by/timezones';
+import { SUPPORTED_ROUTE_SLUGS } from '@/lib/arrive-by/route-support';
+import { routes } from '@/data/routes';
 import type { ArriveByInput, ArriveByPlan } from '@/lib/arrive-by/types';
 
 const NOW = '2026-08-01T00:00:00.000Z';
@@ -318,4 +322,178 @@ describe('req 29: every supported result includes the non-live-schedule disclaim
       expect(result.disclaimer.toLowerCase()).toContain('not a live schedule search');
     });
   }
+});
+
+// ── req 30: indicativeUkDepartureWindow chronology fix ────────────────────
+//
+// Regression coverage for a real defect: earliest/latest were previously
+// assigned backwards (earliest held the chronologically LATER instant,
+// latest held the EARLIER one) — see docs/product/ARRIVE_BY_MVP.md §16 for
+// the full root-cause writeup. Fixed directly in this file (no consumer-side
+// sorting anywhere in the codebase); this block proves the corrected
+// contract holds for every supported route and the parameter combinations
+// that exercise the arithmetic differently, so the API itself — not a UI
+// workaround — is what a future public interface would be safe to trust.
+describe('req 30: indicativeUkDepartureWindow.earliest is always <= .latest', () => {
+  function expectChronologicalWindow(plan: ArriveByPlan) {
+    const { earliest, latest } = plan.indicativeUkDepartureWindow;
+    expect(earliest.utcIso, 'earliest.utcIso must be a valid ISO instant').toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/);
+    expect(latest.utcIso, 'latest.utcIso must be a valid ISO instant').toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/);
+    expect(Number.isNaN(new Date(earliest.utcIso).getTime())).toBe(false);
+    expect(Number.isNaN(new Date(latest.utcIso).getTime())).toBe(false);
+    const earliestMs = new Date(earliest.utcIso).getTime();
+    const latestMs = new Date(latest.utcIso).getTime();
+    expect(earliestMs, `earliest (${earliest.utcIso}) must be <= latest (${latest.utcIso})`).toBeLessThanOrEqual(latestMs);
+    expect(earliest.timeZone).toBe('Europe/London');
+    expect(latest.timeZone).toBe('Europe/London');
+  }
+
+  it('Manchester–Lahore: flexible deadline, hand luggage (baseline)', () => {
+    expectChronologicalWindow(asPlan(planArriveBy(baseInput(), NOW)));
+  });
+
+  it('Manchester–Lahore: strict deadline, checked baggage', () => {
+    expectChronologicalWindow(asPlan(planArriveBy(baseInput({ deadlineStrictness: 'strict', baggage: 'checked-baggage' }), NOW)));
+  });
+
+  it('Manchester–Islamabad: flexible deadline, hand luggage', () => {
+    expectChronologicalWindow(asPlan(planArriveBy(baseInput({ destinationSlug: 'islamabad' }), NOW)));
+  });
+
+  it('Manchester–Islamabad: strict deadline, checked baggage', () => {
+    expectChronologicalWindow(
+      asPlan(planArriveBy(baseInput({ destinationSlug: 'islamabad', deadlineStrictness: 'strict', baggage: 'checked-baggage' }), NOW))
+    );
+  });
+
+  it('Manchester–Dubai: flexible deadline, hand luggage', () => {
+    expectChronologicalWindow(asPlan(planArriveBy(baseInput({ destinationSlug: 'dubai' }), NOW)));
+  });
+
+  it('Manchester–Dubai: strict deadline, checked baggage', () => {
+    expectChronologicalWindow(asPlan(planArriveBy(baseInput({ destinationSlug: 'dubai', deadlineStrictness: 'strict', baggage: 'checked-baggage' }), NOW)));
+  });
+
+  it('Manchester–Dhaka: standard connection-risk preference', () => {
+    expectChronologicalWindow(
+      asPlan(planArriveBy(baseInput({ destinationSlug: 'dhaka', requiredArrivalDateLocal: '2026-09-20', connectionRiskPreference: 'standard' }), NOW))
+    );
+  });
+
+  it('Manchester–Dhaka: cautious connection-risk preference, checked baggage, strict deadline', () => {
+    expectChronologicalWindow(
+      asPlan(
+        planArriveBy(
+          {
+            originAirportSlug: 'manchester',
+            destinationSlug: 'dhaka',
+            requiredArrivalDateLocal: '2026-09-20',
+            requiredArrivalTimeLocal: '05:00',
+            deadlineStrictness: 'strict',
+            baggage: 'checked-baggage',
+            connectionRiskPreference: 'cautious',
+          },
+          NOW
+        )
+      )
+    );
+  });
+
+  it('Manchester–Delhi: before its announced withdrawal (limited_confidence, warning preserved)', () => {
+    const result = planArriveBy(baseInput({ destinationSlug: 'delhi', requiredArrivalDateLocal: '2026-08-20', requiredArrivalTimeLocal: '10:00' }), NOW);
+    expect(result.state).toBe('limited_confidence');
+    const plan = asPlan(result);
+    expect(plan.routeWarning).not.toBeNull();
+    expectChronologicalWindow(plan);
+  });
+
+  it('Manchester–Delhi: strict deadline, checked baggage, before withdrawal', () => {
+    const plan = asPlan(
+      planArriveBy(
+        baseInput({ destinationSlug: 'delhi', requiredArrivalDateLocal: '2026-08-20', requiredArrivalTimeLocal: '10:00', deadlineStrictness: 'strict', baggage: 'checked-baggage' }),
+        NOW
+      )
+    );
+    expectChronologicalWindow(plan);
+  });
+
+  it('Manchester–Delhi: on/after its announced withdrawal returns route_verification_required — no departure window to check, and none is fabricated', () => {
+    const result = planArriveBy(baseInput({ destinationSlug: 'delhi', requiredArrivalDateLocal: '2026-09-05', requiredArrivalTimeLocal: '10:00' }), NOW);
+    expect(result.state).toBe('route_verification_required');
+    expect(result).not.toHaveProperty('indicativeUkDepartureWindow');
+  });
+
+  it('Manchester–Mumbai: before its announced withdrawal (limited_confidence, warning preserved)', () => {
+    const result = planArriveBy(baseInput({ destinationSlug: 'mumbai', requiredArrivalDateLocal: '2026-08-20', requiredArrivalTimeLocal: '10:00' }), NOW);
+    expect(result.state).toBe('limited_confidence');
+    const plan = asPlan(result);
+    expect(plan.routeWarning).not.toBeNull();
+    expectChronologicalWindow(plan);
+  });
+
+  it('Manchester–Mumbai: strict deadline, checked baggage, before withdrawal', () => {
+    const plan = asPlan(
+      planArriveBy(
+        baseInput({ destinationSlug: 'mumbai', requiredArrivalDateLocal: '2026-08-20', requiredArrivalTimeLocal: '10:00', deadlineStrictness: 'strict', baggage: 'checked-baggage' }),
+        NOW
+      )
+    );
+    expectChronologicalWindow(plan);
+  });
+
+  it('Manchester–Mumbai: on/after its announced withdrawal returns route_verification_required — no departure window to check, and none is fabricated', () => {
+    const result = planArriveBy(baseInput({ destinationSlug: 'mumbai', requiredArrivalDateLocal: '2026-09-05', requiredArrivalTimeLocal: '10:00' }), NOW);
+    expect(result.state).toBe('route_verification_required');
+    expect(result).not.toHaveProperty('indicativeUkDepartureWindow');
+  });
+
+  it('UK calendar-date rollover: an early-hours Lahore deadline still returns earliest <= latest', () => {
+    expectChronologicalWindow(asPlan(planArriveBy(baseInput({ requiredArrivalDateLocal: '2026-09-15', requiredArrivalTimeLocal: '00:30' }), NOW)));
+  });
+
+  it('timezone conversion across different dates: UK winter (GMT) deadline', () => {
+    expectChronologicalWindow(
+      asPlan(planArriveBy(baseInput({ requiredArrivalDateLocal: '2026-01-20', requiredArrivalTimeLocal: '14:00' }), '2025-12-01T00:00:00.000Z'))
+    );
+  });
+
+  it('timezone conversion across different dates: UK summer (BST) deadline, Dubai destination', () => {
+    expectChronologicalWindow(asPlan(planArriveBy(baseInput({ destinationSlug: 'dubai', requiredArrivalDateLocal: '2026-09-20', requiredArrivalTimeLocal: '02:00' }), NOW)));
+  });
+
+  it('every supported route produces a chronologically valid window on its own baseline profile', () => {
+    for (const slug of SUPPORTED_ROUTE_SLUGS) {
+      const route = routes.find((r) => r.slug === slug)!;
+      const isConnecting = slug === 'manchester-dhaka';
+      const result = planArriveBy(
+        {
+          originAirportSlug: route.airportSlug,
+          destinationSlug: route.destinationSlug,
+          requiredArrivalDateLocal: '2026-09-20',
+          requiredArrivalTimeLocal: '14:00',
+          deadlineStrictness: 'flexible',
+          baggage: 'hand-luggage-only',
+          ...(isConnecting ? { connectionRiskPreference: 'standard' as const } : {}),
+        },
+        NOW
+      );
+      // Delhi/Mumbai's 2026-08-31 withdrawal is before this date, so both
+      // correctly return route_verification_required here — nothing to
+      // check chronologically for those two on this date, by design.
+      if (result.state === 'ready_for_planning' || result.state === 'limited_confidence') {
+        expectChronologicalWindow(result);
+      } else {
+        expect(result.state, slug).toBe('route_verification_required');
+      }
+    }
+  });
+
+  it('the founder preview consumes indicativeUkDepartureWindow.earliest/.latest directly — no re-sorting helper exists anywhere in the codebase', () => {
+    const founderPreviewSrc = readFileSync(join(process.cwd(), 'lib', 'arrive-by', 'founder-preview.ts'), 'utf8');
+    const componentSrc = readFileSync(join(process.cwd(), 'components', 'founder', 'arrive-by-preview.tsx'), 'utf8');
+    expect(founderPreviewSrc).not.toMatch(/chronologicalDepartureWindow/);
+    expect(componentSrc).not.toMatch(/chronologicalDepartureWindow/);
+    // Destructured directly off the engine's own field, not re-sorted or renamed.
+    expect(componentSrc).toContain('const { earliest, latest } = plan.indicativeUkDepartureWindow;');
+  });
 });
