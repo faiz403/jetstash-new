@@ -74,6 +74,16 @@ analytics/conversion events are verified in the real dashboard.
   observation above: `umrah-package-jed` and `umrah-package-extended` were both showing a flight-only
   fare under an "Umrah package" badge. Both deals, and the `/deals` page's Umrah filter tab, now
   correctly show no tracked fare until the archive can log an actual package-price observation.
+- Arrive By Stage 1 (deterministic backward-planning engine, `lib/arrive-by/`, six routes) is
+  complete and, as of this entry, Stage 2 is also complete: a private, founder-only preview at
+  `/founder/arrive-by` (`app/founder/arrive-by/page.tsx`, `components/founder/arrive-by-preview.tsx`),
+  gated identically to `/founder` and the Journey Brief preview (404s in production unless
+  `FOUNDER_DASHBOARD_ENABLED=true`, `robots: noindex`, absent from `app/sitemap.ts`, no analytics, no
+  network calls). **This is a private product-evaluation tool — it does not indicate public launch
+  readiness.** Stage 3 (a public, customer-facing interface) is explicitly not started; see
+  `docs/product/ARRIVE_BY_MVP.md` §17 for what that would require, and §16 for a discovered Stage 1
+  defect (`indicativeUkDepartureWindow.earliest`/`.latest` named backwards relative to real
+  chronological order) reported but not yet fixed in the engine itself, pending founder sign-off.
 - The Visual Identity System v2 documentation refactor is shipped (`docs/visual-identity.md`,
   `VISUAL_REVIEW_CHECKLIST.md`): Visual Principles, Editorial Photography, Interactive Visual
   Systems and an Asset Catalogue with Lifecycle status per entry. This is the documentation

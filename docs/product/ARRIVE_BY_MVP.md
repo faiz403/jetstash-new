@@ -1,8 +1,14 @@
-# Arrive By — Stage 1 MVP (engine only)
+# Arrive By — Stage 1 MVP (engine) + Stage 2 (private founder preview)
 
 **Status:** Stage 1 complete — pure calculation/recommendation engine, comprehensive deterministic
-tests, no public interface. Not merged to a customer-facing surface. See §16–17 for what Stage 2
-and Stage 3 would each add.
+tests. Stage 2 complete — a private, founder-only preview interface at `/founder/arrive-by`
+(`app/founder/arrive-by/page.tsx`, `components/founder/arrive-by-preview.tsx`), gated exactly like
+`/founder` and the Journey Brief preview (404s in production unless `FOUNDER_DASHBOARD_ENABLED=true`,
+`robots: {index:false, follow:false}`, absent from `app/sitemap.ts`, no analytics, no external
+requests). **This remains private and unindexed — it is a product-evaluation tool, not a
+customer-facing release, and does not indicate public launch readiness.** Stage 3 (public
+integration) is explicitly not started — see §17. See §16 for what Stage 2 actually built and a
+defect it surfaced in Stage 1's own output; §17 for what Stage 3 would still need.
 
 **Relationship to `docs/project-control/ARRIVE_BY_SPEC.md`:** that document specifies a fuller,
 "evidence-gated" feasibility engine — live schedule sources, ground-transport estimates, a
@@ -273,16 +279,31 @@ asserted, the product has crossed into `ARRIVE_BY_SPEC.md`'s evidence-gated terr
 its data/architecture gates (permitted schedule source, connection/terminal assumptions, ground
 transport, an audit trail per result) — none of which this MVP needs or claims to have met.
 
-## 16. Stage 2 interface plan (not built in this PR)
+## 16. Stage 2 — private founder preview (built)
 
-A public interface would need, at minimum: a form (origin/destination/deadline/baggage/strictness),
-a result view rendering `ArriveByPlan`/`ArriveByRouteVerificationRequired`/rejection states in plain
-language (the engine returns structured data, never HTML), a decision on whether it's a standalone
-page (`/arrive-by`) or folds into an existing surface (e.g. a route page), and analytics events
-added deliberately and sparingly — **never the traveller's exact requested date/time**, only
-category-level signals (route, journey type, result state), consistent with how every other
-JetStash form already reports outcomes without personal specifics. This is explicitly a founder
-decision, not something this PR proposes a default for.
+A private, founder-only preview at `/founder/arrive-by` (`app/founder/arrive-by/page.tsx`,
+`components/founder/arrive-by-preview.tsx`) — a form (route/date/time/planning-preference/baggage,
+plus connection-risk-preference shown only for the one connecting route) and a plain-language result
+view rendering `ArriveByPlan`/`ArriveByRouteVerificationRequired`/rejection states, backed entirely
+by `lib/arrive-by/founder-preview.ts`, a thin presentation layer over the unmodified Stage 1 engine
+(route/timezone/config/engine files untouched). No analytics event, no network call, no
+`localStorage` — every plan is computed in the browser from the six-route closed set and discarded
+on navigation. Access, indexing and public-surface protection mirror `/founder` and the Journey
+Brief preview exactly (see the Status line above). This is a product-evaluation tool for the
+founder, not Stage 3's public interface — see §17 for what that would still need.
+
+**Stage 1 defect discovered while building this (reported, not silently patched):**
+`ArriveByPlan.indicativeUkDepartureWindow.earliest`/`.latest` are named backwards relative to real
+chronological order — `.earliest` is computed from the shorter duration bound (closer to the fixed
+landing time, so a *later* clock time) and `.latest` from the longer bound (further from landing, so
+an *earlier* clock time). Because every duration range in `config.ts` has min < max, `.earliest` is
+chronologically after `.latest` for every request, not an edge case — confirmed directly against
+real engine output for both a direct (Lahore) and connecting (Dhaka) example. `lib/arrive-by/engine.ts`
+and `types.ts` are untouched; the founder preview works around it for display only via
+`chronologicalDepartureWindow()` in `founder-preview.ts` (tests: "DISCOVERED STAGE 1 DEFECT" in
+`tests/arrive-by-founder-preview.test.ts`). Renaming the two fields directly in Stage 1 — the
+obviously correct real fix — is left for the founder to approve and schedule, not bundled into this
+PR silently.
 
 ## 17. Stage 3 production-release checklist (not built in this PR)
 

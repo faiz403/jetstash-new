@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync, readdirSync } from 'fs';
-import { join } from 'path';
+import { join, sep } from 'path';
 
 /**
  * Structural/source-scan checks for the Stage 1 Arrive By engine — the
@@ -33,8 +33,19 @@ describe('req 28: no external network call occurs', () => {
   });
 });
 
-describe('no public interface exists yet (Stage 1 scope)', () => {
-  it('no route, page, or component imports lib/arrive-by — the engine is not wired to any UI', () => {
+describe('no PUBLIC interface exists (Stage 2 scope: founder-only preview, never a customer-facing route)', () => {
+  // Stage 2 (docs/product/ARRIVE_BY_MVP.md §16) deliberately wires the engine
+  // to exactly one private, founder-gated surface — see
+  // tests/arrive-by-founder-route-access.test.ts for everything that proves
+  // it stays private (robots noindex, absent from sitemap, no analytics, no
+  // links from public pages). This check now asserts the narrower, still
+  // load-bearing invariant: nothing OUTSIDE that one sanctioned pair of files
+  // references lib/arrive-by — Stage 3's eventual public integration is a
+  // deliberate, separate, founder-approved step, not something that can
+  // happen by accident.
+  const SANCTIONED_STAGE_2_FILES = [join('app', 'founder', 'arrive-by', 'page.tsx'), join('components', 'founder', 'arrive-by-preview.tsx')];
+
+  it('no route, page, or component outside the sanctioned Stage 2 founder preview imports lib/arrive-by', () => {
     const appDir = join(process.cwd(), 'app');
     const componentsDir = join(process.cwd(), 'components');
     const offenders: string[] = [];
@@ -45,6 +56,8 @@ describe('no public interface exists yet (Stage 1 scope)', () => {
         if (entry.isDirectory()) {
           scan(full);
         } else if (entry.isFile() && (entry.name.endsWith('.ts') || entry.name.endsWith('.tsx'))) {
+          const relative = full.replace(process.cwd() + sep, '');
+          if (SANCTIONED_STAGE_2_FILES.includes(relative)) continue;
           const content = readFileSync(full, 'utf8');
           if (content.includes('arrive-by')) offenders.push(full);
         }
@@ -53,6 +66,12 @@ describe('no public interface exists yet (Stage 1 scope)', () => {
     scan(appDir);
     scan(componentsDir);
     expect(offenders).toEqual([]);
+  });
+
+  it('both sanctioned Stage 2 files actually exist — the exemption above is never a stale allowlist', () => {
+    for (const rel of SANCTIONED_STAGE_2_FILES) {
+      expect(readFileSync(join(process.cwd(), rel), 'utf8').length, rel).toBeGreaterThan(0);
+    }
   });
 });
 
