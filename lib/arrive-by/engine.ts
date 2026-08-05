@@ -131,26 +131,42 @@ export function planArriveBy(input: ArriveByInput, nowIso: string): ArriveByResu
     }
   }
 
+  // Two candidate UK departure instants, both targeting the SAME fixed
+  // recommendedLatestLandingUtc: one assuming the LONGER end of the
+  // duration range (a safe, worst-case-protected departure — since more
+  // flight time is assumed, the traveller must leave EARLIER to still land
+  // on time) and one assuming the SHORTER end (an optimistic, best-case
+  // departure — since less flight time is assumed, the traveller could
+  // still land on time leaving LATER). Naming these by chronological
+  // outcome, not by which duration bound produced them, is what keeps the
+  // window's own field names honest below — a longer duration assumption
+  // does NOT mean "leave later"; it means the opposite, because the target
+  // landing time is fixed. (Previously named indicativeDepartureUtc /
+  // earliestDepartureUtc, which inverted this — see docs/product/ARRIVE_BY_MVP.md §16.)
   const totalFlightSideMinutes = durationHours * 60 + connectionBufferMinutes;
-  const indicativeDepartureUtc = addMinutesUtc(recommendedLatestLandingUtc, -totalFlightSideMinutes);
+  const earliestSensibleDepartureUtc = addMinutesUtc(recommendedLatestLandingUtc, -totalFlightSideMinutes);
 
   const ukPreparation = getUkPreparationAssumption(baggage);
   const ukPreparationMinutes = baggage === 'checked-baggage' ? UK_AIRPORT_PREPARATION_CHECKED_BAGGAGE_MINUTES : UK_AIRPORT_PREPARATION_HAND_LUGGAGE_MINUTES;
-  const recommendedOriginAirportArrivalUtc = addMinutesUtc(indicativeDepartureUtc, -ukPreparationMinutes);
+  const recommendedOriginAirportArrivalUtc = addMinutesUtc(earliestSensibleDepartureUtc, -ukPreparationMinutes);
 
   if (new Date(recommendedOriginAirportArrivalUtc).getTime() <= nowMs) {
     return reject('invalid_deadline', 'This deadline is too close for a sensible planning window — even with no preparation time at all, there would be no time left to travel.');
   }
 
-  // A UK departure "window" — the earliest a sensible traveller might reasonably leave (using the SHORTER end of the duration range, so the window has real width) to the latest (the value computed above, using the longer end).
+  // The optimistic, best-case-duration departure — the latest a traveller
+  // could sensibly leave and still make it, if the flight happens to be
+  // quick. Chronologically AFTER earliestSensibleDepartureUtc by
+  // construction, since the short duration bound is always less than the
+  // long one (DIRECT/CONNECTING_JOURNEY_DURATION_RANGE_HOURS in config.ts).
   const shortDurationHours = journeyType === 'direct' ? DIRECT_JOURNEY_DURATION_RANGE_HOURS.min : CONNECTING_JOURNEY_DURATION_RANGE_HOURS.min;
   const shortTotalMinutes = shortDurationHours * 60 + connectionBufferMinutes;
-  const earliestDepartureUtc = addMinutesUtc(recommendedLatestLandingUtc, -shortTotalMinutes);
+  const latestSensibleDepartureUtc = addMinutesUtc(recommendedLatestLandingUtc, -shortTotalMinutes);
 
   const recommendedLatestLandingLocal = toZonedDateTime(recommendedLatestLandingUtc, destinationTimeZone);
   const indicativeUkDepartureWindow = {
-    earliest: toZonedDateTime(earliestDepartureUtc, UK_TIME_ZONE),
-    latest: toZonedDateTime(indicativeDepartureUtc, UK_TIME_ZONE),
+    earliest: toZonedDateTime(earliestSensibleDepartureUtc, UK_TIME_ZONE),
+    latest: toZonedDateTime(latestSensibleDepartureUtc, UK_TIME_ZONE),
   };
   const recommendedOriginAirportArrivalLocal = toZonedDateTime(recommendedOriginAirportArrivalUtc, UK_TIME_ZONE);
 

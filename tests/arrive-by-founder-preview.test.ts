@@ -2,7 +2,6 @@ import { describe, it, expect } from 'vitest';
 import { SUPPORTED_ROUTE_SLUGS } from '@/lib/arrive-by/route-support';
 import {
   FOUNDER_PREVIEW_ROUTE_OPTIONS,
-  chronologicalDepartureWindow,
   describeUkCalendarShift,
   findFounderPreviewRoute,
   isConnectingRouteSlug,
@@ -136,43 +135,32 @@ describe('date rollover is shown correctly', () => {
   });
 });
 
-describe('DISCOVERED STAGE 1 DEFECT: indicativeUkDepartureWindow.earliest/.latest are chronologically inverted', () => {
-  // By construction, every duration range in config.ts has min < max, so
-  // engine.ts's earliestDepartureUtc (short duration -> closer to the fixed
-  // landing time -> a LATER clock time) is always chronologically after
-  // indicativeDepartureUtc (long duration -> further from landing -> an
-  // EARLIER clock time), which the engine stores as "latest". Reported, not
-  // fixed here — lib/arrive-by/engine.ts is untouched. Proven directly
-  // against the real engine output for both the Lahore fixture (direct) and
-  // a Dhaka fixture (connecting), so this isn't an artefact of one journey type.
-  it('a real Lahore plan: the field named "earliest" is chronologically after the field named "latest"', () => {
+describe('indicativeUkDepartureWindow is consumed directly, with no Stage 2 re-sorting', () => {
+  // The earliest/.latest chronological-inversion defect this describe block
+  // used to cover is now fixed at the source in lib/arrive-by/engine.ts —
+  // see tests/arrive-by-engine.test.ts's "req 30" block for the authoritative
+  // engine-level regression coverage across all six routes. This file only
+  // needs to prove the Stage 2 wiring layer forwards the (now-correct)
+  // fields unmodified and adds no re-sorting helper of its own.
+  it('a real Lahore plan: earliest is chronologically <= latest, straight from the engine', () => {
     const plan = asPlan(runFounderPreview(baseForm(), NOW));
     const earliestMs = new Date(plan.indicativeUkDepartureWindow.earliest.utcIso).getTime();
     const latestMs = new Date(plan.indicativeUkDepartureWindow.latest.utcIso).getTime();
-    expect(earliestMs).toBeGreaterThan(latestMs);
+    expect(earliestMs).toBeLessThanOrEqual(latestMs);
   });
 
-  it('a real Dhaka (connecting) plan: same inversion', () => {
+  it('a real Dhaka (connecting) plan: same, holds for a connecting journey too', () => {
     const plan = asPlan(runFounderPreview(baseForm({ routeSlug: 'manchester-dhaka', requiredArrivalDateLocal: '2026-09-20' }), NOW));
     const earliestMs = new Date(plan.indicativeUkDepartureWindow.earliest.utcIso).getTime();
     const latestMs = new Date(plan.indicativeUkDepartureWindow.latest.utcIso).getTime();
-    expect(earliestMs).toBeGreaterThan(latestMs);
+    expect(earliestMs).toBeLessThanOrEqual(latestMs);
   });
 
-  it('chronologicalDepartureWindow corrects the pair for display without touching the engine', () => {
-    const plan = asPlan(runFounderPreview(baseForm(), NOW));
-    const { earlier, later } = chronologicalDepartureWindow(plan.indicativeUkDepartureWindow);
-    expect(new Date(earlier.utcIso).getTime()).toBeLessThanOrEqual(new Date(later.utcIso).getTime());
-    // Re-sorted, not re-derived: the two instants are exactly the engine's own values, just correctly ordered.
-    expect(earlier).toEqual(plan.indicativeUkDepartureWindow.latest);
-    expect(later).toEqual(plan.indicativeUkDepartureWindow.earliest);
-  });
-
-  it('is a no-op (identity) on an already-correctly-ordered pair', () => {
-    const inOrder = { earliest: { dateIso: '2026-01-01', timeHHmm: '08:00', timeZone: 'Europe/London', utcIso: '2026-01-01T08:00:00.000Z' }, latest: { dateIso: '2026-01-01', timeHHmm: '10:00', timeZone: 'Europe/London', utcIso: '2026-01-01T10:00:00.000Z' } };
-    const { earlier, later } = chronologicalDepartureWindow(inOrder);
-    expect(earlier).toEqual(inOrder.earliest);
-    expect(later).toEqual(inOrder.latest);
+  it('lib/arrive-by/founder-preview.ts defines no chronologicalDepartureWindow (or equivalent) re-sorting helper', async () => {
+    const { readFileSync } = await import('fs');
+    const { join } = await import('path');
+    const src = readFileSync(join(process.cwd(), 'lib', 'arrive-by', 'founder-preview.ts'), 'utf8');
+    expect(src).not.toMatch(/chronologicalDepartureWindow/);
   });
 });
 

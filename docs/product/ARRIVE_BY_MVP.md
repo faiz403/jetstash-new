@@ -7,8 +7,9 @@ tests. Stage 2 complete — a private, founder-only preview interface at `/found
 `robots: {index:false, follow:false}`, absent from `app/sitemap.ts`, no analytics, no external
 requests). **This remains private and unindexed — it is a product-evaluation tool, not a
 customer-facing release, and does not indicate public launch readiness.** Stage 3 (public
-integration) is explicitly not started — see §17. See §16 for what Stage 2 actually built and a
-defect it surfaced in Stage 1's own output; §17 for what Stage 3 would still need.
+integration) is explicitly not started — see §17. A chronological-ordering defect Stage 2 surfaced
+in `indicativeUkDepartureWindow` has since been **fixed directly in the Stage 1 engine** (§16) — the
+engine itself now guarantees `earliest <= latest` for every result; no consumer needs to re-sort it.
 
 **Relationship to `docs/project-control/ARRIVE_BY_SPEC.md`:** that document specifies a fuller,
 "evidence-gated" feasibility engine — live schedule sources, ground-transport estimates, a
@@ -145,12 +146,16 @@ verified fact and a planning assumption visibly distinct, exactly as required.
 
 1. `recommendedLatestLandingLocal` = required arrival − (destination processing buffer [+ checked
    baggage] + schedule-risk buffer [strict/flexible]).
-2. `indicativeUkDepartureWindow.latest` = recommended latest landing − indicative direct duration
-   (upper bound).
+2. `indicativeUkDepartureWindow.earliest` = recommended latest landing − indicative direct duration
+   (**upper** bound) — the safe, worst-case-protected departure. Since both candidate departures
+   target the same fixed landing time, assuming the *longer* possible flight duration means leaving
+   *earlier*, not later — this is also the basis for `recommendedOriginAirportArrivalLocal` below.
 3. `recommendedOriginAirportArrivalLocal` = that departure − UK airport preparation allowance
    [hand luggage/checked baggage].
-4. `indicativeUkDepartureWindow.earliest` uses the same landing time minus the duration range's
-   **lower** bound, giving the window real width rather than a single instant.
+4. `indicativeUkDepartureWindow.latest` uses the same landing time minus the duration range's
+   **lower** bound — an optimistic, best-case-duration departure, chronologically the latest a
+   traveller could still sensibly leave. Always `>= .earliest`, since the lower bound is always less
+   than the upper bound (§6); this gives the window real width rather than a single instant.
 
 ## 8. Connecting-route logic
 
@@ -285,25 +290,39 @@ A private, founder-only preview at `/founder/arrive-by` (`app/founder/arrive-by/
 `components/founder/arrive-by-preview.tsx`) — a form (route/date/time/planning-preference/baggage,
 plus connection-risk-preference shown only for the one connecting route) and a plain-language result
 view rendering `ArriveByPlan`/`ArriveByRouteVerificationRequired`/rejection states, backed entirely
-by `lib/arrive-by/founder-preview.ts`, a thin presentation layer over the unmodified Stage 1 engine
-(route/timezone/config/engine files untouched). No analytics event, no network call, no
-`localStorage` — every plan is computed in the browser from the six-route closed set and discarded
-on navigation. Access, indexing and public-surface protection mirror `/founder` and the Journey
-Brief preview exactly (see the Status line above). This is a product-evaluation tool for the
-founder, not Stage 3's public interface — see §17 for what that would still need.
+by `lib/arrive-by/founder-preview.ts`, a thin presentation layer over the Stage 1 engine. No
+analytics event, no network call, no `localStorage` — every plan is computed in the browser from the
+six-route closed set and discarded on navigation. Access, indexing and public-surface protection
+mirror `/founder` and the Journey Brief preview exactly (see the Status line above). This is a
+product-evaluation tool for the founder, not Stage 3's public interface — see §17 for what that
+would still need.
 
-**Stage 1 defect discovered while building this (reported, not silently patched):**
-`ArriveByPlan.indicativeUkDepartureWindow.earliest`/`.latest` are named backwards relative to real
-chronological order — `.earliest` is computed from the shorter duration bound (closer to the fixed
-landing time, so a *later* clock time) and `.latest` from the longer bound (further from landing, so
-an *earlier* clock time). Because every duration range in `config.ts` has min < max, `.earliest` is
-chronologically after `.latest` for every request, not an edge case — confirmed directly against
-real engine output for both a direct (Lahore) and connecting (Dhaka) example. `lib/arrive-by/engine.ts`
-and `types.ts` are untouched; the founder preview works around it for display only via
-`chronologicalDepartureWindow()` in `founder-preview.ts` (tests: "DISCOVERED STAGE 1 DEFECT" in
-`tests/arrive-by-founder-preview.test.ts`). Renaming the two fields directly in Stage 1 — the
-obviously correct real fix — is left for the founder to approve and schedule, not bundled into this
-PR silently.
+**Stage 1 defect discovered while building this — fixed at the source.** Building the founder
+preview surfaced that `ArriveByPlan.indicativeUkDepartureWindow.earliest`/`.latest` were named
+backwards relative to real chronological order: `.earliest` was computed from the shorter duration
+bound (closer to the fixed landing time, so a *later* clock time) and `.latest` from the longer bound
+(further from landing, so an *earlier* clock time). Because every duration range in `config.ts` has
+min < max, `.earliest` was chronologically after `.latest` for every request, not an edge case —
+confirmed directly against real engine output for both a direct (Lahore) and connecting (Dhaka)
+example before the fix.
+
+The correction was made directly in `lib/arrive-by/engine.ts` (§7): the two candidate departure
+instants are now named by their real chronological meaning
+(`earliestSensibleDepartureUtc`/`latestSensibleDepartureUtc`) rather than by which duration bound
+produced them, and assigned to the matching `earliest`/`latest` window field. No other engine
+arithmetic changed — `recommendedLatestLandingLocal`, `recommendedOriginAirportArrivalLocal`,
+`departureTiming`, `assumptionsUsed`, `routeWarning`, `planningWarnings`, `confidence` and every
+rejection/verification-required path are byte-for-byte the same as before; only which value populates
+`.earliest` vs `.latest` changed, and every one of Stage 1's original 30 tests still passes unchanged
+against the corrected engine. `tests/arrive-by-engine.test.ts`'s "req 30" block adds direct regression
+coverage — `earliest <= latest` proven for all six supported routes, across strict/flexible
+deadlines, both baggage types, both Dhaka connection-risk preferences, a UK-calendar-date rollover,
+timezone conversion on different dates, and both the before- and on/after-withdrawal states for
+Delhi and Mumbai.
+
+The founder preview's earlier display-only workaround (`chronologicalDepartureWindow()` in
+`founder-preview.ts`) has been removed — the UI now reads `indicativeUkDepartureWindow.earliest`/
+`.latest` directly and trusts the corrected contract, exactly as a future public interface would.
 
 ## 17. Stage 3 production-release checklist (not built in this PR)
 

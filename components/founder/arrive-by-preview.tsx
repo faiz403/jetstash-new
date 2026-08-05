@@ -7,7 +7,6 @@ import {
   DEPARTURE_TIMING_COPY,
   FOUNDER_PREVIEW_ROUTE_OPTIONS,
   JOURNEY_TYPE_COPY,
-  chronologicalDepartureWindow,
   describeUkCalendarShift,
   findFounderPreviewRoute,
   formatTimeZoneLabel,
@@ -285,14 +284,13 @@ function ArriveByOutcomeCard({ outcome }: { outcome: FounderPreviewOutcome }) {
   const plan = result;
   const isLimited = plan.confidence === 'limited';
   const ukShiftNote = describeUkCalendarShift(plan.requiredArrivalLocal);
-  // Stage 1's own indicativeUkDepartureWindow.earliest/.latest fields are
-  // named backwards relative to real chronological order (a discovered
-  // Stage 1 defect, reported rather than patched in engine.ts — see
-  // chronologicalDepartureWindow's own doc comment in
-  // lib/arrive-by/founder-preview.ts). Sorted here so the window always
-  // displays correctly regardless of which named field holds which instant.
-  const { earlier, later } = chronologicalDepartureWindow(plan.indicativeUkDepartureWindow);
-  const sameUkDate = earlier.dateIso === later.dateIso;
+  // indicativeUkDepartureWindow.earliest/.latest are consumed directly —
+  // the engine itself now guarantees earliest <= latest for every result
+  // (fixed at the source in lib/arrive-by/engine.ts; see
+  // docs/product/ARRIVE_BY_MVP.md §16), so no display-side re-sorting is
+  // needed or present anywhere in this file.
+  const { earliest, latest } = plan.indicativeUkDepartureWindow;
+  const sameUkDate = earliest.dateIso === latest.dateIso;
 
   return (
     <div role="status" aria-live="polite" className="rounded-md border border-ink-100 bg-white shadow-card">
@@ -310,16 +308,16 @@ function ArriveByOutcomeCard({ outcome }: { outcome: FounderPreviewOutcome }) {
         <h2 className="mt-3 font-display text-2xl leading-snug text-ink-900">
           {sameUkDate ? (
             <>
-              Aim to leave the UK between {earlier.timeHHmm} and {later.timeHHmm} on {formatZonedDate(earlier)}.
+              Aim to leave the UK between {earliest.timeHHmm} and {latest.timeHHmm} on {formatZonedDate(earliest)}.
             </>
           ) : (
             <>
-              Aim to leave the UK between {formatZonedDateTime(earlier)} and {formatZonedDateTime(later)}.
+              Aim to leave the UK between {formatZonedDateTime(earliest)} and {formatZonedDateTime(latest)}.
             </>
           )}
         </h2>
         <p className="mt-1 text-sm text-ink-500">
-          {formatZonedDateTime(earlier)} – {formatZonedDateTime(later)} (UK local time)
+          {formatZonedDateTime(earliest)} – {formatZonedDateTime(latest)} (UK local time)
         </p>
 
         <p className="mt-4 text-sm leading-relaxed text-ink-700">

@@ -153,30 +153,6 @@ export function formatTimeZoneLabel(timeZone: string): string {
 }
 
 /**
- * DISCOVERED STAGE 1 DEFECT (reported, not silently patched — see the Stage
- * 2 delivery report; `lib/arrive-by/engine.ts` itself is untouched):
- * `ArriveByPlan.indicativeUkDepartureWindow.earliest`/`.latest` are named
- * backwards relative to real chronological order. `.earliest` is computed
- * from the SHORTER duration bound (closer to the fixed landing time -> a
- * LATER clock time) and `.latest` from the LONGER bound (further from
- * landing -> an EARLIER clock time) — see engine.ts's own
- * `earliestDepartureUtc`/`indicativeDepartureUtc` and
- * docs/product/ARRIVE_BY_MVP.md §7 point 4, which documents exactly this
- * construction. Because the duration range's min is always less than its
- * max (DIRECT/CONNECTING_JOURNEY_DURATION_RANGE_HOURS in config.ts), `.earliest`
- * is chronologically AFTER `.latest` for every single request, not just an
- * edge case. This function re-sorts the pair by real UTC instant so the
- * founder preview never displays an "earliest" time later than the "latest"
- * time it's paired with — a Stage 2 presentation fix only; the underlying
- * field names in Stage 1's own type/engine are left exactly as they are.
- */
-export function chronologicalDepartureWindow(window: { earliest: ZonedDateTime; latest: ZonedDateTime }): { earlier: ZonedDateTime; later: ZonedDateTime } {
-  const earliestMs = new Date(window.earliest.utcIso).getTime();
-  const latestMs = new Date(window.latest.utcIso).getTime();
-  return earliestMs <= latestMs ? { earlier: window.earliest, later: window.latest } : { earlier: window.latest, later: window.earliest };
-}
-
-/**
  * When the destination-local calendar date differs from what that same
  * instant is, locally, in the UK — reads only `requiredArrivalLocal`, and
  * re-expresses it in Europe/London via Stage 1's own `toZonedDateTime`
