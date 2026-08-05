@@ -111,7 +111,7 @@ describe('Fare-observation completeness gating (TR-002) — Verified Check must 
 describe('Deal counts (TR-004) — a card with no tracked fare must not count as one', () => {
   it('counts exactly the deals with fully dated observations', () => {
     const trackedDeals = deals.filter((d) => hasTrackedFare(d, FIXED_TODAY));
-    expect(trackedDeals.map((d) => d.id)).toEqual(['man-lhe-economy', 'lhr-del-economy', 'bhx-atq-economy', 'umrah-package-jed', 'lhr-bom-economy']);
+    expect(trackedDeals.map((d) => d.id)).toEqual(['man-lhe-economy', 'lhr-del-economy', 'bhx-atq-economy', 'umrah-package-jed', 'umrah-package-extended', 'lhr-bom-economy']);
   });
 
   it('hasTrackedFare returns false for a deal whose airport-destination pair has no Route entry at all', () => {
@@ -293,7 +293,7 @@ describe('getDealDirectnessLabel (TR-009, final correction) — a deal/search ca
 
 describe('FARE-001 pilot — historic examples stay private; only fully dated, evidenced observations publish', () => {
   it('keeps historic observations and appends both editorial observation batches', () => {
-    expect(fareObservations).toHaveLength(29);
+    expect(fareObservations).toHaveLength(31);
   });
 
   it('keeps every historic observation incomplete and private', () => {
@@ -318,6 +318,8 @@ describe('FARE-001 pilot — historic examples stay private; only fully dated, e
       'obs-lhr-del-economy-20260804-8w-v1',
       'obs-bhx-atq-economy-20260804-8w-v1',
       'obs-lhr-jed-economy-20260804-8w-v1',
+      'obs-man-med-economy-20260805-8w-v1',
+      'obs-man-doh-economy-20260805-8w-v1',
     ]);
     expect(published).toEqual(expect.arrayContaining([
       expect.objectContaining({
@@ -363,6 +365,13 @@ describe('FARE-001 pilot — historic examples stay private; only fully dated, e
     for (const [id, routeSlug, price, source] of secondBatchEntries) {
       expect(published.find((o) => o.id === id)).toEqual(expect.objectContaining({ routeSlug, price, source, observedDate: '2026-08-04', observedVia: 'google-flights', currency: 'GBP', baggage: 'not stated; optional charges may apply', observationReason: 'routine-weekly', departureDate: '2026-09-29', returnDate: '2026-10-13' }));
     }
+    const tripComEntries = [
+      ['obs-man-med-economy-20260805-8w-v1', 'manchester-madinah', 473, 'Pegasus Airlines and AJet'],
+      ['obs-man-doh-economy-20260805-8w-v1', 'manchester-doha', 411, 'Pegasus Airlines'],
+    ] as const;
+    for (const [id, routeSlug, price, source] of tripComEntries) {
+      expect(published.find((o) => o.id === id)).toEqual(expect.objectContaining({ routeSlug, price, source, observedDate: '2026-08-05', observedVia: 'trip.com', currency: 'GBP', baggage: 'not stated', observationReason: 'routine-weekly', departureDate: '2026-09-30', returnDate: '2026-10-14' }));
+    }
   });
 
   it('derives a one-check £491 summary for London Heathrow–Mumbai, not an invented range', () => {
@@ -390,7 +399,7 @@ describe('FARE-001 pilot — historic examples stay private; only fully dated, e
     });
     expect(affectedDeals.length).toBeGreaterThan(0); // sanity: this set is non-empty
     for (const deal of affectedDeals) {
-      if (['lhr-bom-economy', 'man-lhe-economy', 'umrah-package-jed', 'lhr-del-economy', 'bhx-atq-economy'].includes(deal.id)) continue;
+      if (['lhr-bom-economy', 'man-lhe-economy', 'umrah-package-jed', 'lhr-del-economy', 'bhx-atq-economy', 'umrah-package-extended'].includes(deal.id)) continue;
       expect(hasTrackedFare(deal, FIXED_TODAY), deal.id).toBe(false);
     }
   });
