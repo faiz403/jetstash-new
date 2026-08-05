@@ -101,7 +101,7 @@ export default function BusinessClassPage() {
         <div className="mx-auto max-w-content px-5 sm:px-8">
           <h2 className="font-display text-2xl text-ink-900 sm:text-3xl">Direct routes with an example business class fare</h2>
           <p className="mt-2 max-w-xl text-sm text-ink-500">
-            Direct sectors are where business class makes the strongest case: no cabin change at a connection, no risk of an aircraft swap downgrading the seat. Prices below are illustrative examples, not live quotes.
+            Direct sectors are where business class makes the strongest case: no cabin change at a connection, and no connection where an aircraft swap could downgrade the seat. Prices below are illustrative examples, not live quotes.
           </p>
           <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {businessCapableRoutes.map((route) => {

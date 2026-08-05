@@ -165,10 +165,12 @@ lib/
 Route pages (five priority routes only — see `BOOK_BY_PRIORITY_ROUTE_SLUGS` in
 `lib/booking-intelligence.ts`) show a "When to book" panel: the next relevant festival/peak period,
 a book-by date derived from that route's own stated booking-window guidance (or, where none exists,
-the universal "fares rise sharply in the final 3–4 weeks" rule already stated in
-`data/peak-periods.ts`), a visual timeline, the latest logged fare for context, and a
-state-dependent CTA (book now / Route Watch / honest urgency). Never a live-price claim —
-see JETSTASH_PRINCIPLES.md §14 for the full product decision and §14.1 for the architecture.
+the site's editorial planning assumption that fares on peak-period routes often move in the final
+3–4 weeks), a visual timeline, the latest logged fare for context, and a state-dependent CTA
+(check live price / Route Watch / honest urgency). Conservative planning guidance, never a fare
+prediction and never a live-price claim — see JETSTASH_PRINCIPLES.md §14 for the full product
+decision, §14.1 for the architecture, and §14.5 for the August 2026 evidence-safety correction that
+removed unsupported certainty language ("expect a sharp jump" etc.) sitewide.
 
 The panel also carries a small readiness-verdict badge ("Ready to book" / "Not yet" / "Check before
 booking"...) — this is the customer-facing surface of `lib/travel-intelligence-engine.ts`, which

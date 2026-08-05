@@ -444,7 +444,7 @@ export default async function RoutePage({ params }: { params: Promise<{ slug: st
                   ))}
                 </div>
                 <p className="mt-4 text-xs text-ink-400">
-                  Fares on this route rise sharply within 3–4 weeks of these periods. Book ahead if your dates are fixed.
+                  Demand — and often price — tends to build in the final 3–4 weeks before these periods. Consider booking earlier if your dates are fixed. Planning guidance, not a fare prediction.
                 </p>
               </div>
             )}

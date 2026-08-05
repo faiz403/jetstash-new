@@ -158,14 +158,15 @@ describe('getBookByDateLabel / getBookByTopLabel (founder correction, Section 7)
     expect(label).not.toMatch(/began|closed/i);
   });
 
-  it('TR-001 regression, extracted to the pure function directly: a past surge-avoidance bookByDate is never labelled "Book by" — it reads "Sharp rise began"', () => {
+  it('TR-001 regression, extracted to the pure function directly: a past surge-avoidance bookByDate is never labelled "Book by" — it reads "Typical rise window began" (Truth Reset, August 2026: no longer "Sharp rise began" — see tests/book-by-evidence-safety.test.ts)', () => {
     const label = getBookByDateLabel({
       bookByDate: '2026-06-22',
       bookByBasis: 'surge-avoidance',
       computedForDate: '2026-07-12', // 20 days after bookByDate — the exact reported bug scenario
     });
-    expect(label).toBe('Sharp rise began 22 June 2026');
+    expect(label).toBe('Typical rise window began 22 June 2026');
     expect(label).not.toMatch(/^Book by/);
+    expect(label).not.toMatch(/sharp/i);
   });
 
   it('a past route-recommendation bookByDate reads "Recommended window closed", never "Book by"', () => {

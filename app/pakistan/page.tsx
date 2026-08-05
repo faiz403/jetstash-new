@@ -30,8 +30,8 @@ export default function PakistanHubPage() {
       visaNote="UK passport holders require a visa to enter Pakistan. The e-Visa system processes most tourist and family-visit applications within 7 days when applied for in advance. NICOP holders (Pakistan-origin UK nationals) typically do not require a separate visa. Confirm current requirements with NADRA or your nearest Pakistani consulate."
       practicalNotes={[
         {
-          title: 'Eid and wedding season push fares up sharply',
-          body: 'The weeks around Eid al-Fitr, Eid al-Adha and the UK summer holidays see the highest demand on Pakistan routes. Booking 2–3 months ahead of these windows typically holds the best fares.',
+          title: 'Eid and wedding season see the highest demand',
+          body: 'The weeks around Eid al-Fitr, Eid al-Adha and the UK summer holidays see the highest demand on Pakistan routes, and fares often move in the final weeks before them. Booking 2–3 months ahead gives you time to compare options before that rush — planning guidance, not a fare prediction.',
         },
         {
           title: 'Manchester is usually the most direct option in the north',

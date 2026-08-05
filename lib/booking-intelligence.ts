@@ -19,11 +19,16 @@ import { getLatestPublishableObservation } from '@/data/fare-observations';
  *    prose) — nothing is predicted.
  *  - Two advice tiers. Where a route has a stated 'recommended' window that
  *    applies to the upcoming event, the book-by date comes from it
- *    (basis 'route-recommendation'). Otherwise the only claim made is the
- *    one peak-periods.ts already states site-wide — fares rise sharply in
- *    the final 3–4 weeks — so the book-by date is simply the start of that
- *    surge zone (basis 'surge-avoidance') and no route-specific optimum is
- *    invented.
+ *    (basis 'route-recommendation'). Otherwise the fallback is a single
+ *    editorial planning assumption, stated as such — that fares on
+ *    peak-period routes often move in the final 3–4 weeks before travel —
+ *    so the book-by date is simply the start of that window (basis
+ *    'surge-avoidance') and no route-specific optimum is invented.
+ *  - Truth Reset (August 2026): this is conservative planning guidance, not
+ *    fare prediction. JetStash's own fare archive is not yet large enough to
+ *    prove a route-specific price curve, so no surface here claims to
+ *    forecast a fare rise for a specific route — see copy functions below
+ *    and JETSTASH_PRINCIPLES.md §14 for the standing rule.
  *  - Everything is a pure function of (routeSlug, now). Pages compute a
  *    build-time snapshot for static HTML/SEO; client components recompute
  *    with the visitor's real clock after mount, so a page built weeks ago
@@ -40,8 +45,10 @@ export const BOOK_BY_PRIORITY_ROUTE_SLUGS: readonly string[] = [
 ];
 
 /**
- * The universal surge boundary: peak-periods.ts states fares "rise sharply
- * within 3–4 weeks" of a peak period — this uses the outer (cautious) edge.
+ * The universal planning-window boundary: the site's editorial assumption
+ * that fares on peak-period routes often move within 3–4 weeks of the date —
+ * a general travel-demand pattern, not a per-route forecast. This uses the
+ * outer (cautious) edge.
  */
 export const SURGE_WEEKS = 4;
 
@@ -54,7 +61,7 @@ export type BookByState =
   | 'late'
   /** No route-specific recommendation exists; before the surge zone. */
   | 'pre-surge'
-  /** Inside the final ~4 weeks before the event, where fares typically rise sharply. */
+  /** Inside the final ~4 weeks before the event, when fares often move — planning guidance, not a forecast. */
   | 'surge'
   /** The event/period has started (and, for ranges, not yet ended). */
   | 'inside-period';
@@ -75,7 +82,7 @@ export interface BookBySnapshot {
   airportCity: string;
   destinationCity: string;
   event: BookByEvent;
-  /** ISO date the typical sharp-rise zone begins (event start − SURGE_WEEKS). */
+  /** ISO date the site's editorial planning window begins (event start − SURGE_WEEKS). */
   surgeStartDate: string;
   /** Present only when the route has a stated recommended window applying to this event. */
   recommendedWindow: {
@@ -297,7 +304,7 @@ export function getBookByDateLabel(snapshot: Pick<BookBySnapshot, 'bookByDate' |
   if (!hasPassed) return `Book by ${formatBookByDate(snapshot.bookByDate)}`;
   return snapshot.bookByBasis === 'route-recommendation'
     ? `Recommended window closed ${formatBookByDate(snapshot.bookByDate)}`
-    : `Sharp rise began ${formatBookByDate(snapshot.bookByDate)}`;
+    : `Typical rise window began ${formatBookByDate(snapshot.bookByDate)}`;
 }
 
 /**
@@ -339,11 +346,11 @@ export function bookByHeadline(s: BookBySnapshot): string {
     case 'window-open':
       return `Flying for ${event}? The recommended booking window is open now — book by ${bookBy}.`;
     case 'late':
-      return `Flying for ${event}? The recommended window (by ${bookBy}) has passed — book as soon as you can, before the final-weeks rise.`;
+      return `Flying for ${event}? The recommended window (by ${bookBy}) has passed — book as soon as you can, before fares often move further in the final weeks.`;
     case 'pre-surge':
-      return `Flying for ${event}? Aim to book before ${bookBy} — fares on peak-period routes typically rise sharply in the final 3–4 weeks.`;
+      return `Flying for ${event}? Aim to book before ${bookBy} — on peak-period routes like this, fares often start moving in the final 3–4 weeks.`;
     case 'surge':
-      return `${event} is close. Fares typically rise sharply in these final weeks — if you still need to travel, book as soon as possible.`;
+      return `${event} is close. Fares on peak-period routes often move in these final weeks — if you still need to travel, book as soon as possible.`;
     case 'inside-period':
       return `${event} is underway. If you still need to travel, book as soon as possible — this is typically the most expensive time to buy.`;
   }
@@ -358,8 +365,8 @@ export function buildBookByShareText(s: BookBySnapshot): string {
   const lines = [
     `Flying ${s.airportCity} to ${s.destinationCity} for ${s.event.periodLabel} (${formatEventDate(s.event)})?`,
     s.recommendedWindow
-      ? `JetStash's guidance: book by ${formatBookByDate(s.bookByDate)} — fares on this route typically jump in the final weeks before ${s.event.periodLabel}.`
-      : `JetStash's guidance: aim to book before ${formatBookByDate(s.bookByDate)} — fares typically rise sharply in the final 3–4 weeks.`,
+      ? `JetStash's guidance: book by ${formatBookByDate(s.bookByDate)} — fares on this route often move in the final weeks before ${s.event.periodLabel}. Planning guidance, not a fare prediction.`
+      : `JetStash's guidance: aim to book before ${formatBookByDate(s.bookByDate)} — fares on peak-period routes often move in the final 3–4 weeks. Planning guidance, not a fare prediction.`,
   ];
   return lines.join('\n');
 }
