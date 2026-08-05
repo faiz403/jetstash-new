@@ -37,20 +37,25 @@ describe('getVisibleFilters — real current production data', () => {
     expect(visibleValues).not.toContain('business');
   });
 
-  it('4. Flights, Umrah and All deals remain visible — each currently has at least one live deal', () => {
-    expect(visibleValues).toContain('all');
-    expect(visibleValues).toContain('flight');
-    expect(visibleValues).toContain('umrah');
-    expect(deals.some((d) => d.category === 'flight' && hasTrackedFare(d, NOW_ISO))).toBe(true);
-    expect(deals.some((d) => d.category === 'umrah' && hasTrackedFare(d, NOW_ISO))).toBe(true);
+  it('3. Umrah is hidden — its deals are bundled flight+hotel products, and a flight-only observation is never counted as evidence for one (product-integrity fix, August 2026)', () => {
+    const umrahDeals = deals.filter((d) => d.category === 'umrah');
+    expect(umrahDeals.length).toBeGreaterThan(0); // sanity: the category itself is not empty of deal objects
+    expect(umrahDeals.every((d) => !hasTrackedFare(d, NOW_ISO))).toBe(true);
+    expect(visibleValues).not.toContain('umrah');
   });
 
-  it('6. visible category order is unchanged — All, Flights, Umrah, in their original relative order', () => {
-    expect(visibleValues).toEqual(['all', 'flight', 'umrah']);
+  it('4. Flights and All deals remain visible — Flights currently has at least one live deal', () => {
+    expect(visibleValues).toContain('all');
+    expect(visibleValues).toContain('flight');
+    expect(deals.some((d) => d.category === 'flight' && hasTrackedFare(d, NOW_ISO))).toBe(true);
+  });
+
+  it('6. visible category order is unchanged — All, Flights, in their original relative order', () => {
+    expect(visibleValues).toEqual(['all', 'flight']);
   });
 
   it('9. no hidden category is present at all, so no "0" count can ever render for one', () => {
-    for (const value of ['package', 'business']) {
+    for (const value of ['package', 'business', 'umrah']) {
       expect(visible.find((f) => f.value === value)).toBeUndefined();
     }
   });
@@ -114,8 +119,11 @@ describe('getVisibleFilters — a category reappears automatically once populate
     const { getVisibleFilters: getVisibleFiltersWithMockedFare } = await import('@/components/sections/deals-explorer');
     const visibleAfter = getVisibleFiltersWithMockedFare(NOW_ISO).map((f) => f.value);
     expect(visibleAfter).toContain('business');
-    // Order preserved even with a newly-reappeared category — still All, Flights, Business class, Umrah.
-    expect(visibleAfter).toEqual(['all', 'flight', 'business', 'umrah']);
+    // Order preserved even with a newly-reappeared category — still All, Flights, Business class.
+    // Umrah stays hidden throughout: isBundledProductDeal short-circuits it
+    // before any route+cabin lookup, so mocking manchester-dubai/Business
+    // fare data has no effect on it.
+    expect(visibleAfter).toEqual(['all', 'flight', 'business']);
   });
 
   it('Packages stays hidden in that same simulated scenario — only the mocked route+cabin pair was affected, nothing else', async () => {

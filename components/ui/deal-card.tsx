@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Deal, DealCabin, formatChecked, getDealDirectnessLabel, getDealAirlineLabel } from '@/data/deals';
+import { Deal, DealCabin, formatChecked, getDealDirectnessLabel, getDealAirlineLabel, isBundledProductDeal } from '@/data/deals';
 import { getRouteByAirportAndDestination } from '@/data/routes';
 import { routeStatusEvents } from '@/data/route-status-events';
 import { getEffectiveRoutePresentation } from '@/lib/route-status-copy';
@@ -22,8 +22,11 @@ export function DealCard({ deal }: { deal: Deal }) {
   const matchedRoute = getRouteByAirportAndDestination(deal.fromAirportSlug, deal.toDestinationSlug);
   // The only source of truth for what this card shows as a price: a real
   // logged range/check, or nothing at all — never a hardcoded figure that
-  // can go stale. See data/deals.ts's header comment.
-  const range = matchedRoute ? getFareRangeSummary(matchedRoute.slug, deal.cabin, nowIso) : null;
+  // can go stale. See data/deals.ts's header comment. Never derived for a
+  // package/Umrah deal (isBundledProductDeal) — the archive logs flight-only
+  // fares, which are not evidence for a bundled product's price; see
+  // isBundledProductDeal's doc comment in data/deals.ts.
+  const range = matchedRoute && !isBundledProductDeal(deal) ? getFareRangeSummary(matchedRoute.slug, deal.cabin, nowIso) : null;
   // A duration belongs to a specific airport-to-destination route, never to
   // a destination in general. This presentation removes duration facts when
   // the route is unverified or the service has ended.

@@ -581,6 +581,21 @@ export function getDealsByCategory(category: DealCategory) {
 }
 
 /**
+ * A 'package' or 'umrah' deal sells a bundled flight+hotel (and often
+ * transfers) product, not a bare flight — its real price is structurally
+ * different from, and typically far higher than, a flight-only fare for the
+ * same route (see the historic obs-man-med-economy-1 / obs-lhr-jed-economy-1
+ * package-price entries in data/fare-observations.ts, both £700+ above the
+ * routes' logged flight-only fares). The archive currently has no field
+ * distinguishing a package-price observation from a flight-only one, so a
+ * route-level match alone isn't enough to say an observation is evidence for
+ * a bundled deal's price — see isBundledProductDeal below.
+ */
+export function isBundledProductDeal(deal: Pick<Deal, 'category'>): boolean {
+  return deal.category === 'package' || deal.category === 'umrah';
+}
+
+/**
  * Truth Reset (July 2026): whether this deal currently has a genuinely
  * publishable checked fare behind it (see getFareRangeSummary /
  * isPubliclyPublishable in data/fare-observations.ts) — never assume it does
@@ -591,8 +606,15 @@ export function getDealsByCategory(category: DealCategory) {
  * getFareRangeSummary) — a route that's currently 'unverified'/pending
  * never counts as having a tracked fare, even if a date-complete
  * observation exists for it.
+ *
+ * Also gated on isBundledProductDeal (product-integrity fix, August 2026):
+ * a package/Umrah deal must never be counted as tracked from a flight-only
+ * observation — see that function's doc comment. This is a distinct claim
+ * from route directness/evidence; a bundled deal has no tracked fare until
+ * the archive can log a matching package-price observation for it.
  */
 export function hasTrackedFare(deal: Deal, nowIso: string): boolean {
+  if (isBundledProductDeal(deal)) return false;
   const route = getRouteByAirportAndDestination(deal.fromAirportSlug, deal.toDestinationSlug);
   if (!route) return false;
   return getFareRangeSummary(route.slug, deal.cabin, nowIso) !== null;
