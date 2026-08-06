@@ -152,6 +152,68 @@ The first archive batch should therefore cover, in order:
 Then add Heathrow → Mumbai, Manchester → Dubai, Heathrow → Doha and Birmingham → Mumbai when their
 route evidence and search context are ready. This is an operating queue, not a popularity claim.
 
+## Founder action required: Manchester–Dubai's first publishable observation (Route Completion Batch 1, August 2026)
+
+Manchester–Dubai's route evidence and search context are now ready — this section is the exact,
+ready-to-execute check. Manchester–Dubai's route was audited as part of Route Completion Batch 1
+(`docs/project-control/ROUTE_COVERAGE_AUDIT.md`) and found to have **zero** publicly-publishable
+fare observations: two entries exist in this file (`obs-man-dxb-economy-1`,
+`obs-man-dxb-business-1`, both from 16/12 June 2026) but predate the Truth Reset's
+`departureDate`/`returnDate` requirement, so neither counts as evidence today.
+
+**This is squarely a manual step this environment could not perform** — the archive's own binding
+rule above ("Automated browser polling, price scraping, API harvesting... are not part of this
+archive") rules out an automated check even where the tooling exists to attempt one, and no
+existing observation can be safely re-dated instead (that would misrepresent when the fare was
+actually seen). A founder (or editor with real browser access) needs to log one real, dated check:
+
+- **Route:** `manchester-dubai` (Manchester → Dubai, Emirates)
+- **Profile:** baseline — one adult, return Economy, GBP, 14-night stay
+- **`profileId`:** `manchester-dubai-economy-1adult-baseline-v1`
+- **Departure date:** roughly 8 weeks after the day you actually check (the archive's fixed
+  horizon — see "Observation methodology" above)
+- **Return date:** 14 nights after the departure date searched
+- **Where to check:** Google Flights, Trip.com, or Emirates' own booking page — record whichever
+  was actually used as `observedVia`
+- **`observationReason`:** `routine-weekly` (this is the route's first entry, starting a new series)
+- Record `observedDate` as the real date you checked, `source` as the airline/provider the result
+  names, `currency: 'GBP'`, `baggage` as shown (or `not stated`), and `sourceUrl` where the search
+  can be safely retained.
+
+**Once this single observation is logged, a compliant fare observation would satisfy the current
+Atlas threshold for Manchester–Dubai, subject to a final content-depth review — not an automatic
+promotion.** It already has one genuine depth category (baggage guidance, added in the same batch
+— see `data/traveller-tips.ts`'s `manchester-dubai-emirates-baggage-weight` entry), and a
+publishable fare observation would be its second, clearing `computeRouteIntelligenceLevel()`'s
+two-category bar on the code side. A product-truth review (August 2026) found the rendered route
+page still doesn't show the underlying verification source or date anywhere — see
+`ROUTE_COVERAGE_AUDIT.md`'s "Does 'baggage + fare' genuinely justify 'JetStash knows this route
+well'?" for the full finding — so whoever logs this observation should read the resulting page
+critically rather than treat the two-category bar as the final word. Do not add this observation
+from memory or estimate — if the check can't be done for real, leave this section as the standing
+to-do rather than filling it with an invented number.
+
+## Manchester–Doha: do not close its gap artificially
+
+Manchester–Doha already has one publishable fare observation (`obs-man-doh-economy-20260805-8w-v1`,
+checked 5 August 2026) but stays graded Useful — it needs exactly one more genuine depth category,
+and Route Completion Batch 1 (August 2026) confirmed every avenue it could research is exhausted
+(Qatar Airways' own baggage page returned HTTP 403 on every attempt; Manchester Airport's own Qatar
+Airways page explicitly has no baggage figure). Whoever picks this up next must not close the gap
+by gaming the score:
+
+- **Do not add Manchester–Doha to `BOOK_BY_PRIORITY_ROUTE_SLUGS`** unless it is genuinely
+  editorially justified — because the route fits the festival-anchored, dated booking-guidance
+  pattern that list exists for — never merely to hand it a second scoring category.
+- **Do not log a fare observation from memory, an estimate, or a stale search result** to appear
+  as if a fresh check happened — the same standard as the Dubai check above.
+- **Do not add a warning, a duplicate airline verification record, or a baggage claim that isn't
+  backed by a real, checkable source** — see `ROUTE_COVERAGE_AUDIT.md`'s "Protecting the Doha
+  decision" for the full reasoning, including why even unrestricted human access to Qatar Airways'
+  own baggage page will likely only surface a general, ticket-type-dependent policy statement, not
+  a fact unique to this city pair — genuinely addable, on the same standard as Dubai's own baggage
+  tip, but not something to assume will complete the route.
+
 ## Review standard
 
 Before a record can influence a public fare range or Book-By context:
