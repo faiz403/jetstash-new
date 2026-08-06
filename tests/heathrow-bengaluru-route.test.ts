@@ -263,16 +263,16 @@ describe('DEST-001 — Interactive Route Atlas integration', () => {
     expect(bengaluru!.routeHref).toBe('/routes/london-heathrow-bengaluru');
   });
 
-  it('Bengaluru\'s Atlas evidenceState matches Delhi\'s and Mumbai\'s exactly — all three read "pending" because buildDestinationPoint() only checks the route-level `verification` field, not per-airline `airlineVerifications`. This is a pre-existing gap in lib/atlas-network-data.ts affecting every airlineVerifications-only route already live in production (Delhi, Mumbai) — not a regression introduced by adding Bengaluru, and out of scope for this route addition to fix on its own', () => {
+  it('Route Coverage Truth fix (August 2026): Bengaluru\'s Atlas intelligenceLevel now matches Delhi\'s and Mumbai\'s exactly — all three read "strong" because computeRouteIntelligenceLevel() routes through getDisplayDirectness(), which checks per-airline `airlineVerifications` as well as the route-level `verification` field. This closes the pre-existing gap this test used to document (buildDestinationPoint() previously only checked route-level verification, quietly under-stating all three routes as "pending" despite each having a current, primary-sourced airline verification) — not a regression, a fix, and not special-cased to any one of the three routes.', () => {
     const airports = buildAtlasAirports();
     const heathrow = airports.find((a) => a.airportSlug === 'london-heathrow')!;
     const india = heathrow.countries.find((c) => c.slug === 'india')!;
     const bengaluru = india.destinations.find((d) => d.slug === 'bengaluru')!;
     const delhi = india.destinations.find((d) => d.slug === 'delhi')!;
     const mumbai = india.destinations.find((d) => d.slug === 'mumbai')!;
-    expect(bengaluru.evidenceState).toBe(delhi.evidenceState);
-    expect(bengaluru.evidenceState).toBe(mumbai.evidenceState);
-    expect(bengaluru.evidenceState).toBe('pending');
+    expect(bengaluru.intelligenceLevel).toBe(delhi.intelligenceLevel);
+    expect(bengaluru.intelligenceLevel).toBe(mumbai.intelligenceLevel);
+    expect(bengaluru.intelligenceLevel).toBe('strong');
   });
 
   it('the existing Heathrow India points (Delhi, Mumbai) are still present alongside Bengaluru', () => {

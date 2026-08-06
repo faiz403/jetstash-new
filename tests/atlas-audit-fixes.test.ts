@@ -82,12 +82,12 @@ describe('A. Manchester default route — stability', () => {
     expect(indiaBlock).toContain("buildDestinationPoint('manchester', 'mumbai', 690, 414)");
   });
 
-  it('3. Mumbai\'s honest withdrawal-status derivation logic is untouched', () => {
+  it('3. Mumbai\'s honest withdrawal-status derivation logic is preserved (Route Coverage Truth, August 2026: now an additive serviceNotice, kept deliberately separate from intelligenceLevel rather than overriding it — see computeRouteIntelligenceLevel\'s own doc comment)', () => {
     // buildDestinationPoint (the function that actually derives Mumbai's
     // withdrawal-announced state from route-status-events.ts) lives outside
-    // buildManchesterNetwork and was not touched by this PR at all.
+    // buildManchesterNetwork.
     expect(networkDataSrc).toContain("if (status?.status === 'withdrawal-announced') {");
-    expect(networkDataSrc).toContain('evidenceState = \'withdrawal-announced\';');
+    expect(networkDataSrc).toContain('serviceNotice = {');
   });
 
   it('Manchester keeps every one of its 11 real routes.ts destinations — none removed to make room for the new default', () => {
@@ -199,9 +199,9 @@ describe('B. Duplicate keyboard-accessible controls — destination markers', ()
     expect(destCircleSrc).toContain('focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#C8932E]');
   });
 
-  it('14. the destination hit-circle keeps its meaningful accessible name, including the seasonal-service suffix where relevant', () => {
+  it('14. the destination hit-circle keeps its meaningful accessible name, including the active-notice and seasonal-service suffixes where relevant (Route Coverage Truth, August 2026: label now reads from ROUTE_INTELLIGENCE_COLOUR/intelligenceLevel, plus a new active-service-notice suffix, kept separate from the tier itself)', () => {
     expect(destCircleSrc).toContain(
-      "aria-label={`${d.label} — ${DESTINATION_COLOUR[d.evidenceState].label}${d.networkMembership === 'seasonal' ? ' — seasonal service' : ''}`}"
+      "aria-label={`${d.label} — ${ROUTE_INTELLIGENCE_COLOUR[d.intelligenceLevel].label}${d.serviceNotice ? ' — active service notice' : ''}${d.networkMembership === 'seasonal' ? ' — seasonal service' : ''}`}"
     );
   });
 

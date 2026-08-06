@@ -920,3 +920,67 @@ flight-finding surface.** Concretely:
 - **Never link the homepage to `/founder/*` routes** — they 404 in production (this bug shipped
   once, via the reveal CTA and closing band both pointing at the founder-gated Journey Brief
   prototype; both now point at `/routes/manchester-mumbai` / the hero handover instead).
+
+## 15. Route Coverage Truth — the Atlas's honest status system (decision record, August 2026)
+
+**JetStash must never appear more complete than the intelligence it genuinely holds.** An
+independent audit found the live Route Atlas (`components/founder/atlas-feel-test.tsx` —
+despite its folder name, this is the actual public Atlas embedded on the homepage via
+`JourneyDeskHome`, not a founder-only prototype) let one verified destination make an entire
+country read "strong," and offered no honest middle state between "verified" and "not yet
+researched." The fix, and the full 32-route audit it's grounded in, live in
+`docs/project-control/ROUTE_COVERAGE_AUDIT.md` — this section records the standing architecture
+so future work builds on it correctly.
+
+**Three-level, honestly-derived route status — never a manual override.**
+`computeRouteIntelligenceLevel()` in `lib/atlas-network-data.ts` is the single place a route's
+`'strong' | 'useful' | 'expanding'` status is computed, from real fields only: current
+direct/connecting verification (`getDisplayDirectness()`, which correctly checks both
+route-level `verification` and per-airline `airlineVerifications`), plus at least one genuine
+depth signal — a publishable fare observation, a `connectingAlternative` block, per-airline
+verification detail, Book-By priority, or a specific, sourced, investigated active warning — for
+the top tier. Customer-facing labels: *"JetStash knows this route well"* / *"Useful route
+guidance available"* / *"Intelligence still being expanded"*. No Atlas destination ever renders
+blank: a destination either has a real `data/routes.ts` entry (graded strong/useful above) or it
+falls back to `'expanding'` with a real, non-empty verdict — there is no third, unhandled path.
+
+**Deliberately not the same thing as the rejected `factsConfidence` field** `data/routes.ts`
+documents removing (~line 974): that field collapsed a route's *whole fact bundle* into one
+"verified" label, which was false whenever frequency or a specific airline wasn't independently
+confirmed. This status answers a narrower, honestly-answerable question — how much depth of
+*guidance* exists — and never claims individual facts are more confirmed than they are.
+
+**An active service notice (withdrawal/service-change) is a separate, additive signal, never a
+downgrade.** A well-researched route (a full Route Status ledger entry, dated citations, an
+explained effective date — Manchester–Delhi and Manchester–Mumbai today) doesn't become less
+well-researched because its service is changing; that's a different fact, shown as its own
+labelled callout (`DestinationPoint.serviceNotice`) and aria-label suffix, never by silently
+demoting the route's tier. Founder decision, confirmed explicitly during this phase: keep the
+two concepts separate rather than letting a warning pull a route's grade down.
+
+**Country-level aggregation is conservative, not optimistic.** `aggregateCountryIntelligence()`
+requires *every* destination in a country to be `'strong'` before the country reads "strong" —
+one strong destination alongside weaker siblings now produces `'mixed'` ("Coverage is mixed —
+some routes are more developed than others"), never the top label. This was the exact bug the
+audit found: the previous `.some(evidenceState === 'verified')` rule let a single verified city
+carry an entire country.
+
+**The audit itself is generated from the same function the product calls, not authored
+separately** — `docs/project-control/ROUTE_COVERAGE_AUDIT.md`'s slug-indexed table and
+`tests/atlas-route-status.test.ts` both call `computeRouteIntelligenceLevel()` directly, so the
+document and the live Atlas cannot silently drift apart. Re-run the audit's generation whenever a
+route's underlying facts change materially (a new fare observation, a route newly verified, a
+new warning) — the test suite will fail loudly if the document goes stale first.
+
+**Fare-tracking coverage must state its real scope, not just a raw count.** `/deals`'s hero now
+opens with a live-computed sentence — "We're currently tracking fares on N of our 32 routes" —
+computed from `routes.length` and `getPublishableObservationsByRoute()` at render time, never a
+hand-typed figure that could drift. This followed the same audit finding that the page's previous
+copy (a raw count of fare *checks* logged, with no route denominator) could read as broader
+network coverage than the 8-of-32 reality.
+
+**What Phase 1 (this phase) deliberately did not do:** complete any route's missing intelligence,
+add a new fare observation, add a new route, or change which country/route the Atlas defaults to
+or gives Book-By priority — those are product decisions and follow-up data work, not truth fixes.
+See the audit document's own "Recommended route-completion batches" for what a Phase 2 would
+involve.

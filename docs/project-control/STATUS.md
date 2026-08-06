@@ -77,6 +77,25 @@ analytics/conversion events are verified in the real dashboard.
   `JETSTASH_PRINCIPLES.md` §14.5 for the full correction and what remains for a follow-up sweep
   (non-QA routes carrying the same softer claim family), and `tests/book-by-evidence-safety.test.ts`
   for the regression coverage.
+- Route Coverage Truth Phase 1 (6 August 2026): an independent audit found the live Route Atlas
+  (`components/founder/atlas-feel-test.tsx`, embedded on the homepage via `JourneyDeskHome`) let
+  one verified destination make an entire country read "strong," with no honest middle state
+  between "verified" and "not yet researched." Fixed: every Atlas route now shows one of three
+  honestly-derived, non-blank statuses ("JetStash knows this route well" / "Useful route guidance
+  available" / "Intelligence still being expanded"), computed from real fields
+  (`computeRouteIntelligenceLevel()` in `lib/atlas-network-data.ts`) rather than a manual
+  override; country aggregation is now conservative (one strong destination can no longer carry a
+  whole country); an active withdrawal/service-change notice is a separate, additive signal that
+  never demotes a route's tier. A full, evidence-based 32-route completeness audit — including a
+  known gap this phase surfaced but did not fix (Manchester–Dubai, the Atlas's own default landing
+  route, has zero *publicly displayable* fare evidence) — lives in
+  `docs/project-control/ROUTE_COVERAGE_AUDIT.md`. `/deals`'s hero now states the real,
+  live-computed fare-tracking scope (8 of 32 routes) instead of implying broader coverage. See
+  `JETSTASH_PRINCIPLES.md` §15 for the standing architecture and `tests/atlas-route-status.test.ts`
+  for the regression coverage, which keeps the audit document and the live code from drifting
+  apart. This phase deliberately did not complete any route's missing intelligence, add a fare
+  observation, or touch Arrive By, Book By's own logic, Trip.com links or affiliate behaviour —
+  see the audit's "Recommended route-completion batches" for what a Phase 2 would involve.
 - Product-integrity fix (5 August 2026): `data/deals.ts`'s `hasTrackedFare` now gates on
   `isBundledProductDeal` — a package/Umrah-category deal (bundled flight+hotel) no longer counts a
   flight-only fare observation as evidence for its own price. Found while adding the Madinah
