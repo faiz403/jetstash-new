@@ -932,17 +932,36 @@ researched." The fix, and the full 32-route audit it's grounded in, live in
 `docs/project-control/ROUTE_COVERAGE_AUDIT.md` — this section records the standing architecture
 so future work builds on it correctly.
 
-**Three-level, honestly-derived route status — never a manual override.**
+**Three-level, honestly-derived route status — never a manual override, and BREADTH not presence.**
 `computeRouteIntelligenceLevel()` in `lib/atlas-network-data.ts` is the single place a route's
 `'strong' | 'useful' | 'expanding'` status is computed, from real fields only: current
 direct/connecting verification (`getDisplayDirectness()`, which correctly checks both
-route-level `verification` and per-airline `airlineVerifications`), plus at least one genuine
-depth signal — a publishable fare observation, a `connectingAlternative` block, per-airline
-verification detail, Book-By priority, or a specific, sourced, investigated active warning — for
-the top tier. Customer-facing labels: *"JetStash knows this route well"* / *"Useful route
-guidance available"* / *"Intelligence still being expanded"*. No Atlas destination ever renders
-blank: a destination either has a real `data/routes.ts` entry (graded strong/useful above) or it
-falls back to `'expanding'` with a real, non-empty verdict — there is no third, unhandled path.
+route-level `verification` and per-airline `airlineVerifications`), plus **at least two** of six
+independently-gated depth categories — per-airline verification detail, a `connectingAlternative`
+block, a publishable fare observation, Book-By priority, a specific/sourced/investigated active
+warning, or dedicated baggage guidance — for the top tier. Customer-facing labels: *"JetStash
+knows this route well"* / *"Useful route guidance available"* / *"Intelligence still being
+expanded"*. No Atlas destination ever renders blank: a destination either has a real
+`data/routes.ts` entry (graded strong/useful above) or it falls back to `'expanding'` with a real,
+non-empty verdict — there is no third, unhandled path.
+
+**The threshold is "two or more categories," not "any one" — corrected same-day after a
+product-truth review.** The first version of this function required only one depth signal, which
+a review found let a route reach "JetStash knows this route well" on a single shallow signal (a
+lone `connectingAlternative` paragraph, a lone warning, or airline verification with nothing else
+behind it) — 7 of the original 16 "Strong" routes qualified this way when tested against the real
+32-route dataset. The corrected rule requires breadth: at least two of the six categories. A
+candidate seventh category — "the verification has an independently checkable source URL" — was
+tested against the real data and dropped, because every route-level `verified` record in the
+dataset already has one (14/14); it never actually differentiated anything and would only have
+inflated every verified route's score for free. Airport-specific transfer guidance was considered
+too but excluded from scoring (not from tracking — see §3.5 of the audit) because 0 of 32 routes
+currently have any; a required category nothing can pass isn't a meaningful bar. Trip.com hand-off
+is deliberately never scored at all — it's affiliate/commercial completeness, not evidence of
+route research, and several of the thinnest routes in the dataset have a Trip.com link purely
+because their departure airport has broad affiliate coverage. See
+`docs/project-control/ROUTE_COVERAGE_AUDIT.md`'s "Revision note" for the full before/after
+numbers.
 
 **Deliberately not the same thing as the rejected `factsConfidence` field** `data/routes.ts`
 documents removing (~line 974): that field collapsed a route's *whole fact bundle* into one

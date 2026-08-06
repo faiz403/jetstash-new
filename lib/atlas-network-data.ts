@@ -7,6 +7,7 @@ import { getNetworkEvidence } from '@/data/network-evidence';
 import { getPublishableObservationsByRoute } from '@/data/fare-observations';
 import { getActiveWarningsByRoute } from '@/data/route-warnings';
 import { isBookByRoute } from '@/lib/booking-intelligence';
+import { travellerTips } from '@/data/traveller-tips';
 import type { AirportNetworkData, CountryData, DestinationPoint, RouteIntelligenceLevel, CountryIntelligenceLevel } from '@/components/founder/atlas-feel-test';
 
 const nowIso = new Date().toISOString().slice(0, 10);
@@ -23,37 +24,75 @@ const nowIso = new Date().toISOString().slice(0, 10);
  * that field collapsed a route's WHOLE FACT BUNDLE into one "verified"
  * label, which was false the moment frequency or a specific airline wasn't
  * independently confirmed. This never claims that. It answers a narrower,
- * honestly-answerable question — does real depth of GUIDANCE exist beyond
- * the baseline route page — using only fields that already exist and are
- * already independently gated (getDisplayDirectness, connectingAlternative,
- * airlineVerifications, publishable fare observations, Book-By priority,
- * active investigated warnings). Nothing here invents a number or overrides
- * a route's own facts to look better.
+ * honestly-answerable question — does real, BROAD depth of guidance exist
+ * beyond the baseline route page — using only fields that already exist and
+ * are already independently gated.
  *
- * Bug fix folded in here: the old evidenceState only ever checked
- * route.verification (route-level), never route.airlineVerifications
- * (per-airline). That's a known, previously-documented gap (see the git
- * history around tests/heathrow-bengaluru-route.test.ts) that quietly
- * under-stated Heathrow-Delhi, Heathrow-Mumbai and Heathrow-Bengaluru as
- * "pending" despite each having a current, primary-sourced airline
- * verification. getDisplayDirectness() already correctly checks both, so
- * routing through it here fixes that leak generically rather than
- * special-casing three routes.
+ * Corrected (August 2026, product-truth review of the first version of this
+ * function): the original threshold required only ONE depth signal, which
+ * let a route reach "JetStash knows this route well" on the strength of a
+ * single connecting-alternative paragraph or a single reduced-frequency
+ * warning, with nothing else behind it. Tested against the real 32-route
+ * dataset, that let 7 of 16 "Strong" routes qualify on exactly one signal
+ * (Manchester-Amritsar/Ahmedabad on connectingAlternative alone; Leeds
+ * Bradford-Islamabad and both Gatwick routes on a warning alone;
+ * Heathrow-Bengaluru on airline verification alone) — thinner than the
+ * customer-facing wording defensibly implies. The fix requires BREADTH: at
+ * least two of the six categories below, not any single one. A prior
+ * candidate category ("has an independently checkable source URL") was
+ * tested against the real data and dropped — every route-level `verified`
+ * record in this dataset already carries a sourceUrl (14/14), so it never
+ * actually differentiated anything; it would have inflated every verified
+ * route's score by exactly one point without adding real signal. Airport
+ * -specific transfer guidance was considered too, but 0 of 32 routes
+ * currently have any (data/traveller-tips.ts has no airport-scoped entry
+ * yet) — including it as a required or scored category today would be
+ * un-clearable by definition, not a meaningful bar; it's tracked in the
+ * audit doc instead and should be added here once at least one route earns
+ * one. Trip.com hand-off is deliberately excluded from scoring too — it's
+ * commercial/affiliate completeness (which UK airports Trip.com covers),
+ * not evidence JetStash has researched the route, and several of the
+ * thinnest routes in the dataset (Manchester-Amritsar/Ahmedabad) have a
+ * Trip.com link purely because Manchester has broad affiliate coverage.
+ *
+ * Bug fix folded in here (unchanged from the first version): the old
+ * evidenceState only ever checked route.verification (route-level), never
+ * route.airlineVerifications (per-airline). That's a known, previously
+ * -documented gap (see the git history around
+ * tests/heathrow-bengaluru-route.test.ts) that quietly under-stated
+ * Heathrow-Delhi, Heathrow-Mumbai and Heathrow-Bengaluru as "pending"
+ * despite each having a current, primary-sourced airline verification.
+ * getDisplayDirectness() already correctly checks both, so routing through
+ * it here fixes that leak generically rather than special-casing three
+ * routes.
  */
 export function computeRouteIntelligenceLevel(route: NonNullable<ReturnType<typeof getRouteBySlug>>, nowIsoDate: string): RouteIntelligenceLevel {
   const directness = getDisplayDirectness(route, nowIsoDate);
   if (directness === 'unverified') return 'useful';
-  const hasFareDepth = getPublishableObservationsByRoute(route.slug, nowIsoDate).length > 0;
-  const hasConnectingDepth = Boolean(route.connectingAlternative);
-  const hasAirlineDepth = Boolean(route.airlineVerifications && route.airlineVerifications.length > 0);
-  const hasBookByDepth = isBookByRoute(route.slug);
+
+  // Six independently-gated depth categories. Each answers a genuinely
+  // different question about how much JetStash has actually researched
+  // this specific route — none is inferred from another, and none can be
+  // satisfied by rewording prose.
+  const hasAirlineDepth = Boolean(route.airlineVerifications && route.airlineVerifications.length > 0); // per-carrier breakdown, not just one route-level claim
+  const hasConnectingDepth = Boolean(route.connectingAlternative); // real hub/stops/journey-time detail
+  const hasFareDepth = getPublishableObservationsByRoute(route.slug, nowIsoDate).length > 0; // dated, publishable fare evidence
+  const hasBookByDepth = isBookByRoute(route.slug); // dated, festival-anchored booking-timing guidance, not just generic prose
   // A specific, sourced, investigated warning (e.g. Leeds Bradford's
   // repeatedly-failed direct-service claims) is itself real research, not
   // an absence of it — never the vague "0 warnings means nothing to say"
   // reading.
   const hasWarningDepth = getActiveWarningsByRoute(route.slug).length > 0;
-  const hasDepthSignal = hasFareDepth || hasConnectingDepth || hasAirlineDepth || hasBookByDepth || hasWarningDepth;
-  return hasDepthSignal ? 'strong' : 'useful';
+  const hasBaggageDepth = travellerTips.some(
+    (t) => t.category === 'baggage' && (t.scope.routeSlug === route.slug || t.scope.destinationSlug === route.destinationSlug)
+  );
+
+  const depthCategoryCount = [hasAirlineDepth, hasConnectingDepth, hasFareDepth, hasBookByDepth, hasWarningDepth, hasBaggageDepth].filter(Boolean).length;
+
+  // Breadth, not presence: one deep, well-sourced category is real
+  // research, but "JetStash knows this route well" needs more than one
+  // kind of depth behind it.
+  return depthCategoryCount >= 2 ? 'strong' : 'useful';
 }
 
 function buildDestinationPoint(airportSlug: string, destSlug: string, x: number, y: number): DestinationPoint | null {

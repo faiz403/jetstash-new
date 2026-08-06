@@ -5,6 +5,7 @@ import { routes, getRouteBySlug, getDisplayDirectness, getRouteDestination } fro
 import { getPublishableObservationsByRoute } from '@/data/fare-observations';
 import { getActiveWarningsByRoute } from '@/data/route-warnings';
 import { isBookByRoute } from '@/lib/booking-intelligence';
+import { travellerTips } from '@/data/traveller-tips';
 import { buildAtlasAirports, computeRouteIntelligenceLevel, aggregateCountryIntelligence } from '@/lib/atlas-network-data';
 import type { DestinationPoint, RouteIntelligenceLevel, CountryIntelligenceLevel } from '@/components/founder/atlas-feel-test';
 
@@ -39,6 +40,21 @@ function fixtureDest(overrides: Partial<DestinationPoint>): DestinationPoint {
 
 const atlasSrc = readFileSync(join(process.cwd(), 'components/founder/atlas-feel-test.tsx'), 'utf8');
 
+/** Mirrors computeRouteIntelligenceLevel()'s six depth categories for test assertions — kept separate from the production function so a test can't accidentally pass by testing itself. */
+function depthCategories(route: (typeof routes)[number]) {
+  return {
+    hasFare: getPublishableObservationsByRoute(route.slug, NOW_ISO).length > 0,
+    hasConnAlt: Boolean(route.connectingAlternative),
+    hasAirlineVerif: Boolean(route.airlineVerifications?.length),
+    hasBookBy: isBookByRoute(route.slug),
+    hasWarning: getActiveWarningsByRoute(route.slug).length > 0,
+    hasBaggage: travellerTips.some((t) => t.category === 'baggage' && (t.scope.routeSlug === route.slug || t.scope.destinationSlug === route.destinationSlug)),
+  };
+}
+function depthCategoryCount(route: (typeof routes)[number]) {
+  return Object.values(depthCategories(route)).filter(Boolean).length;
+}
+
 describe('Every Atlas destination receives exactly one valid, non-blank route status', () => {
   const airports = buildAtlasAirports();
   const allDestinations = airports.flatMap((a) => a.countries.flatMap((c) => c.destinations));
@@ -70,18 +86,41 @@ describe('Every Atlas destination receives exactly one valid, non-blank route st
   });
 });
 
-describe('Strongest ("strong") route status requires real, defined depth evidence — never a manual flattering override', () => {
-  it('every route currently graded "strong" genuinely has at least one depth signal: a publishable fare observation, connectingAlternative, per-airline verification, Book-By priority, or an active investigated warning', () => {
+describe('Strongest ("strong") route status requires BROAD depth evidence — at least two independent categories, never one signal alone', () => {
+  it('every route currently graded "strong" genuinely has at least TWO of the six depth categories: a publishable fare observation, connectingAlternative, per-airline verification, Book-By priority, an active investigated warning, or dedicated baggage guidance', () => {
     for (const route of routes) {
       const level = computeRouteIntelligenceLevel(route, NOW_ISO);
       if (level !== 'strong') continue;
-      const hasFare = getPublishableObservationsByRoute(route.slug, NOW_ISO).length > 0;
-      const hasConnAlt = Boolean(route.connectingAlternative);
-      const hasAirlineVerif = Boolean(route.airlineVerifications?.length);
-      const hasBookBy = isBookByRoute(route.slug);
-      const hasWarning = getActiveWarningsByRoute(route.slug).length > 0;
-      expect(hasFare || hasConnAlt || hasAirlineVerif || hasBookBy || hasWarning, route.slug).toBe(true);
+      expect(depthCategoryCount(route), route.slug).toBeGreaterThanOrEqual(2);
     }
+  });
+
+  it('a single depth category is NOT enough for "strong" — the exact defensibility gap a product-truth review found in the first version of this threshold (August 2026)', () => {
+    // Each of these genuinely has exactly one depth category and nothing
+    // else — current/verified, but thin. Regression-guards the specific
+    // routes the review flagged as wrongly "strong" under the old
+    // "any one signal" threshold.
+    const singleSignalRoutes = [
+      'manchester-amritsar', // connectingAlternative only
+      'manchester-ahmedabad', // connectingAlternative only
+      'leeds-bradford-islamabad', // warning only
+      'london-gatwick-ahmedabad', // warning only
+      'london-gatwick-amritsar', // warning only
+      'london-heathrow-bengaluru', // airline verification only
+      'manchester-doha', // fare only
+    ];
+    for (const slug of singleSignalRoutes) {
+      const route = getRouteBySlug(slug)!;
+      expect(depthCategoryCount(route), slug).toBe(1);
+      expect(computeRouteIntelligenceLevel(route, NOW_ISO), slug).toBe('useful');
+    }
+  });
+
+  it('a route with genuinely broad evidence (two or more independent categories) is graded "strong"', () => {
+    // Manchester–Lahore: fare + Book-By + baggage guidance (3 categories).
+    const route = getRouteBySlug('manchester-lahore')!;
+    expect(depthCategoryCount(route)).toBeGreaterThanOrEqual(2);
+    expect(computeRouteIntelligenceLevel(route, NOW_ISO)).toBe('strong');
   });
 
   it('a route with no current direct/connecting verification (route- or airline-level) can never be graded "strong", regardless of any other depth signal', () => {
@@ -91,7 +130,7 @@ describe('Strongest ("strong") route status requires real, defined depth evidenc
   });
 
   it('a route with zero depth signals and no current verification is "useful", not "strong"', () => {
-    // Birmingham–Lahore: unverified, no fare, no connectingAlternative, no airlineVerifications, not Book-By, no warning.
+    // Birmingham–Lahore: unverified, no fare, no connectingAlternative, no airlineVerifications, not Book-By, no warning, no baggage.
     const route = getRouteBySlug('birmingham-lahore')!;
     expect(computeRouteIntelligenceLevel(route, NOW_ISO)).toBe('useful');
   });
@@ -105,19 +144,14 @@ describe('Strongest ("strong") route status requires real, defined depth evidenc
 });
 
 describe('"Useful" routes never receive the strongest status', () => {
-  it('every route currently graded "useful" fails at least one strong criterion (unverified directness, or verified/connecting but with zero depth signals)', () => {
+  it('every route currently graded "useful" fails the strong bar (unverified directness, or verified/connecting but with fewer than two depth categories)', () => {
     for (const route of routes) {
       const level = computeRouteIntelligenceLevel(route, NOW_ISO);
       if (level !== 'useful') continue;
-      const hasFare = getPublishableObservationsByRoute(route.slug, NOW_ISO).length > 0;
-      const hasConnAlt = Boolean(route.connectingAlternative);
-      const hasAirlineVerif = Boolean(route.airlineVerifications?.length);
-      const hasBookBy = isBookByRoute(route.slug);
-      const hasWarning = getActiveWarningsByRoute(route.slug).length > 0;
-      const meetsDepthBar = hasFare || hasConnAlt || hasAirlineVerif || hasBookBy || hasWarning;
+      const meetsDepthBar = depthCategoryCount(route) >= 2;
       const isCurrentlyDirectOrConnecting = getDisplayDirectness(route, NOW_ISO) !== 'unverified';
       // Never strong: either its direct/connecting status isn't currently
-      // confirmed at all, or (if it is) it also lacks every depth signal.
+      // confirmed at all, or (if it is) it also has fewer than two depth categories.
       expect(meetsDepthBar === false || isCurrentlyDirectOrConnecting === false, route.slug).toBeTruthy();
     }
   });
@@ -306,9 +340,9 @@ describe('The route coverage audit document stays in sync with the real data', (
     expect(auditDoc).toContain(`${totalTracked} of 32`);
   });
 
-  it('the audit explicitly flags the Manchester–Dubai fare-evidence gap (the finding this phase surfaced, not fixed)', () => {
+  it('the audit explicitly flags the Manchester–Dubai depth gap (the finding this phase surfaced, not fixed)', () => {
     expect(auditDoc).toMatch(/Manchester.Dubai/);
-    expect(auditDoc.toLowerCase()).toContain('zero publicly-displayable fare evidence');
+    expect(auditDoc.toLowerCase()).toContain('zero depth categories');
   });
 
   it('the /deals page hero states the same live-computed coverage sentence the audit recommends', () => {

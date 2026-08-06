@@ -77,7 +77,8 @@ analytics/conversion events are verified in the real dashboard.
   `JETSTASH_PRINCIPLES.md` §14.5 for the full correction and what remains for a follow-up sweep
   (non-QA routes carrying the same softer claim family), and `tests/book-by-evidence-safety.test.ts`
   for the regression coverage.
-- Route Coverage Truth Phase 1 (6 August 2026): an independent audit found the live Route Atlas
+- Route Coverage Truth Phase 1 (6 August 2026, threshold corrected same day after a product-truth
+  review — see below): an independent audit found the live Route Atlas
   (`components/founder/atlas-feel-test.tsx`, embedded on the homepage via `JourneyDeskHome`) let
   one verified destination make an entire country read "strong," with no honest middle state
   between "verified" and "not yet researched." Fixed: every Atlas route now shows one of three
@@ -86,9 +87,15 @@ analytics/conversion events are verified in the real dashboard.
   (`computeRouteIntelligenceLevel()` in `lib/atlas-network-data.ts`) rather than a manual
   override; country aggregation is now conservative (one strong destination can no longer carry a
   whole country); an active withdrawal/service-change notice is a separate, additive signal that
-  never demotes a route's tier. A full, evidence-based 32-route completeness audit — including a
-  known gap this phase surfaced but did not fix (Manchester–Dubai, the Atlas's own default landing
-  route, has zero *publicly displayable* fare evidence) — lives in
+  never demotes a route's tier. A second, same-day product-truth review then challenged the
+  "Strong" threshold itself: the first version required only one depth signal, which let 7 of 16
+  "Strong" routes qualify on a single shallow signal. Corrected to require **at least two of six**
+  independent depth categories — the real distribution is **9 Strong / 23 Useful** (not 16/16).
+  Five country nodes that had read "Strong" (most visibly Manchester's India, the default-context
+  country on the homepage) are now honestly "Mixed" or "Useful" under the corrected bar; two
+  soft-launch routes (Manchester–Dubai, Manchester–Doha) don't meet it, not five-of-six/one-gap as
+  first reported. A full, evidence-based 32-route completeness audit, including this revision and
+  the two soft-launch gaps this phase surfaced but did not fix, lives in
   `docs/project-control/ROUTE_COVERAGE_AUDIT.md`. `/deals`'s hero now states the real,
   live-computed fare-tracking scope (8 of 32 routes) instead of implying broader coverage. See
   `JETSTASH_PRINCIPLES.md` §15 for the standing architecture and `tests/atlas-route-status.test.ts`
