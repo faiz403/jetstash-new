@@ -152,6 +152,42 @@ The first archive batch should therefore cover, in order:
 Then add Heathrow → Mumbai, Manchester → Dubai, Heathrow → Doha and Birmingham → Mumbai when their
 route evidence and search context are ready. This is an operating queue, not a popularity claim.
 
+## Founder action required: Manchester–Dubai's first publishable observation (Route Completion Batch 1, August 2026)
+
+Manchester–Dubai's route evidence and search context are now ready — this section is the exact,
+ready-to-execute check. Manchester–Dubai's route was audited as part of Route Completion Batch 1
+(`docs/project-control/ROUTE_COVERAGE_AUDIT.md`) and found to have **zero** publicly-publishable
+fare observations: two entries exist in this file (`obs-man-dxb-economy-1`,
+`obs-man-dxb-business-1`, both from 16/12 June 2026) but predate the Truth Reset's
+`departureDate`/`returnDate` requirement, so neither counts as evidence today.
+
+**This is squarely a manual step this environment could not perform** — the archive's own binding
+rule above ("Automated browser polling, price scraping, API harvesting... are not part of this
+archive") rules out an automated check even where the tooling exists to attempt one, and no
+existing observation can be safely re-dated instead (that would misrepresent when the fare was
+actually seen). A founder (or editor with real browser access) needs to log one real, dated check:
+
+- **Route:** `manchester-dubai` (Manchester → Dubai, Emirates)
+- **Profile:** baseline — one adult, return Economy, GBP, 14-night stay
+- **`profileId`:** `manchester-dubai-economy-1adult-baseline-v1`
+- **Departure date:** roughly 8 weeks after the day you actually check (the archive's fixed
+  horizon — see "Observation methodology" above)
+- **Return date:** 14 nights after the departure date searched
+- **Where to check:** Google Flights, Trip.com, or Emirates' own booking page — record whichever
+  was actually used as `observedVia`
+- **`observationReason`:** `routine-weekly` (this is the route's first entry, starting a new series)
+- Record `observedDate` as the real date you checked, `source` as the airline/provider the result
+  names, `currency: 'GBP'`, `baggage` as shown (or `not stated`), and `sourceUrl` where the search
+  can be safely retained.
+
+**Once this single observation is logged, Manchester–Dubai reaches Strong automatically** — it
+already has one genuine depth category (baggage guidance, added in the same batch — see
+`data/traveller-tips.ts`'s `manchester-dubai-emirates-baggage-weight` entry), and a publishable
+fare observation would be its second, clearing `computeRouteIntelligenceLevel()`'s two-category
+bar without any other change required. Do not add this observation from memory or estimate — if
+the check can't be done for real, leave this section as the standing to-do rather than filling it
+with an invented number.
+
 ## Review standard
 
 Before a record can influence a public fare range or Book-By context:

@@ -103,6 +103,23 @@ export const travellerTips: TravellerTip[] = [
     title: 'Confirm the specific flight day before assuming a non-stop exists',
     body: "Air India's direct Amritsar services run at reduced midweek frequency rather than daily. Confirm specific flight days before assuming a non-stop option exists on your preferred date.",
   },
+  {
+    // Route Completion Batch 1 (August 2026): checked directly against
+    // Manchester Airport's own Emirates flight-operator page
+    // (manchesterairport.co.uk/flight-operators/emirates/, checked 6 August
+    // 2026) - a genuinely different, specific figure from the generic
+    // "23kg standard" comparison already in data/guides.ts, not a
+    // duplicate. Deliberately route-scoped, not destination-scoped: this
+    // is Emirates' own weight-concept rule as stated on Manchester
+    // Airport's page for this specific operator, not independently
+    // confirmed for Glasgow/Edinburgh/Newcastle's separate Dubai routes.
+    id: 'manchester-dubai-emirates-baggage-weight',
+    scope: { routeSlug: 'manchester-dubai' },
+    category: 'baggage',
+    title: "Check your fare's exact weight allowance before you pack",
+    body: "Manchester Airport's own Emirates page states no single bag may weigh more than 32kg, and your total checked baggage weight is capped by your ticket type rather than a single fixed figure for every fare. Confirm the exact allowance for your booking in Manage Booking before you pack.",
+    addedDate: '2026-08-06',
+  },
 ];
 
 export function getTipsForScope(scope: TravellerTipScope) {
