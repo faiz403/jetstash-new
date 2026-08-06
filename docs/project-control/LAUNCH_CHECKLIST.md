@@ -90,6 +90,21 @@ separate from section A — organic readiness does not require these.
       and all three lead-capture successes (Contact, Quote Request, Newsletter). If any event isn't
       currently instrumented, add a `track()` call via the existing `lib/analytics.ts` wrapper —
       never call the vendor SDK directly from a component.
+      **Code-side instrumentation confirmed complete, 6 August 2026** — re-audited directly against
+      this exact list: `<Analytics />`/`<SpeedInsights />` are mounted in `app/layout.tsx` (page
+      visits); `atlas_origin_selected`/`atlas_destination_selected`/`atlas_route_opened` are wired
+      with real call sites in `components/founder/atlas-feel-test.tsx`; `travel_ready_check_started`/
+      `_completed`/`_verdict` are wired in `components/travel-ready/travel-ready-check.tsx`;
+      `tripcom_click` fires from every affiliate hand-off via the shared `TrackedOutboundLink`
+      (`deal-card.tsx`, `no-fare-fallback.tsx`, `app/routes/[slug]/page.tsx`); `contact_submit_success`,
+      `quote_request_submit_success` and `newsletter_subscribe_success` are wired in their respective
+      form components. All 23 typed events, the 2-property Vercel Pro ceiling, and PII exclusion are
+      covered by `tests/analytics-events.test.ts`, `tests/analytics-property-limit.test.ts` and
+      `tests/atlas-journey-check-analytics.test.ts` — 71/71 passing. This work actually landed
+      31 July–5 August 2026 (`db459c9`, `8bb6883`) but was never reflected here — this checklist had
+      drifted stale, not the instrumentation. **What's genuinely still open:** confirming real
+      visitor events are actually landing in the Vercel Analytics dashboard — that needs the
+      founder's own dashboard access, not a code change; not confirmed as of this note.
 - [ ] **G1.** Add genuine fare observations, following the existing methodology in
       `FARE_OBSERVATION_ARCHIVE.md`, prioritising the specific routes intended for paid promotion
       before that spend begins. Never backfill a price for a day that wasn't actually checked.
@@ -118,3 +133,7 @@ Real, but genuinely non-blocking for either organic or paid readiness. No urgenc
 
 - **29 July 2026** — checklist created following founder review and acceptance of the launch
   readiness audit.
+- **6 August 2026** — F1's code-side instrumentation re-audited and confirmed complete (it had
+  actually landed 31 July–5 August via `db459c9`/`8bb6883`, but this checklist was never updated to
+  reflect it). F1 stays open — only the real-dashboard-data confirmation remains, which needs the
+  founder's own Vercel access.
