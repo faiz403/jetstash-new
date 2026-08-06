@@ -303,7 +303,7 @@ describe('getDealDirectnessLabel (TR-009, final correction) — a deal/search ca
 
 describe('FARE-001 pilot — historic examples stay private; only fully dated, evidenced observations publish', () => {
   it('keeps historic observations and appends both editorial observation batches', () => {
-    expect(fareObservations).toHaveLength(34);
+    expect(fareObservations).toHaveLength(41);
   });
 
   it('keeps every historic observation incomplete and private', () => {
@@ -333,6 +333,13 @@ describe('FARE-001 pilot — historic examples stay private; only fully dated, e
       'obs-man-dxb-economy-20260806-8w-v1',
       'obs-man-lhe-economy-20260806-8w-v1',
       'obs-man-isb-economy-20260806-8w-v1',
+      'obs-man-del-economy-20260806-8w-v1',
+      'obs-man-bom-economy-20260806-8w-v1',
+      'obs-man-amd-economy-20260806-8w-v1',
+      'obs-man-atq-economy-20260806-8w-v1',
+      'obs-man-doh-economy-20260806-8w-v1',
+      'obs-man-med-economy-20260806-8w-v1',
+      'obs-bhx-atq-economy-20260806-8w-v1',
     ]);
     expect(published).toEqual(expect.arrayContaining([
       expect.objectContaining({

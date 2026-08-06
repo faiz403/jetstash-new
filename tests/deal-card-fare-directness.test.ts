@@ -62,12 +62,15 @@ describe('getDealFareDirectnessLabel — a route being direct never implies a sp
   });
 
   it('unknown fare directness (a logged fare for an airline the route has never verified) renders no badge at all — never guesses either way', () => {
-    // man-lhe-economy was in this list until its Batch A observation
-    // (6 August 2026) recorded an explicit fareDirectness — it now
-    // correctly resolves to 'Connecting' and is covered by its own test
-    // above, not this one. lhr-del-economy and bhx-atq-economy remain
-    // genuinely unconfirmed (no explicit fareDirectness recorded yet).
-    const knownUnconfirmedCases = ['lhr-del-economy', 'bhx-atq-economy'];
+    // man-lhe-economy and bhx-atq-economy were both in this list until
+    // their Batch A observations (6 August 2026) recorded an explicit
+    // fareDirectness from an airline that genuinely matches (bhx-atq) or
+    // the fare's own itinerary (man-lhe) - both now correctly resolve to
+    // 'Connecting' and are covered by their own tests, not this one.
+    // lhr-del-economy remains genuinely unconfirmed (no explicit
+    // fareDirectness recorded yet, and its logged fare's airline still
+    // doesn't match london-heathrow-delhi's verified operators).
+    const knownUnconfirmedCases = ['lhr-del-economy'];
     for (const id of knownUnconfirmedCases) {
       const deal = deals.find((d) => d.id === id)!;
       expect(deal, id).toBeDefined();
@@ -75,6 +78,12 @@ describe('getDealFareDirectnessLabel — a route being direct never implies a sp
       // Confirm this is a genuine change from the route-only label, not a coincidence.
       expect(getDealDirectnessLabel(deal, NOW_ISO), id).not.toBeUndefined();
     }
+  });
+
+  it('bhx-atq-economy correctly moved from "unconfirmed" to "Connecting" once its Batch A observation matched the route\'s own verified Air India operator', () => {
+    const deal = deals.find((d) => d.id === 'bhx-atq-economy')!;
+    expect(getDealFareDirectnessLabel(deal, NOW_ISO)).toBe('Connecting');
+    expect(getDealFareDirectnessLabel(deal, NOW_ISO)).not.toBe('Direct flight');
   });
 
   it('man-lhe-economy correctly moved from "unconfirmed" to "Connecting" once its Batch A observation recorded explicit fareDirectness', () => {

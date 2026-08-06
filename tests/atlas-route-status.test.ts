@@ -100,9 +100,13 @@ describe('Strongest ("strong") route status requires BROAD depth evidence — at
     // else — current/verified, but thin. Regression-guards the specific
     // routes the review flagged as wrongly "strong" under the old
     // "any one signal" threshold.
+    //
+    // manchester-amritsar and manchester-ahmedabad were both in this list
+    // (connectingAlternative only) until Fare Coverage Expansion Batch A
+    // (6 August 2026) gave each a genuine second category (fare evidence)
+    // - both now correctly grade 'strong', covered by their own test
+    // below, not this one.
     const singleSignalRoutes = [
-      'manchester-amritsar', // connectingAlternative only
-      'manchester-ahmedabad', // connectingAlternative only
       'leeds-bradford-islamabad', // warning only
       'london-gatwick-ahmedabad', // warning only
       'london-gatwick-amritsar', // warning only
@@ -113,6 +117,14 @@ describe('Strongest ("strong") route status requires BROAD depth evidence — at
       const route = getRouteBySlug(slug)!;
       expect(depthCategoryCount(route), slug).toBe(1);
       expect(computeRouteIntelligenceLevel(route, NOW_ISO), slug).toBe('useful');
+    }
+  });
+
+  it('manchester-amritsar and manchester-ahmedabad correctly moved to "strong" once Batch A gave each a second depth category (fare evidence)', () => {
+    for (const slug of ['manchester-amritsar', 'manchester-ahmedabad']) {
+      const route = getRouteBySlug(slug)!;
+      expect(depthCategoryCount(route), slug).toBe(2);
+      expect(computeRouteIntelligenceLevel(route, NOW_ISO), slug).toBe('strong');
     }
   });
 

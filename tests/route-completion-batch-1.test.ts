@@ -176,14 +176,19 @@ describe('Manchester-Dubai\'s new fare observation matches the approved specific
   });
 });
 
-describe('Manchester-Doha\'s fare observation is untouched by this round', () => {
+describe('Manchester-Doha\'s original fare observation is untouched by this round', () => {
   it('same id, price, dates as before — no fabricated observation was added to close its gap', () => {
     const obs = fareObservations.find((o) => o.id === 'obs-man-doh-economy-20260805-8w-v1');
     expect(obs).toBeDefined();
     expect(obs!.price).toBe(411);
     expect(obs!.departureDate).toBe('2026-09-30');
     expect(obs!.returnDate).toBe('2026-10-14');
-    expect(getPublishableObservationsByRoute('manchester-doha', NOW_ISO).length).toBe(1);
+    // A second, genuinely separate observation was added later the same
+    // week by Fare Coverage Expansion Batch A (obs-man-doh-economy-20260806-8w-v1,
+    // a real nonstop Qatar Airways result) - this test's own scope is only
+    // that THIS specific historic record (20260805) was never edited, not
+    // that no further observation could ever legitimately be added.
+    expect(getPublishableObservationsByRoute('manchester-doha', NOW_ISO).length).toBe(2);
   });
 
   it('an incomplete fare record (missing dates) can never become publishable, regardless of route status', () => {
@@ -260,7 +265,17 @@ describe('No unrelated route was changed by this batch', () => {
     // the same week) added manchester-lahore's own 2026-08-06 observation -
     // expected, not scope creep from this batch. Any route added here must
     // be explicitly accounted for, never silently allowed.
-    const knownBatchARoutesSoFar: readonly string[] = ['manchester-lahore', 'manchester-islamabad'];
+    const knownBatchARoutesSoFar: readonly string[] = [
+      'manchester-lahore',
+      'manchester-islamabad',
+      'manchester-delhi',
+      'manchester-mumbai',
+      'manchester-ahmedabad',
+      'manchester-amritsar',
+      'manchester-doha',
+      'manchester-madinah',
+      'birmingham-amritsar',
+    ];
     const allowedSlugs = [...(BATCH_1_SLUGS as readonly string[]), ...knownBatchARoutesSoFar];
     const newlyObserved = fareObservations.filter((o) => o.observedDate === '2026-08-06');
     for (const o of newlyObserved) {
@@ -364,9 +379,9 @@ describe('The audit and fare-archive documents accurately reflect the closed obs
     expect(archiveFlat).toContain('never merely to hand it a second scoring category');
   });
 
-  it('states the real, current fare-tracking route count (9 of 32), not a stale hand-typed figure', () => {
+  it('states the real, current fare-tracking route count (13 of 32, after Fare Coverage Expansion Batch A), not a stale hand-typed figure', () => {
     const totalTracked = routes.filter((r) => getPublishableObservationsByRoute(r.slug, NOW_ISO).length > 0).length;
-    expect(totalTracked).toBe(9);
+    expect(totalTracked).toBe(13);
     expect(auditDoc).toContain(`${totalTracked} of 32`);
   });
 });

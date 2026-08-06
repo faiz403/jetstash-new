@@ -206,19 +206,29 @@ only when it appears without digging, `'not stated'` otherwise.
 | 1 | Manchester → Dubai | ✅ Done (6 August 2026) | `obs-man-dxb-economy-20260806-8w-v1` | Full-depth evidence (see above) — this is the check that started the correction. |
 | 2 | Manchester → Lahore | ✅ Done (6 August 2026) | `obs-man-lhe-economy-20260806-8w-v1` | First attempt (Trip.com) hit an interaction limitation reaching the return leg and a session-wide screenshot-tool outage — held back rather than recorded with weaker evidence than Dubai's. Second attempt (Google Flights) captured the full round-trip itinerary; see the closed-observation entry below. |
 | 3 | Manchester → Islamabad | ✅ Done (6 August 2026) | `obs-man-isb-economy-20260806-8w-v1` | First route done under the leaner process — results-list evidence only, no click-through, no baggage digging. **No `man-isb-economy` Deal entry exists** — only `man-isb-business` — so this observation does not currently render on any `DealCard`; it still adds real, dated evidence to the route's own fare history. |
-| 4 | Manchester → Delhi | Not started | — | — |
-| 5 | Manchester → Mumbai | Not started | — | — |
-| 6 | Manchester → Ahmedabad | Not started | — | — |
-| 7 | Manchester → Amritsar | Not started | — | — |
-| 8 | Manchester → Doha | Not started | — | — |
-| 9 | Manchester → Madinah | Not started | — | — |
-| 10 | Birmingham → Amritsar | Not started | — | — |
+| 4 | Manchester → Delhi | ✅ Done (6 August 2026) | `obs-man-del-economy-20260806-8w-v1` | Route's first observation. Gulf Air, connecting, 1 stop. No `man-del-economy` Deal entry exists. |
+| 5 | Manchester → Mumbai | ✅ Done (6 August 2026) | `obs-man-bom-economy-20260806-8w-v1` | Route's first observation. Gulf Air, connecting, 1 stop. No `man-bom-economy` Deal entry exists. |
+| 6 | Manchester → Ahmedabad | ✅ Done (6 August 2026) | `obs-man-amd-economy-20260806-8w-v1` | Route's first observation. Emirates, connecting, 1 stop. No `man-amd-economy` Deal entry exists. |
+| 7 | Manchester → Amritsar | ✅ Done (6 August 2026) | `obs-man-atq-economy-20260806-8w-v1` | Route's first observation. Etihad and Air India, connecting, 2 stops. No `man-atq-economy` Deal entry exists. |
+| 8 | Manchester → Doha | ✅ Done (6 August 2026) | `obs-man-doh-economy-20260806-8w-v1` | Top result is a genuine nonstop Qatar Airways service — **first `fareDirectness: 'direct'` in the archive**. Existing 5 August Pegasus observation (connecting) left untouched. No `man-doh-economy` Deal entry exists — see the evidence file's note on a future aggregation edge case if one is ever added. |
+| 9 | Manchester → Madinah | ✅ Done (6 August 2026) | `obs-man-med-economy-20260806-8w-v1` | Pegasus and Flynas, connecting, 1 stop. Only Deal entry is the bundled Umrah package (unaffected). |
+| 10 | Birmingham → Amritsar | ✅ Done (6 August 2026) | `obs-bhx-atq-economy-20260806-8w-v1` | Air India — matches the route's own verified operator, unlike either historic observation. **`bhx-atq-economy`'s `DealCard` badge now correctly resolves to "Connecting"**, fixing the no-badge state the PR #74 audit found. Confirmed live. |
 
-**Batch A is not complete.** 3 of 10 done (counting Dubai). Manchester–Delhi is next. Kept on one
-working branch (`fare/batch-a-fare-coverage-2026-08`) rather than a PR per route, reviewed and
-merged as a batch once a meaningful set is done — the point of batching is to avoid a run of tiny
-"one route
-updated" merges.
+**Batch A is complete — 10 of 10 routes done (6 August 2026).** All done on one working branch
+(`fare/batch-a-fare-coverage-2026-08`) rather than a PR per route, to be reviewed and merged as a
+batch — the point of batching is to avoid a run of tiny "one route updated" merges. Routes 4–10 used
+the leaner process the founder approved after Lahore/Islamabad: results-list evidence only, no
+click-through into a booking flow, no baggage-rule digging.
+
+**A pattern worth flagging plainly, not burying:** of the 7 routes added under the lean process
+(4–10), only Birmingham–Amritsar had an existing `DealCard` to actually change — Delhi, Mumbai,
+Ahmedabad, Manchester-Amritsar and Doha have **no Manchester/Birmingham-departure Economy Deal
+entry at all** (Manchester–Delhi and Manchester–Mumbai are both verified-direct IndiGo routes with
+real customer demand and still have no Deal card), and Madinah's only Deal is the bundled Umrah
+package. This batch adds real, dated fare-history evidence to every route's own archive regardless,
+but most of it does not yet surface as a price on `/deals` or a route page's `DealCard` — that gap is
+about missing `Deal` entries in `data/deals.ts`, a separate and genuine follow-up, not something this
+fare-collection phase was scoped to fix.
 
 ## ✅ Manchester–Dubai's first publishable observation — closed 6 August 2026
 
