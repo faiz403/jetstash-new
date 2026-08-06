@@ -127,17 +127,45 @@ describe('Strongest ("strong") route status requires BROAD depth evidence — at
     // to a visitor and added a category-DIVERSITY gate that correctly
     // returns both to 'useful' - see the dedicated RIS-001 test file, not
     // this one.
+    //
+    // leeds-bradford-islamabad, london-gatwick-ahmedabad,
+    // london-gatwick-amritsar and london-heathrow-bengaluru were ALL in
+    // this list (warning-only or airline-verif-only) until Fare Coverage
+    // Expansion Batch B (6 August 2026, run after RIS-001) gave each a
+    // fresh fare observation - its second category. Three of the four
+    // (Gatwick-Ahmedabad, Gatwick-Amritsar, Heathrow-Bengaluru) are direct
+    // routes with an already-substantive pre-existing category, so they
+    // correctly clear all three RIS-001 gates and are now 'strong' - see
+    // tests/fare-coverage-batch-b.test.ts, not this one. Leeds
+    // Bradford-Islamabad stays here: it's now genuinely two categories, but
+    // RIS-001's Gate 3 (visible-content) still blocks it, because it's a
+    // connecting route with no connectingAlternative block.
     const singleSignalRoutes = [
-      'leeds-bradford-islamabad', // warning only
-      'london-gatwick-ahmedabad', // warning only
-      'london-gatwick-amritsar', // warning only
-      'london-heathrow-bengaluru', // airline verification only
       'manchester-doha', // fare only
     ];
     for (const slug of singleSignalRoutes) {
       const route = getRouteBySlug(slug)!;
       expect(depthCategoryCount(route), slug).toBe(1);
       expect(computeRouteIntelligenceLevel(route, NOW_ISO), slug).toBe('useful');
+    }
+
+    // Leeds Bradford-Islamabad: two categories (breadth cleared), but a
+    // connecting route with no connectingAlternative block - Gate 3 blocks
+    // Strong regardless of category count.
+    const lba = getRouteBySlug('leeds-bradford-islamabad')!;
+    expect(depthCategoryCount(lba)).toBe(2);
+    expect(lba.isDirect).toBe(false);
+    expect(Boolean(lba.connectingAlternative)).toBe(false);
+    expect(computeRouteIntelligenceLevel(lba, NOW_ISO)).toBe('useful');
+  });
+
+  it('leeds-bradford-islamabad, london-gatwick-ahmedabad, london-gatwick-amritsar and london-heathrow-bengaluru each gained a fresh fare observation from Fare Coverage Expansion Batch B (6 August 2026), and three of the four correctly moved to "strong" on that plus their pre-existing substantive category', () => {
+    const upgraded = ['london-gatwick-ahmedabad', 'london-gatwick-amritsar', 'london-heathrow-bengaluru'];
+    for (const slug of upgraded) {
+      const route = getRouteBySlug(slug)!;
+      expect(depthCategoryCount(route), slug).toBe(2);
+      expect(route.isDirect, slug).toBe(true);
+      expect(computeRouteIntelligenceLevel(route, NOW_ISO), slug).toBe('strong');
     }
   });
 

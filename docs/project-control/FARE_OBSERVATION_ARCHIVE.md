@@ -1,7 +1,8 @@
 # Editorial Fare Observation Archive
 
 **Owner:** JetStash editorial workflow
-**Status:** Active - two priority-route batches recorded; latest check 4 August 2026
+**Status:** Active - three expansion batches recorded (Batch A + Batch B); latest check 6 August 2026;
+23 of 32 routes publishable
 **Canonical data file:** `data/fare-observations.ts`
 
 ## Purpose
@@ -475,6 +476,96 @@ by gaming the score:
   own baggage page will likely only surface a general, ticket-type-dependent policy statement, not
   a fact unique to this city pair — genuinely addable, on the same standard as Dubai's own baggage
   tip, but not something to assume will complete the route.
+
+## Fare Coverage Expansion — Batch B (6 August 2026)
+
+Sequenced after Route Intelligence Scoring v2 (RIS-001) was merged and verified in production
+(`8b1d18d`), per the founder's own ordering: Batch A → RIS-001 → Batch B. **Do not change RIS-001
+during this batch** — every grade change reported below is a mechanical consequence of the unchanged
+scoring function running against new evidence, not a rule change.
+
+**Queue derivation.** Computed live from the real repository data, not by hand: of 32 routes, 13 had
+a publishable observation before this batch. Of the 19 without one, 6 (Manchester–Karachi,
+Birmingham–Lahore, Birmingham–Islamabad, Heathrow–Dhaka, Manchester–Sylhet, Heathrow–Sylhet) are
+`unverified` — a fare observation logged against an unverified route can never become publishable
+(`isObservationPublishable()` requires status `'direct'` or `'connecting'`), so they were excluded
+from consideration entirely rather than have collection effort spent on them. That leaves 13 eligible
+untracked routes, prioritised: (1) an existing Deal with no publishable observation —
+Heathrow–Doha, Gatwick–Ahmedabad; (2) highest-value South Asia/Gulf routes — the remaining 8. This
+fills all 10 slots without needing the lower priority tiers (remaining Manchester routes, Birmingham,
+Heathrow/Gatwick, secondary airports), since every Priority 2 candidate happened to be exactly one of
+those categories already.
+
+**Directness rule for this batch — a deliberate, narrower standard than Batch A's.** Batch A's
+convention (see the evidence-completeness audit above) defaulted every outbound-only review to
+`'unknown'`, regardless of what the outbound itself showed. Batch B's brief states the rule
+differently and more precisely: "either leg confirmed connecting → connecting"; "return not reviewed
+or ambiguous → unknown" only applies when there is nothing more specific to say. Read together: a
+confirmed-connecting outbound leg is sufficient on its own to record `fareDirectness: 'connecting'`,
+because a real, source-shown stop is positive evidence the round trip is not fully nonstop, even
+without checking the return — whereas `'direct'` still requires both legs confirmed (a single
+nonstop leg says nothing about the other one). Every one of Batch B's 10 observations had its
+outbound leg explicitly shown as 1 or more stops, so every one is recorded `'connecting'`, not
+`'unknown'` — a real, defensible finding under this batch's own rule, not a reversion of Batch A's
+correction (which remains correct under Batch A's own, stricter convention).
+
+**Collection method — identical profile across all 10, same check date.** One adult, return, Economy,
+GBP, departure 1 October 2026, return 15 October 2026 (8 weeks out / 14 nights — the same dates as
+Batch A's third round, checked the same day). Results-list evidence only, no click-through into a
+booking flow, except London Heathrow–Doha, where "Flight details" was opened specifically to confirm
+both flight numbers and the connection point. Baggage recorded only when explicitly shown; none of
+the 10 showed one, so all record `'not stated'`. No screenshot was captured or archived for any of
+the 10 — every evidence record below is DOM/accessibility-tree data only (Google Flights' rendered
+results list, read via the browser's accessibility tree), stated plainly rather than implying image
+files exist that don't.
+
+| # | Route | Observation | Price | Source | Directness | Deal added? |
+|---:|---|---|---:|---|---|---|
+| 1 | London Heathrow → Doha | `obs-lhr-doh-economy-20260806-8w-v1` | £490 | Etihad, via Abu Dhabi (AUH) | `connecting` | No — `lhr-doh-economy` already existed |
+| 2 | London Gatwick → Ahmedabad | `obs-lgw-amd-economy-20260806-8w-v1` | £535 | Air Arabia, via Sharjah (SHJ) | `connecting` | No — `lgw-amd-economy` already existed |
+| 3 | London Heathrow → Bengaluru | `obs-lhr-blr-economy-20260806-8w-v1` | £489 | Gulf Air, via Bahrain (BAH) | `connecting` | Yes — `lhr-blr-economy` |
+| 4 | Manchester → Jeddah | `obs-man-jed-economy-20260806-8w-v1` | £432 | Pegasus, via Istanbul (SAW) | `connecting` | Yes — `man-jed-economy` |
+| 5 | Birmingham → Mumbai | `obs-bhx-bom-economy-20260806-8w-v1` | £586 | Qatar Airways, via Doha (DOH) | `connecting` | Yes — `bhx-bom-economy` |
+| 6 | Birmingham → Madinah | `obs-bhx-med-economy-20260806-8w-v1` | £532 | Pegasus and Flynas, via Istanbul (SAW) | `connecting` | Yes — `bhx-med-economy` |
+| 7 | Manchester → Dhaka | `obs-man-dac-economy-20260806-8w-v1` | £653 | Etihad, via Abu Dhabi (AUH) | `connecting` | Yes — `man-dac-economy` |
+| 8 | Leeds Bradford → Amritsar | `obs-lba-atq-economy-20260806-8w-v1` | £800 | KLM and IndiGo, via Amsterdam and Mumbai | `connecting` | Yes — `lba-atq-economy` |
+| 9 | Leeds Bradford → Islamabad | `obs-lba-isb-economy-20260806-8w-v1` | £916 | Aer Lingus and Qatar Airways, via Dublin and Doha | `connecting` | Yes — `lba-isb-economy` |
+| 10 | London Gatwick → Amritsar | `obs-lgw-atq-economy-20260806-8w-v1` | £952 | Qatar Airways, via Doha (DOH) | `connecting` | Yes — `lgw-atq-economy` |
+
+Full evidence for each route: `docs/project-control/fare-evidence/<route-slug>-2026-08-06.md`.
+
+**Every new Deal's `airline` field follows the existing convention** (see the comment above the Batch
+A Deal entries in `data/deals.ts`): the route's own primary editorial operator — the first entry in
+that route's `airlineSlugs` — never the specific cheaper fare's own source airline. The actually
+observed source airline is shown separately and correctly via `FareHistoryPanel`/`DealCard`'s own
+fare-source label, derived live from the observation.
+
+**Coverage after this batch:** 23 of 32 routes publishable (up from 13), 22 of 32 customer-visible
+(up from 5 before the evidence-completeness audit's Deal-entry fix, 12 after it — this batch adds 10
+more, all visible). London Heathrow–Jeddah remains the one archive-only route, unchanged and
+out of scope for this batch (its gap is a missing Deal entry, not a missing observation — see the
+evidence-completeness audit above).
+
+**RIS-001 grade changes caused mechanically by this batch's new evidence.** Three routes move
+Useful → Strong, each because the new fare observation supplied the *second* depth category a route
+already had exactly one of — no manual override, no rule change:
+
+- **London Gatwick–Ahmedabad** — already had a sourced, investigated warning (one substantive
+  category); the new fare is its second, and it is a direct route so Gate 3's connecting-depth check
+  doesn't apply. `ROUTE_COVERAGE_AUDIT.md` had already flagged this exact route as "a fare check or
+  airline-verification entry would clear the bar."
+- **London Heathrow–Bengaluru** — already had airline-verification depth (two independent primary
+  sources); the new fare is its second. `ROUTE_COVERAGE_AUDIT.md` had already flagged this route as
+  "confirmed but un-priced… one fresh, dated fare check would clear the bar."
+- **London Gatwick–Amritsar** — already had a sourced, investigated warning; the new fare is its
+  second, same shape as Gatwick–Ahmedabad.
+
+The other 7 new routes stay Useful — either because the new fare is their only depth category (Gate 1
+not cleared) or because they are connecting routes without a `connectingAlternative` block (Gate 3
+not cleared, e.g. Manchester–Jeddah, Manchester–Dhaka, Birmingham–Mumbai, Birmingham–Madinah,
+Leeds Bradford–Amritsar, Leeds Bradford–Islamabad). London Heathrow–Doha stays Useful too — a single
+fare observation is still only one category. See `ROUTE_COVERAGE_AUDIT.md`'s Batch B addendum for the
+full recomputed table.
 
 ## Review standard
 

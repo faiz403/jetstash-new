@@ -125,12 +125,20 @@ describe('Deal counts (TR-004) — a card with no tracked fare must not count as
     // (Batch A's customer-visibility audit fix) - each backed by a real
     // Batch A observation with nowhere to render before these Deal entries
     // were added; see FARE_OBSERVATION_ARCHIVE.md's audit addendum.
+    // lhr-doh-economy and lgw-amd-economy (Fare Coverage Expansion Batch B,
+    // 6 August 2026) already existed as Deal entries but had no publishable
+    // observation behind them until this batch - no new Deal needed, just a
+    // fresh fare. The 8 entries after them are Batch B's brand-new Deal
+    // entries, each backed by a real Batch B observation with nowhere to
+    // render before now - see FARE_COVERAGE_BATCH_B.md.
     expect(trackedDeals.map((d) => d.id)).toEqual([
       'man-lhe-economy',
       'lhr-del-economy',
       'bhx-atq-economy',
       'man-dxb-economy',
+      'lhr-doh-economy',
       'lhr-bom-economy',
+      'lgw-amd-economy',
       'man-isb-economy',
       'man-del-economy',
       'man-bom-economy',
@@ -138,6 +146,14 @@ describe('Deal counts (TR-004) — a card with no tracked fare must not count as
       'man-atq-economy',
       'man-doh-economy',
       'man-med-economy',
+      'lhr-blr-economy',
+      'man-jed-economy',
+      'bhx-bom-economy',
+      'bhx-med-economy',
+      'man-dac-economy',
+      'lba-atq-economy',
+      'lba-isb-economy',
+      'lgw-atq-economy',
     ]);
   });
 
@@ -319,8 +335,8 @@ describe('getDealDirectnessLabel (TR-009, final correction) — a deal/search ca
 });
 
 describe('FARE-001 pilot — historic examples stay private; only fully dated, evidenced observations publish', () => {
-  it('keeps historic observations and appends both editorial observation batches', () => {
-    expect(fareObservations).toHaveLength(41);
+  it('keeps historic observations and appends every editorial observation batch, including Fare Coverage Expansion Batch B (6 August 2026)', () => {
+    expect(fareObservations).toHaveLength(51);
   });
 
   it('keeps every historic observation incomplete and private', () => {
@@ -357,6 +373,18 @@ describe('FARE-001 pilot — historic examples stay private; only fully dated, e
       'obs-man-doh-economy-20260806-8w-v1',
       'obs-man-med-economy-20260806-8w-v1',
       'obs-bhx-atq-economy-20260806-8w-v1',
+      // Fare Coverage Expansion Batch B (6 August 2026, run after RIS-001) -
+      // see FARE_COVERAGE_BATCH_B.md.
+      'obs-lhr-doh-economy-20260806-8w-v1',
+      'obs-lgw-amd-economy-20260806-8w-v1',
+      'obs-lhr-blr-economy-20260806-8w-v1',
+      'obs-man-jed-economy-20260806-8w-v1',
+      'obs-bhx-bom-economy-20260806-8w-v1',
+      'obs-bhx-med-economy-20260806-8w-v1',
+      'obs-man-dac-economy-20260806-8w-v1',
+      'obs-lba-atq-economy-20260806-8w-v1',
+      'obs-lba-isb-economy-20260806-8w-v1',
+      'obs-lgw-atq-economy-20260806-8w-v1',
     ]);
     expect(published).toEqual(expect.arrayContaining([
       expect.objectContaining({
@@ -424,8 +452,15 @@ describe('FARE-001 pilot — historic examples stay private; only fully dated, e
   });
 
   it('keeps all other historic-only routes out of public fare output', () => {
-    expect(getFareRangeSummary('birmingham-mumbai', 'Economy', FIXED_TODAY)).toBeNull();
-    expect(getLatestPublishableObservation('birmingham-mumbai', FIXED_TODAY)).toBeUndefined();
+    // birmingham-mumbai was the original example here - Fare Coverage
+    // Expansion Batch B (6 August 2026, a later, separate initiative) gave
+    // it a genuine, complete observation, so it's no longer historic-only.
+    // Swapped for manchester-karachi, whose only observation
+    // (obs-man-khi-economy-1) remains undated and incomplete, and which
+    // Batch B deliberately excluded from its own queue (unverified
+    // directness - see FARE_COVERAGE_BATCH_B.md §2).
+    expect(getFareRangeSummary('manchester-karachi', 'Economy', FIXED_TODAY)).toBeNull();
+    expect(getLatestPublishableObservation('manchester-karachi', FIXED_TODAY)).toBeUndefined();
   });
 
   it('keeps every deal without a complete observation untracked', () => {
@@ -447,6 +482,11 @@ describe('FARE-001 pilot — historic examples stay private; only fully dated, e
       // man-*-economy Batch A Deal entries (added the same day as the
       // customer-visibility audit fix) are excluded for the same reason -
       // each has a genuinely complete, dated observation behind it.
+      // lhr-doh-economy and lgw-amd-economy (Fare Coverage Expansion Batch
+      // B, 6 August 2026) already existed but had no complete observation
+      // until this batch; the 8 entries after them are Batch B's own new
+      // Deal entries, each backed by a genuinely complete observation - see
+      // FARE_COVERAGE_BATCH_B.md.
       if (
         [
           'lhr-bom-economy',
@@ -461,6 +501,16 @@ describe('FARE-001 pilot — historic examples stay private; only fully dated, e
           'man-atq-economy',
           'man-doh-economy',
           'man-med-economy',
+          'lhr-doh-economy',
+          'lgw-amd-economy',
+          'lhr-blr-economy',
+          'man-jed-economy',
+          'bhx-bom-economy',
+          'bhx-med-economy',
+          'man-dac-economy',
+          'lba-atq-economy',
+          'lba-isb-economy',
+          'lgw-atq-economy',
         ].includes(deal.id)
       )
         continue;

@@ -54,17 +54,26 @@ describe('Every Batch A observation has complete round-trip evidence, or explici
     }
   });
 
-  it('no Batch A observation dated 2026-08-06 has a direct/connecting value outside the two full-evidence entries', () => {
-    const batchADated = fareObservations.filter((o) => o.observedDate === '2026-08-06');
-    for (const obs of batchADated) {
-      if (fullRoundTripEvidenceIds.has(obs.id)) continue;
-      expect(obs.fareDirectness, obs.id).not.toBe('direct');
-      // Every 2026-08-06 observation outside the two full-evidence entries
-      // must be 'unknown', not a bare 'connecting' either - even a
-      // genuinely-connecting-looking outbound leg does not confirm the
-      // return leg, so it must never silently read as confirmed.
+  it('no Batch A observation outside the two full-evidence entries has a direct/connecting value', () => {
+    // Scoped to Batch A's own known observation IDs (outboundOnlyIds above),
+    // not "every observation dated 2026-08-06" - Fare Coverage Expansion
+    // Batch B (also 6 August 2026, run after RIS-001) added 10 more
+    // observations the same day, under its OWN, deliberately different
+    // directness convention (a confirmed-connecting outbound alone is
+    // enough to record 'connecting' - see
+    // tests/fare-coverage-batch-b.test.ts and FARE_COVERAGE_BATCH_B.md §3).
+    // Filtering by date alone would incorrectly apply Batch A's stricter
+    // rule to Batch B's entries.
+    for (const id of outboundOnlyIds) {
+      const obs = fareObservations.find((o) => o.id === id)!;
+      expect(obs, id).toBeDefined();
+      expect(obs.fareDirectness, id).not.toBe('direct');
+      // Every Batch A outbound-only observation must be 'unknown', not a
+      // bare 'connecting' either - even a genuinely-connecting-looking
+      // outbound leg does not confirm the return leg under BATCH A's OWN
+      // convention, so it must never silently read as confirmed.
       if (obs.fareDirectness !== undefined) {
-        expect(obs.fareDirectness, obs.id).toBe('unknown');
+        expect(obs.fareDirectness, id).toBe('unknown');
       }
     }
   });
@@ -99,16 +108,20 @@ describe('bhx-atq-economy correctly fails closed after the audit correction', ()
   });
 });
 
-describe('Customer-visible fare coverage — every "13 of 32" tracked route either has a visible fare card or is a documented exception', () => {
+describe('Customer-visible fare coverage — every tracked route either has a visible fare card or is a documented exception', () => {
   // The one route this audit found and left unfixed (pre-dates Batch A,
   // out of scope) - a canary so a future silent regression on any OTHER
   // route is caught immediately, while this one known gap doesn't fail
-  // the suite until it's deliberately closed.
+  // the suite until it's deliberately closed. Fare Coverage Expansion
+  // Batch B (6 August 2026) closed the equivalent gap for its own 8 new
+  // routes with new Deal entries at collection time - see
+  // FARE_COVERAGE_BATCH_B.md - so Heathrow-Jeddah remains the ONLY
+  // documented exception even after the tracked-route count grew.
   const documentedInvisibleRoutes = new Set(['london-heathrow-jeddah']);
 
   it('every tracked route has a matching flight-category Economy Deal, except the documented exception', () => {
     const trackedRoutes = routes.filter((r) => getPublishableObservationsByRoute(r.slug, NOW_ISO).length > 0);
-    expect(trackedRoutes.length).toBe(13);
+    expect(trackedRoutes.length).toBe(23);
     for (const route of trackedRoutes) {
       const matchingDeal = deals.find(
         (d) => d.fromAirportSlug === route.airportSlug && d.toDestinationSlug === route.destinationSlug && d.cabin === 'Economy' && !isBundledProductDeal(d)

@@ -712,6 +712,106 @@ export const deals: Deal[] = [
     toCountry: 'Saudi Arabia',
     airline: 'Turkish Airlines',
   },
+  // Fare Coverage Expansion - Batch B (6 August 2026), 8 new Deal entries
+  // for routes that had zero prior Deal coverage - each backed by a real,
+  // dated fare observation added the same day (see data/fare-observations.ts
+  // and docs/project-control/fare-evidence/*-2026-08-06.md). `airline`
+  // follows the same convention as every other Deal above: the route's own
+  // primary editorial operator (first entry in data/routes.ts'
+  // airlineSlugs), never the specific cheaper fare's own source airline -
+  // the actually-observed source airline is shown separately and correctly
+  // via FareHistoryPanel/DealCard's own fareSourceLabel, derived live from
+  // the observation. London Heathrow-Doha and London Gatwick-Ahmedabad
+  // already had Deal entries from before this batch - only their fare
+  // observation was new, so no Deal changes were needed for those two.
+  {
+    id: 'lhr-blr-economy',
+    category: 'flight',
+    cabin: 'Economy',
+    fromAirportSlug: 'london-heathrow',
+    toDestinationSlug: 'bengaluru',
+    fromCity: 'London Heathrow',
+    toCity: 'Bengaluru',
+    toCountry: 'India',
+    airline: 'British Airways',
+  },
+  {
+    id: 'man-jed-economy',
+    category: 'flight',
+    cabin: 'Economy',
+    fromAirportSlug: 'manchester',
+    toDestinationSlug: 'jeddah',
+    fromCity: 'Manchester',
+    toCity: 'Jeddah',
+    toCountry: 'Saudi Arabia',
+    airline: 'Qatar Airways',
+  },
+  {
+    id: 'bhx-bom-economy',
+    category: 'flight',
+    cabin: 'Economy',
+    fromAirportSlug: 'birmingham',
+    toDestinationSlug: 'mumbai',
+    fromCity: 'Birmingham',
+    toCity: 'Mumbai',
+    toCountry: 'India',
+    airline: 'Air India',
+  },
+  {
+    id: 'bhx-med-economy',
+    category: 'flight',
+    cabin: 'Economy',
+    fromAirportSlug: 'birmingham',
+    toDestinationSlug: 'madinah',
+    fromCity: 'Birmingham',
+    toCity: 'Madinah',
+    toCountry: 'Saudi Arabia',
+    airline: 'Turkish Airlines',
+  },
+  {
+    id: 'man-dac-economy',
+    category: 'flight',
+    cabin: 'Economy',
+    fromAirportSlug: 'manchester',
+    toDestinationSlug: 'dhaka',
+    fromCity: 'Manchester',
+    toCity: 'Dhaka',
+    toCountry: 'Bangladesh',
+    airline: 'Biman Bangladesh Airlines',
+  },
+  {
+    id: 'lba-atq-economy',
+    category: 'flight',
+    cabin: 'Economy',
+    fromAirportSlug: 'leeds-bradford',
+    toDestinationSlug: 'amritsar',
+    fromCity: 'Leeds Bradford',
+    toCity: 'Amritsar',
+    toCountry: 'India',
+    airline: 'Air India',
+  },
+  {
+    id: 'lba-isb-economy',
+    category: 'flight',
+    cabin: 'Economy',
+    fromAirportSlug: 'leeds-bradford',
+    toDestinationSlug: 'islamabad',
+    fromCity: 'Leeds Bradford',
+    toCity: 'Islamabad',
+    toCountry: 'Pakistan',
+    airline: 'Emirates',
+  },
+  {
+    id: 'lgw-atq-economy',
+    category: 'flight',
+    cabin: 'Economy',
+    fromAirportSlug: 'london-gatwick',
+    toDestinationSlug: 'amritsar',
+    fromCity: 'London Gatwick',
+    toCity: 'Amritsar',
+    toCountry: 'India',
+    airline: 'Air India',
+  },
 ];
 
 export function getDealsByDestination(destinationSlug: string) {

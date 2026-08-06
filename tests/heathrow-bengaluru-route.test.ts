@@ -162,12 +162,22 @@ describe('DEST-001 — displays as direct, on real evidence only', () => {
 });
 
 describe('DEST-001 — no fare invented, no route other than this one added', () => {
-  it('no fare observation exists for this route — none could be honestly logged this session', () => {
-    expect(fareObservations.filter((o) => o.routeSlug === 'london-heathrow-bengaluru')).toHaveLength(0);
+  // Both tests below originally documented that no fare could be honestly
+  // logged in the DEST-001 session itself - true at the time, not a
+  // standing constraint. Fare Coverage Expansion Batch B (6 August 2026,
+  // a later, separate initiative - see FARE_COVERAGE_BATCH_B.md) logged a
+  // real, dated Gulf Air observation and added a matching Deal entry.
+  it('exactly one genuine, dated fare observation exists for this route, added by Fare Coverage Expansion Batch B', () => {
+    const observations = fareObservations.filter((o) => o.routeSlug === 'london-heathrow-bengaluru');
+    expect(observations).toHaveLength(1);
+    expect(observations[0].id).toBe('obs-lhr-blr-economy-20260806-8w-v1');
+    expect(observations[0].source).toBe('Gulf Air');
   });
 
-  it('no deal card exists for this route', () => {
-    expect(deals.filter((d) => d.fromAirportSlug === 'london-heathrow' && d.toDestinationSlug === 'bengaluru')).toHaveLength(0);
+  it('exactly one deal card exists for this route, added by Fare Coverage Expansion Batch B', () => {
+    const matchingDeals = deals.filter((d) => d.fromAirportSlug === 'london-heathrow' && d.toDestinationSlug === 'bengaluru');
+    expect(matchingDeals).toHaveLength(1);
+    expect(matchingDeals[0].id).toBe('lhr-blr-economy');
   });
 
   it('destinations.ts contains exactly one Bengaluru entry, not duplicated', () => {
@@ -280,15 +290,17 @@ describe('DEST-001 — Interactive Route Atlas integration', () => {
     expect(bengaluru.verdict).not.toMatch(/pending|not yet independently verified/i);
     // Intelligence LEVEL (breadth of guidance beyond verification) is a
     // separate, genuinely different question — see computeRouteIntelligenceLevel's
-    // doc comment. Bengaluru is honestly "useful" here: verified via a
+    // doc comment. Bengaluru was "useful" here (verified via a
     // primary-sourced airline verification, but with none of the other five
-    // depth categories (no fare observation, no connectingAlternative, no
-    // Book-By priority, no active warning, no baggage guidance) — while
-    // Delhi and Mumbai each carry at least one more. Equal verification,
-    // unequal breadth, and that's the honest, intended outcome — never
-    // force these three to read identically just because the underlying
-    // verification bug is fixed.
-    expect(bengaluru.intelligenceLevel).toBe('useful');
+    // depth categories) until Fare Coverage Expansion Batch B (6 August
+    // 2026, a later, separate initiative - see FARE_COVERAGE_BATCH_B.md)
+    // gave it a genuine, dated fare observation — its second category,
+    // clearing all three RIS-001 gates (airline-verification is already
+    // substantive, the fare is customer-visible via lhr-blr-economy, and
+    // it's a direct route so the connecting-depth check doesn't apply).
+    // All three destinations now genuinely read "strong" — a mechanical
+    // consequence of real evidence, not a forced equalization.
+    expect(bengaluru.intelligenceLevel).toBe('strong');
     expect(delhi.intelligenceLevel).toBe('strong');
     expect(mumbai.intelligenceLevel).toBe('strong');
   });
