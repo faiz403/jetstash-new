@@ -251,10 +251,17 @@ describe('No unrelated route was changed by this batch', () => {
   });
 
   it('grading is unchanged for a sample of routes outside this batch', () => {
+    // london-heathrow-bengaluru was the original sample here (useful, one
+    // category) - Fare Coverage Expansion Batch B (6 August 2026, a later,
+    // separate initiative) legitimately gave it a fare observation and
+    // moved it to strong, so it's no longer a valid "outside this batch,
+    // unaffected" example. Swapped for manchester-karachi, which stays
+    // unaffected by every later initiative (unverified directness blocks
+    // any grade change regardless of evidence added elsewhere).
     const lahore = getRouteBySlug('manchester-lahore')!;
-    const bengaluru = getRouteBySlug('london-heathrow-bengaluru')!;
+    const karachi = getRouteBySlug('manchester-karachi')!;
     expect(computeRouteIntelligenceLevel(lahore, NOW_ISO)).toBe('strong');
-    expect(computeRouteIntelligenceLevel(bengaluru, NOW_ISO)).toBe('useful');
+    expect(computeRouteIntelligenceLevel(karachi, NOW_ISO)).toBe('useful');
   });
 
   it('every fare observation dated 2026-08-06 belongs to either Route Completion Batch 1 or a documented, separate later initiative', () => {
@@ -276,7 +283,21 @@ describe('No unrelated route was changed by this batch', () => {
       'manchester-madinah',
       'birmingham-amritsar',
     ];
-    const allowedSlugs = [...(BATCH_1_SLUGS as readonly string[]), ...knownBatchARoutesSoFar];
+    // Fare Coverage Expansion Batch B (6 August 2026, run after RIS-001 -
+    // see FARE_COVERAGE_BATCH_B.md) also observed 10 routes the same day.
+    const knownBatchBRoutes: readonly string[] = [
+      'london-heathrow-doha',
+      'london-gatwick-ahmedabad',
+      'london-heathrow-bengaluru',
+      'manchester-jeddah',
+      'birmingham-mumbai',
+      'birmingham-madinah',
+      'manchester-dhaka',
+      'leeds-bradford-amritsar',
+      'leeds-bradford-islamabad',
+      'london-gatwick-amritsar',
+    ];
+    const allowedSlugs = [...(BATCH_1_SLUGS as readonly string[]), ...knownBatchARoutesSoFar, ...knownBatchBRoutes];
     const newlyObserved = fareObservations.filter((o) => o.observedDate === '2026-08-06');
     for (const o of newlyObserved) {
       expect(allowedSlugs.includes(o.routeSlug), o.id).toBe(true);
@@ -379,9 +400,9 @@ describe('The audit and fare-archive documents accurately reflect the closed obs
     expect(archiveFlat).toContain('never merely to hand it a second scoring category');
   });
 
-  it('states the real, current fare-tracking route count (13 of 32, after Fare Coverage Expansion Batch A), not a stale hand-typed figure', () => {
+  it('states the real, current fare-tracking route count (23 of 32, after Fare Coverage Expansion Batch B), not a stale hand-typed figure', () => {
     const totalTracked = routes.filter((r) => getPublishableObservationsByRoute(r.slug, NOW_ISO).length > 0).length;
-    expect(totalTracked).toBe(13);
+    expect(totalTracked).toBe(23);
     expect(auditDoc).toContain(`${totalTracked} of 32`);
   });
 });

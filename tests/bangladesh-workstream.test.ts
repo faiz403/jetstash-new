@@ -266,14 +266,29 @@ describe('BD-001 — Manchester-Sylhet, Heathrow-Dhaka and Heathrow-Sylhet: Veri
 });
 
 describe('BD-001 — no fare invented, no unrelated destination or route added', () => {
-  it('no fare observation exists for any Bangladesh route — none could be honestly logged this session', () => {
+  // manchester-dhaka gained a genuine, dated fare observation and a
+  // matching Deal entry from Fare Coverage Expansion Batch B (6 August
+  // 2026, a later, separate initiative - see FARE_COVERAGE_BATCH_B.md).
+  // Every other Bangladesh route (both Sylhet routes, and Heathrow-Dhaka)
+  // was deliberately excluded from that batch's queue for being
+  // unverified, and remains fare-free here.
+  it('no fare observation exists for any Bangladesh route except manchester-dhaka (Fare Coverage Expansion Batch B) — none else could be honestly logged this session', () => {
     for (const slug of ALL_BANGLADESH_ROUTE_SLUGS) {
-      expect(fareObservations.filter((o) => o.routeSlug === slug)).toHaveLength(0);
+      if (slug === 'manchester-dhaka') {
+        const observations = fareObservations.filter((o) => o.routeSlug === slug);
+        expect(observations, slug).toHaveLength(1);
+        expect(observations[0].id).toBe('obs-man-dac-economy-20260806-8w-v1');
+        continue;
+      }
+      expect(fareObservations.filter((o) => o.routeSlug === slug), slug).toHaveLength(0);
     }
   });
 
-  it('no deal card exists for any Bangladesh route', () => {
-    expect(deals.filter((d) => d.toDestinationSlug === 'dhaka' || d.toDestinationSlug === 'sylhet')).toHaveLength(0);
+  it('no deal card exists for any Bangladesh route except manchester-dhaka\'s (Fare Coverage Expansion Batch B)', () => {
+    const bangladeshDeals = deals.filter((d) => d.toDestinationSlug === 'dhaka' || d.toDestinationSlug === 'sylhet');
+    expect(bangladeshDeals).toHaveLength(1);
+    expect(bangladeshDeals[0].id).toBe('man-dac-economy');
+    expect(bangladeshDeals[0].fromAirportSlug).toBe('manchester');
   });
 
   it('no other country was added — Muscat/Oman, Hyderabad, Riyadh and Colombo are all absent', () => {

@@ -274,9 +274,18 @@ describe('TR-017 — no unsupported duration, frequency, urgency, demand, or far
     expect(route.peakPeriodIds).toEqual([]);
   });
 
-  it('no deal card and no fare observation exist for this route — no fare is invented', () => {
-    expect(deals.filter((d) => d.fromAirportSlug === 'birmingham' && d.toDestinationSlug === 'mumbai')).toHaveLength(0);
-    expect(fareObservations.filter((o) => o.routeSlug === 'birmingham-mumbai')).toHaveLength(0);
+  it('exactly one genuine, dated fare observation and matching deal card exist for this route, added by Fare Coverage Expansion Batch B — no fare was invented', () => {
+    // Originally asserted zero of each - true when this test was written.
+    // Fare Coverage Expansion Batch B (6 August 2026, a later, separate
+    // initiative - see FARE_COVERAGE_BATCH_B.md) logged a real, dated
+    // Qatar Airways observation and added a matching Deal entry.
+    const bhxBomDeals = deals.filter((d) => d.fromAirportSlug === 'birmingham' && d.toDestinationSlug === 'mumbai');
+    expect(bhxBomDeals).toHaveLength(1);
+    expect(bhxBomDeals[0].id).toBe('bhx-bom-economy');
+    const observations = fareObservations.filter((o) => o.routeSlug === 'birmingham-mumbai');
+    expect(observations).toHaveLength(1);
+    expect(observations[0].id).toBe('obs-bhx-bom-economy-20260806-8w-v1');
+    expect(observations[0].source).toBe('Qatar Airways');
   });
 });
 
@@ -583,13 +592,28 @@ describe('Cross-surface leakage fix — fare section heading is content-aware, n
     expect(copy.caption).toBeNull();
   });
 
-  it('birmingham-mumbai (no observations, no deals) renders the "No tracked fare yet" heading end-to-end on the real page', async () => {
-    expect(fareObservations.filter((o) => o.routeSlug === 'birmingham-mumbai')).toHaveLength(0);
-    expect(deals.filter((d) => d.fromAirportSlug === 'birmingham' && d.toDestinationSlug === 'mumbai')).toHaveLength(0);
-    const element = await RoutePage({ params: Promise.resolve({ slug: 'birmingham-mumbai' }) });
+  it('glasgow-dubai (no observations, no deals) renders the "No tracked fare yet" heading end-to-end on the real page', async () => {
+    // birmingham-mumbai was the original example here - Fare Coverage
+    // Expansion Batch B (6 August 2026, a later, separate initiative - see
+    // FARE_COVERAGE_BATCH_B.md) gave it a genuine observation and Deal, so
+    // it no longer demonstrates the empty state. Swapped for
+    // glasgow-dubai, one of the three secondary-airport Dubai routes
+    // Batch B's queue deliberately didn't reach (Priority 1+2 already
+    // filled its 10 slots).
+    expect(fareObservations.filter((o) => o.routeSlug === 'glasgow-dubai')).toHaveLength(0);
+    expect(deals.filter((d) => d.fromAirportSlug === 'glasgow' && d.toDestinationSlug === 'dubai')).toHaveLength(0);
+    const element = await RoutePage({ params: Promise.resolve({ slug: 'glasgow-dubai' }) });
     const text = collectStrings(element).join(' ');
     expect(text).toMatch(/No tracked fare yet/);
     expect(text).not.toMatch(/Fare history & current example/);
+  });
+
+  it('birmingham-mumbai now has a dated Batch B observation and renders the fare-history heading end-to-end', async () => {
+    expect(fareObservations.some((o) => o.routeSlug === 'birmingham-mumbai')).toBe(true);
+    expect(deals.some((d) => d.fromAirportSlug === 'birmingham' && d.toDestinationSlug === 'mumbai')).toBe(true);
+    const element = await RoutePage({ params: Promise.resolve({ slug: 'birmingham-mumbai' }) });
+    const text = collectStrings(element).join(' ');
+    expect(text).toMatch(/Fare history & current example/);
   });
 
   it('manchester-lahore now has a dated editorial observation and renders the fare-history heading end-to-end', async () => {
