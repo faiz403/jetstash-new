@@ -42,30 +42,51 @@ export interface DestinationPoint {
   // only for destinations relying on data/network-evidence.ts, since for
   // the original 11 the Route Status verdict below already says enough.
   networkNote?: string;
-  // evidenceState answers a different question entirely: "how much has
-  // JetStash independently researched THIS ROUTE?" 'not-yet-tracked'
+  // Route Coverage Truth (August 2026): intelligenceLevel answers a
+  // different question entirely from networkMembership: "how much has
+  // JetStash independently researched THIS ROUTE?" A three-level, honest
+  // answer, never a manually flattering override — see
+  // lib/atlas-network-data.ts's computeRouteIntelligenceLevel doc comment
+  // for the full derivation and why it's deliberately not the rejected
+  // `factsConfidence` field data/routes.ts documents removing. 'expanding'
   // means no Route Status ledger entry exists yet (see data/routes.ts) —
   // it says nothing about reachability, which networkMembership already
-  // covers. Never inferred silently; only used when getRouteBySlug has
-  // nothing to return, per the "not yet researched is a legitimate
-  // answer" principle this Atlas is built on.
-  evidenceState: 'verified' | 'withdrawal-announced' | 'pending' | 'not-yet-tracked';
+  // covers. Never blank: every destination that reaches this Atlas gets
+  // exactly one of these three values.
+  intelligenceLevel: RouteIntelligenceLevel;
+  // A live service-change/withdrawal notice — deliberately SEPARATE from
+  // intelligenceLevel above. A well-researched route doesn't become less
+  // well-researched because its service is changing; that's a different,
+  // additive fact, shown as its own callout rather than silently demoting
+  // the route's evidence tier. null when no such notice is active.
+  serviceNotice: { label: string; detail: string } | null;
   verdict: string;
   detail: string | null;
   flightTime: string;
   href: string;
   // null when there's no real Route Status page to link to yet (i.e. for
-  // 'not-yet-tracked' destinations) — never pointed at a route that
-  // doesn't exist in data/routes.ts.
+  // 'expanding' destinations with no routes.ts entry) — never pointed at a
+  // route that doesn't exist in data/routes.ts.
   routeHref: string | null;
 }
+
+/**
+ * The three-level, customer-facing answer to "how much has JetStash
+ * researched this route" — see lib/atlas-network-data.ts's
+ * computeRouteIntelligenceLevel for the full derivation. Applies at both
+ * the per-route (DestinationPoint) and per-country (CountryData) level;
+ * CountryData additionally allows 'mixed', a real fourth state that only
+ * exists at the aggregate level (see aggregateCountryIntelligence).
+ */
+export type RouteIntelligenceLevel = 'strong' | 'useful' | 'expanding';
+export type CountryIntelligenceLevel = RouteIntelligenceLevel | 'mixed';
 
 export interface CountryData {
   slug: string;
   label: string;
   x: number;
   y: number;
-  confidence: 'strong' | 'mixed' | 'early';
+  intelligenceLevel: CountryIntelligenceLevel;
   destinations: DestinationPoint[];
 }
 
@@ -84,21 +105,34 @@ export interface AirportNetworkData {
   countries: CountryData[];
 }
 
-const CONFIDENCE_COLOUR: Record<CountryData['confidence'], { stroke: string; label: string }> = {
+// Route Coverage Truth (August 2026): country-level labels now name a real,
+// conservatively-aggregated fourth state ('mixed') alongside the honest
+// three route-level tiers — see aggregateCountryIntelligence in
+// lib/atlas-network-data.ts. Every hex value here is reused, not invented:
+// the same four colours the per-route palette below already used.
+const COUNTRY_INTELLIGENCE_COLOUR: Record<CountryIntelligenceLevel, { stroke: string; label: string }> = {
   strong: { stroke: '#E0B158', label: 'JetStash knows this country well' },
-  mixed: { stroke: '#C97B4A', label: 'Coverage is mixed — some routes need a closer look' },
-  early: { stroke: '#8A8578', label: 'Early-stage coverage — still being researched' },
+  mixed: { stroke: '#C97B4A', label: 'Coverage is mixed — some routes are more developed than others' },
+  useful: { stroke: '#A39D8C', label: 'Useful guidance available — coverage is still developing' },
+  expanding: { stroke: '#8A8578', label: 'Early-stage coverage — still being researched' },
 };
 
-// Colours/labels here describe ROUTE INTELLIGENCE only (evidenceState) —
-// never network membership, which is a separate fact rendered separately
-// (see networkNote in the destination panel below).
-const DESTINATION_COLOUR: Record<DestinationPoint['evidenceState'], { fill: string; label: string }> = {
-  verified: { fill: '#E0B158', label: 'Verified' },
-  'withdrawal-announced': { fill: '#D98F5F', label: 'Withdrawal announced' },
-  pending: { fill: '#A39D8C', label: 'Verification pending' },
-  'not-yet-tracked': { fill: '#5B6472', label: 'Route intelligence not yet researched' },
+// Colours/labels here describe ROUTE INTELLIGENCE only (intelligenceLevel)
+// — never network membership, which is a separate fact rendered separately
+// (see networkNote in the destination panel below), and never an active
+// service notice, which is its own additive callout (see SERVICE_NOTICE_COLOUR).
+// No route ever renders without one of these three labels — there is no
+// blank or unexplained state.
+const ROUTE_INTELLIGENCE_COLOUR: Record<RouteIntelligenceLevel, { fill: string; label: string }> = {
+  strong: { fill: '#E0B158', label: 'JetStash knows this route well' },
+  useful: { fill: '#A39D8C', label: 'Useful route guidance available' },
+  expanding: { fill: '#5B6472', label: 'Intelligence still being expanded' },
 };
+
+// A live service-change/withdrawal notice — additive, never the main dot
+// colour (see DestinationPoint.serviceNotice's own comment for why it's
+// kept separate from intelligenceLevel).
+const SERVICE_NOTICE_ACCENT = '#D98F5F';
 
 // Maps an explorable country's slug to its real path in the sourced
 // geometry — only entries that appear in `countries` get the "selected
@@ -507,7 +541,7 @@ export function AtlasFeelTest({
             </radialGradient>
             <linearGradient id="ft-route-active" gradientUnits="userSpaceOnUse" x1={origin.x} y1={origin.y} x2={activeCountry.x} y2={activeCountry.y}>
               <stop offset="0" stopColor="#F7F2E9" stopOpacity="0.9" />
-              <stop offset="1" stopColor={CONFIDENCE_COLOUR[activeCountry.confidence].stroke} />
+              <stop offset="1" stopColor={COUNTRY_INTELLIGENCE_COLOUR[activeCountry.intelligenceLevel].stroke} />
             </linearGradient>
             <filter id="ft-glow-blur" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur stdDeviation="1.4" /></filter>
             {/* One glow filter per country, sized from that country's own real
@@ -537,7 +571,7 @@ export function AtlasFeelTest({
           {countries.map((c) => {
             const pathKey = COUNTRY_TO_PATH_KEY[c.slug];
             const isActive = c.slug === activeCountrySlug;
-            const colour = CONFIDENCE_COLOUR[c.confidence];
+            const colour = COUNTRY_INTELLIGENCE_COLOUR[c.intelligenceLevel];
             return (
               <g key={`landmass-${c.slug}`}>
                 {isActive && (
@@ -567,7 +601,7 @@ export function AtlasFeelTest({
               key={`route-rest-${c.slug}`}
               d={`M ${origin.x} ${origin.y} Q ${(origin.x + c.x) / 2} ${Math.min(origin.y, c.y) - 18}, ${c.x} ${c.y}`}
               fill="none"
-              stroke={CONFIDENCE_COLOUR[c.confidence].stroke}
+              stroke={COUNTRY_INTELLIGENCE_COLOUR[c.intelligenceLevel].stroke}
               strokeWidth="0.35"
               strokeOpacity={c.slug === activeCountrySlug ? 0 : 0.15}
               className="transition-opacity duration-500"
@@ -575,7 +609,7 @@ export function AtlasFeelTest({
           ))}
 
           {/* the active route — brighter, with ambient travelling light, not just a static highlight */}
-          <path d={activeRouteD} fill="none" stroke={CONFIDENCE_COLOUR[activeCountry.confidence].stroke} strokeWidth="1.8" strokeOpacity="0.12" filter="url(#ft-glow-blur)" />
+          <path d={activeRouteD} fill="none" stroke={COUNTRY_INTELLIGENCE_COLOUR[activeCountry.intelligenceLevel].stroke} strokeWidth="1.8" strokeOpacity="0.12" filter="url(#ft-glow-blur)" />
           <path d={activeRouteD} fill="none" stroke="url(#ft-route-active)" strokeWidth="0.6" />
           <circle r="0.8" fill="#F7F2E9">
             <animateMotion dur="3.5s" repeatCount="indefinite" path={activeRouteD} />
@@ -594,7 +628,7 @@ export function AtlasFeelTest({
           {/* country nodes */}
           {countries.map((c) => {
             const isActive = c.slug === activeCountrySlug;
-            const colour = CONFIDENCE_COLOUR[c.confidence];
+            const colour = COUNTRY_INTELLIGENCE_COLOUR[c.intelligenceLevel];
             const push = countryLabelPush[c.slug];
             const isPushed = push.dx !== 0 || push.dy !== 0;
             const labelX = c.x + push.dx;
@@ -665,7 +699,7 @@ export function AtlasFeelTest({
           {/* destinations within the active country — revealed, not always present */}
           {activeCountry.destinations.map((d) => {
             const isActive = d.slug === activeDestSlug;
-            const colour = DESTINATION_COLOUR[d.evidenceState];
+            const colour = ROUTE_INTELLIGENCE_COLOUR[d.intelligenceLevel];
             const labelY = destinationLabelY[d.slug];
             const labelDisplaced = Math.abs(labelY - d.y) > 0.5;
             return (
@@ -686,7 +720,7 @@ export function AtlasFeelTest({
                   className="cursor-pointer outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#C8932E]"
                   tabIndex={0}
                   role="button"
-                  aria-label={`${d.label} — ${DESTINATION_COLOUR[d.evidenceState].label}${d.networkMembership === 'seasonal' ? ' — seasonal service' : ''}`}
+                  aria-label={`${d.label} — ${ROUTE_INTELLIGENCE_COLOUR[d.intelligenceLevel].label}${d.serviceNotice ? ' — active service notice' : ''}${d.networkMembership === 'seasonal' ? ' — seasonal service' : ''}`}
                   onMouseEnter={() => selectDestination(d.slug)}
                   onPointerEnter={() => selectDestination(d.slug)}
                   onPointerDown={() => selectDestination(d.slug)}
@@ -767,7 +801,7 @@ export function AtlasFeelTest({
                       well do we know this" signal the desktop map's halo colour
                       gives for free, instead of every country reading as equal
                       weight until tapped. */}
-                  <span className="inline-block h-1.5 w-1.5 shrink-0 rounded-full" style={{ backgroundColor: CONFIDENCE_COLOUR[c.confidence].stroke }} aria-hidden="true" />
+                  <span className="inline-block h-1.5 w-1.5 shrink-0 rounded-full" style={{ backgroundColor: COUNTRY_INTELLIGENCE_COLOUR[c.intelligenceLevel].stroke }} aria-hidden="true" />
                   {c.label}
                 </button>
               );
@@ -788,7 +822,7 @@ export function AtlasFeelTest({
                       : 'shrink-0 inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.03] px-3.5 py-1.5 text-[13px] font-medium text-ink-300'
                   }
                 >
-                  <span className="inline-block h-1.5 w-1.5 shrink-0 rounded-full" style={{ backgroundColor: DESTINATION_COLOUR[d.evidenceState].fill }} aria-hidden="true" />
+                  <span className="inline-block h-1.5 w-1.5 shrink-0 rounded-full" style={{ backgroundColor: ROUTE_INTELLIGENCE_COLOUR[d.intelligenceLevel].fill }} aria-hidden="true" />
                   {d.label}
                 </button>
               );
@@ -796,30 +830,47 @@ export function AtlasFeelTest({
           </div>
         </div>
 
-        {/* Legend — every state actually shown on screen, not just country
-            confidence. A visitor sees "Seasonal" and "Route intelligence not
-            yet researched" immediately; the legend has to explain both, not
-            only the confidence tier a country's colour hints at. */}
+        {/* Legend — every state actually shown on screen, not just the
+            country-level tier. A visitor sees "Seasonal" and "Intelligence
+            still being expanded" immediately; the legend has to explain
+            every one of them in plain text, not colour alone (accessible
+            text carries the meaning; colour is a bonus, never the only
+            signal — matches every aria-label already on the markers
+            themselves). Two rows because they answer two different
+            questions: how well JetStash knows a COUNTRY overall (an
+            aggregate, so it can be 'mixed'), and how well it knows THIS
+            ROUTE specifically (never 'mixed' — a single route is always
+            exactly one of the three tiers). */}
         <div className="mt-4 flex flex-col gap-3">
-          <div className="flex flex-wrap gap-4 text-xs text-ink-300">
-            {(Object.keys(CONFIDENCE_COLOUR) as CountryData['confidence'][]).map((k) => (
-              <span key={k} className="inline-flex items-center gap-1.5">
-                <span className="inline-block h-2.5 w-2.5 rounded-full" style={{ backgroundColor: CONFIDENCE_COLOUR[k].stroke }} aria-hidden="true" />
-                {CONFIDENCE_COLOUR[k].label}
-              </span>
-            ))}
+          <div>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-500">Country coverage (this destination&apos;s whole country)</p>
+            <div className="mt-1.5 flex flex-wrap gap-4 text-xs text-ink-300">
+              {(Object.keys(COUNTRY_INTELLIGENCE_COLOUR) as CountryIntelligenceLevel[]).map((k) => (
+                <span key={k} className="inline-flex items-center gap-1.5">
+                  <span className="inline-block h-2.5 w-2.5 rounded-full" style={{ backgroundColor: COUNTRY_INTELLIGENCE_COLOUR[k].stroke }} aria-hidden="true" />
+                  {COUNTRY_INTELLIGENCE_COLOUR[k].label}
+                </span>
+              ))}
+            </div>
           </div>
-          <div className="flex flex-wrap gap-4 text-xs text-ink-400">
-            {(Object.keys(DESTINATION_COLOUR) as DestinationPoint['evidenceState'][]).map((k) => (
-              <span key={k} className="inline-flex items-center gap-1.5">
-                <span className="inline-block h-2 w-2 rounded-full" style={{ backgroundColor: DESTINATION_COLOUR[k].fill }} aria-hidden="true" />
-                {DESTINATION_COLOUR[k].label}
+          <div>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-500">Route intelligence (this specific destination)</p>
+            <div className="mt-1.5 flex flex-wrap gap-4 text-xs text-ink-400">
+              {(Object.keys(ROUTE_INTELLIGENCE_COLOUR) as RouteIntelligenceLevel[]).map((k) => (
+                <span key={k} className="inline-flex items-center gap-1.5">
+                  <span className="inline-block h-2 w-2 rounded-full" style={{ backgroundColor: ROUTE_INTELLIGENCE_COLOUR[k].fill }} aria-hidden="true" />
+                  {ROUTE_INTELLIGENCE_COLOUR[k].label}
+                </span>
+              ))}
+              <span className="inline-flex items-center gap-1.5">
+                <span className="inline-block h-2 w-2 rounded-full" style={{ backgroundColor: SERVICE_NOTICE_ACCENT }} aria-hidden="true" />
+                Active service notice — a change has been announced, see the route guide
               </span>
-            ))}
-            <span className="inline-flex items-center gap-1.5">
-              <Badge variant="terracotta" className="px-2 py-0.5 text-[9px]">Seasonal</Badge>
-              service confirmed for part of the year only
-            </span>
+              <span className="inline-flex items-center gap-1.5">
+                <Badge variant="terracotta" className="px-2 py-0.5 text-[9px]">Seasonal</Badge>
+                service confirmed for part of the year only
+              </span>
+            </div>
           </div>
         </div>
 
@@ -848,11 +899,11 @@ export function AtlasFeelTest({
           >
             <div
               className="h-[3px] w-full transition-colors duration-500"
-              style={{ backgroundColor: DESTINATION_COLOUR[activeDest.evidenceState].fill }}
+              style={{ backgroundColor: ROUTE_INTELLIGENCE_COLOUR[activeDest.intelligenceLevel].fill }}
               aria-hidden="true"
             />
             <div className="p-6">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.24em]" style={{ color: DESTINATION_COLOUR[activeDest.evidenceState].fill }}>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.24em]" style={{ color: ROUTE_INTELLIGENCE_COLOUR[activeDest.intelligenceLevel].fill }}>
                 {airportName} → {activeDest.label}
               </p>
               <div className="mt-2 flex flex-wrap items-center gap-2.5">
@@ -860,14 +911,42 @@ export function AtlasFeelTest({
                 {activeDest.networkMembership === 'seasonal' && <Badge variant="terracotta">Seasonal</Badge>}
               </div>
 
+              {/* The honest three-level status, stated in plain words —
+                  never relies on the accent bar's colour alone (see the
+                  legend's own accessible-text rule). This is the single
+                  most-visible answer to "how well does JetStash know this
+                  route", so it sits first, above the more detailed verdict
+                  text below. */}
+              <p
+                className="mt-2.5 inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-semibold"
+                style={{ borderColor: `${ROUTE_INTELLIGENCE_COLOUR[activeDest.intelligenceLevel].fill}66`, color: ROUTE_INTELLIGENCE_COLOUR[activeDest.intelligenceLevel].fill }}
+              >
+                <span className="inline-block h-1.5 w-1.5 rounded-full" style={{ backgroundColor: ROUTE_INTELLIGENCE_COLOUR[activeDest.intelligenceLevel].fill }} aria-hidden="true" />
+                {ROUTE_INTELLIGENCE_COLOUR[activeDest.intelligenceLevel].label}
+              </p>
+
               {/* Truth 1 — route intelligence: how much has JetStash itself
                   independently researched about this route. */}
-              <div className="mt-5 border-l-2 pl-3.5" style={{ borderColor: DESTINATION_COLOUR[activeDest.evidenceState].fill }}>
+              <div className="mt-4 border-l-2 pl-3.5" style={{ borderColor: ROUTE_INTELLIGENCE_COLOUR[activeDest.intelligenceLevel].fill }}>
                 <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-500">Route intelligence</p>
                 <p className="mt-1.5 text-[15px] leading-snug text-ink-100">{activeDest.verdict}</p>
                 {activeDest.detail && <p className="mt-1.5 text-xs leading-relaxed text-ink-400">{activeDest.detail}</p>}
                 <p className="mt-2 text-xs text-ink-500">{activeDest.flightTime}</p>
               </div>
+
+              {/* Active service notice — additive, only rendered when real
+                  (never demotes the tier badge above). Kept visually
+                  distinct (its own accent colour, its own label) from the
+                  tier so a visitor never confuses "how well-researched is
+                  this route" with "is something about it changing right
+                  now" — two different, honest facts. */}
+              {activeDest.serviceNotice && (
+                <div className="mt-4 rounded-sm border px-3.5 py-3" style={{ borderColor: `${SERVICE_NOTICE_ACCENT}55`, backgroundColor: `${SERVICE_NOTICE_ACCENT}14` }}>
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.18em]" style={{ color: SERVICE_NOTICE_ACCENT }}>Active service notice</p>
+                  <p className="mt-1.5 text-sm leading-snug text-ink-100">{activeDest.serviceNotice.label}</p>
+                  <p className="mt-1.5 text-xs leading-relaxed text-ink-400">{activeDest.serviceNotice.detail}</p>
+                </div>
+              )}
 
               {/* Truth 2 — network evidence: is this destination genuinely
                   reachable from Manchester at all. Only rendered for

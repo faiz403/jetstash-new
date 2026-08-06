@@ -1,12 +1,99 @@
-import { getRouteBySlug, getRouteStatus as deriveRouteStatus } from '@/data/routes';
+import { getRouteBySlug, getRouteStatus as deriveRouteStatus, getDisplayDirectness } from '@/data/routes';
 import { routeStatusEvents } from '@/data/route-status-events';
 import { getRouteStatusCopy, formatRouteStatusDate } from '@/lib/route-status-copy';
 import { getDestinationBySlug } from '@/data/destinations';
 import { getAirportBySlug } from '@/data/airports';
 import { getNetworkEvidence } from '@/data/network-evidence';
-import type { AirportNetworkData, CountryData, DestinationPoint } from '@/components/founder/atlas-feel-test';
+import { getPublishableObservationsByRoute } from '@/data/fare-observations';
+import { getActiveWarningsByRoute } from '@/data/route-warnings';
+import { isBookByRoute } from '@/lib/booking-intelligence';
+import { travellerTips } from '@/data/traveller-tips';
+import type { AirportNetworkData, CountryData, DestinationPoint, RouteIntelligenceLevel, CountryIntelligenceLevel } from '@/components/founder/atlas-feel-test';
 
 const nowIso = new Date().toISOString().slice(0, 10);
+
+/**
+ * Route Coverage Truth (August 2026) — the honest, three-level answer to
+ * "how much has JetStash actually researched this route", replacing the
+ * old evidenceState/confidence system that let a single verified
+ * destination make an entire country look "strong" (aggregateCountryIntelligence
+ * below fixes the aggregation half of that; this fixes the per-route half).
+ *
+ * Deliberately NOT the same thing as the `factsConfidence` field
+ * data/routes.ts documents removing (see that file's comment, ~line 974):
+ * that field collapsed a route's WHOLE FACT BUNDLE into one "verified"
+ * label, which was false the moment frequency or a specific airline wasn't
+ * independently confirmed. This never claims that. It answers a narrower,
+ * honestly-answerable question — does real, BROAD depth of guidance exist
+ * beyond the baseline route page — using only fields that already exist and
+ * are already independently gated.
+ *
+ * Corrected (August 2026, product-truth review of the first version of this
+ * function): the original threshold required only ONE depth signal, which
+ * let a route reach "JetStash knows this route well" on the strength of a
+ * single connecting-alternative paragraph or a single reduced-frequency
+ * warning, with nothing else behind it. Tested against the real 32-route
+ * dataset, that let 7 of 16 "Strong" routes qualify on exactly one signal
+ * (Manchester-Amritsar/Ahmedabad on connectingAlternative alone; Leeds
+ * Bradford-Islamabad and both Gatwick routes on a warning alone;
+ * Heathrow-Bengaluru on airline verification alone) — thinner than the
+ * customer-facing wording defensibly implies. The fix requires BREADTH: at
+ * least two of the six categories below, not any single one. A prior
+ * candidate category ("has an independently checkable source URL") was
+ * tested against the real data and dropped — every route-level `verified`
+ * record in this dataset already carries a sourceUrl (14/14), so it never
+ * actually differentiated anything; it would have inflated every verified
+ * route's score by exactly one point without adding real signal. Airport
+ * -specific transfer guidance was considered too, but 0 of 32 routes
+ * currently have any (data/traveller-tips.ts has no airport-scoped entry
+ * yet) — including it as a required or scored category today would be
+ * un-clearable by definition, not a meaningful bar; it's tracked in the
+ * audit doc instead and should be added here once at least one route earns
+ * one. Trip.com hand-off is deliberately excluded from scoring too — it's
+ * commercial/affiliate completeness (which UK airports Trip.com covers),
+ * not evidence JetStash has researched the route, and several of the
+ * thinnest routes in the dataset (Manchester-Amritsar/Ahmedabad) have a
+ * Trip.com link purely because Manchester has broad affiliate coverage.
+ *
+ * Bug fix folded in here (unchanged from the first version): the old
+ * evidenceState only ever checked route.verification (route-level), never
+ * route.airlineVerifications (per-airline). That's a known, previously
+ * -documented gap (see the git history around
+ * tests/heathrow-bengaluru-route.test.ts) that quietly under-stated
+ * Heathrow-Delhi, Heathrow-Mumbai and Heathrow-Bengaluru as "pending"
+ * despite each having a current, primary-sourced airline verification.
+ * getDisplayDirectness() already correctly checks both, so routing through
+ * it here fixes that leak generically rather than special-casing three
+ * routes.
+ */
+export function computeRouteIntelligenceLevel(route: NonNullable<ReturnType<typeof getRouteBySlug>>, nowIsoDate: string): RouteIntelligenceLevel {
+  const directness = getDisplayDirectness(route, nowIsoDate);
+  if (directness === 'unverified') return 'useful';
+
+  // Six independently-gated depth categories. Each answers a genuinely
+  // different question about how much JetStash has actually researched
+  // this specific route — none is inferred from another, and none can be
+  // satisfied by rewording prose.
+  const hasAirlineDepth = Boolean(route.airlineVerifications && route.airlineVerifications.length > 0); // per-carrier breakdown, not just one route-level claim
+  const hasConnectingDepth = Boolean(route.connectingAlternative); // real hub/stops/journey-time detail
+  const hasFareDepth = getPublishableObservationsByRoute(route.slug, nowIsoDate).length > 0; // dated, publishable fare evidence
+  const hasBookByDepth = isBookByRoute(route.slug); // dated, festival-anchored booking-timing guidance, not just generic prose
+  // A specific, sourced, investigated warning (e.g. Leeds Bradford's
+  // repeatedly-failed direct-service claims) is itself real research, not
+  // an absence of it — never the vague "0 warnings means nothing to say"
+  // reading.
+  const hasWarningDepth = getActiveWarningsByRoute(route.slug).length > 0;
+  const hasBaggageDepth = travellerTips.some(
+    (t) => t.category === 'baggage' && (t.scope.routeSlug === route.slug || t.scope.destinationSlug === route.destinationSlug)
+  );
+
+  const depthCategoryCount = [hasAirlineDepth, hasConnectingDepth, hasFareDepth, hasBookByDepth, hasWarningDepth, hasBaggageDepth].filter(Boolean).length;
+
+  // Breadth, not presence: one deep, well-sourced category is real
+  // research, but "JetStash knows this route well" needs more than one
+  // kind of depth behind it.
+  return depthCategoryCount >= 2 ? 'strong' : 'useful';
+}
 
 function buildDestinationPoint(airportSlug: string, destSlug: string, x: number, y: number): DestinationPoint | null {
   const dest = getDestinationBySlug(destSlug);
@@ -14,8 +101,8 @@ function buildDestinationPoint(airportSlug: string, destSlug: string, x: number,
   if (!dest || !route) return null;
 
   const status = deriveRouteStatus(route, routeStatusEvents, nowIso);
-  let evidenceState: DestinationPoint['evidenceState'] = 'pending';
-  // Branches on route.isDirect, not just verification status â€” a route can
+  const intelligenceLevel = computeRouteIntelligenceLevel(route, nowIso);
+  // Branches on route.isDirect, not just verification status — a route can
   // be genuinely VERIFIED as connecting (birmingham-mumbai: Birmingham
   // Airport's own page confirms no direct service exists at all), and the
   // earlier version of this function claimed "Direct service verified" for
@@ -23,21 +110,41 @@ function buildDestinationPoint(airportSlug: string, destSlug: string, x: number,
   // happened to have a verified+non-direct route; surfaced the moment
   // Birmingham did. Fixed generically, not special-cased to Birmingham.
   let verdict = route.isDirect
-    ? 'Direct service not yet independently verified â€” check directly with the airline before booking.'
-    : 'Modelled as a connecting route â€” check directly with the airline for current routing before booking.';
+    ? 'Direct service not yet independently verified — check directly with the airline before booking.'
+    : 'Modelled as a connecting route — check directly with the airline for current routing before booking.';
   let detail: string | null = route.verification?.note ?? null;
 
+  if (route.verification?.status === 'verified' || getDisplayDirectness(route, nowIso) === 'direct') {
+    verdict = route.isDirect ? 'Direct service verified.' : 'Connecting route verified — no direct service currently exists.';
+    if (route.verification) {
+      detail = `Checked ${formatRouteStatusDate(route.verification.verifiedDate)}.`;
+    } else {
+      // No route-level verification record — the 'direct' verdict above
+      // came from a current per-airline verification instead (see
+      // getDisplayDirectness/computeRouteIntelligenceLevel). Cite that
+      // evidence directly rather than leaving detail blank.
+      const currentAirline = (route.airlineVerifications ?? []).find((v) => v.verifiedDate);
+      detail = currentAirline ? `${currentAirline.sourceName}, checked ${formatRouteStatusDate(currentAirline.verifiedDate)}.` : detail;
+    }
+  }
+
+  // An active service-change/withdrawal notice is a SEPARATE, additive
+  // signal from intelligenceLevel above — a well-researched route (Route
+  // Status ledger entry, dated citations, an explained effective date)
+  // doesn't become less well-researched because the service itself is
+  // changing; it becomes a route worth a closer look right now, which is a
+  // different fact and stays visible on its own rather than silently
+  // demoting the route's evidence tier (see JETSTASH_PRINCIPLES.md's Atlas
+  // section for the full reasoning).
+  let serviceNotice: DestinationPoint['serviceNotice'] = null;
   if (status?.status === 'withdrawal-announced') {
     const viewModel = getRouteStatusCopy(route, status, routeStatusEvents, nowIso);
-    evidenceState = 'withdrawal-announced';
     if (viewModel.kind === 'withdrawal-announced') {
-      verdict = `${viewModel.citations[0]?.publisher ?? 'The airline'} has announced a change, effective ${formatRouteStatusDate(viewModel.effectiveFrom)}.`;
-      detail = viewModel.explanation;
+      serviceNotice = {
+        label: `${viewModel.citations[0]?.publisher ?? 'The airline'} has announced a change, effective ${formatRouteStatusDate(viewModel.effectiveFrom)}.`,
+        detail: viewModel.explanation,
+      };
     }
-  } else if (route.verification?.status === 'verified') {
-    evidenceState = 'verified';
-    verdict = route.isDirect ? 'Direct service verified.' : 'Connecting route verified â€” no direct service currently exists.';
-    detail = `Checked ${formatRouteStatusDate(route.verification.verifiedDate)}.`;
   }
 
   return {
@@ -46,13 +153,14 @@ function buildDestinationPoint(airportSlug: string, destSlug: string, x: number,
     x,
     y,
     // The route's own presence in the Route Status ledger IS the network
-    // evidence here â€” a routes.ts entry is itself an individually
+    // evidence here — a routes.ts entry is itself an individually
     // researched route guide, never a fabricated placeholder. None of the
     // routes.ts entries used by this Atlas so far are seasonal; if a future
     // one is, this will need to read that from the route record rather than
     // assuming 'supported'.
     networkMembership: 'supported',
-    evidenceState,
+    intelligenceLevel,
+    serviceNotice,
     verdict,
     detail,
     flightTime: route.flightTime,
@@ -61,10 +169,10 @@ function buildDestinationPoint(airportSlug: string, destSlug: string, x: number,
   };
 }
 // For real JetStash destinations that have no entry at all in the Route
-// Status ledger (data/routes.ts) yet â€” no verification, no confidence,
+// Status ledger (data/routes.ts) yet — no verification, no confidence,
 // nothing getRouteBySlug can return. This does NOT mean the destination is
-// unreachable from the selected airport: that separate question â€” "is it
-// genuinely in the network?" â€” is answered by data/network-evidence.ts, a
+// unreachable from the selected airport: that separate question — "is it
+// genuinely in the network?" — is answered by data/network-evidence.ts, a
 // real, independently-audited network-evidence layer keyed by airport slug
 // (see that file's header for full source discipline). A destination only
 // reaches this function, and only appears in the Atlas at all, if that
@@ -72,23 +180,28 @@ function buildDestinationPoint(airportSlug: string, destSlug: string, x: number,
 // airport; if it found none, the destination is left out of that airport's
 // network entirely rather than shown with a guessed status.
 //
-// evidenceState stays 'not-yet-tracked' regardless â€” that's the honest,
+// intelligenceLevel stays 'expanding' regardless — that's the honest,
 // separate statement that JetStash hasn't done its OWN route-intelligence
-// research yet (fare history, verification, confidence), never conflated
-// with the network-membership question this function already resolved.
+// research yet (fare history, verification, guidance depth), never
+// conflated with the network-membership question this function already
+// resolved. This is also, structurally, why no Atlas route can ever be
+// blank: a destination either has a real routes.ts entry (computed above
+// via computeRouteIntelligenceLevel) or it lands here and gets exactly this
+// one honest, always-present label — there is no third code path that
+// renders nothing.
 function buildUntrackedDestinationPoint(airportSlug: string, destSlug: string, x: number, y: number): DestinationPoint | null {
   const dest = getDestinationBySlug(destSlug);
   const airport = getAirportBySlug(airportSlug);
   const evidence = getNetworkEvidence(destSlug, airportSlug);
   if (!dest || !airport || !evidence || evidence.membership === 'not-supported') return null;
   // dest.flightTimeFromUK is a general destinations.ts field that names
-  // WHICHEVER UK airport that copy happened to be written about â€” for
+  // WHICHEVER UK airport that copy happened to be written about — for
   // Marrakech and Agadir it's London Gatwick, for Faro it's Bristol, not
   // necessarily this airport. Piping it straight through would leak a
-  // different airport's flight time onto this route â€” exactly the
+  // different airport's flight time onto this route — exactly the
   // wrong-airport duration bug this project has already fixed once this
   // session. Only use it here when it actually names this airport's city.
-  // Even where it does, the string still asserts "direct" â€” a claim the
+  // Even where it does, the string still asserts "direct" — a claim the
   // network-evidence audit explicitly could not confirm for any airport
   // audited so far (direct-vs-connecting was unresolved on every primary
   // source reached). Strip that word rather than repeat an unconfirmed
@@ -103,7 +216,8 @@ function buildUntrackedDestinationPoint(airportSlug: string, destSlug: string, x
     y,
     networkMembership: evidence.membership,
     networkNote: `${evidence.evidenceSource} (verified ${formatRouteStatusDate(evidence.dateVerified)}).`,
-    evidenceState: 'not-yet-tracked',
+    intelligenceLevel: 'expanding',
+    serviceNotice: null,
     verdict: 'Route intelligence not yet researched.',
     detail: null,
     flightTime,
@@ -112,37 +226,44 @@ function buildUntrackedDestinationPoint(airportSlug: string, destSlug: string, x
   };
 }
 
-// Country-level confidence is an honest aggregate of its own destinations'
-// states â€” never a fabricated single score, just "what's the strongest
-// signal present" so a visitor isn't clicking blind, per the agreed
-// principle that confidence must never disappear until the city level.
-function aggregateCountryConfidence(points: DestinationPoint[]): CountryData['confidence'] {
-  if (points.some((p) => p.evidenceState === 'verified')) return 'strong';
-  if (points.some((p) => p.evidenceState === 'withdrawal-announced')) return 'mixed';
-  if (points.every((p) => p.evidenceState === 'pending')) return 'early';
-  return 'early';
+// Route Coverage Truth (August 2026): conservative aggregation, replacing
+// the old .some(verified) rule that let a single strong destination make an
+// entire country read "strong" even when its siblings were pending or
+// untracked. A country's badge must never claim more than its WEAKEST
+// meaningfully-represented destination supports:
+//   - every destination at 'strong'            -> 'strong'   (the country really is well known)
+//   - a mix of 'strong' and anything weaker     -> 'mixed'    (some routes need a closer look)
+//   - no 'strong' destination, but some 'useful' -> 'useful'   (real guidance exists, not yet strongest)
+//   - every destination is 'expanding'          -> 'expanding' (early-stage across the board)
+export function aggregateCountryIntelligence(points: DestinationPoint[]): CountryIntelligenceLevel {
+  const allStrong = points.every((p) => p.intelligenceLevel === 'strong');
+  if (allStrong) return 'strong';
+  const anyStrong = points.some((p) => p.intelligenceLevel === 'strong');
+  if (anyStrong) return 'mixed';
+  const anyUseful = points.some((p) => p.intelligenceLevel === 'useful');
+  return anyUseful ? 'useful' : 'expanding';
 }
 
 /**
  * Destination points below are NOT independently re-derived from a global
- * projection formula â€” that approach is exactly what produced unverifiable
+ * projection formula — that approach is exactly what produced unverifiable
  * hand-placed positions before. Instead, each point is computed as a real
  * lon/lat fraction WITHIN its own country's actual fetched bounding box
  * (see lib/atlas-country-geometry.ts for the source), so even if the
  * fraction estimate is imperfect, the point is mathematically guaranteed
- * to land inside or very near the real country shape it belongs to â€” the
+ * to land inside or very near the real country shape it belongs to — the
  * failure mode of "marker floating outside its own country" is structurally
  * ruled out, which a from-scratch global formula could not guarantee.
  *
  * For the countries added when this feel test was extended to all current
  * JetStash destinations, that guarantee was made mechanical rather than
  * eyeballed: a Node script parsed each country's real path into its
- * constituent subpaths (so an offshore territory â€” Balearic Islands,
- * Sicily, Sardinia, the Azores â€” can't skew a mainland-only fraction
+ * constituent subpaths (so an offshore territory — Balearic Islands,
+ * Sicily, Sardinia, the Azores — can't skew a mainland-only fraction
  * calculation), took the largest subpath as the country's mainland, and
  * ran a point-in-polygon check on every computed destination position
  * against that real mainland shape. Every point either landed inside it
- * outright, or â€” for a handful of coastal cities â€” within ~2px of its
+ * outright, or — for a handful of coastal cities — within ~2px of its
  * edge, in which case the script snapped it to the nearest point ON the
  * real polygon rather than trusting the estimate. Nothing here was placed
  * by eye.
@@ -157,7 +278,7 @@ function aggregateCountryConfidence(points: DestinationPoint[]): CountryData['co
  * 617.3-619.7 y 387.3-392.2; sa x 572.0-631.0 y 368.2-416.6.
  *
  * Real-world lon/lat used for the fraction calculation (standard,
- * publicly known city/country coordinates â€” Manchester, Mumbai, Delhi,
+ * publicly known city/country coordinates — Manchester, Mumbai, Delhi,
  * Amritsar, Ahmedabad and Dubai were previously verified against the
  * production route-map-hero formula earlier in this session; the rest
  * follow the same method): Lahore 74.35,31.55; Islamabad 73.05,33.68;
@@ -170,18 +291,18 @@ function aggregateCountryConfidence(points: DestinationPoint[]): CountryData['co
  * Casablanca and Tangier are real JetStash destinations but are not
  * included here: a dedicated network-evidence audit (2026-07-25, see
  * data/network-evidence.ts) found no Manchester claim for either one in
- * any source, official or otherwise â€” both are genuinely London-only â€”
+ * any source, official or otherwise — both are genuinely London-only —
  * so there is no honest way to place them on a Manchester-origin map.
  * Their country, Morocco, still appears here via Marrakech and Agadir,
  * both confirmed Manchester-served by that same audit.
  */
 
 // This function is the ENTIRE Manchester-specific part of the Atlas engine
-// â€” everything downstream (the shared AtlasFeelTest component, the airport
+// — everything downstream (the shared AtlasFeelTest component, the airport
 // selector, the interaction model) is generic. Adding a second airport
 // means writing a sibling function like this one and adding it to the
 // `airports` array below; it never means touching atlas-feel-test.tsx.
-// Nothing about this function's SHAPE is Manchester-specific either â€” only
+// Nothing about this function's SHAPE is Manchester-specific either — only
 // the coordinates and route slugs inside it are, because those are this
 // airport's own real, audited network.
 function buildManchesterNetwork(): AirportNetworkData {
@@ -229,12 +350,12 @@ function buildManchesterNetwork(): AirportNetworkData {
   ].filter((p): p is DestinationPoint => p !== null);
 
   // Turkey, Morocco (excl. Casablanca/Tangier), Spain, Portugal, Greece and
-  // Italy have no Route Status ledger entry yet â€” but they DO have real
+  // Italy have no Route Status ledger entry yet — but they DO have real
   // network evidence (data/network-evidence.ts, audited 2026-07-25 against
   // Manchester Airport's own destination pages) confirming Manchester
   // reachability, which is why they're included here at all. Route
   // intelligence and network membership are deliberately different
-  // questions â€” see the DestinationPoint comment in atlas-feel-test.tsx.
+  // questions — see the DestinationPoint comment in atlas-feel-test.tsx.
   const turkeyPoints = [
     buildUntrackedDestinationPoint('manchester', 'istanbul', 557.16, 337.18),
     buildUntrackedDestinationPoint('manchester', 'antalya', 561.92, 351.8),
@@ -266,7 +387,7 @@ function buildManchesterNetwork(): AirportNetworkData {
 
   const countries: CountryData[] = [
     // Country marker position = the real computed centroid of that
-    // country's own fetched path (see lib/atlas-country-geometry.ts) â€”
+    // country's own fetched path (see lib/atlas-country-geometry.ts) —
     // an actual geometric property of the real shape, not estimated.
     // India and UAE keep their already-approved whole-shape centroids
     // unchanged; every country added afterwards uses its MAINLAND
@@ -274,19 +395,19 @@ function buildManchesterNetwork(): AirportNetworkData {
     // Azores for Portugal, the Balearics for Spain, Sicily/Sardinia for
     // Italy) can't drag the marker away from where its destinations
     // actually are.
-    { slug: 'india', label: 'India', x: 722, y: 400, confidence: aggregateCountryConfidence(indiaPoints), destinations: indiaPoints },
-    { slug: 'uae', label: 'United Arab Emirates', x: 628, y: 394, confidence: aggregateCountryConfidence(uaePoints), destinations: uaePoints },
-    { slug: 'pakistan', label: 'Pakistan', x: 687.71, y: 357.09, confidence: aggregateCountryConfidence(pakistanPoints), destinations: pakistanPoints },
-    { slug: 'bangladesh', label: 'Bangladesh', x: 728.17, y: 394.6, confidence: aggregateCountryConfidence(bangladeshPoints), destinations: bangladeshPoints },
-    { slug: 'qatar', label: 'Qatar', x: 618.56, y: 390.2, confidence: aggregateCountryConfidence(qatarPoints), destinations: qatarPoints },
-    { slug: 'saudi-arabia', label: 'Saudi Arabia', x: 602.66, y: 395.32, confidence: aggregateCountryConfidence(saudiPoints), destinations: saudiPoints },
-    { slug: 'turkey', label: 'Turkey', x: 575.31, y: 345.75, confidence: aggregateCountryConfidence(turkeyPoints), destinations: turkeyPoints },
-    { slug: 'morocco', label: 'Morocco', x: 459.51, y: 369.31, confidence: aggregateCountryConfidence(moroccoPoints), destinations: moroccoPoints },
-    { slug: 'spain', label: 'Spain', x: 464.61, y: 338.83, confidence: aggregateCountryConfidence(spainPoints), destinations: spainPoints },
-    { slug: 'portugal', label: 'Portugal', x: 452.75, y: 341.03, confidence: aggregateCountryConfidence(portugalPoints), destinations: portugalPoints },
-    { slug: 'greece', label: 'Greece', x: 541.77, y: 343.4, confidence: aggregateCountryConfidence(greecePoints), destinations: greecePoints },
-    { slug: 'italy', label: 'Italy', x: 508.35, y: 326.2, confidence: aggregateCountryConfidence(italyPoints), destinations: italyPoints },
-    // Every country above has at least one real destination â€” none is
+    { slug: 'india', label: 'India', x: 722, y: 400, intelligenceLevel: aggregateCountryIntelligence(indiaPoints), destinations: indiaPoints },
+    { slug: 'uae', label: 'United Arab Emirates', x: 628, y: 394, intelligenceLevel: aggregateCountryIntelligence(uaePoints), destinations: uaePoints },
+    { slug: 'pakistan', label: 'Pakistan', x: 687.71, y: 357.09, intelligenceLevel: aggregateCountryIntelligence(pakistanPoints), destinations: pakistanPoints },
+    { slug: 'bangladesh', label: 'Bangladesh', x: 728.17, y: 394.6, intelligenceLevel: aggregateCountryIntelligence(bangladeshPoints), destinations: bangladeshPoints },
+    { slug: 'qatar', label: 'Qatar', x: 618.56, y: 390.2, intelligenceLevel: aggregateCountryIntelligence(qatarPoints), destinations: qatarPoints },
+    { slug: 'saudi-arabia', label: 'Saudi Arabia', x: 602.66, y: 395.32, intelligenceLevel: aggregateCountryIntelligence(saudiPoints), destinations: saudiPoints },
+    { slug: 'turkey', label: 'Turkey', x: 575.31, y: 345.75, intelligenceLevel: aggregateCountryIntelligence(turkeyPoints), destinations: turkeyPoints },
+    { slug: 'morocco', label: 'Morocco', x: 459.51, y: 369.31, intelligenceLevel: aggregateCountryIntelligence(moroccoPoints), destinations: moroccoPoints },
+    { slug: 'spain', label: 'Spain', x: 464.61, y: 338.83, intelligenceLevel: aggregateCountryIntelligence(spainPoints), destinations: spainPoints },
+    { slug: 'portugal', label: 'Portugal', x: 452.75, y: 341.03, intelligenceLevel: aggregateCountryIntelligence(portugalPoints), destinations: portugalPoints },
+    { slug: 'greece', label: 'Greece', x: 541.77, y: 343.4, intelligenceLevel: aggregateCountryIntelligence(greecePoints), destinations: greecePoints },
+    { slug: 'italy', label: 'Italy', x: 508.35, y: 326.2, intelligenceLevel: aggregateCountryIntelligence(italyPoints), destinations: italyPoints },
+    // Every country above has at least one real destination — none is
     // shown just for geographic decoration (that's what CONTEXT_PATH_KEYS
     // in the component is for).
   ].filter((c) => c.destinations.length > 0);
@@ -303,14 +424,23 @@ function buildManchesterNetwork(): AirportNetworkData {
     // the strongest verified, non-withdrawal alternative already in this
     // network: verified directly on Emirates' own route page (the most
     // recently checked of any Manchester route here), zero
-    // route-status-events, two real logged fare observations
-    // (data/fare-observations.ts, obs-man-dxb-economy-1/business-1), and one
-    // of the six routes STATUS.md's SOFT_LAUNCH_PACK originally hand-picked
-    // for "logged fare evidence and a verified TravelUp deep link today" —
-    // that quote is historical (TravelUp has since been removed entirely;
-    // see lib/booking-providers.ts), but the route independently carries a
-    // genuine Trip.com link today too, so the underlying justification still
-    // holds. UAE
+    // route-status-events, and one of the six routes STATUS.md's
+    // SOFT_LAUNCH_PACK originally hand-picked for "logged fare evidence and
+    // a verified TravelUp deep link today" — that quote is historical
+    // (TravelUp has since been removed entirely; see lib/booking-providers.ts),
+    // but the route independently carries a genuine Trip.com link today too,
+    // so the directness/verification part of that justification still
+    // holds. Route Coverage Truth correction (August 2026): the two logged
+    // fare observations this comment used to cite (obs-man-dxb-economy-1/
+    // business-1) predate the Truth Reset departureDate/returnDate
+    // requirement (isPubliclyPublishable(), data/fare-observations.ts) and
+    // are therefore NOT currently publicly displayable — computeRouteIntelligenceLevel
+    // correctly grades this route 'useful', not 'strong', on that basis (see
+    // docs/project-control/ROUTE_COVERAGE_AUDIT.md for the full finding).
+    // Kept as the default landing country anyway: it's still the strongest
+    // verified, non-withdrawal, single-destination option in this network,
+    // and a route being the honest default doesn't require it to already be
+    // the strongest-graded one — the Atlas is explicit that it isn't. UAE
     // is also architecturally the simplest possible default: exactly one
     // destination, so there's no ordering ambiguity about which city shows
     // first, unlike India or Pakistan's multi-destination arrays. Mumbai
@@ -323,24 +453,24 @@ function buildManchesterNetwork(): AirportNetworkData {
 }
 
 /**
- * Birmingham â€” the first Airport Pack built after Manchester, deliberately
+ * Birmingham — the first Airport Pack built after Manchester, deliberately
  * scoped to validate the multi-airport architecture rather than to
  * maximise destination count (per the 2026-07-26 network audit,
  * docs/atlas-airport-network-audit.md).
  *
  * Every destination below has a real data/routes.ts entry for
- * 'birmingham-<destSlug>' â€” Amritsar, Lahore, Islamabad, Madinah, Mumbai,
+ * 'birmingham-<destSlug>' — Amritsar, Lahore, Islamabad, Madinah, Mumbai,
  * the only five Birmingham routes with adequate sourced network evidence
  * per that audit. No network-evidence.ts-only ("route intelligence not yet
  * researched") destinations are included here: those require the same kind
  * of primary-source audit already done for Manchester's secondary
  * destinations (opening Birmingham Airport's own destination pages and
- * reading them directly), which hasn't been done for Birmingham yet â€” so
+ * reading them directly), which hasn't been done for Birmingham yet — so
  * none are added rather than guessed at. buildDestinationPoint requires no
  * changes to add these; it was already generalised to accept any airport
  * slug when the engine was refactored.
  *
- * Destination and country coordinates are real geography, not re-derived â€”
+ * Destination and country coordinates are real geography, not re-derived —
  * a city's position on this map does not depend on which airport you fly
  * from, so Amritsar, Lahore, Islamabad, Madinah and Mumbai reuse the exact
  * same real, point-in-polygon-verified positions already established for
@@ -348,7 +478,7 @@ function buildManchesterNetwork(): AirportNetworkData {
  * position) is new.
  */
 function buildBirminghamNetwork(): AirportNetworkData {
-  // Birmingham Airport (BHX): 52.4539Â°N, 1.7480Â°W â€” standard, publicly
+  // Birmingham Airport (BHX): 52.4539Â°N, 1.7480Â°W — standard, publicly
   // known airport coordinates. Projected with the same method and the same
   // implied UK reference extent as Manchester's origin, verified against the
   // same real-coordinate projection used for every airport in this pack
@@ -370,9 +500,9 @@ function buildBirminghamNetwork(): AirportNetworkData {
   ].filter((p): p is DestinationPoint => p !== null);
 
   const countries: CountryData[] = [
-    { slug: 'india', label: 'India', x: 722, y: 400, confidence: aggregateCountryConfidence(indiaPoints), destinations: indiaPoints },
-    { slug: 'pakistan', label: 'Pakistan', x: 687.71, y: 357.09, confidence: aggregateCountryConfidence(pakistanPoints), destinations: pakistanPoints },
-    { slug: 'saudi-arabia', label: 'Saudi Arabia', x: 602.66, y: 395.32, confidence: aggregateCountryConfidence(saudiPoints), destinations: saudiPoints },
+    { slug: 'india', label: 'India', x: 722, y: 400, intelligenceLevel: aggregateCountryIntelligence(indiaPoints), destinations: indiaPoints },
+    { slug: 'pakistan', label: 'Pakistan', x: 687.71, y: 357.09, intelligenceLevel: aggregateCountryIntelligence(pakistanPoints), destinations: pakistanPoints },
+    { slug: 'saudi-arabia', label: 'Saudi Arabia', x: 602.66, y: 395.32, intelligenceLevel: aggregateCountryIntelligence(saudiPoints), destinations: saudiPoints },
   ].filter((c) => c.destinations.length > 0);
 
   return {
@@ -441,18 +571,18 @@ function buildHeathrowNetwork(): AirportNetworkData {
   ].filter((p): p is DestinationPoint => p !== null);
 
   const countries: CountryData[] = [
-    { slug: 'india', label: 'India', x: 722, y: 400, confidence: aggregateCountryConfidence(indiaPoints), destinations: indiaPoints },
-    { slug: 'qatar', label: 'Qatar', x: 618.56, y: 390.2, confidence: aggregateCountryConfidence(qatarPoints), destinations: qatarPoints },
-    { slug: 'saudi-arabia', label: 'Saudi Arabia', x: 602.66, y: 395.32, confidence: aggregateCountryConfidence(saudiPoints), destinations: saudiPoints },
-    { slug: 'bangladesh', label: 'Bangladesh', x: 728.17, y: 394.6, confidence: aggregateCountryConfidence(bangladeshPoints), destinations: bangladeshPoints },
+    { slug: 'india', label: 'India', x: 722, y: 400, intelligenceLevel: aggregateCountryIntelligence(indiaPoints), destinations: indiaPoints },
+    { slug: 'qatar', label: 'Qatar', x: 618.56, y: 390.2, intelligenceLevel: aggregateCountryIntelligence(qatarPoints), destinations: qatarPoints },
+    { slug: 'saudi-arabia', label: 'Saudi Arabia', x: 602.66, y: 395.32, intelligenceLevel: aggregateCountryIntelligence(saudiPoints), destinations: saudiPoints },
+    { slug: 'bangladesh', label: 'Bangladesh', x: 728.17, y: 394.6, intelligenceLevel: aggregateCountryIntelligence(bangladeshPoints), destinations: bangladeshPoints },
   ].filter((c) => c.destinations.length > 0);
 
   return { airportSlug: 'london-heathrow', airportName: 'London Heathrow', origin, defaultCountrySlug: 'india', countries };
 }
 
 /**
- * London Gatwick â€” 2 routes.ts entries (ahmedabad, amritsar), the full set
- * with adequate sourced network evidence. One country, two destinations â€”
+ * London Gatwick — 2 routes.ts entries (ahmedabad, amritsar), the full set
+ * with adequate sourced network evidence. One country, two destinations —
  * acceptable per instruction; not padded with unsourced claims.
  */
 function buildGatwickNetwork(): AirportNetworkData {
@@ -465,14 +595,14 @@ function buildGatwickNetwork(): AirportNetworkData {
   ].filter((p): p is DestinationPoint => p !== null);
 
   const countries: CountryData[] = [
-    { slug: 'india', label: 'India', x: 722, y: 400, confidence: aggregateCountryConfidence(indiaPoints), destinations: indiaPoints },
+    { slug: 'india', label: 'India', x: 722, y: 400, intelligenceLevel: aggregateCountryIntelligence(indiaPoints), destinations: indiaPoints },
   ].filter((c) => c.destinations.length > 0);
 
   return { airportSlug: 'london-gatwick', airportName: 'London Gatwick', origin, defaultCountrySlug: 'india', countries };
 }
 
 /**
- * Glasgow â€” exactly one routes.ts entry (dubai). A single-country,
+ * Glasgow — exactly one routes.ts entry (dubai). A single-country,
  * single-destination network is the honest shape of Glasgow's currently
  * evidenced network; not expanded to look fuller.
  */
@@ -485,13 +615,13 @@ function buildGlasgowNetwork(): AirportNetworkData {
   ].filter((p): p is DestinationPoint => p !== null);
 
   const countries: CountryData[] = [
-    { slug: 'uae', label: 'United Arab Emirates', x: 628, y: 394, confidence: aggregateCountryConfidence(uaePoints), destinations: uaePoints },
+    { slug: 'uae', label: 'United Arab Emirates', x: 628, y: 394, intelligenceLevel: aggregateCountryIntelligence(uaePoints), destinations: uaePoints },
   ].filter((c) => c.destinations.length > 0);
 
   return { airportSlug: 'glasgow', airportName: 'Glasgow', origin, defaultCountrySlug: 'uae', countries };
 }
 
-/** Edinburgh â€” exactly one routes.ts entry (dubai), same shape as Glasgow. */
+/** Edinburgh — exactly one routes.ts entry (dubai), same shape as Glasgow. */
 function buildEdinburghNetwork(): AirportNetworkData {
   // Edinburgh Airport (EDI): 55.9500Â°N, 3.3725Â°W.
   const origin = { x: 468.0, y: 274.4 };
@@ -501,13 +631,13 @@ function buildEdinburghNetwork(): AirportNetworkData {
   ].filter((p): p is DestinationPoint => p !== null);
 
   const countries: CountryData[] = [
-    { slug: 'uae', label: 'United Arab Emirates', x: 628, y: 394, confidence: aggregateCountryConfidence(uaePoints), destinations: uaePoints },
+    { slug: 'uae', label: 'United Arab Emirates', x: 628, y: 394, intelligenceLevel: aggregateCountryIntelligence(uaePoints), destinations: uaePoints },
   ].filter((c) => c.destinations.length > 0);
 
   return { airportSlug: 'edinburgh', airportName: 'Edinburgh', origin, defaultCountrySlug: 'uae', countries };
 }
 
-/** Newcastle â€” exactly one routes.ts entry (dubai), same shape again. */
+/** Newcastle — exactly one routes.ts entry (dubai), same shape again. */
 function buildNewcastleNetwork(): AirportNetworkData {
   // Newcastle International Airport (NCL): 55.0375Â°N, 1.6917Â°W.
   const origin = { x: 473.7, y: 280.0 };
@@ -517,15 +647,15 @@ function buildNewcastleNetwork(): AirportNetworkData {
   ].filter((p): p is DestinationPoint => p !== null);
 
   const countries: CountryData[] = [
-    { slug: 'uae', label: 'United Arab Emirates', x: 628, y: 394, confidence: aggregateCountryConfidence(uaePoints), destinations: uaePoints },
+    { slug: 'uae', label: 'United Arab Emirates', x: 628, y: 394, intelligenceLevel: aggregateCountryIntelligence(uaePoints), destinations: uaePoints },
   ].filter((c) => c.destinations.length > 0);
 
   return { airportSlug: 'newcastle', airportName: 'Newcastle', origin, defaultCountrySlug: 'uae', countries };
 }
 
 /**
- * Leeds Bradford â€” 2 routes.ts entries (amritsar, islamabad), both
- * genuinely researched as `isDirect: false` â€” Leeds Bradford has no stable
+ * Leeds Bradford — 2 routes.ts entries (amritsar, islamabad), both
+ * genuinely researched as `isDirect: false` — Leeds Bradford has no stable
  * direct service to either, per airports.ts's own standing caution about
  * unproven direct-service claims on this airport. The honest network here
  * is two connecting-only destinations across two countries; the panel's
@@ -545,8 +675,8 @@ function buildLeedsBradfordNetwork(): AirportNetworkData {
   ].filter((p): p is DestinationPoint => p !== null);
 
   const countries: CountryData[] = [
-    { slug: 'india', label: 'India', x: 722, y: 400, confidence: aggregateCountryConfidence(indiaPoints), destinations: indiaPoints },
-    { slug: 'pakistan', label: 'Pakistan', x: 687.71, y: 357.09, confidence: aggregateCountryConfidence(pakistanPoints), destinations: pakistanPoints },
+    { slug: 'india', label: 'India', x: 722, y: 400, intelligenceLevel: aggregateCountryIntelligence(indiaPoints), destinations: indiaPoints },
+    { slug: 'pakistan', label: 'Pakistan', x: 687.71, y: 357.09, intelligenceLevel: aggregateCountryIntelligence(pakistanPoints), destinations: pakistanPoints },
   ].filter((c) => c.destinations.length > 0);
 
   return { airportSlug: 'leeds-bradford', airportName: 'Leeds Bradford', origin, defaultCountrySlug: 'india', countries };
@@ -554,18 +684,18 @@ function buildLeedsBradfordNetwork(): AirportNetworkData {
 
 // Adding another airport: write a sibling `build<Airport>Network()`
 // function above (same shape as buildManchesterNetwork/
-// buildBirminghamNetwork â€” a real, audited network-evidence.ts entry per
+// buildBirminghamNetwork — a real, audited network-evidence.ts entry per
 // destination, real routes.ts entries where they exist, real geometry from
 // lib/atlas-country-geometry.ts) and push its result into this array.
 // Nothing else changes.
 //
 // Bristol, Liverpool and East Midlands are deliberately absent: none has a
 // single routes.ts entry for any destination (confirmed in the 2026-07-26
-// audit) â€” Bristol was named alongside this batch, but the same "only
+// audit) — Bristol was named alongside this batch, but the same "only
 // build from destinations that already have approved Route Status
 // records" rule that excludes Liverpool/East Midlands applies to it too.
 // An Airport Pack with zero destinations isn't a smaller honest network,
-// it's nothing to render â€” flagged back rather than built empty.
+// it's nothing to render — flagged back rather than built empty.
 export function buildAtlasAirports(): AirportNetworkData[] {
   return [
     buildManchesterNetwork(),

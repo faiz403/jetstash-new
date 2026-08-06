@@ -77,6 +77,32 @@ analytics/conversion events are verified in the real dashboard.
   `JETSTASH_PRINCIPLES.md` §14.5 for the full correction and what remains for a follow-up sweep
   (non-QA routes carrying the same softer claim family), and `tests/book-by-evidence-safety.test.ts`
   for the regression coverage.
+- Route Coverage Truth Phase 1 (6 August 2026, threshold corrected same day after a product-truth
+  review — see below): an independent audit found the live Route Atlas
+  (`components/founder/atlas-feel-test.tsx`, embedded on the homepage via `JourneyDeskHome`) let
+  one verified destination make an entire country read "strong," with no honest middle state
+  between "verified" and "not yet researched." Fixed: every Atlas route now shows one of three
+  honestly-derived, non-blank statuses ("JetStash knows this route well" / "Useful route guidance
+  available" / "Intelligence still being expanded"), computed from real fields
+  (`computeRouteIntelligenceLevel()` in `lib/atlas-network-data.ts`) rather than a manual
+  override; country aggregation is now conservative (one strong destination can no longer carry a
+  whole country); an active withdrawal/service-change notice is a separate, additive signal that
+  never demotes a route's tier. A second, same-day product-truth review then challenged the
+  "Strong" threshold itself: the first version required only one depth signal, which let 7 of 16
+  "Strong" routes qualify on a single shallow signal. Corrected to require **at least two of six**
+  independent depth categories — the real distribution is **9 Strong / 23 Useful** (not 16/16).
+  Five country nodes that had read "Strong" (most visibly Manchester's India, the default-context
+  country on the homepage) are now honestly "Mixed" or "Useful" under the corrected bar; two
+  soft-launch routes (Manchester–Dubai, Manchester–Doha) don't meet it, not five-of-six/one-gap as
+  first reported. A full, evidence-based 32-route completeness audit, including this revision and
+  the two soft-launch gaps this phase surfaced but did not fix, lives in
+  `docs/project-control/ROUTE_COVERAGE_AUDIT.md`. `/deals`'s hero now states the real,
+  live-computed fare-tracking scope (8 of 32 routes) instead of implying broader coverage. See
+  `JETSTASH_PRINCIPLES.md` §15 for the standing architecture and `tests/atlas-route-status.test.ts`
+  for the regression coverage, which keeps the audit document and the live code from drifting
+  apart. This phase deliberately did not complete any route's missing intelligence, add a fare
+  observation, or touch Arrive By, Book By's own logic, Trip.com links or affiliate behaviour —
+  see the audit's "Recommended route-completion batches" for what a Phase 2 would involve.
 - Product-integrity fix (5 August 2026): `data/deals.ts`'s `hasTrackedFare` now gates on
   `isBundledProductDeal` — a package/Umrah-category deal (bundled flight+hotel) no longer counts a
   flight-only fare observation as evidence for its own price. Found while adding the Madinah
@@ -296,3 +322,28 @@ for a day that was not actually checked, and never create a fare merely to fill 
 - `fix/trust-cracks-july` and `fix/verification-pending-leakage` are confirmed-safe-to-delete local
   branches (verified 29 July 2026: no content in either is missing from `main`) — see
   `LAUNCH_CHECKLIST.md` item I.
+- **Pre-existing hydration warning in the Atlas's `<style>` block** (found during Route Coverage
+  Truth Phase 1 visual QA, 6 August 2026; not fixed as part of that phase — unrelated to the Atlas
+  status work, and out of scope to touch in that PR). **Component/file:**
+  `components/founder/atlas-feel-test.tsx`, the `<style>{`...`}</style>` block (~line 983) that
+  inlines the Atlas's breathing/pulse keyframe animations as a template-string text child.
+  **Exact warning:** `Warning: Text content did not match. Server: "%s" Client: "%s"` followed by
+  `Error: Text content does not match server-rendered HTML` /
+  `https://nextjs.org/docs/messages/react-hydration-error`. **Reproduces in production, not just
+  dev** — confirmed via a local `next build` + `next start`: the same mismatch surfaces as minified
+  React errors #418/#423/#425 in the browser console. **Root cause:** the CSS comment inside the
+  template string contains an apostrophe and quote marks (`"the selected country's own..."`,
+  `"...same "alive" feeling..."`); React's server renderer HTML-escapes a plain-text child of
+  `<style>` (`'` → `&#x27;`, `"` → `&quot;`) as if it were ordinary text content, but browsers parse
+  `<style>` content as raw CDATA and never decode those entities — so the live DOM keeps the
+  escaped entities while client-side hydration expects the raw characters, and React logs a
+  mismatch and replaces the node. **Proposed fix:** render the block as
+  `<style dangerouslySetInnerHTML={{ __html: cssString }} />` instead of
+  `<style>{cssString}</style>` — `dangerouslySetInnerHTML` sets `innerHTML` directly on both server
+  and client, bypassing React's text-escaping entirely, which is the standard fix for this exact
+  class of bug. **Required regression test:** assert the `<style>` tag uses
+  `dangerouslySetInnerHTML` (not a JSX text-child expression) so this can't silently regress, plus
+  a live check (via a rendered snapshot or the existing Atlas test suite) that no hydration warning
+  fires on initial homepage load. Not yet scheduled to a specific work item — pick up alongside the
+  next Atlas-touching PR rather than as a standalone one-line change, since it touches the same
+  file Route Coverage Truth Phase 2 batches will likely revisit.

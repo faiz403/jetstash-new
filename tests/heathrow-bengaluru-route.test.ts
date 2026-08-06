@@ -263,16 +263,34 @@ describe('DEST-001 — Interactive Route Atlas integration', () => {
     expect(bengaluru!.routeHref).toBe('/routes/london-heathrow-bengaluru');
   });
 
-  it('Bengaluru\'s Atlas evidenceState matches Delhi\'s and Mumbai\'s exactly — all three read "pending" because buildDestinationPoint() only checks the route-level `verification` field, not per-airline `airlineVerifications`. This is a pre-existing gap in lib/atlas-network-data.ts affecting every airlineVerifications-only route already live in production (Delhi, Mumbai) — not a regression introduced by adding Bengaluru, and out of scope for this route addition to fix on its own', () => {
+  it('Route Coverage Truth fix (August 2026): Bengaluru\'s verified status now matches Delhi\'s and Mumbai\'s — all three show a confirmed "Direct service verified" verdict, never "pending", because computeRouteIntelligenceLevel()/buildDestinationPoint() route through getDisplayDirectness(), which checks per-airline `airlineVerifications` as well as the route-level `verification` field. This closes the pre-existing gap this test used to document (buildDestinationPoint() previously only checked route-level verification, quietly under-stating all three routes as "pending" despite each having a current, primary-sourced airline verification) — not a regression, a fix, and not special-cased to any one of the three routes.', () => {
     const airports = buildAtlasAirports();
     const heathrow = airports.find((a) => a.airportSlug === 'london-heathrow')!;
     const india = heathrow.countries.find((c) => c.slug === 'india')!;
     const bengaluru = india.destinations.find((d) => d.slug === 'bengaluru')!;
     const delhi = india.destinations.find((d) => d.slug === 'delhi')!;
     const mumbai = india.destinations.find((d) => d.slug === 'mumbai')!;
-    expect(bengaluru.evidenceState).toBe(delhi.evidenceState);
-    expect(bengaluru.evidenceState).toBe(mumbai.evidenceState);
-    expect(bengaluru.evidenceState).toBe('pending');
+    // The bug this test guards against was about VERIFICATION STATUS
+    // (was Bengaluru's confirmed BA service being read as "pending"?) — all
+    // three now correctly show a confirmed verdict, never "pending" or
+    // "unverified".
+    expect(bengaluru.verdict).toBe('Direct service verified.');
+    expect(bengaluru.verdict).toBe(delhi.verdict);
+    expect(bengaluru.verdict).toBe(mumbai.verdict);
+    expect(bengaluru.verdict).not.toMatch(/pending|not yet independently verified/i);
+    // Intelligence LEVEL (breadth of guidance beyond verification) is a
+    // separate, genuinely different question — see computeRouteIntelligenceLevel's
+    // doc comment. Bengaluru is honestly "useful" here: verified via a
+    // primary-sourced airline verification, but with none of the other five
+    // depth categories (no fare observation, no connectingAlternative, no
+    // Book-By priority, no active warning, no baggage guidance) — while
+    // Delhi and Mumbai each carry at least one more. Equal verification,
+    // unequal breadth, and that's the honest, intended outcome — never
+    // force these three to read identically just because the underlying
+    // verification bug is fixed.
+    expect(bengaluru.intelligenceLevel).toBe('useful');
+    expect(delhi.intelligenceLevel).toBe('strong');
+    expect(mumbai.intelligenceLevel).toBe('strong');
   });
 
   it('the existing Heathrow India points (Delhi, Mumbai) are still present alongside Bengaluru', () => {
