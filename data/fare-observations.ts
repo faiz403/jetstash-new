@@ -153,6 +153,72 @@ export const fareObservations: FareObservation[] = [
   // baggage figure exists anywhere in the flow before recording 'not
   // stated' - never inferred from the ambiguous "Included" badge shown).
   { id: 'obs-man-dxb-economy-20260806-8w-v1', routeSlug: 'manchester-dubai', cabin: 'Economy', observedDate: '2026-08-06', price: 480, priceNote: 'return, per person, one adult; Gulf Air, connecting via Bahrain both ways (outbound MAN T2 09:55-DXB T1 22:35, 9h 40m total, 1h 5m in Bahrain; return DXB T1 21:00-MAN T2 07:15+1, 13h 15m total, 4h 55m in Bahrain); baggage allowance not disclosed anywhere in the selection flow', source: 'Gulf Air', observedVia: 'trip.com', sourceUrl: 'https://www.trip.com/flights/showfarefirst?dcity=man&acity=dxb&ddate=2026-10-01&rdate=2026-10-15&dairport=man&aairport=dxb&triptype=rt&class=y&curr=GBP', currency: 'GBP', baggage: 'not stated', profileId: 'manchester-dubai-economy-1adult-baseline-v1', observationReason: 'routine-weekly', departureDate: '2026-10-01', returnDate: '2026-10-15', fareDirectness: 'connecting' },
+  // Fare Coverage Expansion - Batch A, route 1 of 10 (Manchester-Lahore).
+  // Full round-trip itinerary via Google Flights - see
+  // docs/project-control/fare-evidence/manchester-lahore-2026-08-06.md for
+  // the complete evidence record (both legs' flight numbers, aircraft,
+  // Istanbul connections, the "Long layover" flag, and the baggage-fees
+  // dialog check that found no kg/piece figure for this fare). The two
+  // historic Etihad observations on this route (2026-07-28, 2026-08-04)
+  // predate the fareDirectness field and are left untouched per the
+  // archive's never-edit-old-observations rule; this is a fresh entry.
+  { id: 'obs-man-lhe-economy-20260806-8w-v1', routeSlug: 'manchester-lahore', cabin: 'Economy', observedDate: '2026-08-06', price: 638, priceNote: 'return, per person, one adult; Turkish Airlines, connecting via Istanbul both ways (outbound MAN 22:55-IST 04:55+1 TK1916, 15h 45m layover [flagged "Long layover" by the source], IST 20:40+1-LHE 04:05+2 TK714, 25h 10m total; return LHE 05:35-IST 10:05 TK715, 4h 10m layover, IST 14:15-MAN 16:30 TK1995, 14h 55m total); no baggage figure disclosed, only a link to the airline\'s general baggage-policy page', source: 'Turkish Airlines', observedVia: 'google-flights', sourceUrl: 'https://www.google.com/travel/flights?q=Flights%20from%20Manchester%20to%20Lahore%20October%201%202026%20return%20October%2015%202026&curr=GBP&hl=en&gl=GB', currency: 'GBP', baggage: 'not stated', profileId: 'manchester-lahore-economy-1adult-23kg-v1', observationReason: 'routine-weekly', departureDate: '2026-10-01', returnDate: '2026-10-15', fareDirectness: 'connecting' },
+  // Fare Coverage Expansion - Batch A, route 3 of 10 (Manchester-Islamabad).
+  // Deliberately lighter evidence than Dubai/Lahore, per the founder's
+  // direction to keep the remaining Batch A routes lean - captured from
+  // the results list only (no forced click-through into the booking flow,
+  // no baggage-rule digging). See
+  // docs/project-control/fare-evidence/manchester-islamabad-2026-08-06.md.
+  // The two historic observations on this route (2026-07-28, 2026-08-04)
+  // predate the fareDirectness field and are left untouched.
+  { id: 'obs-man-isb-economy-20260806-8w-v1', routeSlug: 'manchester-islamabad', cabin: 'Economy', observedDate: '2026-08-06', price: 524, priceNote: 'return, per person, one adult; Gulf Air; outbound leg shown as 1 stop (24h 35m total, MAN 09:55-ISB 14:30+1); return leg was never reviewed (results-list evidence only, no click-through) so overall directness is not confirmed; connecting city and baggage not disclosed', source: 'Gulf Air', observedVia: 'google-flights', sourceUrl: 'https://www.google.com/travel/flights?q=Flights%20from%20Manchester%20to%20Islamabad%20October%201%202026%20return%20October%2015%202026&curr=GBP&hl=en&gl=GB', currency: 'GBP', baggage: 'not stated', profileId: 'manchester-islamabad-economy-1adult-23kg-v1', observationReason: 'routine-weekly', departureDate: '2026-10-01', returnDate: '2026-10-15', fareDirectness: 'unknown' },
+  // Fare Coverage Expansion - Batch A, routes 4-10, all done under the lean
+  // process (results-list evidence only, no click-through, no baggage
+  // digging). Manchester-Delhi and Manchester-Mumbai had zero prior
+  // observations - these are each route's first. See the matching
+  // docs/project-control/fare-evidence/*-2026-08-06.md files for each.
+  //
+  // Post-batch audit correction (6 August 2026): every observation in this
+  // block originally recorded fareDirectness from the OUTBOUND leg's own
+  // "results list" summary alone - the return leg was never reviewed for
+  // any of them (confirmed by re-reading each evidence file: all say
+  // "no click-through"). A route being connecting on its outbound leg does
+  // not establish the return leg is too, and vice versa - the same
+  // never-infer-from-partial-evidence standard this whole fareDirectness
+  // field exists to enforce. All corrected from 'connecting'/'direct' to
+  // 'unknown'; priceNote reworded to state plainly that only the outbound
+  // was reviewed. See each route's evidence file for the specific
+  // correction note, and FARE_OBSERVATION_ARCHIVE.md's audit addendum for
+  // the full account. The observations themselves remain valid, dated,
+  // publishable archive entries - only the directness CLAIM was
+  // overreaching, not the underlying price/airline/date evidence.
+  { id: 'obs-man-del-economy-20260806-8w-v1', routeSlug: 'manchester-delhi', cabin: 'Economy', observedDate: '2026-08-06', price: 481, priceNote: 'return, per person, one adult; Gulf Air; outbound leg shown as 1 stop (13h 40m total, MAN 09:55-DEL 04:05+1); return leg was never reviewed (results-list evidence only, no click-through) so overall directness is not confirmed; connecting city and baggage not disclosed', source: 'Gulf Air', observedVia: 'google-flights', sourceUrl: 'https://www.google.com/travel/flights?q=Flights%20from%20Manchester%20to%20Delhi%20October%201%202026%20return%20October%2015%202026&curr=GBP&hl=en&gl=GB', currency: 'GBP', baggage: 'not stated', profileId: 'manchester-delhi-economy-1adult-23kg-v1', observationReason: 'routine-weekly', departureDate: '2026-10-01', returnDate: '2026-10-15', fareDirectness: 'unknown' },
+  { id: 'obs-man-bom-economy-20260806-8w-v1', routeSlug: 'manchester-mumbai', cabin: 'Economy', observedDate: '2026-08-06', price: 461, priceNote: 'return, per person, one adult; Gulf Air; outbound leg shown as 1 stop (14h 45m total, MAN 09:55-BOM 05:10+1); return leg was never reviewed (results-list evidence only, no click-through) so overall directness is not confirmed; connecting city and baggage not disclosed', source: 'Gulf Air', observedVia: 'google-flights', sourceUrl: 'https://www.google.com/travel/flights?q=Flights%20from%20Manchester%20to%20Mumbai%20October%201%202026%20return%20October%2015%202026&curr=GBP&hl=en&gl=GB', currency: 'GBP', baggage: 'not stated', profileId: 'manchester-mumbai-economy-1adult-23kg-v1', observationReason: 'routine-weekly', departureDate: '2026-10-01', returnDate: '2026-10-15', fareDirectness: 'unknown' },
+  { id: 'obs-man-amd-economy-20260806-8w-v1', routeSlug: 'manchester-ahmedabad', cabin: 'Economy', observedDate: '2026-08-06', price: 666, priceNote: 'return, per person, one adult; Emirates; outbound leg shown as 1 stop (12h 45m total, MAN 09:50-AMD 03:05+1); return leg was never reviewed (results-list evidence only, no click-through) so overall directness is not confirmed; connecting city and baggage not disclosed', source: 'Emirates', observedVia: 'google-flights', sourceUrl: 'https://www.google.com/travel/flights?q=Flights%20from%20Manchester%20to%20Ahmedabad%20October%201%202026%20return%20October%2015%202026&curr=GBP&hl=en&gl=GB', currency: 'GBP', baggage: 'not stated', profileId: 'manchester-ahmedabad-economy-1adult-23kg-v1', observationReason: 'routine-weekly', departureDate: '2026-10-01', returnDate: '2026-10-15', fareDirectness: 'unknown' },
+  { id: 'obs-man-atq-economy-20260806-8w-v1', routeSlug: 'manchester-amritsar', cabin: 'Economy', observedDate: '2026-08-06', price: 707, priceNote: 'return, per person, one adult; Etihad and Air India; outbound leg shown as 2 stops (18h total, MAN 09:20-ATQ 07:50+1); return leg was never reviewed (results-list evidence only, no click-through) so overall directness is not confirmed; connecting cities and baggage not disclosed', source: 'Etihad and Air India', observedVia: 'google-flights', sourceUrl: 'https://www.google.com/travel/flights?q=Flights%20from%20Manchester%20to%20Amritsar%20October%201%202026%20return%20October%2015%202026&curr=GBP&hl=en&gl=GB', currency: 'GBP', baggage: 'not stated', profileId: 'manchester-amritsar-economy-1adult-23kg-v1', observationReason: 'routine-weekly', departureDate: '2026-10-01', returnDate: '2026-10-15', fareDirectness: 'unknown' },
+  // Manchester-Doha: the top "Best" result's OUTBOUND leg is a genuine
+  // nonstop Qatar Airways service (also sold under a British Airways
+  // code). Originally recorded as fareDirectness: 'direct' on the strength
+  // of that outbound leg alone - corrected in the 6 August 2026 audit to
+  // 'unknown', since the return leg was never reviewed and a nonstop
+  // outbound does not establish a nonstop return (see the audit addendum
+  // in FARE_OBSERVATION_ARCHIVE.md). The existing
+  // obs-man-doh-economy-20260805-8w-v1 (Pegasus, connecting, predates
+  // fareDirectness) is left untouched, per the never-edit rule.
+  { id: 'obs-man-doh-economy-20260806-8w-v1', routeSlug: 'manchester-doha', cabin: 'Economy', observedDate: '2026-08-06', price: 666, priceNote: 'return, per person, one adult; Qatar Airways (also sold under a British Airways code); outbound leg shown as Nonstop (6h 50m total, MAN 08:05-DOH 16:55); return leg was never reviewed (results-list evidence only, no click-through) so overall directness is not confirmed, despite the outbound alone being nonstop; baggage not disclosed', source: 'Qatar Airways', observedVia: 'google-flights', sourceUrl: 'https://www.google.com/travel/flights?q=Flights%20from%20Manchester%20to%20Doha%20October%201%202026%20return%20October%2015%202026&curr=GBP&hl=en&gl=GB', currency: 'GBP', baggage: 'not stated', profileId: 'manchester-doha-economy-1adult-23kg-v1', observationReason: 'routine-weekly', departureDate: '2026-10-01', returnDate: '2026-10-15', fareDirectness: 'unknown' },
+  { id: 'obs-man-med-economy-20260806-8w-v1', routeSlug: 'manchester-madinah', cabin: 'Economy', observedDate: '2026-08-06', price: 493, priceNote: 'return, per person, one adult; Pegasus and Flynas; outbound leg shown as 1 stop (10h 45m total, MAN 13:55-MED 02:40+1); return leg was never reviewed (results-list evidence only, no click-through) so overall directness is not confirmed; connecting city and baggage not disclosed', source: 'Pegasus and Flynas', observedVia: 'google-flights', sourceUrl: 'https://www.google.com/travel/flights?q=Flights%20from%20Manchester%20to%20Madinah%20October%201%202026%20return%20October%2015%202026&curr=GBP&hl=en&gl=GB', currency: 'GBP', baggage: 'not stated', profileId: 'manchester-madinah-economy-1adult-23kg-v1', observationReason: 'routine-weekly', departureDate: '2026-10-01', returnDate: '2026-10-15', fareDirectness: 'unknown' },
+  // Birmingham-Amritsar: the route's own verified operator (Air India) is
+  // the top "Best" result here, unlike its two historic observations (KLM,
+  // Air France). Only the outbound leg was reviewed, though - corrected in
+  // the 6 August 2026 audit from fareDirectness: 'connecting' to
+  // 'unknown', since the return leg was never confirmed. Consequence: this
+  // no longer drives bhx-atq-economy's DealCard badge on its own -
+  // getDealFareDirectnessLabel() falls back to the "every source is a
+  // verified route operator" check, which still fails (the two older
+  // observations' KLM/Air France sources don't match), so the badge
+  // reverts to showing nothing rather than "Connecting" - see the audit
+  // addendum in FARE_OBSERVATION_ARCHIVE.md.
+  { id: 'obs-bhx-atq-economy-20260806-8w-v1', routeSlug: 'birmingham-amritsar', cabin: 'Economy', observedDate: '2026-08-06', price: 714, priceNote: 'return, per person, one adult; Air India; outbound leg shown as 1 stop (19h 50m total, BHX 21:30-ATQ 21:50+1); return leg was never reviewed (results-list evidence only, no click-through) so overall directness is not confirmed; connecting city and baggage not disclosed', source: 'Air India', observedVia: 'google-flights', sourceUrl: 'https://www.google.com/travel/flights?q=Flights%20from%20Birmingham%20to%20Amritsar%20October%201%202026%20return%20October%2015%202026&curr=GBP&hl=en&gl=GB', currency: 'GBP', baggage: 'not stated', profileId: 'birmingham-amritsar-economy-1adult-23kg-v1', observationReason: 'routine-weekly', departureDate: '2026-10-01', returnDate: '2026-10-15', fareDirectness: 'unknown' },
 ];
 
 export function getObservationsByRoute(routeSlug: string) {

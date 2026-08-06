@@ -393,7 +393,16 @@ describe('Fare-observation publication predicate — pure, synthetic-fixture-tes
   });
 
   it('a genuinely evidenced route\'s fare gating is unaffected by the route-evidence check — still governed purely by date-completeness (TR-002)', () => {
-    expect(getFareRangeSummary('manchester-lahore', 'Economy', FIXED_TODAY)).toEqual({ count: 2, min: 578, max: 620, earliestDate: '2026-07-28', latestDate: '2026-08-04', sources: ['Etihad'], priceNote: 'return, per person, one adult; taxes and required fees included; baggage not stated and optional bag charges may apply' });
+    // Field-by-field rather than a full snapshot: Manchester-Lahore is an
+    // active Fare Coverage Expansion Batch A route and gains further dated
+    // observations over time (see FARE_OBSERVATION_ARCHIVE.md) - this test's
+    // actual purpose is confirming the route-evidence check doesn't gate a
+    // genuinely evidenced route, not pinning its exact growing series.
+    const range = getFareRangeSummary('manchester-lahore', 'Economy', FIXED_TODAY);
+    expect(range).not.toBeNull();
+    expect(range!.count).toBeGreaterThanOrEqual(2);
+    expect(range!.min).toBe(578);
+    expect(range!.sources).toContain('Etihad');
   });
 });
 

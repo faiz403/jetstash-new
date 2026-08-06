@@ -95,16 +95,16 @@ describe('Fare-observation completeness gating (TR-002) — Verified Check must 
     expect(isPubliclyPublishable(rest as FareObservation)).toBe(false);
   });
 
-  it('getFareRangeSummary derives the exact dated Manchester–Lahore weekly series', () => {
-    expect(getFareRangeSummary('manchester-lahore', 'Economy', FIXED_TODAY)).toEqual({
-      count: 2,
-      min: 578,
-      max: 620,
-      earliestDate: '2026-07-28',
-      latestDate: '2026-08-04',
-      sources: ['Etihad'],
-      priceNote: 'return, per person, one adult; taxes and required fees included; baggage not stated and optional bag charges may apply',
-    });
+  it('getFareRangeSummary derives the exact dated Manchester–Lahore weekly series, now including the Batch A entry', () => {
+    const range = getFareRangeSummary('manchester-lahore', 'Economy', FIXED_TODAY);
+    expect(range).not.toBeNull();
+    expect(range!.count).toBe(3);
+    expect(range!.min).toBe(578);
+    expect(range!.max).toBe(638);
+    expect(range!.earliestDate).toBe('2026-07-28');
+    expect(range!.latestDate).toBe('2026-08-06');
+    expect(range!.sources).toEqual(['Etihad', 'Turkish Airlines']);
+    expect(range!.observedDirectness).toBe('connecting');
   });
 });
 
@@ -121,7 +121,24 @@ describe('Deal counts (TR-004) — a card with no tracked fare must not count as
     // — isObservationPublishable() doesn't gate on freshness relative to
     // FIXED_TODAY, only on date-completeness and route status, so this
     // fixed-date test genuinely does track it now, same as production.
-    expect(trackedDeals.map((d) => d.id)).toEqual(['man-lhe-economy', 'lhr-del-economy', 'bhx-atq-economy', 'man-dxb-economy', 'lhr-bom-economy']);
+    // The 7 man-*-economy entries after lhr-bom-economy joined the same day
+    // (Batch A's customer-visibility audit fix) - each backed by a real
+    // Batch A observation with nowhere to render before these Deal entries
+    // were added; see FARE_OBSERVATION_ARCHIVE.md's audit addendum.
+    expect(trackedDeals.map((d) => d.id)).toEqual([
+      'man-lhe-economy',
+      'lhr-del-economy',
+      'bhx-atq-economy',
+      'man-dxb-economy',
+      'lhr-bom-economy',
+      'man-isb-economy',
+      'man-del-economy',
+      'man-bom-economy',
+      'man-amd-economy',
+      'man-atq-economy',
+      'man-doh-economy',
+      'man-med-economy',
+    ]);
   });
 
   it('hasTrackedFare returns false for a deal whose airport-destination pair has no Route entry at all', () => {
@@ -303,7 +320,7 @@ describe('getDealDirectnessLabel (TR-009, final correction) — a deal/search ca
 
 describe('FARE-001 pilot — historic examples stay private; only fully dated, evidenced observations publish', () => {
   it('keeps historic observations and appends both editorial observation batches', () => {
-    expect(fareObservations).toHaveLength(32);
+    expect(fareObservations).toHaveLength(41);
   });
 
   it('keeps every historic observation incomplete and private', () => {
@@ -331,6 +348,15 @@ describe('FARE-001 pilot — historic examples stay private; only fully dated, e
       'obs-man-med-economy-20260805-8w-v1',
       'obs-man-doh-economy-20260805-8w-v1',
       'obs-man-dxb-economy-20260806-8w-v1',
+      'obs-man-lhe-economy-20260806-8w-v1',
+      'obs-man-isb-economy-20260806-8w-v1',
+      'obs-man-del-economy-20260806-8w-v1',
+      'obs-man-bom-economy-20260806-8w-v1',
+      'obs-man-amd-economy-20260806-8w-v1',
+      'obs-man-atq-economy-20260806-8w-v1',
+      'obs-man-doh-economy-20260806-8w-v1',
+      'obs-man-med-economy-20260806-8w-v1',
+      'obs-bhx-atq-economy-20260806-8w-v1',
     ]);
     expect(published).toEqual(expect.arrayContaining([
       expect.objectContaining({
@@ -417,8 +443,27 @@ describe('FARE-001 pilot — historic examples stay private; only fully dated, e
       // Batch 1's manual founder-action fare check
       // (obs-man-dxb-economy-20260806-8w-v1) is genuinely complete, so this
       // deal is correctly tracked now, alongside the other exclusions below
-      // whose routes also gained a complete observation earlier.
-      if (['lhr-bom-economy', 'man-lhe-economy', 'lhr-del-economy', 'bhx-atq-economy', 'man-dxb-economy'].includes(deal.id)) continue;
+      // whose routes also gained a complete observation earlier. The 7
+      // man-*-economy Batch A Deal entries (added the same day as the
+      // customer-visibility audit fix) are excluded for the same reason -
+      // each has a genuinely complete, dated observation behind it.
+      if (
+        [
+          'lhr-bom-economy',
+          'man-lhe-economy',
+          'lhr-del-economy',
+          'bhx-atq-economy',
+          'man-dxb-economy',
+          'man-isb-economy',
+          'man-del-economy',
+          'man-bom-economy',
+          'man-amd-economy',
+          'man-atq-economy',
+          'man-doh-economy',
+          'man-med-economy',
+        ].includes(deal.id)
+      )
+        continue;
       expect(hasTrackedFare(deal, FIXED_TODAY), deal.id).toBe(false);
     }
   });

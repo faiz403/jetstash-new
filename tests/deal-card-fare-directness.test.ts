@@ -62,7 +62,22 @@ describe('getDealFareDirectnessLabel — a route being direct never implies a sp
   });
 
   it('unknown fare directness (a logged fare for an airline the route has never verified) renders no badge at all — never guesses either way', () => {
-    const knownUnconfirmedCases = ['man-lhe-economy', 'lhr-del-economy', 'bhx-atq-economy'];
+    // man-lhe-economy is the one exception in this list — its Batch A
+    // observation has genuine full round-trip evidence (both legs
+    // reviewed), so it correctly resolves to 'Connecting' and is covered
+    // by its own test, not this one.
+    //
+    // bhx-atq-economy returned to this list on 6 August 2026: its Batch A
+    // observation was originally recorded as an explicit 'connecting'
+    // match, but a same-day evidence-completeness audit found only the
+    // outbound leg had actually been reviewed - corrected to
+    // fareDirectness: 'unknown', and the badge correctly reverted to no
+    // badge (see FARE_OBSERVATION_ARCHIVE.md's audit addendum).
+    //
+    // lhr-del-economy remains genuinely unconfirmed (no explicit
+    // fareDirectness recorded yet, and its logged fare's airline still
+    // doesn't match london-heathrow-delhi's verified operators).
+    const knownUnconfirmedCases = ['lhr-del-economy', 'bhx-atq-economy'];
     for (const id of knownUnconfirmedCases) {
       const deal = deals.find((d) => d.id === id)!;
       expect(deal, id).toBeDefined();
@@ -70,6 +85,19 @@ describe('getDealFareDirectnessLabel — a route being direct never implies a sp
       // Confirm this is a genuine change from the route-only label, not a coincidence.
       expect(getDealDirectnessLabel(deal, NOW_ISO), id).not.toBeUndefined();
     }
+  });
+
+  it('bhx-atq-economy: correctly reverted to no badge after the 6 August 2026 evidence-completeness audit found only the outbound leg had been reviewed', () => {
+    const deal = deals.find((d) => d.id === 'bhx-atq-economy')!;
+    expect(getDealFareDirectnessLabel(deal, NOW_ISO)).toBeUndefined();
+    expect(getDealFareDirectnessLabel(deal, NOW_ISO)).not.toBe('Connecting');
+    expect(getDealFareDirectnessLabel(deal, NOW_ISO)).not.toBe('Direct flight');
+  });
+
+  it('man-lhe-economy correctly moved from "unconfirmed" to "Connecting" once its Batch A observation recorded explicit fareDirectness', () => {
+    const deal = deals.find((d) => d.id === 'man-lhe-economy')!;
+    expect(getDealFareDirectnessLabel(deal, NOW_ISO)).toBe('Connecting');
+    expect(getDealFareDirectnessLabel(deal, NOW_ISO)).not.toBe('Direct flight');
   });
 
   it('route-level direct-service guidance (getDealDirectnessLabel) is completely unchanged — the fix only changes which function DealCard calls for the fare-card badge', () => {
@@ -109,16 +137,28 @@ describe('FareRangeSummary.observedDirectness aggregates per-observation fareDir
     expect(range!.observedDirectness).toBe('connecting');
   });
 
-  it('a route/cabin whose observations never recorded fareDirectness reports undefined, never a guess', () => {
+  it('Manchester-Lahore\'s range now reports "connecting", matching its Batch A observation\'s explicit fareDirectness (its two older Etihad observations predate the field and stay unset)', () => {
     const range = getFareRangeSummary('manchester-lahore', 'Economy', NOW_ISO);
+    expect(range).not.toBeNull();
+    expect(range!.observedDirectness).toBe('connecting');
+  });
+
+  it('Manchester-Islamabad\'s range reports undefined, never a guess — its Batch A observation was corrected to fareDirectness: "unknown" after a 6 August 2026 audit found only the outbound leg had been reviewed', () => {
+    const range = getFareRangeSummary('manchester-islamabad', 'Economy', NOW_ISO);
     expect(range).not.toBeNull();
     expect(range!.observedDirectness).toBeUndefined();
   });
 
-  it('the new fareDirectness field is optional and does not break any historic observation', () => {
+  it('a route/cabin whose observations never recorded fareDirectness reports undefined, never a guess', () => {
+    const range = getFareRangeSummary('london-heathrow-delhi', 'Economy', NOW_ISO);
+    expect(range).not.toBeNull();
+    expect(range!.observedDirectness).toBeUndefined();
+  });
+
+  it('the fareDirectness field is optional and, when stated, is always one of the three valid values', () => {
     for (const o of fareObservations) {
       if (o.fareDirectness !== undefined) {
-        expect(['direct', 'connecting'], o.id).toContain(o.fareDirectness);
+        expect(['direct', 'connecting', 'unknown'], o.id).toContain(o.fareDirectness);
       }
     }
   });

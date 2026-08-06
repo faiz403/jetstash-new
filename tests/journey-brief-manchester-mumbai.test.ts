@@ -132,12 +132,25 @@ describe('Book By must remain unavailable for Manchester–Mumbai (Gate 1 audit 
 });
 
 describe('No fabricated fare ever appears for this route', () => {
-  it('zero fare observations exist for manchester-mumbai', () => {
-    expect(getObservationsByRoute('manchester-mumbai')).toHaveLength(0);
+  // Manchester-Mumbai genuinely had zero fare observations when this
+  // prototype was gated (23 July 2026) - Fare Coverage Expansion Batch A
+  // (6 August 2026) gave it its first, real, dated, evidenced observation
+  // (obs-man-bom-economy-20260806-8w-v1). This section's actual guarantee
+  // - that this prototype's static copy never fabricates a price - is
+  // unaffected: lib/journey-brief-manchester-mumbai.ts never reads from
+  // getFareRangeSummary/getObservationsByRoute at all (confirmed: neither
+  // function is imported or called there), so the real archive gaining
+  // genuine data changes nothing this prototype renders.
+  it('had zero fare observations as of the Gate 2 review date (23 July 2026) - a snapshot fact, not an eternal guarantee', () => {
+    const asOfGateTwo = getObservationsByRoute('manchester-mumbai').filter((o) => o.observedDate <= '2026-07-23');
+    expect(asOfGateTwo).toHaveLength(0);
   });
 
-  it('getFareRangeSummary returns nothing to render as a price', () => {
-    expect(getFareRangeSummary('manchester-mumbai', 'Economy', '2026-07-23')).toBeNull();
+  it('now has one real, non-fabricated fare observation (Batch A, 6 August 2026) - getFareRangeSummary correctly returns it, not null', () => {
+    const range = getFareRangeSummary('manchester-mumbai', 'Economy', '2026-08-06');
+    expect(range).not.toBeNull();
+    expect(range!.min).toBe(461);
+    expect(range!.sources).toEqual(['Gulf Air']);
   });
 
   it('the Economy prototype copy contains no currency figure', () => {

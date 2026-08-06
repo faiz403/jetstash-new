@@ -612,6 +612,106 @@ export const deals: Deal[] = [
     toCountry: 'India',
     airline: 'Air India',
   },
+  // Customer-visibility audit fix (6 August 2026, Batch A final review): each
+  // of these 7 routes had a real, publishable Batch A fare observation with
+  // nowhere for it to render — no Manchester/Birmingham-departure Economy
+  // Deal existed, so the fare only ever appeared in the route page's
+  // FareHistoryPanel while NoFareFallback (driven purely by Deal presence)
+  // simultaneously and misleadingly told the same visitor "we haven't
+  // logged a tracked fare... yet" on the same page. Adding these entries
+  // makes DealCard render instead, resolving that contradiction. Every
+  // entry here was checked for safety before being added: with each
+  // observation's fareDirectness now 'unknown' (see the same day's
+  // evidence-completeness audit), getDealFareDirectnessLabel() either
+  // fails closed to no badge, or falls back to the route's own status only
+  // where every contributing fare source genuinely matches a verified
+  // route operator and the route itself is not direct — confirmed for
+  // every entry below via a dry-run against the real function before
+  // adding any of them; none produces an unsupported "Direct flight"
+  // claim. `airline` on each is the route's own primary editorial
+  // operator (data/routes.ts airlineSlugs), never the specific cheaper
+  // fare's own source airline — the same convention every other Deal in
+  // this file already follows; the actually-observed source airline is
+  // shown separately and correctly via FareHistoryPanel/DealCard's own
+  // fareSourceLabel, derived live from the observation, not from this
+  // field.
+  {
+    id: 'man-isb-economy',
+    category: 'flight',
+    cabin: 'Economy',
+    fromAirportSlug: 'manchester',
+    toDestinationSlug: 'islamabad',
+    fromCity: 'Manchester',
+    toCity: 'Islamabad',
+    toCountry: 'Pakistan',
+    airline: 'PIA',
+  },
+  {
+    id: 'man-del-economy',
+    category: 'flight',
+    cabin: 'Economy',
+    fromAirportSlug: 'manchester',
+    toDestinationSlug: 'delhi',
+    fromCity: 'Manchester',
+    toCity: 'Delhi',
+    toCountry: 'India',
+    airline: 'IndiGo',
+  },
+  {
+    id: 'man-bom-economy',
+    category: 'flight',
+    cabin: 'Economy',
+    fromAirportSlug: 'manchester',
+    toDestinationSlug: 'mumbai',
+    fromCity: 'Manchester',
+    toCity: 'Mumbai',
+    toCountry: 'India',
+    airline: 'IndiGo',
+  },
+  {
+    id: 'man-amd-economy',
+    category: 'flight',
+    cabin: 'Economy',
+    fromAirportSlug: 'manchester',
+    toDestinationSlug: 'ahmedabad',
+    fromCity: 'Manchester',
+    toCity: 'Ahmedabad',
+    toCountry: 'India',
+    airline: 'Qatar Airways',
+  },
+  {
+    id: 'man-atq-economy',
+    category: 'flight',
+    cabin: 'Economy',
+    fromAirportSlug: 'manchester',
+    toDestinationSlug: 'amritsar',
+    fromCity: 'Manchester',
+    toCity: 'Amritsar',
+    toCountry: 'India',
+    airline: 'Qatar Airways',
+  },
+  {
+    id: 'man-doh-economy',
+    category: 'flight',
+    cabin: 'Economy',
+    fromAirportSlug: 'manchester',
+    toDestinationSlug: 'doha',
+    fromCity: 'Manchester',
+    toCity: 'Doha',
+    toCountry: 'Qatar',
+    airline: 'Qatar Airways',
+  },
+  {
+    id: 'man-med-economy',
+    category: 'flight',
+    cabin: 'Economy',
+    fromAirportSlug: 'manchester',
+    toDestinationSlug: 'madinah',
+    fromCity: 'Manchester',
+    toCity: 'Madinah',
+    toCountry: 'Saudi Arabia',
+    airline: 'Turkish Airlines',
+  },
 ];
 
 export function getDealsByDestination(destinationSlug: string) {
