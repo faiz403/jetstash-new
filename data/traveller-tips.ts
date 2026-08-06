@@ -113,11 +113,24 @@ export const travellerTips: TravellerTip[] = [
     // is Emirates' own weight-concept rule as stated on Manchester
     // Airport's page for this specific operator, not independently
     // confirmed for Glasgow/Edinburgh/Newcastle's separate Dubai routes.
+    //
+    // Wording corrected after a product-truth review (August 2026): the
+    // source's verbatim text is "no bag may weigh more than 32kg and the
+    // total weight of all your baggage may not exceed the limit of your
+    // ticket type" - it never uses the word "checked", so the body below
+    // no longer claims "checked baggage weight" (the source doesn't say
+    // whether cabin baggage counts towards the total). The source also
+    // never names "Manage Booking" as the place to check - it only says
+    // "We advise that you check the allowances associated with your
+    // booking before you fly", so the body below matches that generic
+    // instruction rather than inventing a specific tool. This is Emirates'
+    // general baggage rule as published on this page, not a fact unique
+    // to the Manchester-Dubai city pair - the note below says so plainly.
     id: 'manchester-dubai-emirates-baggage-weight',
     scope: { routeSlug: 'manchester-dubai' },
     category: 'baggage',
     title: "Check your fare's exact weight allowance before you pack",
-    body: "Manchester Airport's own Emirates page states no single bag may weigh more than 32kg, and your total checked baggage weight is capped by your ticket type rather than a single fixed figure for every fare. Confirm the exact allowance for your booking in Manage Booking before you pack.",
+    body: "Manchester Airport's own Emirates page states no single bag may weigh more than 32kg, and your total baggage weight is capped by your ticket type rather than a single fixed figure for every fare — the page doesn't say whether that total includes cabin baggage. This is Emirates' general baggage rule, not a detail unique to this route, but it's the right rule for this direct Manchester service. Check the exact allowance for your specific booking before you fly.",
     addedDate: '2026-08-06',
   },
 ];

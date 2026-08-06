@@ -68,6 +68,20 @@ describe('The new baggage-guidance entry is tied to a real source record, not in
     );
     expect(dohaBaggageTip).toBeUndefined();
   });
+
+  it('does not claim more precision than the source states (product-truth review, August 2026): the source never uses the word "checked" and never names a specific tool like "Manage Booking" — the wording must not invent either', () => {
+    // Manchester Airport's Emirates page states "the total weight of all
+    // your baggage", never distinguishing checked from cabin baggage, and
+    // says only "check the allowances associated with your booking before
+    // you fly" — never naming "Manage Booking" specifically. The body must
+    // reflect that, not a more precise claim than the source supports.
+    expect(dubaiBaggageTip!.body).not.toContain('checked baggage weight');
+    expect(dubaiBaggageTip!.body).not.toContain('Manage Booking');
+  });
+
+  it('discloses that this is Emirates\' general policy, not a fact unique to the Manchester-Dubai city pair', () => {
+    expect(dubaiBaggageTip!.body.toLowerCase()).toContain('general baggage rule');
+  });
 });
 
 describe('No unsupported claim wording was introduced anywhere in this batch\'s new content', () => {
@@ -191,16 +205,41 @@ describe('No unrelated route was changed by this batch', () => {
 
 describe('The audit document\'s Batch 1 completion record matches the real, current grading function', () => {
   const auditDoc = readFileSync(join(process.cwd(), 'docs/project-control/ROUTE_COVERAGE_AUDIT.md'), 'utf8');
+  const archiveDoc = readFileSync(join(process.cwd(), 'docs/project-control/FARE_OBSERVATION_ARCHIVE.md'), 'utf8');
+  // Markdown in these docs is hand-wrapped at ~90-100 chars, so a phrase
+  // spanning a line break contains a literal newline a plain .toContain()
+  // won't match — normalize whitespace before searching, matching how a
+  // reader (or a search engine) would actually read the rendered prose.
+  const normalize = (s: string) => s.toLowerCase().replace(/\*\*/g, '').replace(/\s+/g, ' ');
+  const auditFlat = normalize(auditDoc);
+  const archiveFlat = normalize(archiveDoc);
 
   it('states the real fare-observation counts for both routes, not a hand-typed figure', () => {
-    expect(auditDoc).toContain('Two logged fare observations exist but predate the dating requirement');
+    expect(auditFlat).toContain(normalize('Two logged fare observations exist but predate the dating requirement'));
     expect(auditDoc).toContain('obs-man-doh-economy-20260805-8w-v1');
   });
 
   it('documents the founder action required for Manchester-Dubai in the fare archive doc', () => {
-    const archiveDoc = readFileSync(join(process.cwd(), 'docs/project-control/FARE_OBSERVATION_ARCHIVE.md'), 'utf8');
     expect(archiveDoc).toContain('## Founder action required: Manchester–Dubai');
     expect(archiveDoc).toContain('manchester-dubai-economy-1adult-baseline-v1');
-    expect(archiveDoc.toLowerCase()).toContain('do not add this observation from memory or estimate');
+    expect(archiveFlat).toContain('do not add this observation from memory or estimate');
+  });
+
+  it('never claims Manchester-Dubai "reaches Strong automatically" — a product-truth review (August 2026) replaced that framing everywhere it appeared, in both docs', () => {
+    expect(auditFlat).not.toContain('reaches strong automatically');
+    expect(archiveFlat).not.toContain('reaches strong automatically');
+    expect(auditFlat).toContain('subject to a final content-depth review');
+    expect(archiveFlat).toContain('subject to a final content-depth review');
+  });
+
+  it('records the finding that route.verification is never rendered on the public route page — the concrete basis for the content-depth caveat above', () => {
+    expect(auditFlat).toContain(normalize('no file under `app/` or `components/` reads `route.verification` outside the test suite'));
+  });
+
+  it('explicitly protects Manchester-Doha from an artificial upgrade, in both the audit and the fare archive', () => {
+    expect(auditDoc).toContain('### Protecting the Doha decision from artificial upgrading');
+    expect(auditFlat).toContain('never simply to hand the route a second atlas scoring category');
+    expect(archiveDoc).toContain('## Manchester–Doha: do not close its gap artificially');
+    expect(archiveFlat).toContain('never merely to hand it a second scoring category');
   });
 });
