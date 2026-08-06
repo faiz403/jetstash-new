@@ -450,6 +450,30 @@ export function AtlasFeelTest({
   // inside the viewBox below without clipping.
   const originGlowR = BASE_COUNTRY_HALO_R * MAX_EMPHASIS_SCALE * 1.2;
 
+  // The Atlas's breathing/pulse keyframe CSS, built once per render from
+  // originGlowR above (itself derived only from fixed module-level
+  // constants — see that line's comment). Rendered via
+  // dangerouslySetInnerHTML near the bottom of this component, not as a
+  // JSX text child — see that call site's comment for why.
+  const atlasStyleTag = `
+        @keyframes originBreathe { 0%,100% { r: ${originGlowR}; opacity: 0.9; } 50% { r: ${originGlowR * 1.125}; opacity: 1; } }
+        .origin-breathe { animation: originBreathe 4s ease-in-out infinite; }
+        @keyframes countryPulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.08); } }
+        .country-pulse { animation: countryPulse 2.2s ease-in-out infinite; }
+        /* The selected country's own real shape breathing gently from within.
+           Opacity-only, deliberately never scale/transform — a real coastline
+           is a complex path, and scaling it risks a visible wobble or shift
+           depending on transform-origin; opacity carries the same "alive"
+           feeling with zero risk of distorting the actual geography. */
+        @keyframes countryLandmassBreathe { 0%,100% { opacity: 0.4; } 50% { opacity: 0.65; } }
+        .country-landmass-breathe { animation: countryLandmassBreathe 3.6s ease-in-out infinite; }
+        .destination-reveal { animation: destReveal 0.4s ease-out; }
+        @keyframes destReveal { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: scale(1); } }
+        @media (prefers-reduced-motion: reduce) {
+          .origin-breathe, .country-pulse, .country-landmass-breathe, .destination-reveal { animation: none !important; }
+        }
+      `;
+
   // viewBox top extended from 240 to 230 (height 210 to 220) when the
   // multi-airport engine first placed an origin north of Manchester:
   // Edinburgh (y=281.4) and Glasgow (y=281.7) sit closer to the viewBox's
@@ -980,24 +1004,22 @@ export function AtlasFeelTest({
         </div>
       </div>
 
-      <style>{`
-        @keyframes originBreathe { 0%,100% { r: ${originGlowR}; opacity: 0.9; } 50% { r: ${originGlowR * 1.125}; opacity: 1; } }
-        .origin-breathe { animation: originBreathe 4s ease-in-out infinite; }
-        @keyframes countryPulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.08); } }
-        .country-pulse { animation: countryPulse 2.2s ease-in-out infinite; }
-        /* The selected country's own real shape breathing gently from within.
-           Opacity-only, deliberately never scale/transform — a real coastline
-           is a complex path, and scaling it risks a visible wobble or shift
-           depending on transform-origin; opacity carries the same "alive"
-           feeling with zero risk of distorting the actual geography. */
-        @keyframes countryLandmassBreathe { 0%,100% { opacity: 0.4; } 50% { opacity: 0.65; } }
-        .country-landmass-breathe { animation: countryLandmassBreathe 3.6s ease-in-out infinite; }
-        .destination-reveal { animation: destReveal 0.4s ease-out; }
-        @keyframes destReveal { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: scale(1); } }
-        @media (prefers-reduced-motion: reduce) {
-          .origin-breathe, .country-pulse, .country-landmass-breathe, .destination-reveal { animation: none !important; }
-        }
-      `}</style>
+      {/*
+        dangerouslySetInnerHTML, not a JSX text child, and this is the one
+        safe case for it: atlasStyleTag below is built entirely from
+        repository-controlled constants (BASE_COUNTRY_HALO_R,
+        MAX_EMPHASIS_SCALE — both fixed module-level numbers, never a prop,
+        piece of state, or anything user-controlled) — nothing here can ever
+        carry attacker-influenced content. A plain `{cssString}` text child
+        hydration-mismatches here because browsers parse <style> content as
+        raw CDATA and never HTML-decode it, while React's SSR renderer
+        HTML-escapes a <style> text child's apostrophes/quotes (the CSS
+        comment below has both) as if it were ordinary text — server and
+        client then disagree on the literal characters in the DOM.
+        dangerouslySetInnerHTML sets innerHTML directly on both sides,
+        bypassing that escaping entirely, so server and client always agree.
+      */}
+      <style dangerouslySetInnerHTML={{ __html: atlasStyleTag }} />
     </div>
   );
 }
