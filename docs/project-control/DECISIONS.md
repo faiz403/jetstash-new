@@ -59,15 +59,17 @@ Intelligence Engine runtime today.
 
 Use cohesive, owned-feeling JetStash photography and visual direction instead of generic stock.
 
-### Route Intelligence Scoring v2 comes before the next fare-collection batch
+### Route Intelligence Scoring v2 comes before the next fare-collection batch — completed
 
 Flagged 6 August 2026 after the Manchester–Dubai directness correction, made concrete the same day
 by Fare Coverage Expansion Batch A's own audit (Manchester–Amritsar and Manchester–Ahmedabad both
 reaching "Strong" on the cheapest possible category combination). Agreed sequencing: Batch A →
-Route Intelligence Scoring v2 (`ROADMAP.md` `RIS-001`) → Batch B. Not implemented yet — the approved
-decision is the *order*, not a specific new scoring formula, which still needs a founder decision on
-criteria. See `ROADMAP.md`'s "Route Intelligence Scoring v2" entry and `BATCH_A_COMPLETION_REVIEW.md`
-§6 for the full reasoning.
+Route Intelligence Scoring v2 (`ROADMAP.md` `RIS-001`) → Batch B — **all three now complete**, the
+same week. RIS-001 shipped as three independent gates (breadth, category diversity, a
+visible-content baseline) on `computeRouteIntelligenceLevel()`, merged `8b1d18d`. Batch B then ran
+against the corrected model rather than the loophole it closed. See
+`ROUTE_COVERAGE_AUDIT.md`'s "Route Intelligence Scoring v2 (RIS-001)" addendum,
+`BATCH_A_COMPLETION_REVIEW.md` §6, and `FARE_COVERAGE_BATCH_B.md` for the full reasoning.
 
 ## Evolved
 
