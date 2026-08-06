@@ -120,18 +120,30 @@ Every new `FareObservation` must include:
 - `currency` — currently GBP for the archive;
 - `price` and a plain `priceNote` such as `return, per person`;
 - `baggage` — what the result states, or `not stated`;
+- `fareDirectness` — `'direct'`, `'connecting'` or `'unknown'`; **required for every new
+  observation, never left unset** (added 6 August 2026, after a route-level "DIRECT FLIGHT" badge
+  was found rendered above a genuinely connecting fare — see the Manchester–Dubai closed-observation
+  entry below for the full incident). The collector must answer this directly from what the source
+  actually shows for THAT itinerary, never inferred from the route's own verified service state: is
+  it direct, or connecting (and if connecting, where and how many stops — record that detail in
+  `priceNote`)? If it genuinely cannot be determined, record `'unknown'` explicitly rather than
+  leaving the field unset — see `FARE_COLLECTION_CHECKLIST.md` for the full step-by-step;
 - `sourceUrl` where a stable manual-check URL can be retained safely.
 
 Append records; never edit an old observation because a fare changed. If a search returns no
 publishable fare, record nothing and leave the route's honest empty state intact.
 
-`observedVia`, `sourceUrl`, `currency`, `baggage`, `profileId` and `observationReason` are typed
-as optional in `FareObservation` only so the eighteen historic entries that predate this
-methodology remain valid TypeScript — that is a migration accommodation, not a relaxation of the
+`observedVia`, `sourceUrl`, `currency`, `baggage`, `profileId`, `observationReason` and
+`fareDirectness` are typed as optional in `FareObservation` only so historic entries that predate
+each field remain valid TypeScript — that is a migration accommodation, not a relaxation of the
 standard above. Every observation created under this archive must populate all of them. Nothing
 currently stops a new entry from omitting them; if that gap starts being exploited in practice,
 add a validation helper or constructor that enforces it for new records without rewriting
 history, rather than tightening the type itself and breaking the historic rows.
+
+**Use `FARE_COLLECTION_CHECKLIST.md` as the working template for every new observation** — it
+walks through this exact field list plus the surrounding process (evidence record, publishability
+check) in collection order, so nothing here is left to be reconstructed from memory afterwards.
 
 ## Cadence and queue
 
@@ -141,7 +153,7 @@ when a route is entering a known peak period or the first result was unusually c
 the first month, review whether the cadence is producing useful comparisons before expanding the
 queue.
 
-The first archive batch should therefore cover, in order:
+The first archive batch covered, in order:
 
 1. Manchester → Lahore
 2. Manchester → Islamabad
@@ -149,8 +161,36 @@ The first archive batch should therefore cover, in order:
 4. Birmingham → Amritsar
 5. Heathrow → Jeddah
 
-Then add Heathrow → Mumbai, Manchester → Dubai, Heathrow → Doha and Birmingham → Mumbai when their
-route evidence and search context are ready. This is an operating queue, not a popularity claim.
+Then Heathrow → Mumbai, Manchester → Dubai, Heathrow → Doha and Birmingham → Mumbai were added as
+their route evidence and search context became ready. This was an operating queue, not a
+popularity claim, and its own gap (no `fareDirectness` field existed yet) is what
+`FARE_COLLECTION_CHECKLIST.md` now exists to close for every batch after it.
+
+### Fare Coverage Expansion — Batch A (approved 6 August 2026, not yet started)
+
+Founder decision, following the Manchester–Dubai directness correction: run future collection in
+deliberately small batches rather than all 32 routes in one pass. The operational reason is
+concrete — if a batch surfaces another methodology gap (as the directness field did here), only
+that batch's entries need reviewing or unwinding, not the whole archive.
+
+**Batch A — 10 highest-value routes, using `FARE_COLLECTION_CHECKLIST.md` for every entry:**
+
+1. Manchester → Lahore
+2. Manchester → Islamabad
+3. Manchester → Delhi
+4. Manchester → Mumbai
+5. Manchester → Amritsar
+6. Manchester → Madinah
+7. Manchester → Doha
+8. Heathrow → Delhi
+9. Heathrow → Mumbai
+10. Birmingham → Lahore
+
+Reassess after Batch A closes — confirm the checklist held up in practice, review whether the
+`fareDirectness` field needs any adjustment, and only then queue the next batch. The end goal
+remains honest, evidence-led coverage across all 32 routes, reached deliberately rather than in one
+uncontrolled sweep. Not started as of this entry — logged here as the approved next phase, per
+`ROADMAP.md`'s `FARE-001` delivery-queue item.
 
 ## ✅ Manchester–Dubai's first publishable observation — closed 6 August 2026
 

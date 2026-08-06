@@ -155,6 +155,15 @@ describe('aggregateFareDirectness — the pure aggregation getFareRangeSummary d
   it('a mix of stated and unstated observations aggregates on the stated ones only, when they agree', () => {
     expect(aggregateFareDirectness([{ fareDirectness: 'connecting' }, { fareDirectness: undefined }])).toBe('connecting');
   });
+
+  it('"unknown" is a real archive value but never drives a badge — treated the same as an omitted field', () => {
+    expect(aggregateFareDirectness([{ fareDirectness: 'unknown' }])).toBeUndefined();
+    expect(aggregateFareDirectness([{ fareDirectness: 'unknown' }, { fareDirectness: 'unknown' }])).toBeUndefined();
+    // A mix of "unknown" and a real stated value still yields the real
+    // value — "unknown" never contaminates a genuine "direct"/"connecting"
+    // agreement, and never counts as a disagreement against it either.
+    expect(aggregateFareDirectness([{ fareDirectness: 'unknown' }, { fareDirectness: 'direct' }])).toBe('direct');
+  });
 });
 
 describe('This fix changes only directness-badge derivation — no Trip.com mapping, fare value or route fact changed', () => {

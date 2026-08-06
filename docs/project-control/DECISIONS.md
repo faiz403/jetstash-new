@@ -79,6 +79,10 @@ Use cohesive, owned-feeling JetStash photography and visual direction instead of
 - Broad SEO expansion beyond priority pages.
 - Advanced newsletter growth mechanics.
 - Route Status expansions beyond the shipped V1.
+- Route Intelligence Scoring v2 — combining evidence-category presence with visible route-page
+  depth and traveller decision-support quality, rather than category count alone. Flagged 6 August
+  2026 after the Manchester–Dubai directness correction; no implementation planned. See
+  `ROADMAP.md`'s "Route Intelligence Scoring v2" entry for the full reasoning.
 
 ## Rejected
 

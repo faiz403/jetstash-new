@@ -58,13 +58,27 @@ export interface FareObservation {
    * badge defect this field exists to prevent, fixed August 2026:
    * obs-man-dxb-economy-20260806-8w-v1 is Gulf Air via Bahrain, connecting,
    * despite Manchester-Dubai's own route-level service being verified
-   * direct on Emirates). Optional because historic entries predate this
-   * field and must never be guessed retroactively — see
-   * getDealFareDirectnessLabel() in data/deals.ts for how the absence of
-   * this field is handled safely (falls back to a route-airline match
-   * check, or shows no badge at all rather than risk repeating the defect).
+   * direct on Emirates).
+   *
+   * `'unknown'` is a deliberate, explicit third state — the collector
+   * looked and could not determine the itinerary's routing, as distinct
+   * from an omitted field on a historic entry that predates this field
+   * entirely (the same reasoning as `baggage: 'not stated'` vs. `baggage`
+   * simply being absent). Every observation created under the fare
+   * collection checklist (`FARE_COLLECTION_CHECKLIST.md`) must record one
+   * of the three values — never leave it silently unset. `'unknown'` is
+   * treated identically to an omitted field by `aggregateFareDirectness()`
+   * below (never drives a badge either way) — the distinction exists for
+   * the archive record, not for display logic.
+   *
+   * Optional (undefined) only so historic entries predating this field
+   * remain valid TypeScript and must never be guessed retroactively — see
+   * getDealFareDirectnessLabel() in data/deals.ts for how an absent or
+   * `'unknown'` value is handled safely (falls back to a route-airline
+   * match check, or shows no badge at all rather than risk repeating the
+   * defect).
    */
-  fareDirectness?: 'direct' | 'connecting';
+  fareDirectness?: 'direct' | 'connecting' | 'unknown';
 }
 
 /**
@@ -247,13 +261,18 @@ export interface FareRangeSummary {
  * evidenced so far is Manchester-Dubai's 'connecting' Gulf Air fare — so the
  * 'direct' branch would otherwise be exercised by no real data at all).
  * Agrees only when every observation that states a value states the SAME
- * one; `undefined` when none state one, or when they disagree — never a
- * majority guess.
+ * one; `undefined` when none state one, when they disagree, or when the
+ * only values stated are `'unknown'` — never a majority guess. `'unknown'`
+ * is a real, explicit archive value (a collector looked and couldn't tell)
+ * but must never drive a badge, so it's treated the same as an omitted
+ * field here — the distinction matters for the record, not for display.
  */
 export function aggregateFareDirectness(
   observations: Pick<FareObservation, 'fareDirectness'>[]
 ): 'direct' | 'connecting' | undefined {
-  const stated = observations.map((o) => o.fareDirectness).filter((d): d is 'direct' | 'connecting' => d !== undefined);
+  const stated = observations
+    .map((o) => o.fareDirectness)
+    .filter((d): d is 'direct' | 'connecting' => d === 'direct' || d === 'connecting');
   return stated.length > 0 && stated.every((d) => d === stated[0]) ? stated[0] : undefined;
 }
 
