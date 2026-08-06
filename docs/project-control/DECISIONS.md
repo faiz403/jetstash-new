@@ -59,6 +59,16 @@ Intelligence Engine runtime today.
 
 Use cohesive, owned-feeling JetStash photography and visual direction instead of generic stock.
 
+### Route Intelligence Scoring v2 comes before the next fare-collection batch
+
+Flagged 6 August 2026 after the Manchester–Dubai directness correction, made concrete the same day
+by Fare Coverage Expansion Batch A's own audit (Manchester–Amritsar and Manchester–Ahmedabad both
+reaching "Strong" on the cheapest possible category combination). Agreed sequencing: Batch A →
+Route Intelligence Scoring v2 (`ROADMAP.md` `RIS-001`) → Batch B. Not implemented yet — the approved
+decision is the *order*, not a specific new scoring formula, which still needs a founder decision on
+criteria. See `ROADMAP.md`'s "Route Intelligence Scoring v2" entry and `BATCH_A_COMPLETION_REVIEW.md`
+§6 for the full reasoning.
+
 ## Evolved
 
 - Generic homepage hero → cinematic Journey Desk and Manchester-to-Mumbai pull experience → the
@@ -79,10 +89,6 @@ Use cohesive, owned-feeling JetStash photography and visual direction instead of
 - Broad SEO expansion beyond priority pages.
 - Advanced newsletter growth mechanics.
 - Route Status expansions beyond the shipped V1.
-- Route Intelligence Scoring v2 — combining evidence-category presence with visible route-page
-  depth and traveller decision-support quality, rather than category count alone. Flagged 6 August
-  2026 after the Manchester–Dubai directness correction; no implementation planned. See
-  `ROADMAP.md`'s "Route Intelligence Scoring v2" entry for the full reasoning.
 
 ## Rejected
 
