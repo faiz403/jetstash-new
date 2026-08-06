@@ -173,43 +173,51 @@ deliberately small batches rather than all 32 routes in one pass. The operationa
 concrete — if a batch surfaces another methodology gap (as the directness field did here), only
 that batch's entries need reviewing or unwinding, not the whole archive.
 
-**Batch A — 10 highest-value routes, using `FARE_COLLECTION_CHECKLIST.md` for every entry:**
+**Batch A — 10 highest-value routes, using `FARE_COLLECTION_CHECKLIST.md` for every entry.**
+Re-sequenced 6 August 2026 (after Manchester–Lahore closed) to prioritise soft-launch routes first,
+then highest commercial value — this order supersedes the original list above, which is left
+unchanged as a historical record of the initial approval:
 
-1. Manchester → Lahore
-2. Manchester → Islamabad
-3. Manchester → Delhi
-4. Manchester → Mumbai
-5. Manchester → Amritsar
-6. Manchester → Madinah
-7. Manchester → Doha
-8. Heathrow → Delhi
-9. Heathrow → Mumbai
-10. Birmingham → Lahore
+1. Manchester → Dubai *(done — the standalone check that started this whole correction; see above)*
+2. Manchester → Lahore
+3. Manchester → Islamabad
+4. Manchester → Delhi
+5. Manchester → Mumbai
+6. Manchester → Ahmedabad
+7. Manchester → Amritsar
+8. Manchester → Doha
+9. Manchester → Madinah
+10. Birmingham → Amritsar
 
 Reassess after Batch A closes — confirm the checklist held up in practice, review whether the
 `fareDirectness` field needs any adjustment, and only then queue the next batch. The end goal
 remains honest, evidence-led coverage across all 32 routes, reached deliberately rather than in one
-uncontrolled sweep.
+uncontrolled sweep. **Process note (6 August 2026, after Lahore):** the founder confirmed the
+Dubai/Lahore level of evidence depth (full round-trip itinerary, extensive DOM checks) is not
+required for every remaining route — later Batch A entries may record only what a search naturally
+surfaces (route, dates, profile, price, airline, direct/connecting, stops if shown), skipping
+forced click-throughs into a booking flow and skipping baggage-rule digging. Baggage is recorded
+only when it appears without digging, `'not stated'` otherwise.
 
 ### Batch A progress
 
 | # | Route | Status | Observation | Notes |
 |---:|---|---|---|---|
-| 1 | Manchester → Lahore | ✅ Done (6 August 2026) | `obs-man-lhe-economy-20260806-8w-v1` | First attempt (Trip.com) hit an interaction limitation reaching the return leg and a session-wide screenshot-tool outage — held back rather than recorded with weaker evidence than Dubai's. Second attempt (Google Flights) captured the full round-trip itinerary; see the closed-observation entry below. |
-| 2 | Manchester → Islamabad | Not started | — | — |
-| 3 | Manchester → Delhi | Not started | — | — |
-| 4 | Manchester → Mumbai | Not started | — | — |
-| 5 | Birmingham → Amritsar | Not started | — | — |
-| 6 | Manchester → Madinah | Not started | — | — |
-| 7 | Manchester → Doha | Not started | — | — |
-| 8 | Heathrow → Delhi | Not started | — | — |
-| 9 | Heathrow → Mumbai | Not started | — | — |
-| 10 | Birmingham → Lahore | Not started | — | — |
+| 1 | Manchester → Dubai | ✅ Done (6 August 2026) | `obs-man-dxb-economy-20260806-8w-v1` | Full-depth evidence (see above) — this is the check that started the correction. |
+| 2 | Manchester → Lahore | ✅ Done (6 August 2026) | `obs-man-lhe-economy-20260806-8w-v1` | First attempt (Trip.com) hit an interaction limitation reaching the return leg and a session-wide screenshot-tool outage — held back rather than recorded with weaker evidence than Dubai's. Second attempt (Google Flights) captured the full round-trip itinerary; see the closed-observation entry below. |
+| 3 | Manchester → Islamabad | ✅ Done (6 August 2026) | `obs-man-isb-economy-20260806-8w-v1` | First route done under the leaner process — results-list evidence only, no click-through, no baggage digging. **No `man-isb-economy` Deal entry exists** — only `man-isb-business` — so this observation does not currently render on any `DealCard`; it still adds real, dated evidence to the route's own fare history. |
+| 4 | Manchester → Delhi | Not started | — | — |
+| 5 | Manchester → Mumbai | Not started | — | — |
+| 6 | Manchester → Ahmedabad | Not started | — | — |
+| 7 | Manchester → Amritsar | Not started | — | — |
+| 8 | Manchester → Doha | Not started | — | — |
+| 9 | Manchester → Madinah | Not started | — | — |
+| 10 | Birmingham → Amritsar | Not started | — | — |
 
-**Batch A is not complete.** 1 of 10 routes done. Per the founder's own sequencing (soft-launch
-routes first, then highest commercial value), Manchester–Islamabad is next. Kept on one working
-branch (`fare/batch-a-fare-coverage-2026-08`) rather than a PR per route, reviewed and merged as a
-batch once a meaningful set is done — the point of batching is to avoid a run of tiny "one route
+**Batch A is not complete.** 3 of 10 done (counting Dubai). Manchester–Delhi is next. Kept on one
+working branch (`fare/batch-a-fare-coverage-2026-08`) rather than a PR per route, reviewed and
+merged as a batch once a meaningful set is done — the point of batching is to avoid a run of tiny
+"one route
 updated" merges.
 
 ## ✅ Manchester–Dubai's first publishable observation — closed 6 August 2026
@@ -348,6 +356,34 @@ Airlines (the route's own verified direct operator) did not appear anywhere in e
 Google Flights' results for these dates. Absence from two booking providers' inventory says nothing
 about PIA's actual schedule on its own — that would need official airline/airport-source
 verification, per the standing sourcing rule (`CLAUDE.md`, "Verified route and airport claims").
+
+## ✅ Manchester–Islamabad's Batch A observation — closed 6 August 2026
+
+Fare Coverage Expansion — Batch A, route 3. First route done under the leaner process the founder
+approved after Lahore — no forced click-through into a booking flow, no baggage-rule digging. Two
+historic observations already exist on this route (`obs-man-isb-economy-20260728-8w-v1`,
+`obs-man-isb-economy-20260804-8w-v1`, both predating `fareDirectness`) and are left untouched.
+
+- **Recorded as:** `obs-man-isb-economy-20260806-8w-v1` in `data/fare-observations.ts`
+- **Route:** `manchester-islamabad` — Manchester (MAN) → Islamabad (ISB), return
+- **Profile:** `manchester-islamabad-economy-1adult-23kg-v1` (existing) — 1 adult, Economy, GBP
+- **Travel dates:** 1–15 October 2026
+- **Price:** £524 return, per person — top "Best"-ranked Google Flights result (cheapest overall
+  on these dates was £484)
+- **Source:** Gulf Air, via Google Flights
+- **Directness:** `fareDirectness: 'connecting'` — the source states "1 stop"; the specific
+  connecting city was not captured (not shown in the collapsed results list, and this check did not
+  click through to find it, per the leaner process)
+- **Baggage:** `'not stated'` — not shown in the results list; this check did not open the bag-fees
+  dialog to look for one
+- **Evidence:** `docs/project-control/fare-evidence/manchester-islamabad-2026-08-06.md`
+
+**Confirmed before recording:** `isObservationPublishable()` / `isPubliclyPublishable()` return
+`true`; `getFareRangeSummary('manchester-islamabad', 'Economy', ...)` resolves `observedDirectness`
+to `'connecting'`. **No `man-isb-economy` Deal entry exists in `data/deals.ts`** — only
+`man-isb-business`, which has no fare logged and is unaffected — so this observation currently adds
+dated fare-history evidence for the route without changing any `DealCard` badge anywhere. No change
+to Atlas grading, Book-By, or the route's own verification record.
 
 ## Manchester–Doha: do not close its gap artificially
 

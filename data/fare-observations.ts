@@ -163,6 +163,15 @@ export const fareObservations: FareObservation[] = [
   // predate the fareDirectness field and are left untouched per the
   // archive's never-edit-old-observations rule; this is a fresh entry.
   { id: 'obs-man-lhe-economy-20260806-8w-v1', routeSlug: 'manchester-lahore', cabin: 'Economy', observedDate: '2026-08-06', price: 638, priceNote: 'return, per person, one adult; Turkish Airlines, connecting via Istanbul both ways (outbound MAN 22:55-IST 04:55+1 TK1916, 15h 45m layover [flagged "Long layover" by the source], IST 20:40+1-LHE 04:05+2 TK714, 25h 10m total; return LHE 05:35-IST 10:05 TK715, 4h 10m layover, IST 14:15-MAN 16:30 TK1995, 14h 55m total); no baggage figure disclosed, only a link to the airline\'s general baggage-policy page', source: 'Turkish Airlines', observedVia: 'google-flights', sourceUrl: 'https://www.google.com/travel/flights?q=Flights%20from%20Manchester%20to%20Lahore%20October%201%202026%20return%20October%2015%202026&curr=GBP&hl=en&gl=GB', currency: 'GBP', baggage: 'not stated', profileId: 'manchester-lahore-economy-1adult-23kg-v1', observationReason: 'routine-weekly', departureDate: '2026-10-01', returnDate: '2026-10-15', fareDirectness: 'connecting' },
+  // Fare Coverage Expansion - Batch A, route 3 of 10 (Manchester-Islamabad).
+  // Deliberately lighter evidence than Dubai/Lahore, per the founder's
+  // direction to keep the remaining Batch A routes lean - captured from
+  // the results list only (no forced click-through into the booking flow,
+  // no baggage-rule digging). See
+  // docs/project-control/fare-evidence/manchester-islamabad-2026-08-06.md.
+  // The two historic observations on this route (2026-07-28, 2026-08-04)
+  // predate the fareDirectness field and are left untouched.
+  { id: 'obs-man-isb-economy-20260806-8w-v1', routeSlug: 'manchester-islamabad', cabin: 'Economy', observedDate: '2026-08-06', price: 524, priceNote: 'return, per person, one adult; Gulf Air, connecting, 1 stop (24h 35m total, MAN 09:55-ISB 14:30+1); connecting city and baggage not disclosed in the results list', source: 'Gulf Air', observedVia: 'google-flights', sourceUrl: 'https://www.google.com/travel/flights?q=Flights%20from%20Manchester%20to%20Islamabad%20October%201%202026%20return%20October%2015%202026&curr=GBP&hl=en&gl=GB', currency: 'GBP', baggage: 'not stated', profileId: 'manchester-islamabad-economy-1adult-23kg-v1', observationReason: 'routine-weekly', departureDate: '2026-10-01', returnDate: '2026-10-15', fareDirectness: 'connecting' },
 ];
 
 export function getObservationsByRoute(routeSlug: string) {

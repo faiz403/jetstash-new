@@ -126,8 +126,14 @@ describe('FareRangeSummary.observedDirectness aggregates per-observation fareDir
     expect(range!.observedDirectness).toBe('connecting');
   });
 
-  it('a route/cabin whose observations never recorded fareDirectness reports undefined, never a guess', () => {
+  it('Manchester-Islamabad\'s range now reports "connecting", matching its Batch A observation\'s explicit fareDirectness (its two older observations predate the field and stay unset)', () => {
     const range = getFareRangeSummary('manchester-islamabad', 'Economy', NOW_ISO);
+    expect(range).not.toBeNull();
+    expect(range!.observedDirectness).toBe('connecting');
+  });
+
+  it('a route/cabin whose observations never recorded fareDirectness reports undefined, never a guess', () => {
+    const range = getFareRangeSummary('london-heathrow-delhi', 'Economy', NOW_ISO);
     expect(range).not.toBeNull();
     expect(range!.observedDirectness).toBeUndefined();
   });

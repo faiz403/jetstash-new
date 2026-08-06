@@ -260,7 +260,7 @@ describe('No unrelated route was changed by this batch', () => {
     // the same week) added manchester-lahore's own 2026-08-06 observation -
     // expected, not scope creep from this batch. Any route added here must
     // be explicitly accounted for, never silently allowed.
-    const knownBatchARoutesSoFar: readonly string[] = ['manchester-lahore'];
+    const knownBatchARoutesSoFar: readonly string[] = ['manchester-lahore', 'manchester-islamabad'];
     const allowedSlugs = [...(BATCH_1_SLUGS as readonly string[]), ...knownBatchARoutesSoFar];
     const newlyObserved = fareObservations.filter((o) => o.observedDate === '2026-08-06');
     for (const o of newlyObserved) {
