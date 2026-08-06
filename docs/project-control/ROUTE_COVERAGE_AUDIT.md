@@ -21,21 +21,21 @@ This phase does not claim every route is now complete. It does three things:
 
 1. **Fixes what the Atlas says.** Every route now shows one of three honestly-derived, non-blank statuses — *"JetStash knows this route well"*, *"Useful route guidance available"*, or *"Intelligence still being expanded"* — computed from real fields, requiring **breadth across at least two independent categories** for the top tier, never a single signal and never manually assigned. Country-level aggregation is conservative: one strong destination can no longer carry an entire country.
 2. **Grades all 32 routes honestly**, using that same derivation, and states plainly what's missing from each one that isn't "strong."
-3. **States the real fare-tracking scope** — 8 of 32 routes have any publicly-displayable fare observation, all 8 currently fresh — and fixes the one page (`/deals`) most likely to read as claiming broader coverage than exists.
+3. **States the real fare-tracking scope** — 9 of 32 routes have any publicly-displayable fare observation, all 9 currently fresh — and fixes the one page (`/deals`) most likely to read as claiming broader coverage than exists.
 
-**Headline numbers, computed from the real data under the corrected threshold:**
+**Headline numbers, computed from the real data under the corrected threshold** (updated 6 August 2026 after Manchester–Dubai's fare observation closed — see "Batch 1 completion record" after §7 and its addendum for the full account):
 
 | | Count | of 32 |
 |---|---|---|
-| **Strong** — JetStash knows this route well | 9 | 28% |
-| **Useful** — useful route guidance available | 23 | 72% |
+| **Strong** — JetStash knows this route well | 10 | 31% |
+| **Useful** — useful route guidance available | 22 | 69% |
 | **Expanding** — intelligence still being expanded | 0 | 0% (this state applies to Atlas destinations with no `routes.ts` entry at all, not to any of the 32) |
-| Routes with any publicly-displayable fare observation | 8 | 25% |
-| Soft-launch routes (of 6) that genuinely meet the Strong bar | 4 | 67% |
+| Routes with any publicly-displayable fare observation | 9 | 28% |
+| Soft-launch routes (of 6) that genuinely meet the Strong bar | 5 | 83% |
 
-**Two findings worth surfacing immediately:**
-- The Atlas's own default landing route, Manchester–Dubai, is graded **Useful** — updated by Route Completion Batch 1 (see "Batch 1 completion record" after §7) with a genuine, sourced baggage-guidance category, but still one category short of Strong: it needs a publishable fare observation, which this batch could not add itself (see below). See §6 and §4.
-- **Manchester–Doha**, a soft-launch route, is also graded **Useful** under the corrected threshold — its only depth category is a single fresh fare observation, and Batch 1 could not honestly add a second one for it (see the completion record). Not upgraded to make the launch set look complete; see §4.
+**Findings worth surfacing immediately:**
+- The Atlas's own default landing route, **Manchester–Dubai, is now graded Strong** — its 6 August 2026 fare observation (`obs-man-dxb-economy-20260806-8w-v1`) gave it a second genuine depth category alongside the baggage guidance Batch 1 already added. This is a real, mechanical consequence of genuine evidence clearing the unchanged two-category threshold — **not an automatic content-quality promotion**: a dedicated content-depth review of the actual rendered page found a real, visible inconsistency (the `DealCard`'s "DIRECT FLIGHT" badge sits directly above this fare's own "connecting via Bahrain" description) that isn't resolved by the grade alone. See the Batch 1 completion record's addendum for the full finding — not fixed in this pass, flagged as a founder-level follow-up.
+- **Manchester–Doha**, a soft-launch route, remains graded **Useful** — its only depth category is a single fresh fare observation, and every avenue this project's tooling could research for a second one is exhausted (see the completion record). Not upgraded to make the launch set look complete, and explicitly protected from being upgraded by anything other than genuine independent evidence — see §4 and "Protecting the Doha decision."
 
 ---
 
@@ -51,7 +51,7 @@ This phase does not claim every route is now complete. It does three things:
 
 **Why breadth, not presence:** each of the six categories is something the codebase already independently gates and can't be gamed by rewording prose — but a route can (and, before this revision, several did) satisfy exactly one of them and nothing else. Requiring at least two means "JetStash knows this route well" now means the route has been looked at from more than one angle — priced *and* verified per-airline, or verified *and* carrying real connecting-route detail, etc. — not just one fact recorded somewhere.
 
-**Category prevalence across the real 32 routes** (how many routes have each, for reference, updated after Route Completion Batch 1 — see the completion record after §7): per-airline verification breakdown 4, connecting-alternative detail 5, fare evidence 8, Book-By priority 5, investigated warning 5, baggage guidance 6.
+**Category prevalence across the real 32 routes** (how many routes have each, for reference, updated after Route Completion Batch 1 and Manchester–Dubai's 6 August 2026 fare observation — see the completion record after §7): per-airline verification breakdown 4, connecting-alternative detail 5, fare evidence 9, Book-By priority 5, investigated warning 5, baggage guidance 6.
 
 **What this deliberately is not:** the `factsConfidence: 'verified' | 'editorial-estimate'` field `data/routes.ts` documents removing (see that file, ~line 974). That field collapsed a route's *whole fact bundle* into one label and called it "verified" even when frequency or a specific airline wasn't independently confirmed — which was false. This status answers a narrower, honestly-answerable question — how much *breadth* of guidance exists — and never overrides or summarises individual fact accuracy. A Strong-graded route can still have an unconfirmed frequency string, same as before; nothing here claims otherwise.
 
@@ -72,13 +72,14 @@ A separate, additive signal — **active service notice** — covers a live with
 
 Grouped by grade. "Depth categories" lists which of the six Strong-qualifying facts the route actually has — Strong routes always have two or more; Useful routes never have two or more. "Fare" shows publishable observation count and freshness as of 6 Aug 2026 (`OBSERVATION_FRESH_DAYS` = 60). "TC" = has a real Trip.com link (tracked, not scored — see the Revision note).
 
-### Strong (9 of 32)
+### Strong (10 of 32)
 
 | Route | Direct/Connecting | Depth categories (2+) | Fare | TC | Notes |
 |---|---|---|---|---|---|
 | Heathrow–Delhi | Direct (airline-verified) | Airline-verif, fare, Book-By, baggage | 2, fresh | N | 4 categories — the broadest evidence of any route. No Heathrow-origin Trip.com link exists (by design — see AFF-001). |
 | Birmingham–Amritsar | Connecting | Fare, Book-By, warning (reduced frequency) | 2, fresh | Y | Soft-launch route. |
 | Heathrow–Jeddah | Direct (airline-verified) | Airline-verif, fare, Book-By | 2, fresh | N | Saudia's own status is separately unverified — BA's evidence doesn't cover it. |
+| Manchester–Dubai | Direct, verified | Fare, baggage | 1, fresh (0d) | Y | **The Atlas default landing route.** Closed 6 August 2026 (`obs-man-dxb-economy-20260806-8w-v1`, £480, Gulf Air, connecting via Bahrain — a different airline/routing than the route's own verified Emirates direct service). Mechanically Strong, but see the Batch 1 completion record's content-depth finding: the rendered `DealCard` shows a "DIRECT FLIGHT" badge directly above this fare's own "connecting via Bahrain" description — a real, unresolved inconsistency, not fixed in this pass. |
 | Manchester–Lahore | Direct, verified | Fare, Book-By, baggage | 2, fresh | Y | Soft-launch route. |
 | Heathrow–Mumbai | Direct (airline-verified, 3 airlines) | Airline-verif, fare | 1, fresh (13d) | N | |
 | Manchester–Delhi | Direct, verified | Connecting-alternative, baggage | 0 | Y | Active withdrawal notice (IndiGo, effective 31 Aug 2026) — shown as a separate service notice, doesn't affect this grade. |
@@ -86,7 +87,7 @@ Grouped by grade. "Depth categories" lists which of the six Strong-qualifying fa
 | Manchester–Madinah | Connecting | Connecting-alternative, fare | 1, fresh (1d) | Y | Soft-launch route. |
 | Manchester–Mumbai | Direct, verified | Connecting-alternative, baggage | 0 | Y | Same withdrawal notice as Delhi. |
 
-### Useful (23 of 32)
+### Useful (22 of 32)
 
 | Route | Direct/Connecting | Depth categories (0–1) | Why not Strong | Fare | TC |
 |---|---|---|---|---|---|
@@ -97,7 +98,6 @@ Grouped by grade. "Depth categories" lists which of the six Strong-qualifying fa
 | Manchester–Amritsar | Connecting | Connecting-alt only (1) | Real connecting detail, but nothing else. | 0 | Y |
 | Manchester–Ahmedabad | Connecting | Connecting-alt only (1) | Same. | 0 | Y |
 | Manchester–Doha | Direct, verified | Fare only (1) | **Soft-launch route.** One fresh fare check, nothing else — Batch 1 (August 2026) could not honestly add a second category; see the completion record after §7. | 1, fresh (1d) | Y |
-| Manchester–Dubai | Direct, verified | Baggage only (1) | **Soft-launch route, the Atlas default landing route.** Batch 1 (August 2026) added a genuine, sourced baggage-guidance category (see the completion record after §7), but a publishable fare observation — its second category — still requires a manual founder check; see `docs/project-control/FARE_OBSERVATION_ARCHIVE.md`. | 0 (2 unpublishable — see §6) | Y |
 | Manchester–Karachi | Direct, **unverified** | Warning (1), but unverified directness blocks Strong regardless | Current direct claim not confirmed by a primary source. | 0 | Y |
 | Birmingham–Lahore | Direct, **unverified** | Baggage (1), but unverified directness blocks Strong regardless | Current direct claim not confirmed by a primary source. | 0 | Y |
 | Heathrow–Doha | Direct, verified | Zero | No depth category at all. | 0 | N |
@@ -143,7 +143,7 @@ Machine-checkable manifest — every one of the 32 routes, exactly once, with it
 | `manchester-delhi` | Strong |
 | `manchester-dhaka` | Useful |
 | `manchester-doha` | Useful |
-| `manchester-dubai` | Useful |
+| `manchester-dubai` | Strong |
 | `manchester-islamabad` | Strong |
 | `manchester-jeddah` | Useful |
 | `manchester-karachi` | Useful |
@@ -160,7 +160,7 @@ Machine-checkable manifest — every one of the 32 routes, exactly once, with it
 Part D of the brief asked this to be recorded explicitly per route, separately from the Strong/Useful/Expanding grade above — it is a genuinely different signal (practical trip-planning content, not route-existence evidence) and deliberately does **not** feed into `computeRouteIntelligenceLevel()` as a required category (baggage guidance is one of the six *scored* categories; airport-specific guidance is tracked only — see below). Computed from `data/traveller-tips.ts`, the only structured source for this content (`TravellerTipScope` can target a `routeSlug`, `destinationSlug`, or `airportSlug`).
 
 - **Airport guidance:** every route's departure airport has a general airport guide page (`/airports/[slug]`, `description`/`whyThisAirport` in `data/airports.ts`) — universal baseline coverage, not a differentiator between routes. But **zero of the 10 traveller tips are scoped to an `airportSlug`** — no route currently has dedicated, route-specific airport guidance (terminal, check-in, transfer-specific advice) beyond that shared baseline. This is a real, previously unrecorded gap, not a data error — nothing here was invented to fill it, and it's why this category is tracked but not required in §2's threshold: a required category that 0/32 routes can currently pass isn't a meaningful bar.
-- **Baggage guidance:** 4 of the 11 traveller tips are `category: 'baggage'` (Route Completion Batch 1, August 2026 added a fourth — `manchester-dubai-emirates-baggage-weight`, checked directly against Manchester Airport's own Emirates operator page), scoped to Lahore, Delhi, Mumbai and Manchester–Dubai specifically. Because most of these are destination-scoped while the new one is route-scoped, this reaches **6 of 32 routes**: Manchester–Lahore, Birmingham–Lahore, Heathrow–Delhi, Manchester–Delhi, Manchester–Mumbai, Manchester–Dubai. The other 26 routes have no dedicated baggage guidance. This category *is* one of the six scored in §2 — it contributes to 4 of the 9 Strong grades (Heathrow–Delhi, Manchester–Lahore, Manchester–Delhi, Manchester–Mumbai), plus Manchester–Dubai's new (still insufficient alone) category.
+- **Baggage guidance:** 4 of the 11 traveller tips are `category: 'baggage'` (Route Completion Batch 1, August 2026 added a fourth — `manchester-dubai-emirates-baggage-weight`, checked directly against Manchester Airport's own Emirates operator page), scoped to Lahore, Delhi, Mumbai and Manchester–Dubai specifically. Because most of these are destination-scoped while the new one is route-scoped, this reaches **6 of 32 routes**: Manchester–Lahore, Birmingham–Lahore, Heathrow–Delhi, Manchester–Delhi, Manchester–Mumbai, Manchester–Dubai. The other 26 routes have no dedicated baggage guidance. This category *is* one of the six scored in §2 — it contributes to 5 of the 10 Strong grades (Heathrow–Delhi, Manchester–Lahore, Manchester–Delhi, Manchester–Mumbai, Manchester–Dubai).
 - **Overlap with §3's grade:** partial now (baggage guidance is a scored category), but still not determinative alone — e.g. Birmingham–Lahore has a baggage tip but stays Useful because its directness is unverified (the prerequisite still gates everything).
 
 This is not a Phase 1 action item beyond the scoring change above — flagged here for the Phase 2+ batches in §7, since airport-specific guidance is the kind of gap a future batch could reasonably close.
@@ -174,7 +174,7 @@ Every country node in the Atlas is scoped to a single airport's network (the sam
 | Airport | Country | Destinations (grade) | Result |
 |---|---|---|---|
 | Manchester | India | Mumbai (Strong), Delhi (Strong), Amritsar (Useful), Ahmedabad (Useful) | **Mixed** |
-| Manchester | UAE | Dubai (Useful) | Useful |
+| Manchester | UAE | Dubai (Strong) | **Strong** (single-destination country — see the content-depth caveat on Dubai's own grade in §3 and the Batch 1 completion record before reading this as unqualified) |
 | Manchester | Pakistan | Lahore (Strong), Islamabad (Strong), Karachi (Useful) | **Mixed** |
 | Manchester | Bangladesh | Dhaka (Useful), Sylhet (Useful) | Useful |
 | Manchester | Qatar | Doha (Useful) | Useful |
@@ -207,32 +207,32 @@ Audited to the same standard as every other route — **not upgraded for being l
 | Manchester–Islamabad | **Strong** | Yes. | None for this grade. |
 | Birmingham–Amritsar | **Strong** | Yes. | None for this grade. |
 | Manchester–Madinah | **Strong** | Yes. | None for this grade. |
+| **Manchester–Dubai** | **Strong** | **Mechanically yes; not without a caveat.** | Closed 6 August 2026 — a genuine fare observation (`obs-man-dxb-economy-20260806-8w-v1`) gave it a second real depth category alongside Batch 1's baggage guidance, clearing the unchanged two-category threshold. But the content-depth review run before accepting this grade found a real, visible problem: the rendered `DealCard`'s "DIRECT FLIGHT" badge (correctly derived from the route's own verified Emirates service) sits directly above this fare's own "connecting via Bahrain, Gulf Air" description — a genuine inconsistency, not resolved by the grade alone. Not fixed here (a shared-component change, out of scope for recording one fare); see the Batch 1 completion record's addendum for the full finding and recommended follow-up. |
 | **Manchester–Doha** | **Useful** | **No.** | Currently has exactly one depth category (a single fresh fare check). Route Completion Batch 1 (August 2026) audited this route specifically and could not honestly add a second: Qatar Airways' own baggage page is not accessible from this environment (confirmed 403), Manchester Airport's own Qatar Airways page explicitly has no baggage figure and directs to Qatar Airways directly, a per-airline `airlineVerifications` entry would duplicate the existing route-level claim on this single-carrier route rather than add real depth, no genuine warning exists, and Book-By priority is a founder decision. See the Batch 1 completion record after §7 for the full account. |
-| **Manchester–Dubai** | **Useful** | **No.** | Route Completion Batch 1 (August 2026) added one genuine, sourced depth category — dedicated baggage guidance, checked directly against Manchester Airport's own Emirates operator page (`data/traveller-tips.ts`'s `manchester-dubai-emirates-baggage-weight`). Still needs a second: a fresh, dated, methodology-compliant fare observation (`departureDate`/`returnDate` — the two existing observations predate the dating requirement and don't count). This batch could not add one itself — the project's own fare-observation methodology (`docs/project-control/FARE_OBSERVATION_ARCHIVE.md`) explicitly rules out an automated check, so this is a standing manual founder action, documented exactly in that file. **A compliant fare observation would satisfy the current Atlas threshold (baggage + fare = 2 categories), subject to a final content-depth review** — not an automatic promotion. A product-truth review of this batch found the route page still doesn't render the underlying `verification` source name or checked date anywhere (confirmed: no file under `app/` or `components/` reads `route.verification` outside tests — the Atlas is the only consumer), airline guidance is a single unadorned "Emirates" line, and the new baggage tip states Emirates' general policy rather than a route-unique fact. None of that blocks the code-level Strong grade, but a founder reviewing the rendered page after the fare check is added should judge for themselves whether "JetStash knows this route well" reads as earned, not assume the two-category bar settles it. |
 
-**Verdict: 4 of the 6 soft-launch routes genuinely meet the corrected, stricter standard today — Manchester–Lahore, Manchester–Islamabad, Birmingham–Amritsar and Manchester–Madinah. Manchester–Doha and Manchester–Dubai do not**, and neither is upgraded here to make the launch set look complete. A compliant fare observation would satisfy the current Atlas threshold for Manchester–Dubai (see the Batch 1 completion record), subject to a final content-depth review rather than an automatic promotion — see that record for what a founder should actually check on the rendered page first. Manchester–Doha's path is less certain — every avenue this batch could research on its own is now exhausted (see above), and closing it must wait for a genuine founder decision (Book-By priority, assigned only if editorially justified, never merely to create a second scoring category) or a human editor with unrestricted browser access confirming a real, route-specific Qatar Airways baggage fact — see "Protecting the Doha decision" after the Batch 1 completion record for why even that second option may not be enough on its own. This is squarely a Phase 2 (or founder) action, not something a further automated pass over this same evidence would resolve.
+**Verdict: 5 of the 6 soft-launch routes now genuinely meet the corrected, stricter standard — Manchester–Lahore, Manchester–Islamabad, Birmingham–Amritsar, Manchester–Madinah and, as of 6 August 2026, Manchester–Dubai (with the content-depth caveat above).** Manchester–Dubai was not upgraded to make the launch set look complete — a real, dated fare check was performed, reviewed twice, and approved before recording; the grade is a mechanical consequence of that evidence against an unchanged threshold, and the caveat is reported rather than hidden. **Manchester–Doha remains the one gap** — every avenue this batch could research on its own is exhausted (see above), and closing it must wait for a genuine founder decision (Book-By priority, assigned only if editorially justified, never merely to create a second scoring category) or a human editor with unrestricted browser access confirming a real, route-specific Qatar Airways baggage fact — see "Protecting the Doha decision" after the Batch 1 completion record for why even that second option may not be enough on its own.
 
 ---
 
 ## 5. Fare-tracking coverage truth
 
-Unaffected by the route-threshold correction — fare-tracking coverage is a separate computation (`getPublishableObservationsByRoute()`) that never depended on `computeRouteIntelligenceLevel()`.
+Unaffected by the route-threshold correction — fare-tracking coverage is a separate computation (`getPublishableObservationsByRoute()`) that never depended on `computeRouteIntelligenceLevel()`. Updated 6 August 2026 for Manchester–Dubai's new observation.
 
-- **Exact number of routes with any publishable observation:** 8 of 32 (25%).
-- **Exact number with recent (≤60 day), methodology-compliant observations:** 8 of 32 — every currently-publishable observation happens to also be fresh.
-- **Total raw entries in the archive:** 31 (`data/fare-observations.ts`), of which 8 routes' worth pass `isPubliclyPublishable()` (requires both `departureDate` and `returnDate` — a Truth Reset requirement the original 18 entries predate).
-- **Soft-launch coverage:** 5 of 6 soft-launch routes have at least one publishable fare observation (all except Manchester–Dubai) — a separate fact from §4's "meets the Strong bar," since a fare check is only one of the two-or-more categories now required.
-- **Did "Fares we're tracking" imply broader coverage than exists?** Yes, on the one page most likely to be read as a coverage claim: `/deals`. Its hero said "Fares we're tracking" and cited only a raw count of checks logged (31) and airports covered, never the route denominator — a visitor had no way to see this spans 8 of 32 routes, not most of the network. **Fixed in this phase** — see §7's implementation note.
+- **Exact number of routes with any publishable observation:** 9 of 32 (28%).
+- **Exact number with recent (≤60 day), methodology-compliant observations:** 9 of 32 — every currently-publishable observation happens to also be fresh.
+- **Total raw entries in the archive:** 32 (`data/fare-observations.ts`), of which 9 routes' worth pass `isPubliclyPublishable()` (requires both `departureDate` and `returnDate` — a Truth Reset requirement the original 18 entries predate).
+- **Soft-launch coverage:** 6 of 6 soft-launch routes now have at least one publishable fare observation — a separate fact from §4's "meets the Strong bar," since a fare check is only one of the two-or-more categories now required.
+- **Did "Fares we're tracking" imply broader coverage than exists?** It did before this phase; already fixed — see §7's implementation note. Wording is live-computed (see below), so it updated automatically with no further code change when Manchester–Dubai's observation was added.
 - **Do empty/thin categories look abandoned?** No — this was already handled correctly before this phase. `NoFareFallback` ("We haven't logged a tracked fare for {city} yet") renders wherever a route/destination/airport/cabin has zero observations, with a Trip.com comparison link where one exists. Nothing was found to fix here.
 - **Is observation age clear?** Yes — every fare-rendering surface (`DealCard`, `FareHistoryPanel`, `BookByCountdown`) already uses the shared 3-tier freshness model (`lib/freshness-thresholds.ts`: fresh ≤60 days, ageing ≤180 days, stale beyond) with visible de-emphasis and explicit "this is old" copy for stale observations.
 - **Is the manual-verification methodology explained clearly?** Yes, on `/deals` itself and in `docs/project-control/FARE_OBSERVATION_ARCHIVE.md` — the hero already linked "Read our standards" before this phase, and that page's own content is accurate and unaffected by this audit.
-- **A limitation worth naming (raised in the product-truth review, not fixed here):** `getPublishableObservationsByRoute()` gates on date-completeness and current route status, but not on freshness — a route whose only publishable observation had gone stale (>180 days, per `lib/freshness-thresholds.ts`) would still count toward the "N of 32 routes" figure on `/deals`, since staleness only affects *display* styling elsewhere, not this count. Today this is moot — all 8 publishable observations are fresh — but the wording doesn't self-enforce freshness going forward. Not changed in this PR (it's a pre-existing property of a function used the same way elsewhere, e.g. Book-By's Verified Check callout, not something this phase introduced); flagged for a future hardening pass if it becomes a real gap.
+- **A limitation worth naming (raised in the product-truth review, not fixed here):** `getPublishableObservationsByRoute()` gates on date-completeness and current route status, but not on freshness — a route whose only publishable observation had gone stale (>180 days, per `lib/freshness-thresholds.ts`) would still count toward the "N of 32 routes" figure on `/deals`, since staleness only affects *display* styling elsewhere, not this count. Today this is moot — all 9 publishable observations are fresh — but the wording doesn't self-enforce freshness going forward. Not changed in this PR (it's a pre-existing property of a function used the same way elsewhere, e.g. Book-By's Verified Check callout, not something this phase introduced); flagged for a future hardening pass if it becomes a real gap.
 
 **Recommended and implemented wording** (using the real, live-computed count rather than a hand-typed number that could drift):
 
-> "We're currently tracking fares on **8 of our 32 routes** — coverage is being expanded gradually using manually verified observations, not a live price feed."
+> "We're currently tracking fares on **9 of our 32 routes** — coverage is being expanded gradually using manually verified observations, not a live price feed."
 
-This is now the opening line of `/deals`'s hero, with `8` and `32` both computed live from `routes.length` and `getPublishableObservationsByRoute()` — the same functions this audit itself calls — so the sentence can never silently drift out of sync with reality the way a hand-typed figure could.
+This is now the opening line of `/deals`'s hero, with the count and `32` both computed live from `routes.length` and `getPublishableObservationsByRoute()` — the same functions this audit itself calls — so the sentence can never silently drift out of sync with reality the way a hand-typed figure could. No code change was needed to reflect Manchester–Dubai's new observation here — the live computation already picked it up.
 
 ---
 
@@ -242,8 +242,8 @@ Only routes with a genuine, specific, actionable gap are listed (Strong routes w
 
 | Route | Gap | What would close it |
 |---|---|---|
-| **Manchester–Dubai** | One depth category (baggage, added by Batch 1) — the Atlas's own default landing route. Two logged fare observations exist but predate the dating requirement. | One fresh, dated fare check (manual founder action — see `FARE_OBSERVATION_ARCHIVE.md`). Would satisfy the code-level Strong threshold once logged — see the Batch 1 completion record for why that shouldn't be read as an automatic content-quality promotion. |
 | **Manchester–Doha** | Soft-launch route with exactly one depth category (a fresh fare check). Batch 1 confirmed no second category is currently addable: Qatar Airways' baggage page is inaccessible, a duplicate `airlineVerifications` entry on this single-carrier route wouldn't be genuine depth, and no real warning exists. | A founder Book-By decision, or a human editor checking Qatar Airways' own baggage page directly with unrestricted browser access. |
+| Manchester–Dubai *(closed 6 August 2026 — kept here as the "thin despite looking complete" example, not an open gap)* | Now Strong (fare + baggage), but the rendered `DealCard` shows a "DIRECT FLIGHT" badge directly above this fare's own "connecting via Bahrain" description — see the Batch 1 completion record's addendum. | A founder decision on whether `getDealDirectnessLabel()` should account for a displayed fare's own routing, or explanatory copy bridging the two facts. Not a "close the gap" item — the depth categories are genuinely met; this is a clarity problem, not a missing-evidence one. |
 | Heathrow–Bengaluru | Airline service is confirmed by two independent primary sources (one category), but no fare observation or any other guidance has ever been logged. | One fresh, dated fare check would clear the bar (airline-verif + fare = 2 categories). |
 | Manchester–Amritsar / Manchester–Ahmedabad | Each has real connecting-route detail (one category) but nothing else. | A fare check or a formally investigated warning would clear the bar. |
 | Leeds Bradford–Islamabad / Gatwick–Ahmedabad / Gatwick–Amritsar | Each has a genuinely researched, sourced warning (one category) but nothing else. | A fare check or per-airline verification would clear the bar — the warning itself should stay, it's real research, just not broad on its own. |
@@ -254,7 +254,7 @@ Only routes with a genuine, specific, actionable gap are listed (Strong routes w
 | Heathrow–Dhaka / Heathrow–Sylhet | Real, current flight-tracking evidence exists, but the exact stop pattern (nonstop vs. via Sylhet) is unconfirmed by any primary source. | A Biman or Heathrow route-specific source stating the stop pattern directly. |
 | 12 zero-category Useful routes (Heathrow–Doha, Leeds Bradford–Amritsar, Manchester–Dhaka, Manchester–Jeddah, Birmingham–Madinah, Birmingham–Mumbai, Glasgow/Edinburgh/Newcastle–Dubai, plus Birmingham–Islamabad, Heathrow–Dhaka, Heathrow–Sylhet, Manchester–Sylhet already listed above for their prerequisite gap) | Verified (where directness is confirmed) and correctly described, but carry none of the six Strong-qualifying depth categories. | Any two of: a fare observation, a `connectingAlternative` block (for the connecting ones), a per-airline verification entry, Book-By priority, a newly-investigated warning, or baggage guidance. |
 
-**Routes that appear visually complete but have thin underlying intelligence** (the specific question the brief asked): **Manchester–Dubai** remains the clearest case — verified, direct, a Trip.com link, and the Atlas's own default first impression, still one manual fare check short of Strong even after Batch 1's genuine baggage addition. **Manchester–Doha** is a soft-launch route that looked complete (verified, fresh fare, Trip.com link) but has only one kind of evidence behind it, and Batch 1 confirmed every other avenue this environment can research is currently exhausted for it. Heathrow–Bengaluru remains the clearest "confirmed but un-priced" case.
+**Routes that appear visually complete but have thin underlying intelligence** (the specific question the brief asked): **Manchester–Dubai is now the clearest example of the inverse problem** — a route that genuinely closed its depth gap (fare + baggage, both real and evidenced) but whose rendered page still shows a real inconsistency (the "DIRECT FLIGHT" badge sitting above a "connecting via Bahrain" fare description) that the grade alone doesn't fix. Meeting the threshold and reading cleanly to a customer are not automatically the same thing — see the Batch 1 completion record's addendum. **Manchester–Doha** is a soft-launch route that looked complete (verified, fresh fare, Trip.com link) but has only one kind of evidence behind it, and Batch 1 confirmed every other avenue this environment can research is currently exhausted for it. Heathrow–Bengaluru remains the clearest "confirmed but un-priced" case.
 
 **Routes with stale or weak evidence:** none of the 32 routes currently have a *stale* `verification` record (every `reviewDueDate` is still in the future as of 6 Aug 2026) — but 9 of them have `unverified` status specifically because no primary source was ever found, not because a once-good source went stale. That's a different, harder gap (needs new evidence, not re-verification of old evidence).
 
@@ -354,6 +354,62 @@ Explicit standing rules, so a future pass doesn't close Manchester–Doha's gap 
 - **The route stays Useful until genuine independent intelligence is available.** No mechanism in this codebase should treat "Doha needs one more category" as licence to manufacture one.
 
 **Would unrestricted human browser access to Qatar Airways' own baggage page actually complete the route?** Probably only partially, and this should not be assumed to close the gap on its own. Based on the same Weight Concept pattern confirmed for Emirates (this batch's own research — see the completion record: allowance stated as varying "by ticket type" with no single figure given) and Qatar Airways' own general baggage-policy pages (checked via search summary earlier in this batch's research, not directly readable), Qatar Airways' baggage rules are very likely governed by fare family and route region in the same generic way — meaning a human editor with real browser access would probably find the same kind of general, ticket-type-dependent policy statement Manchester Airport's own page already gestures at, not a fact unique to the Manchester–Doha city pair. That would still be genuine, addable depth (the same standard Dubai's own baggage tip was held to), but a founder or editor pursuing this should expect "Qatar Airways' general policy, sourced properly" rather than a materially different or more route-specific discovery.
+
+---
+
+## Addendum (6 August 2026): Manchester–Dubai's fare observation closes the code-level gap, with a caveat
+
+Manchester–Dubai's founder-action fare check (documented in `FARE_OBSERVATION_ARCHIVE.md`'s
+"Founder action required" section above) was performed, reviewed twice, and approved for recording:
+
+- **Recorded:** `obs-man-dxb-economy-20260806-8w-v1` — £480 return, Gulf Air, connecting via
+  Bahrain, checked 6 August 2026. Full detail and evidence in `FARE_OBSERVATION_ARCHIVE.md` and
+  `docs/project-control/fare-evidence/manchester-dubai-2026-08-06.md`.
+- **`isPubliclyPublishable()` / `isObservationPublishable()`: confirmed `true`** — both dates
+  present, route matches, route status is `'direct'`.
+- **Atlas grade: now `'strong'`**, computed live via the unchanged `computeRouteIntelligenceLevel()`
+  — baggage (Batch 1) + fare (this observation) = 2 categories. This is a mechanical consequence of
+  real, reviewed evidence clearing an unchanged threshold, **not a manual override and not an
+  automatic content-quality promotion** — the two are deliberately kept separate, per the
+  content-depth review immediately above and the second review below.
+
+### Second content-depth review, specifically on the now-Strong page
+
+The first review (above) was run *before* this observation existed, on the hypothetical of what
+adding one would produce. This second pass re-reviewed the actual rendered
+`/routes/manchester-dubai` page and its `/deals` `DealCard` with the real observation live.
+
+**A new, concrete problem was found that the first review couldn't have predicted**: the
+`DealCard`'s top-right badge reads **"DIRECT FLIGHT"** — correctly derived from the route's own
+verified Emirates direct service via `getDealDirectnessLabel()` (`data/deals.ts`) — rendered
+directly above this fare's own price description, which explicitly states **"Gulf Air, connecting
+via Bahrain both ways."** This is not a hypothetical readability concern; it is a real, currently-
+live inconsistency a customer would see on the same card. Confirmed on both `/routes/manchester-dubai`
+and `/deals` (the same shared `DealCard` component renders on both).
+
+**Root cause, confirmed in code:** `getDealDirectnessLabel()` intentionally derives the badge from
+the *route's* verified status, never the specific fare's own routing — correct for every other
+route in the archive, where the logged fare happens to share the route's verified operator.
+Manchester–Doha's Pegasus observation has the same underlying mismatch (a different airline/routing
+than the route's verified Qatar Airways service) but never became visible, because Doha has no
+`Deal` entry in `data/deals.ts` at all — its `DealCard` never renders.
+
+**Verdict on "JetStash knows this route well": the code-level grade is earned by genuine evidence,
+but the page does not yet read cleanly, and that should not be minimised.** Per the explicit
+instruction accompanying this observation: not weakening the threshold, not removing or hiding the
+fare observation, and not adding filler to paper over it. Instead:
+
+- The observation and the resulting Strong grade stand — they reflect real, reviewed, approved
+  evidence.
+- The badge/description inconsistency is reported here plainly, not fixed in this PR. Fixing it
+  means changing `getDealDirectnessLabel()`/`DealCard` behaviour that renders on every route with a
+  `Deal` entry (23 of 32) — a shared-component change with its own review needs, well beyond the
+  scope of "record one fare observation," and risking unintended effects elsewhere if rushed.
+- **Recommended follow-up (founder decision, not made here):** either derive the topBadge from the
+  specific displayed fare's own routing when a fare observation exists and its routing is known
+  (falling back to the route-level label only when it isn't), or add a short bridging line to the
+  fare card ("this example uses a different, connecting itinerary — the route itself also runs
+  direct with Emirates") so the two facts don't read as contradictory.
 
 ---
 

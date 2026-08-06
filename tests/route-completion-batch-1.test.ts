@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import { readFileSync } from 'fs';
+import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 import { routes, getRouteBySlug, getDisplayDirectness } from '@/data/routes';
-import { getPublishableObservationsByRoute, isPubliclyPublishable, fareObservations } from '@/data/fare-observations';
+import { getPublishableObservationsByRoute, isPubliclyPublishable, isObservationPublishable, fareObservations } from '@/data/fare-observations';
 import { getActiveWarningsByRoute } from '@/data/route-warnings';
 import { isBookByRoute } from '@/lib/booking-intelligence';
 import { getTripComRouteUrl } from '@/lib/booking-providers';
@@ -11,19 +11,24 @@ import { computeRouteIntelligenceLevel } from '@/lib/atlas-network-data';
 
 /**
  * Route Completion Batch 1 (August 2026) — Manchester-Dubai and
- * Manchester-Doha only. See docs/project-control/ROUTE_COVERAGE_AUDIT.md's
- * "Batch 1 completion record" for the full audit this suite guards.
+ * Manchester-Doha. See docs/project-control/ROUTE_COVERAGE_AUDIT.md's
+ * "Batch 1 completion record" and its 6 August addendum for the full audit
+ * this suite guards.
  *
- * Both routes remain graded 'useful' after this batch — neither was
- * upgraded by a manual override, and every assertion here is designed to
- * fail loudly if that ever silently changes without genuine new evidence.
+ * Manchester-Dubai's grade changed from 'useful' to 'strong' on 6 August
+ * 2026 — a mechanical consequence of a real, reviewed, approved fare
+ * observation clearing the unchanged two-category threshold, never a
+ * manual override. Manchester-Doha remains 'useful' throughout — every
+ * assertion here is designed to fail loudly if either changes without
+ * genuine new evidence, or if Doha is ever closed by gaming the score.
  */
 
 const NOW_ISO = new Date().toISOString().slice(0, 10);
 const BATCH_1_SLUGS = ['manchester-dubai', 'manchester-doha'] as const;
+const NEW_DUBAI_OBS_ID = 'obs-man-dxb-economy-20260806-8w-v1';
 
 describe('Batch 1 route service state is unchanged', () => {
-  it('Manchester-Dubai is still a direct, route-level-verified route — unaffected by this batch', () => {
+  it('Manchester-Dubai is still a direct, route-level-verified route — unaffected by the fare observation', () => {
     const route = getRouteBySlug('manchester-dubai')!;
     expect(route.isDirect).toBe(true);
     expect(route.verification?.status).toBe('verified');
@@ -40,7 +45,7 @@ describe('Batch 1 route service state is unchanged', () => {
   });
 });
 
-describe('The new baggage-guidance entry is tied to a real source record, not invented', () => {
+describe('The baggage-guidance entry is tied to a real source record, not invented', () => {
   const dubaiBaggageTip = travellerTips.find((t) => t.id === 'manchester-dubai-emirates-baggage-weight');
 
   it('exists, is scoped only to manchester-dubai (never destinationSlug, which would leak to Glasgow/Edinburgh/Newcastle-Dubai)', () => {
@@ -58,23 +63,17 @@ describe('The new baggage-guidance entry is tied to a real source record, not in
     const forbidden = /\b(cheapest|fastest|safest|guaranteed|stable[- ]fare|best price)\b/i;
     expect(dubaiBaggageTip!.body).not.toMatch(forbidden);
     expect(dubaiBaggageTip!.title).not.toMatch(forbidden);
-    // The claim itself (32kg per bag, ticket-type-capped total) must be present, not paraphrased into something unverifiable.
     expect(dubaiBaggageTip!.body).toContain('32kg');
   });
 
-  it('no equivalent baggage tip was added for Manchester-Doha — the audit is honest that Qatar\'s figure could not be sourced', () => {
+  it('no equivalent baggage tip was added for Manchester-Doha — the archive is honest that Qatar\'s figure could not be sourced', () => {
     const dohaBaggageTip = travellerTips.find(
       (t) => t.category === 'baggage' && (t.scope.routeSlug === 'manchester-doha' || t.scope.destinationSlug === 'doha')
     );
     expect(dohaBaggageTip).toBeUndefined();
   });
 
-  it('does not claim more precision than the source states (product-truth review, August 2026): the source never uses the word "checked" and never names a specific tool like "Manage Booking" — the wording must not invent either', () => {
-    // Manchester Airport's Emirates page states "the total weight of all
-    // your baggage", never distinguishing checked from cabin baggage, and
-    // says only "check the allowances associated with your booking before
-    // you fly" — never naming "Manage Booking" specifically. The body must
-    // reflect that, not a more precise claim than the source supports.
+  it('does not claim more precision than the source states: no "checked baggage weight", no "Manage Booking"', () => {
     expect(dubaiBaggageTip!.body).not.toContain('checked baggage weight');
     expect(dubaiBaggageTip!.body).not.toContain('Manage Booking');
   });
@@ -87,11 +86,19 @@ describe('The new baggage-guidance entry is tied to a real source record, not in
 describe('No unsupported claim wording was introduced anywhere in this batch\'s new content', () => {
   const forbidden = /\b(cheapest|fastest|safest|guaranteed|stable[- ]fare)\b/i;
 
-  it('every traveller tip in the file is free of the forbidden claim words (not just the new one — a regression guard for the whole file)', () => {
+  it('every traveller tip in the file is free of the forbidden claim words', () => {
     for (const tip of travellerTips) {
       expect(tip.body, tip.id).not.toMatch(forbidden);
       expect(tip.title, tip.id).not.toMatch(forbidden);
     }
+  });
+
+  it('the new fare observation\'s priceNote is free of the forbidden claim words, and never asserts a "<9 left"-style live-availability claim or an assumed timezone', () => {
+    const obs = fareObservations.find((o) => o.id === NEW_DUBAI_OBS_ID)!;
+    expect(obs.priceNote).not.toMatch(forbidden);
+    expect(obs.priceNote).not.toMatch(/left\b/i);
+    expect(obs.priceNote.toLowerCase()).not.toContain('13:41');
+    expect(obs.priceNote.toLowerCase()).not.toContain('13:54');
   });
 });
 
@@ -111,24 +118,66 @@ describe('Trip.com route hand-offs for both Batch 1 routes are unchanged', () =>
   });
 });
 
-describe('Fare observations for both Batch 1 routes meet methodology requirements — no new observation was fabricated', () => {
-  it('Manchester-Dubai still has exactly two logged observations, both still non-publishable (missing departureDate/returnDate) — untouched by this batch', () => {
+describe('Manchester-Dubai\'s new fare observation matches the approved specification exactly', () => {
+  const obs = fareObservations.find((o) => o.id === NEW_DUBAI_OBS_ID);
+
+  it('exists with exactly the approved id, route, cabin and price', () => {
+    expect(obs).toBeDefined();
+    expect(obs!.routeSlug).toBe('manchester-dubai');
+    expect(obs!.cabin).toBe('Economy');
+    expect(obs!.price).toBe(480);
+    expect(obs!.currency).toBe('GBP');
+  });
+
+  it('records the exact approved travel dates and checked date', () => {
+    expect(obs!.departureDate).toBe('2026-10-01');
+    expect(obs!.returnDate).toBe('2026-10-15');
+    expect(obs!.observedDate).toBe('2026-08-06');
+  });
+
+  it('records the source airline and provider exactly as approved', () => {
+    expect(obs!.source).toBe('Gulf Air');
+    expect(obs!.observedVia).toBe('trip.com');
+  });
+
+  it('records baggage as "not stated" — never inferred from the ambiguous "Included" badge as a confirmed allowance', () => {
+    expect(obs!.baggage).toBe('not stated');
+    expect(obs!.baggage?.toLowerCase()).not.toContain('included');
+    expect(obs!.baggage?.toLowerCase()).not.toMatch(/\d+\s*kg/);
+  });
+
+  it('follows the methodology: a stable profileId and a valid observationReason', () => {
+    expect(obs!.profileId).toBe('manchester-dubai-economy-1adult-baseline-v1');
+    expect(obs!.observationReason).toBe('routine-weekly');
+  });
+
+  it('is the only new observation added — Manchester-Dubai\'s two historic entries are untouched', () => {
     const dubaiObs = fareObservations.filter((o) => o.routeSlug === 'manchester-dubai');
-    expect(dubaiObs.length).toBe(2);
-    for (const o of dubaiObs) {
+    expect(dubaiObs.length).toBe(3);
+    const historic = dubaiObs.filter((o) => o.id !== NEW_DUBAI_OBS_ID);
+    expect(historic.length).toBe(2);
+    for (const o of historic) {
       expect(o.departureDate, o.id).toBeUndefined();
       expect(o.returnDate, o.id).toBeUndefined();
       expect(isPubliclyPublishable(o), o.id).toBe(false);
     }
-    expect(getPublishableObservationsByRoute('manchester-dubai', NOW_ISO).length).toBe(0);
   });
 
-  it('an incomplete fare record (missing dates) can never become publishable, regardless of route status — the exact gate this batch relied on instead of adding a fake one', () => {
-    const incomplete = { id: 'test-incomplete', routeSlug: 'manchester-dubai', cabin: 'Economy' as const, observedDate: NOW_ISO, price: 100, priceNote: 'test', source: 'test' };
-    expect(isPubliclyPublishable(incomplete)).toBe(false);
+  it('passes isPubliclyPublishable() and isObservationPublishable() — the exact gates required before public display', () => {
+    expect(isPubliclyPublishable(obs!)).toBe(true);
+    const route = getRouteBySlug('manchester-dubai')!;
+    expect(isObservationPublishable(obs!, route, NOW_ISO)).toBe(true);
   });
 
-  it('Manchester-Doha\'s existing publishable observation is untouched by this batch (same id, price, dates)', () => {
+  it('is the sole publishable observation for the route today', () => {
+    const publishable = getPublishableObservationsByRoute('manchester-dubai', NOW_ISO);
+    expect(publishable.length).toBe(1);
+    expect(publishable[0].id).toBe(NEW_DUBAI_OBS_ID);
+  });
+});
+
+describe('Manchester-Doha\'s fare observation is untouched by this round', () => {
+  it('same id, price, dates as before — no fabricated observation was added to close its gap', () => {
     const obs = fareObservations.find((o) => o.id === 'obs-man-doh-economy-20260805-8w-v1');
     expect(obs).toBeDefined();
     expect(obs!.price).toBe(411);
@@ -136,10 +185,15 @@ describe('Fare observations for both Batch 1 routes meet methodology requirement
     expect(obs!.returnDate).toBe('2026-10-14');
     expect(getPublishableObservationsByRoute('manchester-doha', NOW_ISO).length).toBe(1);
   });
+
+  it('an incomplete fare record (missing dates) can never become publishable, regardless of route status', () => {
+    const incomplete = { id: 'test-incomplete', routeSlug: 'manchester-dubai', cabin: 'Economy' as const, observedDate: NOW_ISO, price: 100, priceNote: 'test', source: 'test' };
+    expect(isPubliclyPublishable(incomplete)).toBe(false);
+  });
 });
 
-describe('Atlas grade reflects the real, current evidence for both routes — neither is upgraded by a manual override', () => {
-  it('Manchester-Dubai now has exactly one depth category (baggage) and stays "useful", not "strong"', () => {
+describe('Atlas grade reflects the real, current evidence for both routes — Dubai\'s promotion is mechanical, not a manual override', () => {
+  it('Manchester-Dubai now has exactly two depth categories (baggage + fare) and is genuinely "strong"', () => {
     const route = getRouteBySlug('manchester-dubai')!;
     const hasFare = getPublishableObservationsByRoute(route.slug, NOW_ISO).length > 0;
     const hasConnAlt = Boolean(route.connectingAlternative);
@@ -149,13 +203,14 @@ describe('Atlas grade reflects the real, current evidence for both routes — ne
     const hasBaggage = travellerTips.some((t) => t.category === 'baggage' && (t.scope.routeSlug === route.slug || t.scope.destinationSlug === route.destinationSlug));
     const categoryCount = [hasFare, hasConnAlt, hasAirlineVerif, hasBookBy, hasWarning, hasBaggage].filter(Boolean).length;
 
-    expect(hasBaggage, 'Batch 1 baggage addition should be picked up').toBe(true);
-    expect(hasFare, 'still no publishable fare — the founder action this batch could not perform').toBe(false);
-    expect(categoryCount).toBe(1);
-    expect(computeRouteIntelligenceLevel(route, NOW_ISO)).toBe('useful');
+    expect(hasBaggage, 'Batch 1 baggage addition should still be picked up').toBe(true);
+    expect(hasFare, 'the 6 August 2026 observation should now be publishable').toBe(true);
+    expect(hasBookBy, 'Book-By priority must never be added just to move this grade').toBe(false);
+    expect(categoryCount).toBe(2);
+    expect(computeRouteIntelligenceLevel(route, NOW_ISO)).toBe('strong');
   });
 
-  it('Manchester-Doha stays at exactly one depth category (fare only) and stays "useful" — this batch could not honestly add a second', () => {
+  it('Manchester-Doha stays at exactly one depth category (fare only) and stays "useful" — never upgraded artificially', () => {
     const route = getRouteBySlug('manchester-doha')!;
     const hasFare = getPublishableObservationsByRoute(route.slug, NOW_ISO).length > 0;
     const hasConnAlt = Boolean(route.connectingAlternative);
@@ -167,6 +222,8 @@ describe('Atlas grade reflects the real, current evidence for both routes — ne
 
     expect(hasFare).toBe(true);
     expect(hasBaggage, 'no genuine Qatar Airways baggage source was found — must not be fabricated').toBe(false);
+    expect(hasBookBy, 'Book-By priority must never be added just to close this gap').toBe(false);
+    expect(hasWarning, 'no filler warning must ever be added to close this gap').toBe(false);
     expect(categoryCount).toBe(1);
     expect(computeRouteIntelligenceLevel(route, NOW_ISO)).toBe('useful');
   });
@@ -180,60 +237,91 @@ describe('Route warnings remain separate and untouched for both Batch 1 routes',
 });
 
 describe('No unrelated route was changed by this batch', () => {
-  it('data/routes.ts still has exactly 32 routes, and every route\'s core facts outside the two Batch 1 routes are byte-identical in shape', () => {
+  it('data/routes.ts still has exactly 32 routes', () => {
     expect(routes.length).toBe(32);
   });
 
-  it('every traveller tip outside the one new Batch 1 entry is unchanged in count and content for every other route', () => {
-    const otherRouteTips = travellerTips.filter((t) => t.id !== 'manchester-dubai-emirates-baggage-weight');
-    expect(otherRouteTips.length).toBe(10); // the 10 pre-existing tips, confirmed unchanged in count
-    // None of the other 30 routes gained a new tip scoped to them by this batch.
-    for (const slug of routes.map((r) => r.slug)) {
-      if ((BATCH_1_SLUGS as readonly string[]).includes(slug)) continue;
-      const newTipsForRoute = otherRouteTips.filter((t) => t.scope.routeSlug === slug && t.id.startsWith('manchester-dubai'));
-      expect(newTipsForRoute.length, slug).toBe(0);
-    }
+  it('the traveller-tips file still has exactly the same 11 entries — this round added no new tip', () => {
+    expect(travellerTips.length).toBe(11);
   });
 
-  it('grading is unchanged for a sample of routes outside this batch (Manchester-Lahore stays strong, Heathrow-Bengaluru stays useful) — the six-category model itself was not touched', () => {
+  it('grading is unchanged for a sample of routes outside this batch', () => {
     const lahore = getRouteBySlug('manchester-lahore')!;
     const bengaluru = getRouteBySlug('london-heathrow-bengaluru')!;
     expect(computeRouteIntelligenceLevel(lahore, NOW_ISO)).toBe('strong');
     expect(computeRouteIntelligenceLevel(bengaluru, NOW_ISO)).toBe('useful');
   });
+
+  it('no fare observation exists for any route other than the two Batch 1 routes with an observedDate of 2026-08-06', () => {
+    const newlyObserved = fareObservations.filter((o) => o.observedDate === '2026-08-06');
+    for (const o of newlyObserved) {
+      expect((BATCH_1_SLUGS as readonly string[]).includes(o.routeSlug), o.id).toBe(true);
+    }
+  });
 });
 
-describe('The audit document\'s Batch 1 completion record matches the real, current grading function', () => {
+describe('Evidence for the 6 August 2026 fare check is retained and honestly describes its own limitations', () => {
+  const evidencePath = join(process.cwd(), 'docs/project-control/fare-evidence/manchester-dubai-2026-08-06.md');
+
+  it('the evidence file exists at the documented path', () => {
+    expect(existsSync(evidencePath)).toBe(true);
+  });
+
+  it('discloses honestly that the screenshot PNG files could not be saved to the repository — never implies image files exist that do not', () => {
+    const doc = readFileSync(evidencePath, 'utf8');
+    expect(doc.toLowerCase()).toContain('could not be saved');
+    expect(doc.toLowerCase()).toContain('no png file exists at any path');
+  });
+
+  it('records that baggage was confirmed absent by direct DOM inspection, not assumed from the "Included" badge', () => {
+    const doc = readFileSync(evidencePath, 'utf8');
+    expect(doc.toLowerCase()).toContain('no explicit checked-baggage or cabin-baggage allowance');
+  });
+
+  it('does not record "<9 left" as a durable fact, and does not assume a timezone for the page\'s own timestamp', () => {
+    const doc = readFileSync(evidencePath, 'utf8');
+    expect(doc).toContain('Explicitly not recorded as durable facts');
+    expect(doc.toLowerCase()).toContain('no stated timezone');
+  });
+});
+
+describe('The audit and fare-archive documents accurately reflect the closed observation and its content-depth review', () => {
   const auditDoc = readFileSync(join(process.cwd(), 'docs/project-control/ROUTE_COVERAGE_AUDIT.md'), 'utf8');
   const archiveDoc = readFileSync(join(process.cwd(), 'docs/project-control/FARE_OBSERVATION_ARCHIVE.md'), 'utf8');
-  // Markdown in these docs is hand-wrapped at ~90-100 chars, so a phrase
-  // spanning a line break contains a literal newline a plain .toContain()
-  // won't match — normalize whitespace before searching, matching how a
-  // reader (or a search engine) would actually read the rendered prose.
+  // Markdown in these docs is hand-wrapped, so a phrase spanning a line
+  // break contains a literal newline a plain .toContain() won't match —
+  // normalize whitespace and bold markers before searching.
   const normalize = (s: string) => s.toLowerCase().replace(/\*\*/g, '').replace(/\s+/g, ' ');
   const auditFlat = normalize(auditDoc);
   const archiveFlat = normalize(archiveDoc);
 
-  it('states the real fare-observation counts for both routes, not a hand-typed figure', () => {
-    expect(auditFlat).toContain(normalize('Two logged fare observations exist but predate the dating requirement'));
-    expect(auditDoc).toContain('obs-man-doh-economy-20260805-8w-v1');
+  it('the audit\'s slug index reflects Manchester-Dubai as Strong, matching the real, current grading function', () => {
+    expect(auditDoc).toMatch(/\|\s*`manchester-dubai`\s*\|\s*Strong\s*\|/);
+    const route = getRouteBySlug('manchester-dubai')!;
+    expect(computeRouteIntelligenceLevel(route, NOW_ISO)).toBe('strong');
   });
 
-  it('documents the founder action required for Manchester-Dubai in the fare archive doc', () => {
-    expect(archiveDoc).toContain('## Founder action required: Manchester–Dubai');
-    expect(archiveDoc).toContain('manchester-dubai-economy-1adult-baseline-v1');
-    expect(archiveFlat).toContain('do not add this observation from memory or estimate');
+  it('the fare archive marks the founder action as closed, with the exact observation id and evidence path', () => {
+    expect(archiveDoc).toContain('✅ Manchester–Dubai');
+    expect(archiveDoc).toContain(NEW_DUBAI_OBS_ID);
+    expect(archiveDoc).toContain('docs/project-control/fare-evidence/manchester-dubai-2026-08-06.md');
   });
 
-  it('never claims Manchester-Dubai "reaches Strong automatically" — a product-truth review (August 2026) replaced that framing everywhere it appeared, in both docs', () => {
-    expect(auditFlat).not.toContain('reaches strong automatically');
-    expect(archiveFlat).not.toContain('reaches strong automatically');
-    expect(auditFlat).toContain('subject to a final content-depth review');
-    expect(archiveFlat).toContain('subject to a final content-depth review');
+  it('never claims the promotion was automatic product approval — only ever negates that framing, never asserts it', () => {
+    // The doc legitimately contains the substring "automatic promotion"
+    // inside negations ("not an automatic ... promotion") — assert the
+    // positive claim never appears instead of a naive substring check.
+    expect(auditFlat).not.toMatch(/\bis an automatic (?:content-quality )?promotion\b/);
+    expect(auditFlat).not.toMatch(/\bautomatically (?:approved|qualifies|promoted)\b/);
+    expect(auditFlat).toContain('not an automatic content-quality promotion');
+    expect(archiveFlat).not.toMatch(/reaches strong automatically/);
   });
 
-  it('records the finding that route.verification is never rendered on the public route page — the concrete basis for the content-depth caveat above', () => {
-    expect(auditFlat).toContain(normalize('no file under `app/` or `components/` reads `route.verification` outside the test suite'));
+  it('documents the second content-depth review\'s "DIRECT FLIGHT" badge finding, with its root cause and explicit non-fix', () => {
+    expect(auditFlat).toContain('direct flight');
+    expect(auditFlat).toContain('connecting via bahrain');
+    expect(auditFlat).toContain('getdealdirectnesslabel()'.replace('()', '()').toLowerCase());
+    expect(auditFlat).toContain('not fixed in this pr');
   });
 
   it('explicitly protects Manchester-Doha from an artificial upgrade, in both the audit and the fare archive', () => {
@@ -241,5 +329,11 @@ describe('The audit document\'s Batch 1 completion record matches the real, curr
     expect(auditFlat).toContain('never simply to hand the route a second atlas scoring category');
     expect(archiveDoc).toContain('## Manchester–Doha: do not close its gap artificially');
     expect(archiveFlat).toContain('never merely to hand it a second scoring category');
+  });
+
+  it('states the real, current fare-tracking route count (9 of 32), not a stale hand-typed figure', () => {
+    const totalTracked = routes.filter((r) => getPublishableObservationsByRoute(r.slug, NOW_ISO).length > 0).length;
+    expect(totalTracked).toBe(9);
+    expect(auditDoc).toContain(`${totalTracked} of 32`);
   });
 });

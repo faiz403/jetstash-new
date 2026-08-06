@@ -152,46 +152,73 @@ The first archive batch should therefore cover, in order:
 Then add Heathrow → Mumbai, Manchester → Dubai, Heathrow → Doha and Birmingham → Mumbai when their
 route evidence and search context are ready. This is an operating queue, not a popularity claim.
 
-## Founder action required: Manchester–Dubai's first publishable observation (Route Completion Batch 1, August 2026)
+## ✅ Manchester–Dubai's first publishable observation — closed 6 August 2026
 
-Manchester–Dubai's route evidence and search context are now ready — this section is the exact,
-ready-to-execute check. Manchester–Dubai's route was audited as part of Route Completion Batch 1
+Manchester–Dubai's route was audited as part of Route Completion Batch 1
 (`docs/project-control/ROUTE_COVERAGE_AUDIT.md`) and found to have **zero** publicly-publishable
-fare observations: two entries exist in this file (`obs-man-dxb-economy-1`,
+fare observations at the time: two entries exist in this file (`obs-man-dxb-economy-1`,
 `obs-man-dxb-business-1`, both from 16/12 June 2026) but predate the Truth Reset's
-`departureDate`/`returnDate` requirement, so neither counts as evidence today.
+`departureDate`/`returnDate` requirement, so neither counted as evidence.
 
-**This is squarely a manual step this environment could not perform** — the archive's own binding
-rule above ("Automated browser polling, price scraping, API harvesting... are not part of this
-archive") rules out an automated check even where the tooling exists to attempt one, and no
-existing observation can be safely re-dated instead (that would misrepresent when the fare was
-actually seen). A founder (or editor with real browser access) needs to log one real, dated check:
+This required a genuine manual check — the archive's own binding rule above ("Automated browser
+polling, price scraping, API harvesting... are not part of this archive") ruled out an automated
+one even where the tooling existed to attempt it. That manual check has now been performed and
+reviewed in two rounds (an initial search, then a second pass adding screenshot evidence and
+opening the return leg for full itinerary detail) before being approved and recorded:
 
-- **Route:** `manchester-dubai` (Manchester → Dubai, Emirates)
-- **Profile:** baseline — one adult, return Economy, GBP, 14-night stay
-- **`profileId`:** `manchester-dubai-economy-1adult-baseline-v1`
-- **Departure date:** roughly 8 weeks after the day you actually check (the archive's fixed
-  horizon — see "Observation methodology" above)
-- **Return date:** 14 nights after the departure date searched
-- **Where to check:** Google Flights, Trip.com, or Emirates' own booking page — record whichever
-  was actually used as `observedVia`
-- **`observationReason`:** `routine-weekly` (this is the route's first entry, starting a new series)
-- Record `observedDate` as the real date you checked, `source` as the airline/provider the result
-  names, `currency: 'GBP'`, `baggage` as shown (or `not stated`), and `sourceUrl` where the search
-  can be safely retained.
+- **Recorded as:** `obs-man-dxb-economy-20260806-8w-v1` in `data/fare-observations.ts`
+- **Route:** `manchester-dubai` — Manchester (MAN) → Dubai (DXB), return
+- **Profile:** `manchester-dubai-economy-1adult-baseline-v1` — 1 adult, Economy, GBP
+- **Travel dates:** 1 October 2026 – 15 October 2026 (8 weeks out, 14 nights, per the fixed
+  horizon)
+- **Price:** £480 return, per person
+- **Source/provider:** Gulf Air, via Trip.com (`observedVia: 'trip.com'`) — genuinely the top
+  "Recommended" result on the search, not hand-picked as cheapest (the cheapest shown was £469)
+- **Routing:** connecting via Bahrain on both legs (outbound MAN T2 09:55 → DXB T1 22:35, 9h 40m
+  total, 1h 5m in Bahrain; return DXB T1 21:00 → MAN T2 07:15 next day, 13h 15m total, 4h 55m in
+  Bahrain) — a genuinely different airline and routing from the route's own verified Emirates
+  direct service; see the content-depth finding below for why that matters
+- **Baggage:** recorded as `'not stated'` — the selection flow showed only a generic "Included"
+  badge with no kg/piece figure on either leg, confirmed by direct DOM inspection (no hidden
+  tooltip, no fare-rules text) before recording anything. Never inferred from the badge.
+- **Checked:** 6 August 2026
+- **Evidence:** `docs/project-control/fare-evidence/manchester-dubai-2026-08-06.md` — a full
+  transcription of both screenshots taken during the check (search-parameters + outbound
+  selection; return-leg selection with the matching £480 total). **The actual PNG image files
+  could not be saved to this repository** — the browser tool used renders a screenshot for review
+  but exposes no file path this session could commit — disclosed plainly in that document rather
+  than implying image files exist that don't.
 
-**Once this single observation is logged, a compliant fare observation would satisfy the current
-Atlas threshold for Manchester–Dubai, subject to a final content-depth review — not an automatic
-promotion.** It already has one genuine depth category (baggage guidance, added in the same batch
-— see `data/traveller-tips.ts`'s `manchester-dubai-emirates-baggage-weight` entry), and a
-publishable fare observation would be its second, clearing `computeRouteIntelligenceLevel()`'s
-two-category bar on the code side. A product-truth review (August 2026) found the rendered route
-page still doesn't show the underlying verification source or date anywhere — see
-`ROUTE_COVERAGE_AUDIT.md`'s "Does 'baggage + fare' genuinely justify 'JetStash knows this route
-well'?" for the full finding — so whoever logs this observation should read the resulting page
-critically rather than treat the two-category bar as the final word. Do not add this observation
-from memory or estimate — if the check can't be done for real, leave this section as the standing
-to-do rather than filling it with an invented number.
+**Confirmed `isObservationPublishable()` / `isPubliclyPublishable()` returns `true`** for this
+entry (both dates present, route matches, route status is `'direct'`).
+
+### A genuine content-depth finding surfaced by this observation — not fixed here
+
+Logging this observation gives Manchester–Dubai its second depth category (baggage + fare),
+satisfying `computeRouteIntelligenceLevel()`'s two-category bar mechanically — this is a real
+consequence of genuine evidence, not a manual override, and the threshold itself was not touched.
+**But the code-level grade and a clean-reading page are not automatically the same thing.**
+Reviewing the actual rendered `/routes/manchester-dubai` page (and its `/deals` `DealCard`) found a
+real, visible inconsistency: the card's top-right badge reads **"DIRECT FLIGHT"** — correctly
+derived from the route's own verified Emirates direct service via `getDealDirectnessLabel()` — sitting
+directly above this fare's own description, which explicitly says **"connecting via Bahrain both
+ways."** A customer reading the card would see both claims together and could reasonably read them
+as contradictory.
+
+Root cause: `getDealDirectnessLabel()` (`data/deals.ts`) intentionally derives the badge from the
+**route's** verified status, never a specific displayed fare's own routing — by design, and correct
+for every other route in the archive where the logged fare happens to share the route's own
+operator. Manchester–Dubai is the first case where a logged fare is for a genuinely different
+airline and routing than the route's own verified direct service (the same situation existed for
+Manchester–Doha's Pegasus observation, but Doha has no curated `Deal` entry in `data/deals.ts` at
+all, so its `DealCard` never renders and the mismatch never became visible there).
+
+**Not fixed in this PR** — resolving it means changing shared `DealCard`/`getDealDirectnessLabel()`
+behaviour that renders on every route with a `Deal` entry, well beyond the scope of recording one
+fare observation, and risks unintended consequences elsewhere. Flagged here as a real, founder-level
+follow-up decision (options include: deriving the badge from the specific fare's own routing when
+one is logged and differs from the route, or adding explanatory copy bridging the two facts) — see
+`ROUTE_COVERAGE_AUDIT.md`'s content-depth review for the full verdict this finding produced.
 
 ## Manchester–Doha: do not close its gap artificially
 
