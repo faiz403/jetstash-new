@@ -149,17 +149,26 @@ describe('Customer-visible fare coverage — every "13 of 32" tracked route eith
 });
 
 describe('Newly promoted Strong routes — the content-depth finding is tracked, not silently fixed or hidden', () => {
-  it('Manchester-Amritsar and Manchester-Ahmedabad are graded strong on exactly the minimum two categories (connectingAlternative + fare) - the exact combination the audit found reads thin', () => {
+  // This test originally asserted these two routes graded 'strong' on the
+  // bare connectingAlternative+fare minimum - that finding is exactly what
+  // Route Intelligence Scoring v2 (RIS-001, 6 August 2026) was scoped to
+  // fix. Under RIS-001's Gate 2 (diversity), a route whose only two
+  // categories are connectingAlternative and a fare observation no longer
+  // qualifies for Strong. See ROUTE_COVERAGE_AUDIT.md's "Route Intelligence
+  // Scoring v2 (RIS-001)" addendum for the full model and the recomputed
+  // 32-route table.
+  it('Manchester-Amritsar and Manchester-Ahmedabad have exactly the minimum two categories (connectingAlternative + fare) and correctly grade "useful" under RIS-001\'s diversity gate, not "strong"', () => {
     for (const slug of ['manchester-amritsar', 'manchester-ahmedabad']) {
       const route = routes.find((r) => r.slug === slug)!;
-      expect(computeRouteIntelligenceLevel(route, NOW_ISO), slug).toBe('strong');
       expect(Boolean(route.connectingAlternative), `${slug} connectingAlternative`).toBe(true);
       expect(getPublishableObservationsByRoute(slug, NOW_ISO).length > 0, `${slug} fare`).toBe(true);
-      // Neither route has the other four categories - confirming the
-      // "bare minimum, nothing else" finding stays true and visible,
-      // rather than silently acquiring more depth unnoticed.
+      // Neither route has any of the four "substantive" categories -
+      // confirming the "bare minimum, nothing else" finding stays true and
+      // visible, rather than silently acquiring more depth unnoticed.
       expect(Boolean(route.airlineVerifications?.length), `${slug} airline-verif`).toBe(false);
       expect(getActiveWarningsByRoute(slug).length > 0, `${slug} warning`).toBe(false);
+      // RIS-001: connectingAlternative + fare alone is not enough for Strong.
+      expect(computeRouteIntelligenceLevel(route, NOW_ISO), slug).toBe('useful');
     }
   });
 });
@@ -168,16 +177,28 @@ describe('Country aggregation cannot overstate coverage', () => {
   const fakePoint = (intelligenceLevel: 'strong' | 'useful' | 'expanding'): DestinationPoint =>
     ({ intelligenceLevel } as unknown as DestinationPoint);
 
-  it('Manchester India is Strong only because every one of its destinations individually is - not a manual override', () => {
+  // This test originally asserted all four Manchester India destinations
+  // graded 'strong' and the country aggregate followed suit - that was the
+  // exact "technically correctly aggregated but inflated in practice"
+  // finding Route Intelligence Scoring v2 (RIS-001, 6 August 2026) was
+  // scoped to fix (see the evidence-completeness audit's Part 2, and the
+  // RIS-001 addendum, both in ROUTE_COVERAGE_AUDIT.md). Under RIS-001,
+  // Amritsar and Ahmedabad no longer qualify for Strong (connectingAlternative
+  // + fare alone, no substantive category), so the aggregation logic itself
+  // - unchanged, still conservative - now correctly reports Mixed rather than
+  // Strong for Manchester India.
+  it('Manchester India is Mixed under RIS-001 - Delhi and Mumbai are genuinely Strong, Amritsar and Ahmedabad are not, and the conservative aggregation rule reflects that honestly rather than overstating country-level confidence', () => {
     const indiaDestinationSlugs = ['delhi', 'mumbai', 'amritsar', 'ahmedabad'];
     const manchesterIndiaRoutes = routes.filter((r) => r.airportSlug === 'manchester' && indiaDestinationSlugs.includes(r.destinationSlug));
     expect(manchesterIndiaRoutes.length).toBeGreaterThanOrEqual(4);
     const levels = manchesterIndiaRoutes.map((r) => computeRouteIntelligenceLevel(r, NOW_ISO));
-    for (let i = 0; i < manchesterIndiaRoutes.length; i++) {
-      expect(levels[i], manchesterIndiaRoutes[i].slug).toBe('strong');
-    }
+    const bySlug = Object.fromEntries(manchesterIndiaRoutes.map((r, i) => [r.destinationSlug, levels[i]]));
+    expect(bySlug.delhi, 'delhi').toBe('strong');
+    expect(bySlug.mumbai, 'mumbai').toBe('strong');
+    expect(bySlug.amritsar, 'amritsar').toBe('useful');
+    expect(bySlug.ahmedabad, 'ahmedabad').toBe('useful');
     const aggregate = aggregateCountryIntelligence(levels.map(fakePoint));
-    expect(aggregate).toBe('strong');
+    expect(aggregate).toBe('mixed');
   });
 
   it('a single non-strong destination would prevent the country from reading strong (the conservative rule is not bypassed)', () => {

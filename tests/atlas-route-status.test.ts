@@ -7,6 +7,7 @@ import { getActiveWarningsByRoute } from '@/data/route-warnings';
 import { isBookByRoute } from '@/lib/booking-intelligence';
 import { travellerTips } from '@/data/traveller-tips';
 import { buildAtlasAirports, computeRouteIntelligenceLevel, aggregateCountryIntelligence } from '@/lib/atlas-network-data';
+import { deals, hasTrackedFare } from '@/data/deals';
 import type { DestinationPoint, RouteIntelligenceLevel, CountryIntelligenceLevel } from '@/components/founder/atlas-feel-test';
 
 /**
@@ -53,6 +54,22 @@ function depthCategories(route: (typeof routes)[number]) {
 }
 function depthCategoryCount(route: (typeof routes)[number]) {
   return Object.values(depthCategories(route)).filter(Boolean).length;
+}
+
+/**
+ * RIS-001 (Route Intelligence Scoring v2, August 2026) — mirrors of the two
+ * NEW gates computeRouteIntelligenceLevel() applies beyond category count,
+ * kept independent for the same "a test can't accidentally pass by testing
+ * itself" reason as depthCategories() above. See lib/atlas-network-data.ts's
+ * doc comment for the full reasoning.
+ */
+function hasSubstantiveDepth(route: (typeof routes)[number]) {
+  const d = depthCategories(route);
+  return d.hasAirlineVerif || d.hasBookBy || d.hasWarning || d.hasBaggage;
+}
+function hasVisibleFare(route: (typeof routes)[number]) {
+  const matchingDeals = deals.filter((d) => d.fromAirportSlug === route.airportSlug && d.toDestinationSlug === route.destinationSlug);
+  return matchingDeals.some((d) => hasTrackedFare(d, NOW_ISO));
 }
 
 describe('Every Atlas destination receives exactly one valid, non-blank route status', () => {
@@ -103,9 +120,13 @@ describe('Strongest ("strong") route status requires BROAD depth evidence — at
     //
     // manchester-amritsar and manchester-ahmedabad were both in this list
     // (connectingAlternative only) until Fare Coverage Expansion Batch A
-    // (6 August 2026) gave each a genuine second category (fare evidence)
-    // - both now correctly grade 'strong', covered by their own test
-    // below, not this one.
+    // (6 August 2026) gave each a genuine second category (fare evidence) -
+    // briefly graded 'strong' on category count alone, then Route
+    // Intelligence Scoring v2 (RIS-001, same week) found that exact
+    // combination (connectingAlternative + fare, nothing else) reads thin
+    // to a visitor and added a category-DIVERSITY gate that correctly
+    // returns both to 'useful' - see the dedicated RIS-001 test file, not
+    // this one.
     const singleSignalRoutes = [
       'leeds-bradford-islamabad', // warning only
       'london-gatwick-ahmedabad', // warning only
@@ -120,11 +141,11 @@ describe('Strongest ("strong") route status requires BROAD depth evidence — at
     }
   });
 
-  it('manchester-amritsar and manchester-ahmedabad correctly moved to "strong" once Batch A gave each a second depth category (fare evidence)', () => {
+  it('manchester-amritsar and manchester-ahmedabad have two depth categories (breadth) but stay "useful" under RIS-001\'s diversity gate — connectingAlternative + fare alone is not enough', () => {
     for (const slug of ['manchester-amritsar', 'manchester-ahmedabad']) {
       const route = getRouteBySlug(slug)!;
       expect(depthCategoryCount(route), slug).toBe(2);
-      expect(computeRouteIntelligenceLevel(route, NOW_ISO), slug).toBe('strong');
+      expect(computeRouteIntelligenceLevel(route, NOW_ISO), slug).toBe('useful');
     }
   });
 
@@ -156,15 +177,18 @@ describe('Strongest ("strong") route status requires BROAD depth evidence — at
 });
 
 describe('"Useful" routes never receive the strongest status', () => {
-  it('every route currently graded "useful" fails the strong bar (unverified directness, or verified/connecting but with fewer than two depth categories)', () => {
+  it('every route currently graded "useful" fails at least one of RIS-001\'s four gates (unverified directness; fewer than two depth categories; no substantive category beyond connectingAlternative+fare; or fare/connecting-depth not visibly rendered)', () => {
     for (const route of routes) {
       const level = computeRouteIntelligenceLevel(route, NOW_ISO);
       if (level !== 'useful') continue;
-      const meetsDepthBar = depthCategoryCount(route) >= 2;
       const isCurrentlyDirectOrConnecting = getDisplayDirectness(route, NOW_ISO) !== 'unverified';
-      // Never strong: either its direct/connecting status isn't currently
-      // confirmed at all, or (if it is) it also has fewer than two depth categories.
-      expect(meetsDepthBar === false || isCurrentlyDirectOrConnecting === false, route.slug).toBeTruthy();
+      const meetsDepthBar = depthCategoryCount(route) >= 2;
+      const meetsDiversityBar = hasSubstantiveDepth(route);
+      const meetsVisibleFareBar = hasVisibleFare(route);
+      const meetsConnectingDepthBar = route.isDirect || Boolean(route.connectingAlternative);
+      const failsAtLeastOneGate =
+        !isCurrentlyDirectOrConnecting || !meetsDepthBar || !meetsDiversityBar || !meetsVisibleFareBar || !meetsConnectingDepthBar;
+      expect(failsAtLeastOneGate, route.slug).toBe(true);
     }
   });
 });

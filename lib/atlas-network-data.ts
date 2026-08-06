@@ -8,6 +8,7 @@ import { getPublishableObservationsByRoute } from '@/data/fare-observations';
 import { getActiveWarningsByRoute } from '@/data/route-warnings';
 import { isBookByRoute } from '@/lib/booking-intelligence';
 import { travellerTips } from '@/data/traveller-tips';
+import { deals, hasTrackedFare } from '@/data/deals';
 import type { AirportNetworkData, CountryData, DestinationPoint, RouteIntelligenceLevel, CountryIntelligenceLevel } from '@/components/founder/atlas-feel-test';
 
 const nowIso = new Date().toISOString().slice(0, 10);
@@ -89,10 +90,67 @@ export function computeRouteIntelligenceLevel(route: NonNullable<ReturnType<type
 
   const depthCategoryCount = [hasAirlineDepth, hasConnectingDepth, hasFareDepth, hasBookByDepth, hasWarningDepth, hasBaggageDepth].filter(Boolean).length;
 
-  // Breadth, not presence: one deep, well-sourced category is real
-  // research, but "JetStash knows this route well" needs more than one
-  // kind of depth behind it.
-  return depthCategoryCount >= 2 ? 'strong' : 'useful';
+  // Route Intelligence Scoring v2 (RIS-001, August 2026): breadth of
+  // CATEGORY COUNT alone was found — by Fare Coverage Expansion Batch A's
+  // own audit — to let a route reach "JetStash knows this route well" on
+  // exactly the two cheapest-to-obtain categories (connectingAlternative +
+  // a single fare check), with the fare sometimes not even rendered
+  // anywhere a visitor could see it. v1's 2-of-6 threshold is unchanged
+  // below (Gate 1), but two further, independent gates were added rather
+  // than loosening or replacing it — see ROUTE_COVERAGE_AUDIT.md's RIS-001
+  // audit for the full reasoning and the real 32-route recomputation this
+  // was validated against before being written here.
+  //
+  // GATE 1 (unchanged from v1): breadth — at least two of the six
+  // categories above.
+  if (depthCategoryCount < 2) return 'useful';
+
+  // GATE 2 (new): category DIVERSITY, not just count. connectingAlternative
+  // and fare are both genuinely useful, but both are comparatively cheap to
+  // obtain — connectingAlternative is a single editorial paragraph, and a
+  // fare check is one manual search. airlineVerifications, Book-By
+  // priority, an investigated warning and baggage guidance each require
+  // real, independently-gated research work. A route whose only two
+  // categories are connectingAlternative + fare has NOT been looked at from
+  // more than one genuinely deep angle — it has been looked at from one
+  // deep-ish angle (fare) and one cheap one. Requiring at least one
+  // "substantive" category (independent of how many total categories exist)
+  // directly rules out that specific combination without requiring any
+  // category that may not apply to every route.
+  const hasSubstantiveDepth = hasAirlineDepth || hasBookByDepth || hasWarningDepth || hasBaggageDepth;
+  if (!hasSubstantiveDepth) return 'useful';
+
+  // GATE 3 (new): visible-content baseline — the depth categories above
+  // describe what JetStash has researched; this gate asks whether a real
+  // visitor can actually SEE the result on the rendered page, independent
+  // of category count. Two checks, both grounded in what the route page
+  // template (app/routes/[slug]/page.tsx) actually conditionally renders —
+  // never a fabricated or invented UI signal:
+  //
+  // 1. Fare intelligence must be visibly rendered, not merely archived —
+  //    a real DealCard showing a price a visitor can see, not a fare
+  //    observation sitting in the archive behind NoFareFallback's "we
+  //    haven't logged a tracked fare... yet". This directly generalises
+  //    the exact defect Batch A's audit found and fixed for 7 routes (see
+  //    FARE_OBSERVATION_ARCHIVE.md) into a permanent rule, so a future
+  //    route can never repeat it and still register as Strong.
+  const matchingDeals = deals.filter((d) => d.fromAirportSlug === route.airportSlug && d.toDestinationSlug === route.destinationSlug);
+  const hasVisibleFare = matchingDeals.some((d) => hasTrackedFare(d, nowIsoDate));
+  if (!hasVisibleFare) return 'useful';
+
+  // 2. For a CONNECTING route specifically, the page's "How this connecting
+  //    route usually works" section (hub airports, typical stops, typical
+  //    journey time) is the one thing that actually explains the route to
+  //    a visitor who has no direct option — without it, a connecting
+  //    route's page has essentially nothing beyond the mandatory intro and
+  //    a price. Deliberately NOT required for a DIRECT route (a direct
+  //    route's own verified status already is the core fact a visitor
+  //    needs; the equivalent "1-stop alternative" block there is a genuine
+  //    bonus, never a requirement — matching the standing "a direct route
+  //    may not need transfer guidance" principle).
+  if (!route.isDirect && !hasConnectingDepth) return 'useful';
+
+  return 'strong';
 }
 
 function buildDestinationPoint(airportSlug: string, destSlug: string, x: number, y: number): DestinationPoint | null {
