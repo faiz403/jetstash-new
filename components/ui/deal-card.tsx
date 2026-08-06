@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Deal, DealCabin, formatChecked, getDealDirectnessLabel, getDealAirlineLabel, isBundledProductDeal } from '@/data/deals';
+import { Deal, DealCabin, formatChecked, getDealFareDirectnessLabel, getDealAirlineLabel, isBundledProductDeal } from '@/data/deals';
 import { getRouteByAirportAndDestination } from '@/data/routes';
 import { routeStatusEvents } from '@/data/route-status-events';
 import { getEffectiveRoutePresentation } from '@/lib/route-status-copy';
@@ -42,10 +42,14 @@ export function DealCard({ deal }: { deal: Deal }) {
   const directness = presentation?.statusLabel;
   // Truth Reset (July 2026): the top-right badge must never assert
   // directness independently of the verification system — a category tag
-  // (Umrah package, City break) always takes precedence when present;
-  // otherwise the badge is computed live via getDealDirectnessLabel(),
-  // never a static "Direct flight" string from curation data. See TR-009.
-  const topBadge = deal.categoryTag ?? getDealDirectnessLabel(deal, nowIso);
+  // (Umrah package, City break) always takes precedence when present.
+  // Directness-badge fix (August 2026, product-truth review of PR #74):
+  // this badge sits directly above a specific priced fare card, so it must
+  // describe THAT FARE's own itinerary, never just the wider route —
+  // getDealFareDirectnessLabel() is the one gate for that combination; see
+  // its doc comment in data/deals.ts for the full resolution order. Never
+  // use the route-only getDealDirectnessLabel() here directly. See TR-009.
+  const topBadge = deal.categoryTag ?? getDealFareDirectnessLabel(deal, nowIso);
   // Truth Reset (final correction): route directness and airline attribution
   // are separate claims — a verified-direct route never automatically
   // verifies the specific airline named on the card. `deal.airline` must

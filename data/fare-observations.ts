@@ -47,6 +47,38 @@ export interface FareObservation {
  * appended below when they meet the standard.
    */
   returnDate?: string;
+  /**
+   * Whether the SPECIFIC itinerary this fare was quoted for is direct or
+   * connecting, as actually shown by the source at the time of the check —
+   * never inferred from the route's own verified service state. A route
+   * being direct (e.g. Emirates' own verified Manchester-Dubai service)
+   * does NOT mean every fare ever logged against that route is also direct
+   * — a cheaper search result can genuinely be a different, connecting
+   * itinerary on a different airline (see the DealCard "DIRECT FLIGHT"
+   * badge defect this field exists to prevent, fixed August 2026:
+   * obs-man-dxb-economy-20260806-8w-v1 is Gulf Air via Bahrain, connecting,
+   * despite Manchester-Dubai's own route-level service being verified
+   * direct on Emirates).
+   *
+   * `'unknown'` is a deliberate, explicit third state — the collector
+   * looked and could not determine the itinerary's routing, as distinct
+   * from an omitted field on a historic entry that predates this field
+   * entirely (the same reasoning as `baggage: 'not stated'` vs. `baggage`
+   * simply being absent). Every observation created under the fare
+   * collection checklist (`FARE_COLLECTION_CHECKLIST.md`) must record one
+   * of the three values — never leave it silently unset. `'unknown'` is
+   * treated identically to an omitted field by `aggregateFareDirectness()`
+   * below (never drives a badge either way) — the distinction exists for
+   * the archive record, not for display logic.
+   *
+   * Optional (undefined) only so historic entries predating this field
+   * remain valid TypeScript and must never be guessed retroactively — see
+   * getDealFareDirectnessLabel() in data/deals.ts for how an absent or
+   * `'unknown'` value is handled safely (falls back to a route-airline
+   * match check, or shows no badge at all rather than risk repeating the
+   * defect).
+   */
+  fareDirectness?: 'direct' | 'connecting' | 'unknown';
 }
 
 /**
@@ -113,6 +145,14 @@ export const fareObservations: FareObservation[] = [
   { id: 'obs-lhr-jed-economy-20260804-8w-v1', routeSlug: 'london-heathrow-jeddah', cabin: 'Economy', observedDate: '2026-08-04', price: 487, priceNote: 'return, per person, one adult; taxes and required fees included; baggage not stated and optional bag charges may apply', source: 'Etihad', observedVia: 'google-flights', sourceUrl: 'https://www.google.com/travel/flights?q=Flights%20from%20London%20Heathrow%20to%20Jeddah%20September%2029%202026%20return%20October%2013%202026&curr=GBP&hl=en&gl=GB', currency: 'GBP', baggage: 'not stated; optional charges may apply', profileId: 'london-heathrow-jeddah-economy-1adult-23kg-v1', observationReason: 'routine-weekly', departureDate: '2026-09-29', returnDate: '2026-10-13' },
   { id: 'obs-man-med-economy-20260805-8w-v1', routeSlug: 'manchester-madinah', cabin: 'Economy', observedDate: '2026-08-05', price: 473, priceNote: 'return, per person, one adult; taxes and fees included as shown; baggage not stated and optional bag charges may apply', source: 'Pegasus Airlines and AJet', observedVia: 'trip.com', sourceUrl: 'https://www.trip.com/flights/showfarefirst?dcity=man&acity=med&ddate=2026-09-30&rdate=2026-10-14&dairport=man&aairport=med&triptype=rt&class=y&lowpricesource=searchform&quantity=1&searchboxarg=t&nonstoponly=off&locale=en-XX&curr=GBP', currency: 'GBP', baggage: 'not stated', profileId: 'manchester-madinah-economy-1adult-23kg-v1', observationReason: 'routine-weekly', departureDate: '2026-09-30', returnDate: '2026-10-14' },
   { id: 'obs-man-doh-economy-20260805-8w-v1', routeSlug: 'manchester-doha', cabin: 'Economy', observedDate: '2026-08-05', price: 411, priceNote: 'return, per person, one adult; taxes and fees included as shown; baggage not stated and optional bag charges may apply', source: 'Pegasus Airlines', observedVia: 'trip.com', sourceUrl: 'https://www.trip.com/flights/showfarefirst?dcity=man&acity=doh&ddate=2026-09-30&rdate=2026-10-14&dairport=man&aairport=doh&triptype=rt&class=y&lowpricesource=searchform&quantity=1&searchboxarg=t&nonstoponly=off&locale=en-XX&curr=GBP', currency: 'GBP', baggage: 'not stated', profileId: 'manchester-doha-economy-1adult-23kg-v1', observationReason: 'routine-weekly', departureDate: '2026-09-30', returnDate: '2026-10-14' },
+  // Manchester-Dubai's first publishable observation (Route Completion Batch 1
+  // founder action, closed out 6 August 2026) - see docs/project-control/
+  // fare-evidence/manchester-dubai-2026-08-06.md for the full evidence
+  // record this entry is transcribed from (two screenshots, reviewed and
+  // approved before this was recorded; DOM-checked to confirm no explicit
+  // baggage figure exists anywhere in the flow before recording 'not
+  // stated' - never inferred from the ambiguous "Included" badge shown).
+  { id: 'obs-man-dxb-economy-20260806-8w-v1', routeSlug: 'manchester-dubai', cabin: 'Economy', observedDate: '2026-08-06', price: 480, priceNote: 'return, per person, one adult; Gulf Air, connecting via Bahrain both ways (outbound MAN T2 09:55-DXB T1 22:35, 9h 40m total, 1h 5m in Bahrain; return DXB T1 21:00-MAN T2 07:15+1, 13h 15m total, 4h 55m in Bahrain); baggage allowance not disclosed anywhere in the selection flow', source: 'Gulf Air', observedVia: 'trip.com', sourceUrl: 'https://www.trip.com/flights/showfarefirst?dcity=man&acity=dxb&ddate=2026-10-01&rdate=2026-10-15&dairport=man&aairport=dxb&triptype=rt&class=y&curr=GBP', currency: 'GBP', baggage: 'not stated', profileId: 'manchester-dubai-economy-1adult-baseline-v1', observationReason: 'routine-weekly', departureDate: '2026-10-01', returnDate: '2026-10-15', fareDirectness: 'connecting' },
 ];
 
 export function getObservationsByRoute(routeSlug: string) {
@@ -200,6 +240,40 @@ export interface FareRangeSummary {
   sources: string[];
   /** Taken from the most recent observation — the most representative note for the range shown. */
   priceNote: string;
+  /**
+   * The observations' own recorded `fareDirectness`, when every observation
+   * in this range that states one agrees — `undefined` when none of them
+   * record it, or when they disagree (never average or guess). See
+   * getDealFareDirectnessLabel() in data/deals.ts for how this is used: a
+   * defined value here always wins over the route's own directness for
+   * badge purposes, since it describes the SPECIFIC fare being shown, not
+   * the route in general.
+   */
+  observedDirectness: 'direct' | 'connecting' | undefined;
+}
+
+/**
+ * Pure aggregation of a set of observations' own `fareDirectness` values —
+ * extracted out of getFareRangeSummary() so it can be unit-tested directly
+ * with synthetic data (see tests/deal-card-fare-directness.test.ts), without
+ * needing a real archive entry for every combination (in particular, no
+ * observation has recorded `fareDirectness: 'direct'` yet — the only case
+ * evidenced so far is Manchester-Dubai's 'connecting' Gulf Air fare — so the
+ * 'direct' branch would otherwise be exercised by no real data at all).
+ * Agrees only when every observation that states a value states the SAME
+ * one; `undefined` when none state one, when they disagree, or when the
+ * only values stated are `'unknown'` — never a majority guess. `'unknown'`
+ * is a real, explicit archive value (a collector looked and couldn't tell)
+ * but must never drive a badge, so it's treated the same as an omitted
+ * field here — the distinction matters for the record, not for display.
+ */
+export function aggregateFareDirectness(
+  observations: Pick<FareObservation, 'fareDirectness'>[]
+): 'direct' | 'connecting' | undefined {
+  const stated = observations
+    .map((o) => o.fareDirectness)
+    .filter((d): d is 'direct' | 'connecting' => d === 'direct' || d === 'connecting');
+  return stated.length > 0 && stated.every((d) => d === stated[0]) ? stated[0] : undefined;
 }
 
 /**
@@ -214,6 +288,7 @@ export function getFareRangeSummary(routeSlug: string, cabin: DealCabin, nowIso:
   const observations = getPublishableObservationsByRouteAndCabin(routeSlug, cabin, nowIso);
   if (observations.length === 0) return null;
   const prices = observations.map((o) => o.price);
+  const observedDirectness = aggregateFareDirectness(observations);
   return {
     count: observations.length,
     min: Math.min(...prices),
@@ -222,5 +297,6 @@ export function getFareRangeSummary(routeSlug: string, cabin: DealCabin, nowIso:
     latestDate: observations[observations.length - 1].observedDate,
     sources: [...new Set(observations.map((o) => o.source))],
     priceNote: observations[observations.length - 1].priceNote,
+    observedDirectness,
   };
 }

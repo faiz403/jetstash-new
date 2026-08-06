@@ -82,6 +82,56 @@ export function getDealDirectnessLabel(deal: Pick<Deal, 'fromAirportSlug' | 'toD
 }
 
 /**
+ * The card-level directness badge every DealCard must actually render
+ * (fixed August 2026, product-truth review of PR #74): a badge attached to
+ * a specific priced fare card describes THAT FARE, never just the wider
+ * route. getDealDirectnessLabel() above answers "is this route generally
+ * verified direct" — a real, different question from "is the SPECIFIC
+ * itinerary priced on this card direct". The two were conflated before
+ * this fix, producing a genuine defect: Manchester-Dubai's route-level
+ * "DIRECT FLIGHT" badge sat directly above a logged Gulf Air fare that is
+ * itself connecting via Bahrain — the route's own verified Emirates
+ * service says nothing about what a DIFFERENT airline's fare, found in the
+ * same search, actually involves. Never call getDealDirectnessLabel()
+ * directly from a component that also displays a specific fare — this
+ * function is the one gate for that combination.
+ *
+ * Resolution order:
+ * 1. Bundled products (isBundledProductDeal) never display a flight-only
+ *    fare at all (see that function's doc comment) — nothing to
+ *    contradict, so the route-level label is safe exactly as before.
+ * 2. No publishable fare logged for this route/cabin — same reasoning:
+ *    no specific itinerary is being claimed under the badge, so the
+ *    route-level label is safe.
+ * 3. A fare IS logged, and its own observation(s) explicitly recorded
+ *    `fareDirectness` (consistently, across every observation making up
+ *    the shown range) — that always wins, because it describes exactly
+ *    what's being priced, not the wider route.
+ * 4. A fare is logged but no observation recorded `fareDirectness`
+ *    (every historic entry, and any future one where it wasn't captured):
+ *    fall back to the route-level label ONLY if every source airline in
+ *    the range is one of the route's own currently-verified operators
+ *    (`route.airlineSlugs`) — in that case the route's own directness
+ *    genuinely does describe this fare too, so nothing is lost. If any
+ *    source airline is NOT one of the route's verified operators (the
+ *    exact shape of the Gulf Air/Dubai defect), directness is genuinely
+ *    unknown for that fare — fail closed, no badge, rather than guess.
+ */
+export function getDealFareDirectnessLabel(deal: Pick<Deal, 'fromAirportSlug' | 'toDestinationSlug' | 'cabin' | 'category'>, nowIso: string): DealDirectnessLabel {
+  const route = getRouteByAirportAndDestination(deal.fromAirportSlug, deal.toDestinationSlug);
+  if (!route) return undefined;
+  if (isBundledProductDeal(deal)) return getDealDirectnessLabel(deal, nowIso);
+  const range = getFareRangeSummary(route.slug, deal.cabin, nowIso);
+  if (!range) return getDealDirectnessLabel(deal, nowIso);
+  if (range.observedDirectness === 'direct') return 'Direct flight';
+  if (range.observedDirectness === 'connecting') return 'Connecting';
+  const sourceAirlineSlugs = range.sources.map((s) => airlines.find((a) => s.toLowerCase().includes(a.name.toLowerCase()))?.slug);
+  const everySourceIsAVerifiedRouteOperator = sourceAirlineSlugs.every((slug) => slug !== undefined && route.airlineSlugs.includes(slug));
+  if (everySourceIsAVerifiedRouteOperator) return getDealDirectnessLabel(deal, nowIso);
+  return undefined;
+}
+
+/**
  * The single gate every deal/search card's airline label must go through
  * (Truth Reset, final correction pass; final audit fix). Route directness
  * and airline attribution are separate claims — a route showing "Direct

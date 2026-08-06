@@ -56,6 +56,24 @@ the route-page architecture; the old pull-brief hero and its supporting
 Use transparent evidence states such as route verified, documents ready, active warning and
 connection risk. Do not introduce an opaque numeric score such as “7.8/10”.
 
+### Route Intelligence Scoring v2 (future review — flagged 6 August 2026, no implementation planned)
+
+**Problem:** `computeRouteIntelligenceLevel()`'s Strong threshold (2+ of 6 depth categories, see
+`ROUTE_COVERAGE_AUDIT.md` §8) measures evidence *presence*, not complete traveller usefulness. Two
+separate findings surfaced this the same week: the Atlas threshold itself was originally too
+permissive (corrected in PR #71 to require 2+ categories instead of 1), and Manchester–Dubai's
+"JetStash knows this route well" badge mechanically qualified as Strong (fare + baggage) while its
+airline guidance stayed thin and its underlying fare evidence wasn't surfaced anywhere on the
+public page — a real page-depth gap the category count can't see.
+
+**Future consideration:** combine evidence-category presence with visible route-page depth and
+actual traveller decision-support quality, rather than counting categories alone. No shape is
+decided — this entry exists so the question isn't lost before more routes are graded Strong under
+the current model, not to prescribe a specific new formula.
+
+**Status:** flagged only. No implementation planned; do not start building this without an
+explicit founder decision on the actual criteria.
+
 ## Deferred, not forgotten
 
 - Automated flight-deal collection until a reliable, lawful and maintainable data source exists.

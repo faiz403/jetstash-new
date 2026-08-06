@@ -345,17 +345,22 @@ describe('The route coverage audit document stays in sync with the real data', (
     expect(auditDoc.toLowerCase()).toContain('manual founder action');
   });
 
-  it('the audit records Route Completion Batch 1\'s outcome for both Manchester–Dubai and Manchester–Doha, honestly, without either being auto-upgraded', () => {
+  it('the audit records Route Completion Batch 1\'s historical outcome (both "useful" as of August 2026\'s Batch 1) as a preserved record, without implying it\'s still current', () => {
     expect(auditDoc).toContain('## Batch 1 completion record');
-    const section = auditDoc.slice(auditDoc.indexOf('## Batch 1 completion record'), auditDoc.indexOf('## 8. Criteria for upgrading a route'));
+    const section = auditDoc.slice(auditDoc.indexOf('## Batch 1 completion record'), auditDoc.indexOf('## Addendum (6 August 2026)'));
     expect(section.length).toBeGreaterThan(0);
     expect(section).toContain('manchester-dubai-emirates-baggage-weight');
     expect(section.toLowerCase()).toContain('neither does');
-    // The section must state the real, current grade for both — never a hand-typed claim that could drift.
+  });
+
+  it('the audit\'s current, real grade for each Batch 1 route matches computeRouteIntelligenceLevel() exactly — Dubai is now Strong (a real fare observation closed its gap), Doha stays Useful', () => {
     const dubai = getRouteBySlug('manchester-dubai')!;
     const doha = getRouteBySlug('manchester-doha')!;
-    expect(computeRouteIntelligenceLevel(dubai, NOW_ISO)).toBe('useful');
+    expect(computeRouteIntelligenceLevel(dubai, NOW_ISO)).toBe('strong');
     expect(computeRouteIntelligenceLevel(doha, NOW_ISO)).toBe('useful');
+    // The slug index (the doc's own machine-checkable manifest) must agree.
+    expect(auditDoc).toMatch(/\|\s*`manchester-dubai`\s*\|\s*Strong\s*\|/);
+    expect(auditDoc).toMatch(/\|\s*`manchester-doha`\s*\|\s*Useful\s*\|/);
   });
 
   it('the /deals page hero states the same live-computed coverage sentence the audit recommends', () => {

@@ -116,7 +116,12 @@ describe('Deal counts (TR-004) — a card with no tracked fare must not count as
     // archive currently only logs flight-only fares for their routes — never
     // evidence for a package price. See data/deals.ts's hasTrackedFare and
     // isBundledProductDeal doc comments (product-integrity fix, August 2026).
-    expect(trackedDeals.map((d) => d.id)).toEqual(['man-lhe-economy', 'lhr-del-economy', 'bhx-atq-economy', 'lhr-bom-economy']);
+    // man-dxb-economy joined this list 6 August 2026 (Route Completion
+    // Batch 1's manual founder-action fare check, obs-man-dxb-economy-20260806-8w-v1)
+    // — isObservationPublishable() doesn't gate on freshness relative to
+    // FIXED_TODAY, only on date-completeness and route status, so this
+    // fixed-date test genuinely does track it now, same as production.
+    expect(trackedDeals.map((d) => d.id)).toEqual(['man-lhe-economy', 'lhr-del-economy', 'bhx-atq-economy', 'man-dxb-economy', 'lhr-bom-economy']);
   });
 
   it('hasTrackedFare returns false for a deal whose airport-destination pair has no Route entry at all', () => {
@@ -298,7 +303,7 @@ describe('getDealDirectnessLabel (TR-009, final correction) — a deal/search ca
 
 describe('FARE-001 pilot — historic examples stay private; only fully dated, evidenced observations publish', () => {
   it('keeps historic observations and appends both editorial observation batches', () => {
-    expect(fareObservations).toHaveLength(31);
+    expect(fareObservations).toHaveLength(32);
   });
 
   it('keeps every historic observation incomplete and private', () => {
@@ -325,6 +330,7 @@ describe('FARE-001 pilot — historic examples stay private; only fully dated, e
       'obs-lhr-jed-economy-20260804-8w-v1',
       'obs-man-med-economy-20260805-8w-v1',
       'obs-man-doh-economy-20260805-8w-v1',
+      'obs-man-dxb-economy-20260806-8w-v1',
     ]);
     expect(published).toEqual(expect.arrayContaining([
       expect.objectContaining({
@@ -407,7 +413,12 @@ describe('FARE-001 pilot — historic examples stay private; only fully dated, e
       // umrah-package-jed and umrah-package-extended need no exclusion here:
       // isBundledProductDeal keeps them untracked regardless of observation
       // completeness, so the general assertion below already holds for them.
-      if (['lhr-bom-economy', 'man-lhe-economy', 'lhr-del-economy', 'bhx-atq-economy'].includes(deal.id)) continue;
+      // man-dxb-economy excluded since 6 August 2026: Route Completion
+      // Batch 1's manual founder-action fare check
+      // (obs-man-dxb-economy-20260806-8w-v1) is genuinely complete, so this
+      // deal is correctly tracked now, alongside the other exclusions below
+      // whose routes also gained a complete observation earlier.
+      if (['lhr-bom-economy', 'man-lhe-economy', 'lhr-del-economy', 'bhx-atq-economy', 'man-dxb-economy'].includes(deal.id)) continue;
       expect(hasTrackedFare(deal, FIXED_TODAY), deal.id).toBe(false);
     }
   });
