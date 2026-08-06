@@ -6,7 +6,7 @@ This roadmap contains unfinished work only. Completed work belongs in `COMPLETED
 
 | Order | ID | Status | Work | Definition of done |
 |---:|---|---|---|---|
-| 1 | `FARE-001` | ACTIVE | Build the editorial fare observation archive. Fare Coverage Expansion Batch A (10 routes, 6 August 2026, see `BATCH_A_COMPLETION_REVIEW.md`) and Batch B (10 routes, 6 August 2026, see `FARE_COVERAGE_BATCH_B.md`) both closed — 23 of 32 routes publishable. | Fresh, manually checked observations for priority routes with travel dates, cabin, source, observation method, currency, baggage treatment, a fixed 8-week booking horizon and an evidence-backed `fareDirectness` (both legs confirmed, or honestly `'unknown'`), accumulated honestly over time. |
+| 1 | `FARE-001` | ACTIVE — Batch C deliberately paused, see below | Build the editorial fare observation archive. Fare Coverage Expansion Batch A (10 routes, 6 August 2026, see `BATCH_A_COMPLETION_REVIEW.md`) and Batch B (10 routes, 6 August 2026, merged `0d84c73`, see `FARE_COVERAGE_BATCH_B.md`) both merged — 23 of 32 routes publishable, 22 of 32 customer-visible. | Fresh, manually checked observations for priority routes with travel dates, cabin, source, observation method, currency, baggage treatment, a fixed 8-week booking horizon and an evidence-backed `fareDirectness` (both legs confirmed, or honestly `'unknown'`/itinerary-level `'connecting'` — see `FARE_COLLECTION_CHECKLIST.md` §6), accumulated honestly over time. |
 | 2 | `COV-001` | ACTIVE | Build verified route coverage deliberately. | The route queue is evidence-led, each change is sourced and reviewed, and price context appears only from date-complete observations. |
 | 3 | `VIS-001` | COMPLETE | Complete the UK airport visual collection. | Premium, airport-specific WebP artwork for every supported UK airport, using one consistent 1672×941 composition. |
 | 4 | `AFF-001` | ACTIVE | Improve affiliate coverage. | Current partner state reconciled; only approved, tracked integrations with directly validated customer journeys are enabled. Expedia and other candidates remain off until approved. |
@@ -14,7 +14,27 @@ This roadmap contains unfinished work only. Completed work belongs in `COMPLETED
 
 `RIS-001` (Route Intelligence Scoring v2) shipped 6 August 2026 — see `COMPLETED.md`. **Fare Coverage
 Expansion sequencing (agreed 6 August 2026, after Batch A's audit, completed the same week):** Batch A
-→ Route Intelligence Scoring v2 (`RIS-001`) → Batch B. All three stages are now done.
+→ Route Intelligence Scoring v2 (`RIS-001`) → Batch B. All three stages are now done, merged and
+verified in production.
+
+**Post-Batch-B sequencing decision (6 August 2026, founder-reviewed after PR #78's pre-merge truth
+audit): Batch C is deliberately not the next task.** With the fare database no longer empty (23 of 32
+routes publishable, 22 of 32 customer-visible), the open question changes from "is there any fare
+evidence" to "are the strongest routes genuinely the best travel-intelligence pages." Agreed order:
+
+1. **Let the new system settle** — watch real analytics (route engagement, which fare cards get
+   clicked, which routes actually receive traffic) before deciding where the next investment should
+   go, rather than guessing.
+2. **Close the specific, already-known customer-visible gaps** before starting a new collection
+   round: Heathrow–Jeddah remains archive-only (a fare exists, no matching Deal — see
+   `FARE_OBSERVATION_ARCHIVE.md`'s evidence-completeness audit); the 6 routes Batch B deliberately
+   excluded for being `unverified` still need a primary-source resolution before any fare collection
+   on them is worth attempting; 9 routes remain with no publishable observation at all.
+3. **Then Batch C** — but reshaped. Not "collect 10 more fares" by default; the brief for whatever
+   comes next should weigh completing the highest-traffic routes, adding real
+   `connectingAlternative`/airline-verification/baggage depth to routes Batch B left at exactly one
+   category, and closing the known gaps above, against a further pure fare-collection round —
+   decided against real usage data from step 1, not assumed.
 
 ## Product-development roadmap
 

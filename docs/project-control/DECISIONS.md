@@ -67,9 +67,38 @@ reaching "Strong" on the cheapest possible category combination). Agreed sequenc
 Route Intelligence Scoring v2 (`ROADMAP.md` `RIS-001`) → Batch B — **all three now complete**, the
 same week. RIS-001 shipped as three independent gates (breadth, category diversity, a
 visible-content baseline) on `computeRouteIntelligenceLevel()`, merged `8b1d18d`. Batch B then ran
-against the corrected model rather than the loophole it closed. See
-`ROUTE_COVERAGE_AUDIT.md`'s "Route Intelligence Scoring v2 (RIS-001)" addendum,
-`BATCH_A_COMPLETION_REVIEW.md` §6, and `FARE_COVERAGE_BATCH_B.md` for the full reasoning.
+against the corrected model rather than the loophole it closed, merged `0d84c73` after a dedicated
+pre-merge truth audit (fareDirectness evidence, the 3 mechanical Strong upgrades' exact gates, no
+fare+connectingAlternative-only Strong route, no unsupported DealCard label, 22/32 customer-visible —
+all confirmed against the real code, zero defects found). See `ROUTE_COVERAGE_AUDIT.md`'s "Route
+Intelligence Scoring v2 (RIS-001)" addendum, `BATCH_A_COMPLETION_REVIEW.md` §6, and
+`FARE_COVERAGE_BATCH_B.md` for the full reasoning.
+
+### Batch C is deliberately not the immediate next step after Batch B
+
+Founder decision, 6 August 2026, made after PR #78's pre-merge truth audit came back clean. With 23
+of 32 routes publishable and 22 of 32 customer-visible, the fare database is no longer empty — the
+open question shifts from "is there any fare evidence" to "are the strongest routes genuinely the
+best travel-intelligence pages." Agreed order: (1) let the new system settle and watch real
+analytics — route engagement, which fare cards get clicked, which routes receive traffic — before
+deciding where to invest next; (2) close the specific, already-known gaps first (Heathrow–Jeddah
+still archive-only; the 6 `unverified` routes Batch B excluded still need primary-source resolution;
+9 routes remain with no publishable observation at all); (3) then Batch C, reshaped around real usage
+data rather than defaulting to "collect 10 more fares" — weighing highest-traffic route completion,
+`connectingAlternative`/airline-verification/baggage depth for the 6 routes Batch B left at exactly
+one category, and closing the known gaps, against a further pure fare-collection round. See
+`ROADMAP.md`'s `FARE-001` entry for the full sequencing note.
+
+### `'connecting'` fareDirectness means itinerary-level evidence, not round-trip completeness
+
+Clarified 6 August 2026, after Fare Coverage Expansion Batch B's pre-merge truth audit confirmed the
+batch's own directness rule (a confirmed-connecting outbound alone is enough to record `'connecting'`,
+even with the return leg unreviewed) was applied correctly and honestly — but flagged the wording as
+worth protecting explicitly for future batches, since `'connecting'` could otherwise be misread as
+"both directions confirmed connecting" rather than its actual, narrower meaning: "this fare's
+reviewed leg shows a confirmed stop." `FARE_COLLECTION_CHECKLIST.md` §6 now states this distinction
+directly, so a future collector inherits the correct meaning rather than reconstructing it from
+Batch B's own evidence files.
 
 ## Evolved
 
