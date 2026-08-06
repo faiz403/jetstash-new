@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { deals, getDealFareDirectnessLabel, getDealDirectnessLabel } from '@/data/deals';
 import { getRouteByAirportAndDestination } from '@/data/routes';
-import { getFareRangeSummary, fareObservations } from '@/data/fare-observations';
+import { getFareRangeSummary, fareObservations, aggregateFareDirectness } from '@/data/fare-observations';
 import { getTripComRouteUrl } from '@/lib/booking-providers';
 
 /**
@@ -121,6 +121,39 @@ describe('FareRangeSummary.observedDirectness aggregates per-observation fareDir
         expect(['direct', 'connecting'], o.id).toContain(o.fareDirectness);
       }
     }
+  });
+});
+
+describe('aggregateFareDirectness — the pure aggregation getFareRangeSummary delegates to, tested with synthetic data', () => {
+  // No real observation in the archive has fareDirectness: 'direct' yet
+  // (only Manchester-Dubai's 'connecting' Gulf Air fare has been evidenced
+  // so far), so the 'direct' branch is otherwise never exercised by any
+  // integration-level test against real deals/observations. These cases use
+  // synthetic, clearly-local objects — never written into the real archive —
+  // specifically to cover that branch without fabricating fare evidence.
+  it('a single observation stating "direct" aggregates to "direct"', () => {
+    expect(aggregateFareDirectness([{ fareDirectness: 'direct' }])).toBe('direct');
+  });
+
+  it('a single observation stating "connecting" aggregates to "connecting"', () => {
+    expect(aggregateFareDirectness([{ fareDirectness: 'connecting' }])).toBe('connecting');
+  });
+
+  it('multiple observations agreeing on "direct" aggregate to "direct"', () => {
+    expect(aggregateFareDirectness([{ fareDirectness: 'direct' }, { fareDirectness: 'direct' }])).toBe('direct');
+  });
+
+  it('no observation stating a value aggregates to undefined — never guessed', () => {
+    expect(aggregateFareDirectness([{ fareDirectness: undefined }, { fareDirectness: undefined }])).toBeUndefined();
+    expect(aggregateFareDirectness([])).toBeUndefined();
+  });
+
+  it('observations that disagree ("direct" vs "connecting") aggregate to undefined, never a majority guess', () => {
+    expect(aggregateFareDirectness([{ fareDirectness: 'direct' }, { fareDirectness: 'connecting' }])).toBeUndefined();
+  });
+
+  it('a mix of stated and unstated observations aggregates on the stated ones only, when they agree', () => {
+    expect(aggregateFareDirectness([{ fareDirectness: 'connecting' }, { fareDirectness: undefined }])).toBe('connecting');
   });
 });
 

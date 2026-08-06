@@ -239,6 +239,25 @@ export interface FareRangeSummary {
 }
 
 /**
+ * Pure aggregation of a set of observations' own `fareDirectness` values —
+ * extracted out of getFareRangeSummary() so it can be unit-tested directly
+ * with synthetic data (see tests/deal-card-fare-directness.test.ts), without
+ * needing a real archive entry for every combination (in particular, no
+ * observation has recorded `fareDirectness: 'direct'` yet — the only case
+ * evidenced so far is Manchester-Dubai's 'connecting' Gulf Air fare — so the
+ * 'direct' branch would otherwise be exercised by no real data at all).
+ * Agrees only when every observation that states a value states the SAME
+ * one; `undefined` when none state one, or when they disagree — never a
+ * majority guess.
+ */
+export function aggregateFareDirectness(
+  observations: Pick<FareObservation, 'fareDirectness'>[]
+): 'direct' | 'connecting' | undefined {
+  const stated = observations.map((o) => o.fareDirectness).filter((d): d is 'direct' | 'connecting' => d !== undefined);
+  return stated.length > 0 && stated.every((d) => d === stated[0]) ? stated[0] : undefined;
+}
+
+/**
  * Derives an honest price range from real logged observations — never a
  * "current price" claim. A single observation still returns a summary
  * (min === max), framed by the caller as "one check", not a range. Returns
@@ -250,9 +269,7 @@ export function getFareRangeSummary(routeSlug: string, cabin: DealCabin, nowIso:
   const observations = getPublishableObservationsByRouteAndCabin(routeSlug, cabin, nowIso);
   if (observations.length === 0) return null;
   const prices = observations.map((o) => o.price);
-  const statedDirectness = observations.map((o) => o.fareDirectness).filter((d): d is 'direct' | 'connecting' => d !== undefined);
-  const observedDirectness: 'direct' | 'connecting' | undefined =
-    statedDirectness.length > 0 && statedDirectness.every((d) => d === statedDirectness[0]) ? statedDirectness[0] : undefined;
+  const observedDirectness = aggregateFareDirectness(observations);
   return {
     count: observations.length,
     min: Math.min(...prices),
