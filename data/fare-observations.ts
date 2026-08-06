@@ -153,6 +153,16 @@ export const fareObservations: FareObservation[] = [
   // baggage figure exists anywhere in the flow before recording 'not
   // stated' - never inferred from the ambiguous "Included" badge shown).
   { id: 'obs-man-dxb-economy-20260806-8w-v1', routeSlug: 'manchester-dubai', cabin: 'Economy', observedDate: '2026-08-06', price: 480, priceNote: 'return, per person, one adult; Gulf Air, connecting via Bahrain both ways (outbound MAN T2 09:55-DXB T1 22:35, 9h 40m total, 1h 5m in Bahrain; return DXB T1 21:00-MAN T2 07:15+1, 13h 15m total, 4h 55m in Bahrain); baggage allowance not disclosed anywhere in the selection flow', source: 'Gulf Air', observedVia: 'trip.com', sourceUrl: 'https://www.trip.com/flights/showfarefirst?dcity=man&acity=dxb&ddate=2026-10-01&rdate=2026-10-15&dairport=man&aairport=dxb&triptype=rt&class=y&curr=GBP', currency: 'GBP', baggage: 'not stated', profileId: 'manchester-dubai-economy-1adult-baseline-v1', observationReason: 'routine-weekly', departureDate: '2026-10-01', returnDate: '2026-10-15', fareDirectness: 'connecting' },
+  // Fare Coverage Expansion - Batch A, route 1 of 10 (Manchester-Lahore).
+  // Full round-trip itinerary via Google Flights - see
+  // docs/project-control/fare-evidence/manchester-lahore-2026-08-06.md for
+  // the complete evidence record (both legs' flight numbers, aircraft,
+  // Istanbul connections, the "Long layover" flag, and the baggage-fees
+  // dialog check that found no kg/piece figure for this fare). The two
+  // historic Etihad observations on this route (2026-07-28, 2026-08-04)
+  // predate the fareDirectness field and are left untouched per the
+  // archive's never-edit-old-observations rule; this is a fresh entry.
+  { id: 'obs-man-lhe-economy-20260806-8w-v1', routeSlug: 'manchester-lahore', cabin: 'Economy', observedDate: '2026-08-06', price: 638, priceNote: 'return, per person, one adult; Turkish Airlines, connecting via Istanbul both ways (outbound MAN 22:55-IST 04:55+1 TK1916, 15h 45m layover [flagged "Long layover" by the source], IST 20:40+1-LHE 04:05+2 TK714, 25h 10m total; return LHE 05:35-IST 10:05 TK715, 4h 10m layover, IST 14:15-MAN 16:30 TK1995, 14h 55m total); no baggage figure disclosed, only a link to the airline\'s general baggage-policy page', source: 'Turkish Airlines', observedVia: 'google-flights', sourceUrl: 'https://www.google.com/travel/flights?q=Flights%20from%20Manchester%20to%20Lahore%20October%201%202026%20return%20October%2015%202026&curr=GBP&hl=en&gl=GB', currency: 'GBP', baggage: 'not stated', profileId: 'manchester-lahore-economy-1adult-23kg-v1', observationReason: 'routine-weekly', departureDate: '2026-10-01', returnDate: '2026-10-15', fareDirectness: 'connecting' },
 ];
 
 export function getObservationsByRoute(routeSlug: string) {

@@ -95,16 +95,16 @@ describe('Fare-observation completeness gating (TR-002) — Verified Check must 
     expect(isPubliclyPublishable(rest as FareObservation)).toBe(false);
   });
 
-  it('getFareRangeSummary derives the exact dated Manchester–Lahore weekly series', () => {
-    expect(getFareRangeSummary('manchester-lahore', 'Economy', FIXED_TODAY)).toEqual({
-      count: 2,
-      min: 578,
-      max: 620,
-      earliestDate: '2026-07-28',
-      latestDate: '2026-08-04',
-      sources: ['Etihad'],
-      priceNote: 'return, per person, one adult; taxes and required fees included; baggage not stated and optional bag charges may apply',
-    });
+  it('getFareRangeSummary derives the exact dated Manchester–Lahore weekly series, now including the Batch A entry', () => {
+    const range = getFareRangeSummary('manchester-lahore', 'Economy', FIXED_TODAY);
+    expect(range).not.toBeNull();
+    expect(range!.count).toBe(3);
+    expect(range!.min).toBe(578);
+    expect(range!.max).toBe(638);
+    expect(range!.earliestDate).toBe('2026-07-28');
+    expect(range!.latestDate).toBe('2026-08-06');
+    expect(range!.sources).toEqual(['Etihad', 'Turkish Airlines']);
+    expect(range!.observedDirectness).toBe('connecting');
   });
 });
 
@@ -303,7 +303,7 @@ describe('getDealDirectnessLabel (TR-009, final correction) — a deal/search ca
 
 describe('FARE-001 pilot — historic examples stay private; only fully dated, evidenced observations publish', () => {
   it('keeps historic observations and appends both editorial observation batches', () => {
-    expect(fareObservations).toHaveLength(32);
+    expect(fareObservations).toHaveLength(33);
   });
 
   it('keeps every historic observation incomplete and private', () => {
@@ -331,6 +331,7 @@ describe('FARE-001 pilot — historic examples stay private; only fully dated, e
       'obs-man-med-economy-20260805-8w-v1',
       'obs-man-doh-economy-20260805-8w-v1',
       'obs-man-dxb-economy-20260806-8w-v1',
+      'obs-man-lhe-economy-20260806-8w-v1',
     ]);
     expect(published).toEqual(expect.arrayContaining([
       expect.objectContaining({

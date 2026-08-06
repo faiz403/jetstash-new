@@ -62,7 +62,12 @@ describe('getDealFareDirectnessLabel — a route being direct never implies a sp
   });
 
   it('unknown fare directness (a logged fare for an airline the route has never verified) renders no badge at all — never guesses either way', () => {
-    const knownUnconfirmedCases = ['man-lhe-economy', 'lhr-del-economy', 'bhx-atq-economy'];
+    // man-lhe-economy was in this list until its Batch A observation
+    // (6 August 2026) recorded an explicit fareDirectness — it now
+    // correctly resolves to 'Connecting' and is covered by its own test
+    // above, not this one. lhr-del-economy and bhx-atq-economy remain
+    // genuinely unconfirmed (no explicit fareDirectness recorded yet).
+    const knownUnconfirmedCases = ['lhr-del-economy', 'bhx-atq-economy'];
     for (const id of knownUnconfirmedCases) {
       const deal = deals.find((d) => d.id === id)!;
       expect(deal, id).toBeDefined();
@@ -70,6 +75,12 @@ describe('getDealFareDirectnessLabel — a route being direct never implies a sp
       // Confirm this is a genuine change from the route-only label, not a coincidence.
       expect(getDealDirectnessLabel(deal, NOW_ISO), id).not.toBeUndefined();
     }
+  });
+
+  it('man-lhe-economy correctly moved from "unconfirmed" to "Connecting" once its Batch A observation recorded explicit fareDirectness', () => {
+    const deal = deals.find((d) => d.id === 'man-lhe-economy')!;
+    expect(getDealFareDirectnessLabel(deal, NOW_ISO)).toBe('Connecting');
+    expect(getDealFareDirectnessLabel(deal, NOW_ISO)).not.toBe('Direct flight');
   });
 
   it('route-level direct-service guidance (getDealDirectnessLabel) is completely unchanged — the fix only changes which function DealCard calls for the fare-card badge', () => {
@@ -109,8 +120,14 @@ describe('FareRangeSummary.observedDirectness aggregates per-observation fareDir
     expect(range!.observedDirectness).toBe('connecting');
   });
 
-  it('a route/cabin whose observations never recorded fareDirectness reports undefined, never a guess', () => {
+  it('Manchester-Lahore\'s range now reports "connecting", matching its Batch A observation\'s explicit fareDirectness (its two older Etihad observations predate the field and stay unset)', () => {
     const range = getFareRangeSummary('manchester-lahore', 'Economy', NOW_ISO);
+    expect(range).not.toBeNull();
+    expect(range!.observedDirectness).toBe('connecting');
+  });
+
+  it('a route/cabin whose observations never recorded fareDirectness reports undefined, never a guess', () => {
+    const range = getFareRangeSummary('manchester-islamabad', 'Economy', NOW_ISO);
     expect(range).not.toBeNull();
     expect(range!.observedDirectness).toBeUndefined();
   });

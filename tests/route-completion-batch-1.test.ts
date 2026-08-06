@@ -252,10 +252,19 @@ describe('No unrelated route was changed by this batch', () => {
     expect(computeRouteIntelligenceLevel(bengaluru, NOW_ISO)).toBe('useful');
   });
 
-  it('no fare observation exists for any route other than the two Batch 1 routes with an observedDate of 2026-08-06', () => {
+  it('every fare observation dated 2026-08-06 belongs to either Route Completion Batch 1 or a documented, separate later initiative', () => {
+    // This originally asserted the two Batch 1 routes were the ONLY routes
+    // observed on this calendar date - a fragile invariant, since a real
+    // date can legitimately be shared by an unrelated later initiative.
+    // Fare Coverage Expansion Batch A (FARE_OBSERVATION_ARCHIVE.md, started
+    // the same week) added manchester-lahore's own 2026-08-06 observation -
+    // expected, not scope creep from this batch. Any route added here must
+    // be explicitly accounted for, never silently allowed.
+    const knownBatchARoutesSoFar: readonly string[] = ['manchester-lahore'];
+    const allowedSlugs = [...(BATCH_1_SLUGS as readonly string[]), ...knownBatchARoutesSoFar];
     const newlyObserved = fareObservations.filter((o) => o.observedDate === '2026-08-06');
     for (const o of newlyObserved) {
-      expect((BATCH_1_SLUGS as readonly string[]).includes(o.routeSlug), o.id).toBe(true);
+      expect(allowedSlugs.includes(o.routeSlug), o.id).toBe(true);
     }
   });
 });
