@@ -47,6 +47,24 @@ export interface FareObservation {
  * appended below when they meet the standard.
    */
   returnDate?: string;
+  /**
+   * Whether the SPECIFIC itinerary this fare was quoted for is direct or
+   * connecting, as actually shown by the source at the time of the check —
+   * never inferred from the route's own verified service state. A route
+   * being direct (e.g. Emirates' own verified Manchester-Dubai service)
+   * does NOT mean every fare ever logged against that route is also direct
+   * — a cheaper search result can genuinely be a different, connecting
+   * itinerary on a different airline (see the DealCard "DIRECT FLIGHT"
+   * badge defect this field exists to prevent, fixed August 2026:
+   * obs-man-dxb-economy-20260806-8w-v1 is Gulf Air via Bahrain, connecting,
+   * despite Manchester-Dubai's own route-level service being verified
+   * direct on Emirates). Optional because historic entries predate this
+   * field and must never be guessed retroactively — see
+   * getDealFareDirectnessLabel() in data/deals.ts for how the absence of
+   * this field is handled safely (falls back to a route-airline match
+   * check, or shows no badge at all rather than risk repeating the defect).
+   */
+  fareDirectness?: 'direct' | 'connecting';
 }
 
 /**
@@ -120,7 +138,7 @@ export const fareObservations: FareObservation[] = [
   // approved before this was recorded; DOM-checked to confirm no explicit
   // baggage figure exists anywhere in the flow before recording 'not
   // stated' - never inferred from the ambiguous "Included" badge shown).
-  { id: 'obs-man-dxb-economy-20260806-8w-v1', routeSlug: 'manchester-dubai', cabin: 'Economy', observedDate: '2026-08-06', price: 480, priceNote: 'return, per person, one adult; Gulf Air, connecting via Bahrain both ways (outbound MAN T2 09:55-DXB T1 22:35, 9h 40m total, 1h 5m in Bahrain; return DXB T1 21:00-MAN T2 07:15+1, 13h 15m total, 4h 55m in Bahrain); baggage allowance not disclosed anywhere in the selection flow', source: 'Gulf Air', observedVia: 'trip.com', sourceUrl: 'https://www.trip.com/flights/showfarefirst?dcity=man&acity=dxb&ddate=2026-10-01&rdate=2026-10-15&dairport=man&aairport=dxb&triptype=rt&class=y&curr=GBP', currency: 'GBP', baggage: 'not stated', profileId: 'manchester-dubai-economy-1adult-baseline-v1', observationReason: 'routine-weekly', departureDate: '2026-10-01', returnDate: '2026-10-15' },
+  { id: 'obs-man-dxb-economy-20260806-8w-v1', routeSlug: 'manchester-dubai', cabin: 'Economy', observedDate: '2026-08-06', price: 480, priceNote: 'return, per person, one adult; Gulf Air, connecting via Bahrain both ways (outbound MAN T2 09:55-DXB T1 22:35, 9h 40m total, 1h 5m in Bahrain; return DXB T1 21:00-MAN T2 07:15+1, 13h 15m total, 4h 55m in Bahrain); baggage allowance not disclosed anywhere in the selection flow', source: 'Gulf Air', observedVia: 'trip.com', sourceUrl: 'https://www.trip.com/flights/showfarefirst?dcity=man&acity=dxb&ddate=2026-10-01&rdate=2026-10-15&dairport=man&aairport=dxb&triptype=rt&class=y&curr=GBP', currency: 'GBP', baggage: 'not stated', profileId: 'manchester-dubai-economy-1adult-baseline-v1', observationReason: 'routine-weekly', departureDate: '2026-10-01', returnDate: '2026-10-15', fareDirectness: 'connecting' },
 ];
 
 export function getObservationsByRoute(routeSlug: string) {
@@ -208,6 +226,16 @@ export interface FareRangeSummary {
   sources: string[];
   /** Taken from the most recent observation — the most representative note for the range shown. */
   priceNote: string;
+  /**
+   * The observations' own recorded `fareDirectness`, when every observation
+   * in this range that states one agrees — `undefined` when none of them
+   * record it, or when they disagree (never average or guess). See
+   * getDealFareDirectnessLabel() in data/deals.ts for how this is used: a
+   * defined value here always wins over the route's own directness for
+   * badge purposes, since it describes the SPECIFIC fare being shown, not
+   * the route in general.
+   */
+  observedDirectness: 'direct' | 'connecting' | undefined;
 }
 
 /**
@@ -222,6 +250,9 @@ export function getFareRangeSummary(routeSlug: string, cabin: DealCabin, nowIso:
   const observations = getPublishableObservationsByRouteAndCabin(routeSlug, cabin, nowIso);
   if (observations.length === 0) return null;
   const prices = observations.map((o) => o.price);
+  const statedDirectness = observations.map((o) => o.fareDirectness).filter((d): d is 'direct' | 'connecting' => d !== undefined);
+  const observedDirectness: 'direct' | 'connecting' | undefined =
+    statedDirectness.length > 0 && statedDirectness.every((d) => d === statedDirectness[0]) ? statedDirectness[0] : undefined;
   return {
     count: observations.length,
     min: Math.min(...prices),
@@ -230,5 +261,6 @@ export function getFareRangeSummary(routeSlug: string, cabin: DealCabin, nowIso:
     latestDate: observations[observations.length - 1].observedDate,
     sources: [...new Set(observations.map((o) => o.source))],
     priceNote: observations[observations.length - 1].priceNote,
+    observedDirectness,
   };
 }

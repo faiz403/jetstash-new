@@ -379,37 +379,78 @@ The first review (above) was run *before* this observation existed, on the hypot
 adding one would produce. This second pass re-reviewed the actual rendered
 `/routes/manchester-dubai` page and its `/deals` `DealCard` with the real observation live.
 
-**A new, concrete problem was found that the first review couldn't have predicted**: the
-`DealCard`'s top-right badge reads **"DIRECT FLIGHT"** — correctly derived from the route's own
-verified Emirates direct service via `getDealDirectnessLabel()` (`data/deals.ts`) — rendered
-directly above this fare's own price description, which explicitly states **"Gulf Air, connecting
-via Bahrain both ways."** This is not a hypothetical readability concern; it is a real, currently-
-live inconsistency a customer would see on the same card. Confirmed on both `/routes/manchester-dubai`
-and `/deals` (the same shared `DealCard` component renders on both).
+**A concrete problem was found (and has since been fixed — see "Third review" below):** the
+`DealCard`'s top-right badge read **"DIRECT FLIGHT"** — derived from the route's own verified
+Emirates direct service via `getDealDirectnessLabel()` (`data/deals.ts`) — rendered directly above
+this fare's own price description, which explicitly states **"Gulf Air, connecting via Bahrain both
+ways."** This was a real, currently-live inconsistency a customer would see on the same card,
+confirmed on both `/routes/manchester-dubai` and `/deals` (the same shared `DealCard` component
+renders on both).
 
-**Root cause, confirmed in code:** `getDealDirectnessLabel()` intentionally derives the badge from
-the *route's* verified status, never the specific fare's own routing — correct for every other
-route in the archive, where the logged fare happens to share the route's verified operator.
-Manchester–Doha's Pegasus observation has the same underlying mismatch (a different airline/routing
-than the route's verified Qatar Airways service) but never became visible, because Doha has no
-`Deal` entry in `data/deals.ts` at all — its `DealCard` never renders.
+**Root cause, confirmed in code (at the time):** `getDealDirectnessLabel()` intentionally derives
+the badge from the *route's* verified status, never the specific fare's own routing — correct for
+every other route in the archive at that time, where the logged fare happened to share the route's
+verified operator. Manchester–Doha's Pegasus observation has the same underlying mismatch (a
+different airline/routing than the route's verified Qatar Airways service) but never became
+visible, because Doha has no `Deal` entry in `data/deals.ts` at all — its `DealCard` never renders.
 
-**Verdict on "JetStash knows this route well": the code-level grade is earned by genuine evidence,
-but the page does not yet read cleanly, and that should not be minimised.** Per the explicit
-instruction accompanying this observation: not weakening the threshold, not removing or hiding the
-fare observation, and not adding filler to paper over it. Instead:
+### Third review (6 August 2026): the badge contradiction is now fixed
 
-- The observation and the resulting Strong grade stand — they reflect real, reviewed, approved
-  evidence.
-- The badge/description inconsistency is reported here plainly, not fixed in this PR. Fixing it
-  means changing `getDealDirectnessLabel()`/`DealCard` behaviour that renders on every route with a
-  `Deal` entry (23 of 32) — a shared-component change with its own review needs, well beyond the
-  scope of "record one fare observation," and risking unintended effects elsewhere if rushed.
-- **Recommended follow-up (founder decision, not made here):** either derive the topBadge from the
-  specific displayed fare's own routing when a fare observation exists and its routing is known
-  (falling back to the route-level label only when it isn't), or add a short bridging line to the
-  fare card ("this example uses a different, connecting itinerary — the route itself also runs
-  direct with Emirates") so the two facts don't read as contradictory.
+A follow-up truth-and-integrity correction (same day) implemented the fix this section originally
+left open, rather than leaving it as a future recommendation:
+
+- **New field:** `FareObservation.fareDirectness?: 'direct' | 'connecting'` (`data/fare-observations.ts`)
+  — the specific itinerary's own recorded directness, set from evidence at the time of the check,
+  never inferred from route status. Set to `'connecting'` on
+  `obs-man-dxb-economy-20260806-8w-v1`.
+- **New aggregation:** `FareRangeSummary.observedDirectness`, computed by `getFareRangeSummary()` —
+  `'direct'`/`'connecting'` only when every contributing observation agrees, `undefined` otherwise
+  (never a majority guess).
+- **New gate:** `getDealFareDirectnessLabel()` (`data/deals.ts`) is now the only function `DealCard`
+  calls for its top-right badge. Resolution order: bundled/package deals keep the route-level label
+  (no flight-only fare is ever shown for them); a deal with no logged fare keeps the route-level
+  label (nothing to contradict); an observation with an explicit `fareDirectness` always wins; absent
+  that, the route-level label is used only when every source airline shown is one of the route's own
+  verified operators (a safe inference); otherwise the function **fails closed — no badge at all**,
+  rather than guessing.
+- **Manchester–Dubai now renders "CONNECTING"** on its Economy `DealCard`, directly above the "Gulf
+  Air, connecting via Bahrain both ways" description — the contradiction is resolved. The route
+  hero and Business-class card (no fare logged) are untouched and still correctly read "DIRECT" /
+  "DIRECT FLIGHT", preserving the route-level truth exactly as this section originally required.
+- **Auditing every `Deal` entry for the same latent defect surfaced three more instances** beyond
+  Dubai, none previously visible as a labelled contradiction only because no description text on
+  those cards stated a conflicting airline in words: `man-lhe-economy` (Manchester–Lahore Economy —
+  route verified for PIA, logged fare was Etihad), `lhr-del-economy` (Heathrow–Delhi Economy — route
+  verified for Virgin Atlantic/BA/Air India, logged fare was IndiGo), `bhx-atq-economy`
+  (Birmingham–Amritsar Economy — route verified for Air India, logged fares included KLM/IndiGo/Air
+  France). All three now correctly render **no directness badge** instead of an unconfirmed claim.
+  Every other `Deal` entry was confirmed unaffected (`tests/deal-card-fare-directness.test.ts`).
+- **Manchester–Doha's Pegasus mismatch remains latent** exactly as this section originally noted —
+  it has no `Deal` entry, so `getDealFareDirectnessLabel()` is never called for it and no badge ever
+  renders either way. Adding a `Deal` entry for Doha is unchanged, separate scope.
+
+**Verdict on "JetStash knows this route well" (Part 3 reassessment, this same correction):** the
+brief for this correction explicitly required *not* manually overriding the Atlas grade in either
+direction as part of fixing the badge — and that instruction was followed; nothing in
+`computeRouteIntelligenceLevel()` or the Strong threshold was touched.
+
+- **Internal consistency: now clean.** The specific defect this section flagged — a route-level
+  direct badge sitting directly above a description of a connecting fare — no longer exists anywhere
+  in the catalogue. A customer reading the Dubai page now sees "DIRECT" (Emirates, route-level, in
+  the hero) and "CONNECTING" (Gulf Air, this specific fare, on the card) as two separate, individually
+  true claims, not a contradiction.
+- **The broader content-depth concern from the first review (above this addendum) is unrelated to
+  the badge and remains exactly as before**: the page's airline guidance is still a bare name with
+  no verification detail beyond the badge itself, and the underlying fare-check evidence (the
+  browser-session review, the DOM baggage inspection) is not itself surfaced anywhere on the public
+  page — only the resulting price and badge are. Fixing the badge contradiction does not add page
+  depth; it only stops the page from asserting two things that disagreed.
+- **Grade left exactly as the mechanical threshold computes it (Strong)** — per instruction, not
+  manually raised or lowered here. Whether a fare observation whose itinerary genuinely differs from
+  the route's verified service should count *less* toward the Strong threshold than one that matches
+  it is a real product question the numeric criteria (§8 below) don't currently distinguish between
+  — flagged here as a **possible separate grading-model follow-up**, not resolved or acted on in this
+  correction.
 
 ---
 

@@ -182,43 +182,57 @@ opening the return leg for full itinerary detail) before being approved and reco
   badge with no kg/piece figure on either leg, confirmed by direct DOM inspection (no hidden
   tooltip, no fare-rules text) before recording anything. Never inferred from the badge.
 - **Checked:** 6 August 2026
-- **Evidence:** `docs/project-control/fare-evidence/manchester-dubai-2026-08-06.md` — a full
-  transcription of both screenshots taken during the check (search-parameters + outbound
-  selection; return-leg selection with the matching £480 total). **The actual PNG image files
-  could not be saved to this repository** — the browser tool used renders a screenshot for review
-  but exposes no file path this session could commit — disclosed plainly in that document rather
-  than implying image files exist that don't.
+- **Evidence:** `docs/project-control/fare-evidence/manchester-dubai-2026-08-06.md` — a
+  contemporaneous transcription of both screenshots viewed during the live browser session
+  (search-parameters + outbound selection; return-leg selection with the matching £480 total),
+  captured from the same DOM/accessibility data reviewed at the time of the check. **No PNG/JPG
+  image file was persisted or committed to this repository** — the browser tool renders a
+  screenshot inline for review but exposes no file path this session could write to `git` —
+  disclosed plainly in that document rather than implying image files exist that don't. Reviewed
+  6 August 2026 (truth-and-integrity correction) against `FARE_OBSERVATION_ARCHIVE.md`'s own
+  "Required record fields" and "Review standard" sections (immediately below): neither requires a
+  persisted image file, so this level of evidence is methodology-compliant and the observation
+  stays publishable — see the evidence document's own "Methodology compliance" section for the
+  full citation.
 
 **Confirmed `isObservationPublishable()` / `isPubliclyPublishable()` returns `true`** for this
 entry (both dates present, route matches, route status is `'direct'`).
 
-### A genuine content-depth finding surfaced by this observation — not fixed here
+### A genuine content-depth finding surfaced by this observation — fixed same day (6 August 2026)
 
 Logging this observation gives Manchester–Dubai its second depth category (baggage + fare),
 satisfying `computeRouteIntelligenceLevel()`'s two-category bar mechanically — this is a real
 consequence of genuine evidence, not a manual override, and the threshold itself was not touched.
 **But the code-level grade and a clean-reading page are not automatically the same thing.**
 Reviewing the actual rendered `/routes/manchester-dubai` page (and its `/deals` `DealCard`) found a
-real, visible inconsistency: the card's top-right badge reads **"DIRECT FLIGHT"** — correctly
-derived from the route's own verified Emirates direct service via `getDealDirectnessLabel()` — sitting
-directly above this fare's own description, which explicitly says **"connecting via Bahrain both
-ways."** A customer reading the card would see both claims together and could reasonably read them
-as contradictory.
+real, visible inconsistency: the card's top-right badge read **"DIRECT FLIGHT"** — derived from the
+route's own verified Emirates direct service via `getDealDirectnessLabel()` — sitting directly above
+this fare's own description, which explicitly says **"connecting via Bahrain both ways."** A
+customer reading the card would see both claims together and could reasonably read them as
+contradictory.
 
 Root cause: `getDealDirectnessLabel()` (`data/deals.ts`) intentionally derives the badge from the
 **route's** verified status, never a specific displayed fare's own routing — by design, and correct
-for every other route in the archive where the logged fare happens to share the route's own
-operator. Manchester–Dubai is the first case where a logged fare is for a genuinely different
-airline and routing than the route's own verified direct service (the same situation existed for
-Manchester–Doha's Pegasus observation, but Doha has no curated `Deal` entry in `data/deals.ts` at
-all, so its `DealCard` never renders and the mismatch never became visible there).
+for every other route in the archive at that time, where the logged fare happened to share the
+route's own operator. Manchester–Dubai was the first case where a logged fare was for a genuinely
+different airline and routing than the route's own verified direct service (the same situation
+exists for Manchester–Doha's Pegasus observation, but Doha has no curated `Deal` entry in
+`data/deals.ts` at all, so its `DealCard` never renders and the mismatch never becomes visible
+there).
 
-**Not fixed in this PR** — resolving it means changing shared `DealCard`/`getDealDirectnessLabel()`
-behaviour that renders on every route with a `Deal` entry, well beyond the scope of recording one
-fare observation, and risks unintended consequences elsewhere. Flagged here as a real, founder-level
-follow-up decision (options include: deriving the badge from the specific fare's own routing when
-one is logged and differs from the route, or adding explanatory copy bridging the two facts) — see
-`ROUTE_COVERAGE_AUDIT.md`'s content-depth review for the full verdict this finding produced.
+**Fixed the same day, in a follow-up truth-and-integrity correction**: a new optional
+`FareObservation.fareDirectness` field records the specific itinerary's own directness (set to
+`'connecting'` on this observation); `getFareRangeSummary()` aggregates it into
+`FareRangeSummary.observedDirectness`; and a new `getDealFareDirectnessLabel()` (`data/deals.ts`) is
+now the only function `DealCard` calls for its badge — it prefers the fare's own recorded
+directness, falls back to the route-level label only when every source airline is one of the
+route's verified operators, and fails closed (no badge) otherwise. Manchester–Dubai's card now
+reads "CONNECTING" directly above its Gulf Air description; the route hero and Business-class card
+(no fare logged) still correctly read "DIRECT". Auditing every `Deal` entry for the same latent
+defect surfaced three further instances (Manchester–Lahore, Heathrow–Delhi, Birmingham–Amritsar
+Economy), all of which now correctly render no badge rather than an unconfirmed claim. See
+`ROUTE_COVERAGE_AUDIT.md`'s addendum ("Third review") for the full verdict, and
+`tests/deal-card-fare-directness.test.ts` for the regression coverage.
 
 ## Manchester–Doha: do not close its gap artificially
 

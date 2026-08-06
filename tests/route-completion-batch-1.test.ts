@@ -267,10 +267,30 @@ describe('Evidence for the 6 August 2026 fare check is retained and honestly des
     expect(existsSync(evidencePath)).toBe(true);
   });
 
-  it('discloses honestly that the screenshot PNG files could not be saved to the repository — never implies image files exist that do not', () => {
+  it('discloses honestly that the screenshot PNG files were not persisted or committed — never implies image files exist that do not', () => {
     const doc = readFileSync(evidencePath, 'utf8');
-    expect(doc.toLowerCase()).toContain('could not be saved');
-    expect(doc.toLowerCase()).toContain('no png file exists at any path');
+    expect(doc.toLowerCase()).toContain('no png, jpg, or any other image evidence file was persisted or committed');
+    expect(doc.toLowerCase()).toContain('this is not a substitute claim that image evidence is archived');
+  });
+
+  it('states unambiguously that screenshots were viewed live and this file is a contemporaneous transcription, not a later reconstruction', () => {
+    const doc = readFileSync(evidencePath, 'utf8');
+    expect(doc.toLowerCase()).toContain('two screenshots were viewed during the live browser session');
+    expect(doc.toLowerCase()).toContain('this markdown file is a contemporaneous transcription');
+  });
+
+  it('cites the exact archive-methodology sections confirming this level of evidence is permitted, without weakening the observation', () => {
+    const doc = readFileSync(evidencePath, 'utf8');
+    expect(doc).toContain('### Methodology compliance');
+    expect(doc.toLowerCase()).toContain('neither section requires a persisted image file of any');
+    expect(doc.toLowerCase()).toContain('required record fields');
+    expect(doc.toLowerCase()).toContain('review standard');
+    // The doc legitimately contains "non-publishable" inside a negation
+    // ("not ... non-publishable on evidence grounds") — assert the positive
+    // claim never appears instead of a naive substring check.
+    expect(doc.toLowerCase()).not.toMatch(/\bis non-publishable\b/);
+    expect(doc.toLowerCase()).not.toContain('provisionally reviewed');
+    expect(doc.toLowerCase()).toContain('not weakened, provisional, or non-publishable');
   });
 
   it('records that baggage was confirmed absent by direct DOM inspection, not assumed from the "Included" badge', () => {
@@ -317,11 +337,15 @@ describe('The audit and fare-archive documents accurately reflect the closed obs
     expect(archiveFlat).not.toMatch(/reaches strong automatically/);
   });
 
-  it('documents the second content-depth review\'s "DIRECT FLIGHT" badge finding, with its root cause and explicit non-fix', () => {
+  it('documents the second content-depth review\'s "DIRECT FLIGHT" badge finding and its subsequent fix, not a stale non-fix claim', () => {
     expect(auditFlat).toContain('direct flight');
     expect(auditFlat).toContain('connecting via bahrain');
     expect(auditFlat).toContain('getdealdirectnesslabel()'.replace('()', '()').toLowerCase());
-    expect(auditFlat).toContain('not fixed in this pr');
+    // The fix landed the same day (6 August 2026) — the doc must reflect
+    // that, never the earlier "not fixed in this PR" framing.
+    expect(auditFlat).not.toContain('not fixed in this pr');
+    expect(auditFlat).toContain('getdealfaredirectnesslabel()'.toLowerCase());
+    expect(auditFlat).toContain('now renders "connecting"'.toLowerCase());
   });
 
   it('explicitly protects Manchester-Doha from an artificial upgrade, in both the audit and the fare archive', () => {
