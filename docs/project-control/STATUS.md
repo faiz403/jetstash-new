@@ -103,6 +103,33 @@ analytics/conversion events are verified in the real dashboard.
   apart. This phase deliberately did not complete any route's missing intelligence, add a fare
   observation, or touch Arrive By, Book By's own logic, Trip.com links or affiliate behaviour —
   see the audit's "Recommended route-completion batches" for what a Phase 2 would involve.
+- Manchester–Dubai's fare-observation gap closed, with a process fix (PR #74, merged 6 August 2026
+  as `95f2127`): the founder-action fare check flagged by Route Coverage Truth Phase 1 above was
+  performed via Trip.com, reviewed twice, and recorded (`obs-man-dxb-economy-20260806-8w-v1`, £480
+  return, Gulf Air, connecting via Bahrain, checked 6 August 2026) — Manchester–Dubai's Atlas grade
+  is now mechanically `'strong'` (baggage + fare), not a manual override. Reviewing the rendered
+  page found a real defect this closure exposed: the `DealCard` badge asserted the route's
+  route-level direct service ("DIRECT FLIGHT") directly above this fare's own connecting
+  itinerary — a genuine contradiction, not a cosmetic one. Fixed in the same PR, before merge:
+  `FareObservation` gained a `fareDirectness: 'direct' | 'connecting' | 'unknown'` field recorded
+  from evidence at collection time, never inferred from route status; `getDealFareDirectnessLabel()`
+  (`data/deals.ts`) is now the one gate every `DealCard` badge goes through, falling back to the
+  route-level label only when safe and failing closed (no badge) otherwise. Auditing every `Deal`
+  entry for the same latent defect found three further affected cards (Manchester–Lahore,
+  Heathrow–Delhi, Birmingham–Amritsar Economy), all now correctly showing no badge instead of an
+  unconfirmed claim. Full detail, the evidence-methodology verdict (a persisted image file is not
+  required by the archive's own binding rules) and the Atlas-promotion reassessment (grade left
+  exactly as computed, page now internally consistent, broader content-depth concern flagged
+  separately) live in `ROUTE_COVERAGE_AUDIT.md`'s addendum and `FARE_OBSERVATION_ARCHIVE.md`. Two
+  process improvements came out of this the same day: `docs/project-control/FARE_COLLECTION_CHECKLIST.md`
+  (a step-by-step template for every future observation) and a "Route Intelligence Scoring v2"
+  review flagged in `ROADMAP.md`/`DECISIONS.md` (evidence-category count alone doesn't measure
+  page depth or traveller usefulness — no implementation planned, founder decision required first).
+  A **Fare Coverage Expansion — Batch A** (10 routes: Manchester–Lahore, –Islamabad, –Delhi,
+  –Mumbai, Birmingham–Amritsar, Manchester–Madinah, –Doha, Heathrow–Delhi, –Mumbai,
+  Birmingham–Lahore) is approved as the next phase, sequenced deliberately in small batches rather
+  than all 32 at once — logged in `FARE_OBSERVATION_ARCHIVE.md`, **planned, not started** as of
+  this entry.
 - Product-integrity fix (5 August 2026): `data/deals.ts`'s `hasTrackedFare` now gates on
   `isBundledProductDeal` — a package/Umrah-category deal (bundled flight+hotel) no longer counts a
   flight-only fare observation as evidence for its own price. Found while adding the Madinah
