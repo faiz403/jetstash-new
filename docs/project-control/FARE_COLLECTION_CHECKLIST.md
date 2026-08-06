@@ -64,16 +64,33 @@ polling, scraping or API harvesting) and the route's stable `profileId`.
       different, connecting routing (exactly what happened with Manchester–Dubai's Gulf Air fare
       against Emirates' verified direct service).
 - [ ] Record `fareDirectness` as exactly one of:
-  - `'direct'` — the result itself states or clearly shows a direct itinerary.
-  - `'connecting'` — the result shows one or more stops. Record **where** the connection is and
-    **how many stops**, with leg-by-leg timings if the source shows them, in `priceNote` (see the
-    Manchester–Dubai entry in `FARE_OBSERVATION_ARCHIVE.md` for the level of detail expected —
-    airport codes, terminal, layover duration, both legs).
-  - `'unknown'` — the source genuinely does not make this determinable. Record `'unknown'`
-    explicitly. **Never leave the field unset** to mean "unknown" — an unset field is reserved for
-    historic entries that predate this checklist, not a new observation's honest answer.
+  - `'direct'` — **both legs** of the round trip were reviewed and each independently confirmed
+    nonstop. A single-leg "Nonstop" label is not enough on its own — see the Manchester–Doha
+    correction in `FARE_OBSERVATION_ARCHIVE.md`'s evidence-completeness audit, where an outbound
+    labelled "Nonstop" was originally (wrongly) recorded as `'direct'` before the return leg had
+    ever been opened.
+  - `'connecting'` — **either** leg reviewed shows one or more stops. Unlike `'direct'`, this value
+    does not require both legs to have been checked: a confirmed stop on the leg you did review is
+    real, positive evidence the round trip is not fully nonstop, whether or not the other leg was
+    opened (Fare Coverage Expansion Batch B, 6 August 2026, made this explicit — see below). Record
+    **where** the connection is and **how many stops**, with leg-by-leg timings if the source shows
+    them, in `priceNote` (see the Manchester–Dubai entry in `FARE_OBSERVATION_ARCHIVE.md` for the
+    level of detail expected — airport codes, terminal, layover duration, both legs, where available).
+  - `'unknown'` — the source genuinely does not make this determinable, or neither leg shows a
+    confirmed connecting stop and the other leg was never reviewed. Record `'unknown'` explicitly.
+    **Never leave the field unset** to mean "unknown" — an unset field is reserved for historic
+    entries that predate this checklist, not a new observation's honest answer.
 - [ ] Never infer this field from the route's `isDirect` flag or `airlineSlugs`. It describes the
       one specific itinerary in front of you, nothing else.
+- [ ] **What `'connecting'` means, precisely (added after Fare Coverage Expansion Batch B, 6 August
+      2026 — read this before recording a `'connecting'` value from outbound-only evidence).** A
+      `'connecting'` value is **itinerary-level evidence** — "this specific fare's reviewed leg
+      shows a confirmed stop" — never **round-trip-completeness confirmation** — "both directions of
+      this fare are confirmed connecting." When only the outbound was reviewed, always disclose that
+      plainly in `priceNote` (Batch B's own convention: "outbound only reviewed... return leg not
+      reviewed"), exactly as this checklist already requires for every field. Do not let a
+      `'connecting'` value be read, by a future collector or by the archive's own prose elsewhere, as
+      implying the return leg was also checked — it wasn't, and the record must keep saying so.
 
 ## 7. Baggage
 
