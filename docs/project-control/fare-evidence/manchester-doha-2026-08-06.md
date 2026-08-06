@@ -2,6 +2,16 @@
 
 **Observation ID this evidence supports:** `obs-man-doh-economy-20260806-8w-v1`
 
+> **⚠ Correction, 6 August 2026 audit:** `fareDirectness` was originally recorded as `'direct'` on
+> the strength of the outbound leg being explicitly labelled "Nonstop" — the most confident-looking
+> of all the Batch A findings, and for that reason the one most important to get right. Only the
+> outbound was ever reviewed; the return leg (DOH→MAN) was never opened or confirmed. A nonstop
+> outbound does not establish a nonstop return, even for the route's own verified direct operator —
+> corrected to **`fareDirectness: 'unknown'`**. This was the archive's only `'direct'` value; there
+> is currently no confirmed-direct observation anywhere in the archive as a result. The observation
+> itself (price, airline, dates) remains valid and publishable. See `FARE_OBSERVATION_ARCHIVE.md`'s
+> audit addendum for the full account.
+
 **Context:** Fare Coverage Expansion — Batch A, route 8 of 10. One prior observation exists
 (`obs-man-doh-economy-20260805-8w-v1`, Pegasus, connecting, checked 5 August 2026, predates
 `fareDirectness`) and is left untouched. This fresh check is a genuinely different result. Lean
@@ -18,9 +28,10 @@ operator (Qatar Airways) — the search confirms its own service is bookable via
 Cheaper connecting options exist further down the list (e.g. Pegasus at £487), consistent with the
 existing 5 August observation.
 
-**Directness:** `fareDirectness: 'direct'` — the source itself states "Nonstop", not inferred from
-the route's own verified status. **This is the first observation in the archive with an explicit
-`'direct'` value** — every prior fareDirectness-bearing observation has been `'connecting'`.
+**Directness (as originally recorded, now corrected — see banner above):** the outbound leg's own
+source text states "Nonstop", not inferred from the route's own verified status. But the return leg
+was never opened to confirm the same — **`fareDirectness` is now recorded as `'unknown'`**, not
+`'direct'`. There is currently no confirmed-direct observation anywhere in the archive.
 
 **Baggage:** not shown in the results list — recorded as `'not stated'`.
 
@@ -28,9 +39,7 @@ No screenshot was rendered (tool unavailable this session). No durable availabil
 or recorded.
 
 **Note for a future reviewer:** Manchester–Doha now has two dated observations for the same cabin —
-one connecting (Pegasus, no `fareDirectness`), one direct (Qatar Airways, `'direct'`). There is no
-`man-doh-economy` Deal entry in `data/deals.ts`, so this does not currently create any badge risk.
-If a Deal entry is ever added for this route, `getFareRangeSummary`'s `observedDirectness`
-aggregation only considers observations that state a value — since only the new entry does, the
-range's badge would currently resolve to `'direct'` even though the range also includes a cheaper
-connecting fare. Worth a second look before adding a `man-doh-economy` Deal card.
+one connecting (Pegasus, no `fareDirectness`), one `'unknown'` (Qatar Airways, outbound-only
+evidence). There is no `man-doh-economy` Deal entry in `data/deals.ts`, so this creates no badge
+risk either way. A genuine second check — one that actually opens the return leg — would be needed
+before this route could honestly record `'direct'`.

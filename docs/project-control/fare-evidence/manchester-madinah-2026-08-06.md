@@ -2,6 +2,12 @@
 
 **Observation ID this evidence supports:** `obs-man-med-economy-20260806-8w-v1`
 
+> **⚠ Correction, 6 August 2026 audit:** `fareDirectness` was originally recorded as `'connecting'`
+> on the strength of the outbound leg's "1 stop" label alone. Only the outbound was ever reviewed —
+> the return leg's routing was never confirmed. Corrected to **`fareDirectness: 'unknown'`**. The
+> observation itself (price, airline, dates) remains valid and publishable. See
+> `FARE_OBSERVATION_ARCHIVE.md`'s audit addendum for the full account.
+
 **Context:** Fare Coverage Expansion — Batch A, route 9 of 10. Two prior observations exist (one a
 9 June 2026 flights+hotel package price at a different profile entirely, one a 5 August 2026
 flight-only Pegasus/AJet observation predating `fareDirectness`) and are left untouched. Lean

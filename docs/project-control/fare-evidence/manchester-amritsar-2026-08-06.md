@@ -2,6 +2,14 @@
 
 **Observation ID this evidence supports:** `obs-man-atq-economy-20260806-8w-v1`
 
+> **⚠ Correction, 6 August 2026 audit:** `fareDirectness` was originally recorded as `'connecting'`
+> on the strength of the outbound leg's "2 stops" label alone. Only the outbound was ever reviewed —
+> the return leg's routing was never confirmed. Corrected to **`fareDirectness: 'unknown'`**. The
+> observation itself (price, airline, dates) remains valid and publishable. Note: this correction
+> does not affect this route's Atlas grade — Manchester–Amritsar's promotion to Strong depends only
+> on a publishable fare observation existing, not on its directness value; see
+> `FARE_OBSERVATION_ARCHIVE.md`'s audit addendum for the full account.
+
 **Context:** Fare Coverage Expansion — Batch A, route 7 of 10. This route had zero prior
 observations — this is its first. Lean process: results-list evidence only, no click-through, no
 baggage-rule digging.

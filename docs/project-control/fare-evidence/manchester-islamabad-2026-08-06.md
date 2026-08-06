@@ -2,6 +2,14 @@
 
 **Observation ID this evidence supports:** `obs-man-isb-economy-20260806-8w-v1` (`data/fare-observations.ts`)
 
+> **⚠ Correction, 6 August 2026 audit:** `fareDirectness` was originally recorded as `'connecting'`
+> on the strength of the outbound leg's "1 stop" label alone. Only the outbound was ever reviewed
+> (see "no click-through" below) — the return leg's routing was never confirmed. Per the standing
+> rule that directness must never be inferred from partial evidence, this has been corrected to
+> **`fareDirectness: 'unknown'`**. The observation itself (price, airline, dates) remains valid and
+> publishable — only the directness claim was overreaching. See `FARE_OBSERVATION_ARCHIVE.md`'s
+> audit addendum for the full account.
+
 **Context:** Fare Coverage Expansion — Batch A, route 3 of 10 (Manchester–Lahore and Manchester–Dubai
 done first). Per the founder's own direction after Lahore, this record is intentionally lighter than
 the Dubai/Lahore evidence files — only what the search naturally surfaced, no forced click-through

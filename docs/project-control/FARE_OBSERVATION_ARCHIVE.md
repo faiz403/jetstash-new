@@ -201,34 +201,93 @@ only when it appears without digging, `'not stated'` otherwise.
 
 ### Batch A progress
 
-| # | Route | Status | Observation | Notes |
-|---:|---|---|---|---|
-| 1 | Manchester → Dubai | ✅ Done (6 August 2026) | `obs-man-dxb-economy-20260806-8w-v1` | Full-depth evidence (see above) — this is the check that started the correction. |
-| 2 | Manchester → Lahore | ✅ Done (6 August 2026) | `obs-man-lhe-economy-20260806-8w-v1` | First attempt (Trip.com) hit an interaction limitation reaching the return leg and a session-wide screenshot-tool outage — held back rather than recorded with weaker evidence than Dubai's. Second attempt (Google Flights) captured the full round-trip itinerary; see the closed-observation entry below. |
-| 3 | Manchester → Islamabad | ✅ Done (6 August 2026) | `obs-man-isb-economy-20260806-8w-v1` | First route done under the leaner process — results-list evidence only, no click-through, no baggage digging. **No `man-isb-economy` Deal entry exists** — only `man-isb-business` — so this observation does not currently render on any `DealCard`; it still adds real, dated evidence to the route's own fare history. |
-| 4 | Manchester → Delhi | ✅ Done (6 August 2026) | `obs-man-del-economy-20260806-8w-v1` | Route's first observation. Gulf Air, connecting, 1 stop. No `man-del-economy` Deal entry exists. |
-| 5 | Manchester → Mumbai | ✅ Done (6 August 2026) | `obs-man-bom-economy-20260806-8w-v1` | Route's first observation. Gulf Air, connecting, 1 stop. No `man-bom-economy` Deal entry exists. |
-| 6 | Manchester → Ahmedabad | ✅ Done (6 August 2026) | `obs-man-amd-economy-20260806-8w-v1` | Route's first observation. Emirates, connecting, 1 stop. No `man-amd-economy` Deal entry exists. |
-| 7 | Manchester → Amritsar | ✅ Done (6 August 2026) | `obs-man-atq-economy-20260806-8w-v1` | Route's first observation. Etihad and Air India, connecting, 2 stops. No `man-atq-economy` Deal entry exists. |
-| 8 | Manchester → Doha | ✅ Done (6 August 2026) | `obs-man-doh-economy-20260806-8w-v1` | Top result is a genuine nonstop Qatar Airways service — **first `fareDirectness: 'direct'` in the archive**. Existing 5 August Pegasus observation (connecting) left untouched. No `man-doh-economy` Deal entry exists — see the evidence file's note on a future aggregation edge case if one is ever added. |
-| 9 | Manchester → Madinah | ✅ Done (6 August 2026) | `obs-man-med-economy-20260806-8w-v1` | Pegasus and Flynas, connecting, 1 stop. Only Deal entry is the bundled Umrah package (unaffected). |
-| 10 | Birmingham → Amritsar | ✅ Done (6 August 2026) | `obs-bhx-atq-economy-20260806-8w-v1` | Air India — matches the route's own verified operator, unlike either historic observation. **`bhx-atq-economy`'s `DealCard` badge now correctly resolves to "Connecting"**, fixing the no-badge state the PR #74 audit found. Confirmed live. |
+**Read this table alongside the "Evidence-completeness audit" section below — the `fareDirectness`
+column here reflects the audit's corrections, not what was originally recorded.**
 
-**Batch A is complete — 10 of 10 routes done (6 August 2026).** All done on one working branch
+| # | Route | Status | Observation | Evidence depth | `fareDirectness` |
+|---:|---|---|---|---|---|
+| 1 | Manchester → Dubai | ✅ Done (6 August 2026) | `obs-man-dxb-economy-20260806-8w-v1` | **Full round-trip** — both legs confirmed (Trip.com, two screens, matching £480 total) | `connecting` |
+| 2 | Manchester → Lahore | ✅ Done (6 August 2026) | `obs-man-lhe-economy-20260806-8w-v1` | **Full round-trip** — both legs confirmed (Google Flights, outbound+return flight-detail panels, matching £638 total) | `connecting` |
+| 3 | Manchester → Islamabad | ✅ Done, evidence corrected (6 August 2026) | `obs-man-isb-economy-20260806-8w-v1` | Outbound only — results-list evidence, no click-through | `unknown` *(was `connecting`)* |
+| 4 | Manchester → Delhi | ✅ Done, evidence corrected (6 August 2026) | `obs-man-del-economy-20260806-8w-v1` | Outbound only | `unknown` *(was `connecting`)* |
+| 5 | Manchester → Mumbai | ✅ Done, evidence corrected (6 August 2026) | `obs-man-bom-economy-20260806-8w-v1` | Outbound only | `unknown` *(was `connecting`)* |
+| 6 | Manchester → Ahmedabad | ✅ Done, evidence corrected (6 August 2026) | `obs-man-amd-economy-20260806-8w-v1` | Outbound only | `unknown` *(was `connecting`)* |
+| 7 | Manchester → Amritsar | ✅ Done, evidence corrected (6 August 2026) | `obs-man-atq-economy-20260806-8w-v1` | Outbound only | `unknown` *(was `connecting`)* |
+| 8 | Manchester → Doha | ✅ Done, evidence corrected (6 August 2026) | `obs-man-doh-economy-20260806-8w-v1` | Outbound only — outbound itself nonstop, return never opened | `unknown` *(was `direct`)* |
+| 9 | Manchester → Madinah | ✅ Done, evidence corrected (6 August 2026) | `obs-man-med-economy-20260806-8w-v1` | Outbound only | `unknown` *(was `connecting`)* |
+| 10 | Birmingham → Amritsar | ✅ Done, evidence corrected (6 August 2026) | `obs-bhx-atq-economy-20260806-8w-v1` | Outbound only | `unknown` *(was `connecting`)* |
+
+**Batch A's 10 observations are all recorded (6 August 2026).** All done on one working branch
 (`fare/batch-a-fare-coverage-2026-08`) rather than a PR per route, to be reviewed and merged as a
-batch — the point of batching is to avoid a run of tiny "one route updated" merges. Routes 4–10 used
-the leaner process the founder approved after Lahore/Islamabad: results-list evidence only, no
-click-through into a booking flow, no baggage-rule digging.
+batch. **A post-batch audit (6 August 2026, before any PR was opened) found that 8 of the 10
+observations only ever reviewed the outbound leg** despite `fareDirectness` originally being recorded
+as if the round trip had been confirmed — see "Evidence-completeness audit" below for the full
+finding and correction. Every corrected observation remains a real, dated, publishable archive entry
+(price, airline and dates were genuinely checked); only the directness *claim* was overreaching.
 
-**A pattern worth flagging plainly, not burying:** of the 7 routes added under the lean process
-(4–10), only Birmingham–Amritsar had an existing `DealCard` to actually change — Delhi, Mumbai,
-Ahmedabad, Manchester-Amritsar and Doha have **no Manchester/Birmingham-departure Economy Deal
-entry at all** (Manchester–Delhi and Manchester–Mumbai are both verified-direct IndiGo routes with
-real customer demand and still have no Deal card), and Madinah's only Deal is the bundled Umrah
-package. This batch adds real, dated fare-history evidence to every route's own archive regardless,
-but most of it does not yet surface as a price on `/deals` or a route page's `DealCard` — that gap is
-about missing `Deal` entries in `data/deals.ts`, a separate and genuine follow-up, not something this
-fare-collection phase was scoped to fix.
+**A pattern worth flagging plainly, not burying:** of the 8 routes added under the lean process
+(3–10), only Birmingham–Amritsar had an existing `DealCard` to potentially change — and after the
+audit correction, it no longer does (see below). Delhi, Mumbai, Ahmedabad, Manchester-Amritsar and
+Doha have **no Manchester/Birmingham-departure Economy Deal entry at all** (Manchester–Delhi and
+Manchester–Mumbai are both verified-direct IndiGo routes with real customer demand and still have no
+Deal card), and Madinah's only Deal is the bundled Umrah package. This batch adds real, dated
+fare-history evidence to every route's own archive regardless, but none of it currently surfaces as a
+price on `/deals` or a route page's `DealCard` — that gap is about missing `Deal` entries in
+`data/deals.ts`, a separate and genuine follow-up, not something this fare-collection phase was
+scoped to fix. See Part 3 of the audit below for the full customer-visibility table.
+
+### Evidence-completeness audit (6 August 2026, before any PR opened)
+
+Before Batch A's branch was proposed for review, every observation's evidence record was re-read
+against the standard that actually governs `fareDirectness`: it must describe the ITINERARY
+actually shown, on both legs, never inferred from one leg or from the airline's general network.
+
+**Finding: 8 of the 10 Batch A observations recorded `fareDirectness` from the outbound leg alone.**
+Manchester–Dubai and Manchester–Lahore both have genuine round-trip evidence — the outbound *and*
+the return leg were each opened and their own routing confirmed independently, with the quoted total
+price matching between the outbound-selection and return-selection screens. Every other Batch A
+observation (Islamabad, Delhi, Mumbai, Ahmedabad, Amritsar, Doha, Madinah, Birmingham-Amritsar) was
+recorded under the leaner process approved after Lahore/Islamabad — "results-list evidence only, no
+click-through" — which captures only the outbound leg's own summary. The collapsed round-trip price
+shown for that leaner searches is a genuine, real total (Google Flights pairs a specific return
+automatically to produce it), but the *directness* label shown alongside it describes only the
+outbound half of that pairing — confirmed directly by Lahore's own full click-through, where the
+outbound and return legs had different flight numbers, different layover cities and different
+layover durations from each other.
+
+**Correction applied:** all 8 affected observations' `fareDirectness` changed from `'connecting'`
+(seven of them) or `'direct'` (Manchester–Doha) to **`'unknown'`** — the field's own designed-for
+value for exactly this situation: a collector looked, and could not honestly determine the
+itinerary's full directness. `priceNote` on each was reworded to state plainly that only the
+outbound was reviewed. Each affected evidence file now carries a correction banner. None of the 8
+observations were removed or marked non-publishable — `isPubliclyPublishable()` /
+`isObservationPublishable()` never depended on `fareDirectness`, and both dates, the price, the
+airline and the route match are all genuinely evidenced; only the directness claim was overreaching.
+
+**The Manchester–Doha correction is the one most worth naming specifically.** Its outbound leg was
+explicitly labelled "Nonstop" by the source — the single most confident-looking finding in the whole
+batch, and for exactly that reason the one where inferring the return leg felt safest and was most
+tempting. It was still wrong to do so without checking: the return leg (DOH→MAN) was never opened.
+Correcting it removes the archive's only `'direct'` value — there is currently no
+evidence-confirmed-both-ways direct observation anywhere in the archive.
+
+**Consequence for `bhx-atq-economy`'s `DealCard` badge:** the Birmingham–Amritsar correction has a
+real, visible effect, unlike the others (which have no matching Deal entry to change). With
+`fareDirectness` no longer stated, `getDealFareDirectnessLabel()` falls back to checking whether
+every source airline across the route's observations matches its verified operator — and the two
+older observations (KLM/IndiGo, Air France/Air India) still fail that check. **The badge reverts to
+showing nothing**, exactly as it did before this batch's observation was added. The underlying
+defect this batch set out to fix for that card — genuinely confirming Air India as the route's fare
+source — was not actually completed to the standard required, and the badge is honestly back to "not
+yet confirmed" rather than falsely claiming "Connecting."
+
+**Not affected by this correction:** the Atlas grade for Manchester–Amritsar and Manchester–Ahmedabad
+(their promotion to Strong depends only on a publishable fare observation existing, not its
+directness value — confirmed unchanged, both still `strong`); the total publishable/fare-tracked
+route count (41 archive entries, 13 of 32 routes tracked — unaffected, since `fareDirectness` is not
+part of the publishability gate); any route's own verification record in `data/routes.ts`; Book-By;
+Trip.com URLs. See Part 2 of the audit below for an independent review of whether the Amritsar/
+Ahmedabad promotions are otherwise sound.
 
 ## ✅ Manchester–Dubai's first publishable observation — closed 6 August 2026
 
@@ -381,19 +440,20 @@ historic observations already exist on this route (`obs-man-isb-economy-20260728
 - **Price:** £524 return, per person — top "Best"-ranked Google Flights result (cheapest overall
   on these dates was £484)
 - **Source:** Gulf Air, via Google Flights
-- **Directness:** `fareDirectness: 'connecting'` — the source states "1 stop"; the specific
-  connecting city was not captured (not shown in the collapsed results list, and this check did not
-  click through to find it, per the leaner process)
+- **Directness:** the outbound leg's own source text stated "1 stop"; the return leg was never
+  reviewed (results-list evidence only, no click-through). **Corrected in the 6 August 2026 audit
+  from `fareDirectness: 'connecting'` to `'unknown'`** — a stated outbound stop count does not
+  establish the return leg's routing, and this observation never confirmed it. See the
+  "Evidence-completeness audit" section above for the full account.
 - **Baggage:** `'not stated'` — not shown in the results list; this check did not open the bag-fees
   dialog to look for one
 - **Evidence:** `docs/project-control/fare-evidence/manchester-islamabad-2026-08-06.md`
 
 **Confirmed before recording:** `isObservationPublishable()` / `isPubliclyPublishable()` return
-`true`; `getFareRangeSummary('manchester-islamabad', 'Economy', ...)` resolves `observedDirectness`
-to `'connecting'`. **No `man-isb-economy` Deal entry exists in `data/deals.ts`** — only
-`man-isb-business`, which has no fare logged and is unaffected — so this observation currently adds
-dated fare-history evidence for the route without changing any `DealCard` badge anywhere. No change
-to Atlas grading, Book-By, or the route's own verification record.
+`true`. **No `man-isb-economy` Deal entry exists in `data/deals.ts`** — only `man-isb-business`,
+which has no fare logged and is unaffected — so this observation currently adds dated fare-history
+evidence for the route without changing any `DealCard` badge anywhere. No change to Atlas grading,
+Book-By, or the route's own verification record.
 
 ## Manchester–Doha: do not close its gap artificially
 

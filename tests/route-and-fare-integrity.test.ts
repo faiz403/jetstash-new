@@ -121,7 +121,24 @@ describe('Deal counts (TR-004) — a card with no tracked fare must not count as
     // — isObservationPublishable() doesn't gate on freshness relative to
     // FIXED_TODAY, only on date-completeness and route status, so this
     // fixed-date test genuinely does track it now, same as production.
-    expect(trackedDeals.map((d) => d.id)).toEqual(['man-lhe-economy', 'lhr-del-economy', 'bhx-atq-economy', 'man-dxb-economy', 'lhr-bom-economy']);
+    // The 7 man-*-economy entries after lhr-bom-economy joined the same day
+    // (Batch A's customer-visibility audit fix) - each backed by a real
+    // Batch A observation with nowhere to render before these Deal entries
+    // were added; see FARE_OBSERVATION_ARCHIVE.md's audit addendum.
+    expect(trackedDeals.map((d) => d.id)).toEqual([
+      'man-lhe-economy',
+      'lhr-del-economy',
+      'bhx-atq-economy',
+      'man-dxb-economy',
+      'lhr-bom-economy',
+      'man-isb-economy',
+      'man-del-economy',
+      'man-bom-economy',
+      'man-amd-economy',
+      'man-atq-economy',
+      'man-doh-economy',
+      'man-med-economy',
+    ]);
   });
 
   it('hasTrackedFare returns false for a deal whose airport-destination pair has no Route entry at all', () => {
@@ -426,8 +443,27 @@ describe('FARE-001 pilot — historic examples stay private; only fully dated, e
       // Batch 1's manual founder-action fare check
       // (obs-man-dxb-economy-20260806-8w-v1) is genuinely complete, so this
       // deal is correctly tracked now, alongside the other exclusions below
-      // whose routes also gained a complete observation earlier.
-      if (['lhr-bom-economy', 'man-lhe-economy', 'lhr-del-economy', 'bhx-atq-economy', 'man-dxb-economy'].includes(deal.id)) continue;
+      // whose routes also gained a complete observation earlier. The 7
+      // man-*-economy Batch A Deal entries (added the same day as the
+      // customer-visibility audit fix) are excluded for the same reason -
+      // each has a genuinely complete, dated observation behind it.
+      if (
+        [
+          'lhr-bom-economy',
+          'man-lhe-economy',
+          'lhr-del-economy',
+          'bhx-atq-economy',
+          'man-dxb-economy',
+          'man-isb-economy',
+          'man-del-economy',
+          'man-bom-economy',
+          'man-amd-economy',
+          'man-atq-economy',
+          'man-doh-economy',
+          'man-med-economy',
+        ].includes(deal.id)
+      )
+        continue;
       expect(hasTrackedFare(deal, FIXED_TODAY), deal.id).toBe(false);
     }
   });

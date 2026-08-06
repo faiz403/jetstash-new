@@ -2,6 +2,12 @@
 
 **Observation ID this evidence supports:** `obs-man-bom-economy-20260806-8w-v1`
 
+> **⚠ Correction, 6 August 2026 audit:** `fareDirectness` was originally recorded as `'connecting'`
+> on the strength of the outbound leg's "1 stop" label alone. Only the outbound was ever reviewed —
+> the return leg's routing was never confirmed. Corrected to **`fareDirectness: 'unknown'`**. The
+> observation itself (price, airline, dates) remains valid and publishable. See
+> `FARE_OBSERVATION_ARCHIVE.md`'s audit addendum for the full account.
+
 **Context:** Fare Coverage Expansion — Batch A, route 5 of 10. This route had zero prior
 observations — this is its first. Lean process: results-list evidence only, no click-through, no
 baggage-rule digging.

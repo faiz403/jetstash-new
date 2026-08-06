@@ -477,34 +477,167 @@ document's own numbers, which is real and needs stating plainly rather than left
 fare evidence 9→13. Every other category's prevalence (airline-verif 4, connecting-alt 5, Book-By 5,
 warning 5, baggage 6) is unchanged — this batch only added fare evidence, nothing else.
 
-**`bhx-atq-economy`'s `DealCard` badge fixed as a side effect.** Birmingham–Amritsar was one of the
-three deals the PR #74 directness-badge correction found showing no badge at all, because its two
-historic observations (KLM/IndiGo, Air France/Air India) didn't match the route's verified Air India
-operator. This batch's fresh observation is genuinely from Air India — confirmed live, the badge now
-reads "Connecting" instead of no badge at all.
+**Both of the two claims below in this original addendum were found wrong by the 6 August 2026
+evidence-completeness audit (see the new addendum after this one) and are struck through rather than
+silently deleted, so the correction is traceable:**
 
-**A pattern worth stating plainly, not burying:** of the 7 routes in this batch, only
-Birmingham–Amritsar had an existing `Deal` entry to actually change. Manchester–Delhi,
-Manchester–Mumbai, Manchester–Ahmedabad, Manchester–Amritsar and Manchester–Doha have **no
-Manchester-departure Economy `Deal` entry at all** in `data/deals.ts` — including Delhi and Mumbai,
-both verified-direct IndiGo routes with real customer demand. This batch adds genuine, dated
-fare-history evidence to each route's own archive record regardless, and (for Amritsar and
-Ahmedabad) a real Atlas grade change — but most of it does not yet surface as a price anywhere a
-customer would see it. Closing that is a `data/deals.ts` coverage gap, a separate task from fare
-collection, not something this phase was scoped to fix.
+- ~~`bhx-atq-economy`'s `DealCard` badge fixed as a side effect... the badge now reads "Connecting"
+  instead of no badge at all.~~ **Wrong.** The observation this claim rested on only reviewed the
+  outbound leg; corrected to `fareDirectness: 'unknown'`, and the badge reverted to no badge. See the
+  audit addendum.
+- ~~Manchester–Doha's fresh check found a real nonstop Qatar Airways result — the first observation
+  anywhere in the archive with an explicit `fareDirectness: 'direct'`.~~ **Wrong for the same
+  reason** — the return leg was never opened; corrected to `'unknown'`. There is currently no
+  confirmed-both-ways-direct observation anywhere in the archive.
 
-**A genuine first for the archive:** Manchester–Doha's fresh check found a real nonstop Qatar
-Airways result — the first observation anywhere in the archive with an explicit
-`fareDirectness: 'direct'` (every one before it has been `'connecting'`). Doha's grade is unaffected
-(still one category — fare — regardless of how many observations or which directness), and the
-route's own `isDirect: true` / Emirates-equivalent-for-Doha verified status was already established
-independently. See the evidence file's own note on a related edge case worth a second look if a
-`man-doh-economy` Deal entry is ever added (a route/cabin with mixed-directness observations, where
-only the stated ones drive the aggregated badge).
+**A pattern that was true then and remains true now:** of the 8 routes done under the leaner Batch A
+process (Islamabad through Birmingham–Amritsar), only Birmingham–Amritsar had an existing `Deal`
+entry — Delhi, Mumbai, Ahmedabad, Manchester-Amritsar, Doha and Madinah had **no matching Economy
+`Deal` entry at all**, so their real, dated fare evidence had nowhere to render. **This has since
+been fixed** — see the audit addendum's Part 3 for the full account of adding 7 new, evidence-backed
+Deal entries.
 
 No grade was manually raised or lowered in this addendum. Every number above is a live-computed
 consequence of real, reviewed evidence — the same standard applied to Manchester–Dubai's own
 promotion, and to the correction that followed it.
+
+---
+
+## Addendum (6 August 2026): Batch A evidence-completeness and customer-visibility audit
+
+A founder-requested final review of the Batch A branch, run before any PR was opened, covering three
+questions: was the round-trip evidence genuinely complete for every observation; do the two newly
+promoted Strong routes actually read as "JetStash knows this route well" to a visitor; and does the
+"13 of 32" fare-tracking count reflect what a customer can actually see.
+
+### Part 1 — Evidence completeness (full detail: `FARE_OBSERVATION_ARCHIVE.md`'s own audit section)
+
+**8 of the 10 Batch A observations had only ever reviewed the outbound leg**, despite `fareDirectness`
+originally being recorded as if the round trip had been confirmed. Corrected to `fareDirectness:
+'unknown'` on all 8 (Islamabad, Delhi, Mumbai, Ahmedabad, Amritsar, Doha, Madinah,
+Birmingham-Amritsar). Only Manchester–Dubai and Manchester–Lahore have genuine, confirmed
+round-trip evidence. This does not change any route's Atlas grade (grading only checks that a
+publishable fare observation exists, never its directness) or the 41-entry/13-of-32-route totals.
+
+### Part 2 — Content-depth review of the two newly promoted routes
+
+**Manchester–Amritsar and Manchester–Ahmedabad's exact qualifying categories:** `connectingAlternative`
++ fare — the minimum possible combination, two of six, nothing more. Both were this document's own
+former textbook examples of a route with exactly one category before Batch A.
+
+**Rendered page review (both routes), against the founder's checklist:**
+
+| | Amritsar | Ahmedabad |
+|---|---|---|
+| Route overview | ✅ Real, specific intro (names the actual hub pattern and comparable direct alternatives) | ✅ Same |
+| Airline guidance | ⚠️ Airlines named (3–4), no per-airline depth or comparison | ⚠️ Same |
+| Airport/transfer guidance | ✅ Genuine `connectingAlternative` block — hub airports, typical stops, typical journey time | ✅ Same |
+| Baggage guidance | ❌ None | ❌ None |
+| Warnings | — None exist (correctly not fabricated) | — Same |
+| Booking guidance | ✅ Real peak-period and booking-window copy (Baisakhi/Diwali) | ✅ Real peak-period copy (Navratri/Diwali) |
+| Visible fare intelligence | ✅ Now shown (Part 3 fix), with an honest "return leg not confirmed" caveat | ✅ Same |
+| Sources/review evidence visibly cited | ❌ No visible source citation for the connecting-route facts (connecting routes don't render a verification block the way direct routes do) | ❌ Same |
+
+**Verdict: these pages are not empty or fabricated — the connecting-route guidance and booking
+timing are genuine, specific, and useful.** But they clear "Strong" on the bare minimum two
+categories, one of which (fare) is now honestly weaker post-correction, and there is no visible
+per-airline depth, no baggage guidance, and no visible source citation for a visitor to check.
+**A careful visitor would likely read these pages as genuinely useful, but not as clearly earning
+"JetStash knows this route well"** over "useful route guidance available" — the grade currently
+reads more confident than the page does.
+
+**Per instruction, neither grade was manually overridden in either direction.** This confirms Route
+Intelligence Scoring v2 (flagged in `ROADMAP.md`/`DECISIONS.md`, 6 August 2026, after the original
+Dubai promotion) is no longer a theoretical future concern — it is now a live, reproducible gap: a
+route can reach the two-category bar entirely through `connectingAlternative` + a single, now
+`'unknown'`-directness fare, with zero baggage, warning, or airline-verification depth, and still
+show the platform's strongest confidence label.
+
+**Smallest general safeguard proposed (not implemented in this audit, per instruction not to weaken
+or hand-tune the truth standard to protect the batch claim):** require a visible content-completeness
+floor alongside the existing two-category count — for example, a route qualifies for Strong only if
+its two-or-more categories are not *exclusively* `connectingAlternative` + fare (the specific
+combination now shown to read thin), or only if at least one of its categories is baggage, warning,
+or airline-verification depth rather than the two "cheapest to obtain" categories alone. This is a
+proposal for a founder decision, consistent with the existing Route Intelligence Scoring v2 flag —
+not something this audit resolves unilaterally.
+
+**India country-level claim ("JetStash knows this country well," Manchester context):** correctly
+computed under the existing conservative rule (Strong only if every destination in the country is
+Strong) — all 4 of Manchester's India destinations (Delhi, Mumbai, Amritsar, Ahmedabad) are now
+individually Strong. But 2 of those 4 (Delhi, Mumbai) reached Strong through 3 genuinely broader
+categories each (`connectingAlternative` + baggage + fare), while the other 2 (Amritsar, Ahmedabad)
+reached it through the bare 2-category minimum just reviewed above. The country-level aggregation
+treats all four identically, so **the country-confidence claim is technically correctly aggregated
+but is inflated in practice** — it leans on two borderline routes reading as equally strong as two
+genuinely deep ones. This is the same Route Intelligence Scoring v2 gap, compounded at country level.
+Not fixed here, for the same reason: fixing it would mean changing the aggregation or threshold
+logic, which is exactly the manual-override / truth-standard-weakening this audit was told not to do
+to protect the batch.
+
+### Part 3 — Customer-visible fare coverage
+
+**Full table, all 13 routes currently counted in "13 of 32":**
+
+| Route | Publishable observation | Route page shows fare | `/deals` shows fare | Matching Economy Deal | Displayed directness correct | Customer can see it's tracked |
+|---|---|---|---|---|---|---|
+| Manchester–Lahore | ✅ | ✅ | ✅ | `man-lhe-economy` | ✅ Connecting (genuine full evidence) | ✅ |
+| Manchester–Islamabad | ✅ | ✅ | ✅ | `man-isb-economy` *(added this audit)* | ✅ No badge (fails closed, correct) | ✅ |
+| Heathrow–Delhi | ✅ | ✅ | ✅ | `lhr-del-economy` | ✅ No badge (fails closed, correct) | ✅ |
+| Birmingham–Amritsar | ✅ | ✅ | ✅ | `bhx-atq-economy` | ✅ No badge (corrected from an unsupported "Connecting") | ✅ |
+| Manchester–Dubai | ✅ | ✅ | ✅ | `man-dxb-economy` | ✅ Connecting (genuine full evidence) | ✅ |
+| Heathrow–Jeddah | ✅ | ❌ | ❌ | **None** — only Business and a bundled Umrah package exist | N/A | ❌ **Invisible** |
+| Heathrow–Mumbai | ✅ | ✅ | ✅ | `lhr-bom-economy` | ✅ (pre-existing, unaffected) | ✅ |
+| Manchester–Doha | ✅ | ✅ | ✅ | `man-doh-economy` *(added this audit)* | ✅ No badge (two mismatched sources, fails closed correctly) | ✅ |
+| Manchester–Delhi | ✅ | ✅ | ✅ | `man-del-economy` *(added this audit)* | ✅ No badge (fails closed, correct) | ✅ |
+| Manchester–Mumbai | ✅ | ✅ | ✅ | `man-bom-economy` *(added this audit)* | ✅ No badge (fails closed, correct) | ✅ |
+| Manchester–Amritsar | ✅ | ✅ | ✅ | `man-atq-economy` *(added this audit)* | ✅ Connecting (safe route-level fallback — route confirmed connecting, source matches verified operator) | ✅ |
+| Manchester–Ahmedabad | ✅ | ✅ | ✅ | `man-amd-economy` *(added this audit)* | ✅ Connecting (same safe fallback) | ✅ |
+| Manchester–Madinah | ✅ | ✅ | ✅ | `man-med-economy` *(added this audit)*, alongside the pre-existing bundled Umrah package (unaffected) | ✅ No badge (fails closed, correct) | ✅ |
+
+**Before this audit: 5 of 13 routes had no customer-visible fare card at all** (Islamabad, Delhi,
+Mumbai, Ahmedabad, Amritsar, Doha, Madinah — 7 routes, all Batch A) **plus a real, load-bearing
+on-page contradiction**: every one of those 7 routes' pages simultaneously rendered `FareHistoryPanel`
+(showing the real archived fare) and `NoFareFallback` ("We haven't logged a tracked fare for
+{route}... yet") in the same page, because the two components are driven independently — one by raw
+observations, the other purely by `Deal` presence. Confirmed live on `/routes/manchester-amritsar`
+before the fix.
+
+**Truth model implemented: Option A** — 7 new, evidence-backed `Deal` entries added (Islamabad,
+Delhi, Mumbai, Ahmedabad, Amritsar, Doha, Madinah), each verified safe before being added: with every
+Batch A observation's `fareDirectness` now `'unknown'` post-Part-1-correction,
+`getDealFareDirectnessLabel()` either fails closed to no badge, or falls back to the route's own
+status only where every contributing fare source genuinely matches a verified route operator and the
+route is not itself claiming direct service — confirmed for all 7 by a dry run against the real
+function before any entry was written, and reconfirmed live afterwards. None produces an unsupported
+"Direct flight" claim; no Deal was invented without a real observation behind it; every entry
+preserves its route's existing, unmodified Trip.com URL.
+
+**Remaining gap, not fixed in this audit (out of Batch A's scope):** Heathrow–Jeddah has a
+publishable Economy observation (`obs-lhr-jed-economy-20260728-8w-v1`, pre-dates Batch A entirely —
+part of the original "Second recorded batch") but no matching flight-category Economy `Deal` — only
+a Business deal and a bundled Umrah package exist for that airport/destination pair, and a bundled
+deal never shows a flight-only fare by design. **This route is customer-invisible in the current
+"13 of 32" count.** Flagged as a genuine follow-up; not fixed here because it predates and sits
+outside Batch A, and this review was scoped to Batch A's own claim.
+
+**Final counts:** 13 of 32 routes remain publishable (unaffected by any of this audit's corrections).
+**12 of 13 are now genuinely customer-visible** (up from 5 of 13 before this audit). **1 of 13
+(Heathrow–Jeddah) remains archive-only.**
+
+### Part 4 — Scope confirmation
+
+Confirmed clean: `data/routes.ts` (route verification facts), `data/booking-windows.ts` /
+`lib/booking-intelligence.ts` (Book-By), `data/route-warnings.ts` (no warning invented), `data/fare-observations.ts`'s
+`baggage` field (still `'not stated'` everywhere, never inferred), and `lib/booking-providers.ts`
+(Trip.com URLs) all show zero diff from this audit — verified directly via `git diff --stat`, not
+asserted. No secondary Turkey/UAE/Qatar route intelligence was promoted from connection evidence —
+hub mentions (Istanbul, Doha, Abu Dhabi, Dubai) stay itinerary-level detail on the originating route,
+never written into any other route's own facts.
+
+No grade was manually raised or lowered anywhere in this audit. Every correction is either a data
+fix (8 `fareDirectness` values, now honestly `'unknown'`) or an additive, verified-safe fix (7 new
+Deal entries) — nothing was hidden or hand-tuned to protect the "10/10" or "13 of 32" claims.
 
 ---
 
