@@ -99,8 +99,9 @@ export async function POST(req: NextRequest) {
   const listId = process.env.BREVO_LIST_ID;
 
   if (!apiKey || !listId) {
-    // No provider configured yet — fail clearly rather than pretending to succeed.
-    console.warn('Newsletter signup received but no email provider is configured:', email);
+    // No provider configured yet — fail clearly rather than pretending to
+    // succeed. Never log the submitted email itself.
+    console.warn('Newsletter signup received but no email provider is configured');
     return NextResponse.json(
       { error: 'Newsletter sign-up is not yet configured. Please try again later or contact us directly.' },
       { status: 503 }

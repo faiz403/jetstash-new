@@ -96,7 +96,9 @@ export async function POST(req: NextRequest) {
   const listId = process.env.BREVO_LIST_ID;
 
   if (!apiKey || !listId) {
-    console.warn('Route Watch signup received but no email provider is configured:', { email, airportSlug, destinationSlug });
+    // Never log the submitted email — slugs are safe (internal identifiers,
+    // not user data).
+    console.warn('Route Watch signup received but no email provider is configured', { airportSlug, destinationSlug });
     return NextResponse.json(
       { error: 'Route Watch is not yet configured. Please try again later or contact us directly.' },
       { status: 503 }
@@ -104,10 +106,21 @@ export async function POST(req: NextRequest) {
   }
 
   // Merge into any routes this contact already watches rather than
-  // overwriting. A lookup failure (new contact, transient Brevo error) is
-  // treated as "nothing to merge with".
-  const existing = await getBrevoContact(apiKey, email);
-  const existingRoutes = (existing?.attributes[BREVO_ATTRIBUTE_NAMES.WATCH_ROUTE] ?? '')
+  // overwriting. A confirmed "not found" result means a genuinely new
+  // contact, so it proceeds with an empty existing-routes list. An
+  // `uncertain` result (network failure, non-404 provider error, malformed
+  // response) is NOT safe to treat as "nothing to merge with" — that would
+  // silently discard a real contact's existing preferences if the lookup
+  // merely failed to load them. Fail closed instead: perform no
+  // create/update side effect and ask the visitor to try again.
+  const lookup = await getBrevoContact(apiKey, email);
+  if (lookup.status === 'uncertain') {
+    return NextResponse.json(
+      { error: 'Could not confirm your existing preferences right now. Please try again shortly.' },
+      { status: 503 }
+    );
+  }
+  const existingRoutes = (lookup.status === 'found' ? (lookup.attributes[BREVO_ATTRIBUTE_NAMES.WATCH_ROUTE] ?? '') : '')
     .split(',')
     .map((s) => s.trim())
     .filter(Boolean);

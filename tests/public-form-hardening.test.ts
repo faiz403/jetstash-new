@@ -62,7 +62,7 @@ describe('API route hardening', () => {
     mocks.getBrevoContact.mockReset();
     mocks.sendResendEmail.mockResolvedValue({ ok: true });
     mocks.upsertBrevoContact.mockResolvedValue({ ok: true });
-    mocks.getBrevoContact.mockResolvedValue(null);
+    mocks.getBrevoContact.mockResolvedValue({ status: 'not_found' });
     process.env.RESEND_API_KEY = 'test-resend-key';
     process.env.CONTACT_TO_EMAIL = 'operations@example.test';
     process.env.BREVO_API_KEY = 'test-brevo-key';
