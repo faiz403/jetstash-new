@@ -138,6 +138,86 @@ wider organic promotion.
         distributed/WAF-backed limiter — was explicitly out of scope for this PR (no paid
         infrastructure, no Vercel/DNS/environment change) and has not been built. Do not mark this
         item fully done until that follow-up lands.
+- [ ] **A11.** Accessibility corrections: Atlas SVG semantics, dark-surface text contrast,
+      route-page heading order, mouse-centric wording. **Partly closed 7 August 2026** — every
+      automated/keyboard/browser-accessibility-tree finding from the production audit is fixed and
+      regression-tested; real assistive-technology certification and field Core Web Vitals both
+      remain outstanding for reasons outside this repository's own authority to close.
+      - **1. Atlas SVG semantics — done.** The Route Atlas's interactive SVG (`components/founder/
+        atlas-feel-test.tsx`) had `role="img"` while containing real, keyboard-focusable
+        `role="button"` country/destination controls — an invalid nested-interactive ARIA structure
+        (WCAG 4.1.2) that left those controls' exposure to screen readers undefined/inconsistent
+        across assistive tech. Fixed by changing the SVG's own role to `role="group"` (a container
+        role that carries its own accessible name without hiding or overriding its children's roles
+        the way `role="img"` does) and shortening its label to `` `${airportName}'s route network` ``.
+        Confirmed via live production axe-core scan (nested-interactive violation gone), a live
+        keyboard walkthrough (Tab still reaches every country/destination circle with a visible
+        brass focus ring, Enter/Space still activates the same reveal a mouse hover triggers,
+        unchanged), and the browser accessibility tree (now reports `group "Manchester's route
+        network"` with every button's full accessible name intact, where it previously reported
+        `img "Manchester's real network..."` with those same buttons nested inside it). The map's
+        interaction model, hit-radius geometry and analytics are byte-for-byte unchanged — only the
+        SVG's outer ARIA semantics changed. The separate, already-accessible "Choose a country" /
+        "Choose a destination" button groups (a redundant, properly-exposed alternative to the map
+        itself) are untouched.
+      - **2. Dark-surface text contrast — done.** `text-ink-400` (~4.14:1) and `text-ink-500`
+        (~2.28:1) both fell short of WCAG AA (4.5:1) against the Atlas's dark surfaces (`bg-ink-950`
+        header/legend, `bg-ink-900/90` destination panel) — 13 affected nodes, all within
+        `atlas-feel-test.tsx`. Fixed by moving every dark-surface usage in that file to
+        `text-ink-300`, computed at ~7.6–7.9:1 against both backgrounds (comfortably above AA, at
+        AAA level) — the token this codebase had already established elsewhere as proven-readable on
+        these exact surfaces (see `homepage-opening-hero.tsx`'s own doc comment), not a new token and
+        not a global Tailwind config change. Unrelated `ink-400`/`ink-500` usage on light backgrounds
+        elsewhere (e.g. `CommercialPaths`' sand-background copy) was left untouched — this fix is
+        targeted to the actual affected dark-surface usages only, per the task's own instruction not
+        to blindly change global colour tokens. Confirmed via live axe-core (zero color-contrast
+        violations on the homepage, down from 13 flagged nodes) and a live visual check.
+      - **3. Route-page heading order — done.** `TravellerTipList` (`components/route/
+        traveller-tip-list.tsx`) rendered every tip title as `<h4>` directly under a parent `<h2>`
+        section heading at all three call sites (`routes/destinations/airports [slug]` pages),
+        skipping `<h3>`. Fixed by changing the shared list's heading level to `<h3>` — the correct
+        next level under each page's own `<h2>` (`"Traveller tips for this route"`, `"Traveller tips
+        for {dest.city}"`, `"Before you fly from {airport.city}"`), and consistent with the airport
+        page's sibling `practicalNotes` list, which already renders at `<h3>`. Confirmed via live
+        axe-core on `/routes/manchester-mumbai` (heading-order violation gone, down from 1).
+      - **4. Mouse-centric Atlas wording — done.** The Atlas's desktop instruction read "Hover a
+        country to explore its destinations," implying mouse-only interaction the map never actually
+        required (confirmed by the keyboard walkthrough above). Replaced with the input-neutral
+        "Select a country to explore its destinations," matching the mobile instruction's existing
+        input-neutral wording.
+      - **Tests.** New `tests/a11-atlas-corrections.test.ts` (24 assertions) proves: the Atlas root no
+        longer uses `role="img"`, carries `role="group"` with a concise label instead, and is not
+        itself `aria-hidden`; country/destination hit-circles keep `role="button"`, `tabIndex={0}`,
+        Enter/Space activation, visible focus-visible styling and their full accessible names; no
+        focusable element exists beneath any `aria-hidden` node in the file; every `text-ink-400`/
+        `text-ink-500` usage in the Atlas is gone, replaced with `text-ink-300`, while confirming
+        unrelated light-background usage elsewhere is untouched; the corrected `<h3>` heading level is
+        asserted directly and cross-checked against all three call sites' actual `<h2>` structure; the
+        input-neutral instruction text is asserted present and the old "Hover a country" wording is
+        asserted absent. `tests/homepage-opening-hero.test.ts`'s two assertions that hardcoded the old
+        `text-ink-400` attribution styling were updated to `text-ink-300` (wording/position assertions
+        unchanged). Full canonical suite (1434/1434), `tsc --noEmit`, lint and production build all
+        clean after this change.
+      - **Live verification (production, then local build).** axe-core re-run on all four target
+        pages after the fix: homepage 0 violations (was 2), `/routes/manchester-mumbai` 0 (was 1),
+        `/destinations/dubai` 0 (unchanged), `/contact` 0 (unchanged). Keyboard walkthrough of the
+        Atlas and the confirmed the same tab order, visible focus and Enter/Space activation as
+        before. Browser accessibility-tree spot-check confirmed the `role="group"` structure and
+        intact accessible names directly (not inferred from the automated scan alone).
+      - **What remains genuinely outstanding — do not mark A11 fully complete:**
+        - **Real assistive-technology certification.** Every accessibility check in this PR — the
+          automated axe-core scan, the keyboard walkthrough, and the accessibility-tree spot-check —
+          was performed without a real screen reader (no NVDA/JAWS/VoiceOver session). The
+          accessibility tree closely predicts how most screen readers will expose this structure, but
+          it is not a substitute for an actual assistive-technology pass, and none has been done.
+        - **Field Core Web Vitals remain unavailable**, unrelated to this PR's scope: both Google
+          Search Console and PageSpeed Insights report "No Data" for CrUX field data on
+          jetstash.co.uk, because there isn't yet enough real-user traffic for Chrome's dataset to
+          report on. Not fixable by testing harder — needs real traffic volume first. For the record,
+          the current homepage Lighthouse **mobile lab** result (Slow 4G, Moto G Power emulation, 6
+          August 2026): Performance 94, LCP 2.7s, CLS 0. A 2.7s synthetic LCP is a future observation
+          for a later, separately-scoped performance PR — not a launch blocker, and not evidence
+          gathered or acted on in this PR, which made no performance changes.
 
 ## F–G — Paid-advertising readiness
 
@@ -199,3 +279,9 @@ Real, but genuinely non-blocking for either organic or paid readiness. No urgenc
 - **7 August 2026** — new **A6** item added and partly closed: production-log PII redaction and
   the Brevo not-found/uncertain-lookup fail-closed fix are done; distributed/WAF-backed rate
   limiting remains a documented, unresolved infrastructure gap ahead of paid acquisition traffic.
+- **7 August 2026** — new **A11** item added and partly closed: Atlas SVG semantics
+  (`role="img"` → `role="group"`), dark-surface text contrast (`ink-400`/`ink-500` →
+  `ink-300`), route-page heading order (`h4` → `h3`) and mouse-centric Atlas wording are all
+  fixed and regression-tested; real assistive-technology (NVDA/JAWS/VoiceOver) certification and
+  field Core Web Vitals both remain outstanding, the latter blocked on real traffic volume rather
+  than anything this repository can fix directly.

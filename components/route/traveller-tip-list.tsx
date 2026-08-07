@@ -23,7 +23,14 @@ export function TravellerTipList({ tips }: { tips: TravellerTip[] }) {
               {style.icon}
               <span className="text-xs font-semibold uppercase tracking-wide">{style.label}</span>
             </div>
-            <h4 className="mt-2.5 font-display text-base text-ink-900">{tip.title}</h4>
+            {/* h3, not h4 — every call site (routes/destinations/airports
+                [slug] pages) renders this list directly under its own h2
+                section heading ("Traveller tips for…" / "Before you fly
+                from…"), with no intervening h3 wrapper, so h3 is the
+                correct next level. On the airports page this list also sits
+                alongside practicalNotes items, which are already h3 — this
+                keeps both sibling lists at the same heading level. */}
+            <h3 className="mt-2.5 font-display text-base text-ink-900">{tip.title}</h3>
             <p className="mt-1.5 text-sm leading-relaxed text-ink-500">{tip.body}</p>
           </div>
         );
