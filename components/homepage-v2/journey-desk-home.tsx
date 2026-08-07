@@ -7,7 +7,7 @@ import { AtlasFeelTest } from '@/components/founder/atlas-feel-test';
 import { buildAtlasAirports } from '@/lib/atlas-network-data';
 import { JourneyCheckForm, type JourneyCheckData } from '@/components/homepage-v2/journey-check-form';
 import { HomepageOpeningHero } from '@/components/homepage-v2/homepage-opening-hero';
-import { WhyJetStash, WhatWeCheck, RouteWatchInvite, ClosingBand } from '@/components/homepage-v2/homepage-sections';
+import { WhyJetStash, WhatWeCheck, RouteWatchInvite, ClosingBand, CommercialPaths } from '@/components/homepage-v2/homepage-sections';
 
 /**
  * The public homepage's flagship experience: the Route Atlas, for browsing
@@ -81,6 +81,17 @@ export function JourneyDeskHome() {
           </Link>
         </div>
       </section>
+
+      {/* CommercialPaths (August 2026, founder-reviewed homepage review): written
+          for this homepage but never actually wired into it — a real, on-brand
+          "we help you choose the right journey" explainer (Economy / Business
+          Class / Umrah) that was sitting unused in homepage-sections.tsx. Placed
+          here, not where it was originally scoped, to keep the existing sand/dark
+          section-background rhythm intact (WhyJetStash sand → your-journey dark →
+          CommercialPaths sand → WhatWeCheck dark → RouteWatchInvite sand →
+          ClosingBand dark) rather than stacking two sand or two dark sections
+          back to back. */}
+      <CommercialPaths />
 
       <WhatWeCheck />
       <RouteWatchInvite />
