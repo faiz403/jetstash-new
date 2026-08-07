@@ -500,7 +500,7 @@ export function AtlasFeelTest({
         <span className="text-[11px] font-semibold uppercase tracking-[0.28em] text-brass-200">The JetStash Route Atlas</span>
         {/* h2, not h1 — the homepage opening hero above now owns the page's h1. */}
         <h2 className="mt-2 max-w-4xl font-display text-xl text-sand-50">Explore where you can fly from your UK airport and see what JetStash has verified about each route.</h2>
-        <p className="mt-1 text-xs text-ink-400">
+        <p className="mt-1 text-xs text-ink-300">
           Choose a departure airport, then follow the light to explore its destinations.
         </p>
 
@@ -511,7 +511,7 @@ export function AtlasFeelTest({
             state change (selectAirport), never a navigation or remount, so
             adding a second airport later needs no change here at all. */}
         <div className="mt-4 flex flex-wrap items-center gap-2">
-          <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-400">Flying from</span>
+          <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-300">Flying from</span>
           <div className="flex flex-wrap gap-2" role="group" aria-label="Choose a departure airport">
             {airports.map((a) => {
               const isActive = a.airportSlug === selectedAirportSlug;
@@ -537,7 +537,11 @@ export function AtlasFeelTest({
 
       <div className="relative mx-auto max-w-[1600px] overflow-hidden px-6 py-10 sm:px-10">
         <p className="text-[13px] text-ink-300 sm:hidden">Select a country, then a destination, to see its route.</p>
-        <p className="hidden text-[13px] text-ink-300 sm:block">Hover a country to explore its destinations.</p>
+        {/* Input-neutral wording — the map is genuinely operable by mouse
+            hover, touch (mobile chip selector) and keyboard (Tab + Enter/
+            Space, see the hit-circles' own handlers below), so the
+            instruction must not name only one of those. */}
+        <p className="hidden text-[13px] text-ink-300 sm:block">Select a country to explore its destinations.</p>
 
         <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_22rem] lg:gap-10">
           <div className="min-w-0">
@@ -556,7 +560,19 @@ export function AtlasFeelTest({
             if (!hasScrolledMap && e.currentTarget.scrollLeft > 12) setHasScrolledMap(true);
           }}
         >
-        <svg viewBox="418 230 336 220" className="h-auto w-[800px] max-w-none sm:w-full" role="img" aria-label={`${airportName}'s real network across every current JetStash destination`}>
+        {/* role="group", not role="img" — this SVG's country/destination
+            circles below are real, individually keyboard-focusable
+            role="button" controls (tabIndex={0}, Enter/Space activation).
+            role="img" tells assistive tech to treat everything inside as
+            one opaque, non-interactive unit, which made those controls'
+            exposure to screen readers undefined/inconsistent — an invalid
+            nested-interactive ARIA pattern (WCAG 4.1.2). role="group" is
+            the correct container role for a set of related interactive
+            controls: it carries its own accessible name without hiding or
+            overriding its children's own roles/names the way role="img"
+            does. The map's keyboard/pointer interaction is unchanged —
+            only the outer semantics changed. */}
+        <svg viewBox="418 230 336 220" className="h-auto w-[800px] max-w-none sm:w-full" role="group" aria-label={`${airportName}'s route network`}>
           <defs>
             <radialGradient id="ft-origin-glow" cx="0.5" cy="0.5" r="0.5">
               <stop offset="0" stopColor="#F7F2E9" stopOpacity="0.75" />
@@ -867,7 +883,7 @@ export function AtlasFeelTest({
             exactly one of the three tiers). */}
         <div className="mt-4 flex flex-col gap-3">
           <div>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-500">Country coverage (this destination&apos;s whole country)</p>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-300">Country coverage (this destination&apos;s whole country)</p>
             <div className="mt-1.5 flex flex-wrap gap-4 text-xs text-ink-300">
               {(Object.keys(COUNTRY_INTELLIGENCE_COLOUR) as CountryIntelligenceLevel[]).map((k) => (
                 <span key={k} className="inline-flex items-center gap-1.5">
@@ -878,8 +894,8 @@ export function AtlasFeelTest({
             </div>
           </div>
           <div>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-500">Route intelligence (this specific destination)</p>
-            <div className="mt-1.5 flex flex-wrap gap-4 text-xs text-ink-400">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-300">Route intelligence (this specific destination)</p>
+            <div className="mt-1.5 flex flex-wrap gap-4 text-xs text-ink-300">
               {(Object.keys(ROUTE_INTELLIGENCE_COLOUR) as RouteIntelligenceLevel[]).map((k) => (
                 <span key={k} className="inline-flex items-center gap-1.5">
                   <span className="inline-block h-2 w-2 rounded-full" style={{ backgroundColor: ROUTE_INTELLIGENCE_COLOUR[k].fill }} aria-hidden="true" />
@@ -905,7 +921,7 @@ export function AtlasFeelTest({
             surrounding copy, so it reads as a footnote rather than
             competing with it. Wording and attribution target preserved
             exactly as before; only its position and size changed. */}
-        <p className="mt-4 border-t border-white/5 pt-3 text-[11px] text-ink-400">
+        <p className="mt-4 border-t border-white/5 pt-3 text-[11px] text-ink-300">
           Geography: CC BY 4.0 (MapSVG, via VictorCazanave/svg-maps).
         </p>
           </div>
@@ -952,10 +968,10 @@ export function AtlasFeelTest({
               {/* Truth 1 — route intelligence: how much has JetStash itself
                   independently researched about this route. */}
               <div className="mt-4 border-l-2 pl-3.5" style={{ borderColor: ROUTE_INTELLIGENCE_COLOUR[activeDest.intelligenceLevel].fill }}>
-                <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-500">Route intelligence</p>
+                <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-300">Route intelligence</p>
                 <p className="mt-1.5 text-[15px] leading-snug text-ink-100">{activeDest.verdict}</p>
-                {activeDest.detail && <p className="mt-1.5 text-xs leading-relaxed text-ink-400">{activeDest.detail}</p>}
-                <p className="mt-2 text-xs text-ink-500">{activeDest.flightTime}</p>
+                {activeDest.detail && <p className="mt-1.5 text-xs leading-relaxed text-ink-300">{activeDest.detail}</p>}
+                <p className="mt-2 text-xs text-ink-300">{activeDest.flightTime}</p>
               </div>
 
               {/* Active service notice — additive, only rendered when real
@@ -968,7 +984,7 @@ export function AtlasFeelTest({
                 <div className="mt-4 rounded-sm border px-3.5 py-3" style={{ borderColor: `${SERVICE_NOTICE_ACCENT}55`, backgroundColor: `${SERVICE_NOTICE_ACCENT}14` }}>
                   <p className="text-[10px] font-semibold uppercase tracking-[0.18em]" style={{ color: SERVICE_NOTICE_ACCENT }}>Active service notice</p>
                   <p className="mt-1.5 text-sm leading-snug text-ink-100">{activeDest.serviceNotice.label}</p>
-                  <p className="mt-1.5 text-xs leading-relaxed text-ink-400">{activeDest.serviceNotice.detail}</p>
+                  <p className="mt-1.5 text-xs leading-relaxed text-ink-300">{activeDest.serviceNotice.detail}</p>
                 </div>
               )}
 
@@ -979,8 +995,8 @@ export function AtlasFeelTest({
                   says enough (see the DestinationPoint comment for why). */}
               {activeDest.networkNote && (
                 <div className="mt-4 border-l-2 border-brass-500/50 pl-3.5">
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-500">Network evidence</p>
-                  <p className="mt-1.5 text-[11px] leading-relaxed text-ink-500">{activeDest.networkNote}</p>
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-300">Network evidence</p>
+                  <p className="mt-1.5 text-[11px] leading-relaxed text-ink-300">{activeDest.networkNote}</p>
                 </div>
               )}
 

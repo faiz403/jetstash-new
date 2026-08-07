@@ -123,7 +123,11 @@ describe('mobile visual-polish pass: trust line, map attribution, swipe cue', ()
   });
 
   it('the Atlas introduction paragraph no longer contains the technical map attribution', () => {
-    const introMatch = atlasSrc.match(/<p className="mt-1 text-xs text-ink-400">([\s\S]*?)<\/p>/);
+    // text-ink-300, not the original text-ink-400 — moved for WCAG AA
+    // dark-surface contrast as part of the A11 accessibility corrections
+    // (docs/project-control/LAUNCH_CHECKLIST.md, A11); wording/position
+    // asserted here are otherwise unrelated to and unaffected by that fix.
+    const introMatch = atlasSrc.match(/<p className="mt-1 text-xs text-ink-300">([\s\S]*?)<\/p>/);
     expect(introMatch).not.toBeNull();
     expect(introMatch![1]).not.toContain('CC BY 4.0');
     expect(introMatch![1]).not.toContain('VictorCazanave');
@@ -147,8 +151,9 @@ describe('mobile visual-polish pass: trust line, map attribution, swipe cue', ()
     const attributionIndex = atlasSrc.indexOf(ATTRIBUTION);
     expect(legendIndex).toBeGreaterThan(-1);
     expect(attributionIndex).toBeGreaterThan(legendIndex);
-    // Smaller than the site's usual text-xs secondary-copy size.
-    expect(atlasSrc).toMatch(/text-\[11px\] text-ink-400">\s*Geography: CC BY 4\.0/);
+    // Smaller than the site's usual text-xs secondary-copy size. ink-300,
+    // not the original ink-400 — see the A11 contrast-fix note above.
+    expect(atlasSrc).toMatch(/text-\[11px\] text-ink-300">\s*Geography: CC BY 4\.0/);
   });
 
   it('shows a mobile-only "swipe to explore" cue near the map', () => {
