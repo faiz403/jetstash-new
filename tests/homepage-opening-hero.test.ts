@@ -43,10 +43,30 @@ describe('homepage opening hero uses the approved copy', () => {
     expect(heroSrc.match(/Explore the Route Atlas/g)?.length).toBe(1);
   });
 
-  it('states the three proof points without long paragraphs', () => {
-    expect(heroSrc).toContain('Route first');
-    expect(heroSrc).toContain('Travel ready');
-    expect(heroSrc).toContain('Price with context');
+  // First-screen restructuring (August 2026, founder-reviewed homepage
+  // review): the three proof-point chips ('Route first' / 'Travel ready' /
+  // 'Price with context') were removed — a near-duplicate, differently-worded
+  // restatement of WhyJetStash's own three DIFFERENCE_POINTS (which renders
+  // immediately after the Atlas), and part of why this hero consumed nearly
+  // a full mobile viewport before the Atlas could appear. Replaced with a
+  // single live-computed stat via PageHero's own `stats` prop instead — see
+  // the two tests below.
+  it('no longer states the three retired proof-point chips (superseded by WhyJetStash\'s own DIFFERENCE_POINTS section, which is unchanged)', () => {
+    expect(heroSrc).not.toContain('Travel ready');
+    expect(heroSrc).not.toContain('Price with context');
+    expect(heroSrc).not.toMatch(/role="list" aria-label="Why JetStash is different"/);
+  });
+
+  it('no longer has the closing "When the journey is clear..." line', () => {
+    expect(heroSrc).not.toContain('When the journey is clear, JetStash points you to a booking partner.');
+  });
+
+  it('adds a single live-computed credibility stat via PageHero\'s own stats prop, never a hardcoded figure', () => {
+    expect(heroSrc).toMatch(/stats=\{\[\{ value: `\$\{routesWithTrackedFare\} of \$\{routes\.length\}`/);
+    expect(heroSrc).toContain("import { routes } from '@/data/routes'");
+    expect(heroSrc).toContain("import { getPublishableObservationsByRoute } from '@/data/fare-observations'");
+    // Never a hand-typed number standing in for the live count.
+    expect(heroSrc).not.toMatch(/value: ['"]\d+ of \d+['"]/);
   });
 
   it('reuses the shared PageHero and an existing approved image, not a new one', () => {
@@ -164,6 +184,30 @@ describe('mobile visual-polish pass: trust line, map attribution, swipe cue', ()
   it('no new package.json dependency was introduced for the cue', () => {
     const pkg = readFileSync(join(process.cwd(), 'package.json'), 'utf8');
     expect(pkg).not.toMatch(/react-swipeable|hammerjs|use-gesture/);
+  });
+});
+
+describe('CommercialPaths is wired into the live homepage (August 2026, founder-reviewed homepage review)', () => {
+  const sectionsSrc = readFileSync(join(process.cwd(), 'components/homepage-v2/homepage-sections.tsx'), 'utf8');
+
+  it('is imported and rendered in journey-desk-home.tsx, not left as dead code', () => {
+    expect(homeSrc).toContain('CommercialPaths');
+    expect(homeSrc).toMatch(/<CommercialPaths\s*\/>/);
+  });
+
+  it('renders after the "your-journey" JourneyCheckForm section and before WhatWeCheck, keeping the sand/dark section-background rhythm intact', () => {
+    const yourJourneyIndex = homeSrc.indexOf('id="your-journey"');
+    const commercialPathsIndex = homeSrc.indexOf('<CommercialPaths');
+    const whatWeCheckIndex = homeSrc.indexOf('<WhatWeCheck');
+    expect(yourJourneyIndex).toBeGreaterThan(-1);
+    expect(commercialPathsIndex).toBeGreaterThan(yourJourneyIndex);
+    expect(whatWeCheckIndex).toBeGreaterThan(commercialPathsIndex);
+  });
+
+  it('the component itself is untouched — no new copy was written, the existing Economy/Business/Umrah content is reused verbatim', () => {
+    expect(sectionsSrc).toContain('The same checked journey, three ways to fly it');
+    expect(sectionsSrc).toContain('A planning path, not a deal feed');
+    expect(sectionsSrc).toContain('a person comes back with real pricing');
   });
 });
 
