@@ -79,6 +79,65 @@ wider organic promotion.
       homepage's). Added `title: 'Page Not Found'`, resolving through the layout's `%s | JetStash`
       template to "Page Not Found | JetStash". No layout, copy or behaviour change; still a genuine
       HTTP 404. Verified live in dev and covered by `tests/not-found-page-title.test.ts`.
+- [ ] **A6.** Form/Brevo hardening: production PII logging, provider-failure handling, rate-limit
+      architecture. **Partly closed 7 August 2026** — objectives 1–3 and 5 (below) are genuinely
+      done; objective 4 is honest documentation of an existing limitation, not a fix, and remains
+      open pending infrastructure the repository cannot provide on its own authority.
+      - **1. Production logging/PII — done.** Every `console.error`/`console.warn` call reachable
+        from a public form/API path (`lib/email.ts`'s `upsertBrevoContact`, `getBrevoContact`,
+        `sendResendEmail`; the misconfigured-provider warnings in `app/api/contact`,
+        `app/api/quote-request`, `app/api/subscribe`, `app/api/route-watch`) previously logged a raw
+        Brevo/Resend response body, a raw caught `Error` object, or the submitted `name`/`email`
+        directly — all of which can contain or echo back PII. Every one of these now logs only a
+        fixed message, an internal operation name (`op`), and where relevant an HTTP status code —
+        never a response body, a caught error's message, or a submitted field. `tripType`/`region`
+        (internal classification values, not user data) and `airportSlug`/`destinationSlug`
+        (internal route identifiers) are still logged; `name`, `email`, phone, message body and
+        journey free-text never are. Regression-tested in `tests/email-lib-hardening.test.ts`.
+      - **2 & 3. Brevo not-found vs. provider failure, and Route Watch preference safety — done.**
+        `getBrevoContact()` previously returned `null` for both a confirmed HTTP 404 ("contact
+        genuinely doesn't exist") and every other failure mode (auth failure, rate limit, malformed
+        response, network error) — indistinguishable to its caller. It now returns a 3-state
+        `BrevoContactLookupResult` (`found` / `not_found` / `uncertain`); only a literal HTTP 404
+        resolves to `not_found`. `app/api/route-watch/route.ts` now branches on this explicitly: an
+        `uncertain` lookup returns HTTP 503 immediately and calls `upsertBrevoContact` in neither
+        that path nor before it — no create/update side effect and no discarding of a real
+        contact's existing `WATCH_ROUTE` preferences. `found` merges the new route into the
+        contact's existing preferences exactly as before (still capped at `MAX_WATCHED_ROUTES = 3`,
+        unchanged); `not_found` proceeds to create a new contact exactly as before. Regression-tested
+        in `tests/route-watch-brevo-hardening.test.ts`.
+      - **5. Tests — done.** New `tests/email-lib-hardening.test.ts` (unit-level, real
+        implementation against a stubbed `fetch`) and `tests/route-watch-brevo-hardening.test.ts`
+        (route-level, mocked `lib/email`) cover: not_found vs. uncertain for every relevant fetch
+        outcome (404, non-404 statuses, malformed/wrong-shaped body, thrown network error); no
+        console call anywhere in this path ever contains a submitted email; an uncertain lookup
+        causes zero `upsertBrevoContact` calls and returns 503; a confirmed existing contact's
+        `WATCH_ROUTE` value is genuinely merged, not discarded, including the 3-route cap; a
+        confirmed not-found still creates a contact as before; rate-limit rejection still causes no
+        provider call at all (extending the existing coverage in
+        `tests/public-form-hardening.test.ts`, whose `getBrevoContact` mock was updated to the new
+        3-state contract). Full canonical suite green after this change — see change log entry.
+      - **4. Rate-limit architecture — investigated, not changed; remains a genuine infrastructure
+        limitation.** `lib/form-security.ts`'s `checkRateLimit()` is an in-memory, process-local
+        fixed-window counter (`Map<string, {count, resetAt}>`, capped at 5,000 buckets with
+        oldest-first eviction) — it does not share state across serverless instances or survive a
+        cold start, and was already honestly documented as such in the module's own doc comment
+        before this PR. Confirmed all four public write endpoints (`contact`, `quote-request`,
+        `subscribe`, `route-watch`) already call `checkRateLimit()` as the first statement in their
+        handler, before any provider call — a rejected request already causes zero Brevo/Resend
+        side effect (now regression-tested, see objective 5). No distributed store, no paid
+        infrastructure and no Vercel/DNS/environment change was introduced, per this task's explicit
+        scope. **What remains required before paid acquisition traffic:** a distributed or
+        WAF-backed rate limit (e.g. Vercel WAF / Upstash Redis-backed limiter / Cloudflare rule) —
+        the current limiter only protects a single serverless instance's in-memory window, so a
+        request pattern spread across instances or surviving a cold start is not actually
+        rate-limited today. This is a pre-existing, already-documented limitation, not a regression
+        introduced or newly discovered by this PR.
+      - **Why this is "partly closed," not "closed":** every acceptance criterion this PR could
+        genuinely satisfy in code is met, but objective 4's own stated closing condition — a real
+        distributed/WAF-backed limiter — was explicitly out of scope for this PR (no paid
+        infrastructure, no Vercel/DNS/environment change) and has not been built. Do not mark this
+        item fully done until that follow-up lands.
 
 ## F–G — Paid-advertising readiness
 
@@ -137,3 +196,6 @@ Real, but genuinely non-blocking for either organic or paid readiness. No urgenc
   actually landed 31 July–5 August via `db459c9`/`8bb6883`, but this checklist was never updated to
   reflect it). F1 stays open — only the real-dashboard-data confirmation remains, which needs the
   founder's own Vercel access.
+- **7 August 2026** — new **A6** item added and partly closed: production-log PII redaction and
+  the Brevo not-found/uncertain-lookup fail-closed fix are done; distributed/WAF-backed rate
+  limiting remains a documented, unresolved infrastructure gap ahead of paid acquisition traffic.

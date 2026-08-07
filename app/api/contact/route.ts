@@ -50,7 +50,9 @@ export async function POST(req: NextRequest) {
 
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) {
-    console.warn('Contact form submission received but no email provider is configured:', { name, email });
+    // Never log the submitted name or email — this only records that the
+    // route is unconfigured, not who submitted it.
+    console.warn('Contact form submission received but no email provider is configured');
     return NextResponse.json(
       { error: `The contact form is not yet fully configured. Please email ${siteConfig.contactEmail} directly.` },
       { status: 503 }

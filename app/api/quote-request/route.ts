@@ -96,7 +96,9 @@ export async function POST(req: NextRequest) {
 
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) {
-    console.warn('Quote request received but no email provider is configured:', { name, email, tripType, region });
+    // Never log the submitted name or email — tripType/region are internal
+    // classification values, not user data, so they're safe to keep.
+    console.warn('Quote request received but no email provider is configured', { tripType, region });
     return NextResponse.json(
       { error: `Quote requests are not yet fully configured. Please email ${siteConfig.contactEmail} directly.` },
       { status: 503 }
