@@ -5,8 +5,12 @@ import { DealCard } from '@/components/ui/deal-card';
 import { deals, DealCategory, hasTrackedFare } from '@/data/deals';
 import { cn } from '@/lib/utils';
 
+// A9 reposition (August 2026): 'All deals' -> 'All fares' — the one
+// remaining "deal" word visible on this page itself. Every other label
+// here already names a category, not a claim about the fare being a good
+// one; 'All fares' reads the same way.
 const filters: { label: string; value: DealCategory | 'all' }[] = [
-  { label: 'All deals', value: 'all' },
+  { label: 'All fares', value: 'all' },
   { label: 'Flights', value: 'flight' },
   { label: 'Packages', value: 'package' },
   { label: 'Business class', value: 'business' },

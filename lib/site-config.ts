@@ -34,7 +34,13 @@ export const mainNav = [
   { label: 'UK Airports', href: '/airports' },
   { label: 'Travel Ready', href: '/travel-ready-check' },
   { label: 'Guides', href: '/guides' },
-  { label: 'Deals', href: '/deals' },
+  // A9 reposition (August 2026): was 'Deals', which implies JetStash has
+  // proven a price is unusually good against historical data — it hasn't.
+  // /deals itself already carries this exact language (its page title is
+  // "Tracked Fares from UK Airports", its H1-equivalent hero title is
+  // "Fares we're tracking") — the nav label was the one place still saying
+  // otherwise. URL, route and every analytics event name are unchanged.
+  { label: 'Tracked Fares', href: '/deals' },
 ];
 
 export const footerNav = {
@@ -53,7 +59,9 @@ export const footerNav = {
     { label: 'Business Class', href: '/business-class' },
     { label: 'Family Holidays', href: '/family-holidays' },
     { label: 'Request a Quote', href: '/quote-request' },
-    { label: 'All Deals', href: '/deals' },
+    // A9 reposition (August 2026): matches the mainNav label above — see its
+    // comment for why.
+    { label: 'Tracked Fares', href: '/deals' },
   ],
   company: [
     { label: 'About JetStash', href: '/about' },

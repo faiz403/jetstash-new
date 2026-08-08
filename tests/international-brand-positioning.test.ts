@@ -24,7 +24,9 @@ describe('International brand positioning', () => {
       'UK Airports',
       'Travel Ready',
       'Guides',
-      'Deals',
+      // A9 reposition (August 2026): 'Deals' -> 'Tracked Fares' — see
+      // lib/site-config.ts's own comment on this entry.
+      'Tracked Fares',
     ]);
     expect(footerNav.specialist.map((item) => item.label)).toEqual(
       expect.arrayContaining(['Pakistan Hub', 'India Hub', 'Gulf Hub', 'Umrah & Saudi', 'Business Class'])
