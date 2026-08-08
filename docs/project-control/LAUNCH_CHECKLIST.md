@@ -74,6 +74,8 @@ wider organic promotion.
       review. **Do not use `npm audit fix --force`.** JetStash currently has no user-uploaded
       images, remote user-controlled image URLs, or user-controlled CSS input. Monitor upstream
       releases and reassess if untrusted image or CSS input is introduced.
+      **Superseded by A3 (below) as of 8 August 2026** — kept here as history; see A3 for the
+      current advisory count, re-verified production relevance, and safe updates applied since.
 - [x] **E1.** ~~Fix the 404 page's missing title~~ **Done 29 July 2026** — `app/not-found.tsx` had
       no `metadata` export, so the tab fell back to the root layout's default title (the
       homepage's). Added `title: 'Page Not Found'`, resolving through the layout's `%s | JetStash`
@@ -218,6 +220,81 @@ wider organic promotion.
           August 2026): Performance 94, LCP 2.7s, CLS 0. A 2.7s synthetic LCP is a future observation
           for a later, separately-scoped performance PR — not a launch blocker, and not evidence
           gathered or acted on in this PR, which made no performance changes.
+- [ ] **A3.** Dependency-security review (governance re-audit; supersedes D1 below as the current
+      source of truth — D1's own findings from 29 July 2026 are kept as history, not restated here).
+      **Partly closed 8 August 2026** — every advisory this repository can safely resolve without a
+      major upgrade is resolved; the remaining 3 are documented with a defensible, re-verified
+      mitigation and acceptance decision, not dismissed.
+      - **Re-audited from scratch, not from the old report.** `npm audit --omit=dev` (production
+        tree) and `npm audit` (full tree, 490 packages: 24 prod, 432 dev, 91 optional) both re-run
+        against the current lockfile. Before this pass: 4 production-tree findings (`nanoid`, `next`,
+        `postcss`, `sharp`, all high) and 6 full-tree findings (adding dev-only `brace-expansion` and
+        `js-yaml`, both high) — one genuinely new production advisory (`nanoid`
+        GHSA-2v37-7h3g-55p8) had appeared since D1's 29 July review, and one dev-only advisory
+        (`brace-expansion` GHSA-rgw5-rvv9-x895) had replaced the one D1 investigated and accepted.
+      - **Safe updates applied** (`npm audit fix`, no `--force`; previewed via `--dry-run` first;
+        `package-lock.json` only, zero `package.json` changes): `nanoid` 3.3.16 → 3.3.18 (nested
+        under both `next`'s bundled `postcss@8.4.31` and the top-level `postcss@8.5.25` — deduped to
+        one shared install, both consumers resolved); `js-yaml` 4.3.0 → 4.3.1 (nested under
+        `eslint@8.57.1`, dev-only); `brace-expansion` 1.1.17 → 1.1.18 (top-level, via `eslint`'s
+        `minimatch`, dev-only — a patched 1.x release now exists, unlike at D1's review) and 5.0.8 →
+        5.0.9 (nested under `@typescript-eslint/typescript-estree`'s `minimatch`, dev-only). All 4
+        genuinely resolved — full audit dropped from 6 findings to 3, all dev-only advisories now
+        clear.
+      - **Remaining 3 (all high, all production-tree, all require `next@16.3.0` — a `isSemVerMajor`
+        upgrade, correctly not performed here):**
+        - `next` itself (flagged only because it depends on the two below).
+        - `postcss` <=8.5.22, nested at `node_modules/next/node_modules/postcss@8.4.31` — Next's own
+          bundled build-time CSS processor, a **separate install from the top-level devDependency
+          `postcss@8.5.25`** (already patched, unaffected by these CVEs). Four CVEs: XSS via
+          unescaped `</style>` in stringify output, and three arbitrary-file-read/path-traversal
+          issues via attacker-controlled `sourceMappingURL` in CSS comments.
+        - `sharp` <0.35.0 — Next's built-in image-optimization library (`next/image`'s server-side
+          resize/reformat path), inherited libvips CVEs (CVE-2026-33327/33328/35590/35591).
+      - **Production relevance, re-verified against the current code (not assumed from the prior
+        review):** `next.config.js` was read directly — no `images.remotePatterns` or
+        `images.domains` is configured (`// No remote image hosts: all destination imagery is
+        rendered locally by <DestinationMark />`), so Next's Image Optimization API cannot fetch or
+        process an attacker-supplied remote URL through the vulnerable `sharp`; `next/image` usage
+        was checked across all 9 call sites (`app/airports/page.tsx`, `app/guides/page.tsx`,
+        `components/homepage-v2/journey-brief-hero.tsx`, `pull-brief.tsx`,
+        `components/routes/routes-catalogue.tsx`, `components/sections/route-map-hero.tsx`,
+        `components/ui/destination-visual.tsx`, `hero-backdrop.tsx`, `hub-card.tsx`) — every one
+        renders a static, repo-committed file under `public/images/`, never a remote or
+        user-controlled source. The nested `postcss` only runs at build time compiling the site's
+        own `globals.css`/Tailwind output on Vercel's build infrastructure from the repository's own
+        source — there is no runtime endpoint, form field, or API route anywhere in this codebase
+        (`app/api/contact`, `quote-request`, `subscribe`, `route-watch`, `cron/fare-check-reminder`)
+        that accepts or renders freeform CSS or image bytes from an untrusted user. **Both remaining
+        vulnerable code paths are present in the production dependency tree, but neither is reachable
+        by an untrusted user given the current, re-verified absence of any user-controlled CSS or
+        remote-image input.**
+      - **Risk decision: temporarily accepted, not dismissed.** Explicitly not resolved because doing
+        so requires `next@16.3.0`, a semver-major upgrade — out of scope for a dependency-governance
+        PR per this task's own instruction not to combine major upgrades with routine remediation.
+        Reassess immediately if either changes: (a) `images.remotePatterns`/`domains` is ever added,
+        or (b) any user-controlled CSS or rich-text input path is introduced.
+      - **Deferred major upgrade — Next.js 15.5.21 → 16.3.0.** Not performed in this PR. Requires its
+        own dedicated branch and explicit decision, not a routine dependency PR, because: React 18 →
+        19 compatibility across every component, App Router/Image Optimization/ISR-revalidate
+        behavioural changes between majors, `next.config.js` option renames/removals, and
+        `eslint-config-next` must move in lockstep (currently pinned to `15.5.21` exactly). **Areas
+        requiring regression testing:** the Route Atlas's client-side interaction model
+        (`components/founder/atlas-feel-test.tsx`), every ISR/`revalidate = 21600` page, all
+        `next/image` call sites (static-only today, but the optimization pipeline itself changes
+        version), the CSP report-only headers in `next.config.js`, and the full Vitest suite +
+        production build against the new major before any merge. **Recommended branch name:**
+        `chore/next-16-major-upgrade`. **Acceptance criteria:** zero new console/hydration errors on
+        every route class (homepage, route/destination/airport `[slug]` pages, forms), full canonical
+        test suite green, production build clean, and a manual pass confirming the Atlas and every
+        public form still function identically — only then re-run `npm audit fix --force` (or the
+        now-current major) to actually close the postcss/sharp advisories.
+      - **Why this is "partly closed," not "closed":** every advisory this repository can safely
+        resolve without a major upgrade has been resolved (0 dev-only findings remain). The 3
+        remaining production-tree advisories are not silently accepted — each has a defensible,
+        re-verified mitigation (no reachable input path) and an explicit deferral decision with named
+        next steps. Do not mark this item fully closed until the Next.js major upgrade lands and
+        `postcss`/`sharp` are genuinely patched, not just judged low-risk.
 
 ## F–G — Paid-advertising readiness
 
@@ -285,3 +362,11 @@ Real, but genuinely non-blocking for either organic or paid readiness. No urgenc
   fixed and regression-tested; real assistive-technology (NVDA/JAWS/VoiceOver) certification and
   field Core Web Vitals both remain outstanding, the latter blocked on real traffic volume rather
   than anything this repository can fix directly.
+- **8 August 2026** — new **A3** item added, superseding D1: dependency-security re-audited from
+  scratch (not the old report). `nanoid`, `js-yaml` and both `brace-expansion` instances safely
+  patched via `npm audit fix` (no `--force`, lockfile-only). Full audit dropped 6 findings → 3, all
+  dev-only advisories now clear. Remaining 3 (`next`/`postcss`-nested/`sharp`) all require
+  `next@16.3.0` — re-verified against current code (no `images.remotePatterns` configured, no
+  user-controlled CSS input path anywhere) and temporarily accepted with a documented, defensible
+  mitigation, not dismissed. Major upgrade deferred to its own dedicated branch with named
+  acceptance criteria — not performed in this PR.
