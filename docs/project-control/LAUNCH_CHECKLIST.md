@@ -319,6 +319,64 @@ wider organic promotion.
       .test.ts`, `tests/travel-ready-discoverability.test.ts`). Full canonical suite (1445/1445),
       `tsc --noEmit`, lint and production build all clean; live-verified in dev (nav, footer and the
       `/deals` filter pill all render correctly, no console errors).
+- [x] **A12.** ~~Public trust corrections: broken founder CTA, missing affiliate labels, credibility
+      wording~~ **Done 8 August 2026.** Three genuine trust cracks fixed in one focused PR, following
+      a full audit rather than a guess.
+      - **1. Broken public homepage founder CTA — fixed.** The homepage's Economy card
+        (`CommercialPaths`, inside `components/homepage-v2/homepage-sections.tsx`, rendered live via
+        `journey-desk-home.tsx` → `app/page.tsx`) linked to `/founder/journey-brief/manchester-mumbai`
+        — a founder-only surface (see its own doc comment in
+        `components/journey-brief/journey-brief-manchester-mumbai.tsx`) that a public visitor could
+        never actually reach. Root cause: the Journey Brief prototype was promoted onto the public
+        homepage's Economy card without swapping its link for a public destination. Fixed by linking
+        to the real public route guide for the same featured journey, `/routes/manchester-mumbai` —
+        already the homepage's own flagship thread and a genuine, statically-generated public page
+        (confirmed present in `data/routes.ts`, which `generateStaticParams` reads directly). Button
+        label changed from "Start with the Journey Brief" to "See the Manchester–Mumbai route guide"
+        so the wording matches where it actually goes. A second, pre-existing `/founder` reference in
+        `components/homepage-v2/journey-brief-hero.tsx` was found during the audit and left
+        untouched — confirmed to have zero importers anywhere in `app/` or `components/`, i.e.
+        dead/retired code unreachable from any live route (the same class as the already-retired
+        `pull-brief-hero.tsx`), not a live public link.
+      - **2. Missing affiliate disclosure — fixed.** Audited every customer-facing Trip.com hand-off.
+        The route-page hero CTA and Book-By Countdown CTA already showed "Partner link, opens
+        Trip.com in a new tab." Three did not: `DealCard`, `NoFareFallback`, and the Travel Ready
+        Check booking CTA (`components/travel-ready/travel-ready-check.tsx`) — all three now show
+        the same wording. Every route-specific Trip.com URL, the shared `PROVIDER_REL` rel constant
+        (`nofollow sponsored noopener noreferrer`), every analytics event name/property
+        (`tripcom_click`, `ready_check_book_cta_click`), fail-closed behaviour on unsupported routes,
+        and the footer's Affiliate Disclosure link are all unchanged — confirmed by dedicated
+        regression tests, not just visual inspection.
+      - **3. Credibility wording corrected.** "A member of our team" (implying paid staff a
+        founder-led site doesn't have) removed from `app/deals/page.tsx`, `app/about/page.tsx` (whose
+        own section title already said "checked by a person" — the body text contradicted its own
+        heading) and `components/route/fare-history-panel.tsx`, without inventing a replacement claim
+        — the underlying fact (fares are hand-checked and dated) stays exactly as true as before.
+        "JetStash hands you a live-fare check" (implying JetStash itself supplies live fares) in the
+        same homepage Economy card corrected to name Trip.com's own current partner search as the
+        live/current part. No founder legal identity published anywhere.
+      - **Tests.** New `tests/public-trust-corrections-aug2026.test.ts` (19 assertions): the actual
+        rendered `CommercialPaths` component (not just source text) carries no `/founder` link and
+        does link to `/routes/manchester-mumbai`; a real recursive scan of every `.tsx` file under
+        `app/` and `components/` (excluding the genuine founder-only directories and the confirmed
+        dead `journey-brief-hero.tsx`) for a literal `href="/founder"` finds none; all three newly
+        fixed Trip.com CTAs show the partner-link wording; `PROVIDER_REL` is bound (not hardcoded) at
+        every fixed call site and the shared constant itself still carries all four safe tokens;
+        every analytics event name/property and fail-closed message is asserted unchanged; the
+        footer's Affiliate Disclosure link is asserted unchanged; "our team" / "a member of" and the
+        old "JetStash hands you a live-fare check" phrasing are asserted absent from every affected
+        file. One pre-existing test (`tests/madinah-affiliate-link.test.ts`) hardcoded the old
+        single-line DealCard caption text and was updated (whitespace-normalised) to match the new
+        two-line, disclosure-prefixed wording — the underlying itinerary/baggage/booking-terms fact
+        it checks for is unchanged. Full canonical suite (1464/1464), `tsc --noEmit`, lint and
+        production build all clean.
+      - **Explicitly not done, per this PR's own scope:** TravelUp was not reintroduced (it remains
+        fully removed — see `lib/booking-providers.ts`'s own doc comment); no public Arrive By work
+        was started (`/founder/arrive-by` remains the only Arrive By route, confirmed by directory
+        scan); no route facts, fare observations, affiliate URLs, dependencies, DNS, environment
+        variables or Vercel configuration were changed; no Terms were published; the homepage was not
+        redesigned — only the specific broken link, three missing disclosures, and three sentences
+        were corrected.
 
 ## F–G — Paid-advertising readiness
 
@@ -454,3 +512,11 @@ Real, but genuinely non-blocking for either organic or paid readiness. No urgenc
   Console, Trip.com, form-submission and Brevo signals). Process only, no results recorded yet, no
   code/analytics/Vercel-configuration change. F1 stays partly complete until the process has
   actually been run.
+- **8 August 2026** — new **A12** item added and closed: public trust corrections. The homepage's
+  Economy card linked to a founder-only `/founder/journey-brief/manchester-mumbai` page no public
+  visitor could reach — fixed to link to the real public `/routes/manchester-mumbai` route guide.
+  Three Trip.com CTAs (`DealCard`, `NoFareFallback`, Travel Ready Check) were missing the visible
+  "Partner link" disclosure the route-hero and Book-By Countdown CTAs already had — all three now
+  match. "A member of our team" and "JetStash hands you a live-fare check" corrected across four
+  customer-facing files, without inventing a replacement claim. TravelUp remains fully retired and
+  was not reintroduced; no public Arrive By work was started.

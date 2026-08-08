@@ -38,7 +38,10 @@ export function NoFareFallback({ cityLabel, routeSlug }: { cityLabel: string; ro
             Compare flights on Trip.com
             <ArrowUpRight className="h-4 w-4" strokeWidth={2.25} />
           </TrackedOutboundLink>
-          <p className="mt-3 text-xs text-ink-400">Check the itinerary, baggage allowance and booking terms before paying.</p>
+          <p className="mt-3 text-xs text-ink-400">
+            Partner link, opens Trip.com in a new tab. Check the itinerary, baggage allowance and booking terms
+            before paying.
+          </p>
         </>
       ) : (
         <p className="mt-3 text-xs text-ink-400">Direct flight comparison is not available for this airport yet.</p>

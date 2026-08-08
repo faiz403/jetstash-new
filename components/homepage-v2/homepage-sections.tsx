@@ -6,8 +6,19 @@ import { ROUTE_WATCH_INITIAL_COPY } from '@/lib/route-watch-config';
  * Homepage v2 — server-rendered sections below the signature hero (protected
  * prototype). Every claim here is either verified route data or an honest
  * "not yet" — no invented fare, airline, frequency, popularity or connecting
- * alternative. No affiliate link fires from this page; the safe live-fare
- * path lives inside the route guides / Journey Brief these link to.
+ * alternative. No affiliate link fires from this page; the current-fare
+ * hand-off lives inside the route guides these link to.
+ *
+ * Public-trust fix (A1/A9, August 2026): the Economy card used to link to
+ * /founder/journey-brief/manchester-mumbai — a founder-only surface (see its
+ * own doc comment in components/journey-brief/journey-brief-manchester-mumbai.tsx)
+ * that a public visitor could never actually reach, and its copy claimed
+ * JetStash itself "hands you a live-fare check", which could be read as
+ * JetStash supplying live fares rather than pointing to Trip.com's own
+ * current search. Both fixed: the link now goes to the real public route
+ * guide for this exact featured journey (/routes/manchester-mumbai, the
+ * homepage's own flagship thread — see journey-desk-home.tsx), and the copy
+ * now names Trip.com's search as the current/live part.
  */
 
 /* ── Contextual commercial paths — journey paths, not three sales cards ── */
@@ -20,21 +31,21 @@ export function CommercialPaths() {
           The same checked journey, three ways to fly it
         </h2>
         <p className="mt-3 max-w-xl text-sm leading-relaxed text-ink-500">
-          One Journey Brief underneath all three — the difference is how you want to fly it, not how much we checked.
+          One checked route underneath all three — the difference is how you want to fly it, not how much we checked.
         </p>
         <div className="mt-9 grid gap-5 lg:grid-cols-3">
-          {/* Economy — intelligence first, then the safe live-fare path */}
+          {/* Economy — intelligence first, then the route guide's own Trip.com hand-off */}
           <article className="flex flex-col rounded-lg border border-ink-100 bg-white p-6 shadow-card">
             <span className="flex h-10 w-10 items-center justify-center rounded-sm bg-terracotta-50 text-terracotta-600">
               <Plane className="h-5 w-5" strokeWidth={2} />
             </span>
             <h3 className="mt-4 font-display text-xl text-ink-900">Economy</h3>
             <p className="mt-2 flex-1 text-sm leading-relaxed text-ink-600">
-              See the route status, service change and booking timing first. When you&apos;re ready, JetStash hands you a
-              live-fare check — never a stale or half-built price.
+              See the route status, service change and booking timing first. When you&apos;re ready, we hand you to a
+              current Trip.com partner search — never a stale or half-built price.
             </p>
-            <Link href="/founder/journey-brief/manchester-mumbai" className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-ink-900 hover:text-terracotta-600">
-              Start with the Journey Brief <ArrowRight className="h-4 w-4" strokeWidth={2.25} />
+            <Link href="/routes/manchester-mumbai" className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-ink-900 hover:text-terracotta-600">
+              See the Manchester–Mumbai route guide <ArrowRight className="h-4 w-4" strokeWidth={2.25} />
             </Link>
           </article>
 
