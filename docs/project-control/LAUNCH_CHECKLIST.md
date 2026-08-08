@@ -303,6 +303,22 @@ wider organic promotion.
         re-verified mitigation (no reachable input path) and an explicit deferral decision with named
         next steps. Do not mark this item fully closed until the Next.js major upgrade lands and
         `postcss`/`sharp` are genuinely patched, not just judged low-risk.
+- [x] **A9.** ~~Reposition "Deals" as tracked fare evidence~~ **Done 8 August 2026.** "Deals" implies
+      JetStash has proven a price is unusually good against historical data — it hasn't; every fare
+      shown is a dated, hand-checked observation, never a claim of being the cheapest available (see
+      `data/deals.ts` and `data/fare-observations.ts`). Audited every customer-facing surface first
+      rather than assuming scope: the `/deals` page's own title, hero and card copy already used
+      honest "tracked fare" language from prior work, as did `region-hub-page.tsx` and the
+      business-class/family-holidays/umrah section headings. The three genuine gaps still saying
+      "Deals" were the main nav label, the footer nav label (both `lib/site-config.ts`), and the
+      "All deals" filter pill on the `/deals` page itself (`components/sections/deals-explorer.tsx`)
+      — all three changed to "Tracked Fares" / "All fares". The `/deals` URL, route, `Deal` data
+      type, and every analytics event name (`tripcom_click` and its `{ route, source: 'deal-card' }`
+      properties) are unchanged. New `tests/a9-deals-reposition.test.ts` (11 assertions) plus updates
+      to two existing tests that hardcoded the old labels (`tests/international-brand-positioning
+      .test.ts`, `tests/travel-ready-discoverability.test.ts`). Full canonical suite (1445/1445),
+      `tsc --noEmit`, lint and production build all clean; live-verified in dev (nav, footer and the
+      `/deals` filter pill all render correctly, no console errors).
 
 ## F–G — Paid-advertising readiness
 
@@ -326,9 +342,25 @@ separate from section A — organic readiness does not require these.
       covered by `tests/analytics-events.test.ts`, `tests/analytics-property-limit.test.ts` and
       `tests/atlas-journey-check-analytics.test.ts` — 71/71 passing. This work actually landed
       31 July–5 August 2026 (`db459c9`, `8bb6883`) but was never reflected here — this checklist had
-      drifted stale, not the instrumentation. **What's genuinely still open:** confirming real
-      visitor events are actually landing in the Vercel Analytics dashboard — that needs the
-      founder's own dashboard access, not a code change; not confirmed as of this note.
+      drifted stale, not the instrumentation.
+      **Dashboard reviewed 8 August 2026 — partly complete, closing this item's remaining question
+      with an honest answer rather than leaving it open indefinitely.** Base traffic measurement
+      (page views, landing pages) is confirmed live in the real Vercel dashboard — 24 visitors
+      reaching the homepage, Deals, Manchester–Dubai, Manchester–Mumbai, Manchester–Lahore, Travel
+      Ready Check and the route directory. Custom events (Atlas interaction, Travel Ready Check
+      completion, `tripcom_click`, lead-capture successes) do not currently render in the dashboard
+      — this is a **Vercel Hobby plan limitation, not a broken-tracking finding**: the code-side
+      instrumentation confirmed above is unaffected, and "no custom events visible" does not mean no
+      one interacted. With only 24 visitors, much of that activity may also be our own testing and
+      production checks — far too small a sample for any redesign or conversion decision regardless
+      of which numbers are visible. **Decision: stay on the Hobby plan for now.** Upgrading purely
+      to unlock more numbers would be premature; revisit only once missing custom-event visibility
+      is actually blocking a real product decision. In the meantime, page views/landing pages
+      (Vercel), Search Console impressions/clicks, the Trip.com affiliate dashboard, successful
+      contact/quote emails, and Brevo newsletter/Route Watch signups together give enough signal for
+      the first ~100 visitors. This item stays open, not closed — it is the founder's own dashboard
+      access and judgement that confirmed this, not a repository-side change, and the eventual
+      upgrade decision remains theirs to make when the numbers actually warrant it.
 - [ ] **G1.** Add genuine fare observations, following the existing methodology in
       `FARE_OBSERVATION_ARCHIVE.md`, prioritising the specific routes intended for paid promotion
       before that spend begins. Never backfill a price for a day that wasn't actually checked.
@@ -389,3 +421,13 @@ Real, but genuinely non-blocking for either organic or paid readiness. No urgenc
   international-transfer mechanism, affiliate wording/placement, the publish go/no-go), and a
   reviewer checklist. No Terms published, no `/terms` route created, nothing invented — every open
   item is a named external/professional decision, not repository work.
+- **8 August 2026** — F1's real Vercel dashboard reviewed for the first time (24 visitors). Base
+  traffic measurement (page views, landing pages) confirmed live; custom events don't render on the
+  Hobby plan — a plan limitation, not a broken-tracking finding. Decision recorded: stay on Hobby
+  for now, revisit only once missing event visibility blocks a real product decision. F1 stays open
+  pending that future revisit.
+- **8 August 2026** — new **A9** item added and closed: "Deals" repositioned as "Tracked Fares"
+  across the main nav, footer nav and the `/deals` page's own filter pill — the only three
+  customer-facing surfaces still using the old language after a full audit (the page's title, hero
+  and card copy already said "tracked fare"). URL, `Deal` type and every analytics event name
+  unchanged.

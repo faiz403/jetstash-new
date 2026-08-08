@@ -215,7 +215,9 @@ describe('No unrelated behaviour changed', () => {
 
   it('the product and specialist links survive the footer reorganisation (no accidental removals)', () => {
     const labels = [...footerNav.explore, ...footerNav.specialist].map((l) => l.label);
-    for (const expected of ['Family Holidays', 'Business Class', 'Request a Quote', 'All Deals', 'All Routes', 'All Destinations', 'Travel Guides', 'UK Airports']) {
+    // 'All Deals' -> 'Tracked Fares' (A9 reposition, August 2026) — see
+    // lib/site-config.ts's own comment on this entry.
+    for (const expected of ['Family Holidays', 'Business Class', 'Request a Quote', 'Tracked Fares', 'All Routes', 'All Destinations', 'Travel Guides', 'UK Airports']) {
       expect(labels).toContain(expected);
     }
   });
