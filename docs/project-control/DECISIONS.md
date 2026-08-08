@@ -55,6 +55,19 @@ Route Watch and Travel Club are Brevo-backed, human-operated workflows. They are
 connected to other intelligence products but are not automated monitoring or part of the Travel
 Intelligence Engine runtime today.
 
+**First operating pilot (7 August 2026 audit, procedure recorded 8 August 2026):** the signup and
+storage side of Route Watch is already safe — capped, merged route preferences
+(`MAX_WATCHED_ROUTES` in `lib/route-watch-config.ts`), hardened Brevo-lookup handling (A6, PR #82).
+What was missing was an operating procedure for the review-and-send side, which `/founder`'s
+alert queue has always pointed at without ever defining. The first pilot is deliberately manual —
+see `docs/project-control/ROUTE_WATCH_PILOT_PROCEDURE.md` for the exact workflow. No sending
+automation, cron job, or new analytics event is being built for this pilot. Real send history lives
+in Brevo's own campaign records plus a private operating log kept outside this repository — never a
+public send ledger naming real subscriber counts or campaign statistics. A code-based workflow
+(e.g. a send-log data file wired into the founder dashboard) should only be considered after the
+manual pilot has actually run and reveals genuine, specific friction — not designed speculatively
+ahead of that evidence.
+
 ### Signature Collection visual identity
 
 Use cohesive, owned-feeling JetStash photography and visual direction instead of generic stock.

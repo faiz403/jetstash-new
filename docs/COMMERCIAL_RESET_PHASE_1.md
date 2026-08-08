@@ -79,8 +79,22 @@ Traced by reading the actual component tree and API routes, not assumed.
 | **1. Economy affiliate click** | Scroll to "Most-searched routes" (viewport ~5) or "Featured fares" (viewport ~6) → click a card → route page → "Check live price" (TravelUp) | 2 clicks, ~5-6 viewports | The "Featured fares" cards currently show no fare, so the click carries no price information — same outcome as clicking a bare route card |
 | **2. Business Class enquiry** | Scroll to viewport ~10 → "Explore business class" → business-class page → **no enquiry form exists** → same TravelUp affiliate click as economy, or fall through to the Travel Club signup at the bottom of that page | No true enquiry path exists | This funnel terminates in the same affiliate click as economy; there is no qualified-lead capture step to model |
 | **3. Umrah enquiry** | Scroll to viewport ~11 → "Request a quote" button links directly to `/quote-request?tripType=umrah&region=gulf` | 1 click, ~11 viewports | The only homepage section with a genuine working lead-gen CTA in place today, buried at roughly two-thirds down the page |
-| **4. Route Watch signup** | **Not present on the homepage at all.** `RouteWatchForm` (POSTs to `/api/route-watch`, a separate Brevo list from Travel Club's `/api/subscribe`) is embedded on route pages and the Travel Ready Check page only | Not reachable from the homepage | The homepage instead promotes "Travel Club" (`NewsletterSection`, viewport ~16) — a second, separate acquisition mechanism with its own list. Two different subscribe products compete for the same "leave your email" moment without the homepage ever explaining the difference |
+| **4. Route Watch signup** | **Not present on the homepage at all.** `RouteWatchForm` (POSTs to `/api/route-watch`) is embedded on route pages and the Travel Ready Check page only[^route-watch-list] | Not reachable from the homepage | The homepage instead promotes "Travel Club" (`NewsletterSection`, viewport ~16) — a second, separate acquisition mechanism using the same shared contact list, distinguished only by which custom attributes are set. Two different subscribe products compete for the same "leave your email" moment without the homepage ever explaining the difference |
 | **5. A useful route decision** (e.g. Manchester–Mumbai, Heathrow–Mumbai) | Requires either: (a) finding Mumbai's chip in the Route Atlas's 13-item destination list (7th position, mobile-only horizontal scroll), or (b) navigating to `/routes` or `/india` directly | Not reachable in "two purposeful interactions" today | `featuredRouteSlugs` in `app/page.tsx:55` — the array driving the "Most-searched" section — is `['london-heathrow-delhi', 'manchester-lahore', 'manchester-dubai', 'london-heathrow-jeddah']`. Mumbai is absent from both featured slots. This is the literal, code-level cause of established problems 6 and 7 |
+
+[^route-watch-list]: **Corrected 8 August 2026:** this row originally claimed Route Watch used "a
+    separate Brevo list from Travel Club's `/api/subscribe`," as it stood on 2026-07-14. That was
+    inaccurate even then relative to the code: `app/api/route-watch/route.ts` has always read the
+    same `BREVO_API_KEY`/`BREVO_LIST_ID` environment variables as `/api/subscribe` — one shared
+    Brevo list for both products, distinguished only by which custom contact attributes each signup
+    sets (`WATCH_AIRPORT`/`WATCH_DESTINATION`/`WATCH_ROUTE`/`WATCH_REGION`/`WATCH_INTENT` for Route
+    Watch; `NEAREST_AIRPORT`/`TRAVEL_INTEREST` for Travel Club — see `lib/brevo-attributes.json`).
+    Any Route Watch segmentation must filter on `WATCH_ROUTE` (a comma-delimited list, capped at
+    `MAX_WATCHED_ROUTES`) — the singular `WATCH_AIRPORT`, `WATCH_DESTINATION` and `WATCH_REGION`
+    fields are overwritten on every signup and only represent a subscriber's *most recent* signup,
+    not all of their watched routes, so they are not authoritative for multi-route targeting. See
+    `docs/project-control/ROUTE_WATCH_PILOT_PROCEDURE.md` for the operating procedure this now
+    feeds into.
 
 ---
 
