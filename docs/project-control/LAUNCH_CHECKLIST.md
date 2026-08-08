@@ -361,6 +361,23 @@ separate from section A — organic readiness does not require these.
       the first ~100 visitors. This item stays open, not closed — it is the founder's own dashboard
       access and judgement that confirmed this, not a repository-side change, and the eventual
       upgrade decision remains theirs to make when the numbers actually warrant it.
+      **Measurement process documented, 8 August 2026 (sometimes referred to as "A10" in founder
+      shorthand — this is the same item as F1 above, not a separate checklist entry).** Two new
+      docs formalise how the currently-available evidence actually gets read, rather than leaving
+      that ad hoc: `FIRST_10_USER_TEST.md` (a founder-led, unmoderated-style test with 10 real
+      people — task list, strict no-coaching/no-fixing-mid-session operating rules, and a
+      privately-kept per-user record template with zero real participant data committed to this
+      repository) and `FIRST_100_VISITORS_WORKSHEET.md` (a weekly template combining Vercel
+      visitors/page views/top pages/device split, Search Console clicks/impressions/CTR/position/
+      top queries/landing pages, Trip.com outbound activity and commissions where available,
+      contact/quote/newsletter/Route Watch signups, and founder observations — explicitly
+      restating that custom events are Hobby-plan-unavailable rather than zero, that traffic is too
+      small for conversion-rate claims, and that no paid-advertising decision is made before a
+      credible funnel and stop-loss rule exist). Both are process documents only — no code, no
+      analytics event, no Vercel configuration change, and no real user-test or weekly-visitor
+      results are recorded in either file yet. **This item remains partly complete, not closed,
+      until real evidence is actually collected using this process** — writing the process down is
+      not the same as having run it.
 - [ ] **G1.** Add genuine fare observations, following the existing methodology in
       `FARE_OBSERVATION_ARCHIVE.md`, prioritising the specific routes intended for paid promotion
       before that spend begins. Never backfill a price for a day that wasn't actually checked.
@@ -431,3 +448,9 @@ Real, but genuinely non-blocking for either organic or paid readiness. No urgenc
   customer-facing surfaces still using the old language after a full audit (the page's title, hero
   and card copy already said "tracked fare"). URL, `Deal` type and every analytics event name
   unchanged.
+- **8 August 2026** — F1 (the item also referred to as "A10" in founder shorthand) updated again:
+  the first-users measurement pack is documented — `FIRST_10_USER_TEST.md` (founder-led 10-person
+  test procedure) and `FIRST_100_VISITORS_WORKSHEET.md` (weekly template combining Vercel, Search
+  Console, Trip.com, form-submission and Brevo signals). Process only, no results recorded yet, no
+  code/analytics/Vercel-configuration change. F1 stays partly complete until the process has
+  actually been run.
