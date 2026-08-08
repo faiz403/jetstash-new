@@ -57,6 +57,14 @@ wider organic promotion.
       publish public Terms, and do not recreate a `/terms` route, until all of the above are
       complete** — professional legal review in particular is not something this checklist can mark
       done on the repository's own authority.
+      **Repository-side preparation complete, 8 August 2026** — see
+      `docs/legal/A4_LEGAL_REVIEW_PACK.md` for the consolidated pack: current state of the Privacy
+      Policy, Affiliate Disclosure and Terms draft; a direct-from-code audit of exactly where
+      affiliate/commission notices appear (and don't) around every Trip.com click-through point; the
+      full list of open decisions this item has always required, compiled and cross-checked, not
+      newly invented; and a reviewer checklist. This closes the repository-side half of B2 — every
+      remaining item is still an external professional decision, not something achievable by further
+      code or documentation work. B2 stays open until those decisions are made and recorded.
 - [x] **C1.** ~~Fix the Madinah affiliate-link wording~~ **Done (historical — superseded).** Original
       fix: no genuine route-specific TravelUp page could be verified for Madinah (unlike every other
       route destination), so per the decision rule the generic tracked link was kept and the
@@ -370,3 +378,14 @@ Real, but genuinely non-blocking for either organic or paid readiness. No urgenc
   user-controlled CSS input path anywhere) and temporarily accepted with a documented, defensible
   mitigation, not dismissed. Major upgrade deferred to its own dedicated branch with named
   acceptance criteria — not performed in this PR.
+- **8 August 2026** — **B2** (Terms & Conditions) repository-side preparation completed, item stays
+  open. New `docs/legal/A4_LEGAL_REVIEW_PACK.md`: consolidates the current live Privacy
+  Policy/Affiliate Disclosure state and the unpublished Terms draft, a direct-from-code audit of
+  where affiliate/commission notices actually appear around every Trip.com click-through point
+  (footer-only human-visible disclosure; only the route-guide hero CTA carries "Partner link"
+  wording; `deal-card`/`no-fare-fallback` CTAs carry none), the full list of open decisions B2 has
+  always required (trading/legal identity, contact/postal address, jurisdiction, legal-notices
+  contact, liability wording, ATOL/ABTA phrasing, consumer-law applicability, retention periods,
+  international-transfer mechanism, affiliate wording/placement, the publish go/no-go), and a
+  reviewer checklist. No Terms published, no `/terms` route created, nothing invented — every open
+  item is a named external/professional decision, not repository work.
