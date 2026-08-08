@@ -49,7 +49,7 @@ export default function DealsPage() {
           <>
             We're currently tracking fares on {routesWithTrackedFare} of our {routes.length} routes — coverage is
             being expanded gradually using manually verified observations, not a live price feed. Every fare shown
-            below is a real check a member of our team logged by hand, dated. Where we've checked a route more than
+            below is a real check logged by hand, dated. Where we've checked a route more than
             once, you'll see the range we've actually observed — never a single price left to quietly go stale.
             Always confirm the final price before booking.{' '}
             <Link href="/about" className="font-medium text-brass-300 underline underline-offset-2 hover:text-brass-200">

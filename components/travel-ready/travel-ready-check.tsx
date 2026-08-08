@@ -336,17 +336,20 @@ export function TravelReadyCheck({
           <div className="mt-6 flex flex-wrap items-center gap-3">
             {result.verdict === 'ready-to-continue' ? (
               bookingUrl ? (
-                <a
-                  href={bookingUrl}
-                  target="_blank"
-                  rel={PROVIDER_REL}
-                  data-analytics="ready-check-book-cta"
-                  onClick={() => track('ready_check_book_cta_click', { destination: destinationSlug })}
-                  className="inline-flex h-12 items-center justify-center gap-1.5 rounded-sm bg-brass px-6 text-sm font-semibold text-ink-900 transition-all hover:bg-brass-400 hover:shadow-brass-glow active:scale-[0.985]"
-                >
-                  Compare flights on Trip.com
-                  <ArrowUpRight className="h-4 w-4" strokeWidth={2.25} />
-                </a>
+                <div className="flex flex-col gap-2">
+                  <a
+                    href={bookingUrl}
+                    target="_blank"
+                    rel={PROVIDER_REL}
+                    data-analytics="ready-check-book-cta"
+                    onClick={() => track('ready_check_book_cta_click', { destination: destinationSlug })}
+                    className="inline-flex h-12 items-center justify-center gap-1.5 rounded-sm bg-brass px-6 text-sm font-semibold text-ink-900 transition-all hover:bg-brass-400 hover:shadow-brass-glow active:scale-[0.985]"
+                  >
+                    Compare flights on Trip.com
+                    <ArrowUpRight className="h-4 w-4" strokeWidth={2.25} />
+                  </a>
+                  <p className="text-xs text-ink-400">Partner link, opens Trip.com in a new tab.</p>
+                </div>
               ) : (
                 // Fail-closed, deliberately understated — no CTA, no generic Trip.com link.
                 <p className="text-sm text-ink-400">Direct flight comparison is not available for this airport yet.</p>

@@ -170,7 +170,8 @@ export function DealCard({ deal }: { deal: Deal }) {
               <ArrowUpRight className="h-4 w-4" strokeWidth={2.25} />
             </TrackedOutboundLink>
             <p className="mt-2 text-center text-[11px] text-ink-400">
-              Check the itinerary, baggage allowance and booking terms before paying.
+              Partner link, opens Trip.com in a new tab. Check the itinerary, baggage allowance and booking terms
+              before paying.
             </p>
           </>
         ) : (
