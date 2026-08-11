@@ -39,6 +39,8 @@ import { HeroBackdrop } from '@/components/ui/hero-backdrop';
 import { TrackedOutboundLink } from '@/components/ui/tracked-outbound-link';
 import { SmartFareComparison } from '@/components/route/smart-fare-comparison';
 import { getSmartFareComparisonForRoute } from '@/lib/smart-fare-route-adapter';
+import { FareSignal } from '@/components/route/fare-signal';
+import { getFareSignalForRoute } from '@/lib/fare-signal';
 
 /**
  * Route-hero focal-position overrides, keyed by destination slug. HeroBackdrop's default
@@ -132,6 +134,7 @@ export default async function RoutePage({ params }: { params: Promise<{ slug: st
   const timelineEvents = getTimelineByRoute(route.slug);
   const fareObservations = getPublishableObservationsByRoute(route.slug, nowIso);
   const smartFareComparison = getSmartFareComparisonForRoute(route.slug, nowIso);
+  const fareSignal = getFareSignalForRoute(route.slug, nowIso);
   // Fare copy must reflect the data actually available — see getFareSectionCopy.
   const fareSectionCopy = getFareSectionCopy(fareObservations.length > 0, dealsHere.length > 0);
   const bookingWindows = getBookingWindowsByRoute(route.slug);
@@ -265,6 +268,12 @@ export default async function RoutePage({ params }: { params: Promise<{ slug: st
               Check the itinerary, baggage allowance and booking terms before paying. Partner link, opens Trip.com in a new tab.
             </p>
           )}
+        </div>
+      </section>
+
+      <section className="bg-white py-8 sm:py-10">
+        <div className="mx-auto max-w-content px-5 sm:px-8">
+          <FareSignal signal={fareSignal} tripComUrl={tripComUrl} routeSlug={route.slug} />
         </div>
       </section>
 

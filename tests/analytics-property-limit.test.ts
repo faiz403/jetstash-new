@@ -147,9 +147,9 @@ describe('Vercel Pro two-property ceiling', () => {
 describe('the four reduced events keep exactly the right two properties', () => {
   const find = (needle: string) => sites.find((s) => s.raw.includes(needle));
 
-  it('tripcom_click sends route + source at all three call sites, never origin/destination', () => {
+  it('tripcom_click sends route + source at all call sites, never origin/destination', () => {
     const tripcomSites = sites.filter((s) => s.label === 'properties={{...}}');
-    expect(tripcomSites.length).toBe(3);
+    expect(tripcomSites.length).toBe(4);
     for (const s of tripcomSites) {
       expect(s.props.length, `${s.file}: ${s.raw}`).toBe(2);
       expect(s.raw).toMatch(/route:/);
