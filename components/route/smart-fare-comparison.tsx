@@ -93,6 +93,8 @@ export function SmartFareOptionCard({ option }: { option: SmartFareOptionSummary
 
 export function SmartFareComparison({ comparison, routeLabel }: { comparison: SmartFareComparison; routeLabel: string }) {
   const first = comparison.options[0];
+  const priceTimeStatements = comparison.pairStatements.filter((statement) => statement.kind === 'price-time');
+  const connectionStatements = comparison.pairStatements.filter((statement) => statement.kind === 'connection');
   const dateLabel = first
     ? `${formatDate(first.departureDate)} to ${formatDate(first.returnDate)}`
     : 'dates not shown';
@@ -115,9 +117,22 @@ export function SmartFareComparison({ comparison, routeLabel }: { comparison: Sm
       {comparison.pairStatements.length > 0 && (
         <div className="mt-6 rounded-md border border-brass-200 bg-brass-50 p-4 sm:p-5">
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-brass-700">What the checked itineraries show</p>
-          <ul className="mt-3 flex flex-col gap-2 text-sm leading-relaxed text-ink-700">
-            {comparison.pairStatements.map((statement) => <li key={`${statement.optionIds.join('-')}-${statement.text}`}>{statement.text}</li>)}
-          </ul>
+          {priceTimeStatements.length > 0 && (
+            <div className="mt-3">
+              <h3 className="text-sm font-semibold text-ink-900">Price and journey-time differences</h3>
+              <ul className="mt-2 flex flex-col gap-2 text-sm leading-relaxed text-ink-700">
+                {priceTimeStatements.map((statement) => <li key={`${statement.optionIds.join('-')}-${statement.text}`}>{statement.text}</li>)}
+              </ul>
+            </div>
+          )}
+          {connectionStatements.length > 0 && (
+            <div className={priceTimeStatements.length > 0 ? 'mt-4' : 'mt-3'}>
+              <h3 className="text-sm font-semibold text-ink-900">Connection details</h3>
+              <ul className="mt-2 flex flex-col gap-2 text-sm leading-relaxed text-ink-700">
+                {connectionStatements.map((statement) => <li key={`${statement.optionIds.join('-')}-${statement.text}`}>{statement.text}</li>)}
+              </ul>
+            </div>
+          )}
         </div>
       )}
       <p className="mt-5 text-sm leading-relaxed text-ink-600">
