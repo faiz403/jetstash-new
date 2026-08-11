@@ -50,6 +50,53 @@ Area-level character should not be inferred from a single hotel listing. Subject
 
 Generic, undated travel-blog language is not JetStash intelligence.
 
+### Operational geography for property evidence
+
+Every future Antalya property record must distinguish authoritative location from provider
+marketing shorthand. It must record:
+
+- provider marketing location label;
+- exact property address as sourced;
+- authoritative operational area;
+- authoritative sub-area where relevant;
+- geography source and geography checked date;
+- provider/geography conflict: `yes`, `no` or `unknown`;
+- classification confidence: `strong`, `usable-with-caveat` or `unresolved`;
+- classification limitations or notes.
+
+The evidence hierarchy is:
+
+1. official property address;
+2. reliable coordinates or location record;
+3. municipal or official tourism geography;
+4. provider marketing label, retained only as secondary metadata or an alias.
+
+Provider shorthand must never override stronger geographic evidence. If the operational area or
+sub-area cannot be resolved, classification is **unresolved** and the property fails closed: it
+must not become a public JetStash hotel example.
+
+Operational rules for the initial Antalya research areas:
+
+- **Lara / Kundu:** Güzeloba/Muratpaşa evidence tied specifically to Lara Beach may be classified
+  as Lara Beach. Properties in Kundu, Kemerağzı or Aksu are classified as Kundu/Aksu even when a
+  provider markets them as “Lara”. Lara Beach and Kundu are not treated as geographically identical.
+- **Belek:** Belek, Kadriye, Üçkum Tepesi or Acısu may fall within the operational Belek
+  resort/golf grouping where authoritative evidence supports it. Boğazkent does not automatically
+  become Belek because a provider includes it in a Belek search; the exact property evidence wins.
+- **Side / Manavgat:** Side historic core remains distinguishable from surrounding resort areas.
+  Preserve evidenced sub-area names including Kumköy, Sorgun, Titreyengöl, Evrenseki, Çolaklı,
+  Gündoğdu, Kızılağaç and Kızılot. Do not silently relabel those properties as Side historic core.
+
+Do not invent kilometre thresholds. A provider page that says “Trendy Lara” while giving a
+Kundu/Aksu address, a Side search result that gives an Evrenseki, Kumköy or Titreyengöl address,
+or a Belek result with a Boğazkent address illustrates why this classification step is required.
+
+The final public Antalya area structure is **not yet locked**. Research supports a simple
+top-level model with visible sub-area distinctions, but actual property evidence must be reviewed
+before JetStash decides how areas should be presented publicly. Operational classification and
+public navigation are separate decisions; this standard does not prescribe permanent labels such
+as “Lara / Kundu”, “Belek / Kadriye” or “Side / Manavgat coast”.
+
 ### Property evidence record
 
 One future hotel record must support:
