@@ -401,7 +401,7 @@ describe('Fare-observation publication predicate — pure, synthetic-fixture-tes
     const range = getFareRangeSummary('manchester-lahore', 'Economy', FIXED_TODAY);
     expect(range).not.toBeNull();
     expect(range!.count).toBeGreaterThanOrEqual(2);
-    expect(range!.min).toBe(578);
+    expect(range!.min).toBe(574);
     expect(range!.sources).toContain('Etihad');
   });
 });

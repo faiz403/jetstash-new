@@ -1,7 +1,7 @@
 # Editorial Fare Observation Archive
 
 **Owner:** JetStash editorial workflow
-**Status:** Active - three expansion batches recorded (Batch A + Batch B); latest check 6 August 2026;
+**Status:** Active - Batch A + Batch B plus three scheduled Tier A checks recorded; latest check 11 August 2026;
 23 of 32 routes publishable
 **Canonical data file:** `data/fare-observations.ts`
 
@@ -42,6 +42,22 @@ travel dates advanced by one week to preserve comparability: 29 September to 13 
 These are also dated Google Flights observations, not live-price promises. The next scheduled check
 must keep the same profiles, 14-night stay and fixed eight-week horizon while advancing the travel
 dates with the observation date.
+
+## Third scheduled check
+
+On 11 August 2026, JetStash repeated the same five standard profiles at the fixed eight-week
+horizon. The travel dates advanced by one week to 6 October to 20 October 2026:
+
+- Manchester to Lahore — GBP 574, Etihad, connecting via Abu Dhabi both ways
+- Manchester to Islamabad — GBP 601, Etihad, connecting via Abu Dhabi both ways
+- Heathrow to Delhi — GBP 454, Gulf Air, connecting via Bahrain both ways
+- Birmingham to Amritsar — GBP 823, KLM/IndiGo outbound and Air India/KLM return, connecting via Amsterdam and New Delhi both ways
+- Heathrow to Jeddah — GBP 495, Etihad, connecting via Abu Dhabi both ways
+
+For each selected lowest visible bookable itinerary, both outbound and return details were opened
+in Google Flights. Taxes and required fees were shown as included; no checked-baggage allowance or
+mandatory baggage charge was disclosed for the selected fares, so baggage remains unknown. These
+are dated editorial observations, not live-price promises or claims that the fares remain available.
 
 # What may be observed
 

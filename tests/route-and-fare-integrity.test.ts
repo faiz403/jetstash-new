@@ -95,14 +95,14 @@ describe('Fare-observation completeness gating (TR-002) — Verified Check must 
     expect(isPubliclyPublishable(rest as FareObservation)).toBe(false);
   });
 
-  it('getFareRangeSummary derives the exact dated Manchester–Lahore weekly series, now including the Batch A entry', () => {
+  it('getFareRangeSummary derives the exact dated Manchester–Lahore weekly series, now including the 11 August check', () => {
     const range = getFareRangeSummary('manchester-lahore', 'Economy', FIXED_TODAY);
     expect(range).not.toBeNull();
-    expect(range!.count).toBe(3);
-    expect(range!.min).toBe(578);
+    expect(range!.count).toBe(4);
+    expect(range!.min).toBe(574);
     expect(range!.max).toBe(638);
     expect(range!.earliestDate).toBe('2026-07-28');
-    expect(range!.latestDate).toBe('2026-08-06');
+    expect(range!.latestDate).toBe('2026-08-11');
     expect(range!.sources).toEqual(['Etihad', 'Turkish Airlines']);
     expect(range!.observedDirectness).toBe('connecting');
   });
@@ -335,8 +335,8 @@ describe('getDealDirectnessLabel (TR-009, final correction) — a deal/search ca
 });
 
 describe('FARE-001 pilot — historic examples stay private; only fully dated, evidenced observations publish', () => {
-  it('keeps historic observations and appends every editorial observation batch, including Fare Coverage Expansion Batch B (6 August 2026)', () => {
-    expect(fareObservations).toHaveLength(54);
+  it('keeps historic observations and appends every editorial observation batch, including the 11 August scheduled check', () => {
+    expect(fareObservations).toHaveLength(59);
   });
 
   it('keeps every historic observation incomplete and private', () => {
@@ -347,7 +347,7 @@ describe('FARE-001 pilot — historic examples stay private; only fully dated, e
     }
   });
 
-  it('publishes the exact dated observations from both priority-route batches', () => {
+  it('publishes the exact dated observations from every completed priority-route batch', () => {
     const published = fareObservations.filter(isPubliclyPublishable);
     expect(published.map((o) => o.id)).toEqual([
       'obs-lhr-bom-economy-2',
@@ -388,6 +388,11 @@ describe('FARE-001 pilot — historic examples stay private; only fully dated, e
       'obs-man-isb-economy-20260810-tk-621-v1',
       'obs-man-isb-economy-20260810-tk-626-v1',
       'obs-man-isb-economy-20260810-ey-645-v1',
+      'obs-man-lhe-economy-20260811-8w-v1',
+      'obs-man-isb-economy-20260811-8w-v1',
+      'obs-lhr-del-economy-20260811-8w-v1',
+      'obs-bhx-atq-economy-20260811-8w-v1',
+      'obs-lhr-jed-economy-20260811-8w-v1',
     ]);
     expect(published).toEqual(expect.arrayContaining([
       expect.objectContaining({

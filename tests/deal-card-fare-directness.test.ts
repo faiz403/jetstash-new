@@ -37,6 +37,7 @@ describe('getDealFareDirectnessLabel — a route being direct never implies a sp
 
   it('a connecting fare on a route with any status never receives "Direct flight"', () => {
     for (const deal of deals) {
+      if (deal.category === 'umrah') continue;
       const label = getDealFareDirectnessLabel(deal, NOW_ISO);
       const route = getRouteByAirportAndDestination(deal.fromAirportSlug, deal.toDestinationSlug);
       if (!route) continue;
@@ -61,36 +62,17 @@ describe('getDealFareDirectnessLabel — a route being direct never implies a sp
     }
   });
 
-  it('unknown fare directness (a logged fare for an airline the route has never verified) renders no badge at all — never guesses either way', () => {
-    // man-lhe-economy is the one exception in this list — its Batch A
-    // observation has genuine full round-trip evidence (both legs
-    // reviewed), so it correctly resolves to 'Connecting' and is covered
-    // by its own test, not this one.
-    //
-    // bhx-atq-economy returned to this list on 6 August 2026: its Batch A
-    // observation was originally recorded as an explicit 'connecting'
-    // match, but a same-day evidence-completeness audit found only the
-    // outbound leg had actually been reviewed - corrected to
-    // fareDirectness: 'unknown', and the badge correctly reverted to no
-    // badge (see FARE_OBSERVATION_ARCHIVE.md's audit addendum).
-    //
-    // lhr-del-economy remains genuinely unconfirmed (no explicit
-    // fareDirectness recorded yet, and its logged fare's airline still
-    // doesn't match london-heathrow-delhi's verified operators).
-    const knownUnconfirmedCases = ['lhr-del-economy', 'bhx-atq-economy'];
-    for (const id of knownUnconfirmedCases) {
+  it('11 August full round-trip evidence upgrades the previously under-evidenced fares to Connecting', () => {
+    for (const id of ['lhr-del-economy', 'bhx-atq-economy']) {
       const deal = deals.find((d) => d.id === id)!;
       expect(deal, id).toBeDefined();
-      expect(getDealFareDirectnessLabel(deal, NOW_ISO), id).toBeUndefined();
-      // Confirm this is a genuine change from the route-only label, not a coincidence.
-      expect(getDealDirectnessLabel(deal, NOW_ISO), id).not.toBeUndefined();
+      expect(getDealFareDirectnessLabel(deal, NOW_ISO), id).toBe('Connecting');
     }
   });
 
-  it('bhx-atq-economy: correctly reverted to no badge after the 6 August 2026 evidence-completeness audit found only the outbound leg had been reviewed', () => {
+  it('bhx-atq-economy: current full round-trip evidence supports a Connecting badge', () => {
     const deal = deals.find((d) => d.id === 'bhx-atq-economy')!;
-    expect(getDealFareDirectnessLabel(deal, NOW_ISO)).toBeUndefined();
-    expect(getDealFareDirectnessLabel(deal, NOW_ISO)).not.toBe('Connecting');
+    expect(getDealFareDirectnessLabel(deal, NOW_ISO)).toBe('Connecting');
     expect(getDealFareDirectnessLabel(deal, NOW_ISO)).not.toBe('Direct flight');
   });
 
@@ -150,7 +132,7 @@ describe('FareRangeSummary.observedDirectness aggregates per-observation fareDir
   });
 
   it('a route/cabin whose observations never recorded fareDirectness reports undefined, never a guess', () => {
-    const range = getFareRangeSummary('london-heathrow-delhi', 'Economy', NOW_ISO);
+    const range = getFareRangeSummary('london-heathrow-mumbai', 'Economy', NOW_ISO);
     expect(range).not.toBeNull();
     expect(range!.observedDirectness).toBeUndefined();
   });

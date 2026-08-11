@@ -99,11 +99,11 @@ describe('fareDirectness resolution rules the audit established', () => {
   });
 });
 
-describe('bhx-atq-economy correctly fails closed after the audit correction', () => {
-  it('no longer shows "Connecting" from the under-evidenced observation alone', () => {
+describe('bhx-atq-economy reflects the latest evidence-complete observation', () => {
+  it('shows Connecting only after both legs were reviewed', () => {
     const deal = deals.find((d) => d.id === 'bhx-atq-economy')!;
     const label = getDealFareDirectnessLabel(deal, NOW_ISO);
-    expect(label).toBeUndefined();
+    expect(label).toBe('Connecting');
     expect(label).not.toBe('Direct flight');
   });
 });
