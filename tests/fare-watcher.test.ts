@@ -27,10 +27,29 @@ function baselineFixture(id: string, observedDate: string, departureDate: string
 }
 
 describe('Fare Watcher / Standout Fares', () => {
-  it('audits the real archive without fabricating a candidate', () => {
+  it('audits the real archive without fabricating a standout candidate', () => {
     const candidates = generateFareWatcherCandidates(fareObservations, '2026-08-11');
-    expect(candidates).toEqual([]);
+    expect(candidates).toHaveLength(1);
+    expect(candidates[0]).toMatchObject({ routeSlug: 'manchester-lahore', currentFare: 574, qualification: 'new-recent-low', founderVerificationRequired: true, lifecycle: 'detected' });
     expect(qualifyFareWatcherObservation(currentIslamabad[0], fareObservations, '2026-08-11')).toMatchObject({ qualification: 'ordinary-fare', baselineSampleSize: 3, baselineMedian: 562, previousLow: 524 });
+  });
+
+  it('reports the five 11 August observations without qualifying a Standout Fare', () => {
+    const scheduled = ['manchester-lahore', 'manchester-islamabad', 'london-heathrow-delhi', 'birmingham-amritsar', 'london-heathrow-jeddah'];
+    const results = scheduled.map((routeSlug) => {
+      const candidate = fareObservations.find((observation) => observation.routeSlug === routeSlug && observation.observedDate === '2026-08-11');
+      return qualifyFareWatcherObservation(candidate!, fareObservations, '2026-08-11');
+    });
+
+    expect(results.map((result) => result.candidate.price)).toEqual([574, 601, 454, 823, 495]);
+    expect(results.map((result) => result.qualification)).toEqual(['new-recent-low', 'ordinary-fare', 'insufficient-baseline', 'ordinary-fare', 'insufficient-baseline']);
+    expect(results.map((result) => result.baselineSampleSize)).toEqual([3, 5, 2, 3, 2]);
+    expect(results[0]).toMatchObject({ baselineMedian: 620, previousLow: 578, differencePounds: 46 });
+    expect(results[1]).toMatchObject({ baselineMedian: 621, previousLow: 524, differencePounds: 20 });
+    expect(results[2]).toMatchObject({ baselineMedian: null, previousLow: 432 });
+    expect(results[3]).toMatchObject({ baselineMedian: 733, previousLow: 714, differencePounds: -90 });
+    expect(results[4]).toMatchObject({ baselineMedian: null, previousLow: 487 });
+    expect(results.every((result) => result.qualification !== 'standout-candidate')).toBe(true);
   });
 
   it('requires three comparable prior observations and fails closed below that bar', () => {

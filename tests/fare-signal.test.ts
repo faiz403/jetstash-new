@@ -30,9 +30,9 @@ describe('universal Fare Signal derivation', () => {
   it('shows the latest current publishable fare without promoting the historical Etihad check', () => {
     const signal = getFareSignalForRoute('manchester-islamabad', '2026-08-11');
     expect(signal.state).toBe('current');
-    expect(signal.observation?.price).toBe(621);
-    expect(signal.observation?.airline).toBe('Turkish Airlines');
-    expect(signal.observation?.observedDate).toBe('2026-08-10');
+    expect(signal.observation?.price).toBe(601);
+    expect(signal.observation?.airline).toBe('Etihad');
+    expect(signal.observation?.observedDate).toBe('2026-08-11');
     expect(signal.observation?.id).not.toContain('ey-645');
     expect(signal.strongerSignal).toBeNull();
   });
@@ -69,9 +69,9 @@ describe('Fare Signal presentation and CTA boundaries', () => {
     const text = renderToStaticMarkup(FareSignal({ signal, tripComUrl: getTripComRouteUrl('manchester-islamabad'), routeSlug: 'manchester-islamabad' })).replace(/\s+/g, ' ');
     expect(text).toContain('Fare Signal');
     expect(text).toContain('Fare spotted');
-    expect(text).toContain('621');
-    expect(text).toContain('Turkish Airlines');
-    expect(text).toContain('Checked 10 August 2026');
+    expect(text).toContain('601');
+    expect(text).toContain('Etihad');
+    expect(text).toContain('Checked 11 August 2026');
     expect(text).toContain('Check current price');
     expect(text).toContain('Partner link, opens Trip.com in a new tab.');
     expect(text).not.toMatch(/baggage|£0|deal|cheap|cheapest|below average|good value|save/i);

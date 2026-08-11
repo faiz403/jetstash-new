@@ -30,14 +30,15 @@ const routePageSrc = readFileSync(join(process.cwd(), 'app/routes/[slug]/page.ts
 describe('Smart Fare Comparison Manchester–Islamabad pilot', () => {
   const comparison = getSmartFareComparisonForRoute('manchester-islamabad', '2026-08-11')!;
 
-  it('selects only the two explicitly current Turkish observations', () => {
-    expect(comparison.options).toHaveLength(2);
-    expect(comparison.options.map((option) => option.id)).toEqual([
+  it('selects the three explicitly current options and excludes the historical Etihad snapshot', () => {
+    expect(comparison.options).toHaveLength(3);
+    expect(comparison.options.map((option) => option.id)).toEqual(expect.arrayContaining([
       'obs-man-isb-economy-20260810-tk-621-v1',
       'obs-man-isb-economy-20260810-tk-626-v1',
-    ]);
-    expect(comparison.options.map((option) => option.price)).toEqual([621, 626]);
-    expect(comparison.options.every((option) => option.id.includes('tk-'))).toBe(true);
+      'obs-man-isb-economy-20260811-8w-v1',
+    ]));
+    expect(comparison.options.map((option) => option.price)).toEqual(expect.arrayContaining([601, 621, 626]));
+    expect(comparison.options.some((option) => option.id === 'obs-man-isb-economy-20260810-ey-645-v1')).toBe(false);
     expect(comparison.totalCostComparisonReady).toBe(false);
   });
 
