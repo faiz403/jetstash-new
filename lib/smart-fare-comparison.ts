@@ -65,8 +65,11 @@ export interface SmartFareOptionSummary {
   mandatoryFeeEvidence: 'complete' | 'incomplete';
 }
 
+export type SmartFarePairStatementKind = 'price-time' | 'connection';
+
 export interface SmartFarePairStatement {
   optionIds: [string, string];
+  kind: SmartFarePairStatementKind;
   text: string;
 }
 
@@ -123,11 +126,13 @@ function pairStatements(first: SmartFareOptionSummary, second: SmartFareOptionSu
     if (higher.totalJourneyMinutes !== null && lower.totalJourneyMinutes !== null && higher.totalJourneyMinutes < lower.totalJourneyMinutes) {
       result.push({
         optionIds: ids,
+        kind: 'price-time',
         text: `${formatPounds(higher.price - lower.price)} more saves ${formatDuration(lower.totalJourneyMinutes - higher.totalJourneyMinutes)} of total journey time.`,
       });
     } else if (higher.totalJourneyMinutes !== null && lower.totalJourneyMinutes !== null && higher.totalJourneyMinutes > lower.totalJourneyMinutes) {
       result.push({
         optionIds: ids,
+        kind: 'price-time',
         text: `${formatPounds(higher.price - lower.price)} more takes ${formatDuration(higher.totalJourneyMinutes - lower.totalJourneyMinutes)} longer overall.`,
       });
     }
@@ -138,6 +143,7 @@ function pairStatements(first: SmartFareOptionSummary, second: SmartFareOptionSu
     const more = fewer.id === first.id ? second : first;
     result.push({
       optionIds: ids,
+      kind: 'connection',
       text: `${fewer.airline} has ${formatStops(more.stops! - fewer.stops!)} fewer than ${more.airline}.`,
     });
   }
@@ -150,6 +156,7 @@ function pairStatements(first: SmartFareOptionSummary, second: SmartFareOptionSu
     const longerMinutes = longer.outboundLayoverMinutes[0]!;
     result.push({
       optionIds: ids,
+      kind: 'connection',
       text: `${shorter.airline} has a shorter outbound connection (${formatDuration(shorter.outboundLayoverMinutes[0]!)} versus ${formatDuration(longerMinutes)}).`,
     });
   }

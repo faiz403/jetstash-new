@@ -43,6 +43,7 @@ describe('Smart Fare Comparison', () => {
 
     expect(comparison.options.map((option) => option.totalJourneyMinutes)).toEqual([1450, 1285]);
     expect(comparison.pairStatements).toContainEqual(expect.objectContaining({
+      kind: 'price-time',
       text: '£5 more saves 2h 45m of total journey time.',
     }));
     expect(comparison.statements).toContain('Turkish Airlines: checked baggage costs extra, but the amount was not shown.');
@@ -60,6 +61,7 @@ describe('Smart Fare Comparison', () => {
       returnLayoverMinutes: [60],
     });
     expect(comparison.statements).toContain('Turkish Airlines has a shorter outbound connection (1h 10m versus 3h 40m).');
+    expect(comparison.pairStatements.filter((statement) => statement.kind === 'connection')).not.toHaveLength(0);
     expect(comparison.statements.join('\n')).not.toMatch(/\b(best|cheapest|better value|worth it|savings|recommended)\b/i);
   });
 

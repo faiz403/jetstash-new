@@ -59,6 +59,10 @@ describe('Smart Fare Comparison Manchester–Islamabad pilot', () => {
     expect(text).toContain('Via Istanbul Airport (IST) and Istanbul (IST)');
     expect(text).toContain('Checked baggage: extra charge, amount not shown');
     expect(text).toContain('£5 more saves 2h 45m of total journey time.');
+    expect(text).toContain('Price and journey-time differences');
+    expect(text).toContain('Connection details');
+    expect(text).toContain('£20 more saves 11h 30m of total journey time.');
+    expect(text).toContain('£25 more saves 14h 15m of total journey time.');
     expect(text).toContain('Checked-baggage pricing was not disclosed, so this is not a complete trip-cost comparison.');
     expect(text).not.toMatch(/£0/);
     expect(text).not.toMatch(/\b(best|cheapest|better value|worth it|recommended|savings)\b/i);
@@ -78,5 +82,16 @@ describe('Smart Fare Comparison Manchester–Islamabad pilot', () => {
 
   it('returns no pilot comparison for routes without explicitly current option metadata', () => {
     expect(getSmartFareComparisonForRoute('manchester-lahore', '2026-08-11')).toBeNull();
+  });
+
+  it('does not render empty statement groups', () => {
+    const withoutPairStatements = collectStrings(SmartFareComparison({
+      comparison: { ...comparison, pairStatements: [] },
+      routeLabel: 'Manchester to Islamabad',
+    })).join(' ');
+
+    expect(withoutPairStatements).not.toContain('What the checked itineraries show');
+    expect(withoutPairStatements).not.toContain('Price and journey-time differences');
+    expect(withoutPairStatements).not.toContain('Connection details');
   });
 });
