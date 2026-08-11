@@ -1,6 +1,8 @@
 # JetStash Holidays — Package vs DIY Design Brief
 
 Status: design only. Do not add hotel, package or affiliate integrations yet.
+This remains a later product layer, separate from the internal Fare Watcher
+foundation and not connected to production UI.
 
 ## Initial scope
 
@@ -40,3 +42,12 @@ obligations before legal review confirms the operating model.
 3. Define a versioned family and board-basis search methodology.
 4. Define expiry, recheck and editorial approval rules.
 5. Prove that package and DIY totals are genuinely like-for-like.
+
+## Relationship to Fare Watcher
+
+Fare Watcher may later identify a verified flight observation for an Antalya,
+Dalaman, Marrakech or Agadir corridor, but that does not make a hotel or package
+price evidenced. A Holidays comparison must retain its own party, board-basis,
+bag, transfer and hotel evidence and must not reuse a flight-only fare as a
+package total. No candidate alert or affiliate hand-off can auto-create a
+holiday recommendation.

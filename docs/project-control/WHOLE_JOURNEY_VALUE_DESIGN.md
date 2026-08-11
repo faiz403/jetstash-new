@@ -28,6 +28,12 @@ assumption or generic convenience estimate.
 - Third: research permitted, reproducible ground and airport data sources.
 - Only then: evaluate whether a public Whole Journey Value output is possible.
 
+Fare Watcher Phase 1 does not change this sequence. Its output is an internal
+fare-change candidate, not a value score, recommendation or whole-journey
+claim. Any future airport, ground-transport or hotel layer must enter through
+its own evidenced observation type and remain comparable before it can be
+combined with a fare.
+
 ## Prohibited shortcuts
 
 - No estimated meals, taxis, lounges, hotels or airport convenience costs.
