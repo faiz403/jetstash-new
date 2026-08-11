@@ -1,6 +1,8 @@
 # Fare Watcher / Standout Fares — Design Brief
 
-Status: design only. No monitoring, scraping or automatic publication is approved.
+Status: Phase 1 foundation implemented on `feature/fare-watcher-phase-1`.
+The engine is internal-only: no monitoring, scraping, automatic approval or
+automatic publication is approved.
 
 ## Purpose
 
@@ -31,6 +33,46 @@ an editorial lead, not a customer-facing claim.
    automatically.
 6. Candidates expire automatically when their checked date, travel dates or
    source availability no longer support the claim.
+
+## Phase 1 qualification rules
+
+The pure comparator lives in `lib/fare-watcher.ts`. It only compares records
+that share the same route, cabin, GBP currency, versioned `profileId`, passenger
+profile, trip length and an eight-week-style booking horizon (up to seven days'
+drift). A same-day alternative is part of the same search snapshot, not a
+baseline point. Historical records, incomplete records and records outside the
+180-day baseline window are excluded and reported as evidence limits.
+
+The initial archive is thin: most routes have one observation and only a small
+number have repeated same-profile observations. The first bar is therefore a
+minimum of **three comparable prior observations**, a current candidate, and a
+drop of at least **£25 and 10% below the prior median**. A new recent low that
+does not clear both meaningful-drop thresholds is labelled `new-recent-low`,
+not a stronger public claim. A candidate that clears both thresholds and is a
+new low is an internal `standout-candidate`; otherwise it is `notable-drop` or
+`ordinary-fare`. Zero candidates is a valid result.
+
+Every generated candidate starts at `detected`, carries
+`founderVerificationRequired: true`, and must move through
+`needs-verification` and founder approval before it could ever become eligible
+for publication. Expiry is fail-closed when the observation is stale or the
+travel date has passed. The engine never emits a market-wide cheapest, bargain,
+guaranteed, urgency or savings claim, and it never changes the append-only
+archive itself.
+
+The real archive audit for 11 August 2026 produced no candidates. On
+Manchester–Islamabad, the two explicitly current Turkish snapshots have a
+three-point comparable prior baseline (Â£524, Â£562, Â£621; median Â£562), so
+Â£621 and Â£626 are ordinary fares under this first threshold set. The Etihad
+Â£645 row is explicitly historical and excluded.
+
+## Future provider boundary
+
+`lib/fare-source-adapter.ts` defines a typed, unimplemented adapter boundary:
+`searchRoute`, `normaliseOffer` and `recheckOffer`, plus source terms metadata.
+No consumer-page scraping or unapproved external API is connected. A future
+adapter must prove permitted usage, preserve the same profile fields, and feed
+the append-only observation archive rather than bypassing it.
 
 ## Guardrails
 
