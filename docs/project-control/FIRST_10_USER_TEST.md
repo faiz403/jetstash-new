@@ -1,9 +1,11 @@
 # JetStash First 10 User Test — Founder-Led Procedure
 
 **Recorded:** 8 August 2026, alongside `FIRST_100_VISITORS_WORKSHEET.md` as the first-users
-measurement pack. **Status:** procedure only — no test has been run yet, and no results are
-recorded in this repository. This document defines the task list, the operating rules, and the
-shape of the private per-user record; it deliberately contains zero real participant data.
+measurement pack. **Updated:** 11 August 2026 to cover the current Fare Signal, Manchester–Islamabad
+Smart Fare Comparison and Trip.com handoff. **Status:** procedure only — no test has been run yet,
+and no results are recorded in this repository. This document defines the task list, the operating
+rules, and the shape of the private per-user record; it deliberately contains zero real participant
+data.
 
 ## What this is, and what it deliberately is not
 
@@ -21,12 +23,14 @@ features, or settle a disagreement about taste.
 ## Who to recruit
 
 Real people who are not already familiar with JetStash and were not coached on what it does before
-the session. A mix of broad traveller types is more useful than ten similar people — see the
-private record's "broad traveller type" field below for the categories to aim to cover (e.g.
-someone visiting family in South Asia, a Gulf/Umrah traveller, a business-class flyer, someone with
-no immediate travel plan browsing out of curiosity). Do not recruit exclusively from people who
-already know the founder is testing a travel site for them — that primes the "what does this do"
-task before it starts.
+the session. Prefer people who genuinely book or help book international travel. A mix of broad
+traveller types is more useful than ten similar people — see the private record's "broad traveller
+type" field below for the categories to aim to cover (e.g. someone visiting family in South Asia,
+a Gulf/Umrah traveller, a general long-haul traveller, or someone with no immediate trip who can
+realistically understand the task). Do not impose artificial demographic quotas, and do not recruit
+exclusively from people who already know the founder is testing a travel site for them — that primes
+the "what does this do" task before it starts. Use participants' normal devices where practical,
+especially mobile.
 
 ## Before the session — operating rules (do not skip these)
 
@@ -46,32 +50,58 @@ task before it starts.
   action once it shows up independently across multiple participants, not just once. Do not act on
   a single session's finding alone, however compelling it feels in the moment.
 
+## Opening script
+
+Keep the introduction short and natural:
+
+> I built this website and want to see how clear it is. I won't explain it first because I want to
+> see what makes sense naturally. Please think aloud as you use it. I'm testing the website, not you.
+> Don't enter any personal or passport information, and don't complete a booking.
+
+Keep each session to roughly 20–25 minutes so that ten real sessions remain practical: a short
+introduction, the ten tasks one at a time, and a brief debrief. Do not preview later tasks or turn
+the session into a product walkthrough.
+
 ## The tasks — give these as plain instructions, not a guided tour
 
 Ask the participant to think aloud as they go. Give one instruction at a time; do not preview later
 tasks. Phrase these as neutral prompts, not leading questions — do not say "click the Route Atlas"
 if the task is to see whether they can find it themselves.
 
-1. **First impression.** Show them the homepage only. Ask: *"Looking at this, what do you think
-   this website does?"* Do not correct or clarify their answer.
+1. **First impression.** Show them the homepage only. Ask: *"What do you think this website
+   does?"* Do not correct or clarify their answer.
 2. **Find a relevant route.** Ask them to find information for a flight route that's actually
    relevant to them (their own likely route, or a plausible one if they have no travel plans right
-   now). Watch how they get there.
-3. **Use the Route Atlas.** Ask them to use the interactive map on the homepage to explore where
-   JetStash covers.
-4. **Use Travel Ready Check.** Ask them to find out what they'd need to check before flying to a
-   destination of their choice.
-5. **Find a tracked fare.** Ask them to find a real price example for a route they're interested
-   in.
-6. **Explain the fare.** Once they've found one, ask: *"What does this price actually mean to
-   you?"* — listen for whether they understand it's a dated, hand-checked observation rather than a
-   live bookable price or a guaranteed cheapest fare.
-7. **Find the booking hand-off.** Ask them to show you where they would go next if they actually
-   wanted to book this.
-8. **Trust check.** Ask directly: *"Do you trust the information on this page? Why or why not?"*
-9. **Confusion check.** Ask: *"What, if anything, confused you during this?"*
-10. **Return likelihood.** Ask: *"Would you use this site again, or tell someone else about it?
-    Why or why not?"*
+   now). Ask them to show what they would inspect first, and watch how they get there.
+3. **Discover coverage.** Ask: *"From the homepage, explore where this site covers."* Do not name
+   the Route Atlas beforehand. Record whether they naturally discover and use the map, and what
+   they think it does.
+4. **Travel readiness.** Ask them to find what they would need to check before travelling to a
+   destination of their choice. Then ask: *"What does this result mean to you, and what would you
+   do next?"* Do not collect real passport or document information.
+5. **Find a fare example.** Ask: *"Find a fare example for a route you are interested in."* Do
+   not use internal terms such as "tracked fare" or explain the Fare Signal first.
+6. **Understand the Fare Signal.** Once they have found a fare, ask: *"What does this fare
+   information tell you?"* Record whether they understand the observed fare, checked date, travel
+   dates, airline, routing/directness and that it is not automatically a cheapest-market claim.
+   Do not teach these points beforehand.
+7. **Compare Manchester–Islamabad.** Ask them to open the Manchester–Islamabad route and then ask:
+   *"What differences do you notice between these fare options?"* Do not point them to the £5 /
+   2h 45m comparison or identify a preferred option. Record whether they notice price, journey-time,
+   routing/connection and baggage differences, and whether they mistakenly think JetStash is choosing
+   or recommending a winner. This is not a True Trip Cost test.
+8. **Booking hand-off.** Ask: *"If you wanted to continue towards booking, show me what you would
+   do."* Before any click, ask: *"Where do you expect this to take you?"* Allow one safe click to
+   the current partner handoff where practical, but do not complete a booking or enter payment data.
+   Record whether they understand that they left JetStash, Trip.com is the booking partner, the link
+   opens separately or in a new tab where applicable, fare/details need checking again, and clicking
+   is not equivalent to booking. Do not explain these points beforehand.
+9. **Differentiation, trust and confusion.** Ask: *"Compared with where you normally start looking
+   for flights, what does this site do differently, if anything?"* Do not ask whether JetStash is
+   "better" than a comparison site. Then ask: *"What made you trust or question anything you saw?"
+   and *"What, if anything, confused you?"*
+10. **Before-booking intent.** Ask: *"Would you use JetStash before booking a flight? Why or why
+   not?"* This is intentionally more specific than simply asking whether they would visit again.
 
 ## Privacy — read before running a single session
 
@@ -89,15 +119,25 @@ repository — this file stays a template.
 
 | Field | What to capture |
 |---|---|
+| Anonymous participant code | A code such as U01 — never a name or contact detail |
 | Session date | When the session happened |
 | Broad traveller type | A category, never an identity — e.g. "visiting family in Pakistan", "Gulf/Umrah traveller", "business-class flyer", "browsing, no imminent trip" |
-| Device type | Desktop, mobile, or tablet |
+| Device/browser | The participant's normal device and browser, where practical |
 | First impression (Task 1) | Their own words for what they thought the site does, before any correction |
 | First point of confusion | Where they first got stuck or hesitated, in their own words or your direct observation |
+| Route discovery | Whether they found a plausible route and what they inspected first |
+| Route Atlas discovery/comprehension | Whether they found the map naturally and what they thought it showed |
+| Travel Ready comprehension | What they thought the result meant and what they would do next |
+| Fare Signal noticed/understood | Whether they noticed it and understood the observed fare, dates, airline and routing limits |
+| Smart Fare Comparison understood | Whether they noticed the price, time, routing and baggage differences without being led |
+| Recommendation misunderstanding | Whether they treated the comparison as JetStash choosing or recommending a winner |
+| Baggage uncertainty | Whether they understood that an unknown baggage amount was not £0 or included |
+| Trip.com handoff expectation | Where they expected the click to go before clicking |
+| Trip.com handoff outcome | What happened after the safe click and what they understood about leaving JetStash, the partner and rechecking details |
+| Differentiation language | Their own words about what JetStash does differently from where they normally look |
 | Task completion | Pass/fail per task (1–10 above), noted plainly — not scored or weighted |
-| Trust concerns | What they said in the Task 8 trust check, plus anything else they raised unprompted |
-| Found the booking hand-off? | Yes/no — did they find where to continue to Trip.com, and how long did it take them |
-| Would return? | Their own answer to Task 10, in their own words where possible |
+| Trust concerns | What they said in the Task 9 trust check, plus anything else they raised unprompted |
+| Before-booking intent | Their answer to Task 10, in their own words where possible |
 | Direct quotes worth preserving | Verbatim phrases that capture a reaction precisely — keep these anonymous (no name attached), and skip any quote that would identify the person if read on its own |
 
 ## After all 10 sessions — turning findings into action
