@@ -29,6 +29,13 @@ export interface FareObservation {
   /** Why this check was made; required for new observations. */
   observationReason?: 'routine-weekly' | 'routine-fortnightly' | 'school-holiday' | 'religious-peak' | 'airline-sale' | 'emergency-recheck' | 'route-status-recheck' | 'other';
   /**
+   * Whether this observation is eligible for a current structured comparison.
+   * Historical observations remain in the append-only archive but must not be
+   * mixed into a current comparison snapshot when a later live check replaced
+   * them. Optional so the broader archive remains backwards-compatible.
+   */
+  comparisonEligibility?: 'current' | 'historical';
+  /**
    * ISO date of the outbound departure the fare was quoted FOR — record it
    * on every new observation. Without it, "how many days before departure
    * was this fare seen" can never be computed, and that days-out dimension
@@ -79,6 +86,21 @@ export interface FareObservation {
    * defect).
    */
   fareDirectness?: 'direct' | 'connecting' | 'unknown';
+  /** Directness shown for each reviewed leg; never inferred from the route. */
+  outboundDirectness?: 'direct' | 'connecting' | 'unknown';
+  returnDirectness?: 'direct' | 'connecting' | 'unknown';
+  /** Total scheduled journey time for each reviewed leg, in minutes. */
+  outboundJourneyMinutes?: number;
+  returnJourneyMinutes?: number;
+  /** Stops shown for each reviewed leg. */
+  outboundStops?: number;
+  returnStops?: number;
+  /** Connection airports shown for each reviewed leg. */
+  outboundConnectionAirports?: string[];
+  returnConnectionAirports?: string[];
+  /** Layover durations shown for each reviewed leg, in minutes. */
+  outboundLayoverMinutes?: number[];
+  returnLayoverMinutes?: number[];
 }
 
 /**
@@ -245,6 +267,10 @@ export const fareObservations: FareObservation[] = [
   { id: 'obs-lba-atq-economy-20260806-8w-v1', routeSlug: 'leeds-bradford-amritsar', cabin: 'Economy', observedDate: '2026-08-06', price: 800, priceNote: 'return, per person, one adult; KLM and IndiGo, connecting via Amsterdam and Mumbai (outbound only reviewed: LBA 06:30-ATQ 07:45+1, 2 stops, 25h 15m); return leg not reviewed; baggage not disclosed', source: 'KLM and IndiGo', observedVia: 'google-flights', sourceUrl: 'https://www.google.com/travel/flights?q=Flights%20from%20Leeds%20Bradford%20to%20Amritsar%20October%201%202026%20return%20October%2015%202026&curr=GBP&hl=en&gl=GB', currency: 'GBP', baggage: 'not stated', profileId: 'leeds-bradford-amritsar-economy-1adult-23kg-v1', observationReason: 'routine-weekly', departureDate: '2026-10-01', returnDate: '2026-10-15', fareDirectness: 'connecting' },
   { id: 'obs-lba-isb-economy-20260806-8w-v1', routeSlug: 'leeds-bradford-islamabad', cabin: 'Economy', observedDate: '2026-08-06', price: 916, priceNote: 'return, per person, one adult; Aer Lingus (operated by Emerald Airlines) and Qatar Airways, connecting via Dublin and Doha (outbound only reviewed: LBA 20:05-ISB 01:50+2, 2 stops, 25h 45m; only itinerary returned for these exact dates); return leg not reviewed; baggage not disclosed', source: 'Aer Lingus and Qatar Airways', observedVia: 'google-flights', sourceUrl: 'https://www.google.com/travel/flights?q=Flights%20from%20Leeds%20Bradford%20to%20Islamabad%20October%201%202026%20return%20October%2015%202026&curr=GBP&hl=en&gl=GB', currency: 'GBP', baggage: 'not stated', profileId: 'leeds-bradford-islamabad-economy-1adult-23kg-v1', observationReason: 'routine-weekly', departureDate: '2026-10-01', returnDate: '2026-10-15', fareDirectness: 'connecting' },
   { id: 'obs-lgw-atq-economy-20260806-8w-v1', routeSlug: 'london-gatwick-amritsar', cabin: 'Economy', observedDate: '2026-08-06', price: 952, priceNote: 'return, per person, one adult; Qatar Airways, connecting via Doha (outbound only reviewed: LGW 09:00-ATQ 02:10+1, 1 stop, 17h 10m); a genuine nonstop Air India option exists on this route (route-level verification) but was not the top-ranked search result; return leg not reviewed; baggage not disclosed', source: 'Qatar Airways', observedVia: 'google-flights', sourceUrl: 'https://www.google.com/travel/flights?q=Flights%20from%20London%20Gatwick%20to%20Amritsar%20October%201%202026%20return%20October%2015%202026&curr=GBP&hl=en&gl=GB', currency: 'GBP', baggage: 'not stated', profileId: 'london-gatwick-amritsar-economy-1adult-23kg-v1', observationReason: 'routine-weekly', departureDate: '2026-10-01', returnDate: '2026-10-15', fareDirectness: 'connecting' },
+  // 2026-08-10: full outbound and return details reviewed in Google Flights for the standard 6–20 October profile. Google showed taxes and required fees included, but no baggage allowance; optional charges may apply.
+  { id: 'obs-man-isb-economy-20260810-tk-621-v1', routeSlug: 'manchester-islamabad', cabin: 'Economy', observedDate: '2026-08-10', price: 621, priceNote: 'return, per person, one adult; taxes and required fees included; outbound MAN–IST–ISB 12h 55m with 3h 50m in Istanbul; return ISB–IST–MAN 11h 15m with 1h in Istanbul; baggage not stated; optional charges may apply', source: 'Turkish Airlines', observedVia: 'google-flights', sourceUrl: 'https://www.google.com/travel/flights?q=Flights%20from%20Manchester%20to%20Islamabad%20October%206%202026%20return%20October%2020%202026&curr=GBP&hl=en&gl=GB', currency: 'GBP', baggage: 'not stated; optional charges may apply', profileId: 'manchester-islamabad-economy-1adult-23kg-v1', observationReason: 'routine-weekly', comparisonEligibility: 'current', departureDate: '2026-10-06', returnDate: '2026-10-20', fareDirectness: 'connecting', outboundDirectness: 'connecting', returnDirectness: 'connecting', outboundJourneyMinutes: 775, returnJourneyMinutes: 675, outboundStops: 1, returnStops: 1, outboundConnectionAirports: ['Istanbul Airport (IST)'], returnConnectionAirports: ['Istanbul (IST)'], outboundLayoverMinutes: [230], returnLayoverMinutes: [60] },
+  { id: 'obs-man-isb-economy-20260810-tk-626-v1', routeSlug: 'manchester-islamabad', cabin: 'Economy', observedDate: '2026-08-10', price: 626, priceNote: 'return, per person, one adult; taxes and required fees included; outbound MAN–IST–ISB 10h 10m with 1h 10m in Istanbul; return ISB–IST–MAN 11h 15m with 1h in Istanbul; baggage not stated; optional charges may apply', source: 'Turkish Airlines', observedVia: 'google-flights', sourceUrl: 'https://www.google.com/travel/flights?q=Flights%20from%20Manchester%20to%20Islamabad%20October%206%202026%20return%20October%2020%202026&curr=GBP&hl=en&gl=GB', currency: 'GBP', baggage: 'not stated; optional charges may apply', profileId: 'manchester-islamabad-economy-1adult-23kg-v1', observationReason: 'routine-weekly', comparisonEligibility: 'current', departureDate: '2026-10-06', returnDate: '2026-10-20', fareDirectness: 'connecting', outboundDirectness: 'connecting', returnDirectness: 'connecting', outboundJourneyMinutes: 610, returnJourneyMinutes: 675, outboundStops: 1, returnStops: 1, outboundConnectionAirports: ['Istanbul Airport (IST)'], returnConnectionAirports: ['Istanbul (IST)'], outboundLayoverMinutes: [70], returnLayoverMinutes: [60] },
+  { id: 'obs-man-isb-economy-20260810-ey-645-v1', routeSlug: 'manchester-islamabad', cabin: 'Economy', observedDate: '2026-08-10', price: 645, priceNote: 'return, per person, one adult; taxes and required fees included; outbound MAN–AUH–ISB 14h 05m with 3h 40m in Abu Dhabi; return ISB–AUH–MAN 15h 10m with 4h 05m in Abu Dhabi; baggage not stated; optional charges may apply', source: 'Etihad', observedVia: 'google-flights', sourceUrl: 'https://www.google.com/travel/flights?q=Flights%20from%20Manchester%20to%20Islamabad%20October%206%202026%20return%20October%2020%202026&curr=GBP&hl=en&gl=GB', currency: 'GBP', baggage: 'not stated; optional charges may apply', profileId: 'manchester-islamabad-economy-1adult-23kg-v1', observationReason: 'routine-weekly', comparisonEligibility: 'historical', departureDate: '2026-10-06', returnDate: '2026-10-20', fareDirectness: 'connecting', outboundDirectness: 'connecting', returnDirectness: 'connecting', outboundJourneyMinutes: 845, returnJourneyMinutes: 910, outboundStops: 1, returnStops: 1, outboundConnectionAirports: ['Zayed International Airport (AUH)'], returnConnectionAirports: ['Zayed International Airport (AUH)'], outboundLayoverMinutes: [220], returnLayoverMinutes: [245] },
 ];
 
 export function getObservationsByRoute(routeSlug: string) {

@@ -336,7 +336,7 @@ describe('getDealDirectnessLabel (TR-009, final correction) — a deal/search ca
 
 describe('FARE-001 pilot — historic examples stay private; only fully dated, evidenced observations publish', () => {
   it('keeps historic observations and appends every editorial observation batch, including Fare Coverage Expansion Batch B (6 August 2026)', () => {
-    expect(fareObservations).toHaveLength(51);
+    expect(fareObservations).toHaveLength(54);
   });
 
   it('keeps every historic observation incomplete and private', () => {
@@ -385,6 +385,9 @@ describe('FARE-001 pilot — historic examples stay private; only fully dated, e
       'obs-lba-atq-economy-20260806-8w-v1',
       'obs-lba-isb-economy-20260806-8w-v1',
       'obs-lgw-atq-economy-20260806-8w-v1',
+      'obs-man-isb-economy-20260810-tk-621-v1',
+      'obs-man-isb-economy-20260810-tk-626-v1',
+      'obs-man-isb-economy-20260810-ey-645-v1',
     ]);
     expect(published).toEqual(expect.arrayContaining([
       expect.objectContaining({

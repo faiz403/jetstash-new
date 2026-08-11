@@ -80,10 +80,10 @@ describe('Every Batch A observation has complete round-trip evidence, or explici
 });
 
 describe('fareDirectness resolution rules the audit established', () => {
-  it('"unknown" is never treated as a guessed connecting/direct value by aggregation', () => {
+  it('the 6 August unknown value is not a guess, while the later fully reviewed options aggregate as connecting', () => {
     const range = getFareRangeSummary('manchester-islamabad', 'Economy', NOW_ISO);
     expect(range).not.toBeNull();
-    expect(range!.observedDirectness).toBeUndefined();
+    expect(range!.observedDirectness).toBe('connecting');
   });
 
   it('Manchester-Doha, with one connecting and one unknown-directness observation, resolves to no aggregated directness - never guesses toward either value', () => {

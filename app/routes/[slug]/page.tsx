@@ -37,6 +37,8 @@ import { getDestinationImage } from '@/lib/brand-images';
 import { getFareSectionCopy } from '@/lib/fare-section-copy';
 import { HeroBackdrop } from '@/components/ui/hero-backdrop';
 import { TrackedOutboundLink } from '@/components/ui/tracked-outbound-link';
+import { SmartFareComparison } from '@/components/route/smart-fare-comparison';
+import { getSmartFareComparisonForRoute } from '@/lib/smart-fare-route-adapter';
 
 /**
  * Route-hero focal-position overrides, keyed by destination slug. HeroBackdrop's default
@@ -129,6 +131,7 @@ export default async function RoutePage({ params }: { params: Promise<{ slug: st
   const activeWarnings = getActiveWarningsByRoute(route.slug);
   const timelineEvents = getTimelineByRoute(route.slug);
   const fareObservations = getPublishableObservationsByRoute(route.slug, nowIso);
+  const smartFareComparison = getSmartFareComparisonForRoute(route.slug, nowIso);
   // Fare copy must reflect the data actually available — see getFareSectionCopy.
   const fareSectionCopy = getFareSectionCopy(fareObservations.length > 0, dealsHere.length > 0);
   const bookingWindows = getBookingWindowsByRoute(route.slug);
@@ -571,6 +574,11 @@ export default async function RoutePage({ params }: { params: Promise<{ slug: st
         <div className="mx-auto max-w-content px-5 sm:px-8">
           <h2 className="font-display text-2xl text-ink-900 sm:text-3xl">{fareSectionCopy.heading}</h2>
           {fareSectionCopy.caption && <p className="mt-2 max-w-xl text-sm text-ink-500">{fareSectionCopy.caption}</p>}
+          {smartFareComparison && (
+            <div className="mt-8">
+              <SmartFareComparison comparison={smartFareComparison} routeLabel={`${airport.city} to ${dest.city}`} />
+            </div>
+          )}
           {fareObservations.length > 0 && (
             <div className="mt-8">
               <FareHistoryPanel observations={fareObservations} />

@@ -143,10 +143,10 @@ describe('FareRangeSummary.observedDirectness aggregates per-observation fareDir
     expect(range!.observedDirectness).toBe('connecting');
   });
 
-  it('Manchester-Islamabad\'s range reports undefined, never a guess — its Batch A observation was corrected to fareDirectness: "unknown" after a 6 August 2026 audit found only the outbound leg had been reviewed', () => {
+  it('Manchester-Islamabad\'s range reports connecting after the 10 August options had both legs reviewed', () => {
     const range = getFareRangeSummary('manchester-islamabad', 'Economy', NOW_ISO);
     expect(range).not.toBeNull();
-    expect(range!.observedDirectness).toBeUndefined();
+    expect(range!.observedDirectness).toBe('connecting');
   });
 
   it('a route/cabin whose observations never recorded fareDirectness reports undefined, never a guess', () => {
