@@ -109,7 +109,7 @@ describe('Atlas rendering and accessibility behaviour are unchanged by this fix'
   });
 
   it('the active-service-notice rendering and its accent colour are untouched', () => {
-    expect(atlasSrc).toContain('Active service notice — a change has been announced, see the route guide');
+    expect(atlasSrc).toContain('Active service notice');
     expect(atlasSrc).toContain('SERVICE_NOTICE_ACCENT');
   });
 

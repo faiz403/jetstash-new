@@ -187,18 +187,19 @@ const COUNTRY_HALO_MARGIN = 1;
 // not just nearest-neighbour pairs — so no two hit-circles can ever
 // overlap, for any arrangement of countries this Atlas ever grows to.
 const BASE_COUNTRY_HIT_R = 12.5;
-// Gulf countries are geographically compact at this scale. A five-unit floor
-// keeps Qatar and the UAE comfortable to target without overlap (their centres
-// are just over ten units apart), which matters for both mouse and touch users.
+// Gulf countries are geographically compact at this scale. This value is a
+// preferred lower bound only; computeSafeRadius always lets the geometric
+// non-overlap bound win when countries sit closer together.
 const MIN_COUNTRY_HIT_R = 5;
 const COUNTRY_HIT_MARGIN = 1.5;
 
 // Same principle, finer-grained, for destinations within the active
 // country — Turkey's Aegean/Mediterranean resort towns (Antalya, Dalaman,
 // Bodrum, Izmir) are genuinely only a few units apart in real geography.
-// The margin and floor are smaller than the country version since these
-// hit-circles only need to serve a mouse pointer and keyboard focus, not
-// a fingertip — touch devices use the separate chip selector below.
+// The margin and preferred lower bound are smaller than the country version
+// since these hit-circles only need to serve a mouse pointer and keyboard
+// focus, not a fingertip — touch devices use the separate chip selector
+// below. The lower bound never overrides the no-overlap safety calculation.
 const BASE_DEST_HIT_R = 4.5;
 const MIN_DEST_HIT_R = 1.2;
 const DEST_HIT_MARGIN = 0.8;
@@ -223,8 +224,17 @@ const LABEL_CROWD_RADIUS = 20;
 const LABEL_PUSH_DISTANCE = 8;
 
 function computeSafeRadius(nearestDist: number, base: number, min: number, margin: number): number {
-  const safe = nearestDist / 2 - margin;
-  return Math.min(base, Math.max(min, safe));
+  // Keep a small proportional gap in crowded clusters rather than applying
+  // a fixed margin that can collapse a legitimate target to sub-pixel size.
+  // The resulting radius remains strictly below half the nearest distance.
+  const effectiveMargin = Math.min(margin, nearestDist * 0.05);
+  const safe = nearestDist / 2 - effectiveMargin;
+  // A preferred minimum must never make neighbouring hit targets overlap.
+  // In crowded clusters (Pakistan, Turkey and the Gulf) the safe radius can
+  // be smaller than that preference, so the geometric bound wins and the
+  // mobile chip selector remains the comfortable touch target.
+  const lowerBound = Math.min(min, Math.max(0, safe));
+  return Math.min(base, Math.max(lowerBound, safe));
 }
 
 // Halo glow needs a different bound than the hit-radius above: only one
@@ -757,6 +767,7 @@ export function AtlasFeelTest({
                   cy={d.y}
                   r={destHitRadius[d.slug]}
                   fill="transparent"
+                  pointerEvents="all"
                   className="cursor-pointer outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#C8932E]"
                   tabIndex={0}
                   role="button"
@@ -779,7 +790,7 @@ export function AtlasFeelTest({
                     reader's browse-mode virtual cursor from reading it as a
                     second, redundant node next to the hit-circle's own
                     aria-label. */}
-                <text x={d.x + 2.7} y={labelY + 0.9} fontFamily="var(--font-sans), Arial, sans-serif" fontSize={isActive ? 3 : 2.5} fontWeight={isActive ? 600 : 400} fill="#F7F2E9" stroke="#080A0F" strokeWidth="0.9" strokeOpacity="0.85" paintOrder="stroke" opacity={isActive ? 1 : 0.65} aria-hidden="true">
+                <text x={d.x + 2.7} y={labelY + 0.9} fontFamily="var(--font-sans), Arial, sans-serif" fontSize={isActive ? 3 : 2.5} fontWeight={isActive ? 600 : 400} fill="#F7F2E9" stroke="#080A0F" strokeWidth="0.9" strokeOpacity="0.85" paintOrder="stroke" opacity={isActive ? 1 : 0.65} pointerEvents="none" aria-hidden="true">
                   {d.label}
                 </text>
               </g>
@@ -805,7 +816,7 @@ export function AtlasFeelTest({
               className="pointer-events-none absolute inset-y-0 right-0 w-10 bg-gradient-to-l from-ink-950 to-transparent sm:hidden"
             />
             <div className="pointer-events-none absolute bottom-2 right-2 inline-flex items-center gap-1 rounded-full bg-ink-950/80 px-2.5 py-1 text-[11px] font-medium text-ink-300 sm:hidden">
-              Swipe to explore more routes
+              Swipe across the map to explore more destinations
               <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
             </div>
           </>
@@ -870,46 +881,44 @@ export function AtlasFeelTest({
           </div>
         </div>
 
-        {/* Legend — every state actually shown on screen, not just the
-            country-level tier. A visitor sees "Seasonal" and "Intelligence
-            still being expanded" immediately; the legend has to explain
-            every one of them in plain text, not colour alone (accessible
-            text carries the meaning; colour is a bonus, never the only
-            signal — matches every aria-label already on the markers
-            themselves). Two rows because they answer two different
-            questions: how well JetStash knows a COUNTRY overall (an
-            aggregate, so it can be 'mixed'), and how well it knows THIS
-            ROUTE specifically (never 'mixed' — a single route is always
-            exactly one of the three tiers). */}
-        <div className="mt-4 flex flex-col gap-3">
-          <div>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-300">Country coverage (this destination&apos;s whole country)</p>
-            <div className="mt-1.5 flex flex-wrap gap-4 text-xs text-ink-300">
-              {(Object.keys(COUNTRY_INTELLIGENCE_COLOUR) as CountryIntelligenceLevel[]).map((k) => (
-                <span key={k} className="inline-flex items-center gap-1.5">
-                  <span className="inline-block h-2.5 w-2.5 rounded-full" style={{ backgroundColor: COUNTRY_INTELLIGENCE_COLOUR[k].stroke }} aria-hidden="true" />
-                  {COUNTRY_INTELLIGENCE_COLOUR[k].label}
-                </span>
-              ))}
+        {/* One customer-facing legend keeps the two genuine data layers together:
+            the country glow summarises coverage across a country, while the
+            destination dot answers how much this specific route is researched.
+            They are labelled in one compact block so they do not read as two
+            competing versions of the same legend. */}
+        <div className="mt-4 rounded-sm border border-white/5 bg-white/[0.02] px-3.5 py-3" aria-label="Atlas colour legend">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-300">What the colours mean</p>
+          <p className="mt-1 text-[11px] leading-relaxed text-ink-300">Country glow = coverage across that country. Destination dot = research for that specific route.</p>
+          <div className="mt-2.5 flex flex-col gap-2.5 text-xs text-ink-300">
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-ink-300">Country glow</p>
+              <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1.5">
+                {(Object.keys(COUNTRY_INTELLIGENCE_COLOUR) as CountryIntelligenceLevel[]).map((k) => (
+                  <span key={k} className="inline-flex items-center gap-1.5">
+                    <span className="inline-block h-2.5 w-2.5 rounded-full" style={{ backgroundColor: COUNTRY_INTELLIGENCE_COLOUR[k].stroke }} aria-hidden="true" />
+                    {COUNTRY_INTELLIGENCE_COLOUR[k].label}
+                  </span>
+                ))}
+              </div>
             </div>
-          </div>
-          <div>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-300">Route intelligence (this specific destination)</p>
-            <div className="mt-1.5 flex flex-wrap gap-4 text-xs text-ink-300">
-              {(Object.keys(ROUTE_INTELLIGENCE_COLOUR) as RouteIntelligenceLevel[]).map((k) => (
-                <span key={k} className="inline-flex items-center gap-1.5">
-                  <span className="inline-block h-2 w-2 rounded-full" style={{ backgroundColor: ROUTE_INTELLIGENCE_COLOUR[k].fill }} aria-hidden="true" />
-                  {ROUTE_INTELLIGENCE_COLOUR[k].label}
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-ink-300">Destination dot</p>
+              <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1.5">
+                {(Object.keys(ROUTE_INTELLIGENCE_COLOUR) as RouteIntelligenceLevel[]).map((k) => (
+                  <span key={k} className="inline-flex items-center gap-1.5">
+                    <span className="inline-block h-2 w-2 rounded-full" style={{ backgroundColor: ROUTE_INTELLIGENCE_COLOUR[k].fill }} aria-hidden="true" />
+                    {ROUTE_INTELLIGENCE_COLOUR[k].label}
+                  </span>
+                ))}
+                <span className="inline-flex items-center gap-1.5">
+                  <span className="inline-block h-2 w-2 rounded-full" style={{ backgroundColor: SERVICE_NOTICE_ACCENT }} aria-hidden="true" />
+                  Active service notice
                 </span>
-              ))}
-              <span className="inline-flex items-center gap-1.5">
-                <span className="inline-block h-2 w-2 rounded-full" style={{ backgroundColor: SERVICE_NOTICE_ACCENT }} aria-hidden="true" />
-                Active service notice — a change has been announced, see the route guide
-              </span>
-              <span className="inline-flex items-center gap-1.5">
-                <Badge variant="terracotta" className="px-2 py-0.5 text-[9px]">Seasonal</Badge>
-                service confirmed for part of the year only
-              </span>
+                <span className="inline-flex items-center gap-1.5">
+                  <Badge variant="terracotta" className="px-2 py-0.5 text-[9px]">Seasonal</Badge>
+                  service confirmed for part of the year only
+                </span>
+              </div>
             </div>
           </div>
         </div>
