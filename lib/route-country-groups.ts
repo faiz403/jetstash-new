@@ -74,6 +74,10 @@ export const COUNTRY_REPRESENTATIVE_DESTINATION_SLUG: Record<string, string> = {
   'Saudi Arabia': 'jeddah',
   Turkey: 'istanbul',
   Morocco: 'marrakech',
+  Spain: 'barcelona',
+  Portugal: 'faro',
+  Greece: 'athens',
+  Italy: 'rome',
 };
 
 /**

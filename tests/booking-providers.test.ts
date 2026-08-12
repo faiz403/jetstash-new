@@ -62,7 +62,7 @@ const SUPPORTED_ROUTES = [
   'birmingham-agadir',
 ];
 
-const UNSUPPORTED_LONDON_ROUTES = [
+const UNSUPPORTED_ROUTES = [
   'london-heathrow-delhi',
   'london-heathrow-doha',
   'london-heathrow-jeddah',
@@ -81,21 +81,38 @@ const UNSUPPORTED_LONDON_ROUTES = [
   'london-gatwick-agadir',
   'london-heathrow-casablanca',
   'london-gatwick-tangier',
+  'london-gatwick-barcelona',
+  'london-gatwick-faro',
+  'london-gatwick-athens',
+  'london-gatwick-rome',
+  'manchester-barcelona',
+  'birmingham-barcelona',
+  'bristol-barcelona',
+  'leeds-bradford-barcelona',
+  'bristol-faro',
+  'manchester-faro',
+  'birmingham-faro',
+  'leeds-bradford-faro',
+  'manchester-athens',
+  'birmingham-athens',
+  'manchester-rome',
+  'birmingham-rome',
+  'bristol-rome',
 ];
 
 describe('every current route slug is classified exactly once', () => {
-  it('SUPPORTED_ROUTES + UNSUPPORTED_LONDON_ROUTES together equal every route in data/routes.ts, with no overlap', () => {
+  it('SUPPORTED_ROUTES + UNSUPPORTED_ROUTES together equal every route in data/routes.ts, with no overlap', () => {
     const allSlugs = routes.map((r) => r.slug).sort();
-    const classified = [...SUPPORTED_ROUTES, ...UNSUPPORTED_LONDON_ROUTES].sort();
+    const classified = [...SUPPORTED_ROUTES, ...UNSUPPORTED_ROUTES].sort();
     expect(classified).toEqual(allSlugs);
     expect(new Set(SUPPORTED_ROUTES).size).toBe(SUPPORTED_ROUTES.length);
-    const overlap = SUPPORTED_ROUTES.filter((s) => UNSUPPORTED_LONDON_ROUTES.includes(s));
+    const overlap = SUPPORTED_ROUTES.filter((s) => UNSUPPORTED_ROUTES.includes(s));
     expect(overlap).toEqual([]);
   });
 
-  it('is exactly 45 supported and 18 unsupported', () => {
+  it('is exactly 45 supported and 35 unsupported', () => {
     expect(SUPPORTED_ROUTES).toHaveLength(45);
-    expect(UNSUPPORTED_LONDON_ROUTES).toHaveLength(18);
+    expect(UNSUPPORTED_ROUTES).toHaveLength(35);
   });
 });
 
@@ -156,14 +173,14 @@ describe('all 45 supported routes receive their exact, real Trip.com URL', () =>
 });
 
 describe('all 9 London-origin routes receive no Trip.com URL — fail closed, never a generic fallback', () => {
-  it.each(UNSUPPORTED_LONDON_ROUTES)('%s resolves to null, not a generic London/LON link', (slug) => {
+  it.each(UNSUPPORTED_ROUTES)('%s resolves to null, not a generic London/LON link', (slug) => {
     expect(getTripComRouteUrl(slug)).toBeNull();
     expect(hasTripComRoute(slug)).toBe(false);
   });
 
   it('no unsupported route\'s slug appears as a key anywhere in the URL map source', () => {
-    const src = readFileSync(join(process.cwd(), 'lib/booking-providers.ts'), 'utf8');
-    for (const slug of UNSUPPORTED_LONDON_ROUTES) {
+    const src = readFileSync(join(process.cwd(), 'lib/booking-providers.ts'), 'utf8').split('const TRIPCOM_DESTINATION_URLS')[0];
+    for (const slug of UNSUPPORTED_ROUTES) {
       expect(src).not.toContain(`'${slug}':`);
     }
   });
@@ -204,7 +221,7 @@ describe('public flight handoffs request the UK GBP presentation without changin
     expect(handoff.replace('&locale=en-XX&curr=GBP', '')).toBe(source);
   });
 
-  it.each(UNSUPPORTED_LONDON_ROUTES)('%s remains fail-closed with no handoff URL', (slug) => {
+  it.each(UNSUPPORTED_ROUTES)('%s remains fail-closed with no handoff URL', (slug) => {
     expect(getTripComFlightHandoffUrl(slug)).toBeNull();
   });
 

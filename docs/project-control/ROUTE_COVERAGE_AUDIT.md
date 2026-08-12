@@ -1081,3 +1081,35 @@ the historical 32-route figures elsewhere in this document remain preserved as t
 | `london-gatwick-agadir` | Useful |
 | `london-heathrow-casablanca` | Useful |
 | `london-gatwick-tangier` | Useful |
+
+## Europe route-guide completion record — 13 August 2026
+
+Seventeen Europe route guides were added after the Morocco completion record. They are bounded as
+**Useful** route guidance and use current airport or airline evidence. Exact dates, operators,
+frequencies, durations and baggage terms remain itinerary-specific unless the route entry says
+otherwise. The four Gatwick routes retain no unsafe affiliate fallback. Glasgow → Athens remains
+unbuilt because Glasgow Airport's current destination listings do not list Athens.
+
+| Route slug | Grade |
+|---|---|
+| `manchester-barcelona` | Useful |
+| `birmingham-barcelona` | Useful |
+| `london-gatwick-barcelona` | Useful |
+| `bristol-barcelona` | Useful |
+| `leeds-bradford-barcelona` | Useful |
+| `bristol-faro` | Useful |
+| `manchester-faro` | Useful |
+| `birmingham-faro` | Useful |
+| `leeds-bradford-faro` | Useful |
+| `london-gatwick-faro` | Useful |
+| `manchester-athens` | Useful |
+| `birmingham-athens` | Useful |
+| `london-gatwick-athens` | Useful |
+| `manchester-rome` | Useful |
+| `birmingham-rome` | Useful |
+| `london-gatwick-rome` | Useful |
+| `bristol-rome` | Useful |
+
+The expanded catalogue now contains **80 route guides**. Current publishable fare coverage remains
+**23 of 80** and Trip.com coverage remains **45 of 80**;
+unsupported handoffs continue to fail closed rather than falling back to aggregate London links.

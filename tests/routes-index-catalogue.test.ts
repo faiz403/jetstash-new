@@ -273,10 +273,14 @@ describe('country header images (routes-country-header-images)', () => {
     'Saudi Arabia': 'jeddah',
     Turkey: 'istanbul',
     Morocco: 'marrakech',
+    Spain: 'barcelona',
+    Portugal: 'faro',
+    Greece: 'athens',
+    Italy: 'rome',
   };
 
   it('1 & 13. every current country group has exactly one representative image — no null, no fallback/broken image', () => {
-    expect(countryGroups).toHaveLength(8);
+    expect(countryGroups).toHaveLength(12);
     for (const group of countryGroups) {
       expect(group.image, `${group.country} has no header image`).not.toBeNull();
       expect(group.image!.src.length).toBeGreaterThan(0);

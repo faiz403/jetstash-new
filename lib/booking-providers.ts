@@ -51,8 +51,9 @@ export const PROVIDER_REL = 'nofollow sponsored noopener noreferrer';
 
 /**
  * Route-slug-keyed, exact dashboard-generated Trip.com Flights-page affiliate
- * links — see file header for provenance. 45 of JetStash's 63 routes are
- * covered; the other 18 (all London-origin) are intentionally absent.
+ * links — see file header for provenance. 45 of JetStash's current 80 routes are
+ * covered; the other 35 remain intentionally absent where Trip.com's tooling
+ * does not provide a safe exact handoff (including the known London-origin limits).
  */
 const TRIPCOM_ROUTE_URLS: Readonly<Record<string, string>> = {
   'manchester-lahore':
@@ -238,8 +239,9 @@ const TRIPCOM_DESTINATION_URLS: Readonly<Record<string, string>> = {
 /**
  * The one lookup every booking CTA in the app goes through. Returns the
  * exact dashboard-generated Trip.com URL for a supported route, or `null`
- * for any route not in TRIPCOM_ROUTE_URLS (the 18 London-origin routes today,
- * and any future route that hasn't been through the same manual dashboard
+ * for any route not in TRIPCOM_ROUTE_URLS (the 35 currently unsupported
+ * routes, including the London-origin routes and any future route that
+ * hasn't been through the same manual dashboard
  * verification).
  *
  * Callers MUST fail closed on `null`: render no booking CTA at all, never a

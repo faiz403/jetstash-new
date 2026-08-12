@@ -167,7 +167,7 @@ function affiliateStatus(): FounderSection {
     title: 'Booking provider configuration',
     priority: 'revenue',
     status: 'ok',
-    headline: `${PROVIDER_NAME} is the sole active provider (TravelUp removed — its generic-search CTA reset the traveller's departure airport). ${supportedCount} of ${routes.length} routes have a genuine, dashboard-generated affiliate link; the other ${unsupportedCount} are all London-origin routes where Trip.com's own tools have no Heathrow/Gatwick-specific dateless link — those fail closed with no booking CTA, by design, rather than falling back to a generic link.`,
+    headline: `${PROVIDER_NAME} is the sole active provider (TravelUp removed — its generic-search CTA reset the traveller's departure airport). ${supportedCount} of ${routes.length} routes have a genuine, dashboard-generated affiliate link; the other ${unsupportedCount} remain intentionally unsupported where Trip.com's own tools do not provide a safe exact dateless link — those fail closed with no booking CTA, by design, rather than falling back to a generic link.`,
     items: [],
     action:
       'No action needed for the covered routes — every link is the exact, unedited output of Trip.com\'s Affiliate Link dashboard, never hand-typed or guessed (see lib/booking-providers.ts). If Trip.com later adds Heathrow/Gatwick-specific deep-linking, regenerate those routes\' links the same way through the dashboard and add them to TRIPCOM_ROUTE_URLS.',
@@ -592,7 +592,7 @@ function launchChecklist(): { section: FounderSection; checklist: ChecklistItem[
     },
     {
       label: `${PROVIDER_NAME} route coverage`,
-      detail: `${tripComSupportedCount} of ${routes.length} routes have a dashboard-verified link. The rest are all London-origin routes where Trip.com's tools have no Heathrow/Gatwick-specific dateless link — those fail closed with no booking CTA, by design, not a gap to fill by guessing a URL.`,
+      detail: `${tripComSupportedCount} of ${routes.length} routes have a dashboard-verified link. The rest remain fail-closed where Trip.com's tools do not provide a safe exact dateless link — not a gap to fill by guessing a URL.`,
       done: true,
       priority: 'revenue',
       verifiedBy: 'auto',
