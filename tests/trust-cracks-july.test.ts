@@ -99,5 +99,23 @@ describe('Antalya positioning stays within its evidence boundary', () => {
       "Antalya anchors Turkey's Turquoise Coast, with established resort areas and all-inclusive stays.",
     );
     expect(antalya?.description.toLowerCase()).not.toMatch(/\b(most popular|leading|top|best)\b/);
+    expect(antalya?.flightTimeFromUK).toBe('Scheduled flight time: 4h 45m from Manchester');
+    expect(antalya?.description.toLowerCase()).not.toMatch(/\b(charter|direct)\b/);
+  });
+});
+
+describe('Turkey leisure-route wording stays within its evidence boundary', () => {
+  const dalaman = getDestinationBySlug('dalaman');
+  const bodrum = getDestinationBySlug('bodrum');
+
+  it('labels Dalaman as a published schedule duration, not a direct or typical-time claim', () => {
+    expect(dalaman?.flightTimeFromUK).toBe('Scheduled flight time: 4h 30m from Manchester');
+    expect(dalaman?.flightTimeFromUK?.toLowerCase()).not.toContain('direct');
+    expect(dalaman?.description.toLowerCase()).not.toMatch(/\b(charter|direct)\b/);
+  });
+
+  it('uses the airport evidence for Bodrum summer availability without inventing a date range', () => {
+    expect(bodrum?.description).toContain("Manchester Airport's destination guide lists flights as summer-only");
+    expect(bodrum?.description.toLowerCase()).not.toContain('direct flights concentrated between may and october');
   });
 });

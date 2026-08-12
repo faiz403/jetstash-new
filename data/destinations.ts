@@ -332,7 +332,7 @@ export const destinations: Destination[] = [
     description:
       'Antalya anchors Turkey\'s Turquoise Coast, with established resort areas and all-inclusive stays.',
     bestFor: ['Family holidays', 'All-inclusive', 'Beach'],
-    flightTimeFromUK: '4h 15m direct from Manchester',
+    flightTimeFromUK: 'Scheduled flight time: 4h 45m from Manchester',
     ukAirports: ['manchester', 'birmingham', 'leeds-bradford', 'glasgow', 'bristol', 'london-gatwick'],
     visaNote: 'No visa required for UK passport holders for stays up to 90 days.',
   },
@@ -344,9 +344,9 @@ export const destinations: Destination[] = [
     region: 'mediterranean',
     tagline: 'The western Turquoise Coast: Ölüdeniz, Fethiye and Marmaris',
     description:
-      'Dalaman opens up the western half of Turkey\'s Turquoise Coast: Ölüdeniz\'s lagoon, Fethiye\'s harbour, Hisarönü and Marmaris. It\'s a strongly seasonal airport. UK charter and low-cost routes run densely between spring and autumn, then most pause for winter, so shoulder-season dates need checking against actual flight days.',
+      'Dalaman opens up the western half of Turkey\'s Turquoise Coast: Ölüdeniz\'s lagoon, Fethiye\'s harbour, Hisarönü and Marmaris. Check the current schedule for your dates and departure airport before booking.',
     bestFor: ['Family holidays', 'All-inclusive', 'Beach'],
-    flightTimeFromUK: '4h 15m direct from Manchester',
+    flightTimeFromUK: 'Scheduled flight time: 4h 30m from Manchester',
     ukAirports: ['manchester', 'birmingham', 'leeds-bradford', 'london-gatwick', 'bristol', 'glasgow', 'newcastle'],
     visaNote: 'No visa required for UK passport holders for stays up to 90 days.',
   },
@@ -358,7 +358,7 @@ export const destinations: Destination[] = [
     region: 'mediterranean',
     tagline: 'Aegean peninsula of whitewashed towns and gulet coastline',
     description:
-      'The Bodrum peninsula is the Aegean counterpoint to Antalya\'s Mediterranean strip: a castle-topped harbour town ringed by beach resorts, lively at Gümbet and quieter out at Yalıkavak and Türkbükü. Like Dalaman it\'s a seasonal UK market, with direct flights concentrated between May and October.',
+      'The Bodrum peninsula is the Aegean counterpoint to Antalya\'s Mediterranean strip: a castle-topped harbour town ringed by beach resorts, lively at Gümbet and quieter out at Yalıkavak and Türkbükü. Manchester Airport\'s destination guide lists flights as summer-only, so check dates against the current schedule.',
     bestFor: ['Beach', 'All-inclusive', 'Couples'],
     flightTimeFromUK: '4h direct from Manchester',
     ukAirports: ['manchester', 'birmingham', 'leeds-bradford', 'london-gatwick', 'glasgow'],
