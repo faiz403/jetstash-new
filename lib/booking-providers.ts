@@ -133,6 +133,14 @@ const TRIPCOM_DESTINATION_URLS: Readonly<Record<string, string>> = {
     'https://www.trip.com/flights/Glasgow-to-Bodrum/tickets-GLA-BJV?flighttype=S&dcity=GLA&acity=BJV&Allianceid=9804124&SID=327450313&trip_sub1=&trip_sub3=D19206217',
   'manchester-izmir':
     'https://www.trip.com/flights/Manchester-to-Izmir/tickets-MAN-IZM?flighttype=S&dcity=MAN&acity=IZM&Allianceid=9804124&SID=327450313&trip_sub1=&trip_sub3=D19206224',
+  'manchester-marrakech':
+    'https://www.trip.com/flights/Manchester-to-Marrakech/tickets-MAN-RAK?flighttype=S&dcity=MAN&acity=RAK&Allianceid=9804124&SID=327450313&trip_sub1=&trip_sub3=D19206602',
+  'bristol-marrakech':
+    'https://www.trip.com/flights/Bristol-to-Marrakech/tickets-BRS-RAK?flighttype=S&dcity=BRS&acity=RAK&Allianceid=9804124&SID=327450313&trip_sub1=&trip_sub3=D19206602',
+  'manchester-agadir':
+    'https://www.trip.com/flights/Manchester-to-Agadir/tickets-MAN-AGA?flighttype=S&dcity=MAN&acity=AGA&Allianceid=9804124&SID=327450313&trip_sub1=&trip_sub3=D19206602',
+  'birmingham-agadir':
+    'https://www.trip.com/flights/Birmingham-to-Agadir/tickets-BHX-AGA?flighttype=S&dcity=BHX&acity=AGA&Allianceid=9804124&SID=327450313&trip_sub1=&trip_sub3=D19206602',
   'manchester-antalya':
     'https://www.trip.com/flights/Manchester-to-Antalya/tickets-MAN-AYT?flighttype=S&dcity=MAN&acity=AYT&Allianceid=9804124&SID=327450313&trip_sub1=&trip_sub3=D19205349',
   'birmingham-antalya':

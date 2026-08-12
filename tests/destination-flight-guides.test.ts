@@ -89,4 +89,27 @@ describe('destination flight guides', () => {
     expect(source).toContain('blocked');
     expect(source).not.toContain('`/airports/${entry.airport.slug}`');
   });
+
+  it('covers the approved Morocco continuation batch and keeps unsupported origins blocked', () => {
+    const expected: Record<string, string[]> = {
+      marrakech: ['manchester', 'bristol'],
+      agadir: ['manchester', 'birmingham'],
+    };
+
+    for (const [destinationSlug, originSlugs] of Object.entries(expected)) {
+      for (const originSlug of originSlugs) {
+        const url = getTripComDestinationHandoffUrl(originSlug, destinationSlug);
+        expect(url, `${originSlug}-${destinationSlug}`).toMatch(
+          /^https:\/\/www\.trip\.com\/flights\/.+\?flighttype=S&dcity=[A-Z]+&acity=[A-Z]+&locale=en-XX&curr=GBP&Allianceid=9804124&SID=327450313&trip_sub1=&trip_sub3=D19206602$/,
+        );
+        expect(url).not.toContain('ddate=');
+        expect(url).not.toContain('rdate=');
+      }
+    }
+
+    expect(getTripComDestinationHandoffUrl('london-gatwick', 'marrakech')).toBeNull();
+    expect(getTripComDestinationHandoffUrl('london-gatwick', 'agadir')).toBeNull();
+    expect(getTripComDestinationHandoffUrl('london-heathrow', 'casablanca')).toBeNull();
+    expect(getTripComDestinationHandoffUrl('london-gatwick', 'tangier')).toBeNull();
+  });
 });
