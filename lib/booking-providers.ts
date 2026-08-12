@@ -51,7 +51,7 @@ export const PROVIDER_REL = 'nofollow sponsored noopener noreferrer';
 
 /**
  * Route-slug-keyed, exact dashboard-generated Trip.com Flights-page affiliate
- * links — see file header for provenance. 26 of JetStash's 35 routes are
+ * links — see file header for provenance. 28 of JetStash's 37 routes are
  * covered; the other 9 (all London-origin) are intentionally absent.
  */
 const TRIPCOM_ROUTE_URLS: Readonly<Record<string, string>> = {
@@ -65,6 +65,10 @@ const TRIPCOM_ROUTE_URLS: Readonly<Record<string, string>> = {
     'https://www.trip.com/flights/Manchester-to-Dalaman/tickets-MAN-DLM?flighttype=S&dcity=MAN&acity=DLM&Allianceid=9804124&SID=327450313&trip_sub1=&trip_sub3=D19206147',
   'manchester-bodrum':
     'https://www.trip.com/flights/Manchester-to-Bodrum/tickets-MAN-BJV?flighttype=S&dcity=MAN&acity=BJV&Allianceid=9804124&SID=327450313&trip_sub1=&trip_sub3=D19206196',
+  'manchester-antalya':
+    'https://www.trip.com/flights/Manchester-to-Antalya/tickets-MAN-AYT?flighttype=S&dcity=MAN&acity=AYT&Allianceid=9804124&SID=327450313&trip_sub1=&trip_sub3=D19205349',
+  'manchester-izmir':
+    'https://www.trip.com/flights/Manchester-to-Izmir/tickets-MAN-IZM?flighttype=S&dcity=MAN&acity=IZM&Allianceid=9804124&SID=327450313&trip_sub1=&trip_sub3=D19206224',
   'manchester-dubai':
     'https://www.trip.com/flights/Manchester-to-Dubai/tickets-MAN-DXB?flighttype=S&dcity=MAN&acity=DXB&Allianceid=9804124&SID=327450313&trip_sub1=&trip_sub3=D19082331',
   'manchester-karachi':

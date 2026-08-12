@@ -25,6 +25,8 @@ export const airlines: Airline[] = [
   { slug: 'royal-jordanian', iataCode: 'RJ', name: 'Royal Jordanian' },
   { slug: 'biman-bangladesh', iataCode: 'BG', name: 'Biman Bangladesh Airlines' },
   { slug: 'sunexpress', iataCode: 'XQ', name: 'SunExpress' },
+  { slug: 'jet2', iataCode: 'LS', name: 'Jet2' },
+  { slug: 'corendon', iataCode: 'XC', name: 'Corendon' },
 ];
 
 const airlinesBySlug = new Map(airlines.map((a) => [a.slug, a]));

@@ -99,14 +99,16 @@ describe('Antalya positioning stays within its evidence boundary', () => {
       "Antalya anchors Turkey's Turquoise Coast, with established resort areas and all-inclusive stays.",
     );
     expect(antalya?.description.toLowerCase()).not.toMatch(/\b(most popular|leading|top|best)\b/);
-    expect(antalya?.flightTimeFromUK).toBe('Scheduled flight time: 4h 45m from Manchester');
+    expect(antalya?.flightTimeFromUK).toBe('Published timings vary by airline and date; check the exact Manchester flight');
     expect(antalya?.description.toLowerCase()).not.toMatch(/\b(charter|direct)\b/);
   });
 });
 
 describe('Turkey leisure-route wording stays within its evidence boundary', () => {
+  const antalya = getDestinationBySlug('antalya');
   const dalaman = getDestinationBySlug('dalaman');
   const bodrum = getDestinationBySlug('bodrum');
+  const izmir = getDestinationBySlug('izmir');
 
   it('labels Dalaman as a published schedule duration, not a direct or typical-time claim', () => {
     expect(dalaman?.flightTimeFromUK).toBe('Scheduled flight time: 4h 30m from Manchester');
@@ -117,5 +119,11 @@ describe('Turkey leisure-route wording stays within its evidence boundary', () =
   it('uses the airport evidence for Bodrum summer availability without inventing a date range', () => {
     expect(bodrum?.description).toContain("Manchester Airport's destination guide lists flights as summer-only");
     expect(bodrum?.description.toLowerCase()).not.toContain('direct flights concentrated between may and october');
+  });
+
+  it('keeps Antalya and Izmir destination summaries aligned with their route-guide evidence', () => {
+    expect(antalya?.flightTimeFromUK).toBe('Published timings vary by airline and date; check the exact Manchester flight');
+    expect(izmir?.flightTimeFromUK).toBe('Published planning figure: 4h 20m from Manchester Airport; exact duration varies by flight');
+    expect(izmir?.description.toLowerCase()).not.toContain('outside the summer schedule most itineraries connect via istanbul');
   });
 });

@@ -44,7 +44,7 @@ analytics/conversion events are verified in the real dashboard.
 - TravelUp has been removed entirely (founder decision, 4 August 2026 — its generic-search CTA
   reset the traveller's departure airport, e.g. Manchester silently becoming London, judged an
   unacceptable user experience). Trip.com is now JetStash's sole active flight-comparison provider:
-  26 of 35 routes carry a genuine, dashboard-generated, dateless Trip.com affiliate link
+  28 of 37 routes carry a genuine, dashboard-generated, dateless Trip.com affiliate link
   (`lib/booking-providers.ts`); the 9 London-origin routes (Heathrow/Gatwick) have no booking CTA at
   all, by design, since Trip.com's own tools cannot produce an airport-specific dateless link for
   them and no generic fallback is used. New partner integrations remain disabled until they have
@@ -270,7 +270,7 @@ entries remain private; a past price cannot be reconstructed honestly after the 
 
 **Superseded 4 August 2026.** TravelUp has been removed entirely (its generic-search CTA reset the
 traveller's departure airport — an unacceptable user experience). Trip.com is now JetStash's sole
-active provider: 26 of 35 routes carry a genuine, dashboard-generated, dateless Trip.com affiliate
+active provider: 28 of 37 routes carry a genuine, dashboard-generated, dateless Trip.com affiliate
 link (`lib/booking-providers.ts`), each the exact unedited output of Trip.com's own Affiliate Link
 dashboard tool. The 9 London-origin routes (all Heathrow/Gatwick) have no booking CTA — Trip.com's
 tools cannot produce an airport-specific dateless link for Heathrow or Gatwick, only a generic
@@ -290,10 +290,11 @@ unresolved PIA disputes because no current route-specific primary source support
 Each cycle must add independently sourced service evidence or a date-complete fare observation;
 never fill a route simply to remove a pending state.
 
-The first evidence-bounded Turkey route-guide pilot is prepared for founder review: Manchester–Istanbul,
-Manchester–Dalaman and Manchester–Bodrum. Antalya and Izmir remain deliberately outside the pilot until
-their current directness/frequency evidence is resolved. The three pilot routes preserve their exact
-Trip.com handoffs and publish no fares or unsupported booking claims.
+The first evidence-bounded Turkey route-guide pilot is prepared for founder review across Manchester–Istanbul,
+Manchester–Dalaman, Manchester–Bodrum, Manchester–Antalya and Manchester–Izmir. Antalya publishes seasonal direct-service
+context with varying published timings; Izmir publishes SunExpress's seasonal programme and Manchester
+Airport's planning figure without a fixed weekly frequency. All five preserve their exact Trip.com
+handoffs and publish no fares or unsupported booking claims.
 
 ## NEXT
 
@@ -340,7 +341,7 @@ for a day that was not actually checked, and never create a fare merely to fill 
 
 - The editorial fare archive is at its starting point; it must grow through real dated checks, not
   retrospective estimates or automated scraping — see `LAUNCH_CHECKLIST.md` item G.
-- Trip.com is a single booking-partner dependency. 9 of 35 routes (all London-origin) have no
+- Trip.com is a single booking-partner dependency. 9 of 37 routes (all London-origin) have no
   booking CTA at all, by design — see AFF-001 above. Do not add a partner or route link without
   dashboard verification and direct validation; never guess or hand-edit a Trip.com URL.
 - Travel Ready rules and Route Status evidence require scheduled re-verification as source facts
