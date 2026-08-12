@@ -148,7 +148,7 @@ describe('Route Atlas — no PII, unchanged behaviour otherwise', () => {
   });
 
   it('geography, hit-radius maths, and the country/destination selection state model are untouched', () => {
-    expect(atlasSrc).toContain('function computeSafeRadius(nearestDist: number, base: number, min: number, margin: number): number {');
+    expect(atlasSrc).toContain('const lowerBound = Math.min(min, Math.max(0, safe));');
     expect(atlasSrc).toContain('function nearestDistance<T extends { slug: string; x: number; y: number }>(point: T, all: T[]): number {');
   });
 });

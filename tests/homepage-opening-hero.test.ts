@@ -157,19 +157,19 @@ describe('mobile visual-polish pass: trust line, map attribution, swipe cue', ()
   });
 
   it('shows a mobile-only "swipe to explore" cue near the map', () => {
-    expect(atlasSrc).toContain('Swipe to explore more routes');
+    expect(atlasSrc).toContain('Swipe across the map to explore more destinations');
     expect(atlasSrc).toContain('ChevronRight');
   });
 
   it('the swipe cue and its icon are hidden on desktop (sm:hidden), not shown unconditionally', () => {
     // sm:hidden is on the cue's own opening <div ...> tag, which precedes
     // the visible text in source order, so look backward from the text.
-    const precedingTag = atlasSrc.match(/className="[^"]*"[\s\S]{0,60}Swipe to explore more routes/)?.[0] ?? '';
+    const precedingTag = atlasSrc.match(/className="[^"]*"[\s\S]{0,100}Swipe across the map to explore more destinations/)?.[0] ?? '';
     expect(precedingTag).toContain('sm:hidden');
   });
 
   it('the directional icon is decorative, not a second unlabelled interactive control', () => {
-    const cueBlock = atlasSrc.match(/Swipe to explore more routes[\s\S]{0,150}/)?.[0] ?? '';
+    const cueBlock = atlasSrc.match(/Swipe across the map to explore more destinations[\s\S]{0,150}/)?.[0] ?? '';
     expect(cueBlock).toContain('<ChevronRight');
     expect(cueBlock).toMatch(/<ChevronRight[^/]*aria-hidden="true"/);
   });

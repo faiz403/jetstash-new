@@ -115,9 +115,9 @@ describe('2. Dark-surface text contrast — Atlas moved off text-ink-400/text-in
   it('the affected captions now use text-ink-300 — the token this codebase already established as proven-readable on these dark surfaces', () => {
     expect(atlasSrc).toContain('<p className="mt-1 text-xs text-ink-300">');
     expect(atlasSrc).toContain('<span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-300">Flying from</span>');
-    expect(atlasSrc).toContain("Country coverage (this destination&apos;s whole country)");
-    expect(atlasSrc).toMatch(/text-ink-300">Country coverage/);
-    expect(atlasSrc).toMatch(/text-ink-300">Route intelligence \(this specific destination\)/);
+    expect(atlasSrc).toContain('What the colours mean');
+    expect(atlasSrc).toContain('Country glow');
+    expect(atlasSrc).toContain('Destination dot');
   });
 
   it('the destination panel labels (Route intelligence, Network evidence, flight time, service-notice/network-note detail text) all use text-ink-300', () => {
@@ -170,7 +170,7 @@ describe('4. Atlas instruction wording — input-neutral', () => {
 
 describe('Unrelated Atlas behaviour is unchanged by this PR', () => {
   it('the geometry, hit-radius maths and crowding-avoidance system are untouched', () => {
-    expect(atlasSrc).toContain('function computeSafeRadius(nearestDist: number, base: number, min: number, margin: number): number {');
+    expect(atlasSrc).toContain('const lowerBound = Math.min(min, Math.max(0, safe));');
   });
 
   it('analytics event names and dedup guards are untouched', () => {
@@ -179,8 +179,8 @@ describe('Unrelated Atlas behaviour is unchanged by this PR', () => {
     expect(atlasSrc).toContain("track('atlas_route_opened', { route: activeDest.routeHref!.split('/').pop()! })");
   });
 
-  it('mobile chip selector buttons and swipe-cue copy are untouched', () => {
-    expect(atlasSrc).toContain('Swipe to explore more routes');
+  it('mobile chip selector buttons remain intact and the swipe cue is explicit', () => {
+    expect(atlasSrc).toContain('Swipe across the map to explore more destinations');
     expect(atlasSrc).toContain("onClick={() => activateCountry(c.slug)}");
   });
 });

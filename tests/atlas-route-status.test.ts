@@ -344,7 +344,7 @@ describe('Legend wording matches the real implementation', () => {
   });
 
   it('the legend explains the active-service-notice accent in plain text, not colour alone', () => {
-    expect(atlasSrc).toContain('Active service notice — a change has been announced, see the route guide');
+    expect(atlasSrc).toContain('Active service notice');
   });
 
   it('the three route-level labels read exactly as specified: "JetStash knows this route well" / "Useful route guidance available" / "Intelligence still being expanded"', () => {

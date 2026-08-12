@@ -161,7 +161,8 @@ describe('B. Duplicate keyboard-accessible controls — country markers', () => 
 
   it('the hit-circle keeps a generous, crowding-safe hit radius — unchanged from before this fix', () => {
     expect(countryCircleSrc).toMatch(/r=\{countryHitRadius\[c\.slug\]\}/);
-    // The radius computation itself (computeSafeRadius / BASE_COUNTRY_HIT_R) is untouched.
+    // The shared radius helper remains the single source of truth; its safety
+    // bound is tested separately so crowded countries cannot overlap.
     expect(atlasSrc).toContain('const BASE_COUNTRY_HIT_R = 12.5;');
   });
 });
@@ -252,8 +253,8 @@ describe('Unrelated Atlas behaviour is unchanged', () => {
     expect(networkDataSrc).toContain('href: `/destinations/${destSlug}`,');
   });
 
-  it('16. mobile swipe guidance copy and the hasScrolledMap softening logic are unchanged', () => {
-    expect(atlasSrc).toContain('Swipe to explore more routes');
+  it('16. mobile swipe guidance copy and the hasScrolledMap softening logic remain restrained and stateful', () => {
+    expect(atlasSrc).toContain('Swipe across the map to explore more destinations');
     expect(atlasSrc).toContain('const [hasScrolledMap, setHasScrolledMap] = useState(false);');
     expect(atlasSrc).toContain('if (!hasScrolledMap && e.currentTarget.scrollLeft > 12) setHasScrolledMap(true);');
   });
@@ -265,7 +266,7 @@ describe('Unrelated Atlas behaviour is unchanged', () => {
   });
 
   it('the geometry, hit-radius maths and crowding-avoidance system are untouched', () => {
-    expect(atlasSrc).toContain('function computeSafeRadius(nearestDist: number, base: number, min: number, margin: number): number {');
+    expect(atlasSrc).toContain('const lowerBound = Math.min(min, Math.max(0, safe));');
     expect(atlasSrc).toContain('function nearestDistance<T extends { slug: string; x: number; y: number }>(point: T, all: T[]): number {');
   });
 
