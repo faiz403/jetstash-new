@@ -72,6 +72,7 @@ export const COUNTRY_REPRESENTATIVE_DESTINATION_SLUG: Record<string, string> = {
   'United Arab Emirates': 'dubai',
   Qatar: 'doha',
   'Saudi Arabia': 'jeddah',
+  Turkey: 'istanbul',
 };
 
 /**

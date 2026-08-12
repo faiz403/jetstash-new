@@ -17,6 +17,9 @@ import { getTripComRouteUrl, getTripComFlightHandoffUrl, hasTripComRoute, PROVID
 const SUPPORTED_ROUTES = [
   'manchester-lahore',
   'manchester-islamabad',
+  'manchester-istanbul',
+  'manchester-dalaman',
+  'manchester-bodrum',
   'manchester-dubai',
   'manchester-karachi',
   'manchester-dhaka',
@@ -62,13 +65,13 @@ describe('every current route slug is classified exactly once', () => {
     expect(overlap).toEqual([]);
   });
 
-  it('is exactly 23 supported and 9 unsupported', () => {
-    expect(SUPPORTED_ROUTES).toHaveLength(23);
+  it('is exactly 26 supported and 9 unsupported', () => {
+    expect(SUPPORTED_ROUTES).toHaveLength(26);
     expect(UNSUPPORTED_LONDON_ROUTES).toHaveLength(9);
   });
 });
 
-describe('all 23 supported routes receive their exact, real Trip.com URL', () => {
+describe('all 26 supported routes receive their exact, real Trip.com URL', () => {
   it.each(SUPPORTED_ROUTES)('%s resolves to a genuine trip.com/flights URL', (slug) => {
     const url = getTripComRouteUrl(slug);
     expect(url).not.toBeNull();
@@ -88,6 +91,9 @@ describe('all 23 supported routes receive their exact, real Trip.com URL', () =>
     const CODES: Record<string, [string, string]> = {
       'manchester-lahore': ['MAN', 'LHE'],
       'manchester-islamabad': ['MAN', 'ISB'],
+      'manchester-istanbul': ['MAN', 'IST'],
+      'manchester-dalaman': ['MAN', 'DLM'],
+      'manchester-bodrum': ['MAN', 'BJV'],
       'manchester-dubai': ['MAN', 'DXB'],
       'manchester-karachi': ['MAN', 'KHI'],
       'manchester-dhaka': ['MAN', 'DAC'],

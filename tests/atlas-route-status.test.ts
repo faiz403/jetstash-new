@@ -372,7 +372,7 @@ describe('The route coverage audit document stays in sync with the real data', (
   const auditDoc = readFileSync(join(process.cwd(), 'docs/project-control/ROUTE_COVERAGE_AUDIT.md'), 'utf8');
   const SOFT_LAUNCH_SLUGS = ['manchester-lahore', 'manchester-islamabad', 'manchester-dubai', 'birmingham-amritsar', 'manchester-madinah', 'manchester-doha'];
 
-  it('every one of the 32 real routes has an entry in the audit\'s slug index — a route added later without an audit update fails this test', () => {
+  it('every real route has an entry in the audit\'s slug index — a route added later without an audit update fails this test', () => {
     for (const route of routes) {
       expect(auditDoc, route.slug).toContain(`\`${route.slug}\``);
     }
@@ -435,8 +435,8 @@ describe('The route coverage audit document stays in sync with the real data', (
 });
 
 describe('No route facts, fare observations or verification states were altered by this phase', () => {
-  it('data/routes.ts is untouched by this test suite\'s own import (sanity: routes array still has the pre-phase count)', () => {
-    expect(routes.length).toBe(32);
+  it('data/routes.ts is untouched by this test suite\'s own import (sanity: current route count)', () => {
+    expect(routes.length).toBe(35);
   });
 
   it('computeRouteIntelligenceLevel never mutates the route object it reads', () => {

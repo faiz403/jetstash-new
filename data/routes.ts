@@ -99,6 +99,72 @@ export interface Route {
 
 export const routes: Route[] = [
   {
+    slug: 'manchester-istanbul',
+    airportSlug: 'manchester',
+    destinationSlug: 'istanbul',
+    flightTime: 'Published timings vary: Manchester Airport lists 4h 30m; Turkish Airlines says a little over 4h',
+    frequency: 'Turkish Airlines: two direct flights daily in its published route information; exact departure times vary',
+    airlineSlugs: ['turkish-airlines'],
+    isDirect: true,
+    verification: {
+      status: 'verified',
+      sourceName: 'Turkish Airlines official Manchester–Istanbul route page, corroborated by Manchester Airport destination guide',
+      sourceUrl: 'https://www.turkishairlines.com/uk-int/flights/city/from-manchester-to-istanbul-flights/',
+      verifiedDate: '2026-08-12',
+      reviewDueDate: '2026-09-12',
+      note: 'Turkish Airlines states it operates two direct flights a day from Manchester to Istanbul Airport (IST), taking a little more than four hours. Manchester Airport lists a 4h30m scheduled flight time. Exact dates, departure times and any other operator must be checked before booking.',
+    },
+    intro:
+      'Turkish Airlines currently publishes two direct Manchester–Istanbul flights a day to Istanbul Airport (IST). Manchester Airport lists a scheduled flight time of 4h30m, while Turkish Airlines describes the flight as taking a little more than four hours. Check your dates for the exact departure and fare.',
+    bookingWindowNote:
+      'This guide is route context, not a booking prediction. Check the exact schedule, fare conditions and baggage terms for your dates before booking.',
+    peakPeriodIds: [],
+  },
+  {
+    slug: 'manchester-dalaman',
+    airportSlug: 'manchester',
+    destinationSlug: 'dalaman',
+    flightTime: 'Scheduled flight time: 4h 30m from Manchester',
+    frequency: 'SunExpress: daily direct overnight service from 19 May 2026 in its published summer programme; exact dates may vary',
+    airlineSlugs: ['sunexpress'],
+    isDirect: true,
+    verification: {
+      status: 'verified',
+      sourceName: 'SunExpress official Manchester–Dalaman announcement, corroborated by Manchester Airport destination guide',
+      sourceUrl: 'https://www.sunexpress.com/en-gb/company/media-center/press-releases/sunexpress-launches-convenient-night-flights-from-manchester-to-dalaman/',
+      verifiedDate: '2026-08-12',
+      reviewDueDate: '2026-09-12',
+      note: 'SunExpress announced direct overnight Manchester–Dalaman flights from 19 May 2026, with daily operation in the published summer programme. Its current flight plan lists Manchester service seven days per week for the April–October schedule, which is subject to change. Manchester Airport lists a 4h30m scheduled flight time.',
+    },
+    intro:
+      'SunExpress currently publishes direct overnight Manchester–Dalaman service, including daily operation from 19 May 2026 in its summer programme. Manchester Airport lists a scheduled flight time of 4h30m. Check the exact dates, schedule and baggage terms before booking.',
+    bookingWindowNote:
+      'This guide is route context, not a booking prediction. Dalaman schedules are date-sensitive, so check the exact service and fare conditions before booking.',
+    peakPeriodIds: [],
+  },
+  {
+    slug: 'manchester-bodrum',
+    airportSlug: 'manchester',
+    destinationSlug: 'bodrum',
+    flightTime: 'Published timings vary by source; check the exact flight for your dates',
+    frequency: 'SunExpress: twice-weekly direct service in the summer 2026 programme; exact operating days require checking',
+    airlineSlugs: ['sunexpress'],
+    isDirect: true,
+    verification: {
+      status: 'verified',
+      sourceName: 'SunExpress official summer 2026 UK network announcement, corroborated by Manchester Airport destination guide',
+      sourceUrl: 'https://www.sunexpress.com/en-gb/company/media-center/press-releases/sunexpress-expands-uk-route-network-for-summer-2026-with-launch-of-services-from-east-midlands/',
+      verifiedDate: '2026-08-12',
+      reviewDueDate: '2026-09-12',
+      note: 'SunExpress announces twice-weekly direct Manchester–Bodrum service for summer 2026. Manchester Airport states that flights to Bodrum are offered in summer only. Published timings differ: Manchester Airport lists 4h30m while current Jet2 route examples show 4h15m–4h20m, so no single duration is presented.',
+    },
+    intro:
+      'Manchester–Bodrum is a seasonal route. Manchester Airport says flights are summer-only, and SunExpress announces twice-weekly direct service in its summer 2026 programme. Published flight timings vary, so check the exact itinerary for your dates.',
+    bookingWindowNote:
+      'This guide is route context, not a booking prediction. Check the seasonal schedule, exact operating day and fare conditions before booking.',
+    peakPeriodIds: [],
+  },
+  {
     slug: 'manchester-lahore',
     airportSlug: 'manchester',
     destinationSlug: 'lahore',

@@ -193,6 +193,18 @@ Machine-checkable manifest — every one of the 32 routes, exactly once, with it
 | `manchester-sylhet` | Useful |
 | `newcastle-dubai` | Useful |
 
+### Current route-guide additions — 12 August 2026
+
+The following three routes were added after this 6 August audit as the first Manchester Turkey
+route-guide pilot. They are intentionally recorded here so the machine-checkable slug index remains
+complete; their intelligence grade is computed by the unchanged scoring function.
+
+| Slug | Grade |
+|---|---|
+| `manchester-istanbul` | Useful |
+| `manchester-dalaman` | Useful |
+| `manchester-bodrum` | Useful |
+
 ---
 
 ## 3.5. Airport and baggage guidance coverage
