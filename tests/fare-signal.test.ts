@@ -123,7 +123,7 @@ describe('Fare Signal production coverage counts', () => {
     const signals = routes.map((route) => getFareSignalForRoute(route.slug, '2026-08-11'));
     expect(signals.filter((signal) => signal.state === 'current')).toHaveLength(22);
     expect(signals.filter((signal) => signal.state === 'recent')).toHaveLength(0);
-    expect(signals.filter((signal) => signal.state === 'none')).toHaveLength(41);
+    expect(signals.filter((signal) => signal.state === 'none')).toHaveLength(58);
     expect(routes.filter((route) => getTripComRouteUrl(route.slug)).length).toBe(45);
   });
 });

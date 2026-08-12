@@ -401,7 +401,7 @@ describe('The route coverage audit document stays in sync with the real data', (
 
   it('the audit states the real, current fare-tracking route count, not a stale hand-typed figure', () => {
     const totalTracked = routes.filter((r) => getPublishableObservationsByRoute(r.slug, NOW_ISO).length > 0).length;
-    expect(auditDoc).toContain(`${totalTracked} of 63`);
+    expect(auditDoc).toContain(`${totalTracked} of 80`);
   });
 
   it('the audit explicitly flags Manchester–Dubai\'s remaining fare-observation gap (Route Completion Batch 1 finding)', () => {
@@ -436,7 +436,7 @@ describe('The route coverage audit document stays in sync with the real data', (
 
 describe('No route facts, fare observations or verification states were altered by this phase', () => {
   it('data/routes.ts is untouched by this test suite\'s own import (sanity: current route count)', () => {
-    expect(routes.length).toBe(63);
+    expect(routes.length).toBe(80);
   });
 
   it('computeRouteIntelligenceLevel never mutates the route object it reads', () => {
