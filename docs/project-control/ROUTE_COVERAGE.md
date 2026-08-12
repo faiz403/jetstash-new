@@ -85,7 +85,7 @@ prove either a current direct service or its absence.
 
 ### Manchester Turkey route-guide pilot — 12 August 2026
 
-The first three Turkey route guides are prepared only where current primary evidence supports a
+Five Manchester Turkey route guides are prepared only where current primary evidence supports a
 useful, bounded customer page. This is a pilot benchmark, not permission to fill the remaining
 Turkey matrix without pair-specific evidence.
 
@@ -94,8 +94,9 @@ Turkey matrix without pair-specific evidence.
 | Manchester → Istanbul | Turkish Airlines: two direct flights daily to Istanbul Airport (IST); Manchester Airport: scheduled 4h30m | The frequency is specifically Turkish Airlines' published service, not total route frequency; exact dates and other operators remain for the traveller to check. |
 | Manchester → Dalaman | SunExpress: direct overnight service from 19 May 2026, daily in the published summer programme; Manchester Airport: scheduled 4h30m | The published programme is subject to change; exact dates and baggage terms remain unconfirmed. |
 | Manchester → Bodrum | SunExpress: twice-weekly direct summer 2026 service; Manchester Airport: summer-only | Published duration differs by source, so the guide intentionally publishes no single flight-time figure. |
+| Manchester → Antalya | SunExpress's April–October 2026 plan, corroborated by current Jet2 and Corendon booking pages; Manchester Airport and airline pages publish differing timings | Seasonal direct service is evidenced, but exact airlines, dates, frequency and duration vary; no single timing or fixed weekly number is published. |
+| Manchester → Izmir | SunExpress's April–October 2026 plan and summer programme; Manchester Airport: published 4h20m planning figure | Seasonal direct service is evidenced; no fixed weekly frequency is published and the 4h20m figure is planning guidance, not a guaranteed actual duration. |
 
-Antalya and Izmir remain outside this pilot until current directness/frequency evidence is resolved.
 Every route keeps its existing exact Trip.com handoff; booking evidence does not substitute for
 route evidence.
 

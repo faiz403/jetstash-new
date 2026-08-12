@@ -20,6 +20,8 @@ const SUPPORTED_ROUTES = [
   'manchester-istanbul',
   'manchester-dalaman',
   'manchester-bodrum',
+  'manchester-antalya',
+  'manchester-izmir',
   'manchester-dubai',
   'manchester-karachi',
   'manchester-dhaka',
@@ -65,13 +67,13 @@ describe('every current route slug is classified exactly once', () => {
     expect(overlap).toEqual([]);
   });
 
-  it('is exactly 26 supported and 9 unsupported', () => {
-    expect(SUPPORTED_ROUTES).toHaveLength(26);
+  it('is exactly 28 supported and 9 unsupported', () => {
+    expect(SUPPORTED_ROUTES).toHaveLength(28);
     expect(UNSUPPORTED_LONDON_ROUTES).toHaveLength(9);
   });
 });
 
-describe('all 26 supported routes receive their exact, real Trip.com URL', () => {
+describe('all 28 supported routes receive their exact, real Trip.com URL', () => {
   it.each(SUPPORTED_ROUTES)('%s resolves to a genuine trip.com/flights URL', (slug) => {
     const url = getTripComRouteUrl(slug);
     expect(url).not.toBeNull();

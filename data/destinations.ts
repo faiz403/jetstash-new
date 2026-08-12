@@ -332,7 +332,7 @@ export const destinations: Destination[] = [
     description:
       'Antalya anchors Turkey\'s Turquoise Coast, with established resort areas and all-inclusive stays.',
     bestFor: ['Family holidays', 'All-inclusive', 'Beach'],
-    flightTimeFromUK: 'Scheduled flight time: 4h 45m from Manchester',
+    flightTimeFromUK: 'Published timings vary by airline and date; check the exact Manchester flight',
     ukAirports: ['manchester', 'birmingham', 'leeds-bradford', 'glasgow', 'bristol', 'london-gatwick'],
     visaNote: 'No visa required for UK passport holders for stays up to 90 days.',
   },
@@ -372,9 +372,9 @@ export const destinations: Destination[] = [
     region: 'mediterranean',
     tagline: 'Turkey\'s Aegean city, and the doorstep of Ephesus',
     description:
-      'Izmir pairs a big, liberal seafront city with the Aegean\'s best day trips. Ephesus, Şirince and the Çeşme peninsula\'s beaches are all within easy reach. Direct UK service is newer and more seasonal than Dalaman or Bodrum; outside the summer schedule most itineraries connect via Istanbul, so compare both before booking.',
+      'Izmir pairs a big, liberal seafront city with the Aegean\'s best day trips. Ephesus, Şirince and the Çeşme peninsula\'s beaches are all within easy reach. Direct UK service is seasonal, so check the current schedule and your exact dates before booking.',
     bestFor: ['City breaks', 'Heritage travel', 'Beach'],
-    flightTimeFromUK: '4h direct from Manchester',
+    flightTimeFromUK: 'Published planning figure: 4h 20m from Manchester Airport; exact duration varies by flight',
     ukAirports: ['manchester', 'london-gatwick'],
     visaNote: 'No visa required for UK passport holders for stays up to 90 days.',
   },

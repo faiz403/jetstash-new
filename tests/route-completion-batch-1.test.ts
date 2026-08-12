@@ -241,9 +241,9 @@ describe('Route warnings remain separate and untouched for both Batch 1 routes',
   });
 });
 
-describe('The existing route set remains intact alongside the three approved Turkey additions', () => {
-  it('data/routes.ts now has exactly 35 routes', () => {
-    expect(routes.length).toBe(35);
+describe('The existing route set remains intact alongside the approved Turkey additions', () => {
+  it('data/routes.ts now has exactly 37 routes', () => {
+    expect(routes.length).toBe(37);
   });
 
   it('the traveller-tips file still has exactly the same 11 entries — this round added no new tip', () => {

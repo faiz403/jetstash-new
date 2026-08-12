@@ -195,7 +195,7 @@ Machine-checkable manifest — every one of the 32 routes, exactly once, with it
 
 ### Current route-guide additions — 12 August 2026
 
-The following three routes were added after this 6 August audit as the first Manchester Turkey
+The following five routes were added after this 6 August audit as the first Manchester Turkey
 route-guide pilot. They are intentionally recorded here so the machine-checkable slug index remains
 complete; their intelligence grade is computed by the unchanged scoring function.
 
@@ -204,6 +204,8 @@ complete; their intelligence grade is computed by the unchanged scoring function
 | `manchester-istanbul` | Useful |
 | `manchester-dalaman` | Useful |
 | `manchester-bodrum` | Useful |
+| `manchester-antalya` | Useful |
+| `manchester-izmir` | Useful |
 
 ---
 
