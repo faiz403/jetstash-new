@@ -210,6 +210,20 @@ complete; their intelligence grade is computed by the unchanged scoring function
 | `birmingham-antalya` | Useful |
 | `birmingham-dalaman` | Useful |
 | `birmingham-bodrum` | Useful |
+| `bristol-antalya` | Useful |
+| `bristol-dalaman` | Useful |
+| `glasgow-antalya` | Useful |
+| `glasgow-bodrum` | Useful |
+| `glasgow-dalaman` | Useful |
+| `leeds-bradford-antalya` | Useful |
+| `leeds-bradford-bodrum` | Useful |
+| `leeds-bradford-dalaman` | Useful |
+| `london-gatwick-antalya` | Useful |
+| `london-gatwick-bodrum` | Useful |
+| `london-gatwick-dalaman` | Useful |
+| `london-gatwick-istanbul` | Useful |
+| `london-gatwick-izmir` | Useful |
+| `newcastle-dalaman` | Useful |
 
 ---
 

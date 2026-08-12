@@ -47,6 +47,15 @@ const SUPPORTED_ROUTES = [
   'glasgow-dubai',
   'edinburgh-dubai',
   'newcastle-dubai',
+  'leeds-bradford-antalya',
+  'leeds-bradford-dalaman',
+  'leeds-bradford-bodrum',
+  'glasgow-antalya',
+  'glasgow-dalaman',
+  'glasgow-bodrum',
+  'bristol-antalya',
+  'bristol-dalaman',
+  'newcastle-dalaman',
 ];
 
 const UNSUPPORTED_LONDON_ROUTES = [
@@ -59,6 +68,11 @@ const UNSUPPORTED_LONDON_ROUTES = [
   'london-heathrow-sylhet',
   'london-gatwick-ahmedabad',
   'london-gatwick-amritsar',
+  'london-gatwick-istanbul',
+  'london-gatwick-antalya',
+  'london-gatwick-dalaman',
+  'london-gatwick-bodrum',
+  'london-gatwick-izmir',
 ];
 
 describe('every current route slug is classified exactly once', () => {
@@ -71,13 +85,13 @@ describe('every current route slug is classified exactly once', () => {
     expect(overlap).toEqual([]);
   });
 
-  it('is exactly 32 supported and 9 unsupported', () => {
-    expect(SUPPORTED_ROUTES).toHaveLength(32);
-    expect(UNSUPPORTED_LONDON_ROUTES).toHaveLength(9);
+  it('is exactly 41 supported and 14 unsupported', () => {
+    expect(SUPPORTED_ROUTES).toHaveLength(41);
+    expect(UNSUPPORTED_LONDON_ROUTES).toHaveLength(14);
   });
 });
 
-describe('all 32 supported routes receive their exact, real Trip.com URL', () => {
+describe('all 41 supported routes receive their exact, real Trip.com URL', () => {
   it.each(SUPPORTED_ROUTES)('%s resolves to a genuine trip.com/flights URL', (slug) => {
     const url = getTripComRouteUrl(slug);
     expect(url).not.toBeNull();
