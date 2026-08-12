@@ -4,6 +4,7 @@ import { join } from 'path';
 import { destinations, getDestinationBySlug } from '@/data/destinations';
 import { getRoutesByDestination } from '@/data/routes';
 import { getDestinationFlightGuideEntries } from '@/lib/destination-flight-guides';
+import { getTripComDestinationHandoffUrl } from '@/lib/booking-providers';
 
 const NOW_ISO = '2026-08-12';
 
@@ -53,5 +54,39 @@ describe('destination flight guides', () => {
     expect(source).toContain('<DestinationFlightGuides');
     expect(source).not.toContain('View airport guide');
     expect(source).not.toContain('`/airports/${airport.slug}`');
+  });
+
+  it('covers the approved Turkey continuation batch with exact handoffs only', () => {
+    const expected: Record<string, string[]> = {
+      istanbul: ['manchester', 'birmingham', 'leeds-bradford'],
+      dalaman: ['manchester', 'birmingham', 'leeds-bradford', 'bristol', 'glasgow', 'newcastle'],
+      bodrum: ['manchester', 'birmingham', 'leeds-bradford', 'glasgow'],
+      izmir: ['manchester'],
+    };
+
+    for (const [destinationSlug, originSlugs] of Object.entries(expected)) {
+      for (const originSlug of originSlugs) {
+        const url = getTripComDestinationHandoffUrl(originSlug, destinationSlug);
+        expect(url, `${originSlug}-${destinationSlug}`).toMatch(
+          /^https:\/\/www\.trip\.com\/flights\/.+\?flighttype=S&dcity=[A-Z]+&acity=[A-Z]+&locale=en-XX&curr=GBP&Allianceid=9804124&SID=327450313&trip_sub1=&trip_sub3=D19206\d+$/,
+        );
+        expect(url).not.toContain('ddate=');
+        expect(url).not.toContain('rdate=');
+      }
+    }
+
+    for (const destinationSlug of Object.keys(expected)) {
+      expect(getTripComDestinationHandoffUrl('london-gatwick', destinationSlug)).toBeNull();
+    }
+  });
+
+  it('renders continuation handoffs only for missing route guides and fails closed otherwise', () => {
+    const source = readFileSync(join(process.cwd(), 'components/destination/destination-flight-guides.tsx'), 'utf8');
+    expect(source).toContain('getTripComDestinationHandoffUrl');
+    expect(source).toContain('Check live flights on Trip.com');
+    expect(source).toContain('Partner link, opens Trip.com in a new tab.');
+    expect(source).toContain('entry.href');
+    expect(source).toContain('blocked');
+    expect(source).not.toContain('`/airports/${entry.airport.slug}`');
   });
 });

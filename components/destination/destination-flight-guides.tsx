@@ -3,6 +3,7 @@ import { ArrowUpRight, Plane } from 'lucide-react';
 import type { Destination } from '@/data/destinations';
 import { formatRouteStatusDate } from '@/lib/route-status-copy';
 import { getDestinationFlightGuideEntries, type DestinationFlightGuideEntry } from '@/lib/destination-flight-guides';
+import { getTripComDestinationHandoffUrl, PROVIDER_REL } from '@/lib/booking-providers';
 
 function routeStatusLabel(status: DestinationFlightGuideEntry['routeStatus']): string {
   switch (status) {
@@ -43,6 +44,10 @@ export function DestinationFlightGuides({ destination, nowIso }: DestinationFlig
   const entries = getDestinationFlightGuideEntries(destination, nowIso);
   const guides = entries.filter((entry) => entry.href);
   const unavailable = entries.filter((entry) => !entry.href);
+  const handoffs = unavailable
+    .map((entry) => ({ entry, href: getTripComDestinationHandoffUrl(entry.airport.slug, destination.slug) }))
+    .filter((item): item is { entry: DestinationFlightGuideEntry; href: string } => item.href !== null);
+  const blocked = unavailable.filter((entry) => !getTripComDestinationHandoffUrl(entry.airport.slug, destination.slug));
 
   return (
     <section aria-labelledby="destination-flight-guides-heading" className="mt-10">
@@ -80,14 +85,49 @@ export function DestinationFlightGuides({ destination, nowIso }: DestinationFlig
         </p>
       )}
 
-      {unavailable.length > 0 && (
+      {handoffs.length > 0 && (
+        <div className="mt-4 grid gap-3 sm:grid-cols-2" aria-label={`Current flight options to ${destination.city}`}>
+          {handoffs.map(({ entry, href }) => (
+            <article key={entry.airport.slug} className="rounded-sm border border-ink-100 bg-sand-50 p-4">
+              <div className="flex items-start gap-2">
+                <Plane className="mt-0.5 h-4 w-4 shrink-0 text-ink-400" strokeWidth={2} />
+                <div>
+                  <h4 className="text-sm font-semibold text-ink-800">
+                    {entry.airport.name} → {destination.city}
+                  </h4>
+                  <p className="mt-1 text-xs leading-relaxed text-ink-500">No exact JetStash route guide published yet.</p>
+                </div>
+              </div>
+              <a
+                href={href}
+                target="_blank"
+                rel={PROVIDER_REL}
+                className="mt-4 inline-flex items-center gap-1.5 rounded-sm bg-ink-900 px-4 py-2.5 text-sm font-semibold text-sand-50 transition-colors hover:bg-brass-600"
+              >
+                Check live flights on Trip.com
+                <ArrowUpRight className="h-4 w-4" strokeWidth={2.25} />
+              </a>
+            </article>
+          ))}
+        </div>
+      )}
+
+      {handoffs.length > 0 && (
+        <p className="mt-2 text-xs text-ink-500">
+          Partner link, opens Trip.com in a new tab. Check the itinerary, dates and booking terms before paying.
+        </p>
+      )}
+
+      {blocked.length > 0 && (
         <div className="mt-4 rounded-sm border border-ink-100 bg-sand-50 p-4">
           <p className="text-sm font-medium text-ink-700">Route guide coverage is still being expanded</p>
           <p className="mt-1 text-sm leading-relaxed text-ink-600">
-            We have not yet published destination-specific flight details for:
+            {handoffs.length > 0
+              ? 'We have not yet published destination-specific flight details or an exact partner handoff for:'
+              : 'We have not yet published destination-specific flight details for:'}
           </p>
           <ul className="mt-3 flex flex-wrap gap-2" aria-label={`Airports without a ${destination.city} route guide yet`}>
-            {unavailable.map((entry) => (
+            {blocked.map((entry) => (
               <li key={entry.airport.slug} className="rounded-full border border-ink-200 px-3 py-1 text-xs text-ink-600">
                 {entry.airport.name} ({entry.airport.code})
               </li>
