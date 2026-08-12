@@ -141,6 +141,34 @@ const TRIPCOM_DESTINATION_URLS: Readonly<Record<string, string>> = {
     'https://www.trip.com/flights/Manchester-to-Agadir/tickets-MAN-AGA?flighttype=S&dcity=MAN&acity=AGA&Allianceid=9804124&SID=327450313&trip_sub1=&trip_sub3=D19206602',
   'birmingham-agadir':
     'https://www.trip.com/flights/Birmingham-to-Agadir/tickets-BHX-AGA?flighttype=S&dcity=BHX&acity=AGA&Allianceid=9804124&SID=327450313&trip_sub1=&trip_sub3=D19206602',
+  'manchester-barcelona':
+    'https://www.trip.com/flights/Manchester-to-Barcelona/tickets-MAN-BCN?flighttype=S&dcity=MAN&acity=BCN&Allianceid=9804124&SID=327450313&trip_sub1=&trip_sub3=D19206602',
+  'birmingham-barcelona':
+    'https://www.trip.com/flights/Birmingham-to-Barcelona/tickets-BHX-BCN?flighttype=S&dcity=BHX&acity=BCN&Allianceid=9804124&SID=327450313&trip_sub1=&trip_sub3=D19206602',
+  'bristol-barcelona':
+    'https://www.trip.com/flights/Bristol-to-Barcelona/tickets-BRS-BCN?flighttype=S&dcity=BRS&acity=BCN&Allianceid=9804124&SID=327450313&trip_sub1=&trip_sub3=D19206602',
+  'leeds-bradford-barcelona':
+    'https://www.trip.com/flights/Leeds-to-Barcelona/tickets-LBA-BCN?flighttype=S&dcity=LBA&acity=BCN&Allianceid=9804124&SID=327450313&trip_sub1=&trip_sub3=D19206602',
+  'bristol-faro':
+    'https://www.trip.com/flights/Bristol-to-Faro/tickets-BRS-FAO?flighttype=S&dcity=BRS&acity=FAO&Allianceid=9804124&SID=327450313&trip_sub1=&trip_sub3=D19206602',
+  'manchester-faro':
+    'https://www.trip.com/flights/Manchester-to-Faro/tickets-MAN-FAO?flighttype=S&dcity=MAN&acity=FAO&Allianceid=9804124&SID=327450313&trip_sub1=&trip_sub3=D19206602',
+  'birmingham-faro':
+    'https://www.trip.com/flights/Birmingham-to-Faro/tickets-BHX-FAO?flighttype=S&dcity=BHX&acity=FAO&Allianceid=9804124&SID=327450313&trip_sub1=&trip_sub3=D19206602',
+  'leeds-bradford-faro':
+    'https://www.trip.com/flights/Leeds-to-Faro/tickets-LBA-FAO?flighttype=S&dcity=LBA&acity=FAO&Allianceid=9804124&SID=327450313&trip_sub1=&trip_sub3=D19206602',
+  'manchester-athens':
+    'https://www.trip.com/flights/Manchester-to-Athens/tickets-MAN-ATH?flighttype=S&dcity=MAN&acity=ATH&Allianceid=9804124&SID=327450313&trip_sub1=&trip_sub3=D19206602',
+  'birmingham-athens':
+    'https://www.trip.com/flights/Birmingham-to-Athens/tickets-BHX-ATH?flighttype=S&dcity=BHX&acity=ATH&Allianceid=9804124&SID=327450313&trip_sub1=&trip_sub3=D19206602',
+  'glasgow-athens':
+    'https://www.trip.com/flights/Glasgow-to-Athens/tickets-GLA-ATH?flighttype=S&dcity=GLA&acity=ATH&Allianceid=9804124&SID=327450313&trip_sub1=&trip_sub3=D19206602',
+  'manchester-rome':
+    'https://www.trip.com/flights/Manchester-to-Rome/tickets-MAN-ROM?flighttype=S&dcity=MAN&acity=ROM&Allianceid=9804124&SID=327450313&trip_sub1=&trip_sub3=D19206602',
+  'birmingham-rome':
+    'https://www.trip.com/flights/Birmingham-to-Rome/tickets-BHX-ROM?flighttype=S&dcity=BHX&acity=ROM&Allianceid=9804124&SID=327450313&trip_sub1=&trip_sub3=D19206602',
+  'bristol-rome':
+    'https://www.trip.com/flights/Bristol-to-Rome/tickets-BRS-ROM?flighttype=S&dcity=BRS&acity=ROM&Allianceid=9804124&SID=327450313&trip_sub1=&trip_sub3=D19206602',
   'manchester-antalya':
     'https://www.trip.com/flights/Manchester-to-Antalya/tickets-MAN-AYT?flighttype=S&dcity=MAN&acity=AYT&Allianceid=9804124&SID=327450313&trip_sub1=&trip_sub3=D19205349',
   'birmingham-antalya':

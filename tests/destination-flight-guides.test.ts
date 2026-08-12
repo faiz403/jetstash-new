@@ -112,4 +112,28 @@ describe('destination flight guides', () => {
     expect(getTripComDestinationHandoffUrl('london-heathrow', 'casablanca')).toBeNull();
     expect(getTripComDestinationHandoffUrl('london-gatwick', 'tangier')).toBeNull();
   });
+
+  it('covers the approved Europe continuation batch and keeps Gatwick origins blocked', () => {
+    const expected: Record<string, string[]> = {
+      barcelona: ['manchester', 'birmingham', 'bristol', 'leeds-bradford'],
+      faro: ['bristol', 'manchester', 'birmingham', 'leeds-bradford'],
+      athens: ['manchester', 'birmingham', 'glasgow'],
+      rome: ['manchester', 'birmingham', 'bristol'],
+    };
+
+    for (const [destinationSlug, originSlugs] of Object.entries(expected)) {
+      for (const originSlug of originSlugs) {
+        const url = getTripComDestinationHandoffUrl(originSlug, destinationSlug);
+        expect(url, `${originSlug}-${destinationSlug}`).toMatch(
+          /^https:\/\/www\.trip\.com\/flights\/.+\?flighttype=S&dcity=[A-Z]+&acity=[A-Z]+&locale=en-XX&curr=GBP&Allianceid=9804124&SID=327450313&trip_sub1=&trip_sub3=D19206602$/,
+        );
+        expect(url).not.toContain('ddate=');
+        expect(url).not.toContain('rdate=');
+      }
+    }
+
+    for (const destinationSlug of Object.keys(expected)) {
+      expect(getTripComDestinationHandoffUrl('london-gatwick', destinationSlug)).toBeNull();
+    }
+  });
 });
