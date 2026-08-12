@@ -38,6 +38,14 @@
 
 export const PROVIDER_NAME = 'Trip.com';
 
+/**
+ * Trip.com's Affiliate Link tool accepts these market settings on a custom
+ * flight link and preserves the affiliate identifiers. They request the UK
+ * English / GBP presentation without changing route or search parameters.
+ */
+export const TRIPCOM_UK_LOCALE = 'en-XX';
+export const TRIPCOM_UK_CURRENCY = 'GBP';
+
 /** rel attribute for every Trip.com outbound <a> — matches Google's guidance for paid/affiliate links. */
 export const PROVIDER_REL = 'nofollow sponsored noopener noreferrer';
 
@@ -109,6 +117,23 @@ const TRIPCOM_ROUTE_URLS: Readonly<Record<string, string>> = {
  */
 export function getTripComRouteUrl(routeSlug: string): string | null {
   return TRIPCOM_ROUTE_URLS[routeSlug] ?? null;
+}
+
+/**
+ * Public flight handoff URL. The underlying route URL remains the exact
+ * dashboard-generated value above; this applies the same locale/currency
+ * fields visible in Trip.com's own generated custom-link output so a UK
+ * visitor is explicitly sent a GBP search while route and attribution fields
+ * remain unchanged.
+ */
+export function getTripComFlightHandoffUrl(routeSlug: string): string | null {
+  const routeUrl = getTripComRouteUrl(routeSlug);
+  if (!routeUrl) return null;
+  if (routeUrl.includes('locale=') || routeUrl.includes('curr=')) return routeUrl;
+  return routeUrl.replace(
+    '&Allianceid=',
+    `&locale=${TRIPCOM_UK_LOCALE}&curr=${TRIPCOM_UK_CURRENCY}&Allianceid=`,
+  );
 }
 
 /** Whether a route has a real, dashboard-verified Trip.com link — the fail-closed gate every CTA checks before rendering. */

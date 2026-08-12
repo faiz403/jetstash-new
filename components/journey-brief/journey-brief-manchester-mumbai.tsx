@@ -11,7 +11,7 @@ import {
 } from 'lucide-react';
 import { airports } from '@/data/airports';
 import { destinations } from '@/data/destinations';
-import { getTripComRouteUrl, PROVIDER_REL } from '@/lib/booking-providers';
+import { getTripComFlightHandoffUrl, PROVIDER_REL } from '@/lib/booking-providers';
 import { track } from '@/lib/analytics';
 import { RouteMapHero } from '@/components/sections/route-map-hero';
 import { Badge } from '@/components/ui/badge';
@@ -477,7 +477,7 @@ export function JourneyBriefManchesterMumbai() {
                   <a
                     // manchester-mumbai is always in booking-providers.ts's dashboard-verified
                     // map — this flagship Journey Brief is hardcoded to that one route.
-                    href={getTripComRouteUrl('manchester-mumbai')!}
+                    href={getTripComFlightHandoffUrl('manchester-mumbai')!}
                     target="_blank"
                     rel={PROVIDER_REL}
                     onClick={() => track('journey_brief_live_price_click', { route: 'manchester-mumbai', cabin: 'economy' })}

@@ -1,5 +1,5 @@
 import { SearchX, ArrowUpRight } from 'lucide-react';
-import { getTripComRouteUrl, PROVIDER_REL } from '@/lib/booking-providers';
+import { getTripComFlightHandoffUrl, PROVIDER_REL } from '@/lib/booking-providers';
 import { TrackedOutboundLink } from './tracked-outbound-link';
 
 /**
@@ -15,7 +15,7 @@ import { TrackedOutboundLink } from './tracked-outbound-link';
  * rather than a generic Trip.com link — see lib/booking-providers.ts.
  */
 export function NoFareFallback({ cityLabel, routeSlug }: { cityLabel: string; routeSlug?: string }) {
-  const tripComUrl = routeSlug ? getTripComRouteUrl(routeSlug) : null;
+  const tripComUrl = routeSlug ? getTripComFlightHandoffUrl(routeSlug) : null;
   return (
     <div className="flex flex-col items-center rounded-md border border-dashed border-ink-200 bg-white px-6 py-12 text-center">
       <div className="flex h-11 w-11 items-center justify-center rounded-full bg-ink-50 text-ink-400">

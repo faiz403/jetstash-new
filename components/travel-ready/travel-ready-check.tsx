@@ -12,7 +12,7 @@ import {
 } from '@/lib/travel-ready-check';
 import type { TravelReadySignal } from '@/lib/travel-intelligence-engine';
 import { getRouteByAirportAndDestination } from '@/data/routes';
-import { getTripComRouteUrl, PROVIDER_REL } from '@/lib/booking-providers';
+import { getTripComFlightHandoffUrl, PROVIDER_REL } from '@/lib/booking-providers';
 import { RouteWatchForm } from '@/components/route/route-watch-form';
 import { track } from '@/lib/analytics';
 
@@ -127,7 +127,7 @@ export function TravelReadyCheck({
   // route to point at, so it gets no booking CTA rather than a generic one.
   const matchedRoute =
     airportSlugForCta && destinationSlug ? getRouteByAirportAndDestination(airportSlugForCta, destinationSlug) : undefined;
-  const bookingUrl = matchedRoute ? getTripComRouteUrl(matchedRoute.slug) : null;
+  const bookingUrl = matchedRoute ? getTripComFlightHandoffUrl(matchedRoute.slug) : null;
 
   return (
     <section

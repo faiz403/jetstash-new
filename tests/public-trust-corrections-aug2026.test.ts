@@ -193,9 +193,9 @@ describe('Unrelated behaviour is unchanged — URLs, rel, analytics, fail-closed
     expect(footerSrc).toMatch(/href=["'`]\/affiliate-disclosure["'`]/);
   });
 
-  it('no route-specific Trip.com URL construction was touched (getTripComRouteUrl call sites unchanged)', () => {
+  it('all route-specific Trip.com handoffs still use the shared provider helper', () => {
     for (const src of [dealCardSrc, noFareFallbackSrc, travelReadyCheckSrc, routeHeroSrc]) {
-      expect(src).toContain('getTripComRouteUrl');
+      expect(src).toContain('getTripComFlightHandoffUrl');
     }
   });
 });

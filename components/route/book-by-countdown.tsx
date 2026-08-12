@@ -14,7 +14,7 @@ import {
 } from '@/lib/booking-intelligence';
 import { computeReadiness, VERDICT_COPY, type EngineSnapshot, type TravelReadySignal } from '@/lib/travel-intelligence-engine';
 import { getRouteBySlug, getRouteAirport, getRouteDestination } from '@/data/routes';
-import { getTripComRouteUrl, PROVIDER_REL } from '@/lib/booking-providers';
+import { getTripComFlightHandoffUrl, PROVIDER_REL } from '@/lib/booking-providers';
 import { WhatsAppShareButton } from '@/components/route/whatsapp-share-button';
 import { siteConfig } from '@/lib/site-config';
 import { OBSERVATION_FRESH_DAYS } from '@/lib/freshness-thresholds';
@@ -96,7 +96,7 @@ export function BookByCountdown({
   // Fail-closed by construction: null for any route not in booking-providers.ts's
   // dashboard-verified map (2 of the 5 Book-By priority routes — the Heathrow ones —
   // are unsupported today) — never a generic Trip.com fallback.
-  const bookingUrl = getTripComRouteUrl(route.slug);
+  const bookingUrl = getTripComFlightHandoffUrl(route.slug);
 
   // ── Timeline geometry ──────────────────────────────────────────────────
   // Span: from the recommended window's opening (or 8 weeks before the
