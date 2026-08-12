@@ -330,7 +330,7 @@ export const destinations: Destination[] = [
     region: 'mediterranean',
     tagline: 'Turkey\'s all-inclusive coastline',
     description:
-      'Antalya anchors the Turquoise Coast, the UK\'s most popular all-inclusive resort region outside Spain, with a long season and direct charter flights from almost every regional UK airport.',
+      'Antalya anchors Turkey\'s Turquoise Coast, with established resort areas and all-inclusive stays.',
     bestFor: ['Family holidays', 'All-inclusive', 'Beach'],
     flightTimeFromUK: '4h 15m direct from Manchester',
     ukAirports: ['manchester', 'birmingham', 'leeds-bradford', 'glasgow', 'bristol', 'london-gatwick'],
