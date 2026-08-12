@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync, readdirSync, statSync } from 'fs';
 import { join } from 'path';
+import { getDestinationBySlug } from '@/data/destinations';
 
 /**
  * Three trust-crack fixes found during a July 2026 live-site audit:
@@ -86,5 +87,17 @@ describe('destination pages do not present generic durations as route facts', ()
     expect(pageSrc).toContain('<DestinationFlightGuides');
     expect(pageSrc).not.toContain('View airport guide');
     expect(pageSrc).not.toContain('`/airports/${airport.slug}`');
+  });
+});
+
+describe('Antalya positioning stays within its evidence boundary', () => {
+  const antalya = getDestinationBySlug('antalya');
+
+  it('keeps useful resort context without unsupported comparative wording', () => {
+    expect(antalya?.tagline).toBe("Turkey's all-inclusive coastline");
+    expect(antalya?.description).toBe(
+      "Antalya anchors Turkey's Turquoise Coast, with established resort areas and all-inclusive stays.",
+    );
+    expect(antalya?.description.toLowerCase()).not.toMatch(/\b(most popular|leading|top|best)\b/);
   });
 });
