@@ -97,8 +97,27 @@ Turkey matrix without pair-specific evidence.
 | Manchester → Antalya | SunExpress's April–October 2026 plan, corroborated by current Jet2 and Corendon booking pages; Manchester Airport and airline pages publish differing timings | Seasonal direct service is evidenced, but exact airlines, dates, frequency and duration vary; no single timing or fixed weekly number is published. |
 | Manchester → Izmir | SunExpress's April–October 2026 plan and summer programme; Manchester Airport: published 4h20m planning figure | Seasonal direct service is evidenced; no fixed weekly frequency is published and the 4h20m figure is planning guidance, not a guaranteed actual duration. |
 
-Every route keeps its existing exact Trip.com handoff; booking evidence does not substitute for
-route evidence.
+Every route that already has a verified Trip.com handoff keeps it; the five new Gatwick route
+guides remain without a provider CTA because booking evidence does not substitute for route
+evidence and Trip.com's tool still cannot generate exact airport-specific London links.
+
+### Turkey route-guide completion batch - 12 August 2026
+
+Fourteen of the remaining fifteen Turkey airport-to-destination pairs now have route guides backed
+by current airport or airline evidence. Leeds Bradford to Istanbul remains intentionally unbuilt:
+Leeds Bradford Airport's current destinations directory does not list Istanbul, and no current
+airport or airline source reviewed in this batch established a route-specific service. The fourteen
+new guides preserve exact non-London Trip.com handoffs where already verified; all five new Gatwick
+guides remain without a provider CTA because Trip.com's tool still cannot generate an exact
+airport-specific dateless London handoff.
+
+| Airport | Destination guides added | Evidence boundary |
+|---|---|---|
+| Leeds Bradford | Antalya, Dalaman, Bodrum | Direct destination listings; no fixed operator, frequency or duration published on the reviewed pages. |
+| Glasgow | Antalya, Dalaman, Bodrum | Current airport schedules list direct services; Dalaman/Bodrum publish approximate durations, Antalya remains date-specific. |
+| Bristol | Antalya, Dalaman | Current airport pages list direct service and bounded schedule context; no fixed route duration published. |
+| Newcastle | Dalaman | Current airport airline directory supports seasonal SunExpress service; fixed duration/frequency remains unknown. |
+| London Gatwick | Istanbul, Antalya, Dalaman, Bodrum, Izmir | Current airport/airline sources support direct seasonal or daily service; exact Trip.com airport handoffs remain blocked. |
 
 ## Weekly operating rhythm
 

@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest';
 import { getDestinationBySlug } from '@/data/destinations';
 import { getAntalyaFlightHandoffStatuses, getAntalyaFlightHandoffs, getAntalyaPublicHotelExamples } from '@/lib/antalya-holiday-intelligence';
 import { getDestinationFlightGuideEntries } from '@/lib/destination-flight-guides';
+import { getTripComFlightHandoffUrl } from '@/lib/booking-providers';
 
 const pageSrc = readFileSync(join(process.cwd(), 'app', 'destinations', '[slug]', 'page.tsx'), 'utf8');
 const componentSrc = readFileSync(join(process.cwd(), 'components', 'destination', 'antalya-holiday-intelligence.tsx'), 'utf8');
@@ -34,18 +35,13 @@ describe('public Antalya holiday intelligence', () => {
     expect(publicCopy).toContain('not establish a walkable route');
   });
 
-  it('fails closed when Antalya has no verified exact route and partner handoff', () => {
+  it('has no competing Holiday Intelligence handoffs once every Antalya origin has a route guide', () => {
     const destination = getDestinationBySlug('antalya')!;
     const handoffs = getAntalyaFlightHandoffs(destination, '2026-08-12');
-    expect(handoffs.map((handoff) => handoff.airportName)).toEqual([
-      'Leeds Bradford Airport',
-      'Glasgow Airport',
-      'Bristol Airport',
-    ]);
-    expect(handoffs.every((handoff) => handoff.href.includes('curr=GBP'))).toBe(true);
-    expect(handoffs.every((handoff) => handoff.href.includes('Allianceid=9804124') && handoff.href.includes('SID=327450313'))).toBe(true);
+    expect(handoffs).toEqual([]);
     const statuses = getAntalyaFlightHandoffStatuses(destination, '2026-08-12');
-    expect(statuses.find((entry) => entry.airportSlug === 'london-gatwick')).toMatchObject({ status: 'blocked', href: null });
+    expect(statuses).toEqual([]);
+    expect(getTripComFlightHandoffUrl('london-gatwick-antalya')).toBeNull();
     expect(componentSrc).toContain('{handoff.airportName} → Antalya');
     expect(componentSrc).toContain('Check live flights on Trip.com');
     expect(componentSrc).toContain('Partner link, opens Trip.com in a new tab.');
@@ -53,17 +49,23 @@ describe('public Antalya holiday intelligence', () => {
     expect(componentSrc).toContain('nofollow sponsored noopener noreferrer');
   });
 
-  it('leaves route-guide pairs to their route journey and keeps unsupported pairs in Holiday Intelligence', () => {
+  it('leaves every Antalya origin on one route-guide journey and keeps Gatwick fail-closed', () => {
     const destination = getDestinationBySlug('antalya')!;
     const guideEntries = getDestinationFlightGuideEntries(destination, '2026-08-12');
     expect(guideEntries.find((entry) => entry.airport.slug === 'manchester')?.routeSlug).toBe('manchester-antalya');
     expect(guideEntries.find((entry) => entry.airport.slug === 'birmingham')?.routeSlug).toBe('birmingham-antalya');
 
-    const handoffRoutes = getAntalyaFlightHandoffs(destination, '2026-08-12').map((handoff) => handoff.routeSlug);
-    expect(handoffRoutes).toEqual(['leeds-bradford-antalya', 'glasgow-antalya', 'bristol-antalya']);
-    expect(handoffRoutes).not.toContain('manchester-antalya');
-    expect(handoffRoutes).not.toContain('birmingham-antalya');
-    expect(handoffRoutes).not.toContain('london-gatwick-antalya');
+    const routeSlugs = guideEntries.filter((entry) => entry.airport.slug !== 'london-heathrow').map((entry) => entry.routeSlug);
+    expect(routeSlugs).toEqual([
+      'manchester-antalya',
+      'birmingham-antalya',
+      'leeds-bradford-antalya',
+      'glasgow-antalya',
+      'bristol-antalya',
+      'london-gatwick-antalya',
+    ]);
+    expect(getAntalyaFlightHandoffs(destination, '2026-08-12')).toEqual([]);
+    expect(getTripComFlightHandoffUrl('london-gatwick-antalya')).toBeNull();
   });
 
   it('wires the public section only for Antalya and keeps founder-only detail out of the public page', () => {

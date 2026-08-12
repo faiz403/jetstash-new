@@ -51,8 +51,8 @@ export const PROVIDER_REL = 'nofollow sponsored noopener noreferrer';
 
 /**
  * Route-slug-keyed, exact dashboard-generated Trip.com Flights-page affiliate
- * links — see file header for provenance. 32 of JetStash's 41 routes are
- * covered; the other 9 (all London-origin) are intentionally absent.
+ * links — see file header for provenance. 41 of JetStash's 55 routes are
+ * covered; the other 14 (all London-origin) are intentionally absent.
  */
 const TRIPCOM_ROUTE_URLS: Readonly<Record<string, string>> = {
   'manchester-lahore':
@@ -109,6 +109,24 @@ const TRIPCOM_ROUTE_URLS: Readonly<Record<string, string>> = {
     'https://www.trip.com/flights/Birmingham-to-Bodrum/tickets-BHX-BJV?flighttype=S&dcity=BHX&acity=BJV&Allianceid=9804124&SID=327450313&trip_sub1=&trip_sub3=D19206210',
   'birmingham-antalya':
     'https://www.trip.com/flights/Birmingham-to-Antalya/tickets-BHX-AYT?flighttype=S&dcity=BHX&acity=AYT&Allianceid=9804124&SID=327450313&trip_sub1=&trip_sub3=D19205349',
+  'leeds-bradford-antalya':
+    'https://www.trip.com/flights/Leeds-to-Antalya/tickets-LBA-AYT?flighttype=S&dcity=LBA&acity=AYT&Allianceid=9804124&SID=327450313&trip_sub1=&trip_sub3=D19205349',
+  'leeds-bradford-dalaman':
+    'https://www.trip.com/flights/Leeds-to-Dalaman/tickets-LBA-DLM?flighttype=S&dcity=LBA&acity=DLM&Allianceid=9804124&SID=327450313&trip_sub1=&trip_sub3=D19206161',
+  'leeds-bradford-bodrum':
+    'https://www.trip.com/flights/Leeds-to-Bodrum/tickets-LBA-BJV?flighttype=S&dcity=LBA&acity=BJV&Allianceid=9804124&SID=327450313&trip_sub1=&trip_sub3=D19206245',
+  'glasgow-antalya':
+    'https://www.trip.com/flights/Glasgow-to-Antalya/tickets-GLA-AYT?flighttype=S&dcity=GLA&acity=AYT&Allianceid=9804124&SID=327450313&trip_sub1=&trip_sub3=D19205349',
+  'glasgow-dalaman':
+    'https://www.trip.com/flights/Glasgow-to-Dalaman/tickets-GLA-DLM?flighttype=S&dcity=GLA&acity=DLM&Allianceid=9804124&SID=327450313&trip_sub1=&trip_sub3=D19206182',
+  'glasgow-bodrum':
+    'https://www.trip.com/flights/Glasgow-to-Bodrum/tickets-GLA-BJV?flighttype=S&dcity=GLA&acity=BJV&Allianceid=9804124&SID=327450313&trip_sub1=&trip_sub3=D19206217',
+  'bristol-antalya':
+    'https://www.trip.com/flights/Bristol-to-Antalya/tickets-BRS-AYT?flighttype=S&dcity=BRS&acity=AYT&Allianceid=9804124&SID=327450313&trip_sub1=&trip_sub3=D19205349',
+  'bristol-dalaman':
+    'https://www.trip.com/flights/Bristol-to-Dalaman/tickets-BRS-DLM?flighttype=S&dcity=BRS&acity=DLM&Allianceid=9804124&SID=327450313&trip_sub1=&trip_sub3=D19206175',
+  'newcastle-dalaman':
+    'https://www.trip.com/flights/Newcastle%20upon%20Tyne-to-Dalaman/tickets-NCL-DLM?flighttype=S&dcity=NCL&acity=DLM&Allianceid=9804124&SID=327450313&trip_sub1=&trip_sub3=D19206189',
   'leeds-bradford-amritsar':
     'https://www.trip.com/flights/Leeds-to-Amritsar/tickets-LBA-ATQ?flighttype=S&dcity=LBA&acity=ATQ&Allianceid=9804124&SID=327450313&trip_sub1=&trip_sub3=D19082870',
   'leeds-bradford-islamabad':
