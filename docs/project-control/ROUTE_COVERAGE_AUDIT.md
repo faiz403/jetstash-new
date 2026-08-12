@@ -206,6 +206,10 @@ complete; their intelligence grade is computed by the unchanged scoring function
 | `manchester-bodrum` | Useful |
 | `manchester-antalya` | Useful |
 | `manchester-izmir` | Useful |
+| `birmingham-istanbul` | Useful |
+| `birmingham-antalya` | Useful |
+| `birmingham-dalaman` | Useful |
+| `birmingham-bodrum` | Useful |
 
 ---
 
