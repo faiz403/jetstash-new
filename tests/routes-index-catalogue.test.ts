@@ -271,10 +271,11 @@ describe('country header images (routes-country-header-images)', () => {
     'United Arab Emirates': 'dubai',
     Qatar: 'doha',
     'Saudi Arabia': 'jeddah',
+    Turkey: 'istanbul',
   };
 
   it('1 & 13. every current country group has exactly one representative image — no null, no fallback/broken image', () => {
-    expect(countryGroups).toHaveLength(6);
+    expect(countryGroups).toHaveLength(7);
     for (const group of countryGroups) {
       expect(group.image, `${group.country} has no header image`).not.toBeNull();
       expect(group.image!.src.length).toBeGreaterThan(0);
