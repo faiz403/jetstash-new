@@ -81,9 +81,10 @@ describe('destination pages do not present generic durations as route facts', ()
     expect(pageSrc).not.toMatch(/>Typical flight time: \{dest\.flightTimeFromUK\}</);
   });
 
-  it('uses neutral airport-specific guidance and points to route guides for verified service', () => {
+  it('uses destination-specific flight guidance and never falls back to a generic airport page', () => {
     expect(pageSrc).not.toContain('{dest.flightTimeFromUK}');
-    expect(pageSrc).toMatch(/vary by UK departure airport/i);
-    expect(pageSrc).toMatch(/route guides/i);
+    expect(pageSrc).toContain('<DestinationFlightGuides');
+    expect(pageSrc).not.toContain('View airport guide');
+    expect(pageSrc).not.toContain('`/airports/${airport.slug}`');
   });
 });

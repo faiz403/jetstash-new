@@ -1,11 +1,9 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { Plane, FileCheck, ArrowUpRight } from 'lucide-react';
+import { FileCheck, ArrowUpRight } from 'lucide-react';
 import { destinations, getDestinationBySlug } from '@/data/destinations';
 import { getDealsByDestination } from '@/data/deals';
-import { airports } from '@/data/airports';
-import { getRoutesByDestination } from '@/data/routes';
 import { getTipsForScope } from '@/data/traveller-tips';
 import { getVisaLinkForCountry } from '@/lib/visa-links';
 import { TRAVEL_READY_SUPPORTED_COUNTRIES } from '@/lib/travel-ready-check';
@@ -21,6 +19,7 @@ import { siteConfig } from '@/lib/site-config';
 import { DestinationVisual } from '@/components/ui/destination-visual';
 import { HeroBackdrop } from '@/components/ui/hero-backdrop';
 import { JsonLd, breadcrumbSchema } from '@/components/seo/json-ld';
+import { DestinationFlightGuides } from '@/components/destination/destination-flight-guides';
 
 // Pure ISR, matching the route detail pages — this page renders DealCard and
 // Book-By snapshots (computeBookBySnapshotsForDestination), both of which
@@ -52,8 +51,6 @@ export default async function DestinationPage({ params }: { params: Promise<{ sl
   }
 
   const dealsHere = getDealsByDestination(dest.slug);
-  const servingAirports = airports.filter((a) => dest.ukAirports.includes(a.slug));
-  const routesHere = getRoutesByDestination(dest.slug);
   const travellerTips = getTipsForScope({ destinationSlug: dest.slug });
   const visaLink = getVisaLinkForCountry(dest.country);
   // Book-By intelligence strip — renders only for destinations served by a
@@ -119,33 +116,7 @@ export default async function DestinationPage({ params }: { params: Promise<{ sl
               <h2 className="font-display text-2xl text-ink-900">About {dest.city}</h2>
               <p className="mt-4 leading-relaxed text-ink-600">{dest.description}</p>
 
-              <h3 className="mt-10 font-display text-xl text-ink-900">Flying from the UK</h3>
-              <div className="mt-4 flex flex-col gap-3">
-                {servingAirports.map((airport) => {
-                  const matchedRoute = routesHere.find((r) => r.airportSlug === airport.slug);
-                  const href = matchedRoute ? `/routes/${matchedRoute.slug}` : `/airports/${airport.slug}`;
-                  return (
-                    <Link
-                      key={airport.slug}
-                      href={href}
-                      className="flex items-center justify-between rounded-sm border border-ink-100 px-4 py-3 transition-colors hover:border-brass/40 hover:bg-sand-50"
-                    >
-                      <span className="flex items-center gap-2 text-sm font-medium text-ink-700">
-                        <Plane className="h-4 w-4 text-ink-400" strokeWidth={2} />
-                        {airport.name} ({airport.code})
-                      </span>
-                      <span className="flex items-center gap-1 text-xs text-ink-400">
-                        {matchedRoute ? 'View route guide' : 'View airport guide'}
-                        <ArrowUpRight className="h-3 w-3" strokeWidth={2.25} />
-                      </span>
-                    </Link>
-                  );
-                })}
-              </div>
-              <p className="mt-3 text-sm text-ink-500">
-                Flight times and direct-service availability vary by UK departure airport. Explore the route guides
-                above for current, verified service details.
-              </p>
+              <DestinationFlightGuides destination={dest} nowIso={new Date().toISOString().slice(0, 10)} />
             </div>
 
             <div className="rounded-md border border-ink-100 bg-sand-50 p-7">
