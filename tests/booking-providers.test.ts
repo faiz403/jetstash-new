@@ -38,6 +38,10 @@ const SUPPORTED_ROUTES = [
   'birmingham-islamabad',
   'birmingham-madinah',
   'birmingham-mumbai',
+  'birmingham-istanbul',
+  'birmingham-dalaman',
+  'birmingham-bodrum',
+  'birmingham-antalya',
   'leeds-bradford-amritsar',
   'leeds-bradford-islamabad',
   'glasgow-dubai',
@@ -67,13 +71,13 @@ describe('every current route slug is classified exactly once', () => {
     expect(overlap).toEqual([]);
   });
 
-  it('is exactly 28 supported and 9 unsupported', () => {
-    expect(SUPPORTED_ROUTES).toHaveLength(28);
+  it('is exactly 32 supported and 9 unsupported', () => {
+    expect(SUPPORTED_ROUTES).toHaveLength(32);
     expect(UNSUPPORTED_LONDON_ROUTES).toHaveLength(9);
   });
 });
 
-describe('all 28 supported routes receive their exact, real Trip.com URL', () => {
+describe('all 32 supported routes receive their exact, real Trip.com URL', () => {
   it.each(SUPPORTED_ROUTES)('%s resolves to a genuine trip.com/flights URL', (slug) => {
     const url = getTripComRouteUrl(slug);
     expect(url).not.toBeNull();
@@ -112,6 +116,10 @@ describe('all 28 supported routes receive their exact, real Trip.com URL', () =>
       'birmingham-islamabad': ['BHX', 'ISB'],
       'birmingham-madinah': ['BHX', 'MED'],
       'birmingham-mumbai': ['BHX', 'BOM'],
+      'birmingham-istanbul': ['BHX', 'IST'],
+      'birmingham-dalaman': ['BHX', 'DLM'],
+      'birmingham-bodrum': ['BHX', 'BJV'],
+      'birmingham-antalya': ['BHX', 'AYT'],
       'leeds-bradford-amritsar': ['LBA', 'ATQ'],
       'leeds-bradford-islamabad': ['LBA', 'ISB'],
       'glasgow-dubai': ['GLA', 'DXB'],

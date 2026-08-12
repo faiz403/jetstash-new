@@ -45,7 +45,7 @@ const nowIso = new Date().toISOString().slice(0, 10);
  * record in this dataset already carries a sourceUrl (14/14), so it never
  * actually differentiated anything; it would have inflated every verified
  * route's score by exactly one point without adding real signal. Airport
- * -specific transfer guidance was considered too, but 0 of 37 routes
+ * -specific transfer guidance was considered too, but 0 of 41 routes
  * currently have any (data/traveller-tips.ts has no airport-scoped entry
  * yet) — including it as a required or scored category today would be
  * un-clearable by definition, not a meaningful bar; it's tracked in the

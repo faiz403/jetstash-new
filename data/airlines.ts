@@ -21,12 +21,15 @@ export const airlines: Airline[] = [
   { slug: 'indigo', iataCode: '6E', name: 'IndiGo' },
   { slug: 'etihad-airways', iataCode: 'EY', name: 'Etihad Airways' },
   { slug: 'turkish-airlines', iataCode: 'TK', name: 'Turkish Airlines' },
+  { slug: 'pegasus', iataCode: 'PC', name: 'Pegasus Airlines' },
   { slug: 'egyptair', iataCode: 'MS', name: 'EgyptAir' },
   { slug: 'royal-jordanian', iataCode: 'RJ', name: 'Royal Jordanian' },
   { slug: 'biman-bangladesh', iataCode: 'BG', name: 'Biman Bangladesh Airlines' },
   { slug: 'sunexpress', iataCode: 'XQ', name: 'SunExpress' },
   { slug: 'jet2', iataCode: 'LS', name: 'Jet2' },
   { slug: 'corendon', iataCode: 'XC', name: 'Corendon' },
+  { slug: 'easyjet', iataCode: 'U2', name: 'easyJet' },
+  { slug: 'tui', iataCode: 'BY', name: 'TUI' },
 ];
 
 const airlinesBySlug = new Map(airlines.map((a) => [a.slug, a]));

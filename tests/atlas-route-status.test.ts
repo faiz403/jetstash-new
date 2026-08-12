@@ -436,7 +436,7 @@ describe('The route coverage audit document stays in sync with the real data', (
 
 describe('No route facts, fare observations or verification states were altered by this phase', () => {
   it('data/routes.ts is untouched by this test suite\'s own import (sanity: current route count)', () => {
-    expect(routes.length).toBe(37);
+    expect(routes.length).toBe(41);
   });
 
   it('computeRouteIntelligenceLevel never mutates the route object it reads', () => {

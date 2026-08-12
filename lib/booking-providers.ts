@@ -51,7 +51,7 @@ export const PROVIDER_REL = 'nofollow sponsored noopener noreferrer';
 
 /**
  * Route-slug-keyed, exact dashboard-generated Trip.com Flights-page affiliate
- * links — see file header for provenance. 28 of JetStash's 37 routes are
+ * links — see file header for provenance. 32 of JetStash's 41 routes are
  * covered; the other 9 (all London-origin) are intentionally absent.
  */
 const TRIPCOM_ROUTE_URLS: Readonly<Record<string, string>> = {
@@ -101,6 +101,14 @@ const TRIPCOM_ROUTE_URLS: Readonly<Record<string, string>> = {
     'https://www.trip.com/flights/Birmingham-to-Medina/tickets-BHX-MED?flighttype=S&dcity=BHX&acity=MED&Allianceid=9804124&SID=327450313&trip_sub1=&trip_sub3=D19082807',
   'birmingham-mumbai':
     'https://www.trip.com/flights/Birmingham-to-Mumbai/tickets-BHX-BOM?flighttype=S&dcity=BHX&acity=BOM&Allianceid=9804124&SID=327450313&trip_sub1=&trip_sub3=D19082814',
+  'birmingham-istanbul':
+    'https://www.trip.com/flights/Birmingham-to-Istanbul/tickets-BHX-IST?flighttype=S&dcity=BHX&acity=IST&Allianceid=9804124&SID=327450313&trip_sub1=&trip_sub3=D19206133',
+  'birmingham-dalaman':
+    'https://www.trip.com/flights/Birmingham-to-Dalaman/tickets-BHX-DLM?flighttype=S&dcity=BHX&acity=DLM&Allianceid=9804124&SID=327450313&trip_sub1=&trip_sub3=D19206154',
+  'birmingham-bodrum':
+    'https://www.trip.com/flights/Birmingham-to-Bodrum/tickets-BHX-BJV?flighttype=S&dcity=BHX&acity=BJV&Allianceid=9804124&SID=327450313&trip_sub1=&trip_sub3=D19206210',
+  'birmingham-antalya':
+    'https://www.trip.com/flights/Birmingham-to-Antalya/tickets-BHX-AYT?flighttype=S&dcity=BHX&acity=AYT&Allianceid=9804124&SID=327450313&trip_sub1=&trip_sub3=D19205349',
   'leeds-bradford-amritsar':
     'https://www.trip.com/flights/Leeds-to-Amritsar/tickets-LBA-ATQ?flighttype=S&dcity=LBA&acity=ATQ&Allianceid=9804124&SID=327450313&trip_sub1=&trip_sub3=D19082870',
   'leeds-bradford-islamabad':
