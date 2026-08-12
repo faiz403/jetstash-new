@@ -136,4 +136,23 @@ describe('destination flight guides', () => {
       expect(getTripComDestinationHandoffUrl('london-gatwick', destinationSlug)).toBeNull();
     }
   });
+
+  it('covers the approved Birmingham continuation batch with exact handoffs only', () => {
+    const expected: Record<string, string> = {
+      delhi: 'DEL',
+      ahmedabad: 'AMD',
+      dubai: 'DXB',
+      doha: 'DOH',
+      jeddah: 'JED',
+    };
+
+    for (const [destinationSlug, arrivalCode] of Object.entries(expected)) {
+      const url = getTripComDestinationHandoffUrl('birmingham', destinationSlug);
+      expect(url, `birmingham-${destinationSlug}`).toMatch(
+        new RegExp(`^https://www\\.trip\\.com/flights/Birmingham-to-.+/tickets-BHX-${arrivalCode}\\?flighttype=S&dcity=BHX&acity=${arrivalCode}&locale=en-XX&curr=GBP&Allianceid=9804124&SID=327450313&trip_sub1=&trip_sub3=D19206602$`),
+      );
+      expect(url).not.toContain('ddate=');
+      expect(url).not.toContain('rdate=');
+    }
+  });
 });

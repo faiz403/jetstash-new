@@ -169,6 +169,16 @@ const TRIPCOM_DESTINATION_URLS: Readonly<Record<string, string>> = {
     'https://www.trip.com/flights/Birmingham-to-Rome/tickets-BHX-ROM?flighttype=S&dcity=BHX&acity=ROM&Allianceid=9804124&SID=327450313&trip_sub1=&trip_sub3=D19206602',
   'bristol-rome':
     'https://www.trip.com/flights/Bristol-to-Rome/tickets-BRS-ROM?flighttype=S&dcity=BRS&acity=ROM&Allianceid=9804124&SID=327450313&trip_sub1=&trip_sub3=D19206602',
+  'birmingham-delhi':
+    'https://www.trip.com/flights/Birmingham-to-New%20Delhi/tickets-BHX-DEL?flighttype=S&dcity=BHX&acity=DEL&Allianceid=9804124&SID=327450313&trip_sub1=&trip_sub3=D19206602',
+  'birmingham-ahmedabad':
+    'https://www.trip.com/flights/Birmingham-to-Ahmedabad/tickets-BHX-AMD?flighttype=S&dcity=BHX&acity=AMD&Allianceid=9804124&SID=327450313&trip_sub1=&trip_sub3=D19206602',
+  'birmingham-dubai':
+    'https://www.trip.com/flights/Birmingham-to-Dubai/tickets-BHX-DXB?flighttype=S&dcity=BHX&acity=DXB&Allianceid=9804124&SID=327450313&trip_sub1=&trip_sub3=D19206602',
+  'birmingham-doha':
+    'https://www.trip.com/flights/Birmingham-to-Doha/tickets-BHX-DOH?flighttype=S&dcity=BHX&acity=DOH&Allianceid=9804124&SID=327450313&trip_sub1=&trip_sub3=D19206602',
+  'birmingham-jeddah':
+    'https://www.trip.com/flights/Birmingham-to-Jeddah/tickets-BHX-JED?flighttype=S&dcity=BHX&acity=JED&Allianceid=9804124&SID=327450313&trip_sub1=&trip_sub3=D19206602',
   'manchester-antalya':
     'https://www.trip.com/flights/Manchester-to-Antalya/tickets-MAN-AYT?flighttype=S&dcity=MAN&acity=AYT&Allianceid=9804124&SID=327450313&trip_sub1=&trip_sub3=D19205349',
   'birmingham-antalya':
