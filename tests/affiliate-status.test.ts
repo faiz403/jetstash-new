@@ -10,7 +10,7 @@ describe('affiliate-status founder guidance', () => {
     expect(affiliate).toBeDefined();
     expect(affiliate?.status).toBe('ok');
     expect(affiliate?.headline).toContain('Trip.com is the sole active provider');
-    expect(affiliate?.headline).toContain('41 of 55');
+    expect(affiliate?.headline).toContain('45 of 63');
     expect(affiliate?.headline).not.toMatch(/TravelUp is/i);
     expect(affiliate?.action).not.toContain('travelup.com');
   });

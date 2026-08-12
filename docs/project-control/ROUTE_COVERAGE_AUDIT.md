@@ -1062,3 +1062,22 @@ Per the brief's explicit scope:
 - Did not touch Arrive By, Book By's own logic, Trip.com links, or affiliate provider behaviour.
 - Did not change which country the Atlas defaults to per airport, or which routes carry Book-By priority — those are product/founder decisions, not truth-and-honesty fixes.
 - Did not split `/deals`'s coverage-wording fix or the `lib/atlas-network-data.ts` mojibake text-encoding correction into separate PRs — both were reviewed specifically for this (see the PR's own review notes) and judged safe and in-scope to keep together: the `/deals` change uses only the existing publishability-gated function and was explicit brief scope; the mojibake fix touches only prose (comments and customer-facing strings) in the exact file already being modified for this phase, verified byte-for-byte to never touch a URL, identifier, or code token.
+## Morocco route-guide completion record — 12 August 2026
+
+The following Morocco route guides were added after the original 32-route audit. They are all
+bounded as **Useful** route guidance: current airport or airline evidence supports the route
+posture, while exact dates, frequencies, durations and baggage terms remain itinerary-specific.
+The four non-London Trip.com handoffs are preserved; London-origin handoffs remain blocked.
+Across the expanded 63-route catalogue, publishable fare coverage is **23 of 63** routes;
+the historical 32-route figures elsewhere in this document remain preserved as the original audit.
+
+| Route slug | Grade |
+|---|---|
+| `manchester-marrakech` | Useful |
+| `bristol-marrakech` | Useful |
+| `london-gatwick-marrakech` | Useful |
+| `manchester-agadir` | Useful |
+| `birmingham-agadir` | Useful |
+| `london-gatwick-agadir` | Useful |
+| `london-heathrow-casablanca` | Useful |
+| `london-gatwick-tangier` | Useful |

@@ -44,8 +44,8 @@ analytics/conversion events are verified in the real dashboard.
 - TravelUp has been removed entirely (founder decision, 4 August 2026 — its generic-search CTA
   reset the traveller's departure airport, e.g. Manchester silently becoming London, judged an
   unacceptable user experience). Trip.com is now JetStash's sole active flight-comparison provider:
-  41 of 55 routes carry a genuine, dashboard-generated, dateless Trip.com affiliate link
-  (`lib/booking-providers.ts`); the 9 London-origin routes (Heathrow/Gatwick) have no booking CTA at
+  45 of 63 routes carry a genuine, dashboard-generated, dateless Trip.com affiliate link
+  (`lib/booking-providers.ts`); the 18 London-origin routes (Heathrow/Gatwick) have no booking CTA at
   all, by design, since Trip.com's own tools cannot produce an airport-specific dateless link for
   them and no generic fallback is used. New partner integrations remain disabled until they have
   explicit approval, a real tracking link and direct journey validation.
@@ -270,9 +270,9 @@ entries remain private; a past price cannot be reconstructed honestly after the 
 
 **Superseded 4 August 2026.** TravelUp has been removed entirely (its generic-search CTA reset the
 traveller's departure airport — an unacceptable user experience). Trip.com is now JetStash's sole
-active provider: 41 of 55 routes carry a genuine, dashboard-generated, dateless Trip.com affiliate
+active provider: 45 of 63 routes carry a genuine, dashboard-generated, dateless Trip.com affiliate
 link (`lib/booking-providers.ts`), each the exact unedited output of Trip.com's own Affiliate Link
-dashboard tool. The 9 London-origin routes (all Heathrow/Gatwick) have no booking CTA — Trip.com's
+dashboard tool. The 18 London-origin routes (all Heathrow/Gatwick) have no booking CTA — Trip.com's
 tools cannot produce an airport-specific dateless link for Heathrow or Gatwick, only a generic
 "London" (LON) option, which is deliberately not used per JetStash's fail-closed rule: an exact
 airport-specific link, or no CTA at all. Expedia and other potential partners must remain unenabled
@@ -301,6 +301,13 @@ Birmingham–Antalya, Birmingham–Dalaman and Birmingham–Bodrum. Birmingham A
 direct service for all four; Istanbul preserves the IST/SAW arrival distinction, Dalaman keeps its
 approximate timing qualified, and Bodrum remains explicitly seasonal. All four preserve their exact
 Trip.com handoffs and publish no fares, baggage claims or fixed frequency promises.
+
+The Morocco route-guide batch is prepared for founder review across Manchester–Marrakech,
+Bristol–Marrakech, Gatwick–Marrakech, Manchester–Agadir, Birmingham–Agadir, Gatwick–Agadir,
+Heathrow–Casablanca and Gatwick–Tangier. Current airport and airline evidence supports bounded
+direct-service guidance for all eight; it does not support fixed fares, baggage claims or universal
+frequency/duration promises. The four existing non-London Trip.com handoffs are preserved inside
+their route guides; the four London-origin handoffs remain intentionally blocked with no LON fallback.
 
 ## NEXT
 
@@ -347,7 +354,7 @@ for a day that was not actually checked, and never create a fare merely to fill 
 
 - The editorial fare archive is at its starting point; it must grow through real dated checks, not
   retrospective estimates or automated scraping — see `LAUNCH_CHECKLIST.md` item G.
-- Trip.com is a single booking-partner dependency. 14 of 55 routes (all London-origin) have no
+- Trip.com is a single booking-partner dependency. 18 of 63 routes (all London-origin) have no
   booking CTA at all, by design — see AFF-001 above. Do not add a partner or route link without
   dashboard verification and direct validation; never guess or hand-edit a Trip.com URL.
 - Travel Ready rules and Route Status evidence require scheduled re-verification as source facts

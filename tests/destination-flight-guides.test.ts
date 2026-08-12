@@ -113,6 +113,39 @@ describe('destination flight guides', () => {
     expect(getTripComDestinationHandoffUrl('london-gatwick', 'tangier')).toBeNull();
   });
 
+  it('keeps the eight Morocco route guides evidence-bounded and preserves their booking boundaries', () => {
+    const expected = [
+      ['manchester-marrakech', 'manchester', 'marrakech'],
+      ['bristol-marrakech', 'bristol', 'marrakech'],
+      ['london-gatwick-marrakech', 'london-gatwick', 'marrakech'],
+      ['manchester-agadir', 'manchester', 'agadir'],
+      ['birmingham-agadir', 'birmingham', 'agadir'],
+      ['london-gatwick-agadir', 'london-gatwick', 'agadir'],
+      ['london-heathrow-casablanca', 'london-heathrow', 'casablanca'],
+      ['london-gatwick-tangier', 'london-gatwick', 'tangier'],
+    ] as const;
+
+    for (const [slug, airportSlug, destinationSlug] of expected) {
+      const route = getRoutesByDestination(destinationSlug).find((item) => item.slug === slug);
+      expect(route, slug).toBeDefined();
+      expect(route?.airportSlug).toBe(airportSlug);
+      expect(route?.isDirect).toBe(true);
+      expect(route?.verification?.status).toBe('verified');
+      expect(route?.verification?.sourceUrl).toMatch(/^https:\/\//);
+      expect(getDestinationFlightGuideEntries(getDestinationBySlug(destinationSlug)!, NOW_ISO).find((entry) => entry.routeSlug === slug)?.href)
+        .toBe(`/routes/${slug}`);
+    }
+
+    expect(getTripComDestinationHandoffUrl('manchester', 'marrakech')).toContain('dcity=MAN&acity=RAK');
+    expect(getTripComDestinationHandoffUrl('bristol', 'marrakech')).toContain('dcity=BRS&acity=RAK');
+    expect(getTripComDestinationHandoffUrl('manchester', 'agadir')).toContain('dcity=MAN&acity=AGA');
+    expect(getTripComDestinationHandoffUrl('birmingham', 'agadir')).toContain('dcity=BHX&acity=AGA');
+    expect(getTripComDestinationHandoffUrl('london-gatwick', 'marrakech')).toBeNull();
+    expect(getTripComDestinationHandoffUrl('london-gatwick', 'agadir')).toBeNull();
+    expect(getTripComDestinationHandoffUrl('london-heathrow', 'casablanca')).toBeNull();
+    expect(getTripComDestinationHandoffUrl('london-gatwick', 'tangier')).toBeNull();
+  });
+
   it('covers the approved Europe continuation batch and keeps Gatwick origins blocked', () => {
     const expected: Record<string, string[]> = {
       barcelona: ['manchester', 'birmingham', 'bristol', 'leeds-bradford'],
