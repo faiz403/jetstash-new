@@ -29,7 +29,7 @@ import { RouteReadinessPanel } from '@/components/route/route-readiness-panel';
 import { TravelReadyCheck } from '@/components/travel-ready/travel-ready-check';
 import { JsonLd, breadcrumbSchema } from '@/components/seo/json-ld';
 import { siteConfig } from '@/lib/site-config';
-import { getTripComRouteUrl, PROVIDER_REL } from '@/lib/booking-providers';
+import { getTripComFlightHandoffUrl, PROVIDER_REL } from '@/lib/booking-providers';
 import { computeBookBySnapshot } from '@/lib/booking-intelligence';
 import { computeReadiness } from '@/lib/travel-intelligence-engine';
 import { TRAVEL_READY_SUPPORTED_COUNTRIES } from '@/lib/travel-ready-check';
@@ -152,8 +152,8 @@ export default async function RoutePage({ params }: { params: Promise<{ slug: st
   const evidenceReframe = Boolean(bookBySnapshot) && bookingWindows.length > 0;
   // Fail-closed by construction: null for any route not in booking-providers.ts's
   // dashboard-verified map (the 9 London-origin routes today) — never a generic
-  // Trip.com fallback. See getTripComRouteUrl's doc comment.
-  const tripComUrl = getTripComRouteUrl(route.slug);
+  // Trip.com fallback. See getTripComFlightHandoffUrl's doc comment.
+  const tripComUrl = getTripComFlightHandoffUrl(route.slug);
 
   return (
     <>

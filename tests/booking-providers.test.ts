@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync, readdirSync } from 'fs';
 import { join } from 'path';
 import { routes } from '@/data/routes';
-import { getTripComRouteUrl, hasTripComRoute, PROVIDER_NAME, PROVIDER_REL } from '@/lib/booking-providers';
+import { getTripComRouteUrl, getTripComFlightHandoffUrl, hasTripComRoute, PROVIDER_NAME, PROVIDER_REL } from '@/lib/booking-providers';
 
 /**
  * Trip.com sole-provider migration — TravelUp removed entirely. Covers the
@@ -156,6 +156,26 @@ describe('no Trip.com URL contains a fixed departure or return date', () => {
   });
 });
 
+describe('public flight handoffs request the UK GBP presentation without changing attribution', () => {
+  it.each(SUPPORTED_ROUTES)('%s adds the supported locale/currency fields to the shared handoff URL', (slug) => {
+    const source = getTripComRouteUrl(slug)!;
+    const handoff = getTripComFlightHandoffUrl(slug)!;
+    expect(handoff).toContain('locale=en-XX&curr=GBP');
+    expect(handoff).toContain('Allianceid=9804124');
+    expect(handoff).toContain('SID=327450313');
+    expect(handoff.replace('&locale=en-XX&curr=GBP', '')).toBe(source);
+  });
+
+  it.each(UNSUPPORTED_LONDON_ROUTES)('%s remains fail-closed with no handoff URL', (slug) => {
+    expect(getTripComFlightHandoffUrl(slug)).toBeNull();
+  });
+
+  it('does not introduce currency conversion or request USD', () => {
+    const src = readFileSync(join(process.cwd(), 'lib/booking-providers.ts'), 'utf8');
+    expect(src).not.toMatch(/curr=USD|convert|exchange rate/i);
+  });
+});
+
 describe('TravelUp is completely removed from active code — no residue', () => {
   const ACTIVE_DIRS = ['app', 'components', 'lib', 'data'];
 
@@ -213,8 +233,8 @@ describe('TravelUp is completely removed from active code — no residue', () =>
 describe('Trip.com CTA is primary, singular, and correctly wired on the route hero', () => {
   const routePageSrc = readFileSync(join(process.cwd(), 'app/routes/[slug]/page.tsx'), 'utf8');
 
-  it('renders exactly one booking CTA branch, gated on getTripComRouteUrl(route.slug)', () => {
-    expect(routePageSrc).toContain('getTripComRouteUrl(route.slug)');
+  it('renders exactly one booking CTA branch, gated on the shared GBP flight handoff helper', () => {
+    expect(routePageSrc).toContain('getTripComFlightHandoffUrl(route.slug)');
     expect(routePageSrc).toContain('tripComUrl ?');
   });
 
