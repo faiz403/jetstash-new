@@ -67,8 +67,13 @@ export function getAntalyaFlightHandoffs(destination: Destination, nowIso: strin
 }
 
 export function getAntalyaFlightHandoffStatuses(destination: Destination, nowIso: string): readonly AntalyaFlightHandoffStatus[] {
-  return getDestinationFlightGuideEntries(destination, nowIso).map((entry) => {
-    const href = getTripComDestinationHandoffUrl(entry.airport.slug, destination.slug);
-    return { airportName: entry.airport.name, airportSlug: entry.airport.slug, status: href ? 'verified' : 'blocked', href };
-  });
+  // Holiday Intelligence is the continuation for pairs without an exact
+  // JetStash route guide. Route-guide pairs keep their booking journey on the
+  // route page rather than receiving a competing destination-level CTA.
+  return getDestinationFlightGuideEntries(destination, nowIso)
+    .filter((entry) => entry.routeSlug === null)
+    .map((entry) => {
+      const href = getTripComDestinationHandoffUrl(entry.airport.slug, destination.slug);
+      return { airportName: entry.airport.name, airportSlug: entry.airport.slug, status: href ? 'verified' : 'blocked', href };
+    });
 }

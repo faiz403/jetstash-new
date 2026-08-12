@@ -3,6 +3,7 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { getDestinationBySlug } from '@/data/destinations';
 import { getAntalyaFlightHandoffStatuses, getAntalyaFlightHandoffs, getAntalyaPublicHotelExamples } from '@/lib/antalya-holiday-intelligence';
+import { getDestinationFlightGuideEntries } from '@/lib/destination-flight-guides';
 
 const pageSrc = readFileSync(join(process.cwd(), 'app', 'destinations', '[slug]', 'page.tsx'), 'utf8');
 const componentSrc = readFileSync(join(process.cwd(), 'components', 'destination', 'antalya-holiday-intelligence.tsx'), 'utf8');
@@ -37,8 +38,6 @@ describe('public Antalya holiday intelligence', () => {
     const destination = getDestinationBySlug('antalya')!;
     const handoffs = getAntalyaFlightHandoffs(destination, '2026-08-12');
     expect(handoffs.map((handoff) => handoff.airportName)).toEqual([
-      'Manchester Airport',
-      'Birmingham Airport',
       'Leeds Bradford Airport',
       'Glasgow Airport',
       'Bristol Airport',
@@ -52,6 +51,19 @@ describe('public Antalya holiday intelligence', () => {
     expect(componentSrc).toContain('Partner link, opens Trip.com in a new tab.');
     expect(componentSrc).toContain('No exact dateless Trip.com handoff was generated for:');
     expect(componentSrc).toContain('nofollow sponsored noopener noreferrer');
+  });
+
+  it('leaves route-guide pairs to their route journey and keeps unsupported pairs in Holiday Intelligence', () => {
+    const destination = getDestinationBySlug('antalya')!;
+    const guideEntries = getDestinationFlightGuideEntries(destination, '2026-08-12');
+    expect(guideEntries.find((entry) => entry.airport.slug === 'manchester')?.routeSlug).toBe('manchester-antalya');
+    expect(guideEntries.find((entry) => entry.airport.slug === 'birmingham')?.routeSlug).toBe('birmingham-antalya');
+
+    const handoffRoutes = getAntalyaFlightHandoffs(destination, '2026-08-12').map((handoff) => handoff.routeSlug);
+    expect(handoffRoutes).toEqual(['leeds-bradford-antalya', 'glasgow-antalya', 'bristol-antalya']);
+    expect(handoffRoutes).not.toContain('manchester-antalya');
+    expect(handoffRoutes).not.toContain('birmingham-antalya');
+    expect(handoffRoutes).not.toContain('london-gatwick-antalya');
   });
 
   it('wires the public section only for Antalya and keeps founder-only detail out of the public page', () => {
