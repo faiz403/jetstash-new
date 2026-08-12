@@ -224,44 +224,51 @@ export default async function RoutePage({ params }: { params: Promise<{ slug: st
             )}
           </div>
 
-          <div className="mt-7 flex flex-wrap items-center gap-3">
-            {tripComUrl ? (
-              <TrackedOutboundLink
-                event="tripcom_click"
-                properties={{ route: route.slug, source: 'route-hero' }}
-                href={tripComUrl}
-                target="_blank"
-                rel={PROVIDER_REL}
-                className={
-                  bookBySnapshot
-                    ? 'inline-flex h-12 items-center justify-center gap-1.5 rounded-sm border border-white/20 px-6 text-sm font-semibold text-sand-50 transition-colors hover:bg-white/10 active:scale-[0.985]'
-                    : 'inline-flex h-12 items-center justify-center gap-1.5 rounded-sm bg-brass px-6 text-sm font-semibold text-ink-900 transition-all hover:bg-brass-400 hover:shadow-brass-glow active:scale-[0.985]'
-                }
-              >
-                Compare flights on Trip.com
-                <ArrowUpRight className="h-4 w-4" strokeWidth={2.25} />
-              </TrackedOutboundLink>
-            ) : (
-              // Fail-closed, deliberately understated: no CTA, no generic Trip.com
-              // link, no suggestion to broaden Heathrow/Gatwick to all of London.
-              <p className="text-sm text-ink-400">Direct flight comparison is not available for this airport yet.</p>
+          <div className="mt-7">
+            {tripComUrl && (
+              <p data-testid="route-intelligence-continuation-cue" className="mb-3 max-w-lg text-xs leading-relaxed text-ink-300">
+                More JetStash intelligence below, including journey context and things to check before you book. ↓
+              </p>
             )}
-            {/* When a Book-By panel exists below, its own state-aware CTA is the one dominant
-                recommendation — the WhatsApp share moves there too (built from the same snapshot),
-                so this hero doesn't duplicate either action. */}
-            {!bookBySnapshot && (
-              // Verification-pending leakage fix: presentation.shareText is
-              // fully pre-built by getEffectiveRoutePresentation() — for a pending
-              // route it omits booking timing, demand, fare urgency, airline
-              // and routing claims entirely rather than appending
-              // route.bookingWindowNote raw.
-              <WhatsAppShareButton
-                url={`${siteConfig.url}/routes/${route.slug}`}
-                text={presentation.shareText}
-                route={route.slug}
-                source="route-hero"
-              />
-            )}
+            <div className="flex flex-wrap items-center gap-3">
+              {tripComUrl ? (
+                <TrackedOutboundLink
+                  event="tripcom_click"
+                  properties={{ route: route.slug, source: 'route-hero' }}
+                  href={tripComUrl}
+                  target="_blank"
+                  rel={PROVIDER_REL}
+                  className={
+                    bookBySnapshot
+                      ? 'inline-flex h-12 items-center justify-center gap-1.5 rounded-sm border border-white/20 px-6 text-sm font-semibold text-sand-50 transition-colors hover:bg-white/10 active:scale-[0.985]'
+                      : 'inline-flex h-12 items-center justify-center gap-1.5 rounded-sm bg-brass px-6 text-sm font-semibold text-ink-900 transition-all hover:bg-brass-400 hover:shadow-brass-glow active:scale-[0.985]'
+                  }
+                >
+                  Compare flights on Trip.com
+                  <ArrowUpRight className="h-4 w-4" strokeWidth={2.25} />
+                </TrackedOutboundLink>
+              ) : (
+                // Fail-closed, deliberately understated: no CTA, no generic Trip.com
+                // link, no suggestion to broaden Heathrow/Gatwick to all of London.
+                <p className="text-sm text-ink-400">Direct flight comparison is not available for this airport yet.</p>
+              )}
+              {/* When a Book-By panel exists below, its own state-aware CTA is the one dominant
+                  recommendation — the WhatsApp share moves there too (built from the same snapshot),
+                  so this hero doesn't duplicate either action. */}
+              {!bookBySnapshot && (
+                // Verification-pending leakage fix: presentation.shareText is
+                // fully pre-built by getEffectiveRoutePresentation() — for a pending
+                // route it omits booking timing, demand, fare urgency, airline
+                // and routing claims entirely rather than appending
+                // route.bookingWindowNote raw.
+                <WhatsAppShareButton
+                  url={`${siteConfig.url}/routes/${route.slug}`}
+                  text={presentation.shareText}
+                  route={route.slug}
+                  source="route-hero"
+                />
+              )}
+            </div>
           </div>
           {tripComUrl && (
             <p className="mt-2.5 text-xs text-ink-300">
