@@ -4,6 +4,10 @@ import { describe, expect, it } from 'vitest';
 import { antalyaHotelEvidence } from '@/data/hotel-evidence';
 
 const publicRoots = ['app', 'components'];
+const approvedInternalSources = new Set([
+  'app/founder/antalya-hotel-intelligence/page.tsx',
+  'components/founder/antalya-hotel-intelligence.tsx',
+]);
 
 function sourceFilesUnder(root: string): string[] {
   return readdirSync(root, { withFileTypes: true }).flatMap((entry) => {
@@ -112,6 +116,9 @@ describe('internal Antalya hotel evidence contract', () => {
   it('is not currently imported by public rendering sources', () => {
     const publicSource = publicRoots
       .flatMap((root) => sourceFilesUnder(root))
+      // Only the approved founder prototype may consume this internal module;
+      // every other app/components source remains a public-consumer guard.
+      .filter((file) => !approvedInternalSources.has(file.replaceAll('\\', '/')))
       .filter((file) => /\.(ts|tsx|js|jsx)$/.test(file))
       .map((file) => readFileSync(file, 'utf8'))
       .join('\n');
