@@ -20,6 +20,7 @@ import { DestinationVisual } from '@/components/ui/destination-visual';
 import { HeroBackdrop } from '@/components/ui/hero-backdrop';
 import { JsonLd, breadcrumbSchema } from '@/components/seo/json-ld';
 import { DestinationFlightGuides } from '@/components/destination/destination-flight-guides';
+import { AntalyaHolidayIntelligence } from '@/components/destination/antalya-holiday-intelligence';
 
 // Pure ISR, matching the route detail pages — this page renders DealCard and
 // Book-By snapshots (computeBookBySnapshotsForDestination), both of which
@@ -117,6 +118,7 @@ export default async function DestinationPage({ params }: { params: Promise<{ sl
               <p className="mt-4 leading-relaxed text-ink-600">{dest.description}</p>
 
               <DestinationFlightGuides destination={dest} nowIso={new Date().toISOString().slice(0, 10)} />
+              {dest.slug === 'antalya' && <AntalyaHolidayIntelligence destination={dest} nowIso={new Date().toISOString().slice(0, 10)} />}
             </div>
 
             <div className="rounded-md border border-ink-100 bg-sand-50 p-7">
