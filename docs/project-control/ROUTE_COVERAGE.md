@@ -119,6 +119,21 @@ airport-specific dateless London handoff.
 | Newcastle | Dalaman | Current airport airline directory supports seasonal SunExpress service; fixed duration/frequency remains unknown. |
 | London Gatwick | Istanbul, Antalya, Dalaman, Bodrum, Izmir | Current airport/airline sources support direct seasonal or daily service; exact Trip.com airport handoffs remain blocked. |
 
+### Morocco route-guide completion batch — 12 August 2026
+
+All eight published Morocco airport-to-destination pairs in this batch have bounded route guides
+backed by current airport or airline evidence. The guides preserve the four existing non-London
+Trip.com handoffs; Gatwick/Heathrow booking handoffs remain blocked because Trip.com's affiliate
+tool does not provide an exact airport-specific dateless link for those origins.
+
+| Origin | Destination guides added | Evidence boundary |
+|---|---|---|
+| Manchester | Marrakech, Agadir | Manchester Airport and current airline pages support direct service; published timings and exact dates/frequency remain subject to the selected itinerary. |
+| Bristol | Marrakech | Bristol Airport publishes up to four weekly, year-round service; operator and duration remain unconfirmed on the reviewed page. |
+| Birmingham | Agadir | Birmingham Airport supports direct service with approximate duration and seasonal/date caveats; operator/frequency vary by programme. |
+| London Gatwick | Marrakech, Agadir, Tangier | Gatwick's current route material supports direct service; exact operator, frequency and duration are deliberately not fixed in the guide. |
+| London Heathrow | Casablanca | Royal Air Maroc and Heathrow material identify the LHR–CMN service; exact schedule, duration and baggage terms remain for the traveller to check. |
+
 ## Weekly operating rhythm
 
 1. Pick **one Tier A route** needing a source check and **one** needing a date-complete fare.

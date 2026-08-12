@@ -51,8 +51,8 @@ export const PROVIDER_REL = 'nofollow sponsored noopener noreferrer';
 
 /**
  * Route-slug-keyed, exact dashboard-generated Trip.com Flights-page affiliate
- * links — see file header for provenance. 41 of JetStash's 55 routes are
- * covered; the other 14 (all London-origin) are intentionally absent.
+ * links — see file header for provenance. 45 of JetStash's 63 routes are
+ * covered; the other 18 (all London-origin) are intentionally absent.
  */
 const TRIPCOM_ROUTE_URLS: Readonly<Record<string, string>> = {
   'manchester-lahore':
@@ -69,6 +69,14 @@ const TRIPCOM_ROUTE_URLS: Readonly<Record<string, string>> = {
     'https://www.trip.com/flights/Manchester-to-Antalya/tickets-MAN-AYT?flighttype=S&dcity=MAN&acity=AYT&Allianceid=9804124&SID=327450313&trip_sub1=&trip_sub3=D19205349',
   'manchester-izmir':
     'https://www.trip.com/flights/Manchester-to-Izmir/tickets-MAN-IZM?flighttype=S&dcity=MAN&acity=IZM&Allianceid=9804124&SID=327450313&trip_sub1=&trip_sub3=D19206224',
+  'manchester-marrakech':
+    'https://www.trip.com/flights/Manchester-to-Marrakech/tickets-MAN-RAK?flighttype=S&dcity=MAN&acity=RAK&Allianceid=9804124&SID=327450313&trip_sub1=&trip_sub3=D19206602',
+  'bristol-marrakech':
+    'https://www.trip.com/flights/Bristol-to-Marrakech/tickets-BRS-RAK?flighttype=S&dcity=BRS&acity=RAK&Allianceid=9804124&SID=327450313&trip_sub1=&trip_sub3=D19206602',
+  'manchester-agadir':
+    'https://www.trip.com/flights/Manchester-to-Agadir/tickets-MAN-AGA?flighttype=S&dcity=MAN&acity=AGA&Allianceid=9804124&SID=327450313&trip_sub1=&trip_sub3=D19206602',
+  'birmingham-agadir':
+    'https://www.trip.com/flights/Birmingham-to-Agadir/tickets-BHX-AGA?flighttype=S&dcity=BHX&acity=AGA&Allianceid=9804124&SID=327450313&trip_sub1=&trip_sub3=D19206602',
   'manchester-dubai':
     'https://www.trip.com/flights/Manchester-to-Dubai/tickets-MAN-DXB?flighttype=S&dcity=MAN&acity=DXB&Allianceid=9804124&SID=327450313&trip_sub1=&trip_sub3=D19082331',
   'manchester-karachi':
@@ -230,7 +238,7 @@ const TRIPCOM_DESTINATION_URLS: Readonly<Record<string, string>> = {
 /**
  * The one lookup every booking CTA in the app goes through. Returns the
  * exact dashboard-generated Trip.com URL for a supported route, or `null`
- * for any route not in TRIPCOM_ROUTE_URLS (the 9 London-origin routes today,
+ * for any route not in TRIPCOM_ROUTE_URLS (the 18 London-origin routes today,
  * and any future route that hasn't been through the same manual dashboard
  * verification).
  *
