@@ -20,7 +20,7 @@ describe('route intelligence continuation cue', () => {
   });
 
   it('does not change the existing CTA, disclosure or shared handoff wiring', () => {
-    expect(routePageSrc).toContain('getTripComFlightHandoffUrl(route.slug)');
+    expect(routePageSrc).toContain('getTripComFlightHandoffUrl(route.slug, airport.slug, dest.slug)');
     expect(routePageSrc).toContain('event="tripcom_click"');
     expect(routePageSrc).toContain('rel={PROVIDER_REL}');
     expect(routePageSrc).toContain('Check the itinerary, baggage allowance and booking terms before paying. Partner link, opens Trip.com in a new tab.');

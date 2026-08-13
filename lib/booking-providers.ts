@@ -239,10 +239,11 @@ const TRIPCOM_DESTINATION_URLS: Readonly<Record<string, string>> = {
 /**
  * The one lookup every booking CTA in the app goes through. Returns the
  * exact dashboard-generated Trip.com URL for a supported route, or `null`
- * for any route not in TRIPCOM_ROUTE_URLS (the 35 currently unsupported
- * routes, including the London-origin routes and any future route that
- * hasn't been through the same manual dashboard
- * verification).
+ * for any route not in TRIPCOM_ROUTE_URLS (or, for a route page, its exact
+ * verified airport-pair entry in TRIPCOM_DESTINATION_URLS). The destination
+ * fallback is deliberately pair-specific; it never broadens Heathrow or
+ * Gatwick to an aggregate London search.
+ * verification process).
  *
  * Callers MUST fail closed on `null`: render no booking CTA at all, never a
  * generic Trip.com homepage/search link, and never fall back to any other
@@ -260,8 +261,9 @@ export function getTripComRouteUrl(routeSlug: string): string | null {
  * visitor is explicitly sent a GBP search while route and attribution fields
  * remain unchanged.
  */
-export function getTripComFlightHandoffUrl(routeSlug: string): string | null {
-  const routeUrl = getTripComRouteUrl(routeSlug);
+export function getTripComFlightHandoffUrl(routeSlug: string, originSlug?: string, destinationSlug?: string): string | null {
+  const routeUrl = getTripComRouteUrl(routeSlug)
+    ?? (originSlug && destinationSlug ? TRIPCOM_DESTINATION_URLS[`${originSlug}-${destinationSlug}`] : null);
   if (!routeUrl) return null;
   if (routeUrl.includes('locale=') || routeUrl.includes('curr=')) return routeUrl;
   return routeUrl.replace(

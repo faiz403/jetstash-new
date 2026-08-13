@@ -289,7 +289,7 @@ describe('Trip.com CTA is primary, singular, and correctly wired on the route he
   const routePageSrc = readFileSync(join(process.cwd(), 'app/routes/[slug]/page.tsx'), 'utf8');
 
   it('renders exactly one booking CTA branch, gated on the shared GBP flight handoff helper', () => {
-    expect(routePageSrc).toContain('getTripComFlightHandoffUrl(route.slug)');
+    expect(routePageSrc).toContain('getTripComFlightHandoffUrl(route.slug, airport.slug, dest.slug)');
     expect(routePageSrc).toContain('tripComUrl ?');
   });
 
