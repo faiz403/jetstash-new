@@ -5,7 +5,7 @@ import { join } from 'node:path';
 import { routes } from '@/data/routes';
 import { getTripComRouteUrl } from '@/lib/booking-providers';
 import type { FareObservation } from '@/data/fare-observations';
-import { getPublishableObservationsByRoute } from '@/data/fare-observations';
+import { fareObservations, getPublishableObservationsByRoute } from '@/data/fare-observations';
 import { deals, hasTrackedFare } from '@/data/deals';
 import { deriveFareSignal, getFareSignalForRoute, shouldShowNoFareFallback } from '@/lib/fare-signal';
 import { FareSignal } from '@/components/route/fare-signal';
@@ -121,20 +121,22 @@ describe('Fare Signal presentation and CTA boundaries', () => {
 });
 
 describe('Fare Signal production coverage counts', () => {
-  it('reports 47 routes with a current publishable fare and 41 without one at the current archive date', () => {
+  it('reports 59 routes with a current publishable fare and 29 without one at the current archive date', () => {
     const signals = routes.map((route) => getFareSignalForRoute(route.slug, '2026-08-13'));
-    expect(signals.filter((signal) => signal.state === 'current')).toHaveLength(47);
+    expect(signals.filter((signal) => signal.state === 'current')).toHaveLength(59);
     expect(signals.filter((signal) => signal.state === 'recent')).toHaveLength(0);
-    expect(signals.filter((signal) => signal.state === 'none')).toHaveLength(41);
+    expect(signals.filter((signal) => signal.state === 'none')).toHaveLength(29);
     expect(routes.filter((route) => getTripComRouteUrl(route.slug)).length).toBe(45);
   });
 
-  it('excludes Heathrow-Mumbai when currency is absent, without backfilling the historic record', () => {
-    expect(getPublishableObservationsByRoute('london-heathrow-mumbai', '2026-08-13')).toEqual([]);
-    expect(getFareSignalForRoute('london-heathrow-mumbai', '2026-08-13').state).toBe('none');
+  it('does not backfill Heathrow-Mumbai’s incomplete historic record, while allowing the fresh complete observation to render', () => {
+    const historic = fareObservations.find((observation) => observation.id === 'obs-lhr-bom-economy-2');
+    expect(historic?.currency).toBeUndefined();
+    expect(getPublishableObservationsByRoute('london-heathrow-mumbai', '2026-08-13')).toHaveLength(1);
+    expect(getFareSignalForRoute('london-heathrow-mumbai', '2026-08-13')).toMatchObject({ state: 'current', observation: { id: 'obs-lhr-bom-economy-20260813-8w-v1', price: 424 } });
     const deal = deals.find((entry) => entry.id === 'lhr-bom-economy');
     expect(deal).toBeDefined();
-    expect(hasTrackedFare(deal!, '2026-08-13')).toBe(false);
+    expect(hasTrackedFare(deal!, '2026-08-13')).toBe(true);
   });
 
   it('uses one display-readiness standard for tracked coverage and non-empty Fare Signals', () => {
@@ -160,10 +162,10 @@ describe('Fare Signal and route-page no-fare fallback share one readiness bounda
     expect(shouldShowNoFareFallback(signal)).toBe(false);
   });
 
-  it('Heathrow-Mumbai has no current signal and retains the no-fare fallback', () => {
+  it('Heathrow-Mumbai has a fresh complete signal and no longer shows the no-fare fallback', () => {
     const signal = getFareSignalForRoute('london-heathrow-mumbai', '2026-08-13');
-    expect(signal.state).toBe('none');
-    expect(shouldShowNoFareFallback(signal)).toBe(true);
+    expect(signal.state).toBe('current');
+    expect(shouldShowNoFareFallback(signal)).toBe(false);
   });
 
   it('no route can have a current Fare Signal and a no-fare fallback at the same time', () => {

@@ -146,6 +146,9 @@ describe('Deal counts (TR-004) — a card with no tracked fare must not count as
       'lhr-doh-economy',
       'man-dlm-flight',
       'man-bjv-flight',
+      'man-bcn-flight',
+      'lhr-bom-economy',
+      'man-fco-economy',
       'lgw-amd-economy',
       'man-isb-economy',
       'man-del-economy',
@@ -343,8 +346,8 @@ describe('getDealDirectnessLabel (TR-009, final correction) — a deal/search ca
 });
 
 describe('FARE-001 pilot — historic examples stay private; only fully dated, evidenced observations publish', () => {
-  it('keeps historic observations and appends every editorial observation batch, including the 11 August scheduled check', () => {
-    expect(fareObservations).toHaveLength(86);
+  it('keeps historic observations and appends every editorial observation batch, including the 13 August Batch 3 check', () => {
+    expect(fareObservations).toHaveLength(98);
   });
 
   it('keeps every historic observation incomplete and private', () => {
@@ -427,6 +430,18 @@ describe('FARE-001 pilot — historic examples stay private; only fully dated, e
       'obs-lba-fao-economy-20260813-8w-v1',
       'obs-brs-dlm-economy-20260813-8w-v1',
       'obs-gla-ayt-economy-20260813-8w-v1',
+      'obs-lhr-bom-economy-20260813-8w-v1',
+      'obs-lhr-lhe-economy-20260813-8w-v1',
+      'obs-lhr-dxb-economy-20260813-8w-v1',
+      'obs-lgw-dxb-economy-20260813-8w-v1',
+      'obs-gla-dlm-economy-20260813-8w-v1',
+      'obs-brs-ayt-economy-20260813-8w-v1',
+      'obs-ncl-dlm-economy-20260813-8w-v1',
+      'obs-brs-rak-economy-20260813-8w-v1',
+      'obs-bhx-aga-economy-20260813-8w-v1',
+      'obs-man-bcn-economy-20260813-8w-v1',
+      'obs-man-rom-economy-20260813-8w-v1',
+      'obs-bhx-ath-economy-20260813-8w-v1',
     ]);
     expect(published).toEqual(expect.arrayContaining([
       expect.objectContaining({
@@ -471,8 +486,10 @@ describe('FARE-001 pilot — historic examples stay private; only fully dated, e
     }
   });
 
-  it('does not derive a public fare summary for London Heathrow–Mumbai without source currency', () => {
-    expect(getFareRangeSummary('london-heathrow-mumbai', 'Economy', FIXED_TODAY)).toBeNull();
+  it('keeps Heathrow-Mumbai’s historic currency-incomplete observation private while using the fresh complete observation', () => {
+    const historic = fareObservations.find((observation) => observation.id === 'obs-lhr-bom-economy-2');
+    expect(historic?.currency).toBeUndefined();
+    expect(getFareRangeSummary('london-heathrow-mumbai', 'Economy', FIXED_TODAY)).toMatchObject({ count: 1, min: 424, max: 424 });
   });
 
   it('keeps all other historic-only routes out of public fare output', () => {

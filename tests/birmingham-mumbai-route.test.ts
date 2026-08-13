@@ -592,15 +592,16 @@ describe('Cross-surface leakage fix — fare section heading is content-aware, n
     expect(copy.caption).toBeNull();
   });
 
-  it('glasgow-dalaman (no observations, no deals) renders the "No tracked fare yet" heading end-to-end on the real page', async () => {
+  it('leeds-bradford-bodrum (no observations, no deals) renders the "No tracked fare yet" heading end-to-end on the real page', async () => {
     // birmingham-mumbai was the original example here - Fare Coverage
     // Expansion Batch B (6 August 2026, a later, separate initiative - see
     // FARE_COVERAGE_BATCH_B.md) gave it a genuine observation and Deal, so
     // it no longer demonstrates the empty state. Swapped for
-    // Glasgow -> Dalaman remains an unobserved route in this archive.
-    expect(fareObservations.filter((o) => o.routeSlug === 'glasgow-dalaman')).toHaveLength(0);
-    expect(deals.filter((d) => d.fromAirportSlug === 'glasgow' && d.toDestinationSlug === 'dalaman')).toHaveLength(0);
-    const element = await RoutePage({ params: Promise.resolve({ slug: 'glasgow-dalaman' }) });
+    // Leeds Bradford -> Bodrum returned no result for Batch 3's exact profile,
+    // so it remains the genuine no-fare example.
+    expect(fareObservations.filter((o) => o.routeSlug === 'leeds-bradford-bodrum')).toHaveLength(0);
+    expect(deals.filter((d) => d.fromAirportSlug === 'leeds-bradford' && d.toDestinationSlug === 'bodrum')).toHaveLength(0);
+    const element = await RoutePage({ params: Promise.resolve({ slug: 'leeds-bradford-bodrum' }) });
     const text = collectStrings(element).join(' ');
     expect(text).toMatch(/No tracked fare yet/);
     expect(text).not.toMatch(/Fare history & current example/);

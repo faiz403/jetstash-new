@@ -59,14 +59,14 @@ describe('Fare Coverage Programme Batch 2', () => {
     for (const routeSlug of VERIFICATION_PENDING_BATCH_2) {
       expect(getPublishableObservationsByRoute(routeSlug, NOW_ISO), routeSlug).toHaveLength(0);
     }
-    const current = routes.filter((route) => getPublishableObservationsByRoute(route.slug, NOW_ISO).length > 0);
-    expect(current).toHaveLength(47);
+    // Batch 2's own public/non-public boundary must remain true even as later
+    // controlled observation batches legitimately expand total coverage.
   });
 
   it('keeps the archive duplicate-free and does not introduce a Standout Fare record', () => {
     const ids = fareObservations.map((entry) => entry.id);
     expect(new Set(ids).size).toBe(ids.length);
-    expect(fareObservations.filter((entry) => entry.observedDate === NOW_ISO)).toHaveLength(27);
+    expect(fareObservations.filter((entry) => Object.values(BATCH_2).some((expected) => expected.id === entry.id))).toHaveLength(14);
   });
 
   it('reruns Fare Watcher Phase 1 without qualifying a Standout Fare', () => {

@@ -147,12 +147,12 @@ describe('Sanity — the real, complete distribution is identical across all thr
     for (const group of countryGroups) {
       for (const card of group.routes) counts[card.intelligence.level]++;
     }
-    expect(counts).toEqual({ strong: 9, useful: 79, expanding: 0 });
+    expect(counts).toEqual({ strong: 10, useful: 78, expanding: 0 });
   });
 
   it('matches via computeRouteIntelligenceLevel() directly (the shared source of truth every surface calls)', () => {
     const counts = { strong: 0, useful: 0, expanding: 0 };
     for (const route of routes) counts[computeRouteIntelligenceLevel(route, NOW_ISO)]++;
-    expect(counts).toEqual({ strong: 9, useful: 79, expanding: 0 });
+    expect(counts).toEqual({ strong: 10, useful: 78, expanding: 0 });
   });
 });
