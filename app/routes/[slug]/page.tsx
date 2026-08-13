@@ -40,7 +40,7 @@ import { TrackedOutboundLink } from '@/components/ui/tracked-outbound-link';
 import { SmartFareComparison } from '@/components/route/smart-fare-comparison';
 import { getSmartFareComparisonForRoute } from '@/lib/smart-fare-route-adapter';
 import { FareSignal } from '@/components/route/fare-signal';
-import { getFareSignalForRoute } from '@/lib/fare-signal';
+import { getFareSignalForRoute, shouldShowNoFareFallback } from '@/lib/fare-signal';
 import { getRouteIntelligenceDisplayForRoute } from '@/lib/route-intelligence-display';
 
 /**
@@ -625,11 +625,11 @@ export default async function RoutePage({ params }: { params: Promise<{ slug: st
                 <DealCard key={deal.id} deal={deal} />
               ))}
             </div>
-          ) : (
+          ) : shouldShowNoFareFallback(fareSignal) ? (
             <div className="mt-8">
               <NoFareFallback cityLabel={`${airport.city} to ${dest.city}`} routeSlug={route.slug} />
             </div>
-          )}
+          ) : null}
           {/* id anchors the Book-By panel's "Watch this route" CTA; the global
               scroll-padding-top keeps it clear of the sticky header. */}
           <div id="route-watch" className="mt-8 max-w-xl">

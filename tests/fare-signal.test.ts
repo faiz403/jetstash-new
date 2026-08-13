@@ -7,7 +7,7 @@ import { getTripComRouteUrl } from '@/lib/booking-providers';
 import type { FareObservation } from '@/data/fare-observations';
 import { getPublishableObservationsByRoute } from '@/data/fare-observations';
 import { deals, hasTrackedFare } from '@/data/deals';
-import { deriveFareSignal, getFareSignalForRoute } from '@/lib/fare-signal';
+import { deriveFareSignal, getFareSignalForRoute, shouldShowNoFareFallback } from '@/lib/fare-signal';
 import { FareSignal } from '@/components/route/fare-signal';
 
 const routePageSrc = readFileSync(join(process.cwd(), 'app/routes/[slug]/page.tsx'), 'utf8');
@@ -121,29 +121,55 @@ describe('Fare Signal presentation and CTA boundaries', () => {
 });
 
 describe('Fare Signal production coverage counts', () => {
-  it('reports 22 routes with a current publishable fare and 66 without one at the current archive date', () => {
-    const signals = routes.map((route) => getFareSignalForRoute(route.slug, '2026-08-11'));
-    expect(signals.filter((signal) => signal.state === 'current')).toHaveLength(22);
+  it('reports 35 routes with a current publishable fare and 53 without one at the current archive date', () => {
+    const signals = routes.map((route) => getFareSignalForRoute(route.slug, '2026-08-13'));
+    expect(signals.filter((signal) => signal.state === 'current')).toHaveLength(35);
     expect(signals.filter((signal) => signal.state === 'recent')).toHaveLength(0);
-    expect(signals.filter((signal) => signal.state === 'none')).toHaveLength(66);
+    expect(signals.filter((signal) => signal.state === 'none')).toHaveLength(53);
     expect(routes.filter((route) => getTripComRouteUrl(route.slug)).length).toBe(45);
   });
 
   it('excludes Heathrow-Mumbai when currency is absent, without backfilling the historic record', () => {
-    expect(getPublishableObservationsByRoute('london-heathrow-mumbai', '2026-08-11')).toEqual([]);
-    expect(getFareSignalForRoute('london-heathrow-mumbai', '2026-08-11').state).toBe('none');
+    expect(getPublishableObservationsByRoute('london-heathrow-mumbai', '2026-08-13')).toEqual([]);
+    expect(getFareSignalForRoute('london-heathrow-mumbai', '2026-08-13').state).toBe('none');
     const deal = deals.find((entry) => entry.id === 'lhr-bom-economy');
     expect(deal).toBeDefined();
-    expect(hasTrackedFare(deal!, '2026-08-11')).toBe(false);
+    expect(hasTrackedFare(deal!, '2026-08-13')).toBe(false);
   });
 
   it('uses one display-readiness standard for tracked coverage and non-empty Fare Signals', () => {
     const trackedRoutes = routes
-      .filter((route) => getPublishableObservationsByRoute(route.slug, '2026-08-11').length > 0)
+      .filter((route) => getPublishableObservationsByRoute(route.slug, '2026-08-13').length > 0)
       .map((route) => route.slug);
     const signalledRoutes = routes
-      .filter((route) => getFareSignalForRoute(route.slug, '2026-08-11').state !== 'none')
+      .filter((route) => getFareSignalForRoute(route.slug, '2026-08-13').state !== 'none')
       .map((route) => route.slug);
     expect(trackedRoutes).toEqual(signalledRoutes);
+  });
+});
+
+describe('Fare Signal and route-page no-fare fallback share one readiness boundary', () => {
+  it('the route page gates NoFareFallback from the shared Fare Signal readiness helper, not Deal-card presence', () => {
+    expect(routePageSrc).toContain('shouldShowNoFareFallback(fareSignal)');
+    expect(routePageSrc).toContain(') : shouldShowNoFareFallback(fareSignal) ?');
+  });
+
+  it('Manchester-Antalya has a current signal and never shows the no-fare fallback', () => {
+    const signal = getFareSignalForRoute('manchester-antalya', '2026-08-13');
+    expect(signal.state).toBe('current');
+    expect(shouldShowNoFareFallback(signal)).toBe(false);
+  });
+
+  it('Heathrow-Mumbai has no current signal and retains the no-fare fallback', () => {
+    const signal = getFareSignalForRoute('london-heathrow-mumbai', '2026-08-13');
+    expect(signal.state).toBe('none');
+    expect(shouldShowNoFareFallback(signal)).toBe(true);
+  });
+
+  it('no route can have a current Fare Signal and a no-fare fallback at the same time', () => {
+    for (const route of routes) {
+      const signal = getFareSignalForRoute(route.slug, '2026-08-13');
+      expect(signal.state === 'current' && shouldShowNoFareFallback(signal), route.slug).toBe(false);
+    }
   });
 });

@@ -1200,7 +1200,9 @@ with the lower, incomplete figure — the previously-drafted "45 of 82" was corr
 written into version-controlled test assertions.
 
 The catalogue now contains **88 route guides** (80 plus this batch's 8 built pairs across both
-evidence passes). Current publishable fare coverage remains **22 of 88** — none of the 8 new routes has
+evidence passes). Current publishable fare coverage is **35 of 88** after the 13 August 2026 controlled
+observation batch. None of the 8 new route guides in this section had a fare observation at the time
+of that route-guide audit; the later fare batch is recorded separately in the fare archive.
 a fare observation yet. Route-level exact Trip.com coverage remains **45 of 88** (all 8 new routes are
 either London-origin, per the standing limitation, or Birmingham pairs Trip.com's tool has no exact
 link for); the true any-handoff figure is **63 of 88**.

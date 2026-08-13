@@ -175,7 +175,7 @@ describe('Fare Coverage Expansion Batch B — publishability and customer visibi
     }
   });
 
-  it('overall coverage: 22 of 32 routes publishable, 22 of 32 customer-visible', () => {
+  it('overall coverage: 35 of 88 routes publishable, with 23 represented by curated tracked-fare cards', () => {
     let publishable = 0;
     let visible = 0;
     for (const route of routes) {
@@ -183,11 +183,14 @@ describe('Fare Coverage Expansion Batch B — publishability and customer visibi
       const deal = deals.find((d) => d.fromAirportSlug === route.airportSlug && d.toDestinationSlug === route.destinationSlug && d.cabin === 'Economy' && !isBundledProductDeal(d));
       if (deal && hasTrackedFare(deal, NOW_ISO)) visible++;
     }
-    expect(publishable).toBe(22);
-    expect(visible).toBe(21);
+    expect(publishable).toBe(35);
+    expect(visible).toBe(23);
+    // The 12 remaining routes have valid Fare Signals but no curated Deal
+    // card. They are intentionally counted by route-level coverage only.
+    expect(publishable - visible).toBe(12);
   });
 
-  it('London Heathrow-Jeddah remains the one archive-only route, unaffected by this batch', () => {
+  it('London Heathrow-Jeddah remains without a curated card, alongside the later Fare-Signal-only routes', () => {
     const route = routes.find((r) => r.slug === 'london-heathrow-jeddah')!;
     expect(getPublishableObservationsByRoute('london-heathrow-jeddah', NOW_ISO).length).toBeGreaterThan(0);
     const deal = deals.find((d) => d.fromAirportSlug === route.airportSlug && d.toDestinationSlug === route.destinationSlug && d.cabin === 'Economy' && !isBundledProductDeal(d));

@@ -144,6 +144,8 @@ describe('Deal counts (TR-004) — a card with no tracked fare must not count as
       'bhx-atq-economy',
       'man-dxb-economy',
       'lhr-doh-economy',
+      'man-dlm-flight',
+      'man-bjv-flight',
       'lgw-amd-economy',
       'man-isb-economy',
       'man-del-economy',
@@ -342,7 +344,7 @@ describe('getDealDirectnessLabel (TR-009, final correction) — a deal/search ca
 
 describe('FARE-001 pilot — historic examples stay private; only fully dated, evidenced observations publish', () => {
   it('keeps historic observations and appends every editorial observation batch, including the 11 August scheduled check', () => {
-    expect(fareObservations).toHaveLength(59);
+    expect(fareObservations).toHaveLength(72);
   });
 
   it('keeps every historic observation incomplete and private', () => {
@@ -398,6 +400,19 @@ describe('FARE-001 pilot — historic examples stay private; only fully dated, e
       'obs-lhr-del-economy-20260811-8w-v1',
       'obs-bhx-atq-economy-20260811-8w-v1',
       'obs-lhr-jed-economy-20260811-8w-v1',
+      'obs-man-ist-economy-20260813-8w-v1',
+      'obs-man-ayt-economy-20260813-8w-v1',
+      'obs-man-dlm-economy-20260813-8w-v1',
+      'obs-man-bod-economy-20260813-8w-v1',
+      'obs-man-izm-economy-20260813-8w-v1',
+      'obs-man-rak-economy-20260813-8w-v1',
+      'obs-man-aga-economy-20260813-8w-v1',
+      'obs-bhx-ist-economy-20260813-8w-v1',
+      'obs-bhx-ayt-economy-20260813-8w-v1',
+      'obs-bhx-dlm-economy-20260813-8w-v1',
+      'obs-bhx-bod-economy-20260813-8w-v1',
+      'obs-lba-ayt-economy-20260813-8w-v1',
+      'obs-lba-dlm-economy-20260813-8w-v1',
     ]);
     expect(published).toEqual(expect.arrayContaining([
       expect.objectContaining({
