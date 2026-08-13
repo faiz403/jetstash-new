@@ -132,7 +132,7 @@ describe('FareRangeSummary.observedDirectness aggregates per-observation fareDir
   });
 
   it('a route/cabin whose observations never recorded fareDirectness reports undefined, never a guess', () => {
-    const range = getFareRangeSummary('london-heathrow-mumbai', 'Economy', NOW_ISO);
+    const range = getFareRangeSummary('manchester-mumbai', 'Economy', NOW_ISO);
     expect(range).not.toBeNull();
     expect(range!.observedDirectness).toBeUndefined();
   });

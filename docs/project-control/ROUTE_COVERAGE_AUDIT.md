@@ -176,7 +176,7 @@ Machine-checkable manifest — every one of the 32 routes, exactly once, with it
 | `london-heathrow-dhaka` | Useful |
 | `london-heathrow-doha` | Useful |
 | `london-heathrow-jeddah` | Useful |
-| `london-heathrow-mumbai` | Strong |
+| `london-heathrow-mumbai` | Useful |
 | `london-heathrow-sylhet` | Useful |
 | `manchester-ahmedabad` | Useful |
 | `manchester-amritsar` | Useful |
@@ -1200,7 +1200,7 @@ with the lower, incomplete figure — the previously-drafted "45 of 82" was corr
 written into version-controlled test assertions.
 
 The catalogue now contains **88 route guides** (80 plus this batch's 8 built pairs across both
-evidence passes). Current publishable fare coverage remains **23 of 88** — none of the 8 new routes has
+evidence passes). Current publishable fare coverage remains **22 of 88** — none of the 8 new routes has
 a fare observation yet. Route-level exact Trip.com coverage remains **45 of 88** (all 8 new routes are
 either London-origin, per the standing limitation, or Birmingham pairs Trip.com's tool has no exact
 link for); the true any-handoff figure is **63 of 88**.

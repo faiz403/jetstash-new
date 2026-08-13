@@ -5,6 +5,8 @@ import { join } from 'node:path';
 import { routes } from '@/data/routes';
 import { getTripComRouteUrl } from '@/lib/booking-providers';
 import type { FareObservation } from '@/data/fare-observations';
+import { getPublishableObservationsByRoute } from '@/data/fare-observations';
+import { deals, hasTrackedFare } from '@/data/deals';
 import { deriveFareSignal, getFareSignalForRoute } from '@/lib/fare-signal';
 import { FareSignal } from '@/components/route/fare-signal';
 
@@ -119,11 +121,29 @@ describe('Fare Signal presentation and CTA boundaries', () => {
 });
 
 describe('Fare Signal production coverage counts', () => {
-  it('reports 22 routes with a current publishable fare and 66 without one at the current archive date. london-heathrow-mumbai\'s obs-lhr-bom-economy-2 (Virgin Atlantic, £491, observed 24 July 2026) has complete dates and passes isPubliclyPublishable(), so it counts toward the homepage\'s looser "23 of 88" stat (getPublishableObservationsByRoute) — but it predates the currency field becoming a standard part of every new observation (it was this project\'s very first FARE-001 pilot entry, before Batch A\'s field standard existed; see FARE_OBSERVATION_ARCHIVE.md\'s "migration accommodation" note on optional fields). No contemporaneous evidence note, source capture or archived source configuration for this entry states its currency, so `currency: \'GBP\'` was deliberately NOT added here — that would be retrospective inference from UK departure, not verified evidence, which the fare-observation standard does not allow. It stays a non-displayable "none" in Fare Signal until a real currency fact is confirmed.', () => {
+  it('reports 22 routes with a current publishable fare and 66 without one at the current archive date', () => {
     const signals = routes.map((route) => getFareSignalForRoute(route.slug, '2026-08-11'));
     expect(signals.filter((signal) => signal.state === 'current')).toHaveLength(22);
     expect(signals.filter((signal) => signal.state === 'recent')).toHaveLength(0);
     expect(signals.filter((signal) => signal.state === 'none')).toHaveLength(66);
     expect(routes.filter((route) => getTripComRouteUrl(route.slug)).length).toBe(45);
+  });
+
+  it('excludes Heathrow-Mumbai when currency is absent, without backfilling the historic record', () => {
+    expect(getPublishableObservationsByRoute('london-heathrow-mumbai', '2026-08-11')).toEqual([]);
+    expect(getFareSignalForRoute('london-heathrow-mumbai', '2026-08-11').state).toBe('none');
+    const deal = deals.find((entry) => entry.id === 'lhr-bom-economy');
+    expect(deal).toBeDefined();
+    expect(hasTrackedFare(deal!, '2026-08-11')).toBe(false);
+  });
+
+  it('uses one display-readiness standard for tracked coverage and non-empty Fare Signals', () => {
+    const trackedRoutes = routes
+      .filter((route) => getPublishableObservationsByRoute(route.slug, '2026-08-11').length > 0)
+      .map((route) => route.slug);
+    const signalledRoutes = routes
+      .filter((route) => getFareSignalForRoute(route.slug, '2026-08-11').state !== 'none')
+      .map((route) => route.slug);
+    expect(trackedRoutes).toEqual(signalledRoutes);
   });
 });

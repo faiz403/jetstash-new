@@ -20,15 +20,15 @@ function collectStrings(node: unknown, out: string[] = []): string[] {
 }
 
 describe('FARE-001 fare-history travel-date transparency', () => {
-  const observation = fareObservations.find((entry) => entry.id === 'obs-lhr-bom-economy-2')!;
+  const observation = fareObservations.find((entry) => entry.id === 'obs-man-lhe-economy-20260811-8w-v1')!;
 
   it('shows the exact outbound and return dates alongside the source and checked date', () => {
     const text = collectStrings(FareHistoryPanel({ observations: [observation] })).join(' ').replace(/\s+/g, ' ');
 
     expect(text).toContain('Economy');
-    expect(text).toContain('Virgin Atlantic');
-    expect(text).toContain('Checked 24 July 2026');
-    expect(text).toContain('Travel dates: 8 September 2026 – 1 October 2026');
+    expect(text).toContain('Etihad');
+    expect(text).toContain('Checked 11 August 2026');
+    expect(text).toContain('Travel dates: 6 October 2026 – 20 October 2026');
   });
 
   it('still refuses to render an incomplete historic observation', () => {

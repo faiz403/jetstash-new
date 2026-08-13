@@ -175,7 +175,7 @@ describe('Fare Coverage Expansion Batch B — publishability and customer visibi
     }
   });
 
-  it('overall coverage: 23 of 32 routes publishable, 22 of 32 customer-visible', () => {
+  it('overall coverage: 22 of 32 routes publishable, 22 of 32 customer-visible', () => {
     let publishable = 0;
     let visible = 0;
     for (const route of routes) {
@@ -183,8 +183,8 @@ describe('Fare Coverage Expansion Batch B — publishability and customer visibi
       const deal = deals.find((d) => d.fromAirportSlug === route.airportSlug && d.toDestinationSlug === route.destinationSlug && d.cabin === 'Economy' && !isBundledProductDeal(d));
       if (deal && hasTrackedFare(deal, NOW_ISO)) visible++;
     }
-    expect(publishable).toBe(23);
-    expect(visible).toBe(22);
+    expect(publishable).toBe(22);
+    expect(visible).toBe(21);
   });
 
   it('London Heathrow-Jeddah remains the one archive-only route, unaffected by this batch', () => {
@@ -223,12 +223,12 @@ describe('Fare Coverage Expansion Batch B — RIS-001 mechanical grade changes',
     }
   });
 
-  it('Heathrow India and Gatwick India country aggregates move to Strong, and only because every destination in each group is individually Strong (the conservative rule is not bypassed)', () => {
+  it('Gatwick India remains Strong while Heathrow India is Mixed because currency-incomplete Heathrow-Mumbai no longer supplies fare depth', () => {
     const airports = buildAtlasAirports();
     const heathrow = airports.find((a) => a.airportSlug === 'london-heathrow')!;
     const heathrowIndia = heathrow.countries.find((c) => c.slug === 'india')!;
-    expect(heathrowIndia.intelligenceLevel).toBe('strong');
-    expect(heathrowIndia.destinations.every((d) => d.intelligenceLevel === 'strong')).toBe(true);
+    expect(heathrowIndia.intelligenceLevel).toBe('mixed');
+    expect(heathrowIndia.destinations.some((d) => d.intelligenceLevel !== 'strong')).toBe(true);
 
     const gatwick = airports.find((a) => a.airportSlug === 'london-gatwick')!;
     const gatwickIndia = gatwick.countries.find((c) => c.slug === 'india')!;

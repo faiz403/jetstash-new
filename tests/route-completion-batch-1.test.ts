@@ -400,9 +400,9 @@ describe('The audit and fare-archive documents accurately reflect the closed obs
     expect(archiveFlat).toContain('never merely to hand it a second scoring category');
   });
 
-  it('states the real, current fare-tracking route count (23 of 32, after Fare Coverage Expansion Batch B), not a stale hand-typed figure', () => {
+  it('states the real, current fare-tracking route count (22 of 88), not a stale hand-typed figure', () => {
     const totalTracked = routes.filter((r) => getPublishableObservationsByRoute(r.slug, NOW_ISO).length > 0).length;
-    expect(totalTracked).toBe(23);
-    expect(auditDoc).toContain(`${totalTracked} of 32`);
+    expect(totalTracked).toBe(22);
+    expect(auditDoc).toContain(`${totalTracked} of 88`);
   });
 });

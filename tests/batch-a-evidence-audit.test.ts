@@ -121,7 +121,7 @@ describe('Customer-visible fare coverage — every tracked route either has a vi
 
   it('every tracked route has a matching flight-category Economy Deal, except the documented exception', () => {
     const trackedRoutes = routes.filter((r) => getPublishableObservationsByRoute(r.slug, NOW_ISO).length > 0);
-    expect(trackedRoutes.length).toBe(23);
+    expect(trackedRoutes.length).toBe(22);
     for (const route of trackedRoutes) {
       const matchingDeal = deals.find(
         (d) => d.fromAirportSlug === route.airportSlug && d.toDestinationSlug === route.destinationSlug && d.cabin === 'Economy' && !isBundledProductDeal(d)

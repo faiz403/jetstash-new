@@ -1,5 +1,6 @@
 import {
   getPublishableObservationsByRoute,
+  isPubliclyPublishable,
   type FareObservation,
 } from '@/data/fare-observations';
 import { daysBetweenIso, getFareFreshnessState, type FareFreshnessState } from '@/lib/freshness-thresholds';
@@ -30,17 +31,17 @@ export interface FareSignal {
 }
 
 function toSignalObservation(observation: FareObservation): FareSignalObservation | null {
-  if (!observation.departureDate || !observation.returnDate || !observation.currency) return null;
+  if (!isPubliclyPublishable(observation)) return null;
 
   return {
     id: observation.id,
     cabin: observation.cabin,
     airline: observation.source,
     price: observation.price,
-    currency: observation.currency,
+    currency: observation.currency!,
     observedDate: observation.observedDate,
-    departureDate: observation.departureDate,
-    returnDate: observation.returnDate,
+    departureDate: observation.departureDate!,
+    returnDate: observation.returnDate!,
     directness: observation.fareDirectness === 'direct' || observation.fareDirectness === 'connecting'
       ? observation.fareDirectness
       : null,

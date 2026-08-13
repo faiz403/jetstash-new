@@ -118,7 +118,7 @@ export interface FareObservation {
  * ones going forward instead.
  */
 export function isPubliclyPublishable(o: FareObservation): boolean {
-  return Boolean(o.departureDate && o.returnDate);
+  return Boolean(o.departureDate && o.returnDate && o.currency);
 }
 
 /**
@@ -305,7 +305,8 @@ export function getObservationsByRouteAndCabin(routeSlug: string, cabin: DealCab
 /**
  * Pure predicate: is this exact observation safe to show publicly right
  * now? Requires ALL of:
- *  1. Date-completeness (isPubliclyPublishable).
+ *  1. Display completeness (both travel dates and source currency are
+ *     present; see isPubliclyPublishable).
  *  2. A defined route.
  *  3. `route.slug === observation.routeSlug` — the route passed in must
  *     actually be the one this observation was logged against, not merely
