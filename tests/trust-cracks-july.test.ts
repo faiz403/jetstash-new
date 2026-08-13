@@ -96,7 +96,7 @@ describe('Antalya positioning stays within its evidence boundary', () => {
   it('keeps useful resort context without unsupported comparative wording', () => {
     expect(antalya?.tagline).toBe("Turkey's all-inclusive coastline");
     expect(antalya?.description).toBe(
-      "Antalya anchors Turkey's Turquoise Coast, with established resort areas and all-inclusive stays.",
+      "Antalya anchors Turkey's Turquoise Coast, with resort areas such as Lara/Kundu, Belek and the Side-Manavgat coast. The wider region includes beach and all-inclusive stays, so check the specific resort area and local travel time before booking.",
     );
     expect(antalya?.description.toLowerCase()).not.toMatch(/\b(most popular|leading|top|best)\b/);
     expect(antalya?.flightTimeFromUK).toBe('Published timings vary by airline and date; check the exact Manchester flight');

@@ -273,7 +273,7 @@ export const destinations: Destination[] = [
     region: 'gulf',
     tagline: 'The Gulf\'s cultural capital, built for stopovers',
     description:
-      'Doha\'s Museum of Islamic Art, the Souq Waqif and a coastline of new public beaches make it more than a connection point, though Qatar Airways\' hub status means most UK travellers will pass through at some stage anyway.',
+      'Doha combines the Museum of Islamic Art, Souq Waqif and public beaches with a Gulf city break. It can be a stopover or a destination in its own right, so check whether your plans include time in the city or only a flight connection.',
     bestFor: ['Stopovers', 'Culture', 'Family holidays'],
     flightTimeFromUK: '6h 30m direct from London Heathrow',
     ukAirports: ['london-heathrow', 'manchester', 'birmingham'],
@@ -330,7 +330,7 @@ export const destinations: Destination[] = [
     region: 'mediterranean',
     tagline: 'Turkey\'s all-inclusive coastline',
     description:
-      'Antalya anchors Turkey\'s Turquoise Coast, with established resort areas and all-inclusive stays.',
+      'Antalya anchors Turkey\'s Turquoise Coast, with resort areas such as Lara/Kundu, Belek and the Side-Manavgat coast. The wider region includes beach and all-inclusive stays, so check the specific resort area and local travel time before booking.',
     bestFor: ['Family holidays', 'All-inclusive', 'Beach'],
     flightTimeFromUK: 'Published timings vary by airline and date; check the exact Manchester flight',
     ukAirports: ['manchester', 'birmingham', 'leeds-bradford', 'glasgow', 'bristol', 'london-gatwick'],
