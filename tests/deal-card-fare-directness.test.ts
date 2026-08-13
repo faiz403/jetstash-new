@@ -37,7 +37,10 @@ describe('getDealFareDirectnessLabel — a route being direct never implies a sp
 
   it('a connecting fare on a route with any status never receives "Direct flight"', () => {
     for (const deal of deals) {
-      if (deal.category === 'umrah') continue;
+      // Package/Umrah cards are curated bundled products, not flight-fare
+      // cards. A newly observed flight fare must not rewrite their product
+      // badge or make a package card pretend to be a flight comparison.
+      if (deal.category === 'umrah' || deal.category === 'package') continue;
       const label = getDealFareDirectnessLabel(deal, NOW_ISO);
       const route = getRouteByAirportAndDestination(deal.fromAirportSlug, deal.toDestinationSlug);
       if (!route) continue;
@@ -94,6 +97,10 @@ describe('getDealFareDirectnessLabel — a route being direct never implies a sp
     const umrahMed = deals.find((d) => d.id === 'umrah-package-extended')!;
     expect(getDealFareDirectnessLabel(umrahJed, NOW_ISO)).toBe(getDealDirectnessLabel(umrahJed, NOW_ISO));
     expect(getDealFareDirectnessLabel(umrahMed, NOW_ISO)).toBe(getDealDirectnessLabel(umrahMed, NOW_ISO));
+    const packageDeal = deals.find((deal) => deal.id === 'man-ist-package');
+    if (packageDeal) {
+      expect(getDealFareDirectnessLabel(packageDeal, NOW_ISO)).toBe(getDealDirectnessLabel(packageDeal, NOW_ISO));
+    }
   });
 
   it('a deal/cabin with no logged fare at all falls back to the route-level label unchanged (nothing to contradict)', () => {

@@ -121,28 +121,28 @@ describe('Fare Signal presentation and CTA boundaries', () => {
 });
 
 describe('Fare Signal production coverage counts', () => {
-  it('reports 22 routes with a current publishable fare and 66 without one at the current archive date', () => {
-    const signals = routes.map((route) => getFareSignalForRoute(route.slug, '2026-08-11'));
-    expect(signals.filter((signal) => signal.state === 'current')).toHaveLength(22);
+  it('reports 35 routes with a current publishable fare and 53 without one at the current archive date', () => {
+    const signals = routes.map((route) => getFareSignalForRoute(route.slug, '2026-08-13'));
+    expect(signals.filter((signal) => signal.state === 'current')).toHaveLength(35);
     expect(signals.filter((signal) => signal.state === 'recent')).toHaveLength(0);
-    expect(signals.filter((signal) => signal.state === 'none')).toHaveLength(66);
+    expect(signals.filter((signal) => signal.state === 'none')).toHaveLength(53);
     expect(routes.filter((route) => getTripComRouteUrl(route.slug)).length).toBe(45);
   });
 
   it('excludes Heathrow-Mumbai when currency is absent, without backfilling the historic record', () => {
-    expect(getPublishableObservationsByRoute('london-heathrow-mumbai', '2026-08-11')).toEqual([]);
-    expect(getFareSignalForRoute('london-heathrow-mumbai', '2026-08-11').state).toBe('none');
+    expect(getPublishableObservationsByRoute('london-heathrow-mumbai', '2026-08-13')).toEqual([]);
+    expect(getFareSignalForRoute('london-heathrow-mumbai', '2026-08-13').state).toBe('none');
     const deal = deals.find((entry) => entry.id === 'lhr-bom-economy');
     expect(deal).toBeDefined();
-    expect(hasTrackedFare(deal!, '2026-08-11')).toBe(false);
+    expect(hasTrackedFare(deal!, '2026-08-13')).toBe(false);
   });
 
   it('uses one display-readiness standard for tracked coverage and non-empty Fare Signals', () => {
     const trackedRoutes = routes
-      .filter((route) => getPublishableObservationsByRoute(route.slug, '2026-08-11').length > 0)
+      .filter((route) => getPublishableObservationsByRoute(route.slug, '2026-08-13').length > 0)
       .map((route) => route.slug);
     const signalledRoutes = routes
-      .filter((route) => getFareSignalForRoute(route.slug, '2026-08-11').state !== 'none')
+      .filter((route) => getFareSignalForRoute(route.slug, '2026-08-13').state !== 'none')
       .map((route) => route.slug);
     expect(trackedRoutes).toEqual(signalledRoutes);
   });

@@ -67,10 +67,12 @@ describe('/deals page filter pill no longer says "All deals"', () => {
   });
 });
 
-describe('Unrelated behaviour is unchanged — URL, analytics and card copy', () => {
-  it('the /deals route file itself was not touched by this change (already used tracked-fare language)', () => {
+describe('The /deals route keeps its URL while clarifying curated card scope', () => {
+  it('the /deals route keeps its URL and distinguishes route coverage from curated cards', () => {
     expect(dealsPageSrc).toContain("title: 'Tracked Fares from UK Airports'");
     expect(dealsPageSrc).toContain('alternates: { canonical: `${siteConfig.url}/deals` }');
+    expect(dealsPageSrc).toContain('curated selection of routes and categories');
+    expect(dealsPageSrc).toContain('not listed as a Deal card here');
   });
 
   it('DealCard never rendered the word "Deal" in customer-facing text, and still does not', () => {

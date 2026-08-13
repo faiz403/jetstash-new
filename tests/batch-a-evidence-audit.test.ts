@@ -108,30 +108,40 @@ describe('bhx-atq-economy reflects the latest evidence-complete observation', ()
   });
 });
 
-describe('Customer-visible fare coverage — every tracked route either has a visible fare card or is a documented exception', () => {
-  // The one route this audit found and left unfixed (pre-dates Batch A,
-  // out of scope) - a canary so a future silent regression on any OTHER
-  // route is caught immediately, while this one known gap doesn't fail
-  // the suite until it's deliberately closed. Fare Coverage Expansion
-  // Batch B (6 August 2026) closed the equivalent gap for its own 8 new
-  // routes with new Deal entries at collection time - see
-  // FARE_COVERAGE_BATCH_B.md - so Heathrow-Jeddah remains the ONLY
-  // documented exception even after the tracked-route count grew.
-  const documentedInvisibleRoutes = new Set(['london-heathrow-jeddah']);
+describe('Route-level Fare Signal coverage and curated Deal-card coverage remain distinct', () => {
+  // Deal entries are a curated card catalogue, not a second copy of the
+  // observation archive. These routes have valid current Fare Signals but no
+  // curated Economy card by design; they must still count in route-level
+  // coverage and on the /deals hero.
+  const fareSignalOnlyRoutes = new Set([
+    'london-heathrow-jeddah',
+    'manchester-istanbul',
+    'manchester-antalya',
+    'manchester-izmir',
+    'manchester-marrakech',
+    'manchester-agadir',
+    'birmingham-istanbul',
+    'birmingham-antalya',
+    'birmingham-dalaman',
+    'birmingham-bodrum',
+    'leeds-bradford-antalya',
+    'leeds-bradford-dalaman',
+  ]);
 
-  it('every tracked route has a matching flight-category Economy Deal, except the documented exception', () => {
+  it('every route-level tracked fare is either represented by a curated Economy card or explicitly remains Fare-Signal-only', () => {
     const trackedRoutes = routes.filter((r) => getPublishableObservationsByRoute(r.slug, NOW_ISO).length > 0);
-    expect(trackedRoutes.length).toBe(22);
+    expect(trackedRoutes.length).toBe(35);
     for (const route of trackedRoutes) {
       const matchingDeal = deals.find(
         (d) => d.fromAirportSlug === route.airportSlug && d.toDestinationSlug === route.destinationSlug && d.cabin === 'Economy' && !isBundledProductDeal(d)
       );
-      if (documentedInvisibleRoutes.has(route.slug)) {
+      if (fareSignalOnlyRoutes.has(route.slug)) {
         expect(matchingDeal, route.slug).toBeUndefined();
       } else {
-        expect(matchingDeal, `${route.slug} should have a customer-visible Economy Deal`).toBeDefined();
+        expect(matchingDeal, `${route.slug} should have a curated Economy card`).toBeDefined();
       }
     }
+    expect(fareSignalOnlyRoutes.size).toBe(12);
   });
 
   it('none of the 7 newly added Deal entries ever shows an unsupported "Direct flight" badge', () => {

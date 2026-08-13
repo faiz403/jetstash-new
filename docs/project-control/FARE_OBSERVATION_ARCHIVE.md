@@ -1,8 +1,8 @@
 # Editorial Fare Observation Archive
 
 **Owner:** JetStash editorial workflow
-**Status:** Active - Batch A + Batch B plus three scheduled Tier A checks recorded; latest check 11 August 2026;
-23 of 32 routes publishable
+**Status:** Active - Batch A + Batch B plus four scheduled checks recorded; latest check 13 August 2026;
+35 of 88 routes publishable
 **Canonical data file:** `data/fare-observations.ts`
 
 ## Purpose
@@ -58,6 +58,28 @@ For each selected lowest visible bookable itinerary, both outbound and return de
 in Google Flights. Taxes and required fees were shown as included; no checked-baggage allowance or
 mandatory baggage charge was disclosed for the selected fares, so baggage remains unknown. These
 are dated editorial observations, not live-price promises or claims that the fares remain available.
+
+## Fourth scheduled check — 13 August 2026
+
+Batch 1 added thirteen append-only observations using the locked one-adult, return-Economy,
+GBP, 14-night profile for 8–22 October 2026. The requested twelve-route target was exceeded by
+one because Manchester → Izmir was also captured during the controlled session; it is retained
+because this archive is append-only. All thirteen records have both legs reviewed, an explicit
+direct/connecting state, source URL, baggage treatment and `observationReason: routine-weekly`.
+
+The new routes are Manchester → Istanbul (£179, connecting via Munich), Manchester → Antalya
+(£231, direct), Manchester → Dalaman (£201, direct), Manchester → Bodrum (£351, connecting via
+Istanbul Sabiha Gökçen), Manchester → Izmir (£248, connecting via Istanbul Sabiha Gökçen),
+Manchester → Marrakech (£89, direct), Manchester → Agadir (£96, direct with separate return
+tickets), Birmingham → Istanbul (£194, direct), Birmingham → Antalya (£201, direct), Birmingham
+→ Dalaman (£231, direct), Birmingham → Bodrum (£259, connecting via Istanbul Sabiha Gökçen),
+Leeds Bradford → Antalya (£285, direct) and Leeds Bradford → Dalaman (£232, direct). Baggage
+remains `not stated` in every record; where the source warned that overhead-bin access was not
+included, that warning is retained rather than converted into a baggage allowance or £0 cost.
+
+The contemporaneous evidence table and exact search URLs are in
+`docs/project-control/fare-evidence/fare-coverage-batch-1-2026-08-13.md`. No Fare Watcher
+candidate was promoted automatically.
 
 # What may be observed
 
