@@ -2,7 +2,7 @@
 
 **Owner:** JetStash editorial workflow
 **Status:** Active - Batch A + Batch B plus four scheduled checks recorded; latest check 13 August 2026;
-35 of 88 routes publishable
+47 of 88 routes publishable
 **Canonical data file:** `data/fare-observations.ts`
 
 ## Purpose
