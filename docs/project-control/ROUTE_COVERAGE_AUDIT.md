@@ -1110,6 +1110,110 @@ unbuilt because Glasgow Airport's current destination listings do not list Athen
 | `london-gatwick-rome` | Useful |
 | `bristol-rome` | Useful |
 
-The expanded catalogue now contains **80 route guides**. Current publishable fare coverage remains
-**23 of 80** and Trip.com coverage remains **45 of 80**;
-unsupported handoffs continue to fail closed rather than falling back to aggregate London links.
+The expanded catalogue then contained **80 route guides**.
+
+---
+
+## Final Route-Guide Completion batch (13 August 2026)
+
+Twelve candidate airport-to-destination pairs were audited against current, authoritative (airport-
+or airline-own) evidence only — Trip.com is booking evidence, never route evidence, and was not used
+to decide any of the twelve. **First pass: two were built; ten remain evidence-blocked** — not
+silently dropped, recorded here so the catalogue stays honestly incomplete rather than quietly padded.
+**A second evidence pass (also 13 August 2026, same day) then re-opened the ten** — see below — and
+built six more, using search-indexed content for official pages that 403 on direct fetch. Final
+outcome: **8 of 12 built, 4 genuinely blocked.**
+
+| Route slug | Grade | Evidence |
+|---|---|---|
+| `london-heathrow-lahore` | Useful | Heathrow Airport's own media centre press release ("Spring takes off at Heathrow with new routes and greater choice for passengers", mediacentre.heathrow.com/pressrelease/detail/24969): PIA, weekly from 30 March 2026, Terminal 4. |
+| `london-gatwick-dubai` | Useful | Gatwick's own destinations page (gatwickairport.com/flights/destinations.html): "Dubai, UAE... 7-8 hours flight time... Serviced by Emirates." |
+
+**Four pairs that stayed evidence-blocked after both passes, and why:**
+
+| Pair | Why blocked |
+|---|---|
+| Leeds Bradford → Istanbul | Current authoritative evidence did not establish this route. Leeds Bradford Airport's own destinations directory does not list Istanbul (re-confirmed 13 August 2026, both passes: the airport's own destination-specific URL pattern that resolves for its other Turkey routes 404s for Istanbul; its own direct-destinations highlight page excludes Turkey entirely). This is an absence of confirming evidence from the sources reached, not proof that no airline anywhere serves the pair. Not forced, per standing instruction. |
+| Glasgow → Athens | Current authoritative evidence did not establish this route. easyJet's own Athens network lists Bristol, Edinburgh, Luton, Gatwick and Manchester, not Glasgow; Jet2's Glasgow programme serves Heraklion and Corfu, not Athens. Re-confirmed via a July-2026-dated source in the second pass. Glasgow Airport's own site remained unreachable in both passes, so this rests on airline-side negative evidence only from the two carriers checked, not a check of every airline — not proof that no airline anywhere flies the pair. Not forced, per standing instruction. |
+| Heathrow → Karachi | Current authoritative evidence did not establish this route. Heathrow's own media centre press release (the same one used for Lahore, above) names only Islamabad and Lahore as PIA's returning routes — Karachi is not mentioned in any current, reachable source, including a dedicated second-pass search. This reflects the sources reached, not a check of every airline serving Heathrow. |
+| Heathrow → Madinah | Current authoritative evidence did not establish this route. No current Heathrow-Madinah service was found for British Airways (Heathrow-Saudi Arabia service is Jeddah, Riyadh and, newly, Dammam — not Madinah) or Saudia, re-confirmed in the second pass. This reflects the sources reached, not a check of every airline serving Heathrow. |
+
+### Second evidence pass (13 August 2026, same day) — six more built
+
+The first pass stopped too early on several routes: a 403 from **direct** WebFetch was wrongly treated
+as an evidence blocker, when the exact same official page is independently indexed and reachable via
+search (Google/Bing/DDG's own crawl of the same page — not a different or lesser source). Founder
+review independently confirmed several of these pages were genuinely reachable this way. Re-opened all
+ten blocked pairs on that basis; six now have sufficient evidence.
+
+| Route slug | Grade | Evidence | Notes |
+|---|---|---|---|
+| `birmingham-dubai` | Useful | Birmingham Airport's own Dubai destination page (birminghamairport.co.uk/destinations/where-we-fly/dubai/ — confirmed indexed and current via search), corroborated by Birmingham Airport's own historical Emirates launch press releases. | Direct, Emirates, ~7h. Historical "three-times-daily" launch figure (2015) not republished as current frequency. |
+| `birmingham-doha` | Useful | Birmingham Airport's own press release, "Qatar Airways Returns to Birmingham Airport" (indexed via search; direct fetch 403s). | Direct, Qatar Airways, launched daily 6 July 2023 — launch evidence, current frequency not independently reconfirmed. |
+| `birmingham-jeddah` | Useful | Birmingham Airport's own press release, "Saudia Launches Three-Times-A-Week Jeddah Service from BHX" (indexed via search; direct fetch 403s), with CEO Nick Barton quoted confirming the launch. | Direct, Saudia, launched 2 July 2023, 3x/week (Tue/Thu/Sun), ~6h15m — launch evidence, current frequency not independently reconfirmed. |
+| `london-heathrow-dubai` | Useful | Heathrow's own live flight-tracking system indexes multiple current Emirates Heathrow-Dubai flight-detail pages (EK2/EK4/EK6/EK32/EK42 departures, EK3/EK31 arrivals, all Terminal 3) — reached via search-indexed content, since the pages themselves are JS-rendered to direct fetch. | Direct, Emirates, Terminal 3. British Airways separately operates a reduced, currently-disrupted service on this route (Middle East airspace-related capacity cuts since March 2026) — not listed in `airlineSlugs`, since no primary BA source confirming current status was reachable. |
+| `birmingham-delhi` | Useful (unverified, genuine conflict preserved) | Birmingham Airport's own 2019 press release describing a direct Boeing 787 Delhi/Amritsar tag-service, **plus** Birmingham Airport's own CURRENT Delhi destination page (Air India, direct, ~7h55) — **set against** Air India's own current route-information page, which states 0 direct flights between Birmingham and Delhi, while Air India's own schedule output separately shows AI114 as Non Stop on some 2026 dates. | **Deliberately not resolved either way** — `verification.status: 'unverified'`, `isDirect: true` per the standing "genuine dispute" rule (matches the Manchester–Sylhet precedent). All claims stated explicitly in the route's own intro/note; none discarded. Founder-supplied evidence (13 August 2026 amendment) added Birmingham Airport's current Delhi destination page to the "direct" side without resolving the conflict. |
+| `birmingham-ahmedabad` | Useful (unverified, genuine conflict preserved) | Air India's own current page for this pair is internally self-contradictory: its marketing copy describes flying to Ahmedabad and references a direct-flight duration, while the same page's structured route information and FAQ separately state 0 direct flights between Birmingham and Ahmedabad. | **Deliberately not resolved either way** — `verification.status: 'unverified'`, `isDirect: true`, matching the Birmingham–Delhi and Manchester–Sylhet precedent. Originally built as connecting on the mistaken assumption that Air India's page was a clean, unconflicted confirmation; corrected 13 August 2026 (founder amendment) once the page's internal self-contradiction (marketing copy vs. structured data/FAQ) was identified — no other current authoritative primary source resolves it. No specific hub (Delhi/Mumbai) is asserted — no source reached confirms the exact routing, if any, Air India's own itineraries use, so none is published. |
+
+**FINAL AMEND (13 August 2026, founder review):** `birmingham-ahmedabad` was corrected from a
+settled `isDirect: false` connecting claim to `isDirect: true` + `verification.status: 'unverified'`
+once the founder identified that Air India's own current page for this pair is internally
+self-contradictory (marketing copy vs. structured route information/FAQ), not the clean,
+unconflicted confirmation it was first treated as. `birmingham-delhi`'s evidence record was also
+extended with Birmingham Airport's own current Delhi destination page (Air India, direct, ~7h55),
+without resolving that route's pre-existing conflict either. Elsewhere in this document, absolute
+"no airline flies X" conclusions for genuinely evidence-blocked pairs (Leeds Bradford–Istanbul,
+Glasgow–Athens, Heathrow–Karachi, Heathrow–Madinah) were reworded to "current authoritative evidence
+did not establish the route" — the sources reached did not confirm the route, which is not the same
+claim as proving every airline was checked.
+
+**A genuine tooling limitation, not evidence the routes don't exist:** direct WebFetch to
+birminghamairport.co.uk (every subdomain: `www`, `airport`, `corporate`) and to emirates.com,
+qatarairways.com and saudia.com returned 403 (or a bot-detection interstitial) on every attempt in
+both passes — matching this project's existing documented pattern for PIA's own site
+(`piac.com.pk`). The second pass worked around this by using search-indexed content (via WebSearch and
+DuckDuckGo's HTML search endpoint) for the exact same official pages, per the explicit rule that a 403
+on direct fetch is not itself an evidence blocker when the identical official source is reachable
+another way.
+
+### Trip.com coverage — two genuinely different metrics, reconciled
+
+An earlier draft of this batch's report stated "Trip.com coverage: 45 of 82", which understated the
+real customer-facing coverage and was flagged for reconciliation before being written into this
+document. Two distinct, both-valid metrics exist in `lib/booking-providers.ts`, and conflating them
+was the error:
+
+- **Route-level exact link** (`TRIPCOM_ROUTE_URLS` / `getTripComRouteUrl()` / `hasTripComRoute()`) —
+  **45 of 88** routes have an exact, dashboard-generated Trip.com link keyed to that specific route
+  slug. This is what `tests/booking-providers.test.ts`'s `SUPPORTED_ROUTES`/`UNSUPPORTED_ROUTES`
+  partition tracks, and what `STATUS.md` has always meant by "45 of N routes carry a genuine,
+  dashboard-generated, dateless Trip.com affiliate link."
+- **Any working handoff on the route page** (`getTripComFlightHandoffUrl()`, what a visitor actually
+  sees on `/routes/[slug]`) — falls back to a second, separate map (`TRIPCOM_DESTINATION_URLS`, 42
+  entries, pair-keyed) when no route-level entry exists. The true union across both maps is **63 of
+  88** routes with some working Trip.com CTA — the figure a founder independently verifying the real
+  coverage would find, and the one this document should have led with.
+
+Both are accurate; neither overwrites the other. This document now states both explicitly rather than
+citing only the narrower one under the label "Trip.com coverage." No test or doc value was overwritten
+with the lower, incomplete figure — the previously-drafted "45 of 82" was corrected before being
+written into version-controlled test assertions.
+
+The catalogue now contains **88 route guides** (80 plus this batch's 8 built pairs across both
+evidence passes). Current publishable fare coverage remains **23 of 88** — none of the 8 new routes has
+a fare observation yet. Route-level exact Trip.com coverage remains **45 of 88** (all 8 new routes are
+either London-origin, per the standing limitation, or Birmingham pairs Trip.com's tool has no exact
+link for); the true any-handoff figure is **63 of 88**.
+
+### Full route index — the 8 new routes
+
+| Slug | Grade |
+|---|---|
+| `london-heathrow-lahore` | Useful |
+| `london-gatwick-dubai` | Useful |
+| `birmingham-dubai` | Useful |
+| `birmingham-doha` | Useful |
+| `birmingham-jeddah` | Useful |
+| `london-heathrow-dubai` | Useful |
+| `birmingham-delhi` | Useful |
+| `birmingham-ahmedabad` | Useful |

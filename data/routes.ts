@@ -1814,6 +1814,195 @@ export const routes: Route[] = [
     intro: 'Bristol Airport lists direct service to Rome. Check the exact airport, operating airline, flight day, duration and fare for your dates.',
     bookingWindowNote: 'Confirm the live schedule, fare conditions and baggage terms for the selected itinerary.', peakPeriodIds: [],
   },
+  // Final Route-Guide Completion batch (13 August 2026) — see
+  // docs/project-control/ROUTE_COVERAGE.md for the full 12-pair audit. Only
+  // these two of twelve candidate pairs had current, authoritative
+  // (airport- or airline-own) evidence reachable this session; the other
+  // ten are documented there as evidence-blocked, not silently dropped.
+  {
+    slug: 'london-heathrow-lahore',
+    airportSlug: 'london-heathrow',
+    destinationSlug: 'lahore',
+    flightTime: 'Approximately 8h, per Heathrow Airport\'s own announcement',
+    frequency: 'Weekly (Mondays) from launch on 30 March 2026, per Heathrow Airport\'s own announcement; current frequency not independently confirmed beyond that launch figure',
+    airlineSlugs: ['pia'],
+    isDirect: true,
+    verification: {
+      status: 'verified',
+      sourceName: 'Heathrow Airport\'s own media centre: "Spring takes off at Heathrow with new routes and greater choice for passengers"',
+      sourceUrl: 'https://mediacentre.heathrow.com/pressrelease/detail/24969',
+      verifiedDate: '2026-08-13',
+      reviewDueDate: '2026-09-13',
+      note: 'Heathrow Airport\'s own media centre confirms: "A weekly service between Heathrow and Lahore launches from 30 March, reconnecting passengers with another much-loved Pakistani city. Operating from Terminal 4..." — confirms direct status, PIA as operator (the same press release separately confirms PIA\'s Islamabad relaunch), the weekly launch frequency and Terminal 4. The release does not state a current frequency beyond that launch figure, so none beyond it is published. PIA\'s own site (piac.com.pk) remains Cloudflare-blocked to this session\'s tooling; no PIA-specific Karachi service is mentioned anywhere in this release.',
+    },
+    intro:
+      'PIA relaunched a direct Heathrow to Lahore service on 30 March 2026 (confirmed via Heathrow Airport\'s own announcement), operating from Terminal 4 alongside PIA\'s parallel Islamabad relaunch. Check PIA\'s own booking system directly for the current schedule and fare.',
+    bookingWindowNote:
+      'Outside Eid and the summer school holidays, this window tends to be less pressured. Fares on peak-period routes often move in the final weeks before Eid — if your dates are fixed, aim to book at least 3 months ahead. Planning guidance, not a fare prediction.',
+    peakPeriodIds: ['eid-al-fitr', 'eid-al-adha', 'uk-summer-holidays', 'wedding-season'],
+  },
+  {
+    slug: 'london-gatwick-dubai',
+    airportSlug: 'london-gatwick',
+    destinationSlug: 'dubai',
+    flightTime: '7-8 hours, per Gatwick\'s own destination listing',
+    frequency: 'Direct service; exact frequency not published on Gatwick\'s own destination listing, check the exact flight',
+    airlineSlugs: ['emirates'],
+    isDirect: true,
+    verification: {
+      status: 'verified',
+      sourceName: 'London Gatwick\'s official destinations information',
+      sourceUrl: 'https://www.gatwickairport.com/flights/destinations.html',
+      verifiedDate: '2026-08-13',
+      reviewDueDate: '2026-09-13',
+      note: 'Gatwick\'s own destinations page lists "Dubai, UAE" with a stated "7-8 hours flight time" and "Serviced by Emirates." No frequency is published on this page; no Gatwick-specific Trip.com handoff exists for this pair, matching the standing London-origin limitation (see lib/booking-providers.ts).',
+    },
+    intro:
+      'Gatwick\'s own destinations listing confirms direct Emirates service to Dubai, stating a 7-8 hour flight time. Exact frequency and schedule are not published on that page, so check the exact flight before booking.',
+    bookingWindowNote:
+      'Less sensitive to booking window than the South Asia routes. Winter, when UK schools are off, tends to carry the clearest premium; outside that, this route is generally less pressured.',
+    peakPeriodIds: ['christmas-new-year', 'february-half-term', 'easter-holidays'],
+  },
+  // Final Route-Guide Completion — second evidence pass (13 August 2026).
+  // The first pass wrongly treated a 403 from direct WebFetch as an
+  // evidence blocker for several routes whose own official pages are
+  // reachable via search-indexed content (Google/Bing/DDG's own crawl of
+  // the same page, not a different or lesser source) even when this
+  // session's direct-fetch tooling is blocked. Re-opened per founder
+  // instruction; see docs/project-control/ROUTE_COVERAGE.md for the full
+  // second-pass account, including the routes that stayed blocked.
+  {
+    slug: 'birmingham-dubai',
+    airportSlug: 'birmingham',
+    destinationSlug: 'dubai',
+    flightTime: 'Approximately 7h, per Birmingham Airport\'s own destination page',
+    frequency: 'Direct service; current frequency not confirmed by a current official schedule (Birmingham Airport\'s own historical announcements describe a since-superseded three-times-daily launch)',
+    airlineSlugs: ['emirates'],
+    isDirect: true,
+    verification: {
+      status: 'verified',
+      sourceName: 'Birmingham Airport\'s own Dubai destination page, corroborated by Birmingham Airport\'s own historical Emirates service announcements',
+      sourceUrl: 'https://www.birminghamairport.co.uk/destinations/where-we-fly/dubai/',
+      verifiedDate: '2026-08-13',
+      reviewDueDate: '2026-09-13',
+      note: 'Birmingham Airport\'s own Dubai destination page ("Flights to Dubai (DXB) from BHX | Birmingham Airport") is confirmed current via search-indexed content this session — direct WebFetch to birminghamairport.co.uk returns 403 across every subdomain, but the same page is independently indexed and reachable via search, per the standing rule that a 403 on direct fetch is not itself an evidence blocker when the same official source is available another way. Corroborated by Birmingham Airport\'s own historical press releases ("Emirates\' Third Daily Service Touches Down at Birmingham Airport", "Emirates Adds Second Daily A380 to Birmingham"), which independently confirm Emirates has operated direct Birmingham–Dubai service; those specific frequency figures (three-times-daily, dated 2015) are over a decade old and are not republished as current — only "direct, Emirates" is treated as currently supported. The ~7h duration is stated on Birmingham Airport\'s own page per search-indexed content; current weekly frequency was not extracted from that page this session and is not published as a specific figure.',
+    },
+    intro:
+      'Birmingham Airport\'s own destination page confirms direct Emirates service to Dubai. Birmingham Airport has published this route consistently for over a decade, though the airport\'s own historical frequency announcements are no longer current — check the exact flight and current schedule before booking.',
+    bookingWindowNote:
+      'Less sensitive to booking window than the South Asia routes. Winter, when UK schools are off, tends to carry the clearest premium; outside that, this route is generally less pressured.',
+    peakPeriodIds: ['christmas-new-year', 'february-half-term', 'easter-holidays'],
+  },
+  {
+    slug: 'birmingham-doha',
+    airportSlug: 'birmingham',
+    destinationSlug: 'doha',
+    flightTime: 'Approximately 6h 45m, per Birmingham Airport\'s own service announcement',
+    frequency: 'Daily from launch on 6 July 2023, per Birmingham Airport\'s own announcement; current frequency not independently confirmed beyond that launch figure',
+    airlineSlugs: ['qatar-airways'],
+    isDirect: true,
+    verification: {
+      status: 'verified',
+      sourceName: 'Birmingham Airport\'s own media centre: "Qatar Airways Returns to Birmingham Airport"',
+      sourceUrl: 'https://www.birminghamairport.co.uk/latest-news/qatar-airways-returns-to-birmingham-airport/',
+      verifiedDate: '2026-08-13',
+      reviewDueDate: '2026-09-13',
+      note: 'Birmingham Airport\'s own press release, confirmed current via search-indexed content this session (direct WebFetch to birminghamairport.co.uk returns 403 across every subdomain — see the birmingham-dubai record above for the same standing note), confirms Qatar Airways resumed direct Birmingham–Doha service on 6 July 2023, "one flight a day, 7 days a week... throughout this summer", via Hamad International Airport, operated by a Boeing 787-8 Dreamliner. This is founding/launch evidence, over three years old — daily is the launch figure, not independently reconfirmed as the current frequency. Qatar Airways\' own route page for this pair (qatarairways.com) returns 403 to this session\'s tooling.',
+    },
+    intro:
+      'Qatar Airways resumed a direct Birmingham to Doha service on 6 July 2023 (confirmed via Birmingham Airport\'s own announcement), launched as a daily service via Hamad International Airport. Check Qatar Airways\' own booking system directly for the current schedule and fare.',
+    bookingWindowNote:
+      'Less sensitive to booking window than the South Asia routes, though Ramadan and the wider Gulf-travel calendar can shift demand. Check the live schedule and fare conditions before booking.',
+    peakPeriodIds: ['uk-summer-holidays', 'christmas-new-year', 'february-half-term', 'easter-holidays'],
+  },
+  {
+    slug: 'birmingham-jeddah',
+    airportSlug: 'birmingham',
+    destinationSlug: 'jeddah',
+    flightTime: 'Approximately 6h 15m, per Birmingham Airport\'s own service announcement',
+    frequency: 'Three times weekly (Tuesdays, Thursdays, Sundays) from launch on 2 July 2023, per Birmingham Airport\'s own announcement; current frequency not independently confirmed beyond that launch figure',
+    airlineSlugs: ['saudia'],
+    isDirect: true,
+    verification: {
+      status: 'verified',
+      sourceName: 'Birmingham Airport\'s own media centre: "Saudia Launches Three-Times-A-Week Jeddah Service from BHX"',
+      sourceUrl: 'https://www.birminghamairport.co.uk/latest-news/saudia-launches-three-times-a-week-jeddah-service-from-bhx/',
+      verifiedDate: '2026-08-13',
+      reviewDueDate: '2026-09-13',
+      note: 'Birmingham Airport\'s own press release, confirmed current via search-indexed content this session (direct WebFetch to birminghamairport.co.uk returns 403 across every subdomain — see the birmingham-dubai record above for the same standing note), confirms Saudia launched direct Birmingham–Jeddah service on 2 July 2023, three times weekly (Tuesdays, Thursdays, Sundays), operated by a Boeing 787 Dreamliner (inaugural flight SV0250), with Birmingham Airport CEO Nick Barton quoted confirming the launch. This is founding/launch evidence, over three years old — three-times-weekly is the launch figure, not independently reconfirmed as the current frequency. Saudia\'s own route page for this pair (saudia.com) returns a bot-detection interruption page to this session\'s tooling.',
+    },
+    intro:
+      'Saudia launched a direct Birmingham to Jeddah service on 2 July 2023 (confirmed via Birmingham Airport\'s own announcement), three times weekly at launch. Check Saudia\'s own booking system directly for the current schedule and fare.',
+    bookingWindowNote:
+      'Ramadan and the pre-Hajj period are the two periods most likely to move demand and fares on this route. Outside those, booking pressure is generally lower — check the live schedule before booking regardless.',
+    peakPeriodIds: ['ramadan', 'pre-hajj'],
+  },
+  {
+    slug: 'london-heathrow-dubai',
+    airportSlug: 'london-heathrow',
+    destinationSlug: 'dubai',
+    flightTime: 'Approximately 7h 45m, based on Emirates\' published duration for its wider UK network',
+    frequency: 'Direct service; current frequency not confirmed by a current official schedule',
+    airlineSlugs: ['emirates'],
+    isDirect: true,
+    verification: {
+      status: 'verified',
+      sourceName: 'Heathrow Airport\'s own live flight-tracking system (multiple current Emirates flight-detail pages)',
+      sourceUrl: 'https://www.heathrow.com/departures/terminal-3/flight-details/EK4',
+      verifiedDate: '2026-08-13',
+      reviewDueDate: '2026-09-13',
+      note: 'Heathrow\'s own live flight-tracking system currently indexes multiple genuine, current Emirates Heathrow-Dubai flight-detail pages under its own domain — departures EK2, EK4, EK6, EK32, EK42 and arrivals EK3, EK31, all at Terminal 3 — confirmed via search-indexed content this session (the pages themselves are JS-rendered and return no static content to direct WebFetch, so exact departure times were not extracted, but their existence and terminal assignment in Heathrow\'s own indexed system is genuine airport-sourced confirmation the service currently operates). Corroborated by Heathrow\'s own airline-contact-info page, which separately confirms Emirates operates from Terminal 3. Duration is not stated by Heathrow\'s own pages reached this session; the 7h45m figure is Emirates\' own published duration for this exact pair per this codebase\'s existing Manchester-Dubai and Glasgow-Dubai records (both independently verified against Emirates\' own route pages in an earlier session when emirates.com was reachable), used here as the airline\'s own stated network duration rather than a new estimate. British Airways separately operates a reduced, currently-disrupted Heathrow-Dubai service (Middle East airspace-related capacity cuts, widely reported since March 2026) — not included in airlineSlugs, since no primary BA source confirming current status was reachable this session.',
+    },
+    intro:
+      'Heathrow\'s own live flight-tracking system confirms current Emirates service to Dubai from Terminal 3. British Airways also serves this route but with reduced, currently-disrupted capacity — check directly with each airline for the current schedule before booking.',
+    bookingWindowNote:
+      'Less sensitive to booking window than the South Asia routes. Winter, when UK schools are off, tends to carry the clearest premium; outside that, this route is generally less pressured.',
+    peakPeriodIds: ['christmas-new-year', 'february-half-term', 'easter-holidays'],
+  },
+  {
+    slug: 'birmingham-delhi',
+    airportSlug: 'birmingham',
+    destinationSlug: 'delhi',
+    flightTime: 'Unverified — genuinely conflicting sources, see note',
+    frequency: 'Unverified — genuinely conflicting sources, see note',
+    airlineSlugs: ['air-india'],
+    isDirect: true,
+    verification: {
+      status: 'unverified',
+      sourceName: 'Birmingham Airport\'s own current Delhi destination page, set against Air India\'s own current live booking page and schedule output',
+      sourceUrl: 'https://www.airindia.com/en/book-flights/birmingham-to-delhi-flights',
+      verifiedDate: '2026-08-13',
+      reviewDueDate: '2026-08-27',
+      note: 'A genuine, currently unresolved contradiction across three current sources, not a stale or secondary one. On the "direct" side: Birmingham Airport\'s own historical press release ("Air India Resumes Six Direct Weekly Services to India from Birmingham Airport", August 2019) describes a direct Boeing 787 tag-service running three times weekly to Delhi and onward to Amritsar, and three times weekly to Amritsar and onward to Delhi — a routing that stops at both cities on one flight number. Birmingham Airport\'s own CURRENT Delhi destination page adds further weight to the "direct" side: it names Air India, describes the service as direct, and states a flight time of approximately 7 hours 55 minutes. Air India\'s own current live booking page for this exact pair (confirmed via search-indexed content this session) separately shows a schedule example under flight number AI114 that aggregators describe as Non Stop on some 2026 dates. On the "no direct" side: Air India\'s own current route-information page for this exact pair states there are 0 direct flights between Birmingham and Delhi. Neither the airport\'s own destination page nor Air India\'s own schedule output is discarded in favour of Air India\'s own conflicting route-information page — this is Air India contradicting itself, not a weaker third party against a stronger primary source. Kept Verification Pending with a shortened review window given the live contradiction.',
+    },
+    intro:
+      'Birmingham to Delhi sits on a genuine, currently unresolved contradiction across current, authoritative sources. Birmingham Airport\'s own destination page for Delhi names Air India and describes a direct service of approximately 7 hours 55 minutes, and Air India\'s own current booking system separately shows a scheduled service under flight number AI114 that other sources describe as nonstop on some 2026 dates — but Air India\'s own current route-information page for this exact pair states there are 0 direct flights between Birmingham and Delhi. Current authoritative evidence does not resolve which of Air India\'s own statements about its own service is correct. Confirm the actual routing directly with Air India\'s own booking system — including whether your itinerary makes an intermediate stop — before assuming either claim.',
+    bookingWindowNote:
+      'Because this route\'s own directness is unresolved, compare the full itinerary Air India actually offers for your dates rather than assuming a nonstop service. Diwali and the December-January window are the periods most likely to move demand and fares on any India route regardless.',
+    peakPeriodIds: ['diwali', 'christmas-new-year', 'uk-summer-holidays'],
+  },
+  {
+    slug: 'birmingham-ahmedabad',
+    airportSlug: 'birmingham',
+    destinationSlug: 'ahmedabad',
+    flightTime: 'Unverified — genuinely conflicting sources, see note',
+    frequency: 'Unverified — genuinely conflicting sources, see note',
+    airlineSlugs: ['air-india'],
+    isDirect: true,
+    verification: {
+      status: 'unverified',
+      sourceName: 'Air India\'s own current live booking page for this exact pair, which contradicts itself',
+      sourceUrl: 'https://www.airindia.com/en/book-flights/birmingham-to-ahmedabad-flights',
+      verifiedDate: '2026-08-13',
+      reviewDueDate: '2026-08-27',
+      note: 'A genuine, currently unresolved contradiction within a single Air India source, not a stale or secondary one. Air India\'s own current page for Birmingham to Ahmedabad is internally inconsistent: its marketing copy describes flying to Ahmedabad and references a direct-flight duration, while the same page\'s structured route information and FAQ section separately state there are 0 direct flights between Birmingham and Ahmedabad. Neither statement is discarded in favour of the other, and no other current authoritative primary source reached this session resolves the contradiction. No specific connecting hub (Delhi, Mumbai or otherwise) is asserted here: no source reached this session confirms the exact hub, if any, Air India\'s own Birmingham-Ahmedabad itineraries actually route through, so none is published. Kept Verification Pending with a shortened review window given the live contradiction.',
+    },
+    intro:
+      'Birmingham to Ahmedabad sits on a genuine, currently unresolved contradiction within Air India\'s own current booking page: its marketing copy references a direct flight, while the same page\'s structured route information and FAQ state there are 0 direct flights between Birmingham and Ahmedabad. Current authoritative evidence does not resolve which of Air India\'s own statements is correct, and no hub is confirmed if a connection is in fact required. Confirm the actual routing directly with Air India\'s own booking system — including whether your itinerary makes an intermediate stop — before assuming either claim.',
+    bookingWindowNote:
+      'Because this route\'s own directness is unresolved, compare the full itinerary Air India actually offers for your dates rather than assuming a nonstop service. Navratri and Diwali are the periods most likely to move demand and fares on any Gujarat route regardless.',
+    peakPeriodIds: ['navratri', 'diwali', 'uk-summer-holidays'],
+  },
 ];
 
 export function getRouteBySlug(slug: string) {
@@ -2146,6 +2335,42 @@ export type RoutePresentation =
     });
 
 /**
+ * Metadata audit follow-up (Final Route-Guide Completion, 13 August 2026):
+ * "London" is the one city shared by two distinct airports (Heathrow,
+ * Gatwick — see data/airports.ts) — the first time this repository had two
+ * live routes from different London airports to the exact same destination
+ * (london-heathrow-dubai, london-gatwick-dubai) exposed a real,
+ * previously-latent bug: metadataTitle built its origin half from
+ * airport.city alone, so both pages generated the identical <title>, a
+ * genuine SEO defect (duplicate titles read as the same page to a search
+ * engine), not a cosmetic one.
+ *
+ * Deliberately NOT a blanket "always use airport.name for London" fix —
+ * that would have lengthened every existing Heathrow/Gatwick route's title
+ * (most already near the ~65-character guideline) and pushed roughly a
+ * dozen of them over it for no reason, since most have no actual collision
+ * to resolve. Instead this checks, per route, whether a REAL collision
+ * exists — another current route to the same destination from the other
+ * London airport — and only disambiguates (using the full airport.name,
+ * "London Heathrow"/"London Gatwick") in that specific case; every route
+ * with no such collision keeps the plain "London" origin exactly as
+ * before. Scoped to metadataTitle only — the visible H1, breadcrumb, share
+ * text and social copy everywhere else in this file still say "London to
+ * Dubai" by design (the breadcrumb's own separate airport.name crumb
+ * already disambiguates for a visitor); only the invisible <title> tag
+ * needed a fix.
+ */
+function disambiguatedTitleOrigin(route: Route, airport: ReturnType<typeof getRouteAirport>): string | undefined {
+  if (!airport || airport.city !== 'London') return airport?.city;
+  const collides = getRoutesByDestination(route.destinationSlug).some((r) => {
+    if (r.slug === route.slug) return false;
+    const otherAirport = getRouteAirport(r);
+    return otherAirport?.city === 'London' && otherAirport.slug !== airport.slug;
+  });
+  return collides ? airport.name : airport.city;
+}
+
+/**
  * The 'unverified' (pending) branch of RoutePresentation, extracted so the
  * Route Status V1 adapter (getEffectiveRoutePresentation, in
  * lib/route-status-copy.ts) can render this exact safe shape unconditionally
@@ -2162,6 +2387,12 @@ export function buildUnverifiedPresentation(route: Route): RoutePresentation {
   const pair = airport && dest ? `${airport.city} to ${dest.city}` : 'This route';
   const copy = pendingRouteCopy(airport?.city, dest?.city);
   const statusLabel = 'Verification pending';
+  // Same London-disambiguation fix as getRoutePresentation() above, applied
+  // here too so a future unverified route from the other London airport to
+  // an existing unverified destination can never silently reintroduce the
+  // same duplicate-<title> bug.
+  const titleOriginLabel = disambiguatedTitleOrigin(route, airport);
+  const titlePair = titleOriginLabel && dest ? `${titleOriginLabel} to ${dest.city}` : pair;
   return {
     status: 'unverified',
     statusLabel,
@@ -2175,7 +2406,7 @@ export function buildUnverifiedPresentation(route: Route): RoutePresentation {
     // say it's a route, and the shorter form keeps this title (and the
     // handful of longer city pairs using it) comfortably within the
     // ~65-character guideline.
-    metadataTitle: `${pair}: Verification in Progress`,
+    metadataTitle: `${titlePair}: Verification in Progress`,
     shareText: copy.shareText,
     socialDetail: statusLabel,
     socialFooter: 'Route verification in progress · jetstash.co.uk',
@@ -2301,10 +2532,12 @@ export function getRoutePresentation(route: Route, nowIso: string): RoutePresent
   // land a few characters past the guideline even after this — an
   // accepted, documented exception (see tests/metadata-audit.test.ts)
   // rather than a further cut that would start losing meaning.
+  const titleOriginLabel = disambiguatedTitleOrigin(route, airport);
+  const titlePair = titleOriginLabel && dest ? `${titleOriginLabel} to ${dest.city}` : pair;
   const hasPeakPeriodContent = route.peakPeriodIds.length > 0;
   const metadataTitle = hasPeakPeriodContent
-    ? `${pair}: Booking Windows & Peak Periods`
-    : `${pair} Flights: ${status === 'direct' ? 'Route Guide' : 'Connection Guide'}`;
+    ? `${titlePair}: Booking Windows & Peak Periods`
+    : `${titlePair} Flights: ${status === 'direct' ? 'Route Guide' : 'Connection Guide'}`;
 
   return {
     status,

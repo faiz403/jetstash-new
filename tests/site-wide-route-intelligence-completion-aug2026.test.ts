@@ -12,7 +12,7 @@ import { getRouteIntelligenceDisplay, getRouteIntelligenceDisplayForRoute } from
 /**
  * Site-wide Route Intelligence Completion (August 2026, phase 2).
  *
- * Phase 1 (same month) fixed the Atlas so every one of the 80 real routes
+ * Phase 1 (same month) fixed the Atlas so every one of the (then) 80 real routes
  * gets a genuine computeRouteIntelligenceLevel() grade — but that grade was
  * only ever visible on the homepage Atlas. An audit of the three other
  * public journeys a visitor actually follows to reach a route
@@ -50,7 +50,7 @@ describe('Shared display adapter (lib/route-intelligence-display.ts) reuses the 
   });
 });
 
-describe('Surface 1 — /routes card catalogue shows Route Intelligence for every one of the 80 routes', () => {
+describe('Surface 1 — /routes card catalogue shows Route Intelligence for every one of the 88 routes', () => {
   const countryGroups = buildRouteCountryGroups(routes, NOW_ISO, routeStatusEvents);
   const allCards = countryGroups.flatMap((g) => g.routes);
   const catalogueSrc = readFileSync(join(process.cwd(), 'components/routes/routes-catalogue.tsx'), 'utf8');
@@ -95,7 +95,7 @@ describe('Surface 2 — destination page flight-guide cards show Route Intellige
     }
   });
 
-  it('every one of the 80 real routes is reachable through its own destination\'s flight-guide entries with a non-null intelligence value', () => {
+  it('every one of the 88 real routes is reachable through its own destination\'s flight-guide entries with a non-null intelligence value', () => {
     const missing: string[] = [];
     for (const route of routes) {
       const destination = destinations.find((d) => d.slug === route.destinationSlug);
@@ -140,19 +140,19 @@ describe('Surface 3 — every individual route page shows its own Route Intellig
   });
 });
 
-describe('Sanity — the real, complete distribution is identical across all three surfaces and the Atlas (10 Strong / 70 Useful / 0 Expanding)', () => {
+describe('Sanity — the real, complete distribution is identical across all three surfaces and the Atlas (10 Strong / 78 Useful / 0 Expanding, after the Final Route-Guide Completion batch\'s two evidence passes added 8 Useful-graded routes)', () => {
   it('matches on /routes', () => {
     const countryGroups = buildRouteCountryGroups(routes, NOW_ISO, routeStatusEvents);
     const counts = { strong: 0, useful: 0, expanding: 0 };
     for (const group of countryGroups) {
       for (const card of group.routes) counts[card.intelligence.level]++;
     }
-    expect(counts).toEqual({ strong: 10, useful: 70, expanding: 0 });
+    expect(counts).toEqual({ strong: 10, useful: 78, expanding: 0 });
   });
 
   it('matches via computeRouteIntelligenceLevel() directly (the shared source of truth every surface calls)', () => {
     const counts = { strong: 0, useful: 0, expanding: 0 };
     for (const route of routes) counts[computeRouteIntelligenceLevel(route, NOW_ISO)]++;
-    expect(counts).toEqual({ strong: 10, useful: 70, expanding: 0 });
+    expect(counts).toEqual({ strong: 10, useful: 78, expanding: 0 });
   });
 });
