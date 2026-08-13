@@ -151,7 +151,7 @@ export const destinations: Destination[] = [
     region: 'india',
     tagline: 'Home of the Golden Temple',
     description:
-      'Amritsar centres on the Harmandir Sahib, the Golden Temple, one of the most significant sites in Sikhism. It\'s the most direct route for UK travellers with Punjabi heritage on either side of the border.',
+      'Amritsar is centred on the Harmandir Sahib, the Golden Temple, and is a destination for Punjabi family, heritage and religious travel. Check the exact airport and service for your dates before booking.',
     bestFor: ['Pilgrimage', 'Family visits', 'Heritage travel'],
     flightTimeFromUK: '9h direct from Birmingham',
     ukAirports: ['birmingham', 'london-gatwick', 'manchester'],
@@ -174,7 +174,7 @@ export const destinations: Destination[] = [
     region: 'india',
     tagline: 'Gujarat\'s commercial capital, on the Sabarmati',
     description:
-      'Ahmedabad pairs Gandhi\'s Sabarmati Ashram with a fast-growing business and textile hub, and is the most direct route from the UK for Gujarati heritage travellers. Air India\'s non-stop Gatwick service makes it a genuine alternative to a Mumbai or Delhi connection.',
+      'Ahmedabad combines Sabarmati Ashram, Gujarati heritage and a large urban centre. Travellers can compare direct and connecting options from the UK rather than assuming one airport is the best fit.',
     bestFor: ['Family visits', 'Heritage travel', 'Business travel'],
     flightTimeFromUK: '9h 40m direct from London Gatwick',
     ukAirports: ['london-gatwick', 'manchester', 'birmingham'],
@@ -235,7 +235,7 @@ export const destinations: Destination[] = [
     region: 'bangladesh',
     tagline: 'Tea gardens and the heartland of the UK\'s Bangladeshi diaspora',
     description:
-      'Sylhet, in Bangladesh\'s hilly north-east, is surrounded by tea estates and holds particular significance for the UK: the great majority of Britain\'s Bangladeshi community trace their roots to this region. It is overwhelmingly a family-visit destination rather than a general holiday one.',
+      'Sylhet is a tea-growing region in north-east Bangladesh with strong links to UK family travel. Family stays can also be combined with time in the city and surrounding tea-growing areas.',
     bestFor: ['Family visits', 'Heritage travel'],
     flightTimeFromUK: 'No current UK service can be confirmed as nonstop — see the route guide for the honest stop pattern.',
     ukAirports: ['manchester', 'london-heathrow'],
@@ -259,7 +259,7 @@ export const destinations: Destination[] = [
     region: 'gulf',
     tagline: 'Skylines, souks and a stopover that became a destination',
     description:
-      'Dubai works as a standalone holiday, a family stopover en route to South Asia, or a long weekend of beach club and old-town contrast. Year-round flights from almost every major UK airport make it the most accessible Gulf city.',
+      'Dubai combines beaches, older districts and a major international airport with a wide range of city-break and stopover options. Check the exact UK airport and dates rather than assuming every airport has the same service.',
     bestFor: ['Family holidays', 'Stopovers', 'Shopping', 'Beach'],
     flightTimeFromUK: '7h direct from most UK airports',
     ukAirports: ['manchester', 'glasgow', 'edinburgh', 'newcastle', 'london-heathrow', 'birmingham', 'london-gatwick'],
@@ -316,7 +316,7 @@ export const destinations: Destination[] = [
     region: 'mediterranean',
     tagline: 'Two continents, one city break',
     description:
-      'Istanbul\'s Hagia Sophia, Grand Bazaar and Bosphorus crossings make it one of the most rewarding short-haul city breaks from the UK, with year-round direct flights from most regional airports.',
+      'Istanbul spans Europe and Asia, with Hagia Sophia, the Grand Bazaar and the Bosphorus central to a city break. Direct service varies by UK airport and season, so check the exact origin and dates.',
     bestFor: ['City breaks', 'Heritage travel'],
     flightTimeFromUK: 'Manchester Airport publishes around 4h 30m; exact flight time varies',
     ukAirports: ['manchester', 'birmingham', 'london-gatwick', 'leeds-bradford'],
@@ -442,7 +442,7 @@ export const destinations: Destination[] = [
     region: 'mediterranean',
     tagline: 'Gaudí, the Mediterranean and Catalan food',
     description:
-      'Barcelona remains the UK\'s most popular year-round European city break, thanks to Gaudí\'s unfinished cathedral, the Gothic Quarter and a beach within walking distance of the centre.',
+      'Barcelona combines Gaudí architecture, the Gothic Quarter, Mediterranean beaches and Catalan food. Check the airport, dates and local travel time for the part of the city or coast you plan to visit.',
     bestFor: ['City breaks', 'Family holidays'],
     flightTimeFromUK: 'Manchester Airport publishes around 2h 30m; exact flight time varies',
     ukAirports: ['manchester', 'birmingham', 'london-gatwick', 'bristol', 'leeds-bradford'],
