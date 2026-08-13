@@ -153,7 +153,7 @@ export default async function RoutePage({ params }: { params: Promise<{ slug: st
   // Fail-closed by construction: null for any route not in booking-providers.ts's
   // dashboard-verified map (the 9 London-origin routes today) — never a generic
   // Trip.com fallback. See getTripComFlightHandoffUrl's doc comment.
-  const tripComUrl = getTripComFlightHandoffUrl(route.slug);
+  const tripComUrl = getTripComFlightHandoffUrl(route.slug, airport.slug, dest.slug);
 
   return (
     <>
