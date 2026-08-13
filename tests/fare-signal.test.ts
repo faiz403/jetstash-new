@@ -7,7 +7,7 @@ import { getTripComRouteUrl } from '@/lib/booking-providers';
 import type { FareObservation } from '@/data/fare-observations';
 import { getPublishableObservationsByRoute } from '@/data/fare-observations';
 import { deals, hasTrackedFare } from '@/data/deals';
-import { deriveFareSignal, getFareSignalForRoute } from '@/lib/fare-signal';
+import { deriveFareSignal, getFareSignalForRoute, shouldShowNoFareFallback } from '@/lib/fare-signal';
 import { FareSignal } from '@/components/route/fare-signal';
 
 const routePageSrc = readFileSync(join(process.cwd(), 'app/routes/[slug]/page.tsx'), 'utf8');
@@ -145,5 +145,31 @@ describe('Fare Signal production coverage counts', () => {
       .filter((route) => getFareSignalForRoute(route.slug, '2026-08-13').state !== 'none')
       .map((route) => route.slug);
     expect(trackedRoutes).toEqual(signalledRoutes);
+  });
+});
+
+describe('Fare Signal and route-page no-fare fallback share one readiness boundary', () => {
+  it('the route page gates NoFareFallback from the shared Fare Signal readiness helper, not Deal-card presence', () => {
+    expect(routePageSrc).toContain('shouldShowNoFareFallback(fareSignal)');
+    expect(routePageSrc).toContain(') : shouldShowNoFareFallback(fareSignal) ?');
+  });
+
+  it('Manchester-Antalya has a current signal and never shows the no-fare fallback', () => {
+    const signal = getFareSignalForRoute('manchester-antalya', '2026-08-13');
+    expect(signal.state).toBe('current');
+    expect(shouldShowNoFareFallback(signal)).toBe(false);
+  });
+
+  it('Heathrow-Mumbai has no current signal and retains the no-fare fallback', () => {
+    const signal = getFareSignalForRoute('london-heathrow-mumbai', '2026-08-13');
+    expect(signal.state).toBe('none');
+    expect(shouldShowNoFareFallback(signal)).toBe(true);
+  });
+
+  it('no route can have a current Fare Signal and a no-fare fallback at the same time', () => {
+    for (const route of routes) {
+      const signal = getFareSignalForRoute(route.slug, '2026-08-13');
+      expect(signal.state === 'current' && shouldShowNoFareFallback(signal), route.slug).toBe(false);
+    }
   });
 });

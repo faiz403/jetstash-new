@@ -90,3 +90,8 @@ export function deriveFareSignal(observations: FareObservation[], nowIso: string
 export function getFareSignalForRoute(routeSlug: string, nowIso: string): FareSignal {
   return deriveFareSignal(getPublishableObservationsByRoute(routeSlug, nowIso), nowIso);
 }
+
+/** A route with any renderable Fare Signal must not show the no-fare fallback. */
+export function shouldShowNoFareFallback(fareSignal: FareSignal): boolean {
+  return fareSignal.state === 'none';
+}
