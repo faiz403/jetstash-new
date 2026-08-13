@@ -35,7 +35,7 @@ export const destinations: Destination[] = [
     region: 'pakistan',
     tagline: 'Mughal heritage and Punjab\'s cultural capital',
     description:
-      'Lahore holds centuries of Mughal architecture, with the Badshahi Mosque, the Fort and the Shalimar Gardens at its heart, and it remains one of South Asia\'s great food cities. For UK families with Punjabi roots, this is often the most important journey of the year.',
+      'Lahore holds centuries of Mughal architecture, with the Badshahi Mosque, Lahore Fort and the Shalimar Gardens at its heart, alongside a distinctive food culture. UK visitors may also be travelling to see family, so check the exact dates and route details before booking.',
     bestFor: ['Family visits', 'Heritage travel', 'Food'],
     flightTimeFromUK: '8h direct from Manchester',
     ukAirports: ['manchester', 'birmingham', 'london-heathrow'],
@@ -128,7 +128,7 @@ export const destinations: Destination[] = [
     region: 'india',
     tagline: 'India\'s coastal commercial and cultural capital',
     description:
-      'Mumbai moves at its own pace: Bollywood, the Gateway of India, and a financial district that never quite sleeps. It\'s a common stopover for travellers connecting south or onward to the Gulf, and now directly reachable from Manchester as well as London.',
+      'Mumbai brings together Bollywood, the Gateway of India and a major financial district on India\'s west coast. Check the exact UK airport, dates and routing before booking.',
     bestFor: ['Business travel', 'City breaks', 'Family visits'],
     flightTimeFromUK: '9h direct from London Heathrow or Manchester',
     ukAirports: ['london-heathrow', 'manchester', 'birmingham'],
@@ -212,7 +212,7 @@ export const destinations: Destination[] = [
     region: 'bangladesh',
     tagline: 'Bangladesh\'s vast, fast-growing capital on the Buriganga',
     description:
-      'Dhaka is Bangladesh\'s capital and by far its largest city — a dense, fast-moving hub of business, government and culture on the Buriganga river. For most UK travellers it is either the destination itself or the gateway for a wider family trip elsewhere in the country.',
+      'Dhaka is Bangladesh\'s capital on the Buriganga, with a dense mix of business, government and culture. It can also be a starting point for family travel elsewhere in the country, so check the onward journey as well as the flight.',
     bestFor: ['Family visits', 'Business travel', 'Heritage travel'],
     flightTimeFromUK: 'No current UK service can be confirmed as nonstop — see the route guide for the honest stop pattern.',
     ukAirports: ['london-heathrow', 'manchester'],
@@ -287,7 +287,7 @@ export const destinations: Destination[] = [
     region: 'gulf',
     tagline: 'The gateway to Makkah',
     description:
-      'Jeddah is the principal arrival point for pilgrims travelling to Makkah for Umrah and Hajj, and increasingly a city break destination in its own right with the restored Al-Balad old town.',
+      'Jeddah is a gateway for journeys to Makkah and also has the restored Al-Balad old town and a Red Sea setting. Check the current entry and travel arrangements for your dates.',
     bestFor: ['Umrah', 'Pilgrimage', 'Heritage travel'],
     flightTimeFromUK: '6h direct from London Heathrow',
     ukAirports: ['london-heathrow', 'manchester', 'birmingham'],
@@ -301,7 +301,7 @@ export const destinations: Destination[] = [
     region: 'gulf',
     tagline: 'The second holiest city in Islam',
     description:
-      'Madinah is most often the second stop on an Umrah itinerary, home to the Prophet\'s Mosque (Al-Masjid an-Nabawi) and a calmer pace than Makkah for pilgrims completing their visit.',
+      'Madinah is home to the Prophet\'s Mosque (Al-Masjid an-Nabawi) and is visited by pilgrims as part of Umrah journeys. Check the current entry and travel arrangements for your dates.',
     bestFor: ['Umrah', 'Pilgrimage'],
     flightTimeFromUK: '6h 15m direct from London Heathrow',
     ukAirports: ['london-heathrow', 'manchester'],
@@ -414,7 +414,7 @@ export const destinations: Destination[] = [
     region: 'north-africa',
     tagline: 'Morocco\'s working capital, and its main flight hub',
     description:
-      'Casablanca is a business and transit city more than a resort. The vast Hassan II Mosque and a faded art-deco centre reward a day or two, but its real role for UK travellers is as Royal Air Maroc\'s hub, and the natural connecting point for the rest of Morocco. Via the Al Boraq high-speed train, it\'s barely two hours from Tangier.',
+      'Casablanca combines the Hassan II Mosque, an art-deco city centre and a transport hub for travel within Morocco. Check the exact flight and any onward connection for your dates.',
     bestFor: ['Business travel', 'Culture'],
     flightTimeFromUK: 'Published duration not confirmed for London Heathrow; check the exact flight for your dates',
     ukAirports: ['london-heathrow'],
@@ -428,7 +428,7 @@ export const destinations: Destination[] = [
     region: 'north-africa',
     tagline: 'Where the Mediterranean meets the Atlantic',
     description:
-      'Tangier has shed its rough-edged reputation for a whitewashed medina, a renewed seafront and a literary history worth chasing through its cafés. Direct UK service is limited, so check current schedules. The Al Boraq high-speed train makes Tangier an easy add-on to a Casablanca or wider Morocco trip.',
+      'Tangier sits near where the Mediterranean meets the Atlantic, with a whitewashed medina, a renewed seafront and a literary history. The Al Boraq high-speed train links Tangier with Casablanca; check current flight and train schedules for your dates.',
     bestFor: ['City breaks', 'Culture'],
     flightTimeFromUK: 'Published duration not confirmed for London Gatwick; check the exact flight for your dates',
     ukAirports: ['london-gatwick'],
@@ -456,7 +456,7 @@ export const destinations: Destination[] = [
     region: 'mediterranean',
     tagline: 'Gateway to the Algarve coastline',
     description:
-      'Faro is the entry point for the Algarve\'s beaches and golf resorts, a reliably mild, family-friendly stretch of coast that runs a long flight season from regional UK airports.',
+      'Faro is the entry point for the Algarve\'s beaches and golf resorts. Check the exact airport, dates and local travel time for the part of the Algarve you plan to visit.',
     bestFor: ['Family holidays', 'Golf', 'Beach'],
     flightTimeFromUK: 'Published duration not confirmed for Bristol; check the exact flight for your dates',
     ukAirports: ['bristol', 'manchester', 'birmingham', 'leeds-bradford', 'london-gatwick'],

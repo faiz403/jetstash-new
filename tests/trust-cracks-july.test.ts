@@ -159,3 +159,41 @@ describe('destination overview trust-fix batch 1 stays within its evidence bound
     }
   });
 });
+
+describe('destination overview trust-fix batch 2 stays within its evidence boundary', () => {
+  const batch = ['lahore', 'mumbai', 'dhaka', 'faro', 'jeddah', 'madinah', 'casablanca', 'tangier'];
+  const banned = /\b(most important|most often|principal arrival point|increasingly|common stopover|most UK travellers|by far its largest|reliably mild|long flight season|reliable winter-sun|under four hours|more than a resort|natural connecting point|barely two hours|easy add-on|shed its rough-edged reputation)\b/i;
+
+  it('uses neutral, destination-specific overview wording for all eight destinations', () => {
+    expect(getDestinationBySlug('lahore')?.description).toBe(
+      "Lahore holds centuries of Mughal architecture, with the Badshahi Mosque, Lahore Fort and the Shalimar Gardens at its heart, alongside a distinctive food culture. UK visitors may also be travelling to see family, so check the exact dates and route details before booking.",
+    );
+    expect(getDestinationBySlug('mumbai')?.description).toBe(
+      "Mumbai brings together Bollywood, the Gateway of India and a major financial district on India's west coast. Check the exact UK airport, dates and routing before booking.",
+    );
+    expect(getDestinationBySlug('dhaka')?.description).toBe(
+      "Dhaka is Bangladesh's capital on the Buriganga, with a dense mix of business, government and culture. It can also be a starting point for family travel elsewhere in the country, so check the onward journey as well as the flight.",
+    );
+    expect(getDestinationBySlug('faro')?.description).toBe(
+      "Faro is the entry point for the Algarve's beaches and golf resorts. Check the exact airport, dates and local travel time for the part of the Algarve you plan to visit.",
+    );
+    expect(getDestinationBySlug('jeddah')?.description).toBe(
+      'Jeddah is a gateway for journeys to Makkah and also has the restored Al-Balad old town and a Red Sea setting. Check the current entry and travel arrangements for your dates.',
+    );
+    expect(getDestinationBySlug('madinah')?.description).toBe(
+      "Madinah is home to the Prophet's Mosque (Al-Masjid an-Nabawi) and is visited by pilgrims as part of Umrah journeys. Check the current entry and travel arrangements for your dates.",
+    );
+    expect(getDestinationBySlug('casablanca')?.description).toBe(
+      'Casablanca combines the Hassan II Mosque, an art-deco city centre and a transport hub for travel within Morocco. Check the exact flight and any onward connection for your dates.',
+    );
+    expect(getDestinationBySlug('tangier')?.description).toBe(
+      'Tangier sits near where the Mediterranean meets the Atlantic, with a whitewashed medina, a renewed seafront and a literary history. The Al Boraq high-speed train links Tangier with Casablanca; check current flight and train schedules for your dates.',
+    );
+  });
+
+  it('does not reintroduce unsupported importance, popularity, demand or service claims', () => {
+    for (const slug of batch) {
+      expect(getDestinationBySlug(slug)?.description).not.toMatch(banned);
+    }
+  });
+});
