@@ -346,13 +346,21 @@ export function aggregateCountryIntelligence(points: DestinationPoint[]): Countr
  * Athens 23.73,37.98; Rome 12.50,41.90; Doha 51.53,25.29; Jeddah
  * 39.19,21.54; Madinah 39.61,24.47.
  *
- * Casablanca and Tangier are real JetStash destinations but are not
- * included here: a dedicated network-evidence audit (2026-07-25, see
- * data/network-evidence.ts) found no Manchester claim for either one in
- * any source, official or otherwise — both are genuinely London-only —
- * so there is no honest way to place them on a Manchester-origin map.
- * Their country, Morocco, still appears here via Marrakech and Agadir,
- * both confirmed Manchester-served by that same audit.
+ * Casablanca and Tangier are real JetStash destinations, each reachable
+ * only from a London airport (Heathrow and Gatwick respectively per
+ * data/routes.ts — neither has a Manchester route, matching the original
+ * 2026-07-25 network-evidence audit finding that found no Manchester claim
+ * for either), so neither appears in Manchester's own network below. Their
+ * points are computed the same regression way as every other destination
+ * here, anchored on this file's own already-verified Marrakech/Agadir pair
+ * (slope: 2.7901 x-units per degree longitude, -3.3223 y-units per degree
+ * latitude — both cross-checked against the Marrakech-Agadir line before
+ * use): Tangier 35.7595,-5.834 → x458.45,y355.84 (used on Gatwick's
+ * network, its only served airport); Casablanca 33.5731,-7.5898 →
+ * x453.55,y363.10 (used on Heathrow's network, its only served airport).
+ * Both land inside this file's own documented Morocco mainland bounding
+ * box (x 437.9-471.9, y 355.4-382.6) — Tangier sits at the box's northern
+ * edge, consistent with its real position on the Strait of Gibraltar.
  */
 
 // This function is the ENTIRE Manchester-specific part of the Atlas engine
@@ -407,40 +415,45 @@ function buildManchesterNetwork(): AirportNetworkData {
     buildDestinationPoint('manchester', 'madinah', 586.05, 391.24),
   ].filter((p): p is DestinationPoint => p !== null);
 
-  // Turkey, Morocco (excl. Casablanca/Tangier), Spain, Portugal, Greece and
-  // Italy have no Route Status ledger entry yet — but they DO have real
-  // network evidence (data/network-evidence.ts, audited 2026-07-25 against
-  // Manchester Airport's own destination pages) confirming Manchester
-  // reachability, which is why they're included here at all. Route
-  // intelligence and network membership are deliberately different
-  // questions — see the DestinationPoint comment in atlas-feel-test.tsx.
+  // Route Intelligence Completion (August 2026): Turkey, Morocco (excl.
+  // Casablanca/Tangier — Manchester has no route to either), Spain,
+  // Portugal, Greece and Italy each gained a real data/routes.ts entry via
+  // the Turkey/Morocco/Europe route-guide batches (12 August 2026) — these
+  // are no longer network-evidence-only destinations, so they now go
+  // through buildDestinationPoint (real computeRouteIntelligenceLevel
+  // grading) rather than buildUntrackedDestinationPoint's hardcoded
+  // 'expanding'. Before this fix, all 11 of these routes had a genuine
+  // route guide but the Atlas silently showed "Intelligence still being
+  // expanded" for every one of them — the exact class of gap
+  // computeRouteIntelligenceLevel was built to report honestly, just never
+  // wired in here after the route guides shipped.
   const turkeyPoints = [
-    buildUntrackedDestinationPoint('manchester', 'istanbul', 557.16, 337.18),
-    buildUntrackedDestinationPoint('manchester', 'antalya', 561.92, 351.8),
-    buildUntrackedDestinationPoint('manchester', 'dalaman', 556.64, 352.48),
-    buildUntrackedDestinationPoint('manchester', 'bodrum', 552.9, 351.34),
-    buildUntrackedDestinationPoint('manchester', 'izmir', 552.1, 346.39),
+    buildDestinationPoint('manchester', 'istanbul', 557.16, 337.18),
+    buildDestinationPoint('manchester', 'antalya', 561.92, 351.8),
+    buildDestinationPoint('manchester', 'dalaman', 556.64, 352.48),
+    buildDestinationPoint('manchester', 'bodrum', 552.9, 351.34),
+    buildDestinationPoint('manchester', 'izmir', 552.1, 346.39),
   ].filter((p): p is DestinationPoint => p !== null);
 
   const moroccoPoints = [
-    buildUntrackedDestinationPoint('manchester', 'marrakech', 452.46, 369.56),
-    buildUntrackedDestinationPoint('manchester', 'agadir', 447.94, 373.58),
+    buildDestinationPoint('manchester', 'marrakech', 452.46, 369.56),
+    buildDestinationPoint('manchester', 'agadir', 447.94, 373.58),
   ].filter((p): p is DestinationPoint => p !== null);
 
   const spainPoints = [
-    buildUntrackedDestinationPoint('manchester', 'barcelona', 480.8, 336.16),
+    buildDestinationPoint('manchester', 'barcelona', 480.8, 336.16),
   ].filter((p): p is DestinationPoint => p !== null);
 
   const portugalPoints = [
-    buildUntrackedDestinationPoint('manchester', 'faro', 452.66, 351.2),
+    buildDestinationPoint('manchester', 'faro', 452.66, 351.2),
   ].filter((p): p is DestinationPoint => p !== null);
 
   const greecePoints = [
-    buildUntrackedDestinationPoint('manchester', 'athens', 542.34, 348.05),
+    buildDestinationPoint('manchester', 'athens', 542.34, 348.05),
   ].filter((p): p is DestinationPoint => p !== null);
 
   const italyPoints = [
-    buildUntrackedDestinationPoint('manchester', 'rome', 510, 330.8),
+    buildDestinationPoint('manchester', 'rome', 510, 330.8),
   ].filter((p): p is DestinationPoint => p !== null);
 
   const countries: CountryData[] = [
@@ -511,29 +524,28 @@ function buildManchesterNetwork(): AirportNetworkData {
 }
 
 /**
- * Birmingham — the first Airport Pack built after Manchester, deliberately
- * scoped to validate the multi-airport architecture rather than to
- * maximise destination count (per the 2026-07-26 network audit,
- * docs/atlas-airport-network-audit.md).
+ * Birmingham — the first Airport Pack built after Manchester, originally
+ * scoped to five destinations to validate the multi-airport architecture
+ * (per the 2026-07-26 network audit, docs/atlas-airport-network-audit.md).
  *
- * Every destination below has a real data/routes.ts entry for
- * 'birmingham-<destSlug>' — Amritsar, Lahore, Islamabad, Madinah, Mumbai,
- * the only five Birmingham routes with adequate sourced network evidence
- * per that audit. No network-evidence.ts-only ("route intelligence not yet
- * researched") destinations are included here: those require the same kind
- * of primary-source audit already done for Manchester's secondary
- * destinations (opening Birmingham Airport's own destination pages and
- * reading them directly), which hasn't been done for Birmingham yet — so
- * none are added rather than guessed at. buildDestinationPoint requires no
- * changes to add these; it was already generalised to accept any airport
- * slug when the engine was refactored.
+ * Route Intelligence Completion (August 2026): the Turkey and Morocco
+ * route-guide batches (12 August 2026) added real data/routes.ts entries
+ * for Birmingham–Istanbul/Antalya/Dalaman/Bodrum/Agadir, and the Europe
+ * batch added Barcelona/Faro/Athens/Rome — none of these nine were ever
+ * wired into this function, so all nine had a genuine route guide with zero
+ * Atlas presence at all (not even the honest "expanding" state — simply
+ * absent). Added below using the same buildDestinationPoint mechanism as
+ * the original five; no new evidence was researched, this only wires up
+ * evidence that already existed. Birmingham has no Marrakech or Tangier
+ * route, so Morocco appears here via Agadir only.
  *
  * Destination and country coordinates are real geography, not re-derived —
  * a city's position on this map does not depend on which airport you fly
- * from, so Amritsar, Lahore, Islamabad, Madinah and Mumbai reuse the exact
- * same real, point-in-polygon-verified positions already established for
- * Manchester's network. Only the origin (Birmingham Airport's own real
- * position) is new.
+ * from, so every destination below reuses the exact same real,
+ * point-in-polygon-verified (or, for the newer batch, regression-derived —
+ * see the big geometry comment above buildManchesterNetwork) positions
+ * already established elsewhere in this file. Only the origin (Birmingham
+ * Airport's own real position) is airport-specific.
  */
 function buildBirminghamNetwork(): AirportNetworkData {
   // Birmingham Airport (BHX): 52.4539Â°N, 1.7480Â°W — standard, publicly
@@ -557,10 +569,43 @@ function buildBirminghamNetwork(): AirportNetworkData {
     buildDestinationPoint('birmingham', 'madinah', 586.05, 391.24),
   ].filter((p): p is DestinationPoint => p !== null);
 
+  const turkeyPoints = [
+    buildDestinationPoint('birmingham', 'istanbul', 557.16, 337.18),
+    buildDestinationPoint('birmingham', 'antalya', 561.92, 351.8),
+    buildDestinationPoint('birmingham', 'dalaman', 556.64, 352.48),
+    buildDestinationPoint('birmingham', 'bodrum', 552.9, 351.34),
+  ].filter((p): p is DestinationPoint => p !== null);
+
+  const moroccoPoints = [
+    buildDestinationPoint('birmingham', 'agadir', 447.94, 373.58),
+  ].filter((p): p is DestinationPoint => p !== null);
+
+  const spainPoints = [
+    buildDestinationPoint('birmingham', 'barcelona', 480.8, 336.16),
+  ].filter((p): p is DestinationPoint => p !== null);
+
+  const portugalPoints = [
+    buildDestinationPoint('birmingham', 'faro', 452.66, 351.2),
+  ].filter((p): p is DestinationPoint => p !== null);
+
+  const greecePoints = [
+    buildDestinationPoint('birmingham', 'athens', 542.34, 348.05),
+  ].filter((p): p is DestinationPoint => p !== null);
+
+  const italyPoints = [
+    buildDestinationPoint('birmingham', 'rome', 510, 330.8),
+  ].filter((p): p is DestinationPoint => p !== null);
+
   const countries: CountryData[] = [
     { slug: 'india', label: 'India', x: 722, y: 400, intelligenceLevel: aggregateCountryIntelligence(indiaPoints), destinations: indiaPoints },
     { slug: 'pakistan', label: 'Pakistan', x: 687.71, y: 357.09, intelligenceLevel: aggregateCountryIntelligence(pakistanPoints), destinations: pakistanPoints },
     { slug: 'saudi-arabia', label: 'Saudi Arabia', x: 602.66, y: 395.32, intelligenceLevel: aggregateCountryIntelligence(saudiPoints), destinations: saudiPoints },
+    { slug: 'turkey', label: 'Turkey', x: 575.31, y: 345.75, intelligenceLevel: aggregateCountryIntelligence(turkeyPoints), destinations: turkeyPoints },
+    { slug: 'morocco', label: 'Morocco', x: 459.51, y: 369.31, intelligenceLevel: aggregateCountryIntelligence(moroccoPoints), destinations: moroccoPoints },
+    { slug: 'spain', label: 'Spain', x: 464.61, y: 338.83, intelligenceLevel: aggregateCountryIntelligence(spainPoints), destinations: spainPoints },
+    { slug: 'portugal', label: 'Portugal', x: 452.75, y: 341.03, intelligenceLevel: aggregateCountryIntelligence(portugalPoints), destinations: portugalPoints },
+    { slug: 'greece', label: 'Greece', x: 541.77, y: 343.4, intelligenceLevel: aggregateCountryIntelligence(greecePoints), destinations: greecePoints },
+    { slug: 'italy', label: 'Italy', x: 508.35, y: 326.2, intelligenceLevel: aggregateCountryIntelligence(italyPoints), destinations: italyPoints },
   ].filter((c) => c.destinations.length > 0);
 
   return {
@@ -573,10 +618,15 @@ function buildBirminghamNetwork(): AirportNetworkData {
 }
 
 /**
- * London Heathrow - 7 routes.ts entries (bengaluru, delhi, doha, jeddah,
- * mumbai, dhaka, sylhet), the full set with adequate sourced network
- * evidence per the 2026-07-26 audit plus the 2026-07-30 Bengaluru and
- * Bangladesh additions. london-heathrow-dhaka and london-heathrow-sylhet are
+ * London Heathrow - 8 routes.ts entries (bengaluru, delhi, doha, jeddah,
+ * mumbai, dhaka, sylhet, casablanca), the full set with adequate sourced
+ * network evidence per the 2026-07-26 audit plus the 2026-07-30 Bengaluru
+ * and Bangladesh additions, plus Casablanca from the 12 August 2026 Morocco
+ * route-guide batch (Route Intelligence Completion, August 2026 — wired in
+ * here, having had a real route guide with zero Atlas presence). Casablanca
+ * is Heathrow's only Morocco route — Marrakech/Agadir/Tangier are all
+ * London Gatwick or Manchester routes, not Heathrow's.
+ * london-heathrow-dhaka and london-heathrow-sylhet are
  * both Verification Pending: Heathrow's own live flight-tracking pages
  * confirm named flights BG201/BG202 (Dhaka-London) currently operate, and
  * independent flight-schedule sources consistently describe that same
@@ -586,8 +636,8 @@ function buildBirminghamNetwork(): AirportNetworkData {
  * here. (An earlier version of this comment stated "zero evidence" for
  * Sylhet from Heathrow - corrected 2026-07-30 per a founder-directed
  * recheck; the real signal was there, just not primary-source-confirmed.)
- * No Lahore/Karachi/Dubai/Madinah/Casablanca - all real Heathrow
- * destinations, none with a routes.ts entry, so none included.
+ * No Lahore/Karachi/Dubai/Madinah - all real Heathrow destinations, none
+ * with a routes.ts entry, so none included.
  */
 function buildHeathrowNetwork(): AirportNetworkData {
   // London Heathrow (LHR): 51.4700Â°N, 0.4543Â°W.
@@ -628,20 +678,35 @@ function buildHeathrowNetwork(): AirportNetworkData {
     buildDestinationPoint('london-heathrow', 'sylhet', 735.75, 398.25),
   ].filter((p): p is DestinationPoint => p !== null);
 
+  // Casablanca 33.5731,-7.5898 -> x453.55,y363.10 — see the geometry
+  // comment above buildManchesterNetwork for the exact regression this was
+  // computed with (anchored on Marrakech/Agadir).
+  const moroccoPoints = [
+    buildDestinationPoint('london-heathrow', 'casablanca', 453.55, 363.1),
+  ].filter((p): p is DestinationPoint => p !== null);
+
   const countries: CountryData[] = [
     { slug: 'india', label: 'India', x: 722, y: 400, intelligenceLevel: aggregateCountryIntelligence(indiaPoints), destinations: indiaPoints },
     { slug: 'qatar', label: 'Qatar', x: 618.56, y: 390.2, intelligenceLevel: aggregateCountryIntelligence(qatarPoints), destinations: qatarPoints },
     { slug: 'saudi-arabia', label: 'Saudi Arabia', x: 602.66, y: 395.32, intelligenceLevel: aggregateCountryIntelligence(saudiPoints), destinations: saudiPoints },
     { slug: 'bangladesh', label: 'Bangladesh', x: 728.17, y: 394.6, intelligenceLevel: aggregateCountryIntelligence(bangladeshPoints), destinations: bangladeshPoints },
+    { slug: 'morocco', label: 'Morocco', x: 459.51, y: 369.31, intelligenceLevel: aggregateCountryIntelligence(moroccoPoints), destinations: moroccoPoints },
   ].filter((c) => c.destinations.length > 0);
 
   return { airportSlug: 'london-heathrow', airportName: 'London Heathrow', origin, defaultCountrySlug: 'india', countries };
 }
 
 /**
- * London Gatwick — 2 routes.ts entries (ahmedabad, amritsar), the full set
- * with adequate sourced network evidence. One country, two destinations —
- * acceptable per instruction; not padded with unsourced claims.
+ * London Gatwick — originally 2 routes.ts entries (ahmedabad, amritsar).
+ *
+ * Route Intelligence Completion (August 2026): the Turkey, Morocco and
+ * Europe route-guide batches (12 August 2026) added 12 more real
+ * data/routes.ts entries for Gatwick — Istanbul/Antalya/Dalaman/Bodrum/Izmir
+ * (Turkey), Marrakech/Agadir/Tangier (Morocco — Gatwick is the only UK
+ * airport JetStash serves Tangier from), and Barcelona/Faro/Athens/Rome
+ * (Europe) — none were ever wired into this function, so all 12 had a
+ * genuine route guide with zero Atlas presence. Added below using the same
+ * buildDestinationPoint mechanism as the original two.
  */
 function buildGatwickNetwork(): AirportNetworkData {
   // London Gatwick (LGW): 51.1537Â°N, 0.1821Â°W.
@@ -652,17 +717,59 @@ function buildGatwickNetwork(): AirportNetworkData {
     buildDestinationPoint('london-gatwick', 'amritsar', 695, 380),
   ].filter((p): p is DestinationPoint => p !== null);
 
+  const turkeyPoints = [
+    buildDestinationPoint('london-gatwick', 'istanbul', 557.16, 337.18),
+    buildDestinationPoint('london-gatwick', 'antalya', 561.92, 351.8),
+    buildDestinationPoint('london-gatwick', 'dalaman', 556.64, 352.48),
+    buildDestinationPoint('london-gatwick', 'bodrum', 552.9, 351.34),
+    buildDestinationPoint('london-gatwick', 'izmir', 552.1, 346.39),
+  ].filter((p): p is DestinationPoint => p !== null);
+
+  // Tangier 35.7595,-5.834 -> x458.45,y355.84 — see the geometry comment
+  // above buildManchesterNetwork for the regression this was computed with.
+  const moroccoPoints = [
+    buildDestinationPoint('london-gatwick', 'marrakech', 452.46, 369.56),
+    buildDestinationPoint('london-gatwick', 'agadir', 447.94, 373.58),
+    buildDestinationPoint('london-gatwick', 'tangier', 458.45, 355.84),
+  ].filter((p): p is DestinationPoint => p !== null);
+
+  const spainPoints = [
+    buildDestinationPoint('london-gatwick', 'barcelona', 480.8, 336.16),
+  ].filter((p): p is DestinationPoint => p !== null);
+
+  const portugalPoints = [
+    buildDestinationPoint('london-gatwick', 'faro', 452.66, 351.2),
+  ].filter((p): p is DestinationPoint => p !== null);
+
+  const greecePoints = [
+    buildDestinationPoint('london-gatwick', 'athens', 542.34, 348.05),
+  ].filter((p): p is DestinationPoint => p !== null);
+
+  const italyPoints = [
+    buildDestinationPoint('london-gatwick', 'rome', 510, 330.8),
+  ].filter((p): p is DestinationPoint => p !== null);
+
   const countries: CountryData[] = [
     { slug: 'india', label: 'India', x: 722, y: 400, intelligenceLevel: aggregateCountryIntelligence(indiaPoints), destinations: indiaPoints },
+    { slug: 'turkey', label: 'Turkey', x: 575.31, y: 345.75, intelligenceLevel: aggregateCountryIntelligence(turkeyPoints), destinations: turkeyPoints },
+    { slug: 'morocco', label: 'Morocco', x: 459.51, y: 369.31, intelligenceLevel: aggregateCountryIntelligence(moroccoPoints), destinations: moroccoPoints },
+    { slug: 'spain', label: 'Spain', x: 464.61, y: 338.83, intelligenceLevel: aggregateCountryIntelligence(spainPoints), destinations: spainPoints },
+    { slug: 'portugal', label: 'Portugal', x: 452.75, y: 341.03, intelligenceLevel: aggregateCountryIntelligence(portugalPoints), destinations: portugalPoints },
+    { slug: 'greece', label: 'Greece', x: 541.77, y: 343.4, intelligenceLevel: aggregateCountryIntelligence(greecePoints), destinations: greecePoints },
+    { slug: 'italy', label: 'Italy', x: 508.35, y: 326.2, intelligenceLevel: aggregateCountryIntelligence(italyPoints), destinations: italyPoints },
   ].filter((c) => c.destinations.length > 0);
 
   return { airportSlug: 'london-gatwick', airportName: 'London Gatwick', origin, defaultCountrySlug: 'india', countries };
 }
 
 /**
- * Glasgow — exactly one routes.ts entry (dubai). A single-country,
- * single-destination network is the honest shape of Glasgow's currently
- * evidenced network; not expanded to look fuller.
+ * Glasgow — originally exactly one routes.ts entry (dubai).
+ *
+ * Route Intelligence Completion (August 2026): the Turkey route-guide batch
+ * (12 August 2026) added three real data/routes.ts entries for Glasgow —
+ * Antalya, Dalaman, Bodrum — never wired into this function, so all three
+ * had a genuine route guide with zero Atlas presence. Added below using the
+ * same buildDestinationPoint mechanism as the original Dubai entry.
  */
 function buildGlasgowNetwork(): AirportNetworkData {
   // Glasgow Airport (GLA): 55.8642Â°N, 4.4331Â°W.
@@ -672,8 +779,15 @@ function buildGlasgowNetwork(): AirportNetworkData {
     buildDestinationPoint('glasgow', 'dubai', 630, 391),
   ].filter((p): p is DestinationPoint => p !== null);
 
+  const turkeyPoints = [
+    buildDestinationPoint('glasgow', 'antalya', 561.92, 351.8),
+    buildDestinationPoint('glasgow', 'dalaman', 556.64, 352.48),
+    buildDestinationPoint('glasgow', 'bodrum', 552.9, 351.34),
+  ].filter((p): p is DestinationPoint => p !== null);
+
   const countries: CountryData[] = [
     { slug: 'uae', label: 'United Arab Emirates', x: 628, y: 394, intelligenceLevel: aggregateCountryIntelligence(uaePoints), destinations: uaePoints },
+    { slug: 'turkey', label: 'Turkey', x: 575.31, y: 345.75, intelligenceLevel: aggregateCountryIntelligence(turkeyPoints), destinations: turkeyPoints },
   ].filter((c) => c.destinations.length > 0);
 
   return { airportSlug: 'glasgow', airportName: 'Glasgow', origin, defaultCountrySlug: 'uae', countries };
@@ -695,7 +809,13 @@ function buildEdinburghNetwork(): AirportNetworkData {
   return { airportSlug: 'edinburgh', airportName: 'Edinburgh', origin, defaultCountrySlug: 'uae', countries };
 }
 
-/** Newcastle — exactly one routes.ts entry (dubai), same shape again. */
+/**
+ * Newcastle — originally exactly one routes.ts entry (dubai).
+ *
+ * Route Intelligence Completion (August 2026): the Turkey route-guide batch
+ * (12 August 2026) added one real data/routes.ts entry for Newcastle —
+ * Dalaman, its only Turkey route — never wired into this function.
+ */
 function buildNewcastleNetwork(): AirportNetworkData {
   // Newcastle International Airport (NCL): 55.0375Â°N, 1.6917Â°W.
   const origin = { x: 473.7, y: 280.0 };
@@ -704,21 +824,34 @@ function buildNewcastleNetwork(): AirportNetworkData {
     buildDestinationPoint('newcastle', 'dubai', 630, 391),
   ].filter((p): p is DestinationPoint => p !== null);
 
+  const turkeyPoints = [
+    buildDestinationPoint('newcastle', 'dalaman', 556.64, 352.48),
+  ].filter((p): p is DestinationPoint => p !== null);
+
   const countries: CountryData[] = [
     { slug: 'uae', label: 'United Arab Emirates', x: 628, y: 394, intelligenceLevel: aggregateCountryIntelligence(uaePoints), destinations: uaePoints },
+    { slug: 'turkey', label: 'Turkey', x: 575.31, y: 345.75, intelligenceLevel: aggregateCountryIntelligence(turkeyPoints), destinations: turkeyPoints },
   ].filter((c) => c.destinations.length > 0);
 
   return { airportSlug: 'newcastle', airportName: 'Newcastle', origin, defaultCountrySlug: 'uae', countries };
 }
 
 /**
- * Leeds Bradford — 2 routes.ts entries (amritsar, islamabad), both
- * genuinely researched as `isDirect: false` — Leeds Bradford has no stable
- * direct service to either, per airports.ts's own standing caution about
- * unproven direct-service claims on this airport. The honest network here
- * is two connecting-only destinations across two countries; the panel's
- * verdict text reflects that automatically via the isDirect-aware fix in
+ * Leeds Bradford — originally 2 routes.ts entries (amritsar, islamabad),
+ * both genuinely researched as `isDirect: false` — Leeds Bradford has no
+ * stable direct service to either, per airports.ts's own standing caution
+ * about unproven direct-service claims on this airport. The panel's verdict
+ * text reflects that automatically via the isDirect-aware fix in
  * buildDestinationPoint, no special-casing required.
+ *
+ * Route Intelligence Completion (August 2026): the Turkey and Europe
+ * route-guide batches (12 August 2026) added five real data/routes.ts
+ * entries for Leeds Bradford — Antalya/Dalaman/Bodrum (Turkey, all
+ * genuinely `isDirect: true` per Leeds Bradford Airport's own destinations
+ * directory, unlike the original two connecting-only routes above) and
+ * Barcelona/Faro (Europe) — never wired into this function, so all five had
+ * a genuine route guide with zero Atlas presence. Leeds Bradford has no
+ * Morocco, Greece or Italy route.
  */
 function buildLeedsBradfordNetwork(): AirportNetworkData {
   // Leeds Bradford Airport (LBA): 53.8659Â°N, 1.6606Â°W.
@@ -732,28 +865,97 @@ function buildLeedsBradfordNetwork(): AirportNetworkData {
     buildDestinationPoint('leeds-bradford', 'islamabad', 689.74, 355.52),
   ].filter((p): p is DestinationPoint => p !== null);
 
+  const turkeyPoints = [
+    buildDestinationPoint('leeds-bradford', 'antalya', 561.92, 351.8),
+    buildDestinationPoint('leeds-bradford', 'dalaman', 556.64, 352.48),
+    buildDestinationPoint('leeds-bradford', 'bodrum', 552.9, 351.34),
+  ].filter((p): p is DestinationPoint => p !== null);
+
+  const spainPoints = [
+    buildDestinationPoint('leeds-bradford', 'barcelona', 480.8, 336.16),
+  ].filter((p): p is DestinationPoint => p !== null);
+
+  const portugalPoints = [
+    buildDestinationPoint('leeds-bradford', 'faro', 452.66, 351.2),
+  ].filter((p): p is DestinationPoint => p !== null);
+
   const countries: CountryData[] = [
     { slug: 'india', label: 'India', x: 722, y: 400, intelligenceLevel: aggregateCountryIntelligence(indiaPoints), destinations: indiaPoints },
     { slug: 'pakistan', label: 'Pakistan', x: 687.71, y: 357.09, intelligenceLevel: aggregateCountryIntelligence(pakistanPoints), destinations: pakistanPoints },
+    { slug: 'turkey', label: 'Turkey', x: 575.31, y: 345.75, intelligenceLevel: aggregateCountryIntelligence(turkeyPoints), destinations: turkeyPoints },
+    { slug: 'spain', label: 'Spain', x: 464.61, y: 338.83, intelligenceLevel: aggregateCountryIntelligence(spainPoints), destinations: spainPoints },
+    { slug: 'portugal', label: 'Portugal', x: 452.75, y: 341.03, intelligenceLevel: aggregateCountryIntelligence(portugalPoints), destinations: portugalPoints },
   ].filter((c) => c.destinations.length > 0);
 
   return { airportSlug: 'leeds-bradford', airportName: 'Leeds Bradford', origin, defaultCountrySlug: 'india', countries };
 }
 
+/**
+ * Bristol — Route Intelligence Completion (August 2026). Bristol had zero
+ * Atlas presence at all (no build function existed) despite the Turkey,
+ * Morocco and Europe route-guide batches (12 August 2026) giving it 6 real
+ * data/routes.ts entries — Antalya, Dalaman (Turkey), Marrakech (Morocco)
+ * and Barcelona, Faro, Rome (Europe), all genuinely `isDirect: true` per
+ * Bristol Airport's own current destination pages. This is a brand-new
+ * build function, not a fix to an existing one — the original 2026-07-26
+ * network audit correctly found zero Bristol routes.ts entries at the time
+ * and correctly left it out; that's no longer true, so it's added the same
+ * way every other airport in this file was: real routes.ts entries only,
+ * real geometry reused from the destinations already plotted elsewhere in
+ * this file. Bristol has no Istanbul, Bodrum, Izmir, Agadir, Tangier, Athens
+ * or Casablanca route — Turkey appears via Antalya/Dalaman only, Morocco via
+ * Marrakech only, and there is no Greece destination at all.
+ */
+function buildBristolNetwork(): AirportNetworkData {
+  // Bristol Airport (BRS): 51.3827Â°N, 2.7191Â°W.
+  const origin = { x: 465.9, y: 302.4 };
+
+  const turkeyPoints = [
+    buildDestinationPoint('bristol', 'antalya', 561.92, 351.8),
+    buildDestinationPoint('bristol', 'dalaman', 556.64, 352.48),
+  ].filter((p): p is DestinationPoint => p !== null);
+
+  const moroccoPoints = [
+    buildDestinationPoint('bristol', 'marrakech', 452.46, 369.56),
+  ].filter((p): p is DestinationPoint => p !== null);
+
+  const spainPoints = [
+    buildDestinationPoint('bristol', 'barcelona', 480.8, 336.16),
+  ].filter((p): p is DestinationPoint => p !== null);
+
+  const portugalPoints = [
+    buildDestinationPoint('bristol', 'faro', 452.66, 351.2),
+  ].filter((p): p is DestinationPoint => p !== null);
+
+  const italyPoints = [
+    buildDestinationPoint('bristol', 'rome', 510, 330.8),
+  ].filter((p): p is DestinationPoint => p !== null);
+
+  const countries: CountryData[] = [
+    { slug: 'turkey', label: 'Turkey', x: 575.31, y: 345.75, intelligenceLevel: aggregateCountryIntelligence(turkeyPoints), destinations: turkeyPoints },
+    { slug: 'morocco', label: 'Morocco', x: 459.51, y: 369.31, intelligenceLevel: aggregateCountryIntelligence(moroccoPoints), destinations: moroccoPoints },
+    { slug: 'spain', label: 'Spain', x: 464.61, y: 338.83, intelligenceLevel: aggregateCountryIntelligence(spainPoints), destinations: spainPoints },
+    { slug: 'portugal', label: 'Portugal', x: 452.75, y: 341.03, intelligenceLevel: aggregateCountryIntelligence(portugalPoints), destinations: portugalPoints },
+    { slug: 'italy', label: 'Italy', x: 508.35, y: 326.2, intelligenceLevel: aggregateCountryIntelligence(italyPoints), destinations: italyPoints },
+  ].filter((c) => c.destinations.length > 0);
+
+  return { airportSlug: 'bristol', airportName: 'Bristol', origin, defaultCountrySlug: 'spain', countries };
+}
+
 // Adding another airport: write a sibling `build<Airport>Network()`
 // function above (same shape as buildManchesterNetwork/
-// buildBirminghamNetwork — a real, audited network-evidence.ts entry per
-// destination, real routes.ts entries where they exist, real geometry from
-// lib/atlas-country-geometry.ts) and push its result into this array.
-// Nothing else changes.
+// buildBirminghamNetwork — real routes.ts entries where they exist, real
+// geometry from lib/atlas-country-geometry.ts) and push its result into
+// this array. Nothing else changes.
 //
-// Bristol, Liverpool and East Midlands are deliberately absent: none has a
-// single routes.ts entry for any destination (confirmed in the 2026-07-26
-// audit) — Bristol was named alongside this batch, but the same "only
-// build from destinations that already have approved Route Status
-// records" rule that excludes Liverpool/East Midlands applies to it too.
-// An Airport Pack with zero destinations isn't a smaller honest network,
-// it's nothing to render — flagged back rather than built empty.
+// Liverpool and East Midlands are deliberately absent: neither has a single
+// routes.ts entry for any destination (reconfirmed against the current
+// 80-route catalogue during Route Intelligence Completion, August 2026) —
+// the same "only build from destinations that already have a real route
+// guide" rule that used to also exclude Bristol (now added above, since
+// Bristol gained real routes.ts entries the 2026-07-26 audit predates). An
+// Airport Pack with zero destinations isn't a smaller honest network, it's
+// nothing to render — flagged back rather than built empty.
 export function buildAtlasAirports(): AirportNetworkData[] {
   return [
     buildManchesterNetwork(),
@@ -764,5 +966,6 @@ export function buildAtlasAirports(): AirportNetworkData[] {
     buildEdinburghNetwork(),
     buildNewcastleNetwork(),
     buildLeedsBradfordNetwork(),
+    buildBristolNetwork(),
   ];
 }

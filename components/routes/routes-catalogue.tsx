@@ -292,6 +292,17 @@ function RouteCard({ route }: { route: RouteCardData }) {
           <span className="inline-block text-brass-500 transition-transform duration-300 group-hover:translate-x-0.5">→</span> {route.destCity}
         </h3>
         <p className="mt-1.5 text-sm text-ink-500">{route.subLine}</p>
+        {/* Route Intelligence Completion (August 2026, phase 2): a quiet
+            dot + label, deliberately not a second pill next to the
+            direct/connecting badge above — that badge is Route Status
+            (is this route direct?), this is the separate, genuinely
+            different Route Intelligence fact (how much has JetStash
+            researched it?). Matches the Atlas's own compact "destination
+            dot" convention rather than inventing a new visual language. */}
+        <span className="mt-1.5 flex items-center gap-1.5 text-xs text-ink-400">
+          <span className={`inline-block h-1.5 w-1.5 shrink-0 rounded-full ${route.intelligence.dotClassName}`} aria-hidden="true" />
+          {route.intelligence.label}
+        </span>
         <span className="mt-4 flex items-center gap-1.5 text-sm font-semibold text-ink-900 transition-colors group-hover:text-terracotta-600">
           View route guide
           <ArrowUpRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" strokeWidth={2.25} />

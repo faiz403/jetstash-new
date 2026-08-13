@@ -2,6 +2,7 @@ import { routes as defaultRoutes, getRouteAirport, getRouteDestination, type Rou
 import { routeStatusEvents as defaultRouteStatusEvents, type RouteStatusEvent } from '@/data/route-status-events';
 import { getEffectiveRoutePresentation } from '@/lib/route-status-copy';
 import { getAirportImage, getDestinationImage } from '@/lib/brand-images';
+import { getRouteIntelligenceDisplayForRoute, type RouteIntelligenceDisplay } from '@/lib/route-intelligence-display';
 import type { RegionGroup } from '@/data/destinations';
 
 /**
@@ -26,6 +27,17 @@ export interface RouteCardData {
   isDirectStatus: boolean;
   /** Sub-line under the h3: flightTime for direct/connecting routes, statusLabel for pending/ended. */
   subLine: string;
+  /**
+   * Route Intelligence Completion (August 2026, phase 2) — the same
+   * computeRouteIntelligenceLevel() grade the homepage Atlas shows, now
+   * carried onto this card too. Deliberately separate from statusLabel
+   * above: statusLabel answers "is this route direct/connecting/pending"
+   * (Route Status), this answers "how much has JetStash actually
+   * researched this route" (Route Intelligence) — see
+   * lib/route-intelligence-display.ts's doc comment for the full
+   * distinction.
+   */
+  intelligence: RouteIntelligenceDisplay;
   /** Pre-lowercased "country + destination city + origin airport/city + route title" — the exact fields the search box must match. */
   searchIndex: string;
 }
@@ -173,6 +185,7 @@ export function buildRouteCountryGroups(
           statusLabel: presentation.statusLabel,
           isDirectStatus: presentation.status === 'direct',
           subLine,
+          intelligence: getRouteIntelligenceDisplayForRoute(route, nowIso),
           searchIndex: `${dest.country} ${dest.city} ${airport.city} ${airport.name} ${airport.city} to ${dest.city}`.toLowerCase(),
         };
       })

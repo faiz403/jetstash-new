@@ -226,16 +226,40 @@ describe('"Expanding" routes are labelled clearly — never a blank or broken st
   const allDestinations = airports.flatMap((a) => a.countries.flatMap((c) => c.destinations));
   const untracked = allDestinations.filter((d) => d.routeHref === null);
 
-  it('sanity: at least one Atlas destination has no data/routes.ts entry (the network-evidence-only set)', () => {
-    expect(untracked.length).toBeGreaterThan(0);
+  // Route Intelligence Completion (August 2026): before this phase, 48 of
+  // the 80 real data/routes.ts entries had no wiring at all into
+  // buildAtlasAirports()'s per-airport build functions — 11 (all
+  // Manchester's Turkey/Morocco/Europe destinations) were plotted via
+  // buildUntrackedDestinationPoint's hardcoded 'expanding' state despite
+  // having a real, verified route guide, and 37 more (plus an entirely
+  // missing Bristol network) had no Atlas point at all. Every one of those
+  // 48 is now wired to its real routes.ts entry via buildDestinationPoint,
+  // so the honest, CURRENT state is zero untracked Atlas destinations — not
+  // a bug, the intended outcome of closing that gap. This assertion
+  // documents that outcome explicitly (rather than silently allowing it to
+  // drift back) — if a future destination is ever added to
+  // data/network-evidence.ts ahead of its own route guide, this number
+  // will correctly become nonzero again, and the test below (using a
+  // synthetic fixture, since the real data no longer has an example)
+  // independently proves the 'expanding' labelling itself still renders
+  // correctly whenever that happens.
+  it('sanity: zero Atlas destinations currently lack a data/routes.ts entry — every real route is now wired', () => {
+    expect(untracked.length).toBe(0);
   });
 
-  it('every untracked destination (no routes.ts entry) is graded "expanding" with a real, non-empty verdict — never blank', () => {
+  it('every untracked destination (no routes.ts entry) that DOES occur is graded "expanding" with a real, non-empty verdict — never blank', () => {
     for (const d of untracked) {
       expect(d.intelligenceLevel, d.slug).toBe('expanding');
       expect(d.verdict, d.slug).toBeTruthy();
       expect(d.verdict.length, d.slug).toBeGreaterThan(0);
     }
+  });
+
+  it('the "expanding" labelling itself still renders correctly, proven via a synthetic fixture since real data has no current example', () => {
+    const syntheticExpanding = fixtureDest({ intelligenceLevel: 'expanding', routeHref: null, verdict: 'Route intelligence not yet researched.' });
+    expect(syntheticExpanding.intelligenceLevel).toBe('expanding');
+    expect(syntheticExpanding.routeHref).toBeNull();
+    expect(syntheticExpanding.verdict).toBeTruthy();
   });
 });
 

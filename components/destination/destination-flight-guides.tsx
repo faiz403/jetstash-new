@@ -67,6 +67,21 @@ export function DestinationFlightGuides({ destination, nowIso }: DestinationFlig
                   </h4>
                   <p className="mt-1 text-xs text-ink-500">{routeStatusLabel(entry.routeStatus)}</p>
                   <p className="mt-1 text-xs leading-relaxed text-ink-500">{fareStatusLabel(entry)}</p>
+                  {/* Route Intelligence Completion (August 2026, phase 2):
+                      a quiet dot + label alongside the two existing lines
+                      above — routeStatusLabel answers "is this route
+                      direct/connecting", this answers the separate "how
+                      much has JetStash researched it" question. entry.intelligence
+                      is only ever null when routeStatus is also null (no
+                      route guide at all), a case this branch never renders
+                      in (see the `guides` filter above), so the fallback
+                      is unreachable in practice but kept for type safety. */}
+                  {entry.intelligence && (
+                    <p className="mt-1 flex items-center gap-1.5 text-xs text-ink-400">
+                      <span className={`inline-block h-1.5 w-1.5 shrink-0 rounded-full ${entry.intelligence.dotClassName}`} aria-hidden="true" />
+                      {entry.intelligence.label}
+                    </p>
+                  )}
                 </div>
               </div>
               <Link

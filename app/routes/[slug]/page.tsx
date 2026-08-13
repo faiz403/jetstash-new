@@ -41,6 +41,7 @@ import { SmartFareComparison } from '@/components/route/smart-fare-comparison';
 import { getSmartFareComparisonForRoute } from '@/lib/smart-fare-route-adapter';
 import { FareSignal } from '@/components/route/fare-signal';
 import { getFareSignalForRoute } from '@/lib/fare-signal';
+import { getRouteIntelligenceDisplayForRoute } from '@/lib/route-intelligence-display';
 
 /**
  * Route-hero focal-position overrides, keyed by destination slug. HeroBackdrop's default
@@ -115,6 +116,13 @@ export default async function RoutePage({ params }: { params: Promise<{ slug: st
   // getEffectiveRoutePresentation's adapter doc comment in data/routes.ts.
   const presentation = getEffectiveRoutePresentation(route, routeStatusEvents, nowIso);
   const presentationAirlines = getAirlinesBySlugs(presentation.airlineSlugs);
+  // Route Intelligence Completion (August 2026, phase 2) — the same
+  // computeRouteIntelligenceLevel() grade the homepage Atlas shows for this
+  // exact route, now shown on its own detail page. Deliberately separate
+  // from presentation.statusLabel below: that answers Route Status (is this
+  // route direct/connecting/pending), this answers the different Route
+  // Intelligence question (how much has JetStash actually researched it).
+  const routeIntelligence = getRouteIntelligenceDisplayForRoute(route, nowIso);
   // Ledger-managed routes only (getRouteStatus returns null otherwise) —
   // the evidence-validated view model behind the Route Status panel below.
   // A previously-verified direct service that has ended, or an announced
@@ -179,13 +187,24 @@ export default async function RoutePage({ params }: { params: Promise<{ slug: st
             <span>/</span>
             <span className="text-ink-200">{dest.city}</span>
           </nav>
-          <div className="stagger-in stagger-1 animate-fade-up">
+          <div className="stagger-in stagger-1 flex animate-fade-up flex-wrap items-center gap-3">
             {/* Presentation-integrity fix: never re-derive label text via a
                 local ternary — presentation.statusLabel is the one canonical
                 label (see RoutePresentationBase's doc comment), so a new
                 status value (e.g. 'service-ended') can never silently fall
                 through to the wrong badge. */}
             <Badge variant="dark">{presentation.statusLabel}</Badge>
+            {/* Route Intelligence Completion (August 2026, phase 2): a
+                quiet dot + label beside the Route Status badge above, never
+                a second Badge component — that would read as two competing
+                pills for what a visitor would reasonably assume is one
+                fact. This is a genuinely separate fact (how much JetStash
+                has researched this route, not whether it's direct), so it
+                gets its own small, quieter treatment instead. */}
+            <span className="flex items-center gap-1.5 text-xs text-ink-300">
+              <span className={`inline-block h-1.5 w-1.5 shrink-0 rounded-full ${routeIntelligence.dotClassName}`} aria-hidden="true" />
+              {routeIntelligence.label}
+            </span>
           </div>
           <h1 className="stagger-in stagger-2 mt-4 animate-fade-up font-display text-4xl leading-[1.05] tracking-tight text-sand-50 sm:text-5xl">
             {airport.city} to {dest.city}
