@@ -3,6 +3,7 @@ import { type Destination } from '@/data/destinations';
 import { getRouteByAirportAndDestination, getRoutesByDestination, type RoutePresentation } from '@/data/routes';
 import { getFareSignalForRoute, type FareSignal } from '@/lib/fare-signal';
 import { getEffectiveRoutePresentation } from '@/lib/route-status-copy';
+import { getRouteIntelligenceDisplayForRoute, type RouteIntelligenceDisplay } from '@/lib/route-intelligence-display';
 import { routeStatusEvents } from '@/data/route-status-events';
 
 export interface DestinationFlightGuideEntry {
@@ -11,6 +12,14 @@ export interface DestinationFlightGuideEntry {
   href: string | null;
   routeStatus: RoutePresentation['status'] | null;
   fareSignal: FareSignal | null;
+  /**
+   * Route Intelligence Completion (August 2026, phase 2) — the same
+   * computeRouteIntelligenceLevel() grade the homepage Atlas shows, carried
+   * onto this destination journey's route cards too. Null exactly when
+   * routeStatus is null (no data/routes.ts entry for this airport pair) —
+   * intelligence can only be computed against a real Route.
+   */
+  intelligence: RouteIntelligenceDisplay | null;
 }
 
 /**
@@ -38,7 +47,7 @@ export function getDestinationFlightGuideEntries(
 
     const route = getRouteByAirportAndDestination(airportSlug, destination.slug);
     if (!route) {
-      entries.push({ airport, routeSlug: null, href: null, routeStatus: null, fareSignal: null });
+      entries.push({ airport, routeSlug: null, href: null, routeStatus: null, fareSignal: null, intelligence: null });
       continue;
     }
 
@@ -48,6 +57,7 @@ export function getDestinationFlightGuideEntries(
       href: `/routes/${route.slug}`,
       routeStatus: getEffectiveRoutePresentation(route, routeStatusEvents, nowIso).status,
       fareSignal: getFareSignalForRoute(route.slug, nowIso),
+      intelligence: getRouteIntelligenceDisplayForRoute(route, nowIso),
     });
   }
 

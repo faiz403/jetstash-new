@@ -1,9 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'fs';
 import { join } from 'path';
-import { buildAtlasAirports } from '@/lib/atlas-network-data';
+import { buildAtlasAirports, computeRouteIntelligenceLevel } from '@/lib/atlas-network-data';
+import { getRouteByAirportAndDestination } from '@/data/routes';
 
 const atlasSrc = readFileSync(join(process.cwd(), 'components/founder/atlas-feel-test.tsx'), 'utf8');
+const NOW_ISO = new Date().toISOString().slice(0, 10);
 
 describe('Route Atlas destination interaction', () => {
   const destinations = buildAtlasAirports().flatMap((airport) =>
@@ -19,7 +21,19 @@ describe('Route Atlas destination interaction', () => {
     for (const slug of ['antalya', 'dalaman']) {
       const destination = turkey.destinations.find((item) => item.slug === slug)!;
       expect(destination.href).toBe(`/destinations/${slug}`);
-      expect(destination.intelligenceLevel).toBe('expanding');
+      // Route Intelligence Completion (August 2026): both routes gained a
+      // real data/routes.ts entry via the 12 August 2026 Turkey route-guide
+      // batch, but the Atlas kept plotting them via
+      // buildUntrackedDestinationPoint's hardcoded 'expanding' state — a
+      // real route guide reading as "not yet researched" on the homepage.
+      // Fixed by wiring both through buildDestinationPoint like every other
+      // tracked route; this test now asserts the real, live-computed grade
+      // (currently 'useful' for both) rather than pinning the stale
+      // pre-fix 'expanding' value as if it were correct.
+      const route = getRouteByAirportAndDestination('manchester', slug)!;
+      expect(destination.intelligenceLevel).toBe(computeRouteIntelligenceLevel(route, NOW_ISO));
+      expect(destination.intelligenceLevel).not.toBe('expanding');
+      expect(destination.routeHref).toBe(`/routes/manchester-${slug}`);
     }
   });
 
