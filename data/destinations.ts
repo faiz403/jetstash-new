@@ -318,7 +318,7 @@ export const destinations: Destination[] = [
     description:
       'Istanbul\'s Hagia Sophia, Grand Bazaar and Bosphorus crossings make it one of the most rewarding short-haul city breaks from the UK, with year-round direct flights from most regional airports.',
     bestFor: ['City breaks', 'Heritage travel'],
-    flightTimeFromUK: '4h direct from Manchester',
+    flightTimeFromUK: 'Manchester Airport publishes around 4h 30m; exact flight time varies',
     ukAirports: ['manchester', 'birmingham', 'london-gatwick', 'leeds-bradford'],
     visaNote: 'No visa required for UK passport holders for stays up to 90 days.',
   },
@@ -360,7 +360,7 @@ export const destinations: Destination[] = [
     description:
       'The Bodrum peninsula is the Aegean counterpoint to Antalya\'s Mediterranean strip: a castle-topped harbour town ringed by beach resorts, lively at Gümbet and quieter out at Yalıkavak and Türkbükü. Manchester Airport\'s destination guide lists flights as summer-only, so check dates against the current schedule.',
     bestFor: ['Beach', 'All-inclusive', 'Couples'],
-    flightTimeFromUK: '4h direct from Manchester',
+    flightTimeFromUK: 'Published timings vary by source; check the exact Manchester flight',
     ukAirports: ['manchester', 'birmingham', 'leeds-bradford', 'london-gatwick', 'glasgow'],
     visaNote: 'No visa required for UK passport holders for stays up to 90 days.',
   },
@@ -388,7 +388,7 @@ export const destinations: Destination[] = [
     description:
       'A short flight delivers an entirely different world: the Jemaa el-Fnaa, the Jardin Majorelle and a medina built for getting pleasantly lost in, with the High Atlas an hour away.',
     bestFor: ['City breaks', 'Culture'],
-    flightTimeFromUK: '3h 30m direct from London Gatwick',
+    flightTimeFromUK: 'Published duration not confirmed for London Gatwick; check the exact flight for your dates',
     ukAirports: ['london-gatwick', 'manchester', 'bristol'],
     visaNote: 'No visa required for UK passport holders for stays up to 90 days.',
   },
@@ -402,7 +402,7 @@ export const destinations: Destination[] = [
     description:
       'Agadir is the reliable winter-sun option under four hours from the UK, with a long crescent beach and a modern, rebuilt city that stays genuinely warm through the months the UK doesn\'t. The souk and the hilltop kasbah ruins add just enough Morocco to a beach week.',
     bestFor: ['Winter sun', 'Beach', 'Family holidays'],
-    flightTimeFromUK: '3h 45m direct from London Gatwick',
+    flightTimeFromUK: 'Published duration not confirmed for London Gatwick; check the exact flight for your dates',
     ukAirports: ['london-gatwick', 'manchester', 'birmingham'],
     visaNote: 'No visa required for UK passport holders for stays up to 90 days.',
   },
@@ -416,7 +416,7 @@ export const destinations: Destination[] = [
     description:
       'Casablanca is a business and transit city more than a resort. The vast Hassan II Mosque and a faded art-deco centre reward a day or two, but its real role for UK travellers is as Royal Air Maroc\'s hub, and the natural connecting point for the rest of Morocco. Via the Al Boraq high-speed train, it\'s barely two hours from Tangier.',
     bestFor: ['Business travel', 'Culture'],
-    flightTimeFromUK: '3h 25m direct from London Heathrow',
+    flightTimeFromUK: 'Published duration not confirmed for London Heathrow; check the exact flight for your dates',
     ukAirports: ['london-heathrow'],
     visaNote: 'No visa required for UK passport holders for stays up to 90 days.',
   },
@@ -430,7 +430,7 @@ export const destinations: Destination[] = [
     description:
       'Tangier has shed its rough-edged reputation for a whitewashed medina, a renewed seafront and a literary history worth chasing through its cafés. Direct UK service is limited, so check current schedules. The Al Boraq high-speed train makes Tangier an easy add-on to a Casablanca or wider Morocco trip.',
     bestFor: ['City breaks', 'Culture'],
-    flightTimeFromUK: '2h 50m direct from London Gatwick',
+    flightTimeFromUK: 'Published duration not confirmed for London Gatwick; check the exact flight for your dates',
     ukAirports: ['london-gatwick'],
     visaNote: 'No visa required for UK passport holders for stays up to 90 days.',
   },
@@ -444,7 +444,7 @@ export const destinations: Destination[] = [
     description:
       'Barcelona remains the UK\'s most popular year-round European city break, thanks to Gaudí\'s unfinished cathedral, the Gothic Quarter and a beach within walking distance of the centre.',
     bestFor: ['City breaks', 'Family holidays'],
-    flightTimeFromUK: '2h 15m direct from Manchester',
+    flightTimeFromUK: 'Manchester Airport publishes around 2h 30m; exact flight time varies',
     ukAirports: ['manchester', 'birmingham', 'london-gatwick', 'bristol', 'leeds-bradford'],
     visaNote: 'No visa required for UK passport holders for stays up to 90 days.',
   },
@@ -458,7 +458,7 @@ export const destinations: Destination[] = [
     description:
       'Faro is the entry point for the Algarve\'s beaches and golf resorts, a reliably mild, family-friendly stretch of coast that runs a long flight season from regional UK airports.',
     bestFor: ['Family holidays', 'Golf', 'Beach'],
-    flightTimeFromUK: '2h 45m direct from Bristol',
+    flightTimeFromUK: 'Published duration not confirmed for Bristol; check the exact flight for your dates',
     ukAirports: ['bristol', 'manchester', 'birmingham', 'leeds-bradford', 'london-gatwick'],
     visaNote: 'No visa required for UK passport holders for stays up to 90 days.',
   },
@@ -472,7 +472,7 @@ export const destinations: Destination[] = [
     description:
       'Athens works as a city break on its own or as the launch point for the Saronic and Cycladic islands. A flight under four hours puts the Acropolis within reach of most of the UK.',
     bestFor: ['City breaks', 'Island hopping'],
-    flightTimeFromUK: '3h 40m direct from Manchester',
+    flightTimeFromUK: 'Manchester Airport publishes around 3h 50m; exact flight time varies',
     ukAirports: ['manchester', 'birmingham', 'london-gatwick', 'glasgow'],
     visaNote: 'No visa required for UK passport holders for stays up to 90 days.',
   },
@@ -486,7 +486,7 @@ export const destinations: Destination[] = [
     description:
       'Rome rewards even a short city break: the Colosseum and Roman Forum in the morning, Vatican City in the afternoon, and a trattoria within walking distance of wherever you end up.',
     bestFor: ['City breaks', 'Heritage travel'],
-    flightTimeFromUK: '2h 35m direct from Manchester',
+    flightTimeFromUK: 'Manchester Airport publishes around 2h 45m; exact flight time varies',
     ukAirports: ['manchester', 'birmingham', 'london-gatwick', 'bristol'],
     visaNote: 'No visa required for UK passport holders for stays up to 90 days.',
   },
