@@ -127,3 +127,35 @@ describe('Turkey leisure-route wording stays within its evidence boundary', () =
     expect(izmir?.description.toLowerCase()).not.toContain('outside the summer schedule most itineraries connect via istanbul');
   });
 });
+
+describe('destination overview trust-fix batch 1 stays within its evidence boundary', () => {
+  const batch = ['barcelona', 'dubai', 'istanbul', 'amritsar', 'ahmedabad', 'sylhet'];
+  const banned = /\b(most popular|most direct|most accessible|most rewarding|leading|top resort|year-round direct|year-round flights|regional airports|great majority|overwhelmingly|high demand|current demand)\b/i;
+
+  it('uses the approved factual overview wording for all six destinations', () => {
+    expect(getDestinationBySlug('barcelona')?.description).toBe(
+      'Barcelona combines Gaudí architecture, the Gothic Quarter, Mediterranean beaches and Catalan food. Check the airport, dates and local travel time for the part of the city or coast you plan to visit.',
+    );
+    expect(getDestinationBySlug('dubai')?.description).toBe(
+      'Dubai combines beaches, older districts and a major international airport with a wide range of city-break and stopover options. Check the exact UK airport and dates rather than assuming every airport has the same service.',
+    );
+    expect(getDestinationBySlug('istanbul')?.description).toBe(
+      'Istanbul spans Europe and Asia, with Hagia Sophia, the Grand Bazaar and the Bosphorus central to a city break. Direct service varies by UK airport and season, so check the exact origin and dates.',
+    );
+    expect(getDestinationBySlug('amritsar')?.description).toBe(
+      'Amritsar is centred on the Harmandir Sahib, the Golden Temple, and is a destination for Punjabi family, heritage and religious travel. Check the exact airport and service for your dates before booking.',
+    );
+    expect(getDestinationBySlug('ahmedabad')?.description).toBe(
+      'Ahmedabad combines Sabarmati Ashram, Gujarati heritage and a large urban centre. Travellers can compare direct and connecting options from the UK rather than assuming one airport is the best fit.',
+    );
+    expect(getDestinationBySlug('sylhet')?.description).toBe(
+      'Sylhet is a tea-growing region in north-east Bangladesh with strong links to UK family travel. Family stays can also be combined with time in the city and surrounding tea-growing areas.',
+    );
+  });
+
+  it('does not reintroduce unsupported comparative, service-certainty or demographic claims', () => {
+    for (const slug of batch) {
+      expect(getDestinationBySlug(slug)?.description).not.toMatch(banned);
+    }
+  });
+});
