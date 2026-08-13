@@ -302,7 +302,7 @@ describe('DEST-001 — Interactive Route Atlas integration', () => {
     // consequence of real evidence, not a forced equalization.
     expect(bengaluru.intelligenceLevel).toBe('strong');
     expect(delhi.intelligenceLevel).toBe('strong');
-    expect(mumbai.intelligenceLevel).toBe('useful');
+    expect(mumbai.intelligenceLevel).toBe('strong');
   });
 
   it('the existing Heathrow India points (Delhi, Mumbai) are still present alongside Bengaluru', () => {

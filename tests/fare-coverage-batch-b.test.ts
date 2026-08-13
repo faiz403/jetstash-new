@@ -175,7 +175,7 @@ describe('Fare Coverage Expansion Batch B — publishability and customer visibi
     }
   });
 
-  it('overall coverage: 47 of 88 routes publishable, with 23 represented by curated tracked-fare cards', () => {
+  it('overall coverage reflects later evidence batches: 59 of 88 routes publishable, with 26 represented by curated tracked-fare cards', () => {
     let publishable = 0;
     let visible = 0;
     for (const route of routes) {
@@ -183,11 +183,11 @@ describe('Fare Coverage Expansion Batch B — publishability and customer visibi
       const deal = deals.find((d) => d.fromAirportSlug === route.airportSlug && d.toDestinationSlug === route.destinationSlug && d.cabin === 'Economy' && !isBundledProductDeal(d));
       if (deal && hasTrackedFare(deal, NOW_ISO)) visible++;
     }
-    expect(publishable).toBe(47);
-    expect(visible).toBe(23);
-    // The 24 remaining routes have valid Fare Signals but no curated Deal
+    expect(publishable).toBe(59);
+    expect(visible).toBe(26);
+    // The 33 remaining routes have valid Fare Signals but no curated Deal
     // card. They are intentionally counted by route-level coverage only.
-    expect(publishable - visible).toBe(24);
+    expect(publishable - visible).toBe(33);
   });
 
   it('London Heathrow-Jeddah remains without a curated card, alongside the later Fare-Signal-only routes', () => {
@@ -226,12 +226,12 @@ describe('Fare Coverage Expansion Batch B — RIS-001 mechanical grade changes',
     }
   });
 
-  it('Gatwick India remains Strong while Heathrow India is Mixed because currency-incomplete Heathrow-Mumbai no longer supplies fare depth', () => {
+  it('Gatwick and Heathrow India are Strong when every destination has sufficient evidenced depth', () => {
     const airports = buildAtlasAirports();
     const heathrow = airports.find((a) => a.airportSlug === 'london-heathrow')!;
     const heathrowIndia = heathrow.countries.find((c) => c.slug === 'india')!;
-    expect(heathrowIndia.intelligenceLevel).toBe('mixed');
-    expect(heathrowIndia.destinations.some((d) => d.intelligenceLevel !== 'strong')).toBe(true);
+    expect(heathrowIndia.intelligenceLevel).toBe('strong');
+    expect(heathrowIndia.destinations.every((d) => d.intelligenceLevel === 'strong')).toBe(true);
 
     const gatwick = airports.find((a) => a.airportSlug === 'london-gatwick')!;
     const gatwickIndia = gatwick.countries.find((c) => c.slug === 'india')!;
