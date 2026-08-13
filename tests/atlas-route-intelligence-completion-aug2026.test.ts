@@ -78,7 +78,7 @@ describe('Every data/routes.ts entry has a tracked Atlas Route Intelligence stat
       const level = trackedBySlug.get(route.slug)?.intelligenceLevel;
       if (level === 'strong' || level === 'useful' || level === 'expanding') counts[level]++;
     }
-    expect(counts).toEqual({ strong: 10, useful: 78, expanding: 0 });
+    expect(counts).toEqual({ strong: 9, useful: 79, expanding: 0 });
   });
 });
 

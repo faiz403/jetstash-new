@@ -320,6 +320,7 @@ describe('Fare-observation publication predicate — pure, synthetic-fixture-tes
       source: 'PIA',
       departureDate: '2026-08-01',
       returnDate: '2026-08-15',
+      currency: 'GBP',
     };
     // Sanity: this fixture genuinely passes the date-completeness gate alone.
     expect(isObservationPublishable(syntheticCompleteObservation, undefined, FIXED_TODAY)).toBe(false); // undefined route also blocked
@@ -338,6 +339,7 @@ describe('Fare-observation publication predicate — pure, synthetic-fixture-tes
       source: 'PIA',
       departureDate: '2026-08-01',
       returnDate: '2026-08-15',
+      currency: 'GBP',
     };
     expect(isObservationPublishable(syntheticCompleteObservation, verifiedRoute, FIXED_TODAY)).toBe(true);
   });

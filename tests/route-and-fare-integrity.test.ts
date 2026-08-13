@@ -72,6 +72,7 @@ describe('Fare-observation completeness gating (TR-002) — Verified Check must 
     price: 500,
     priceNote: 'return, per person',
     source: 'Test Airline',
+    currency: 'GBP',
     departureDate: '2026-08-01',
     returnDate: '2026-08-15',
   };
@@ -92,6 +93,12 @@ describe('Fare-observation completeness gating (TR-002) — Verified Check must 
 
   it('an observation with neither date is not publishable', () => {
     const { departureDate, returnDate, ...rest } = complete;
+    expect(isPubliclyPublishable(rest as FareObservation)).toBe(false);
+  });
+
+  it('an observation without source currency is not publishable', () => {
+    const { currency, ...rest } = complete;
+    expect(currency).toBe('GBP');
     expect(isPubliclyPublishable(rest as FareObservation)).toBe(false);
   });
 
@@ -137,7 +144,6 @@ describe('Deal counts (TR-004) — a card with no tracked fare must not count as
       'bhx-atq-economy',
       'man-dxb-economy',
       'lhr-doh-economy',
-      'lhr-bom-economy',
       'lgw-amd-economy',
       'man-isb-economy',
       'man-del-economy',
@@ -341,7 +347,7 @@ describe('FARE-001 pilot — historic examples stay private; only fully dated, e
 
   it('keeps every historic observation incomplete and private', () => {
     const incomplete = fareObservations.filter((o) => !isPubliclyPublishable(o));
-    expect(incomplete).toHaveLength(18);
+    expect(incomplete).toHaveLength(19);
     for (const o of incomplete) {
       expect(isPubliclyPublishable(o), `observation ${o.id}`).toBe(false);
     }
@@ -350,7 +356,6 @@ describe('FARE-001 pilot — historic examples stay private; only fully dated, e
   it('publishes the exact dated observations from every completed priority-route batch', () => {
     const published = fareObservations.filter(isPubliclyPublishable);
     expect(published.map((o) => o.id)).toEqual([
-      'obs-lhr-bom-economy-2',
       'obs-man-lhe-economy-20260728-8w-v1',
       'obs-man-isb-economy-20260728-8w-v1',
       'obs-lhr-del-economy-20260728-8w-v1',
@@ -396,16 +401,6 @@ describe('FARE-001 pilot — historic examples stay private; only fully dated, e
     ]);
     expect(published).toEqual(expect.arrayContaining([
       expect.objectContaining({
-        id: 'obs-lhr-bom-economy-2',
-        routeSlug: 'london-heathrow-mumbai',
-        cabin: 'Economy',
-        observedDate: '2026-07-24',
-        price: 491,
-        source: 'Virgin Atlantic',
-        departureDate: '2026-09-08',
-        returnDate: '2026-10-01',
-      }),
-      expect.objectContaining({
         id: 'obs-man-lhe-economy-20260728-8w-v1',
         routeSlug: 'manchester-lahore',
         cabin: 'Economy',
@@ -447,16 +442,8 @@ describe('FARE-001 pilot — historic examples stay private; only fully dated, e
     }
   });
 
-  it('derives a one-check £491 summary for London Heathrow–Mumbai, not an invented range', () => {
-    expect(getFareRangeSummary('london-heathrow-mumbai', 'Economy', FIXED_TODAY)).toEqual({
-      count: 1,
-      min: 491,
-      max: 491,
-      earliestDate: '2026-07-24',
-      latestDate: '2026-07-24',
-      sources: ['Virgin Atlantic'],
-      priceNote: 'return, per person, Economy; starting fare',
-    });
+  it('does not derive a public fare summary for London Heathrow–Mumbai without source currency', () => {
+    expect(getFareRangeSummary('london-heathrow-mumbai', 'Economy', FIXED_TODAY)).toBeNull();
   });
 
   it('keeps all other historic-only routes out of public fare output', () => {
