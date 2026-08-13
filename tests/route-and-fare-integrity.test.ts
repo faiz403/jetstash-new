@@ -344,7 +344,7 @@ describe('getDealDirectnessLabel (TR-009, final correction) — a deal/search ca
 
 describe('FARE-001 pilot — historic examples stay private; only fully dated, evidenced observations publish', () => {
   it('keeps historic observations and appends every editorial observation batch, including the 11 August scheduled check', () => {
-    expect(fareObservations).toHaveLength(72);
+    expect(fareObservations).toHaveLength(86);
   });
 
   it('keeps every historic observation incomplete and private', () => {
@@ -413,6 +413,20 @@ describe('FARE-001 pilot — historic examples stay private; only fully dated, e
       'obs-bhx-bod-economy-20260813-8w-v1',
       'obs-lba-ayt-economy-20260813-8w-v1',
       'obs-lba-dlm-economy-20260813-8w-v1',
+      'obs-bhx-del-economy-20260813-8w-v1',
+      'obs-bhx-amd-economy-20260813-8w-v1',
+      'obs-bhx-dxb-economy-20260813-8w-v1',
+      'obs-bhx-doh-economy-20260813-8w-v1',
+      'obs-bhx-jed-economy-20260813-8w-v1',
+      'obs-gla-dxb-economy-20260813-8w-v1',
+      'obs-edi-dxb-economy-20260813-8w-v1',
+      'obs-ncl-dxb-economy-20260813-8w-v1',
+      'obs-brs-fao-economy-20260813-8w-v1',
+      'obs-man-fao-economy-20260813-8w-v1',
+      'obs-bhx-fao-economy-20260813-8w-v1',
+      'obs-lba-fao-economy-20260813-8w-v1',
+      'obs-brs-dlm-economy-20260813-8w-v1',
+      'obs-gla-ayt-economy-20260813-8w-v1',
     ]);
     expect(published).toEqual(expect.arrayContaining([
       expect.objectContaining({

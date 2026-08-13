@@ -121,11 +121,11 @@ describe('Fare Signal presentation and CTA boundaries', () => {
 });
 
 describe('Fare Signal production coverage counts', () => {
-  it('reports 35 routes with a current publishable fare and 53 without one at the current archive date', () => {
+  it('reports 47 routes with a current publishable fare and 41 without one at the current archive date', () => {
     const signals = routes.map((route) => getFareSignalForRoute(route.slug, '2026-08-13'));
-    expect(signals.filter((signal) => signal.state === 'current')).toHaveLength(35);
+    expect(signals.filter((signal) => signal.state === 'current')).toHaveLength(47);
     expect(signals.filter((signal) => signal.state === 'recent')).toHaveLength(0);
-    expect(signals.filter((signal) => signal.state === 'none')).toHaveLength(53);
+    expect(signals.filter((signal) => signal.state === 'none')).toHaveLength(41);
     expect(routes.filter((route) => getTripComRouteUrl(route.slug)).length).toBe(45);
   });
 

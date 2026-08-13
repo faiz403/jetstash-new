@@ -175,7 +175,7 @@ describe('Fare Coverage Expansion Batch B — publishability and customer visibi
     }
   });
 
-  it('overall coverage: 35 of 88 routes publishable, with 23 represented by curated tracked-fare cards', () => {
+  it('overall coverage: 47 of 88 routes publishable, with 23 represented by curated tracked-fare cards', () => {
     let publishable = 0;
     let visible = 0;
     for (const route of routes) {
@@ -183,11 +183,11 @@ describe('Fare Coverage Expansion Batch B — publishability and customer visibi
       const deal = deals.find((d) => d.fromAirportSlug === route.airportSlug && d.toDestinationSlug === route.destinationSlug && d.cabin === 'Economy' && !isBundledProductDeal(d));
       if (deal && hasTrackedFare(deal, NOW_ISO)) visible++;
     }
-    expect(publishable).toBe(35);
+    expect(publishable).toBe(47);
     expect(visible).toBe(23);
-    // The 12 remaining routes have valid Fare Signals but no curated Deal
+    // The 24 remaining routes have valid Fare Signals but no curated Deal
     // card. They are intentionally counted by route-level coverage only.
-    expect(publishable - visible).toBe(12);
+    expect(publishable - visible).toBe(24);
   });
 
   it('London Heathrow-Jeddah remains without a curated card, alongside the later Fare-Signal-only routes', () => {
