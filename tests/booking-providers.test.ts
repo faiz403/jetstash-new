@@ -98,6 +98,24 @@ const UNSUPPORTED_ROUTES = [
   'manchester-rome',
   'birmingham-rome',
   'bristol-rome',
+  // Final Route-Guide Completion batch (13 August 2026): both are
+  // London-origin pairs, so — matching the standing rule — neither gets a
+  // Trip.com handoff (Trip.com's tool has no Heathrow/Gatwick-specific
+  // dateless link for either).
+  'london-heathrow-lahore',
+  'london-gatwick-dubai',
+  // Final Route-Guide Completion, second evidence pass (13 August 2026):
+  // none of these six have a route-level TRIPCOM_ROUTE_URLS entry either —
+  // Birmingham has no dashboard-generated link for any of Dubai/Doha/
+  // Jeddah/Delhi/Ahmedabad, and london-heathrow-dubai is another
+  // London-origin pair with the same standing limitation as
+  // london-heathrow-lahore above.
+  'birmingham-dubai',
+  'birmingham-doha',
+  'birmingham-jeddah',
+  'london-heathrow-dubai',
+  'birmingham-delhi',
+  'birmingham-ahmedabad',
 ];
 
 describe('every current route slug is classified exactly once', () => {
@@ -110,9 +128,9 @@ describe('every current route slug is classified exactly once', () => {
     expect(overlap).toEqual([]);
   });
 
-  it('is exactly 45 supported and 35 unsupported', () => {
+  it('is exactly 45 supported and 43 unsupported (43, not 35/37, after the Final Route-Guide Completion batch\'s two evidence passes added 8 more routes, none with a route-level Trip.com link)', () => {
     expect(SUPPORTED_ROUTES).toHaveLength(45);
-    expect(UNSUPPORTED_ROUTES).toHaveLength(35);
+    expect(UNSUPPORTED_ROUTES).toHaveLength(43);
   });
 });
 

@@ -539,6 +539,18 @@ function buildManchesterNetwork(): AirportNetworkData {
  * evidence that already existed. Birmingham has no Marrakech or Tangier
  * route, so Morocco appears here via Agadir only.
  *
+ * Final Route-Guide Completion, second evidence pass (13 August 2026):
+ * Delhi, Ahmedabad, Dubai, Doha and Jeddah added — each backed by a
+ * Birmingham Airport-own source (its current destination page for Dubai;
+ * its own launch press releases for Doha and Jeddah) reached via
+ * search-indexed content after direct WebFetch to birminghamairport.co.uk
+ * returned 403 across every subdomain — see data/routes.ts's
+ * birmingham-dubai/-doha/-jeddah/-delhi/-ahmedabad records for the full
+ * evidence and, for Delhi specifically, a genuine disclosed conflict this
+ * Atlas entry deliberately does not paper over (computeRouteIntelligenceLevel
+ * still grades it honestly from the 'unverified' status the route record
+ * carries).
+ *
  * Destination and country coordinates are real geography, not re-derived —
  * a city's position on this map does not depend on which airport you fly
  * from, so every destination below reuses the exact same real,
@@ -558,6 +570,13 @@ function buildBirminghamNetwork(): AirportNetworkData {
   const indiaPoints = [
     buildDestinationPoint('birmingham', 'mumbai', 690, 414),
     buildDestinationPoint('birmingham', 'amritsar', 695, 380),
+    // Delhi and Ahmedabad added in the Final Route-Guide Completion
+    // batch's second evidence pass (13 August 2026) — Delhi's Route
+    // Intelligence deliberately reflects a genuine, disclosed evidence
+    // conflict (see data/routes.ts's birmingham-delhi record) rather than
+    // asserting a resolved direct/connecting answer.
+    buildDestinationPoint('birmingham', 'delhi', 701, 388),
+    buildDestinationPoint('birmingham', 'ahmedabad', 690, 403),
   ].filter((p): p is DestinationPoint => p !== null);
 
   const pakistanPoints = [
@@ -565,8 +584,28 @@ function buildBirminghamNetwork(): AirportNetworkData {
     buildDestinationPoint('birmingham', 'islamabad', 689.74, 355.52),
   ].filter((p): p is DestinationPoint => p !== null);
 
+  const uaePoints = [
+    // Birmingham–Dubai added in the Final Route-Guide Completion batch's
+    // second evidence pass (13 August 2026) — Birmingham Airport's own
+    // Dubai destination page, confirmed via search-indexed content after
+    // direct WebFetch to birminghamairport.co.uk returned 403 (see
+    // data/routes.ts's birmingham-dubai record for the full evidence).
+    buildDestinationPoint('birmingham', 'dubai', 630, 391),
+  ].filter((p): p is DestinationPoint => p !== null);
+
+  const qatarPoints = [
+    // Birmingham–Doha added in the same second evidence pass — Birmingham
+    // Airport's own "Qatar Airways Returns to Birmingham Airport" press
+    // release.
+    buildDestinationPoint('birmingham', 'doha', 619.44, 389.82),
+  ].filter((p): p is DestinationPoint => p !== null);
+
   const saudiPoints = [
     buildDestinationPoint('birmingham', 'madinah', 586.05, 391.24),
+    // Jeddah added in the same second evidence pass — Birmingham Airport's
+    // own "Saudia Launches Three-Times-A-Week Jeddah Service from BHX"
+    // press release.
+    buildDestinationPoint('birmingham', 'jeddah', 584.88, 400.03),
   ].filter((p): p is DestinationPoint => p !== null);
 
   const turkeyPoints = [
@@ -599,6 +638,8 @@ function buildBirminghamNetwork(): AirportNetworkData {
   const countries: CountryData[] = [
     { slug: 'india', label: 'India', x: 722, y: 400, intelligenceLevel: aggregateCountryIntelligence(indiaPoints), destinations: indiaPoints },
     { slug: 'pakistan', label: 'Pakistan', x: 687.71, y: 357.09, intelligenceLevel: aggregateCountryIntelligence(pakistanPoints), destinations: pakistanPoints },
+    { slug: 'uae', label: 'United Arab Emirates', x: 628, y: 394, intelligenceLevel: aggregateCountryIntelligence(uaePoints), destinations: uaePoints },
+    { slug: 'qatar', label: 'Qatar', x: 618.56, y: 390.2, intelligenceLevel: aggregateCountryIntelligence(qatarPoints), destinations: qatarPoints },
     { slug: 'saudi-arabia', label: 'Saudi Arabia', x: 602.66, y: 395.32, intelligenceLevel: aggregateCountryIntelligence(saudiPoints), destinations: saudiPoints },
     { slug: 'turkey', label: 'Turkey', x: 575.31, y: 345.75, intelligenceLevel: aggregateCountryIntelligence(turkeyPoints), destinations: turkeyPoints },
     { slug: 'morocco', label: 'Morocco', x: 459.51, y: 369.31, intelligenceLevel: aggregateCountryIntelligence(moroccoPoints), destinations: moroccoPoints },
@@ -636,8 +677,15 @@ function buildBirminghamNetwork(): AirportNetworkData {
  * here. (An earlier version of this comment stated "zero evidence" for
  * Sylhet from Heathrow - corrected 2026-07-30 per a founder-directed
  * recheck; the real signal was there, just not primary-source-confirmed.)
- * No Lahore/Karachi/Dubai/Madinah - all real Heathrow destinations, none
- * with a routes.ts entry, so none included.
+ * Lahore added in the Final Route-Guide Completion batch (13 August 2026) —
+ * verified via Heathrow Airport's own media centre press release. Dubai
+ * added in that same batch's second evidence pass — Heathrow's own live
+ * flight-tracking system indexes multiple current Emirates flight-detail
+ * pages for this pair, reached via search-indexed content after direct
+ * WebFetch returned only a JS shell. Karachi and Madinah remain real
+ * Heathrow destinations with no routes.ts entry — no current, authoritative
+ * evidence was found for either across both evidence passes (see
+ * docs/project-control/ROUTE_COVERAGE.md), so neither is included.
  */
 function buildHeathrowNetwork(): AirportNetworkData {
   // London Heathrow (LHR): 51.4700Â°N, 0.4543Â°W.
@@ -656,6 +704,19 @@ function buildHeathrowNetwork(): AirportNetworkData {
     buildDestinationPoint('london-heathrow', 'bengaluru', 701.9, 430.6),
     buildDestinationPoint('london-heathrow', 'delhi', 701, 388),
     buildDestinationPoint('london-heathrow', 'mumbai', 690, 414),
+  ].filter((p): p is DestinationPoint => p !== null);
+
+  const pakistanPoints = [
+    buildDestinationPoint('london-heathrow', 'lahore', 690.58, 356.42),
+  ].filter((p): p is DestinationPoint => p !== null);
+
+  const uaePoints = [
+    // Heathrow–Dubai added in the Final Route-Guide Completion batch's
+    // second evidence pass (13 August 2026) — Heathrow's own live
+    // flight-tracking system indexes multiple current Emirates
+    // Heathrow-Dubai flight-detail pages (see data/routes.ts's
+    // london-heathrow-dubai record for the full evidence).
+    buildDestinationPoint('london-heathrow', 'dubai', 630, 391),
   ].filter((p): p is DestinationPoint => p !== null);
 
   const qatarPoints = [
@@ -687,6 +748,8 @@ function buildHeathrowNetwork(): AirportNetworkData {
 
   const countries: CountryData[] = [
     { slug: 'india', label: 'India', x: 722, y: 400, intelligenceLevel: aggregateCountryIntelligence(indiaPoints), destinations: indiaPoints },
+    { slug: 'pakistan', label: 'Pakistan', x: 687.71, y: 357.09, intelligenceLevel: aggregateCountryIntelligence(pakistanPoints), destinations: pakistanPoints },
+    { slug: 'uae', label: 'United Arab Emirates', x: 628, y: 394, intelligenceLevel: aggregateCountryIntelligence(uaePoints), destinations: uaePoints },
     { slug: 'qatar', label: 'Qatar', x: 618.56, y: 390.2, intelligenceLevel: aggregateCountryIntelligence(qatarPoints), destinations: qatarPoints },
     { slug: 'saudi-arabia', label: 'Saudi Arabia', x: 602.66, y: 395.32, intelligenceLevel: aggregateCountryIntelligence(saudiPoints), destinations: saudiPoints },
     { slug: 'bangladesh', label: 'Bangladesh', x: 728.17, y: 394.6, intelligenceLevel: aggregateCountryIntelligence(bangladeshPoints), destinations: bangladeshPoints },
@@ -707,6 +770,10 @@ function buildHeathrowNetwork(): AirportNetworkData {
  * (Europe) — none were ever wired into this function, so all 12 had a
  * genuine route guide with zero Atlas presence. Added below using the same
  * buildDestinationPoint mechanism as the original two.
+ *
+ * Dubai added in the Final Route-Guide Completion batch (13 August 2026) —
+ * verified via Gatwick's own destinations.html page ("Dubai, UAE... 7-8
+ * hours flight time... Serviced by Emirates").
  */
 function buildGatwickNetwork(): AirportNetworkData {
   // London Gatwick (LGW): 51.1537Â°N, 0.1821Â°W.
@@ -715,6 +782,10 @@ function buildGatwickNetwork(): AirportNetworkData {
   const indiaPoints = [
     buildDestinationPoint('london-gatwick', 'ahmedabad', 690, 403),
     buildDestinationPoint('london-gatwick', 'amritsar', 695, 380),
+  ].filter((p): p is DestinationPoint => p !== null);
+
+  const uaePoints = [
+    buildDestinationPoint('london-gatwick', 'dubai', 630, 391),
   ].filter((p): p is DestinationPoint => p !== null);
 
   const turkeyPoints = [
@@ -751,6 +822,7 @@ function buildGatwickNetwork(): AirportNetworkData {
 
   const countries: CountryData[] = [
     { slug: 'india', label: 'India', x: 722, y: 400, intelligenceLevel: aggregateCountryIntelligence(indiaPoints), destinations: indiaPoints },
+    { slug: 'uae', label: 'United Arab Emirates', x: 628, y: 394, intelligenceLevel: aggregateCountryIntelligence(uaePoints), destinations: uaePoints },
     { slug: 'turkey', label: 'Turkey', x: 575.31, y: 345.75, intelligenceLevel: aggregateCountryIntelligence(turkeyPoints), destinations: turkeyPoints },
     { slug: 'morocco', label: 'Morocco', x: 459.51, y: 369.31, intelligenceLevel: aggregateCountryIntelligence(moroccoPoints), destinations: moroccoPoints },
     { slug: 'spain', label: 'Spain', x: 464.61, y: 338.83, intelligenceLevel: aggregateCountryIntelligence(spainPoints), destinations: spainPoints },

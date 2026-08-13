@@ -119,11 +119,11 @@ describe('Fare Signal presentation and CTA boundaries', () => {
 });
 
 describe('Fare Signal production coverage counts', () => {
-  it('reports 22 routes with a current publishable fare and 33 without one at the current archive date', () => {
+  it('reports 22 routes with a current publishable fare and 66 without one at the current archive date. london-heathrow-mumbai\'s obs-lhr-bom-economy-2 (Virgin Atlantic, £491, observed 24 July 2026) has complete dates and passes isPubliclyPublishable(), so it counts toward the homepage\'s looser "23 of 88" stat (getPublishableObservationsByRoute) — but it predates the currency field becoming a standard part of every new observation (it was this project\'s very first FARE-001 pilot entry, before Batch A\'s field standard existed; see FARE_OBSERVATION_ARCHIVE.md\'s "migration accommodation" note on optional fields). No contemporaneous evidence note, source capture or archived source configuration for this entry states its currency, so `currency: \'GBP\'` was deliberately NOT added here — that would be retrospective inference from UK departure, not verified evidence, which the fare-observation standard does not allow. It stays a non-displayable "none" in Fare Signal until a real currency fact is confirmed.', () => {
     const signals = routes.map((route) => getFareSignalForRoute(route.slug, '2026-08-11'));
     expect(signals.filter((signal) => signal.state === 'current')).toHaveLength(22);
     expect(signals.filter((signal) => signal.state === 'recent')).toHaveLength(0);
-    expect(signals.filter((signal) => signal.state === 'none')).toHaveLength(58);
+    expect(signals.filter((signal) => signal.state === 'none')).toHaveLength(66);
     expect(routes.filter((route) => getTripComRouteUrl(route.slug)).length).toBe(45);
   });
 });

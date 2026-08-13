@@ -285,10 +285,10 @@ export const deals: Deal[] = [
   {
     // Truth Reset (July 2026): airline corrected from 'British Airways' to 'PIA'.
     // No source found for a current direct BA Heathrow–Lahore service; PIA
-    // relaunched this exact route direct from 30 March 2026 (weekly), confirmed
-    // via independent aviation-news reporting, cross-checked against multiple
-    // outlets. No Route entry exists yet for this pair — flagged for a future
-    // data addition once flight-time/frequency specifics are sourced.
+    // relaunched this exact route direct from 30 March 2026 (weekly). A real
+    // Route entry (london-heathrow-lahore) was added in the Final Route-Guide
+    // Completion batch (13 August 2026), verified via Heathrow Airport's own
+    // media centre — see data/routes.ts for the full citation.
     id: 'lhr-business-lhe',
     category: 'business',
     cabin: 'Business',

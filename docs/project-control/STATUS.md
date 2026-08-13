@@ -44,10 +44,12 @@ analytics/conversion events are verified in the real dashboard.
 - TravelUp has been removed entirely (founder decision, 4 August 2026 — its generic-search CTA
   reset the traveller's departure airport, e.g. Manchester silently becoming London, judged an
   unacceptable user experience). Trip.com is now JetStash's sole active flight-comparison provider:
-  45 of 80 routes carry a genuine, dashboard-generated, dateless Trip.com affiliate link
-  (`lib/booking-providers.ts`); 35 routes currently have no booking CTA, by design, because no safe
-  exact handoff has been verified for them (the 18 London-origin routes are the largest known
-  cluster). No generic fallback is used. New partner integrations remain disabled until they have
+  45 of 88 routes carry a genuine, dashboard-generated, dateless Trip.com affiliate link
+  (`lib/booking-providers.ts`); a further 18 fall back to a genuine, pair-keyed
+  `TRIPCOM_DESTINATION_URLS` handoff, so 63 of 88 routes show some working Trip.com CTA on their
+  route page. 25 routes currently have no booking CTA at all, by design, because no safe exact
+  handoff has been verified for them (the London-origin routes are the largest known cluster). No
+  generic fallback is used. New partner integrations remain disabled until they have
   explicit approval, a real tracking link and direct journey validation.
 - The Founder Dashboard is unavailable in production and non-indexable.
 - Contact, Quote Request and Newsletter submission flows were freshly re-verified live on 29 July
@@ -270,12 +272,13 @@ entries remain private; a past price cannot be reconstructed honestly after the 
 
 **Superseded 4 August 2026.** TravelUp has been removed entirely (its generic-search CTA reset the
 traveller's departure airport — an unacceptable user experience). Trip.com is now JetStash's sole
-active provider: 45 of 80 routes carry a genuine, dashboard-generated, dateless Trip.com affiliate
+active provider: 45 of 88 routes carry a genuine, dashboard-generated, dateless Trip.com affiliate
 link (`lib/booking-providers.ts`), each the exact unedited output of Trip.com's own Affiliate Link
-dashboard tool. 35 routes currently have no booking CTA — Trip.com's tools cannot produce a safe
-exact airport-specific dateless link for the London-origin cluster (only a generic
-"London" (LON) option, which is deliberately not used per JetStash's fail-closed rule: an exact
-airport-specific link, or no CTA at all. Expedia and other potential partners must remain unenabled
+dashboard tool; a further 18 fall back to a genuine `TRIPCOM_DESTINATION_URLS` handoff, for 63 of 88
+routes with some working CTA. 25 routes currently have no booking CTA at all — Trip.com's tools
+cannot produce a safe exact airport-specific dateless link for the London-origin cluster (only a
+generic "London" (LON) option, which is deliberately not used per JetStash's fail-closed rule: an
+exact airport-specific link, or no CTA at all. Expedia and other potential partners must remain unenabled
 until JetStash has approval, a genuine tracking link and a scoped validation of the customer
 journey.
 
@@ -354,7 +357,7 @@ for a day that was not actually checked, and never create a fare merely to fill 
 
 - The editorial fare archive is at its starting point; it must grow through real dated checks, not
   retrospective estimates or automated scraping — see `LAUNCH_CHECKLIST.md` item G.
-- Trip.com is a single booking-partner dependency. 35 of 80 routes have no
+- Trip.com is a single booking-partner dependency. 25 of 88 routes have no
   booking CTA at all, by design — see AFF-001 above. Do not add a partner or route link without
   dashboard verification and direct validation; never guess or hand-edit a Trip.com URL.
 - Travel Ready rules and Route Status evidence require scheduled re-verification as source facts

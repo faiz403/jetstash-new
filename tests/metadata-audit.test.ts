@@ -269,6 +269,10 @@ const DOCUMENTED_TITLE_EXCEPTIONS: Record<string, string> = {
     '66 chars, 1 over. Longest city-pair name + the intentionally-preserved "Booking Windows & Peak Periods" phrase.',
   '/routes/manchester-ahmedabad':
     '66 chars, 1 over. Longest city-pair name + the intentionally-preserved "Booking Windows & Peak Periods" phrase.',
+  '/routes/london-heathrow-dubai':
+    '67 chars, 2 over. The only two routes where "London" alone would collide with another live London-origin route to the same destination (london-gatwick-dubai) — disambiguated to "London Heathrow"/"London Gatwick" (see disambiguatedTitleOrigin() in data/routes.ts) specifically to fix a real duplicate-<title> SEO bug, at the cost of a small, accepted overage.',
+  '/routes/london-gatwick-dubai':
+    '66 chars, 1 over. Same disambiguation as london-heathrow-dubai above, and for the same reason — the two exist only because both routes to Dubai needed to stop sharing one <title>.',
 };
 
 // Sanity bound: an exception is a small, reasoned overage, not a licence to
