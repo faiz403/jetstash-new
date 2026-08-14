@@ -1,6 +1,7 @@
 import { antalyaHotelEvidence, type HotelEvidenceRecord } from '@/data/hotel-evidence';
 import { getDestinationFlightGuideEntries } from '@/lib/destination-flight-guides';
 import { getTripComDestinationHandoffUrl } from '@/lib/booking-providers';
+import { getTripComHotelUrl, HOTEL_PROVIDER_REL } from '@/lib/hotel-booking-links';
 import type { Destination } from '@/data/destinations';
 
 export interface AntalyaPublicHotelExample {
@@ -11,7 +12,19 @@ export interface AntalyaPublicHotelExample {
   locationNote: string;
   factualSignals: readonly string[];
   checkedDate: string;
+  /**
+   * "Check current price" handoff — deliberately separate from the
+   * factual/evidence fields above. `null` when no verified, dashboard-
+   * generated Trip.com link exists yet for this property (see
+   * lib/hotel-booking-links.ts); callers MUST fail closed and render no CTA
+   * at all rather than guess a link. Never a price, rating or availability
+   * claim — Trip.com's own page carries those, not JetStash.
+   */
+  bookingUrl: string | null;
 }
+
+/** rel attribute for the hotel "Check current price" CTA — re-exported here so the component doesn't need a second import path. */
+export { HOTEL_PROVIDER_REL };
 
 export interface AntalyaFlightHandoff {
   routeSlug: string;
@@ -57,6 +70,7 @@ export function getAntalyaPublicHotelExamples(): readonly AntalyaPublicHotelExam
       .map((claim) => factValue(record, claim))
       .filter(Boolean),
     checkedDate: record.checkedDate,
+    bookingUrl: getTripComHotelUrl(record.evidenceId),
   }));
 }
 
