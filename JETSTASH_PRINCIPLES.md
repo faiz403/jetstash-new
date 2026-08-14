@@ -842,6 +842,7 @@ identifies a person or a document):
 | `ready_check_source_click` | An official-source link | `source` |
 | `ready_check_book_cta_click` | Travel Ready's live-price CTA | `destination` |
 | `ready_check_watch_click` | Travel Ready's "Watch this route" | `destination`, `verdict` |
+| `ready_check_baggage_cta_click` | Travel Ready's "Shop suitcases & luggage" (CJ) | — |
 | `route_watch_signup` | Route Watch success | `airport`, `destination`, `intent` |
 | `tripcom_click` | Any outbound Trip.com link | `route`, `origin`, `destination`, `source` |
 
