@@ -79,6 +79,17 @@ describe('Fare Signal presentation and CTA boundaries', () => {
     expect(text).not.toMatch(/baggage|£0|deal|cheap|cheapest|below average|good value|save/i);
   });
 
+  it('labels a connecting observed fare separately from the route-level direct context', () => {
+    const signal = getFareSignalForRoute('manchester-islamabad', '2026-08-11');
+    const text = renderToStaticMarkup(FareSignal({
+      signal,
+      tripComUrl: getTripComRouteUrl('manchester-islamabad'),
+      routeSlug: 'manchester-islamabad',
+      routeDirectness: 'direct',
+    }));
+    expect(text).toContain('Route intelligence describes direct service; this Fare Signal is for the connecting itinerary observed on the dates shown.');
+  });
+
   it('renders a recent fare without calling it current or a deal', () => {
     const signal = deriveFareSignal([recentFixture], '2026-08-11');
     const text = renderToStaticMarkup(FareSignal({ signal, tripComUrl: null, routeSlug: 'fixture-route' }));
@@ -94,6 +105,7 @@ describe('Fare Signal presentation and CTA boundaries', () => {
     expect(getTripComRouteUrl('london-heathrow-mumbai')).toBeNull();
     expect(text).not.toContain('Check current price');
     expect(text).not.toContain('Trip.com');
+    expect(text).not.toContain('Exact partner booking link');
   });
 
   it('keeps the Fare Signal above Smart Fare Comparison and leaves the stricter verdict private', () => {
@@ -107,6 +119,10 @@ describe('Fare Signal presentation and CTA boundaries', () => {
     expect(routePageSrc).not.toContain('deriveTripValueVerdict');
     expect(routePageSrc).not.toContain('True Trip Cost');
     expect(routePageSrc).not.toContain('Value Verdict');
+  });
+
+  it('passes the verified route context into Fare Signal so materially different observed itineraries are labelled', () => {
+    expect(routePageSrc).toContain('routeDirectness={presentation.status === \'direct\' || presentation.status === \'connecting\' ? presentation.status : null}');
   });
 
   it('does not carry unknown baggage or unsupported stronger-signal language in the reusable component', () => {

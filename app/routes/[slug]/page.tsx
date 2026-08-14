@@ -267,9 +267,9 @@ export default async function RoutePage({ params }: { params: Promise<{ slug: st
                   <ArrowUpRight className="h-4 w-4" strokeWidth={2.25} />
                 </TrackedOutboundLink>
               ) : (
-                // Fail-closed, deliberately understated: no CTA, no generic Trip.com
-                // link, no suggestion to broaden Heathrow/Gatwick to all of London.
-                <p className="text-sm text-ink-400">Direct flight comparison is not available for this airport yet.</p>
+                // Fail-closed: no CTA, no generic Trip.com link, and no suggestion
+                // to broaden Heathrow/Gatwick to all of London.
+                <p className="text-sm text-ink-400">Exact partner booking link is not currently verified for this route.</p>
               )}
               {/* When a Book-By panel exists below, its own state-aware CTA is the one dominant
                   recommendation — the WhatsApp share moves there too (built from the same snapshot),
@@ -299,7 +299,12 @@ export default async function RoutePage({ params }: { params: Promise<{ slug: st
 
       <section className="bg-white py-8 sm:py-10">
         <div className="mx-auto max-w-content px-5 sm:px-8">
-          <FareSignal signal={fareSignal} tripComUrl={tripComUrl} routeSlug={route.slug} />
+          <FareSignal
+            signal={fareSignal}
+            tripComUrl={tripComUrl}
+            routeSlug={route.slug}
+            routeDirectness={presentation.status === 'direct' || presentation.status === 'connecting' ? presentation.status : null}
+          />
         </div>
       </section>
 

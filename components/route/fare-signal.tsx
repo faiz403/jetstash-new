@@ -39,8 +39,16 @@ function SignalCta({ href, routeSlug }: { href: string; routeSlug: string }) {
   );
 }
 
-function CurrentSignal({ data, tripComUrl, routeSlug }: { data: FareSignalObservation; tripComUrl: string | null; routeSlug: string }) {
+function itineraryDifferenceCopy(routeDirectness: 'direct' | 'connecting' | null, fareDirectness: FareSignalObservation['directness']): string | null {
+  if (!routeDirectness || !fareDirectness || routeDirectness === fareDirectness) return null;
+  const routeContext = routeDirectness === 'direct' ? 'direct service' : 'connecting service';
+  const fareContext = fareDirectness === 'direct' ? 'direct itinerary' : 'connecting itinerary';
+  return `Route intelligence describes ${routeContext}; this Fare Signal is for the ${fareContext} observed on the dates shown.`;
+}
+
+function CurrentSignal({ data, tripComUrl, routeSlug, routeDirectness }: { data: FareSignalObservation; tripComUrl: string | null; routeSlug: string; routeDirectness: 'direct' | 'connecting' | null }) {
   const routing = formatRouting(data);
+  const itineraryDifference = itineraryDifferenceCopy(routeDirectness, data.directness);
   return (
     <>
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
@@ -57,12 +65,14 @@ function CurrentSignal({ data, tripComUrl, routeSlug }: { data: FareSignalObserv
         {routing && <span className="inline-flex items-center gap-2"><Plane className="h-4 w-4 text-terracotta-600" />{routing}</span>}
         <span className="inline-flex items-center gap-2"><CalendarDays className="h-4 w-4 text-terracotta-600" />{formatChecked(data.departureDate)} – {formatChecked(data.returnDate)}</span>
       </div>
+      {itineraryDifference && <p className="mt-4 text-sm leading-relaxed text-ink-600">{itineraryDifference}</p>}
       {tripComUrl && <SignalCta href={tripComUrl} routeSlug={routeSlug} />}
     </>
   );
 }
 
-function RecentSignal({ data, tripComUrl, routeSlug }: { data: FareSignalObservation; tripComUrl: string | null; routeSlug: string }) {
+function RecentSignal({ data, tripComUrl, routeSlug, routeDirectness }: { data: FareSignalObservation; tripComUrl: string | null; routeSlug: string; routeDirectness: 'direct' | 'connecting' | null }) {
+  const itineraryDifference = itineraryDifferenceCopy(routeDirectness, data.directness);
   return (
     <>
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
@@ -73,12 +83,13 @@ function RecentSignal({ data, tripComUrl, routeSlug }: { data: FareSignalObserva
         <p className="text-sm text-ink-600">Checked {formatChecked(data.observedDate)}</p>
       </div>
       <p className="mt-4 text-sm leading-relaxed text-ink-600">Price may have changed.</p>
+      {itineraryDifference && <p className="mt-3 text-sm leading-relaxed text-ink-600">{itineraryDifference}</p>}
       {tripComUrl && <SignalCta href={tripComUrl} routeSlug={routeSlug} />}
     </>
   );
 }
 
-export function FareSignal({ signal, tripComUrl, routeSlug }: { signal: FareSignalData; tripComUrl: string | null; routeSlug: string }) {
+export function FareSignal({ signal, tripComUrl, routeSlug, routeDirectness = null }: { signal: FareSignalData; tripComUrl: string | null; routeSlug: string; routeDirectness?: 'direct' | 'connecting' | null }) {
   return (
     <section aria-labelledby="fare-signal-heading" className="rounded-md border border-ink-200 bg-sand-50 p-5 sm:p-6">
       <div className="flex items-center gap-2.5">
@@ -89,8 +100,8 @@ export function FareSignal({ signal, tripComUrl, routeSlug }: { signal: FareSign
         <p className="mt-4 text-sm font-medium text-ink-700">{signal.strongerSignal}</p>
       )}
       <div className="mt-4">
-        {signal.state === 'current' && signal.observation ? <CurrentSignal data={signal.observation} tripComUrl={tripComUrl} routeSlug={routeSlug} /> : null}
-        {signal.state === 'recent' && signal.observation ? <RecentSignal data={signal.observation} tripComUrl={tripComUrl} routeSlug={routeSlug} /> : null}
+        {signal.state === 'current' && signal.observation ? <CurrentSignal data={signal.observation} tripComUrl={tripComUrl} routeSlug={routeSlug} routeDirectness={routeDirectness} /> : null}
+        {signal.state === 'recent' && signal.observation ? <RecentSignal data={signal.observation} tripComUrl={tripComUrl} routeSlug={routeSlug} routeDirectness={routeDirectness} /> : null}
         {signal.state === 'none' ? (
           <div className="flex items-start gap-3 text-sm text-ink-600">
             <RouteIcon className="mt-0.5 h-4 w-4 shrink-0 text-ink-400" strokeWidth={2} />

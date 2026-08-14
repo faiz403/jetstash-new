@@ -45,6 +45,8 @@ describe('public Antalya holiday intelligence', () => {
     expect(componentSrc).toContain('{handoff.airportName} → Antalya');
     expect(componentSrc).toContain('Check live flights on Trip.com');
     expect(componentSrc).toContain('Partner link, opens Trip.com in a new tab.');
+    expect(componentSrc).toContain('Flight actions are shown on the individual Antalya route guides above.');
+    expect(componentSrc).not.toContain('No airport-specific partner handoff is available for Antalya yet.');
     expect(componentSrc).toContain('No exact dateless Trip.com handoff was generated for:');
     expect(componentSrc).toContain('nofollow sponsored noopener noreferrer');
   });
