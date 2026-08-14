@@ -62,7 +62,7 @@ describe('Fare Coverage Programme Batch 3', () => {
 
   it('keeps current display-ready coverage aligned with Fare Signals after later append-only batches', () => {
     const current = routes.filter((route) => getPublishableObservationsByRoute(route.slug, NOW_ISO).length > 0);
-    expect(current).toHaveLength(71);
+    expect(current).toHaveLength(79);
     for (const route of current) {
       const signal = getFareSignalForRoute(route.slug, NOW_ISO);
       expect(signal.state, route.slug).toBe('current');

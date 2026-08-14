@@ -43,9 +43,9 @@ describe('Fare Coverage Programme Batch 4', () => {
     }
   });
 
-  it('restores current display-ready coverage to 71 routes after the four older routes are reverified', () => {
+  it('keeps current display-ready coverage aligned after later append-only batches', () => {
     const current = routes.filter((route) => getPublishableObservationsByRoute(route.slug, NOW_ISO).length > 0);
-    expect(current).toHaveLength(71);
+    expect(current).toHaveLength(79);
     for (const route of current) {
       expect(shouldShowNoFareFallback(getFareSignalForRoute(route.slug, NOW_ISO)), route.slug).toBe(false);
     }

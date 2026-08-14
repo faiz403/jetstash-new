@@ -222,7 +222,7 @@ complete; their intelligence grade is computed by the unchanged scoring function
 | `london-gatwick-bodrum` | Useful |
 | `london-gatwick-dalaman` | Useful |
 | `london-gatwick-istanbul` | Useful |
-| `london-gatwick-izmir` | Useful |
+| `london-gatwick-izmir` | Strong |
 | `newcastle-dalaman` | Useful |
 
 ---
@@ -1223,7 +1223,13 @@ link for); the true any-handoff figure is **63 of 88**.
 ## Current fare-coverage amendment — 14 August 2026
 
 The historical audit figures above remain preserved as dated records. The current 88-route catalogue
-now has **71 of 88** routes with a display-ready Fare Signal after the 14 August Batch 4 observations
+now has **79 of 88** routes with a display-ready Fare Signal after the 14 August Batch 4 and Batch 5 observations
 and same-day primary-source re-verification of Manchester–Lahore, Manchester–Islamabad,
 Heathrow–Jeddah and Heathrow–Mumbai. The current value is derived from the live fare-observation and
 route-evidence gates, not hand-entered.
+
+The 14 August Batch 5 sweep added eight further current observations: Bristol–Rome,
+Gatwick–Istanbul, Glasgow–Bodrum, Gatwick–Marrakech, Heathrow–Casablanca, Gatwick–Izmir,
+Gatwick–Agadir and Gatwick–Tangier. Leeds Bradford–Bodrum remains uncovered because the exact
+8–22 October search returned no options; alternative dates and airports were not substituted.
+The current Route Intelligence distribution is 11 Strong / 77 Useful / 0 Expanding.

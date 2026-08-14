@@ -140,19 +140,19 @@ describe('Surface 3 — every individual route page shows its own Route Intellig
   });
 });
 
-describe('Sanity — the real, complete distribution is identical across all three surfaces and the Atlas (10 Strong / 78 Useful / 0 Expanding, after the Final Route-Guide Completion batch\'s two evidence passes added 8 Useful-graded routes)', () => {
+describe('Sanity — the real, complete distribution is identical across all three surfaces and the Atlas (11 Strong / 77 Useful / 0 Expanding after the final fare sweep)', () => {
   it('matches on /routes', () => {
     const countryGroups = buildRouteCountryGroups(routes, NOW_ISO, routeStatusEvents);
     const counts = { strong: 0, useful: 0, expanding: 0 };
     for (const group of countryGroups) {
       for (const card of group.routes) counts[card.intelligence.level]++;
     }
-    expect(counts).toEqual({ strong: 10, useful: 78, expanding: 0 });
+    expect(counts).toEqual({ strong: 11, useful: 77, expanding: 0 });
   });
 
   it('matches via computeRouteIntelligenceLevel() directly (the shared source of truth every surface calls)', () => {
     const counts = { strong: 0, useful: 0, expanding: 0 };
     for (const route of routes) counts[computeRouteIntelligenceLevel(route, NOW_ISO)]++;
-    expect(counts).toEqual({ strong: 10, useful: 78, expanding: 0 });
+    expect(counts).toEqual({ strong: 11, useful: 77, expanding: 0 });
   });
 });
