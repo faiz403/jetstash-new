@@ -261,12 +261,23 @@ describe('TravelUp is completely removed from active code — no residue', () =>
     return out;
   }
 
-  it('no active app/components/lib/data file references TravelUp\'s tracking domain or CJ identifiers — these have no legitimate reason to appear anywhere, historical or otherwise', () => {
+  // "101818709" was dropped from this guard in August 2026: it is not a
+  // TravelUp-specific identifier — it is JetStash's own CJ publisher/site
+  // property ID (confirmed live on the CJ account, "JetStash website –
+  // 101818709"), which is necessarily reused across *any* CJ advertiser
+  // relationship on the account, not just TravelUp's. The genuinely
+  // TravelUp-specific identifiers — its tracking subdomain (kqzyfj) and its
+  // own link ID (15363607) — remain forbidden below. lib/baggage-affiliate-
+  // link.ts legitimately contains "101818709" as part of a new, unrelated,
+  // founder-approved CJ programme (Travel Luggage & Cabin Bags, advertiser
+  // 7218698, tracking domain dpbolvw.net, link ID 17045640) and is not a
+  // sign TravelUp has returned.
+  it('no active app/components/lib/data file references TravelUp\'s specific tracking domain or link ID — these have no legitimate reason to appear anywhere, historical or otherwise', () => {
     const offenders: string[] = [];
     for (const dir of ACTIVE_DIRS) {
       for (const file of collectFiles(join(process.cwd(), dir))) {
         const content = readFileSync(file, 'utf8');
-        if (/kqzyfj|101818709|15363607/i.test(content)) offenders.push(file);
+        if (/kqzyfj|15363607/i.test(content)) offenders.push(file);
       }
     }
     expect(offenders).toEqual([]);

@@ -48,6 +48,7 @@ export type AnalyticsEvent =
   | 'ready_check_source_click'
   | 'ready_check_book_cta_click'
   | 'ready_check_watch_click'
+  | 'ready_check_baggage_cta_click'
   // Route Watch
   | 'route_watch_signup'
   // Journey Brief (Manchester-Mumbai flagship)

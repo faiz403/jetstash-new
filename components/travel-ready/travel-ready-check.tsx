@@ -13,6 +13,7 @@ import {
 import type { TravelReadySignal } from '@/lib/travel-intelligence-engine';
 import { getRouteByAirportAndDestination } from '@/data/routes';
 import { getTripComFlightHandoffUrl, PROVIDER_REL } from '@/lib/booking-providers';
+import { getBaggageAffiliateUrl, BAGGAGE_PROVIDER_REL } from '@/lib/baggage-affiliate-link';
 import { RouteWatchForm } from '@/components/route/route-watch-form';
 import { track } from '@/lib/analytics';
 
@@ -128,6 +129,11 @@ export function TravelReadyCheck({
   const matchedRoute =
     airportSlugForCta && destinationSlug ? getRouteByAirportAndDestination(airportSlugForCta, destinationSlug) : undefined;
   const bookingUrl = matchedRoute ? getTripComFlightHandoffUrl(matchedRoute.slug) : null;
+
+  // Independent of the readiness verdict/logic above — a static commercial
+  // handoff, not a Travel Ready signal. Fail-closed: renders nothing at all
+  // if lib/baggage-affiliate-link.ts has no configured URL.
+  const baggageAffiliateUrl = getBaggageAffiliateUrl();
 
   return (
     <section
@@ -381,6 +387,26 @@ export function TravelReadyCheck({
           )}
 
           <p className="mt-5 text-xs text-ink-400">{result.disclaimer}</p>
+        </div>
+      )}
+
+      {baggageAffiliateUrl && (
+        <div className="mt-6 border-t border-ink-100 pt-4">
+          <p className="text-sm text-ink-600">
+            Need luggage for your trip?{' '}
+            <a
+              href={baggageAffiliateUrl}
+              target="_blank"
+              rel={BAGGAGE_PROVIDER_REL}
+              data-analytics="ready-check-baggage-cta"
+              onClick={() => track('ready_check_baggage_cta_click')}
+              className="font-semibold text-terracotta-600 underline underline-offset-2 hover:text-terracotta-700"
+            >
+              Shop suitcases &amp; luggage
+              <ArrowUpRight className="ml-0.5 inline h-3.5 w-3.5" strokeWidth={2.25} />
+            </a>
+          </p>
+          <p className="mt-1 text-xs text-ink-400">Partner link, opens Travel Luggage &amp; Cabin Bags in a new tab.</p>
         </div>
       )}
     </section>
