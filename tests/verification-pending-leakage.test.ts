@@ -159,12 +159,12 @@ describe('getRoutePresentation — verified direct routes (real dataset) keep wo
     expect(p.frequency).toMatch(/not confirmed/i);
   });
 
-  it('london-heathrow-jeddah: mixed per-airline evidence names only the individually-verified airline (British Airways, not Saudia)', () => {
+  it('london-heathrow-jeddah: current primary evidence names both individually-verified airlines', () => {
     const route = getRouteBySlug('london-heathrow-jeddah')!;
     const p = getRoutePresentation(route, FIXED_TODAY);
     expect(p.status).toBe('direct');
     expect(p.airlineSlugs).toContain('british-airways');
-    expect(p.airlineSlugs).not.toContain('saudia');
+    expect(p.airlineSlugs).toContain('saudia');
   });
 });
 
@@ -265,7 +265,7 @@ describe('Metadata output — generateMetadata() never builds a pending route\'s
     vi.setSystemTime(new Date('2026-07-23T12:00:00Z'));
     const meta = await generateMetadata({ params: Promise.resolve({ slug: 'manchester-lahore' }) });
     const route = getRouteBySlug('manchester-lahore')!;
-    expect(route.verification?.reviewDueDate).toBe('2026-08-13'); // sanity: fixture assumption still holds
+    expect(route.verification?.reviewDueDate).toBe('2026-09-14'); // sanity: current evidence refresh
     expect(meta.title).toMatch(/Booking Windows & Peak Periods/);
     // Metadata audit (Aug 2026): was a raw `.slice(0, 150) + '...'` — replaced
     // with truncateMetadataDescription's word/sentence-boundary-aware
@@ -275,7 +275,7 @@ describe('Metadata output — generateMetadata() never builds a pending route\'s
 
   it('regression: the SAME route produces the restrained pending metadata once the clock passes its reviewDueDate — proves generateMetadata does not depend on today\'s real date, only on the (mocked) clock at test time', async () => {
     vi.useFakeTimers();
-    vi.setSystemTime(new Date('2026-08-14T12:00:00Z')); // the day after reviewDueDate
+    vi.setSystemTime(new Date('2026-09-15T12:00:00Z')); // the day after reviewDueDate
     const meta = await generateMetadata({ params: Promise.resolve({ slug: 'manchester-lahore' }) });
     expect(meta.title).toMatch(/Verification in Progress/i);
     assertNoForbiddenClaims(String(meta.description));

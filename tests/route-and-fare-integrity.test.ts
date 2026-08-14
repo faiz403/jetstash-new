@@ -148,6 +148,7 @@ describe('Deal counts (TR-004) — a card with no tracked fare must not count as
       'man-bjv-flight',
       'man-bcn-flight',
       'lhr-bom-economy',
+      'man-ath-economy',
       'man-fco-economy',
       'lgw-amd-economy',
       'man-isb-economy',
@@ -181,7 +182,7 @@ describe('Deal counts (TR-004) — a card with no tracked fare must not count as
 });
 
 describe('Route.airlineSlugs — TR-010, revised three times after successive primary-source re-checks', () => {
-  it('London Heathrow–Jeddah lists Saudia and British Airways, but only British Airways is individually verified', () => {
+  it('London Heathrow–Jeddah lists Saudia and British Airways, each with independent current evidence', () => {
     // TR-010 originally removed British Airways based on secondary aviation-
     // news reporting only (Head for Points et al). Round 1 restored BA but
     // marked the whole route 'unverified'. Round 2 verified the route overall
@@ -192,7 +193,7 @@ describe('Route.airlineSlugs — TR-010, revised three times after successive pr
     expect(route.airlineSlugs).toContain('saudia');
     expect(route.airlineSlugs).toContain('british-airways');
     expect(getAirlineDisplayStatus(route, 'british-airways', FIXED_TODAY)).toBe('verified');
-    expect(getAirlineDisplayStatus(route, 'saudia', FIXED_TODAY)).toBe('unverified');
+    expect(getAirlineDisplayStatus(route, 'saudia', FIXED_TODAY)).toBe('verified');
   });
 
   it('the route still shows Direct overall, because at least one airline (BA) has current verified evidence', () => {
@@ -210,11 +211,11 @@ describe('Per-airline verification (founder correction) — one airline\'s evide
   });
 
   it('an airline with no verification record on a route is unverified, even though other airlines on the same route are verified', () => {
-    // london-heathrow-jeddah: BA is verified, Saudia has an explicit
-    // 'unverified' record. This proves the two don't bleed into each other.
+    // London Heathrow–Jeddah now has independent BA and Saudia records;
+    // this absent fixture still proves that one record cannot bleed into another.
     const route = getRouteBySlug('london-heathrow-jeddah')!;
-    expect(getAirlineVerification(route, 'saudia')?.status).toBe('unverified');
-    expect(getAirlineDisplayStatus(route, 'saudia', FIXED_TODAY)).toBe('unverified');
+    expect(getAirlineVerification(route, 'not-a-real-airline')).toBeUndefined();
+    expect(getAirlineDisplayStatus(route, 'not-a-real-airline', FIXED_TODAY)).toBe('unverified');
   });
 
   it('an airline entirely absent from airlineVerifications is unverified by default, not silently inherited from the route', () => {
@@ -346,8 +347,8 @@ describe('getDealDirectnessLabel (TR-009, final correction) — a deal/search ca
 });
 
 describe('FARE-001 pilot — historic examples stay private; only fully dated, evidenced observations publish', () => {
-  it('keeps historic observations and appends every editorial observation batch, including the 13 August Batch 3 check', () => {
-    expect(fareObservations).toHaveLength(98);
+  it('keeps historic observations and appends every editorial observation batch, including the 14 August Batch 4 check', () => {
+    expect(fareObservations).toHaveLength(110);
   });
 
   it('keeps every historic observation incomplete and private', () => {
@@ -442,6 +443,18 @@ describe('FARE-001 pilot — historic examples stay private; only fully dated, e
       'obs-man-bcn-economy-20260813-8w-v1',
       'obs-man-rom-economy-20260813-8w-v1',
       'obs-bhx-ath-economy-20260813-8w-v1',
+      'obs-lgw-bod-economy-20260814-8w-v1',
+      'obs-lgw-fao-economy-20260814-8w-v1',
+      'obs-lgw-bcn-economy-20260814-8w-v1',
+      'obs-bhx-rom-economy-20260814-8w-v1',
+      'obs-man-ath-economy-20260814-8w-v1',
+      'obs-bhx-bcn-economy-20260814-8w-v1',
+      'obs-brs-bcn-economy-20260814-8w-v1',
+      'obs-lba-bcn-economy-20260814-8w-v1',
+      'obs-lgw-rom-economy-20260814-8w-v1',
+      'obs-lgw-ath-economy-20260814-8w-v1',
+      'obs-lgw-dlm-economy-20260814-8w-v1',
+      'obs-lgw-ayt-economy-20260814-8w-v1',
     ]);
     expect(published).toEqual(expect.arrayContaining([
       expect.objectContaining({
@@ -561,21 +574,19 @@ describe('FARE-001 pilot — historic examples stay private; only fully dated, e
 });
 
 describe('getDealAirlineLabel (TR-010, final correction) — a deal/search card must never assert an airline as confirmed independently of that airline\'s own verification record', () => {
-  it('1. Jeddah cards do not display Saudia without Saudia evidence', () => {
+  it('1. Jeddah cards display Saudia now that Saudia has independent current evidence', () => {
     const jed1 = deals.find((d) => d.id === 'umrah-package-jed')!;
     const jed2 = deals.find((d) => d.id === 'lhr-jed-business')!;
     expect(jed1.airline).toBe('Saudia'); // the underlying curation field is unchanged — the fix is in what's *shown*
     expect(jed2.airline).toBe('Saudia');
-    expect(getDealAirlineLabel(jed1, FIXED_TODAY)).not.toBe('Saudia');
-    expect(getDealAirlineLabel(jed2, FIXED_TODAY)).not.toBe('Saudia');
-    expect(getDealAirlineLabel(jed1, FIXED_TODAY)).toBe('Verification pending');
-    expect(getDealAirlineLabel(jed2, FIXED_TODAY)).toBe('Verification pending');
+    expect(getDealAirlineLabel(jed1, FIXED_TODAY)).toBe('Saudia');
+    expect(getDealAirlineLabel(jed2, FIXED_TODAY)).toBe('Saudia');
   });
 
-  it('2. BA evidence does not verify Saudia — the two are independently gated on the same route', () => {
+  it('2. BA evidence and Saudia evidence remain independently gated on the same route', () => {
     const route = getRouteBySlug('london-heathrow-jeddah')!;
     expect(getDealAirlineDisplayStatus(route, 'british-airways', FIXED_TODAY)).toBe('verified');
-    expect(getDealAirlineDisplayStatus(route, 'saudia', FIXED_TODAY)).toBe('unverified');
+    expect(getDealAirlineDisplayStatus(route, 'saudia', FIXED_TODAY)).toBe('verified');
     // The route itself still shows Direct (BA's evidence is sufficient for route-level directness),
     // proving directness and airline attribution are tracked as genuinely separate claims.
     expect(getDisplayDirectness(route, FIXED_TODAY)).toBe('direct');
@@ -632,11 +643,16 @@ describe('getDealAirlineLabel (TR-010, final correction) — a deal/search card 
     }
   });
 
-  it('every Saudia-named deal in the current public array is unverified as of this pass (Jeddah and Madinah both) — confirms the systemic sweep caught both, not just the reported Jeddah card', () => {
+  it('every Saudia-named deal reflects its route-specific evidence state (Jeddah verified, Madinah pending)', () => {
     const saudiaDeals = deals.filter((d) => d.airline === 'Saudia');
     expect(saudiaDeals.length).toBeGreaterThan(0);
     for (const deal of saudiaDeals) {
-      expect(getDealAirlineLabel(deal, FIXED_TODAY), deal.id).not.toBe('Saudia');
+      const expected = deal.id === 'umrah-package-jed' || deal.id === 'lhr-jed-business'
+        ? 'Saudia'
+        : deal.id === 'lhr-med-business'
+          ? undefined
+          : 'Verification pending';
+      expect(getDealAirlineLabel(deal, FIXED_TODAY), deal.id).toBe(expected);
     }
   });
 });

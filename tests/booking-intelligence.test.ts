@@ -129,16 +129,16 @@ describe('computeBookBySnapshot — unsupported inputs return null rather than g
   describe('verification-pending leakage fix (audit finding): a priority route whose verification has since expired — fully deterministic on the `now` parameter, no system-clock mocking needed', () => {
     const route = getRouteBySlug('manchester-lahore')!;
 
-    it('sanity: the fixture route\'s real reviewDueDate is 2026-08-13', () => {
-      expect(route.verification?.reviewDueDate).toBe('2026-08-13');
+    it('sanity: the fixture route\'s real reviewDueDate is 2026-09-14', () => {
+      expect(route.verification?.reviewDueDate).toBe('2026-09-14');
     });
 
     it('2026-07-23 (before reviewDueDate): still produces a snapshot normally', () => {
       expect(computeBookBySnapshot('manchester-lahore', new Date('2026-07-23T12:00:00Z'))).not.toBeNull();
     });
 
-    it('2026-08-14 (the day after reviewDueDate): stops producing a snapshot, even though the route is still in BOOK_BY_PRIORITY_ROUTE_SLUGS and still has upcoming peak-period occurrences', () => {
-      expect(computeBookBySnapshot('manchester-lahore', new Date('2026-08-14T12:00:00Z'))).toBeNull();
+    it('2026-09-15 (the day after reviewDueDate): stops producing a snapshot, even though the route is still in BOOK_BY_PRIORITY_ROUTE_SLUGS and still has upcoming peak-period occurrences', () => {
+      expect(computeBookBySnapshot('manchester-lahore', new Date('2026-09-15T12:00:00Z'))).toBeNull();
     });
 
     it('a far-future date: still null — expiry does not un-expire with more time passing', () => {

@@ -315,8 +315,8 @@ describe('final audit round 3 — evidenceDetail replaces the old EVIDENCE_BUNDL
     const copy = buildFlagshipStatusCopy('manchester-lahore', [withdrawal, cancellation], FIXED_TODAY);
     expect(copy.evidenceDetail).not.toContain('2026-05-01');
     expect(copy.evidenceDetail).not.toMatch(/next check|review/i);
-    // manchester-lahore's real route.verification.verifiedDate is 2026-07-13 — the citation's own checked date, independent of the (removed) withdrawal.
-    expect(copy.evidenceDetail).toBe('Current route evidence checked 13 July 2026.');
+    // manchester-lahore's real route.verification.verifiedDate is 2026-08-14 — the citation's own checked date, independent of the (removed) withdrawal.
+    expect(copy.evidenceDetail).toBe('Current route evidence checked 14 August 2026.');
   });
 
   it('reschedule uses only the new evidence-driven date — evidenceDetail never mentions the pre-reschedule date', () => {
