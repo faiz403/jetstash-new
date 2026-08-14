@@ -21,6 +21,7 @@ import { HeroBackdrop } from '@/components/ui/hero-backdrop';
 import { JsonLd, breadcrumbSchema } from '@/components/seo/json-ld';
 import { DestinationFlightGuides } from '@/components/destination/destination-flight-guides';
 import { AntalyaHolidayIntelligence } from '@/components/destination/antalya-holiday-intelligence';
+import { ScrollContinuationCue } from '@/components/ui/scroll-continuation-cue';
 
 // Pure ISR, matching the route detail pages — this page renders DealCard and
 // Book-By snapshots (computeBookBySnapshotsForDestination), both of which
@@ -57,6 +58,10 @@ export default async function DestinationPage({ params }: { params: Promise<{ sl
   // Book-By intelligence strip — renders only for destinations served by a
   // V1 priority route (lib/booking-intelligence.ts). Absolute dates only.
   const bookBySnapshots = computeBookBySnapshotsForDestination(dest.slug, new Date());
+  // Gates the scroll-continuation cue below: only render it when something
+  // genuinely useful actually follows the first/About section — never a
+  // "scroll down" promise pointing at just an empty no-fare fallback.
+  const hasContentBelowAboutSection = Boolean(dest.familyVisitContent) || travellerTips.length > 0 || dealsHere.length > 0;
 
   return (
     <>
@@ -158,6 +163,8 @@ export default async function DestinationPage({ params }: { params: Promise<{ sl
               </p>
             </div>
           </div>
+
+          {hasContentBelowAboutSection && <ScrollContinuationCue />}
         </div>
       </section>
 
