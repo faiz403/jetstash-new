@@ -1219,3 +1219,11 @@ link for); the true any-handoff figure is **63 of 88**.
 | `london-heathrow-dubai` | Useful |
 | `birmingham-delhi` | Useful |
 | `birmingham-ahmedabad` | Useful |
+
+## Current fare-coverage amendment — 14 August 2026
+
+The historical audit figures above remain preserved as dated records. The current 88-route catalogue
+now has **71 of 88** routes with a display-ready Fare Signal after the 14 August Batch 4 observations
+and same-day primary-source re-verification of Manchester–Lahore, Manchester–Islamabad,
+Heathrow–Jeddah and Heathrow–Mumbai. The current value is derived from the live fare-observation and
+route-evidence gates, not hand-entered.

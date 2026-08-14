@@ -147,11 +147,22 @@ describe('Route-level Fare Signal coverage and curated Deal-card coverage remain
     'bristol-marrakech',
     'birmingham-agadir',
     'birmingham-athens',
+    'london-gatwick-antalya',
+    'london-gatwick-bodrum',
+    'london-gatwick-faro',
+    'london-gatwick-barcelona',
+    'birmingham-rome',
+    'birmingham-barcelona',
+    'bristol-barcelona',
+    'leeds-bradford-barcelona',
+    'london-gatwick-rome',
+    'london-gatwick-athens',
+    'london-gatwick-dalaman',
   ]);
 
   it('every route-level tracked fare is either represented by a curated Economy card or explicitly remains Fare-Signal-only', () => {
     const trackedRoutes = routes.filter((r) => getPublishableObservationsByRoute(r.slug, NOW_ISO).length > 0);
-    expect(trackedRoutes.length).toBe(59);
+    expect(trackedRoutes.length).toBe(71);
     for (const route of trackedRoutes) {
       const matchingDeal = deals.find(
         (d) => d.fromAirportSlug === route.airportSlug && d.toDestinationSlug === route.destinationSlug && d.cabin === 'Economy' && !isBundledProductDeal(d)
@@ -162,7 +173,7 @@ describe('Route-level Fare Signal coverage and curated Deal-card coverage remain
         expect(matchingDeal, `${route.slug} should have a curated Economy card`).toBeDefined();
       }
     }
-    expect(fareSignalOnlyRoutes.size).toBe(33);
+    expect(fareSignalOnlyRoutes.size).toBe(44);
   });
 
   it('none of the 7 newly added Deal entries ever shows an unsupported "Direct flight" badge', () => {
