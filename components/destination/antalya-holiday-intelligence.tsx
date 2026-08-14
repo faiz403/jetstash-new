@@ -51,11 +51,9 @@ export function AntalyaHolidayIntelligence({ destination, nowIso }: AntalyaHolid
                   </article>
                 ))}
               </div>
-            ) : (
-              <p className="mt-2 text-sm leading-relaxed text-ink-600">
-                No airport-specific partner handoff is available for Antalya yet. JetStash will show a flight action only when the exact route and partner link are both verified.
-              </p>
-            )}
+            ) : flightStatuses.length === 0 ? (
+              <p className="mt-2 text-sm leading-relaxed text-ink-600">Flight actions are shown on the individual Antalya route guides above.</p>
+            ) : null}
             {flightHandoffs.length > 0 && <p className="mt-2 text-xs text-ink-500">Partner link, opens Trip.com in a new tab. Check the itinerary, dates and booking terms before paying.</p>}
             {blockedOrigins.length > 0 && <p className="mt-2 text-xs leading-relaxed text-ink-500">No exact dateless Trip.com handoff was generated for: {blockedOrigins.map((entry) => entry.airportName).join(', ')}. Those origins remain blocked rather than using a generic link.</p>}
           </div>

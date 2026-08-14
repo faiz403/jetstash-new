@@ -63,8 +63,8 @@ describe('URLs preserve Trip.com\'s own generated affiliate parameters, unmodifi
   it('every hotel URL points to the exact property page, not a search/listing page', () => {
     for (const record of antalyaHotelEvidence) {
       const url = getTripComHotelUrl(record.evidenceId)!;
-      expect(url, record.evidenceId).toContain('/hotels/detail/');
-      expect(url, record.evidenceId).toMatch(/hotelId=\d+/);
+      expect(url, record.evidenceId).toMatch(/\/hotels\/[^?]*hotel-detail-\d+\//);
+      expect(url, record.evidenceId).not.toMatch(/checkIn=|checkOut=/);
     }
   });
 

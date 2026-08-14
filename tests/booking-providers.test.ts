@@ -327,7 +327,8 @@ describe('Trip.com CTA is primary, singular, and correctly wired on the route he
   });
 
   it('renders the required clean unavailable state when no Trip.com URL exists', () => {
-    expect(routePageSrc).toContain('Direct flight comparison is not available for this airport yet.');
+    expect(routePageSrc).toContain('Exact partner booking link is not currently verified for this route.');
+    expect(routePageSrc).not.toContain('Direct flight comparison is not available for this airport yet.');
   });
 
   it('never suggests broadening Heathrow/Gatwick to generic London, and never links a generic Trip.com page', () => {
