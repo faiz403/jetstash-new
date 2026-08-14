@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { ArrowUpRight, Plane } from 'lucide-react';
 import type { Destination } from '@/data/destinations';
 import { formatRouteStatusDate } from '@/lib/route-status-copy';
-import { getAntalyaFlightHandoffStatuses, getAntalyaPublicHotelExamples } from '@/lib/antalya-holiday-intelligence';
+import { getAntalyaFlightHandoffStatuses, getAntalyaPublicHotelExamples, HOTEL_PROVIDER_REL } from '@/lib/antalya-holiday-intelligence';
 
 interface AntalyaHolidayIntelligenceProps {
   destination: Destination;
@@ -14,6 +14,7 @@ export function AntalyaHolidayIntelligence({ destination, nowIso }: AntalyaHolid
   const flightStatuses = getAntalyaFlightHandoffStatuses(destination, nowIso);
   const flightHandoffs = flightStatuses.filter((entry): entry is typeof entry & { href: string } => entry.status === 'verified' && entry.href !== null);
   const blockedOrigins = flightStatuses.filter((entry) => entry.status === 'blocked');
+  const hasAnyHotelBookingLink = examples.some((example) => example.bookingUrl !== null);
 
   return (
     <section aria-labelledby="antalya-holiday-intelligence-heading" className="mt-12 rounded-md border border-ink-100 bg-sand-50 p-5 sm:mt-14 sm:p-7">
@@ -76,9 +77,23 @@ export function AntalyaHolidayIntelligence({ destination, nowIso }: AntalyaHolid
               </ul>
             </div>
             <p className="mt-4 text-xs text-ink-400">Provider area label: {example.providerArea}</p>
+            {example.bookingUrl && (
+              <a
+                href={example.bookingUrl}
+                target="_blank"
+                rel={HOTEL_PROVIDER_REL}
+                className="mt-4 inline-flex items-center gap-1.5 rounded-sm bg-ink-900 px-4 py-2.5 text-sm font-semibold text-sand-50 transition-colors hover:bg-brass-600"
+              >
+                Check current price on Trip.com
+                <ArrowUpRight className="h-4 w-4" strokeWidth={2.25} />
+              </a>
+            )}
           </article>
         ))}
       </div>
+      {hasAnyHotelBookingLink && (
+        <p className="mt-3 text-xs text-ink-500">Partner link, opens Trip.com in a new tab. Check the property, dates and booking terms before paying.</p>
+      )}
 
       <p className="mt-5 text-xs leading-relaxed text-ink-500">
         This section explains location and evidenced property context. It does not sell a package or claim that one area or property is right for every traveller.
