@@ -149,9 +149,14 @@ describe('the four reduced events keep exactly the right two properties', () => 
 
   it('every TrackedOutboundLink properties={{...}} call site (tripcom_click and tripcom_hotel_click) sends route + source, never origin/destination', () => {
     // 4 pre-existing tripcom_click sites (route-hero, fare-signal, deal-card,
-    // no-fare-fallback) + 2 added on Antalya Holiday Intelligence (August
-    // 2026, Google Ads conversion tracking): one tripcom_click flight
-    // handoff, one new tripcom_hotel_click hotel CTA.
+    // no-fare-fallback) + 2 in the one shared
+    // components/destination/holiday-intelligence.tsx (Hotel Intelligence
+    // architecture, consolidated August 2026 to serve Antalya and the
+    // expansion destinations alike): one tripcom_click flight handoff, one
+    // tripcom_hotel_click hotel CTA. Previously this was 8 while Antalya
+    // had its own separate, near-duplicate component with the same two
+    // sites — merging the two components back to 6 total sites is exactly
+    // the point of the consolidation (one call site, many destinations).
     const tripcomSites = sites.filter((s) => s.label === 'properties={{...}}');
     expect(tripcomSites.length).toBe(6);
     for (const s of tripcomSites) {
