@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { footerNav, siteConfig } from '@/lib/site-config';
 import { Logomark } from '../ui/logomark';
+import { CookieSettingsButton } from '../ui/cookie-settings-button';
 
 export function Footer() {
   return (
@@ -47,7 +48,10 @@ export function Footer() {
         </div>
 
         <div className="mt-12 flex flex-col gap-3 border-t border-white/5 pt-8 text-xs text-ink-300 sm:flex-row sm:items-center sm:justify-between">
-          <p>© {new Date().getFullYear()} JetStash. All rights reserved.</p>
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+            <p>© {new Date().getFullYear()} JetStash. All rights reserved.</p>
+            <CookieSettingsButton />
+          </div>
           <p className="max-w-xl">
             Prices shown across this site are indicative and subject to change. Always confirm the final price
             with the airline or operator before booking.

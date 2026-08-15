@@ -104,13 +104,19 @@ describe('AnalyticsEvent vocabulary — every event this repo actually fires is 
   // accurate.
   const BAGGAGE_CTA_EVENTS = ['ready_check_baggage_cta_click'];
 
-  it.each([...EXISTING_EVENTS, ...NEW_EVENTS, ...BAGGAGE_CTA_EVENTS])('%s is part of the typed AnalyticsEvent union', (eventName) => {
+  // Added later still, by Google Ads conversion tracking (August 2026):
+  // the missing Trip.com hotel-click event, wired on the Antalya Holiday
+  // Intelligence hotel CTAs (components/destination/antalya-holiday-intelligence.tsx)
+  // to keep it distinct from tripcom_click's flight handoffs.
+  const GOOGLE_ADS_TRACKING_EVENTS = ['tripcom_hotel_click'];
+
+  it.each([...EXISTING_EVENTS, ...NEW_EVENTS, ...BAGGAGE_CTA_EVENTS, ...GOOGLE_ADS_TRACKING_EVENTS])('%s is part of the typed AnalyticsEvent union', (eventName) => {
     expect(analyticsSrc).toMatch(new RegExp(`\\| '${eventName}'`));
   });
 
   it('has exactly one union member per real event — no stragglers, nothing forgotten', () => {
     const matches = analyticsSrc.match(/\n\s*\| '[a-z_]+'/g) ?? [];
-    expect(matches).toHaveLength(EXISTING_EVENTS.length + NEW_EVENTS.length + BAGGAGE_CTA_EVENTS.length);
+    expect(matches).toHaveLength(EXISTING_EVENTS.length + NEW_EVENTS.length + BAGGAGE_CTA_EVENTS.length + GOOGLE_ADS_TRACKING_EVENTS.length);
   });
 
   it("track()'s event parameter is typed as AnalyticsEvent, not a bare string — a typo at any call site is a compile error, not a silently-dropped event", () => {

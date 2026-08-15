@@ -3,6 +3,7 @@ import { ArrowUpRight, Plane } from 'lucide-react';
 import type { Destination } from '@/data/destinations';
 import { formatRouteStatusDate } from '@/lib/route-status-copy';
 import { getAntalyaFlightHandoffStatuses, getAntalyaPublicHotelExamples, HOTEL_PROVIDER_REL } from '@/lib/antalya-holiday-intelligence';
+import { TrackedOutboundLink } from '@/components/ui/tracked-outbound-link';
 
 interface AntalyaHolidayIntelligenceProps {
   destination: Destination;
@@ -39,7 +40,9 @@ export function AntalyaHolidayIntelligence({ destination, nowIso }: AntalyaHolid
                 {flightHandoffs.map((handoff) => (
                   <article key={handoff.airportSlug} className="min-w-0 rounded-sm border border-ink-200 bg-white p-4">
                     <p className="text-sm font-semibold text-ink-900">{handoff.airportName} → Antalya</p>
-                    <a
+                    <TrackedOutboundLink
+                      event="tripcom_click"
+                      properties={{ route: `${handoff.airportSlug}-antalya`, source: 'antalya-holiday-intelligence' }}
                       href={handoff.href}
                       target="_blank"
                       rel="nofollow sponsored noopener noreferrer"
@@ -47,7 +50,7 @@ export function AntalyaHolidayIntelligence({ destination, nowIso }: AntalyaHolid
                     >
                       Check live flights on Trip.com
                       <ArrowUpRight className="h-4 w-4" strokeWidth={2.25} />
-                    </a>
+                    </TrackedOutboundLink>
                   </article>
                 ))}
               </div>
@@ -76,7 +79,9 @@ export function AntalyaHolidayIntelligence({ destination, nowIso }: AntalyaHolid
             </div>
             <p className="mt-4 text-xs text-ink-400">Provider area label: {example.providerArea}</p>
             {example.bookingUrl && (
-              <a
+              <TrackedOutboundLink
+                event="tripcom_hotel_click"
+                properties={{ route: destination.slug, source: 'antalya-holiday-intelligence' }}
                 href={example.bookingUrl}
                 target="_blank"
                 rel={HOTEL_PROVIDER_REL}
@@ -84,7 +89,7 @@ export function AntalyaHolidayIntelligence({ destination, nowIso }: AntalyaHolid
               >
                 Check current price on Trip.com
                 <ArrowUpRight className="h-4 w-4" strokeWidth={2.25} />
-              </a>
+              </TrackedOutboundLink>
             )}
           </article>
         ))}
