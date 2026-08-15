@@ -1,12 +1,15 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { getAntalyaPublicHotelExamples } from '@/lib/antalya-holiday-intelligence';
+import { getPublicHotelExamples } from '@/lib/holiday-intelligence';
 import { getTripComHotelUrl, hasTripComHotelLink, HOTEL_PROVIDER_REL } from '@/lib/hotel-booking-links';
 import { antalyaHotelEvidence } from '@/data/hotel-evidence';
 
 /**
- * Antalya hotel affiliate MVP (August 2026).
+ * Antalya hotel affiliate MVP (August 2026), repointed at the shared
+ * lib/holiday-intelligence.ts + components/destination/holiday-intelligence.tsx
+ * (Hotel Intelligence architecture consolidation, August 2026) — every
+ * assertion below is unchanged; only the import paths were updated.
  *
  * The smallest legitimate monetised journey for the existing Antalya
  * Holiday Intelligence pilot: factual hotel context (already public) plus
@@ -18,7 +21,7 @@ import { antalyaHotelEvidence } from '@/data/hotel-evidence';
  * itself.
  */
 
-const componentSrc = readFileSync(join(process.cwd(), 'components', 'destination', 'antalya-holiday-intelligence.tsx'), 'utf8');
+const componentSrc = readFileSync(join(process.cwd(), 'components', 'destination', 'holiday-intelligence.tsx'), 'utf8');
 const hotelLinksSrc = readFileSync(join(process.cwd(), 'lib', 'hotel-booking-links.ts'), 'utf8');
 
 describe('Only exact verified hotel links can render', () => {
@@ -29,8 +32,8 @@ describe('Only exact verified hotel links can render', () => {
     }
   });
 
-  it('getAntalyaPublicHotelExamples() surfaces a non-null bookingUrl for all three current examples', () => {
-    const examples = getAntalyaPublicHotelExamples();
+  it("getPublicHotelExamples('antalya') surfaces a non-null bookingUrl for all three current examples", () => {
+    const examples = getPublicHotelExamples('antalya');
     expect(examples).toHaveLength(3);
     for (const example of examples) {
       expect(example.bookingUrl, example.hotelName).not.toBeNull();
@@ -76,11 +79,11 @@ describe('URLs preserve Trip.com\'s own generated affiliate parameters, unmodifi
 
 describe('No prices, ratings or availability are exposed by JetStash', () => {
   it('the public data projection never carries a price, rating, review score, discount or availability claim', () => {
-    const publicCopy = JSON.stringify(getAntalyaPublicHotelExamples()).toLowerCase();
+    const publicCopy = JSON.stringify(getPublicHotelExamples('antalya')).toLowerCase();
     // bookingUrl legitimately contains "curr=gbp" (a currency-market
     // parameter Trip.com's own generator appended, not a JetStash price) —
     // excluded from this check by removing the URL fields before matching.
-    const withoutUrls = JSON.stringify(getAntalyaPublicHotelExamples().map(({ bookingUrl, ...rest }) => rest)).toLowerCase();
+    const withoutUrls = JSON.stringify(getPublicHotelExamples('antalya').map(({ bookingUrl, ...rest }) => rest)).toLowerCase();
     expect(withoutUrls).not.toMatch(/£|\bprice\b|availability|package|rating|review|discount/);
     expect(publicCopy).not.toMatch(/strikethrough|strike-through/);
   });
@@ -108,7 +111,7 @@ describe('Existing factual/non-recommendation language remains', () => {
   });
 
   it('keeps the existing factual hotel context fields untouched', () => {
-    const examples = getAntalyaPublicHotelExamples();
+    const examples = getPublicHotelExamples('antalya');
     expect(examples.map((example) => example.hotelName)).toEqual([
       'Trendy Lara',
       'Regnum Carya',

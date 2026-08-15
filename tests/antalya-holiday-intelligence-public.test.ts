@@ -2,16 +2,26 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { getDestinationBySlug } from '@/data/destinations';
-import { getAntalyaFlightHandoffStatuses, getAntalyaFlightHandoffs, getAntalyaPublicHotelExamples } from '@/lib/antalya-holiday-intelligence';
+import { getHolidayFlightHandoffStatuses, getHolidayFlightHandoffs, getPublicHotelExamples } from '@/lib/holiday-intelligence';
 import { getDestinationFlightGuideEntries } from '@/lib/destination-flight-guides';
 import { getTripComFlightHandoffUrl } from '@/lib/booking-providers';
 
+/**
+ * Repointed at the shared lib/holiday-intelligence.ts + shared
+ * components/destination/holiday-intelligence.tsx (Hotel Intelligence
+ * architecture consolidation, August 2026) — every assertion below is
+ * unchanged from before the consolidation; only the import paths and the
+ * "wired only for Antalya" check (now a shared-component allowlist check)
+ * were updated. Antalya's public output must remain identical.
+ */
+
 const pageSrc = readFileSync(join(process.cwd(), 'app', 'destinations', '[slug]', 'page.tsx'), 'utf8');
-const componentSrc = readFileSync(join(process.cwd(), 'components', 'destination', 'antalya-holiday-intelligence.tsx'), 'utf8');
+const componentSrc = readFileSync(join(process.cwd(), 'components', 'destination', 'holiday-intelligence.tsx'), 'utf8');
+const libSrc = readFileSync(join(process.cwd(), 'lib', 'holiday-intelligence.ts'), 'utf8');
 
 describe('public Antalya holiday intelligence', () => {
   it('derives exactly the three approved factual examples', () => {
-    const examples = getAntalyaPublicHotelExamples();
+    const examples = getPublicHotelExamples('antalya');
     expect(examples.map((example) => example.hotelName)).toEqual([
       'Trendy Lara',
       'Regnum Carya',
@@ -26,7 +36,7 @@ describe('public Antalya holiday intelligence', () => {
   });
 
   it('keeps the public projection free of internal evidence detail and commercial claims', () => {
-    const publicCopy = JSON.stringify(getAntalyaPublicHotelExamples()).toLowerCase();
+    const publicCopy = JSON.stringify(getPublicHotelExamples('antalya')).toLowerCase();
     expect(publicCopy).not.toContain('internal-only');
     expect(publicCopy).not.toContain('providerpropertyurl');
     expect(publicCopy).not.toContain('"sources"');
@@ -37,15 +47,15 @@ describe('public Antalya holiday intelligence', () => {
 
   it('has no competing Holiday Intelligence handoffs once every Antalya origin has a route guide', () => {
     const destination = getDestinationBySlug('antalya')!;
-    const handoffs = getAntalyaFlightHandoffs(destination, '2026-08-12');
+    const handoffs = getHolidayFlightHandoffs(destination, '2026-08-12');
     expect(handoffs).toEqual([]);
-    const statuses = getAntalyaFlightHandoffStatuses(destination, '2026-08-12');
+    const statuses = getHolidayFlightHandoffStatuses(destination, '2026-08-12');
     expect(statuses).toEqual([]);
     expect(getTripComFlightHandoffUrl('london-gatwick-antalya')).toBeNull();
-    expect(componentSrc).toContain('{handoff.airportName} → Antalya');
+    expect(componentSrc).toContain('{handoff.airportName} → {destination.city}');
     expect(componentSrc).toContain('Check live flights on Trip.com');
     expect(componentSrc).toContain('Partner link, opens Trip.com in a new tab.');
-    expect(componentSrc).toContain('Flight actions are shown on the individual Antalya route guides above.');
+    expect(componentSrc).toContain('Flight actions are shown on the individual {destination.city} route guides above.');
     expect(componentSrc).not.toContain('No airport-specific partner handoff is available for Antalya yet.');
     expect(componentSrc).toContain('No exact dateless Trip.com handoff was generated for:');
     expect(componentSrc).toContain('nofollow sponsored noopener noreferrer');
@@ -66,24 +76,34 @@ describe('public Antalya holiday intelligence', () => {
       'bristol-antalya',
       'london-gatwick-antalya',
     ]);
-    expect(getAntalyaFlightHandoffs(destination, '2026-08-12')).toEqual([]);
+    expect(getHolidayFlightHandoffs(destination, '2026-08-12')).toEqual([]);
     expect(getTripComFlightHandoffUrl('london-gatwick-antalya')).toBeNull();
   });
 
-  it('wires the public section only for Antalya and keeps founder-only detail out of the public page', () => {
-    expect(pageSrc).toContain("dest.slug === 'antalya'");
-    expect(pageSrc).toContain('AntalyaHolidayIntelligence');
+  it('wires the public section for Antalya through the shared component, gated by the same allowlist as every other live destination', () => {
+    expect(pageSrc).toContain('hasHolidayIntelligence(dest.slug)');
+    expect(pageSrc).toContain('<HolidayIntelligence');
+    expect(pageSrc).not.toContain('AntalyaHolidayIntelligence');
     expect(pageSrc).not.toContain("@/data/hotel-evidence");
     expect(pageSrc).not.toContain('antalyaHotelEvidence');
+    // Antalya must still be present on the public allowlist in the shared lib.
+    expect(libSrc).toMatch(/Set\(\[[^\]]*'antalya'[^\]]*\]\)/);
   });
 
   it('preserves the three location distinctions in customer-facing copy', () => {
-    const examples = getAntalyaPublicHotelExamples();
+    const examples = getPublicHotelExamples('antalya');
     expect(examples[0].locationNote).toContain('Kundu/Aksu');
     expect(examples[0].locationNote).toContain('rather than Lara Beach proper');
     expect(examples[1].locationNote).toContain('Kadriye');
     expect(examples[1].locationNote).toContain('Belek tourism area');
     expect(examples[2].locationNote).toContain('Evrenseki');
     expect(examples[2].locationNote).toContain('approximately 8 km from Side Centre');
+  });
+
+  it('renders no "Areas to consider" section for Antalya — pure refactor, not a content change', () => {
+    // Antalya's stay-area copy carries areas: [] specifically so the shared
+    // component's `hasAreas` branch stays false for Antalya.
+    expect(componentSrc).toContain('const hasAreas = stayAreaCopy.areas.length > 0;');
+    expect(componentSrc).toContain("{hasAreas && (");
   });
 });

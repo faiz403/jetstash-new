@@ -328,8 +328,8 @@ describe('components/layout/footer.tsx — Cookie settings is present on every p
   });
 });
 
-describe('components/destination/antalya-holiday-intelligence.tsx — flight vs hotel event separation', () => {
-  const componentSrc = read('components/destination/antalya-holiday-intelligence.tsx');
+describe('components/destination/holiday-intelligence.tsx — flight vs hotel event separation (shared component, serves Antalya + the Hotel Intelligence expansion pilot since the August 2026 architecture consolidation)', () => {
+  const componentSrc = read('components/destination/holiday-intelligence.tsx');
 
   it('imports TrackedOutboundLink and no longer uses a bare <a> for either CTA', () => {
     expect(componentSrc).toContain("import { TrackedOutboundLink } from '@/components/ui/tracked-outbound-link';");
@@ -337,7 +337,7 @@ describe('components/destination/antalya-holiday-intelligence.tsx — flight vs 
 
   it('the flight handoff fires tripcom_click with a composite route slug, never misclassified as a hotel event', () => {
     expect(componentSrc).toContain('event="tripcom_click"');
-    expect(componentSrc).toContain('route: `${handoff.airportSlug}-antalya`');
+    expect(componentSrc).toContain('route: `${handoff.airportSlug}-${destination.slug}`');
     expect(componentSrc).not.toMatch(/href=\{handoff\.href\}[\s\S]{0,80}tripcom_hotel_click/);
   });
 
@@ -348,14 +348,18 @@ describe('components/destination/antalya-holiday-intelligence.tsx — flight vs 
 
   it('both tracked call sites stay within the two-property ceiling and carry only route+source', () => {
     // Not a plain balanced-brace regex: the flight call site's route value is
-    // a template literal (`${handoff.airportSlug}-antalya`), whose own `${`
-    // closes a brace before the properties block's real end — matched here
-    // by tests/analytics-property-limit.test.ts's depth-aware scanner
-    // instead, this check just confirms both call sites exist and are
-    // shaped as expected.
+    // a template literal (`${handoff.airportSlug}-${destination.slug}`),
+    // whose own `${` closes a brace before the properties block's real end —
+    // matched here by tests/analytics-property-limit.test.ts's depth-aware
+    // scanner instead, this check just confirms both call sites exist and
+    // are shaped as expected.
     const occurrences = (componentSrc.match(/properties=\{\{/g) ?? []).length;
     expect(occurrences).toBe(2);
-    expect(componentSrc).toContain("properties={{ route: `${handoff.airportSlug}-antalya`, source: 'antalya-holiday-intelligence' }}");
-    expect(componentSrc).toContain("properties={{ route: destination.slug, source: 'antalya-holiday-intelligence' }}");
+    expect(componentSrc).toContain("properties={{ route: `${handoff.airportSlug}-${destination.slug}`, source: analyticsSource }}");
+    expect(componentSrc).toContain("properties={{ route: destination.slug, source: analyticsSource }}");
+  });
+
+  it('analyticsSource resolves to the exact, unchanged Antalya value for Antalya specifically, keeping its existing analytics history continuous', () => {
+    expect(componentSrc).toContain("const analyticsSource = destination.slug === 'antalya' ? 'antalya-holiday-intelligence' : 'holiday-intelligence';");
   });
 });
