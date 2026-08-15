@@ -22,6 +22,15 @@ export const metadata: Metadata = {
  * this site. No postal address is published: none has been approved, and
  * none is invented here. This is not a substitute for professional legal
  * review, and is not presented as one.
+ *
+ * Updated again (August 2026) for the optional, consent-gated Google Ads
+ * measurement tag added ahead of Pilot #2 (app/layout.tsx,
+ * components/ui/cookie-consent-banner.tsx, lib/consent.ts,
+ * lib/google-ads-conversions.ts). It's the first thing on this site that is
+ * ever gated behind an accept/decline choice, so "JetStash does not use
+ * cookies" is no longer accurate without qualification — the claim below is
+ * now scoped to what's true: nothing else on the site uses a cookie, and
+ * this one is off unless explicitly accepted.
  */
 const sections: { title: string; body: React.ReactNode }[] = [
   {
@@ -62,6 +71,10 @@ const sections: { title: string; body: React.ReactNode }[] = [
             information, and standard web server logs.
           </li>
           <li>Aggregate, cookieless usage information, described under Cookies and analytics below.</li>
+          <li>
+            Only if you explicitly accept the optional advertising cookie described under Cookies and analytics: a
+            signal that a flight, hotel or baggage partner link was clicked. It never tells us who clicked it.
+          </li>
         </ul>
         <p>
           Travel Ready Check is different from everything above. Whether you&apos;re travelling on a British
@@ -96,12 +109,32 @@ const sections: { title: string; body: React.ReactNode }[] = [
   {
     title: 'Cookies and analytics',
     body: (
-      <p>
-        JetStash does not use cookies. The one analytics tool on this site, Vercel Web Analytics, is built to work
-        without cookies or any other tracking identifier, and only ever receives page-view and named-event data with
-        route or destination context, never a name, email address or anything else that identifies you personally.
-        We also use Vercel Speed Insights, which measures page performance in the same cookieless way.
-      </p>
+      <>
+        <p>
+          JetStash doesn&apos;t use cookies for anything by default. The one analytics tool on this site, Vercel Web
+          Analytics, is built to work without cookies or any other tracking identifier, and only ever receives
+          page-view and named-event data with route or destination context, never a name, email address or anything
+          else that identifies you personally. We also use Vercel Speed Insights, which measures page performance in
+          the same cookieless way.
+        </p>
+        <p>
+          Separately, a cookie banner shown on your first visit offers one optional, off-by-default measurement
+          cookie for Google Ads. Nothing about it loads until you actively accept: no Google script is requested, and
+          nothing is sent to Google, before that point, or if you decline, or if you close the banner without
+          choosing. Only once you accept does JetStash load a Google Ads measurement tag, and only then does it tell
+          Google whether a Google ad led to a genuine click on a flight, hotel or baggage-affiliate partner link —
+          nothing else. Google is the only third party this ever reaches.
+        </p>
+        <p>
+          Your choice is remembered locally in your own browser, not in a JetStash account or server-side profile.
+          You can see and change it at any time using &lsquo;Cookie settings&rsquo; in the footer of every page —
+          declining after previously accepting switches this measurement off again for every page you load after
+          that (a one-off page reload may be needed to fully clear an already-loaded Google script from the current
+          tab, which the control handles for you). We don&apos;t use this tag for remarketing or personalised
+          advertising under any circumstance, and it never receives your name, email address, or the partner
+          link&apos;s own web address.
+        </p>
+      </>
     ),
   },
   {
@@ -138,6 +171,10 @@ const sections: { title: string; body: React.ReactNode }[] = [
             <strong className="font-semibold text-ink-800">Aggregate analytics:</strong> legitimate interests,
             limited to understanding overall site usage, never to identifying you.
           </li>
+          <li>
+            <strong className="font-semibold text-ink-800">Optional Google Ads measurement:</strong> consent. It
+            only ever runs if you actively accept it in the cookie banner, and you can decline it at any time.
+          </li>
         </ul>
         <p>
           We don&apos;t rely on &lsquo;contract&rsquo; as a basis anywhere on this site. JetStash doesn&apos;t take
@@ -163,8 +200,10 @@ const sections: { title: string; body: React.ReactNode }[] = [
         <p>
           We may also share the minimum necessary detail with a professional adviser, such as an accountant or
           solicitor, or with an authority such as the Information Commissioner&apos;s Office, where the law requires
-          it. We do not currently use Google Analytics, advertising pixels, or any tracking or marketing technology
-          beyond what&apos;s listed above.
+          it. If, and only if, you accept the optional advertising cookie described under Cookies and analytics,
+          Google Ads receives a simple signal that a flight, hotel or baggage partner link was clicked — never your
+          name, email address, or the partner link itself. We do not use Google Analytics, advertising pixels, or
+          any other tracking or marketing technology, and we don&apos;t run remarketing or personalised advertising.
         </p>
       </>
     ),
@@ -302,7 +341,7 @@ export default function PrivacyPolicyPage() {
 
       <section className="bg-white py-16 sm:py-24">
         <div className="mx-auto max-w-2xl px-5 sm:px-8">
-          <p className="text-sm text-ink-400">Last updated: 31 July 2026</p>
+          <p className="text-sm text-ink-400">Last updated: 15 August 2026</p>
           <div className="mt-8 flex flex-col gap-10">
             {sections.map((section, i) => (
               <div key={section.title} className="grid gap-3 border-l-2 border-brass-200 pl-6 sm:grid-cols-[2.5rem_1fr] sm:gap-5">

@@ -1,4 +1,5 @@
 import { track as vercelTrack } from '@vercel/analytics';
+import { fireGoogleAdsConversion } from './google-ads-conversions';
 
 /**
  * The one place JetStash sends an analytics event from — a thin wrapper
@@ -56,6 +57,7 @@ export type AnalyticsEvent =
   | 'journey_brief_live_price_click'
   // Outbound affiliate link
   | 'tripcom_click'
+  | 'tripcom_hotel_click'
   // Lead-capture conversions (Contact, Quote Request, Newsletter)
   | 'contact_submit_success'
   | 'quote_request_submit_success'
@@ -74,5 +76,17 @@ export function track(event: AnalyticsEvent, properties?: Record<string, string 
     vercelTrack(event, properties);
   } catch {
     // Analytics must never break the page it's measuring.
+  }
+  // Deliberately its own try/catch: a Google Ads failure must never affect
+  // whether Vercel Analytics recorded the event, and must never break the
+  // click/navigation this function is called from. See
+  // lib/google-ads-conversions.ts for which events map to a Google Ads
+  // conversion (only three; everything else is a no-op) and lib/consent.ts
+  // for how the visitor's advertising-consent choice gates what Google
+  // actually does with the call.
+  try {
+    fireGoogleAdsConversion(event);
+  } catch {
+    // Google Ads measurement must never break the page it's measuring.
   }
 }

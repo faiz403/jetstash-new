@@ -5,6 +5,7 @@ import { SpeedInsights } from '@vercel/speed-insights/next';
 import './globals.css';
 import { Header } from '@/components/layout/header';
 import { Footer } from '@/components/layout/footer';
+import { CookieConsentBanner } from '@/components/ui/cookie-consent-banner';
 import { JsonLd, organizationSchema, webSiteSchema } from '@/components/seo/json-ld';
 import { siteConfig } from '@/lib/site-config';
 
@@ -53,6 +54,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className={`${fraunces.variable} ${publicSans.variable}`}>
       <body className="font-sans">
+        {/*
+          No Google tag is installed here (August 2026 revision — an earlier
+          draft unconditionally loaded gtag.js from this file, which turned
+          out to be Advanced Consent Mode: the tag downloads and can send
+          cookieless pings regardless of the visitor's choice). JetStash uses
+          Basic Consent Mode instead: CookieConsentBanner is the only place
+          the Google tag is ever requested, and only after the visitor
+          actively accepts. See its own doc comment for the full reasoning.
+        */}
         <a
           href="#main-content"
           className="sr-only z-[60] rounded-sm bg-brass px-4 py-2 text-sm font-semibold text-ink-900 focus:not-sr-only focus:absolute focus:left-4 focus:top-4"
@@ -64,6 +74,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Header />
         <main id="main-content">{children}</main>
         <Footer />
+        <CookieConsentBanner />
         <Analytics />
         <SpeedInsights />
       </body>
