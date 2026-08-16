@@ -6,11 +6,12 @@ This roadmap contains unfinished work only. Completed work belongs in `COMPLETED
 
 | Order | ID | Status | Work | Definition of done |
 |---:|---|---|---|---|
-| 1 | `FARE-001` | ACTIVE — Batch C deliberately paused, see below | Build the editorial fare observation archive. Fare Coverage Expansion Batch A (10 routes, 6 August 2026, see `BATCH_A_COMPLETION_REVIEW.md`) and Batch B (10 routes, 6 August 2026, merged `0d84c73`, see `FARE_COVERAGE_BATCH_B.md`) both merged — 23 of 32 routes publishable, 22 of 32 customer-visible. | Fresh, manually checked observations for priority routes with travel dates, cabin, source, observation method, currency, baggage treatment, a fixed 8-week booking horizon and an evidence-backed `fareDirectness` (both legs confirmed, or honestly `'unknown'`/itinerary-level `'connecting'` — see `FARE_COLLECTION_CHECKLIST.md` §6), accumulated honestly over time. |
+| 1 | `FARE-001` | ACTIVE — Batch C deliberately paused, see below | Build the editorial fare observation archive. The route catalogue has grown to 88 routes since Batch A/B were sequenced (Turkey/Morocco/Bangladesh/Bengaluru expansions) — the original "of 32" framing is obsolete; current reconciled counts (16 August 2026, see `STATUS.md`'s canonical table) are **99 of 119 archive records publicly publishable, 81 of 88 routes with ≥1 publishable observation, 79 of 88 routes with a current display-ready Fare Signal**. | Fresh, manually checked observations for priority routes with travel dates, cabin, source, observation method, currency, baggage treatment, a fixed 8-week booking horizon and an evidence-backed `fareDirectness` (both legs confirmed, or honestly `'unknown'`/itinerary-level `'connecting'` — see `FARE_COLLECTION_CHECKLIST.md` §6), accumulated honestly over time. |
 | 2 | `COV-001` | ACTIVE | Build verified route coverage deliberately. | The route queue is evidence-led, each change is sourced and reviewed, and price context appears only from date-complete observations. |
 | 3 | `VIS-001` | COMPLETE | Complete the UK airport visual collection. | Premium, airport-specific WebP artwork for every supported UK airport, using one consistent 1672×941 composition. |
-| 4 | `AFF-001` | ACTIVE | Improve affiliate coverage. | Current partner state reconciled; only approved, tracked integrations with directly validated customer journeys are enabled. Expedia and other candidates remain off until approved. |
-| 5 | `CONV-001` | QUEUED | Validate homepage conversion. | Funnel analytics reviewed; changes made only where data identifies a real drop-off. Same underlying gap as `LAUNCH_CHECKLIST.md` item F, the paid-advertising analytics blocker. |
+| 4 | `AFF-001` | ACTIVE | Improve affiliate coverage. | Current partner state reconciled; only approved, tracked integrations with directly validated customer journeys are enabled. Expedia and other candidates remain off until approved. Reconciled 16 August 2026: 45/88 routes exact, 18/88 fallback, 63/88 total working CTA, 25/88 none (see `STATUS.md`). |
+| 5 | `CONV-001` | ACTIVE | Validate homepage/campaign conversion. | Funnel analytics reviewed; changes made only where data identifies a real drop-off. The paid-advertising analytics blocker this item originally tracked is now resolved: Google Ads Basic Consent Mode + conversion tracking shipped (PR #135, 15 August 2026) and Pilot #2 is live. This item now covers reading that data once a meaningful sample exists — do not close it or act on it from a same-day click count. |
+| 6 | `HOTEL-001` | COMPLETE, FROZEN | Hotel Intelligence expansion. | Shipped across 10 destinations with 29 exact-property Trip.com handoffs (PR #136, 15 August 2026). Expansion is explicitly frozen — do not add an 11th destination without a new founder decision backed by customer usage evidence, not engineering capacity. |
 
 `RIS-001` (Route Intelligence Scoring v2) shipped 6 August 2026 — see `COMPLETED.md`. **Fare Coverage
 Expansion sequencing (agreed 6 August 2026, after Batch A's audit, completed the same week):** Batch A
@@ -19,8 +20,10 @@ verified in production.
 
 **Post-Batch-B sequencing decision (6 August 2026, founder-reviewed after PR #78's pre-merge truth
 audit): Batch C is deliberately not the next task.** With the fare database no longer empty (23 of 32
-routes publishable, 22 of 32 customer-visible), the open question changes from "is there any fare
-evidence" to "are the strongest routes genuinely the best travel-intelligence pages." Agreed order:
+routes publishable, 22 of 32 customer-visible **at the time of this decision** — the catalogue has
+since grown to 88 routes; see `FARE-001` above for the current 16 August 2026 reconciled counts),
+the open question changes from "is there any fare evidence" to "are the strongest routes genuinely
+the best travel-intelligence pages." Agreed order:
 
 1. **Let the new system settle** — watch real analytics (route engagement, which fare cards get
    clicked, which routes actually receive traffic) before deciding where the next investment should
@@ -29,7 +32,8 @@ evidence" to "are the strongest routes genuinely the best travel-intelligence pa
    round: Heathrow–Jeddah remains archive-only (a fare exists, no matching Deal — see
    `FARE_OBSERVATION_ARCHIVE.md`'s evidence-completeness audit); the 6 routes Batch B deliberately
    excluded for being `unverified` still need a primary-source resolution before any fare collection
-   on them is worth attempting; 9 routes remain with no publishable observation at all.
+   on them is worth attempting; as of 16 August 2026, 7 of the current 88 routes have no publishable
+   observation at all (88 total − 81 with ≥1 publishable observation).
 3. **Then Batch C** — but reshaped. Not "collect 10 more fares" by default; the brief for whatever
    comes next should weigh completing the highest-traffic routes, adding real
    `connectingAlternative`/airline-verification/baggage depth to routes Batch B left at exactly one

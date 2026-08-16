@@ -44,7 +44,12 @@ wider organic promotion.
       checks only cover pages actually visited manually. Set up a real reporting mechanism
       (`report-to`/`report-uri`, or another deliberate monitoring method) so production violations
       across all traffic can be observed over time before enforcement, not just the pages checked
-      during this PR.
+      during this PR. **Updated 16 August 2026:** the CSP cannot simply be switched to enforced
+      unchanged any more — Google Ads Basic Consent Mode + conversion tracking (PR #135) now loads
+      a gtag script and makes external connections that the current report-only policy's
+      `script-src 'self'`/`connect-src 'self'` would block if enforced as-is. Any future enforcement
+      pass must first add the correct Google Ads domains to the allowlist and verify tracking still
+      fires, not just flip the header.
 - [x] **B1.** ~~Draft JetStash Terms & Conditions~~ **Repository working draft complete** — see
       `docs/legal/TERMS_DRAFT.md` (PR #39, merged). This is a repository-only working draft: it is
       not published, linked, served or presented as binding Terms on jetstash.co.uk, and no

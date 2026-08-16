@@ -1,10 +1,11 @@
 # JetStash Current Status
 
-**Last reconciled:** 29 July 2026
+**Last reconciled:** 16 August 2026
 
 **Production branch:** `main`
 
-**Application release baseline:** `8b1de036a51e3ec41f03a832ed89327f99428052`
+**Application release baseline:** `9371c3341b1d36ca4c6940d871c0f519c3ffc2e3` (PR #136 merge — Hotel
+Intelligence expansion; PR #135 — Google Ads Basic Consent Mode + conversion tracking)
 
 **Launch readiness:** see `LAUNCH_READINESS_AUDIT_2026-07-29.md` and `LAUNCH_CHECKLIST.md` — ready
 for public organic launch after a short hardening pass; paid advertising remains blocked until
@@ -160,6 +161,52 @@ analytics/conversion events are verified in the real dashboard.
 - Permanent project-control records are linked from `CLAUDE.md` and `README.md`.
 - `CLAUDE.md`, `README.md` and `JETSTASH_PRINCIPLES.md` reflect Next.js `15.5.21`, the current
   Vitest suite, Route Status ownership, homepage architecture and automatic Vercel deployment.
+- **Hotel Intelligence (PR #136, merged 15 August 2026) covers exactly 10 destinations — Antalya,
+  Dubai, Madinah, Dalaman, Istanbul, Marrakech, Bodrum, Agadir, Barcelona, Faro — via one shared
+  architecture (`lib/holiday-intelligence.ts`, `components/destination/holiday-intelligence.tsx`).**
+  29 property evidence records exist across those destinations (`data/hotel-evidence.ts`: 3
+  Antalya; `data/hotel-evidence-expansion.ts`: 26 across the other 9), and all 29 map to a real,
+  dashboard-generated, dateless Trip.com hotel affiliate link (`lib/hotel-booking-links.ts`) —
+  zero missing, duplicate or orphaned mappings, verified by direct reconciliation of the evidence
+  files against the URL map. **Hotel Intelligence expansion is frozen at these 10 destinations**;
+  adding an 11th requires a new, explicit founder decision backed by customer evidence, not more
+  engineering capacity alone.
+- **Fare Signal / fare-observation terminology, reconciled 16 August 2026** (see the canonical
+  table below) — do not use "fare coverage" to mean more than one of these without saying which:
+  119 total `FareObservation` archive records exist (append-only, never overwritten); 99 of those
+  are publicly publishable (20 legacy records predate the `departureDate`/`returnDate`/`currency`
+  completeness requirement and are preserved but excluded from display, per
+  `isPubliclyPublishable()` in `data/fare-observations.ts`); 81 routes have at least one
+  publishable observation; **79 of 88 routes currently render a display-ready Fare Signal** once
+  route-verification status is also applied (2 of the 81 — Birmingham–Delhi, Birmingham–Ahmedabad —
+  have a publishable observation but are excluded because their `Route` record is still
+  Verification Pending, per `data/fare-evidence/fare-coverage-batch-5-2026-08-14.md`). The 79/88
+  figure has not changed since the 14 August Batch 5 entry.
+
+  | Term | Count | Definition |
+  |---|---:|---|
+  | Total `FareObservation` archive records | 119 | Every observation ever logged, append-only, never overwritten |
+  | Publicly publishable observations | 99 | Archive records with complete `departureDate`/`returnDate`/`currency` (`isPubliclyPublishable()`) |
+  | Routes with ≥1 publishable observation | 81 | Distinct `routeSlug`s among the 99 publishable records |
+  | Routes with a current display-ready Fare Signal | 79 | The 81 above, minus routes whose `Route` record is still Verification Pending (2: Birmingham–Delhi, Birmingham–Ahmedabad) |
+  | Curated `Deal` records | 49 | Separate hand-curated card selection (`data/deals.ts`) — not fare evidence itself |
+
+- **Curated `Deal` count is 49** (`data/deals.ts`) — a separate, smaller, hand-curated set of
+  airport→destination+cabin combinations chosen for card display; distinct from, and much smaller
+  than, the 81 routes that actually have fare evidence. Never conflate the two: a route can have a
+  real Fare Signal with no curated Deal card, and vice versa is architecturally impossible (every
+  `Deal` derives its price display from `getFareRangeSummary()`, never a stored price).
+- **Google Ads Basic Consent Mode + conversion tracking (PR #135, merged 15 August 2026)** is live:
+  the consent gate genuinely blocks the ads tag from loading until acceptance and supports
+  withdrawal (`lib/consent.ts`); tracked conversion events exist for flights, hotels and baggage
+  (`lib/google-ads-conversions.ts`). **Pilot #1** (July 2026) generated 42 clicks from £30.85 spend
+  but had no conversion tracking in place, so it produced no usable read on demand. **Pilot #2**
+  (started 16 August 2026, two campaigns: Manchester→Mumbai, Manchester→Antalya) has conversion
+  tracking wired from day one and is currently live. Its click/impression/spend numbers are
+  intentionally **not** recorded here — they change within the same day and would go stale
+  immediately; check Google Ads and Vercel Analytics directly for current Pilot #2 numbers, and do
+  not make a campaign decision from an early sample (this document's own standing rule, restated
+  from `FIRST_100_VISITORS_WORKSHEET.md`).
 
 ## ACTIVE
 
@@ -364,9 +411,19 @@ for a day that was not actually checked, and never create a fare merely to fill 
   change.
 - Homepage conversion quality cannot be claimed from visual review alone; it requires real funnel
   data — see `LAUNCH_CHECKLIST.md` item F.
-- No CSP/X-Frame-Options/X-Content-Type-Options/Referrer-Policy headers are set, and `npm audit`
-  reports 3 high-severity transitive advisories (PostCSS, sharp, via `next`) — see
-  `LAUNCH_CHECKLIST.md` items A and D. Do not run `npm audit fix --force`; it downgrades Next.js.
+- **Corrected 16 August 2026** — the previous claim here ("no CSP/X-Frame-Options/... headers are
+  set") is stale and was wrong even before this correction relative to the code: `next.config.js`
+  sets `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY` and `Referrer-Policy:
+  strict-origin-when-cross-origin` on every route. What remains genuinely open: the
+  Content-Security-Policy is still `Content-Security-Policy-Report-Only` (`CSP_REPORT_ONLY` in
+  `next.config.js`), never promoted to enforced — deliberately, per its own header comment
+  ("observe real violations before enforcing"), but that comment predates Google Ads. **The current
+  CSP value (`script-src 'self'`, `connect-src 'self'`) would break Google Ads' gtag script
+  (loaded in `app/layout.tsx`) if enforced as-is** — any future move to enforce it must first add
+  the correct Google Ads domains to the allowlist, verified against live tracking, not just flipped
+  on. `npm audit` still reports the same 3 high-severity transitive advisories (PostCSS, sharp, via
+  `next`), re-checked 16 August 2026 — see `LAUNCH_CHECKLIST.md` items A and D. Do not run `npm
+  audit fix --force`; it downgrades Next.js.
 - No Terms & Conditions page exists — see `LAUNCH_CHECKLIST.md` item B.
 - `fix/trust-cracks-july` and `fix/verification-pending-leakage` are confirmed-safe-to-delete local
   branches (verified 29 July 2026: no content in either is missing from `main`) — see

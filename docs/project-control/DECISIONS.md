@@ -5,6 +5,25 @@ evidence and an explicit founder decision.
 
 ## Approved
 
+### Business truth + project-control reconciliation — 16 August 2026
+
+A full numerical reconciliation of `main` at `9371c3341b1d36ca4c6940d871c0f519c3ffc2e3` against
+`STATUS.md`/`ROADMAP.md`. **This is a correction and update entry, not a rewrite of history** — the
+older dated decisions below that reference "23 of 32 routes" or similar figures remain accurate
+historical snapshots of what was true when they were made; they are not edited. Current canonical
+counts (16 August 2026): 119 total `FareObservation` records, 99 publicly publishable, 81 of 88
+routes with ≥1 publishable observation, 79 of 88 routes with a current display-ready Fare Signal, 49
+curated `Deal` records, 45/88 exact route-specific Trip.com flight handoffs + 18/88 fallback = 63/88
+routes with a working CTA (25/88 none, by design), 10 Hotel Intelligence destinations with 29 exact
+property-to-affiliate-link mappings (frozen), Google Ads Basic Consent Mode + conversion tracking
+live (PR #135), Pilot #2 running with tracking (day-one click counts intentionally not recorded in
+project-control docs — they go stale within hours). See `STATUS.md`'s canonical terminology table
+for full definitions. Two corrections made to previously-stale STATUS.md claims: the security
+headers line ("no CSP/X-Frame-Options/... set") was wrong relative to the actual code even before
+this pass — `next.config.js` has set `X-Content-Type-Options`, `X-Frame-Options` and
+`Referrer-Policy` for some time; only the CSP itself remains report-only, not enforced, and enforcing
+it as currently written would break Google Ads tracking.
+
 ### Travel intelligence first; booking second
 
 JetStash should become the first place travellers check before booking. It is not a general
