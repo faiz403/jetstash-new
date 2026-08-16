@@ -110,13 +110,23 @@ describe('AnalyticsEvent vocabulary — every event this repo actually fires is 
   // to keep it distinct from tripcom_click's flight handoffs.
   const GOOGLE_ADS_TRACKING_EVENTS = ['tripcom_hotel_click'];
 
-  it.each([...EXISTING_EVENTS, ...NEW_EVENTS, ...BAGGAGE_CTA_EVENTS, ...GOOGLE_ADS_TRACKING_EVENTS])('%s is part of the typed AnalyticsEvent union', (eventName) => {
+  // Added later still, by the generic Journey Decision Brief founder-only
+  // MVP (August 2026, lib/journey-decision-brief.ts +
+  // components/journey-brief/journey-decision-brief.tsx) — deliberately
+  // separate from journey_brief_started/journey_brief_live_price_click
+  // above, which belong to the older Manchester-Mumbai route-specific
+  // prototype this MVP does not build on.
+  const JOURNEY_DECISION_BRIEF_EVENTS = ['journey_decision_brief_started', 'journey_decision_brief_completed'];
+
+  it.each([...EXISTING_EVENTS, ...NEW_EVENTS, ...BAGGAGE_CTA_EVENTS, ...GOOGLE_ADS_TRACKING_EVENTS, ...JOURNEY_DECISION_BRIEF_EVENTS])('%s is part of the typed AnalyticsEvent union', (eventName) => {
     expect(analyticsSrc).toMatch(new RegExp(`\\| '${eventName}'`));
   });
 
   it('has exactly one union member per real event — no stragglers, nothing forgotten', () => {
     const matches = analyticsSrc.match(/\n\s*\| '[a-z_]+'/g) ?? [];
-    expect(matches).toHaveLength(EXISTING_EVENTS.length + NEW_EVENTS.length + BAGGAGE_CTA_EVENTS.length + GOOGLE_ADS_TRACKING_EVENTS.length);
+    expect(matches).toHaveLength(
+      EXISTING_EVENTS.length + NEW_EVENTS.length + BAGGAGE_CTA_EVENTS.length + GOOGLE_ADS_TRACKING_EVENTS.length + JOURNEY_DECISION_BRIEF_EVENTS.length,
+    );
   });
 
   it("track()'s event parameter is typed as AnalyticsEvent, not a bare string — a typo at any call site is a compile error, not a silently-dropped event", () => {

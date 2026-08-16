@@ -55,6 +55,9 @@ export type AnalyticsEvent =
   // Journey Brief (Manchester-Mumbai flagship)
   | 'journey_brief_started'
   | 'journey_brief_live_price_click'
+  // Journey Decision Brief (generic founder-only MVP, August 2026)
+  | 'journey_decision_brief_started'
+  | 'journey_decision_brief_completed'
   // Outbound affiliate link
   | 'tripcom_click'
   | 'tripcom_hotel_click'
