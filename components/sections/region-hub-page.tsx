@@ -9,6 +9,7 @@ import { getDealsByRegionGroup } from '@/data/deals';
 import { getRoutesByDestination, getRouteAirport } from '@/data/routes';
 import { routeStatusEvents } from '@/data/route-status-events';
 import { getEffectiveRoutePresentation } from '@/lib/route-status-copy';
+import { hasCurrentFareSignalAmongRoutes } from '@/lib/fare-signal';
 import { TRAVEL_READY_SUPPORTED_COUNTRIES } from '@/lib/travel-ready-check';
 import { DestinationVisual } from '@/components/ui/destination-visual';
 import { HeroBackdrop } from '@/components/ui/hero-backdrop';
@@ -45,6 +46,13 @@ export function RegionHubPage({
   const slugs = destinationsInRegion.map((d) => d.slug);
   const regionDeals = getDealsByRegionGroup(slugs);
   const regionRoutes = slugs.flatMap((slug) => getRoutesByDestination(slug));
+  // Fare fallback truth fix (August 2026): zero curated Deals for this hub
+  // must never be presented as zero tracked fares — see
+  // hasCurrentFareSignalAmongRoutes's own doc comment.
+  const regionHasFareSignalElsewhere = hasCurrentFareSignalAmongRoutes(
+    regionRoutes.map((r) => r.slug),
+    new Date().toISOString().slice(0, 10)
+  );
 
   return (
     <>
@@ -193,7 +201,7 @@ export function RegionHubPage({
             </div>
           ) : (
             <div className="mt-8">
-              <NoFareFallback cityLabel={eyebrow} />
+              <NoFareFallback cityLabel={eyebrow} hasFareSignalElsewhere={regionHasFareSignalElsewhere} />
             </div>
           )}
         </div>

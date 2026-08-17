@@ -12,6 +12,7 @@ import { getNotesByAirport } from '@/data/airport-notes';
 import { getTipsForScope } from '@/data/traveller-tips';
 import { DealCard } from '@/components/ui/deal-card';
 import { NoFareFallback } from '@/components/ui/no-fare-fallback';
+import { hasCurrentFareSignalAmongRoutes } from '@/lib/fare-signal';
 import { Badge } from '@/components/ui/badge';
 import { TravellerTipList } from '@/components/route/traveller-tip-list';
 import { JsonLd, breadcrumbSchema } from '@/components/seo/json-ld';
@@ -61,6 +62,15 @@ export default async function AirportPage({ params }: { params: Promise<{ slug: 
 
   const dealsHere = getDealsByAirport(airport.slug);
   const routesHere = getRoutesByAirport(airport.slug);
+  // Fare fallback truth fix (August 2026): zero curated Deals for this
+  // airport must never be presented as zero tracked fares — see
+  // hasCurrentFareSignalAmongRoutes's own doc comment. Only feeds the
+  // "Fares we're tracking from {airport}" fallback below, never the
+  // separate "Routes from {airport}" fallback above it, which already only
+  // renders when routesHere itself is empty (no routes at all means no
+  // possible Fare Signal either).
+  const nowIsoForFareCheck = new Date().toISOString().slice(0, 10);
+  const airportHasFareSignalElsewhere = hasCurrentFareSignalAmongRoutes(routesHere.map((r) => r.slug), nowIsoForFareCheck);
   const compareAirports = (airport.compareAirportSlugs ?? [])
     .map((slug) => getAirportBySlug(slug))
     .filter((a): a is NonNullable<typeof a> => Boolean(a));
@@ -266,7 +276,7 @@ export default async function AirportPage({ params }: { params: Promise<{ slug: 
             </div>
           ) : (
             <div className="mt-8">
-              <NoFareFallback cityLabel={airport.name} />
+              <NoFareFallback cityLabel={airport.name} hasFareSignalElsewhere={airportHasFareSignalElsewhere} />
             </div>
           )}
         </div>

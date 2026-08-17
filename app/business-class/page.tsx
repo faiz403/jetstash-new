@@ -7,6 +7,7 @@ import { NoFareFallback } from '@/components/ui/no-fare-fallback';
 import { NewsletterSection } from '@/components/sections/newsletter-section';
 import { HeroBackdrop } from '@/components/ui/hero-backdrop';
 import { getDealsByCategory, getDealsByDestination } from '@/data/deals';
+import { hasCurrentFareSignalForCabinAmongRoutes } from '@/lib/fare-signal';
 import { routes, getRouteAirport, getRouteDestination } from '@/data/routes';
 import { routeStatusEvents } from '@/data/route-status-events';
 import { getEffectiveRoutePresentation } from '@/lib/route-status-copy';
@@ -40,6 +41,15 @@ const decisionPoints = [
 export default function BusinessClassPage() {
   const nowIso = new Date().toISOString().slice(0, 10);
   const businessDeals = getDealsByCategory('business');
+  // Fare fallback truth fix (August 2026): zero curated Business-class Deals
+  // must never be presented as zero tracked Business fares — a separate,
+  // unrelated fact (data/deals.ts vs data/fare-observations.ts). Cabin-
+  // specific, so this uses hasCurrentFareSignalForCabinAmongRoutes rather
+  // than the cabin-agnostic hasCurrentFareSignalAmongRoutes used on the
+  // airport/destination/region-hub fallbacks. Checked across every route,
+  // not just businessCapableRoutes above (which is itself filtered by
+  // existing Business Deals — circular for this check).
+  const hasCurrentBusinessFareSignal = hasCurrentFareSignalForCabinAmongRoutes(routes.map((r) => r.slug), 'Business', nowIso);
   // Verification-pending leakage fix: this section's own heading asserts
   // "Direct routes" — it must only ever include routes whose directness is
   // currently evidenced as 'direct', never an 'unverified'/pending one that
@@ -148,7 +158,7 @@ export default function BusinessClassPage() {
             </div>
           ) : (
             <div className="mt-8">
-              <NoFareFallback cityLabel="business class routes" />
+              <NoFareFallback cityLabel="business class routes" hasFareSignalElsewhere={hasCurrentBusinessFareSignal} />
             </div>
           )}
         </div>

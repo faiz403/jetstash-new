@@ -4,6 +4,8 @@ import Link from 'next/link';
 import { FileCheck, ArrowUpRight } from 'lucide-react';
 import { destinations, getDestinationBySlug } from '@/data/destinations';
 import { getDealsByDestination } from '@/data/deals';
+import { getRoutesByDestination } from '@/data/routes';
+import { hasCurrentFareSignalAmongRoutes } from '@/lib/fare-signal';
 import { getTipsForScope } from '@/data/traveller-tips';
 import { getVisaLinkForCountry } from '@/lib/visa-links';
 import { TRAVEL_READY_SUPPORTED_COUNTRIES } from '@/lib/travel-ready-check';
@@ -54,6 +56,14 @@ export default async function DestinationPage({ params }: { params: Promise<{ sl
   }
 
   const dealsHere = getDealsByDestination(dest.slug);
+  // Fare fallback truth fix (August 2026): zero curated Deals for this
+  // destination must never be presented as zero tracked fares — see
+  // hasCurrentFareSignalAmongRoutes's own doc comment.
+  const nowIsoForFareCheck = new Date().toISOString().slice(0, 10);
+  const destinationHasFareSignalElsewhere = hasCurrentFareSignalAmongRoutes(
+    getRoutesByDestination(dest.slug).map((r) => r.slug),
+    nowIsoForFareCheck
+  );
   const travellerTips = getTipsForScope({ destinationSlug: dest.slug });
   const visaLink = getVisaLinkForCountry(dest.country);
   // Book-By intelligence strip — renders only for destinations served by a
@@ -195,7 +205,7 @@ export default async function DestinationPage({ params }: { params: Promise<{ sl
             </div>
           ) : (
             <div className="mt-8">
-              <NoFareFallback cityLabel={dest.city} />
+              <NoFareFallback cityLabel={dest.city} hasFareSignalElsewhere={destinationHasFareSignalElsewhere} />
             </div>
           )}
         </div>

@@ -13,8 +13,21 @@ import { TrackedOutboundLink } from './tracked-outbound-link';
  * Trip.com link that honestly represents "this page." Per JetStash's
  * fail-closed booking rule, those contexts get no provider CTA at all
  * rather than a generic Trip.com link — see lib/booking-providers.ts.
+ *
+ * `hasFareSignalElsewhere` (Fare fallback truth fix, August 2026): every
+ * multi-route call site above gates this component purely on whether it has
+ * zero curated Deal cards (data/deals.ts) — but "no curated Deal" and "no
+ * tracked fare" are separate, unrelated facts (a Deal is hand-curated
+ * marketing selection; a Fare Signal is evidence). A caller that has
+ * checked hasCurrentFareSignalAmongRoutes() (lib/fare-signal.ts) for its
+ * own route scope and found a genuine current Fare Signal must pass this as
+ * true, so this component never claims "we haven't logged a tracked fare"
+ * when JetStash actually has. The single-route route-guide call site never
+ * needs this — it already gates on shouldShowNoFareFallback(fareSignal), the
+ * fully correct per-route check, so this only ever applies false there and
+ * changes nothing.
  */
-export function NoFareFallback({ cityLabel, routeSlug }: { cityLabel: string; routeSlug?: string }) {
+export function NoFareFallback({ cityLabel, routeSlug, hasFareSignalElsewhere = false }: { cityLabel: string; routeSlug?: string; hasFareSignalElsewhere?: boolean }) {
   const tripComUrl = routeSlug ? getTripComFlightHandoffUrl(routeSlug) : null;
   return (
     <div className="flex flex-col items-center rounded-md border border-dashed border-ink-200 bg-white px-6 py-12 text-center">
@@ -22,8 +35,9 @@ export function NoFareFallback({ cityLabel, routeSlug }: { cityLabel: string; ro
         <SearchX className="h-5 w-5" strokeWidth={2} />
       </div>
       <p className="mt-4 max-w-sm text-sm leading-relaxed text-ink-600">
-        We haven't logged a tracked fare for {cityLabel} yet.
-        {tripComUrl ? ' Compare flights on Trip.com to see current options.' : ''}
+        {hasFareSignalElsewhere
+          ? <>There&apos;s no curated fare card for {cityLabel} yet, but tracked fare evidence is available on the individual route guides.</>
+          : <>We haven&apos;t logged a tracked fare for {cityLabel} yet.{tripComUrl ? ' Compare flights on Trip.com to see current options.' : ''}</>}
       </p>
       {tripComUrl ? (
         <>
