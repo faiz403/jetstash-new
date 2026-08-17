@@ -1,8 +1,10 @@
 import {
   getPublishableObservationsByRoute,
+  getPublishableObservationsByRouteAndCabin,
   isPubliclyPublishable,
   type FareObservation,
 } from '@/data/fare-observations';
+import type { DealCabin } from '@/data/deals';
 import { daysBetweenIso, getFareFreshnessState, type FareFreshnessState } from '@/lib/freshness-thresholds';
 
 export type FareSignalState = 'current' | 'recent' | 'none';
@@ -94,4 +96,47 @@ export function getFareSignalForRoute(routeSlug: string, nowIso: string): FareSi
 /** A route with any renderable Fare Signal must not show the no-fare fallback. */
 export function shouldShowNoFareFallback(fareSignal: FareSignal): boolean {
   return fareSignal.state === 'none';
+}
+
+/**
+ * Fare fallback truth fix (August 2026): the correct question for a
+ * multi-route scope (an airport, a destination, a region hub) is "does ANY
+ * route in this scope have a current, publicly-safe Fare Signal" — a
+ * completely separate question from "does a curated Deal card exist for
+ * this scope" (`data/deals.ts`). A page must never render "we haven't
+ * logged a tracked fare" copy just because it has zero curated Deals; the
+ * Tracked Fares discoverability audit (16 August 2026) found this
+ * conflation live on the Glasgow, Newcastle and Edinburgh airport pages —
+ * each has a genuine current Fare Signal on at least one route, but zero
+ * curated Deal, and so incorrectly rendered the "no tracked fare" fallback.
+ *
+ * Deliberately reuses getFareSignalForRoute() — the one canonical
+ * freshness/verification-aware derivation — rather than a raw
+ * FareObservation presence check, which would bypass the route-status gate
+ * (see isObservationPublishable in data/fare-observations.ts) and could
+ * resurface the exact class of leakage that gate exists to prevent.
+ *
+ * `'current'` only, not `'recent'` — matches "current display-ready Fare
+ * Signal," the same standard `/deals`'s and the homepage's own coverage
+ * stats already use, so this never claims stronger evidence exists than
+ * what a visitor would actually see if they followed through to the route.
+ */
+export function hasCurrentFareSignalAmongRoutes(routeSlugs: string[], nowIso: string): boolean {
+  return routeSlugs.some((slug) => getFareSignalForRoute(slug, nowIso).state === 'current');
+}
+
+/**
+ * Cabin-scoped sibling of hasCurrentFareSignalAmongRoutes, for a
+ * category page like /business-class where the relevant question is "does a
+ * current Business fare exist anywhere", not "does a current fare of any
+ * cabin exist on this specific route" — deriveFareSignal() itself is
+ * cabin-agnostic (a route's Fare Signal is its single latest observation
+ * regardless of cabin), so the fix is to feed it an already cabin-filtered
+ * observation list (getPublishableObservationsByRouteAndCabin) rather than
+ * duplicate its fresh/recent/none derivation logic locally.
+ */
+export function hasCurrentFareSignalForCabinAmongRoutes(routeSlugs: string[], cabin: DealCabin, nowIso: string): boolean {
+  return routeSlugs.some(
+    (slug) => deriveFareSignal(getPublishableObservationsByRouteAndCabin(slug, cabin, nowIso), nowIso).state === 'current'
+  );
 }
