@@ -1,7 +1,7 @@
 export type RouteWatchIntent = 'best-fare' | 'family-visit' | 'special-occasion' | 'business' | 'document-timing';
 
 export const ROUTE_WATCH_INTENT_OPTIONS: { value: RouteWatchIntent; label: string }[] = [
-  { value: 'best-fare', label: 'Just want the best price' },
+  { value: 'best-fare', label: 'I care most about a lower fare' },
   { value: 'family-visit', label: 'Visiting family' },
   { value: 'special-occasion', label: 'Eid, wedding or festival travel' },
   { value: 'business', label: 'Business travel' },
