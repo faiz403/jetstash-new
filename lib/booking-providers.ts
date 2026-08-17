@@ -50,6 +50,25 @@ export const TRIPCOM_UK_CURRENCY = 'GBP';
 export const PROVIDER_REL = 'nofollow sponsored noopener noreferrer';
 
 /**
+ * Fresh-search clarification (Trip.com handoff trust fix, August 2026).
+ *
+ * Every URL above is confirmed structurally dateless (see the file header —
+ * Trip.com's Flights page tool has no date field at all). That means a
+ * customer who has just read a specific dated Fare Signal (price, airline,
+ * departure/return dates, stops) and then clicks through lands on a fresh
+ * Trip.com route search that does not carry any of those dates or that
+ * itinerary across — Trip.com decides its own default dates and will not
+ * necessarily show the same airline, price or routing. This is the one
+ * shared sentence for every surface where a dated Fare Signal observation
+ * sits directly above a Trip.com CTA, so the distinction is never implied
+ * away and never worded slightly differently in two places. Only render it
+ * next to a CTA that follows a dated observation — a surface with no
+ * observed itinerary above the CTA has nothing to clarify.
+ */
+export const TRIPCOM_FRESH_SEARCH_NOTE =
+  'Trip.com opens a new route search. Re-enter the dates and itinerary shown above to compare like for like.';
+
+/**
  * Route-slug-keyed, exact dashboard-generated Trip.com Flights-page affiliate
  * links — see file header for provenance. 45 of JetStash's current 80 routes are
  * covered; the other 35 remain intentionally absent where Trip.com's tooling
