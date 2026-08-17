@@ -961,7 +961,7 @@ export const routes: Route[] = [
       note: 'Re-verified on 14 August 2026 against Manchester Airport\'s current media-centre route announcement: Pakistan International Airlines adds Lahore as its second direct Manchester destination from 3 July 2026. This confirms direct status, PIA as operator and the launch date. The source does not establish a current frequency, so frequency remains unpublished. PIA\'s own site was also checked for corroboration but does not publish a Lahore–Manchester schedule detail.',
     },
     intro:
-      'The flagship Pakistan corridor from the North of England. PIA runs direct Manchester to Lahore services (confirmed via Manchester Airport\'s own announcement, launched 3 July 2026), and for the North West\'s Punjabi community it\'s usually the most convenient option going: no Gulf connection, no extra layover, and no transfer point where baggage could go astray.',
+      'The flagship Pakistan corridor from the North of England. PIA runs direct Manchester to Lahore services (confirmed via Manchester Airport\'s own announcement, launched 3 July 2026) — a direct service for the North West\'s Punjabi community, avoiding a Gulf connection, an extra layover, and a transfer point where baggage could go astray.',
     bookingWindowNote:
       'Outside Eid and the summer school holidays, this window tends to be less pressured. Fares on peak-period routes often move in the final weeks before Eid — if your dates are fixed, aim to book at least 3 months ahead. Planning guidance, not a fare prediction.',
     peakPeriodIds: ['eid-al-fitr', 'eid-al-adha', 'uk-summer-holidays', 'wedding-season'],
@@ -1046,7 +1046,7 @@ export const routes: Route[] = [
       note: 'Emirates current route information states 21 flights per week and an 8-hour flight duration; both can vary by season.',
     },
     intro:
-      'Emirates\' Manchester to Dubai service is one of the more reliably priced long-haul routes from the North, helped by strong competition from connecting Gulf carriers flying out of other UK airports.',
+      'Emirates operates a direct Manchester to Dubai service, with connecting alternatives available via Gulf carriers flying from other UK airports.',
     bookingWindowNote:
       'Less sensitive to booking window than the South Asia routes. Winter, when UK schools are off, tends to carry the clearest premium; outside that, this route is generally less pressured.',
     peakPeriodIds: ['christmas-new-year', 'february-half-term', 'easter-holidays'],
@@ -1246,7 +1246,7 @@ export const routes: Route[] = [
       },
     ],
     intro:
-      'Heathrow to Mumbai has genuine multi-carrier competition. Air India and Virgin Atlantic each confirmed via their own current sources to run twice daily; British Airways also operates the route direct, though its exact daily count isn\'t separately confirmed. Comparing all three rather than booking the first result is consistently worthwhile.',
+      'Heathrow to Mumbai has genuine multi-carrier competition. Air India and Virgin Atlantic each confirmed via their own current sources to run twice daily; British Airways also operates the route direct, though its exact daily count isn\'t separately confirmed. With several carriers operating this route, compare the fare, itinerary and booking details for your own dates rather than booking the first result.',
     bookingWindowNote:
       'Less sensitive to booking window than the Punjab and Pakistan routes. Diwali and the December to January window remain the two periods when fares rise sharply, and February to April and September to October offer the most reliable value.',
     peakPeriodIds: ['diwali', 'christmas-new-year', 'uk-summer-holidays'],
