@@ -531,6 +531,92 @@ function travelReadyOpsStatus(now: Date): FounderSection {
   };
 }
 
+// ── 8c. Route verification review status ─────────────────────────────────
+// PR #146: Route.verification.reviewDueDate already gates public display
+// via isCurrentClaimValid()/getEffectiveRoutePresentation() (data/routes.ts)
+// — an expired review already fails closed to neutral "Verification
+// pending" copy on its own, never a stale "verified" claim continuing to
+// show. What was missing was founder visibility: nothing previously
+// surfaced which routes were approaching or past that date, so a founder
+// could not realistically track dozens of individual dates by memory. This
+// section is purely derived from existing route data — read-only, no
+// network call, no persisted state — and never changes a review date, a
+// verification status, or any customer-facing presentation; it only tells
+// the founder where to look. Reuses RULE_REVIEW_WATCH_DAYS
+// (lib/freshness-thresholds.ts) as the "approaching" horizon, the same
+// convention travelReadyOpsStatus above already uses for Travel Ready
+// rules — not a new threshold invented for this section. That horizon
+// controls only when this dashboard shows a reminder; it never changes
+// what reviewDueDate itself means or how the public site behaves.
+const MAX_DUE_SOON_ITEMS_SHOWN = 15;
+
+function routeVerificationReviewStatus(now: Date): FounderSection {
+  const nowIso = now.toISOString().slice(0, 10);
+  const verifiedRoutes = routes.filter((r) => r.verification);
+
+  const withDays = verifiedRoutes.map((route) => ({
+    route,
+    daysToReview: Math.floor(
+      (new Date(`${route.verification!.reviewDueDate}T00:00:00Z`).getTime() - new Date(`${nowIso}T00:00:00Z`).getTime()) / 86_400_000
+    ),
+  }));
+
+  const overdue = withDays.filter((r) => r.daysToReview < 0).sort((a, b) => a.daysToReview - b.daysToReview);
+  const dueSoon = withDays
+    .filter((r) => r.daysToReview >= 0 && r.daysToReview <= RULE_REVIEW_WATCH_DAYS)
+    .sort((a, b) => a.daysToReview - b.daysToReview);
+  const healthyCount = withDays.length - overdue.length - dueSoon.length;
+
+  const overdueItems: FounderItem[] = overdue.map(({ route, daysToReview }) => {
+    const daysOverdue = Math.abs(daysToReview);
+    return {
+      label: `${routeLabel(route.slug)}: overdue by ${daysOverdue} day${daysOverdue === 1 ? '' : 's'}`,
+      detail: `Review was due ${formatShortDate(route.verification!.reviewDueDate)} — this route's presentation has already failed closed to neutral "Verification pending" copy. Re-check the evidence against verification.sourceName/sourceUrl and update verification.verifiedDate/reviewDueDate in data/routes.ts if still supported, or leave it as-is if not.`,
+      status: 'attention',
+      href: `/routes/${route.slug}`,
+    };
+  });
+
+  // Kept concise on purpose (§6): with the current review-date clustering,
+  // dozens of routes can legitimately fall inside the watch window at once
+  // — rendering every one as a full card would make the section unusable.
+  // The nearest MAX_DUE_SOON_ITEMS_SHOWN are listed individually (most
+  // actionable first); the remainder is summarised as one count so the
+  // section stays honest about total volume without becoming a wall of
+  // cards. The headline below always states the true, uncapped totals.
+  const dueSoonShown = dueSoon.slice(0, MAX_DUE_SOON_ITEMS_SHOWN);
+  const dueSoonItems: FounderItem[] = dueSoonShown.map(({ route, daysToReview }) => ({
+    label: `${routeLabel(route.slug)}: due in ${daysToReview} day${daysToReview === 1 ? '' : 's'}`,
+    detail: `Review due ${formatShortDate(route.verification!.reviewDueDate)} — re-check the evidence before it lapses, or let it fail closed honestly if nothing current supports it.`,
+    status: 'watch',
+    href: `/routes/${route.slug}`,
+  }));
+  const hiddenDueSoonCount = dueSoon.length - dueSoonShown.length;
+  if (hiddenDueSoonCount > 0) {
+    dueSoonItems.push({
+      label: `+ ${hiddenDueSoonCount} more route${hiddenDueSoonCount === 1 ? '' : 's'} due within ${RULE_REVIEW_WATCH_DAYS} days`,
+      detail: 'Not listed individually to keep this section readable — see verification.reviewDueDate across data/routes.ts for the full list.',
+      status: 'watch',
+    });
+  }
+
+  const items = [...overdueItems, ...dueSoonItems];
+
+  return {
+    id: 'route-verification-review',
+    title: 'Route verification reviews',
+    priority: 'revenue',
+    status: worst(items.map((i) => i.status)),
+    headline:
+      overdue.length === 0 && dueSoon.length === 0
+        ? `All ${verifiedRoutes.length} verified routes are within a healthy review window.`
+        : `${overdue.length} route${overdue.length === 1 ? '' : 's'} overdue for re-verification, ${dueSoon.length} due within ${RULE_REVIEW_WATCH_DAYS} days, ${healthyCount} healthy. An expired review already fails closed to neutral presentation on its own — this is a review-timing reminder, not a sign anything dishonest is currently showing.`,
+    items,
+    action:
+      'For an overdue or soon-due route: re-check the evidence against verification.sourceName/sourceUrl, then update verification.verifiedDate and reviewDueDate in data/routes.ts if the direct/connecting claim still holds. If nothing current supports it, leave the review date as-is — the route already fails closed to honest neutral copy automatically; this dashboard never extends a review date or reverifies a route on its own.',
+  };
+}
+
 // ── 9. Pages with stale content ──────────────────────────────────────────
 function staleContent(): FounderSection {
   const items: FounderItem[] = [];
@@ -701,6 +787,7 @@ export function getFounderSnapshot(now: Date): FounderSnapshot {
     fareObservationCoverage(),
     bookByCadenceStatus(now),
     travelReadyOpsStatus(now),
+    routeVerificationReviewStatus(now),
     photographyStatus(),
     warningsForReview(),
     staleContent(),
