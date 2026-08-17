@@ -1,0 +1,256 @@
+import { describe, expect, it } from 'vitest';
+import { readFileSync } from 'fs';
+import { join } from 'path';
+import { fareObservations, type FareObservation } from '@/data/fare-observations';
+import { generateRouteWatchFareCandidates } from '@/lib/route-watch-fare-trigger';
+import { qualifyFareWatcherObservation } from '@/lib/fare-watcher';
+import { ROUTE_WATCH_INTENT_OPTIONS, isRouteWatchIntent } from '@/lib/route-watch-options';
+import { ROUTE_WATCH_INITIAL_COPY } from '@/lib/route-watch-config';
+import { getFounderSnapshot } from '@/lib/founder-insights';
+
+/**
+ * Route Watch meaningful lower-fare trigger (PR #143, August 2026).
+ *
+ * The one rule this file exists to lock in: Route Watch reuses Fare
+ * Watcher's existing, already-reviewed evidence engine (lib/fare-watcher.ts)
+ * completely unchanged — it never invents a second, looser threshold just
+ * to keep the Route Watch queue non-empty. A bare 'new-recent-low' (clears
+ * the previous-low bar but not both meaningful-drop thresholds together)
+ * must never enter this queue, even though it remains valid Fare Watcher
+ * intelligence elsewhere. See docs/project-control/ROUTE_WATCH_PILOT_PROCEDURE.md.
+ */
+
+const routeWatchFareTriggerSrc = readFileSync(join(process.cwd(), 'lib', 'route-watch-fare-trigger.ts'), 'utf8');
+const founderInsightsSrc = readFileSync(join(process.cwd(), 'lib', 'founder-insights.ts'), 'utf8');
+const procedureDoc = readFileSync(join(process.cwd(), 'docs', 'project-control', 'ROUTE_WATCH_PILOT_PROCEDURE.md'), 'utf8');
+
+function fixture(overrides: Partial<FareObservation> = {}): FareObservation {
+  return {
+    id: 'fixture', routeSlug: 'fixture-route', cabin: 'Economy', observedDate: '2026-08-10',
+    price: 500, priceNote: 'return, one adult', source: 'Example', observedVia: 'google-flights',
+    sourceUrl: 'https://example.test', currency: 'GBP', baggage: 'not stated', profileId: 'fixture-v1',
+    observationReason: 'routine-weekly', comparisonEligibility: 'current', departureDate: '2026-10-05', returnDate: '2026-10-19', fareDirectness: 'connecting',
+    ...overrides,
+  };
+}
+
+function baselineFixture(id: string, observedDate: string, departureDate: string, price: number, routeSlug = 'fixture-route'): FareObservation {
+  const returnDate = new Date(`${departureDate}T12:00:00Z`);
+  returnDate.setUTCDate(returnDate.getUTCDate() + 14);
+  return fixture({ id, routeSlug, observedDate, departureDate, returnDate: returnDate.toISOString().slice(0, 10), price });
+}
+
+describe('A. Public intent wording', () => {
+  it('the customer-facing label is exactly "I care most about a lower fare"', () => {
+    const opt = ROUTE_WATCH_INTENT_OPTIONS.find((o) => o.value === 'best-fare');
+    expect(opt?.label).toBe('I care most about a lower fare');
+  });
+
+  it('the stored slug/value remains "best-fare" — no Brevo data migration required', () => {
+    expect(isRouteWatchIntent('best-fare')).toBe(true);
+  });
+
+  it('the label never claims best market price, cheapest fare, continuous monitoring or automatic alerts', () => {
+    const label = ROUTE_WATCH_INTENT_OPTIONS.find((o) => o.value === 'best-fare')!.label;
+    expect(label.toLowerCase()).not.toMatch(/\bbest\b/);
+    expect(label.toLowerCase()).not.toMatch(/cheapest/);
+    expect(label.toLowerCase()).not.toMatch(/automatic|continuous|live|guarantee/);
+  });
+
+  it('the existing "not an automatic price-drop alert" disclaimer is unchanged by this PR', () => {
+    expect(ROUTE_WATCH_INITIAL_COPY).toMatch(/not an automatic price-drop alert/i);
+  });
+});
+
+describe('B–G. Route Watch fare-candidate gate — only clears when Fare Watcher\'s strong threshold is met', () => {
+  const strongBaseline = [
+    baselineFixture('a', '2026-08-01', '2026-09-26', 500),
+    baselineFixture('b', '2026-08-02', '2026-09-27', 510),
+    baselineFixture('c', '2026-08-03', '2026-09-28', 520),
+  ]; // median 510
+
+  it('B. a standout candidate (clears >=£25 AND >=10% below median, and is a new low) enters the queue', () => {
+    const candidate = fixture({ id: 'standout', price: 400 }); // -110 / -21.6%, below previous low 500
+    const all = [candidate, ...strongBaseline];
+    const result = qualifyFareWatcherObservation(candidate, all, '2026-08-11');
+    expect(result.qualification).toBe('standout-candidate');
+
+    const queued = generateRouteWatchFareCandidates(all, '2026-08-11');
+    expect(queued).toHaveLength(1);
+    expect(queued[0]).toMatchObject({ routeSlug: 'fixture-route', currentFare: 400, qualification: 'standout-candidate' });
+  });
+
+  it('B2. a notable drop (clears both thresholds but is not a new low) also enters the queue', () => {
+    // median 510, previousLow 500. price 450: -60/-11.76%, clears both thresholds, but 450 < 500 so it IS a new low too —
+    // construct a case that clears both thresholds without being a new low by raising previousLow above the candidate only via a tighter baseline.
+    const baseline = [
+      baselineFixture('a', '2026-08-01', '2026-09-26', 440), // previous low, but NOT what median drops against alone
+      baselineFixture('b', '2026-08-02', '2026-09-27', 560),
+      baselineFixture('c', '2026-08-03', '2026-09-28', 560),
+    ]; // median 560, previousLow 440
+    const candidate = fixture({ id: 'notable', price: 450 }); // vs median 560: -110/-19.6% (clears both), but 450 > previousLow 440 so NOT a new low
+    const all = [candidate, ...baseline];
+    const result = qualifyFareWatcherObservation(candidate, all, '2026-08-11');
+    expect(result.qualification).toBe('notable-drop');
+
+    const queued = generateRouteWatchFareCandidates(all, '2026-08-11');
+    expect(queued).toHaveLength(1);
+    expect(queued[0].qualification).toBe('notable-drop');
+  });
+
+  it('C. clears >=£25 but not >=10% below median → does NOT enter the queue', () => {
+    // median 1000 baseline, candidate 977 -> diff 23... use larger baseline to isolate axes.
+    const baseline = [
+      baselineFixture('a', '2026-08-01', '2026-09-26', 1000),
+      baselineFixture('b', '2026-08-02', '2026-09-27', 1000),
+      baselineFixture('c', '2026-08-03', '2026-09-28', 1000),
+    ]; // median 1000
+    const candidate = fixture({ id: 'pound-only', price: 970 }); // -£30 (>=25) but only -3% (<10%)
+    const all = [candidate, ...baseline];
+    const result = qualifyFareWatcherObservation(candidate, all, '2026-08-11');
+    expect(result.differencePounds).toBe(30);
+    expect(result.differencePercent).toBeCloseTo(3, 1);
+    expect(result.qualification).not.toBe('standout-candidate');
+    expect(result.qualification).not.toBe('notable-drop');
+
+    expect(generateRouteWatchFareCandidates(all, '2026-08-11')).toHaveLength(0);
+  });
+
+  it('D. clears >=10% but not >=£25 below median → does NOT enter the queue', () => {
+    const baseline = [
+      baselineFixture('a', '2026-08-01', '2026-09-26', 100),
+      baselineFixture('b', '2026-08-02', '2026-09-27', 100),
+      baselineFixture('c', '2026-08-03', '2026-09-28', 100),
+    ]; // median 100
+    const candidate = fixture({ id: 'percent-only', price: 89 }); // -£11 (<25) but -11% (>=10%)
+    const all = [candidate, ...baseline];
+    const result = qualifyFareWatcherObservation(candidate, all, '2026-08-11');
+    expect(result.differencePounds).toBe(11);
+    expect(result.differencePercent).toBeCloseTo(11, 1);
+    expect(result.qualification).not.toBe('standout-candidate');
+    expect(result.qualification).not.toBe('notable-drop');
+
+    expect(generateRouteWatchFareCandidates(all, '2026-08-11')).toHaveLength(0);
+  });
+
+  it('E. new-recent-low without clearing the strong threshold → does NOT enter the queue (the real Manchester-Lahore case)', () => {
+    // Reproduces the real archive shape: 574 vs median 620, previous low 578 — a new low, only 7.4% below median.
+    const baseline = [
+      baselineFixture('a', '2026-08-01', '2026-09-26', 578),
+      baselineFixture('b', '2026-08-02', '2026-09-27', 620),
+      baselineFixture('c', '2026-08-03', '2026-09-28', 645),
+    ]; // median 620, previousLow 578
+    const candidate = fixture({ id: 'new-low', price: 574 });
+    const all = [candidate, ...baseline];
+    const result = qualifyFareWatcherObservation(candidate, all, '2026-08-11');
+    expect(result.qualification).toBe('new-recent-low');
+    expect(result.differencePercent).toBeLessThan(10);
+
+    expect(generateRouteWatchFareCandidates(all, '2026-08-11')).toHaveLength(0);
+  });
+
+  it('F. an ordinary fare → does NOT enter the queue', () => {
+    const candidate = fixture({ id: 'ordinary', price: 505 });
+    const all = [candidate, ...strongBaseline];
+    const result = qualifyFareWatcherObservation(candidate, all, '2026-08-11');
+    expect(result.qualification).toBe('ordinary-fare');
+    expect(generateRouteWatchFareCandidates(all, '2026-08-11')).toHaveLength(0);
+  });
+
+  it('G. insufficient baseline (< 3 comparable prior observations) → does NOT enter the queue', () => {
+    const candidate = fixture({ id: 'thin', price: 400 });
+    const all = [candidate, baselineFixture('a', '2026-08-01', '2026-09-26', 500)];
+    const result = qualifyFareWatcherObservation(candidate, all, '2026-08-11');
+    expect(result.qualification).toBe('insufficient-baseline');
+    expect(generateRouteWatchFareCandidates(all, '2026-08-11')).toHaveLength(0);
+  });
+
+  it('never redeclares Fare Watcher\'s own threshold constants — only calls into its exports', () => {
+    // The derivation must call generateFareWatcherCandidates from fare-watcher.ts, never
+    // redeclare a new MIN_DROP-style constant or threshold assignment of its own. Mentioning
+    // the numbers in a doc comment (referencing FARE_WATCHER_MIN_DROP_POUNDS/PERCENT by name)
+    // is fine — a new executable threshold constant is not.
+    expect(routeWatchFareTriggerSrc).toContain("from '@/lib/fare-watcher'");
+    expect(routeWatchFareTriggerSrc).toContain('generateFareWatcherCandidates(');
+    expect(routeWatchFareTriggerSrc).not.toMatch(/export const \w*(THRESHOLD|MIN_DROP|MIN_BASELINE)\w*\s*=/i);
+    expect(routeWatchFareTriggerSrc).not.toMatch(/=\s*25\s*[;,)]/); // no new "= 25" threshold assignment
+    expect(routeWatchFareTriggerSrc).not.toMatch(/=\s*10\s*[;,)]/); // no new "= 10" threshold assignment
+  });
+});
+
+describe('Real archive expectation (17 August 2026 baseline) — zero candidates is the honest, expected result', () => {
+  it('the real fareObservations archive produces zero Route Watch fare candidates today, because the one new-recent-low case does not clear the strong threshold', () => {
+    const nowIso = new Date().toISOString().slice(0, 10);
+    const candidates = generateRouteWatchFareCandidates(fareObservations, nowIso);
+    expect(candidates).toHaveLength(0);
+  });
+});
+
+describe('H. No automatic send path or external provider call exists in candidate derivation', () => {
+  // Both files legitimately mention "Brevo" in prose (instructing the founder to check Brevo
+  // manually at send time) — that's the point of a human-reviewed pilot. What must never exist
+  // is an actual call: an import of a Brevo/email helper, or a fetch.
+  it('lib/route-watch-fare-trigger.ts makes no actual Brevo, email, or network call', () => {
+    expect(routeWatchFareTriggerSrc).not.toMatch(/fetch\(/);
+    expect(routeWatchFareTriggerSrc).not.toMatch(/sendResendEmail|upsertBrevoContact|getBrevoContact/);
+    expect(routeWatchFareTriggerSrc).not.toMatch(/import .*from ['"]@\/lib\/email['"]/);
+  });
+
+  it('the new founder-insights.ts section makes no actual Brevo, email, or network call either', () => {
+    const section = founderInsightsSrc.slice(
+      founderInsightsSrc.indexOf('function routeWatchFareCandidates'),
+      founderInsightsSrc.indexOf('// ── 1. Fare observation coverage')
+    );
+    expect(section).not.toMatch(/fetch\(/);
+    expect(section).not.toMatch(/sendResendEmail|upsertBrevoContact|getBrevoContact/);
+  });
+
+  it('founder-insights.ts does not import any Brevo/email helper for this section (module-level imports unchanged for that concern)', () => {
+    expect(founderInsightsSrc).not.toMatch(/import .*from ['"]@\/lib\/email['"]/);
+  });
+
+  it('the founder snapshot includes the new section without requiring any network dependency', () => {
+    const snapshot = getFounderSnapshot(new Date('2026-08-17T12:00:00.000Z'));
+    const section = snapshot.grouped['nice-to-have'].find((s) => s.id === 'route-watch-fare-candidates');
+    expect(section).toBeDefined();
+    expect(section!.title).toBe('Route Watch — lower-fare candidates');
+  });
+});
+
+describe('I. Trust wording — no overclaim in rendered founder copy or customer-facing labels', () => {
+  // Applied only to actually-rendered copy (founder dashboard text, the customer intent label) —
+  // NOT to the procedure doc's own guardrail prose, which must legitimately name the forbidden
+  // phrases in order to warn against them ("must never say: best price, cheapest fare, ...").
+  const forbidden = [/\bcheapest\b/i, /best market price/i, /guaranteed saving/i, /\blive alert\b/i, /market-wide price drop/i, /fare still available/i];
+
+  it('the founder section headline/action text never overclaims', () => {
+    const snapshot = getFounderSnapshot(new Date('2026-08-17T12:00:00.000Z'));
+    const section = snapshot.grouped['nice-to-have'].find((s) => s.id === 'route-watch-fare-candidates')!;
+    const text = [section.headline, section.action ?? '', ...section.items.map((i) => i.detail)].join(' ');
+    for (const pattern of forbidden) expect(text).not.toMatch(pattern);
+  });
+
+  it('the customer intent label never overclaims', () => {
+    const label = ROUTE_WATCH_INTENT_OPTIONS.find((o) => o.value === 'best-fare')!.label;
+    for (const pattern of forbidden) expect(label).not.toMatch(pattern);
+  });
+
+  it('the empty state explicitly says nothing qualifies, rather than implying nothing was checked', () => {
+    // Real archive today has zero candidates — exercise the actual empty-state copy.
+    const snapshot = getFounderSnapshot(new Date());
+    const section = snapshot.grouped['nice-to-have'].find((s) => s.id === 'route-watch-fare-candidates')!;
+    expect(section.items).toHaveLength(0);
+    expect(section.headline).toMatch(/strong evidence threshold/i);
+  });
+
+  it('the pilot procedure explicitly states it reuses Fare Watcher unchanged and never loosens the threshold to manufacture candidates', () => {
+    // \s+ (not literal spaces) because the markdown source wraps this prose across lines.
+    expect(procedureDoc).toMatch(/reuses\s+Fare\s+Watcher's\s+existing\s+evidence\s+engine\s+unchanged/i);
+    expect(procedureDoc).toMatch(/not\s+a\s+gap\s+to\s+work\s+around\s+by\s+loosening\s+the\s+threshold/i);
+  });
+
+  it('the pilot procedure explicitly names its own guardrail phrases (must legitimately mention them to forbid them)', () => {
+    expect(procedureDoc).toMatch(/must\s+\*\*never\*\*\s+say/i);
+    expect(procedureDoc).toMatch(/nothing\s+sends\s+itself|nothing\s+sends\s+automatically|automatic\s+send/i);
+  });
+});

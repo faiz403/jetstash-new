@@ -1,7 +1,11 @@
 # Route Watch — First Operating Pilot Procedure
 
 **Recorded:** 8 August 2026, following a full audit of the existing Route Watch implementation.
-**Status:** manual pilot, deliberately no code changes. See `docs/project-control/DECISIONS.md`
+**Updated:** 17 August 2026 (PR #143) — added candidate source B below (evidence-backed
+lower-fare candidates from Fare Watcher). Everything else in this procedure is unchanged.
+**Status:** manual pilot. PR #143 added one small, deterministic derivation
+(`lib/route-watch-fare-trigger.ts`) that surfaces candidates on `/founder`; it added no send
+automation, no cron, and no new external dependency. See `docs/project-control/DECISIONS.md`
 ("Route Watch is human-reviewed today") for the decision this procedure implements.
 
 ## What this is, and what it deliberately is not
@@ -35,47 +39,93 @@ Brevo's own dashboard). If this manual process reveals genuine, specific frictio
   segment preview before every send regardless (see below) — never assume it stayed the same as
   last time.
 
-## Trigger
+## Trigger — two legitimate candidate sources, neither automatic
 
-A send is only ever considered after a **new, dated entry in `data/route-status-events.ts`** on a
-pilot route. Never a schedule, never a cron, never a "it's been a while, let's check in" impulse.
-The ledger entry's own required `SourceRef` (a real URL and an `accessedAt` date, enforced by the
-type system) is the evidence a send would be based on.
+A send is only ever considered after one of the following. Never a schedule, never a cron, never
+an "it's been a while, let's check in" impulse. Both sources only ever produce a **candidate** for
+founder review — neither one sends anything by itself.
+
+**A. A new, dated entry in `data/route-status-events.ts`** on a pilot route. The ledger entry's own
+required `SourceRef` (a real URL and an `accessedAt` date, enforced by the type system) is the
+evidence a send would be based on.
+
+**B. A meaningful lower-fare candidate from Fare Watcher** (PR #143, 17 August 2026), surfaced by
+`/founder`'s "Route Watch — lower-fare candidates" section
+(`routeWatchFareCandidates()` in `lib/founder-insights.ts`, deriving from
+`generateRouteWatchFareCandidates()` in `lib/route-watch-fare-trigger.ts`). This is specifically for
+subscribers whose `WATCH_INTENT` is `best-fare` ("I care most about a lower fare"). It **reuses
+Fare Watcher's existing evidence engine unchanged** (`lib/fare-watcher.ts`) — the same ≥£25-and-≥10%-
+below-a-comparable-median standard, the same ≥3-point baseline requirement, the same route/cabin/
+currency/profile/trip-length/booking-horizon comparability gate already used for Standout Fares
+elsewhere in JetStash. **Deliberately excludes** a bare `new-recent-low` (clears the previous-low bar
+but not both meaningful-drop thresholds together) — real example from the archive, 17 August 2026:
+Manchester–Lahore at £574 against a £620 comparable median is only a 7.4% drop and £4 below the
+previous low, so it stays `new-recent-low` and does **not** enter this queue. **Zero qualifying
+candidates on a given day is expected and correct**, not a gap to work around by loosening the
+threshold. This source has no first-ever-observation trigger and no Fare-Signal-state
+reconstruction — those were considered and deliberately excluded from PR #143's scope; see
+`docs/project-control/DECISIONS.md`.
 
 ## Review step — human judgement only
 
-The founder reads the ledger event and `/founder`'s alert queue, and decides in their own judgement
-whether the change is genuinely meaningful to a route's watchers. No part of this is automated or
-scored by code:
+The founder reads the candidate (a route-status event, or a Fare Watcher lower-fare candidate) and
+`/founder`'s alert queue, and decides in their own judgement whether it's genuinely meaningful to
+that route's watchers. No part of this is automated or scored by code beyond Fare Watcher's own
+existing qualification:
 
-- No automated judgement of "meaningfulness" exists or should be built for this pilot.
+- No automated judgement of "meaningfulness" beyond Fare Watcher's existing threshold exists or
+  should be built for this pilot.
 - **If nothing meaningful changed, send nothing.** There is no obligation to send just because a
-  ledger event exists — plenty of ledger events (e.g. `frequency-change`, routine `service-launched`
-  entries) are historical/advisory and not watcher-relevant on their own.
+  candidate exists — plenty of route-status ledger events (e.g. `frequency-change`, routine
+  `service-launched` entries) are historical/advisory and not watcher-relevant on their own, and a
+  Fare Watcher candidate is still only ever a lead, not a verified fact, until the founder rechecks
+  the source.
 - Founder approval is the review step itself — in a pilot this size there is one person doing the
   reviewing and the sending, so there is no separate sign-off stage to define.
 
 ## Duplicate-send prevention — check both, every time, before sending
 
 1. **Brevo's own campaign history** — check whether a campaign already went out referencing this
-   route/event.
+   route/event (or, for a fare candidate, this route/fare-check).
 2. **The private operating log** (see template below, kept outside this repository) — check
-   whether this exact `{route slug, route-status event ID}` pair has already been logged as sent.
+   whether this exact `{route slug, candidate ID}` pair has already been logged as sent. For a
+   route-status send, the candidate ID is the ledger event's own `id`. For a fare candidate, use
+   the `FareWatcherCandidate.id` (`fare-watcher-<observationId>`, already stable and unique per
+   `lib/fare-watcher.ts`) — no separate ID scheme or persisted state is needed.
 
-**Never send twice for the same route-status event.** If either check shows it's already gone out,
-stop — do not send again "just in case" the first one didn't land.
+**Never send twice for the same candidate.** If either check shows it's already gone out, stop — do
+not send again "just in case" the first one didn't land.
 
-## Segmentation — Brevo, `WATCH_ROUTE` only
+## Segmentation — Brevo, `WATCH_ROUTE` (+ `WATCH_INTENT` for fare candidates)
 
 1. In Brevo, open Contacts → Segments (or the campaign's own recipient filter).
 2. Add filter condition: `WATCH_ROUTE` **contains** `<route-slug>` (e.g. `manchester-lahore`).
-3. **Never segment using `WATCH_AIRPORT`, `WATCH_DESTINATION` or `WATCH_REGION`.** Those three
+3. **For a fare candidate specifically, also filter `WATCH_INTENT` equals `best-fare`** — only
+   subscribers who said "I care most about a lower fare" for that route should receive a
+   price-oriented send. A route-status send is not intent-filtered this way (a service change
+   matters to every watcher of that route, regardless of stated intent).
+4. **Never segment using `WATCH_AIRPORT`, `WATCH_DESTINATION` or `WATCH_REGION`.** Those three
    fields are overwritten on every signup and only reflect a subscriber's *most recent* Route Watch
    signup — for anyone watching more than one route, they do not represent all of their preferences.
    `WATCH_ROUTE` (the comma-delimited, capped list) is the only field that does.
-4. **Preview the recipient count before sending.** Confirm it's the small, expected segment for
+5. **Preview the recipient count before sending.** Confirm it's the small, expected segment for
    that one route — not the shared list Route Watch and Travel Club both write into (see
    `docs/COMMERCIAL_RESET_PHASE_1.md`'s corrected note on this).
+
+## Customer email language standard — fare candidates only
+
+A future founder-composed lower-fare send should carry this meaning, adapted only as far as
+grammar requires:
+
+> "We checked this route again and found a lower comparable fare than our recent checks."
+
+Any numeric context shown (price, £/% difference, dates) must come directly from the
+`FareWatcherCandidate` evidence already computed — never a hand-typed or rounded-for-effect figure.
+It must **never** say: best price, cheapest fare, a market-wide price drop, a live alert, a
+guaranteed saving, a limited-time price, or that the fare is still available. `FareWatcherCandidate.
+evidenceLimits` ("The comparison describes JetStash observations only; it is not a market-wide
+claim.") is the standing reminder of why — echo that discipline in the email copy itself, not just
+the internal record.
 
 ## Sending — Brevo Campaigns only
 
@@ -103,8 +153,9 @@ Do not fill in real values in this file or anywhere in this repository.
 | Field | Purpose |
 |---|---|
 | Route slug | Which pilot route this send was about |
-| Route-status event ID | The exact `data/route-status-events.ts` entry (`id`) this send is based on |
-| Evidence checked date | When the founder actually reviewed the ledger event and its source |
+| Candidate source | `route-status` or `fare-watcher` |
+| Candidate ID | For a route-status send, the `data/route-status-events.ts` entry's own `id`. For a fare candidate, the `FareWatcherCandidate.id` (`fare-watcher-<observationId>`) |
+| Evidence checked date | When the founder actually reviewed the candidate and its source |
 | Founder approval date | When the decision to send was made |
 | Brevo campaign ID | Brevo's own campaign identifier, for cross-checking campaign history |
 | Send date | When the campaign actually went out |
@@ -113,18 +164,27 @@ Do not fill in real values in this file or anywhere in this repository.
 
 ## What this pilot is not, and what it must never become without a new, explicit decision
 
-- No sending automation, cron job, or scheduled send of any kind.
+- No sending automation, cron job, or scheduled send of any kind — PR #143 added a read-only
+  candidate *derivation* (`lib/route-watch-fare-trigger.ts`, surfaced on `/founder`), never a send
+  path. Founder review, Brevo segmentation and the send itself remain exactly as manual as before.
 - No new analytics event for sends (nothing was added to `lib/analytics.ts`'s event vocabulary).
-- No `data/` send ledger or any other code change — the private log above is a document the founder
-  edits directly, not something the application reads, writes, or displays.
+- No `data/` send ledger, no persisted candidate state, and no Brevo query from candidate
+  derivation — the private log above is a document the founder edits directly, not something the
+  application reads, writes, or displays.
 - No exposure of subscriber counts, email addresses, or campaign statistics anywhere in this public
   repository.
-- No real Brevo contacts were created, modified, or emailed as part of writing this procedure.
+- No real Brevo contacts were created, modified, or emailed as part of writing this procedure or
+  implementing PR #143.
+- No "first fare evidence available" trigger — considered during PR #143's rule-definition audit
+  and deliberately excluded: it's a different event from "a lower fare," and mixing it into the
+  price-oriented intent would answer a promise the customer didn't actually make. May be considered
+  separately later as its own explicit decision.
 
 ## When to reconsider building something
 
 Only after the manual pilot has actually run — through at least a small number of real candidate
-events — and reveals a specific, concrete friction point (e.g. the duplicate-check is genuinely
-error-prone in practice, or segment-preview counts are unreliable). At that point, revisit
-`docs/project-control/DECISIONS.md`'s Route Watch entry with the real evidence, and scope any code
-change as its own separate, reviewed piece of work — never speculatively ahead of that evidence.
+events (route-status or fare-watcher) — and reveals a specific, concrete friction point (e.g. the
+duplicate-check is genuinely error-prone in practice, or segment-preview counts are unreliable). At
+that point, revisit `docs/project-control/DECISIONS.md`'s Route Watch entry with the real evidence,
+and scope any code change as its own separate, reviewed piece of work — never speculatively ahead of
+that evidence.

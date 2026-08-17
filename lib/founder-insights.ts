@@ -4,6 +4,7 @@ import { routeStatusEvents } from '@/data/route-status-events';
 import { destinations, getDestinationBySlug } from '@/data/destinations';
 import { getAirportBySlug } from '@/data/airports';
 import { fareObservations, getObservationsByRoute, getLatestObservation } from '@/data/fare-observations';
+import { generateRouteWatchFareCandidates } from '@/lib/route-watch-fare-trigger';
 import { routeWarnings } from '@/data/route-warnings';
 import { imageCoverage } from '@/lib/brand-images';
 import { hasTripComRoute, PROVIDER_NAME } from '@/lib/booking-providers';
@@ -121,6 +122,48 @@ function engineAlertQueue(now: Date): FounderSection {
         : `${items.length} of ${snapshots.length} engine-covered routes have a verdict worth reviewing for a Route Watch send. No deadline — nothing sends itself.`,
     items,
     action: 'Review each route, confirm the underlying fact is still accurate, and send a Route Watch email to that route\'s watchers via Brevo if it\'s genuinely worth their attention — same manual-send model as Travel Club.',
+  };
+}
+
+// ── 0b. Route Watch — meaningful lower-fare candidates ───────────────────
+// PR #143: makes the "I care most about a lower fare" Route Watch intent
+// (lib/route-watch-options.ts) genuinely operable, without weakening
+// JetStash's existing Standout Fare evidence standard to manufacture
+// candidates. Deterministic from fareObservations alone — no Brevo call
+// here; the founder checks WATCH_ROUTE + WATCH_INTENT === 'best-fare'
+// subscribers manually in Brevo at send time (see
+// docs/project-control/ROUTE_WATCH_PILOT_PROCEDURE.md). Deliberately reuses
+// generateRouteWatchFareCandidates (lib/route-watch-fare-trigger.ts), which
+// itself reuses Fare Watcher's existing engine unchanged — never a second,
+// looser threshold invented just to keep this queue non-empty. Zero
+// candidates is an honest, expected result on a given day, not a defect.
+function routeWatchFareCandidates(now: Date): FounderSection {
+  const nowIso = now.toISOString().slice(0, 10);
+  const candidates = generateRouteWatchFareCandidates(fareObservations, nowIso);
+
+  const items: FounderItem[] = candidates.map((c) => ({
+    label: `${routeLabel(c.routeSlug)}: ${c.currency} ${c.currentFare} (${c.qualification === 'standout-candidate' ? 'standout candidate' : 'notable drop'})`,
+    detail:
+      `£${c.currentFare} vs a comparable median of £${c.baselineMedian} (previous low £${c.previousLow}) — `
+      + `£${c.differencePounds} / ${c.differencePercent.toFixed(1)}% below median, from ${c.baselineSampleSize} comparable prior checks. `
+      + `Checked ${c.checkedDate}, travel ${c.travelDates.departureDate} to ${c.travelDates.returnDate}, ${c.airlineOrProvider}. `
+      + `Verify the source, then check Brevo for WATCH_ROUTE + WATCH_INTENT=best-fare subscribers on this route before deciding whether to send.`,
+    status: 'watch',
+    href: `/routes/${c.routeSlug}`,
+  }));
+
+  return {
+    id: 'route-watch-fare-candidates',
+    title: 'Route Watch — lower-fare candidates',
+    priority: 'nice-to-have',
+    status: items.length > 0 ? 'watch' : 'ok',
+    headline:
+      items.length === 0
+        ? "No fare observation currently clears Fare Watcher's strong evidence threshold (≥£25 and ≥10% below a ≥3-point comparable median) — nothing qualifies for a Route Watch lower-fare send today. That's expected on a thin archive, not a gap to work around."
+        : `${items.length} fare observation${items.length === 1 ? '' : 's'} clear Fare Watcher's strong evidence threshold and may be worth a manual Route Watch send to that route's "I care most about a lower fare" subscribers. Nothing sends itself.`,
+    items,
+    action:
+      'For each candidate: verify the source, check Brevo for WATCH_ROUTE + WATCH_INTENT=best-fare subscribers on this route, check the private operating log and Brevo campaign history for a duplicate (see docs/project-control/ROUTE_WATCH_PILOT_PROCEDURE.md), then send manually via Brevo Campaigns only if genuinely worth it — same manual-send model as the route-status queue above.',
   };
 }
 
@@ -654,6 +697,7 @@ export function getFounderSnapshot(now: Date): FounderSnapshot {
     serviceChangesStatus(now),
     affiliateStatus(),
     engineAlertQueue(now),
+    routeWatchFareCandidates(now),
     fareObservationCoverage(),
     bookByCadenceStatus(now),
     travelReadyOpsStatus(now),

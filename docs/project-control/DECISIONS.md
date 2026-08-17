@@ -87,6 +87,26 @@ public send ledger naming real subscriber counts or campaign statistics. A code-
 manual pilot has actually run and reveals genuine, specific friction — not designed speculatively
 ahead of that evidence.
 
+**Meaningful lower-fare trigger (PR #143, 17 August 2026):** the operating-truth audit found that
+Route Watch's "I care most about a lower fare" intent (relabelled from "Just want the best price" —
+same wording-safety reasoning as the label change itself) had no operable trigger at all: no code
+path compared a new fare observation against a prior one, and `/founder`'s only existing "consider a
+Route Watch send" signal (`engineAlertQueue`) is Travel-Readiness/booking-timing logic, unrelated to
+price. PR #143 closes that gap the smallest way available: `lib/route-watch-fare-trigger.ts` reuses
+Fare Watcher's existing, already-reviewed evidence engine (`lib/fare-watcher.ts`) unchanged — same
+≥£25-and-≥10%-below-median threshold, same ≥3-point comparable baseline, same comparability gate —
+filtered to the two qualifications that clear both thresholds together (`standout-candidate`,
+`notable-drop`). A bare `new-recent-low` (clears the previous-low bar but not both meaningful-drop
+thresholds) is deliberately excluded from this queue, even though it remains valid Fare Watcher
+intelligence elsewhere — Route Watch must not quietly weaken JetStash's existing evidence standard
+just to keep a queue non-empty. A "first-ever fare evidence for this route" trigger was audited,
+found technically provable, and deliberately left out of PR #143's scope: it is a different event
+from "a lower fare," and answering a promise the customer didn't make would be its own honesty
+problem. Route Watch remains human-reviewed and manual: this PR added a read-only candidate
+derivation surfaced on `/founder`, never a send path, a Brevo query, or persisted state. It does
+**not** become automated fare monitoring, real-time alerting, continuous market scanning,
+cheapest-price tracking, or automatic email sending.
+
 ### Signature Collection visual identity
 
 Use cohesive, owned-feeling JetStash photography and visual direction instead of generic stock.
