@@ -139,7 +139,24 @@ export function DealCard({ deal }: { deal: Deal }) {
 
             <div className="mt-4 flex items-center gap-1.5 text-xs text-ink-400">
               <span className="h-1.5 w-1.5 rounded-full bg-ink-300" />
-              No fare checks logged yet — check the live price below
+              {isBundledProductDeal(deal)
+                // Antalya fare/package truth fix (PR #144, August 2026): a
+                // package/Umrah deal's range is ALWAYS null here — see
+                // isBundledProductDeal's own doc comment above — never
+                // because no fare checks exist for the underlying route.
+                // Birmingham-Antalya (obs-bhx-ayt-economy-20260813-8w-v1) is
+                // the proof case: a genuinely current, fresh flight fare is
+                // logged and shown elsewhere on the same destination page
+                // (DestinationFlightGuides' fareStatusLabel), while this
+                // exact card previously said "No fare checks logged yet" —
+                // false for the route, and the wrong noun for a package
+                // regardless. The missing evidence is specifically a
+                // package price, which the archive has no field to record
+                // yet (see data/fare-observations.ts's package-price
+                // entries note in isBundledProductDeal's comment) — never a
+                // claim that no flight fare checks exist.
+                ? 'No package price tracked yet.'
+                : 'No fare checks logged yet — check the live price below'}
             </div>
             {matchedRoute && (
               <Link
