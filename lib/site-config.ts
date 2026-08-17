@@ -36,11 +36,17 @@ export const mainNav = [
   { label: 'Guides', href: '/guides' },
   // A9 reposition (August 2026): was 'Deals', which implies JetStash has
   // proven a price is unusually good against historical data — it hasn't.
-  // /deals itself already carries this exact language (its page title is
-  // "Tracked Fares from UK Airports", its H1-equivalent hero title is
-  // "Fares we're tracking") — the nav label was the one place still saying
-  // otherwise. URL, route and every analytics event name are unchanged.
-  { label: 'Tracked Fares', href: '/deals' },
+  // Exhaustive Tracked Fares (PR #140, August 2026): this entry now points
+  // at /tracked-fares, not /deals — the label finally leads to what it
+  // promises, every current display-ready Fare Signal (79 of 88 routes
+  // today), not the smaller curated Deal selection. Deliberately not a
+  // second primary-nav item for /deals (Option B, founder decision,
+  // 17 August 2026): two adjacent "fare" concepts in primary nav would
+  // read as unexplained duplication and push the product back toward a
+  // generic deals-site feel. /deals remains real and valuable — reachable
+  // via footerNav.specialist below and a restrained cross-link from
+  // /tracked-fares itself, never removed.
+  { label: 'Tracked Fares', href: '/tracked-fares' },
 ];
 
 export const footerNav = {
@@ -60,8 +66,13 @@ export const footerNav = {
     { label: 'Family Holidays', href: '/family-holidays' },
     { label: 'Request a Quote', href: '/quote-request' },
     // A9 reposition (August 2026): matches the mainNav label above — see its
-    // comment for why.
-    { label: 'Tracked Fares', href: '/deals' },
+    // comment for why. Exhaustive Tracked Fares (PR #140): now points at
+    // /tracked-fares, matching mainNav's own repointing.
+    { label: 'Tracked Fares', href: '/tracked-fares' },
+    // Exhaustive Tracked Fares (PR #140, August 2026): /deals stays
+    // reachable — deliberately footer-only, not primary nav (Option B) —
+    // now that "Tracked Fares" itself points elsewhere.
+    { label: 'Deals', href: '/deals' },
   ],
   company: [
     { label: 'About JetStash', href: '/about' },

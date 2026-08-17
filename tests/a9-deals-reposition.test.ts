@@ -17,6 +17,14 @@ import { mainNav, footerNav } from '@/lib/site-config';
  * accidentally break it: the /deals URL itself, the underlying Deal data
  * type and its route/href, and every analytics event name (tripcom_click
  * etc.) — see the source diff this test accompanies for the exact scope.
+ *
+ * Exhaustive Tracked Fares (PR #140, August 2026): the "Tracked Fares" nav
+ * label now points at /tracked-fares instead of /deals — see that PR's own
+ * doc comments in lib/site-config.ts and lib/tracked-fare-groups.ts for
+ * why. /deals itself is untouched (still real, still curated, still at its
+ * own URL) — only the "Tracked Fares" label moved off it, and a new
+ * footer-only "Deals" entry was added so it stays reachable (Option B: no
+ * second primary-nav item).
  */
 
 const siteConfigSrc = readFileSync(join(process.cwd(), 'lib/site-config.ts'), 'utf8');
@@ -31,9 +39,12 @@ describe('Main and footer navigation no longer say "Deals"', () => {
     expect(labels).not.toContain('Deals');
   });
 
-  it('the Tracked Fares nav entry still points at /deals — the URL is unchanged', () => {
+  // Exhaustive Tracked Fares (PR #140, August 2026): the nav entry now
+  // points at the exhaustive /tracked-fares page, not the curated /deals
+  // page — see this file's own top-of-file doc comment for why.
+  it('the Tracked Fares nav entry points at /tracked-fares, the exhaustive Fare Signal list', () => {
     const entry = mainNav.find((item) => item.label === 'Tracked Fares');
-    expect(entry?.href).toBe('/deals');
+    expect(entry?.href).toBe('/tracked-fares');
   });
 
   it('footerNav.specialist labels "Tracked Fares", not "All Deals"', () => {
@@ -42,8 +53,14 @@ describe('Main and footer navigation no longer say "Deals"', () => {
     expect(labels).not.toContain('All Deals');
   });
 
-  it('the footer Tracked Fares entry also points at /deals', () => {
+  it('the footer Tracked Fares entry also points at /tracked-fares', () => {
     const entry = footerNav.specialist.find((item) => item.label === 'Tracked Fares');
+    expect(entry?.href).toBe('/tracked-fares');
+  });
+
+  it('/deals stays reachable via a dedicated footer entry (Option B: no second primary-nav item)', () => {
+    expect(mainNav.map((item) => item.label)).not.toContain('Deals');
+    const entry = footerNav.specialist.find((item) => item.label === 'Deals');
     expect(entry?.href).toBe('/deals');
   });
 
