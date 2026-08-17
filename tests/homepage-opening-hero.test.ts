@@ -232,6 +232,20 @@ describe('CommercialPaths is wired into the live homepage (August 2026, founder-
     expect(routeWatchIndex).toBeGreaterThan(commercialPathsIndex);
   });
 
+  // Founder final order (August 2026): "Check a journey" is the PRIMARY
+  // customer task, the Route Atlas is the SECONDARY exploration experience —
+  // the scroll path must match that hierarchy even for a visitor who never
+  // clicks either hero CTA. Your Journey now renders directly beneath the
+  // hero, before the Atlas.
+  it('renders the primary Your Journey task directly beneath the hero, before the secondary Route Atlas', () => {
+    const heroIndex = homeSrc.indexOf('<HomepageOpeningHero');
+    const yourJourneyIndex = homeSrc.indexOf('id="your-journey"');
+    const atlasIndex = homeSrc.indexOf('<AtlasFeelTest');
+    expect(heroIndex).toBeGreaterThan(-1);
+    expect(yourJourneyIndex).toBeGreaterThan(heroIndex);
+    expect(atlasIndex).toBeGreaterThan(yourJourneyIndex);
+  });
+
   it('the component itself is untouched — no new copy was written, the existing Economy/Business/Umrah content is reused verbatim', () => {
     expect(sectionsSrc).toContain('The same checked journey, three ways to fly it');
     expect(sectionsSrc).toContain('A planning path, not a deal feed');

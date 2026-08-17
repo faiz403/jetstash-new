@@ -45,16 +45,22 @@ export function JourneyDeskHome() {
     <>
       <HomepageOpeningHero />
 
-      <AtlasFeelTest airports={buildAtlasAirports()} defaultAirportSlug="manchester" />
-
-      {/* id="your-journey" restores ClosingBand's "Check my trip" anchor, which previously
+      {/* Founder final order (August 2026): Your Journey — the primary
+          "Check a journey" task — now renders directly beneath the hero, so
+          the natural scroll path matches the CTA hierarchy (primary task
+          first, secondary Route Atlas exploration second) even for a
+          visitor who scrolls past the hero without clicking either button.
+          Composition/order only — the section's own content, styling and
+          the Atlas below are unchanged.
+          id="your-journey" restores ClosingBand's "Check my trip" anchor, which previously
           pointed nowhere live (the only element that ever had this id was in the retired,
           unused pull-brief-hero.tsx) — now also the opening hero's primary CTA target, and
-          the Atlas's own new "Already know where you're going? Check a journey" line (see
-          atlas-feel-test.tsx's header). No per-element scroll-margin needed: app/globals.css
-          already sets a global scroll-padding-top: 6rem tuned to the 80px sticky header (see
-          its own comment there) — adding scroll-mt-24 here as well stacked both offsets and
-          overshot to ~192px instead of the intended small gap below the header. */}
+          the Atlas's own "Already know where you're going? Check a journey" line (see
+          atlas-feel-test.tsx's header) jumps back up here. No per-element scroll-margin
+          needed: app/globals.css already sets a global scroll-padding-top: 6rem tuned to the
+          80px sticky header (see its own comment there) — adding scroll-mt-24 here as well
+          stacked both offsets and overshot to ~192px instead of the intended small gap below
+          the header. */}
       <section id="your-journey" className="border-t border-white/10 bg-ink-950 px-5 py-10 sm:px-8 sm:py-14">
         <div className="mx-auto max-w-content">
           <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
@@ -81,13 +87,15 @@ export function JourneyDeskHome() {
         </div>
       </section>
 
-      {/* Density + hierarchy fix (August 2026): WhyJetStash now carries the
+      <AtlasFeelTest airports={buildAtlasAirports()} defaultAirportSlug="manchester" />
+
+      {/* Density + hierarchy fix (August 2026): WhyJetStash carries the
           merged "why JetStash / what we check" story (see its own doc
-          comment in homepage-sections.tsx) and moved to here, after the
-          interactive Atlas and Your Journey check — understand JetStash and
-          check a route first, then see the specialist Commercial Paths.
-          CommercialPaths itself is unchanged, only its position moved
-          (previously between Your Journey and the old WhatWeCheck). */}
+          comment in homepage-sections.tsx) — after the primary Your Journey
+          task and the secondary Atlas exploration, then the specialist
+          Commercial Paths. CommercialPaths itself is unchanged, only its
+          position moved (previously between Your Journey and the old
+          WhatWeCheck). */}
       <WhyJetStash />
 
       <CommercialPaths />
