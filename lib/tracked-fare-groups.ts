@@ -75,7 +75,17 @@ export function buildTrackedFareAirportGroups(
       destCity: dest.city,
       destCountry: dest.country,
       observation: signal.observation,
-      tripComUrl: getTripComFlightHandoffUrl(route.slug),
+      // Handoff parity fix (PR #141, August 2026): must pass the same
+      // three arguments the route guide itself passes
+      // (app/routes/[slug]/page.tsx's own tripComUrl line) — route-slug
+      // alone only checks TRIPCOM_ROUTE_URLS and silently skips the
+      // exact-pair TRIPCOM_DESTINATION_URLS fallback getTripComFlightHandoffUrl
+      // already supports, which is exactly as verified/dashboard-generated
+      // as the primary map (see lib/booking-providers.ts's own doc
+      // comment) — never a broadened "LON" aggregate. Omitting these two
+      // arguments here silently lost 16 already-approved handoffs that
+      // the corresponding route guide correctly showed all along.
+      tripComUrl: getTripComFlightHandoffUrl(route.slug, airport.slug, dest.slug),
       searchIndex: `${dest.city} ${dest.country} ${airport.city} ${airport.name}`.toLowerCase(),
     };
 
