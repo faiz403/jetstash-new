@@ -57,7 +57,14 @@ export function HomepageOpeningHero() {
   return (
     <PageHero
       eyebrow="Before you book a flight"
-      title="Check the whole journey before you book."
+      // Founder copy correction (August 2026): this exact headline reads in
+      // font-sans, not the site's usual Fraunces display face — a deliberate,
+      // one-off typographic break so the homepage's opening line doesn't look
+      // like every other page's PageHero title. Scoped to a <span> around just
+      // this text, not a change to PageHero's own h1 (which keeps font-display
+      // for every other page and every other heading on this one) — see
+      // PageHero's own doc comment, still unchanged.
+      title={<span className="font-sans">Check the whole journey, not just the fare.</span>}
       description="Choose your UK airport and destination. JetStash shows which routes are operating, what has changed, what travel requirements apply and when the information was last checked."
       heroKey="routes"
       size="compact"

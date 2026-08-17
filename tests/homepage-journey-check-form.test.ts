@@ -25,11 +25,17 @@ describe('JourneyCheckForm is wired onto the public homepage', () => {
     expect(homeSrc).toContain('<JourneyCheckForm origins={journeyCheck.origins} destinations={journeyCheck.destinations} routeIndex={journeyCheck.routeIndex} />');
   });
 
-  it('the Atlas is still the first thing rendered — the form is a companion below it, not a replacement', () => {
+  // Founder final order (August 2026): "Check a journey" is the PRIMARY
+  // customer task and now renders directly beneath the hero, before the
+  // SECONDARY Route Atlas exploration experience — previously the reverse.
+  // The Atlas remains the homepage's flagship browse/discovery surface;
+  // only the scroll order relative to this form changed.
+  it('renders before the Atlas — the form is the primary task, the Atlas the secondary exploration experience below it', () => {
     const atlasIndex = homeSrc.indexOf('<AtlasFeelTest');
     const formIndex = homeSrc.indexOf('<JourneyCheckForm');
     expect(atlasIndex).toBeGreaterThan(-1);
-    expect(formIndex).toBeGreaterThan(atlasIndex);
+    expect(formIndex).toBeGreaterThan(-1);
+    expect(formIndex).toBeLessThan(atlasIndex);
   });
 
   it('origins/destinations/routeIndex are computed from the real tracked-route data, not fabricated', () => {

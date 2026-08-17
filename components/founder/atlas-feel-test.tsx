@@ -262,6 +262,49 @@ function nearestDistance<T extends { slug: string; x: number; y: number }>(point
   return nearest;
 }
 
+// Shared body for both legend renderings below (desktop's always-open block
+// and mobile's collapsed-by-default <details>) — pure module-level data, no
+// props, so the two call sites can never drift out of sync with each other.
+function LegendBody() {
+  return (
+    <>
+      <p className="mt-1 text-[11px] leading-relaxed text-ink-300">Country glow = coverage across that country. Destination dot = research for that specific route.</p>
+      <div className="mt-2.5 flex flex-col gap-2.5 text-xs text-ink-300">
+        <div>
+          <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-ink-300">Country glow</p>
+          <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1.5">
+            {(Object.keys(COUNTRY_INTELLIGENCE_COLOUR) as CountryIntelligenceLevel[]).map((k) => (
+              <span key={k} className="inline-flex items-center gap-1.5">
+                <span className="inline-block h-2.5 w-2.5 rounded-full" style={{ backgroundColor: COUNTRY_INTELLIGENCE_COLOUR[k].stroke }} aria-hidden="true" />
+                {COUNTRY_INTELLIGENCE_COLOUR[k].label}
+              </span>
+            ))}
+          </div>
+        </div>
+        <div>
+          <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-ink-300">Destination dot</p>
+          <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1.5">
+            {(Object.keys(ROUTE_INTELLIGENCE_COLOUR) as RouteIntelligenceLevel[]).map((k) => (
+              <span key={k} className="inline-flex items-center gap-1.5">
+                <span className="inline-block h-2 w-2 rounded-full" style={{ backgroundColor: ROUTE_INTELLIGENCE_COLOUR[k].fill }} aria-hidden="true" />
+                {ROUTE_INTELLIGENCE_COLOUR[k].label}
+              </span>
+            ))}
+            <span className="inline-flex items-center gap-1.5">
+              <span className="inline-block h-2 w-2 rounded-full" style={{ backgroundColor: SERVICE_NOTICE_ACCENT }} aria-hidden="true" />
+              Active service notice
+            </span>
+            <span className="inline-flex items-center gap-1.5">
+              <Badge variant="terracotta" className="px-2 py-0.5 text-[9px]">Seasonal</Badge>
+              service confirmed for part of the year only
+            </span>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}
+
 export function AtlasFeelTest({
   airports,
   defaultAirportSlug,
@@ -281,6 +324,19 @@ export function AtlasFeelTest({
   const [activeDestSlug, setActiveDestSlug] = useState<string | null>(
     activeAirport.countries.find((c) => c.slug === activeAirport.defaultCountrySlug)?.destinations[0]?.slug ?? null
   );
+
+  // Density fix (August 2026, CEO homepage review): below lg, activeDest is
+  // still always non-null (a default is auto-picked above so hover/keyboard
+  // has something to land on) but the full detail panel used to render
+  // unconditionally underneath the map on every load — a large card nobody
+  // had actually asked for yet. mobileRevealed tracks whether the visitor
+  // has genuinely chosen a destination (see selectDestination below, the
+  // one real "selection" action — never set by activateCountry/selectAirport's
+  // own automatic default-destination resets, which reset it back to false
+  // instead) so the panel can stay progressively disclosed on mobile/tablet
+  // while lg+ keeps showing it immediately, exactly as before (see the panel's
+  // own className below for how this and the lg breakpoint combine).
+  const [mobileRevealed, setMobileRevealed] = useState(false);
   // Mirrors activeDestSlug for analytics dedup only. A single hover gesture
   // dispatches several native events (mouseenter, pointerenter, pointerdown)
   // in the same tick, each calling selectDestination before React has
@@ -322,6 +378,11 @@ export function AtlasFeelTest({
     lastTrackedDestRef.current = nextDest;
     setActiveCountrySlug(slug);
     setActiveDestSlug(nextDest);
+    // A new country's first destination is an automatic default, not a
+    // choice — mobile goes back to showing exploration controls until the
+    // visitor actually picks one within this country. No-op on desktop,
+    // where the panel's className below ignores this flag at lg+.
+    setMobileRevealed(false);
   }
 
   // Switching airport must feel like the same experience redrawing itself,
@@ -343,6 +404,7 @@ export function AtlasFeelTest({
     const nextDest = c?.destinations[0]?.slug ?? null;
     lastTrackedDestRef.current = nextDest;
     setActiveDestSlug(nextDest);
+    setMobileRevealed(false);
   }
 
   // The one place a destination selection is both applied and measured —
@@ -360,6 +422,7 @@ export function AtlasFeelTest({
       track('atlas_destination_selected', { airport: selectedAirportSlug, destination: slug });
     }
     setActiveDestSlug(slug);
+    setMobileRevealed(true);
   }
 
   // Size-driven visual emphasis: computed from each country's real path
@@ -505,13 +568,28 @@ export function AtlasFeelTest({
     // Atlas" CTA: app/globals.css already sets a global scroll-padding-top: 6rem
     // tuned to the 80px sticky header. Adding scroll-mt-24 here too stacked both
     // offsets and overshot to ~192px instead of a small gap below the header.
-    <div id="route-atlas" className="min-h-screen bg-ink-950">
-      <header className="border-b border-white/10 px-6 py-6 sm:px-10">
+    <div id="route-atlas" className="bg-ink-950 lg:min-h-screen">
+      <header className="border-b border-white/10 px-6 py-5 sm:px-10 sm:py-6">
         <span className="text-[11px] font-semibold uppercase tracking-[0.28em] text-brass-200">The JetStash Route Atlas</span>
         {/* h2, not h1 — the homepage opening hero above now owns the page's h1. */}
         <h2 className="mt-2 max-w-4xl font-display text-xl text-sand-50">Explore where you can fly from your UK airport and see what JetStash has verified about each route.</h2>
         <p className="mt-1 text-xs text-ink-300">
           Choose a departure airport, then follow the light to explore its destinations.
+        </p>
+        {/* The two-entry-paths clarification (density + hierarchy fix, August
+            2026): the hero above already offers "Check a journey" as the
+            primary CTA for a visitor who already knows their route, and this
+            Atlas as the secondary path for a visitor still exploring. Nothing
+            previously said the two paths meet in the same place — one line,
+            no new CTA, reusing the hero's own primary label and its existing
+            #your-journey anchor rather than inventing new copy or a new link
+            target. */}
+        <p className="mt-1.5 text-xs text-ink-300">
+          Already know where you&apos;re going?{' '}
+          <Link href="#your-journey" className="font-semibold text-brass-300 underline decoration-brass-400/60 underline-offset-2 hover:text-brass-200">
+            Check a journey
+          </Link>{' '}
+          directly — both lead to the same checked route intelligence.
         </p>
 
         {/* Airport selector — same pill idiom as the mobile country/destination
@@ -545,7 +623,7 @@ export function AtlasFeelTest({
         </div>
       </header>
 
-      <div className="relative mx-auto max-w-[1600px] overflow-hidden px-6 py-10 sm:px-10">
+      <div className="relative mx-auto max-w-[1600px] overflow-hidden px-6 py-8 sm:px-10 sm:py-10">
         <p className="text-[13px] text-ink-300 sm:hidden">Select a country, then a destination, to see its route.</p>
         {/* Input-neutral wording — the map is genuinely operable by mouse
             hover, touch (mobile chip selector) and keyboard (Tab + Enter/
@@ -885,43 +963,24 @@ export function AtlasFeelTest({
             the country glow summarises coverage across a country, while the
             destination dot answers how much this specific route is researched.
             They are labelled in one compact block so they do not read as two
-            competing versions of the same legend. */}
-        <div className="mt-4 rounded-sm border border-white/5 bg-white/[0.02] px-3.5 py-3" aria-label="Atlas colour legend">
+            competing versions of the same legend. Rendered twice below by
+            design, not duplicated content by accident: desktop keeps it
+            permanently open (unchanged from before), while mobile/tablet
+            gets it behind a native <details> disclosure, closed by default —
+            "may be compact/collapsible on mobile" from the density fix brief.
+            LegendBody is the single shared body so the two never drift. */}
+        <div className="mt-4 hidden rounded-sm border border-white/5 bg-white/[0.02] px-3.5 py-3 sm:block" aria-label="Atlas colour legend">
           <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-300">What the colours mean</p>
-          <p className="mt-1 text-[11px] leading-relaxed text-ink-300">Country glow = coverage across that country. Destination dot = research for that specific route.</p>
-          <div className="mt-2.5 flex flex-col gap-2.5 text-xs text-ink-300">
-            <div>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-ink-300">Country glow</p>
-              <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1.5">
-                {(Object.keys(COUNTRY_INTELLIGENCE_COLOUR) as CountryIntelligenceLevel[]).map((k) => (
-                  <span key={k} className="inline-flex items-center gap-1.5">
-                    <span className="inline-block h-2.5 w-2.5 rounded-full" style={{ backgroundColor: COUNTRY_INTELLIGENCE_COLOUR[k].stroke }} aria-hidden="true" />
-                    {COUNTRY_INTELLIGENCE_COLOUR[k].label}
-                  </span>
-                ))}
-              </div>
-            </div>
-            <div>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-ink-300">Destination dot</p>
-              <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1.5">
-                {(Object.keys(ROUTE_INTELLIGENCE_COLOUR) as RouteIntelligenceLevel[]).map((k) => (
-                  <span key={k} className="inline-flex items-center gap-1.5">
-                    <span className="inline-block h-2 w-2 rounded-full" style={{ backgroundColor: ROUTE_INTELLIGENCE_COLOUR[k].fill }} aria-hidden="true" />
-                    {ROUTE_INTELLIGENCE_COLOUR[k].label}
-                  </span>
-                ))}
-                <span className="inline-flex items-center gap-1.5">
-                  <span className="inline-block h-2 w-2 rounded-full" style={{ backgroundColor: SERVICE_NOTICE_ACCENT }} aria-hidden="true" />
-                  Active service notice
-                </span>
-                <span className="inline-flex items-center gap-1.5">
-                  <Badge variant="terracotta" className="px-2 py-0.5 text-[9px]">Seasonal</Badge>
-                  service confirmed for part of the year only
-                </span>
-              </div>
-            </div>
-          </div>
+          <LegendBody />
         </div>
+        <details className="mt-4 rounded-sm border border-white/5 bg-white/[0.02] px-3.5 py-3 sm:hidden" aria-label="Atlas colour legend">
+          <summary className="cursor-pointer select-none text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-300">
+            What the colours mean
+          </summary>
+          <div className="mt-2.5">
+            <LegendBody />
+          </div>
+        </details>
 
         {/* Quiet technical footnote, deliberately separated from the
             introduction above (which now stays focused on what the visitor
@@ -944,7 +1003,15 @@ export function AtlasFeelTest({
         {activeDest && (
           <div
             aria-live="polite"
-            className="mt-6 max-w-md overflow-hidden rounded-md border border-white/10 bg-ink-900/90 shadow-[0_18px_40px_-24px_rgba(0,0,0,0.65)] lg:sticky lg:top-6 lg:mt-0"
+            // Progressive disclosure (density fix, August 2026): below lg the
+            // panel stays out of the default layout — "hidden" here, not a
+            // conditional `{mobileRevealed && (...)}` unmount, so a keyboard
+            // user tabbing through the map/chips before ever selecting a
+            // destination doesn't lose this landmark from the DOM — until
+            // mobileRevealed flips true from a genuine destination selection
+            // (see selectDestination above). lg+ always shows it immediately,
+            // exactly as before this change.
+            className={`mt-6 max-w-md overflow-hidden rounded-md border border-white/10 bg-ink-900/90 shadow-[0_18px_40px_-24px_rgba(0,0,0,0.65)] lg:sticky lg:top-6 lg:mt-0 lg:block ${mobileRevealed ? '' : 'hidden'}`}
           >
             <div
               className="h-[3px] w-full transition-colors duration-500"
