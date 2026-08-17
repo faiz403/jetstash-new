@@ -24,6 +24,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const staticPages = [
     '',
     '/deals',
+    '/tracked-fares',
     '/destinations',
     '/airports',
     '/routes',

@@ -157,8 +157,12 @@ describe('the four reduced events keep exactly the right two properties', () => 
     // had its own separate, near-duplicate component with the same two
     // sites — merging the two components back to 6 total sites is exactly
     // the point of the consolidation (one call site, many destinations).
+    // + 1 new site (Exhaustive Tracked Fares, PR #140, August 2026):
+    // components/sections/tracked-fares-explorer.tsx's TrackedFareCard CTA
+    // — source: 'tracked-fares-card', same route + source shape as every
+    // other site here.
     const tripcomSites = sites.filter((s) => s.label === 'properties={{...}}');
-    expect(tripcomSites.length).toBe(6);
+    expect(tripcomSites.length).toBe(7);
     for (const s of tripcomSites) {
       expect(s.props.length, `${s.file}: ${s.raw}`).toBe(2);
       expect(s.raw).toMatch(/route:/);

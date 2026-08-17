@@ -75,6 +75,7 @@ const STATIC_PAGES: { page: string; path: string }[] = [
   { page: '/airports', path: 'app/airports/page.tsx' },
   { page: '/guides', path: 'app/guides/page.tsx' },
   { page: '/deals', path: 'app/deals/page.tsx' },
+  { page: '/tracked-fares', path: 'app/tracked-fares/page.tsx' },
   { page: '/404', path: 'app/not-found.tsx' },
 ];
 
