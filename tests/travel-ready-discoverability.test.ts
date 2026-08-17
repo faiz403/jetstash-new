@@ -3,7 +3,7 @@ import { isValidElement } from 'react';
 import { footerNav } from '@/lib/site-config';
 import { getDestinationsByRegion, getDestinationBySlug, type Destination } from '@/data/destinations';
 import { TRAVEL_READY_SUPPORTED_COUNTRIES } from '@/lib/travel-ready-check';
-import { WhatWeCheck } from '@/components/homepage-v2/homepage-sections';
+import { WhyJetStash } from '@/components/homepage-v2/homepage-sections';
 import { RegionHubPage } from '@/components/sections/region-hub-page';
 import { FamilyVisitBlock } from '@/components/sections/family-visit-block';
 import UmrahHubPage from '@/app/umrah/page';
@@ -86,23 +86,24 @@ describe('Footer — Travel Ready Check is a real navigation link, not just a pa
   });
 });
 
-describe('Homepage "What we check" — the Travel-ready documents card links to the tool', () => {
+describe('Homepage "why JetStash" (merged with the former WhatWeCheck, August 2026 density fix) — the Travel-ready documents card links to the tool', () => {
   it('renders a link to /travel-ready-check with an honest, non-generic label', () => {
-    const element = WhatWeCheck();
+    const element = WhyJetStash();
     const hrefs = collectHrefs(element);
     expect(hrefs).toContain('/travel-ready-check');
   });
 
   it('the link text sits next to the travel-ready-documents copy, not a generic "click here"', () => {
-    const element = WhatWeCheck();
+    const element = WhyJetStash();
     const text = collectStrings(element).join(' ');
     expect(text).toMatch(/check your travel readiness/i);
   });
 
-  it('only one card links out — the other four checks stay plain text (no navigation clutter)', () => {
-    const element = WhatWeCheck();
+  it('only one check-item card links out (the others stay plain text) — the section as a whole also keeps its one closing "/routes" continuation link', () => {
+    const element = WhyJetStash();
     const hrefs = collectHrefs(element);
-    expect(hrefs).toHaveLength(1);
+    expect(hrefs).toEqual(expect.arrayContaining(['/travel-ready-check', '/routes']));
+    expect(hrefs).toHaveLength(2);
   });
 });
 
@@ -209,8 +210,8 @@ describe('No unrelated behaviour changed', () => {
   it('the Route Watch invitation still anchors to the route-watch form, unaffected by this work', () => {
     // Regression guard only — RouteWatchInvite is untouched by TRC-001, this
     // just proves the homepage module still imports/exports cleanly after
-    // the WhatWeCheck edit above.
-    expect(typeof WhatWeCheck).toBe('function');
+    // the WhyJetStash edit above.
+    expect(typeof WhyJetStash).toBe('function');
   });
 
   it('the product and specialist links survive the footer reorganisation (no accidental removals)', () => {

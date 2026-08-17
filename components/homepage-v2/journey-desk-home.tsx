@@ -7,7 +7,7 @@ import { AtlasFeelTest } from '@/components/founder/atlas-feel-test';
 import { buildAtlasAirports } from '@/lib/atlas-network-data';
 import { JourneyCheckForm, type JourneyCheckData } from '@/components/homepage-v2/journey-check-form';
 import { HomepageOpeningHero } from '@/components/homepage-v2/homepage-opening-hero';
-import { WhyJetStash, WhatWeCheck, RouteWatchInvite, ClosingBand, CommercialPaths } from '@/components/homepage-v2/homepage-sections';
+import { WhyJetStash, RouteWatchInvite, ClosingBand, CommercialPaths } from '@/components/homepage-v2/homepage-sections';
 
 /**
  * The public homepage's flagship experience: the Route Atlas, for browsing
@@ -47,15 +47,14 @@ export function JourneyDeskHome() {
 
       <AtlasFeelTest airports={buildAtlasAirports()} defaultAirportSlug="manchester" />
 
-      <WhyJetStash />
-
       {/* id="your-journey" restores ClosingBand's "Check my trip" anchor, which previously
           pointed nowhere live (the only element that ever had this id was in the retired,
-          unused pull-brief-hero.tsx) — now also the opening hero's primary CTA target.
-          No per-element scroll-margin needed: app/globals.css already sets a global
-          scroll-padding-top: 6rem tuned to the 80px sticky header (see its own comment
-          there) — adding scroll-mt-24 here as well stacked both offsets and overshot to
-          ~192px instead of the intended small gap below the header. */}
+          unused pull-brief-hero.tsx) — now also the opening hero's primary CTA target, and
+          the Atlas's own new "Already know where you're going? Check a journey" line (see
+          atlas-feel-test.tsx's header). No per-element scroll-margin needed: app/globals.css
+          already sets a global scroll-padding-top: 6rem tuned to the 80px sticky header (see
+          its own comment there) — adding scroll-mt-24 here as well stacked both offsets and
+          overshot to ~192px instead of the intended small gap below the header. */}
       <section id="your-journey" className="border-t border-white/10 bg-ink-950 px-5 py-10 sm:px-8 sm:py-14">
         <div className="mx-auto max-w-content">
           <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
@@ -82,18 +81,17 @@ export function JourneyDeskHome() {
         </div>
       </section>
 
-      {/* CommercialPaths (August 2026, founder-reviewed homepage review): written
-          for this homepage but never actually wired into it — a real, on-brand
-          "we help you choose the right journey" explainer (Economy / Business
-          Class / Umrah) that was sitting unused in homepage-sections.tsx. Placed
-          here, not where it was originally scoped, to keep the existing sand/dark
-          section-background rhythm intact (WhyJetStash sand → your-journey dark →
-          CommercialPaths sand → WhatWeCheck dark → RouteWatchInvite sand →
-          ClosingBand dark) rather than stacking two sand or two dark sections
-          back to back. */}
+      {/* Density + hierarchy fix (August 2026): WhyJetStash now carries the
+          merged "why JetStash / what we check" story (see its own doc
+          comment in homepage-sections.tsx) and moved to here, after the
+          interactive Atlas and Your Journey check — understand JetStash and
+          check a route first, then see the specialist Commercial Paths.
+          CommercialPaths itself is unchanged, only its position moved
+          (previously between Your Journey and the old WhatWeCheck). */}
+      <WhyJetStash />
+
       <CommercialPaths />
 
-      <WhatWeCheck />
       <RouteWatchInvite />
       <ClosingBand />
     </>

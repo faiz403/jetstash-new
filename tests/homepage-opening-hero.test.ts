@@ -24,10 +24,31 @@ const atlasSrc = readFileSync(join(process.cwd(), 'components/founder/atlas-feel
 describe('homepage opening hero uses the approved copy', () => {
   it('has the exact eyebrow, headline and supporting copy', () => {
     expect(heroSrc).toContain('Before you book a flight');
-    expect(heroSrc).toContain('Check the whole journey before you book.');
+    expect(heroSrc).toContain('Check the whole journey, not just the fare.');
     expect(heroSrc).toContain(
       'Choose your UK airport and destination. JetStash shows which routes are operating, what has changed, what travel requirements apply and when the information was last checked.'
     );
+  });
+
+  // Founder copy correction (August 2026): eyebrow prop stays sentence-case in
+  // source ("Before you book a flight") — Badge already applies CSS
+  // text-transform: uppercase (components/ui/badge.tsx), so it renders exactly
+  // as "BEFORE YOU BOOK A FLIGHT" without hardcoding all-caps into the DOM,
+  // which would also make a screen reader spell it letter by letter.
+  it('the eyebrow badge renders uppercase via CSS, not a hardcoded all-caps string', () => {
+    const badgeSrc = readFileSync(join(process.cwd(), 'components/ui/badge.tsx'), 'utf8');
+    expect(badgeSrc).toMatch(/\buppercase\b/);
+    expect(heroSrc).not.toContain('BEFORE YOU BOOK A FLIGHT');
+  });
+
+  // Founder copy correction (August 2026): this headline alone breaks from the
+  // site's usual Fraunces display face — deliberately scoped to a <span> around
+  // just the title text (not a change to PageHero's own h1, which keeps
+  // font-display for every other page and heading, homepage included).
+  it('the headline renders in font-sans, not font-display, via a scoped span — PageHero itself is untouched', () => {
+    expect(heroSrc).toMatch(/title=\{<span className="font-sans">Check the whole journey, not just the fare\.<\/span>\}/);
+    const pageHeroSrc = readFileSync(join(process.cwd(), 'components/sections/page-hero.tsx'), 'utf8');
+    expect(pageHeroSrc).toContain('font-display text-4xl leading-[1.08] tracking-tight text-sand-50 sm:text-5xl');
   });
 
   it('has the exact trust line', () => {
@@ -200,13 +221,15 @@ describe('CommercialPaths is wired into the live homepage (August 2026, founder-
     expect(homeSrc).toMatch(/<CommercialPaths\s*\/>/);
   });
 
-  it('renders after the "your-journey" JourneyCheckForm section and before WhatWeCheck, keeping the sand/dark section-background rhythm intact', () => {
+  it('renders after the "your-journey" JourneyCheckForm section and the merged WhyJetStash section, and before RouteWatchInvite (density + hierarchy fix, August 2026: understand JetStash and check a route first, then see the specialist paths)', () => {
     const yourJourneyIndex = homeSrc.indexOf('id="your-journey"');
+    const whyJetStashIndex = homeSrc.indexOf('<WhyJetStash');
     const commercialPathsIndex = homeSrc.indexOf('<CommercialPaths');
-    const whatWeCheckIndex = homeSrc.indexOf('<WhatWeCheck');
+    const routeWatchIndex = homeSrc.indexOf('<RouteWatchInvite');
     expect(yourJourneyIndex).toBeGreaterThan(-1);
-    expect(commercialPathsIndex).toBeGreaterThan(yourJourneyIndex);
-    expect(whatWeCheckIndex).toBeGreaterThan(commercialPathsIndex);
+    expect(whyJetStashIndex).toBeGreaterThan(yourJourneyIndex);
+    expect(commercialPathsIndex).toBeGreaterThan(whyJetStashIndex);
+    expect(routeWatchIndex).toBeGreaterThan(commercialPathsIndex);
   });
 
   it('the component itself is untouched — no new copy was written, the existing Economy/Business/Umrah content is reused verbatim', () => {
