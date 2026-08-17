@@ -4,7 +4,7 @@ import { useEffect, useId, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { ArrowUpRight, ChevronDown, Search, X } from 'lucide-react';
 import { formatChecked } from '@/data/deals';
-import { PROVIDER_REL } from '@/lib/booking-providers';
+import { PROVIDER_REL, TRIPCOM_FRESH_SEARCH_NOTE } from '@/lib/booking-providers';
 import { TrackedOutboundLink } from '@/components/ui/tracked-outbound-link';
 import type { TrackedFareAirportGroup, TrackedFareEntry } from '@/lib/tracked-fare-groups';
 
@@ -238,17 +238,20 @@ function TrackedFareCard({ airportCity, entry }: { airportCity: string; entry: T
 
       <div className="mt-4 flex flex-col gap-2">
         {tripComUrl ? (
-          <TrackedOutboundLink
-            event="tripcom_click"
-            properties={{ route: entry.routeSlug, source: 'tracked-fares-card' }}
-            href={tripComUrl}
-            target="_blank"
-            rel={PROVIDER_REL}
-            className="inline-flex items-center justify-center gap-1.5 rounded-sm bg-ink-900 px-4 py-2.5 text-sm font-semibold text-sand-50 transition-all hover:bg-brass-600 active:scale-[0.985]"
-          >
-            Compare flights on Trip.com
-            <ArrowUpRight className="h-4 w-4" strokeWidth={2.25} />
-          </TrackedOutboundLink>
+          <>
+            <TrackedOutboundLink
+              event="tripcom_click"
+              properties={{ route: entry.routeSlug, source: 'tracked-fares-card' }}
+              href={tripComUrl}
+              target="_blank"
+              rel={PROVIDER_REL}
+              className="inline-flex items-center justify-center gap-1.5 rounded-sm bg-ink-900 px-4 py-2.5 text-sm font-semibold text-sand-50 transition-all hover:bg-brass-600 active:scale-[0.985]"
+            >
+              Compare flights on Trip.com
+              <ArrowUpRight className="h-4 w-4" strokeWidth={2.25} />
+            </TrackedOutboundLink>
+            <p className="text-[11px] leading-snug text-ink-400">{TRIPCOM_FRESH_SEARCH_NOTE}</p>
+          </>
         ) : (
           <p className="text-xs text-ink-400">Direct flight comparison is not available for this airport yet.</p>
         )}

@@ -1,7 +1,7 @@
 import { ArrowUpRight, CalendarDays, Plane, Search, Route as RouteIcon } from 'lucide-react';
 import type { FareSignal as FareSignalData, FareSignalObservation } from '@/lib/fare-signal';
 import { formatChecked } from '@/data/deals';
-import { PROVIDER_REL } from '@/lib/booking-providers';
+import { PROVIDER_REL, TRIPCOM_FRESH_SEARCH_NOTE } from '@/lib/booking-providers';
 import { TrackedOutboundLink } from '@/components/ui/tracked-outbound-link';
 
 function formatStops(observation: FareSignalObservation): string | null {
@@ -22,19 +22,22 @@ function formatRouting(observation: FareSignalObservation): string | null {
 
 function SignalCta({ href, routeSlug }: { href: string; routeSlug: string }) {
   return (
-    <div className="mt-5 flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:gap-4">
-      <TrackedOutboundLink
-        event="tripcom_click"
-        properties={{ route: routeSlug, source: 'fare-signal' }}
-        href={href}
-        target="_blank"
-        rel={PROVIDER_REL}
-        className="inline-flex items-center gap-1.5 rounded-sm bg-ink-900 px-4 py-2.5 text-sm font-semibold text-sand-50 transition-all hover:bg-brass-600 active:scale-[0.985]"
-      >
-        Check current price
-        <ArrowUpRight className="h-4 w-4" strokeWidth={2.25} />
-      </TrackedOutboundLink>
-      <p className="text-xs text-ink-500">Partner link, opens Trip.com in a new tab.</p>
+    <div className="mt-5">
+      <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:gap-4">
+        <TrackedOutboundLink
+          event="tripcom_click"
+          properties={{ route: routeSlug, source: 'fare-signal' }}
+          href={href}
+          target="_blank"
+          rel={PROVIDER_REL}
+          className="inline-flex items-center gap-1.5 rounded-sm bg-ink-900 px-4 py-2.5 text-sm font-semibold text-sand-50 transition-all hover:bg-brass-600 active:scale-[0.985]"
+        >
+          Check current price
+          <ArrowUpRight className="h-4 w-4" strokeWidth={2.25} />
+        </TrackedOutboundLink>
+        <p className="text-xs text-ink-500">Partner link, opens Trip.com in a new tab.</p>
+      </div>
+      <p className="mt-1.5 text-xs text-ink-400">{TRIPCOM_FRESH_SEARCH_NOTE}</p>
     </div>
   );
 }
