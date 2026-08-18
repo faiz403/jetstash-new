@@ -156,7 +156,7 @@ Grouped by grade under RIS-001. "Depth categories" lists which of the six catego
 
 ### Full route index (by slug)
 
-Machine-checkable manifest — every one of the 32 routes, exactly once, with its exact grade. See §6 for gaps on any route below Strong.
+Machine-checkable manifest — every one of the 32 routes, exactly once, with its exact grade. See §6 for gaps on any route below Strong. This table is kept in sync with the live code (`tests/atlas-route-status.test.ts` enforces it), so it reflects the route's *current* grade, not necessarily its grade on this document's 6 August 2026 date — `london-gatwick-ahmedabad` is one such case: it read Strong through most of this document's own 6 August narrative below, and now reads Useful after an 18 August 2026 evidence correction — see "Current-state addendum — 18 August 2026" near the end of this document.
 
 | Slug | Grade |
 |---|---|
@@ -169,7 +169,7 @@ Machine-checkable manifest — every one of the 32 routes, exactly once, with it
 | `glasgow-dubai` | Useful |
 | `leeds-bradford-amritsar` | Useful |
 | `leeds-bradford-islamabad` | Useful |
-| `london-gatwick-ahmedabad` | Strong |
+| `london-gatwick-ahmedabad` | Useful |
 | `london-gatwick-amritsar` | Strong |
 | `london-heathrow-bengaluru` | Strong |
 | `london-heathrow-delhi` | Strong |
@@ -1233,3 +1233,21 @@ Gatwick–Istanbul, Glasgow–Bodrum, Gatwick–Marrakech, Heathrow–Casablanca
 Gatwick–Agadir and Gatwick–Tangier. Leeds Bradford–Bodrum remains uncovered because the exact
 8–22 October search returned no options; alternative dates and airports were not substituted.
 The current Route Intelligence distribution is 11 Strong / 77 Useful / 0 Expanding.
+
+## Current-state addendum — 18 August 2026 (Route Verification Refresh Batch 1 correction)
+
+The 14 August figures immediately above are preserved as an accurate dated record and are **not**
+rewritten here. As of 18 August 2026, `london-gatwick-ahmedabad`'s verification state changed:
+Route Verification Refresh Batch 1's own correction reclassified it `unverified` (DISPUTED) after a
+fresh check found current Air India surfaces genuinely conflict on which London airport the service
+uses — see `data/routes.ts`'s `london-gatwick-ahmedabad` record and
+`docs/project-control/ROUTE_VERIFICATION_CADENCE_POLICY.md` for the full evidence account. No
+confirmed 2026 relocation was established — only a real, current contradiction, which the existing
+fail-closed architecture (`getEffectiveRoutePresentation()`) now correctly reflects.
+
+That single status change mechanically drops the route's fare observation out of
+`isObservationPublishable()` (which requires a current, confirmed direct/connecting status) and below
+`computeRouteIntelligenceLevel()`'s prerequisite gate, regardless of its depth-category count. As of
+18 August 2026 the live, current figures are: **78 of 88** routes with a display-ready Fare Signal,
+and a Route Intelligence distribution of **10 Strong / 78 Useful / 0 Expanding**. This is a live,
+mechanical consequence of one route's evidence state changing, not a re-audit of the 14 August work.

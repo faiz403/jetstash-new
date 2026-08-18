@@ -45,7 +45,10 @@ describe('Fare Coverage Programme Batch 4', () => {
 
   it('keeps current display-ready coverage aligned after later append-only batches', () => {
     const current = routes.filter((route) => getPublishableObservationsByRoute(route.slug, NOW_ISO).length > 0);
-    expect(current).toHaveLength(79);
+    // 79→78 on 18 August 2026: Route Verification Refresh Batch 1's correction
+    // reclassified london-gatwick-ahmedabad unverified, dropping its fare
+    // observation out of isObservationPublishable().
+    expect(current).toHaveLength(78);
     for (const route of current) {
       expect(shouldShowNoFareFallback(getFareSignalForRoute(route.slug, NOW_ISO)), route.slug).toBe(false);
     }

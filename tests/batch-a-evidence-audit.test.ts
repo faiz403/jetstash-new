@@ -166,7 +166,10 @@ describe('Route-level Fare Signal coverage and curated Deal-card coverage remain
 
   it('every route-level tracked fare is either represented by a curated Economy card or explicitly remains Fare-Signal-only', () => {
     const trackedRoutes = routes.filter((r) => getPublishableObservationsByRoute(r.slug, NOW_ISO).length > 0);
-    expect(trackedRoutes.length).toBe(79);
+    // 79→78 on 18 August 2026: Route Verification Refresh Batch 1's correction
+    // reclassified london-gatwick-ahmedabad unverified, which drops its fare
+    // observation out of isObservationPublishable() — see ROUTE_VERIFICATION_CADENCE_POLICY.md.
+    expect(trackedRoutes.length).toBe(78);
     for (const route of trackedRoutes) {
       const matchingDeal = deals.find(
         (d) => d.fromAirportSlug === route.airportSlug && d.toDestinationSlug === route.destinationSlug && d.cabin === 'Economy' && !isBundledProductDeal(d)

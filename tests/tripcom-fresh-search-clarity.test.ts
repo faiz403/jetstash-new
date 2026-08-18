@@ -125,11 +125,11 @@ describe('5. resolver, URLs and handoff state are untouched', () => {
     expect(getTripComFlightHandoffUrl('manchester-barcelona', 'manchester', 'barcelona')).toContain('MAN-BCN');
   });
 
-  it('PR #141 reconciliation is unchanged: 79 total, 56 with a verified handoff, 23 unavailable', () => {
+  it('PR #141 reconciliation, updated 18 August 2026: 78 total, 56 with a verified handoff, 22 unavailable (london-gatwick-ahmedabad — itself one of the no-handoff entries — dropped out of tracked fares when Route Verification Refresh Batch 1\'s correction reclassified it unverified)', () => {
     const groups = buildTrackedFareAirportGroups(routes, undefined, nowIso);
     const entries = groups.flatMap((g) => g.entries);
-    expect(entries).toHaveLength(79);
+    expect(entries).toHaveLength(78);
     expect(entries.filter((e) => e.tripComUrl !== null)).toHaveLength(56);
-    expect(entries.filter((e) => e.tripComUrl === null)).toHaveLength(23);
+    expect(entries.filter((e) => e.tripComUrl === null)).toHaveLength(22);
   });
 });

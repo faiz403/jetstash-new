@@ -58,8 +58,14 @@ describe('Fare Coverage Programme Batch 5', () => {
   });
 
   it('raises current display-ready coverage to 79 routes without contradictory fallbacks', () => {
+    // Batch 5 genuinely raised coverage to 79 at the time (14 August 2026); the
+    // assertion below tracks live current-state data, which dropped to 78 on
+    // 18 August 2026 when Route Verification Refresh Batch 1's correction
+    // reclassified london-gatwick-ahmedabad unverified, dropping its fare
+    // observation out of isObservationPublishable(). The 79-route Batch 5
+    // outcome remains an accurate historical record for 14 August 2026.
     const current = routes.filter((route) => getPublishableObservationsByRoute(route.slug, NOW_ISO).length > 0);
-    expect(current).toHaveLength(79);
+    expect(current).toHaveLength(78);
     for (const route of current) {
       expect(shouldShowNoFareFallback(getFareSignalForRoute(route.slug, NOW_ISO)), route.slug).toBe(false);
     }

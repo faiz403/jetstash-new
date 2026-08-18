@@ -47,7 +47,15 @@ const NEW_DEAL_IDS = ['lhr-blr-economy', 'man-jed-economy', 'bhx-bom-economy', '
 
 // The 3 routes RIS-001 mechanically upgrades once Batch B's fare gives each
 // its second, already-substantive category.
-const UPGRADED_TO_STRONG = ['london-gatwick-ahmedabad', 'london-heathrow-bengaluru', 'london-gatwick-amritsar'];
+// london-gatwick-ahmedabad was upgraded to Strong on 6 August 2026 (Batch B) —
+// a real, evidence-driven grade at the time, preserved as history throughout
+// this file's narrative comments — but Route Verification Refresh Batch 1's
+// correction (18 August 2026) reclassified the route unverified after a
+// fresh check found current Air India surfaces genuinely conflict, which
+// mechanically drops it back to 'useful'. See
+// docs/project-control/ROUTE_VERIFICATION_CADENCE_POLICY.md.
+const UPGRADED_TO_STRONG = ['london-heathrow-bengaluru', 'london-gatwick-amritsar'];
+const REVERTED_TO_USEFUL_18_AUG = ['london-gatwick-ahmedabad'];
 
 describe('Fare Coverage Expansion Batch B — observation methodology', () => {
   it('every Batch B observation exists, is dated 6 August 2026, and uses the 8-week/14-night profile', () => {
@@ -114,13 +122,21 @@ describe('Fare Coverage Expansion Batch B — observation methodology', () => {
 describe('Fare Coverage Expansion Batch B — publishability and customer visibility', () => {
   it('every new route has exactly one publishable observation', () => {
     for (const slug of NEW_ROUTES) {
+      if (REVERTED_TO_USEFUL_18_AUG.includes(slug)) continue; // see below
       const publishable = getPublishableObservationsByRoute(slug, NOW_ISO);
       expect(publishable.length, slug).toBe(1);
     }
   });
 
+  it('london-gatwick-ahmedabad\'s Batch B observation still exists in the archive but is no longer publishable, since 18 August 2026\'s correction reclassified the route unverified', () => {
+    const raw = fareObservations.filter((o) => o.routeSlug === 'london-gatwick-ahmedabad' && o.cabin === 'Economy');
+    expect(raw.length).toBeGreaterThanOrEqual(1); // append-only archive — never deleted
+    expect(getPublishableObservationsByRoute('london-gatwick-ahmedabad', NOW_ISO).length).toBe(0);
+  });
+
   it('every new route has a customer-visible fare (a real Deal that renders it), and the badge reflects the fare\'s own evidenced directness', () => {
     for (const slug of NEW_ROUTES) {
+      if (REVERTED_TO_USEFUL_18_AUG.includes(slug)) continue; // see the dedicated test above
       const route = routes.find((r) => r.slug === slug)!;
       const deal = deals.find((d) => d.fromAirportSlug === route.airportSlug && d.toDestinationSlug === route.destinationSlug && d.cabin === 'Economy' && !isBundledProductDeal(d));
       expect(deal, slug).toBeDefined();
@@ -175,7 +191,7 @@ describe('Fare Coverage Expansion Batch B — publishability and customer visibi
     }
   });
 
-  it('overall coverage reflects the current evidence archive: 79 of 88 routes publishable, with 31 represented by curated tracked-fare cards', () => {
+  it('overall coverage reflects the current evidence archive: 78 of 88 routes publishable, with 30 represented by curated tracked-fare cards (updated 18 August 2026 — london-gatwick-ahmedabad dropped out of both counts when Route Verification Refresh Batch 1\'s correction reclassified it unverified)', () => {
     let publishable = 0;
     let visible = 0;
     for (const route of routes) {
@@ -183,8 +199,8 @@ describe('Fare Coverage Expansion Batch B — publishability and customer visibi
       const deal = deals.find((d) => d.fromAirportSlug === route.airportSlug && d.toDestinationSlug === route.destinationSlug && d.cabin === 'Economy' && !isBundledProductDeal(d));
       if (deal && hasTrackedFare(deal, NOW_ISO)) visible++;
     }
-    expect(publishable).toBe(79);
-    expect(visible).toBe(31);
+    expect(publishable).toBe(78);
+    expect(visible).toBe(30);
     // The 48 remaining routes have valid Fare Signals but no curated Deal
     // card. They are intentionally counted by route-level coverage only.
     expect(publishable - visible).toBe(48);
@@ -199,7 +215,7 @@ describe('Fare Coverage Expansion Batch B — publishability and customer visibi
 });
 
 describe('Fare Coverage Expansion Batch B — RIS-001 mechanical grade changes', () => {
-  it('the 3 upgraded routes clear all three RIS-001 gates on a pre-existing substantive category plus the new fare — not a manual override', () => {
+  it('the 2 routes still upgraded clear all three RIS-001 gates on a pre-existing substantive category plus the new fare — not a manual override (originally 3; see the reversion test below)', () => {
     for (const slug of UPGRADED_TO_STRONG) {
       const route = routes.find((r) => r.slug === slug)!;
       expect(route.isDirect, slug).toBe(true); // confirms Gate 3's connecting-depth check never applies here
@@ -210,9 +226,15 @@ describe('Fare Coverage Expansion Batch B — RIS-001 mechanical grade changes',
     }
   });
 
-  it('the 7 non-upgraded new routes stay useful, each failing a specific, identifiable gate', () => {
+  it('london-gatwick-ahmedabad genuinely cleared the RIS-001 gates on 6 August 2026 (real evidence, not a manual override) but reverted to useful on 18 August 2026 when its verification state changed, not because RIS-001 or its depth categories changed', () => {
+    const route = routes.find((r) => r.slug === 'london-gatwick-ahmedabad')!;
+    expect(route.verification!.status).toBe('unverified');
+    expect(computeRouteIntelligenceLevel(route, NOW_ISO)).toBe('useful');
+  });
+
+  it('the 8 non-upgraded new routes stay useful, each failing a specific, identifiable gate', () => {
     const stillUseful = NEW_ROUTES.filter((s) => !UPGRADED_TO_STRONG.includes(s));
-    expect(stillUseful.length).toBe(7);
+    expect(stillUseful.length).toBe(8);
     for (const slug of stillUseful) {
       const route = routes.find((r) => r.slug === slug)!;
       expect(computeRouteIntelligenceLevel(route, NOW_ISO), slug).toBe('useful');
@@ -226,17 +248,23 @@ describe('Fare Coverage Expansion Batch B — RIS-001 mechanical grade changes',
     }
   });
 
-  it('Gatwick and Heathrow India are Strong when every destination has sufficient evidenced depth', () => {
+  it('Heathrow India is Strong when every destination has sufficient evidenced depth', () => {
     const airports = buildAtlasAirports();
     const heathrow = airports.find((a) => a.airportSlug === 'london-heathrow')!;
     const heathrowIndia = heathrow.countries.find((c) => c.slug === 'india')!;
     expect(heathrowIndia.intelligenceLevel).toBe('strong');
     expect(heathrowIndia.destinations.every((d) => d.intelligenceLevel === 'strong')).toBe(true);
+  });
 
+  it('Gatwick India was genuinely Strong on 6 August 2026 (both destinations individually Strong at the time) but reverted to Mixed on 18 August 2026 when london-gatwick-ahmedabad\'s verification state changed — the conservative aggregation rule (Strong only if every destination is Strong) correctly stops carrying it once one sibling is no longer Strong', () => {
+    const airports = buildAtlasAirports();
     const gatwick = airports.find((a) => a.airportSlug === 'london-gatwick')!;
     const gatwickIndia = gatwick.countries.find((c) => c.slug === 'india')!;
-    expect(gatwickIndia.intelligenceLevel).toBe('strong');
-    expect(gatwickIndia.destinations.every((d) => d.intelligenceLevel === 'strong')).toBe(true);
+    expect(gatwickIndia.intelligenceLevel).toBe('mixed');
+    const ahmedabad = gatwickIndia.destinations.find((d) => d.slug === 'ahmedabad');
+    expect(ahmedabad?.intelligenceLevel, 'ahmedabad should have reverted to useful').toBe('useful');
+    const amritsar = gatwickIndia.destinations.find((d) => d.slug === 'amritsar');
+    expect(amritsar?.intelligenceLevel, 'amritsar should remain strong').toBe('strong');
   });
 
   it('a single non-strong destination in either group would prevent Strong (the conservative rule is not bypassed)', () => {
@@ -260,6 +288,7 @@ describe('Fare Coverage Expansion Batch B — no scope creep', () => {
 
   it('aggregateFareDirectness never guesses across disagreeing observations for any Batch B route', () => {
     for (const slug of NEW_ROUTES) {
+      if (REVERTED_TO_USEFUL_18_AUG.includes(slug)) continue; // no longer publishable — see the dedicated test above
       const range = getFareRangeSummary(slug, 'Economy', NOW_ISO);
       expect(range, slug).not.toBeNull();
       // Each of these routes has exactly one Economy observation this

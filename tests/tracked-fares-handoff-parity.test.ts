@@ -100,12 +100,12 @@ describe('Semantic parity: every current tracked-fare entry resolves identically
 });
 
 describe('Current-dataset reconciliation (documented evidence, not a hardcoded production rule)', () => {
-  it('79 current tracked fares: 56 with a verified handoff, 23 with the explicit unavailable state', () => {
+  it('78 current tracked fares: 56 with a verified handoff, 22 with the explicit unavailable state (updated 18 August 2026 — london-gatwick-ahmedabad, itself a no-handoff entry, dropped out of tracked fares when Route Verification Refresh Batch 1\'s correction reclassified it unverified)', () => {
     const airportGroups = buildTrackedFareAirportGroups(routes, undefined, nowIso);
     const allEntries = airportGroups.flatMap((g) => g.entries);
-    expect(allEntries).toHaveLength(79);
+    expect(allEntries).toHaveLength(78);
     expect(allEntries.filter((e) => e.tripComUrl !== null)).toHaveLength(56);
-    expect(allEntries.filter((e) => e.tripComUrl === null)).toHaveLength(23);
+    expect(allEntries.filter((e) => e.tripComUrl === null)).toHaveLength(22);
   });
 
   // The exact 16 routes the audit named — asserted as regression evidence
@@ -126,10 +126,10 @@ describe('Current-dataset reconciliation (documented evidence, not a hardcoded p
     }
   });
 
-  it('all 23 remaining no-handoff routes are London Heathrow/Gatwick — the documented aggregate-search limitation, not a new gap', () => {
+  it('all 22 remaining no-handoff routes are London Heathrow/Gatwick — the documented aggregate-search limitation, not a new gap', () => {
     const airportGroups = buildTrackedFareAirportGroups(routes, undefined, nowIso);
     const blocked = airportGroups.flatMap((g) => g.entries).filter((e) => e.tripComUrl === null);
-    expect(blocked).toHaveLength(23);
+    expect(blocked).toHaveLength(22);
     for (const e of blocked) {
       const route = routes.find((r) => r.slug === e.routeSlug)!;
       const airport = getRouteAirport(route)!;

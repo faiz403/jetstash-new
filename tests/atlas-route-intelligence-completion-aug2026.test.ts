@@ -72,13 +72,13 @@ describe('Every data/routes.ts entry has a tracked Atlas Route Intelligence stat
     expect(trackedRouteCount).toBe(routes.length);
   });
 
-  it('sanity: the current 88-route catalogue grades 11 Strong / 77 Useful / 0 Expanding', () => {
+  it('sanity: the current 88-route catalogue grades 10 Strong / 78 Useful / 0 Expanding (updated 18 August 2026 — london-gatwick-ahmedabad reverted Strong→Useful when Route Verification Refresh Batch 1\'s correction reclassified it unverified; see ROUTE_VERIFICATION_CADENCE_POLICY.md)', () => {
     const counts = { strong: 0, useful: 0, expanding: 0 };
     for (const route of routes) {
       const level = trackedBySlug.get(route.slug)?.intelligenceLevel;
       if (level === 'strong' || level === 'useful' || level === 'expanding') counts[level]++;
     }
-    expect(counts).toEqual({ strong: 11, useful: 77, expanding: 0 });
+    expect(counts).toEqual({ strong: 10, useful: 78, expanding: 0 });
   });
 });
 
