@@ -259,10 +259,73 @@ function toCandidate(result: FareWatcherQualificationResult): FareWatcherCandida
   };
 }
 
+/**
+ * True when `a` should replace `b` as the "latest" observation for the same
+ * comparison identity: later observedDate wins; on a genuine same-day tie,
+ * the lower price wins; a final id comparison makes the result fully
+ * deterministic. Mirrors the existing "latest observation" tie-break
+ * already used by `selectLatestObservation` in lib/fare-signal.ts, so the
+ * two "what's the current one" derivations in the codebase agree.
+ */
+function isNewerCandidate(a: FareObservation, b: FareObservation): boolean {
+  if (a.observedDate !== b.observedDate) return a.observedDate > b.observedDate;
+  if (a.price !== b.price) return a.price < b.price;
+  return a.id.localeCompare(b.id) < 0;
+}
+
+/**
+ * Candidate supersession (Fare Watcher Current-Candidate Supersession fix,
+ * 19 August 2026): FARE_WATCHER_DESIGN.md's own candidate-flow section
+ * already states candidates "expire automatically when their checked date,
+ * travel dates or source availability no longer support the claim" — the
+ * third clause was never implemented. Discovered via a real live-verified
+ * case: a route's 18 August observation independently qualified as
+ * `standout-candidate`; a same-profile 19 August recheck found the fare no
+ * longer reproducible and logged a fresh, lower-tier observation. Without
+ * this filter, BOTH observations independently surface as separate
+ * "current" candidates for the same route — including via Route Watch and
+ * the founder Command Centre UI — even though the 18 August one no longer
+ * reflects an available fare.
+ *
+ * Keeps exactly one 'current'-eligible observation per (routeSlug, cabin,
+ * profileId) identity — the same triple `qualifyFareWatcherObservation`
+ * already uses to decide whether two observations are comparable at all
+ * (see its `different-profile` exclusion below). An observation with no
+ * `profileId` has no stable identity to group by and is kept as its own
+ * singleton group rather than risk an incorrect collapse.
+ *
+ * This ONLY decides which observation is ever promoted to a candidate. It
+ * does not touch baseline computation: `qualifyFareWatcherObservation` is
+ * still called with the full, unfiltered observation list, so a superseded
+ * observation (like the 18 August one above) remains fully available as
+ * comparable baseline evidence for whichever observation IS selected as the
+ * candidate — exactly how it already legitimately became part of the 19
+ * August observation's own baseline median.
+ */
+function latestCurrentObservationsByIdentity(observations: readonly FareObservation[], nowIso: string): FareObservation[] {
+  const latestByIdentity = new Map<string, FareObservation>();
+  for (const observation of observations) {
+    if (observation.comparisonEligibility !== 'current') continue;
+    // Never let an observation dated after nowIso supersede one that is
+    // valid as of nowIso — an evaluation "as of" a given date must only
+    // ever see what was actually known by then, exactly like
+    // qualifyFareWatcherObservation's own candidateAge check below treats a
+    // future-dated candidate as invalid rather than as evidence.
+    if (observation.observedDate > nowIso) continue;
+    const key = observation.profileId
+      ? `${observation.routeSlug}|${observation.cabin}|${observation.profileId}`
+      : `no-profile-id:${observation.id}`;
+    const existing = latestByIdentity.get(key);
+    if (!existing || isNewerCandidate(observation, existing)) {
+      latestByIdentity.set(key, observation);
+    }
+  }
+  return [...latestByIdentity.values()];
+}
+
 /** Generates internal leads only. It never writes the archive or publishes UI copy. */
 export function generateFareWatcherCandidates(observations: FareObservation[], nowIso: string): FareWatcherCandidate[] {
-  return observations
-    .filter((observation) => observation.comparisonEligibility === 'current')
+  return latestCurrentObservationsByIdentity(observations, nowIso)
     .map((candidate) => toCandidate(qualifyFareWatcherObservation(candidate, observations, nowIso)))
     .filter((candidate): candidate is FareWatcherCandidate => candidate !== null);
 }
