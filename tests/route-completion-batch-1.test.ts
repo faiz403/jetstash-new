@@ -151,10 +151,10 @@ describe('Manchester-Dubai\'s new fare observation matches the approved specific
     expect(obs!.observationReason).toBe('routine-weekly');
   });
 
-  it('is the only new observation added — Manchester-Dubai\'s two historic entries are untouched', () => {
+  it('Manchester-Dubai\'s two historic entries remain untouched — one further genuine observation was added later (18 August 2026, Weekly Full Fare Refresh #1)', () => {
     const dubaiObs = fareObservations.filter((o) => o.routeSlug === 'manchester-dubai');
-    expect(dubaiObs.length).toBe(3);
-    const historic = dubaiObs.filter((o) => o.id !== NEW_DUBAI_OBS_ID);
+    expect(dubaiObs.length).toBe(4);
+    const historic = dubaiObs.filter((o) => o.id !== NEW_DUBAI_OBS_ID && o.id !== 'obs-man-dxb-economy-20260818-8w-v1');
     expect(historic.length).toBe(2);
     for (const o of historic) {
       expect(o.departureDate, o.id).toBeUndefined();
@@ -169,10 +169,10 @@ describe('Manchester-Dubai\'s new fare observation matches the approved specific
     expect(isObservationPublishable(obs!, route, NOW_ISO)).toBe(true);
   });
 
-  it('is the sole publishable observation for the route today', () => {
+  it('remains publishable alongside the 18 August 2026 refresh observation', () => {
     const publishable = getPublishableObservationsByRoute('manchester-dubai', NOW_ISO);
-    expect(publishable.length).toBe(1);
-    expect(publishable[0].id).toBe(NEW_DUBAI_OBS_ID);
+    expect(publishable.length).toBe(2);
+    expect(publishable.map((o) => o.id)).toContain(NEW_DUBAI_OBS_ID);
   });
 });
 
@@ -183,12 +183,14 @@ describe('Manchester-Doha\'s original fare observation is untouched by this roun
     expect(obs!.price).toBe(411);
     expect(obs!.departureDate).toBe('2026-09-30');
     expect(obs!.returnDate).toBe('2026-10-14');
-    // A second, genuinely separate observation was added later the same
-    // week by Fare Coverage Expansion Batch A (obs-man-doh-economy-20260806-8w-v1,
-    // a real nonstop Qatar Airways result) - this test's own scope is only
+    // Two further genuinely separate observations were added later - by
+    // Fare Coverage Expansion Batch A the same week
+    // (obs-man-doh-economy-20260806-8w-v1, a real nonstop Qatar Airways
+    // result) and by Weekly Full Fare Refresh #1 on 18 August 2026
+    // (obs-man-doh-economy-20260818-8w-v1) - this test's own scope is only
     // that THIS specific historic record (20260805) was never edited, not
     // that no further observation could ever legitimately be added.
-    expect(getPublishableObservationsByRoute('manchester-doha', NOW_ISO).length).toBe(2);
+    expect(getPublishableObservationsByRoute('manchester-doha', NOW_ISO).length).toBe(3);
   });
 
   it('an incomplete fare record (missing dates) can never become publishable, regardless of route status', () => {

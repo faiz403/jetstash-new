@@ -6,6 +6,7 @@ import {
   checkManifestCompleteness,
   generateFareObservationCode,
   summarizeWeeklyFareBatch,
+  resolveProfileId,
   WEEKLY_FARE_PROFILE_2026_08_18,
   type WeeklyFareEvidenceEntry,
 } from '@/lib/weekly-fare-ingest';
@@ -58,7 +59,7 @@ describe('1. simple direct return', () => {
     expect(result.isRouteVerificationBlocked).toBe(false);
   });
 
-  it('generates a "-baseline-v1" profileId, never "-23kg-v1" — this run does not lock baggage to any weight, and no observation in the archive has ever evidenced an actual 23kg figure (audited 18 August 2026; see obs-man-dxb-economy-20260806-8w-v1 for the archive\'s own precedent for this exact naming)', () => {
+  it('generates a "-baseline-v1" profileId, never "-23kg-v1", when the route has NO historical observation at all — a genuinely first-ever check (audited 18 August 2026; see obs-man-dxb-economy-20260806-8w-v1 for the archive\'s own precedent for this exact naming)', () => {
     const entry: WeeklyFareEvidenceEntry = {
       routeSlug: 'manchester-dubai',
       usable: true,
@@ -72,6 +73,194 @@ describe('1. simple direct return', () => {
     const result = validateWeeklyFareEntry(entry, profile, noExistingObservations);
     expect(result.preparedObservation?.profileId).toBe('manchester-dubai-economy-1adult-baseline-v1');
     expect(result.preparedObservation?.profileId).not.toContain('23kg');
+  });
+});
+
+describe('resolveProfileId — Fare Profile Decision Audit (18 August 2026): profileId is an opaque, stable comparison-series identifier, never baggage evidence; a new observation must continue its route\'s existing series, never invent a fresh one out from under it', () => {
+  it('REGRESSION — Manchester–Dubai: exactly one historical profileId ("-baseline-v1", its own already-established series) is continued automatically, with no override needed', () => {
+    const existing: FareObservation = {
+      id: 'obs-man-dxb-economy-20260806-8w-v1',
+      routeSlug: 'manchester-dubai',
+      cabin: 'Economy',
+      observedDate: '2026-08-06',
+      price: 480,
+      priceNote: 'return, per person',
+      source: 'Gulf Air',
+      profileId: 'manchester-dubai-economy-1adult-baseline-v1',
+    };
+    const entry: WeeklyFareEvidenceEntry = {
+      routeSlug: 'manchester-dubai',
+      usable: true,
+      fare: 350,
+      airline: 'Pegasus',
+      outboundDirectness: 'connecting',
+      returnDirectness: 'connecting',
+      baggage: 'not stated',
+      source: 'google-flights',
+    };
+    const result = validateWeeklyFareEntry(entry, profile, [existing]);
+    expect(result.status).toBe('VALID');
+    expect(result.preparedObservation?.profileId).toBe('manchester-dubai-economy-1adult-baseline-v1');
+  });
+
+  it('REGRESSION — a genuinely first-ever observation for a route (zero historical profileIds) mints the neutral "-baseline-v1" convention', () => {
+    const entry: WeeklyFareEvidenceEntry = {
+      routeSlug: 'manchester-agadir',
+      usable: true,
+      fare: 94,
+      airline: 'Ryanair',
+      outboundDirectness: 'connecting',
+      returnDirectness: 'connecting',
+      baggage: 'not stated',
+      source: 'google-flights',
+    };
+    const result = validateWeeklyFareEntry(entry, profile, []);
+    expect(result.status).toBe('VALID');
+    expect(result.preparedObservation?.profileId).toBe('manchester-agadir-economy-1adult-baseline-v1');
+  });
+
+  it('a route with exactly one historical "-23kg-v1" series continues it exactly, even though the token itself is a legacy naming habit, not baggage evidence', () => {
+    const existing: FareObservation = {
+      id: 'obs-man-lhe-economy-20260806-8w-v1',
+      routeSlug: 'manchester-lahore',
+      cabin: 'Economy',
+      observedDate: '2026-08-06',
+      price: 638,
+      priceNote: 'return, per person',
+      source: 'Turkish Airlines',
+      baggage: 'not stated',
+      profileId: 'manchester-lahore-economy-1adult-23kg-v1',
+    };
+    const entry: WeeklyFareEvidenceEntry = {
+      routeSlug: 'manchester-lahore',
+      usable: true,
+      fare: 628,
+      airline: 'Etihad',
+      outboundDirectness: 'connecting',
+      returnDirectness: 'connecting',
+      baggage: 'not stated',
+      source: 'google-flights',
+    };
+    const result = validateWeeklyFareEntry(entry, profile, [existing]);
+    expect(result.status).toBe('VALID');
+    expect(result.preparedObservation?.profileId).toBe('manchester-lahore-economy-1adult-23kg-v1');
+    // The continued profileId says nothing about this observation's own
+    // baggage evidence — that remains exactly what was supplied.
+    expect(result.preparedObservation?.baggage).toBe('not stated');
+  });
+
+  it('REGRESSION — London Gatwick–Istanbul: two competing historical profileIds (a superseded, methodology-excluded generic series and the current valid exact-airport "-saw-" series) fail closed WITHOUT an override — the helper never guesses, never picks "most recent" or "most common"', () => {
+    const supersededExcluded: FareObservation = {
+      id: 'obs-lgw-ist-economy-20260814-8w-v1',
+      routeSlug: 'london-gatwick-istanbul',
+      cabin: 'Economy',
+      observedDate: '2026-08-14',
+      price: 149,
+      priceNote: 'return, per person',
+      source: 'Pegasus',
+      profileId: 'london-gatwick-istanbul-economy-1adult-23kg-v1',
+    };
+    const currentValid: FareObservation = {
+      id: 'obs-lgw-saw-economy-20260814-8w-v1',
+      routeSlug: 'london-gatwick-istanbul',
+      cabin: 'Economy',
+      observedDate: '2026-08-14',
+      price: 149,
+      priceNote: 'return, per person; exact-destination search LGW-SAW',
+      source: 'Pegasus',
+      profileId: 'london-gatwick-istanbul-saw-economy-1adult-23kg-v1',
+    };
+    const entry: WeeklyFareEvidenceEntry = {
+      routeSlug: 'london-gatwick-istanbul',
+      usable: true,
+      fare: 162,
+      airline: 'Pegasus',
+      outboundDirectness: 'direct',
+      returnDirectness: 'direct',
+      baggage: 'not stated',
+      source: 'google-flights',
+    };
+    const result = validateWeeklyFareEntry(entry, profile, [supersededExcluded, currentValid]);
+    expect(result.status).toBe('INVALID');
+    expect(result.issues.some((i) => i.field === 'profileId')).toBe(true);
+    expect(result.issues.find((i) => i.field === 'profileId')?.message).toContain('london-gatwick-istanbul-economy-1adult-23kg-v1');
+    expect(result.issues.find((i) => i.field === 'profileId')?.message).toContain('london-gatwick-istanbul-saw-economy-1adult-23kg-v1');
+    expect(result.preparedObservation).toBeNull();
+  });
+
+  it('REGRESSION — London Gatwick–Istanbul: WITH an explicit profileIdOverride pointing at the current valid "-saw-" series, the entry validates and never revives the superseded generic series', () => {
+    const supersededExcluded: FareObservation = {
+      id: 'obs-lgw-ist-economy-20260814-8w-v1',
+      routeSlug: 'london-gatwick-istanbul',
+      cabin: 'Economy',
+      observedDate: '2026-08-14',
+      price: 149,
+      priceNote: 'return, per person',
+      source: 'Pegasus',
+      profileId: 'london-gatwick-istanbul-economy-1adult-23kg-v1',
+    };
+    const currentValid: FareObservation = {
+      id: 'obs-lgw-saw-economy-20260814-8w-v1',
+      routeSlug: 'london-gatwick-istanbul',
+      cabin: 'Economy',
+      observedDate: '2026-08-14',
+      price: 149,
+      priceNote: 'return, per person; exact-destination search LGW-SAW',
+      source: 'Pegasus',
+      profileId: 'london-gatwick-istanbul-saw-economy-1adult-23kg-v1',
+    };
+    const entry: WeeklyFareEvidenceEntry = {
+      routeSlug: 'london-gatwick-istanbul',
+      usable: true,
+      fare: 162,
+      airline: 'Pegasus',
+      outboundDirectness: 'direct',
+      returnDirectness: 'direct',
+      baggage: 'not stated',
+      source: 'google-flights',
+      profileIdOverride: 'london-gatwick-istanbul-saw-economy-1adult-23kg-v1',
+    };
+    const result = validateWeeklyFareEntry(entry, profile, [supersededExcluded, currentValid]);
+    expect(result.status).toBe('VALID');
+    expect(result.preparedObservation?.profileId).toBe('london-gatwick-istanbul-saw-economy-1adult-23kg-v1');
+    expect(result.preparedObservation?.profileId).not.toBe('london-gatwick-istanbul-economy-1adult-23kg-v1');
+  });
+
+  it('resolveProfileId exposed directly: same three cases, tested against the pure function itself', () => {
+    const noHistory = resolveProfileId('some-new-route', 'Economy', [], undefined);
+    expect(noHistory).toEqual({ profileId: 'some-new-route-economy-1adult-baseline-v1', ambiguous: false, competingProfileIds: [] });
+
+    const oneHistory = resolveProfileId(
+      'manchester-dubai',
+      'Economy',
+      [{ id: 'x', routeSlug: 'manchester-dubai', cabin: 'Economy', observedDate: '2026-08-06', price: 1, priceNote: '', source: '', profileId: 'manchester-dubai-economy-1adult-baseline-v1' }],
+      undefined
+    );
+    expect(oneHistory).toEqual({ profileId: 'manchester-dubai-economy-1adult-baseline-v1', ambiguous: false, competingProfileIds: [] });
+
+    const twoHistory = resolveProfileId(
+      'london-gatwick-istanbul',
+      'Economy',
+      [
+        { id: 'a', routeSlug: 'london-gatwick-istanbul', cabin: 'Economy', observedDate: '2026-08-14', price: 1, priceNote: '', source: '', profileId: 'london-gatwick-istanbul-economy-1adult-23kg-v1' },
+        { id: 'b', routeSlug: 'london-gatwick-istanbul', cabin: 'Economy', observedDate: '2026-08-14', price: 1, priceNote: '', source: '', profileId: 'london-gatwick-istanbul-saw-economy-1adult-23kg-v1' },
+      ],
+      undefined
+    );
+    expect(twoHistory.ambiguous).toBe(true);
+    expect(twoHistory.profileId).toBeNull();
+    expect(twoHistory.competingProfileIds).toHaveLength(2);
+
+    const overridden = resolveProfileId(
+      'london-gatwick-istanbul',
+      'Economy',
+      [
+        { id: 'a', routeSlug: 'london-gatwick-istanbul', cabin: 'Economy', observedDate: '2026-08-14', price: 1, priceNote: '', source: '', profileId: 'london-gatwick-istanbul-economy-1adult-23kg-v1' },
+        { id: 'b', routeSlug: 'london-gatwick-istanbul', cabin: 'Economy', observedDate: '2026-08-14', price: 1, priceNote: '', source: '', profileId: 'london-gatwick-istanbul-saw-economy-1adult-23kg-v1' },
+      ],
+      'london-gatwick-istanbul-saw-economy-1adult-23kg-v1'
+    );
+    expect(overridden).toEqual({ profileId: 'london-gatwick-istanbul-saw-economy-1adult-23kg-v1', ambiguous: false, competingProfileIds: [] });
   });
 });
 

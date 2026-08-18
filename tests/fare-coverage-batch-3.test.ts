@@ -52,12 +52,16 @@ describe('Fare Coverage Programme Batch 3', () => {
     const historic = fareObservations.find((entry) => entry.id === 'obs-lhr-bom-economy-2');
     expect(historic).toMatchObject({ price: 491 });
     expect(historic?.currency).toBeUndefined();
-    expect(getFareSignalForRoute('london-heathrow-mumbai', NOW_ISO)).toMatchObject({ state: 'current', observation: { id: 'obs-lhr-bom-economy-20260813-8w-v1', price: 424 } });
+    // 18 August 2026: Weekly Full Fare Refresh #1 added a newer, later
+    // observation (Etihad, £450), which is now the latest.
+    expect(getFareSignalForRoute('london-heathrow-mumbai', NOW_ISO)).toMatchObject({ state: 'current', observation: { id: 'obs-lhr-bom-economy-20260818-8w-v1', price: 450 } });
   });
 
   it('uses the approved Birmingham-Athens replacement because the exact Leeds Bradford-Bodrum search returned no result', () => {
     expect(fareObservations.some((entry) => entry.routeSlug === 'leeds-bradford-bodrum' && entry.observedDate === NOW_ISO)).toBe(false);
-    expect(getPublishableObservationsByRoute('birmingham-athens', NOW_ISO)).toHaveLength(1);
+    // 18 August 2026: Weekly Full Fare Refresh #1 appended a second
+    // genuine, publishable observation for birmingham-athens.
+    expect(getPublishableObservationsByRoute('birmingham-athens', NOW_ISO)).toHaveLength(2);
   });
 
   it('keeps current display-ready coverage aligned with Fare Signals after later append-only batches', () => {

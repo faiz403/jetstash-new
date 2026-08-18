@@ -146,11 +146,12 @@ describe('No fabricated fare ever appears for this route', () => {
     expect(asOfGateTwo).toHaveLength(0);
   });
 
-  it('now has one real, non-fabricated fare observation (Batch A, 6 August 2026) - getFareRangeSummary correctly returns it, not null', () => {
+  it('now has real, non-fabricated fare observations (Batch A 6 August 2026, plus Weekly Full Fare Refresh #1 18 August 2026) - getFareRangeSummary correctly returns them, not null', () => {
     const range = getFareRangeSummary('manchester-mumbai', 'Economy', '2026-08-06');
     expect(range).not.toBeNull();
-    expect(range!.min).toBe(461);
-    expect(range!.sources).toEqual(['Gulf Air']);
+    expect(range!.min).toBe(445);
+    expect(range!.max).toBe(461);
+    expect(range!.sources).toEqual(['Gulf Air', 'Etihad']);
   });
 
   it('the Economy prototype copy contains no currency figure', () => {

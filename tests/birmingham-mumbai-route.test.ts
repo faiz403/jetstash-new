@@ -283,9 +283,13 @@ describe('TR-017 — no unsupported duration, frequency, urgency, demand, or far
     expect(bhxBomDeals).toHaveLength(1);
     expect(bhxBomDeals[0].id).toBe('bhx-bom-economy');
     const observations = fareObservations.filter((o) => o.routeSlug === 'birmingham-mumbai');
-    expect(observations).toHaveLength(1);
+    // 18 August 2026: Weekly Full Fare Refresh #1 appended a second,
+    // genuine observation for this route — append-only, the original is
+    // untouched.
+    expect(observations).toHaveLength(2);
     expect(observations[0].id).toBe('obs-bhx-bom-economy-20260806-8w-v1');
     expect(observations[0].source).toBe('Qatar Airways');
+    expect(observations[1].id).toBe('obs-bhx-bom-economy-20260818-8w-v1');
   });
 });
 

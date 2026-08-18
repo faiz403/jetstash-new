@@ -121,6 +121,17 @@ export interface WeeklyFareEvidenceEntry {
   publicationNote?: string;
   /** Rare override — defaults to 'current'. Only set 'historical' deliberately (e.g. logging a secondary alternate fare alongside the primary one). */
   comparisonEligibility?: 'current' | 'historical';
+  /**
+   * Explicit human-supplied profileId for this route/cabin, only needed when
+   * `resolveProfileId` cannot determine one automatically (see its own doc
+   * comment) — e.g. a route with more than one distinct historical
+   * profileId, where picking one algorithmically would risk silently
+   * reviving a superseded/excluded series. Supplying this is the ONLY way
+   * past that fail-closed state; the helper never guesses. Ignored (and
+   * unnecessary) when the route has zero or exactly one historical
+   * profileId, since those cases resolve automatically.
+   */
+  profileIdOverride?: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -210,6 +221,78 @@ function aggregateEntryDirectness(
   if (outbound === 'direct' && ret === 'direct') return 'direct';
   if (outbound === 'connecting' || ret === 'connecting') return 'connecting';
   return 'unknown';
+}
+
+export interface ProfileIdResolution {
+  /** Populated only when resolution succeeded. */
+  profileId: string | null;
+  /**
+   * true when the route/cabin has more than one distinct historical
+   * profileId and no override was supplied — the caller must fail the
+   * entry closed rather than guess.
+   */
+  ambiguous: boolean;
+  /** The competing historical profileIds found, when ambiguous. */
+  competingProfileIds: string[];
+}
+
+/**
+ * Determines the profileId a new observation should use, per the 18 August
+ * 2026 Fare Profile Decision Audit: `profileId` is an opaque, stable
+ * comparison-series identifier — Fare Watcher's comparability gate depends
+ * on it matching EXACTLY across a route's series
+ * (`lib/fare-watcher.ts`'s `profileId !== candidate.profileId` check) — so
+ * a new observation must continue whatever profileId that route/cabin's
+ * prior observations already established, never invent a new one where a
+ * series already exists.
+ *
+ * Resolution order:
+ *  1. `override`, if supplied — always wins, no further checks. This is
+ *     the ONLY way to resolve a genuinely ambiguous route (see case 3)
+ *     without guessing.
+ *  2. Zero distinct historical profileIds for this routeSlug+cabin → this
+ *     is genuinely the route's first observation (or first under the
+ *     current methodology); mint the neutral
+ *     `<route-slug>-<cabin>-1adult-baseline-v1`. Never `-23kg-v1` — see
+ *     FARE_OBSERVATION_ARCHIVE.md's profileId semantics note for why that
+ *     token is never assigned to a fresh series.
+ *  3. Exactly one distinct historical profileId → continue it exactly,
+ *     whatever its own naming happens to be (a legacy `-23kg-v1` series,
+ *     an existing `-baseline-v1` series, or anything else). This is the
+ *     common case and requires no human input.
+ *  4. More than one distinct historical profileId → FAIL CLOSED
+ *     (`ambiguous: true`). This helper has no reliable way to know which
+ *     of several historical series is the "current" one — e.g.
+ *     london-gatwick-istanbul has both a superseded, methodology-excluded
+ *     generic-Istanbul series AND the current valid exact-airport (`-saw-`)
+ *     series; picking automatically (even "most recent" or "most common")
+ *     risks silently reviving evidence the archive has already rejected.
+ *     The caller must supply `profileIdOverride` for that specific route.
+ */
+export function resolveProfileId(
+  routeSlug: string,
+  cabin: DealCabin,
+  existingObservations: readonly FareObservation[],
+  override: string | undefined
+): ProfileIdResolution {
+  if (override && override.trim().length > 0) {
+    return { profileId: override, ambiguous: false, competingProfileIds: [] };
+  }
+
+  const cabinSlug = slugifyCabin(cabin);
+  const historicalProfileIds = new Set(
+    existingObservations
+      .filter((o) => o.routeSlug === routeSlug && o.cabin === cabin && o.profileId)
+      .map((o) => o.profileId as string)
+  );
+
+  if (historicalProfileIds.size === 0) {
+    return { profileId: `${routeSlug}-${cabinSlug}-1adult-baseline-v1`, ambiguous: false, competingProfileIds: [] };
+  }
+  if (historicalProfileIds.size === 1) {
+    return { profileId: [...historicalProfileIds][0], ambiguous: false, competingProfileIds: [] };
+  }
+  return { profileId: null, ambiguous: true, competingProfileIds: [...historicalProfileIds] };
 }
 
 /**
@@ -303,18 +386,29 @@ export function validateWeeklyFareEntry(
   const originCode = airport!.code.toLowerCase();
   const destCode = destination!.iataCode.toLowerCase();
   const id = `obs-${originCode}-${destCode}-${cabinSlug}-${compactDate(profile.observedDate)}-8w-v1`;
-  // 'baseline', not '23kg': audited 18 August 2026 against
-  // FARE_OBSERVATION_ARCHIVE.md and the archive itself — no observation
-  // anywhere records an actual 23kg checked-bag figure (baggage is always
-  // 'not stated' or a fee-availability note), and this run does not lock
-  // baggage to any weight. '-23kg-v1' is a legacy naming habit copied
-  // forward from one worked example in the methodology doc, never a
-  // defined or evidenced unit — using it here would assert something
-  // Stage A evidence doesn't support. 'baseline' matches the archive's own
-  // existing precedent for exactly this situation: see
-  // obs-man-dxb-economy-20260806-8w-v1, profileId
-  // 'manchester-dubai-economy-1adult-baseline-v1', baggage 'not stated'.
-  const profileId = `${entry.routeSlug}-${cabinSlug}-1adult-baseline-v1`;
+
+  // profileId: continue the route's own established comparison series
+  // where one exists; never invent a new one out from under it. See
+  // resolveProfileId's own doc comment and the 18 August 2026 Fare Profile
+  // Decision Audit for the full reasoning — profileId is an opaque, stable
+  // comparison-series identifier (Fare Watcher matches it by exact string
+  // equality), never baggage evidence; a legacy '-23kg-v1' token is never
+  // a claim that a 23kg bag was searched or found.
+  const profileResolution = resolveProfileId(entry.routeSlug, cabin, existingObservations, entry.profileIdOverride);
+  if (profileResolution.ambiguous) {
+    issues.push(
+      issue(
+        'profileId',
+        `Route "${entry.routeSlug}" (${cabin}) has more than one historical profileId (${profileResolution.competingProfileIds.join(', ')}) — cannot determine which comparison series is current without guessing. Supply profileIdOverride explicitly.`
+      )
+    );
+  }
+
+  if (issues.length > 0) {
+    return { routeSlug: entry.routeSlug, status: 'INVALID', issues, preparedObservation: null, isRouteVerificationBlocked, publicationNote: entry.publicationNote };
+  }
+
+  const profileId = profileResolution.profileId!;
 
   // Duplicate protection — never silently re-insert the same evidence twice.
   const idCollision = existingObservations.find((o) => o.id === id);

@@ -168,10 +168,16 @@ describe('DEST-001 — no fare invented, no route other than this one added', ()
   // a later, separate initiative - see FARE_COVERAGE_BATCH_B.md) logged a
   // real, dated Gulf Air observation and added a matching Deal entry.
   it('exactly one genuine, dated fare observation exists for this route, added by Fare Coverage Expansion Batch B', () => {
+    // 18 August 2026: Weekly Full Fare Refresh #1 appended a second,
+    // genuine observation (British Airways, both legs direct) — see
+    // tests/fare-coverage-batch-b.test.ts for the resulting honest
+    // directness disagreement (Batch B's outbound-only-connecting evidence
+    // vs this one's both-legs-direct evidence — aggregate now undefined).
     const observations = fareObservations.filter((o) => o.routeSlug === 'london-heathrow-bengaluru');
-    expect(observations).toHaveLength(1);
+    expect(observations).toHaveLength(2);
     expect(observations[0].id).toBe('obs-lhr-blr-economy-20260806-8w-v1');
     expect(observations[0].source).toBe('Gulf Air');
+    expect(observations[1].id).toBe('obs-lhr-blr-economy-20260818-8w-v1');
   });
 
   it('exactly one deal card exists for this route, added by Fare Coverage Expansion Batch B', () => {

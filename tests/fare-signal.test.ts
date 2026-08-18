@@ -32,9 +32,12 @@ describe('universal Fare Signal derivation', () => {
   it('shows the latest current publishable fare without promoting the historical Etihad check', () => {
     const signal = getFareSignalForRoute('manchester-islamabad', '2026-08-11');
     expect(signal.state).toBe('current');
-    expect(signal.observation?.price).toBe(601);
+    // 2026-08-18: Weekly Full Fare Refresh #1 added a newer, later-dated
+    // observation for this route, which now becomes the latest — the
+    // function selects the latest observedDate regardless of nowIso.
+    expect(signal.observation?.price).toBe(630);
     expect(signal.observation?.airline).toBe('Etihad');
-    expect(signal.observation?.observedDate).toBe('2026-08-11');
+    expect(signal.observation?.observedDate).toBe('2026-08-18');
     expect(signal.observation?.id).not.toContain('ey-645');
     expect(signal.strongerSignal).toBeNull();
   });
@@ -71,9 +74,9 @@ describe('Fare Signal presentation and CTA boundaries', () => {
     const text = renderToStaticMarkup(FareSignal({ signal, tripComUrl: getTripComRouteUrl('manchester-islamabad'), routeSlug: 'manchester-islamabad' })).replace(/\s+/g, ' ');
     expect(text).toContain('Fare Signal');
     expect(text).toContain('Fare spotted');
-    expect(text).toContain('601');
+    expect(text).toContain('630');
     expect(text).toContain('Etihad');
-    expect(text).toContain('Checked 11 August 2026');
+    expect(text).toContain('Checked 18 August 2026');
     expect(text).toContain('Check current price');
     expect(text).toContain('Partner link, opens Trip.com in a new tab.');
     expect(text).not.toMatch(/baggage|£0|deal|cheap|cheapest|below average|good value|save/i);
@@ -148,8 +151,11 @@ describe('Fare Signal production coverage counts', () => {
   it('does not backfill Heathrow-Mumbai’s incomplete historic record, while allowing the fresh complete observation to render', () => {
     const historic = fareObservations.find((observation) => observation.id === 'obs-lhr-bom-economy-2');
     expect(historic?.currency).toBeUndefined();
-    expect(getPublishableObservationsByRoute('london-heathrow-mumbai', '2026-08-13')).toHaveLength(1);
-    expect(getFareSignalForRoute('london-heathrow-mumbai', '2026-08-13')).toMatchObject({ state: 'current', observation: { id: 'obs-lhr-bom-economy-20260813-8w-v1', price: 424 } });
+    // 2026-08-18: Weekly Full Fare Refresh #1 added a second complete
+    // observation (Etihad, £450) for this route, alongside the 13 August
+    // one (Gulf Air, £424) — both are complete and publishable.
+    expect(getPublishableObservationsByRoute('london-heathrow-mumbai', '2026-08-13')).toHaveLength(2);
+    expect(getFareSignalForRoute('london-heathrow-mumbai', '2026-08-13')).toMatchObject({ state: 'current', observation: { id: 'obs-lhr-bom-economy-20260818-8w-v1', price: 450 } });
     const deal = deals.find((entry) => entry.id === 'lhr-bom-economy');
     expect(deal).toBeDefined();
     expect(hasTrackedFare(deal!, '2026-08-13')).toBe(true);

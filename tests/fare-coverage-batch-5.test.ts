@@ -46,10 +46,14 @@ describe('Fare Coverage Programme Batch 5', () => {
       price: 149,
       sourceUrl: 'https://www.google.com/travel/flights?q=Flights%20from%20London%20Gatwick%20to%20Istanbul%20October%208%202026%20return%20October%2022%202026&curr=GBP&hl=en&gl=GB',
     });
+    // 18 August 2026: Weekly Full Fare Refresh #1 appended a second,
+    // genuine, publishable observation for this route (exact LGW-IST
+    // pair, Pegasus, direct both ways).
     expect(getPublishableObservationsByRoute('london-gatwick-istanbul', NOW_ISO).map((entry) => entry.id)).toEqual([
       'obs-lgw-saw-economy-20260814-8w-v1',
+      'obs-lgw-ist-economy-20260818-8w-v1',
     ]);
-    expect(getFareSignalForRoute('london-gatwick-istanbul', NOW_ISO).observation?.id).toBe('obs-lgw-saw-economy-20260814-8w-v1');
+    expect(getFareSignalForRoute('london-gatwick-istanbul', NOW_ISO).observation?.id).toBe('obs-lgw-ist-economy-20260818-8w-v1');
   });
 
   it('leaves Leeds Bradford–Bodrum uncovered because the exact controlled search returned no options', () => {
