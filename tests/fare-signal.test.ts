@@ -137,11 +137,11 @@ describe('Fare Signal presentation and CTA boundaries', () => {
 });
 
 describe('Fare Signal production coverage counts', () => {
-  it('reports 79 routes with a current publishable fare and 9 without one at the current archive date', () => {
+  it('reports 78 routes with a current publishable fare and 10 without one at the current archive date (updated 18 August 2026 — london-gatwick-ahmedabad moved from current to none when Route Verification Refresh Batch 1\'s correction reclassified it unverified)', () => {
     const signals = routes.map((route) => getFareSignalForRoute(route.slug, '2026-08-14'));
-    expect(signals.filter((signal) => signal.state === 'current')).toHaveLength(79);
+    expect(signals.filter((signal) => signal.state === 'current')).toHaveLength(78);
     expect(signals.filter((signal) => signal.state === 'recent')).toHaveLength(0);
-    expect(signals.filter((signal) => signal.state === 'none')).toHaveLength(9);
+    expect(signals.filter((signal) => signal.state === 'none')).toHaveLength(10);
     expect(routes.filter((route) => getTripComRouteUrl(route.slug)).length).toBe(45);
   });
 

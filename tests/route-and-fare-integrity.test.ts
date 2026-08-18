@@ -138,6 +138,14 @@ describe('Deal counts (TR-004) — a card with no tracked fare must not count as
     // fresh fare. The 8 entries after them are Batch B's brand-new Deal
     // entries, each backed by a real Batch B observation with nowhere to
     // render before now - see FARE_COVERAGE_BATCH_B.md.
+    // lgw-amd-economy dropped out of this list on 18 August 2026: Route
+    // Verification Refresh Batch 1's correction reclassified
+    // london-gatwick-ahmedabad unverified (DISPUTED) after a fresh check
+    // found current Air India surfaces genuinely conflict on which London
+    // airport this service uses. isObservationPublishable() correctly fails
+    // closed — the observation is still preserved in the archive, it just
+    // can no longer render publicly, exactly per data/fare-observations.ts's
+    // own doc comment. See docs/project-control/ROUTE_VERIFICATION_CADENCE_POLICY.md.
     expect(trackedDeals.map((d) => d.id)).toEqual([
       'man-lhe-economy',
       'lhr-del-economy',
@@ -154,7 +162,6 @@ describe('Deal counts (TR-004) — a card with no tracked fare must not count as
       'lhr-bom-economy',
       'man-ath-economy',
       'man-fco-economy',
-      'lgw-amd-economy',
       'man-isb-economy',
       'man-del-economy',
       'man-bom-economy',
@@ -670,9 +677,16 @@ describe('getDealAirlineLabel (TR-010, final correction) — a deal/search card 
 });
 
 describe('Resolved route evidence sweep (July 2026)', () => {
+  // london-gatwick-ahmedabad was removed from this list on 18 August 2026:
+  // Route Verification Refresh Batch 1's correction reclassified it
+  // unverified (DISPUTED) after a fresh check found current Air India
+  // surfaces genuinely conflict on which London airport the service uses.
+  // It is deliberately no longer expected to resolve to 'direct' — see its
+  // own coverage in tests/route-verification-review-visibility.test.ts and
+  // docs/project-control/ROUTE_VERIFICATION_CADENCE_POLICY.md.
   const resolvedDirect = [
     'london-heathrow-delhi', 'manchester-dubai', 'london-heathrow-doha', 'manchester-doha',
-    'glasgow-dubai', 'edinburgh-dubai', 'newcastle-dubai', 'london-gatwick-ahmedabad', 'london-gatwick-amritsar',
+    'glasgow-dubai', 'edinburgh-dubai', 'newcastle-dubai', 'london-gatwick-amritsar',
   ] as const;
 
   it('clears the pending state only where a current official source now supports direct service', () => {

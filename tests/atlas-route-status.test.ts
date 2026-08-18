@@ -160,13 +160,20 @@ describe('Strongest ("strong") route status requires BROAD depth evidence — at
   });
 
   it('leeds-bradford-islamabad, london-gatwick-ahmedabad, london-gatwick-amritsar and london-heathrow-bengaluru each gained a fresh fare observation from Fare Coverage Expansion Batch B (6 August 2026), and three of the four correctly moved to "strong" on that plus their pre-existing substantive category', () => {
-    const upgraded = ['london-gatwick-ahmedabad', 'london-gatwick-amritsar', 'london-heathrow-bengaluru'];
+    const upgraded = ['london-gatwick-amritsar', 'london-heathrow-bengaluru'];
     for (const slug of upgraded) {
       const route = getRouteBySlug(slug)!;
       expect(depthCategoryCount(route), slug).toBe(2);
       expect(route.isDirect, slug).toBe(true);
       expect(computeRouteIntelligenceLevel(route, NOW_ISO), slug).toBe('strong');
     }
+  });
+
+  it('london-gatwick-ahmedabad reverted to "useful" on 18 August 2026 — Route Verification Refresh Batch 1\'s correction reclassified it unverified after a fresh check found current Air India surfaces genuinely conflict, which both drops its fare observation from publishable (isObservationPublishable requires a current, confirmed direct/connecting status) and blocks Strong at the prerequisite gate regardless of category count. It genuinely was Strong for 6 August-18 August 2026, on real evidence at the time — this is not a walk-back of that history, only its current state.', () => {
+    const route = getRouteBySlug('london-gatwick-ahmedabad')!;
+    expect(route.verification!.status).toBe('unverified');
+    expect(depthCategoryCount(route)).toBe(1); // the pre-existing warning; fare no longer publishable
+    expect(computeRouteIntelligenceLevel(route, NOW_ISO)).toBe('useful');
   });
 
   it('manchester-amritsar and manchester-ahmedabad have two depth categories (breadth) but stay "useful" under RIS-001\'s diversity gate — connectingAlternative + fare alone is not enough', () => {

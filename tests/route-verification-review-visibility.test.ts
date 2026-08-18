@@ -157,7 +157,16 @@ describe('H. Real current archive reconciliation matches the independently compu
     expect(routes.filter((r) => r.verification)).toHaveLength(76);
   });
 
-  it('exactly 6 routes are overdue as of today, and none are healthy (>30 days out)', () => {
+  it('exactly 6 routes are overdue as of today; Route Verification Refresh Batch 1 (18 August 2026) genuinely produced healthy (>30 day) routes for the first time', () => {
+    // Updated after the Route Verification Refresh Batch 1 evidence work:
+    // 9 routes were freshly re-checked against real primary sources and
+    // moved onto the locked cadence policy's category windows (STABLE 90d /
+    // RECENT-CHANGING 30d / CONNECTING-STRUCTURAL 45d) — 7 of those 9 landed
+    // on a window longer than the 30-day dashboard horizon, so "0 healthy"
+    // (true before Batch 1, when every record was on the old flat ~31-day
+    // default) is no longer the honest count. The 6 overdue NO-EVIDENCE/
+    // DISPUTED routes were deliberately left untouched — see
+    // docs/project-control/ROUTE_VERIFICATION_CADENCE_POLICY.md.
     const nowIso = new Date().toISOString().slice(0, 10);
     const withVerification = routes.filter((r) => r.verification);
     const daysBetween = (a: string, b: string) =>
@@ -170,12 +179,12 @@ describe('H. Real current archive reconciliation matches the independently compu
     const healthy = withVerification.length - overdue.length - dueSoon.length;
 
     expect(overdue).toHaveLength(6);
-    expect(healthy).toBe(0);
+    expect(healthy).toBe(7);
 
     const section = findSection(new Date());
     expect(section.headline).toContain('6 routes overdue');
     expect(section.headline).toContain(`${dueSoon.length} due within ${RULE_REVIEW_WATCH_DAYS} days`);
-    expect(section.headline).toContain('0 healthy');
+    expect(section.headline).toContain('7 healthy');
   });
 
   it('the section stays concise: at most MAX_DUE_SOON_ITEMS_SHOWN individual due-soon rows plus one summary row when the backlog is large', () => {
@@ -187,6 +196,81 @@ describe('H. Real current archive reconciliation matches the independently compu
     // individually-listed rows must stay bounded.
     expect(dueSoonRows.length).toBeLessThanOrEqual(15);
     expect(summaryRow).toBeDefined();
+  });
+
+  it('verified/unverified split: Batch 1 correction moved london-gatwick-ahmedabad from verified to unverified without changing the total', () => {
+    // Recorded truthfully after the Batch 1 correction (18 August 2026):
+    // london-gatwick-ahmedabad was reclassified DISPUTED/unverified because a
+    // fresh check found current Air India surfaces genuinely conflict — not
+    // because any evidence-gap route was touched. The 76-record total and the
+    // 6-route overdue set (the pre-existing NO-EVIDENCE/DISPUTED backlog) are
+    // both unaffected by this single record's status flip.
+    const withVerification = routes.filter((r) => r.verification);
+    const verified = withVerification.filter((r) => r.verification!.status === 'verified');
+    const unverified = withVerification.filter((r) => r.verification!.status !== 'verified');
+
+    expect(withVerification).toHaveLength(76);
+    expect(verified.length + unverified.length).toBe(76);
+    expect(verified.length).toBe(67);
+    expect(unverified.length).toBe(9);
+  });
+});
+
+describe('I. London Gatwick–Ahmedabad Batch 1 correction (18 August 2026)', () => {
+  const route = routes.find((r) => r.slug === 'london-gatwick-ahmedabad')!;
+
+  it('is unverified (DISPUTED), not left as a confidently verified claim', () => {
+    expect(route.verification!.status).toBe('unverified');
+  });
+
+  it('carries the fresh check date and the DISPUTED category\'s 14-day window, not an administratively-extended old date', () => {
+    expect(route.verification!.verifiedDate).toBe('2026-08-18');
+    expect(route.verification!.reviewDueDate).toBe('2026-09-01');
+  });
+
+  it('customer presentation fails closed immediately as of today, not on the old 28 August expiry', () => {
+    const nowIso = new Date().toISOString().slice(0, 10);
+    const presentation = getEffectiveRoutePresentation(route, routeStatusEvents, nowIso);
+    expect(presentation.status).not.toBe('verified');
+    expect(route.intro.toLowerCase()).not.toMatch(/nonstop|non-stop|direct service confirmed/);
+  });
+
+  it('the verification note never asserts a confirmed 2026 Heathrow relocation — only a genuine current conflict', () => {
+    const note = (route.verification!.note ?? '').toLowerCase();
+    // The note must explicitly disclaim a confirmed relocation, not merely
+    // omit the topic — and must never assert one as settled fact.
+    expect(note).toMatch(/no confirmed 2026 relocation/);
+    expect(note).not.toMatch(/(?<!no )confirmed 2026 relocation/);
+    expect(note).toMatch(/conflict|contradiction/);
+    expect(note).toMatch(/2025/);
+  });
+
+  it('the cadence policy document records the correction and never asserts a confirmed 2026 relocation either', () => {
+    const policyPath = join(process.cwd(), 'docs/project-control/ROUTE_VERIFICATION_CADENCE_POLICY.md');
+    const policyText = readFileSync(policyPath, 'utf8').toLowerCase();
+    expect(policyText).toMatch(/gatwick.{0,20}ahmedabad/);
+    expect(policyText).toMatch(/no confirmed 2026 relocation/);
+  });
+
+  it('isDirect is left unchanged — only the confidence of the claim changed, not its general shape', () => {
+    expect(route.isDirect).toBe(true);
+  });
+});
+
+describe('J. Batch 1 correction did not disturb the untouched pre-existing overdue evidence-gap routes', () => {
+  const untouchedSlugs = [
+    'manchester-karachi',
+    'birmingham-lahore',
+    'birmingham-islamabad',
+    'london-heathrow-dhaka',
+    'manchester-sylhet',
+    'london-heathrow-sylhet',
+  ];
+
+  it.each(untouchedSlugs)('%s remains unverified with its original review date untouched', (slug) => {
+    const route = routes.find((r) => r.slug === slug);
+    expect(route, `expected a route with slug ${slug}`).toBeDefined();
+    expect(route!.verification!.status).toBe('unverified');
   });
 });
 
