@@ -358,8 +358,8 @@ describe('getDealDirectnessLabel (TR-009, final correction) — a deal/search ca
 });
 
 describe('FARE-001 pilot — historic examples stay private; only fully dated, evidenced observations publish', () => {
-  it('keeps historic observations and appends every editorial observation batch, including the 18 August Weekly Full Fare Refresh #1 batch', () => {
-    expect(fareObservations).toHaveLength(204);
+  it('keeps historic observations and appends every editorial observation batch, including the 19 August Standout Fare candidate verification recheck', () => {
+    expect(fareObservations).toHaveLength(206);
   });
 
   it('keeps every historic observation incomplete and private', () => {
@@ -559,6 +559,8 @@ describe('FARE-001 pilot — historic examples stay private; only fully dated, e
       'obs-man-zyl-economy-20260818-8w-v1',
       'obs-ncl-dlm-economy-20260818-8w-v1',
       'obs-ncl-dxb-economy-20260818-8w-v1',
+      'obs-bhx-atq-economy-20260819-8w-v1',
+      'obs-lhr-jed-economy-20260819-8w-v1',
     ]);
     expect(published).toEqual(expect.arrayContaining([
       expect.objectContaining({
