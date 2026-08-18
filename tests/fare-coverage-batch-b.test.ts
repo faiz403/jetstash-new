@@ -120,11 +120,15 @@ describe('Fare Coverage Expansion Batch B — observation methodology', () => {
 });
 
 describe('Fare Coverage Expansion Batch B — publishability and customer visibility', () => {
-  it('every new route has exactly one publishable observation', () => {
+  it('every new route has at least one publishable observation (most now have two, after the 18 August Weekly Full Fare Refresh #1)', () => {
+    // leeds-bradford-islamabad returned NO USABLE OBSERVATION on 18 August
+    // (no exact LBA-ISB itinerary found), so its lone Batch B observation
+    // stands alone; every other route below got a genuine second one.
+    const stillJustOne = ['leeds-bradford-islamabad'];
     for (const slug of NEW_ROUTES) {
       if (REVERTED_TO_USEFUL_18_AUG.includes(slug)) continue; // see below
       const publishable = getPublishableObservationsByRoute(slug, NOW_ISO);
-      expect(publishable.length, slug).toBe(1);
+      expect(publishable.length, slug).toBe(stillJustOne.includes(slug) ? 1 : 2);
     }
   });
 
@@ -135,13 +139,19 @@ describe('Fare Coverage Expansion Batch B — publishability and customer visibi
   });
 
   it('every new route has a customer-visible fare (a real Deal that renders it), and the badge reflects the fare\'s own evidenced directness', () => {
+    // london-heathrow-bengaluru: see the aggregateFareDirectness test above
+    // — its 18 August evidence genuinely disagrees with Batch B's, so the
+    // badge correctly shows nothing rather than picking a side.
+    const expectedByRoute: Record<string, string | undefined> = {
+      'london-heathrow-bengaluru': undefined,
+    };
     for (const slug of NEW_ROUTES) {
       if (REVERTED_TO_USEFUL_18_AUG.includes(slug)) continue; // see the dedicated test above
       const route = routes.find((r) => r.slug === slug)!;
       const deal = deals.find((d) => d.fromAirportSlug === route.airportSlug && d.toDestinationSlug === route.destinationSlug && d.cabin === 'Economy' && !isBundledProductDeal(d));
       expect(deal, slug).toBeDefined();
       expect(hasTrackedFare(deal!, NOW_ISO), slug).toBe(true);
-      expect(getDealFareDirectnessLabel(deal!, NOW_ISO), slug).toBe('Connecting');
+      expect(getDealFareDirectnessLabel(deal!, NOW_ISO), slug).toBe(slug in expectedByRoute ? expectedByRoute[slug] : 'Connecting');
     }
   });
 
@@ -287,17 +297,26 @@ describe('Fare Coverage Expansion Batch B — no scope creep', () => {
   });
 
   it('aggregateFareDirectness never guesses across disagreeing observations for any Batch B route', () => {
+    // 18 August 2026: Weekly Full Fare Refresh #1 added a second Economy
+    // observation for every route below except leeds-bradford-islamabad
+    // (NO RESULT that run — its lone Batch B observation stands alone).
+    // london-heathrow-bengaluru's fresh 18 August check genuinely found
+    // both legs direct on British Airways, disagreeing with Batch B's own
+    // outbound-only-connecting evidence — the aggregate now honestly
+    // resolves to undefined (never guesses between the two), which IS the
+    // "never guesses across disagreeing observations" behaviour this test
+    // exists to prove, not a defect.
+    const expectedByRoute: Record<string, string | undefined> = {
+      'london-heathrow-bengaluru': undefined,
+    };
     for (const slug of NEW_ROUTES) {
       if (REVERTED_TO_USEFUL_18_AUG.includes(slug)) continue; // no longer publishable — see the dedicated test above
       const range = getFareRangeSummary(slug, 'Economy', NOW_ISO);
       expect(range, slug).not.toBeNull();
-      // Each of these routes has exactly one Economy observation this
-      // batch, so its own stated directness must win outright - never
-      // undefined, never guessed from a majority.
       const obs = fareObservations.filter((o) => o.routeSlug === slug && o.cabin === 'Economy');
       const expectedDirectness = aggregateFareDirectness(obs);
       expect(range!.observedDirectness, slug).toBe(expectedDirectness);
-      expect(range!.observedDirectness, slug).toBe('connecting');
+      expect(range!.observedDirectness, slug).toBe(slug in expectedByRoute ? expectedByRoute[slug] : 'connecting');
     }
   });
 });

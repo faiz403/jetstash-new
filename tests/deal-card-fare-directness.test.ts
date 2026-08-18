@@ -138,10 +138,10 @@ describe('FareRangeSummary.observedDirectness aggregates per-observation fareDir
     expect(range!.observedDirectness).toBe('connecting');
   });
 
-  it('a route/cabin whose observations never recorded fareDirectness reports undefined, never a guess', () => {
+  it('manchester-mumbai now resolves to a real, evidenced "connecting" once the 18 August Weekly Full Fare Refresh #1 observation supplied its first ever stated fareDirectness value (previously undefined: its only observation was explicitly \'unknown\', which never counts toward an aggregate)', () => {
     const range = getFareRangeSummary('manchester-mumbai', 'Economy', NOW_ISO);
     expect(range).not.toBeNull();
-    expect(range!.observedDirectness).toBeUndefined();
+    expect(range!.observedDirectness).toBe('connecting');
   });
 
   it('the fareDirectness field is optional and, when stated, is always one of the three valid values', () => {

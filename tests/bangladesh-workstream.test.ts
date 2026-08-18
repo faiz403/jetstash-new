@@ -9,7 +9,7 @@ import {
 } from '@/data/routes';
 import { destinations, getDestinationBySlug } from '@/data/destinations';
 import { getAirlinesBySlugs } from '@/data/airlines';
-import { fareObservations } from '@/data/fare-observations';
+import { fareObservations, getFareRangeSummary } from '@/data/fare-observations';
 import { deals } from '@/data/deals';
 import { getTripComRouteUrl, hasTripComRoute } from '@/lib/booking-providers';
 import { evaluateTravelReadiness, TRAVEL_READY_SUPPORTED_COUNTRIES } from '@/lib/travel-ready-check';
@@ -272,16 +272,44 @@ describe('BD-001 — no fare invented, no unrelated destination or route added',
   // Every other Bangladesh route (both Sylhet routes, and Heathrow-Dhaka)
   // was deliberately excluded from that batch's queue for being
   // unverified, and remains fare-free here.
-  it('no fare observation exists for any Bangladesh route except manchester-dhaka (Fare Coverage Expansion Batch B) — none else could be honestly logged this session', () => {
+  it('every Bangladesh route now has genuine archived fare evidence (Weekly Full Fare Refresh #1, 18 August 2026) — searched normally per the founder\'s explicit instruction that fare observation and route verification are separate questions, never used to resolve or bypass verification', () => {
+    // All four Bangladesh routes are 'unverified' (see data/routes.ts) —
+    // that stays true regardless of this fare evidence existing. Each
+    // route below has at least one genuine, dated, GBP, both-legs-reviewed
+    // observation appended this run; manchester-dhaka additionally keeps
+    // its untouched 6 August Batch B entry (append-only).
+    const expected: Record<string, { count: number; latestId: string }> = {
+      'london-heathrow-dhaka': { count: 1, latestId: 'obs-lhr-dac-economy-20260818-8w-v1' },
+      'london-heathrow-sylhet': { count: 1, latestId: 'obs-lhr-zyl-economy-20260818-8w-v1' },
+      'manchester-dhaka': { count: 2, latestId: 'obs-man-dac-economy-20260818-8w-v1' },
+      'manchester-sylhet': { count: 1, latestId: 'obs-man-zyl-economy-20260818-8w-v1' },
+    };
     for (const slug of ALL_BANGLADESH_ROUTE_SLUGS) {
-      if (slug === 'manchester-dhaka') {
-        const observations = fareObservations.filter((o) => o.routeSlug === slug);
-        expect(observations, slug).toHaveLength(1);
-        expect(observations[0].id).toBe('obs-man-dac-economy-20260806-8w-v1');
-        continue;
-      }
-      expect(fareObservations.filter((o) => o.routeSlug === slug), slug).toHaveLength(0);
+      const observations = fareObservations.filter((o) => o.routeSlug === slug);
+      expect(observations, slug).toHaveLength(expected[slug].count);
+      expect(observations[observations.length - 1].id, slug).toBe(expected[slug].latestId);
     }
+    // manchester-dhaka is 'verified' (Manchester Airport's own media
+    // centre confirmed the Biman Bangladesh resumption — see
+    // data/routes.ts) — its fare evidence IS publishable. The other three
+    // remain 'unverified'/DISPUTED, so their genuine evidence stays
+    // archived but non-publishable — this is the standing fail-closed
+    // separation between fare observation and route verification, never
+    // resolved by an observation existing.
+    expect(getRouteBySlug('manchester-dhaka')!.verification?.status).toBe('verified');
+    expect(getFareRangeSummary('manchester-dhaka', 'Economy', '2026-08-18')).not.toBeNull();
+    for (const slug of ['london-heathrow-dhaka', 'london-heathrow-sylhet', 'manchester-sylhet']) {
+      expect(getRouteBySlug(slug)!.verification?.status, slug).toBe('unverified');
+      expect(getFareRangeSummary(slug, 'Economy', '2026-08-18'), slug).toBeNull();
+    }
+  });
+
+  it('manchester-dhaka\'s original 6 August Batch B observation is untouched by the 18 August refresh (append-only)', () => {
+    const original = fareObservations.find((o) => o.id === 'obs-man-dac-economy-20260806-8w-v1');
+    expect(original).toBeDefined();
+    expect(original).toEqual(
+      expect.objectContaining({ routeSlug: 'manchester-dhaka', observedDate: '2026-08-06' })
+    );
   });
 
   it('no deal card exists for any Bangladesh route except manchester-dhaka\'s (Fare Coverage Expansion Batch B)', () => {

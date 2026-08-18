@@ -53,7 +53,9 @@ describe('Fare Coverage Programme Batch 2', () => {
 
   it('renders twelve eligible Batch 2 replacements while keeping verification-pending routes excluded', () => {
     for (const routeSlug of Object.keys(BATCH_2).filter((slug) => !VERIFICATION_PENDING_BATCH_2.includes(slug))) {
-      expect(getPublishableObservationsByRoute(routeSlug, NOW_ISO), routeSlug).toHaveLength(1);
+      // 18 August 2026: Weekly Full Fare Refresh #1 appended a second
+      // genuine, publishable observation for each of these twelve routes.
+      expect(getPublishableObservationsByRoute(routeSlug, NOW_ISO), routeSlug).toHaveLength(2);
       expect(routes.some((route) => route.slug === routeSlug), routeSlug).toBe(true);
     }
     for (const routeSlug of VERIFICATION_PENDING_BATCH_2) {

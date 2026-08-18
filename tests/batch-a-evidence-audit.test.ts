@@ -86,11 +86,11 @@ describe('fareDirectness resolution rules the audit established', () => {
     expect(range!.observedDirectness).toBe('connecting');
   });
 
-  it('Manchester-Doha, with one connecting and one unknown-directness observation, resolves to no aggregated directness - never guesses toward either value', () => {
+  it('Manchester-Doha now resolves to a real, evidenced "connecting" once the 18 August Weekly Full Fare Refresh #1 observation supplied the route/cabin\'s first ever stated fareDirectness value - honest aggregation, not a guess (previously undefined: one observation predates the field, one is explicitly \'unknown\', neither states \'direct\'/\'connecting\')', () => {
     const range = getFareRangeSummary('manchester-doha', 'Economy', NOW_ISO);
     expect(range).not.toBeNull();
-    expect(range!.count).toBe(2);
-    expect(range!.observedDirectness).toBeUndefined();
+    expect(range!.count).toBe(3);
+    expect(range!.observedDirectness).toBe('connecting');
   });
 
   it('Manchester-Dubai and Manchester-Lahore keep their genuine, evidence-backed directness after the audit', () => {

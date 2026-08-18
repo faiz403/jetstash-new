@@ -81,7 +81,14 @@ describe('Smart Fare Comparison Manchester–Islamabad pilot', () => {
   });
 
   it('returns no pilot comparison for routes without explicitly current option metadata', () => {
-    expect(getSmartFareComparisonForRoute('manchester-lahore', '2026-08-11')).toBeNull();
+    // 2026-08-18: Weekly Full Fare Refresh #1 added a second
+    // comparisonEligibility: 'current' observation for manchester-lahore,
+    // so it now genuinely clears the >=2-current-options threshold (see
+    // lib/smart-fare-route-adapter.ts) — a real, evidence-driven pilot
+    // activation, not a regression. manchester-dubai still has fewer than
+    // two qualifying 'current' observations, so it remains a valid
+    // negative fixture for this null-safety assertion.
+    expect(getSmartFareComparisonForRoute('manchester-dubai', '2026-08-18')).toBeNull();
   });
 
   it('does not render empty statement groups', () => {

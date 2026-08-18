@@ -143,6 +143,19 @@ A route profile may override the baseline only for a documented reason—for exa
 different typical stay or baggage norm. It must include a stable `profileId` such as
 `manchester-lahore-economy-1adult-23kg-v1`.
 
+**`profileId` semantics (Fare Profile Decision Audit, 18 August 2026):** `profileId` is an opaque,
+stable comparison-series identifier and must never be interpreted as baggage evidence. Legacy
+`-23kg-v1` tokens are naming history, not proof that a 23kg bag was searched, selected, or found —
+the observation's own `baggage` field is the sole source of truth for what was actually shown. A
+new observation for a route that already has an established series must reuse that series'
+`profileId` exactly, whatever its own naming happens to be (Fare Watcher's comparability gate
+matches on exact string equality — see `lib/fare-watcher.ts`); a route with no established series
+starts a fresh one using the neutral `-baseline-v1` convention instead of `-23kg-v1`. Never assign a
+route's superseded or methodology-excluded series to a new observation merely because its name
+matches a familiar pattern — when a route has more than one historical `profileId` and it isn't
+obvious from the archive which is current, resolve it explicitly (see
+`lib/weekly-fare-ingest.ts`'s `resolveProfileId`) rather than guessing.
+
 Every observation must also state one `observationReason`: `routine-weekly`,
 `routine-fortnightly`, `school-holiday`, `religious-peak`, `airline-sale`, `emergency-recheck`,
 `route-status-recheck` or `other` (with the reason explained in `priceNote`). This lets future

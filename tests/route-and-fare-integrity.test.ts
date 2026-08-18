@@ -102,14 +102,14 @@ describe('Fare-observation completeness gating (TR-002) — Verified Check must 
     expect(isPubliclyPublishable(rest as FareObservation)).toBe(false);
   });
 
-  it('getFareRangeSummary derives the exact dated Manchester–Lahore weekly series, now including the 11 August check', () => {
+  it('getFareRangeSummary derives the exact dated Manchester–Lahore weekly series, now including the 18 August Weekly Full Fare Refresh #1 check', () => {
     const range = getFareRangeSummary('manchester-lahore', 'Economy', FIXED_TODAY);
     expect(range).not.toBeNull();
-    expect(range!.count).toBe(4);
+    expect(range!.count).toBe(5);
     expect(range!.min).toBe(574);
     expect(range!.max).toBe(638);
     expect(range!.earliestDate).toBe('2026-07-28');
-    expect(range!.latestDate).toBe('2026-08-11');
+    expect(range!.latestDate).toBe('2026-08-18');
     expect(range!.sources).toEqual(['Etihad', 'Turkish Airlines']);
     expect(range!.observedDirectness).toBe('connecting');
   });
@@ -358,8 +358,8 @@ describe('getDealDirectnessLabel (TR-009, final correction) — a deal/search ca
 });
 
 describe('FARE-001 pilot — historic examples stay private; only fully dated, evidenced observations publish', () => {
-  it('keeps historic observations and appends every editorial observation batch, including the 14 August Batch 4 check', () => {
-    expect(fareObservations).toHaveLength(119);
+  it('keeps historic observations and appends every editorial observation batch, including the 18 August Weekly Full Fare Refresh #1 batch', () => {
+    expect(fareObservations).toHaveLength(204);
   });
 
   it('keeps every historic observation incomplete and private', () => {
@@ -474,6 +474,91 @@ describe('FARE-001 pilot — historic examples stay private; only fully dated, e
       'obs-lgw-aga-economy-20260814-8w-v1',
       'obs-lgw-tng-economy-20260814-8w-v1',
       'obs-lgw-saw-economy-20260814-8w-v1',
+      'obs-bhx-aga-economy-20260818-8w-v1',
+      'obs-bhx-amd-economy-20260818-8w-v1',
+      'obs-bhx-atq-economy-20260818-8w-v1',
+      'obs-bhx-ayt-economy-20260818-8w-v1',
+      'obs-bhx-ath-economy-20260818-8w-v1',
+      'obs-bhx-bcn-economy-20260818-8w-v1',
+      'obs-bhx-bjv-economy-20260818-8w-v1',
+      'obs-bhx-dlm-economy-20260818-8w-v1',
+      'obs-bhx-del-economy-20260818-8w-v1',
+      'obs-bhx-doh-economy-20260818-8w-v1',
+      'obs-bhx-dxb-economy-20260818-8w-v1',
+      'obs-bhx-fao-economy-20260818-8w-v1',
+      'obs-bhx-isb-economy-20260818-8w-v1',
+      'obs-bhx-ist-economy-20260818-8w-v1',
+      'obs-bhx-jed-economy-20260818-8w-v1',
+      'obs-bhx-lhe-economy-20260818-8w-v1',
+      'obs-bhx-med-economy-20260818-8w-v1',
+      'obs-bhx-bom-economy-20260818-8w-v1',
+      'obs-bhx-fco-economy-20260818-8w-v1',
+      'obs-brs-ayt-economy-20260818-8w-v1',
+      'obs-brs-bcn-economy-20260818-8w-v1',
+      'obs-brs-dlm-economy-20260818-8w-v1',
+      'obs-brs-fao-economy-20260818-8w-v1',
+      'obs-brs-rak-economy-20260818-8w-v1',
+      'obs-brs-fco-economy-20260818-8w-v1',
+      'obs-edi-dxb-economy-20260818-8w-v1',
+      'obs-gla-ayt-economy-20260818-8w-v1',
+      'obs-gla-dlm-economy-20260818-8w-v1',
+      'obs-gla-dxb-economy-20260818-8w-v1',
+      'obs-lba-atq-economy-20260818-8w-v1',
+      'obs-lba-ayt-economy-20260818-8w-v1',
+      'obs-lba-bcn-economy-20260818-8w-v1',
+      'obs-lba-dlm-economy-20260818-8w-v1',
+      'obs-lba-fao-economy-20260818-8w-v1',
+      'obs-lgw-aga-economy-20260818-8w-v1',
+      'obs-lgw-amd-economy-20260818-8w-v1',
+      'obs-lgw-atq-economy-20260818-8w-v1',
+      'obs-lgw-ayt-economy-20260818-8w-v1',
+      'obs-lgw-ath-economy-20260818-8w-v1',
+      'obs-lgw-bcn-economy-20260818-8w-v1',
+      'obs-lgw-bjv-economy-20260818-8w-v1',
+      'obs-lgw-dlm-economy-20260818-8w-v1',
+      'obs-lgw-dxb-economy-20260818-8w-v1',
+      'obs-lgw-fao-economy-20260818-8w-v1',
+      'obs-lgw-ist-economy-20260818-8w-v1',
+      'obs-lgw-adb-economy-20260818-8w-v1',
+      'obs-lgw-rak-economy-20260818-8w-v1',
+      'obs-lgw-fco-economy-20260818-8w-v1',
+      'obs-lgw-tng-economy-20260818-8w-v1',
+      'obs-lhr-blr-economy-20260818-8w-v1',
+      'obs-lhr-cmn-economy-20260818-8w-v1',
+      'obs-lhr-del-economy-20260818-8w-v1',
+      'obs-lhr-dac-economy-20260818-8w-v1',
+      'obs-lhr-doh-economy-20260818-8w-v1',
+      'obs-lhr-dxb-economy-20260818-8w-v1',
+      'obs-lhr-jed-economy-20260818-8w-v1',
+      'obs-lhr-lhe-economy-20260818-8w-v1',
+      'obs-lhr-bom-economy-20260818-8w-v1',
+      'obs-lhr-zyl-economy-20260818-8w-v1',
+      'obs-man-aga-economy-20260818-8w-v1',
+      'obs-man-amd-economy-20260818-8w-v1',
+      'obs-man-atq-economy-20260818-8w-v1',
+      'obs-man-ayt-economy-20260818-8w-v1',
+      'obs-man-ath-economy-20260818-8w-v1',
+      'obs-man-bcn-economy-20260818-8w-v1',
+      'obs-man-bjv-economy-20260818-8w-v1',
+      'obs-man-dlm-economy-20260818-8w-v1',
+      'obs-man-del-economy-20260818-8w-v1',
+      'obs-man-dac-economy-20260818-8w-v1',
+      'obs-man-doh-economy-20260818-8w-v1',
+      'obs-man-dxb-economy-20260818-8w-v1',
+      'obs-man-fao-economy-20260818-8w-v1',
+      'obs-man-isb-economy-20260818-8w-v1',
+      'obs-man-ist-economy-20260818-8w-v1',
+      'obs-man-adb-economy-20260818-8w-v1',
+      'obs-man-jed-economy-20260818-8w-v1',
+      'obs-man-khi-economy-20260818-8w-v1',
+      'obs-man-lhe-economy-20260818-8w-v1',
+      'obs-man-med-economy-20260818-8w-v1',
+      'obs-man-rak-economy-20260818-8w-v1',
+      'obs-man-bom-economy-20260818-8w-v1',
+      'obs-man-fco-economy-20260818-8w-v1',
+      'obs-man-zyl-economy-20260818-8w-v1',
+      'obs-ncl-dlm-economy-20260818-8w-v1',
+      'obs-ncl-dxb-economy-20260818-8w-v1',
     ]);
     expect(published).toEqual(expect.arrayContaining([
       expect.objectContaining({
@@ -518,10 +603,13 @@ describe('FARE-001 pilot — historic examples stay private; only fully dated, e
     }
   });
 
-  it('keeps Heathrow-Mumbai’s historic currency-incomplete observation private while using the fresh complete observation', () => {
+  it('keeps Heathrow-Mumbai’s historic currency-incomplete observation private while using the fresh complete observations', () => {
     const historic = fareObservations.find((observation) => observation.id === 'obs-lhr-bom-economy-2');
     expect(historic?.currency).toBeUndefined();
-    expect(getFareRangeSummary('london-heathrow-mumbai', 'Economy', FIXED_TODAY)).toMatchObject({ count: 1, min: 424, max: 424 });
+    // 2026-08-18: Weekly Full Fare Refresh #1 added a second complete
+    // observation (Etihad, £450), alongside the existing 13 August one
+    // (Gulf Air, £424).
+    expect(getFareRangeSummary('london-heathrow-mumbai', 'Economy', FIXED_TODAY)).toMatchObject({ count: 2, min: 424, max: 450 });
   });
 
   it('keeps all other historic-only routes out of public fare output', () => {

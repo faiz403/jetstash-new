@@ -178,11 +178,15 @@ describe('B–G. Route Watch fare-candidate gate — only clears when Fare Watch
   });
 });
 
-describe('Real archive expectation (17 August 2026 baseline) — zero candidates is the honest, expected result', () => {
-  it('the real fareObservations archive produces zero Route Watch fare candidates today, because the one new-recent-low case does not clear the strong threshold', () => {
+describe('Real archive expectation (18 August 2026, Weekly Full Fare Refresh #1) — two genuine standout-candidates, from real evidence, is the honest, expected result', () => {
+  it('the real fareObservations archive produces exactly two Route Watch fare candidates today (birmingham-amritsar and london-heathrow-jeddah), both standout-candidate — the profile-continuity fix restored Fare Watcher\'s comparable baseline for these two routes\' established -23kg-v1 series', () => {
     const nowIso = new Date().toISOString().slice(0, 10);
     const candidates = generateRouteWatchFareCandidates(fareObservations, nowIso);
-    expect(candidates).toHaveLength(0);
+    expect(candidates).toHaveLength(2);
+    expect(candidates.map((c) => c.routeSlug).sort()).toEqual(['birmingham-amritsar', 'london-heathrow-jeddah']);
+    for (const c of candidates) {
+      expect(c.qualification).toBe('standout-candidate');
+    }
   });
 });
 
@@ -235,12 +239,16 @@ describe('I. Trust wording — no overclaim in rendered founder copy or customer
     for (const pattern of forbidden) expect(label).not.toMatch(pattern);
   });
 
-  it('the empty state explicitly says nothing qualifies, rather than implying nothing was checked', () => {
-    // Real archive today has zero candidates — exercise the actual empty-state copy.
+  it('the non-empty state clearly states how many candidates cleared the threshold, never overclaiming urgency', () => {
+    // 18 August 2026: the real archive now has two genuine standout
+    // candidates — exercise the actual non-empty-state copy rather than
+    // the (no-longer-true) empty state.
     const snapshot = getFounderSnapshot(new Date());
     const section = snapshot.grouped['nice-to-have'].find((s) => s.id === 'route-watch-fare-candidates')!;
-    expect(section.items).toHaveLength(0);
-    expect(section.headline).toMatch(/strong evidence threshold/i);
+    expect(section.items).toHaveLength(2);
+    expect(section.headline).toMatch(/2 fare observations clear Fare Watcher's strong evidence threshold/i);
+    expect(section.headline).toMatch(/Nothing sends itself/i);
+    for (const pattern of forbidden) expect(section.headline).not.toMatch(pattern);
   });
 
   it('the pilot procedure explicitly states it reuses Fare Watcher unchanged and never loosens the threshold to manufacture candidates', () => {
