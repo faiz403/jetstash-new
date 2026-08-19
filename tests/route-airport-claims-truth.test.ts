@@ -151,7 +151,19 @@ describe('No route/fare/verification data changed — this PR is editorial wordi
   it('gatwick, manchester, birmingham airports: route lists and hasDirectLongHaul are unchanged', () => {
     expect(gatwickAirport.longHaulRoutes).toEqual(['Dubai', 'Doha', 'Ahmedabad', 'Amritsar']);
     expect(gatwickAirport.hasDirectLongHaul).toBe(true);
-    expect(manchesterAirport.longHaulRoutes).toEqual(['Islamabad', 'Lahore', 'Dubai', 'Doha', 'Abu Dhabi', 'Karachi', 'Delhi', 'Mumbai']);
-    expect(birminghamAirport.longHaulRoutes).toEqual(['Islamabad', 'Dubai', 'Sharjah', 'Doha']);
+    // Route Verification Batch 2 pre-commit trust audit (19 August 2026):
+    // both lists here previously named a destination whose only route from
+    // that airport is `unverified` — 'Karachi' from Manchester
+    // (manchester-karachi) and 'Islamabad' from Birmingham
+    // (birmingham-islamabad). This "All long-haul routes" list on
+    // app/airports/[slug]/page.tsx renders flatly with no verification-
+    // status check (unlike data/destinations.ts's ukAirports, which is
+    // resolved through the verification-aware
+    // getDestinationFlightGuideEntries()/routeStatusLabel() pipeline and
+    // was left untouched because it already renders honestly). Removed
+    // both entries; every remaining destination in each list has a
+    // `verified` route from that airport.
+    expect(manchesterAirport.longHaulRoutes).toEqual(['Islamabad', 'Lahore', 'Dubai', 'Doha', 'Abu Dhabi', 'Delhi', 'Mumbai']);
+    expect(birminghamAirport.longHaulRoutes).toEqual(['Dubai', 'Sharjah', 'Doha']);
   });
 });

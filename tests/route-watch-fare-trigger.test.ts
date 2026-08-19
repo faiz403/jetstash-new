@@ -178,15 +178,33 @@ describe('B–G. Route Watch fare-candidate gate — only clears when Fare Watch
   });
 });
 
-describe('Real archive expectation (18 August 2026, Weekly Full Fare Refresh #1) — two genuine standout-candidates, from real evidence, is the honest, expected result', () => {
-  it('the real fareObservations archive produces exactly two Route Watch fare candidates today (birmingham-amritsar and london-heathrow-jeddah), both standout-candidate — the profile-continuity fix restored Fare Watcher\'s comparable baseline for these two routes\' established -23kg-v1 series', () => {
+describe('Real archive expectation (19 August 2026, post-supersession-fix) — one genuine notable-drop candidate, from real evidence, is the honest, expected result', () => {
+  // Superseded by the Fare Watcher Current-Candidate Supersession fix
+  // (see lib/fare-watcher.ts's latestCurrentObservationsByIdentity doc
+  // comment, 19 August 2026): the 18 August £579/£367 standout-candidate
+  // observations for birmingham-amritsar and london-heathrow-jeddah both
+  // triggered a same-profile verification recheck the next day
+  // (observationReason: 'emergency-recheck', logged 2026-08-19). Neither
+  // £579 nor £367 could be reproduced; the fresh, honest results were
+  // £603 and £535 respectively. Once logged, the supersession fix
+  // correctly stops treating the no-longer-reproducible 18 August
+  // observations as active candidates in favour of the fresh 19 August
+  // ones — exactly the "expire when source availability no longer
+  // supports the claim" behaviour FARE_WATCHER_DESIGN.md always described
+  // but this fix was the first to implement. Of the two fresh 19 August
+  // observations, birmingham-amritsar's £603 still clears the meaningful-
+  // drop threshold against its own comparable median (as 'notable-drop',
+  // not 'standout-candidate' — a smaller but still real margin);
+  // london-heathrow-jeddah's £535 does not clear it at all. One genuine,
+  // currently-reproducible candidate is therefore the correct, expected
+  // result — not a regression from the two-candidate count this
+  // describe block asserted before the 19 August recheck existed.
+  it('the real fareObservations archive produces exactly one Route Watch fare candidate today (birmingham-amritsar, notable-drop) — the 19 August verification recheck correctly superseded both 18 August standout observations, one of which no longer clears the threshold', () => {
     const nowIso = new Date().toISOString().slice(0, 10);
     const candidates = generateRouteWatchFareCandidates(fareObservations, nowIso);
-    expect(candidates).toHaveLength(2);
-    expect(candidates.map((c) => c.routeSlug).sort()).toEqual(['birmingham-amritsar', 'london-heathrow-jeddah']);
-    for (const c of candidates) {
-      expect(c.qualification).toBe('standout-candidate');
-    }
+    expect(candidates).toHaveLength(1);
+    expect(candidates.map((c) => c.routeSlug)).toEqual(['birmingham-amritsar']);
+    expect(candidates[0].qualification).toBe('notable-drop');
   });
 });
 
@@ -240,13 +258,15 @@ describe('I. Trust wording — no overclaim in rendered founder copy or customer
   });
 
   it('the non-empty state clearly states how many candidates cleared the threshold, never overclaiming urgency', () => {
-    // 18 August 2026: the real archive now has two genuine standout
-    // candidates — exercise the actual non-empty-state copy rather than
-    // the (no-longer-true) empty state.
+    // 19 August 2026: the real archive now has one genuine notable-drop
+    // candidate (see the "Real archive expectation" describe block above
+    // for why this dropped from two to one after the supersession fix) —
+    // exercise the actual non-empty-state copy rather than the
+    // (no-longer-true) empty state.
     const snapshot = getFounderSnapshot(new Date());
     const section = snapshot.grouped['nice-to-have'].find((s) => s.id === 'route-watch-fare-candidates')!;
-    expect(section.items).toHaveLength(2);
-    expect(section.headline).toMatch(/2 fare observations clear Fare Watcher's strong evidence threshold/i);
+    expect(section.items).toHaveLength(1);
+    expect(section.headline).toMatch(/1 fare observation clear Fare Watcher's strong evidence threshold/i);
     expect(section.headline).toMatch(/Nothing sends itself/i);
     for (const pattern of forbidden) expect(section.headline).not.toMatch(pattern);
   });
