@@ -25,7 +25,7 @@ export const airports: Airport[] = [
     region: 'North West England',
     description:
       'The largest airport outside London and the busiest direct gateway in the North of England to Pakistan, India, the Gulf and South Asia, alongside year-round European routes.',
-    longHaulRoutes: ['Islamabad', 'Lahore', 'Dubai', 'Doha', 'Abu Dhabi', 'Karachi', 'Delhi', 'Mumbai'],
+    longHaulRoutes: ['Islamabad', 'Lahore', 'Dubai', 'Doha', 'Abu Dhabi', 'Delhi', 'Mumbai'],
     shortHaulHighlights: ['Istanbul', 'Antalya', 'Dalaman', 'Marrakech', 'Barcelona'],
     whyThisAirport:
       'Manchester is the only airport in the North of England with genuine daily-frequency direct services to Pakistan, which shapes travel patterns for the large Pakistani-heritage communities across Greater Manchester, Lancashire and West Yorkshire. For most of this audience, Manchester avoids the additional journey to a London airport — compare the available route and fare for your own dates once the drive to the airport is factored in. It has also served Delhi and Mumbai direct with IndiGo since 2025 — see the Manchester–Delhi and Manchester–Mumbai route guides for current verified status before booking.',
@@ -40,7 +40,7 @@ export const airports: Airport[] = [
     region: 'West Midlands',
     description:
       'A key Midlands departure point with strong connections to the Gulf, Pakistan, and India, serving one of the UK\'s largest South Asian communities.',
-    longHaulRoutes: ['Islamabad', 'Dubai', 'Sharjah', 'Doha'],
+    longHaulRoutes: ['Dubai', 'Sharjah', 'Doha'],
     shortHaulHighlights: ['Malaga', 'Faro', 'Alicante', 'Antalya', 'Bodrum'],
     whyThisAirport:
       'Birmingham sits at the centre of the UK\'s largest concentration of British-Pakistani and British-Indian communities outside London, and its route network reflects that: strong Gulf-connecting options to both India and Pakistan, plus seasonal direct services that rotate by demand. For Midlands-based families, it avoids the drive to Heathrow — compare route, fare, parking and travel time for your own journey.',

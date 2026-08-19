@@ -122,3 +122,38 @@ Birmingham–Islamabad, Heathrow–Dhaka, Manchester–Sylhet, Heathrow–Sylhet
 from this batch and left untouched — they need new primary evidence, not a cadence change, and
 remain correctly fail-closed. See `docs/project-control/ROUTE_COVERAGE_AUDIT.md` (6 August 2026),
 which named this exact set for the same reason.
+
+### Batch 2 — 19 August 2026
+
+Live primary-source research ran against 9 `unverified`/DISPUTED routes plus one routine
+reconfirmation, followed by a targeted manual-resolution pass on the three most promising leads.
+**Outcome: zero reclassifications.** This is a correct result, not a stalled one — the evidence
+standard held, and every route that stayed unverified stayed unverified because the evidence
+genuinely didn't clear the bar, not because it wasn't checked.
+
+- **All 9 unverified/DISPUTED routes** (Heathrow–Dhaka, Heathrow–Sylhet, Birmingham–Delhi,
+  Manchester–Sylhet, Birmingham–Ahmedabad, Gatwick–Ahmedabad, Manchester–Karachi,
+  Birmingham–Lahore, Birmingham–Islamabad) remain unverified. No `status`, `verifiedDate`, or
+  `reviewDueDate` changed on any of them — per this policy's own rule, a fresh check that comes
+  back blocked, inconclusive, or merely reconfirming an already-recorded absence does not qualify
+  for a new date. Seven records (Heathrow–Dhaka, Heathrow–Sylhet, Birmingham–Delhi,
+  Birmingham–Ahmedabad, Manchester–Sylhet, Gatwick–Ahmedabad, Manchester–Karachi) got a concise,
+  dated note addition where today's research genuinely added new directly-read evidence; the
+  remaining two (Birmingham–Lahore, Birmingham–Islamabad) were left completely untouched, since
+  today's re-check only reconfirmed a fact their notes already recorded.
+- **Heathrow–Dhaka and Heathrow–Sylhet**: `verification.sourceUrl` corrected from a stale
+  Terminal 3 Heathrow flight-detail URL to the Terminal 4 URL actually opened and confirmed live
+  this session (Biman Bangladesh Airlines currently operates from Heathrow T4). Factual/source
+  correction only — status, dates, directness and fare publishability all untouched.
+- **Manchester–Mumbai**: reconfirmed as still operating, but `verifiedDate`/`reviewDueDate` were
+  deliberately left unchanged. This record's load-bearing evidence is IndiGo's own 4 Feb 2026
+  press release; today's directly-read check (Manchester Airport's own live Mumbai page, no
+  service-suspended notice) corroborates the route is still running but does not itself reconfirm
+  IndiGo's own schedule facts, so it does not meet this policy's bar for a fresh `verifiedDate`.
+  The existing `reviewDueDate` (2026-08-31) was left as-is rather than mechanically extended to a
+  RECENT/CHANGING 30-day window, since that would land after the already-tracked IndiGo withdrawal
+  (`data/route-status-events.ts`, event `man-bom-indigo-withdrawal-2026-06`, effective the same
+  2026-08-31 date) — extending it would imply the route stays valid past the date it's known to
+  stop operating. The ledger event itself was not touched.
+- **No suppressed fare was unlocked.** All nine archived fares logged against these routes stay
+  suppressed, unchanged from before this batch.
