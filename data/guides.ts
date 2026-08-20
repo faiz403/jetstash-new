@@ -52,8 +52,26 @@ export const guides: Guide[] = [
   },
   {
     slug: 'direct-vs-gulf-connecting-fares',
-    title: 'Comparing direct versus Gulf-connecting fares properly',
-    summary: 'A one-stop fare via Dubai or Doha is sometimes cheaper than flying direct, but only if you compare the whole journey rather than the headline price.',
+    // Search Console opportunity audit (20 Aug 2026): this guide sat at 0%
+    // CTR despite real page-1 impressions (position ~7.4), and a live SERP
+    // check confirmed Google shows the title and description verbatim --
+    // unlike the visa guide, Google wasn't already rewriting toward a
+    // better alternative, so any fix here is our own editorial call, not
+    // one Google handed us. The old title's trailing "properly" read as a
+    // correction rather than a helpful resource, and neither the old title
+    // nor description named Pakistan or India even though the body is
+    // written specifically for those routes. Deliberately a title change,
+    // not just a metadata change -- guide.title also is the page's own
+    // <h1>, and "Comparing direct versus Gulf-connecting fares properly"
+    // was awkward there too; fixing only the SERP-facing copy while
+    // leaving weaker wording on the page itself was rejected. Previewed
+    // live against production before landing (client-side DOM injection
+    // only, no repo change involved) on the /guides hub card and a
+    // "More guides" related-card at 375px and 1280px: clean at every
+    // check, matching sibling cards' existing line-count bands, zero
+    // clipping -- see tests/guide-metadata-gulf-connecting-fares.test.ts.
+    title: 'Direct vs Gulf-Connecting Fares to Pakistan or India',
+    summary: 'Comparing direct and Gulf-connecting fares to Pakistan or India means weighing journey time and baggage transfers too, not just the headline price.',
     paragraphs: [
       'A one-stop fare via Dubai, Doha or Abu Dhabi is sometimes cheaper than a direct flight to Pakistan or India, but the comparison needs to include total journey time, connection risk, and whether checked luggage transfers automatically. For trips with young children or elderly relatives, a direct flight is often worth a moderate price premium.',
       'Compare like with like: total door-to-door time, not flight time. A connection adds the layover itself plus the slack you should build around it. A tight connection saves an hour on paper and costs a day when it goes wrong. Check whether both legs sit on a single ticket. One booking means the airline owns the problem if you misconnect and your bags are checked through; two separate cheap tickets stitched together means you own the problem, and that risk is rarely priced into the "saving".',
