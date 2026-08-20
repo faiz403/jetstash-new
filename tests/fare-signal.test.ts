@@ -82,15 +82,19 @@ describe('Fare Signal presentation and CTA boundaries', () => {
     expect(text).not.toMatch(/baggage|£0|deal|cheap|cheapest|below average|good value|save/i);
   });
 
-  it('labels a connecting observed fare separately from the route-level direct context', () => {
+  it('labels a connecting observed fare separately from the route-level direct context (Route Page Journey Clarity System, 20 Aug 2026)', () => {
     const signal = getFareSignalForRoute('manchester-islamabad', '2026-08-11');
     const text = renderToStaticMarkup(FareSignal({
       signal,
       tripComUrl: getTripComRouteUrl('manchester-islamabad'),
       routeSlug: 'manchester-islamabad',
       routeDirectness: 'direct',
-    }));
-    expect(text).toContain('Route intelligence describes direct service; this Fare Signal is for the connecting itinerary observed on the dates shown.');
+      routeStatusLabel: 'Direct',
+      routeAirlineLabel: 'PIA',
+    })).replace(/\s+/g, ' ');
+    expect(text).toContain('Route service');
+    expect(text).toContain('PIA · Direct');
+    expect(text).toContain('This tracked fare is a different, connecting journey.');
   });
 
   it('renders a recent fare without calling it current or a deal', () => {
