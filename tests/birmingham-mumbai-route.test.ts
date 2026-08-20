@@ -334,11 +334,17 @@ describe('TR-017 — presentation integrity: metadata and social copy must refle
     expect(String(meta.title)).toMatch(/Connection Guide/i);
   });
 
-  it('a route WITH real peak-period content (e.g. manchester-lahore) keeps the full "Booking Windows & Peak Periods" title — the fix is content-aware, not a blanket removal', () => {
+  it('a route WITH real peak-period content (e.g. manchester-lahore) keeps the "Booking & Peak Periods" title — the fix is content-aware, not a blanket removal', () => {
     const route = getRouteBySlug('manchester-lahore')!;
     expect(route.peakPeriodIds.length).toBeGreaterThan(0);
     const p = getRoutePresentation(route, FIXED_TODAY);
-    expect(p.metadataTitle).toMatch(/Booking Windows & Peak Periods/);
+    // "Windows" was dropped and the connector shortened to an en dash in the
+    // 20 Aug 2026 Search Console opportunity-audit fix (see data/routes.ts
+    // and tests/peak-period-title-flights.test.ts) so "Flights" could be
+    // restored without pushing titles over the 65-character guideline —
+    // "Booking" and "Peak Periods" themselves are still both present.
+    expect(p.metadataTitle).toMatch(/Booking & Peak Periods/);
+    expect(p.metadataTitle).toMatch(/Flights/);
   });
 
   it('socialDetail contains no numeric journey duration and no quantified frequency — the flightTime field here is a full disclaimer sentence, not a duration, so it must fall back to a restrained label rather than being shown verbatim', () => {

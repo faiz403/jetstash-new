@@ -266,7 +266,12 @@ describe('Metadata output — generateMetadata() never builds a pending route\'s
     const meta = await generateMetadata({ params: Promise.resolve({ slug: 'manchester-lahore' }) });
     const route = getRouteBySlug('manchester-lahore')!;
     expect(route.verification?.reviewDueDate).toBe('2026-09-14'); // sanity: current evidence refresh
-    expect(meta.title).toMatch(/Booking Windows & Peak Periods/);
+    // "Windows" and the " to " connector were dropped in the 20 Aug 2026
+    // peak-period title fix so "Flights" could return without exceeding the
+    // 65-character guideline — see data/routes.ts and
+    // tests/peak-period-title-flights.test.ts.
+    expect(meta.title).toMatch(/Booking & Peak Periods/);
+    expect(meta.title).toMatch(/Flights/);
     // Metadata audit (Aug 2026): was a raw `.slice(0, 150) + '...'` — replaced
     // with truncateMetadataDescription's word/sentence-boundary-aware
     // truncation (see data/routes.ts). Same source text, cleaner cut.

@@ -247,11 +247,18 @@ describe('Metadata audit — deterministic, repeatable', () => {
  * would violate "do not alter headings merely to mirror metadata" and
  * "do not change visible page copy unless strictly necessary."
  *
- * Route entries (2): manchester-islamabad and manchester-ahmedabad are each
- * exactly 66 characters (1 over) — the longest city-pair names combined with
- * "Booking Windows & Peak Periods", which the peak-period title branch
- * intentionally keeps verbatim (see data/routes.ts). Trimming further starts
- * losing the phrase's meaning for a single character of overage.
+ * No route entries currently need an exception. The peak-period title fix
+ * (Search Console opportunity audit, 20 Aug 2026 — see data/routes.ts and
+ * tests/peak-period-title-flights.test.ts) restored "Flights" to every
+ * peak-period route's title by shortening the connector to an en dash and
+ * dropping "Windows" from the trailing phrase, which incidentally resolved
+ * the four route exceptions this list used to carry (manchester-islamabad,
+ * manchester-ahmedabad, london-heathrow-dubai, london-gatwick-dubai — the
+ * last two disambiguated for the separate duplicate-<title> reason
+ * documented in disambiguatedTitleOrigin(), data/routes.ts) — all four now
+ * land at or under the threshold. If a future route reintroduces an
+ * over-threshold title, add it back here with its own reasoning rather than
+ * assuming this list is permanently empty of route entries.
  */
 const DOCUMENTED_TITLE_EXCEPTIONS: Record<string, string> = {
   '/guides/visa-processing-booking-date':
@@ -266,14 +273,6 @@ const DOCUMENTED_TITLE_EXCEPTIONS: Record<string, string> = {
     'guide.title doubles as the page <h1>; longest of the six, still a single accurate sentence.',
   '/guides/comparing-airlines-same-route':
     'guide.title doubles as the page <h1>; shortening would blur the guide\'s specific comparison angle.',
-  '/routes/manchester-islamabad':
-    '66 chars, 1 over. Longest city-pair name + the intentionally-preserved "Booking Windows & Peak Periods" phrase.',
-  '/routes/manchester-ahmedabad':
-    '66 chars, 1 over. Longest city-pair name + the intentionally-preserved "Booking Windows & Peak Periods" phrase.',
-  '/routes/london-heathrow-dubai':
-    '67 chars, 2 over. The only two routes where "London" alone would collide with another live London-origin route to the same destination (london-gatwick-dubai) — disambiguated to "London Heathrow"/"London Gatwick" (see disambiguatedTitleOrigin() in data/routes.ts) specifically to fix a real duplicate-<title> SEO bug, at the cost of a small, accepted overage.',
-  '/routes/london-gatwick-dubai':
-    '66 chars, 1 over. Same disambiguation as london-heathrow-dubai above, and for the same reason — the two exist only because both routes to Dubai needed to stop sharing one <title>.',
 };
 
 // Sanity bound: an exception is a small, reasoned overage, not a licence to
