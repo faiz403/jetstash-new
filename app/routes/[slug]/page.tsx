@@ -299,11 +299,20 @@ export default async function RoutePage({ params }: { params: Promise<{ slug: st
 
       <section className="bg-white py-8 sm:py-10">
         <div className="mx-auto max-w-content px-5 sm:px-8">
+          {/* Route Page Journey Clarity System (20 Aug 2026): routeStatusLabel
+              and routeAirlineLabel are the same presentation.statusLabel and
+              presentationAirlines values already rendered in the hero above
+              (never re-derived), passed through so FareSignal can name the
+              route's own verified service when it differs from the tracked
+              fare's itinerary — see components/route/fare-signal.tsx's
+              RouteVsFareCallout doc comment. */}
           <FareSignal
             signal={fareSignal}
             tripComUrl={tripComUrl}
             routeSlug={route.slug}
             routeDirectness={presentation.status === 'direct' || presentation.status === 'connecting' ? presentation.status : null}
+            routeStatusLabel={presentation.status === 'direct' || presentation.status === 'connecting' ? presentation.statusLabel : null}
+            routeAirlineLabel={presentationAirlines.length > 0 ? presentationAirlines.map((a) => a.name).join(', ') : null}
           />
         </div>
       </section>
