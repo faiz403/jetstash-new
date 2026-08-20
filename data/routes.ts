@@ -2521,23 +2521,31 @@ export function getRoutePresentation(route: Route, nowIso: string): RoutePresent
   // when the route actually has peak-period data behind it. Checked against
   // route.peakPeriodIds generically, not special-cased to Birmingham–Mumbai
   // — any future route with no peak-period content gets the same fallback.
-  // Metadata audit (Aug 2026): dropped "Flights" from this branch
-  // specifically — the full "{pair} Flights: Booking Windows & Peak
-  // Periods" suffix, identical across every route with peak-period
-  // content, pushed nearly half the route network's titles past the
-  // ~65-character guideline. "Flights" was the one word removable without
-  // losing a route fact, a search term, or the origin/destination pair —
-  // "to" already signals a journey, and "Booking Windows & Peak Periods"
-  // alone still says exactly what the page covers. A handful of routes
-  // with an unusually long city pair (e.g. Manchester to Ahmedabad) still
-  // land a few characters past the guideline even after this — an
-  // accepted, documented exception (see tests/metadata-audit.test.ts)
-  // rather than a further cut that would start losing meaning.
+  //
+  // Peak-period title fix (Search Console opportunity audit, 20 Aug 2026):
+  // "Flights" is back in this branch. The prior Aug 2026 metadata audit
+  // dropped it here because inserting it naively pushed titles well past
+  // the ~65-character guideline — but live Search Console data then showed
+  // every peak-period route sitting at 0% CTR despite real impressions
+  // (290 for London Heathrow–Jeddah alone), and a title reading as an
+  // editorial "Booking Windows & Peak Periods" piece, with no word
+  // signalling a bookable route, is the plausible reason: it doesn't read
+  // like the commercial result a flight search expects. "Flights" earns
+  // its place back by recovering the character budget elsewhere rather
+  // than by exceeding it: the origin–destination connector drops from
+  // " to " to an en dash, and "Windows" drops from the trailing phrase
+  // ("Booking Windows & Peak Periods" → "Booking & Peak Periods"),
+  // preserving "Booking" and "Peak Periods" — the two words carrying the
+  // actual intent — intact. Checked against the full current peak-period
+  // route set (see tests/peak-period-title-flights.test.ts): every one
+  // lands at or under 65 characters, so this needs no per-route exception
+  // list, unlike the previous version. The non-peak-period branch below is
+  // untouched — it already said "Flights" and was never the problem.
   const titleOriginLabel = disambiguatedTitleOrigin(route, airport);
   const titlePair = titleOriginLabel && dest ? `${titleOriginLabel} to ${dest.city}` : pair;
   const hasPeakPeriodContent = route.peakPeriodIds.length > 0;
   const metadataTitle = hasPeakPeriodContent
-    ? `${titlePair}: Booking Windows & Peak Periods`
+    ? `${titlePair.replace(' to ', '–')} Flights: Booking & Peak Periods`
     : `${titlePair} Flights: ${status === 'direct' ? 'Route Guide' : 'Connection Guide'}`;
 
   return {

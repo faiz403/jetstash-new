@@ -182,8 +182,12 @@ describe('The London Heathrow/Gatwick metadata-title collision is fixed for Duba
 
   it('a non-colliding London route (e.g. london-heathrow-lahore, the only London route to Lahore) still uses the plain "London" origin, not the longer disambiguated form', () => {
     const presentation = getRoutePresentation(getRouteBySlug('london-heathrow-lahore')!, NOW_ISO);
-    expect(presentation.metadataTitle).toContain('London to Lahore');
-    expect(presentation.metadataTitle).not.toContain('London Heathrow to Lahore');
+    // The connector became an en dash in the 20 Aug 2026 peak-period title
+    // fix (see data/routes.ts) — "London–Lahore", not "London to Lahore" —
+    // but the origin disambiguation this test actually covers is unaffected:
+    // it's still the plain "London" origin, not "London Heathrow".
+    expect(presentation.metadataTitle).toContain('London–Lahore');
+    expect(presentation.metadataTitle).not.toContain('London Heathrow–Lahore');
   });
 
   it('the visible H1/breadcrumb pair (not the <title>) is unaffected — still the plain city name for both Dubai routes', () => {
