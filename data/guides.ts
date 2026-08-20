@@ -20,7 +20,20 @@ export const guides: Guide[] = [
   {
     slug: 'visa-processing-booking-date',
     title: 'How visa processing time should shape your booking date',
-    summary: 'For Pakistan, India and Saudi Arabia, visa processing is often the real constraint on how late you can book, not flight pricing.',
+    // Search Console opportunity audit (20 Aug 2026): this guide sat at 0%
+    // CTR despite real page-1 impressions (position ~7), and a live SERP
+    // check showed Google already rewriting the old, more abstract summary
+    // with concrete facts pulled from the body text instead of using it
+    // verbatim. This version leads with the same concrete facts Google was
+    // already choosing to surface -- grounded only in what the body
+    // paragraphs actually state (the 4-7 day figure is stated only for
+    // India/Pakistan e-Visas, never for Saudi Arabia, so it stays scoped to
+    // those two; the 2-3 week buffer recommendation is the page's own
+    // general guidance, which is why Saudi Arabia is included for that part
+    // only). Previewed on both the /guides hub card and the "More guides"
+    // related-card context at 375px and 1280px before landing -- see
+    // tests/guide-metadata-visa-summary.test.ts.
+    summary: 'Pakistan and India e-Visas often take 4 to 7 days, with delays possible. Build 2 to 3 weeks of buffer before booking, including for Saudi Arabia trips.',
     paragraphs: [
       'For Pakistan, India and Saudi Arabia, visa processing is often the real constraint on how late you can book, not flight pricing. e-Visas for India and Pakistan are typically processed within 4 to 7 days, but delays happen, particularly during high-demand periods. Build at least 2 to 3 weeks of buffer before your travel date if you haven\'t applied yet, and treat "fastest possible visa turnaround" as a worst case, not a plan.',
       'The order of operations matters as much as the timing. The expensive mistake is booking a non-refundable fare first and applying for the visa second, because if the application is delayed past your departure date, the fare is lost. If your dates depend on a visa you don\'t yet hold, either apply before you commit to the flight, or choose a fare with a change policy you\'ve actually read rather than assumed.',
