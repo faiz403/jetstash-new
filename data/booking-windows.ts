@@ -82,7 +82,11 @@ export const bookingWindows: BookingWindow[] = [
     routeSlug: 'birmingham-islamabad',
     label: 'Recommended booking window ahead of Eid',
     weeksBeforeDeparture: { min: 8, max: 13 },
-    guidance: 'Planning guidance: aim to book 2 to 3 months ahead of Eid on this route. Its direct service is not yet independently verified (see the route status above) — confirm directly with PIA before booking.',
+    // Wording updated 21 August 2026 (COV-001 follow-up) — the route was
+    // reclassified from disputed-direct to verified-connecting via Istanbul
+    // in PR #159; this sentence must not re-hardcode Istanbul as a
+    // permanent route fact (see data/routes.ts note for the same route).
+    guidance: 'Planning guidance: aim to book 2 to 3 months ahead of Eid on this route. Current evidence shows connecting itineraries rather than a nonstop Birmingham–Islamabad service, so check the exact routing and timings before booking.',
     role: 'recommended',
     appliesToPeriodIds: ['eid-al-fitr', 'eid-al-adha'],
   },
