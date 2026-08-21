@@ -132,8 +132,28 @@ export function isPubliclyPublishable(o: FareObservation): boolean {
   return Boolean(o.departureDate && o.returnDate && o.currency);
 }
 
-/** Genuine archive records that fail a later methodology check remain preserved but are excluded from public surfaces. */
-const methodologyExcludedObservationIds = new Set(['obs-lgw-ist-economy-20260814-8w-v1']);
+/**
+ * Genuine archive records that fail a later methodology check remain preserved but are excluded
+ * from public surfaces.
+ *
+ * COV-001 reclassification (21 August 2026): the four entries below are NOT a methodology
+ * failure -- each is a real, date-complete, correctly-evidenced observation for a route that was
+ * reclassified the same day from disputed-direct to verified-connecting (see
+ * docs/project-control/ROUTE_VERIFICATION_CADENCE_POLICY.md, Batch 3). Because
+ * isObservationPublishable() gates purely on route directness/status, reclassifying isDirect to
+ * false would otherwise auto-unlock these four fares as an unreviewed side effect of a route-truth
+ * correction -- a separate decision the founder deliberately deferred ("do not unlock fares yet").
+ * Remove an entry here (not append a new observation) once that separate FARE-001 decision is made
+ * for the route in question.
+ */
+const methodologyExcludedObservationIds = new Set([
+  'obs-lgw-ist-economy-20260814-8w-v1',
+  'obs-man-khi-economy-20260818-8w-v1',
+  'obs-bhx-lhe-economy-20260818-8w-v1',
+  'obs-bhx-isb-economy-20260818-8w-v1',
+  'obs-bhx-del-economy-20260818-8w-v1',
+  'obs-bhx-del-economy-20260813-8w-v1',
+]);
 
 /**
  * Append-only fare history per route — the single source of truth for

@@ -135,12 +135,15 @@ describe('connecting-only route: never falsely mentions a direct service', () =>
 
 describe('verification-pending routes stay fail-closed', () => {
   it('an unverified route never receives a route-vs-fare callout, because it has no fare to compare and no route directness to state', () => {
-    const { presentation } = presentationFor('birmingham-lahore');
+    // birmingham-lahore was this fixture until COV-001 (21 August 2026)
+    // reclassified it to verified-connecting — see
+    // docs/project-control/ROUTE_VERIFICATION_CADENCE_POLICY.md, Batch 3.
+    const { presentation } = presentationFor('birmingham-ahmedabad');
     expect(presentation.status).toBe('unverified');
-    const signal = getFareSignalForRoute('birmingham-lahore', NOW_ISO);
+    const signal = getFareSignalForRoute('birmingham-ahmedabad', NOW_ISO);
     expect(signal.state).toBe('none');
 
-    const html = renderFareSignalForRoute('birmingham-lahore');
+    const html = renderFareSignalForRoute('birmingham-ahmedabad');
     expect(html).not.toContain('Route service');
     expect(html).toContain('No current fare tracked.');
   });
@@ -343,12 +346,17 @@ describe('full 88-route dataset safety check (Phase 8)', () => {
       else if (presentation.status === 'connecting' && fareDirectness === 'direct') connectingDirectFare += 1;
     }
 
+    // noFare 1 -> 5, unverified 9 -> 5 (COV-001, 21 August 2026): see
+    // tests/route-hero-scanability.test.ts's identical count update for the
+    // full explanation — four routes moved from unverified to
+    // verified-connecting, but their pre-existing fares stay suppressed via
+    // methodologyExcludedObservationIds, so each now falls into noFare.
     expect(directConnectingFare).toBe(56);
     expect(directDirectFare).toBe(12);
     expect(connectingConnectingFare).toBe(10);
     expect(connectingDirectFare).toBe(0);
-    expect(noFare).toBe(1);
-    expect(unverified).toBe(9);
+    expect(noFare).toBe(5);
+    expect(unverified).toBe(5);
     expect(directConnectingFare + directDirectFare + connectingConnectingFare + connectingDirectFare + noFare + unverified).toBe(88);
   });
 });

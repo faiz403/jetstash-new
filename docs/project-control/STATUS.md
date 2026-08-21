@@ -22,6 +22,14 @@ analytics/conversion events are verified in the real dashboard.
 ## Current truth
 
 - Route Status V1 is shipped and live.
+- COV-001 verification-gap audit (21 August 2026): Manchester–Karachi, Birmingham–Lahore,
+  Birmingham–Islamabad and Birmingham–Delhi were reclassified from disputed-direct to
+  verified-connecting on fresh primary-source evidence (PIA's own live booking engine for the three
+  PIA routes; Air India's own current page for Birmingham–Delhi, reconciled with Birmingham
+  Airport's 2019 tag-service announcement). See `ROUTE_VERIFICATION_CADENCE_POLICY.md` Batch 3 for
+  the full evidence record. No fare was unlocked by this change; Birmingham–Ahmedabad,
+  Gatwick–Ahmedabad, Heathrow–Dhaka, Heathrow–Sylhet and Manchester–Sylhet remain unverified,
+  deliberately untouched.
 - The Route Atlas (PR #27, plus mobile/crowding/density follow-ups in PR #28, #29, #30, #34)
   replaced the Manchester-to-Mumbai pull-brief hero as the public homepage. The pull-brief hero and
   its supporting `lib/homepage-flagship.ts`/`lib/flagship-status-copy.ts`/`pull-brief*.tsx` code

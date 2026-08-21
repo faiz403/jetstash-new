@@ -67,7 +67,10 @@ describe('WhatsApp share text stays synchronised with Route Status — Mancheste
   });
 
   it('5. a Verification Pending route keeps its short, claim-free uncertainty message — untouched by this fix', () => {
-    const route = getRouteBySlug('manchester-karachi')!;
+    // manchester-karachi was this fixture until COV-001 (21 August 2026)
+    // reclassified it to verified-connecting — see
+    // docs/project-control/ROUTE_VERIFICATION_CADENCE_POLICY.md, Batch 3.
+    const route = getRouteBySlug('birmingham-ahmedabad')!;
     expect(route.verification?.status).toBe('unverified');
     const presentation = getEffectiveRoutePresentation(route, routeStatusEvents, FIXED_TODAY);
     expect(presentation.status).toBe('unverified');
