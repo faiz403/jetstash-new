@@ -1,10 +1,12 @@
 # Route Page Journey Clarity + Scanability — Validation Follow-Up Procedure
 
 **Recorded:** 21 August 2026, immediately after PR #155 (Route Page Journey Clarity System) and
-PR #156 (Route Page Scanability fix) shipped to production. **Status:** procedure only — no test
-has been run yet, and no results are recorded in this repository. This document defines the task
-list, the operating rules, and the shape of the private per-user record; it deliberately contains
-zero real participant data, following the same pattern as `FIRST_10_USER_TEST.md`.
+PR #156 (Route Page Scanability fix) shipped to production. **Status: COMPLETE** — the 5-user round
+this procedure defines has run in full; see "Outcome" at the end of this document for the recorded
+result. The procedure below is preserved unedited as the record of what was actually run — this
+document deliberately contains zero real participant data beyond the pattern-level outcome summary,
+following the same privacy standard as `FIRST_10_USER_TEST.md` (see that section's own rules on what
+belongs in this repository and what stays in the private log).
 
 ## Why this exists
 
@@ -144,3 +146,64 @@ table below defines the *shape* of that private record only — this file stays 
   independent occurrence, per the operating rules above.
 - It creates no code, no analytics event, and no data file — documentation-only, matching
   `FIRST_10_USER_TEST.md` and `ROUTE_WATCH_PILOT_PROCEDURE.md`'s same approach.
+
+## Outcome (recorded 21 August 2026, Big Review Clean-up Batch 1)
+
+The full 5-user round ran across two sessions: Users 1 and 2 before the PR #161 fixes existed, User
+3 as the first clean post-#161 validation, Users 4 and 5 broadening validation across other routes,
+CTA states and the hotel/destination layer. Pattern-level summary only, per this document's own
+privacy rule — no name, contact detail, or identifying quote is recorded here.
+
+**User 1** — understood Manchester→Islamabad's direct PIA route service vs. its connecting Fare
+Signal correctly. Exposed two defects: the homepage journey-submit selection did not open the route
+guide, and the page's generic "No fare checks logged yet" read as contradicting the visible fare.
+Said they would use JetStash alongside Google Flights/Skyscanner — for context, not as a replacement
+for broader live comparison.
+
+**User 2** — also understood the direct-route-vs-connecting-fare distinction correctly, and also
+independently exposed the same two defects User 1 found. This session ran **before** the PR #161
+fixes existed. **User 2 does not validate PR #161** — their session is evidence for what PR #161 was
+commissioned to fix, not evidence the fix works.
+
+**User 3** — the first clean validation run **after** PR #161 shipped. The homepage
+Manchester→Islamabad selector and navigation worked correctly. Route service (PIA, direct) and the
+£630 Etihad connecting Fare Signal were both understood correctly, with no confusion between them.
+The contradictory generic no-fare message was gone. Glasgow→Bodrum, tested as the no-mismatch
+control route, remained clear.
+
+**User 4** — broader route-system validation across four further routes: Manchester→Lahore (direct
+route vs. £628 Etihad connecting fare distinction clear), Heathrow→Mumbai (£450 connecting fare; no
+unsafe CTA; the exact partner-link fail-closed message rendered correctly where no safe handoff
+exists), Gatwick→Istanbul (£162 direct fare; no unverified CTA; no generic London fallback leaked
+through), Manchester→Marrakech (£91 direct fare; valid Trip.com CTAs). No contradictory no-fare
+messaging found on any of the four.
+
+**User 5** — Manchester→Antalya, testing the hotel/destination layer alongside the route layer:
+£197 return Fare Signal, with route intelligence and Fare Signal kept visually distinct; a
+current-price CTA present; no contradictory no-fare copy; three factual hotel-property examples with
+exact-property Trip.com CTAs and the partner disclosure present; no prices, ratings or unsupported
+recommendations attached to any property; the Lara/Kundu, Belek/Kadriye and Side/Evrenseki area
+distinctions read clearly.
+
+### Validation conclusion
+
+- **PR #155 materially improved comprehension of route service vs. observed fare journey.** Three
+  independent users (1, 2, 3) correctly distinguished a route's own direct service from a
+  connecting tracked fare without coaching — the exact confusion pattern that motivated the fix.
+- **PR #156 improved scanability, but Users 1 and 2 exposed two objective defects**: the homepage
+  journey-submit failure, and the ambiguous generic no-fare fallback message.
+- **Those defects were fixed at root in PR #161**: (1) a pre-hydration hydration-safety guard for
+  the homepage submit button, proven via raw SSR HTML, not just asserted; (2) a cabin-specific
+  no-fare fallback replacing the generic sentence, after founder review correctly judged an
+  ordering-only fix insufficient (the same ambiguity existed on 6 routes, not just one).
+- **User 3 validated both fixes post-#161** — clean navigation, clean fare-vs-route comprehension, no
+  contradictory copy.
+- **Users 4 and 5 broadened validation** across multiple routes, CTA states (working, fail-closed,
+  and no-CTA-by-design) and the hotel/destination layer, without exposing another repeated defect.
+- **No further route-page redesign is currently justified from this validation round.** Reopen UX
+  work on route pages only if new, repeated user evidence appears — a single session's observation
+  is a data point, not a mandate, per this document's own operating rules above.
+
+This closes the PR #155/#156 validation follow-up. See `STATUS.md`'s Current truth for the
+project-status entry, and `docs/project-control/DECISIONS.md`'s 21 August 2026 entry for the
+decision-log record.

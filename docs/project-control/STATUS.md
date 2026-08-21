@@ -1,17 +1,21 @@
 # JetStash Current Status
 
-**Last reconciled:** 21 August 2026
+**Last reconciled:** 21 August 2026 (Big Review Clean-up Batch 1)
 
 **Production branch:** `main`
 
-**Application release baseline:** `02d416f7c16132262f32c4371aec197ef15a0be5` (PR #156 merge — Route
-Page Scanability fix; PR #155 — Route Page Journey Clarity System). **Known gap in this ledger:**
-PRs #137–#151 (18–19 August 2026: route-verification batches, weekly fare refresh, standout-candidate
-verification, fare-note jargon fix, route-verification review visibility) shipped and are live in
-production, but are not individually reconciled into this document — this pass covers only #152–#156
-per the 21 August 2026 reconciliation request. Do not assume everything between PR #136 and #152 is
-undocumented-because-unimportant; it is undocumented-because-not-yet-reconciled. A future pass should
-close that specific gap rather than re-deriving it from git history each time.
+**Application release baseline:** `65db09cf39cd8d09e51b458d86a8947351c5edff` (PR #161 merge —
+Participant 1 defect follow-up; PR #160 — Birmingham–Islamabad stale booking-window copy fix; PR
+#159 — COV-001 4-route reclassification; PR #156 — Route Page Scanability fix; PR #155 — Route Page
+Journey Clarity System). **Known gap in this ledger:** PRs #137–#151 (18–19 August 2026:
+route-verification batches, weekly fare refresh, standout-candidate verification, fare-note jargon
+fix, route-verification review visibility) shipped and are live in production, but are not
+individually reconciled into this document — the 21 August reconciliation passes have covered
+#152–#161 (this pass closes #159–#161; a prior 21 August pass closed #152–#156; #157 was itself a
+reconciliation PR; #158 created the validation procedure this pass now records the outcome of). Do
+not assume everything between PR #136 and #152 is undocumented-because-unimportant; it is
+undocumented-because-not-yet-reconciled. A future pass should close that specific gap rather than
+re-deriving it from git history each time.
 
 **Launch readiness:** see `LAUNCH_READINESS_AUDIT_2026-07-29.md` and `LAUNCH_CHECKLIST.md` — ready
 for public organic launch after a short hardening pass; paid advertising remains blocked until
@@ -30,6 +34,56 @@ analytics/conversion events are verified in the real dashboard.
   the full evidence record. No fare was unlocked by this change; Birmingham–Ahmedabad,
   Gatwick–Ahmedabad, Heathrow–Dhaka, Heathrow–Sylhet and Manchester–Sylhet remain unverified,
   deliberately untouched.
+- **Birmingham–Islamabad booking-window copy fix (PR #160, merged 21 August 2026):** the COV-001
+  reclassification above exposed a real customer-facing inconsistency PR #159 itself didn't touch —
+  `data/booking-windows.ts`'s `bhx-isb-eid-recommended` guidance still said "Its direct service is
+  not yet independently verified," directly contradicting the corrected CONNECTING Route Status
+  copy on the same page. Fixed to a connecting-not-nonstop sentence that doesn't hardcode Istanbul
+  as a permanent route fact (the route-level note is allowed to; this shorter sentence stays
+  generic, matching the same guardrail already applied to Manchester–Karachi). One file, one
+  sentence, verified live on production.
+- **Participant 1 defect follow-up (PR #161, merged 21 August 2026):** the first user of the new
+  5-user PR #155/#156 validation round (see `PR155_156_VALIDATION_FOLLOWUP.md`'s outcome section)
+  exposed two objective defects, both fixed at root, not patched:
+  1. **Homepage journey-submit hydration race.** The "Check my journey" form has no `action`/
+     `method` attribute, so a submit reaching the browser before hydration attached React's
+     `onSubmit` fell through to a native GET reload of the homepage itself — indistinguishable from
+     "did nothing." Fixed with a standard hydration-safety guard: the submit button ships
+     `disabled=""` in the raw server-rendered HTML (proven via a pre-hydration `curl`, not asserted)
+     and only enables after mount.
+  2. **Ambiguous cabin-scoped no-fare fallback.** `DealCard`'s "No fare checks logged yet" read as
+     contradicting a fare shown elsewhere on the same page (it's cabin-scoped; the route-level Fare
+     Signal panel is cabin-agnostic). A founder review correctly judged an initial ordering-only fix
+     insufficient — a scope check found the same latent ambiguity on 6 routes, not just
+     Manchester–Islamabad. Fixed at the source: the fallback now names the cabin (e.g. "No Business
+     class fare checks logged yet"), derived from the card's own already-trusted `deal.cabin`.
+  See `tests/dealcard-order-and-hydration-fix.test.ts` for the regression coverage.
+- **PR #155/#156 real-user validation round: COMPLETE (21 August 2026)** — see
+  `PR155_156_VALIDATION_FOLLOWUP.md`'s outcome section for the full per-user record and evidence-
+  based conclusion. Summary: PR #155 materially improved comprehension of route service vs. observed
+  fare journey (validated independently by Users 1, 2 and 3, without coaching); PR #156 improved
+  scanability but Users 1 and 2 exposed the two objective defects fixed in PR #161; User 3 confirmed
+  both fixes post-#161; Users 4 and 5 broadened validation across multiple routes, CTA states and the
+  hotel/destination layer without exposing another repeated defect. No further route-page redesign
+  is currently justified from this round — reopen only on new, repeated user evidence.
+- **Trip.com dated round-trip handoff — commercial attribution NOT YET CONFIRMED.** What is proved
+  so far, and only this: a controlled production click through Ad ID `D19082296`
+  (Manchester–Islamabad) was completed 21 August 2026, through the real referral flow, and the
+  current generic production Trip.com handoff successfully reached Trip.com with its affiliate
+  parameters (`Allianceid`, `SID`, `trip_sub3=D19082296`) confirmed intact on the landed page. The
+  same click also confirmed the generic URL opens a **one-way** search, not round-trip
+  (`flighttype=S`) — a second, independent reason (beyond preserving dates) the dated handoff would
+  eventually be worth building, separate from the attribution question. **Affiliate attribution
+  itself is not yet confirmed, and this entry must not be read as if it were.** Two conditions must
+  both be met before it is: (1) Trip.com's Partner dashboard reporting cycle must explicitly include
+  21 August (next update 22 August — not yet due), and (2) `D19082296`'s click count must show an
+  increment above its known pre-test baseline of **1 click**, attributable to the controlled test —
+  only that specific increment closes the generic-link attribution question; a flat or unrelated
+  count does not. **Even if generic-link attribution is confirmed, that does not by itself prove
+  attribution for the separate, not-yet-built, transformed dated
+  `/flights/showfarefirst?...&triptype=rt` handoff** — that format requires its own, separate
+  controlled-attribution proof before implementation. **No implementation of the dated handoff until
+  attribution evidence supports it** — this is an observation-only entry, no code change.
 - The Route Atlas (PR #27, plus mobile/crowding/density follow-ups in PR #28, #29, #30, #34)
   replaced the Manchester-to-Mumbai pull-brief hero as the public homepage. The pull-brief hero and
   its supporting `lib/homepage-flagship.ts`/`lib/flagship-status-copy.ts`/`pull-brief*.tsx` code
@@ -185,25 +239,44 @@ analytics/conversion events are verified in the real dashboard.
   files against the URL map. **Hotel Intelligence expansion is frozen at these 10 destinations**;
   adding an 11th requires a new, explicit founder decision backed by customer evidence, not more
   engineering capacity alone.
-- **Fare Signal / fare-observation terminology, reconciled 16 August 2026** (see the canonical
-  table below) — do not use "fare coverage" to mean more than one of these without saying which:
-  119 total `FareObservation` archive records exist (append-only, never overwritten); 99 of those
-  are publicly publishable (20 legacy records predate the `departureDate`/`returnDate`/`currency`
-  completeness requirement and are preserved but excluded from display, per
-  `isPubliclyPublishable()` in `data/fare-observations.ts`); 81 routes have at least one
-  publishable observation; **79 of 88 routes currently render a display-ready Fare Signal** once
-  route-verification status is also applied (2 of the 81 — Birmingham–Delhi, Birmingham–Ahmedabad —
-  have a publishable observation but are excluded because their `Route` record is still
-  Verification Pending, per `data/fare-evidence/fare-coverage-batch-5-2026-08-14.md`). The 79/88
-  figure has not changed since the 14 August Batch 5 entry.
+- **Fare Signal / fare-observation terminology, recounted 21 August 2026 (Big Review Clean-up
+  Batch 1)** (see the canonical table below) — do not use "fare coverage" to mean more than one of
+  these without saying which. **Correction to this table's prior 16 August figures**: the archive
+  has grown substantially through ordinary editorial fare-collection work in the five days since
+  (119→206 total records) — that growth is healthy, not a problem (see the freshness audit note
+  below), but the 16 August counts themselves were stale and are replaced here, not edited in place
+  (see `DECISIONS.md`'s new 21 August entry for the same correction recorded as a decision-log
+  entry, following that document's own "add, don't rewrite" convention). 206 total `FareObservation`
+  archive records exist (append-only, never overwritten); 181 of those are publicly publishable (25
+  are not — legacy records predating the `departureDate`/`returnDate`/`currency` completeness
+  requirement, plus the 5 COV-001 methodology-excluded records below, per `isPubliclyPublishable()`
+  in `data/fare-observations.ts`); 83 routes have at least one publishable observation; **78 of 88
+  routes currently render a display-ready Fare Signal** once route-verification status is also
+  applied.
 
   | Term | Count | Definition |
   |---|---:|---|
-  | Total `FareObservation` archive records | 119 | Every observation ever logged, append-only, never overwritten |
-  | Publicly publishable observations | 99 | Archive records with complete `departureDate`/`returnDate`/`currency` (`isPubliclyPublishable()`) |
-  | Routes with ≥1 publishable observation | 81 | Distinct `routeSlug`s among the 99 publishable records |
-  | Routes with a current display-ready Fare Signal | 79 | The 81 above, minus routes whose `Route` record is still Verification Pending (2: Birmingham–Delhi, Birmingham–Ahmedabad) |
-  | Curated `Deal` records | 49 | Separate hand-curated card selection (`data/deals.ts`) — not fare evidence itself |
+  | Total `FareObservation` archive records | 206 | Every observation ever logged, append-only, never overwritten |
+  | Publicly publishable observations | 181 | Archive records with complete `departureDate`/`returnDate`/`currency`, minus methodology exclusions (`isPubliclyPublishable()`) |
+  | Routes with ≥1 publishable observation | 83 | Distinct `routeSlug`s among the 181 publishable records |
+  | Routes with a current display-ready Fare Signal | 78 | The 83 above, filtered by `getFareSignalForRoute(...).state === 'current'` (also requires the observation to be fresh, not just publishable) |
+  | Curated `Deal` records | 49 | Separate hand-curated card selection (`data/deals.ts`) — not fare evidence itself; unchanged since 16 August |
+
+  **Freshness is healthy, not a gap** — a dedicated freshness audit (21 August 2026, before COV-001)
+  found no systemic staleness problem across the archive; do not treat this recount as evidence of a
+  freshness issue. The real, still-open coverage gaps are narrower and specific, not a general
+  freshness problem:
+  - **`leeds-bradford-bodrum`** — a verified direct route with **zero fare observations ever
+    logged** (a `FARE-001` coverage gap, not a verification one — see
+    `ROUTE_VERIFICATION_CADENCE_POLICY.md`'s Batch 3 note).
+  - **The 4 COV-001 routes** (Manchester–Karachi, Birmingham–Lahore, Birmingham–Islamabad,
+    Birmingham–Delhi) each have a real, logged, date-complete fare observation that is deliberately
+    held out of public view via `methodologyExcludedObservationIds`, pending a separate founder
+    decision on whether to unlock them now that the routes are verified — see
+    `ROUTE_VERIFICATION_CADENCE_POLICY.md`'s Batch 3 correction above for the exact observation IDs.
+  - **5 routes remain verification-blocked**, not fare-blocked: Birmingham–Ahmedabad,
+    Gatwick–Ahmedabad, Heathrow–Dhaka, Heathrow–Sylhet, Manchester–Sylhet — a fare cannot honestly
+    render on an unverified route regardless of whether one is logged.
 
 - **Curated `Deal` count is 49** (`data/deals.ts`) — a separate, smaller, hand-curated set of
   airport→destination+cabin combinations chosen for card display; distinct from, and much smaller
@@ -384,10 +457,16 @@ Route coverage now has a durable operating queue in `ROUTE_COVERAGE.md`. The 28 
 the qualifying direct-service records for Heathrow–Delhi, Manchester–Dubai, Heathrow–Doha,
 Manchester–Doha, Glasgow–Dubai, Edinburgh–Dubai, Newcastle–Dubai, Gatwick–Ahmedabad and
 Gatwick–Amritsar, and corrected Birmingham–Amritsar to connecting using current Air India
-evidence. Manchester–Karachi, Birmingham–Lahore and Birmingham–Islamabad remain explicitly
-unresolved PIA disputes because no current route-specific primary source supports either outcome.
-Each cycle must add independently sourced service evidence or a date-complete fare observation;
-never fill a route simply to remove a pending state.
+evidence. **Corrected 21 August 2026 (Big Review Clean-up Batch 1):** this paragraph previously said
+Manchester–Karachi, Birmingham–Lahore and Birmingham–Islamabad "remain explicitly unresolved PIA
+disputes" — stale since the 21 August COV-001 verification-gap audit (PR #159) reclassified all
+three, plus Birmingham–Delhi, from disputed-direct to verified-connecting on fresh primary-source
+evidence. See "Current truth" above and `ROUTE_VERIFICATION_CADENCE_POLICY.md`'s Batch 3 for the
+full evidence record. The genuinely still-unresolved routes are Birmingham–Ahmedabad,
+Gatwick–Ahmedabad, Heathrow–Dhaka, Heathrow–Sylhet and Manchester–Sylhet (5, not 3) — deliberately
+untouched by that pass; see `ROUTE_COVERAGE.md`'s "Explicitly unresolved direct-service disputes"
+for each one's specific open reason. Each cycle must add independently sourced service evidence or a
+date-complete fare observation; never fill a route simply to remove a pending state.
 
 The first evidence-bounded Turkey route-guide pilot is prepared for founder review across Manchester–Istanbul,
 Manchester–Dalaman, Manchester–Bodrum, Manchester–Antalya and Manchester–Izmir. Antalya publishes seasonal direct-service

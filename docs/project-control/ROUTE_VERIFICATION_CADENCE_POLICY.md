@@ -196,6 +196,16 @@ trackers and several OTAs — but Manchester Airport's own page, rechecked live 
 unchanged and still states it is not currently flying there; the founder judged this not yet
 resolved enough to act on).
 
-**No suppressed fare was unlocked by this batch.** None of the four reclassified routes has ever had
-a fare observation logged; reclassification alone does not publish one. Trip.com handoff logic was
-not touched.
+**Correction (Big Review Clean-up Batch 1, 21 August 2026):** the sentence originally here — "none of
+the four reclassified routes has ever had a fare observation logged" — was wrong and is corrected
+now. All four routes DO have logged fare observations (Manchester–Karachi: `obs-man-khi-economy-
+20260818-8w-v1`; Birmingham–Lahore: `obs-bhx-lhe-economy-20260818-8w-v1`; Birmingham–Islamabad:
+`obs-bhx-isb-economy-20260818-8w-v1`; Birmingham–Delhi: `obs-bhx-del-economy-20260818-8w-v1` and
+`obs-bhx-del-economy-20260813-8w-v1`). **No suppressed fare was unlocked by this batch** — that part
+was correct — but the mechanism is deliberate suppression, not absence of evidence: reclassifying a
+route from unverified to verified-connecting would have made these five observations pass
+`isObservationPublishable()`'s route-status gate for the first time, so all five were added to
+`methodologyExcludedObservationIds` (`data/fare-observations.ts`) the same PR, keeping them excluded
+from `isPubliclyPublishable()` regardless of route status. They remain in the archive, correctly
+attributed, pending a separate, deliberate founder decision on whether to unlock them — see
+`STATUS.md`'s Current truth for that open item. Trip.com handoff logic was not touched.
