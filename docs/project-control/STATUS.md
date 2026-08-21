@@ -1,11 +1,17 @@
 # JetStash Current Status
 
-**Last reconciled:** 16 August 2026
+**Last reconciled:** 21 August 2026
 
 **Production branch:** `main`
 
-**Application release baseline:** `9371c3341b1d36ca4c6940d871c0f519c3ffc2e3` (PR #136 merge — Hotel
-Intelligence expansion; PR #135 — Google Ads Basic Consent Mode + conversion tracking)
+**Application release baseline:** `02d416f7c16132262f32c4371aec197ef15a0be5` (PR #156 merge — Route
+Page Scanability fix; PR #155 — Route Page Journey Clarity System). **Known gap in this ledger:**
+PRs #137–#151 (18–19 August 2026: route-verification batches, weekly fare refresh, standout-candidate
+verification, fare-note jargon fix, route-verification review visibility) shipped and are live in
+production, but are not individually reconciled into this document — this pass covers only #152–#156
+per the 21 August 2026 reconciliation request. Do not assume everything between PR #136 and #152 is
+undocumented-because-unimportant; it is undocumented-because-not-yet-reconciled. A future pass should
+close that specific gap rather than re-deriving it from git history each time.
 
 **Launch readiness:** see `LAUNCH_READINESS_AUDIT_2026-07-29.md` and `LAUNCH_CHECKLIST.md` — ready
 for public organic launch after a short hardening pass; paid advertising remains blocked until
@@ -207,6 +213,41 @@ analytics/conversion events are verified in the real dashboard.
   immediately; check Google Ads and Vercel Analytics directly for current Pilot #2 numbers, and do
   not make a campaign decision from an early sample (this document's own standing rule, restated
   from `FIRST_100_VISITORS_WORKSHEET.md`).
+- **Search Console opportunity fixes, PRs #152–#154 (merged 20 August 2026)** — three page-1,
+  low/zero-click pages fixed from a real Search Console audit, not assumption:
+  - `PR #152` restored "Flights" to every peak-period route title (30 routes) after the audit found
+    these sitting at 0% CTR despite real impressions (290 for Heathrow–Jeddah alone) — the title had
+    read as editorial content, not a bookable-route result. Recovered the character budget (an en
+    dash connector, "Windows" dropped from the trailing phrase) rather than exceeding the ~65-char
+    guideline a prior attempt had hit; all 30 current peak-period titles land at ≤65 chars.
+  - `PR #153` rewrote `/guides/visa-processing-booking-date`'s meta description to state concrete
+    e-Visa processing times (4–7 days) and the booking buffer (2–3 weeks) instead of generic copy,
+    matching what Google was already displaying verbatim from JetStash's own snippet.
+  - `PR #154` rewrote `/guides/direct-vs-gulf-connecting-fares`'s title, meta description **and H1**
+    (the H1 change was a deliberate scope extension, founder-approved, since the weak H1 was part of
+    the same CTR problem) after the audit found it on page 1 with zero clicks.
+- **Route Page Journey Clarity System (PR #155, merged 20 August 2026)** — two independent
+  first-time users found the same P1 problem: a route's own verified service (e.g. PIA direct on
+  Manchester–Islamabad) and the tracked fare shown directly below it (e.g. a connecting Etihad
+  itinerary) were each individually accurate but not visually distinguished. A real-data audit
+  proved this systemic, not a one-off: 56 of 88 routes (64%) carry a verified-direct route with a
+  connecting tracked fare. Fixed with a "Route service" callout inside Fare Signal
+  (`components/route/fare-signal.tsx`) naming the route's real airline and directness whenever it
+  differs from the tracked fare's own directness — reuses 100% existing evidence (no new data,
+  no route/fare changes), fires only on a genuine mismatch so an already-matching route gets zero
+  extra density. See `tests/fare-signal-route-vs-fare-clarity.test.ts`.
+- **Route Page Scanability fix (PR #156, merged 21 August 2026)** — a read-only audit measured, on
+  live production, that the route-page hero's own Trip.com CTA duplicated Fare Signal's identical
+  CTA one section below (same link, same caveat, ~200–850px apart) while sitting at or past the
+  mobile fold. Removed the hero's duplicate CTA, its caption, its itinerary/baggage caveat, and the
+  continuation cue that only existed to bridge to it; Fare Signal (unconditionally the very next
+  section) is now the one place a route's Trip.com action lives, with WhatsApp Share kept in a
+  clean standalone hero position. Measured before/after on Manchester–Islamabad: Fare Signal moved
+  up 169px at 375/390px mobile, 153px at 1440px desktop, where its price/routing/Route Service
+  callout now render fully within the first screen. A no-fare-but-valid-CTA edge case
+  (`birmingham-lahore` and 6 similar routes) was caught during implementation and fixed rather than
+  silently regressed — see `tests/route-hero-scanability.test.ts`'s full 88-route safety check
+  (63 routes keep a working CTA, 25 show the exact fail-closed sentence, never neither/both).
 
 ## ACTIVE
 
