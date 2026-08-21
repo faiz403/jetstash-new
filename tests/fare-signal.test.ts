@@ -79,7 +79,15 @@ describe('Fare Signal presentation and CTA boundaries', () => {
     expect(text).toContain('Checked 18 August 2026');
     expect(text).toContain('Check current price');
     expect(text).toContain('Partner link, opens Trip.com in a new tab.');
-    expect(text).not.toMatch(/baggage|£0|deal|cheap|cheapest|below average|good value|save/i);
+    // Route Page Scanability fix (21 Aug 2026): the former hero-only caveat
+    // ("Check the itinerary, baggage allowance and booking terms before
+    // paying.") now lives here, folded into the one complete CTA caveat —
+    // so a mention of "baggage" is now expected and correct. It's still not
+    // a stated allowance fact (no figure, no airline-specific claim), only
+    // an instruction to check — the £0/deal/cheap-style fabrication guard
+    // stays in force.
+    expect(text).toContain('Check the itinerary, baggage allowance and booking terms before paying.');
+    expect(text).not.toMatch(/£0|deal|cheap|cheapest|below average|good value|save/i);
   });
 
   it('labels a connecting observed fare separately from the route-level direct context (Route Page Journey Clarity System, 20 Aug 2026)', () => {
@@ -106,13 +114,13 @@ describe('Fare Signal presentation and CTA boundaries', () => {
     expect(text).not.toMatch(/deal|cheap|cheapest|below average|good value|save/i);
   });
 
-  it('renders no CTA when the route has no safe exact Trip.com link', () => {
+  it('renders the exact fail-closed sentence, not a CTA, when the route has no safe exact Trip.com link (Route Page Scanability fix, 21 Aug 2026 — this sentence used to live only in the hero, which no longer carries a CTA at all)', () => {
     const signal = getFareSignalForRoute('london-heathrow-mumbai', '2026-08-11');
     const text = renderToStaticMarkup(FareSignal({ signal, tripComUrl: getTripComRouteUrl('london-heathrow-mumbai'), routeSlug: 'london-heathrow-mumbai' }));
     expect(getTripComRouteUrl('london-heathrow-mumbai')).toBeNull();
     expect(text).not.toContain('Check current price');
     expect(text).not.toContain('Trip.com');
-    expect(text).not.toContain('Exact partner booking link');
+    expect(text).toContain('Exact partner booking link is not currently verified for this route.');
   });
 
   it('keeps the Fare Signal above Smart Fare Comparison and leaves the stricter verdict private', () => {

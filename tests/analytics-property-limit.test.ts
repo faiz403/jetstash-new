@@ -148,7 +148,7 @@ describe('the four reduced events keep exactly the right two properties', () => 
   const find = (needle: string) => sites.find((s) => s.raw.includes(needle));
 
   it('every TrackedOutboundLink properties={{...}} call site (tripcom_click and tripcom_hotel_click) sends route + source, never origin/destination', () => {
-    // 4 pre-existing tripcom_click sites (route-hero, fare-signal, deal-card,
+    // 3 pre-existing tripcom_click sites (fare-signal, deal-card,
     // no-fare-fallback) + 2 in the one shared
     // components/destination/holiday-intelligence.tsx (Hotel Intelligence
     // architecture, consolidated August 2026 to serve Antalya and the
@@ -161,8 +161,12 @@ describe('the four reduced events keep exactly the right two properties', () => 
     // components/sections/tracked-fares-explorer.tsx's TrackedFareCard CTA
     // — source: 'tracked-fares-card', same route + source shape as every
     // other site here.
+    // Route Page Scanability fix (21 Aug 2026): the route-hero site is
+    // removed — the hero's own Trip.com CTA (source: 'route-hero') no
+    // longer exists; Fare Signal (source: 'fare-signal') is the one
+    // remaining route-page call site. 7 → 6.
     const tripcomSites = sites.filter((s) => s.label === 'properties={{...}}');
-    expect(tripcomSites.length).toBe(7);
+    expect(tripcomSites.length).toBe(6);
     for (const s of tripcomSites) {
       expect(s.props.length, `${s.file}: ${s.raw}`).toBe(2);
       expect(s.raw).toMatch(/route:/);

@@ -35,10 +35,39 @@ function SignalCta({ href, routeSlug }: { href: string; routeSlug: string }) {
           Check current price
           <ArrowUpRight className="h-4 w-4" strokeWidth={2.25} />
         </TrackedOutboundLink>
-        <p className="text-xs text-ink-500">Partner link, opens Trip.com in a new tab.</p>
+        {/* Route Page Scanability fix (21 Aug 2026): this is now the one
+            complete partner/trust caveat for the whole page -- the hero's
+            former "Check the itinerary, baggage allowance and booking terms
+            before paying." sentence is folded in here verbatim (not
+            reworded) rather than dropped, since it no longer exists
+            anywhere else. The fresh-search note below stays a separate line
+            -- it answers a different question (dates don't carry across,
+            not "check terms before paying") and is a shared constant reused
+            elsewhere, so it isn't merged into this sentence. */}
+        <p className="text-xs text-ink-500">Check the itinerary, baggage allowance and booking terms before paying. Partner link, opens Trip.com in a new tab.</p>
       </div>
       <p className="mt-1.5 text-xs text-ink-400">{TRIPCOM_FRESH_SEARCH_NOTE}</p>
     </div>
+  );
+}
+
+/**
+ * Route Page Scanability fix (21 Aug 2026): the hero's own Trip.com CTA was
+ * removed (tests/route-hero-scanability.test.ts) so Fare Signal is now the
+ * only place a route's booking action lives. That means the hero's old
+ * fail-closed sentence for a route with no safe exact Trip.com handoff --
+ * "Exact partner booking link is not currently verified for this route." --
+ * has to live here too, verbatim, or a route with no CTA would show nothing
+ * at all where the action used to be. Deliberately reused word-for-word
+ * rather than reworded, and rendered in every state (current, recent, and
+ * none) wherever tripComUrl is null, so a route that has a verified CTA but
+ * no current fare (e.g. birmingham-lahore) doesn't lose its one working
+ * booking link, and a route with neither gets the same honest sentence a
+ * no-fare route always showed for its CTA slot.
+ */
+function NoCtaFallback() {
+  return (
+    <p className="mt-5 text-sm text-ink-400">Exact partner booking link is not currently verified for this route.</p>
   );
 }
 
@@ -127,7 +156,7 @@ function CurrentSignal({ data, tripComUrl, routeSlug, routeDirectness, routeStat
         <span className="inline-flex items-center gap-2"><CalendarDays className="h-4 w-4 text-terracotta-600" />{formatChecked(data.departureDate)} – {formatChecked(data.returnDate)}</span>
       </div>
       {mismatch && <RouteVsFareCallout mismatch={mismatch} />}
-      {tripComUrl && <SignalCta href={tripComUrl} routeSlug={routeSlug} />}
+      {tripComUrl ? <SignalCta href={tripComUrl} routeSlug={routeSlug} /> : <NoCtaFallback />}
     </>
   );
 }
@@ -145,7 +174,7 @@ function RecentSignal({ data, tripComUrl, routeSlug, routeDirectness, routeStatu
       </div>
       <p className="mt-4 text-sm leading-relaxed text-ink-600">Price may have changed.</p>
       {mismatch && <RouteVsFareCallout mismatch={mismatch} />}
-      {tripComUrl && <SignalCta href={tripComUrl} routeSlug={routeSlug} />}
+      {tripComUrl ? <SignalCta href={tripComUrl} routeSlug={routeSlug} /> : <NoCtaFallback />}
     </>
   );
 }
@@ -180,10 +209,18 @@ export function FareSignal({
         {signal.state === 'current' && signal.observation ? <CurrentSignal data={signal.observation} tripComUrl={tripComUrl} routeSlug={routeSlug} routeDirectness={routeDirectness} routeStatusLabel={routeStatusLabel} routeAirlineLabel={routeAirlineLabel} /> : null}
         {signal.state === 'recent' && signal.observation ? <RecentSignal data={signal.observation} tripComUrl={tripComUrl} routeSlug={routeSlug} routeDirectness={routeDirectness} routeStatusLabel={routeStatusLabel} routeAirlineLabel={routeAirlineLabel} /> : null}
         {signal.state === 'none' ? (
-          <div className="flex items-start gap-3 text-sm text-ink-600">
-            <RouteIcon className="mt-0.5 h-4 w-4 shrink-0 text-ink-400" strokeWidth={2} />
-            <p>No current fare tracked.</p>
-          </div>
+          <>
+            <div className="flex items-start gap-3 text-sm text-ink-600">
+              <RouteIcon className="mt-0.5 h-4 w-4 shrink-0 text-ink-400" strokeWidth={2} />
+              <p>No current fare tracked.</p>
+            </div>
+            {/* Route Page Scanability fix (21 Aug 2026): a route can have a
+                verified Trip.com CTA with no current fare logged (e.g.
+                birmingham-lahore) -- that CTA must still render here now
+                that the hero no longer carries one, or the route loses its
+                only working booking link entirely. */}
+            {tripComUrl ? <SignalCta href={tripComUrl} routeSlug={routeSlug} /> : <NoCtaFallback />}
+          </>
         ) : null}
       </div>
     </section>

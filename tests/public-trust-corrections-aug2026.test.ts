@@ -56,8 +56,13 @@ const homepageSectionsSrc = readFileSync(join(process.cwd(), 'components/homepag
 const dealCardSrc = readFileSync(join(process.cwd(), 'components/ui/deal-card.tsx'), 'utf8');
 const noFareFallbackSrc = readFileSync(join(process.cwd(), 'components/ui/no-fare-fallback.tsx'), 'utf8');
 const travelReadyCheckSrc = readFileSync(join(process.cwd(), 'components/travel-ready/travel-ready-check.tsx'), 'utf8');
-const routeHeroSrc = readFileSync(join(process.cwd(), 'app/routes/[slug]/page.tsx'), 'utf8');
 const bookByCountdownSrc = readFileSync(join(process.cwd(), 'components/route/book-by-countdown.tsx'), 'utf8');
+// Route Page Scanability fix (21 Aug 2026): the route page itself still
+// computes the shared handoff URL (routePageSrc, was routeHeroSrc), but the
+// hero-level CTA and its "Partner link" disclosure moved to Fare Signal —
+// fareSignalSrc is the new file for that specific check.
+const routePageSrc = readFileSync(join(process.cwd(), 'app/routes/[slug]/page.tsx'), 'utf8');
+const fareSignalSrc = readFileSync(join(process.cwd(), 'components/route/fare-signal.tsx'), 'utf8');
 const dealsPageSrc = readFileSync(join(process.cwd(), 'app/deals/page.tsx'), 'utf8');
 const aboutPageSrc = readFileSync(join(process.cwd(), 'app/about/page.tsx'), 'utf8');
 const fareHistoryPanelSrc = readFileSync(join(process.cwd(), 'components/route/fare-history-panel.tsx'), 'utf8');
@@ -143,8 +148,8 @@ describe('Fix 2 — every customer-facing Trip.com CTA now shows visible partner
     expect(travelReadyCheckSrc).toMatch(/Partner link, opens Trip\.com in a new tab/);
   });
 
-  it('the route-hero CTA and Book-By Countdown CTA already had it, and still do (regression guard)', () => {
-    expect(routeHeroSrc).toMatch(/Partner link, opens Trip\.com in a new tab/);
+  it('Fare Signal (the route page\'s one remaining CTA, since 21 Aug 2026) and Book-By Countdown CTA already had it, and still do (regression guard)', () => {
+    expect(fareSignalSrc).toMatch(/Partner link, opens Trip\.com in a new tab/);
     expect(bookByCountdownSrc).toMatch(/Partner link, opens Trip\.com in a new tab/);
   });
 });
@@ -194,7 +199,7 @@ describe('Unrelated behaviour is unchanged — URLs, rel, analytics, fail-closed
   });
 
   it('all route-specific Trip.com handoffs still use the shared provider helper', () => {
-    for (const src of [dealCardSrc, noFareFallbackSrc, travelReadyCheckSrc, routeHeroSrc]) {
+    for (const src of [dealCardSrc, noFareFallbackSrc, travelReadyCheckSrc, routePageSrc]) {
       expect(src).toContain('getTripComFlightHandoffUrl');
     }
   });

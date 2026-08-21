@@ -181,9 +181,19 @@ describe('passenger basis only appears when supported (it currently is not, by d
 });
 
 describe('baggage unknown remains unknown', () => {
-  it('the component still never mentions baggage -- this fix did not add a baggage claim', () => {
+  // Route Page Scanability fix (21 Aug 2026): the hero's own "Check the
+  // itinerary, baggage allowance and booking terms before paying." caveat
+  // moved into this component's CTA caveat verbatim (see SignalCta) once
+  // the hero's duplicate CTA was removed -- so the component now legitimately
+  // mentions "baggage" as an instruction to check, not a stated fact. The
+  // real rule this test protects -- no fabricated baggage allowance FACT
+  // (a figure, an "included"/"free" claim, an airline-specific promise) --
+  // still holds and is asserted directly below.
+  it('mentions baggage only as an instruction to check, never as a stated allowance fact', () => {
+    expect(componentSrc).toContain('Check the itinerary, baggage allowance and booking terms before paying.');
+    expect(componentSrc).not.toMatch(/\d+\s*(kg|kilograms?)\b/i);
+    expect(componentSrc).not.toMatch(/baggage (included|free|allowance:)/i);
     expect(componentSrc).not.toContain('Baggage');
-    expect(componentSrc).not.toContain('baggage');
   });
 });
 

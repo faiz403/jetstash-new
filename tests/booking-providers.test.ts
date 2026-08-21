@@ -314,31 +314,45 @@ describe('TravelUp is completely removed from active code — no residue', () =>
   });
 });
 
-describe('Trip.com CTA is primary, singular, and correctly wired on the route hero', () => {
+describe('Trip.com CTA is primary, singular, and correctly wired on Fare Signal', () => {
+  // Route Page Scanability fix (21 Aug 2026): the hero-level CTA this
+  // describe block used to cover was removed entirely — see
+  // tests/route-hero-scanability.test.ts for the removal itself. Fare
+  // Signal (components/route/fare-signal.tsx) is now the one place a
+  // route's Trip.com action, its wiring and its fail-closed fallback live,
+  // so the file under test moves there. The hero's old "Compare flights on
+  // Trip.com" wording is retired, not relocated — Fare Signal keeps its own
+  // pre-existing "Check current price" wording as the one surviving label.
   const routePageSrc = readFileSync(join(process.cwd(), 'app/routes/[slug]/page.tsx'), 'utf8');
+  const fareSignalSrc = readFileSync(join(process.cwd(), 'components/route/fare-signal.tsx'), 'utf8');
 
-  it('renders exactly one booking CTA branch, gated on the shared GBP flight handoff helper', () => {
+  it('the route page still computes the shared GBP flight handoff and hands it to Fare Signal', () => {
     expect(routePageSrc).toContain('getTripComFlightHandoffUrl(route.slug, airport.slug, dest.slug)');
-    expect(routePageSrc).toContain('tripComUrl ?');
+    expect(routePageSrc).toMatch(/<FareSignal[\s\S]*?tripComUrl=\{tripComUrl\}/);
+  });
+
+  it('Fare Signal renders exactly one booking CTA branch, gated on tripComUrl', () => {
+    expect(fareSignalSrc.match(/tripComUrl \?/g)?.length).toBeGreaterThanOrEqual(3); // current, recent, none states
   });
 
   it('uses the required CTA wording', () => {
-    expect(routePageSrc).toContain('Compare flights on Trip.com');
+    expect(fareSignalSrc).toContain('Check current price');
+    expect(routePageSrc).not.toContain('Compare flights on Trip.com');
   });
 
   it('uses the required supporting wording', () => {
-    expect(routePageSrc).toContain('Check the itinerary, baggage allowance and booking terms before paying.');
+    expect(fareSignalSrc).toContain('Check the itinerary, baggage allowance and booking terms before paying.');
   });
 
   it('fires tripcom_click with exactly the two properties standard Vercel Pro can store — route and source, never origin/destination (both derivable from the route slug)', () => {
-    expect(routePageSrc).toContain("event=\"tripcom_click\"");
-    expect(routePageSrc).toMatch(/properties=\{\{ route: route\.slug, source: 'route-hero' \}\}/);
-    expect(routePageSrc).not.toMatch(/properties=\{\{[^}]*origin:/);
-    expect(routePageSrc).not.toMatch(/properties=\{\{[^}]*destination:/);
+    expect(fareSignalSrc).toContain("event=\"tripcom_click\"");
+    expect(fareSignalSrc).toMatch(/properties=\{\{ route: routeSlug, source: 'fare-signal' \}\}/);
+    expect(fareSignalSrc).not.toMatch(/properties=\{\{[^}]*origin:/);
+    expect(fareSignalSrc).not.toMatch(/properties=\{\{[^}]*destination:/);
   });
 
   it('renders the required clean unavailable state when no Trip.com URL exists', () => {
-    expect(routePageSrc).toContain('Exact partner booking link is not currently verified for this route.');
+    expect(fareSignalSrc).toContain('Exact partner booking link is not currently verified for this route.');
     expect(routePageSrc).not.toContain('Direct flight comparison is not available for this airport yet.');
   });
 
@@ -348,7 +362,7 @@ describe('Trip.com CTA is primary, singular, and correctly wired on the route he
   });
 
   it('preserves the correct external-link security attributes', () => {
-    expect(routePageSrc).toContain('PROVIDER_REL');
+    expect(fareSignalSrc).toContain('PROVIDER_REL');
     const bookingProvidersSrc = readFileSync(join(process.cwd(), 'lib/booking-providers.ts'), 'utf8');
     expect(bookingProvidersSrc).toContain("PROVIDER_REL = 'nofollow sponsored noopener noreferrer'");
   });
