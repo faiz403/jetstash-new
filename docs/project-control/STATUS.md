@@ -66,19 +66,24 @@ analytics/conversion events are verified in the real dashboard.
   both fixes post-#161; Users 4 and 5 broadened validation across multiple routes, CTA states and the
   hotel/destination layer without exposing another repeated defect. No further route-page redesign
   is currently justified from this round — reopen only on new, repeated user evidence.
-- **Trip.com dated round-trip handoff — attribution proof OPEN, not yet resolved.** A controlled
-  production click was fired 21 August 2026 (Manchester–Islamabad, Ad ID `D19082296`, through the
-  real referral flow) to test whether Trip.com's Partner dashboard attributes it. **This is checkable
-  only once Trip.com's reporting cycle includes 21 August** (next update 22 August) — not yet due.
-  This test proves (or doesn't) attribution for JetStash's **existing, generic, dateless production
-  Trip.com link** — it does **not** by itself prove attribution for the separate, not-yet-built,
-  dated `/flights/showfarefirst?...&triptype=rt` handoff; that transformed URL may still need its
-  own, separate controlled-attribution proof before implementation, even if this test passes. Also
-  newly discovered during the 21 August controlled click: the current generic production Trip.com
-  URL opens a **one-way** search (`flighttype=S`), not round-trip — a second, independent reason
-  (beyond preserving dates) the dated handoff would be worth building once attribution clears. **No
-  implementation of the dated handoff until attribution evidence supports it** — this is an
-  observation-only entry, no code change.
+- **Trip.com dated round-trip handoff — commercial attribution NOT YET CONFIRMED.** What is proved
+  so far, and only this: a controlled production click through Ad ID `D19082296`
+  (Manchester–Islamabad) was completed 21 August 2026, through the real referral flow, and the
+  current generic production Trip.com handoff successfully reached Trip.com with its affiliate
+  parameters (`Allianceid`, `SID`, `trip_sub3=D19082296`) confirmed intact on the landed page. The
+  same click also confirmed the generic URL opens a **one-way** search, not round-trip
+  (`flighttype=S`) — a second, independent reason (beyond preserving dates) the dated handoff would
+  eventually be worth building, separate from the attribution question. **Affiliate attribution
+  itself is not yet confirmed, and this entry must not be read as if it were.** Two conditions must
+  both be met before it is: (1) Trip.com's Partner dashboard reporting cycle must explicitly include
+  21 August (next update 22 August — not yet due), and (2) `D19082296`'s click count must show an
+  increment above its known pre-test baseline of **1 click**, attributable to the controlled test —
+  only that specific increment closes the generic-link attribution question; a flat or unrelated
+  count does not. **Even if generic-link attribution is confirmed, that does not by itself prove
+  attribution for the separate, not-yet-built, transformed dated
+  `/flights/showfarefirst?...&triptype=rt` handoff** — that format requires its own, separate
+  controlled-attribution proof before implementation. **No implementation of the dated handoff until
+  attribution evidence supports it** — this is an observation-only entry, no code change.
 - The Route Atlas (PR #27, plus mobile/crowding/density follow-ups in PR #28, #29, #30, #34)
   replaced the Manchester-to-Mumbai pull-brief hero as the public homepage. The pull-brief hero and
   its supporting `lib/homepage-flagship.ts`/`lib/flagship-status-copy.ts`/`pull-brief*.tsx` code

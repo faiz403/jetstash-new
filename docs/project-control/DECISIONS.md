@@ -35,9 +35,13 @@ Also recorded this pass: the PR #155/#156 5-user real-user validation round is c
 `PR155_156_VALIDATION_FOLLOWUP.md`'s outcome section) — PR #155's route-vs-fare comprehension fix is
 validated by real, uncoached users; PR #156's two exposed defects were fixed at root in PR #161 and
 re-validated clean by a subsequent participant. And: the Trip.com dated round-trip handoff's
-attribution proof is explicitly OPEN, checkable only once Trip.com's reporting includes the 21
-August controlled test click — this does not by itself validate the separate, not-yet-built,
-transformed `/flights/showfarefirst` URL even if it passes.
+**affiliate attribution is not yet confirmed** — proved so far only that a 21 August controlled
+click through `D19082296` reached Trip.com with its affiliate parameters intact and confirmed the
+generic link opens one-way (`flighttype=S`). Attribution itself requires two further conditions:
+Trip.com's reporting cycle explicitly including 21 August, and `D19082296`'s click count showing an
+increment above its pre-test baseline of 1 click attributable to the test. Even once that clears, it
+does not by itself validate the separate, not-yet-built, transformed `/flights/showfarefirst` URL —
+that needs its own proof.
 
 ### Business truth + project-control reconciliation — 16 August 2026
 
