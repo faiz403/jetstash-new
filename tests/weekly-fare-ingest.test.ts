@@ -586,11 +586,14 @@ describe('10. nonexistent route', () => {
 
 describe('Route-verification and fare-observation truth stay separate', () => {
   it('an unverified route can still produce a VALID prepared observation, flagged as blocked — never silently dropped, never used to change verification', () => {
+    // manchester-karachi was this fixture until COV-001 (21 August 2026)
+    // reclassified it to verified-connecting — see
+    // docs/project-control/ROUTE_VERIFICATION_CADENCE_POLICY.md, Batch 3.
     const entry: WeeklyFareEvidenceEntry = {
-      routeSlug: 'manchester-karachi', // currently unverified in data/routes.ts
+      routeSlug: 'birmingham-ahmedabad', // currently unverified in data/routes.ts
       usable: true,
       fare: 495,
-      airline: 'PIA',
+      airline: 'Air India',
       outboundDirectness: 'direct',
       returnDirectness: 'direct',
       baggage: 'not stated',
@@ -721,9 +724,12 @@ describe('checkManifestCompleteness', () => {
 
 describe('summarizeWeeklyFareBatch', () => {
   it('tallies VALID / INVALID / NO RESULT counts and the route-verification-blocked count', () => {
+    // manchester-karachi was this fixture until COV-001 (21 August 2026)
+    // reclassified it to verified-connecting — see
+    // docs/project-control/ROUTE_VERIFICATION_CADENCE_POLICY.md, Batch 3.
     const entries: WeeklyFareEvidenceEntry[] = [
       { routeSlug: 'manchester-dubai', usable: true, fare: 480, airline: 'Emirates', outboundDirectness: 'direct', returnDirectness: 'direct', baggage: 'not stated', source: 'google-flights' },
-      { routeSlug: 'manchester-karachi', usable: true, fare: 495, airline: 'PIA', outboundDirectness: 'direct', returnDirectness: 'direct', baggage: 'not stated', source: 'airline' },
+      { routeSlug: 'birmingham-ahmedabad', usable: true, fare: 495, airline: 'Air India', outboundDirectness: 'direct', returnDirectness: 'direct', baggage: 'not stated', source: 'airline' },
       { routeSlug: 'birmingham-mumbai', usable: false, noResultReason: 'no bookable result for exact dates' },
       { routeSlug: 'nonexistent-route-slug', usable: true, fare: 1 } as WeeklyFareEvidenceEntry,
     ];
@@ -733,7 +739,7 @@ describe('summarizeWeeklyFareBatch', () => {
     expect(summary.valid).toBe(2);
     expect(summary.invalid).toBe(1);
     expect(summary.noResult).toBe(1);
-    expect(summary.routeVerificationBlockedCount).toBe(1); // manchester-karachi
+    expect(summary.routeVerificationBlockedCount).toBe(1); // birmingham-ahmedabad
   });
 });
 

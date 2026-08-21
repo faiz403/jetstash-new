@@ -53,34 +53,41 @@ describe('All six second-pass routes exist with the correct evidence-driven shap
   });
 });
 
-describe('birmingham-delhi preserves the genuine Air India evidence conflict — never silently resolved', () => {
+describe('birmingham-delhi: the genuine Air India evidence conflict was reconciled, not silently resolved (COV-001, 21 August 2026)', () => {
+  // Superseded by COV-001 (docs/project-control/ROUTE_VERIFICATION_CADENCE_POLICY.md, Batch 3):
+  // the apparent Birmingham Airport ("direct") vs Air India ("0 direct flights") conflict this
+  // block used to guard as permanently unresolved was reconciled once Air India's own current
+  // page named the routing explicitly (AI118 "via ATQ") -- the same tag-service Birmingham
+  // Airport's own 2019 press release already described. Both primary sources agree; the
+  // conflict was in each source's own use of "direct" vs "nonstop", not a real disagreement
+  // about the underlying service. This is now a verified-connecting record, not a preserved
+  // dispute -- birmingham-ahmedabad below is unaffected and remains a genuine, still-open
+  // conflict.
   const route = getRouteBySlug('birmingham-delhi')!;
 
-  it('is marked unverified, not verified either way', () => {
-    expect(route.verification?.status).toBe('unverified');
-    expect(route.isDirect).toBe(true); // standing "genuine dispute stays isDirect: true" rule
+  it('is marked verified-connecting, not left disputed now that the sources reconcile', () => {
+    expect(route.verification?.status).toBe('verified');
+    expect(route.isDirect).toBe(false);
   });
 
-  it('getDisplayDirectness() correctly reports this as unverified, never a resolved direct claim', () => {
-    expect(getDisplayDirectness(route, NOW_ISO)).toBe('unverified');
+  it('getDisplayDirectness() correctly reports this as connecting, not unverified or direct', () => {
+    expect(getDisplayDirectness(route, NOW_ISO)).toBe('connecting');
   });
 
-  it('the intro states both conflicting claims explicitly, never picking one silently', () => {
+  it('the intro states the resolved routing (via Amritsar) rather than presenting an unresolved contradiction', () => {
     const introLower = route.intro.toLowerCase();
-    expect(introLower).toContain('0 direct flights');
-    expect(introLower).toMatch(/ai114|nonstop/);
-    expect(introLower).toMatch(/contradiction|conflict|disagree/);
+    expect(introLower).toMatch(/amritsar/);
+    expect(introLower).not.toMatch(/contradiction|conflict|disagree/);
   });
 
-  it('the verification note documents Birmingham Airport\'s historical claim, its current Delhi destination page, and Air India\'s own current live page, without resolving them', () => {
+  it('the verification note documents how Air India\'s own current page and Birmingham Airport\'s 2019 tag-service announcement were reconciled', () => {
     const note = route.verification?.note ?? '';
     expect(note).toContain('2019');
-    expect(note.toLowerCase()).toContain('0 direct flights');
-    expect(note.toLowerCase()).toMatch(/7 hours 55 minutes|7h55/);
-    expect(note.toLowerCase()).toContain('current delhi destination page');
+    expect(note.toLowerCase()).toMatch(/via atq/);
+    expect(note.toLowerCase()).toMatch(/reconciled/);
   });
 
-  it('Route Intelligence still grades it (Useful) — an unverified route never silently drops out of the system', () => {
+  it('Route Intelligence still grades it (Useful)', () => {
     expect(computeRouteIntelligenceLevel(route, NOW_ISO)).toBe('useful');
   });
 });

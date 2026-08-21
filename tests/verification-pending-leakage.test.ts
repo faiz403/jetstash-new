@@ -19,10 +19,13 @@ import { generateMetadata } from '@/app/routes/[slug]/page';
 
 const FIXED_TODAY = '2026-07-23';
 
-// The three routes this codebase's own Truth Reset already recorded as
-// genuinely 'unverified'/pending (isDirect: true, no current verified
-// record) — see docs/LAUNCH_BLOCKERS.md TR-006/TR-007.
-const PENDING_ROUTE_SLUGS = ['manchester-karachi', 'birmingham-lahore', 'birmingham-islamabad'];
+// Three routes still genuinely 'unverified'/pending (isDirect: true, no
+// current verified record) as of COV-001 (21 August 2026) — see
+// docs/project-control/ROUTE_VERIFICATION_CADENCE_POLICY.md, Batch 3.
+// manchester-karachi, birmingham-lahore and birmingham-islamabad were this
+// fixture set until that pass reclassified all three to verified-connecting
+// on fresh primary-source evidence (a live PIA booking-engine search).
+const PENDING_ROUTE_SLUGS = ['birmingham-ahmedabad', 'london-gatwick-ahmedabad', 'london-heathrow-dhaka'];
 
 /** Minimal, valid Route fixture builder for synthetic edge-case tests — never touches production data. */
 function makeRoute(overrides: Partial<Route>): Route {
@@ -71,22 +74,20 @@ describe('getRoutePresentation — pending routes (real dataset, all 3 currently
     });
   }
 
-  it('birmingham-islamabad: presentation never returns the raw un-hedged route.flightTime string', () => {
-    // route.flightTime is '7h 50m direct' with no hedge baked into the
-    // string itself — exactly the shape of leak this fix closes.
-    const route = getRouteBySlug('birmingham-islamabad')!;
+  it('presentation never returns the raw un-hedged route.flightTime string, even when the raw field reads confidently (synthetic — birmingham-islamabad was this fixture with a real "7h 50m direct" string until COV-001 reclassified it verified-connecting; every route still genuinely pending today already hedges its own raw flightTime string, so this edge case is now demonstrated synthetically)', () => {
+    const route = makeRoute({ flightTime: '7h 50m direct', frequency: 'Daily direct', verification: undefined });
     expect(route.flightTime).toBe('7h 50m direct');
     const p = getRoutePresentation(route, FIXED_TODAY);
     expect(p.flightTime).toBeNull();
   });
 
   it('shareText omits booking timing, demand, fare urgency, airline and routing claims entirely (not merely hedged)', () => {
-    const route = getRouteBySlug('manchester-karachi')!;
+    const route = getRouteBySlug('birmingham-ahmedabad')!;
     const p = getRoutePresentation(route, FIXED_TODAY);
-    expect(p.shareText).not.toMatch(/PIA/);
+    expect(p.shareText).not.toMatch(/Air India/);
     expect(p.shareText).not.toMatch(/book/i);
     expect(p.shareText).not.toMatch(/\d+h/);
-    expect(p.shareText).toMatch(/Manchester to Karachi/);
+    expect(p.shareText).toMatch(/Birmingham to Ahmedabad/);
     expect(p.shareText).toMatch(/verification/i);
   });
 });
@@ -251,13 +252,13 @@ describe('Metadata output — generateMetadata() never builds a pending route\'s
     vi.useRealTimers();
   });
 
-  it('a pending route gets a restrained, claim-free title and description — deterministic regardless of clock, since birmingham-islamabad\'s verification.status is explicitly \'unverified\', not merely expired', async () => {
+  it('a pending route gets a restrained, claim-free title and description — deterministic regardless of clock, since birmingham-ahmedabad\'s verification.status is explicitly \'unverified\', not merely expired', async () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date('2026-07-23T12:00:00Z'));
-    const meta = await generateMetadata({ params: Promise.resolve({ slug: 'birmingham-islamabad' }) });
+    const meta = await generateMetadata({ params: Promise.resolve({ slug: 'birmingham-ahmedabad' }) });
     expect(meta.title).toMatch(/Verification in Progress/i);
     assertNoForbiddenClaims(String(meta.description));
-    expect(String(meta.description)).not.toMatch(/PIA/);
+    expect(String(meta.description)).not.toMatch(/Air India/);
   });
 
   it('a verified direct route keeps its existing intro-derived title and description, as of a fixed date before its reviewDueDate', async () => {
@@ -296,7 +297,7 @@ describe('Metadata output — generateMetadata() never builds a pending route\'s
 
 describe('Open Graph detail selection — mirrors getRoutePresentation, never duplicates or joins two nulls', () => {
   it('pending route: a single statusLabel line, not "null · null" or a duplicated sentence', () => {
-    const route = getRouteBySlug('manchester-karachi')!;
+    const route = getRouteBySlug('birmingham-ahmedabad')!;
     const p = getRoutePresentation(route, FIXED_TODAY);
     // This is exactly the logic opengraph-image.tsx uses to build its `detail` line.
     const detail = p.status === 'unverified' ? p.statusLabel : `${p.flightTime} · ${p.frequency}`;
@@ -314,15 +315,15 @@ describe('Open Graph detail selection — mirrors getRoutePresentation, never du
 
 describe('Fare-observation publication predicate — pure, synthetic-fixture-testable (no fabricated fare data added to production)', () => {
   it('a date-complete observation attached to a pending route is still blocked by route evidence, not just date-completeness', () => {
-    const pendingRoute = getRouteBySlug('manchester-karachi')!;
+    const pendingRoute = getRouteBySlug('birmingham-ahmedabad')!;
     const syntheticCompleteObservation: FareObservation = {
       id: 'test-synthetic-complete',
-      routeSlug: 'manchester-karachi',
+      routeSlug: 'birmingham-ahmedabad',
       cabin: 'Economy',
       observedDate: '2026-07-01',
       price: 500,
       priceNote: 'return, per person',
-      source: 'PIA',
+      source: 'Air India',
       departureDate: '2026-08-01',
       returnDate: '2026-08-15',
       currency: 'GBP',

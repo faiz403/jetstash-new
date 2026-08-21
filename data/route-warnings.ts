@@ -38,10 +38,15 @@ export const routeWarnings: RouteWarning[] = [
   // here would recreate exactly the second-source-of-truth risk the ledger
   // exists to prevent.
   {
+    // Resolved by COV-001 (21 August 2026): a live PIA booking-engine
+    // search settled the question this warning raised — Manchester-Karachi
+    // is now a verified-connecting route (data/routes.ts), not an open
+    // uncertainty. Left here as history per this file's own "never delete
+    // a resolved warning" rule.
     id: 'man-khi-frequency-settling',
     routeSlug: 'manchester-karachi',
     severity: 'caution',
-    status: 'active',
+    status: 'resolved',
     title: 'We can\'t currently confirm a direct Manchester–Karachi service',
     body:
       'Current 2026 reporting on PIA\'s expanded UK network describes its direct Manchester services as Lahore and Islamabad only. Confirm the current routing directly with PIA before booking — a connecting itinerary via Islamabad or Lahore is realistic.',

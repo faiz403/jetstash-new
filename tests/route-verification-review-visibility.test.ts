@@ -32,9 +32,13 @@ function findSection(now: Date) {
 }
 
 describe('A. An overdue verified route appears and is identified as overdue', () => {
-  it('a real currently-overdue route (manchester-karachi) appears with an "overdue" item at today\'s date', () => {
+  it('a real currently-overdue route (Heathrow-Dhaka) appears with an "overdue" item at today\'s date', () => {
+    // manchester-karachi was this fixture until COV-001 (21 August 2026)
+    // reclassified it to verified-connecting with a fresh, non-overdue
+    // reviewDueDate (2026-10-05) — see
+    // docs/project-control/ROUTE_VERIFICATION_CADENCE_POLICY.md, Batch 3.
     const section = findSection(new Date());
-    const item = section.items.find((i) => i.label.includes('Manchester') && i.label.includes('Karachi'));
+    const item = section.items.find((i) => i.label.includes('London') && i.label.includes('Dhaka'));
     expect(item).toBeDefined();
     expect(item!.label).toMatch(/overdue by \d+ days?/);
     expect(item!.status).toBe('attention');
@@ -157,16 +161,16 @@ describe('H. Real current archive reconciliation matches the independently compu
     expect(routes.filter((r) => r.verification)).toHaveLength(76);
   });
 
-  it('exactly 6 routes are overdue as of today; Route Verification Refresh Batch 1 (18 August 2026) genuinely produced healthy (>30 day) routes for the first time', () => {
-    // Updated after the Route Verification Refresh Batch 1 evidence work:
-    // 9 routes were freshly re-checked against real primary sources and
-    // moved onto the locked cadence policy's category windows (STABLE 90d /
-    // RECENT-CHANGING 30d / CONNECTING-STRUCTURAL 45d) — 7 of those 9 landed
-    // on a window longer than the 30-day dashboard horizon, so "0 healthy"
-    // (true before Batch 1, when every record was on the old flat ~31-day
-    // default) is no longer the honest count. The 6 overdue NO-EVIDENCE/
-    // DISPUTED routes were deliberately left untouched — see
-    // docs/project-control/ROUTE_VERIFICATION_CADENCE_POLICY.md.
+  it('exactly 3 routes are overdue as of today (COV-001, 21 August 2026, superseded the prior 6-route/7-healthy count)', () => {
+    // Updated after COV-001 (docs/project-control/ROUTE_VERIFICATION_CADENCE_POLICY.md,
+    // Batch 3): manchester-karachi, birmingham-lahore and birmingham-islamabad
+    // — 3 of the prior 6 overdue NO-EVIDENCE/DISPUTED routes — were freshly
+    // reclassified to verified-connecting on a live PIA booking-engine check,
+    // landing them on the CONNECTING/STRUCTURAL 45-day window (healthy, not
+    // overdue). birmingham-delhi was also reclassified the same pass and
+    // moved from "due soon" to healthy on the same fresh window. Only
+    // london-heathrow-dhaka, manchester-sylhet and london-heathrow-sylhet
+    // remain overdue — genuinely untouched, still awaiting new evidence.
     const nowIso = new Date().toISOString().slice(0, 10);
     const withVerification = routes.filter((r) => r.verification);
     const daysBetween = (a: string, b: string) =>
@@ -178,13 +182,13 @@ describe('H. Real current archive reconciliation matches the independently compu
     });
     const healthy = withVerification.length - overdue.length - dueSoon.length;
 
-    expect(overdue).toHaveLength(6);
-    expect(healthy).toBe(7);
+    expect(overdue).toHaveLength(3);
+    expect(healthy).toBe(11);
 
     const section = findSection(new Date());
-    expect(section.headline).toContain('6 routes overdue');
+    expect(section.headline).toContain('3 routes overdue');
     expect(section.headline).toContain(`${dueSoon.length} due within ${RULE_REVIEW_WATCH_DAYS} days`);
-    expect(section.headline).toContain('7 healthy');
+    expect(section.headline).toContain('11 healthy');
   });
 
   it('the section stays concise: at most MAX_DUE_SOON_ITEMS_SHOWN individual due-soon rows plus one summary row when the backlog is large', () => {
@@ -198,21 +202,19 @@ describe('H. Real current archive reconciliation matches the independently compu
     expect(summaryRow).toBeDefined();
   });
 
-  it('verified/unverified split: Batch 1 correction moved london-gatwick-ahmedabad from verified to unverified without changing the total', () => {
-    // Recorded truthfully after the Batch 1 correction (18 August 2026):
-    // london-gatwick-ahmedabad was reclassified DISPUTED/unverified because a
-    // fresh check found current Air India surfaces genuinely conflict — not
-    // because any evidence-gap route was touched. The 76-record total and the
-    // 6-route overdue set (the pre-existing NO-EVIDENCE/DISPUTED backlog) are
-    // both unaffected by this single record's status flip.
+  it('verified/unverified split: COV-001 (21 August 2026) moved 4 routes from unverified to verified without changing the 76-record total', () => {
+    // manchester-karachi, birmingham-lahore, birmingham-islamabad and
+    // birmingham-delhi moved from unverified to verified-connecting — see
+    // docs/project-control/ROUTE_VERIFICATION_CADENCE_POLICY.md, Batch 3.
+    // The 76-record total is unaffected; only the status split moved (67/9 -> 71/5).
     const withVerification = routes.filter((r) => r.verification);
     const verified = withVerification.filter((r) => r.verification!.status === 'verified');
     const unverified = withVerification.filter((r) => r.verification!.status !== 'verified');
 
     expect(withVerification).toHaveLength(76);
     expect(verified.length + unverified.length).toBe(76);
-    expect(verified.length).toBe(67);
-    expect(unverified.length).toBe(9);
+    expect(verified.length).toBe(71);
+    expect(unverified.length).toBe(5);
   });
 });
 
@@ -257,14 +259,18 @@ describe('I. London Gatwick–Ahmedabad Batch 1 correction (18 August 2026)', ()
   });
 });
 
-describe('J. Batch 1 correction did not disturb the untouched pre-existing overdue evidence-gap routes', () => {
+describe('J. COV-001 (21 August 2026) did not disturb the genuinely untouched evidence-gap routes', () => {
+  // manchester-karachi, birmingham-lahore and birmingham-islamabad were
+  // reclassified by COV-001 itself and are no longer part of this untouched
+  // set — see docs/project-control/ROUTE_VERIFICATION_CADENCE_POLICY.md,
+  // Batch 3. The remaining three, plus the two Air India disputes, are
+  // confirmed genuinely untouched.
   const untouchedSlugs = [
-    'manchester-karachi',
-    'birmingham-lahore',
-    'birmingham-islamabad',
     'london-heathrow-dhaka',
     'manchester-sylhet',
     'london-heathrow-sylhet',
+    'birmingham-ahmedabad',
+    'london-gatwick-ahmedabad',
   ];
 
   it.each(untouchedSlugs)('%s remains unverified with its original review date untouched', (slug) => {

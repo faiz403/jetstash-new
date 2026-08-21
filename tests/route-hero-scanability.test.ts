@@ -124,8 +124,11 @@ describe('no-CTA routes still show the exact fail-closed message, in Fare Signal
 });
 
 describe('verification-pending routes remain fail-closed on route-service claims — but keep a genuinely verified CTA if one exists', () => {
-  it('birmingham-lahore: unverified route status, but its independently-verified Trip.com link (a separate fact) still renders — no Route Service claim, no fabricated directness', () => {
-    const { route, presentation } = presentationFor('birmingham-lahore');
+  it('birmingham-ahmedabad: unverified route status, but its independently-verified Trip.com link (a separate fact) still renders — no Route Service claim, no fabricated directness', () => {
+    // birmingham-lahore was this fixture until COV-001 (21 August 2026)
+    // reclassified it to verified-connecting — see
+    // docs/project-control/ROUTE_VERIFICATION_CADENCE_POLICY.md, Batch 3.
+    const { route, presentation } = presentationFor('birmingham-ahmedabad');
     expect(presentation.status).toBe('unverified');
     const dest = getRouteDestination(route)!;
     const airport = getRouteAirport(route)!;
@@ -218,11 +221,18 @@ describe('no evidence or trust wording was accidentally lost — full 88-route s
       else if (presentation.status === 'connecting' && fareDirectness === 'connecting') connectingConnectingFare += 1;
       else if (presentation.status === 'connecting' && fareDirectness === 'direct') connectingDirectFare += 1;
     }
+    // noFare 1 -> 5, unverified 9 -> 5 (COV-001, 21 August 2026): four routes
+    // (manchester-karachi, birmingham-lahore, birmingham-islamabad,
+    // birmingham-delhi) moved from unverified to verified-connecting, but
+    // their pre-existing fare observations stay deliberately suppressed via
+    // methodologyExcludedObservationIds (see data/fare-observations.ts), so
+    // each now falls into noFare rather than any directness-match bucket.
+    // The four directness-match buckets below are untouched by this fix.
     expect(directConnectingFare).toBe(56);
     expect(directDirectFare).toBe(12);
     expect(connectingConnectingFare).toBe(10);
     expect(connectingDirectFare).toBe(0);
-    expect(noFare).toBe(1);
-    expect(unverified).toBe(9);
+    expect(noFare).toBe(5);
+    expect(unverified).toBe(5);
   });
 });

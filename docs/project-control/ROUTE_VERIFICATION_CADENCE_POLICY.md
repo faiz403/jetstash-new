@@ -157,3 +157,45 @@ genuinely didn't clear the bar, not because it wasn't checked.
   stop operating. The ledger event itself was not touched.
 - **No suppressed fare was unlocked.** All nine archived fares logged against these routes stay
   suppressed, unchanged from before this batch.
+
+### Batch 3 — 21 August 2026 (COV-001 verification-gap audit)
+
+A founder-directed read-only audit of the 9 genuinely-unverified routes (`leeds-bradford-bodrum`
+was included in the founder's request but turned out, on inspection, to already be a correctly
+`verified` direct record with no Fare Signal purely because no fare has ever been logged — a
+`FARE-001` gap, not a verification one; it was excluded from the audit's conclusions and is
+untouched here), followed by a founder-approved narrow implementation pass reclassifying 4 of them.
+
+**Reclassified from disputed-direct (`isDirect: true`, `unverified`) to verified-connecting
+(`isDirect: false`, `verified`), CONNECTING/STRUCTURAL category, 45-day window:**
+
+| Route | New evidence | Routing recorded |
+|---|---|---:|
+| Manchester–Karachi | Live search on PIA's own booking engine (book-pia.crane.aero), round trip, 1-15 Sep 2026 sampled: 10 results, zero nonstop. Routing was mixed (Islamabad on PIA metal; Dubai/Jeddah on Emirates/Saudia codeshare) across the sample. | Not fixed — the evidence does not support a single stable hub, so none is recorded as a durable fact; only "connecting" is. |
+| Birmingham–Lahore | Same engine, BHX-LHE, same dates: 6 results, zero nonstop, 6 of 6 routed via Istanbul New Airport. | Istanbul (consistent across every sampled result) |
+| Birmingham–Islamabad | Same engine, BHX-ISB, same dates: 6 results, zero nonstop, 6 of 6 routed via Istanbul New Airport. | Istanbul (consistent across every sampled result) |
+| Birmingham–Delhi | Air India's own current page names AI118 as "(via ATQ)" — the same flight number Birmingham Airport's own 2019 press release already described as a Delhi/Amritsar tag-service. The two sources, read together, resolve what Batch 2 (19 August) had correctly left as an unresolved cross-source conflict. | Amritsar (Air India's own current page names it explicitly) |
+
+**Evidence-scoping caution, applied deliberately:** for Manchester–Karachi specifically, the record
+states only that no nonstop service appeared in the live results sampled on 21 August 2026 for the
+1-15 September 2026 window — it does not assert PIA never operates a nonstop MAN-KHI service under
+any circumstance. A live booking-engine search is schedule-and-codeshare-dependent at the moment of
+query, not a permanent published timetable; this is why all four records use the CONNECTING/STRUCTURAL
+45-day window rather than the STABLE 90-day window, and why Manchester–Karachi in particular
+deliberately does not name a fixed via-city the way the two Istanbul-routed records do.
+
+**Left deliberately untouched, exactly as before:** Birmingham–Ahmedabad (Air India's own page is
+still internally self-contradictory — no new evidence resolved it), Gatwick–Ahmedabad (Air India's
+Ahmedabad-London aggregator page now shows zero direct flights and no AI171, which is new but does
+not cleanly resolve the LGW-vs-LHR question either way), Heathrow–Dhaka and Heathrow–Sylhet
+(Heathrow's own tracker confirms BG202 operates but discloses no stop pattern, unchanged since 19
+August; Biman's own site remains Cloudflare-blocked to automated access), and Manchester–Sylhet
+(materially strengthened — Bangladesh's state news agency, citing a Biman press release, now
+describes a real timed Sylhet stop on the Manchester rotation, corroborated by independent schedule
+trackers and several OTAs — but Manchester Airport's own page, rechecked live the same day, is
+unchanged and still states it is not currently flying there; the founder judged this not yet
+resolved enough to act on).
+
+**No suppressed fare was unlocked by this batch.** None of the four reclassified routes has ever had
+a fare observation logged; reclassification alone does not publish one. Trip.com handoff logic was
+not touched.

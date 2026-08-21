@@ -15,17 +15,21 @@ const RESOLUTION_TODAY = '2026-07-28';
 
 describe('getDisplayDirectness — a route must never show Direct without a current, verified record', () => {
   it('a route with isDirect: true but no verification record renders as unverified, never direct', () => {
-    // birmingham-islamabad was deliberately left with a conflicting-evidence
-    // 'unverified' record during this Truth Reset pass — confirms the
-    // fallback path (isDirect true + non-'verified' status) demotes it.
-    const route = getRouteBySlug('birmingham-islamabad')!;
+    // birmingham-ahmedabad carries a deliberately conflicting-evidence
+    // 'unverified' record (still genuinely disputed as of COV-001, 21 August
+    // 2026 — see docs/project-control/ROUTE_VERIFICATION_CADENCE_POLICY.md,
+    // Batch 3) — confirms the fallback path (isDirect true + non-'verified'
+    // status) demotes it. birmingham-islamabad, this test's fixture until
+    // COV-001, was reclassified to verified-connecting that same pass and no
+    // longer fits this example.
+    const route = getRouteBySlug('birmingham-ahmedabad')!;
     expect(route.isDirect).toBe(true);
     expect(getDisplayDirectness(route, FIXED_TODAY)).toBe('unverified');
   });
 
-  it('manchester-karachi is downgraded to unverified after the Truth Reset correction', () => {
+  it('manchester-karachi is upgraded to verified-connecting (COV-001, 21 August 2026), superseding its earlier Truth Reset downgrade', () => {
     const route = getRouteBySlug('manchester-karachi')!;
-    expect(getDisplayDirectness(route, FIXED_TODAY)).toBe('unverified');
+    expect(getDisplayDirectness(route, FIXED_TODAY)).toBe('connecting');
   });
 
   it('a route with a current, primary-sourced verified record shows direct', () => {
@@ -243,7 +247,12 @@ describe('Per-airline verification (founder correction) — one airline\'s evide
 });
 
 describe('Section 5 (founder correction) — Verification pending is a distinct third state, never Direct nor Connecting', () => {
-  const disputedRoutes = ['manchester-karachi', 'birmingham-lahore', 'birmingham-islamabad'];
+  // manchester-karachi, birmingham-lahore and birmingham-islamabad were this
+  // fixture set until COV-001 (21 August 2026) reclassified all three to
+  // verified-connecting on fresh primary-source evidence — see
+  // docs/project-control/ROUTE_VERIFICATION_CADENCE_POLICY.md, Batch 3.
+  // Swapped for three routes still genuinely disputed as of that same pass.
+  const disputedRoutes = ['birmingham-ahmedabad', 'london-gatwick-ahmedabad', 'london-heathrow-dhaka'];
 
   it('unverified never renders Direct', () => {
     for (const slug of disputedRoutes) {
@@ -300,9 +309,12 @@ describe('getDealDirectnessLabel (TR-009, final correction) — a deal/search ca
   });
 
   it('3. an unverified route means no Direct or Connecting tag', () => {
-    // manchester-karachi is isDirect: true but unverified (Truth Reset) —
-    // must render neither claim, not fall back to "Connecting" either.
-    const label = getDealDirectnessLabel({ fromAirportSlug: 'manchester', toDestinationSlug: 'karachi' }, FIXED_TODAY);
+    // birmingham-ahmedabad is isDirect: true but unverified (still genuinely
+    // disputed as of COV-001, 21 August 2026) — must render neither claim,
+    // not fall back to "Connecting" either. manchester-karachi, this test's
+    // fixture until COV-001, was reclassified to verified-connecting that
+    // same pass.
+    const label = getDealDirectnessLabel({ fromAirportSlug: 'birmingham', toDestinationSlug: 'ahmedabad' }, FIXED_TODAY);
     expect(label).toBeUndefined();
   });
 
@@ -363,8 +375,13 @@ describe('FARE-001 pilot — historic examples stay private; only fully dated, e
   });
 
   it('keeps every historic observation incomplete and private', () => {
+    // 20 -> 25 (COV-001, 21 Aug 2026): 5 date-complete observations were
+    // added to methodologyExcludedObservationIds (see
+    // data/fare-observations.ts) so a route-truth reclassification never
+    // silently unlocks a fare as a side effect — not because they became
+    // date-incomplete.
     const incomplete = fareObservations.filter((o) => !isPubliclyPublishable(o));
-    expect(incomplete).toHaveLength(20);
+    expect(incomplete).toHaveLength(25);
     for (const o of incomplete) {
       expect(isPubliclyPublishable(o), `observation ${o.id}`).toBe(false);
     }
@@ -428,7 +445,7 @@ describe('FARE-001 pilot — historic examples stay private; only fully dated, e
       'obs-bhx-bod-economy-20260813-8w-v1',
       'obs-lba-ayt-economy-20260813-8w-v1',
       'obs-lba-dlm-economy-20260813-8w-v1',
-      'obs-bhx-del-economy-20260813-8w-v1',
+      // obs-bhx-del-economy-20260813-8w-v1 excluded (COV-001, 21 Aug 2026, methodologyExcludedObservationIds — see data/fare-observations.ts)
       'obs-bhx-amd-economy-20260813-8w-v1',
       'obs-bhx-dxb-economy-20260813-8w-v1',
       'obs-bhx-doh-economy-20260813-8w-v1',
@@ -482,14 +499,14 @@ describe('FARE-001 pilot — historic examples stay private; only fully dated, e
       'obs-bhx-bcn-economy-20260818-8w-v1',
       'obs-bhx-bjv-economy-20260818-8w-v1',
       'obs-bhx-dlm-economy-20260818-8w-v1',
-      'obs-bhx-del-economy-20260818-8w-v1',
+      // obs-bhx-del-economy-20260818-8w-v1 excluded (COV-001, 21 Aug 2026, methodologyExcludedObservationIds — see data/fare-observations.ts)
       'obs-bhx-doh-economy-20260818-8w-v1',
       'obs-bhx-dxb-economy-20260818-8w-v1',
       'obs-bhx-fao-economy-20260818-8w-v1',
-      'obs-bhx-isb-economy-20260818-8w-v1',
+      // obs-bhx-isb-economy-20260818-8w-v1 excluded (COV-001, 21 Aug 2026, methodologyExcludedObservationIds)
       'obs-bhx-ist-economy-20260818-8w-v1',
       'obs-bhx-jed-economy-20260818-8w-v1',
-      'obs-bhx-lhe-economy-20260818-8w-v1',
+      // obs-bhx-lhe-economy-20260818-8w-v1 excluded (COV-001, 21 Aug 2026, methodologyExcludedObservationIds)
       'obs-bhx-med-economy-20260818-8w-v1',
       'obs-bhx-bom-economy-20260818-8w-v1',
       'obs-bhx-fco-economy-20260818-8w-v1',
@@ -550,7 +567,7 @@ describe('FARE-001 pilot — historic examples stay private; only fully dated, e
       'obs-man-ist-economy-20260818-8w-v1',
       'obs-man-adb-economy-20260818-8w-v1',
       'obs-man-jed-economy-20260818-8w-v1',
-      'obs-man-khi-economy-20260818-8w-v1',
+      // obs-man-khi-economy-20260818-8w-v1 excluded (COV-001, 21 Aug 2026, methodologyExcludedObservationIds — see data/fare-observations.ts)
       'obs-man-lhe-economy-20260818-8w-v1',
       'obs-man-med-economy-20260818-8w-v1',
       'obs-man-rak-economy-20260818-8w-v1',
@@ -795,10 +812,12 @@ describe('Resolved route evidence sweep (July 2026)', () => {
     expect(getRoutePresentation(route, RESOLUTION_TODAY).status).toBe('connecting');
   });
 
-  it('keeps only genuinely unresolved PIA disputes pending rather than inventing a resolution', () => {
+  it('the three PIA disputes resolved by COV-001 (21 August 2026) are evidenced resolutions, not invented ones — a live PIA booking-engine search decided each, not a guess', () => {
     for (const slug of ['manchester-karachi', 'birmingham-lahore', 'birmingham-islamabad'] as const) {
       const route = getRouteBySlug(slug)!;
-      expect(getDisplayDirectness(route, RESOLUTION_TODAY), slug).toBe('unverified');
+      expect(getDisplayDirectness(route, RESOLUTION_TODAY), slug).toBe('connecting');
+      expect(route.verification?.status, slug).toBe('verified');
+      expect(route.verification?.sourceName, slug).toMatch(/PIA.*booking engine/i);
     }
   });
 });

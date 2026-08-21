@@ -39,13 +39,18 @@ describe('destination flight guides', () => {
   });
 
   it('keeps route evidence and fare evidence specific to the exact airport-to-destination pair', () => {
+    // birmingham-islamabad was reclassified to verified-connecting by
+    // COV-001 (21 August 2026) on a live PIA booking-engine check — see
+    // docs/project-control/ROUTE_VERIFICATION_CADENCE_POLICY.md, Batch 3.
+    // Its pre-existing fare observation stays deliberately suppressed via
+    // methodologyExcludedObservationIds, so fareSignal.state remains 'none'.
     const islamabad = getDestinationFlightGuideEntries(getDestinationBySlug('islamabad')!, NOW_ISO);
     const manchester = islamabad.find((entry) => entry.routeSlug === 'manchester-islamabad')!;
     const birmingham = islamabad.find((entry) => entry.routeSlug === 'birmingham-islamabad')!;
 
     expect(manchester.routeStatus).toBe('direct');
     expect(manchester.fareSignal?.state).toBe('current');
-    expect(birmingham.routeStatus).toBe('unverified');
+    expect(birmingham.routeStatus).toBe('connecting');
     expect(birmingham.fareSignal?.state).toBe('none');
   });
 

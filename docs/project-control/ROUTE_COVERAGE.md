@@ -73,15 +73,22 @@ further 2026 suspension/resumption).
 
 ### Explicitly unresolved direct-service disputes
 
-These are the only three direct-route records still intentionally fail-closed after the July
-coverage pass. They are not silently treated as connecting routes: the available evidence does not
-prove either a current direct service or its absence.
+**Resolved 21 August 2026 (COV-001 verification-gap audit) — see the batch history in
+`ROUTE_VERIFICATION_CADENCE_POLICY.md`.** Manchester–Karachi, Birmingham–Lahore and
+Birmingham–Islamabad are no longer disputed-direct records: a live search on PIA's own booking
+engine resolved all three as connecting, not nonstop — Manchester–Karachi's sampled results showed
+a mixed routing (Islamabad on PIA's own metal, or Dubai/Jeddah on codeshare partners), while
+Birmingham–Lahore and Birmingham–Islamabad routed consistently via Istanbul across every sampled
+result. All three are now published as verified-connecting records in `data/routes.ts`, not left in
+this table. Birmingham–Delhi (previously a separate cross-source dispute, not listed in this table)
+was resolved the same day as connecting via Amritsar, once Air India's own current page and
+Birmingham Airport's 2019 tag-service announcement were read together rather than as competing
+claims.
 
-| Route | What current primary material supports | Safe customer-facing posture | Next evidence action |
-|---|---|---|---|
-| Manchester → Karachi | PIA's current public material confirms the resumed Islamabad–Manchester service, but publishes no route-specific Manchester–Karachi direct claim. | Keep directness unverified; do not publish a duration, frequency or airline fact as established. | Check PIA's live booking result or a current Manchester Airport/PIA schedule entry for MAN–KHI. |
-| Birmingham → Lahore | PIA's current public material identifies Heathrow–Lahore service; Birmingham Airport's live destination directory does not list Lahore. | Keep directness unverified; do not infer a connection or cancellation from absence alone. | Check PIA's live booking result or a current BHX/PIA schedule entry for BHX–LHE. |
-| Birmingham → Islamabad | PIA publicly confirms Islamabad–Manchester and Heathrow operations, but not Birmingham–Islamabad; Birmingham Airport's live destination directory does not list Islamabad. | Keep directness unverified; do not convert conflicting secondary reports into a direct claim. | Check PIA's live booking result or a current BHX/PIA schedule entry for BHX–ISB. |
+No direct-route records remain in this "explicitly unresolved" state as of this pass. Birmingham
+Ahmedabad, Gatwick–Ahmedabad, Heathrow–Dhaka, Heathrow–Sylhet and Manchester–Sylhet remain
+unverified for entirely different, still-open reasons (see the Bangladesh workstream and the
+COV-001 audit record) — they were deliberately left untouched by this pass.
 
 ### Manchester Turkey route-guide pilot — 12 August 2026
 

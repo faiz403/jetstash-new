@@ -184,11 +184,14 @@ describe('14. existing route hrefs, statuses and images are preserved exactly', 
     expect(card.airportImage).toEqual(getAirportImage(airport.slug));
   });
 
-  it('a Verification Pending route (manchester-karachi) shows statusLabel as its sub-line, never a raw flightTime', () => {
-    const route = getRouteBySlug('manchester-karachi')!;
+  it('a Verification Pending route (birmingham-ahmedabad) shows statusLabel as its sub-line, never a raw flightTime', () => {
+    // manchester-karachi was this fixture until COV-001 (21 August 2026)
+    // reclassified it to verified-connecting — see
+    // docs/project-control/ROUTE_VERIFICATION_CADENCE_POLICY.md, Batch 3.
+    const route = getRouteBySlug('birmingham-ahmedabad')!;
     const presentation = getEffectiveRoutePresentation(route, routeStatusEvents, FIXED_TODAY);
     expect(presentation.status).toBe('unverified');
-    const card = countryGroups.flatMap((g) => g.routes).find((r) => r.slug === 'manchester-karachi')!;
+    const card = countryGroups.flatMap((g) => g.routes).find((r) => r.slug === 'birmingham-ahmedabad')!;
     expect(card.subLine).toBe(presentation.statusLabel);
     expect(card.isDirectStatus).toBe(false);
   });
