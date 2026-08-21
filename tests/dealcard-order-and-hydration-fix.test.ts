@@ -1,10 +1,12 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'fs';
 import { join } from 'path';
-import { deals, getDealsByDestination } from '@/data/deals';
+import { renderToStaticMarkup } from 'react-dom/server';
+import { deals, getDealsByDestination, isBundledProductDeal, type DealCabin } from '@/data/deals';
 import { getRouteByAirportAndDestination, routes } from '@/data/routes';
 import { getFareRangeSummary } from '@/data/fare-observations';
 import { getFareSignalForRoute } from '@/lib/fare-signal';
+import { DealCard } from '@/components/ui/deal-card';
 
 /**
  * Participant 1 defect follow-up (21 Aug 2026) — two objective, reproducible
@@ -140,5 +142,124 @@ describe('Defect 2 — stale "No fare checks logged yet" reading as a contradict
     }
 
     expect(offenders).toEqual([]);
+  });
+});
+
+describe('Defect 2 follow-up (founder review) — cabin-specific fallback wording replaces the generic sentence', () => {
+  const dealCardSrc = readFileSync(join(process.cwd(), 'components/ui/deal-card.tsx'), 'utf8');
+
+  // Mirrors deal-card.tsx's own cabinLabel map exactly (same convention as
+  // tests/whatsapp-share-route-status.test.ts mirroring WhatsAppShareButton's
+  // own construction) — the source-text assertion below pins the map's real
+  // values, so if the two ever diverge this test catches it.
+  const cabinLabel: Record<DealCabin, string> = {
+    Economy: 'Economy',
+    'Premium Economy': 'Premium Economy',
+    Business: 'Business class',
+  };
+
+  it("deal-card.tsx's cabinLabel map has the exact values this test relies on", () => {
+    expect(dealCardSrc).toContain("Economy: 'Economy'");
+    expect(dealCardSrc).toContain("'Premium Economy': 'Premium Economy'");
+    expect(dealCardSrc).toContain("Business: 'Business class'");
+  });
+
+  it('the no-fare fallback is derived from the card\'s own cabin, not hardcoded to any route or cabin', () => {
+    expect(dealCardSrc).toContain('`No ${cabinLabel[deal.cabin]} fare checks logged yet — check the live price below`');
+    // The generic, cabin-agnostic sentence must be gone — this is exactly
+    // the wording Participant 1 misread as contradicting the fare shown
+    // elsewhere on the same page.
+    expect(dealCardSrc).not.toContain("'No fare checks logged yet — check the live price below'");
+  });
+
+  it('the package/Umrah fallback is untouched — a different, already-correct concern (bundled-product price, not cabin)', () => {
+    expect(dealCardSrc).toContain("'No package price tracked yet.'");
+  });
+
+  it('the CTA below the fallback (route-guide link, Trip.com button) is structurally unchanged', () => {
+    expect(dealCardSrc).toContain('More on the route guide');
+    expect(dealCardSrc).toContain('Booking-window guidance on the route guide');
+    expect(dealCardSrc).toContain('Compare flights on Trip.com');
+    expect(dealCardSrc).toContain('Direct flight comparison is not available for this airport yet.');
+  });
+
+  // Truthfulness check across every card actually affected today (real
+  // data, not a synthetic fixture): every currently no-fare, non-package
+  // deal renders a cabin-named sentence — never the old bare wording, never
+  // "undefined" (DealCabin is a closed union, so cabinLabel[deal.cabin]
+  // cannot miss, but this proves it against real deal entries rather than
+  // just trusting the type system).
+  it('every currently affected no-fare card (11 as of 21 Aug 2026: 9 Business, 2 Economy) renders a truthful, cabin-named sentence', () => {
+    const nowIsoLocal = nowIso;
+    const affected: { id: string; cabin: DealCabin; sentence: string }[] = [];
+
+    for (const d of deals) {
+      if (isBundledProductDeal(d)) continue;
+      const route = getRouteByAirportAndDestination(d.fromAirportSlug, d.toDestinationSlug);
+      if (!route) continue;
+      const range = getFareRangeSummary(route.slug, d.cabin, nowIsoLocal);
+      if (range) continue;
+
+      const sentence = `No ${cabinLabel[d.cabin]} fare checks logged yet — check the live price below`;
+      expect(sentence).not.toContain('undefined');
+      expect(sentence.startsWith(`No ${cabinLabel[d.cabin]} `)).toBe(true);
+      affected.push({ id: d.id, cabin: d.cabin, sentence });
+    }
+
+    expect(affected.length).toBe(11);
+    expect(affected.filter((a) => a.cabin === 'Business')).toHaveLength(9);
+    expect(affected.filter((a) => a.cabin === 'Economy')).toHaveLength(2);
+    // Manchester-Islamabad's own Business card, by name — the exact card
+    // Participant 1 read as contradictory.
+    expect(affected.some((a) => a.id === 'man-isb-business' && a.sentence === 'No Business class fare checks logged yet — check the live price below')).toBe(true);
+  });
+
+  it('the 6 routes with a has-fare cabin alongside a no-fare cabin (the real ambiguity class) all get a self-contained, cabin-named sentence for their no-fare card', () => {
+    const groups = new Map<string, typeof deals>();
+    for (const d of deals) {
+      const key = `${d.fromAirportSlug}|${d.toDestinationSlug}`;
+      if (!groups.has(key)) groups.set(key, []);
+      groups.get(key)!.push(d);
+    }
+
+    const mixedRoutes: string[] = [];
+    for (const [key, group] of groups) {
+      if (group.length < 2) continue;
+      const [fromAirportSlug, toDestinationSlug] = key.split('|');
+      const route = getRouteByAirportAndDestination(fromAirportSlug, toDestinationSlug);
+      if (!route) continue;
+      const flightDeals = group.filter((d) => !isBundledProductDeal(d));
+      const withRange = flightDeals.filter((d) => getFareRangeSummary(route.slug, d.cabin, nowIso));
+      const withoutRange = flightDeals.filter((d) => !getFareRangeSummary(route.slug, d.cabin, nowIso));
+      if (withRange.length > 0 && withoutRange.length > 0) {
+        mixedRoutes.push(route.slug);
+        for (const d of withoutRange) {
+          const sentence = `No ${cabinLabel[d.cabin]} fare checks logged yet — check the live price below`;
+          expect(sentence).toContain(cabinLabel[d.cabin]);
+        }
+      }
+    }
+
+    expect(mixedRoutes.sort()).toEqual(
+      ['birmingham-amritsar', 'london-heathrow-delhi', 'london-heathrow-doha', 'manchester-dubai', 'manchester-islamabad', 'manchester-lahore'].sort()
+    );
+  });
+
+  // Real render, not just a source-text or string-template check — same
+  // renderToStaticMarkup(DealCard({ deal })) pattern already established in
+  // tests/antalya-fare-package-truth.test.ts. Proves the exact HTML a
+  // visitor receives for the two cards at the centre of this whole defect.
+  it('man-isb-business genuinely renders "No Business class fare checks logged yet" — the real card Participant 1 misread', () => {
+    const dealDef = deals.find((d) => d.id === 'man-isb-business')!;
+    const html = renderToStaticMarkup(DealCard({ deal: dealDef }));
+    expect(html).toContain('No Business class fare checks logged yet — check the live price below');
+    expect(html).not.toMatch(/>No fare checks logged yet/);
+  });
+
+  it('man-isb-economy genuinely renders its real fare range, untouched by the wording fix (only the no-fare branch changed)', () => {
+    const dealDef = deals.find((d) => d.id === 'man-isb-economy')!;
+    const html = renderToStaticMarkup(DealCard({ deal: dealDef }));
+    expect(html).toMatch(/£\d/);
+    expect(html).not.toContain('fare checks logged yet');
   });
 });

@@ -156,7 +156,19 @@ export function DealCard({ deal }: { deal: Deal }) {
                 // entries note in isBundledProductDeal's comment) — never a
                 // claim that no flight fare checks exist.
                 ? 'No package price tracked yet.'
-                : 'No fare checks logged yet — check the live price below'}
+                // Participant 1 defect follow-up (21 Aug 2026): this used to
+                // read as a bare, cabin-agnostic "No fare checks logged
+                // yet" — on a route where a *different* cabin's card (or the
+                // route page's own cabin-agnostic top Fare Signal) shows a
+                // real price, a reader has no reason to assume this
+                // sentence is scoped to just this card's cabin, and a real
+                // participant read it as contradicting a fare they'd just
+                // seen. Naming the cabin makes the sentence correct and
+                // self-contained on its own — derived from the card's own
+                // already-trusted `deal.cabin` via the same cabinLabel map
+                // the header row above already uses, never a new or
+                // route-specific string.
+                : `No ${cabinLabel[deal.cabin]} fare checks logged yet — check the live price below`}
             </div>
             {matchedRoute && (
               <Link
