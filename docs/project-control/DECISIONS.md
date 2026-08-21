@@ -5,6 +5,40 @@ evidence and an explicit founder decision.
 
 ## Approved
 
+### Big Review Clean-up Batch 1 — 21 August 2026
+
+A full numerical reconciliation of `main` at `65db09cf39cd8d09e51b458d86a8947351c5edff` (PR #161
+merge) against `STATUS.md`. **This is a correction and update entry, not a rewrite of history** —
+the 16 August entry below remains an accurate historical snapshot of what was true then; it is not
+edited. Current canonical counts (21 August 2026): 206 total `FareObservation` records (up from 119
+on 16 August — ordinary editorial fare-collection growth over 5 days, not a data-integrity issue),
+181 publicly publishable, 83 of 88 routes with ≥1 publishable observation, 78 of 88 routes with a
+current display-ready Fare Signal. Trip.com CTA coverage (45/88 primary + 18/88 fallback = 63/88
+working, 25/88 none by design) and curated `Deal` count (49) are unchanged since 16 August — checked,
+not assumed.
+
+Two corrections made to previously-stale project-control claims, both found and fixed the same day:
+
+1. `ROUTE_VERIFICATION_CADENCE_POLICY.md`'s Batch 3 entry stated "none of the four [COV-001]
+   reclassified routes has ever had a fare observation logged" — false. All four have real, logged,
+   date-complete observations, deliberately held out of public view via
+   `methodologyExcludedObservationIds` pending a separate founder decision on unlocking them, not
+   absent from the archive. The conclusion this sentence was protecting ("no suppressed fare was
+   unlocked by this batch") was itself correct; only the stated mechanism was wrong.
+2. `STATUS.md`'s `COV-001` ACTIVE-section paragraph still said Manchester–Karachi, Birmingham–Lahore
+   and Birmingham–Islamabad "remain explicitly unresolved PIA disputes" — stale since the COV-001
+   audit (PR #159, same day) reclassified all three, plus Birmingham–Delhi. The correct, current
+   unresolved list is five routes, not three: Birmingham–Ahmedabad, Gatwick–Ahmedabad,
+   Heathrow–Dhaka, Heathrow–Sylhet, Manchester–Sylhet.
+
+Also recorded this pass: the PR #155/#156 5-user real-user validation round is complete (see
+`PR155_156_VALIDATION_FOLLOWUP.md`'s outcome section) — PR #155's route-vs-fare comprehension fix is
+validated by real, uncoached users; PR #156's two exposed defects were fixed at root in PR #161 and
+re-validated clean by a subsequent participant. And: the Trip.com dated round-trip handoff's
+attribution proof is explicitly OPEN, checkable only once Trip.com's reporting includes the 21
+August controlled test click — this does not by itself validate the separate, not-yet-built,
+transformed `/flights/showfarefirst` URL even if it passes.
+
 ### Business truth + project-control reconciliation — 16 August 2026
 
 A full numerical reconciliation of `main` at `9371c3341b1d36ca4c6940d871c0f519c3ffc2e3` against
