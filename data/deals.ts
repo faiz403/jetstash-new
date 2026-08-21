@@ -523,17 +523,6 @@ export const deals: Deal[] = [
     toCountry: 'Italy',
     airline: 'Ryanair',
   },
-  {
-    id: 'man-isb-business',
-    category: 'business',
-    cabin: 'Business',
-    fromAirportSlug: 'manchester',
-    toDestinationSlug: 'islamabad',
-    fromCity: 'Manchester',
-    toCity: 'Islamabad',
-    toCountry: 'Pakistan',
-    airline: 'PIA',
-  },
   // Truth Reset (July 2026): hidden — see identical note above lhr-khi-economy.
   // {
   //   id: 'lhr-khi-business',
@@ -639,6 +628,37 @@ export const deals: Deal[] = [
     id: 'man-isb-economy',
     category: 'flight',
     cabin: 'Economy',
+    fromAirportSlug: 'manchester',
+    toDestinationSlug: 'islamabad',
+    fromCity: 'Manchester',
+    toCity: 'Islamabad',
+    toCountry: 'Pakistan',
+    airline: 'PIA',
+  },
+  // Participant 1 defect follow-up (21 Aug 2026): man-isb-business moved to
+  // immediately after man-isb-economy — this pair was the one isolated case
+  // (confirmed by scanning every multi-cabin destination+airport group) where
+  // a no-fare deal card rendered before a has-fare one for the same route on
+  // a page with a current Fare Signal. A visitor scanning top to bottom hit
+  // this card's "No fare checks logged yet" immediately after the £630
+  // Economy Fare Signal higher up the page and read it as a contradiction —
+  // it's actually a different cabin (Business has no publishable fare
+  // logged; see data/fare-observations.ts's isPubliclyPublishable — its one
+  // historical check, obs-man-isb-business-1, predates the required
+  // departureDate/returnDate/currency methodology fields). This reorder
+  // doesn't touch that gate or any fare data — it only changes which card a
+  // reader reaches first, so the has-fare Economy card establishes context
+  // before the no-fare Business card, where "Business class" now reads as
+  // the obvious differentiator rather than an apparent contradiction. A
+  // one-off scope check across every multi-cabin destination+airport group
+  // (run and discarded, not committed) confirmed this was the only route
+  // where a no-fare deal card preceded a has-fare one — see
+  // tests/dealcard-order-and-hydration-fix.test.ts for the systemic-vs-
+  // isolated regression coverage.
+  {
+    id: 'man-isb-business',
+    category: 'business',
+    cabin: 'Business',
     fromAirportSlug: 'manchester',
     toDestinationSlug: 'islamabad',
     fromCity: 'Manchester',

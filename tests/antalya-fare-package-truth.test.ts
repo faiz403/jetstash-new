@@ -107,12 +107,20 @@ describe('3. DealCard no longer claims "no fare checks" for a package deal — i
   });
 });
 
-describe('4. A genuinely no-evidence flight-only deal keeps the original, accurate wording (fallback boundary is preserved, not collapsed)', () => {
-  it('a non-bundled deal whose route has no matching Airport/Destination (so no fare evidence can possibly exist) still renders the original "No fare checks logged yet" copy', () => {
+describe('4. A genuinely no-evidence flight-only deal keeps the accurate, cabin-scoped wording (fallback boundary is preserved, not collapsed)', () => {
+  it('a non-bundled deal whose route has no matching Airport/Destination (so no fare evidence can possibly exist) still renders the flight-fallback copy, not the package one', () => {
     // Synthetic, non-bundled deal pointing at slugs with no real match — the
     // exact behavioural case the original copy was written for. This proves
     // the fix is additive (a new branch for bundled deals) rather than a
     // rewrite that could have silently changed the honest-no-evidence case too.
+    //
+    // Participant 1 defect follow-up (21 Aug 2026): the flight-fallback
+    // sentence itself became cabin-specific (data/deals.ts's `cabin` field
+    // is now named in the sentence, e.g. "No Economy fare checks logged
+    // yet") — see tests/dealcard-order-and-hydration-fix.test.ts for the
+    // full root-cause story. This test still proves what it always proved
+    // (the package/flight fallback boundary is intact), just against the
+    // current exact string.
     const syntheticDeal = {
       id: 'synthetic-no-evidence',
       category: 'flight' as const,
@@ -126,7 +134,7 @@ describe('4. A genuinely no-evidence flight-only deal keeps the original, accura
     };
     expect(isBundledProductDeal(syntheticDeal)).toBe(false);
     const html = renderToStaticMarkup(DealCard({ deal: syntheticDeal }));
-    expect(html).toContain('No fare checks logged yet — check the live price below');
+    expect(html).toContain('No Economy fare checks logged yet — check the live price below');
     expect(html).not.toContain('No package price tracked yet.');
   });
 });
