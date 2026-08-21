@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState, type FormEvent } from 'react';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowRight } from 'lucide-react';
 import { track } from '@/lib/analytics';
@@ -37,6 +37,22 @@ export function JourneyCheckForm({ origins, destinations, routeIndex }: JourneyC
   // select — never on initial render, never repeated. Same guarded-ref
   // pattern as travel-ready-check.tsx's own markStarted().
   const startedRef = useRef(false);
+  // Participant 1 defect follow-up (21 Aug 2026): this <form> has no
+  // action/method attribute (verified in the raw server-rendered HTML), so
+  // it relies entirely on this component's onSubmit handler calling
+  // e.preventDefault() to work. A submit that reaches the browser before
+  // hydration attaches that handler falls through to the native default —
+  // a plain GET reload of the current page (no action = itself; the
+  // selects carry no `name`, so no data survives either) — which looks
+  // exactly like "Check my journey did nothing" to whoever clicked it. Only
+  // a real risk on a fast click during hydration (a heavier bundle sits
+  // above this on the page — see AtlasFeelTest in journey-desk-home.tsx),
+  // never after mount, so this guard is a pure safety net, not a behaviour
+  // change for the overwhelming majority of visitors who click post-hydration.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const routeSlug = routeIndex[`${fromSlug}|${toSlug}`];
   const fromLabel = origins.find((o) => o.slug === fromSlug)?.label ?? fromSlug;
@@ -111,7 +127,8 @@ export function JourneyCheckForm({ origins, destinations, routeIndex }: JourneyC
         </div>
         <button
           type="submit"
-          className="inline-flex h-11 items-center justify-center gap-1.5 rounded-sm bg-brass px-5 text-sm font-semibold text-ink-900 shadow-[0_1px_8px_-4px_rgba(200,147,46,0.25)] transition-[transform,background-color,box-shadow] duration-150 hover:bg-brass-400 hover:shadow-brass-glow active:scale-[0.985]"
+          disabled={!mounted}
+          className="inline-flex h-11 items-center justify-center gap-1.5 rounded-sm bg-brass px-5 text-sm font-semibold text-ink-900 shadow-[0_1px_8px_-4px_rgba(200,147,46,0.25)] transition-[transform,background-color,box-shadow] duration-150 hover:bg-brass-400 hover:shadow-brass-glow active:scale-[0.985] disabled:cursor-not-allowed disabled:opacity-60"
         >
           Check my journey
           <ArrowRight className="h-4 w-4" strokeWidth={2.25} />
