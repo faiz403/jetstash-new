@@ -11,6 +11,7 @@ import {
   getRoutePresentation,
   buildServiceEndedPresentation,
   buildUnverifiedPresentation,
+  truncateMetadataDescription,
 } from '@/data/routes';
 import {
   type RouteStatusEvent,
@@ -417,7 +418,29 @@ function buildWithdrawalAnnouncedPresentation(
       ? `${pair} currently has a direct option.`
       : `${pair} does not currently have a confirmed direct option.`;
   const shareText = `${directClause} ${viewModel.headline} — check the latest JetStash route status and booking guidance before relying on it.`;
-  return { ...presentation, shareText };
+  // SEO Domination Batch 1 (22 Aug 2026): metadataTitle/metadataDescription
+  // were the one thing this function's own doc comment above says must NOT
+  // reuse the legacy presentation unchanged for 'withdrawal-announced' —
+  // yet until this fix they did, unlike shareText. A search engine indexing
+  // this page still saw a plain, unqualified "Route Guide"/"Flights:
+  // Booking & Peak Periods" title even while the page's own Route Status
+  // panel (and shareText, above) already carried the withdrawal caveat.
+  // Found auditing a real, live Search Console opportunity for the exact
+  // query "direct flight from Manchester to Mumbai" — putting an
+  // unqualified "direct" claim into metadata here would have gone stale
+  // within days of the announced 31 August 2026 withdrawal.
+  // Only applies while presentation.status is still 'direct' (a route this
+  // viewModel reaches with status !== 'direct' already carries an honest,
+  // non-direct title from the legacy layer with nothing to correct).
+  // Derived from viewModel.headline — the same validated, sourced, dated
+  // ledger fact already reused for shareText above — never a second,
+  // hand-written date that could drift out of sync with the ledger.
+  if (presentation.status !== 'direct') return { ...presentation, shareText };
+  const metadataTitle = `${pair}: Direct Flight Status Update`;
+  const metadataDescription = truncateMetadataDescription(
+    `${directClause} ${viewModel.headline} — check current status before booking.`
+  );
+  return { ...presentation, shareText, metadataTitle, metadataDescription };
 }
 
 /**

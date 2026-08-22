@@ -987,6 +987,16 @@ export const routes: Route[] = [
       reviewDueDate: '2026-09-14',
       note: 'Re-verified on 14 August 2026 against Manchester Airport\'s current media-centre route announcement: Pakistan International Airlines adds Lahore as its second direct Manchester destination from 3 July 2026. This confirms direct status, PIA as operator and the launch date. The source does not establish a current frequency, so frequency remains unpublished. PIA\'s own site was also checked for corroboration but does not publish a Lahore–Manchester schedule detail.',
     },
+    // EVIDENCE REQUIRED BEFORE SEO OPTIMISATION (SEO Domination Batch 1, 22
+    // Aug 2026): a Business Class SEO push targeting "business class to
+    // lahore" was considered and dropped after founder review checked the
+    // live route page and found it shows no Business evidence at all — the
+    // one Fare Signal on this page is an unrelated Economy connecting fare,
+    // and the only Business observation ever logged
+    // (obs-man-lhe-business-1) is not isPubliclyPublishable(). See Business
+    // Fare Evidence Batch 1 (queued). Do not target this route for
+    // Business-class SEO until a genuine, current, publishable
+    // Business-cabin observation exists for it.
     intro:
       'The flagship Pakistan corridor from the North of England. PIA runs direct Manchester to Lahore services (confirmed via Manchester Airport\'s own announcement, launched 3 July 2026) — a direct service for the North West\'s Punjabi community, avoiding a Gulf connection, an extra layover, and a transfer point where baggage could go astray.',
     bookingWindowNote:
@@ -1094,6 +1104,16 @@ export const routes: Route[] = [
       reviewDueDate: '2026-09-17',
       note: 'Route Verification Refresh Batch 1 (18 August 2026): Qatar Airways\' own booking route for this pair is still live; direct service is not in dispute. However, independent reporting (not a primary source, kept out of public copy) describes a Qatar Airways schedule reduction for this pair announced for spring 2026 — a genuine future change-risk signal even though nothing has changed yet. Classified RECENT / CHANGING rather than STABLE for that reason — 30-day review window per the locked verification cadence policy, not the 90-day STABLE window.',
     },
+    // EVIDENCE REQUIRED BEFORE SEO OPTIMISATION (SEO Domination Batch 1, 22
+    // Aug 2026): a Business Class SEO push targeting "business class to
+    // doha from uk" was considered and dropped after founder review checked
+    // the live route page and found it shows no Business evidence at all —
+    // the one Fare Signal on this page is an unrelated Economy connecting
+    // fare with no working Trip.com CTA, and the only Business observation
+    // ever logged (obs-lhr-doh-business-1) is not isPubliclyPublishable().
+    // See Business Fare Evidence Batch 1 (queued). Do not target this route
+    // for Business-class SEO until a genuine, current, publishable
+    // Business-cabin observation exists for it.
     intro:
       'Qatar Airways currently offers a direct London Heathrow to Doha booking route. Doha is also a major onward hub, but connection choices and timings should be checked against the live itinerary.',
     bookingWindowNote:
@@ -1884,6 +1904,16 @@ export const routes: Route[] = [
       reviewDueDate: '2026-09-13',
       note: 'Heathrow Airport\'s own media centre confirms: "A weekly service between Heathrow and Lahore launches from 30 March, reconnecting passengers with another much-loved Pakistani city. Operating from Terminal 4..." — confirms direct status, PIA as operator (the same press release separately confirms PIA\'s Islamabad relaunch), the weekly launch frequency and Terminal 4. The release does not state a current frequency beyond that launch figure, so none beyond it is published. PIA\'s own site (piac.com.pk) remains Cloudflare-blocked to this session\'s tooling; no PIA-specific Karachi service is mentioned anywhere in this release.',
     },
+    // EVIDENCE REQUIRED BEFORE SEO OPTIMISATION (SEO Domination Batch 1, 22
+    // Aug 2026): a Business Class SEO push targeting "business class to
+    // lahore" was considered and dropped after founder review checked the
+    // live route page and found it shows no Business evidence at all — the
+    // one Fare Signal on this page is an unrelated Economy connecting fare
+    // with no working Trip.com CTA, and this route has a curated Business
+    // Deal (lhr-business-lhe) but zero Business fare observations logged at
+    // all. See Business Fare Evidence Batch 1 (queued). Do not target this
+    // route for Business-class SEO until a genuine, current, publishable
+    // Business-cabin observation exists for it.
     intro:
       'PIA relaunched a direct Heathrow to Lahore service on 30 March 2026 (confirmed via Heathrow Airport\'s own announcement), operating from Terminal 4 alongside PIA\'s parallel Islamabad relaunch. Check PIA\'s own booking system directly for the current schedule and fare.',
     bookingWindowNote:
@@ -2611,7 +2641,7 @@ export function getRoutePresentation(route: Route, nowIso: string): RoutePresent
   const titleOriginLabel = disambiguatedTitleOrigin(route, airport);
   const titlePair = titleOriginLabel && dest ? `${titleOriginLabel} to ${dest.city}` : pair;
   const hasPeakPeriodContent = route.peakPeriodIds.length > 0;
-  const metadataTitle = hasPeakPeriodContent
+  const defaultMetadataTitle = hasPeakPeriodContent
     ? `${titlePair.replace(' to ', '–')} Flights: Booking & Peak Periods`
     : `${titlePair} Flights: ${status === 'direct' ? 'Route Guide' : 'Connection Guide'}`;
 
@@ -2623,7 +2653,7 @@ export function getRoutePresentation(route: Route, nowIso: string): RoutePresent
     airlineSlugs,
     summary: route.intro,
     metadataDescription: truncateMetadataDescription(route.intro),
-    metadataTitle,
+    metadataTitle: defaultMetadataTitle,
     shareText: buildShareText(status, pair, route.flightTime),
     socialDetail: buildSocialDetail(status, route.flightTime, statusLabel),
     socialFooter: 'Travel intelligence · jetstash.co.uk',
