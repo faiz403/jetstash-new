@@ -44,8 +44,12 @@ describe('1. every current Fare Signal appears exactly once, no duplicates, no e
     const allSlugs = airportGroups.flatMap((g) => g.entries.map((e) => e.routeSlug));
     // Every real route with zero evidence is excluded by construction — spot
     // check a route slug that genuinely has none, confirmed the same way
-    // PR #139's own regression tests confirmed it.
-    expect(allSlugs).not.toContain('leeds-bradford-bodrum');
+    // PR #139's own regression tests confirmed it. leeds-bradford-bodrum
+    // was this fixture until Fare Coverage Batch 1 (22 August 2026) gave it
+    // its first-ever fare; swapped to birmingham-delhi, whose two real
+    // observations stay deliberately excluded pending a separate
+    // connecting-vs-connecting journey presentation decision.
+    expect(allSlugs).not.toContain('birmingham-delhi');
   });
 });
 

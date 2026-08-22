@@ -189,7 +189,11 @@ describe('Defect 2 follow-up (founder review) — cabin-specific fallback wordin
   // "undefined" (DealCabin is a closed union, so cabinLabel[deal.cabin]
   // cannot miss, but this proves it against real deal entries rather than
   // just trusting the type system).
-  it('every currently affected no-fare card (11 as of 21 Aug 2026: 9 Business, 2 Economy) renders a truthful, cabin-named sentence', () => {
+  it('every currently affected no-fare card (10 as of 22 Aug 2026, after Fare Coverage Batch 1: 9 Business, 1 Economy) renders a truthful, cabin-named sentence', () => {
+    // Was 11 (9 Business, 2 Economy) as of 21 August 2026. Fare Coverage
+    // Batch 1 (22 August) gave man-khi-economy (manchester-karachi) its
+    // first real published fare, dropping it off this list — the other
+    // Economy no-fare card (london-gatwick-ahmedabad) is untouched.
     const nowIsoLocal = nowIso;
     const affected: { id: string; cabin: DealCabin; sentence: string }[] = [];
 
@@ -206,9 +210,9 @@ describe('Defect 2 follow-up (founder review) — cabin-specific fallback wordin
       affected.push({ id: d.id, cabin: d.cabin, sentence });
     }
 
-    expect(affected.length).toBe(11);
+    expect(affected.length).toBe(10);
     expect(affected.filter((a) => a.cabin === 'Business')).toHaveLength(9);
-    expect(affected.filter((a) => a.cabin === 'Economy')).toHaveLength(2);
+    expect(affected.filter((a) => a.cabin === 'Economy')).toHaveLength(1);
     // Manchester-Islamabad's own Business card, by name — the exact card
     // Participant 1 read as contradictory.
     expect(affected.some((a) => a.id === 'man-isb-business' && a.sentence === 'No Business class fare checks logged yet — check the live price below')).toBe(true);

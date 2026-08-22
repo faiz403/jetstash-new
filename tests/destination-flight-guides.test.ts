@@ -39,14 +39,19 @@ describe('destination flight guides', () => {
   });
 
   it('keeps route evidence and fare evidence specific to the exact airport-to-destination pair', () => {
-    // birmingham-islamabad was reclassified to verified-connecting by
-    // COV-001 (21 August 2026) on a live PIA booking-engine check — see
-    // docs/project-control/ROUTE_VERIFICATION_CADENCE_POLICY.md, Batch 3.
-    // Its pre-existing fare observation stays deliberately suppressed via
-    // methodologyExcludedObservationIds, so fareSignal.state remains 'none'.
-    const islamabad = getDestinationFlightGuideEntries(getDestinationBySlug('islamabad')!, NOW_ISO);
-    const manchester = islamabad.find((entry) => entry.routeSlug === 'manchester-islamabad')!;
-    const birmingham = islamabad.find((entry) => entry.routeSlug === 'birmingham-islamabad')!;
+    // birmingham-islamabad was this fixture until COV-001 (21 August 2026)
+    // reclassified it verified-connecting and Fare Coverage Batch 1 (22
+    // August 2026) then gave it a fresh, genuinely publishable observation
+    // — it now legitimately shows fareSignal.state 'current', so it can no
+    // longer prove the "route evidence is pair-specific, fare stays
+    // suppressed" case. Swapped to Delhi: birmingham-delhi is verified-
+    // connecting (also COV-001) with its two real observations still
+    // deliberately excluded pending a separate presentation decision, and
+    // manchester-delhi is a genuinely direct, current-fare sibling on the
+    // same destination.
+    const delhi = getDestinationFlightGuideEntries(getDestinationBySlug('delhi')!, NOW_ISO);
+    const manchester = delhi.find((entry) => entry.routeSlug === 'manchester-delhi')!;
+    const birmingham = delhi.find((entry) => entry.routeSlug === 'birmingham-delhi')!;
 
     expect(manchester.routeStatus).toBe('direct');
     expect(manchester.fareSignal?.state).toBe('current');

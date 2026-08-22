@@ -201,7 +201,12 @@ describe('Fare Coverage Expansion Batch B — publishability and customer visibi
     }
   });
 
-  it('overall coverage reflects the current evidence archive: 78 of 88 routes publishable, with 30 represented by curated tracked-fare cards (updated 18 August 2026 — london-gatwick-ahmedabad dropped out of both counts when Route Verification Refresh Batch 1\'s correction reclassified it unverified)', () => {
+  it('overall coverage reflects the current evidence archive: 82 of 88 routes publishable, with 31 represented by curated tracked-fare cards (updated 22 August 2026, Fare Coverage Batch 1)', () => {
+    // Was 78/30 as of 18 August 2026. Fare Coverage Batch 1 (22 August)
+    // added four routes to "publishable" (leeds-bradford-bodrum,
+    // manchester-karachi, birmingham-lahore, birmingham-islamabad), but
+    // only manchester-karachi has a curated Economy Deal card — the other
+    // three have no Deal entry at all, so "visible" moves by only +1.
     let publishable = 0;
     let visible = 0;
     for (const route of routes) {
@@ -209,11 +214,11 @@ describe('Fare Coverage Expansion Batch B — publishability and customer visibi
       const deal = deals.find((d) => d.fromAirportSlug === route.airportSlug && d.toDestinationSlug === route.destinationSlug && d.cabin === 'Economy' && !isBundledProductDeal(d));
       if (deal && hasTrackedFare(deal, NOW_ISO)) visible++;
     }
-    expect(publishable).toBe(78);
-    expect(visible).toBe(30);
-    // The 48 remaining routes have valid Fare Signals but no curated Deal
+    expect(publishable).toBe(82);
+    expect(visible).toBe(31);
+    // The remaining routes have valid Fare Signals but no curated Deal
     // card. They are intentionally counted by route-level coverage only.
-    expect(publishable - visible).toBe(48);
+    expect(publishable - visible).toBe(51);
   });
 
   it('London Heathrow-Jeddah remains without a curated card, alongside the later Fare-Signal-only routes', () => {

@@ -56,20 +56,34 @@ describe('Fare Coverage Programme Batch 5', () => {
     expect(getFareSignalForRoute('london-gatwick-istanbul', NOW_ISO).observation?.id).toBe('obs-lgw-ist-economy-20260818-8w-v1');
   });
 
-  it('leaves Leeds Bradford–Bodrum uncovered because the exact controlled search returned no options', () => {
-    expect(getPublishableObservationsByRoute('leeds-bradford-bodrum', NOW_ISO)).toHaveLength(0);
-    expect(getFareSignalForRoute('leeds-bradford-bodrum', NOW_ISO).state).toBe('none');
+  it('Batch 5\'s own controlled search (14 August 2026) genuinely found no options for Leeds Bradford–Bodrum at the time — a real gap that stood until Fare Coverage Batch 1 closed it on 22 August 2026', () => {
+    // Historical fact, unaffected by later data: Batch 5's exact controlled
+    // search on 14 August 2026 returned nothing for this route — the
+    // archive has no observation dated on or before 14 August 2026 for it.
+    // (The archive is append-only and has no observedDate<=nowIso gate, so
+    // asserting "still zero observations as evaluated at this historical
+    // date" no longer holds once ANY observation is ever added, regardless
+    // of its own date — that's why this checks observedDate directly
+    // rather than re-running the old length-0 assertion.)
+    const observations = fareObservations.filter((o) => o.routeSlug === 'leeds-bradford-bodrum');
+    expect(observations.every((o) => o.observedDate > NOW_ISO), 'no observation existed on or before 14 August 2026').toBe(true);
+    // Fare Coverage Batch 1 (22 August 2026) closed this exact gap — the
+    // route's first-ever fare, evaluated as of today, not Batch 5's date.
+    const today = '2026-08-22';
+    expect(getPublishableObservationsByRoute('leeds-bradford-bodrum', today).length).toBeGreaterThan(0);
+    expect(getFareSignalForRoute('leeds-bradford-bodrum', today).state).toBe('current');
   });
 
-  it('raises current display-ready coverage to 79 routes without contradictory fallbacks', () => {
+  it('raises current display-ready coverage to 82 routes without contradictory fallbacks', () => {
     // Batch 5 genuinely raised coverage to 79 at the time (14 August 2026); the
-    // assertion below tracks live current-state data, which dropped to 78 on
-    // 18 August 2026 when Route Verification Refresh Batch 1's correction
-    // reclassified london-gatwick-ahmedabad unverified, dropping its fare
-    // observation out of isObservationPublishable(). The 79-route Batch 5
-    // outcome remains an accurate historical record for 14 August 2026.
+    // assertion below tracks live current-state data, which moved to 78 on
+    // 18 August 2026 (Route Verification Refresh Batch 1's london-gatwick-
+    // ahmedabad correction) then to 82 on 22 August 2026 (Fare Coverage
+    // Batch 1 — see tests/fare-coverage-batch-3.test.ts's identical update
+    // for the full explanation). The 79-route Batch 5 outcome remains an
+    // accurate historical record for 14 August 2026.
     const current = routes.filter((route) => getPublishableObservationsByRoute(route.slug, NOW_ISO).length > 0);
-    expect(current).toHaveLength(78);
+    expect(current).toHaveLength(82);
     for (const route of current) {
       expect(shouldShowNoFareFallback(getFareSignalForRoute(route.slug, NOW_ISO)), route.slug).toBe(false);
     }

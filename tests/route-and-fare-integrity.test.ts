@@ -150,6 +150,13 @@ describe('Deal counts (TR-004) — a card with no tracked fare must not count as
     // closed — the observation is still preserved in the archive, it just
     // can no longer render publicly, exactly per data/fare-observations.ts's
     // own doc comment. See docs/project-control/ROUTE_VERIFICATION_CADENCE_POLICY.md.
+    // man-khi-economy joined this list on 22 August 2026 (Fare Coverage
+    // Batch 1): manchester-karachi was reclassified verified-connecting by
+    // COV-001 (21 August) then given a fresh, fully-evidenced observation
+    // (obs-man-khi-economy-20260822-8w-v1, Pegasus, both legs independently
+    // reviewed) — the pre-existing 18 August observation for this route
+    // stays deliberately excluded (insufficient retained itinerary
+    // evidence, not this new one).
     expect(trackedDeals.map((d) => d.id)).toEqual([
       'man-lhe-economy',
       'lhr-del-economy',
@@ -164,6 +171,7 @@ describe('Deal counts (TR-004) — a card with no tracked fare must not count as
       'lgw-tng-flight',
       'man-bcn-flight',
       'lhr-bom-economy',
+      'man-khi-economy',
       'man-ath-economy',
       'man-fco-economy',
       'man-isb-economy',
@@ -371,7 +379,11 @@ describe('getDealDirectnessLabel (TR-009, final correction) — a deal/search ca
 
 describe('FARE-001 pilot — historic examples stay private; only fully dated, evidenced observations publish', () => {
   it('keeps historic observations and appends every editorial observation batch, including the 19 August Standout Fare candidate verification recheck', () => {
-    expect(fareObservations).toHaveLength(206);
+    // 206 -> 210 (Fare Coverage Batch 1, 22 August 2026): four new,
+    // fully-evidenced observations appended (leeds-bradford-bodrum's
+    // first-ever fare; fresh rechecks for manchester-karachi,
+    // birmingham-lahore, birmingham-islamabad).
+    expect(fareObservations).toHaveLength(210);
   });
 
   it('keeps every historic observation incomplete and private', () => {
@@ -578,6 +590,10 @@ describe('FARE-001 pilot — historic examples stay private; only fully dated, e
       'obs-ncl-dxb-economy-20260818-8w-v1',
       'obs-bhx-atq-economy-20260819-8w-v1',
       'obs-lhr-jed-economy-20260819-8w-v1',
+      'obs-lba-bjv-economy-20260822-8w-v1',
+      'obs-man-khi-economy-20260822-8w-v1',
+      'obs-bhx-lhe-economy-20260822-8w-v1',
+      'obs-bhx-isb-economy-20260822-8w-v1',
     ]);
     expect(published).toEqual(expect.arrayContaining([
       expect.objectContaining({
@@ -635,12 +651,17 @@ describe('FARE-001 pilot — historic examples stay private; only fully dated, e
     // birmingham-mumbai was the original example here - Fare Coverage
     // Expansion Batch B (6 August 2026, a later, separate initiative) gave
     // it a genuine, complete observation, so it's no longer historic-only.
-    // Swapped for manchester-karachi, whose only observation
-    // (obs-man-khi-economy-1) remains undated and incomplete, and which
-    // Batch B deliberately excluded from its own queue (unverified
-    // directness - see FARE_COVERAGE_BATCH_B.md §2).
-    expect(getFareRangeSummary('manchester-karachi', 'Economy', FIXED_TODAY)).toBeNull();
-    expect(getLatestPublishableObservation('manchester-karachi', FIXED_TODAY)).toBeUndefined();
+    // Swapped to manchester-karachi, whose only observation
+    // (obs-man-khi-economy-1) remained undated and incomplete — until Fare
+    // Coverage Batch 1 (22 August 2026) gave the route a fresh, complete
+    // observation. Swapped again to birmingham-delhi: its two real
+    // observations are structurally complete (unlike man-khi-economy-1)
+    // but stay excluded via methodologyExcludedObservationIds, pending a
+    // separate connecting-vs-connecting journey presentation decision —
+    // a different mechanism producing the same "no public output" result
+    // this test checks for.
+    expect(getFareRangeSummary('birmingham-delhi', 'Economy', FIXED_TODAY)).toBeNull();
+    expect(getLatestPublishableObservation('birmingham-delhi', FIXED_TODAY)).toBeUndefined();
   });
 
   it('keeps every deal without a complete observation untracked', () => {
@@ -666,7 +687,9 @@ describe('FARE-001 pilot — historic examples stay private; only fully dated, e
       // B, 6 August 2026) already existed but had no complete observation
       // until this batch; the 8 entries after them are Batch B's own new
       // Deal entries, each backed by a genuinely complete observation - see
-      // FARE_COVERAGE_BATCH_B.md.
+      // FARE_COVERAGE_BATCH_B.md. man-khi-economy joined this list 22
+      // August 2026 (Fare Coverage Batch 1) - manchester-karachi gained a
+      // fresh, complete, both-legs-evidenced observation.
       if (
         [
           'lhr-bom-economy',
@@ -674,6 +697,7 @@ describe('FARE-001 pilot — historic examples stay private; only fully dated, e
           'lhr-del-economy',
           'bhx-atq-economy',
           'man-dxb-economy',
+          'man-khi-economy',
           'man-isb-economy',
           'man-del-economy',
           'man-bom-economy',

@@ -164,11 +164,22 @@ describe('verification-pending routes stay fail-closed', () => {
 });
 
 describe('no-fare routes remain truthful', () => {
-  it('a direct route with no current fare shows no callout and no fabricated fare directness', () => {
-    const { presentation } = presentationFor('leeds-bradford-bodrum');
-    const signal = getFareSignalForRoute('leeds-bradford-bodrum', NOW_ISO);
+  it('a route with no current fare shows no callout and no fabricated fare directness', () => {
+    // Fare Coverage Batch 1 (22 August 2026) gave leeds-bradford-bodrum its
+    // first-ever fare, and by that point every other currently-direct
+    // route on the site already had one too — there is no longer a real
+    // direct route with zero publishable observations to use here.
+    // Swapped to birmingham-delhi (connecting, verified via COV-001): its
+    // two real archived observations stay deliberately excluded pending a
+    // separate presentation decision (Fare Coverage Batch 1B), so it's a
+    // genuine, current state === 'none' example. The property under test —
+    // the 'none' branch renders a completely different JSX block that
+    // never calls routeVsFareMismatch() at all, so no callout can fire
+    // regardless of the route's own directness — holds identically here.
+    const { presentation } = presentationFor('birmingham-delhi');
+    const signal = getFareSignalForRoute('birmingham-delhi', NOW_ISO);
     expect(signal.state).toBe('none');
-    const html = renderFareSignalForRoute('leeds-bradford-bodrum');
+    const html = renderFareSignalForRoute('birmingham-delhi');
     expect(html).not.toContain('Route service');
     expect(html).toContain('No current fare tracked.');
     void presentation;
@@ -346,16 +357,21 @@ describe('full 88-route dataset safety check (Phase 8)', () => {
       else if (presentation.status === 'connecting' && fareDirectness === 'direct') connectingDirectFare += 1;
     }
 
-    // noFare 1 -> 5, unverified 9 -> 5 (COV-001, 21 August 2026): see
-    // tests/route-hero-scanability.test.ts's identical count update for the
-    // full explanation — four routes moved from unverified to
-    // verified-connecting, but their pre-existing fares stay suppressed via
-    // methodologyExcludedObservationIds, so each now falls into noFare.
+    // noFare 1 -> 5 -> 1 (COV-001, 21 August 2026, then Fare Coverage
+    // Batch 1, 22 August 2026): COV-001 moved four routes from unverified
+    // to verified-connecting with their pre-existing fares still
+    // suppressed, pushing noFare 1->5. Batch 1 then gave leeds-bradford-
+    // bodrum (the original 1) plus three of those four COV-001 routes
+    // (manchester-karachi, birmingham-lahore, birmingham-islamabad) a
+    // fresh, publishable observation each, dropping noFare back to 1 — only
+    // birmingham-delhi remains, its two real observations deliberately
+    // held pending a separate connecting-vs-connecting journey
+    // presentation decision. unverified stays 5, untouched by Batch 1.
     expect(directConnectingFare).toBe(56);
-    expect(directDirectFare).toBe(12);
-    expect(connectingConnectingFare).toBe(10);
+    expect(directDirectFare).toBe(13);
+    expect(connectingConnectingFare).toBe(13);
     expect(connectingDirectFare).toBe(0);
-    expect(noFare).toBe(5);
+    expect(noFare).toBe(1);
     expect(unverified).toBe(5);
     expect(directConnectingFare + directDirectFare + connectingConnectingFare + connectingDirectFare + noFare + unverified).toBe(88);
   });

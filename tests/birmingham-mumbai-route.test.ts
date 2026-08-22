@@ -14,7 +14,7 @@ import { getDestinationBySlug } from '@/data/destinations';
 import { getAirportBySlug } from '@/data/airports';
 import { getAirlinesBySlugs } from '@/data/airlines';
 import { deals } from '@/data/deals';
-import { fareObservations } from '@/data/fare-observations';
+import { fareObservations, isPubliclyPublishable } from '@/data/fare-observations';
 import { generateMetadata } from '@/app/routes/[slug]/page';
 import RoutePage from '@/app/routes/[slug]/page';
 import DestinationPage from '@/app/destinations/[slug]/page';
@@ -602,16 +602,22 @@ describe('Cross-surface leakage fix — fare section heading is content-aware, n
     expect(copy.caption).toBeNull();
   });
 
-  it('leeds-bradford-bodrum (no observations, no deals) renders the "No tracked fare yet" heading end-to-end on the real page', async () => {
+  it('birmingham-delhi (no publishable observations, no deals) renders the "No tracked fare yet" heading end-to-end on the real page', async () => {
     // birmingham-mumbai was the original example here - Fare Coverage
     // Expansion Batch B (6 August 2026, a later, separate initiative - see
     // FARE_COVERAGE_BATCH_B.md) gave it a genuine observation and Deal, so
-    // it no longer demonstrates the empty state. Swapped for
-    // Leeds Bradford -> Bodrum returned no result for Batch 3's exact profile,
-    // so it remains the genuine no-fare example.
-    expect(fareObservations.filter((o) => o.routeSlug === 'leeds-bradford-bodrum')).toHaveLength(0);
-    expect(deals.filter((d) => d.fromAirportSlug === 'leeds-bradford' && d.toDestinationSlug === 'bodrum')).toHaveLength(0);
-    const element = await RoutePage({ params: Promise.resolve({ slug: 'leeds-bradford-bodrum' }) });
+    // it no longer demonstrates the empty state. Swapped to
+    // Leeds Bradford -> Bodrum, which then itself got its first-ever fare
+    // in Fare Coverage Batch 1 (22 August 2026). Swapped again to
+    // Birmingham -> Delhi: COV-001 (21 August 2026) reclassified it
+    // verified-connecting, but its two real archived observations stay
+    // deliberately excluded pending a separate connecting-vs-connecting
+    // journey presentation decision (Fare Coverage Batch 1B) — so it has
+    // genuine raw observations but zero PUBLISHABLE ones, which is the
+    // state this test actually needs to prove, and it has no curated Deal.
+    expect(fareObservations.filter((o) => o.routeSlug === 'birmingham-delhi' && isPubliclyPublishable(o))).toHaveLength(0);
+    expect(deals.filter((d) => d.fromAirportSlug === 'birmingham' && d.toDestinationSlug === 'delhi')).toHaveLength(0);
+    const element = await RoutePage({ params: Promise.resolve({ slug: 'birmingham-delhi' }) });
     const text = collectStrings(element).join(' ');
     expect(text).toMatch(/No tracked fare yet/);
     expect(text).not.toMatch(/Fare history & current example/);
