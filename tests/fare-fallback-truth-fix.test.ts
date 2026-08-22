@@ -61,13 +61,25 @@ describe('hasCurrentFareSignalForCabinAmongRoutes — cabin-scoped sibling for /
     expect(hasCurrentFareSignalForCabinAmongRoutes(['not-a-real-route'], 'Business', nowIso)).toBe(false);
   });
 
-  // Real, current gap (not part of this PR's scope to close, see §2's
-  // "curated-but-untracked" finding): no route currently has a current
-  // Business-cabin Fare Signal at all — confirmed live, not assumed. This
-  // guards the business-class page's own check against silently trusting a
-  // cabin that has never actually been evidenced.
-  it('is currently false for Business cabin across every real route (documents the current archive state, not a bug)', () => {
-    expect(hasCurrentFareSignalForCabinAmongRoutes(routes.map((r) => r.slug), 'Business', nowIso)).toBe(false);
+  // Business Fare Evidence Batch 1 (22 Aug 2026) closed the gap this test
+  // used to document ("no route currently has a current Business-cabin Fare
+  // Signal at all") for manchester-lahore, london-heathrow-lahore,
+  // london-heathrow-doha and manchester-karachi — see
+  // data/fare-observations.ts's "Business Fare Evidence Batch 1" block.
+  // This guards the business-class page's own check against silently
+  // trusting a cabin with no evidence; it must now correctly flip true for
+  // scopes that include one of those four routes, and stay false for
+  // scopes that genuinely have none.
+  it('is true for Business cabin among the four routes Business Fare Evidence Batch 1 evidenced', () => {
+    expect(hasCurrentFareSignalForCabinAmongRoutes(routes.map((r) => r.slug), 'Business', nowIso)).toBe(true);
+    expect(hasCurrentFareSignalForCabinAmongRoutes(['manchester-lahore'], 'Business', nowIso)).toBe(true);
+    expect(hasCurrentFareSignalForCabinAmongRoutes(['london-heathrow-lahore'], 'Business', nowIso)).toBe(true);
+    expect(hasCurrentFareSignalForCabinAmongRoutes(['london-heathrow-doha'], 'Business', nowIso)).toBe(true);
+    expect(hasCurrentFareSignalForCabinAmongRoutes(['manchester-karachi'], 'Business', nowIso)).toBe(true);
+  });
+
+  it('remains false for Business cabin among a scope that genuinely has none — the gap is closed for exactly these four routes, not globally', () => {
+    expect(hasCurrentFareSignalForCabinAmongRoutes(['manchester-istanbul'], 'Business', nowIso)).toBe(false);
   });
 });
 
