@@ -8,7 +8,7 @@ import { getEffectiveRoutePresentation } from '@/lib/route-status-copy';
 import { fareObservations, isPubliclyPublishable, getPublishableObservationsByRoute } from '@/data/fare-observations';
 import { getFareSignalForRoute } from '@/lib/fare-signal';
 import { getTripComFlightHandoffUrl } from '@/lib/booking-providers';
-import { generateFareWatcherCandidates } from '@/lib/fare-watcher';
+import { generateFareWatcherCandidates, qualifyFareWatcherObservation } from '@/lib/fare-watcher';
 import { FareSignal } from '@/components/route/fare-signal';
 
 /**
@@ -64,12 +64,26 @@ describe('1. existing PR #155 direct-vs-connecting wording is completely unchang
 });
 
 describe('2. Birmingham-Delhi gets a proven connecting-vs-connecting mismatch', () => {
-  it('route carries routeServiceConnections via Amritsar (ATQ); the tracked fare connects via Frankfurt/Munich', () => {
+  it('route carries routeServiceConnections for the outbound direction only (ATQ); return is deliberately absent', () => {
+    // Founder remediation (22 August 2026): the 2019 Birmingham Airport
+    // press release cited as evidence describes two alternating weekly
+    // patterns of the outbound (Birmingham-departing) flight AI118 -- it
+    // says nothing about the inbound flight's stop pattern. The original
+    // `return: ['ATQ']` value was an unsupported inference and has been
+    // removed; see data/routes.ts's own comment for the full reasoning.
     const route = getRouteBySlug('birmingham-delhi')!;
-    expect(route.routeServiceConnections).toEqual({ outbound: ['ATQ'], return: ['ATQ'] });
+    expect(route.routeServiceConnections).toEqual({ outbound: ['ATQ'] });
+    expect(route.routeServiceConnections?.return).toBeUndefined();
     const signal = getFareSignalForRoute('birmingham-delhi', NOW_ISO);
     expect(signal.state).toBe('current');
-    expect(signal.observation?.connectionAirports).toEqual(['Frankfurt Airport (FRA)', 'Munich Airport (MUC)']);
+    expect(signal.observation?.connectionAirports).toEqual([
+      'Il Caravaggio International Airport (BGY)',
+      'Cairo International Airport (CAI)',
+      'King Abdulaziz International Airport (JED)',
+      'Abu Dhabi International Airport (AUH)',
+      'Paris Charles de Gaulle Airport (CDG)',
+      'Amsterdam Airport Schiphol (AMS)',
+    ]);
   });
 
   it('renders the new "different connecting journey" callout, with no airport codes repeated inside the note itself', () => {
@@ -80,6 +94,20 @@ describe('2. Birmingham-Delhi gets a proven connecting-vs-connecting mismatch', 
     // the card -- the note text itself must not duplicate them.
     const noteMatch = html.match(/This tracked fare is a different connecting journey\./);
     expect(noteMatch).not.toBeNull();
+  });
+
+  it('one fully-evidenced direction alone is sufficient to establish the mismatch, while the unsupported direction stays genuinely absent (not a guessed match)', () => {
+    // Direct proof of the founder's exact remediation requirement: even
+    // though routeServiceConnections carries no `return` value at all for
+    // this route, the comparison still fires correctly because the
+    // merged route-side set already contains ATQ from `outbound` alone,
+    // and ATQ is not among the fare's six connection airports either way.
+    const route = getRouteBySlug('birmingham-delhi')!;
+    expect(Object.keys(route.routeServiceConnections ?? {})).toEqual(['outbound']);
+    const signal = getFareSignalForRoute('birmingham-delhi', NOW_ISO);
+    expect(signal.observation?.connectionAirports.some((a) => a.includes('ATQ'))).toBe(false);
+    const html = renderFareSignalForRoute('birmingham-delhi');
+    expect(html).toContain('This tracked fare is a different connecting journey.');
   });
 });
 
@@ -192,11 +220,22 @@ describe('8, 9 & 10. Birmingham-Delhi observation lifecycle', () => {
     expect(obs.price).toBe(527);
   });
 
-  it('the 22 August observation is the current publicly-shown fare', () => {
+  it('the 22 August observation is the current publicly-shown fare, and is the founder-corrected £563 self-transfer itinerary, not the original £776', () => {
+    // Founder remediation (22 August 2026): the original 22 August record
+    // used a £776 Lufthansa "Best"-tab result; Google's own Cheapest tab
+    // showed £563 for the exact same locked profile, independently
+    // re-verified leg by leg (BHX and DEL remain the exact endpoints on
+    // both legs; genuinely bookable via three independent providers;
+    // labelled "Lowest total price" by Google itself). Corrected in place
+    // since PR #164 had not yet merged.
     const signal = getFareSignalForRoute('birmingham-delhi', NOW_ISO);
     expect(signal.state).toBe('current');
     expect(signal.observation?.id).toBe('obs-bhx-del-economy-20260822-8w-v1');
-    expect(signal.observation?.price).toBe(776);
+    expect(signal.observation?.price).toBe(563);
+    const obs = fareObservations.find((o) => o.id === 'obs-bhx-del-economy-20260822-8w-v1')!;
+    expect(obs.priceNote.toLowerCase()).toContain('self-transfer');
+    expect(obs.outboundStops).toBe(3);
+    expect(obs.returnStops).toBe(3);
   });
 });
 
@@ -223,6 +262,19 @@ describe('13. Fare Watcher does not manufacture a candidate for the newly-unlock
   it('birmingham-delhi has fewer than the minimum comparable baseline, so no candidate forms', () => {
     const candidates = generateFareWatcherCandidates(fareObservations, NOW_ISO);
     expect(candidates.some((c) => c.routeSlug === 'birmingham-delhi')).toBe(false);
+  });
+
+  it('the excluded 18 August observation no longer inflates the comparable baseline (Fare Watcher Methodology-Exclusion audit, 22 August 2026)', () => {
+    // Before the audit's fix, obs-bhx-del-economy-20260818-8w-v1 (still
+    // methodology-excluded, £527) silently counted as a comparable
+    // baseline point despite never being publicly publishable. The
+    // baseline is now exactly the one genuinely comparable record: the
+    // unsuppressed 13 August observation.
+    const obs22 = fareObservations.find((o) => o.id === 'obs-bhx-del-economy-20260822-8w-v1')!;
+    const result = qualifyFareWatcherObservation(obs22, fareObservations, NOW_ISO);
+    expect(result.baselineSampleSize).toBe(1);
+    expect(result.comparableBaseline.map((o) => o.id)).toEqual(['obs-bhx-del-economy-20260813-8w-v1']);
+    expect(result.exclusions).toContainEqual({ observationId: 'obs-bhx-del-economy-20260818-8w-v1', reason: 'methodology-excluded' });
   });
 });
 

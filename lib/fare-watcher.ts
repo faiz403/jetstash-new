@@ -1,4 +1,4 @@
-import type { FareObservation } from '@/data/fare-observations';
+import { isMethodologyExcluded, type FareObservation } from '@/data/fare-observations';
 import { hasTripComRoute } from '@/lib/booking-providers';
 import { daysBetweenIso, OBSERVATION_FRESH_DAYS, OBSERVATION_STALE_DAYS } from '@/lib/freshness-thresholds';
 
@@ -35,7 +35,8 @@ export interface FareWatcherExclusion {
     | 'different-booking-horizon'
     | 'different-trip-length'
     | 'outside-baseline-window'
-    | 'not-earlier-than-candidate';
+    | 'not-earlier-than-candidate'
+    | 'methodology-excluded';
 }
 
 export interface FareWatcherQualificationResult {
@@ -134,6 +135,25 @@ export function qualifyFareWatcherObservation(
       evidenceLimits: ['The candidate is not a complete, explicitly current GBP observation.'],
     };
   }
+  // Fare Watcher Methodology-Exclusion audit (22 August 2026): an
+  // observation excluded from public output because its retained itinerary
+  // evidence is insufficient to confirm ticketing structure must not
+  // itself become an internal candidate lead either -- the same
+  // insufficiency that blocks it from Fare Signal applies here.
+  if (isMethodologyExcluded(candidate.id)) {
+    return {
+      candidate,
+      qualification: 'insufficient-baseline',
+      baselineMedian: null,
+      previousLow: null,
+      differencePounds: null,
+      differencePercent: null,
+      baselineSampleSize: 0,
+      comparableBaseline: [],
+      exclusions: [],
+      evidenceLimits: ['The candidate is methodology-excluded (see data/fare-observations.ts) and cannot itself be evaluated.'],
+    };
+  }
   const candidateAge = daysBetweenIso(candidate.observedDate, nowIso);
   if (candidateAge < 0 || candidateAge > OBSERVATION_FRESH_DAYS) {
     return {
@@ -152,6 +172,24 @@ export function qualifyFareWatcherObservation(
 
   for (const observation of observations) {
     if (observation.id === candidate.id) continue;
+    // Fare Watcher Methodology-Exclusion audit (22 August 2026): checked
+    // before every other baseline test. An observation methodology-
+    // excludes for insufficient retained itinerary evidence (data/fare-
+    // observations.ts's methodologyExcludedObservationIds, checked via
+    // isMethodologyExcluded()) must never silently influence whether a
+    // later fare reads as an ordinary movement or a Standout Fare --
+    // FARE_WATCHER_DESIGN.md's own stated exclusion list (historical,
+    // incomplete, outside the baseline window) predates this mechanism and
+    // was never updated to include it, which is exactly how this gap
+    // stayed latent: e.g. obs-bhx-del-economy-20260818-8w-v1 (and the
+    // equivalent 18 August records on birmingham-lahore, birmingham-
+    // islamabad and manchester-karachi) reused their route's existing
+    // profileId, so they passed every other check and silently counted as
+    // that route's sole comparable baseline point in PR #163.
+    if (isMethodologyExcluded(observation.id)) {
+      exclusions.push(exclusion(observation, 'methodology-excluded'));
+      continue;
+    }
     if (observation.comparisonEligibility === 'historical') {
       exclusions.push(exclusion(observation, 'historical'));
       continue;

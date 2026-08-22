@@ -133,6 +133,23 @@ export function isPubliclyPublishable(o: FareObservation): boolean {
 }
 
 /**
+ * Whether this observation id is in the methodology-exclusion list —
+ * exported so other derivation layers that must never let an
+ * evidence-insufficient record silently influence anything can respect the
+ * same gate without duplicating or re-importing the list itself (added 22
+ * August 2026, Fare Watcher Methodology-Exclusion audit: lib/fare-watcher.ts's
+ * comparable-baseline gate had never checked this list at all — an
+ * observation excluded here because its retained itinerary evidence is
+ * insufficient to confirm ticketing structure was nonetheless silently
+ * counted as a Fare Watcher baseline point, e.g.
+ * obs-bhx-del-economy-20260818-8w-v1 and the equivalent 18 August records
+ * on birmingham-lahore, birmingham-islamabad and manchester-karachi).
+ */
+export function isMethodologyExcluded(observationId: string): boolean {
+  return methodologyExcludedObservationIds.has(observationId);
+}
+
+/**
  * Genuine archive records that fail a later methodology check remain preserved but are excluded
  * from public surfaces.
  *
@@ -543,13 +560,30 @@ export const fareObservations: FareObservation[] = [
   // ============================================================
   // Connecting Journey Structure + BHX-DEL unlock (22 August 2026) — this
   // route's own verified service (data/routes.ts routeServiceConnections)
-  // connects via Amritsar (ATQ); this fresh fare connects via Frankfurt
-  // (FRA) outbound and Munich (MUC) return — a different connecting
-  // journey, proven by structured evidence on both sides rather than
-  // asserted from directness alone. Reuses the route's existing baseline
-  // profileId (same series as the 13 and 18 August 2026 records).
+  // connects via Amritsar (ATQ) outbound; this fresh fare connects via a
+  // different set of cities entirely (Milan Bergamo/Cairo/Jeddah outbound,
+  // Abu Dhabi/Paris/Amsterdam return) — a different connecting journey,
+  // proven by structured evidence rather than asserted from directness
+  // alone. Reuses the route's existing baseline profileId (same series as
+  // the 13 and 18 August 2026 records).
+  //
+  // Founder remediation (22 August 2026): the first version of this record
+  // used a £776 Lufthansa "Best"-tab result while Google's own Cheapest tab
+  // showed £563 for the exact same locked profile. JetStash's standing
+  // selection rule is the lowest total fare displayed for the exact
+  // profile, not the nicest itinerary — a self-transfer/separate-ticket
+  // warning does not by itself disqualify a fare. The £563 itinerary was
+  // independently re-inspected leg by leg (both outbound and return
+  // expanded via Google's own booking flow, not inferred from a summary
+  // badge): BHX and DEL remain the exact, unaltered endpoints on both
+  // legs, the itinerary was genuinely selectable across three independent
+  // booking-option providers (Mytrip, Gotogate, Flightnetwork), and
+  // Google's own itinerary-summary page explicitly labelled it "Lowest
+  // total price" for this search. It qualifies under the locked profile
+  // and replaces the £776 record below (corrected in place, not appended
+  // as a second same-day observation, since PR #164 had not yet merged).
   // ============================================================
-  { id: 'obs-bhx-del-economy-20260822-8w-v1', routeSlug: 'birmingham-delhi', cabin: 'Economy', observedDate: '2026-08-22', price: 776, priceNote: "return, per person, one adult; Lufthansa; outbound BHX-FRA-DEL 14h30m via Frankfurt; return DEL-MUC-BHX 13h45m via Munich; single ticket, no self-transfer notice; baggage not stated.", source: "Lufthansa", observedVia: 'google-flights', sourceUrl: 'https://www.google.com/travel/flights?q=Flights%20from%20Birmingham%20to%20Delhi%20October%2017%202026%20return%20October%2031%202026&curr=GBP&hl=en&gl=GB', currency: 'GBP', baggage: "not stated", profileId: 'birmingham-delhi-economy-1adult-23kg-v1', observationReason: 'route-status-recheck', comparisonEligibility: 'current', departureDate: '2026-10-17', returnDate: '2026-10-31', fareDirectness: 'connecting', outboundDirectness: 'connecting', returnDirectness: 'connecting', outboundConnectionAirports: ["Frankfurt Airport (FRA)"], returnConnectionAirports: ["Munich Airport (MUC)"], outboundJourneyMinutes: 870, returnJourneyMinutes: 825 },
+  { id: 'obs-bhx-del-economy-20260822-8w-v1', routeSlug: 'birmingham-delhi', cabin: 'Economy', observedDate: '2026-08-22', price: 563, priceNote: "return, per person, one adult; self-transfer — no single ticket, 5 independent operating carriers across both legs, each connection must be independently cleared and re-checked; outbound BHX-BGY-CAI-JED-DEL 24h10m via Milan Bergamo (Ryanair), Cairo (Air Arabia Egypt) and Jeddah (Saudia), 3 stops; return DEL-AUH-CDG-AMS-BHX 21h10m via Abu Dhabi (Etihad), Paris CDG (Etihad) and Amsterdam (KLM), 3 stops; Google Flights' own Cheapest tab explicitly labelled this itinerary \"Lowest total price\" for this exact search; genuinely selectable at this price across three independent booking-option providers (Mytrip, Gotogate, Flightnetwork); baggage not stated beyond Ryanair's standard fee schedule shown on the itinerary page.", source: "Ryanair / Air Arabia Egypt / Saudia / Etihad / KLM", observedVia: 'google-flights', sourceUrl: 'https://www.google.com/travel/flights?q=Flights%20from%20Birmingham%20to%20Delhi%20October%2017%202026%20return%20October%2031%202026&curr=GBP&hl=en&gl=GB', currency: 'GBP', baggage: "not stated", profileId: 'birmingham-delhi-economy-1adult-23kg-v1', observationReason: 'route-status-recheck', comparisonEligibility: 'current', departureDate: '2026-10-17', returnDate: '2026-10-31', fareDirectness: 'connecting', outboundDirectness: 'connecting', returnDirectness: 'connecting', outboundStops: 3, returnStops: 3, outboundConnectionAirports: ["Il Caravaggio International Airport (BGY)", "Cairo International Airport (CAI)", "King Abdulaziz International Airport (JED)"], returnConnectionAirports: ["Abu Dhabi International Airport (AUH)", "Paris Charles de Gaulle Airport (CDG)", "Amsterdam Airport Schiphol (AMS)"], outboundJourneyMinutes: 1450, returnJourneyMinutes: 1270 },
 ];
 
 export function getObservationsByRoute(routeSlug: string) {

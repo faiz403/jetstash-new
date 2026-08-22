@@ -41,7 +41,16 @@ that share the same route, cabin, GBP currency, versioned `profileId`, passenger
 profile, trip length and an eight-week-style booking horizon (up to seven days'
 drift). A same-day alternative is part of the same search snapshot, not a
 baseline point. Historical records, incomplete records and records outside the
-180-day baseline window are excluded and reported as evidence limits.
+180-day baseline window are excluded and reported as evidence limits. **A
+methodology-excluded observation** (`data/fare-observations.ts`'s
+`methodologyExcludedObservationIds`, checked via the exported
+`isMethodologyExcluded()`) **is excluded too, added 22 August 2026** — an
+observation whose retained itinerary evidence is insufficient to confirm
+ticketing structure must not influence a baseline median or previous-low
+figure, or itself become a candidate, any more than it may appear on the
+public Fare Signal. This mechanism postdates the original Phase 1 rules
+above and was not threaded through until a Fare Watcher Methodology-
+Exclusion audit found it silently entering baselines (see PR #164).
 
 The initial archive is thin: most routes have one observation and only a small
 number have repeated same-profile observations. The first bar is therefore a

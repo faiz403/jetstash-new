@@ -2024,16 +2024,25 @@ export const routes: Route[] = [
       reviewDueDate: '2026-10-05',
       note: 'COV-001 verification-gap audit (21 August 2026): the two-source conflict identified in Route Verification Refresh Batch 2 (19 August 2026) — Birmingham Airport\'s own page naming Air India as "direct", 7h55m, against Air India\'s own page stating "No direct flights available" — is now reconciled, not merely re-observed. Air India\'s own current page explicitly names the routing: "Last flight from Birmingham airport AI 118 departs at 20:30 (via ATQ)" — AI118 is the same flight number Birmingham Airport\'s own 2019 press release ("Air India Resumes Six Direct Weekly Services to India from Birmingham Airport") already described as a Boeing 787 tag-service running three times weekly to Delhi and onward to Amritsar, and three times weekly to Amritsar and onward to Delhi, on one flight number. Both sources describe the same real service; the apparent conflict was a difference in each source\'s own use of "direct" (Birmingham Airport: single flight number, no aircraft change) versus "nonstop" (Air India\'s own FAQ and structured field: no scheduled stop) — Air India\'s own current schedule confirms the stop is real. Recorded here as connecting via Amritsar because Air India\'s own current page is the source that names the routing explicitly; frequency (three times weekly) is carried over from the 2019 tag-service pattern and is not independently re-verified for the current 2026 schedule, so it is flagged as such rather than stated as freshly confirmed.',
     },
-    // routeServiceConnections (22 Aug 2026, Connecting Journey Structure):
-    // outbound is Air India's own current page, directly quoted above
-    // ("Last flight from Birmingham airport AI 118 departs at 20:30 (via
-    // ATQ)") — the strongest evidence tier this field ever uses. return is
-    // populated on the same tag-service rotation the 2019 Birmingham
-    // Airport press release describes ("three times weekly to Amritsar and
-    // onward to Delhi" is the return-direction half of the same pattern) —
-    // one tier below the outbound's direct current-page quote, but still a
-    // named primary source, not inferred from the flight number alone.
-    routeServiceConnections: { outbound: ['ATQ'], return: ['ATQ'] },
+    // routeServiceConnections (22 Aug 2026, Connecting Journey Structure;
+    // corrected 22 Aug 2026, founder remediation): outbound is Air India's
+    // own current page, directly quoted above ("Last flight from
+    // Birmingham airport AI 118 departs at 20:30 (via ATQ)") — the
+    // strongest evidence tier this field ever uses. `return` is
+    // deliberately left absent: the 2019 Birmingham Airport press release
+    // quoted above ("three times weekly to Delhi and onward to Amritsar,
+    // and three times weekly to Amritsar and onward to Delhi") describes
+    // two alternating weekly patterns of AI118 itself — the single
+    // Birmingham-departing (outbound) flight — not the inbound
+    // (Delhi/Amritsar-to-Birmingham) flight's stop pattern. No primary
+    // source in this route's evidence base says anything about the return
+    // direction, so it stays genuinely unknown per this field's own "never
+    // populate a guess" rule, rather than assuming outbound/return
+    // symmetry. This doesn't weaken the connecting-journey comparison for
+    // this route: the outbound direction alone (ATQ vs. the tracked fare's
+    // BGY/CAI/JED) is already sufficient to prove a different connecting
+    // journey.
+    routeServiceConnections: { outbound: ['ATQ'] },
     intro:
       'Air India\'s Birmingham to Delhi service is a connecting tag-flight via Amritsar, not a nonstop service — Air India\'s own current schedule names AI118 as routing via Amritsar (ATQ) on its way to Delhi, the same pattern Birmingham Airport\'s own 2019 announcement described. Check the live itinerary directly with Air India for your own dates and the current stop pattern before booking.',
     bookingWindowNote:
