@@ -380,19 +380,27 @@ describe('Requirements 8–11: route metadata correctness and honesty', () => {
     }
   });
 
-  it('req 11: withdrawal-announced routes (Manchester–Mumbai, Manchester–Delhi) keep an honest, non-fabricated metadata description', () => {
-    // buildWithdrawalAnnouncedPresentation() (lib/route-status-copy.ts) only
-    // overrides shareText — metadataDescription flows through unchanged from
-    // the base getRoutePresentation(), i.e. truncateMetadataDescription(route.intro).
-    // Confirms that base intro text (which itself defers to "the Route Status
-    // panel below" rather than asserting a specific current frequency) is what
-    // ships, not a rewritten or invented claim.
+  it('req 11: withdrawal-announced routes (Manchester–Mumbai, Manchester–Delhi) keep an honest, non-fabricated, time-bounded metadata description', () => {
+    // SEO Domination Batch 1 (22 Aug 2026): buildWithdrawalAnnouncedPresentation()
+    // (lib/route-status-copy.ts) used to only override shareText, leaving
+    // metadataTitle/metadataDescription as the plain, unqualified generic
+    // template — found auditing a real Search Console opportunity for
+    // "direct flight from Manchester to Mumbai": putting an unqualified
+    // "direct" claim into metadata would go stale within days of the
+    // announced 31 August 2026 withdrawal. Both routes now get a
+    // time-bounded title/description instead, derived from the same
+    // validated, sourced ledger headline reused for shareText — never a
+    // hand-written date that could drift out of sync with the ledger.
     for (const slug of ['manchester-mumbai', 'manchester-delhi']) {
       const route = routes.find((r) => r.slug === slug);
       expect(route, slug).toBeTruthy();
       if (!route) continue;
       const presentation = getEffectiveRoutePresentation(route, routeStatusEvents, now);
-      expect(presentation.metadataDescription).toBe(truncateMetadataDescription(route.intro));
+      expect(presentation.metadataTitle, slug).toContain('Direct Flight Status Update');
+      expect(presentation.metadataDescription, slug).toContain('currently has a direct option');
+      expect(presentation.metadataDescription, slug).toContain('withdrawal announced, effective 31 August 2026');
+      expect(presentation.metadataDescription, slug).not.toBe(truncateMetadataDescription(route.intro));
+      expect(presentation.metadataDescription.length, slug).toBeLessThanOrEqual(DESCRIPTION_THRESHOLD);
     }
   });
 
