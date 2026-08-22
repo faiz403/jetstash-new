@@ -79,9 +79,14 @@ describe('3. appears on the two intended Fare Signal → Trip.com handoff surfac
   });
 
   it('route-page Fare Signal: does NOT render the note when the signal state is "none" (no dated observation to clarify)', () => {
-    const signal = getFareSignalForRoute('leeds-bradford-bodrum', nowIso);
+    // leeds-bradford-bodrum was this fixture until Fare Coverage Batch 1
+    // (22 August 2026) gave it its first-ever fare; swapped to
+    // birmingham-delhi, whose two real observations stay deliberately
+    // excluded pending a separate connecting-vs-connecting journey
+    // presentation decision.
+    const signal = getFareSignalForRoute('birmingham-delhi', nowIso);
     expect(signal.state).toBe('none');
-    const html = renderToStaticMarkup(FareSignal({ signal, tripComUrl: null, routeSlug: 'leeds-bradford-bodrum' }));
+    const html = renderToStaticMarkup(FareSignal({ signal, tripComUrl: null, routeSlug: 'birmingham-delhi' }));
     expect(html).not.toContain(TRIPCOM_FRESH_SEARCH_NOTE);
   });
 
@@ -125,11 +130,18 @@ describe('5. resolver, URLs and handoff state are untouched', () => {
     expect(getTripComFlightHandoffUrl('manchester-barcelona', 'manchester', 'barcelona')).toContain('MAN-BCN');
   });
 
-  it('PR #141 reconciliation, updated 18 August 2026: 78 total, 56 with a verified handoff, 22 unavailable (london-gatwick-ahmedabad — itself one of the no-handoff entries — dropped out of tracked fares when Route Verification Refresh Batch 1\'s correction reclassified it unverified)', () => {
+  it('updated 22 August 2026 (Fare Coverage Batch 1): 82 total, 60 with a verified handoff, 22 unavailable', () => {
+    // Was 78/56/22 as of 18 August 2026 (PR #141). Fare Coverage Batch 1
+    // added four routes' first current Fare Signal (leeds-bradford-bodrum,
+    // manchester-karachi, birmingham-lahore, birmingham-islamabad) — all
+    // four already had a working Trip.com handoff before this batch, which
+    // didn't touch Trip.com/affiliate logic at all, so the +4 total lands
+    // entirely on the with-handoff count (56->60) and the no-handoff count
+    // (22) is unchanged.
     const groups = buildTrackedFareAirportGroups(routes, undefined, nowIso);
     const entries = groups.flatMap((g) => g.entries);
-    expect(entries).toHaveLength(78);
-    expect(entries.filter((e) => e.tripComUrl !== null)).toHaveLength(56);
+    expect(entries).toHaveLength(82);
+    expect(entries.filter((e) => e.tripComUrl !== null)).toHaveLength(60);
     expect(entries.filter((e) => e.tripComUrl === null)).toHaveLength(22);
   });
 });

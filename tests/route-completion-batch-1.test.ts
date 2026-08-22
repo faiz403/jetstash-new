@@ -402,9 +402,9 @@ describe('The audit and fare-archive documents accurately reflect the closed obs
     expect(archiveFlat).toContain('never merely to hand it a second scoring category');
   });
 
-  it('states the real, current fare-tracking route count (78 of 88, updated 18 August 2026 — london-gatwick-ahmedabad dropped out when Route Verification Refresh Batch 1\'s correction reclassified it unverified), not a stale hand-typed figure', () => {
+  it('states the real, current fare-tracking route count (82 of 88, updated 22 August 2026, Fare Coverage Batch 1), not a stale hand-typed figure', () => {
     const totalTracked = routes.filter((r) => getPublishableObservationsByRoute(r.slug, NOW_ISO).length > 0).length;
-    expect(totalTracked).toBe(78);
+    expect(totalTracked).toBe(82);
     expect(auditDoc).toContain(`${totalTracked} of 88`);
   });
 });

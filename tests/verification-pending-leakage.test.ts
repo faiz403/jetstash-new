@@ -415,9 +415,29 @@ describe('Fare-observation publication predicate — pure, synthetic-fixture-tes
 });
 
 describe('hasTrackedFare — deal-level fare gating stays consistent with the route-evidence gate', () => {
-  it('the Manchester–Karachi deal (matches a pending route) never counts as a tracked fare', () => {
-    const deal = deals.find((d) => d.id === 'man-khi-economy')!;
-    expect(deal).toBeDefined();
+  it('a deal matching a still-pending route never counts as a tracked fare', () => {
+    // The Manchester-Karachi deal was this fixture until COV-001 (21 August
+    // 2026) reclassified the route verified-connecting, then Fare Coverage
+    // Batch 1 (22 August 2026) gave it a real published fare — it now
+    // genuinely IS a tracked fare, so it can no longer prove this gate.
+    // No real Deal entry exists for any of the 3 still-pending routes
+    // (checked: none of birmingham-ahmedabad/london-gatwick-ahmedabad/
+    // london-heathrow-dhaka has one in data/deals.ts), so this constructs a
+    // synthetic deal pointing at a real pending route, matching the same
+    // synthetic-fixture convention makeRoute() uses elsewhere in this file.
+    const pendingRoute = getRouteBySlug('birmingham-ahmedabad')!;
+    expect(pendingRoute.verification?.status).toBe('unverified');
+    const deal: (typeof deals)[number] = {
+      id: 'test-pending-route-deal',
+      category: 'flight',
+      cabin: 'Economy',
+      fromAirportSlug: 'birmingham',
+      toDestinationSlug: 'ahmedabad',
+      fromCity: 'Birmingham',
+      toCity: 'Ahmedabad',
+      toCountry: 'India',
+      airline: 'Air India',
+    };
     expect(hasTrackedFare(deal, FIXED_TODAY)).toBe(false);
   });
 });

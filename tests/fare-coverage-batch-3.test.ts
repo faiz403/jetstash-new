@@ -68,8 +68,12 @@ describe('Fare Coverage Programme Batch 3', () => {
     const current = routes.filter((route) => getPublishableObservationsByRoute(route.slug, NOW_ISO).length > 0);
     // 79→78 on 18 August 2026: Route Verification Refresh Batch 1's correction
     // reclassified london-gatwick-ahmedabad unverified, dropping its fare
-    // observation out of isObservationPublishable().
-    expect(current).toHaveLength(78);
+    // observation out of isObservationPublishable(). 78→82 on 22 August 2026
+    // (Fare Coverage Batch 1): four routes each gained a fresh, evidenced
+    // observation (leeds-bradford-bodrum's first-ever fare; fresh rechecks
+    // for manchester-karachi, birmingham-lahore, birmingham-islamabad
+    // following COV-001's 21 August reclassification).
+    expect(current).toHaveLength(82);
     for (const route of current) {
       const signal = getFareSignalForRoute(route.slug, NOW_ISO);
       expect(signal.state, route.slug).toBe('current');

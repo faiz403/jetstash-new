@@ -1248,6 +1248,14 @@ fail-closed architecture (`getEffectiveRoutePresentation()`) now correctly refle
 That single status change mechanically drops the route's fare observation out of
 `isObservationPublishable()` (which requires a current, confirmed direct/connecting status) and below
 `computeRouteIntelligenceLevel()`'s prerequisite gate, regardless of its depth-category count. As of
-18 August 2026 the live, current figures are: **78 of 88** routes with a display-ready Fare Signal,
-and a Route Intelligence distribution of **10 Strong / 78 Useful / 0 Expanding**. This is a live,
+18 August 2026 the live, current figures were: 78 of 88 routes with a display-ready Fare Signal,
+and a Route Intelligence distribution of 10 Strong / 78 Useful / 0 Expanding. This is a live,
 mechanical consequence of one route's evidence state changing, not a re-audit of the 14 August work.
+
+**Updated 22 August 2026 (Fare Coverage Batch 1)**: Leeds Bradford-Bodrum, Manchester-Karachi,
+Birmingham-Lahore and Birmingham-Islamabad each gained a genuine, fully-evidenced dated observation
+(the first three had none logged for their route at all; the latter three's routes were also newly
+reclassified verified-connecting by COV-001 on 21 August). The live, current figure is now
+**82 of 88** routes with a display-ready Fare Signal. This is again a live, mechanical consequence
+of real evidence being added — not a re-audit of the Route Intelligence Scoring breakdown above,
+which this pass did not touch.

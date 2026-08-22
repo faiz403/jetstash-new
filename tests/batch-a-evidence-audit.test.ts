@@ -114,6 +114,14 @@ describe('Route-level Fare Signal coverage and curated Deal-card coverage remain
   // curated Economy card by design; they must still count in route-level
   // coverage and on the /deals hero.
   const fareSignalOnlyRoutes = new Set([
+    // Fare Coverage Batch 1 (22 August 2026): leeds-bradford-bodrum,
+    // birmingham-lahore and birmingham-islamabad each gained a fresh
+    // publishable observation but have no curated Economy Deal card.
+    // manchester-karachi also gained one but DOES have an existing Economy
+    // Deal (man-khi-economy), so it's correctly excluded from this set.
+    'leeds-bradford-bodrum',
+    'birmingham-lahore',
+    'birmingham-islamabad',
     'london-heathrow-jeddah',
     'manchester-istanbul',
     'manchester-antalya',
@@ -169,7 +177,9 @@ describe('Route-level Fare Signal coverage and curated Deal-card coverage remain
     // 79→78 on 18 August 2026: Route Verification Refresh Batch 1's correction
     // reclassified london-gatwick-ahmedabad unverified, which drops its fare
     // observation out of isObservationPublishable() — see ROUTE_VERIFICATION_CADENCE_POLICY.md.
-    expect(trackedRoutes.length).toBe(78);
+    // 78→82 on 22 August 2026 (Fare Coverage Batch 1) — see
+    // tests/fare-coverage-batch-3.test.ts's identical update.
+    expect(trackedRoutes.length).toBe(82);
     for (const route of trackedRoutes) {
       const matchingDeal = deals.find(
         (d) => d.fromAirportSlug === route.airportSlug && d.toDestinationSlug === route.destinationSlug && d.cabin === 'Economy' && !isBundledProductDeal(d)
@@ -180,7 +190,7 @@ describe('Route-level Fare Signal coverage and curated Deal-card coverage remain
         expect(matchingDeal, `${route.slug} should have a curated Economy card`).toBeDefined();
       }
     }
-    expect(fareSignalOnlyRoutes.size).toBe(48);
+    expect(fareSignalOnlyRoutes.size).toBe(51);
   });
 
   it('none of the 7 newly added Deal entries ever shows an unsupported "Direct flight" badge', () => {

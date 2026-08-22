@@ -56,7 +56,12 @@ describe('universal Fare Signal derivation', () => {
   });
 
   it('returns the explicit no-current-fare state when no publishable observation exists', () => {
-    const signal = getFareSignalForRoute('birmingham-lahore', '2026-08-11');
+    // birmingham-lahore was this fixture until Fare Coverage Batch 1 (22
+    // August 2026) gave it a fresh, publishable observation — swapped to
+    // birmingham-delhi, whose two real observations stay deliberately
+    // excluded pending a separate connecting-vs-connecting journey
+    // presentation decision.
+    const signal = getFareSignalForRoute('birmingham-delhi', '2026-08-11');
     expect(signal).toEqual({ state: 'none', observation: null, freshness: null, strongerSignal: null });
   });
 
@@ -152,11 +157,18 @@ describe('Fare Signal presentation and CTA boundaries', () => {
 });
 
 describe('Fare Signal production coverage counts', () => {
-  it('reports 78 routes with a current publishable fare and 10 without one at the current archive date (updated 18 August 2026 — london-gatwick-ahmedabad moved from current to none when Route Verification Refresh Batch 1\'s correction reclassified it unverified)', () => {
+  it('reports 82 routes with a current publishable fare and 6 without one at the current archive date (updated 22 August 2026, Fare Coverage Batch 1)', () => {
+    // Was 78/10 as of 18 August 2026. COV-001 (21 August) then Fare
+    // Coverage Batch 1 (22 August) together moved 4 routes into "current"
+    // (leeds-bradford-bodrum, manchester-karachi, birmingham-lahore,
+    // birmingham-islamabad) — the "none" bucket is now exactly the 5
+    // still-unverified routes plus birmingham-delhi (held, see
+    // ROUTE_VERIFICATION_CADENCE_POLICY.md Batch 3 and the Fare Coverage
+    // Batch 1B audit).
     const signals = routes.map((route) => getFareSignalForRoute(route.slug, '2026-08-14'));
-    expect(signals.filter((signal) => signal.state === 'current')).toHaveLength(78);
+    expect(signals.filter((signal) => signal.state === 'current')).toHaveLength(82);
     expect(signals.filter((signal) => signal.state === 'recent')).toHaveLength(0);
-    expect(signals.filter((signal) => signal.state === 'none')).toHaveLength(10);
+    expect(signals.filter((signal) => signal.state === 'none')).toHaveLength(6);
     expect(routes.filter((route) => getTripComRouteUrl(route.slug)).length).toBe(45);
   });
 
