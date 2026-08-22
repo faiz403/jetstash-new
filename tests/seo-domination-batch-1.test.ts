@@ -8,7 +8,8 @@ import { fareObservations, isPubliclyPublishable } from '@/data/fare-observation
  * SEO Domination Batch 1 (22 August 2026) — the first implementation wave
  * from the SEO Domination Shortlist audit. Originally shipped with two
  * evidence-ready Tier A business-class opportunities (Lahore, Doha) and one
- * Tier B direct-flight evidence opportunity (Manchester-Mumbai). Founder
+ * Tier B direct-flight evidence opportunity (Manchester-Mumbai), via a new
+ * opt-in `Route.seoTitle`/`seoDescription` override mechanism. Founder
  * review (same day, before merge) found the Business Class Lahore/Doha
  * titles crossed the project's own evidence gate: none of the three routes
  * show any Business-cabin content on the live page, and the only
@@ -16,27 +17,24 @@ import { fareObservations, isPubliclyPublishable } from '@/data/fare-observation
  * publishable or don't exist at all. Those three overrides were removed —
  * see the "EVIDENCE REQUIRED BEFORE SEO OPTIMISATION" comments in
  * data/routes.ts on manchester-lahore, london-heathrow-lahore and
- * london-heathrow-doha — leaving Manchester-Mumbai (plus the architecturally
- * shared Manchester-Delhi fix) as the batch's actual final scope. Karachi
- * remains deliberately excluded — no Business-cabin evidence exists for it
- * either. Business Fare Evidence Batch 1 (queued, not yet started) is the
- * follow-up that would make the Business overrides legitimate again.
+ * london-heathrow-doha. With no route left using it, a second founder pass
+ * removed the seoTitle/seoDescription mechanism itself as dead speculative
+ * infrastructure (it was never required by the Manchester-Mumbai/Delhi fix
+ * below, which overrides metadataTitle/metadataDescription at the shared
+ * withdrawal-announced presentation layer, not via a per-route field) —
+ * leaving Manchester-Mumbai plus the architecturally shared Manchester-Delhi
+ * fix as this batch's actual final scope. Karachi remains deliberately
+ * excluded — no Business-cabin evidence exists for it either. Business Fare
+ * Evidence Batch 1 (queued, not yet started) is the follow-up that would
+ * make a future, real Business-class override legitimate again.
  */
 
 const NOW_ISO = '2026-08-22';
 
-describe('Target 1 & 2 removed: Business Class Lahore/Doha overrides failed the evidence gate', () => {
+describe('Business Class Lahore/Doha SEO push: considered and dropped, evidence gate not met', () => {
   const formerTargets = ['manchester-lahore', 'london-heathrow-lahore', 'london-heathrow-doha'] as const;
 
-  it('none of the three formerly-targeted routes carry a seoTitle/seoDescription override any more', () => {
-    for (const slug of formerTargets) {
-      const route = getRouteBySlug(slug)!;
-      expect(route.seoTitle, slug).toBeUndefined();
-      expect(route.seoDescription, slug).toBeUndefined();
-    }
-  });
-
-  it('each falls back to the plain default metadataTitle/metadataDescription template — no weaker replacement wording was substituted', () => {
+  it('each route\'s title/description is the plain default template — no Business Class wording and no fare figure', () => {
     for (const slug of formerTargets) {
       const route = getRouteBySlug(slug)!;
       const presentation = getRoutePresentation(route, NOW_ISO);
@@ -59,11 +57,6 @@ describe('Target 1 & 2 removed: Business Class Lahore/Doha overrides failed the 
     }
     expect(fareObservations.some((o) => o.routeSlug === 'london-heathrow-lahore' && o.cabin === 'Business')).toBe(false);
   });
-
-  it('the getRoutePresentation() default template is untouched for every route — no route in the network carries a seoTitle/seoDescription override', () => {
-    const overridden = routes.filter((r) => r.seoTitle || r.seoDescription).map((r) => r.slug).sort();
-    expect(overridden).toEqual([]);
-  });
 });
 
 describe('Target 3: Manchester-Mumbai route-status recheck before optimising "direct flight" wording', () => {
@@ -79,12 +72,6 @@ describe('Target 3: Manchester-Mumbai route-status recheck before optimising "di
     // C (substitute a different query) — a stable "direct" claim would
     // still be wrong, which is what this whole target is about avoiding.
     expect(NOW_ISO < event.effectiveFrom).toBe(true);
-  });
-
-  it('manchester-mumbai received NO seoTitle/seoDescription override in data/routes.ts — the fix lives in the shared withdrawal-announced presentation builder instead, so it also correctly reaches manchester-delhi', () => {
-    const route = getRouteBySlug('manchester-mumbai')!;
-    expect(route.seoTitle).toBeUndefined();
-    expect(route.seoDescription).toBeUndefined();
   });
 
   it('today, the route\'s title/description acknowledge the timing rather than advertise a stable direct route', () => {
@@ -127,10 +114,7 @@ describe('Target 3: Manchester-Mumbai route-status recheck before optimising "di
 });
 
 describe('Deliberately not implemented: Karachi', () => {
-  it('manchester-karachi carries no seoTitle/seoDescription override — no Business-cabin evidence exists for it yet', () => {
-    const route = getRouteBySlug('manchester-karachi')!;
-    expect(route.seoTitle).toBeUndefined();
-    expect(route.seoDescription).toBeUndefined();
+  it('manchester-karachi has no Business-cabin evidence logged yet', () => {
     expect(fareObservations.some((o) => o.routeSlug === 'manchester-karachi' && o.cabin === 'Business')).toBe(false);
   });
 });

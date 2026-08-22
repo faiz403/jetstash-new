@@ -49,23 +49,6 @@ function peakPeriodRoutes() {
   return routes.filter((r) => r.peakPeriodIds.length > 0 && getRoutePresentation(r, NOW_ISO).status !== 'unverified');
 }
 
-/**
- * SEO Domination Batch 1 (22 Aug 2026): routes.ts's own optional
- * seoTitle/seoDescription override (see the Route interface's doc comment)
- * is designed to replace this default template for a specific, checked
- * Search Console opportunity when one is justified. Batch 1 briefly set it
- * on manchester-lahore, london-heathrow-lahore and london-heathrow-doha, but
- * founder review found the Business Class evidence gate wasn't met and all
- * three overrides were removed the same day — no route currently uses this
- * mechanism. This filter is kept as forward-looking infrastructure so a
- * future, evidence-justified override doesn't silently break the default
- * template assumptions this file tests (the en-dash connector, "Booking &
- * Peak Periods" survival).
- */
-function peakPeriodRoutesOnDefaultTemplate() {
-  return peakPeriodRoutes().filter((r) => !r.seoTitle);
-}
-
 describe('peak-period route titles contain "Flights" and fit the character threshold', () => {
   it('every current peak-period route exists and has at least one, so this suite is not silently testing zero routes', () => {
     expect(peakPeriodRoutes().length).toBeGreaterThan(0);
@@ -81,7 +64,7 @@ describe('peak-period route titles contain "Flights" and fit the character thres
   });
 
   it('"Booking" and "Peak Periods" both survive the shortened phrase — only "Windows" was dropped', () => {
-    for (const route of peakPeriodRoutesOnDefaultTemplate().slice(0, 5)) {
+    for (const route of peakPeriodRoutes().slice(0, 5)) {
       const presentation = getRoutePresentation(route, NOW_ISO);
       expect(presentation.metadataTitle, route.slug).toMatch(/Booking & Peak Periods/);
       expect(presentation.metadataTitle, route.slug).not.toMatch(/Windows/);
@@ -104,7 +87,7 @@ describe('peak-period route titles contain "Flights" and fit the character thres
   });
 
   it('the connector is an en dash, not " to " — the specific mechanism that recovered the character budget', () => {
-    for (const route of peakPeriodRoutesOnDefaultTemplate().slice(0, 5)) {
+    for (const route of peakPeriodRoutes().slice(0, 5)) {
       const presentation = getRoutePresentation(route, NOW_ISO);
       expect(presentation.metadataTitle, route.slug).not.toContain(' to ');
       expect(presentation.metadataTitle, route.slug).toContain('–');
