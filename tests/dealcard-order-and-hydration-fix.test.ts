@@ -189,11 +189,15 @@ describe('Defect 2 follow-up (founder review) — cabin-specific fallback wordin
   // "undefined" (DealCabin is a closed union, so cabinLabel[deal.cabin]
   // cannot miss, but this proves it against real deal entries rather than
   // just trusting the type system).
-  it('every currently affected no-fare card (10 as of 22 Aug 2026, after Fare Coverage Batch 1: 9 Business, 1 Economy) renders a truthful, cabin-named sentence', () => {
-    // Was 11 (9 Business, 2 Economy) as of 21 August 2026. Fare Coverage
-    // Batch 1 (22 August) gave man-khi-economy (manchester-karachi) its
-    // first real published fare, dropping it off this list — the other
-    // Economy no-fare card (london-gatwick-ahmedabad) is untouched.
+  it('every currently affected no-fare card (7 as of 22 Aug 2026, after Business Fare Evidence Batch 1: 6 Business, 1 Economy) renders a truthful, cabin-named sentence', () => {
+    // Was 10 (9 Business, 1 Economy) earlier the same day, after Fare
+    // Coverage Batch 1. Business Fare Evidence Batch 1 (same day, later)
+    // gave man-lhe-business, lhr-business-lhe and lhr-doh-business each
+    // their first real published fare, dropping all three off this list —
+    // the remaining Economy no-fare card (lgw-amd-economy,
+    // london-gatwick-ahmedabad) is untouched by this batch (its own
+    // unrelated verification dispute is why it stays no-fare — see
+    // ROUTE_VERIFICATION_CADENCE_POLICY.md).
     const nowIsoLocal = nowIso;
     const affected: { id: string; cabin: DealCabin; sentence: string }[] = [];
 
@@ -210,15 +214,23 @@ describe('Defect 2 follow-up (founder review) — cabin-specific fallback wordin
       affected.push({ id: d.id, cabin: d.cabin, sentence });
     }
 
-    expect(affected.length).toBe(10);
-    expect(affected.filter((a) => a.cabin === 'Business')).toHaveLength(9);
+    expect(affected.length).toBe(7);
+    expect(affected.filter((a) => a.cabin === 'Business')).toHaveLength(6);
     expect(affected.filter((a) => a.cabin === 'Economy')).toHaveLength(1);
     // Manchester-Islamabad's own Business card, by name — the exact card
-    // Participant 1 read as contradictory.
+    // Participant 1 read as contradictory. Untouched by this batch
+    // (manchester-islamabad is not one of the four routes it evidenced).
     expect(affected.some((a) => a.id === 'man-isb-business' && a.sentence === 'No Business class fare checks logged yet — check the live price below')).toBe(true);
   });
 
-  it('the 6 routes with a has-fare cabin alongside a no-fare cabin (the real ambiguity class) all get a self-contained, cabin-named sentence for their no-fare card', () => {
+  it('the 4 routes with a has-fare cabin alongside a no-fare cabin (the real ambiguity class) all get a self-contained, cabin-named sentence for their no-fare card', () => {
+    // Was 6 before Business Fare Evidence Batch 1. london-heathrow-doha and
+    // manchester-lahore both drop off this list — Business Fare Evidence
+    // Batch 1 gave their previously-no-fare Business cabin a real
+    // observation, so both routes now have EVERY cabin covered rather than
+    // a mix of has-fare and no-fare. (london-heathrow-lahore and
+    // manchester-karachi were never on this list at all — each has only
+    // one curated Deal, so there's no second cabin to be "mixed" with.)
     const groups = new Map<string, typeof deals>();
     for (const d of deals) {
       const key = `${d.fromAirportSlug}|${d.toDestinationSlug}`;
@@ -245,7 +257,7 @@ describe('Defect 2 follow-up (founder review) — cabin-specific fallback wordin
     }
 
     expect(mixedRoutes.sort()).toEqual(
-      ['birmingham-amritsar', 'london-heathrow-delhi', 'london-heathrow-doha', 'manchester-dubai', 'manchester-islamabad', 'manchester-lahore'].sort()
+      ['birmingham-amritsar', 'london-heathrow-delhi', 'manchester-dubai', 'manchester-islamabad'].sort()
     );
   });
 

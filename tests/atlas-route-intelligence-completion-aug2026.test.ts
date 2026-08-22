@@ -72,13 +72,17 @@ describe('Every data/routes.ts entry has a tracked Atlas Route Intelligence stat
     expect(trackedRouteCount).toBe(routes.length);
   });
 
-  it('sanity: the current 88-route catalogue grades 10 Strong / 78 Useful / 0 Expanding (updated 18 August 2026 — london-gatwick-ahmedabad reverted Strong→Useful when Route Verification Refresh Batch 1\'s correction reclassified it unverified; see ROUTE_VERIFICATION_CADENCE_POLICY.md)', () => {
+  it('sanity: the current 88-route catalogue grades 11 Strong / 77 Useful / 0 Expanding (updated 22 August 2026 — Business Fare Evidence Batch 1 promoted london-heathrow-lahore Useful→Strong: it is the one route whose only curated Deal is Business-cabin, so Gate 3\'s visible-fare check depended entirely on that cabin, which had no publishable observation before this batch; see data/fare-observations.ts\'s "Business Fare Evidence Batch 1" block. Previously 10 Strong / 78 Useful, 18 August 2026, when london-gatwick-ahmedabad reverted Strong→Useful under Route Verification Refresh Batch 1; see ROUTE_VERIFICATION_CADENCE_POLICY.md)', () => {
     const counts = { strong: 0, useful: 0, expanding: 0 };
     for (const route of routes) {
       const level = trackedBySlug.get(route.slug)?.intelligenceLevel;
       if (level === 'strong' || level === 'useful' || level === 'expanding') counts[level]++;
     }
-    expect(counts).toEqual({ strong: 10, useful: 78, expanding: 0 });
+    expect(counts).toEqual({ strong: 11, useful: 77, expanding: 0 });
+  });
+
+  it('confirms london-heathrow-lahore specifically is the route that moved — no other route\'s grade changed in this batch', () => {
+    expect(trackedBySlug.get('london-heathrow-lahore')?.intelligenceLevel).toBe('strong');
   });
 });
 

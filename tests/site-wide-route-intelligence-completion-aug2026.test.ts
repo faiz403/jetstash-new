@@ -140,19 +140,19 @@ describe('Surface 3 — every individual route page shows its own Route Intellig
   });
 });
 
-describe('Sanity — the real, complete distribution is identical across all three surfaces and the Atlas (10 Strong / 78 Useful / 0 Expanding, updated 18 August 2026 when Route Verification Refresh Batch 1\'s correction reverted london-gatwick-ahmedabad from Strong to Useful)', () => {
+describe('Sanity — the real, complete distribution is identical across all three surfaces and the Atlas (11 Strong / 77 Useful / 0 Expanding, updated 22 August 2026 when Business Fare Evidence Batch 1 promoted london-heathrow-lahore Useful→Strong — see tests/atlas-route-intelligence-completion-aug2026.test.ts for the full reasoning; previously 10 Strong / 78 Useful, 18 August 2026, when Route Verification Refresh Batch 1\'s correction reverted london-gatwick-ahmedabad from Strong to Useful)', () => {
   it('matches on /routes', () => {
     const countryGroups = buildRouteCountryGroups(routes, NOW_ISO, routeStatusEvents);
     const counts = { strong: 0, useful: 0, expanding: 0 };
     for (const group of countryGroups) {
       for (const card of group.routes) counts[card.intelligence.level]++;
     }
-    expect(counts).toEqual({ strong: 10, useful: 78, expanding: 0 });
+    expect(counts).toEqual({ strong: 11, useful: 77, expanding: 0 });
   });
 
   it('matches via computeRouteIntelligenceLevel() directly (the shared source of truth every surface calls)', () => {
     const counts = { strong: 0, useful: 0, expanding: 0 };
     for (const route of routes) counts[computeRouteIntelligenceLevel(route, NOW_ISO)]++;
-    expect(counts).toEqual({ strong: 10, useful: 78, expanding: 0 });
+    expect(counts).toEqual({ strong: 11, useful: 77, expanding: 0 });
   });
 });

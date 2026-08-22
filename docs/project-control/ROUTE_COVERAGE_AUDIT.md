@@ -1265,3 +1265,30 @@ connecting-vs-connecting journey comparison shipped (`routeServiceFareMismatch()
 `components/route/fare-signal.tsx`), letting Birmingham-Delhi's held fare evidence publish safely —
 its 13 August observation was unsuppressed and a fresh 22 August observation was added. The live,
 current figure is now **83 of 88** routes with a display-ready Fare Signal.
+
+**Updated 22 August 2026 (Business Fare Evidence Batch 1)**: genuine, current, publishable
+Business-cabin fare observations were logged for `manchester-lahore`, `london-heathrow-lahore`,
+`london-heathrow-doha` and `manchester-karachi` — fare evidence only, no SEO/Deal/Trip.com/route
+change (see `data/fare-observations.ts`'s "Business Fare Evidence Batch 1" block for the full
+locked-methodology provenance). One route's Route Intelligence grade moves mechanically as a
+consequence: `london-heathrow-lahore` is the one route in the network whose only curated `Deal` is
+Business-cabin (no Economy `Deal` exists for it), so Gate 3's visible-fare check depended entirely
+on that cabin, which had no publishable observation before this batch — clearing it flips the route
+from Useful to Strong, confirmed by running the real `computeRouteIntelligenceLevel()` before and
+after this batch's data change, not asserted from the model alone:
+
+| Route slug | Grade | Why |
+|---|---|---|
+| `london-heathrow-lahore` | Strong | Business Fare Evidence Batch 1 gave its only curated Deal (Business-cabin) its first publishable fare observation, clearing Gate 3 (visible-content baseline) — the route already cleared Gates 1 and 2 via its existing airline-verification and fare-depth categories. |
+
+The other three routes this batch evidenced (`manchester-lahore`, `london-heathrow-doha`,
+`manchester-karachi`) were already Strong or Useful for reasons independent of Business-cabin
+evidence (each has its own Economy `Deal` already carrying a visible fare, or — for
+`manchester-karachi` — remains gated below Strong by its connecting-route Gate 3 requirement,
+unrelated to cabin), so none of the three changes grade. **No manual override anywhere** — the one
+upgrade above is a mechanical consequence of the same unchanged function running against real, dated
+evidence, the same pattern established by the 6 August 2026 Fare Coverage Expansion Batch B addendum.
+The live, current Route Intelligence distribution is now **11 Strong / 77 Useful / 0 Expanding**
+(previously 10 Strong / 78 Useful, 18 August 2026 — see above). The live, current fare-tracking
+figure remains **83 of 88** routes with a display-ready Fare Signal — this batch adds a second
+tracked cabin to four already-tracked routes, not a new route.

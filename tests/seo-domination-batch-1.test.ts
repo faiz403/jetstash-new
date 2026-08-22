@@ -44,10 +44,17 @@ describe('Business Class Lahore/Doha SEO push: considered and dropped, evidence 
     }
   });
 
-  it('confirms the real reason: the only Business-cabin observation on each route (where one exists) is not publicly publishable, or none exists at all', () => {
-    // london-heathrow-lahore has zero Business observations logged at all;
-    // manchester-lahore and london-heathrow-doha each have exactly one,
-    // both legacy records missing departureDate/returnDate/currency.
+  it('at the time this decision was made (22 Aug 2026), the only Business-cabin observation on each route (where one existed) was not publicly publishable, or none existed at all', () => {
+    // london-heathrow-lahore had zero Business observations logged at all;
+    // manchester-lahore and london-heathrow-doha each had exactly one,
+    // both legacy records missing departureDate/returnDate/currency. Business
+    // Fare Evidence Batch 1 (same day, later) closed this evidence gap for
+    // all three routes with genuine, current, publishable observations —
+    // see data/fare-observations.ts's "Business Fare Evidence Batch 1"
+    // block — but that batch was fare-evidence-only and deliberately did
+    // not re-open the SEO decision this file documents, so the historical
+    // record below (why the legacy Business observations specifically
+    // could never have supported the original titles) still stands.
     const legacyBusinessObs = ['obs-man-lhe-business-1', 'obs-lhr-doh-business-1'];
     for (const id of legacyBusinessObs) {
       const obs = fareObservations.find((o) => o.id === id)!;
@@ -55,7 +62,15 @@ describe('Business Class Lahore/Doha SEO push: considered and dropped, evidence 
       expect(obs.cabin, id).toBe('Business');
       expect(isPubliclyPublishable(obs), id).toBe(false);
     }
-    expect(fareObservations.some((o) => o.routeSlug === 'london-heathrow-lahore' && o.cabin === 'Business')).toBe(false);
+  });
+
+  it('Business Fare Evidence Batch 1 (22 Aug 2026) closed the evidence gap for all three routes, but the plain-default SEO title/description above was deliberately left unchanged — evidence and SEO readiness remain separate decisions', () => {
+    for (const slug of formerTargets) {
+      expect(fareObservations.some((o) => o.routeSlug === slug && o.cabin === 'Business' && isPubliclyPublishable(o)), slug).toBe(true);
+      const route = getRouteBySlug(slug)!;
+      const presentation = getRoutePresentation(route, NOW_ISO);
+      expect(presentation.metadataTitle, slug).not.toContain('Business Class');
+    }
   });
 });
 
@@ -114,7 +129,11 @@ describe('Target 3: Manchester-Mumbai route-status recheck before optimising "di
 });
 
 describe('Deliberately not implemented: Karachi', () => {
-  it('manchester-karachi has no Business-cabin evidence logged yet', () => {
-    expect(fareObservations.some((o) => o.routeSlug === 'manchester-karachi' && o.cabin === 'Business')).toBe(false);
+  it('at the time of this decision (22 Aug 2026), manchester-karachi had no Business-cabin evidence logged yet — Business Fare Evidence Batch 1 (same day, later) closed that gap, but this batch never revisited a Karachi Business SEO decision', () => {
+    // Confirmed no such evidence existed before this SEO audit's own cutoff:
+    // no Business observation on this route predates Business Fare Evidence
+    // Batch 1's own 22 Aug 2026 entry.
+    const businessObs = fareObservations.filter((o) => o.routeSlug === 'manchester-karachi' && o.cabin === 'Business');
+    expect(businessObs.every((o) => o.id === 'obs-man-khi-business-20260822-8w-v1')).toBe(true);
   });
 });

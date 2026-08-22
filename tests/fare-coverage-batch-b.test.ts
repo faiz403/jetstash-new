@@ -125,10 +125,16 @@ describe('Fare Coverage Expansion Batch B — publishability and customer visibi
     // (no exact LBA-ISB itinerary found), so its lone Batch B observation
     // stands alone; every other route below got a genuine second one.
     const stillJustOne = ['leeds-bradford-islamabad'];
+    // london-heathrow-doha gained a third publishable observation on 22
+    // August 2026 (Business Fare Evidence Batch 1) — getPublishableObservationsByRoute()
+    // counts across every cabin, not just Economy, so this route's own
+    // count is a genuine exception to the "two" default below.
+    const threeAfterBusinessBatch = ['london-heathrow-doha'];
     for (const slug of NEW_ROUTES) {
       if (REVERTED_TO_USEFUL_18_AUG.includes(slug)) continue; // see below
       const publishable = getPublishableObservationsByRoute(slug, NOW_ISO);
-      expect(publishable.length, slug).toBe(stillJustOne.includes(slug) ? 1 : 2);
+      const expected = stillJustOne.includes(slug) ? 1 : threeAfterBusinessBatch.includes(slug) ? 3 : 2;
+      expect(publishable.length, slug).toBe(expected);
     }
   });
 
