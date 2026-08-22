@@ -221,22 +221,26 @@ describe('no evidence or trust wording was accidentally lost — full 88-route s
       else if (presentation.status === 'connecting' && fareDirectness === 'connecting') connectingConnectingFare += 1;
       else if (presentation.status === 'connecting' && fareDirectness === 'direct') connectingDirectFare += 1;
     }
-    // noFare 1 -> 5 -> 1, unverified 9 -> 5 (COV-001, 21 August 2026, then
-    // Fare Coverage Batch 1, 22 August 2026): COV-001 moved four routes
-    // (manchester-karachi, birmingham-lahore, birmingham-islamabad,
-    // birmingham-delhi) from unverified to verified-connecting with their
-    // pre-existing fares still suppressed, pushing noFare 1->5. Batch 1
-    // then gave leeds-bradford-bodrum (the original 1) plus three of those
-    // four COV-001 routes a fresh, publishable observation each, dropping
-    // noFare back to 1 (only birmingham-delhi remains, held pending a
-    // separate presentation decision) and moving directDirectFare 12->13
-    // (leeds-bradford-bodrum) and connectingConnectingFare 10->13 (the
-    // three PIA-route rechecks).
+    // noFare 1 -> 5 -> 1 -> 0, unverified 9 -> 5 (COV-001, 21 August 2026,
+    // then Fare Coverage Batch 1 and Connecting Journey Structure + BHX-DEL
+    // unlock, both 22 August 2026): COV-001 moved four routes (manchester-
+    // karachi, birmingham-lahore, birmingham-islamabad, birmingham-delhi)
+    // from unverified to verified-connecting with their pre-existing fares
+    // still suppressed, pushing noFare 1->5. Batch 1 then gave leeds-
+    // bradford-bodrum (the original 1) plus three of those four COV-001
+    // routes a fresh, publishable observation each, dropping noFare back to
+    // 1 (only birmingham-delhi remained, held pending a separate
+    // presentation decision) and moving directDirectFare 12->13 (leeds-
+    // bradford-bodrum) and connectingConnectingFare 10->13 (the three
+    // PIA-route rechecks). Connecting Journey Structure + BHX-DEL unlock
+    // then unsuppressed birmingham-delhi's 13 August observation and added
+    // a fresh 22 August one, dropping noFare to 0 and moving
+    // connectingConnectingFare 13->14.
     expect(directConnectingFare).toBe(56);
     expect(directDirectFare).toBe(13);
-    expect(connectingConnectingFare).toBe(13);
+    expect(connectingConnectingFare).toBe(14);
     expect(connectingDirectFare).toBe(0);
-    expect(noFare).toBe(1);
+    expect(noFare).toBe(0);
     expect(unverified).toBe(5);
   });
 });

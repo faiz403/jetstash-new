@@ -277,7 +277,12 @@ export default async function RoutePage({ params }: { params: Promise<{ slug: st
               (never re-derived), passed through so FareSignal can name the
               route's own verified service when it differs from the tracked
               fare's itinerary — see components/route/fare-signal.tsx's
-              RouteVsFareCallout doc comment. */}
+              RouteVsFareCallout doc comment. routeServiceConnections (added
+              22 Aug 2026, Connecting Journey Structure) is route.ts's own
+              structured field, passed straight through with no
+              re-derivation — undefined for almost every route, which is
+              exactly when the new routeServiceFareMismatch() comparison
+              must stay silent. */}
           <FareSignal
             signal={fareSignal}
             tripComUrl={tripComUrl}
@@ -285,6 +290,7 @@ export default async function RoutePage({ params }: { params: Promise<{ slug: st
             routeDirectness={presentation.status === 'direct' || presentation.status === 'connecting' ? presentation.status : null}
             routeStatusLabel={presentation.status === 'direct' || presentation.status === 'connecting' ? presentation.statusLabel : null}
             routeAirlineLabel={presentationAirlines.length > 0 ? presentationAirlines.map((a) => a.name).join(', ') : null}
+            routeServiceConnections={route.routeServiceConnections ?? null}
           />
         </div>
       </section>

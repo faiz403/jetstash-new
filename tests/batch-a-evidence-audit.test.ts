@@ -122,6 +122,11 @@ describe('Route-level Fare Signal coverage and curated Deal-card coverage remain
     'leeds-bradford-bodrum',
     'birmingham-lahore',
     'birmingham-islamabad',
+    // Connecting Journey Structure + BHX-DEL unlock (22 August 2026):
+    // birmingham-delhi gained a fresh publishable observation but has no
+    // curated Economy Deal card (only lhr-del-economy and man-del-economy
+    // exist for Delhi).
+    'birmingham-delhi',
     'london-heathrow-jeddah',
     'manchester-istanbul',
     'manchester-antalya',
@@ -179,7 +184,9 @@ describe('Route-level Fare Signal coverage and curated Deal-card coverage remain
     // observation out of isObservationPublishable() — see ROUTE_VERIFICATION_CADENCE_POLICY.md.
     // 78→82 on 22 August 2026 (Fare Coverage Batch 1) — see
     // tests/fare-coverage-batch-3.test.ts's identical update.
-    expect(trackedRoutes.length).toBe(82);
+    // 82→83 on 22 August 2026 (Connecting Journey Structure + BHX-DEL
+    // unlock): birmingham-delhi gained a fresh publishable observation.
+    expect(trackedRoutes.length).toBe(83);
     for (const route of trackedRoutes) {
       const matchingDeal = deals.find(
         (d) => d.fromAirportSlug === route.airportSlug && d.toDestinationSlug === route.destinationSlug && d.cabin === 'Economy' && !isBundledProductDeal(d)
@@ -190,7 +197,7 @@ describe('Route-level Fare Signal coverage and curated Deal-card coverage remain
         expect(matchingDeal, `${route.slug} should have a curated Economy card`).toBeDefined();
       }
     }
-    expect(fareSignalOnlyRoutes.size).toBe(51);
+    expect(fareSignalOnlyRoutes.size).toBe(52);
   });
 
   it('none of the 7 newly added Deal entries ever shows an unsupported "Direct flight" badge', () => {

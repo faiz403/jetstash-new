@@ -22,7 +22,13 @@ const BATCH_2: Record<string, { id: string; price: number; directness: 'direct' 
   'glasgow-antalya': { id: 'obs-gla-ayt-economy-20260813-8w-v1', price: 608, directness: 'connecting', baggage: 'not stated' },
 };
 
-const VERIFICATION_PENDING_BATCH_2 = ['birmingham-delhi', 'birmingham-ahmedabad'];
+// birmingham-delhi was verification-pending as of this batch (13 August
+// 2026) and stayed that way through Fare Coverage Batch 1B's exclusion —
+// until Connecting Journey Structure + BHX-DEL unlock (22 August 2026)
+// unsuppressed its 13 August observation and appended a fresh 22 August
+// one, so it no longer belongs in this "stays excluded" list. See the
+// dedicated assertion for it below the main loop.
+const VERIFICATION_PENDING_BATCH_2 = ['birmingham-ahmedabad'];
 
 describe('Fare Coverage Programme Batch 2', () => {
   it('records the twelve selected observations plus two approved replacements under the locked profile', () => {
@@ -52,7 +58,7 @@ describe('Fare Coverage Programme Batch 2', () => {
   });
 
   it('renders twelve eligible Batch 2 replacements while keeping verification-pending routes excluded', () => {
-    for (const routeSlug of Object.keys(BATCH_2).filter((slug) => !VERIFICATION_PENDING_BATCH_2.includes(slug))) {
+    for (const routeSlug of Object.keys(BATCH_2).filter((slug) => !VERIFICATION_PENDING_BATCH_2.includes(slug) && slug !== 'birmingham-delhi')) {
       // 18 August 2026: Weekly Full Fare Refresh #1 appended a second
       // genuine, publishable observation for each of these twelve routes.
       expect(getPublishableObservationsByRoute(routeSlug, NOW_ISO), routeSlug).toHaveLength(2);
@@ -61,6 +67,14 @@ describe('Fare Coverage Programme Batch 2', () => {
     for (const routeSlug of VERIFICATION_PENDING_BATCH_2) {
       expect(getPublishableObservationsByRoute(routeSlug, NOW_ISO), routeSlug).toHaveLength(0);
     }
+    // birmingham-delhi: also 2 publishable observations at this date, but
+    // for a different reason than the other twelve — its 18 August refresh
+    // (obs-bhx-del-economy-20260818-8w-v1) stays methodology-excluded, so
+    // the 2 here are the 13 August observation (unsuppressed by Connecting
+    // Journey Structure + BHX-DEL unlock) and the fresh 22 August one
+    // (isObservationPublishable doesn't gate on observedDate vs nowIso, so
+    // the later-dated 22 August record counts here too).
+    expect(getPublishableObservationsByRoute('birmingham-delhi', NOW_ISO)).toHaveLength(2);
     // Batch 2's own public/non-public boundary must remain true even as later
     // controlled observation batches legitimately expand total coverage.
   });

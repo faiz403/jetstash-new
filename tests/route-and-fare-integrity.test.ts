@@ -383,7 +383,9 @@ describe('FARE-001 pilot — historic examples stay private; only fully dated, e
     // fully-evidenced observations appended (leeds-bradford-bodrum's
     // first-ever fare; fresh rechecks for manchester-karachi,
     // birmingham-lahore, birmingham-islamabad).
-    expect(fareObservations).toHaveLength(210);
+    // 210 -> 211 (Connecting Journey Structure + BHX-DEL unlock, 22 August
+    // 2026): one further fresh observation appended for birmingham-delhi.
+    expect(fareObservations).toHaveLength(211);
   });
 
   it('keeps every historic observation incomplete and private', () => {
@@ -392,8 +394,16 @@ describe('FARE-001 pilot — historic examples stay private; only fully dated, e
     // data/fare-observations.ts) so a route-truth reclassification never
     // silently unlocks a fare as a side effect — not because they became
     // date-incomplete.
+    // 25 -> 24 (Connecting Journey Structure + BHX-DEL unlock, 22 August
+    // 2026): obs-bhx-del-economy-20260813-8w-v1's exclusion was lifted —
+    // it was never itself methodologically deficient (full sourceUrl,
+    // per-leg stop/connection-airport evidence), only held pending the
+    // connecting-vs-connecting presentation decision that PR implements.
+    // obs-bhx-del-economy-20260818-8w-v1 remains excluded (no sourceUrl,
+    // no stop/connection-airport fields — genuinely unprovable itinerary
+    // structure, unchanged).
     const incomplete = fareObservations.filter((o) => !isPubliclyPublishable(o));
-    expect(incomplete).toHaveLength(25);
+    expect(incomplete).toHaveLength(24);
     for (const o of incomplete) {
       expect(isPubliclyPublishable(o), `observation ${o.id}`).toBe(false);
     }
@@ -457,7 +467,12 @@ describe('FARE-001 pilot — historic examples stay private; only fully dated, e
       'obs-bhx-bod-economy-20260813-8w-v1',
       'obs-lba-ayt-economy-20260813-8w-v1',
       'obs-lba-dlm-economy-20260813-8w-v1',
-      // obs-bhx-del-economy-20260813-8w-v1 excluded (COV-001, 21 Aug 2026, methodologyExcludedObservationIds — see data/fare-observations.ts)
+      // obs-bhx-del-economy-20260813-8w-v1 was excluded (COV-001, 21 Aug
+      // 2026, methodologyExcludedObservationIds — see
+      // data/fare-observations.ts), unsuppressed by Connecting Journey
+      // Structure + BHX-DEL unlock (22 Aug 2026) — see this file's own
+      // "keeps every historic observation incomplete and private" test above.
+      'obs-bhx-del-economy-20260813-8w-v1',
       'obs-bhx-amd-economy-20260813-8w-v1',
       'obs-bhx-dxb-economy-20260813-8w-v1',
       'obs-bhx-doh-economy-20260813-8w-v1',
@@ -594,6 +609,7 @@ describe('FARE-001 pilot — historic examples stay private; only fully dated, e
       'obs-man-khi-economy-20260822-8w-v1',
       'obs-bhx-lhe-economy-20260822-8w-v1',
       'obs-bhx-isb-economy-20260822-8w-v1',
+      'obs-bhx-del-economy-20260822-8w-v1',
     ]);
     expect(published).toEqual(expect.arrayContaining([
       expect.objectContaining({
@@ -647,21 +663,36 @@ describe('FARE-001 pilot — historic examples stay private; only fully dated, e
     expect(getFareRangeSummary('london-heathrow-mumbai', 'Economy', FIXED_TODAY)).toMatchObject({ count: 2, min: 424, max: 450 });
   });
 
-  it('keeps all other historic-only routes out of public fare output', () => {
-    // birmingham-mumbai was the original example here - Fare Coverage
-    // Expansion Batch B (6 August 2026, a later, separate initiative) gave
-    // it a genuine, complete observation, so it's no longer historic-only.
-    // Swapped to manchester-karachi, whose only observation
-    // (obs-man-khi-economy-1) remained undated and incomplete — until Fare
-    // Coverage Batch 1 (22 August 2026) gave the route a fresh, complete
-    // observation. Swapped again to birmingham-delhi: its two real
-    // observations are structurally complete (unlike man-khi-economy-1)
-    // but stay excluded via methodologyExcludedObservationIds, pending a
-    // separate connecting-vs-connecting journey presentation decision —
-    // a different mechanism producing the same "no public output" result
-    // this test checks for.
-    expect(getFareRangeSummary('birmingham-delhi', 'Economy', FIXED_TODAY)).toBeNull();
-    expect(getLatestPublishableObservation('birmingham-delhi', FIXED_TODAY)).toBeUndefined();
+  it('keeps every remaining methodology-excluded or structurally-incomplete observation out of public output, even once its own route has other publishable data', () => {
+    // birmingham-mumbai was the original example here — Fare Coverage
+    // Expansion Batch B (6 August 2026) gave it a genuine, complete
+    // observation, so it's no longer historic-only. manchester-karachi and
+    // then birmingham-delhi were the next fixtures in turn, and both later
+    // gained a fresh, complete, publishable observation of their own (Fare
+    // Coverage Batch 1, then Connecting Journey Structure + BHX-DEL unlock,
+    // both 22 August 2026) — by this point no single route in the whole
+    // dataset has ALL its observations unpublishable any more (verified by
+    // a full-dataset scan while implementing this fix). What's still
+    // durably true, and what this test checks directly instead: an
+    // individual observation that is structurally incomplete (an undated
+    // legacy record) or methodology-excluded stays unpublishable on its own
+    // terms, even once its own route has other, separately-evidenced
+    // publishable data.
+    const legacy = fareObservations.find((o) => o.id === 'obs-man-khi-economy-1')!;
+    expect(isPubliclyPublishable(legacy)).toBe(false);
+    expect(legacy.departureDate).toBeUndefined();
+
+    const stillExcluded = [
+      'obs-lgw-ist-economy-20260814-8w-v1',
+      'obs-man-khi-economy-20260818-8w-v1',
+      'obs-bhx-lhe-economy-20260818-8w-v1',
+      'obs-bhx-isb-economy-20260818-8w-v1',
+      'obs-bhx-del-economy-20260818-8w-v1',
+    ];
+    for (const id of stillExcluded) {
+      const o = fareObservations.find((observation) => observation.id === id)!;
+      expect(isPubliclyPublishable(o), id).toBe(false);
+    }
   });
 
   it('keeps every deal without a complete observation untracked', () => {

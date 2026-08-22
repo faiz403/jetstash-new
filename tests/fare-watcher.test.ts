@@ -127,6 +127,47 @@ describe('Fare Watcher / Standout Fares', () => {
     expect(advanceFareWatcherCandidate(candidate, 'request-verification', '2027-01-01').lifecycle).toBe('expired');
   });
 
+  it('excludes a methodology-excluded observation from the baseline even when every other field is otherwise valid and comparable (22 August 2026, Fare Watcher Methodology-Exclusion audit)', () => {
+    const candidate = fixture({ price: 400 });
+    // obs-bhx-del-economy-20260818-8w-v1 is a real id in
+    // data/fare-observations.ts's methodologyExcludedObservationIds --
+    // reused here as a fixture id specifically to prove the gate fires
+    // purely from id membership, independent of every other field being
+    // otherwise fully valid and comparable.
+    const excludedButOtherwiseValid = fixture({
+      id: 'obs-bhx-del-economy-20260818-8w-v1',
+      observedDate: '2026-08-01',
+      departureDate: '2026-09-26',
+      returnDate: '2026-10-10',
+      price: 300,
+    });
+    const result = qualifyFareWatcherObservation(candidate, [candidate, excludedButOtherwiseValid], '2026-08-11');
+    expect(result.baselineSampleSize).toBe(0);
+    expect(result.exclusions).toContainEqual({ observationId: 'obs-bhx-del-economy-20260818-8w-v1', reason: 'methodology-excluded' });
+  });
+
+  it('a methodology-excluded observation can never itself become a candidate either, even if every other field would otherwise qualify it', () => {
+    const excludedCandidate = fixture({ id: 'obs-bhx-del-economy-20260818-8w-v1', price: 400 });
+    const result = qualifyFareWatcherObservation(excludedCandidate, [excludedCandidate], '2026-08-11');
+    expect(result.qualification).toBe('insufficient-baseline');
+    expect(result.evidenceLimits[0]).toContain('methodology-excluded');
+  });
+
+  it('real archive: birmingham-delhi\'s excluded 18 August observation no longer counts toward the 22 August observation\'s baseline', () => {
+    const obs22 = fareObservations.find((observation) => observation.id === 'obs-bhx-del-economy-20260822-8w-v1')!;
+    const result = qualifyFareWatcherObservation(obs22, fareObservations, '2026-08-22');
+    expect(result.comparableBaseline.map((observation) => observation.id)).toEqual(['obs-bhx-del-economy-20260813-8w-v1']);
+    expect(result.exclusions).toContainEqual({ observationId: 'obs-bhx-del-economy-20260818-8w-v1', reason: 'methodology-excluded' });
+  });
+
+  it('real archive: birmingham-lahore\'s excluded 18 August observation (a PR #163 route) no longer counts toward the 22 August observation\'s baseline either', () => {
+    const obs22 = fareObservations.find((observation) => observation.id === 'obs-bhx-lhe-economy-20260822-8w-v1')!;
+    const result = qualifyFareWatcherObservation(obs22, fareObservations, '2026-08-22');
+    expect(result.comparableBaseline).toEqual([]);
+    expect(result.baselineSampleSize).toBe(0);
+    expect(result.exclusions).toContainEqual({ observationId: 'obs-bhx-lhe-economy-20260818-8w-v1', reason: 'methodology-excluded' });
+  });
+
   it('never emits public market-wide language or an automatic approval', () => {
     const candidate = generateFareWatcherCandidates([
       fixture({ id: 'candidate', routeSlug: 'manchester-lahore', price: 400 }),

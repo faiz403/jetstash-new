@@ -80,13 +80,14 @@ describe('3. appears on the two intended Fare Signal → Trip.com handoff surfac
 
   it('route-page Fare Signal: does NOT render the note when the signal state is "none" (no dated observation to clarify)', () => {
     // leeds-bradford-bodrum was this fixture until Fare Coverage Batch 1
-    // (22 August 2026) gave it its first-ever fare; swapped to
-    // birmingham-delhi, whose two real observations stay deliberately
-    // excluded pending a separate connecting-vs-connecting journey
-    // presentation decision.
-    const signal = getFareSignalForRoute('birmingham-delhi', nowIso);
+    // (22 August 2026) gave it its first-ever fare. birmingham-delhi was
+    // the next fixture, until Connecting Journey Structure + BHX-DEL
+    // unlock (22 August 2026) unsuppressed its 13 August observation and
+    // appended a fresh 22 August one. Swapped to birmingham-ahmedabad, one
+    // of the five routes still genuinely verification-blocked (unverified).
+    const signal = getFareSignalForRoute('birmingham-ahmedabad', nowIso);
     expect(signal.state).toBe('none');
-    const html = renderToStaticMarkup(FareSignal({ signal, tripComUrl: null, routeSlug: 'birmingham-delhi' }));
+    const html = renderToStaticMarkup(FareSignal({ signal, tripComUrl: null, routeSlug: 'birmingham-ahmedabad' }));
     expect(html).not.toContain(TRIPCOM_FRESH_SEARCH_NOTE);
   });
 
@@ -130,18 +131,22 @@ describe('5. resolver, URLs and handoff state are untouched', () => {
     expect(getTripComFlightHandoffUrl('manchester-barcelona', 'manchester', 'barcelona')).toContain('MAN-BCN');
   });
 
-  it('updated 22 August 2026 (Fare Coverage Batch 1): 82 total, 60 with a verified handoff, 22 unavailable', () => {
+  it('updated 22 August 2026 (Connecting Journey Structure + BHX-DEL unlock): 83 total, 61 with a verified handoff, 22 unavailable', () => {
     // Was 78/56/22 as of 18 August 2026 (PR #141). Fare Coverage Batch 1
     // added four routes' first current Fare Signal (leeds-bradford-bodrum,
     // manchester-karachi, birmingham-lahore, birmingham-islamabad) — all
     // four already had a working Trip.com handoff before this batch, which
-    // didn't touch Trip.com/affiliate logic at all, so the +4 total lands
-    // entirely on the with-handoff count (56->60) and the no-handoff count
-    // (22) is unchanged.
+    // didn't touch Trip.com/affiliate logic at all, so the +4 total landed
+    // entirely on the with-handoff count (56->60), no-handoff count (22)
+    // unchanged (82/60/22). Connecting Journey Structure + BHX-DEL unlock
+    // (same day) then gave birmingham-delhi its own first current Fare
+    // Signal too — it already had a working Trip.com handoff, so this +1
+    // also lands entirely on the with-handoff count (83/61/22). Neither
+    // change touched Trip.com/affiliate logic itself.
     const groups = buildTrackedFareAirportGroups(routes, undefined, nowIso);
     const entries = groups.flatMap((g) => g.entries);
-    expect(entries).toHaveLength(82);
-    expect(entries.filter((e) => e.tripComUrl !== null)).toHaveLength(60);
+    expect(entries).toHaveLength(83);
+    expect(entries.filter((e) => e.tripComUrl !== null)).toHaveLength(61);
     expect(entries.filter((e) => e.tripComUrl === null)).toHaveLength(22);
   });
 });

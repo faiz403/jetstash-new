@@ -1255,7 +1255,13 @@ mechanical consequence of one route's evidence state changing, not a re-audit of
 **Updated 22 August 2026 (Fare Coverage Batch 1)**: Leeds Bradford-Bodrum, Manchester-Karachi,
 Birmingham-Lahore and Birmingham-Islamabad each gained a genuine, fully-evidenced dated observation
 (the first three had none logged for their route at all; the latter three's routes were also newly
-reclassified verified-connecting by COV-001 on 21 August). The live, current figure is now
-**82 of 88** routes with a display-ready Fare Signal. This is again a live, mechanical consequence
+reclassified verified-connecting by COV-001 on 21 August). The live, current figure was then
+82 of 88 routes with a display-ready Fare Signal. This is again a live, mechanical consequence
 of real evidence being added — not a re-audit of the Route Intelligence Scoring breakdown above,
 which this pass did not touch.
+
+**Updated 22 August 2026 (Connecting Journey Structure + BHX-DEL unlock)**: a fail-closed
+connecting-vs-connecting journey comparison shipped (`routeServiceFareMismatch()`,
+`components/route/fare-signal.tsx`), letting Birmingham-Delhi's held fare evidence publish safely —
+its 13 August observation was unsuppressed and a fresh 22 August observation was added. The live,
+current figure is now **83 of 88** routes with a display-ready Fare Signal.

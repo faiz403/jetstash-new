@@ -44,18 +44,23 @@ describe('destination flight guides', () => {
     // August 2026) then gave it a fresh, genuinely publishable observation
     // — it now legitimately shows fareSignal.state 'current', so it can no
     // longer prove the "route evidence is pair-specific, fare stays
-    // suppressed" case. Swapped to Delhi: birmingham-delhi is verified-
-    // connecting (also COV-001) with its two real observations still
-    // deliberately excluded pending a separate presentation decision, and
-    // manchester-delhi is a genuinely direct, current-fare sibling on the
-    // same destination.
-    const delhi = getDestinationFlightGuideEntries(getDestinationBySlug('delhi')!, NOW_ISO);
-    const manchester = delhi.find((entry) => entry.routeSlug === 'manchester-delhi')!;
-    const birmingham = delhi.find((entry) => entry.routeSlug === 'birmingham-delhi')!;
+    // suppressed" case. Swapped to Delhi (birmingham-delhi vs manchester-
+    // delhi), then swapped again once Connecting Journey Structure +
+    // BHX-DEL unlock (22 August 2026) gave birmingham-delhi its own
+    // publishable observation too. Swapped to Ahmedabad: manchester-
+    // ahmedabad is verified-connecting with a current fare, and birmingham-
+    // ahmedabad remains genuinely unverified (one of the five routes still
+    // verification-blocked site-wide) with no fare surfacing — a different
+    // reason for divergence (route verification, not evidence exclusion),
+    // but the same property under test: two routes sharing a destination
+    // resolve independently, never conflated.
+    const ahmedabad = getDestinationFlightGuideEntries(getDestinationBySlug('ahmedabad')!, NOW_ISO);
+    const manchester = ahmedabad.find((entry) => entry.routeSlug === 'manchester-ahmedabad')!;
+    const birmingham = ahmedabad.find((entry) => entry.routeSlug === 'birmingham-ahmedabad')!;
 
-    expect(manchester.routeStatus).toBe('direct');
+    expect(manchester.routeStatus).toBe('connecting');
     expect(manchester.fareSignal?.state).toBe('current');
-    expect(birmingham.routeStatus).toBe('connecting');
+    expect(birmingham.routeStatus).toBe('unverified');
     expect(birmingham.fareSignal?.state).toBe('none');
   });
 

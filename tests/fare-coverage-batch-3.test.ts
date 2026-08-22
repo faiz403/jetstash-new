@@ -72,8 +72,13 @@ describe('Fare Coverage Programme Batch 3', () => {
     // (Fare Coverage Batch 1): four routes each gained a fresh, evidenced
     // observation (leeds-bradford-bodrum's first-ever fare; fresh rechecks
     // for manchester-karachi, birmingham-lahore, birmingham-islamabad
-    // following COV-001's 21 August reclassification).
-    expect(current).toHaveLength(82);
+    // following COV-001's 21 August reclassification). 82→83, same day
+    // (Connecting Journey Structure + BHX-DEL unlock): birmingham-delhi's
+    // 13 August observation was unsuppressed and a fresh 22 August one
+    // appended — isObservationPublishable() doesn't gate on observedDate
+    // vs nowIso, so both already count as publishable at this file's own
+    // NOW_ISO (13 August).
+    expect(current).toHaveLength(83);
     for (const route of current) {
       const signal = getFareSignalForRoute(route.slug, NOW_ISO);
       expect(signal.state, route.slug).toBe('current');

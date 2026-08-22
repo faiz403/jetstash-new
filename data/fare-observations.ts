@@ -133,6 +133,23 @@ export function isPubliclyPublishable(o: FareObservation): boolean {
 }
 
 /**
+ * Whether this observation id is in the methodology-exclusion list —
+ * exported so other derivation layers that must never let an
+ * evidence-insufficient record silently influence anything can respect the
+ * same gate without duplicating or re-importing the list itself (added 22
+ * August 2026, Fare Watcher Methodology-Exclusion audit: lib/fare-watcher.ts's
+ * comparable-baseline gate had never checked this list at all — an
+ * observation excluded here because its retained itinerary evidence is
+ * insufficient to confirm ticketing structure was nonetheless silently
+ * counted as a Fare Watcher baseline point, e.g.
+ * obs-bhx-del-economy-20260818-8w-v1 and the equivalent 18 August records
+ * on birmingham-lahore, birmingham-islamabad and manchester-karachi).
+ */
+export function isMethodologyExcluded(observationId: string): boolean {
+  return methodologyExcludedObservationIds.has(observationId);
+}
+
+/**
  * Genuine archive records that fail a later methodology check remain preserved but are excluded
  * from public surfaces.
  *
@@ -152,7 +169,15 @@ const methodologyExcludedObservationIds = new Set([
   'obs-bhx-lhe-economy-20260818-8w-v1',
   'obs-bhx-isb-economy-20260818-8w-v1',
   'obs-bhx-del-economy-20260818-8w-v1',
-  'obs-bhx-del-economy-20260813-8w-v1',
+  // obs-bhx-del-economy-20260813-8w-v1 removed (22 Aug 2026, Connecting
+  // Journey Structure): this record was never itself methodologically
+  // deficient — it has a full sourceUrl and per-leg stop/connection-airport
+  // evidence (FRA both ways). It was excluded pending a decision on how the
+  // route page distinguishes Birmingham-Delhi's own verified connecting
+  // service from a differently-routed tracked fare; that decision is now
+  // implemented (routeServiceFareMismatch(), components/route/fare-signal.tsx),
+  // so this record becomes a valid historical/comparable observation again.
+  // The record's own fields are unchanged — only its exclusion is lifted.
 ]);
 
 /**
@@ -521,14 +546,44 @@ export const fareObservations: FareObservation[] = [
   // routes remain in the archive, excluded via methodologyExcludedObservationIds
   // (insufficient retained itinerary evidence to confirm ticketing
   // structure, not because of any specific carrier named in them).
-  // Birmingham-Delhi was not appended here — held pending a separate
-  // decision on how the route page distinguishes a connecting-via-Amritsar
-  // route service from a connecting-via-a-different-city tracked fare.
+  // Birmingham-Delhi's fresh 22 August observation is appended separately
+  // below, under Connecting Journey Structure — it was held out of this
+  // block originally, pending a decision on how the route page
+  // distinguishes a connecting-via-Amritsar route service from a
+  // connecting-via-a-different-city tracked fare. That decision has now
+  // shipped (routeServiceFareMismatch(), components/route/fare-signal.tsx).
   // ============================================================
   { id: 'obs-lba-bjv-economy-20260822-8w-v1', routeSlug: 'leeds-bradford-bodrum', cabin: 'Economy', observedDate: '2026-08-22', price: 614, priceNote: "return, per person, one adult; Jet2; outbound LBA-BJV nonstop 4h15m (4:55pm-11:10pm); return BJV-LBA nonstop 4h25m (11:55pm-1:20am+1); single carrier, single booking, no self-transfer or separate-ticket notice shown; baggage not stated. Search dates are one day later than the standard 8-week horizon (18 October instead of 17 October) because the standard date had no scheduled service on Google Flights; the 14-night stay length is unchanged.", source: "Jet2", observedVia: 'google-flights', sourceUrl: 'https://www.google.com/travel/flights?q=Flights%20from%20Leeds%20Bradford%20to%20Bodrum%20October%2018%202026%20return%20November%201%202026&curr=GBP&hl=en&gl=GB', currency: 'GBP', baggage: "not stated", profileId: 'leeds-bradford-bodrum-economy-1adult-baseline-v1', observationReason: 'routine-weekly', comparisonEligibility: 'current', departureDate: '2026-10-18', returnDate: '2026-11-01', fareDirectness: 'direct', outboundDirectness: 'direct', returnDirectness: 'direct', outboundJourneyMinutes: 255, returnJourneyMinutes: 265 },
   { id: 'obs-man-khi-economy-20260822-8w-v1', routeSlug: 'manchester-karachi', cabin: 'Economy', observedDate: '2026-08-22', price: 539, priceNote: "return, per person, one adult; Pegasus (flights PC1180/PC130 outbound, same carrier both ways); outbound MAN-SAW-KHI 11h30m (11:55am-3:25am+1) via Istanbul Sabiha Gökçen, 2h layover; return KHI-SAW-MAN 13h (5:10am-1:10pm) via Sabiha Gökçen, 2h20m layover; single ticket, no self-transfer notice; Google Flights states this fare does not include overhead bin access; baggage not stated.", source: "Pegasus", observedVia: 'google-flights', sourceUrl: 'https://www.google.com/travel/flights?q=Flights%20from%20Manchester%20to%20Karachi%20October%2017%202026%20return%20October%2031%202026&curr=GBP&hl=en&gl=GB', currency: 'GBP', baggage: "not stated", profileId: 'manchester-karachi-economy-1adult-baseline-v1', observationReason: 'route-status-recheck', comparisonEligibility: 'current', departureDate: '2026-10-17', returnDate: '2026-10-31', fareDirectness: 'connecting', outboundDirectness: 'connecting', returnDirectness: 'connecting', outboundStops: 1, returnStops: 1, outboundConnectionAirports: ["Sabiha Gökçen Airport (SAW)"], returnConnectionAirports: ["Sabiha Gökçen Airport (SAW)"], outboundJourneyMinutes: 690, returnJourneyMinutes: 780, outboundLayoverMinutes: [120], returnLayoverMinutes: [140] },
   { id: 'obs-bhx-lhe-economy-20260822-8w-v1', routeSlug: 'birmingham-lahore', cabin: 'Economy', observedDate: '2026-08-22', price: 896, priceNote: "return, per person, one adult; Turkish Airlines (flights TK1968/TK714 outbound, marketed jointly with Pakistan International Airlines but operated on Turkish Airlines metal); outbound BHX-IST-LHE 14h5m (10:00am-4:05am+1) via Istanbul, 4h40m layover; return LHE-IST-BHX 14h50m (6:00am-3:50pm) via Istanbul, 4h10m layover; single ticket, no self-transfer notice; baggage not stated. A same-price (£896) alternative existed with a shorter Istanbul layover; this is the source's first-displayed result at the lowest fare.", source: "Turkish Airlines", observedVia: 'google-flights', sourceUrl: 'https://www.google.com/travel/flights?q=Flights%20from%20Birmingham%20to%20Lahore%20October%2017%202026%20return%20October%2031%202026&curr=GBP&hl=en&gl=GB', currency: 'GBP', baggage: "not stated", profileId: 'birmingham-lahore-economy-1adult-baseline-v1', observationReason: 'route-status-recheck', comparisonEligibility: 'current', departureDate: '2026-10-17', returnDate: '2026-10-31', fareDirectness: 'connecting', outboundDirectness: 'connecting', returnDirectness: 'connecting', outboundStops: 1, returnStops: 1, outboundConnectionAirports: ["Istanbul Airport (IST)"], returnConnectionAirports: ["Istanbul Airport (IST)"], outboundJourneyMinutes: 845, returnJourneyMinutes: 890, outboundLayoverMinutes: [280], returnLayoverMinutes: [250] },
   { id: 'obs-bhx-isb-economy-20260822-8w-v1', routeSlug: 'birmingham-islamabad', cabin: 'Economy', observedDate: '2026-08-22', price: 906, priceNote: "return, per person, one adult; Turkish Airlines (flights TK1970/TK750 outbound); outbound BHX-IST-ISB 10h10m (5:35pm-7:45am+1) via Istanbul, 1h15m layover; return ISB-IST-BHX 14h35m (6:15am-3:50pm) via Istanbul, 4h10m layover; single ticket, no self-transfer notice; baggage not stated.", source: "Turkish Airlines", observedVia: 'google-flights', sourceUrl: 'https://www.google.com/travel/flights?q=Flights%20from%20Birmingham%20to%20Islamabad%20October%2017%202026%20return%20October%2031%202026&curr=GBP&hl=en&gl=GB', currency: 'GBP', baggage: "not stated", profileId: 'birmingham-islamabad-economy-1adult-baseline-v1', observationReason: 'route-status-recheck', comparisonEligibility: 'current', departureDate: '2026-10-17', returnDate: '2026-10-31', fareDirectness: 'connecting', outboundDirectness: 'connecting', returnDirectness: 'connecting', outboundStops: 1, returnStops: 1, outboundConnectionAirports: ["Istanbul Airport (IST)"], returnConnectionAirports: ["Istanbul Airport (IST)"], outboundJourneyMinutes: 610, returnJourneyMinutes: 875, outboundLayoverMinutes: [75], returnLayoverMinutes: [250] },
+  // ============================================================
+  // Connecting Journey Structure + BHX-DEL unlock (22 August 2026) — this
+  // route's own verified service (data/routes.ts routeServiceConnections)
+  // connects via Amritsar (ATQ) outbound; this fresh fare connects via a
+  // different set of cities entirely (Milan Bergamo/Cairo/Jeddah outbound,
+  // Abu Dhabi/Paris/Amsterdam return) — a different connecting journey,
+  // proven by structured evidence rather than asserted from directness
+  // alone. Reuses the route's existing baseline profileId (same series as
+  // the 13 and 18 August 2026 records).
+  //
+  // Founder remediation (22 August 2026): the first version of this record
+  // used a £776 Lufthansa "Best"-tab result while Google's own Cheapest tab
+  // showed £563 for the exact same locked profile. JetStash's standing
+  // selection rule is the lowest total fare displayed for the exact
+  // profile, not the nicest itinerary — a self-transfer/separate-ticket
+  // warning does not by itself disqualify a fare. The £563 itinerary was
+  // independently re-inspected leg by leg (both outbound and return
+  // expanded via Google's own booking flow, not inferred from a summary
+  // badge): BHX and DEL remain the exact, unaltered endpoints on both
+  // legs, the itinerary was genuinely selectable across three independent
+  // booking-option providers (Mytrip, Gotogate, Flightnetwork), and
+  // Google's own itinerary-summary page explicitly labelled it "Lowest
+  // total price" for this search. It qualifies under the locked profile
+  // and replaces the £776 record below (corrected in place, not appended
+  // as a second same-day observation, since PR #164 had not yet merged).
+  // ============================================================
+  { id: 'obs-bhx-del-economy-20260822-8w-v1', routeSlug: 'birmingham-delhi', cabin: 'Economy', observedDate: '2026-08-22', price: 563, priceNote: "return, per person, one adult; self-transfer — no single ticket, 5 independent operating carriers across both legs, each connection must be independently cleared and re-checked; outbound BHX-BGY-CAI-JED-DEL 24h10m via Milan Bergamo (Ryanair), Cairo (Air Arabia Egypt) and Jeddah (Saudia), 3 stops; return DEL-AUH-CDG-AMS-BHX 21h10m via Abu Dhabi (Etihad), Paris CDG (Etihad) and Amsterdam (KLM), 3 stops; Google Flights' own Cheapest tab explicitly labelled this itinerary \"Lowest total price\" for this exact search; genuinely selectable at this price across three independent booking-option providers (Mytrip, Gotogate, Flightnetwork); baggage not stated beyond Ryanair's standard fee schedule shown on the itinerary page.", source: "Ryanair / Air Arabia Egypt / Saudia / Etihad / KLM", observedVia: 'google-flights', sourceUrl: 'https://www.google.com/travel/flights?q=Flights%20from%20Birmingham%20to%20Delhi%20October%2017%202026%20return%20October%2031%202026&curr=GBP&hl=en&gl=GB', currency: 'GBP', baggage: "not stated", profileId: 'birmingham-delhi-economy-1adult-23kg-v1', observationReason: 'route-status-recheck', comparisonEligibility: 'current', departureDate: '2026-10-17', returnDate: '2026-10-31', fareDirectness: 'connecting', outboundDirectness: 'connecting', returnDirectness: 'connecting', outboundStops: 3, returnStops: 3, outboundConnectionAirports: ["Il Caravaggio International Airport (BGY)", "Cairo International Airport (CAI)", "King Abdulaziz International Airport (JED)"], returnConnectionAirports: ["Abu Dhabi International Airport (AUH)", "Paris Charles de Gaulle Airport (CDG)", "Amsterdam Airport Schiphol (AMS)"], outboundJourneyMinutes: 1450, returnJourneyMinutes: 1270 },
 ];
 
 export function getObservationsByRoute(routeSlug: string) {

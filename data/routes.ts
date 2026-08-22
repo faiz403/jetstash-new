@@ -95,6 +95,33 @@ export interface Route {
     typicalAirlines: string[];
     typicalJourneyTime: string;
   };
+  /**
+   * Structured, verified connection airport(s) — IATA codes — for THIS
+   * route's own current connecting service (never for the unrelated
+   * `connectingAlternative` concept above, which describes a typical
+   * fallback for a route that has or had a direct option). Exists so code
+   * can safely compare a route's own verified routing against a tracked
+   * fare observation's own structured `outboundConnectionAirports` /
+   * `returnConnectionAirports` (see `routeServiceFareMismatch()` in
+   * `components/route/fare-signal.tsx`) — never by parsing `flightTime` or
+   * `verification.note` prose, and never inferred from airline identity.
+   *
+   * Optional at both the field level and the outbound/return level.
+   * `undefined` means genuinely unknown/unresearched for that leg — never
+   * populate a guess to fill the gap. A route whose own evidence shows
+   * variable or mixed routing (e.g. manchester-karachi, where COV-001's
+   * live booking-engine search found no single stable hub) MUST leave this
+   * field entirely absent, not populated with one of the observed options.
+   * Populate `outbound` and `return` independently, each only when that
+   * specific direction is itself evidenced — do not backfill the other leg
+   * from a same-flight-number or tag-service assumption unless that
+   * assumption is itself explicitly sourced (state the reasoning in the
+   * route's own comment where this field is set).
+   */
+  routeServiceConnections?: {
+    outbound?: string[];
+    return?: string[];
+  };
 }
 
 export const routes: Route[] = [
@@ -1149,6 +1176,12 @@ export const routes: Route[] = [
       reviewDueDate: '2026-10-05',
       note: 'COV-001 verification-gap audit (21 August 2026): a live Birmingham-Lahore search run directly on PIA\'s own ticketing engine (round trip, 1-15 Sep 2026, the dates sampled) returned 6 fare results, both directions. Every result — 6 of 6 — routed via Istanbul New Airport on a PIA-ticketed connecting itinerary (PK-5968/PK-5970 into PK-5714/PK-5744). No nonstop option appeared, and the via-city was consistent across every sampled result, unlike the mixed pattern found on Manchester-Karachi the same session — Istanbul is recorded here because the evidence supports it as the currently observed routing, not because it is assumed to be permanent. Scope: this is what PIA\'s own live booking results showed for the sampled 1-15 Sep 2026 window on 21 August 2026, and should be re-checked on the normal CONNECTING/STRUCTURAL cadence rather than treated as a one-time settled fact. Supersedes the prior DISPUTED classification: Birmingham Airport\'s absence of Lahore from its own destination directory (Route Verification Refresh Batch 1/2, corroborating but not conclusive on its own) is now explained — there genuinely is no Birmingham-originating PIA flight to Lahore, only a through-ticketed connection via Istanbul.',
     },
+    // routeServiceConnections (22 Aug 2026, Connecting Journey Structure):
+    // both outbound and return evidenced directly — the note above states
+    // "6 fare results, both directions... 6 of 6 routed via Istanbul" from
+    // PIA's own live booking engine, the strongest evidence tier this field
+    // uses.
+    routeServiceConnections: { outbound: ['IST'], return: ['IST'] },
     intro:
       'PIA sells Birmingham to Lahore as a connecting itinerary via Istanbul, not a nonstop flight. A live search on PIA\'s own booking engine (21 August 2026) consistently routed every result through Istanbul New Airport — check the live itinerary for your own dates to confirm the current routing and connection time.',
     bookingWindowNote:
@@ -1171,6 +1204,11 @@ export const routes: Route[] = [
       reviewDueDate: '2026-10-05',
       note: 'COV-001 verification-gap audit (21 August 2026): a live Birmingham-Islamabad search run directly on PIA\'s own ticketing engine (round trip, 1-15 Sep 2026, the dates sampled) returned 6 fare results, both directions. Every result — 6 of 6 — routed via Istanbul New Airport on a PIA-ticketed connecting itinerary (PK-5968/PK-5970 into PK-5710/PK-5711). No nonstop option appeared, and the via-city was consistent across every sampled result. Scope: this is what PIA\'s own live booking results showed for the sampled 1-15 Sep 2026 window on 21 August 2026, and should be re-checked on the normal CONNECTING/STRUCTURAL cadence rather than treated as a one-time settled fact. Supersedes the prior DISPUTED classification: Birmingham Airport\'s absence of Islamabad from its own destination directory (Route Verification Refresh Batch 1/2, corroborating but not conclusive on its own) is now explained — there genuinely is no Birmingham-originating PIA flight to Islamabad, only a through-ticketed connection via Istanbul.',
     },
+    // routeServiceConnections (22 Aug 2026, Connecting Journey Structure):
+    // both outbound and return evidenced directly — same live PIA
+    // booking-engine search as birmingham-lahore, "6 fare results, both
+    // directions... 6 of 6 routed via Istanbul".
+    routeServiceConnections: { outbound: ['IST'], return: ['IST'] },
     intro:
       'PIA sells Birmingham to Islamabad as a connecting itinerary via Istanbul, not a nonstop flight. A live search on PIA\'s own booking engine (21 August 2026) consistently routed every result through Istanbul New Airport — check the live itinerary for your own dates to confirm the current routing and connection time.',
     bookingWindowNote:
@@ -1330,6 +1368,13 @@ export const routes: Route[] = [
       reviewDueDate: '2026-10-02',
       note: 'Route Verification Refresh Batch 1 (18 August 2026): re-checked. Independent Bangladeshi press reporting (BSS News, Dhaka Tribune) corroborates Biman\'s own notice: the Dhaka-Sylhet-Manchester service resumed 1 July 2026 after a four-month suspension (the suspension itself ran roughly February/March-June 2026, i.e. entirely before both the original 30 July check and this refresh — not a new development), operating two weekly flights every Tuesday and Saturday via Sylhet, matching this record\'s existing frequency claim exactly. No suspension or further disruption found since the 1 July resumption. The notice still does not identify aircraft, terminal or transfer arrangements, so none is claimed. This is a connecting, multi-leg service pattern with a documented volatile history — classified CONNECTING / STRUCTURAL. 45-day review window per the locked verification cadence policy (shorter than the 90-day STABLE window, given the route\'s own suspension/relaunch history).',
     },
+    // routeServiceConnections (22 Aug 2026, Connecting Journey Structure):
+    // both legs evidenced by the same single source quoted above — Biman's
+    // own official notice names the rotation itself as "DHAKA-MANCHESTER-
+    // DHAKA (VIA SYLHET)", i.e. a single named stop for both the outbound
+    // and return half of one round-trip service, not two independently
+    // sourced legs. Sylhet's Osmani International Airport IATA code is ZYL.
+    routeServiceConnections: { outbound: ['ZYL'], return: ['ZYL'] },
     intro:
       "Manchester to Dhaka is a connecting journey with one stop via Sylhet, not a nonstop service. Biman Bangladesh Airlines' current official notice says this route resumed from 1 July 2026 and operates every Tuesday and Saturday. The notice does not establish aircraft, terminal or transfer arrangements, and this service has a documented history of suspension and relaunch — confirm the live routing and schedule directly with Biman before booking.",
     bookingWindowNote:
@@ -1979,6 +2024,25 @@ export const routes: Route[] = [
       reviewDueDate: '2026-10-05',
       note: 'COV-001 verification-gap audit (21 August 2026): the two-source conflict identified in Route Verification Refresh Batch 2 (19 August 2026) — Birmingham Airport\'s own page naming Air India as "direct", 7h55m, against Air India\'s own page stating "No direct flights available" — is now reconciled, not merely re-observed. Air India\'s own current page explicitly names the routing: "Last flight from Birmingham airport AI 118 departs at 20:30 (via ATQ)" — AI118 is the same flight number Birmingham Airport\'s own 2019 press release ("Air India Resumes Six Direct Weekly Services to India from Birmingham Airport") already described as a Boeing 787 tag-service running three times weekly to Delhi and onward to Amritsar, and three times weekly to Amritsar and onward to Delhi, on one flight number. Both sources describe the same real service; the apparent conflict was a difference in each source\'s own use of "direct" (Birmingham Airport: single flight number, no aircraft change) versus "nonstop" (Air India\'s own FAQ and structured field: no scheduled stop) — Air India\'s own current schedule confirms the stop is real. Recorded here as connecting via Amritsar because Air India\'s own current page is the source that names the routing explicitly; frequency (three times weekly) is carried over from the 2019 tag-service pattern and is not independently re-verified for the current 2026 schedule, so it is flagged as such rather than stated as freshly confirmed.',
     },
+    // routeServiceConnections (22 Aug 2026, Connecting Journey Structure;
+    // corrected 22 Aug 2026, founder remediation): outbound is Air India's
+    // own current page, directly quoted above ("Last flight from
+    // Birmingham airport AI 118 departs at 20:30 (via ATQ)") — the
+    // strongest evidence tier this field ever uses. `return` is
+    // deliberately left absent: the 2019 Birmingham Airport press release
+    // quoted above ("three times weekly to Delhi and onward to Amritsar,
+    // and three times weekly to Amritsar and onward to Delhi") describes
+    // two alternating weekly patterns of AI118 itself — the single
+    // Birmingham-departing (outbound) flight — not the inbound
+    // (Delhi/Amritsar-to-Birmingham) flight's stop pattern. No primary
+    // source in this route's evidence base says anything about the return
+    // direction, so it stays genuinely unknown per this field's own "never
+    // populate a guess" rule, rather than assuming outbound/return
+    // symmetry. This doesn't weaken the connecting-journey comparison for
+    // this route: the outbound direction alone (ATQ vs. the tracked fare's
+    // BGY/CAI/JED) is already sufficient to prove a different connecting
+    // journey.
+    routeServiceConnections: { outbound: ['ATQ'] },
     intro:
       'Air India\'s Birmingham to Delhi service is a connecting tag-flight via Amritsar, not a nonstop service — Air India\'s own current schedule names AI118 as routing via Amritsar (ATQ) on its way to Delhi, the same pattern Birmingham Airport\'s own 2019 announcement described. Check the live itinerary directly with Air India for your own dates and the current stop pattern before booking.',
     bookingWindowNote:

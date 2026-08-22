@@ -170,16 +170,23 @@ describe('no-fare routes remain truthful', () => {
     // route on the site already had one too — there is no longer a real
     // direct route with zero publishable observations to use here.
     // Swapped to birmingham-delhi (connecting, verified via COV-001): its
-    // two real archived observations stay deliberately excluded pending a
-    // separate presentation decision (Fare Coverage Batch 1B), so it's a
-    // genuine, current state === 'none' example. The property under test —
-    // the 'none' branch renders a completely different JSX block that
-    // never calls routeVsFareMismatch() at all, so no callout can fire
-    // regardless of the route's own directness — holds identically here.
-    const { presentation } = presentationFor('birmingham-delhi');
-    const signal = getFareSignalForRoute('birmingham-delhi', NOW_ISO);
+    // two real archived observations stayed deliberately excluded pending
+    // a separate presentation decision (Fare Coverage Batch 1B) — until
+    // Connecting Journey Structure + BHX-DEL unlock (22 August 2026)
+    // implemented that decision and gave the route a current fare too.
+    // There is now genuinely no route in the dataset with a known
+    // direct/connecting status AND zero publishable observations (verified
+    // by a full-dataset scan while implementing that fix). Swapped to
+    // birmingham-ahmedabad, one of the five still-unverified routes — a
+    // different reason for state === 'none' (route verification, not fare
+    // evidence), but the exact same property under test: the 'none' branch
+    // renders a completely different JSX block that never calls
+    // routeVsFareMismatch() at all, so no callout can fire regardless of
+    // the route's own directness.
+    const { presentation } = presentationFor('birmingham-ahmedabad');
+    const signal = getFareSignalForRoute('birmingham-ahmedabad', NOW_ISO);
     expect(signal.state).toBe('none');
-    const html = renderFareSignalForRoute('birmingham-delhi');
+    const html = renderFareSignalForRoute('birmingham-ahmedabad');
     expect(html).not.toContain('Route service');
     expect(html).toContain('No current fare tracked.');
     void presentation;
@@ -357,21 +364,26 @@ describe('full 88-route dataset safety check (Phase 8)', () => {
       else if (presentation.status === 'connecting' && fareDirectness === 'direct') connectingDirectFare += 1;
     }
 
-    // noFare 1 -> 5 -> 1 (COV-001, 21 August 2026, then Fare Coverage
-    // Batch 1, 22 August 2026): COV-001 moved four routes from unverified
-    // to verified-connecting with their pre-existing fares still
-    // suppressed, pushing noFare 1->5. Batch 1 then gave leeds-bradford-
-    // bodrum (the original 1) plus three of those four COV-001 routes
-    // (manchester-karachi, birmingham-lahore, birmingham-islamabad) a
-    // fresh, publishable observation each, dropping noFare back to 1 — only
-    // birmingham-delhi remains, its two real observations deliberately
-    // held pending a separate connecting-vs-connecting journey
-    // presentation decision. unverified stays 5, untouched by Batch 1.
+    // noFare 1 -> 5 -> 1 -> 0 (COV-001, 21 August 2026, then Fare Coverage
+    // Batch 1 and Connecting Journey Structure + BHX-DEL unlock, both 22
+    // August 2026): COV-001 moved four routes from unverified to verified-
+    // connecting with their pre-existing fares still suppressed, pushing
+    // noFare 1->5. Batch 1 then gave leeds-bradford-bodrum (the original 1)
+    // plus three of those four COV-001 routes (manchester-karachi,
+    // birmingham-lahore, birmingham-islamabad) a fresh, publishable
+    // observation each, dropping noFare back to 1 — only birmingham-delhi
+    // remained, its two real observations deliberately held pending a
+    // separate connecting-vs-connecting journey presentation decision.
+    // Connecting Journey Structure + BHX-DEL unlock then implemented that
+    // decision (routeServiceFareMismatch()), unsuppressing birmingham-
+    // delhi's 13 August observation and adding a fresh 22 August one,
+    // dropping noFare to 0 and moving connectingConnectingFare 13->14.
+    // unverified stays 5, untouched by either 22 August change.
     expect(directConnectingFare).toBe(56);
     expect(directDirectFare).toBe(13);
-    expect(connectingConnectingFare).toBe(13);
+    expect(connectingConnectingFare).toBe(14);
     expect(connectingDirectFare).toBe(0);
-    expect(noFare).toBe(1);
+    expect(noFare).toBe(0);
     expect(unverified).toBe(5);
     expect(directConnectingFare + directDirectFare + connectingConnectingFare + connectingDirectFare + noFare + unverified).toBe(88);
   });
