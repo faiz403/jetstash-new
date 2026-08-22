@@ -74,16 +74,17 @@ describe('Fare Coverage Programme Batch 5', () => {
     expect(getFareSignalForRoute('leeds-bradford-bodrum', today).state).toBe('current');
   });
 
-  it('raises current display-ready coverage to 82 routes without contradictory fallbacks', () => {
+  it('raises current display-ready coverage to 83 routes without contradictory fallbacks', () => {
     // Batch 5 genuinely raised coverage to 79 at the time (14 August 2026); the
     // assertion below tracks live current-state data, which moved to 78 on
     // 18 August 2026 (Route Verification Refresh Batch 1's london-gatwick-
     // ahmedabad correction) then to 82 on 22 August 2026 (Fare Coverage
-    // Batch 1 — see tests/fare-coverage-batch-3.test.ts's identical update
+    // Batch 1) then to 83, same day (Connecting Journey Structure + BHX-DEL
+    // unlock — see tests/fare-coverage-batch-3.test.ts's identical update
     // for the full explanation). The 79-route Batch 5 outcome remains an
     // accurate historical record for 14 August 2026.
     const current = routes.filter((route) => getPublishableObservationsByRoute(route.slug, NOW_ISO).length > 0);
-    expect(current).toHaveLength(82);
+    expect(current).toHaveLength(83);
     for (const route of current) {
       expect(shouldShowNoFareFallback(getFareSignalForRoute(route.slug, NOW_ISO)), route.slug).toBe(false);
     }

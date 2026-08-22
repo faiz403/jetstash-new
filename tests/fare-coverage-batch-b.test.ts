@@ -201,12 +201,16 @@ describe('Fare Coverage Expansion Batch B — publishability and customer visibi
     }
   });
 
-  it('overall coverage reflects the current evidence archive: 82 of 88 routes publishable, with 31 represented by curated tracked-fare cards (updated 22 August 2026, Fare Coverage Batch 1)', () => {
+  it('overall coverage reflects the current evidence archive: 83 of 88 routes publishable, with 31 represented by curated tracked-fare cards (updated 22 August 2026, Connecting Journey Structure + BHX-DEL unlock)', () => {
     // Was 78/30 as of 18 August 2026. Fare Coverage Batch 1 (22 August)
     // added four routes to "publishable" (leeds-bradford-bodrum,
     // manchester-karachi, birmingham-lahore, birmingham-islamabad), but
     // only manchester-karachi has a curated Economy Deal card — the other
-    // three have no Deal entry at all, so "visible" moves by only +1.
+    // three have no Deal entry at all, so "visible" moved by only +1
+    // (82/31). Connecting Journey Structure + BHX-DEL unlock (same day)
+    // then added birmingham-delhi to "publishable" too — it also has no
+    // curated Economy Deal card (only lhr-del-economy and man-del-economy
+    // exist for Delhi), so "visible" is unchanged (83/31).
     let publishable = 0;
     let visible = 0;
     for (const route of routes) {
@@ -214,11 +218,11 @@ describe('Fare Coverage Expansion Batch B — publishability and customer visibi
       const deal = deals.find((d) => d.fromAirportSlug === route.airportSlug && d.toDestinationSlug === route.destinationSlug && d.cabin === 'Economy' && !isBundledProductDeal(d));
       if (deal && hasTrackedFare(deal, NOW_ISO)) visible++;
     }
-    expect(publishable).toBe(82);
+    expect(publishable).toBe(83);
     expect(visible).toBe(31);
     // The remaining routes have valid Fare Signals but no curated Deal
     // card. They are intentionally counted by route-level coverage only.
-    expect(publishable - visible).toBe(51);
+    expect(publishable - visible).toBe(52);
   });
 
   it('London Heathrow-Jeddah remains without a curated card, alongside the later Fare-Signal-only routes', () => {

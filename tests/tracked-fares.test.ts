@@ -47,9 +47,14 @@ describe('1. every current Fare Signal appears exactly once, no duplicates, no e
     // PR #139's own regression tests confirmed it. leeds-bradford-bodrum
     // was this fixture until Fare Coverage Batch 1 (22 August 2026) gave it
     // its first-ever fare; swapped to birmingham-delhi, whose two real
-    // observations stay deliberately excluded pending a separate
-    // connecting-vs-connecting journey presentation decision.
-    expect(allSlugs).not.toContain('birmingham-delhi');
+    // observations stayed deliberately excluded pending a separate
+    // connecting-vs-connecting journey presentation decision — until
+    // Connecting Journey Structure + BHX-DEL unlock (22 August 2026)
+    // implemented that decision and gave the route a current fare too.
+    // Swapped to birmingham-ahmedabad, one of the five routes still
+    // genuinely verification-blocked (unverified), which has zero evidence
+    // for a different, durable reason: route verification status.
+    expect(allSlugs).not.toContain('birmingham-ahmedabad');
   });
 });
 

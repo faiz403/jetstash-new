@@ -132,23 +132,34 @@ describe('the four evidence-insufficient 18 August observations remain excluded 
   });
 });
 
-describe('birmingham-delhi remains held — untouched by this batch', () => {
-  it('no fresh 22 August observation was appended for birmingham-delhi', () => {
+describe('birmingham-delhi was held by this batch — since unlocked by Connecting Journey Structure (22 Aug 2026)', () => {
+  // This batch (Fare Coverage Batch 1) deliberately did NOT append a fresh
+  // observation for birmingham-delhi or unsuppress either archived one —
+  // it stayed held pending a separate decision on how the route page
+  // distinguishes a connecting-via-Amritsar route service from a
+  // connecting-via-a-different-city tracked fare. That follow-up PR
+  // (Connecting Journey Structure + BHX-DEL unlock, same day) shipped the
+  // decision — a fail-closed routeServiceFareMismatch() comparison — and
+  // both appended a fresh 22 August observation and lifted the 13 August
+  // one's exclusion. See tests/connecting-journey-structure.test.ts for
+  // that PR's own full regression coverage; this block now documents the
+  // state Batch 1 itself left behind before that follow-up landed.
+  it('a fresh 22 August observation now exists for birmingham-delhi (added by the follow-up PR, not this batch)', () => {
     const has22Aug = fareObservations.some((o) => o.routeSlug === 'birmingham-delhi' && o.observedDate === '2026-08-22');
-    expect(has22Aug).toBe(false);
+    expect(has22Aug).toBe(true);
   });
 
-  it('both existing birmingham-delhi observations remain excluded — neither unsuppressed', () => {
-    for (const id of ['obs-bhx-del-economy-20260813-8w-v1', 'obs-bhx-del-economy-20260818-8w-v1']) {
-      const obs = fareObservations.find((o) => o.id === id)!;
-      expect(isPubliclyPublishable(obs), id).toBe(false);
-    }
+  it('the 13 August observation is publishable again; the 18 August one remains excluded', () => {
+    const obs13 = fareObservations.find((o) => o.id === 'obs-bhx-del-economy-20260813-8w-v1')!;
+    const obs18 = fareObservations.find((o) => o.id === 'obs-bhx-del-economy-20260818-8w-v1')!;
+    expect(isPubliclyPublishable(obs13)).toBe(true);
+    expect(isPubliclyPublishable(obs18)).toBe(false);
   });
 
-  it('birmingham-delhi Fare Signal stays "none" — no fare renders', () => {
+  it('birmingham-delhi Fare Signal now shows the fresh 22 August fare', () => {
     const signal = getFareSignalForRoute('birmingham-delhi', nowIso);
-    expect(signal.state).toBe('none');
-    expect(signal.observation).toBeNull();
+    expect(signal.state).toBe('current');
+    expect(signal.observation?.id).toBe('obs-bhx-del-economy-20260822-8w-v1');
   });
 
   it('birmingham-delhi route data is untouched — still verified-connecting via Amritsar, per COV-001', () => {

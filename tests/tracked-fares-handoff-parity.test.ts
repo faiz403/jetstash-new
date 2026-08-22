@@ -100,16 +100,20 @@ describe('Semantic parity: every current tracked-fare entry resolves identically
 });
 
 describe('Current-dataset reconciliation (documented evidence, not a hardcoded production rule)', () => {
-  it('82 current tracked fares: 60 with a verified handoff, 22 with the explicit unavailable state (updated 22 August 2026, Fare Coverage Batch 1)', () => {
+  it('83 current tracked fares: 61 with a verified handoff, 22 with the explicit unavailable state (updated 22 August 2026, Connecting Journey Structure + BHX-DEL unlock)', () => {
     // Was 78/56/22 as of 18 August 2026. Fare Coverage Batch 1 (22 August)
     // added four routes' first current Fare Signal (leeds-bradford-bodrum,
     // manchester-karachi, birmingham-lahore, birmingham-islamabad) — all
     // four already had a working Trip.com handoff before this batch, so
-    // the +4 total lands entirely on the with-handoff count.
+    // the +4 total landed entirely on the with-handoff count (82/60/22).
+    // Connecting Journey Structure + BHX-DEL unlock (same day) then gave
+    // birmingham-delhi its own first current Fare Signal too — it already
+    // had a working Trip.com handoff, so this +1 also lands entirely on
+    // the with-handoff count (83/61/22).
     const airportGroups = buildTrackedFareAirportGroups(routes, undefined, nowIso);
     const allEntries = airportGroups.flatMap((g) => g.entries);
-    expect(allEntries).toHaveLength(82);
-    expect(allEntries.filter((e) => e.tripComUrl !== null)).toHaveLength(60);
+    expect(allEntries).toHaveLength(83);
+    expect(allEntries.filter((e) => e.tripComUrl !== null)).toHaveLength(61);
     expect(allEntries.filter((e) => e.tripComUrl === null)).toHaveLength(22);
   });
 
