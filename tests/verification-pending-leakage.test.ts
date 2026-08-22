@@ -262,17 +262,18 @@ describe('Metadata output — generateMetadata() never builds a pending route\'s
   });
 
   it('a verified direct route keeps its existing intro-derived title and description, as of a fixed date before its reviewDueDate', async () => {
-    // manchester-lahore was this fixture until SEO Domination Batch 1 (22
-    // August 2026) gave it a checked-opportunity seoTitle/seoDescription
-    // override ("business class to lahore") — it no longer demonstrates the
-    // default intro-derived template this test is actually about. Swapped
-    // to birmingham-lahore, a real peak-period verified-direct route with
-    // no override and a reviewDueDate safely after the fixed clock below.
+    // Briefly swapped to birmingham-lahore during SEO Domination Batch 1 (22
+    // August 2026) while manchester-lahore carried a checked-opportunity
+    // seoTitle/seoDescription override ("business class to lahore"); that
+    // override was removed the same day after founder review found the
+    // Business-cabin evidence gate wasn't met, so manchester-lahore is back
+    // on the plain default intro-derived template and reverted back to
+    // being this fixture.
     vi.useFakeTimers();
     vi.setSystemTime(new Date('2026-07-23T12:00:00Z'));
-    const meta = await generateMetadata({ params: Promise.resolve({ slug: 'birmingham-lahore' }) });
-    const route = getRouteBySlug('birmingham-lahore')!;
-    expect(route.verification?.reviewDueDate).toBe('2026-10-05'); // sanity: current evidence refresh
+    const meta = await generateMetadata({ params: Promise.resolve({ slug: 'manchester-lahore' }) });
+    const route = getRouteBySlug('manchester-lahore')!;
+    expect(route.verification?.reviewDueDate).toBe('2026-09-14'); // sanity: current evidence refresh
     // "Windows" and the " to " connector were dropped in the 20 Aug 2026
     // peak-period title fix so "Flights" could return without exceeding the
     // 65-character guideline — see data/routes.ts and

@@ -52,12 +52,15 @@ function peakPeriodRoutes() {
 /**
  * SEO Domination Batch 1 (22 Aug 2026): routes.ts's own optional
  * seoTitle/seoDescription override (see the Route interface's doc comment)
- * deliberately replaces this default template for a specific, checked
- * Search Console opportunity — manchester-lahore, london-heathrow-lahore
- * and london-heathrow-doha all now use it. The default-template mechanism
- * this file tests (the en-dash connector, "Booking & Peak Periods" survival)
- * only applies to routes still using that default, so they're excluded here
- * rather than silently expected to still match a template they no longer use.
+ * is designed to replace this default template for a specific, checked
+ * Search Console opportunity when one is justified. Batch 1 briefly set it
+ * on manchester-lahore, london-heathrow-lahore and london-heathrow-doha, but
+ * founder review found the Business Class evidence gate wasn't met and all
+ * three overrides were removed the same day — no route currently uses this
+ * mechanism. This filter is kept as forward-looking infrastructure so a
+ * future, evidence-justified override doesn't silently break the default
+ * template assumptions this file tests (the en-dash connector, "Booking &
+ * Peak Periods" survival).
  */
 function peakPeriodRoutesOnDefaultTemplate() {
   return peakPeriodRoutes().filter((r) => !r.seoTitle);

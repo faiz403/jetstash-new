@@ -334,14 +334,14 @@ describe('TR-017 — presentation integrity: metadata and social copy must refle
     expect(String(meta.title)).toMatch(/Connection Guide/i);
   });
 
-  it('a route WITH real peak-period content (e.g. birmingham-lahore) keeps the "Booking & Peak Periods" title — the fix is content-aware, not a blanket removal', () => {
-    // manchester-lahore was this fixture until SEO Domination Batch 1 (22
-    // August 2026) gave it a checked-opportunity seoTitle override
-    // ("business class to lahore") — it now legitimately has a different,
-    // deliberately shorter title, so it no longer demonstrates the generic
-    // content-aware-title behaviour this test is actually about. Swapped to
-    // birmingham-lahore, a real peak-period route with no override.
-    const route = getRouteBySlug('birmingham-lahore')!;
+  it('a route WITH real peak-period content (e.g. manchester-lahore) keeps the "Booking & Peak Periods" title — the fix is content-aware, not a blanket removal', () => {
+    // Briefly swapped to birmingham-lahore during SEO Domination Batch 1 (22
+    // August 2026) while manchester-lahore carried a checked-opportunity
+    // seoTitle override ("business class to lahore"); that override was
+    // removed the same day after founder review found the Business-cabin
+    // evidence gate wasn't met, so manchester-lahore is back on the plain
+    // default template and reverted back to being this fixture.
+    const route = getRouteBySlug('manchester-lahore')!;
     expect(route.peakPeriodIds.length).toBeGreaterThan(0);
     const p = getRoutePresentation(route, FIXED_TODAY);
     // "Windows" was dropped and the connector shortened to an en dash in the

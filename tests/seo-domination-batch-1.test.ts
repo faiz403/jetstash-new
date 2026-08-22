@@ -1,78 +1,52 @@
 import { describe, it, expect } from 'vitest';
-import { routes, getRouteBySlug } from '@/data/routes';
+import { routes, getRouteBySlug, getRoutePresentation } from '@/data/routes';
 import { routeStatusEvents } from '@/data/route-status-events';
 import { getEffectiveRoutePresentation } from '@/lib/route-status-copy';
 import { fareObservations, isPubliclyPublishable } from '@/data/fare-observations';
-import { DESCRIPTION_THRESHOLD, TITLE_THRESHOLD } from './metadata-audit.test';
 
 /**
  * SEO Domination Batch 1 (22 August 2026) — the first implementation wave
- * from the SEO Domination Shortlist audit: two evidence-ready Tier A
- * business-class opportunities (Lahore, Doha) and one Tier B direct-flight
- * evidence opportunity (Manchester-Mumbai), the last held for a route-status
- * recheck first because of a known imminent service withdrawal. Karachi was
- * deliberately excluded — no Business-cabin evidence exists for it yet.
+ * from the SEO Domination Shortlist audit. Originally shipped with two
+ * evidence-ready Tier A business-class opportunities (Lahore, Doha) and one
+ * Tier B direct-flight evidence opportunity (Manchester-Mumbai). Founder
+ * review (same day, before merge) found the Business Class Lahore/Doha
+ * titles crossed the project's own evidence gate: none of the three routes
+ * show any Business-cabin content on the live page, and the only
+ * Business-cabin observations that exist for them are either not publicly
+ * publishable or don't exist at all. Those three overrides were removed —
+ * see the "EVIDENCE REQUIRED BEFORE SEO OPTIMISATION" comments in
+ * data/routes.ts on manchester-lahore, london-heathrow-lahore and
+ * london-heathrow-doha — leaving Manchester-Mumbai (plus the architecturally
+ * shared Manchester-Delhi fix) as the batch's actual final scope. Karachi
+ * remains deliberately excluded — no Business-cabin evidence exists for it
+ * either. Business Fare Evidence Batch 1 (queued, not yet started) is the
+ * follow-up that would make the Business overrides legitimate again.
  */
 
 const NOW_ISO = '2026-08-22';
-const applyTemplate = (title: string) => `${title} | JetStash`;
 
-describe('Target 1 & 2: business-class seoTitle/seoDescription overrides', () => {
-  const targets = ['manchester-lahore', 'london-heathrow-lahore', 'london-heathrow-doha'] as const;
+describe('Target 1 & 2 removed: Business Class Lahore/Doha overrides failed the evidence gate', () => {
+  const formerTargets = ['manchester-lahore', 'london-heathrow-lahore', 'london-heathrow-doha'] as const;
 
-  it('all three carry a checked seoTitle and seoDescription override', () => {
-    for (const slug of targets) {
+  it('none of the three formerly-targeted routes carry a seoTitle/seoDescription override any more', () => {
+    for (const slug of formerTargets) {
       const route = getRouteBySlug(slug)!;
-      expect(route.seoTitle, slug).toBeTruthy();
-      expect(route.seoDescription, slug).toBeTruthy();
+      expect(route.seoTitle, slug).toBeUndefined();
+      expect(route.seoDescription, slug).toBeUndefined();
     }
   });
 
-  it('every override fits within the site\'s own title/description length guidelines, including the rendered " | JetStash" template', () => {
-    for (const slug of targets) {
+  it('each falls back to the plain default metadataTitle/metadataDescription template — no weaker replacement wording was substituted', () => {
+    for (const slug of formerTargets) {
       const route = getRouteBySlug(slug)!;
-      expect(applyTemplate(route.seoTitle!).length, slug).toBeLessThanOrEqual(TITLE_THRESHOLD);
-      expect(route.seoDescription!.length, slug).toBeLessThanOrEqual(DESCRIPTION_THRESHOLD);
+      const presentation = getRoutePresentation(route, NOW_ISO);
+      expect(presentation.metadataTitle, slug).not.toContain('Business Class');
+      expect(presentation.metadataTitle, slug).not.toMatch(/£\d/);
+      expect(presentation.metadataDescription, slug).not.toMatch(/£\d/);
     }
   });
 
-  it('every title names "Business Class" and contains "Flights" (the Search Console CTR fix this shares with the peak-period title work)', () => {
-    for (const slug of targets) {
-      const route = getRouteBySlug(slug)!;
-      expect(route.seoTitle, slug).toContain('Business Class');
-      expect(route.seoTitle, slug).toMatch(/Flights/);
-    }
-  });
-
-  it('every title/description names the real, verified operating airline (PIA for Lahore, Qatar Airways for Doha) and direct status — never a fare figure', () => {
-    const expectations: Record<string, { airlineFragment: RegExp; directFragment: RegExp }> = {
-      'manchester-lahore': { airlineFragment: /PIA/, directFragment: /Direct/ },
-      'london-heathrow-lahore': { airlineFragment: /PIA/, directFragment: /Direct/ },
-      'london-heathrow-doha': { airlineFragment: /Qatar Airways|Direct/, directFragment: /Direct/ },
-    };
-    for (const slug of targets) {
-      const route = getRouteBySlug(slug)!;
-      const { airlineFragment, directFragment } = expectations[slug];
-      const haystack = `${route.seoTitle} ${route.seoDescription}`;
-      expect(haystack, slug).toMatch(airlineFragment);
-      expect(haystack, slug).toMatch(directFragment);
-      // No fare evidence is publishable for any of these three routes'
-      // Business-cabin observations (checked below) — the copy must never
-      // claim one.
-      expect(haystack, slug).not.toMatch(/£\d/);
-    }
-  });
-
-  it('no banned superlative or unsupported product-quality language anywhere in the new copy', () => {
-    const banned = /\bbest\b|\bcheapest\b|\bpremium\b|\bluxury\b|\bflat-?bed\b|\blounge\b|\bflexib(le|ility)\b/i;
-    for (const slug of targets) {
-      const route = getRouteBySlug(slug)!;
-      expect(route.seoTitle, slug).not.toMatch(banned);
-      expect(route.seoDescription, slug).not.toMatch(banned);
-    }
-  });
-
-  it('confirms the real reason no fare figure is claimed: the only Business-cabin observation on each route (where one exists) is not publicly publishable', () => {
+  it('confirms the real reason: the only Business-cabin observation on each route (where one exists) is not publicly publishable, or none exists at all', () => {
     // london-heathrow-lahore has zero Business observations logged at all;
     // manchester-lahore and london-heathrow-doha each have exactly one,
     // both legacy records missing departureDate/returnDate/currency.
@@ -86,9 +60,9 @@ describe('Target 1 & 2: business-class seoTitle/seoDescription overrides', () =>
     expect(fareObservations.some((o) => o.routeSlug === 'london-heathrow-lahore' && o.cabin === 'Business')).toBe(false);
   });
 
-  it('the getRoutePresentation() default template is untouched for every other route — only these three carry an override', () => {
+  it('the getRoutePresentation() default template is untouched for every route — no route in the network carries a seoTitle/seoDescription override', () => {
     const overridden = routes.filter((r) => r.seoTitle || r.seoDescription).map((r) => r.slug).sort();
-    expect(overridden).toEqual(['london-heathrow-doha', 'london-heathrow-lahore', 'manchester-lahore'].sort());
+    expect(overridden).toEqual([]);
   });
 });
 
