@@ -31,7 +31,7 @@ describe('London–Doha and Manchester–Lahore get their intended, evidence-saf
   it('london-heathrow-doha carries the exact proposed title/description', () => {
     const route = getRouteBySlug('london-heathrow-doha')!;
     const presentation = getRoutePresentation(route, NOW_ISO);
-    expect(presentation.metadataTitle).toBe('London–Doha Business Class: Direct vs Connecting');
+    expect(presentation.metadataTitle).toBe('London–Doha Business Class: Fare & Direct Route');
     expect(presentation.metadataDescription).toBe(
       'Qatar Airways operates Heathrow–Doha direct. JetStash separately tracks a connecting Business Class fare via Cairo — route and fare kept clearly distinct.'
     );
@@ -40,7 +40,7 @@ describe('London–Doha and Manchester–Lahore get their intended, evidence-saf
   it('manchester-lahore carries the exact proposed title/description', () => {
     const route = getRouteBySlug('manchester-lahore')!;
     const presentation = getRoutePresentation(route, NOW_ISO);
-    expect(presentation.metadataTitle).toBe('Manchester–Lahore Business Class: Direct vs Connecting');
+    expect(presentation.metadataTitle).toBe('Manchester–Lahore Business Class: Fare & Direct Route');
     expect(presentation.metadataDescription).toBe(
       'PIA operates Manchester–Lahore direct. JetStash separately tracks a connecting Business Class fare, and shows how it differs from the direct route service.'
     );
@@ -92,6 +92,15 @@ describe('Claim safety — neither title/description nor businessClarity content
       const presentation = getRoutePresentation(route, NOW_ISO);
       const text = `${presentation.metadataTitle} ${presentation.metadataDescription}`.toLowerCase();
       expect(text, slug).not.toMatch(/\bbest\b|\bcheapest\b/);
+    }
+  });
+
+  it('neither title reads as "direct Business Class vs connecting Business Class" — founder correction, 23 Aug 2026, PR #168 review: the original "Business Class: Direct vs Connecting" phrasing was too easy to misread as a cabin-specific claim about the direct service itself, which the evidence never established', () => {
+    for (const slug of targets) {
+      const route = getRouteBySlug(slug)!;
+      const presentation = getRoutePresentation(route, NOW_ISO);
+      expect(presentation.metadataTitle, slug).not.toMatch(/Direct vs Connecting/i);
+      expect(presentation.metadataTitle, slug).toContain('Fare & Direct Route');
     }
   });
 

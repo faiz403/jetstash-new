@@ -195,10 +195,17 @@ export function DealCard({ deal }: { deal: Deal }) {
             tests/dealcard-route-guide-link-fix.test.ts, which derives that
             list from getFareRangeSummary()/getRouteByAirportAndDestination()
             rather than hardcoding it, so it stays correct as the archive
-            grows. Both cases below are now real links (the count > 1 case
-            was previously inert text with no href at all, despite naming
-            "the route guide") — same visible wording as before wherever a
-            string was already load-bearing test coverage. */}
+            grows.
+            Deliberately scoped to ONLY this case. An earlier version of
+            this fix also turned the range.count > 1 paragraph below into a
+            real link — founder review (23 Aug 2026, PR #168) correctly
+            flagged that as an undisclosed, much larger blast radius (29
+            live cards today, none of them related to this batch's actual
+            Business-evidence subject) beyond the approved scope ("fix the
+            missing route-guide link on all 5 single-observation
+            DealCards"), so it was reverted — the count > 1 paragraph stays
+            plain text, exactly as it was before this fix, and is left for
+            a separate, explicitly-scoped decision if it's wanted later. */}
         {matchedRoute && range && range.count === 1 && (
           <Link
             href={`/routes/${matchedRoute.slug}`}
@@ -208,14 +215,8 @@ export function DealCard({ deal }: { deal: Deal }) {
             <ArrowUpRight className="h-3 w-3" strokeWidth={2.25} />
           </Link>
         )}
-        {matchedRoute && range && range.count > 1 && (
-          <Link
-            href={`/routes/${matchedRoute.slug}`}
-            className="mt-1.5 inline-flex items-center gap-1 text-xs text-ink-400 transition-colors hover:text-ink-600"
-          >
-            See the full history on the route guide
-            <ArrowUpRight className="h-3 w-3" strokeWidth={2.25} />
-          </Link>
+        {range && range.count > 1 && (
+          <p className="mt-1.5 text-xs text-ink-400">See the full history on the route guide.</p>
         )}
 
         {tripComUrl ? (

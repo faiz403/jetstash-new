@@ -1088,9 +1088,17 @@ export const routes: Route[] = [
     // own direct Manchester–Lahore service (re-verified 14 Aug 2026,
     // reviewDueDate 14 Sep 2026, no route-status-events override) is a
     // completely different, non-self-transfer journey from the evidenced
-    // Business fare. Character budget: 54 chars + the automatic " | JetStash"
-    // suffix = 65, at the site's own ≤65 guideline ceiling.
-    seoTitle: 'Manchester–Lahore Business Class: Direct vs Connecting',
+    // Business fare. Founder correction (23 Aug 2026, PR #168 review):
+    // the original "Direct vs Connecting" phrasing reads too easily as
+    // "direct Business Class vs connecting Business Class" — a
+    // cabin-specific claim about the direct service itself the evidence
+    // never established (PIA's own direct-route confirmation says
+    // nothing about cabin). "Fare & Direct Route" grammatically
+    // separates the two nouns (a fare, and a route fact) instead of
+    // reading as two variants of one thing. Character budget: 53 chars +
+    // the automatic " | JetStash" suffix = 64, under the site's own ≤65
+    // guideline ceiling.
+    seoTitle: 'Manchester–Lahore Business Class: Fare & Direct Route',
     seoDescription:
       'PIA operates Manchester–Lahore direct. JetStash separately tracks a connecting Business Class fare, and shows how it differs from the direct route service.',
     businessClarity: {
@@ -1224,10 +1232,15 @@ export const routes: Route[] = [
     // separate, connecting EgyptAir itinerary via Cairo (all 4 segments
     // labelled plainly "EgyptAir", no confirmed operating-carrier split —
     // see the observation's own priceNote). No price in the title (a dated
-    // fare observation is not durable metadata). Character budget: 48 chars
-    // + the automatic " | JetStash" suffix = 59, comfortably under the
-    // site's ≤65 guideline.
-    seoTitle: 'London–Doha Business Class: Direct vs Connecting',
+    // fare observation is not durable metadata). Founder correction (23
+    // Aug 2026, PR #168 review): "Direct vs Connecting" read too easily
+    // as "direct Business Class vs connecting Business Class" — a
+    // cabin-specific claim about Qatar Airways' own direct service that
+    // was never evidenced. "Fare & Direct Route" grammatically separates
+    // the fare from the route fact instead of reading as two variants of
+    // one thing. Character budget: 47 chars + the automatic " | JetStash"
+    // suffix = 58, comfortably under the site's ≤65 guideline.
+    seoTitle: 'London–Doha Business Class: Fare & Direct Route',
     seoDescription:
       'Qatar Airways operates Heathrow–Doha direct. JetStash separately tracks a connecting Business Class fare via Cairo — route and fare kept clearly distinct.',
     businessClarity: {

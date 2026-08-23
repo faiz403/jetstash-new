@@ -19,6 +19,16 @@ import { DealCard } from '@/components/ui/deal-card';
  * surrounding code already had two deliberate link variants (no-fare,
  * fare-history), the single-check case was simply never given one.
  *
+ * Deliberately scoped to ONLY the count === 1 case. An earlier version of
+ * this fix also turned the count > 1 paragraph into a real link; founder
+ * review (23 Aug 2026, PR #168) found that changed 29 additional live
+ * cards today — an undisclosed blast radius far beyond the approved scope
+ * ("fix the missing route-guide link on all 5 single-observation
+ * DealCards"), none of them related to this batch's actual subject — so it
+ * was reverted. The count > 1 paragraph stays plain, non-link text, exactly
+ * as before this fix; see the full three-way blast-radius breakdown this
+ * suite proves below.
+ *
  * NOW_ISO deliberately matches the live archive's own "today" so this
  * suite proves the fix against real production data, not synthetic
  * fixtures — and per the founder's own instruction, the affected-card list
@@ -53,30 +63,22 @@ function renderDealLinks(dealId: string) {
   return { html, hasRouteGuideLink, routeHref };
 }
 
-describe('DealCard route-guide link — all three observation-count shapes retain a real link', () => {
-  it('confirms today\'s real, derived (not hardcoded) affected-card counts — sanity that this suite is exercising genuine data in all three shapes', () => {
+describe('DealCard route-guide link — full blast-radius breakdown, scoped fix', () => {
+  it('confirms today\'s real, derived (not hardcoded) affected-card counts in all three shapes', () => {
     const { zero, one, twoPlus } = dealsByObservationCount();
     expect(zero.length, 'expected at least one no-fare Deal today').toBeGreaterThan(0);
     expect(one.length, 'expected at least one single-observation Deal today').toBeGreaterThan(0);
     expect(twoPlus.length, 'expected at least one 2+-observation Deal today').toBeGreaterThan(0);
   });
 
-  it('the exact three new Business Fare Evidence Batch 1 cards are among today\'s single-observation set — the flagship case this fix exists for', () => {
+  it('bucket A (count === 1, genuinely fixed) is exactly today\'s 5 single-observation cards, including the three new Business Fare Evidence Batch 1 cards — the flagship case this fix exists for', () => {
     const { one } = dealsByObservationCount();
-    for (const id of ['man-lhe-business', 'lhr-business-lhe', 'lhr-doh-business']) {
-      expect(one, id).toContain(id);
-    }
+    expect(one.sort()).toEqual(
+      ['lba-isb-economy', 'lhr-business-lhe', 'lhr-doh-business', 'man-khi-economy', 'man-lhe-business'].sort()
+    );
   });
 
-  it('zero-observation cards keep their existing route-guide link ("More on the route guide" / "Booking-window guidance on the route guide") — unaffected by this fix', () => {
-    const { zero } = dealsByObservationCount();
-    for (const id of zero) {
-      const { hasRouteGuideLink, routeHref } = renderDealLinks(id);
-      expect(hasRouteGuideLink, `${id} -> ${routeHref}`).toBe(true);
-    }
-  });
-
-  it('single-observation cards now get a real route-guide link ("View route guide") — the defect fixed here', () => {
+  it('bucket A: every count === 1 card now gets a real "View route guide" link — the defect fixed here', () => {
     const { one } = dealsByObservationCount();
     for (const id of one) {
       const { html, hasRouteGuideLink, routeHref } = renderDealLinks(id);
@@ -85,18 +87,32 @@ describe('DealCard route-guide link — all three observation-count shapes retai
     }
   });
 
-  it('2+-observation cards keep a route-guide link too — previously inert "See the full history on the route guide" text with no href, now a real link, same visible wording', () => {
+  it('bucket B (count > 1) is deliberately UNCHANGED — stays plain, non-link text, not part of this fix\'s approved scope', () => {
     const { twoPlus } = dealsByObservationCount();
+    // Sanity: today's bucket B is large (29 cards) and spans routes with no
+    // relationship to this batch's Lahore/Doha/Karachi subject (Barcelona,
+    // Rome, Athens, Dhaka, etc.) — exactly why founder review asked for it
+    // to be excluded rather than silently included.
+    expect(twoPlus.length).toBeGreaterThan(20);
     for (const id of twoPlus) {
-      const { html, hasRouteGuideLink, routeHref } = renderDealLinks(id);
-      expect(hasRouteGuideLink, `${id} -> ${routeHref}`).toBe(true);
-      expect(html, id).toContain('See the full history on the route guide');
+      const { html, hasRouteGuideLink } = renderDealLinks(id);
+      expect(hasRouteGuideLink, id).toBe(false);
+      expect(html, id).toContain('See the full history on the route guide.');
+      expect(html, id).not.toMatch(/<a[^>]*>See the full history on the route guide/);
     }
   });
 
-  it('every affected card\'s route-guide link points at its own matched route, not some other route', () => {
-    const { zero, one, twoPlus } = dealsByObservationCount();
-    for (const id of [...zero, ...one, ...twoPlus]) {
+  it('bucket C (no fare at all) keeps its existing, pre-existing route-guide link ("More on the route guide" / "Booking-window guidance on the route guide") — unaffected by this fix', () => {
+    const { zero } = dealsByObservationCount();
+    for (const id of zero) {
+      const { hasRouteGuideLink, routeHref } = renderDealLinks(id);
+      expect(hasRouteGuideLink, `${id} -> ${routeHref}`).toBe(true);
+    }
+  });
+
+  it('every fixed (bucket A) and pre-existing (bucket C) route-guide link points at its own matched route, not some other route', () => {
+    const { zero, one } = dealsByObservationCount();
+    for (const id of [...zero, ...one]) {
       const deal = deals.find((d) => d.id === id)!;
       const route = getRouteByAirportAndDestination(deal.fromAirportSlug, deal.toDestinationSlug)!;
       const html = renderToStaticMarkup(DealCard({ deal }));
