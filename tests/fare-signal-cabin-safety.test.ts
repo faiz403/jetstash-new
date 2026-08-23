@@ -154,13 +154,13 @@ describe('deriveFareSignal — Economy-preference fallback cases', () => {
 
 describe('Business-specific surfaces are unaffected by construction', () => {
   it('hasCurrentFareSignalForCabinAmongRoutes still correctly reports Business evidence — its input is always pre-filtered to one cabin, so the new Economy preference never applies', () => {
-    // These are the four real routes Business Fare Evidence Batch 1 (PR
-    // #166) evidenced. PR #166 is not merged into this branch, so these
-    // routes carry no Business observation here yet — this proves the
-    // helper still resolves false honestly today, and (per the manual
-    // cross-branch check run alongside this fix) resolves true again once
-    // PR #166's data lands, unaffected by this change either way.
-    expect(hasCurrentFareSignalForCabinAmongRoutes(['manchester-lahore'], 'Business', NOW_ISO)).toBe(false);
+    // manchester-lahore is one of the four real routes Business Fare
+    // Evidence Batch 1 (PR #166) evidenced; PR #166 is now merged onto this
+    // branch's history, so this correctly resolves true — proving the
+    // Economy-preference fix genuinely never reaches this cabin-scoped
+    // helper, exactly as predicted when this fix was first verified via a
+    // read-only cross-branch check (before #166 had landed here).
+    expect(hasCurrentFareSignalForCabinAmongRoutes(['manchester-lahore'], 'Business', NOW_ISO)).toBe(true);
   });
 
   it('a single-cabin Business-only input is completely untouched by the Economy-preference branch', () => {
@@ -170,14 +170,15 @@ describe('Business-specific surfaces are unaffected by construction', () => {
   });
 });
 
-describe('real-network sanity: today\'s actual data has zero routes where this fix changes anything (no route currently has both a current Economy and a current non-Economy observation)', () => {
-  it('every route\'s Fare Signal on main today is identical to what it was before this fix — this branch is fare-evidence-neutral', () => {
-    // A pure logic fix landing on clean main (before PR #166's Business
-    // observations exist) must not move a single pixel today — the whole
-    // point is it only ever fires once a genuine cross-cabin race exists,
-    // which today's real archive does not yet contain. manchester-lahore
-    // is checked explicitly since it is the flagship case this fix exists
-    // for once PR #166 lands.
+describe('real-network sanity: manchester-lahore\'s generic Fare Signal correctly stays Economy even with Business Fare Evidence Batch 1\'s real Business observation present', () => {
+  it('manchester-lahore\'s Fare Signal is £628 Economy, not the newer £3,051 Business observation — the flagship case this fix exists for', () => {
+    // This fix was originally authored and verified on clean main, before
+    // PR #166's Business observations existed, via a read-only cross-branch
+    // check (no route anywhere changed on main itself — confirmed at the
+    // time). PR #166 has since been merged onto this branch's own history,
+    // so this assertion now runs directly against the real, merged data:
+    // the generic signal still correctly resolves to the £628 Economy
+    // observation, not the £3,051 Business one dated four days later.
     const signal = getFareSignalForRoute('manchester-lahore', NOW_ISO);
     expect(signal.observation?.cabin).toBe('Economy');
     expect(signal.observation?.price).toBe(628);

@@ -13,7 +13,7 @@ import { getAirlinesBySlugs } from '@/data/airlines';
 import { getFareSignalForRoute } from '@/lib/fare-signal';
 import { getTripComRouteUrl } from '@/lib/booking-providers';
 import { FareSignal } from '@/components/route/fare-signal';
-import { deals } from '@/data/deals';
+import { deals, hasTrackedFare } from '@/data/deals';
 import { qualifyFareWatcherObservation, generateFareWatcherCandidates } from '@/lib/fare-watcher';
 
 /**
@@ -143,41 +143,61 @@ describe('self-transfer disclosure survives exactly as recorded', () => {
 });
 
 describe('Lahore/Doha route-vs-fare mismatch behaviour is correct against their own verified direct service', () => {
-  it('Manchester-Lahore: the new Business fare is now the current signal and the mismatch callout fires against PIA · Direct', () => {
+  // Generic Fare Signal cabin safety (23 Aug 2026, PR #167, merged ahead of
+  // this batch): the shared, cabin-blind route-page signal now deliberately
+  // prefers a current Economy observation over a newer Business one, so the
+  // GENERIC signal below correctly stays each route's existing Economy fare
+  // — unaffected by this batch's new Business evidence. The new Business
+  // observations are separately confirmed visible on their own
+  // Business-cabin surface (the "getFareRangeSummary(Business) now returns
+  // exactly this one observation" test above, and the DealCard-level checks
+  // below), which is the intended split: a normal visitor still sees the
+  // route's real Economy price up top, and Business shoppers still see the
+  // new evidence exactly where they'd look for it.
+  it('Manchester-Lahore: the generic Fare Signal correctly stays Economy; the mismatch callout still fires correctly against PIA · Direct for that Economy fare; the new Business fare is separately confirmed visible via its own Deal', () => {
     const { presentation } = presentationFor('manchester-lahore');
     expect(presentation.status).toBe('direct');
     const signal = getFareSignalForRoute('manchester-lahore', NOW_ISO);
-    expect(signal.observation?.id).toBe('obs-man-lhe-business-20260822-8w-v1');
+    expect(signal.observation?.cabin).toBe('Economy');
     expect(signal.observation?.directness).toBe('connecting');
 
     const html = renderFareSignalForRoute('manchester-lahore');
     expect(html).toContain('Route service');
     expect(html).toContain('PIA · Direct');
     expect(html).toContain('This tracked fare is a different, connecting journey.');
+
+    const businessDeal = deals.find((d) => d.id === 'man-lhe-business')!;
+    expect(hasTrackedFare(businessDeal, NOW_ISO)).toBe(true);
   });
 
-  it('Heathrow-Lahore: the new Business fare is now the current signal and the mismatch callout fires against PIA · Direct', () => {
+  it('Heathrow-Lahore: the generic Fare Signal correctly stays Economy; the mismatch callout still fires correctly against PIA · Direct for that Economy fare; the new Business fare is separately confirmed visible via its own Deal', () => {
     const { presentation } = presentationFor('london-heathrow-lahore');
     expect(presentation.status).toBe('direct');
     const signal = getFareSignalForRoute('london-heathrow-lahore', NOW_ISO);
-    expect(signal.observation?.id).toBe('obs-lhr-lhe-business-20260822-8w-v1');
+    expect(signal.observation?.cabin).toBe('Economy');
 
     const html = renderFareSignalForRoute('london-heathrow-lahore');
     expect(html).toContain('Route service');
     expect(html).toContain('PIA · Direct');
     expect(html).toContain('This tracked fare is a different, connecting journey.');
+
+    const businessDeal = deals.find((d) => d.id === 'lhr-business-lhe')!;
+    expect(hasTrackedFare(businessDeal, NOW_ISO)).toBe(true);
   });
 
-  it('Heathrow-Doha: the new Business fare is now the current signal and the mismatch callout fires against Qatar Airways · Direct', () => {
+  it('Heathrow-Doha: the generic Fare Signal correctly stays Economy; the mismatch callout still fires correctly against Qatar Airways · Direct for that Economy fare; the new Business fare is separately confirmed visible via its own Deal', () => {
     const { presentation } = presentationFor('london-heathrow-doha');
     expect(presentation.status).toBe('direct');
     const signal = getFareSignalForRoute('london-heathrow-doha', NOW_ISO);
-    expect(signal.observation?.id).toBe('obs-lhr-doh-business-20260822-8w-v1');
+    expect(signal.observation?.cabin).toBe('Economy');
 
     const html = renderFareSignalForRoute('london-heathrow-doha');
     expect(html).toContain('Route service');
     expect(html).toContain('Qatar Airways · Direct');
     expect(html).toContain('This tracked fare is a different, connecting journey.');
+
+    const businessDeal = deals.find((d) => d.id === 'lhr-doh-business')!;
+    expect(hasTrackedFare(businessDeal, NOW_ISO)).toBe(true);
   });
 
   it('current no-safe-Trip.com-handoff state is unchanged for both Heathrow routes', () => {
