@@ -126,11 +126,31 @@ function isComparable(observation: FareObservation): observation is ComparableOb
 }
 
 /**
- * Picks the single largest exact-match comparison group for a route (ties
- * broken by whichever group's most recent member was checked most
- * recently) — never blends two different groups, and never assumes the
- * globally "latest" observations belong together the way the pre-reset
- * code did.
+ * Picks the single best exact-match comparison group for a route — never
+ * blends two different groups, and never assumes the globally "latest"
+ * observations belong together the way the pre-reset code did.
+ *
+ * Selection policy (founder correction, 23 Aug 2026, PR #171 review):
+ * group SIZE must never be the primary signal, and must never be used to
+ * relax the exact-match contract itself — it only ever chooses between
+ * groups that already, independently, satisfy that contract (>= 2
+ * members). A route could later have an older 3-observation group
+ * sitting alongside a newer 2-observation group; picking "largest group"
+ * as the primary rule would show customers a stale travel window over a
+ * fresher one for no better reason than one extra observation. Freshness
+ * outranks richness once a group has already earned comparability:
+ *
+ * 1. Discard any group with fewer than 2 observations.
+ * 2. Among survivors, prefer whichever group's most recently OBSERVED
+ *    member has the latest observedDate — recency of evidence, not
+ *    recency/fuzziness of the travel dates themselves (those stay exact
+ *    per the contract above; this only ranks between fully-qualified
+ *    groups).
+ * 3. If that ties, prefer the larger group.
+ * 4. If still tied, resolve deterministically via the group's own exact
+ *    comparison key (comparisonGroupKey), sorted ascending — arbitrary
+ *    but stable and reproducible, never dependent on Map iteration
+ *    order or insertion order.
  */
 function selectBestComparisonGroup(observations: ComparableObservation[]): ComparableObservation[] | null {
   const groups = new Map<string, ComparableObservation[]>();
@@ -141,23 +161,21 @@ function selectBestComparisonGroup(observations: ComparableObservation[]): Compa
     else groups.set(key, [observation]);
   }
 
-  let best: ComparableObservation[] | null = null;
-  for (const group of groups.values()) {
-    if (group.length < 2) continue;
-    if (!best) {
-      best = group;
-      continue;
-    }
-    if (group.length > best.length) {
-      best = group;
-      continue;
-    }
-    if (group.length === best.length) {
-      const latestOf = (g: ComparableObservation[]) => g.reduce((max, o) => (o.observedDate > max ? o.observedDate : max), g[0].observedDate);
-      if (latestOf(group) > latestOf(best)) best = group;
-    }
-  }
-  return best;
+  const candidates = [...groups.entries()].filter(([, group]) => group.length >= 2);
+  if (candidates.length === 0) return null;
+
+  const latestObservedDate = (group: ComparableObservation[]) =>
+    group.reduce((max, o) => (o.observedDate > max ? o.observedDate : max), group[0].observedDate);
+
+  candidates.sort(([keyA, groupA], [keyB, groupB]) => {
+    const recencyDiff = latestObservedDate(groupB).localeCompare(latestObservedDate(groupA));
+    if (recencyDiff !== 0) return recencyDiff;
+    const sizeDiff = groupB.length - groupA.length;
+    if (sizeDiff !== 0) return sizeDiff;
+    return keyA.localeCompare(keyB);
+  });
+
+  return candidates[0][1];
 }
 
 /**

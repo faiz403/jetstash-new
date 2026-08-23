@@ -141,6 +141,58 @@ describe('Negative fixtures — each of these must never produce a comparison', 
   });
 });
 
+describe('Group-selection tie-break policy (founder correction, 23 Aug 2026, PR #171 review) — recency outranks richness, never the reverse', () => {
+  it('an older, larger group must lose to a newer, smaller group — group size is never the primary signal', () => {
+    // Older exact group: 3 options, all checked 40 days before the newer
+    // group's own most recent check.
+    const olderGroupDates = { departureDate: '2026-09-01', returnDate: '2026-09-15' };
+    const older1 = baseObservation({ id: 'old-1', ...olderGroupDates, observedDate: '2026-07-10', price: 400 });
+    const older2 = baseObservation({ id: 'old-2', ...olderGroupDates, observedDate: '2026-07-11', price: 410 });
+    const older3 = baseObservation({ id: 'old-3', ...olderGroupDates, observedDate: '2026-07-12', price: 420 });
+    // Newer exact group: only 2 options, but checked today.
+    const newerGroupDates = { departureDate: '2026-10-01', returnDate: '2026-10-15' };
+    const newer1 = baseObservation({ id: 'new-1', ...newerGroupDates, observedDate: '2026-08-22', price: 500 });
+    const newer2 = baseObservation({ id: 'new-2', ...newerGroupDates, observedDate: '2026-08-23', price: 520 });
+
+    const options = selectComparableSmartFareOptions([older1, older2, older3, newer1, newer2]);
+    expect(options.map((o) => o.id).sort()).toEqual(['new-1', 'new-2'].sort());
+  });
+
+  it('equally recent groups (same most-recent observedDate) => the larger group wins', () => {
+    const groupADates = { departureDate: '2026-10-01', returnDate: '2026-10-15' };
+    const a1 = baseObservation({ id: 'ga-1', ...groupADates, observedDate: '2026-08-20', price: 400 });
+    const a2 = baseObservation({ id: 'ga-2', ...groupADates, observedDate: '2026-08-22', price: 410 }); // most recent in group A
+    const groupBDates = { departureDate: '2026-10-08', returnDate: '2026-10-22' };
+    const b1 = baseObservation({ id: 'gb-1', ...groupBDates, observedDate: '2026-08-21', price: 500 });
+    const b2 = baseObservation({ id: 'gb-2', ...groupBDates, observedDate: '2026-08-22', price: 510 }); // ties group A's most recent date
+    const b3 = baseObservation({ id: 'gb-3', ...groupBDates, observedDate: '2026-08-19', price: 490 });
+
+    const options = selectComparableSmartFareOptions([a1, a2, b1, b2, b3]);
+    // Group B has 3 members vs group A's 2, and both groups' most recent
+    // member shares the same observedDate (2026-08-22) — recency ties, so
+    // the larger group (B) must win.
+    expect(options.map((o) => o.id).sort()).toEqual(['gb-1', 'gb-2', 'gb-3'].sort());
+  });
+
+  it('a complete tie (same recency, same size) resolves deterministically — repeated calls, and calls with the groups\' insertion order reversed, produce the identical result', () => {
+    const groupADates = { departureDate: '2026-10-01', returnDate: '2026-10-15' };
+    const a1 = baseObservation({ id: 'ta-1', ...groupADates, observedDate: '2026-08-20', price: 400 });
+    const a2 = baseObservation({ id: 'ta-2', ...groupADates, observedDate: '2026-08-22', price: 410 });
+    const groupBDates = { departureDate: '2026-10-08', returnDate: '2026-10-22' };
+    const b1 = baseObservation({ id: 'tb-1', ...groupBDates, observedDate: '2026-08-21', price: 500 });
+    const b2 = baseObservation({ id: 'tb-2', ...groupBDates, observedDate: '2026-08-22', price: 510 });
+
+    const forward = selectComparableSmartFareOptions([a1, a2, b1, b2]);
+    const reversed = selectComparableSmartFareOptions([b2, b1, a2, a1]);
+    expect(forward.map((o) => o.id).sort()).toEqual(reversed.map((o) => o.id).sort());
+    // The tie-break is the comparison group's own key, sorted ascending —
+    // "Economy::2026-10-01::2026-10-15::..." sorts before
+    // "Economy::2026-10-08::2026-10-22::..." (date string comparison), so
+    // group A (the earlier departureDate) is the deterministic winner here.
+    expect(forward.map((o) => o.id).sort()).toEqual(['ta-1', 'ta-2'].sort());
+  });
+});
+
 describe('Positive regression — Manchester-Islamabad (the original, proven-valid pilot)', () => {
   it('remains a valid Smart Fare Comparison with its real production data, unchanged by this fix', () => {
     const comparison = getSmartFareComparisonForRoute('manchester-islamabad', NOW_ISO);
@@ -170,7 +222,12 @@ describe('Network-wide current truth — derived, not hardcoded, so this suite f
     // result than the founder's own rough "64 -> 1" prediction, and
     // exactly the outcome the founder's own instruction anticipated:
     // "all other currently-rendering routes: comparison disappears unless
-    // the implementation proves they satisfy the exact contract."
+    // the implementation proves they satisfy the exact contract." Re-
+    // confirmed unchanged after the group-selection tie-break policy
+    // amendment (23 Aug 2026, PR #171 review) — none of today's real
+    // routes currently has more than one qualifying exact-match group, so
+    // that amendment has no effect on today's set; it only changes future
+    // behaviour once a route does have competing groups.
     expect(validRoutes).toEqual(['birmingham-amritsar', 'london-heathrow-jeddah', 'manchester-islamabad'].sort());
   });
 
