@@ -71,14 +71,13 @@ describe('London–Doha and Manchester–Lahore get their intended, evidence-saf
     expect(presentation.metadataTitle).not.toContain('Business Class');
   });
 
-  it('no other route in the network carries a seoTitle/seoDescription override — the mechanism stays genuinely opt-in, not a blanket rewrite', () => {
+  it('at the time of this batch (23 Aug 2026), only these two routes carried a seoTitle/seoDescription override — the mechanism stayed genuinely opt-in, not a blanket rewrite; manchester-karachi joined later (a separate PR, same day) once its own Business Deal made the SEO opportunity real — see tests/manchester-karachi-business-seo.test.ts', () => {
     const overridden = routes.filter((r) => r.seoTitle || r.seoDescription).map((r) => r.slug);
-    expect(overridden.sort()).toEqual(['london-heathrow-doha', 'manchester-lahore']);
+    expect(overridden.sort()).toEqual(['london-heathrow-doha', 'manchester-karachi', 'manchester-lahore']);
   });
 
-  it('Karachi is untouched by this batch, as instructed', () => {
+  it('Karachi got no businessClarity panel in this batch, nor in its own later SEO PR — route and tracked fare already agree on "connecting", so there is no direct-vs-connecting conflict to disambiguate', () => {
     const route = getRouteBySlug('manchester-karachi')!;
-    expect(route.seoTitle).toBeUndefined();
     expect(route.businessClarity).toBeUndefined();
   });
 });
@@ -235,9 +234,9 @@ describe('Regression: everything the founder\'s spec required unchanged actually
     expect(dohaRange.priceNote).toContain('no operating-vs-marketing split is recorded as confirmed');
   });
 
-  it('every other route\'s metadataTitle/metadataDescription is byte-for-byte identical to what the plain default template alone would produce — the override touches only its own two routes', () => {
+  it('every other route\'s metadataTitle/metadataDescription is byte-for-byte identical to what the plain default template alone would produce — this batch\'s override touches only its own two routes (manchester-karachi\'s own later, separate PR is excluded here too — see tests/manchester-karachi-business-seo.test.ts for its own isolation proof)', () => {
     for (const route of routes) {
-      if (route.slug === 'london-heathrow-doha' || route.slug === 'manchester-lahore') continue;
+      if (['london-heathrow-doha', 'manchester-lahore', 'manchester-karachi'].includes(route.slug)) continue;
       const presentation = getRoutePresentation(route, NOW_ISO);
       // Re-derive what the plain template would produce by confirming
       // neither override field is set — if it were, this route would be a

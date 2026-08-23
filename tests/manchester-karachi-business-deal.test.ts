@@ -183,10 +183,8 @@ describe('Downstream effects — honestly re-derived, not assumed', () => {
 });
 
 describe('No SEO metadata changed in this batch', () => {
-  it('manchester-karachi carries no seoTitle/seoDescription/businessClarity — this is a data-only product PR', () => {
+  it('manchester-karachi carried no seoTitle/seoDescription/businessClarity at the time of this PR — this was a data-only product PR; a separate, later PR (23 Aug 2026) added durable, fare-shape-agnostic seoTitle/seoDescription once the Deal made the SEO opportunity real, but never businessClarity — see tests/manchester-karachi-business-seo.test.ts', () => {
     const route = getRouteBySlug('manchester-karachi')!;
-    expect(route.seoTitle).toBeUndefined();
-    expect(route.seoDescription).toBeUndefined();
     expect(route.businessClarity).toBeUndefined();
   });
 });
