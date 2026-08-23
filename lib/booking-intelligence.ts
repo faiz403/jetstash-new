@@ -4,7 +4,8 @@ import { getEffectiveRoutePresentation } from '@/lib/route-status-copy';
 import { getPeakPeriodById } from '@/data/peak-periods';
 import { getUpcomingOccurrences, type PeakDatePrecision } from '@/data/peak-period-dates';
 import { getBookingWindowsByRoute } from '@/data/booking-windows';
-import { getLatestPublishableObservation } from '@/data/fare-observations';
+import { getPublishableObservationsByRoute } from '@/data/fare-observations';
+import { selectRepresentativeObservation } from '@/lib/fare-signal';
 
 /**
  * Book-By Countdown — the single derivation layer for every booking-
@@ -95,6 +96,15 @@ export interface BookBySnapshot {
   /** The one date the panel leads with. */
   bookByDate: string;
   bookByBasis: 'route-recommendation' | 'surge-avoidance';
+  /**
+   * Kept the field name for a minimal diff (Book-By cabin safety, 23 Aug
+   * 2026), but this is no longer literally "the latest observation" — it's
+   * the same cabin-safe representative-fare selection the generic Fare
+   * Signal uses (selectRepresentativeObservation() in lib/fare-signal.ts):
+   * a current Economy observation when one exists, otherwise the latest
+   * observation regardless of cabin. See computeBookBySnapshot's own doc
+   * comment above where this is built.
+   */
   latestObservation: {
     price: number;
     priceNote: string;
@@ -229,15 +239,29 @@ export function computeBookBySnapshot(routeSlug: string, now: Date): BookBySnaps
 
   const state = computeBookByState(nowIso, occurrence.startDate, recommendedWindow, surgeStartDate);
 
-  const latest = getLatestPublishableObservation(routeSlug, nowIso);
-  const latestObservation = latest
+  // Book-By cabin safety (23 August 2026, founder-approved): this used to
+  // call getLatestPublishableObservation() directly — "whichever
+  // observation was checked most recently, any cabin" — a second,
+  // independently-drifting policy from the generic Fare Signal's own
+  // Economy-preference fix (PR #167, lib/fare-signal.ts). That let
+  // Book-By's "Verified check" show a newer Business fare (e.g.
+  // manchester-lahore's £3,051) directly beneath booking-timing guidance
+  // while the same route's Fare Signal correctly led with a current
+  // Economy fare (£628). selectRepresentativeObservation() is the one
+  // canonical policy both surfaces now share — see its own doc comment in
+  // lib/fare-signal.ts for the full reasoning and the confirmed defect.
+  const { observation: representative } = selectRepresentativeObservation(
+    getPublishableObservationsByRoute(routeSlug, nowIso),
+    nowIso
+  );
+  const latestObservation = representative
     ? {
-        price: latest.price,
-        priceNote: latest.priceNote,
-        observedDate: latest.observedDate,
-        source: latest.source,
-        cabin: latest.cabin,
-        ageDays: daysBetweenIso(latest.observedDate, nowIso),
+        price: representative.price,
+        priceNote: representative.priceNote,
+        observedDate: representative.observedDate,
+        source: representative.source,
+        cabin: representative.cabin,
+        ageDays: daysBetweenIso(representative.observedDate, nowIso),
       }
     : null;
 

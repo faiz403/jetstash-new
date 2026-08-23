@@ -119,6 +119,57 @@ function selectCurrentEconomyObservation(observations: FareObservation[], nowIso
 }
 
 /**
+ * Book-By cabin safety (23 August 2026, founder-approved, following an
+ * independent P0 verification — the second confirmed Sol Ultra Full Big
+ * Review finding, after Smart Fare Comparison). Confirmed live defect:
+ * lib/booking-intelligence.ts's computeBookBySnapshot() selected its
+ * "Verified check" via a cabin-blind getLatestPublishableObservation() —
+ * "whichever observation was checked most recently, any cabin" — a
+ * completely separate policy from this file's own Economy-preference fix
+ * above (PR #167). On manchester-lahore this meant the generic Fare
+ * Signal correctly led with £628 Economy while Book-By's own "Verified
+ * check" badge showed £3,051 Business, directly beneath booking-timing
+ * guidance a normal Economy-shopper never asked to see Business pricing
+ * from.
+ *
+ * The fix is this exported function: the exact same selection policy
+ * deriveFareSignal() (below) already applies — prefer a current Economy
+ * observation, otherwise fall back to the latest observation regardless
+ * of cabin — but returning the raw FareObservation rather than the public
+ * FareSignalObservation view model deriveFareSignal() builds. Book-By
+ * needs fields (priceNote) that view model deliberately doesn't carry;
+ * rather than force Book-By through a shape that doesn't fit, or write a
+ * second Economy-preference algorithm that could drift from this one
+ * again, this is the ONE representative-fare selection policy, and
+ * deriveFareSignal() itself is now just a thin wrapper around it.
+ */
+export function selectRepresentativeObservation(
+  observations: FareObservation[],
+  nowIso: string
+): { observation: FareObservation | null; state: FareSignalState; freshness: FareFreshnessState | null } {
+  const currentEconomy = selectCurrentEconomyObservation(observations, nowIso);
+  if (currentEconomy) {
+    return {
+      observation: currentEconomy,
+      state: 'current',
+      freshness: getFareFreshnessState(daysBetweenIso(currentEconomy.observedDate, nowIso)),
+    };
+  }
+
+  const { observation: latest, historicalOnly } = selectLatestObservation(observations);
+  if (!latest || !isPubliclyPublishable(latest)) {
+    return { observation: null, state: 'none', freshness: null };
+  }
+
+  const freshness = getFareFreshnessState(daysBetweenIso(latest.observedDate, nowIso));
+  return {
+    observation: latest,
+    state: freshness === 'fresh' && !historicalOnly ? 'current' : 'recent',
+    freshness,
+  };
+}
+
+/**
  * Derives the single public Fare Signal from the same publishability and
  * freshness rules used by the existing fare surfaces. Historical entries can
  * remain in the archive, but never displace a current observation when one is
@@ -126,32 +177,12 @@ function selectCurrentEconomyObservation(observations: FareObservation[], nowIso
  * not yet provide a defensible same-profile baseline for every route.
  */
 export function deriveFareSignal(observations: FareObservation[], nowIso: string): FareSignal {
-  const currentEconomy = selectCurrentEconomyObservation(observations, nowIso);
-  if (currentEconomy) {
-    const economySignal = toSignalObservation(currentEconomy);
-    if (economySignal) {
-      return {
-        state: 'current',
-        observation: economySignal,
-        freshness: getFareFreshnessState(daysBetweenIso(currentEconomy.observedDate, nowIso)),
-        strongerSignal: null,
-      };
-    }
-  }
-
-  const { observation: latest, historicalOnly } = selectLatestObservation(observations);
-  const observation = latest ? toSignalObservation(latest) : null;
-  if (!latest || !observation) {
+  const { observation: selected, state, freshness } = selectRepresentativeObservation(observations, nowIso);
+  const signalObservation = selected ? toSignalObservation(selected) : null;
+  if (!selected || !signalObservation) {
     return { state: 'none', observation: null, freshness: null, strongerSignal: null };
   }
-
-  const freshness = getFareFreshnessState(daysBetweenIso(latest.observedDate, nowIso));
-  return {
-    state: freshness === 'fresh' && !historicalOnly ? 'current' : 'recent',
-    observation,
-    freshness,
-    strongerSignal: null,
-  };
+  return { state, observation: signalObservation, freshness, strongerSignal: null };
 }
 
 export function getFareSignalForRoute(routeSlug: string, nowIso: string): FareSignal {
