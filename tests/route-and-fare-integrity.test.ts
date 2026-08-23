@@ -161,8 +161,13 @@ describe('Deal counts (TR-004) — a card with no tracked fare must not count as
     // man-lhe-business, lhr-business-lhe and lhr-doh-business each now have
     // a genuine, current, publishable Business observation for the first
     // time — see data/fare-observations.ts's "Business Fare Evidence
-    // Batch 1" block. manchester-karachi has no curated Business Deal at
-    // all, so its own new Business observation doesn't add a Deal here.
+    // Batch 1" block. manchester-karachi deliberately had no curated
+    // Business Deal at the time. man-khi-business joined this list on 23
+    // August 2026 (a separate product-completion PR, chosen over the next
+    // Tier B SEO candidate in a founder decision audit) — makes that same
+    // manchester-karachi Business observation (already logged since 22
+    // August) visible for the first time; see
+    // tests/manchester-karachi-business-deal.test.ts.
     expect(trackedDeals.map((d) => d.id)).toEqual([
       'man-lhe-economy',
       'lhr-del-economy',
@@ -180,6 +185,7 @@ describe('Deal counts (TR-004) — a card with no tracked fare must not count as
       'man-bcn-flight',
       'lhr-bom-economy',
       'man-khi-economy',
+      'man-khi-business',
       'man-ath-economy',
       'man-fco-economy',
       'lhr-doh-business',
@@ -745,7 +751,10 @@ describe('FARE-001 pilot — historic examples stay private; only fully dated, e
       // 2026 (Business Fare Evidence Batch 1) - each gained its
       // first-ever genuine, current, publishable Business-cabin
       // observation (append-only archive: no observedDate<=nowIso gate,
-      // so this test's earlier FIXED_TODAY still sees it).
+      // so this test's earlier FIXED_TODAY still sees it). man-khi-business
+      // joined this list 23 August 2026 (a separate product-completion
+      // PR) - its own Business observation was already complete since 22
+      // August, just not yet attached to a Deal.
       if (
         [
           'lhr-bom-economy',
@@ -754,6 +763,7 @@ describe('FARE-001 pilot — historic examples stay private; only fully dated, e
           'bhx-atq-economy',
           'man-dxb-economy',
           'man-khi-economy',
+          'man-khi-business',
           'man-isb-economy',
           'man-del-economy',
           'man-bom-economy',

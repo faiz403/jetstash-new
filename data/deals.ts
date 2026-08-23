@@ -501,6 +501,34 @@ export const deals: Deal[] = [
     toCountry: 'Pakistan',
     airline: 'PIA',
   },
+  // Manchester–Karachi Business Deal (23 Aug 2026, product completion —
+  // makes Business Fare Evidence Batch 1's manchester-karachi observation
+  // genuinely visible, closing the gap left when PR #166 deliberately
+  // curated no Deal for it). `airline: 'PIA'` follows the established,
+  // tested convention (see tests/fare-coverage-batch-b.test.ts's own
+  // "every new Deal's airline field is the route's own primary editorial
+  // operator, not the specific cheaper fare's source airline" comment) —
+  // the ROUTE's own first verified operator (manchester-karachi's
+  // airlineSlugs: ['pia']), never the tracked fare's own carrier. This is
+  // not a stale hardcode: getDealAirlineLabel() re-verifies it live against
+  // the route's current AirlineVerification status on every render, and
+  // the tracked fare's real carrier (Gulf Air) is attributed separately and
+  // correctly via DealCard's own fareSourceLabel, sourced live from the
+  // observation's `source` field — never from this field. Audited before
+  // adding: Deal.airline has exactly one production consumer
+  // (getDealAirlineLabel(), called only from components/ui/deal-card.tsx)
+  // and is never rendered raw anywhere.
+  {
+    id: 'man-khi-business',
+    category: 'business',
+    cabin: 'Business',
+    fromAirportSlug: 'manchester',
+    toDestinationSlug: 'karachi',
+    fromCity: 'Manchester',
+    toCity: 'Karachi',
+    toCountry: 'Pakistan',
+    airline: 'PIA',
+  },
   {
     id: 'man-ath-economy',
     category: 'flight',

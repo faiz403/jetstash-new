@@ -210,7 +210,7 @@ describe('Lahore/Doha route-vs-fare mismatch behaviour is correct against their 
   });
 });
 
-describe('Manchester-Karachi: no false route-vs-fare mismatch, no made-up fixed hub, no Business Deal', () => {
+describe('Manchester-Karachi: no false route-vs-fare mismatch, no made-up fixed hub', () => {
   it('the route itself remains structurally connecting, unchanged by this batch', () => {
     const { presentation } = presentationFor('manchester-karachi');
     expect(presentation.status).toBe('connecting');
@@ -233,12 +233,12 @@ describe('Manchester-Karachi: no false route-vs-fare mismatch, no made-up fixed 
     expect(html).not.toContain('Route service');
   });
 
-  it('no Business Deal exists for manchester-karachi in this PR', () => {
+  it('this PR (Business Fare Evidence Batch 1) deliberately curated no Business Deal for manchester-karachi — a separate product-completion PR (23 Aug 2026, "man-khi-business") added it later, once a founder decision audit compared it against the next Tier B SEO candidate and chose it; see tests/manchester-karachi-business-deal.test.ts for that Deal\'s own full coverage', () => {
     const route = getRouteBySlug('manchester-karachi')!;
     const businessDeal = deals.find(
       (d) => d.fromAirportSlug === route.airportSlug && d.toDestinationSlug === route.destinationSlug && d.cabin === 'Business'
     );
-    expect(businessDeal).toBeUndefined();
+    expect(businessDeal?.id).toBe('man-khi-business');
   });
 });
 
