@@ -1310,6 +1310,32 @@ export const routes: Route[] = [
       reviewDueDate: '2026-10-05',
       note: 'COV-001 verification-gap audit (21 August 2026): a live Manchester-Karachi search run directly on PIA\'s own ticketing engine (round trip, 1-15 Sep 2026, the dates sampled) returned 10 fare results. None was a nonstop itinerary. The results split across two different routings: PIA\'s own metal connecting via Islamabad (flights PK-702-PK-301/309), and separate Emirates/Saudia-coded itineraries connecting via Dubai or Jeddah. Because the routing was not consistent across the sampled results, no single via-city is recorded as a fixed fact here — this evidence supports "connecting, not nonstop" as the durable claim, not a specific permanent hub. Scope: this is what PIA\'s own live booking results showed for the sampled 1-15 Sep 2026 window on 21 August 2026 — a live fare search reflects the schedule and codeshare partners available at the time of the query, not a permanent published timetable, so this should be re-checked on the normal CONNECTING/STRUCTURAL cadence rather than treated as a one-time settled fact. Supersedes the prior DISPUTED classification (Route Verification Refresh Batch 2, 19 August 2026): that pass could only confirm Manchester Airport\'s own guide-page system returns a 404 for Karachi, which was corroborating but not conclusive; today\'s live booking-engine check is the qualifying primary-source evidence this route previously lacked.',
     },
+    // SEO Domination — Manchester-Karachi Business (23 Aug 2026): targets
+    // "business class flights to karachi" / "business class to karachi"
+    // now that Business Fare Evidence Batch 1 plus the later Karachi
+    // Business Deal product-completion PR (#169) together make a genuine,
+    // current, checked Business fare visible on this page. Deliberately
+    // does NOT encode today's fare shape into the title/description the
+    // way an earlier draft of this decision proposed ("...Business Class:
+    // Connecting Fare") — founder correction, 23 Aug 2026: this route's
+    // own connecting status is itself under a normal review cycle
+    // (reviewDueDate 2026-10-05) and the next Business observation could
+    // just as easily be direct, use a different airline, or a different
+    // connection city, all while the underlying SEO opportunity stays
+    // exactly as valid. The static metadata below describes the durable
+    // JetStash product (a tracked, checked Business fare with full
+    // itinerary/connection/history detail) rather than freezing today's
+    // Gulf Air/Bahrain routing into the title — the live Business Deal
+    // card (data/deals.ts's man-khi-business, PR #169) is the one place
+    // that time-sensitive fare truth (£2,553, Gulf Air, via Bahrain,
+    // checked 22 August 2026) belongs. No BusinessClarityPanel/FAQ added
+    // here — route and tracked fare already agree on "connecting", so
+    // there is no direct-vs-connecting conflict to disambiguate the way
+    // Lahore/Doha needed. Character budget: 53 chars + the automatic
+    // " | JetStash" suffix = 64, under the site's ≤65 guideline.
+    seoTitle: 'Manchester–Karachi Business Class Fares & Route Guide',
+    seoDescription:
+      'Track checked Business Class fares for Manchester–Karachi, with itinerary, connection and fare-history details kept separate from the route’s verified service status.',
     intro:
       'PIA sells Manchester to Karachi as a connecting itinerary, not a nonstop flight. A live search on PIA\'s own booking engine (21 August 2026) showed routings via Islamabad on PIA\'s own aircraft, alongside codeshare options via Dubai or Jeddah — the exact routing varies by date and fare class, so check the live itinerary for your own dates rather than assuming a fixed hub.',
     bookingWindowNote:
