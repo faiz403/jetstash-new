@@ -67,6 +67,58 @@ function selectLatestObservation(observations: FareObservation[]): { observation
 }
 
 /**
+ * Generic Fare Signal cabin safety (23 August 2026). Business Fare Evidence
+ * Batch 1 (PR #166) exposed a defect that pre-dates it but was never
+ * exercised: deriveFareSignal()'s plain "latest observation wins" sort has
+ * no cabin awareness at all, so once a route ever gets a Business
+ * observation dated the same day or later than its current Economy one, the
+ * generic route page (and every other surface that reuses
+ * getFareSignalForRoute() -- app/routes/[slug]/page.tsx's hero,
+ * lib/destination-flight-guides.ts's per-airport destination cards, and
+ * lib/tracked-fare-groups.ts's /tracked-fares listing) would silently start
+ * leading with a Business fare a normal, non-Business-shopping visitor never
+ * asked to see. Traced through git history before fixing: the original
+ * "add universal route fare signal" commit (a909ed2, 11 Aug 2026) carries no
+ * cabin reasoning at all, and tests/fare-signal.test.ts has never once
+ * exercised a mixed-cabin scenario -- every fixture is hardcoded Economy.
+ * This was an unexamined default, not a deliberate design choice.
+ *
+ * The fix: prefer a current (fresh, non-historical, publicly publishable)
+ * Economy observation outright, whenever one exists, regardless of what any
+ * other cabin's latest check date is -- a stale or missing Economy
+ * observation must never block a fresh Business one from surfacing (a route
+ * with no Economy evidence, or whose Economy has aged past
+ * OBSERVATION_FRESH_DAYS, correctly falls through to the pre-existing
+ * cabin-blind latest-wins behaviour below).
+ *
+ * Deliberately narrow: this only changes deriveFareSignal()'s own default
+ * selection, called in production from getFareSignalForRoute() (the
+ * cabin-mixed, all-cabins case) and from
+ * hasCurrentFareSignalForCabinAmongRoutes() (which pre-filters its input to
+ * one cabin via getPublishableObservationsByRouteAndCabin() before ever
+ * reaching here -- with only one cabin present, this preference is
+ * structurally a no-op, so /business-class and every other cabin-specific
+ * surface are unaffected by construction, not by a special case).
+ */
+function selectCurrentEconomyObservation(observations: FareObservation[], nowIso: string): FareObservation | undefined {
+  // Deliberately NOT selectLatestObservation()'s "fall back to historical
+  // entries when nothing else exists" behaviour -- that fallback exists so
+  // the overall signal still shows *something* rather than nothing, marked
+  // 'recent'/'historical' accordingly. A historical-only entry must never
+  // be treated as the preferred *current* Economy signal, or a lone
+  // historical Economy record would wrongly block a genuinely current
+  // Business observation from ever surfacing.
+  return [...observations]
+    .filter((observation) =>
+      observation.cabin === 'Economy'
+      && observation.comparisonEligibility !== 'historical'
+      && isPubliclyPublishable(observation)
+      && getFareFreshnessState(daysBetweenIso(observation.observedDate, nowIso)) === 'fresh'
+    )
+    .sort((a, b) => b.observedDate.localeCompare(a.observedDate) || a.price - b.price || a.id.localeCompare(b.id))[0];
+}
+
+/**
  * Derives the single public Fare Signal from the same publishability and
  * freshness rules used by the existing fare surfaces. Historical entries can
  * remain in the archive, but never displace a current observation when one is
@@ -74,6 +126,19 @@ function selectLatestObservation(observations: FareObservation[]): { observation
  * not yet provide a defensible same-profile baseline for every route.
  */
 export function deriveFareSignal(observations: FareObservation[], nowIso: string): FareSignal {
+  const currentEconomy = selectCurrentEconomyObservation(observations, nowIso);
+  if (currentEconomy) {
+    const economySignal = toSignalObservation(currentEconomy);
+    if (economySignal) {
+      return {
+        state: 'current',
+        observation: economySignal,
+        freshness: getFareFreshnessState(daysBetweenIso(currentEconomy.observedDate, nowIso)),
+        strongerSignal: null,
+      };
+    }
+  }
+
   const { observation: latest, historicalOnly } = selectLatestObservation(observations);
   const observation = latest ? toSignalObservation(latest) : null;
   if (!latest || !observation) {
@@ -129,11 +194,13 @@ export function hasCurrentFareSignalAmongRoutes(routeSlugs: string[], nowIso: st
  * Cabin-scoped sibling of hasCurrentFareSignalAmongRoutes, for a
  * category page like /business-class where the relevant question is "does a
  * current Business fare exist anywhere", not "does a current fare of any
- * cabin exist on this specific route" — deriveFareSignal() itself is
- * cabin-agnostic (a route's Fare Signal is its single latest observation
- * regardless of cabin), so the fix is to feed it an already cabin-filtered
- * observation list (getPublishableObservationsByRouteAndCabin) rather than
- * duplicate its fresh/recent/none derivation logic locally.
+ * cabin exist on this specific route" — feeds deriveFareSignal() an already
+ * cabin-filtered observation list (getPublishableObservationsByRouteAndCabin)
+ * rather than duplicating its fresh/recent/none derivation logic locally.
+ * deriveFareSignal() itself now prefers a current Economy observation when
+ * one exists among its input (see its own "Generic Fare Signal cabin
+ * safety" doc comment) — irrelevant here by construction, since this
+ * function's input never contains more than one cabin to begin with.
  */
 export function hasCurrentFareSignalForCabinAmongRoutes(routeSlugs: string[], cabin: DealCabin, nowIso: string): boolean {
   return routeSlugs.some(
