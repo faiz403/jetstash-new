@@ -1,60 +1,57 @@
 import { describe, it, expect } from 'vitest';
-import { routes, getRouteBySlug, getRoutePresentation } from '@/data/routes';
+import { routes, getRouteBySlug } from '@/data/routes';
 import { routeStatusEvents } from '@/data/route-status-events';
 import { getEffectiveRoutePresentation } from '@/lib/route-status-copy';
 import { fareObservations, isPubliclyPublishable } from '@/data/fare-observations';
 
 /**
  * SEO Domination Batch 1 (22 August 2026) — the first implementation wave
- * from the SEO Domination Shortlist audit. Originally shipped with two
+ * from the SEO Domination Shortlist audit. Originally attempted two
  * evidence-ready Tier A business-class opportunities (Lahore, Doha) and one
  * Tier B direct-flight evidence opportunity (Manchester-Mumbai), via a new
  * opt-in `Route.seoTitle`/`seoDescription` override mechanism. Founder
  * review (same day, before merge) found the Business Class Lahore/Doha
  * titles crossed the project's own evidence gate: none of the three routes
- * show any Business-cabin content on the live page, and the only
- * Business-cabin observations that exist for them are either not publicly
- * publishable or don't exist at all. Those three overrides were removed —
- * see the "EVIDENCE REQUIRED BEFORE SEO OPTIMISATION" comments in
- * data/routes.ts on manchester-lahore, london-heathrow-lahore and
- * london-heathrow-doha. With no route left using it, a second founder pass
+ * showed any Business-cabin content on the live page, and the only
+ * Business-cabin observations that existed for them were either not
+ * publicly publishable or didn't exist at all. Those three overrides were
+ * removed, and — with no route left using it — a second founder pass
  * removed the seoTitle/seoDescription mechanism itself as dead speculative
- * infrastructure (it was never required by the Manchester-Mumbai/Delhi fix
- * below, which overrides metadataTitle/metadataDescription at the shared
- * withdrawal-announced presentation layer, not via a per-route field) —
- * leaving Manchester-Mumbai plus the architecturally shared Manchester-Delhi
- * fix as this batch's actual final scope. Karachi remains deliberately
- * excluded — no Business-cabin evidence exists for it either. Business Fare
- * Evidence Batch 1 (queued, not yet started) is the follow-up that would
- * make a future, real Business-class override legitimate again.
+ * infrastructure, leaving Manchester-Mumbai plus the architecturally shared
+ * Manchester-Delhi fix as that batch's actual final scope. The
+ * "Business Class Lahore/Doha SEO push" describe block below is kept as
+ * this decision's historical record (the legacy, non-publishable
+ * observations that made the original titles premature).
+ *
+ * SEO Domination Batch 1B (23 August 2026) re-opened exactly that decision
+ * once the evidence gate was genuinely closed: Business Fare Evidence Batch
+ * 1 (PR #166) logged real, current, publishable Business observations for
+ * all three routes, and the Fare Signal cabin-safety fix (PR #167) ensured
+ * the generic route-page Fare Signal still leads with Economy regardless.
+ * seoTitle/seoDescription were reintroduced (same shape as before — see
+ * data/routes.ts's own doc comment) and applied to manchester-lahore and
+ * london-heathrow-doha only; london-heathrow-lahore deliberately stays on
+ * its default metadata to avoid cannibalising manchester-lahore's "business
+ * class to lahore" targeting within the Lahore cluster. See
+ * tests/seo-domination-batch-1b.test.ts for full coverage of the new
+ * titles, the Business clarity panel and the FAQ content.
  */
 
 const NOW_ISO = '2026-08-22';
 
-describe('Business Class Lahore/Doha SEO push: considered and dropped, evidence gate not met', () => {
-  const formerTargets = ['manchester-lahore', 'london-heathrow-lahore', 'london-heathrow-doha'] as const;
-
-  it('each route\'s title/description is the plain default template — no Business Class wording and no fare figure', () => {
-    for (const slug of formerTargets) {
-      const route = getRouteBySlug(slug)!;
-      const presentation = getRoutePresentation(route, NOW_ISO);
-      expect(presentation.metadataTitle, slug).not.toContain('Business Class');
-      expect(presentation.metadataTitle, slug).not.toMatch(/£\d/);
-      expect(presentation.metadataDescription, slug).not.toMatch(/£\d/);
-    }
-  });
-
-  it('at the time this decision was made (22 Aug 2026), the only Business-cabin observation on each route (where one existed) was not publicly publishable, or none existed at all', () => {
+describe('Business Class Lahore/Doha SEO push (22 Aug): historical record of why the original attempt was premature', () => {
+  it('the legacy Business-cabin observation each route had at the time (where one existed) was not publicly publishable — the reason the 22 Aug titles were withdrawn', () => {
     // london-heathrow-lahore had zero Business observations logged at all;
-    // manchester-lahore and london-heathrow-doha each had exactly one,
-    // both legacy records missing departureDate/returnDate/currency. Business
+    // manchester-lahore and london-heathrow-doha each had exactly one, both
+    // legacy records missing departureDate/returnDate/currency. Business
     // Fare Evidence Batch 1 (same day, later) closed this evidence gap for
     // all three routes with genuine, current, publishable observations —
     // see data/fare-observations.ts's "Business Fare Evidence Batch 1"
-    // block — but that batch was fare-evidence-only and deliberately did
-    // not re-open the SEO decision this file documents, so the historical
-    // record below (why the legacy Business observations specifically
-    // could never have supported the original titles) still stands.
+    // block — and SEO Domination Batch 1B (23 Aug) then acted on that new
+    // evidence for manchester-lahore and london-heathrow-doha. The
+    // historical record below (why these specific legacy observations
+    // could never have supported the original 22 Aug titles) still stands
+    // regardless.
     const legacyBusinessObs = ['obs-man-lhe-business-1', 'obs-lhr-doh-business-1'];
     for (const id of legacyBusinessObs) {
       const obs = fareObservations.find((o) => o.id === id)!;
@@ -64,12 +61,10 @@ describe('Business Class Lahore/Doha SEO push: considered and dropped, evidence 
     }
   });
 
-  it('Business Fare Evidence Batch 1 (22 Aug 2026) closed the evidence gap for all three routes, but the plain-default SEO title/description above was deliberately left unchanged — evidence and SEO readiness remain separate decisions', () => {
-    for (const slug of formerTargets) {
-      expect(fareObservations.some((o) => o.routeSlug === slug && o.cabin === 'Business' && isPubliclyPublishable(o)), slug).toBe(true);
-      const route = getRouteBySlug(slug)!;
-      const presentation = getRoutePresentation(route, NOW_ISO);
-      expect(presentation.metadataTitle, slug).not.toContain('Business Class');
+  it('the legacy non-publishable observations above are still in the archive (append-only, never overwritten) alongside the newer genuine ones — proves this historical record was never silently deleted when the evidence gap was later closed', () => {
+    const legacyBusinessObs = ['obs-man-lhe-business-1', 'obs-lhr-doh-business-1'];
+    for (const id of legacyBusinessObs) {
+      expect(fareObservations.some((o) => o.id === id), id).toBe(true);
     }
   });
 });
