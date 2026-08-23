@@ -44,9 +44,18 @@ const applyTemplate = (title: string) => `${title} | ${siteConfig.name}`;
  * buildUnverifiedPresentation() regardless of peakPeriodIds, so they must be
  * excluded here — they're covered by the separate
  * 'verification-pending' describe block below instead.
+ *
+ * Also excludes any route carrying a `seoTitle` override (SEO Domination
+ * Batch 1B, 23 Aug 2026 — manchester-lahore and london-heathrow-doha) —
+ * this suite is specifically about the shared default peak-period template,
+ * and an overridden route deliberately doesn't use it. This exact filter
+ * existed once before (peakPeriodRoutesOnDefaultTemplate(), removed in
+ * f0a36f3 when the override mechanism itself was temporarily dead) and is
+ * legitimately needed again now that overrides have real consumers — see
+ * data/routes.ts's own seoTitle doc comment.
  */
 function peakPeriodRoutes() {
-  return routes.filter((r) => r.peakPeriodIds.length > 0 && getRoutePresentation(r, NOW_ISO).status !== 'unverified');
+  return routes.filter((r) => r.peakPeriodIds.length > 0 && !r.seoTitle && getRoutePresentation(r, NOW_ISO).status !== 'unverified');
 }
 
 describe('peak-period route titles contain "Flights" and fit the character threshold', () => {

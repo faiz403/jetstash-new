@@ -9,7 +9,7 @@ import { getAirlinesBySlugs } from '@/data/airlines';
 import { getDealsByDestination } from '@/data/deals';
 import { getTimelineByRoute } from '@/data/route-timeline';
 import { getActiveWarningsByRoute } from '@/data/route-warnings';
-import { getPublishableObservationsByRoute } from '@/data/fare-observations';
+import { getPublishableObservationsByRoute, getFareRangeSummary } from '@/data/fare-observations';
 import { getBookingWindowsByRoute } from '@/data/booking-windows';
 import { getTipsForScope } from '@/data/traveller-tips';
 import { getCommunityNotesForScope } from '@/data/community-notes';
@@ -41,6 +41,7 @@ import { getSmartFareComparisonForRoute } from '@/lib/smart-fare-route-adapter';
 import { FareSignal } from '@/components/route/fare-signal';
 import { getFareSignalForRoute, shouldShowNoFareFallback } from '@/lib/fare-signal';
 import { getRouteIntelligenceDisplayForRoute } from '@/lib/route-intelligence-display';
+import { BusinessClarityPanel } from '@/components/route/business-clarity-panel';
 
 /**
  * Route-hero focal-position overrides, keyed by destination slug. HeroBackdrop's default
@@ -161,6 +162,15 @@ export default async function RoutePage({ params }: { params: Promise<{ slug: st
   // dashboard-verified map (the 9 London-origin routes today) — never a generic
   // Trip.com fallback. See getTripComFlightHandoffUrl's doc comment.
   const tripComUrl = getTripComFlightHandoffUrl(route.slug, airport.slug, dest.slug);
+  // SEO Domination Batch 1B (23 Aug 2026): route.businessClarity is static,
+  // hand-authored route-vs-fare context; the actual price and checked-date
+  // it renders alongside always come from this live lookup, never from a
+  // stored figure, so the panel can never go stale — see
+  // BusinessClarityPanel's own doc comment. Fails closed: if the route's
+  // Business observation ever stops being current/publishable,
+  // businessFareRange is null and the whole panel simply doesn't render,
+  // rather than showing a broken or invented fare.
+  const businessFareRange = route.businessClarity ? getFareRangeSummary(route.slug, 'Business', nowIso) : null;
 
   return (
     <>
@@ -622,6 +632,13 @@ export default async function RoutePage({ params }: { params: Promise<{ slug: st
               <NoFareFallback cityLabel={`${airport.city} to ${dest.city}`} routeSlug={route.slug} />
             </div>
           ) : null}
+          {/* SEO Domination Batch 1B (23 Aug 2026) — sits directly below the
+              Business Deal card it's about, only when a genuine current
+              Business observation backs it (businessFareRange is null
+              otherwise; see its own computation above). */}
+          {route.businessClarity && businessFareRange && (
+            <BusinessClarityPanel clarity={route.businessClarity} fareRange={businessFareRange} />
+          )}
           {/* id anchors the Book-By panel's "Watch this route" CTA; the global
               scroll-padding-top keeps it clear of the sticky header. */}
           <div id="route-watch" className="mt-8 max-w-xl">

@@ -334,15 +334,16 @@ describe('TR-017 — presentation integrity: metadata and social copy must refle
     expect(String(meta.title)).toMatch(/Connection Guide/i);
   });
 
-  it('a route WITH real peak-period content (e.g. manchester-lahore) keeps the "Booking & Peak Periods" title — the fix is content-aware, not a blanket removal', () => {
-    // Briefly swapped to birmingham-lahore during SEO Domination Batch 1 (22
-    // August 2026) while manchester-lahore carried a checked-opportunity
-    // title override ("business class to lahore"); that override — and later
-    // the whole override mechanism, once unused — was removed the same
-    // batch after founder review found the Business-cabin evidence gate
-    // wasn't met, so manchester-lahore is back on the plain default template
-    // and reverted back to being this fixture.
-    const route = getRouteBySlug('manchester-lahore')!;
+  it('a route WITH real peak-period content (e.g. birmingham-lahore) keeps the "Booking & Peak Periods" title — the fix is content-aware, not a blanket removal', () => {
+    // Swapped to birmingham-lahore again for SEO Domination Batch 1B (23
+    // August 2026): manchester-lahore now legitimately carries a checked,
+    // evidence-backed seoTitle override ("business class to lahore" —
+    // Business Fare Evidence Batch 1 closed the gap that made the 22 August
+    // attempt premature; see data/routes.ts's own seoTitle doc comment for
+    // the full history), so it's no longer a plain-default-template
+    // example. birmingham-lahore carries no override and has the same
+    // peak-period content shape.
+    const route = getRouteBySlug('birmingham-lahore')!;
     expect(route.peakPeriodIds.length).toBeGreaterThan(0);
     const p = getRoutePresentation(route, FIXED_TODAY);
     // "Windows" was dropped and the connector shortened to an en dash in the

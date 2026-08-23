@@ -122,6 +122,88 @@ export interface Route {
     outbound?: string[];
     return?: string[];
   };
+  /**
+   * Optional per-route override for the generated <title> — reintroduced
+   * for SEO Domination Batch 1B (23 Aug 2026). getRoutePresentation()'s
+   * default metadataTitle is a fixed template shared by every route
+   * (`"${pair} Flights: ..."`); most routes should keep that. This exact
+   * mechanism was added, then removed the same week (22 Aug 2026,
+   * `938013b` → `20b78f3` → `f0a36f3`) when a Business Class override was
+   * proposed for Lahore/Doha before any genuine Business-cabin fare
+   * evidence existed — see manchester-lahore, london-heathrow-lahore and
+   * london-heathrow-doha's own "EVIDENCE REQUIRED BEFORE SEO OPTIMISATION"
+   * comments for that history. Business Fare Evidence Batch 1 (PR #166,
+   * merged) and the Fare Signal cabin-safety fix (PR #167, merged) together
+   * removed the reason it was dead: manchester-lahore and
+   * london-heathrow-doha now carry it again, for real. Set this only when a
+   * specific, real Search Console opportunity has been checked (live SERP,
+   * existing evidence readiness) and the default template genuinely doesn't
+   * target it — never as a blanket rewrite. Must stay evidence-safe: no
+   * invented fare, no "best"/"cheapest"/"premium"/"luxury" superlative, no
+   * claim the route's own verified facts don't support, and never a claim
+   * that a tracked connecting fare is the route's own direct service. Keep
+   * to the same ~65-character guideline the default template already
+   * respects (measured on the full rendered title, including the
+   * automatic " | JetStash" suffix — see tests/peak-period-title-flights.test.ts).
+   * A ledger-managed route's withdrawal-aware metadata
+   * (`buildWithdrawalAnnouncedPresentation()` in lib/route-status-copy.ts)
+   * still overrides this unconditionally where it applies — that builder
+   * operates on the already-built RoutePresentation object regardless of
+   * whether metadataTitle originated from this override or the default
+   * template, so time-sensitive service-status truth always wins.
+   */
+  seoTitle?: string;
+  /**
+   * Optional per-route override for the generated <meta description> —
+   * same rules, origin and precedence as seoTitle above. The default
+   * (truncateMetadataDescription(route.intro)) should keep serving almost
+   * every route; only override when route.intro isn't written to answer
+   * the specific query this override targets.
+   */
+  seoDescription?: string;
+  /**
+   * Optional Business Class route-vs-fare clarity content — SEO Domination
+   * Batch 1B (23 Aug 2026). Renders a short on-page section plus a visible
+   * FAQ (app/routes/[slug]/page.tsx) that plainly separates this route's
+   * own verified direct service from a tracked Business Class fare that
+   * differs from it — JetStash's actual differentiator versus aggregators
+   * that just show a price. Only set alongside a real seoTitle override,
+   * once both a genuine route-service fact and a genuine current Business
+   * observation exist for the route.
+   *
+   * Deliberately holds NO price and NO checked-date: those are rendered
+   * dynamically by the route page from the live archive
+   * (getFareRangeSummary(route.slug, 'Business', nowIso)), the same
+   * source every other fare display on the site already uses — so this
+   * field can never go stale the way a hardcoded £ figure would (see
+   * CLAUDE.md's "Deal cards never show a hardcoded price" rule, which the
+   * same reasoning extends to here). trackedFareShape describes only the
+   * itinerary's stable shape (self-transfer/stops/via-hub), which a
+   * re-observation could in principle change — same class of hand-authored,
+   * periodically-reviewed editorial fact as route.connectingAlternative's
+   * typicalStops, not something rendered from live data.
+   */
+  businessClarity?: {
+    /** e.g. "PIA operates Manchester–Lahore direct (confirmed via Manchester Airport's own announcement)." */
+    routeServiceSummary: string;
+    /**
+     * The tracked Business fare's itinerary shape only — must read
+     * naturally after "is ", must never include a price, and must never
+     * describe the fare as the route's own direct/named-airline service.
+     * e.g. "a self-transfer itinerary across five other airlines, with
+     * three stops each way".
+     */
+    trackedFareShape: string;
+    /** e.g. "Are there direct flights from Manchester to Lahore, and is JetStash's tracked Business fare direct?" */
+    faqQuestion: string;
+    /**
+     * Answers only the route-service half of faqQuestion plainly (cite the
+     * primary source). The fare half is appended dynamically by the route
+     * page from trackedFareShape plus the live observation — never write
+     * a price or checked date into this string.
+     */
+    faqRouteServiceAnswer: string;
+  };
 }
 
 export const routes: Route[] = [
@@ -987,16 +1069,45 @@ export const routes: Route[] = [
       reviewDueDate: '2026-09-14',
       note: 'Re-verified on 14 August 2026 against Manchester Airport\'s current media-centre route announcement: Pakistan International Airlines adds Lahore as its second direct Manchester destination from 3 July 2026. This confirms direct status, PIA as operator and the launch date. The source does not establish a current frequency, so frequency remains unpublished. PIA\'s own site was also checked for corroboration but does not publish a Lahore–Manchester schedule detail.',
     },
-    // EVIDENCE REQUIRED BEFORE SEO OPTIMISATION (SEO Domination Batch 1, 22
-    // Aug 2026): a Business Class SEO push targeting "business class to
-    // lahore" was considered and dropped after founder review checked the
-    // live route page and found it shows no Business evidence at all — the
-    // one Fare Signal on this page is an unrelated Economy connecting fare,
-    // and the only Business observation ever logged
-    // (obs-man-lhe-business-1) is not isPubliclyPublishable(). See Business
-    // Fare Evidence Batch 1 (queued). Do not target this route for
-    // Business-class SEO until a genuine, current, publishable
-    // Business-cabin observation exists for it.
+    // SEO Domination Batch 1B (23 Aug 2026): re-targets "business class to
+    // lahore" now that the evidence gate from the 22 Aug attempt
+    // (see f0a36f3's removal, and the "EVIDENCE REQUIRED BEFORE SEO
+    // OPTIMISATION" note this comment replaces) is genuinely met — Business
+    // Fare Evidence Batch 1 (PR #166) logged a real, current, publishable
+    // Business observation for this route (obs-man-lhe-business-20260822-8w-v1,
+    // £3,051), and PR #167 fixed the generic Fare Signal so this route's own
+    // Economy signal (£628) still leads, never displaced by the newer
+    // Business check. manchester-lahore is the canonical primary for this
+    // query (working Trip.com CTA; london-heathrow-lahore stays on its
+    // default metadata to avoid cannibalisation — see
+    // tests/seo-domination-batch-1b.test.ts). Deliberately does NOT target
+    // "best"/"cheapest" business class to lahore: the tracked £3,051 fare is
+    // a 3-stop self-transfer itinerary priced above the live UK SERP's own
+    // ~£1,700–£2,500 range, not a "best" result by any honest metric.
+    // Deliberately does NOT claim the tracked fare is PIA or direct — PIA's
+    // own direct Manchester–Lahore service (re-verified 14 Aug 2026,
+    // reviewDueDate 14 Sep 2026, no route-status-events override) is a
+    // completely different, non-self-transfer journey from the evidenced
+    // Business fare. Founder correction (23 Aug 2026, PR #168 review):
+    // the original "Direct vs Connecting" phrasing reads too easily as
+    // "direct Business Class vs connecting Business Class" — a
+    // cabin-specific claim about the direct service itself the evidence
+    // never established (PIA's own direct-route confirmation says
+    // nothing about cabin). "Fare & Direct Route" grammatically
+    // separates the two nouns (a fare, and a route fact) instead of
+    // reading as two variants of one thing. Character budget: 53 chars +
+    // the automatic " | JetStash" suffix = 64, under the site's own ≤65
+    // guideline ceiling.
+    seoTitle: 'Manchester–Lahore Business Class: Fare & Direct Route',
+    seoDescription:
+      'PIA operates Manchester–Lahore direct. JetStash separately tracks a connecting Business Class fare, and shows how it differs from the direct route service.',
+    businessClarity: {
+      routeServiceSummary: "PIA operates Manchester–Lahore direct (confirmed via Manchester Airport's own announcement, re-verified 14 August 2026).",
+      trackedFareShape: 'a self-transfer itinerary across five other airlines, with three stops each way',
+      faqQuestion: "Are there direct flights from Manchester to Lahore, and is JetStash's tracked Business fare direct?",
+      faqRouteServiceAnswer:
+        "PIA operates Manchester to Lahore direct — confirmed via Manchester Airport's own announcement (re-verified 14 August 2026). You may see other sources suggesting no direct UK–Lahore flights exist; that doesn't match this primary-source evidence.",
+    },
     intro:
       'The flagship Pakistan corridor from the North of England. PIA runs direct Manchester to Lahore services (confirmed via Manchester Airport\'s own announcement, launched 3 July 2026) — a direct service for the North West\'s Punjabi community, avoiding a Gulf connection, an extra layover, and a transfer point where baggage could go astray.',
     bookingWindowNote:
@@ -1104,16 +1215,41 @@ export const routes: Route[] = [
       reviewDueDate: '2026-09-17',
       note: 'Route Verification Refresh Batch 1 (18 August 2026): Qatar Airways\' own booking route for this pair is still live; direct service is not in dispute. However, independent reporting (not a primary source, kept out of public copy) describes a Qatar Airways schedule reduction for this pair announced for spring 2026 — a genuine future change-risk signal even though nothing has changed yet. Classified RECENT / CHANGING rather than STABLE for that reason — 30-day review window per the locked verification cadence policy, not the 90-day STABLE window.',
     },
-    // EVIDENCE REQUIRED BEFORE SEO OPTIMISATION (SEO Domination Batch 1, 22
-    // Aug 2026): a Business Class SEO push targeting "business class to
-    // doha from uk" was considered and dropped after founder review checked
-    // the live route page and found it shows no Business evidence at all —
-    // the one Fare Signal on this page is an unrelated Economy connecting
-    // fare with no working Trip.com CTA, and the only Business observation
-    // ever logged (obs-lhr-doh-business-1) is not isPubliclyPublishable().
-    // See Business Fare Evidence Batch 1 (queued). Do not target this route
-    // for Business-class SEO until a genuine, current, publishable
-    // Business-cabin observation exists for it.
+    // SEO Domination Batch 1B (23 Aug 2026): re-targets "business class to
+    // doha from uk" / "business class flights to doha" now that the
+    // evidence gate from the 22 Aug attempt (see f0a36f3's removal, and the
+    // "EVIDENCE REQUIRED BEFORE SEO OPTIMISATION" note this comment
+    // replaces) is genuinely met — Business Fare Evidence Batch 1 (PR #166)
+    // logged a real, current, publishable Business observation for this
+    // route (obs-lhr-doh-business-20260822-8w-v1, £1,596), and PR #167 fixed
+    // the generic Fare Signal so this route's own Economy signal (£471)
+    // still leads. This route still has no working Trip.com CTA (Heathrow
+    // structural gap, unrelated to and unfixed by this batch — see
+    // getTripComFlightHandoffUrl's own doc comment) — commercial conversion
+    // is weaker here than on manchester-lahore, deliberately accepted
+    // because the ranking/trust case stands on its own. Deliberately does
+    // NOT claim £1,596 is Qatar Airways or direct: the tracked fare is a
+    // separate, connecting EgyptAir itinerary via Cairo (all 4 segments
+    // labelled plainly "EgyptAir", no confirmed operating-carrier split —
+    // see the observation's own priceNote). No price in the title (a dated
+    // fare observation is not durable metadata). Founder correction (23
+    // Aug 2026, PR #168 review): "Direct vs Connecting" read too easily
+    // as "direct Business Class vs connecting Business Class" — a
+    // cabin-specific claim about Qatar Airways' own direct service that
+    // was never evidenced. "Fare & Direct Route" grammatically separates
+    // the fare from the route fact instead of reading as two variants of
+    // one thing. Character budget: 47 chars + the automatic " | JetStash"
+    // suffix = 58, comfortably under the site's ≤65 guideline.
+    seoTitle: 'London–Doha Business Class: Fare & Direct Route',
+    seoDescription:
+      'Qatar Airways operates Heathrow–Doha direct. JetStash separately tracks a connecting Business Class fare via Cairo — route and fare kept clearly distinct.',
+    businessClarity: {
+      routeServiceSummary: 'Qatar Airways operates Heathrow–Doha direct.',
+      trackedFareShape: 'a connecting EgyptAir itinerary via Cairo, with one stop each way',
+      faqQuestion: "Are there direct flights from London to Doha, and is JetStash's tracked Business fare direct?",
+      faqRouteServiceAnswer:
+        'Qatar Airways operates Heathrow to Doha direct.',
+    },
     intro:
       'Qatar Airways currently offers a direct London Heathrow to Doha booking route. Doha is also a major onward hub, but connection choices and timings should be checked against the live itinerary.',
     bookingWindowNote:
@@ -1904,16 +2040,18 @@ export const routes: Route[] = [
       reviewDueDate: '2026-09-13',
       note: 'Heathrow Airport\'s own media centre confirms: "A weekly service between Heathrow and Lahore launches from 30 March, reconnecting passengers with another much-loved Pakistani city. Operating from Terminal 4..." — confirms direct status, PIA as operator (the same press release separately confirms PIA\'s Islamabad relaunch), the weekly launch frequency and Terminal 4. The release does not state a current frequency beyond that launch figure, so none beyond it is published. PIA\'s own site (piac.com.pk) remains Cloudflare-blocked to this session\'s tooling; no PIA-specific Karachi service is mentioned anywhere in this release.',
     },
-    // EVIDENCE REQUIRED BEFORE SEO OPTIMISATION (SEO Domination Batch 1, 22
-    // Aug 2026): a Business Class SEO push targeting "business class to
-    // lahore" was considered and dropped after founder review checked the
-    // live route page and found it shows no Business evidence at all — the
-    // one Fare Signal on this page is an unrelated Economy connecting fare
-    // with no working Trip.com CTA, and this route has a curated Business
-    // Deal (lhr-business-lhe) but zero Business fare observations logged at
-    // all. See Business Fare Evidence Batch 1 (queued). Do not target this
-    // route for Business-class SEO until a genuine, current, publishable
-    // Business-cabin observation exists for it.
+    // KEPT ON DEFAULT METADATA — CLUSTER SECONDARY (SEO Domination Batch
+    // 1B, 23 Aug 2026): unlike the 22 Aug attempt this replaces, the
+    // evidence gate for a Business Class override is now genuinely met —
+    // Business Fare Evidence Batch 1 (PR #166) logged a real, current,
+    // publishable Business observation for this route too
+    // (obs-lhr-lhe-business-20260822-8w-v1, £2,205). This route is
+    // deliberately still NOT given a seoTitle/seoDescription override,
+    // to avoid cannibalising manchester-lahore's "business class to
+    // lahore" targeting — manchester-lahore is the cluster's canonical
+    // primary (it also has a working Trip.com CTA; this route does not,
+    // a separate Heathrow structural gap). See manchester-lahore's own
+    // seoTitle comment for the full reasoning.
     intro:
       'PIA relaunched a direct Heathrow to Lahore service on 30 March 2026 (confirmed via Heathrow Airport\'s own announcement), operating from Terminal 4 alongside PIA\'s parallel Islamabad relaunch. Check PIA\'s own booking system directly for the current schedule and fare.',
     bookingWindowNote:
@@ -2652,8 +2790,8 @@ export function getRoutePresentation(route: Route, nowIso: string): RoutePresent
     frequency: route.frequency,
     airlineSlugs,
     summary: route.intro,
-    metadataDescription: truncateMetadataDescription(route.intro),
-    metadataTitle: defaultMetadataTitle,
+    metadataDescription: route.seoDescription ?? truncateMetadataDescription(route.intro),
+    metadataTitle: route.seoTitle ?? defaultMetadataTitle,
     shareText: buildShareText(status, pair, route.flightTime),
     socialDetail: buildSocialDetail(status, route.flightTime, statusLabel),
     socialFooter: 'Travel intelligence · jetstash.co.uk',

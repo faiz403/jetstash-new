@@ -181,6 +181,40 @@ export function DealCard({ deal }: { deal: Deal }) {
             )}
           </>
         )}
+        {/* Hub-link root fix (SEO Domination Batch 1B, 23 Aug 2026): the
+            `range` branch above only ever gave a route-guide path via
+            range.count > 1's plain (non-link) paragraph below — a card
+            with exactly one tracked observation (every brand-new
+            -baseline-v1 series, e.g. the three new Business Fare Evidence
+            Batch 1 cards) fell into neither that condition nor the
+            no-range branch's own Link a few lines up, and silently lost
+            its route-guide path entirely. Confirmed via the real data
+            (not assumed): 5 live cards affected today —
+            man-lhe-business, lhr-business-lhe, lhr-doh-business,
+            man-khi-economy, lba-isb-economy — see
+            tests/dealcard-route-guide-link-fix.test.ts, which derives that
+            list from getFareRangeSummary()/getRouteByAirportAndDestination()
+            rather than hardcoding it, so it stays correct as the archive
+            grows.
+            Deliberately scoped to ONLY this case. An earlier version of
+            this fix also turned the range.count > 1 paragraph below into a
+            real link — founder review (23 Aug 2026, PR #168) correctly
+            flagged that as an undisclosed, much larger blast radius (29
+            live cards today, none of them related to this batch's actual
+            Business-evidence subject) beyond the approved scope ("fix the
+            missing route-guide link on all 5 single-observation
+            DealCards"), so it was reverted — the count > 1 paragraph stays
+            plain text, exactly as it was before this fix, and is left for
+            a separate, explicitly-scoped decision if it's wanted later. */}
+        {matchedRoute && range && range.count === 1 && (
+          <Link
+            href={`/routes/${matchedRoute.slug}`}
+            className="mt-1.5 inline-flex items-center gap-1 text-xs text-ink-400 transition-colors hover:text-ink-600"
+          >
+            View route guide
+            <ArrowUpRight className="h-3 w-3" strokeWidth={2.25} />
+          </Link>
+        )}
         {range && range.count > 1 && (
           <p className="mt-1.5 text-xs text-ink-400">See the full history on the route guide.</p>
         )}
