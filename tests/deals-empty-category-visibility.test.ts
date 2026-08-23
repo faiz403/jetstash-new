@@ -30,15 +30,14 @@ describe('getVisibleFilters — real current production data', () => {
     expect(visibleValues).not.toContain('package');
   });
 
-  it('2. Business class is now visible — Business Fare Evidence Batch 1 (22 Aug 2026) gave three of the ten existing business-category deals a genuine, current, publishable fare, which is enough to flip visibility (getVisibleFilters gates on deals.some(...), not every) — most business-category deals still have none (append-only archive: no observedDate<=nowIso gate, so this test\'s earlier-dated NOW_ISO still sees the new evidence)', () => {
+  it('2. Business class is now visible — Business Fare Evidence Batch 1 (22 Aug 2026) plus the later Manchester-Karachi product-completion PR (23 Aug 2026) give four of the eleven existing business-category deals a genuine, current, publishable fare, which is enough to flip visibility (getVisibleFilters gates on deals.some(...), not every) — most business-category deals still have none (append-only archive: no observedDate<=nowIso gate, so this test\'s earlier-dated NOW_ISO still sees all the new evidence)', () => {
     const businessDeals = deals.filter((d) => d.category === 'business');
     expect(businessDeals.length).toBeGreaterThan(0);
     const withTrackedFare = businessDeals.filter((d) => hasTrackedFare(d, NOW_ISO)).map((d) => d.id).sort();
-    // Exactly the three routes Business Fare Evidence Batch 1 evidenced —
-    // manchester-lahore, london-heathrow-lahore, london-heathrow-doha.
-    // manchester-karachi has no curated Business deal at all, so it can
-    // never appear here regardless of its own fare evidence.
-    expect(withTrackedFare).toEqual(['lhr-business-lhe', 'lhr-doh-business', 'man-lhe-business']);
+    // manchester-lahore, london-heathrow-lahore, london-heathrow-doha
+    // (Business Fare Evidence Batch 1) plus manchester-karachi (product-
+    // completion PR, 23 Aug 2026 — see tests/manchester-karachi-business-deal.test.ts).
+    expect(withTrackedFare).toEqual(['lhr-business-lhe', 'lhr-doh-business', 'man-khi-business', 'man-lhe-business']);
     expect(visibleValues).toContain('business');
   });
 

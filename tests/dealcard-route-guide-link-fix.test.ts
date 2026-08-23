@@ -71,10 +71,10 @@ describe('DealCard route-guide link — full blast-radius breakdown, scoped fix'
     expect(twoPlus.length, 'expected at least one 2+-observation Deal today').toBeGreaterThan(0);
   });
 
-  it('bucket A (count === 1, genuinely fixed) is exactly today\'s 5 single-observation cards, including the three new Business Fare Evidence Batch 1 cards — the flagship case this fix exists for', () => {
+  it('bucket A (count === 1, genuinely fixed) is exactly today\'s 6 single-observation cards, including the three new Business Fare Evidence Batch 1 cards and the later Manchester-Karachi Business Deal (23 Aug product-completion PR) — the flagship case this fix exists for', () => {
     const { one } = dealsByObservationCount();
     expect(one.sort()).toEqual(
-      ['lba-isb-economy', 'lhr-business-lhe', 'lhr-doh-business', 'man-khi-economy', 'man-lhe-business'].sort()
+      ['lba-isb-economy', 'lhr-business-lhe', 'lhr-doh-business', 'man-khi-business', 'man-khi-economy', 'man-lhe-business'].sort()
     );
   });
 
