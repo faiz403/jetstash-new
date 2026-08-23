@@ -11,6 +11,7 @@ function toSmartOption(observation: typeof observed[number]): SmartFareOption {
   return {
     id: observation.id,
     airline: observation.source,
+    cabin: observation.cabin,
     price: observation.price,
     currency: 'GBP',
     departureDate: observation.departureDate!,

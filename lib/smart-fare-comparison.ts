@@ -4,6 +4,25 @@
  * This layer reports differences in the facts that are actually known. It is
  * deliberately separate from deriveTripValueVerdict(), which requires a
  * complete total-cost basis before it can name a value outcome.
+ *
+ * Smart Fare Comparison integrity reset (23 Aug 2026, founder-approved,
+ * following an independent P0 verification): this module's own
+ * derivation logic was never the defect — deriveSmartFareComparison()
+ * has always faithfully compared whatever options it was handed. The
+ * confirmed defect lived entirely upstream, in
+ * lib/smart-fare-route-adapter.ts's getSmartFareComparisonForRoute(),
+ * which selected up to 3 observations for a route with no invariant
+ * beyond "current, dated, known directness" — no cabin check, no exact
+ * travel-date check, no passenger/profile check. That let a £574 Economy
+ * fare (6-20 Oct) render side-by-side with a £3,051 Business fare
+ * (17-31 Oct) with the derived sentence "£2,477 more takes 33h 25m
+ * longer overall" carrying no cabin disclosure anywhere. See
+ * getSmartFareComparisonForRoute's own doc comment for the actual fix
+ * (an exact-match comparison-group invariant). `cabin` is added to the
+ * option types below purely as defence in depth: even once the adapter
+ * can no longer construct a mixed-cabin comparison, every card still
+ * visibly states its cabin, so a future regression at the adapter layer
+ * would be immediately obvious on the rendered page rather than silent.
  */
 
 export type SmartFareDirectness = 'direct' | 'connecting' | 'unknown';
@@ -23,6 +42,8 @@ export interface SmartFareMandatoryFee {
 export interface SmartFareOption {
   id: string;
   airline: string;
+  /** Rendered visibly on every option card — defence in depth, see this file's own top doc comment. */
+  cabin: string;
   price: number;
   currency: 'GBP';
   departureDate: string;
@@ -45,6 +66,7 @@ export interface SmartFareOption {
 export interface SmartFareOptionSummary {
   id: string;
   airline: string;
+  cabin: string;
   price: number;
   currency: 'GBP';
   departureDate: string;
