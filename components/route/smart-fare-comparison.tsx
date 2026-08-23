@@ -58,6 +58,13 @@ export function SmartFareOptionCard({ option }: { option: SmartFareOptionSummary
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-terracotta-600">Observed option</p>
           <h3 className="mt-2 font-display text-xl text-ink-900">{option.airline}</h3>
+          {/* Cabin defence in depth (Smart Fare Comparison integrity reset,
+              23 Aug 2026) — the adapter can no longer construct a
+              mixed-cabin comparison (see getSmartFareComparisonForRoute's
+              own doc comment), but every card states its cabin regardless,
+              so any future regression at the adapter layer would be
+              immediately visible on the page rather than silent. */}
+          <p className="mt-0.5 text-xs font-medium text-ink-500">{option.cabin}</p>
         </div>
         <p className="shrink-0 font-display text-2xl text-ink-900">£{option.price.toLocaleString('en-GB')}</p>
       </div>
@@ -95,6 +102,16 @@ export function SmartFareComparison({ comparison, routeLabel }: { comparison: Sm
   const first = comparison.options[0];
   const priceTimeStatements = comparison.pairStatements.filter((statement) => statement.kind === 'price-time');
   const connectionStatements = comparison.pairStatements.filter((statement) => statement.kind === 'connection');
+  // Smart Fare Comparison integrity reset (23 Aug 2026): before this fix, a
+  // rendered comparison could legitimately contain options with different
+  // travel dates, making this "first option's dates" header a real,
+  // misleading blanket claim for the other card(s) shown beneath it.
+  // getSmartFareComparisonForRoute() now only ever builds a comparison from
+  // an exact-match group (identical cabin/departureDate/returnDate/
+  // profileId/currency — see its own doc comment), so every option this
+  // component receives is guaranteed to share the same dates already; this
+  // reads the first option purely for convenience, not as an assumption.
+  // Each card's own "Travel dates" footer (below) is untouched.
   const dateLabel = first
     ? `${formatDate(first.departureDate)} to ${formatDate(first.returnDate)}`
     : 'dates not shown';
