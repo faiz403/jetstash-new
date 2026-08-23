@@ -30,11 +30,16 @@ describe('getVisibleFilters — real current production data', () => {
     expect(visibleValues).not.toContain('package');
   });
 
-  it('2. Business class is hidden — every business-category deal currently has zero live (tracked-fare) count', () => {
+  it('2. Business class is now visible — Business Fare Evidence Batch 1 (22 Aug 2026) gave three of the ten existing business-category deals a genuine, current, publishable fare, which is enough to flip visibility (getVisibleFilters gates on deals.some(...), not every) — most business-category deals still have none (append-only archive: no observedDate<=nowIso gate, so this test\'s earlier-dated NOW_ISO still sees the new evidence)', () => {
     const businessDeals = deals.filter((d) => d.category === 'business');
     expect(businessDeals.length).toBeGreaterThan(0);
-    expect(businessDeals.every((d) => !hasTrackedFare(d, NOW_ISO))).toBe(true);
-    expect(visibleValues).not.toContain('business');
+    const withTrackedFare = businessDeals.filter((d) => hasTrackedFare(d, NOW_ISO)).map((d) => d.id).sort();
+    // Exactly the three routes Business Fare Evidence Batch 1 evidenced —
+    // manchester-lahore, london-heathrow-lahore, london-heathrow-doha.
+    // manchester-karachi has no curated Business deal at all, so it can
+    // never appear here regardless of its own fare evidence.
+    expect(withTrackedFare).toEqual(['lhr-business-lhe', 'lhr-doh-business', 'man-lhe-business']);
+    expect(visibleValues).toContain('business');
   });
 
   it('3. Umrah is hidden — its deals are bundled flight+hotel products, and a flight-only observation is never counted as evidence for one (product-integrity fix, August 2026)', () => {
@@ -50,14 +55,15 @@ describe('getVisibleFilters — real current production data', () => {
     expect(deals.some((d) => d.category === 'flight' && hasTrackedFare(d, NOW_ISO))).toBe(true);
   });
 
-  it('6. visible category order is unchanged — All, Flights, in their original relative order', () => {
-    expect(visibleValues).toEqual(['all', 'flight']);
+  it('6. visible category order is unchanged for the surviving hidden categories — All, Flights, then Business now newly included in its original declared-array position, ahead of the still-hidden Packages and Umrah', () => {
+    expect(visibleValues).toEqual(['all', 'flight', 'business']);
   });
 
-  it('9. no hidden category is present at all, so no "0" count can ever render for one', () => {
-    for (const value of ['package', 'business', 'umrah']) {
+  it('9. Packages and Umrah remain hidden (still zero live count); Business is no longer one of the hidden categories', () => {
+    for (const value of ['package', 'umrah']) {
       expect(visible.find((f) => f.value === value)).toBeUndefined();
     }
+    expect(visible.find((f) => f.value === 'business')).toBeTruthy();
   });
 });
 

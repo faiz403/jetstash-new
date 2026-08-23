@@ -157,12 +157,20 @@ describe('Deal counts (TR-004) — a card with no tracked fare must not count as
     // reviewed) — the pre-existing 18 August observation for this route
     // stays deliberately excluded (insufficient retained itinerary
     // evidence, not this new one).
+    // Business Fare Evidence Batch 1 (22 August 2026) added three more:
+    // man-lhe-business, lhr-business-lhe and lhr-doh-business each now have
+    // a genuine, current, publishable Business observation for the first
+    // time — see data/fare-observations.ts's "Business Fare Evidence
+    // Batch 1" block. manchester-karachi has no curated Business Deal at
+    // all, so its own new Business observation doesn't add a Deal here.
     expect(trackedDeals.map((d) => d.id)).toEqual([
       'man-lhe-economy',
       'lhr-del-economy',
       'bhx-atq-economy',
       'man-dxb-economy',
       'lhr-doh-economy',
+      'lhr-business-lhe',
+      'man-lhe-business',
       'man-dlm-flight',
       'man-bjv-flight',
       'lgw-adb-flight',
@@ -174,6 +182,7 @@ describe('Deal counts (TR-004) — a card with no tracked fare must not count as
       'man-khi-economy',
       'man-ath-economy',
       'man-fco-economy',
+      'lhr-doh-business',
       'man-isb-economy',
       'man-del-economy',
       'man-bom-economy',
@@ -385,7 +394,11 @@ describe('FARE-001 pilot — historic examples stay private; only fully dated, e
     // birmingham-lahore, birmingham-islamabad).
     // 210 -> 211 (Connecting Journey Structure + BHX-DEL unlock, 22 August
     // 2026): one further fresh observation appended for birmingham-delhi.
-    expect(fareObservations).toHaveLength(211);
+    // 211 -> 215 (Business Fare Evidence Batch 1, 22 August 2026): four new,
+    // fully-evidenced Business-cabin observations appended for
+    // manchester-lahore, london-heathrow-lahore, london-heathrow-doha and
+    // manchester-karachi.
+    expect(fareObservations).toHaveLength(215);
   });
 
   it('keeps every historic observation incomplete and private', () => {
@@ -610,6 +623,13 @@ describe('FARE-001 pilot — historic examples stay private; only fully dated, e
       'obs-bhx-lhe-economy-20260822-8w-v1',
       'obs-bhx-isb-economy-20260822-8w-v1',
       'obs-bhx-del-economy-20260822-8w-v1',
+      // Business Fare Evidence Batch 1 (22 August 2026) — see
+      // data/fare-observations.ts's own "Business Fare Evidence Batch 1"
+      // block for the full locked-methodology evidence.
+      'obs-man-lhe-business-20260822-8w-v1',
+      'obs-lhr-lhe-business-20260822-8w-v1',
+      'obs-lhr-doh-business-20260822-8w-v1',
+      'obs-man-khi-business-20260822-8w-v1',
     ]);
     expect(published).toEqual(expect.arrayContaining([
       expect.objectContaining({
@@ -720,7 +740,12 @@ describe('FARE-001 pilot — historic examples stay private; only fully dated, e
       // Deal entries, each backed by a genuinely complete observation - see
       // FARE_COVERAGE_BATCH_B.md. man-khi-economy joined this list 22
       // August 2026 (Fare Coverage Batch 1) - manchester-karachi gained a
-      // fresh, complete, both-legs-evidenced observation.
+      // fresh, complete, both-legs-evidenced observation. man-lhe-business,
+      // lhr-business-lhe and lhr-doh-business joined this list 22 August
+      // 2026 (Business Fare Evidence Batch 1) - each gained its
+      // first-ever genuine, current, publishable Business-cabin
+      // observation (append-only archive: no observedDate<=nowIso gate,
+      // so this test's earlier FIXED_TODAY still sees it).
       if (
         [
           'lhr-bom-economy',
@@ -746,6 +771,9 @@ describe('FARE-001 pilot — historic examples stay private; only fully dated, e
           'lba-atq-economy',
           'lba-isb-economy',
           'lgw-atq-economy',
+          'man-lhe-business',
+          'lhr-business-lhe',
+          'lhr-doh-business',
         ].includes(deal.id)
       )
         continue;
