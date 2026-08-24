@@ -72,7 +72,10 @@ export type AnalyticsEvent =
   // Journey Check engagement
   | 'journey_check_started'
   | 'journey_check_completed'
-  | 'journey_check_route_opened';
+  | 'journey_check_route_opened'
+  // Journey Choice (MVP pilot, manchester-islamabad only, 24 Aug 2026)
+  | 'journey_choice_evidence_opened'
+  | 'journey_choice_cta_click';
 
 export function track(event: AnalyticsEvent, properties?: Record<string, string | number | boolean>): void {
   try {

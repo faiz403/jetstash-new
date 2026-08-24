@@ -118,14 +118,20 @@ describe('AnalyticsEvent vocabulary — every event this repo actually fires is 
   // prototype this MVP does not build on.
   const JOURNEY_DECISION_BRIEF_EVENTS = ['journey_decision_brief_started', 'journey_decision_brief_completed'];
 
-  it.each([...EXISTING_EVENTS, ...NEW_EVENTS, ...BAGGAGE_CTA_EVENTS, ...GOOGLE_ADS_TRACKING_EVENTS, ...JOURNEY_DECISION_BRIEF_EVENTS])('%s is part of the typed AnalyticsEvent union', (eventName) => {
+  // Added later still, by Journey Choice — the one-route MVP pilot
+  // (manchester-islamabad only, 24 Aug 2026, PR #173): the evidence
+  // disclosure open and the Trip.com CTA click, both scoped to
+  // components/route/journey-choice.tsx.
+  const JOURNEY_CHOICE_EVENTS = ['journey_choice_evidence_opened', 'journey_choice_cta_click'];
+
+  it.each([...EXISTING_EVENTS, ...NEW_EVENTS, ...BAGGAGE_CTA_EVENTS, ...GOOGLE_ADS_TRACKING_EVENTS, ...JOURNEY_DECISION_BRIEF_EVENTS, ...JOURNEY_CHOICE_EVENTS])('%s is part of the typed AnalyticsEvent union', (eventName) => {
     expect(analyticsSrc).toMatch(new RegExp(`\\| '${eventName}'`));
   });
 
   it('has exactly one union member per real event — no stragglers, nothing forgotten', () => {
     const matches = analyticsSrc.match(/\n\s*\| '[a-z_]+'/g) ?? [];
     expect(matches).toHaveLength(
-      EXISTING_EVENTS.length + NEW_EVENTS.length + BAGGAGE_CTA_EVENTS.length + GOOGLE_ADS_TRACKING_EVENTS.length + JOURNEY_DECISION_BRIEF_EVENTS.length,
+      EXISTING_EVENTS.length + NEW_EVENTS.length + BAGGAGE_CTA_EVENTS.length + GOOGLE_ADS_TRACKING_EVENTS.length + JOURNEY_DECISION_BRIEF_EVENTS.length + JOURNEY_CHOICE_EVENTS.length,
     );
   });
 

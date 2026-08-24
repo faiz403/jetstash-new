@@ -132,13 +132,19 @@ describe('Fare Signal presentation and CTA boundaries', () => {
     expect(text).toContain('Exact partner booking link is not currently verified for this route.');
   });
 
-  it('keeps the Fare Signal above Smart Fare Comparison and leaves the stricter verdict private', () => {
+  it('keeps the Fare Signal above Journey Choice and leaves the stricter verdict private', () => {
+    // Journey Choice MVP pilot (24 Aug 2026): the public route page renders
+    // <JourneyChoice>, not <SmartFareComparison> — see
+    // tests/journey-choice.test.ts and tests/smart-fare-route-pilot.test.ts.
+    // Fare Signal's own position and behaviour are completely unchanged by
+    // that swap, which is exactly what this test still guards.
     const signalIndex = routePageSrc.indexOf('<FareSignal');
-    const smartIndex = routePageSrc.indexOf('<SmartFareComparison');
+    const journeyChoiceIndex = routePageSrc.indexOf('<JourneyChoice');
     const historyIndex = routePageSrc.indexOf('<FareHistoryPanel');
     expect((routePageSrc.match(/<FareSignal/g) ?? []).length).toBe(1);
-    expect(signalIndex).toBeLessThan(smartIndex);
-    expect(smartIndex).toBeLessThan(historyIndex);
+    expect(routePageSrc).not.toContain('<SmartFareComparison');
+    expect(signalIndex).toBeLessThan(journeyChoiceIndex);
+    expect(journeyChoiceIndex).toBeLessThan(historyIndex);
     expect(routePageSrc).toContain('getFareSignalForRoute(route.slug, nowIso)');
     expect(routePageSrc).not.toContain('deriveTripValueVerdict');
     expect(routePageSrc).not.toContain('True Trip Cost');
