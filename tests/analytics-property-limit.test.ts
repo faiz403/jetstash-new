@@ -147,7 +147,7 @@ describe('Vercel Pro two-property ceiling', () => {
 describe('the four reduced events keep exactly the right two properties', () => {
   const find = (needle: string) => sites.find((s) => s.raw.includes(needle));
 
-  it('every TrackedOutboundLink properties={{...}} call site (tripcom_click and tripcom_hotel_click) sends route + source, never origin/destination', () => {
+  it('every TrackedOutboundLink properties={{...}} call site (tripcom_click, tripcom_hotel_click and journey_choice_cta_click) sends route + source, never origin/destination', () => {
     // 3 pre-existing tripcom_click sites (fare-signal, deal-card,
     // no-fare-fallback) + 2 in the one shared
     // components/destination/holiday-intelligence.tsx (Hotel Intelligence
@@ -165,8 +165,12 @@ describe('the four reduced events keep exactly the right two properties', () => 
     // removed — the hero's own Trip.com CTA (source: 'route-hero') no
     // longer exists; Fare Signal (source: 'fare-signal') is the one
     // remaining route-page call site. 7 → 6.
+    // Journey Choice MVP pilot (24 Aug 2026): one new site
+    // (components/route/journey-choice.tsx, event 'journey_choice_cta_click',
+    // source: 'journey-choice') — manchester-islamabad only, alongside
+    // Fare Signal's own CTA, never replacing it. 6 → 7.
     const tripcomSites = sites.filter((s) => s.label === 'properties={{...}}');
-    expect(tripcomSites.length).toBe(6);
+    expect(tripcomSites.length).toBe(7);
     for (const s of tripcomSites) {
       expect(s.props.length, `${s.file}: ${s.raw}`).toBe(2);
       expect(s.raw).toMatch(/route:/);

@@ -69,12 +69,21 @@ describe('Smart Fare Comparison Manchester–Islamabad pilot', () => {
   });
 
   it('keeps True Trip Cost out of the pilot route page when evidence is insufficient', () => {
+    // Journey Choice MVP pilot (24 Aug 2026): the public route page no
+    // longer renders <SmartFareComparison> directly — it renders
+    // <JourneyChoice>, whose own getJourneyChoiceForRoute() adapter calls
+    // getSmartFareComparisonForRoute() internally (see
+    // lib/journey-choice-route-adapter.ts), so the underlying exact-match
+    // selection PR #171 built is still exactly what's reused; only the
+    // page-level presentation call site moved. See
+    // tests/journey-choice.test.ts for the new component's own coverage.
     const fareSectionIndex = routePageSrc.indexOf('{fareSectionCopy.heading}');
-    const smartIndex = routePageSrc.indexOf('<SmartFareComparison');
+    const journeyChoiceIndex = routePageSrc.indexOf('<JourneyChoice');
     const historyIndex = routePageSrc.indexOf('<FareHistoryPanel');
-    expect(smartIndex).toBeGreaterThan(fareSectionIndex);
-    expect(smartIndex).toBeLessThan(historyIndex);
-    expect(routePageSrc).toContain('getSmartFareComparisonForRoute(route.slug, nowIso)');
+    expect(journeyChoiceIndex).toBeGreaterThan(fareSectionIndex);
+    expect(journeyChoiceIndex).toBeLessThan(historyIndex);
+    expect(routePageSrc).not.toContain('<SmartFareComparison');
+    expect(routePageSrc).toContain('getJourneyChoiceForRoute(route.slug, nowIso)');
     expect(routePageSrc).not.toContain('deriveTripValueVerdict');
     expect(routePageSrc).not.toContain('True Trip Cost');
     expect(routePageSrc).not.toContain('Value Verdict');

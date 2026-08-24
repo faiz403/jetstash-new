@@ -36,8 +36,8 @@ import { TRAVEL_READY_SUPPORTED_COUNTRIES } from '@/lib/travel-ready-check';
 import { getDestinationImage } from '@/lib/brand-images';
 import { getFareSectionCopy } from '@/lib/fare-section-copy';
 import { HeroBackdrop } from '@/components/ui/hero-backdrop';
-import { SmartFareComparison } from '@/components/route/smart-fare-comparison';
-import { getSmartFareComparisonForRoute } from '@/lib/smart-fare-route-adapter';
+import { JourneyChoice } from '@/components/route/journey-choice';
+import { getJourneyChoiceForRoute } from '@/lib/journey-choice-route-adapter';
 import { FareSignal } from '@/components/route/fare-signal';
 import { getFareSignalForRoute, shouldShowNoFareFallback } from '@/lib/fare-signal';
 import { getRouteIntelligenceDisplayForRoute } from '@/lib/route-intelligence-display';
@@ -141,7 +141,19 @@ export default async function RoutePage({ params }: { params: Promise<{ slug: st
   const activeWarnings = getActiveWarningsByRoute(route.slug);
   const timelineEvents = getTimelineByRoute(route.slug);
   const fareObservations = getPublishableObservationsByRoute(route.slug, nowIso);
-  const smartFareComparison = getSmartFareComparisonForRoute(route.slug, nowIso);
+  // Journey Choice Brief, MVP pilot (24 Aug 2026, founder-approved) —
+  // manchester-islamabad only (see lib/journey-choice-route-adapter.ts's
+  // own allowlist doc comment). Reuses getSmartFareComparisonForRoute()
+  // internally, so it can never diverge from PR #171's exact-match
+  // COMPARABLE OR NOT SHOWN invariant. Deliberately replaces the
+  // customer-facing Smart Fare Comparison presentation (below) rather than
+  // sitting alongside it — see components/route/journey-choice.tsx's own
+  // doc comment for why two comparison products would confuse the exact
+  // clarity this feature exists to add. Fare Signal (next section) is
+  // UNCHANGED and untouched by this — it answers a different question
+  // ("what's the current representative tracked fare") and can carry newer
+  // evidence than Journey Choice's own exact-match comparison batch.
+  const journeyChoice = getJourneyChoiceForRoute(route.slug, nowIso);
   const fareSignal = getFareSignalForRoute(route.slug, nowIso);
   // Fare copy must reflect the data actually available — see getFareSectionCopy.
   const fareSectionCopy = getFareSectionCopy(fareObservations.length > 0, dealsHere.length > 0);
@@ -611,9 +623,17 @@ export default async function RoutePage({ params }: { params: Promise<{ slug: st
         <div className="mx-auto max-w-content px-5 sm:px-8">
           <h2 className="font-display text-2xl text-ink-900 sm:text-3xl">{fareSectionCopy.heading}</h2>
           {fareSectionCopy.caption && <p className="mt-2 max-w-xl text-sm text-ink-500">{fareSectionCopy.caption}</p>}
-          {smartFareComparison && (
+          {journeyChoice && (
             <div className="mt-8">
-              <SmartFareComparison comparison={smartFareComparison} routeLabel={`${airport.city} to ${dest.city}`} />
+              <JourneyChoice
+                journeyChoice={journeyChoice}
+                routeLabel={`${airport.city} to ${dest.city}`}
+                routeSlug={route.slug}
+                tripComUrl={tripComUrl}
+                routeDirectness={presentation.status === 'direct' || presentation.status === 'connecting' ? presentation.status : null}
+                routeStatusLabel={presentation.status === 'direct' || presentation.status === 'connecting' ? presentation.statusLabel : null}
+                routeAirlineLabel={presentationAirlines.length > 0 ? presentationAirlines.map((a) => a.name).join(', ') : null}
+              />
             </div>
           )}
           {fareObservations.length > 0 && (
