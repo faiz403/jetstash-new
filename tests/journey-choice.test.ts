@@ -11,6 +11,7 @@ import { computeBookBySnapshot } from '@/lib/booking-intelligence';
 import { getTripComFlightHandoffUrl } from '@/lib/booking-providers';
 import { getJourneyChoiceTripComHandoff } from '@/lib/tripcom-dated-handoff';
 import { JourneyChoice } from '@/components/route/journey-choice';
+import { JourneyChoiceImpressionSection } from '@/components/route/journey-choice-impression-section';
 
 /**
  * Journey Choice — MVP, one-route pilot (manchester-islamabad only, 24 Aug
@@ -50,6 +51,21 @@ function collectStrings(node: unknown, out: string[] = []): string[] {
     // this text-extraction test. Invoking the function directly (the same
     // thing React itself does during render) keeps this test honest about
     // what a real visitor actually sees.
+    //
+    // JourneyChoiceImpressionSection (measurement instrumentation, 24 Aug
+    // 2026) is the one exception: it's a real 'use client' component using
+    // useRef/useEffect, which throws "Invalid hook call" when invoked
+    // directly outside an actual React render (no dispatcher — this repo's
+    // Vitest environment is plain Node, not jsdom, and has no
+    // @testing-library dependency to render through). It unconditionally
+    // renders exactly `<section>{children}</section>` with no derived
+    // content of its own, so walking its own children directly is
+    // equivalent for text-extraction purposes and never invokes the hooks.
+    if (node.type === JourneyChoiceImpressionSection) {
+      const children = (node.props as { children?: unknown } | null)?.children;
+      if (children !== undefined) collectStrings(children, out);
+      return out;
+    }
     if (typeof node.type === 'function') {
       const rendered = (node.type as (props: unknown) => unknown)(node.props);
       collectStrings(rendered, out);
