@@ -4,6 +4,7 @@ import { PROVIDER_REL, TRIPCOM_FRESH_SEARCH_NOTE } from '@/lib/booking-providers
 import { JOURNEY_CHOICE_DATED_HANDOFF_NOTE, type JourneyChoiceTripComHandoff } from '@/lib/tripcom-dated-handoff';
 import { TrackedOutboundLink } from '@/components/ui/tracked-outbound-link';
 import { JourneyChoiceEvidenceDisclosure } from '@/components/route/journey-choice-evidence-disclosure';
+import { JourneyChoiceImpressionSection } from '@/components/route/journey-choice-impression-section';
 
 /**
  * Journey Choice (MVP, pilot: manchester-islamabad only, 24 Aug 2026,
@@ -29,6 +30,14 @@ import { JourneyChoiceEvidenceDisclosure } from '@/components/route/journey-choi
  * disclosure sentence come from `tripComHandoff` (see
  * lib/tripcom-dated-handoff.ts), resolved once in page.tsx — this
  * component never decides for itself whether the URL preserves dates.
+ *
+ * Measurement instrumentation (24 Aug 2026, one-time founder-approved
+ * exception to the freeze — see
+ * components/route/journey-choice-impression-section.tsx for the outer
+ * wrapper's own doc comment). The CTA's `source` property distinguishes
+ * a dated click (`journey-choice-dated`) from a fail-closed fallback
+ * click (`journey-choice-fallback`), derived solely from
+ * `tripComHandoff.datesPreserved` — never inferred from the URL string.
  */
 
 function formatDate(iso: string): string {
@@ -185,7 +194,7 @@ export function JourneyChoice({
   const travelDatesLabel = `${formatDate(lowerFare.departureDate)} to ${formatDate(lowerFare.returnDate)}`;
 
   return (
-    <section aria-labelledby="journey-choice-heading" className="rounded-md border border-ink-200 bg-white p-5 sm:p-7">
+    <JourneyChoiceImpressionSection routeSlug={routeSlug}>
       <p className="text-xs font-semibold uppercase tracking-[0.18em] text-terracotta-600">Journey Choice</p>
       <h2 id="journey-choice-heading" className="mt-1 font-display text-2xl text-ink-900 sm:text-3xl">{routeLabel}</h2>
       <p className="mt-2 text-sm text-ink-500">
@@ -234,7 +243,7 @@ export function JourneyChoice({
           <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:gap-4">
             <TrackedOutboundLink
               event="journey_choice_cta_click"
-              properties={{ route: routeSlug, source: 'journey-choice' }}
+              properties={{ route: routeSlug, source: tripComHandoff.datesPreserved ? 'journey-choice-dated' : 'journey-choice-fallback' }}
               href={tripComHandoff.url}
               target="_blank"
               rel={PROVIDER_REL}
@@ -271,6 +280,6 @@ export function JourneyChoice({
           )}
         </ul>
       </JourneyChoiceEvidenceDisclosure>
-    </section>
+    </JourneyChoiceImpressionSection>
   );
 }
