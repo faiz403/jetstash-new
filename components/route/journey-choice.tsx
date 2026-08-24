@@ -1,6 +1,7 @@
 import { ArrowUpRight, Clock3, Info, Plane } from 'lucide-react';
 import type { JourneyChoice as JourneyChoiceData, JourneyChoiceOption } from '@/lib/journey-choice';
 import { PROVIDER_REL, TRIPCOM_FRESH_SEARCH_NOTE } from '@/lib/booking-providers';
+import { JOURNEY_CHOICE_DATED_HANDOFF_NOTE, type JourneyChoiceTripComHandoff } from '@/lib/tripcom-dated-handoff';
 import { TrackedOutboundLink } from '@/components/ui/tracked-outbound-link';
 import { JourneyChoiceEvidenceDisclosure } from '@/components/route/journey-choice-evidence-disclosure';
 
@@ -23,6 +24,11 @@ import { JourneyChoiceEvidenceDisclosure } from '@/components/route/journey-choi
  * component also never renders a self-transfer claim of any kind — the
  * data model has no self-transfer field today, so there is nothing to
  * assert either way.
+ *
+ * Dated Trip.com handoff pilot (24 Aug 2026): the CTA's `href` and
+ * disclosure sentence come from `tripComHandoff` (see
+ * lib/tripcom-dated-handoff.ts), resolved once in page.tsx — this
+ * component never decides for itself whether the URL preserves dates.
  */
 
 function formatDate(iso: string): string {
@@ -151,7 +157,7 @@ export function JourneyChoice({
   journeyChoice,
   routeLabel,
   routeSlug,
-  tripComUrl,
+  tripComHandoff,
   routeDirectness = null,
   routeStatusLabel = null,
   routeAirlineLabel = null,
@@ -159,7 +165,14 @@ export function JourneyChoice({
   journeyChoice: JourneyChoiceData;
   routeLabel: string;
   routeSlug: string;
-  tripComUrl: string | null;
+  /**
+   * Resolved by lib/tripcom-dated-handoff.ts's getJourneyChoiceTripComHandoff()
+   * in app/routes/[slug]/page.tsx — null only when the route has no
+   * verified Trip.com CTA at all (matches the pre-existing NoCtaFallback
+   * case). `datesPreserved` decides which disclosure sentence is honest;
+   * this component never re-derives that itself.
+   */
+  tripComHandoff: JourneyChoiceTripComHandoff | null;
   routeDirectness?: 'direct' | 'connecting' | null;
   /** Canonical presentation.statusLabel — never a locally re-derived string. */
   routeStatusLabel?: string | null;
@@ -216,13 +229,13 @@ export function JourneyChoice({
         <p className="mt-5 text-sm text-ink-600">Checked-baggage cost isn&apos;t confirmed.</p>
       )}
 
-      {tripComUrl ? (
+      {tripComHandoff ? (
         <div className="mt-5">
           <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:gap-4">
             <TrackedOutboundLink
               event="journey_choice_cta_click"
               properties={{ route: routeSlug, source: 'journey-choice' }}
-              href={tripComUrl}
+              href={tripComHandoff.url}
               target="_blank"
               rel={PROVIDER_REL}
               className="inline-flex items-center gap-1.5 rounded-sm bg-ink-900 px-4 py-2.5 text-sm font-semibold text-sand-50 transition-all hover:bg-brass-600 active:scale-[0.985]"
@@ -232,7 +245,9 @@ export function JourneyChoice({
             </TrackedOutboundLink>
             <p className="text-xs text-ink-500">Check the itinerary, baggage allowance and booking terms before paying. Partner link, opens Trip.com in a new tab.</p>
           </div>
-          <p className="mt-1.5 text-xs text-ink-400">{TRIPCOM_FRESH_SEARCH_NOTE}</p>
+          <p className="mt-1.5 text-xs text-ink-400">
+            {tripComHandoff.datesPreserved ? JOURNEY_CHOICE_DATED_HANDOFF_NOTE : TRIPCOM_FRESH_SEARCH_NOTE}
+          </p>
         </div>
       ) : (
         <p className="mt-5 text-sm text-ink-400">Exact partner booking link is not currently verified for this route.</p>

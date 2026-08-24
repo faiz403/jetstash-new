@@ -9,6 +9,7 @@ import type { SmartFareOptionSummary } from '@/lib/smart-fare-comparison';
 import { getFareSignalForRoute } from '@/lib/fare-signal';
 import { computeBookBySnapshot } from '@/lib/booking-intelligence';
 import { getTripComFlightHandoffUrl } from '@/lib/booking-providers';
+import { getJourneyChoiceTripComHandoff } from '@/lib/tripcom-dated-handoff';
 import { JourneyChoice } from '@/components/route/journey-choice';
 
 /**
@@ -175,11 +176,16 @@ describe('Pilot allowlist — one route only, not a pre-decided second route', (
 
 describe('No profileId or invented-baggage leakage into the customer-facing component', () => {
   const journeyChoice = getJourneyChoiceForRoute('manchester-islamabad', NOW_ISO)!;
+  const tripComHandoff = getJourneyChoiceTripComHandoff(
+    'manchester-islamabad',
+    journeyChoice,
+    getTripComFlightHandoffUrl('manchester-islamabad', 'manchester', 'islamabad')
+  );
   const rendered = collectStrings(JourneyChoice({
     journeyChoice,
     routeLabel: 'Manchester to Islamabad',
     routeSlug: 'manchester-islamabad',
-    tripComUrl: getTripComFlightHandoffUrl('manchester-islamabad', 'manchester', 'islamabad'),
+    tripComHandoff,
     routeDirectness: 'direct',
     routeStatusLabel: 'Direct',
     routeAirlineLabel: 'PIA',

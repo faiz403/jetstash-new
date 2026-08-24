@@ -38,6 +38,7 @@ import { getFareSectionCopy } from '@/lib/fare-section-copy';
 import { HeroBackdrop } from '@/components/ui/hero-backdrop';
 import { JourneyChoice } from '@/components/route/journey-choice';
 import { getJourneyChoiceForRoute } from '@/lib/journey-choice-route-adapter';
+import { getJourneyChoiceTripComHandoff } from '@/lib/tripcom-dated-handoff';
 import { FareSignal } from '@/components/route/fare-signal';
 import { getFareSignalForRoute, shouldShowNoFareFallback } from '@/lib/fare-signal';
 import { getRouteIntelligenceDisplayForRoute } from '@/lib/route-intelligence-display';
@@ -174,6 +175,16 @@ export default async function RoutePage({ params }: { params: Promise<{ slug: st
   // dashboard-verified map (the 9 London-origin routes today) — never a generic
   // Trip.com fallback. See getTripComFlightHandoffUrl's doc comment.
   const tripComUrl = getTripComFlightHandoffUrl(route.slug, airport.slug, dest.slug);
+  // Journey Choice dated Trip.com handoff pilot (24 Aug 2026, founder-
+  // approved, manchester-islamabad only — see lib/tripcom-dated-handoff.ts's
+  // own doc comment for the two-part commercial evidence this pilot rests
+  // on). Fails closed to the exact same tripComUrl every other surface on
+  // this page already uses whenever the pilot doesn't apply or Journey
+  // Choice's own structured dates/cabin don't support it — never a second,
+  // divergent CTA policy.
+  const journeyChoiceTripComHandoff = journeyChoice
+    ? getJourneyChoiceTripComHandoff(route.slug, journeyChoice, tripComUrl)
+    : null;
   // SEO Domination Batch 1B (23 Aug 2026): route.businessClarity is static,
   // hand-authored route-vs-fare context; the actual price and checked-date
   // it renders alongside always come from this live lookup, never from a
@@ -629,7 +640,7 @@ export default async function RoutePage({ params }: { params: Promise<{ slug: st
                 journeyChoice={journeyChoice}
                 routeLabel={`${airport.city} to ${dest.city}`}
                 routeSlug={route.slug}
-                tripComUrl={tripComUrl}
+                tripComHandoff={journeyChoiceTripComHandoff}
                 routeDirectness={presentation.status === 'direct' || presentation.status === 'connecting' ? presentation.status : null}
                 routeStatusLabel={presentation.status === 'direct' || presentation.status === 'connecting' ? presentation.statusLabel : null}
                 routeAirlineLabel={presentationAirlines.length > 0 ? presentationAirlines.map((a) => a.name).join(', ') : null}
