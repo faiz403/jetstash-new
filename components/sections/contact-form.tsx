@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, FormEvent } from 'react';
+import Link from 'next/link';
 import { CheckCircle2, AlertCircle } from 'lucide-react';
 import { HoneypotField } from '@/components/forms/honeypot-field';
 import { HONEYPOT_FIELD_NAME } from '@/lib/form-security';
@@ -99,6 +100,13 @@ export function ContactForm() {
       >
         {status === 'submitting' ? 'Sending…' : 'Send message'}
       </button>
+      <p className="text-xs leading-relaxed text-ink-500">
+        Read our{' '}
+        <Link href="/privacy-policy" className="font-medium text-ink-700 underline underline-offset-2 hover:text-terracotta-600">
+          Privacy Policy
+        </Link>{' '}
+        for information about how JetStash handles the details you provide.
+      </p>
     </form>
   );
 }

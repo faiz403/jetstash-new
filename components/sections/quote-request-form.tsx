@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, FormEvent } from 'react';
+import Link from 'next/link';
 import {
   CheckCircle2,
   AlertCircle,
@@ -225,6 +226,13 @@ export function QuoteRequestForm({ initialTripType, initialRegion }: QuoteReques
       </button>
       <p className="text-xs text-ink-400">
         This is a request for a human to follow up with real pricing, not an instant automated quote.
+      </p>
+      <p className="text-xs leading-relaxed text-ink-500">
+        Read our{' '}
+        <Link href="/privacy-policy" className="font-medium text-ink-700 underline underline-offset-2 hover:text-terracotta-600">
+          Privacy Policy
+        </Link>{' '}
+        for information about how JetStash handles the details you provide.
       </p>
     </form>
   );

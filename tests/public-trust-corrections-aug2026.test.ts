@@ -38,7 +38,8 @@ function listTsxFiles(dir: string, out: string[] = []): string[] {
  * 2. Three customer-facing Trip.com hand-offs (DealCard, NoFareFallback,
  *    Travel Ready Check) had no visible partner/affiliate disclosure next to
  *    the CTA, unlike the route-hero and Book-By Countdown CTAs which already
- *    said "Partner link, opens Trip.com in a new tab." All three now match.
+ *    used visible partner wording. The later commercial-trust remediation
+ *    centralised that disclosure in AffiliateLinkDisclosure.
  * 3. "A member of our team" (implying paid staff JetStash doesn't have —
  *    it's founder-led) appeared in app/deals/page.tsx, app/about/page.tsx and
  *    fare-history-panel.tsx; "JetStash hands you a live-fare check" (implying
@@ -135,22 +136,22 @@ describe('Fix 1 — the broken /founder homepage CTA is replaced with a real pub
   });
 });
 
-describe('Fix 2 — every customer-facing Trip.com CTA now shows visible partner wording', () => {
-  it('DealCard shows "Partner link"', () => {
-    expect(dealCardSrc).toMatch(/Partner link, opens Trip\.com in a new tab/);
+describe('Fix 2 — every customer-facing Trip.com CTA keeps visible commercial wording', () => {
+  it('DealCard uses the shared affiliate disclosure', () => {
+    expect(dealCardSrc).toContain('AffiliateLinkDisclosure');
   });
 
-  it('NoFareFallback shows "Partner link"', () => {
-    expect(noFareFallbackSrc).toMatch(/Partner link, opens Trip\.com in a new tab/);
+  it('NoFareFallback uses the shared affiliate disclosure', () => {
+    expect(noFareFallbackSrc).toContain('AffiliateLinkDisclosure');
   });
 
-  it('Travel Ready Check\'s booking CTA shows "Partner link"', () => {
-    expect(travelReadyCheckSrc).toMatch(/Partner link, opens Trip\.com in a new tab/);
+  it('Travel Ready Check\'s booking CTA uses the shared affiliate disclosure', () => {
+    expect(travelReadyCheckSrc).toContain('AffiliateLinkDisclosure');
   });
 
   it('Fare Signal (the route page\'s one remaining CTA, since 21 Aug 2026) and Book-By Countdown CTA already had it, and still do (regression guard)', () => {
-    expect(fareSignalSrc).toMatch(/Partner link, opens Trip\.com in a new tab/);
-    expect(bookByCountdownSrc).toMatch(/Partner link, opens Trip\.com in a new tab/);
+    expect(fareSignalSrc).toContain('AffiliateLinkDisclosure');
+    expect(bookByCountdownSrc).toContain('AffiliateLinkDisclosure');
   });
 });
 

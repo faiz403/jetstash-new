@@ -87,7 +87,7 @@ describe('Fare Signal presentation and CTA boundaries', () => {
     expect(text).toContain('Etihad');
     expect(text).toContain('Checked 18 August 2026');
     expect(text).toContain('Check current price');
-    expect(text).toContain('Partner link, opens Trip.com in a new tab.');
+    expect(text).toContain('Ad · Affiliate link.</span> JetStash earns commission on eligible bookings through this link, at no extra cost to you.');
     // Route Page Scanability fix (21 Aug 2026): the former hero-only caveat
     // ("Check the itinerary, baggage allowance and booking terms before
     // paying.") now lives here, folded into the one complete CTA caveat —

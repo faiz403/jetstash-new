@@ -128,13 +128,13 @@ describe('Existing factual/non-recommendation language remains', () => {
 
 describe('CTA disclosure and link safety, matching the existing flight-handoff pattern', () => {
   it('uses the hotel-specific disclosure sentence ("property", not "itinerary" — that wording is reserved for the flight CTA)', () => {
-    expect(componentSrc).toContain('Partner link, opens Trip.com in a new tab. Check the property, dates and booking terms before paying.');
+    expect(componentSrc).toContain('Check the property, dates and booking terms before paying.');
   });
 
   it('never reuses the flight CTA\'s exact disclosure sentence for the hotel CTA', () => {
-    const flightDisclosure = 'Partner link, opens Trip.com in a new tab. Check the itinerary, dates and booking terms before paying.';
-    expect(componentSrc).toContain(flightDisclosure); // still present once, for the flight CTA
-    expect((componentSrc.match(new RegExp(flightDisclosure.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g')) ?? []).length).toBe(1);
+    const flightWarning = 'Check the itinerary, dates and booking terms before paying.';
+    expect(componentSrc).toContain(flightWarning); // still present once, for the flight CTA
+    expect((componentSrc.match(new RegExp(flightWarning.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g')) ?? []).length).toBe(1);
   });
 
   it('every hotel CTA opens in a new tab with the safe rel attribute', () => {

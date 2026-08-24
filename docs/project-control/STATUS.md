@@ -25,6 +25,13 @@ analytics/conversion events are verified in the real dashboard.
 
 ## Current truth
 
+- **Commercial trust safe-fix (founder-authorised Category A remediation):** customer-facing
+  compensated CTAs now use one adjacent, explicit affiliate/advertising disclosure; Contact and
+  Quote Request show the existing Privacy Policy beside their forms; stale hotel-scope copy,
+  unsupported generic Business-cabin benefit claims, package-price framing and DealCard's ambiguous
+  airline-vs-route verification label are corrected. No Terms, operator identity, address, retention,
+  Google Ads, consent, quote-fulfilment, Journey Choice product, route-tier or indexing change is
+  included. Category B remains dependent on founder/legal facts rather than repository inference.
 - Route Status V1 is shipped and live.
 - COV-001 verification-gap audit (21 August 2026): Manchester–Karachi, Birmingham–Lahore,
   Birmingham–Islamabad and Birmingham–Delhi were reclassified from disputed-direct to

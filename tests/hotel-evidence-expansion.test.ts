@@ -288,7 +288,8 @@ describe('component fail-closed CTA rendering', () => {
 
   it('uses the hotel-specific CTA disclosure sentence and label, matching the Antalya pattern', () => {
     expect(componentSrc).toContain('Check current price on Trip.com');
-    expect(componentSrc).toContain('Partner link, opens Trip.com in a new tab. Check the property, dates and booking terms before paying.');
+    expect(componentSrc).toContain('Check the property, dates and booking terms before paying.');
+    expect(componentSrc).toContain('<AffiliateLinkDisclosure providerName="Trip.com"');
   });
 
   it('fires tripcom_hotel_click for the hotel CTA and tripcom_click for the flight handoff, each exactly once in source', () => {

@@ -14,6 +14,7 @@ import type { TravelReadySignal } from '@/lib/travel-intelligence-engine';
 import { getRouteByAirportAndDestination } from '@/data/routes';
 import { getTripComFlightHandoffUrl, PROVIDER_REL } from '@/lib/booking-providers';
 import { getBaggageAffiliateUrl, BAGGAGE_PROVIDER_REL } from '@/lib/baggage-affiliate-link';
+import { AffiliateLinkDisclosure } from '@/components/ui/affiliate-link-disclosure';
 import { RouteWatchForm } from '@/components/route/route-watch-form';
 import { track } from '@/lib/analytics';
 
@@ -354,7 +355,7 @@ export function TravelReadyCheck({
                     Compare flights on Trip.com
                     <ArrowUpRight className="h-4 w-4" strokeWidth={2.25} />
                   </a>
-                  <p className="text-xs text-ink-400">Partner link, opens Trip.com in a new tab.</p>
+                  <AffiliateLinkDisclosure providerName="Trip.com" className="text-ink-400" />
                 </div>
               ) : (
                 // Fail-closed, deliberately understated — no CTA, no generic Trip.com link.
@@ -406,7 +407,7 @@ export function TravelReadyCheck({
               <ArrowUpRight className="ml-0.5 inline h-3.5 w-3.5" strokeWidth={2.25} />
             </a>
           </p>
-          <p className="mt-1 text-xs text-ink-400">Partner link, opens Travel Luggage &amp; Cabin Bags in a new tab.</p>
+          <AffiliateLinkDisclosure providerName="Travel Luggage & Cabin Bags" className="mt-1 text-ink-400" />
         </div>
       )}
     </section>

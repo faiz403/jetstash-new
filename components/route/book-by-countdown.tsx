@@ -15,6 +15,7 @@ import {
 import { computeReadiness, VERDICT_COPY, type EngineSnapshot, type TravelReadySignal } from '@/lib/travel-intelligence-engine';
 import { getRouteBySlug, getRouteAirport, getRouteDestination } from '@/data/routes';
 import { getTripComFlightHandoffUrl, PROVIDER_REL } from '@/lib/booking-providers';
+import { AffiliateLinkDisclosure } from '@/components/ui/affiliate-link-disclosure';
 import { WhatsAppShareButton } from '@/components/route/whatsapp-share-button';
 import { siteConfig } from '@/lib/site-config';
 import { OBSERVATION_FRESH_DAYS } from '@/lib/freshness-thresholds';
@@ -321,9 +322,9 @@ export function BookByCountdown({
         />
       </div>
       {bookingUrl && (
-        <p className="mt-2.5 text-xs text-ink-400">
-          Check the itinerary, baggage allowance and booking terms before paying. Partner link, opens Trip.com in a new tab.
-        </p>
+        <AffiliateLinkDisclosure providerName="Trip.com" className="mt-2.5 text-ink-400">
+          Check the itinerary, baggage allowance and booking terms before paying.
+        </AffiliateLinkDisclosure>
       )}
 
       {/* ── Why this advice? ──────────────────────────────────────────────── */}

@@ -10,6 +10,7 @@ import { Plane, ArrowUpRight } from 'lucide-react';
 import { Badge } from './badge';
 import { DestinationVisual } from './destination-visual';
 import { TrackedOutboundLink } from './tracked-outbound-link';
+import { AffiliateLinkDisclosure } from './affiliate-link-disclosure';
 
 const cabinLabel: Record<DealCabin, string> = {
   Economy: 'Economy',
@@ -58,6 +59,12 @@ export function DealCard({ deal }: { deal: Deal }) {
   // no matching Route record, or 'Verification pending' when that exact
   // airline isn't currently verified on the matched route. See TR-010.
   const airlineLabel = getDealAirlineLabel(deal, nowIso);
+  const airlineFactLabel = airlineLabel === 'Verification pending'
+    ? 'Airline: verification pending'
+    : airlineLabel
+      ? `Airline: ${airlineLabel}`
+      : null;
+  const routeFactLabel = directness ? `Route: ${directness}` : null;
   const freshness = range ? getFareFreshnessState(daysBetweenIso(range.latestDate, nowIso)) : null;
   const isStale = freshness === 'stale';
   // The airline named by a Deal is separate curation data. Once a fare is
@@ -130,10 +137,11 @@ export function DealCard({ deal }: { deal: Deal }) {
             )}
             {presentation?.status !== 'unverified' && presentation?.status !== 'service-ended' &&
               (() => {
-                // Deduped, since an unverified airline and an unverified route
-                // both read "Verification pending" — showing it twice would be
-                // redundant, not more informative.
-                const parts = [airlineLabel, directness].filter((v, i, arr) => v && arr.indexOf(v) === i) as string[];
+                // Airline verification and route directness are independent
+                // facts. Name both explicitly so "verification pending" can
+                // never appear to qualify an already-verified Direct or
+                // Connecting route state.
+                const parts = [airlineFactLabel, routeFactLabel].filter(Boolean) as string[];
                 return parts.length > 0 ? <p className="mt-1 text-sm font-medium text-ink-500">{parts.join(' · ')}</p> : null;
               })()}
 
@@ -232,10 +240,9 @@ export function DealCard({ deal }: { deal: Deal }) {
               Compare flights on Trip.com
               <ArrowUpRight className="h-4 w-4" strokeWidth={2.25} />
             </TrackedOutboundLink>
-            <p className="mt-2 text-center text-[11px] text-ink-400">
-              Partner link, opens Trip.com in a new tab. Check the itinerary, baggage allowance and booking terms
-              before paying.
-            </p>
+            <AffiliateLinkDisclosure providerName="Trip.com" className="mt-2 text-center text-ink-400">
+              Check the itinerary, baggage allowance and booking terms before paying.
+            </AffiliateLinkDisclosure>
           </>
         ) : (
           // Fail-closed, deliberately understated — no CTA, no generic Trip.com link.

@@ -6,6 +6,7 @@ import { ArrowUpRight, ChevronDown, Search, X } from 'lucide-react';
 import { formatChecked } from '@/data/deals';
 import { PROVIDER_REL, TRIPCOM_FRESH_SEARCH_NOTE } from '@/lib/booking-providers';
 import { TrackedOutboundLink } from '@/components/ui/tracked-outbound-link';
+import { AffiliateLinkDisclosure } from '@/components/ui/affiliate-link-disclosure';
 import type { TrackedFareAirportGroup, TrackedFareEntry } from '@/lib/tracked-fare-groups';
 
 /**
@@ -250,6 +251,7 @@ function TrackedFareCard({ airportCity, entry }: { airportCity: string; entry: T
               Compare flights on Trip.com
               <ArrowUpRight className="h-4 w-4" strokeWidth={2.25} />
             </TrackedOutboundLink>
+            <AffiliateLinkDisclosure providerName="Trip.com" className="text-ink-400" />
             <p className="text-[11px] leading-snug text-ink-400">{TRIPCOM_FRESH_SEARCH_NOTE}</p>
           </>
         ) : (

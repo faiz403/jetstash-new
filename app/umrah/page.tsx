@@ -117,7 +117,11 @@ export default function UmrahHubPage() {
 
       <section className="bg-white py-16 sm:py-20">
         <div className="mx-auto max-w-content px-5 sm:px-8">
-          <h2 className="font-display text-2xl text-ink-900 sm:text-3xl">Example package fares</h2>
+          <h2 className="font-display text-2xl text-ink-900 sm:text-3xl">Umrah route cards, not package prices</h2>
+          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-ink-500">
+            JetStash has not tracked package prices for these cards. They show route context and a flight comparison
+            handoff where available; the link is not a quote for flights, hotels, transfers or other package inclusions.
+          </p>
           {umrahDeals.length > 0 ? (
             <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {umrahDeals.map((deal) => (
