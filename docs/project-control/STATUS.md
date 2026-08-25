@@ -531,6 +531,28 @@ not receive the label, since its own `priceNote` records no such evidence. Prese
 fare data, Fare Watcher maths, route truth, Journey Choice or Book-By logic changed, and no
 structured field was added to `FareObservation`.
 
+**Same-day verification-recheck representative priority (25 August 2026, founder-approved, OPEN
+PR, NOT MERGED):** logic-only fix, no data appended. A deferred four-observation append (£480
+MAN-ISB / £547 MAN-LHE / £361 LHR-JED / £591 BHX-ATQ, all `emergency-recheck`, all sharing their
+route's routine observation's exact `observedDate`) exposed a real evidence-ordering defect: the
+representative-observation tie-break (`lib/fare-signal.ts`) broke a same-day tie on price alone, so
+every one of those routes would have kept displaying its cheaper, already-superseded routine fare
+instead of the later verification. Fixed with one shared comparator
+(`compareByRepresentativePriority`) used by both `selectLatestObservation` and
+`selectCurrentEconomyObservation` (and therefore Book-By's representative selection too, which
+already delegates to the same function): on a same-day tie, `observationReason: 'emergency-recheck'`
+now outranks a non-recheck observation — evidence recency, not a price preference, proven both
+directions (a recheck that came back higher AND one that came back lower both win). Historical
+safety audit of the two existing emergency-recheck records (Birmingham–Amritsar and
+Heathrow–Jeddah, both 19 August 2026) found **zero public-facing change** — neither has a same-day
+sibling observation, so the new tie-break tier was never reached for either. Does not weaken the
+verification-recheck comparison-integrity fix (PR #179): `isIndependentComparisonObservation()` is
+untouched, so an emergency-recheck still never enters Smart Fare/Journey Choice comparison
+membership or independently increases Fare Watcher baseline depth — proven via a before/after diff
+of `generateFareWatcherCandidates()`'s actual output, not assumed. The real four-observation append
+remains deferred pending this PR's review and merge; a synthetic four-fare simulation (test-only,
+nothing written to `data/fare-observations.ts`) proves it will resolve correctly once merged.
+
 ## NEXT
 
 ### FARE-001 — Begin building the editorial fare observation archive
