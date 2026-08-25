@@ -217,11 +217,11 @@ describe('Regression: everything the founder\'s spec required unchanged actually
   it('the generic Fare Signal on both target routes still leads with Economy, not the newer Business observation — PR #167\'s fix, unaffected by this SEO batch', () => {
     const lahoreSignal = getFareSignalForRoute('manchester-lahore', NOW_ISO);
     expect(lahoreSignal.observation?.cabin).toBe('Economy');
-    expect(lahoreSignal.observation?.price).toBe(628);
+    expect(lahoreSignal.observation?.price).toBe(538);
 
     const dohaSignal = getFareSignalForRoute('london-heathrow-doha', NOW_ISO);
     expect(dohaSignal.observation?.cabin).toBe('Economy');
-    expect(dohaSignal.observation?.price).toBe(471);
+    expect(dohaSignal.observation?.price).toBe(425);
   });
 
   it('both routes\' Business fare directness/self-transfer disclosures are byte-for-byte unchanged from Business Fare Evidence Batch 1 — this SEO batch never touched fare-observations.ts', () => {

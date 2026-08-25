@@ -106,15 +106,15 @@ describe('Fare-observation completeness gating (TR-002) — Verified Check must 
     expect(isPubliclyPublishable(rest as FareObservation)).toBe(false);
   });
 
-  it('getFareRangeSummary derives the exact dated Manchester–Lahore weekly series, now including the 18 August Weekly Full Fare Refresh #1 check', () => {
+  it('getFareRangeSummary derives the exact dated Manchester–Lahore weekly series, now including the 25 August controlled weekly check', () => {
     const range = getFareRangeSummary('manchester-lahore', 'Economy', FIXED_TODAY);
     expect(range).not.toBeNull();
-    expect(range!.count).toBe(5);
-    expect(range!.min).toBe(574);
+    expect(range!.count).toBe(6);
+    expect(range!.min).toBe(538);
     expect(range!.max).toBe(638);
     expect(range!.earliestDate).toBe('2026-07-28');
-    expect(range!.latestDate).toBe('2026-08-18');
-    expect(range!.sources).toEqual(['Etihad', 'Turkish Airlines']);
+    expect(range!.latestDate).toBe('2026-08-25');
+    expect(range!.sources).toEqual(['Etihad', 'Turkish Airlines', 'Ryanair / Air Cairo / flyadeal / Fly Jinnah (outbound), Pakistan International Airlines / Pegasus / Ryanair (return)']);
     expect(range!.observedDirectness).toBe('connecting');
   });
 });
@@ -404,7 +404,7 @@ describe('FARE-001 pilot — historic examples stay private; only fully dated, e
     // fully-evidenced Business-cabin observations appended for
     // manchester-lahore, london-heathrow-lahore, london-heathrow-doha and
     // manchester-karachi.
-    expect(fareObservations).toHaveLength(215);
+    expect(fareObservations).toHaveLength(222);
   });
 
   it('keeps every historic observation incomplete and private', () => {
@@ -636,6 +636,13 @@ describe('FARE-001 pilot — historic examples stay private; only fully dated, e
       'obs-lhr-lhe-business-20260822-8w-v1',
       'obs-lhr-doh-business-20260822-8w-v1',
       'obs-man-khi-business-20260822-8w-v1',
+      'obs-man-isb-economy-20260825-8w-v1',
+      'obs-man-lhe-economy-20260825-8w-v1',
+      'obs-man-dxb-economy-20260825-8w-v1',
+      'obs-lhr-jed-economy-20260825-8w-v1',
+      'obs-lhr-doh-economy-20260825-8w-v1',
+      'obs-bhx-atq-economy-20260825-8w-v1',
+      'obs-lgw-atq-economy-20260825-8w-v1',
     ]);
     expect(published).toEqual(expect.arrayContaining([
       expect.objectContaining({

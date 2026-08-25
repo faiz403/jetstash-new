@@ -73,8 +73,8 @@ describe('direct-route + connecting-fare: the distinction is explicit (Mancheste
     expect(html).toContain('Route service');
     expect(html).toContain('PIA · Direct');
     expect(html).toContain('This tracked fare is a different, connecting journey.');
-    // The fare's own airline (Etihad) is still shown by the existing header row, untouched.
-    expect(html).toContain('Etihad');
+    // The current fare's own airline is shown by the existing header row.
+    expect(html).toContain('Riyadh Air');
   });
 });
 

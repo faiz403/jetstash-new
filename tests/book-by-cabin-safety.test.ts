@@ -17,7 +17,7 @@ import { getRouteBySlug } from '@/data/routes';
  * independently-drifting policy from the generic Fare Signal's own
  * Economy-preference fix (PR #167). On manchester-lahore this meant Book-By
  * showed a £3,051 Business "Verified check" directly beneath booking-timing
- * guidance while the same route's Fare Signal correctly led with £628
+ * guidance while the same route's Fare Signal correctly led with the latest £538
  * Economy.
  *
  * The fix: lib/fare-signal.ts's selectRepresentativeObservation() is now
@@ -58,18 +58,18 @@ function businessObservation(overrides: Partial<FareObservation> = {}): FareObse
 }
 
 describe('A. Real Manchester-Lahore data — the exact confirmed live defect', () => {
-  it('Fare Signal selects the £628 Economy observation', () => {
+  it('Fare Signal selects the latest £538 Economy observation', () => {
     const signal = getFareSignalForRoute('manchester-lahore', NOW_ISO);
     expect(signal.observation?.cabin).toBe('Economy');
-    expect(signal.observation?.price).toBe(628);
-    expect(signal.observation?.id).toBe('obs-man-lhe-economy-20260818-8w-v1');
+    expect(signal.observation?.price).toBe(538);
+    expect(signal.observation?.id).toBe('obs-man-lhe-economy-20260825-8w-v1');
   });
 
   it('Book-By now selects the SAME Economy observation — the confirmed defect is gone', () => {
     const snapshot = computeBookBySnapshot('manchester-lahore', NOW_DATE);
     expect(snapshot?.latestObservation?.cabin).toBe('Economy');
-    expect(snapshot?.latestObservation?.price).toBe(628);
-    expect(snapshot?.latestObservation?.observedDate).toBe('2026-08-18');
+    expect(snapshot?.latestObservation?.price).toBe(538);
+    expect(snapshot?.latestObservation?.observedDate).toBe('2026-08-25');
   });
 
   it('the £3,051 Business observation remains completely untouched in the append-only archive', () => {

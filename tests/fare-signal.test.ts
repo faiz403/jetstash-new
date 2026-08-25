@@ -35,9 +35,9 @@ describe('universal Fare Signal derivation', () => {
     // 2026-08-18: Weekly Full Fare Refresh #1 added a newer, later-dated
     // observation for this route, which now becomes the latest — the
     // function selects the latest observedDate regardless of nowIso.
-    expect(signal.observation?.price).toBe(630);
-    expect(signal.observation?.airline).toBe('Etihad');
-    expect(signal.observation?.observedDate).toBe('2026-08-18');
+    expect(signal.observation?.price).toBe(460);
+    expect(signal.observation?.airline).toBe('Riyadh Air');
+    expect(signal.observation?.observedDate).toBe('2026-08-25');
     expect(signal.observation?.id).not.toContain('ey-645');
     expect(signal.strongerSignal).toBeNull();
   });
@@ -83,9 +83,9 @@ describe('Fare Signal presentation and CTA boundaries', () => {
     const text = renderToStaticMarkup(FareSignal({ signal, tripComUrl: getTripComRouteUrl('manchester-islamabad'), routeSlug: 'manchester-islamabad' })).replace(/\s+/g, ' ');
     expect(text).toContain('Fare Signal');
     expect(text).toContain('Fare spotted');
-    expect(text).toContain('630');
-    expect(text).toContain('Etihad');
-    expect(text).toContain('Checked 18 August 2026');
+    expect(text).toContain('460');
+    expect(text).toContain('Riyadh Air');
+    expect(text).toContain('Checked 25 August 2026');
     expect(text).toContain('Check current price');
     expect(text).toContain('Ad · Affiliate link.</span> JetStash earns commission on eligible bookings through this link, at no extra cost to you.');
     // Route Page Scanability fix (21 Aug 2026): the former hero-only caveat
