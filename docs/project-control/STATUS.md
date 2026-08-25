@@ -603,7 +603,8 @@ candidate). Two pre-existing tests that had hardcoded the stale-detection bug's 
 20260825`) were updated to the corrected values — same test-maintenance pattern as PR #178/#183.
 Full Vitest (134 files / 2,733 tests), `tsc --noEmit`, `next lint` and `next build` all pass.
 
-**First Public Standout Fare Pilot (25 Aug 2026, founder-approved, OPEN PR, NOT MERGED):**
+**First Public Standout Fare Pilot (25 Aug 2026, founder-approved, PR #185, MERGED — LIVE on
+production at `14bfdb9`):**
 manchester-islamabad only — JetStash's first customer-facing Fare Watcher surface. Deliberately
 does NOT add a new route-page section: `components/route/fare-signal.tsx`'s existing "Fare
 spotted" eyebrow becomes "Standout Fare" plus two short evidence lines ("£141 below JetStash's
@@ -635,7 +636,29 @@ baggage-included claim) plus two defense-in-depth cases. Three pre-existing test
 had asserted the narrower pre-pilot invariant "this component never mentions baggage as a fact at
 all" / a literal `source: 'fare-signal'` — updated to the still-binding rule (no fabricated
 figure, no inclusion/£0 claim) now that one evidence-safe baggage line legitimately exists. Full
-Vitest (135 files / 2,752 tests), `tsc --noEmit`, `next lint` and `next build` all pass.
+Vitest (135 files / 2,752 tests), `tsc --noEmit`, `next lint` and `next build` all pass. Verified
+live on `jetstash.co.uk` post-merge (not preview): manchester-islamabad renders exactly £480 /
+Riyadh Air / Economy / checked 25 August 2026 / connecting via RUH / 20 Oct–3 Nov / "£141 below
+JetStash's comparable tracked median of £621." / the baggage caveat / the unchanged Trip.com CTA,
+disclosure and fresh-search note; Journey Choice still shows £601/£621/£626 and "£25 more saves
+14h 15m", with the reconciliation sentence distinguishing the two travel windows; manchester-lahore,
+london-heathrow-jeddah and birmingham-amritsar confirmed to still render only "Fare spotted"; the
+Google Ads conversion path (`lib/google-ads-conversions.ts`) confirmed to key only off the `event`
+string, never the new conditional `source` property, so `fireGoogleAdsConversion` is unaffected by
+this pilot.
+
+**FARE WATCHER PHASE 1 — CUSTOMER-FACING PILOT LIVE. WAIT FOR REAL TRAFFIC (25 Aug 2026, founder
+decision).** The full lifecycle the founder wanted before touching the public product is now real,
+not theoretical: detected → independently rechecked → verified evidence → founder approval →
+public Standout Fare → fail-closed approval contract. Deliberate freeze on further Fare Watcher
+work until this pilot has collected real traffic — see "Do not reopen without new evidence" below
+for the explicit scope. The open commercial question is simple: do travellers notice the Standout
+Fare and click through (MAN→ISB route visit → Standout Fare exposure → Fare Signal Trip.com click
+with `source: fare-signal-standout` → Trip.com attributed click → booking/commission)? A known
+measurement blind spot exists in the middle of that funnel (the current Vercel plan previously
+blocked reading custom-event detail) — deliberately not being built around tonight; JetStash's
+active development attention moves to whatever can materially improve traffic or commercial
+coverage instead.
 
 ## NEXT
 
@@ -677,6 +700,13 @@ for a day that was not actually checked, and never create a fare merely to fill 
 - The Visual Identity System v2 documentation structure (do not restructure again without new
   evidence the four-part split isn't working — populating the Placeholder/Planned assets it
   already tracks is not a reason to reopen it).
+- **Fare Watcher / Standout Fare (25 Aug 2026 founder freeze)** — do not build a second Standout
+  Fare, a Standout Fare listing page, homepage promotion, new Fare Watcher UI, threshold changes,
+  further Journey Choice work, or additional analytics beyond the existing `tripcom_click` `source`
+  distinction, until the live manchester-islamabad pilot has collected real traffic and the founder
+  reopens this with that evidence. The engine itself (`lib/fare-watcher.ts`, `lib/standout-fare.ts`)
+  is correct and complete for this phase — the open question is customer behaviour, not more
+  internal engineering.
 
 ## Known risks
 
