@@ -8,6 +8,7 @@ import {
   HOTEL_PROVIDER_REL,
 } from '@/lib/holiday-intelligence';
 import { TrackedOutboundLink } from '@/components/ui/tracked-outbound-link';
+import { AffiliateLinkDisclosure } from '@/components/ui/affiliate-link-disclosure';
 
 /**
  * The one Holiday Intelligence component, shared by every destination that
@@ -43,7 +44,6 @@ export function HolidayIntelligence({ destination, nowIso }: HolidayIntelligence
   const flightStatuses = getHolidayFlightHandoffStatuses(destination, nowIso);
   const flightHandoffs = flightStatuses.filter((entry): entry is typeof entry & { href: string } => entry.status === 'verified' && entry.href !== null);
   const blockedOrigins = flightStatuses.filter((entry) => entry.status === 'blocked');
-  const hasAnyHotelBookingLink = examples.some((example) => example.bookingUrl !== null);
 
   return (
     <section aria-labelledby={`${destination.slug}-holiday-intelligence-heading`} className="mt-12 rounded-md border border-ink-100 bg-sand-50 p-5 sm:mt-14 sm:p-7">
@@ -92,13 +92,15 @@ export function HolidayIntelligence({ destination, nowIso }: HolidayIntelligence
                       Check live flights on Trip.com
                       <ArrowUpRight className="h-4 w-4" strokeWidth={2.25} />
                     </TrackedOutboundLink>
+                    <AffiliateLinkDisclosure providerName="Trip.com" className="mt-2 text-ink-500">
+                      Check the itinerary, dates and booking terms before paying.
+                    </AffiliateLinkDisclosure>
                   </article>
                 ))}
               </div>
             ) : flightStatuses.length === 0 ? (
               <p className="mt-2 text-sm leading-relaxed text-ink-600">Flight actions are shown on the individual {destination.city} route guides above.</p>
             ) : null}
-            {flightHandoffs.length > 0 && <p className="mt-2 text-xs text-ink-500">Partner link, opens Trip.com in a new tab. Check the itinerary, dates and booking terms before paying.</p>}
             {blockedOrigins.length > 0 && <p className="mt-2 text-xs leading-relaxed text-ink-500">No exact dateless Trip.com handoff was generated for: {blockedOrigins.map((entry) => entry.airportName).join(', ')}. Those origins remain blocked rather than using a generic link.</p>}
           </div>
         </div>
@@ -122,24 +124,26 @@ export function HolidayIntelligence({ destination, nowIso }: HolidayIntelligence
             )}
             <p className="mt-4 text-xs text-ink-400">Provider area label: {example.providerArea}</p>
             {example.bookingUrl && (
-              <TrackedOutboundLink
-                event="tripcom_hotel_click"
-                properties={{ route: destination.slug, source: analyticsSource }}
-                href={example.bookingUrl}
-                target="_blank"
-                rel={HOTEL_PROVIDER_REL}
-                className="mt-4 inline-flex items-center gap-1.5 rounded-sm bg-ink-900 px-4 py-2.5 text-sm font-semibold text-sand-50 transition-colors hover:bg-brass-600"
-              >
-                Check current price on Trip.com
-                <ArrowUpRight className="h-4 w-4" strokeWidth={2.25} />
-              </TrackedOutboundLink>
+              <>
+                <TrackedOutboundLink
+                  event="tripcom_hotel_click"
+                  properties={{ route: destination.slug, source: analyticsSource }}
+                  href={example.bookingUrl}
+                  target="_blank"
+                  rel={HOTEL_PROVIDER_REL}
+                  className="mt-4 inline-flex items-center gap-1.5 rounded-sm bg-ink-900 px-4 py-2.5 text-sm font-semibold text-sand-50 transition-colors hover:bg-brass-600"
+                >
+                  Check current price on Trip.com
+                  <ArrowUpRight className="h-4 w-4" strokeWidth={2.25} />
+                </TrackedOutboundLink>
+                <AffiliateLinkDisclosure providerName="Trip.com" className="mt-2 text-ink-500">
+                  Check the property, dates and booking terms before paying.
+                </AffiliateLinkDisclosure>
+              </>
             )}
           </article>
         ))}
       </div>
-      {hasAnyHotelBookingLink && (
-        <p className="mt-3 text-xs text-ink-500">Partner link, opens Trip.com in a new tab. Check the property, dates and booking terms before paying.</p>
-      )}
 
       <p className="mt-5 text-xs leading-relaxed text-ink-500">
         {hasAreas

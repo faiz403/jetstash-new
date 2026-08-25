@@ -1,6 +1,7 @@
 import { SearchX, ArrowUpRight } from 'lucide-react';
 import { getTripComFlightHandoffUrl, PROVIDER_REL } from '@/lib/booking-providers';
 import { TrackedOutboundLink } from './tracked-outbound-link';
+import { AffiliateLinkDisclosure } from './affiliate-link-disclosure';
 
 /**
  * Shown wherever a destination/route/cabin combination has no fare
@@ -52,10 +53,9 @@ export function NoFareFallback({ cityLabel, routeSlug, hasFareSignalElsewhere = 
             Compare flights on Trip.com
             <ArrowUpRight className="h-4 w-4" strokeWidth={2.25} />
           </TrackedOutboundLink>
-          <p className="mt-3 text-xs text-ink-400">
-            Partner link, opens Trip.com in a new tab. Check the itinerary, baggage allowance and booking terms
-            before paying.
-          </p>
+          <AffiliateLinkDisclosure providerName="Trip.com" className="mt-3 text-ink-400">
+            Check the itinerary, baggage allowance and booking terms before paying.
+          </AffiliateLinkDisclosure>
         </>
       ) : (
         <p className="mt-3 text-xs text-ink-400">Direct flight comparison is not available for this airport yet.</p>

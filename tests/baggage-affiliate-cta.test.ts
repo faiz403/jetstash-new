@@ -81,7 +81,7 @@ describe('The CTA uses the correct outbound link safety attributes', () => {
   });
 
   it('carries the required partner-link disclosure sentence', () => {
-    expect(componentSrc).toContain('Partner link, opens Travel Luggage &amp; Cabin Bags in a new tab.');
+    expect(componentSrc).toContain('<AffiliateLinkDisclosure providerName="Travel Luggage & Cabin Bags"');
   });
 });
 

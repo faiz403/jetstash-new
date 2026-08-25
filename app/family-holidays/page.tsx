@@ -104,7 +104,11 @@ export default function FamilyHolidaysPage() {
 
       <section className="bg-sand-50 py-16 sm:py-20">
         <div className="mx-auto max-w-content px-5 sm:px-8">
-          <h2 className="font-display text-2xl text-ink-900 sm:text-3xl">Example family package fares</h2>
+          <h2 className="font-display text-2xl text-ink-900 sm:text-3xl">Family holiday route cards</h2>
+          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-ink-500">
+            JetStash has not tracked a package price for these cards. They show selected flight-route context and,
+            where an exact partner handoff exists, a flight search rather than a flight-plus-hotel package quote.
+          </p>
           {packageDeals.length > 0 ? (
             <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {packageDeals.map((deal) => (

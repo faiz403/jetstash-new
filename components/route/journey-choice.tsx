@@ -3,6 +3,7 @@ import type { JourneyChoice as JourneyChoiceData, JourneyChoiceOption } from '@/
 import { PROVIDER_REL, TRIPCOM_FRESH_SEARCH_NOTE } from '@/lib/booking-providers';
 import { JOURNEY_CHOICE_DATED_HANDOFF_NOTE, type JourneyChoiceTripComHandoff } from '@/lib/tripcom-dated-handoff';
 import { TrackedOutboundLink } from '@/components/ui/tracked-outbound-link';
+import { AffiliateLinkDisclosure } from '@/components/ui/affiliate-link-disclosure';
 import { JourneyChoiceEvidenceDisclosure } from '@/components/route/journey-choice-evidence-disclosure';
 import { JourneyChoiceImpressionSection } from '@/components/route/journey-choice-impression-section';
 
@@ -252,7 +253,9 @@ export function JourneyChoice({
               Check today&apos;s price
               <ArrowUpRight className="h-4 w-4" strokeWidth={2.25} />
             </TrackedOutboundLink>
-            <p className="text-xs text-ink-500">Check the itinerary, baggage allowance and booking terms before paying. Partner link, opens Trip.com in a new tab.</p>
+            <AffiliateLinkDisclosure providerName="Trip.com">
+              Check the itinerary, baggage allowance and booking terms before paying.
+            </AffiliateLinkDisclosure>
           </div>
           <p className="mt-1.5 text-xs text-ink-400">
             {tripComHandoff.datesPreserved ? JOURNEY_CHOICE_DATED_HANDOFF_NOTE : TRIPCOM_FRESH_SEARCH_NOTE}

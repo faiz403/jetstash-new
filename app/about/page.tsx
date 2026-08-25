@@ -32,8 +32,8 @@ const standards = [
   },
   {
     icon: Ban,
-    title: 'We\'d rather be incomplete than wrong',
-    body: 'Some verticals you might expect, hotels, car hire, airport lounges, parking, aren\'t on the site yet. That\'s deliberate: we would rather not cover something than cover it with thin, generic placeholder content. They\'ll arrive when we can do them to the same standard as the routes.',
+    title: 'We\'d rather be limited than wrong',
+    body: 'JetStash now publishes checked hotel and location intelligence for a limited set of destinations. Car hire, airport lounges and parking are not covered. We add a category only when it can be supported with specific, checked context rather than generic placeholders.',
   },
   {
     icon: Scale,

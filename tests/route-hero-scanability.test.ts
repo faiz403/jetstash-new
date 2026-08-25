@@ -101,7 +101,8 @@ describe('Fare Signal is the one remaining first commercial decision unit', () =
     expect(html).toContain('Route service'); // PR #155 distinction (mismatch case)
     expect(html).toContain('PIA · Direct');
     expect(html).toContain('Check current price'); // CTA
-    expect(html).toContain('Check the itinerary, baggage allowance and booking terms before paying. Partner link, opens Trip.com in a new tab.'); // one complete caveat
+    expect(html).toContain('Ad · Affiliate link.</span> JetStash earns commission on eligible bookings through this link, at no extra cost to you.');
+    expect(html).toContain('Check the itinerary, baggage allowance and booking terms before paying.');
   });
 });
 

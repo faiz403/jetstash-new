@@ -314,6 +314,11 @@ constructs a booking URL by hand.
 - **Link semantics**: every outbound affiliate `<a>` uses `PROVIDER_REL`
   (`"nofollow sponsored noopener noreferrer"`) and opens in a new tab — matches Google's guidance
   for paid/affiliate links, defined once, never hand-typed at a call site.
+- **Visible commercial disclosure is part of every CTA, not a footer substitute.** Every compensated
+  customer-facing link renders the shared `AffiliateLinkDisclosure` immediately beside the action:
+  “Ad · Affiliate link. JetStash earns commission on eligible bookings through this link, at no
+  extra cost to you.” Provider/open-tab detail and any itinerary, price-freshness, baggage or booking-
+  terms warning remain additive; the disclosure never replaces an evidence caveat.
 - **To add a route's link**: generate it through Trip.com's own Affiliate Link dashboard (never
   hand-construct one), confirm it lands on the correct route, and add the exact output to
   `TRIPCOM_ROUTE_URLS`. To add a new provider: design its own shape in

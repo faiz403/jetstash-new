@@ -44,12 +44,12 @@ describe('deal card no longer carries Madinah-specific CTA-caption logic', () =>
 
   it('uses the standard Trip.com CTA and supporting copy', () => {
     // Whitespace-normalised: public-trust-corrections-aug2026 (August 2026)
-    // wrapped this caption onto two source lines and prefixed it with a
-    // "Partner link" disclosure — the underlying itinerary/baggage/booking
-    // terms wording is unchanged, just no longer a single unbroken line.
+    // wrapped this caption onto two source lines. The later commercial-trust
+    // pass moved the commercial wording into the shared disclosure component;
+    // the underlying itinerary/baggage/booking warning remains unchanged.
     const normalised = dealCardSrc.replace(/\s+/g, ' ');
     expect(normalised).toContain('Compare flights on Trip.com');
-    expect(normalised).toContain('Partner link, opens Trip.com in a new tab.');
+    expect(normalised).toContain('AffiliateLinkDisclosure');
     expect(normalised).toContain('Check the itinerary, baggage allowance and booking terms before paying.');
   });
 });

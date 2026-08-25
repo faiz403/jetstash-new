@@ -3,6 +3,7 @@ import type { FareSignal as FareSignalData, FareSignalObservation } from '@/lib/
 import { formatChecked } from '@/data/deals';
 import { PROVIDER_REL, TRIPCOM_FRESH_SEARCH_NOTE } from '@/lib/booking-providers';
 import { TrackedOutboundLink } from '@/components/ui/tracked-outbound-link';
+import { AffiliateLinkDisclosure } from '@/components/ui/affiliate-link-disclosure';
 
 function formatStops(observation: FareSignalObservation): string | null {
   if (observation.outboundStops === null || observation.returnStops === null) return null;
@@ -44,7 +45,9 @@ function SignalCta({ href, routeSlug }: { href: string; routeSlug: string }) {
             -- it answers a different question (dates don't carry across,
             not "check terms before paying") and is a shared constant reused
             elsewhere, so it isn't merged into this sentence. */}
-        <p className="text-xs text-ink-500">Check the itinerary, baggage allowance and booking terms before paying. Partner link, opens Trip.com in a new tab.</p>
+        <AffiliateLinkDisclosure providerName="Trip.com">
+          Check the itinerary, baggage allowance and booking terms before paying.
+        </AffiliateLinkDisclosure>
       </div>
       <p className="mt-1.5 text-xs text-ink-400">{TRIPCOM_FRESH_SEARCH_NOTE}</p>
     </div>

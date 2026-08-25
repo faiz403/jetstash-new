@@ -4,6 +4,7 @@ import type { Destination } from '@/data/destinations';
 import { formatRouteStatusDate } from '@/lib/route-status-copy';
 import { getDestinationFlightGuideEntries, type DestinationFlightGuideEntry } from '@/lib/destination-flight-guides';
 import { getTripComDestinationHandoffUrl, PROVIDER_REL } from '@/lib/booking-providers';
+import { AffiliateLinkDisclosure } from '@/components/ui/affiliate-link-disclosure';
 
 function routeStatusLabel(status: DestinationFlightGuideEntry['routeStatus']): string {
   switch (status) {
@@ -122,15 +123,12 @@ export function DestinationFlightGuides({ destination, nowIso }: DestinationFlig
                 Check live flights on Trip.com
                 <ArrowUpRight className="h-4 w-4" strokeWidth={2.25} />
               </a>
+              <AffiliateLinkDisclosure providerName="Trip.com" className="mt-2 text-ink-500">
+                Check the itinerary, dates and booking terms before paying.
+              </AffiliateLinkDisclosure>
             </article>
           ))}
         </div>
-      )}
-
-      {handoffs.length > 0 && (
-        <p className="mt-2 text-xs text-ink-500">
-          Partner link, opens Trip.com in a new tab. Check the itinerary, dates and booking terms before paying.
-        </p>
       )}
 
       {blocked.length > 0 && (

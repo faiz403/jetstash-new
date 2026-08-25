@@ -12,6 +12,7 @@ import {
 import { airports } from '@/data/airports';
 import { destinations } from '@/data/destinations';
 import { getTripComFlightHandoffUrl, PROVIDER_REL } from '@/lib/booking-providers';
+import { AffiliateLinkDisclosure } from '@/components/ui/affiliate-link-disclosure';
 import { track } from '@/lib/analytics';
 import { RouteMapHero } from '@/components/sections/route-map-hero';
 import { Badge } from '@/components/ui/badge';
@@ -486,7 +487,9 @@ export function JourneyBriefManchesterMumbai() {
                     Compare flights on Trip.com
                     <ArrowUpRight className="h-3.5 w-3.5" strokeWidth={2.25} />
                   </a>
-                  <p className="mt-1.5 text-[11px] text-ink-400">Check the itinerary, baggage allowance and booking terms before paying.</p>
+                  <AffiliateLinkDisclosure providerName="Trip.com" className="mt-1.5 text-ink-400">
+                    Check the itinerary, baggage allowance and booking terms before paying.
+                  </AffiliateLinkDisclosure>
                 </div>
                 <div className={`rounded-md border bg-white p-5 ${cabinPreference === 'Business' ? 'border-brass/50' : 'border-ink-100'}`}>
                   <div className="flex items-center justify-between">

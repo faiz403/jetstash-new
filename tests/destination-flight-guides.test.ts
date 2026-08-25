@@ -99,7 +99,7 @@ describe('destination flight guides', () => {
     const source = readFileSync(join(process.cwd(), 'components/destination/destination-flight-guides.tsx'), 'utf8');
     expect(source).toContain('getTripComDestinationHandoffUrl');
     expect(source).toContain('Check live flights on Trip.com');
-    expect(source).toContain('Partner link, opens Trip.com in a new tab.');
+    expect(source).toContain('<AffiliateLinkDisclosure providerName="Trip.com"');
     expect(source).toContain('entry.href');
     expect(source).toContain('blocked');
     expect(source).not.toContain('`/airports/${entry.airport.slug}`');
