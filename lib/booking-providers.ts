@@ -69,6 +69,41 @@ export const TRIPCOM_FRESH_SEARCH_NOTE =
   'Trip.com opens a new route search. Re-enter the dates and itinerary shown above to compare like for like.';
 
 /**
+ * The one fail-closed sentence for "this route has no dashboard-verified
+ * partner link" (Route Page Simplification Phase 1, 25 Aug 2026).
+ *
+ * The Route Page Decision-First & Density audit found two DIFFERENT
+ * sentences firing for this one underlying state on the same route page,
+ * roughly 1.2 screens apart on london-heathrow-jeddah:
+ *   - Fare Signal: "Exact partner booking link is not currently verified
+ *     for this route."
+ *   - Book-By Countdown: "Direct flight comparison is not available for
+ *     this airport yet."
+ * The second was also arguably inaccurate — the limitation is Trip.com's
+ * own airport-specific link tooling (see the file header on the nine
+ * London-origin routes), not an absence of direct flights, on a route
+ * whose hero badge says DIRECT.
+ *
+ * Fare Signal's wording is kept verbatim as the canonical one because it
+ * names the real cause (partner link, not flights) and is already the
+ * sentence asserted across the full 88-route sweep in
+ * tests/route-hero-scanability.ts. Nothing about the fail-closed DECISION
+ * changes here — getTripComFlightHandoffUrl() still returns null for
+ * exactly the same routes, and every caller still renders no CTA. This
+ * constant only ensures the one state is described in one way.
+ *
+ * Deliberately NOT applied (out of scope for Phase 1) to the four other
+ * surfaces that still carry the older "Direct flight comparison…" wording
+ * — components/ui/deal-card.tsx, components/ui/no-fare-fallback.tsx,
+ * components/travel-ready/travel-ready-check.tsx and
+ * components/sections/tracked-fares-explorer.tsx. Those are separate
+ * surfaces with their own regression tests; unifying them is a later,
+ * separately-reviewed change.
+ */
+export const NO_VERIFIED_PARTNER_LINK_NOTE =
+  'Exact partner booking link is not currently verified for this route.';
+
+/**
  * Route-slug-keyed, exact dashboard-generated Trip.com Flights-page affiliate
  * links — see file header for provenance. 45 of JetStash's current 80 routes are
  * covered; the other 35 remain intentionally absent where Trip.com's tooling

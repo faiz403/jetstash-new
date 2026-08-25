@@ -25,6 +25,31 @@ analytics/conversion events are verified in the real dashboard.
 
 ## Current truth
 
+- **Route page simplification Phase 1 — fare reconciliation + unified fail-closed copy (OPEN PR,
+  NOT MERGED, refreshed 25 August 2026 onto the post-#180 baseline):** implements only §20 of the
+  Route Page Decision-First & Density master audit, which is the audit's own Phase 1 and nothing
+  else. Two changes. (1) The audit's single P0: on `manchester-islamabad` the page currently
+  renders £460 for travel 20 October–3 November (Fare Signal, the 25 August controlled batch's
+  Riyadh Air check) and £601/£621/£626 for travel 6–20 October (Journey Choice) — different trips —
+  ~4,500px apart with no cross-reference. One derived sentence now names the two travel-date
+  windows at the point of contrast (`lib/fare-window-reconciliation.ts`, rendered by `page.tsx`
+  above Journey Choice, never inside it). The exact fare/window pair is never hardcoded — the
+  module derives whichever two windows the two blocks currently hold, so this description's own
+  figures will move again the next time a fare-coverage batch logs a new manchester-islamabad
+  check. Fails closed: null when either window is missing and null when the two windows match, so
+  it renders on no other route today. (2) The two divergent fail-closed sentences
+  for one state — Fare Signal's "Exact partner booking link is not currently verified for this
+  route." and Book-By's "Direct flight comparison is not available for this airport yet." — are now
+  one shared `NO_VERIFIED_PARTNER_LINK_NOTE` constant carrying Fare Signal's wording verbatim; both
+  render identically on `london-heathrow-jeddah`, ~1,024px apart. No fare data, no Trip.com URL, no
+  affiliate ID, no analytics event and no CTA is added or removed; Journey Choice's derivation,
+  evidence drawer, dated handoff and measurement instrumentation are untouched; Travel Ready is not
+  touched at all. Audit Phases 2–7 (warning-zone promotion, duplicate-CTA removal, Fare History
+  progressive disclosure, Travel Ready compression, Journey Choice promotion, the Heathrow–Jeddah
+  commercial path) all remain **not started** and deliberately out of that PR. Known follow-up: the
+  older "Direct flight comparison…" wording still exists on four other surfaces (`deal-card.tsx`,
+  `no-fare-fallback.tsx`, `travel-ready-check.tsx`, `tracked-fares-explorer.tsx`), each with its own
+  regression tests — unifying those is a separate, later change.
 - **Commercial trust safe-fix (founder-authorised Category A remediation):** customer-facing
   compensated CTAs now use one adjacent, explicit affiliate/advertising disclosure; Contact and
   Quote Request show the existing Privacy Policy beside their forms; stale hotel-scope copy,

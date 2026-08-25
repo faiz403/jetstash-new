@@ -41,6 +41,8 @@ import { getJourneyChoiceForRoute } from '@/lib/journey-choice-route-adapter';
 import { getJourneyChoiceTripComHandoff } from '@/lib/tripcom-dated-handoff';
 import { FareSignal } from '@/components/route/fare-signal';
 import { getFareSignalForRoute, shouldShowNoFareFallback } from '@/lib/fare-signal';
+import { FareWindowReconciliationNote } from '@/components/route/fare-window-reconciliation-note';
+import { deriveFareWindowReconciliation } from '@/lib/fare-window-reconciliation';
 import { getRouteIntelligenceDisplayForRoute } from '@/lib/route-intelligence-display';
 import { BusinessClarityPanel } from '@/components/route/business-clarity-panel';
 
@@ -194,6 +196,18 @@ export default async function RoutePage({ params }: { params: Promise<{ slug: st
   // businessFareRange is null and the whole panel simply doesn't render,
   // rather than showing a broken or invented fare.
   const businessFareRange = route.businessClarity ? getFareRangeSummary(route.slug, 'Business', nowIso) : null;
+  // Route Page Simplification Phase 1 (25 Aug 2026) — the audit's single P0.
+  // When BOTH fare blocks render and they cover DIFFERENT travel-date
+  // windows, the page says so once, at the point of contrast. Derived
+  // entirely from date strings both components already render (see
+  // lib/fare-window-reconciliation.ts); returns null — and therefore renders
+  // nothing at all — for every route without a second fare block, and for a
+  // second block whose window matches the first. Journey Choice itself is
+  // read from, never modified.
+  const fareWindowReconciliation = deriveFareWindowReconciliation(
+    fareSignal.observation,
+    journeyChoice ? journeyChoice.lowerFare : null
+  );
 
   return (
     <>
@@ -634,8 +648,13 @@ export default async function RoutePage({ params }: { params: Promise<{ slug: st
         <div className="mx-auto max-w-content px-5 sm:px-8">
           <h2 className="font-display text-2xl text-ink-900 sm:text-3xl">{fareSectionCopy.heading}</h2>
           {fareSectionCopy.caption && <p className="mt-2 max-w-xl text-sm text-ink-500">{fareSectionCopy.caption}</p>}
-          {journeyChoice && (
+          {journeyChoice && fareWindowReconciliation && (
             <div className="mt-8">
+              <FareWindowReconciliationNote reconciliation={fareWindowReconciliation} />
+            </div>
+          )}
+          {journeyChoice && (
+            <div className={fareWindowReconciliation ? 'mt-4' : 'mt-8'}>
               <JourneyChoice
                 journeyChoice={journeyChoice}
                 routeLabel={`${airport.city} to ${dest.city}`}
