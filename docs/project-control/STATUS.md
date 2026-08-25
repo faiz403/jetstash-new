@@ -494,6 +494,18 @@ direct-service guidance for all eight; it does not support fixed fares, baggage 
 frequency/duration promises. The four existing non-London Trip.com handoffs are preserved inside
 their route guides; the four London-origin handoffs remain intentionally blocked with no LON fallback.
 
+**Self-transfer prominence fix (25 August 2026, founder-approved narrow customer-trust fix):**
+Fare Signal now shows a "Self-transfer itinerary" label, alongside the fare's routing information,
+whenever the representative observation's own `priceNote` explicitly records self-transfer or
+separate-ticket wording (`lib/fare-self-transfer.ts` — a single conservative evidence predicate,
+never inferring from stop/airline count, airport changes or price alone, and never labelling a
+negated mention such as "no self-transfer notice"). Confirmed live on the six 25 August batch fares
+that carry this evidence (Manchester–Lahore, Manchester–Dubai, Heathrow–Jeddah, Heathrow–Doha,
+Birmingham–Amritsar, Gatwick–Amritsar); Manchester–Islamabad's £460 Riyadh Air fare correctly does
+not receive the label, since its own `priceNote` records no such evidence. Presentation only — no
+fare data, Fare Watcher maths, route truth, Journey Choice or Book-By logic changed, and no
+structured field was added to `FareObservation`.
+
 ## NEXT
 
 ### FARE-001 — Begin building the editorial fare observation archive

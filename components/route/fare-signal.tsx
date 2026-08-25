@@ -1,9 +1,32 @@
-import { ArrowUpRight, CalendarDays, Info, Plane, Search, Route as RouteIcon } from 'lucide-react';
+import { AlertTriangle, ArrowUpRight, CalendarDays, Info, Plane, Search, Route as RouteIcon } from 'lucide-react';
 import type { FareSignal as FareSignalData, FareSignalObservation } from '@/lib/fare-signal';
 import { formatChecked } from '@/data/deals';
 import { PROVIDER_REL, TRIPCOM_FRESH_SEARCH_NOTE } from '@/lib/booking-providers';
+import { SELF_TRANSFER_LABEL } from '@/lib/fare-self-transfer';
 import { TrackedOutboundLink } from '@/components/ui/tracked-outbound-link';
 import { AffiliateLinkDisclosure } from '@/components/ui/affiliate-link-disclosure';
+
+/**
+ * Self-transfer prominence fix (25 Aug 2026, founder-approved). Renders
+ * only when FareSignalObservation.isSelfTransfer is true -- see
+ * lib/fare-self-transfer.ts for the evidence predicate. Placed inside the
+ * same routing-info row formatRouting() already renders in CurrentSignal
+ * (and as its own line in RecentSignal, which shows no routing row at
+ * all), per the founder brief: "alongside the fare's routing information
+ * -- not only in Fare History, a Business panel, or a deep-detail view."
+ * Deliberately the exact label text agreed, nothing added: no claim about
+ * baggage transfer or connection protection is made here or implied --
+ * those stay whatever the existing baggage/optional-charges caveats
+ * already say.
+ */
+function SelfTransferNote() {
+  return (
+    <span className="inline-flex items-center gap-1.5 rounded-sm border border-terracotta-300 bg-terracotta-50 px-2 py-1 text-xs font-semibold text-terracotta-700">
+      <AlertTriangle className="h-3.5 w-3.5 shrink-0" strokeWidth={2.25} aria-hidden="true" />
+      {SELF_TRANSFER_LABEL}
+    </span>
+  );
+}
 
 function formatStops(observation: FareSignalObservation): string | null {
   if (observation.outboundStops === null || observation.returnStops === null) return null;
@@ -229,9 +252,10 @@ function CurrentSignal({ data, tripComUrl, routeSlug, routeDirectness, routeStat
           <p className="mt-1">Checked {formatChecked(data.observedDate)}</p>
         </div>
       </div>
-      <div className="mt-5 flex flex-wrap gap-x-5 gap-y-2 text-sm text-ink-700">
+      <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-ink-700">
         {routing && <span className="inline-flex items-center gap-2"><Plane className="h-4 w-4 text-terracotta-600" />{routing}</span>}
         <span className="inline-flex items-center gap-2"><CalendarDays className="h-4 w-4 text-terracotta-600" />{formatChecked(data.departureDate)} – {formatChecked(data.returnDate)}</span>
+        {data.isSelfTransfer && <SelfTransferNote />}
       </div>
       {mismatch && <RouteVsFareCallout mismatch={mismatch} />}
       {tripComUrl ? <SignalCta href={tripComUrl} routeSlug={routeSlug} /> : <NoCtaFallback />}
@@ -251,6 +275,7 @@ function RecentSignal({ data, tripComUrl, routeSlug, routeDirectness, routeStatu
         </div>
         <p className="text-sm text-ink-600">Checked {formatChecked(data.observedDate)}</p>
       </div>
+      {data.isSelfTransfer && <div className="mt-3"><SelfTransferNote /></div>}
       <p className="mt-4 text-sm leading-relaxed text-ink-600">Price may have changed.</p>
       {mismatch && <RouteVsFareCallout mismatch={mismatch} />}
       {tripComUrl ? <SignalCta href={tripComUrl} routeSlug={routeSlug} /> : <NoCtaFallback />}
