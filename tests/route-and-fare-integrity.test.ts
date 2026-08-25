@@ -106,15 +106,15 @@ describe('Fare-observation completeness gating (TR-002) — Verified Check must 
     expect(isPubliclyPublishable(rest as FareObservation)).toBe(false);
   });
 
-  it('getFareRangeSummary derives the exact dated Manchester–Lahore weekly series, now including the 25 August controlled weekly check', () => {
+  it('getFareRangeSummary derives the exact dated Manchester–Lahore weekly series, now including the 25 August controlled weekly check and its same-day emergency-recheck', () => {
     const range = getFareRangeSummary('manchester-lahore', 'Economy', FIXED_TODAY);
     expect(range).not.toBeNull();
-    expect(range!.count).toBe(6);
+    expect(range!.count).toBe(7);
     expect(range!.min).toBe(538);
     expect(range!.max).toBe(638);
     expect(range!.earliestDate).toBe('2026-07-28');
     expect(range!.latestDate).toBe('2026-08-25');
-    expect(range!.sources).toEqual(['Etihad', 'Turkish Airlines', 'Ryanair / Air Cairo / flyadeal / Fly Jinnah (outbound), Pakistan International Airlines / Pegasus / Ryanair (return)']);
+    expect(range!.sources).toEqual(['Etihad', 'Turkish Airlines', 'Ryanair / Air Cairo / flyadeal / Fly Jinnah (outbound), Pakistan International Airlines / Pegasus / Ryanair (return)', 'Ryanair / Air Arabia / Fly Jinnah (outbound)']);
     expect(range!.observedDirectness).toBe('connecting');
   });
 });
@@ -404,7 +404,12 @@ describe('FARE-001 pilot — historic examples stay private; only fully dated, e
     // fully-evidenced Business-cabin observations appended for
     // manchester-lahore, london-heathrow-lahore, london-heathrow-doha and
     // manchester-karachi.
-    expect(fareObservations).toHaveLength(222);
+    // 222 -> 226 (Fare Watcher verification recheck batch, 25 August 2026):
+    // four same-day emergency-recheck observations appended for
+    // manchester-islamabad, manchester-lahore, london-heathrow-jeddah and
+    // birmingham-amritsar, verifying the controlled weekly batch's own
+    // Fare Watcher candidates on that route.
+    expect(fareObservations).toHaveLength(226);
   });
 
   it('keeps every historic observation incomplete and private', () => {
@@ -643,6 +648,13 @@ describe('FARE-001 pilot — historic examples stay private; only fully dated, e
       'obs-lhr-doh-economy-20260825-8w-v1',
       'obs-bhx-atq-economy-20260825-8w-v1',
       'obs-lgw-atq-economy-20260825-8w-v1',
+      // Fare Watcher verification recheck batch (25 August 2026) — same-day
+      // rechecks of the controlled weekly batch's own Fare Watcher
+      // candidates above.
+      'obs-man-isb-economy-20260825-recheck-v1',
+      'obs-man-lhe-economy-20260825-recheck-v1',
+      'obs-lhr-jed-economy-20260825-recheck-v1',
+      'obs-bhx-atq-economy-20260825-recheck-v1',
     ]);
     expect(published).toEqual(expect.arrayContaining([
       expect.objectContaining({

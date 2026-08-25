@@ -90,10 +90,10 @@ describe('the 25 August 2026 batch -- real observations, real founder-specified 
     expect(signal.observation?.isSelfTransfer).toBe(true);
   });
 
-  it('manchester-islamabad\'s £460 Riyadh Air observation is NOT flagged -- its priceNote records no self-transfer/separate-ticket evidence', () => {
+  it('manchester-islamabad\'s representative Riyadh Air observation is NOT flagged -- its priceNote records no self-transfer/separate-ticket evidence (now the 25 Aug emergency-recheck, £480, which outranks the £460 routine check on the same-day representative-priority rule -- PR #182 -- but carries the same "no self-transfer notice" evidence)', () => {
     const signal = getFareSignalForRoute('manchester-islamabad', NOW_ISO);
     expect(signal.state).toBe('current');
-    expect(signal.observation?.price).toBe(460);
+    expect(signal.observation?.price).toBe(480);
     expect(signal.observation?.isSelfTransfer).toBe(false);
   });
 });
