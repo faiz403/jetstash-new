@@ -197,6 +197,176 @@ describe('Fare Watcher / Standout Fares', () => {
     expect(jedResult.exclusions).toContainEqual({ observationId: 'obs-lhr-jed-economy-20260819-8w-v1', reason: 'verification-recheck' });
   });
 
+  it('real archive: a matching emergency-recheck becomes the evaluated evidence while candidate identity stays anchored to the original detection (Verified-Candidate Price Integrity, 25 August 2026)', () => {
+    // Step 6 required real-data results, verified against the actual engine
+    // (not hardcoded into production logic): MAN-ISB detection £460,
+    // verified £480, median £621, ~£141/22.7% below median, still
+    // qualifies; MAN-LHE detection £538, verified £547, median £620,
+    // ~£73/11.8% below median, still qualifies; LHR-JED and BHX-ATQ use the
+    // engine's own current median rather than a stale expectation.
+    const candidates = generateFareWatcherCandidates(fareObservations, '2026-08-25');
+    const bySlug = Object.fromEntries(candidates.map((candidate) => [candidate.routeSlug, candidate]));
+
+    expect(bySlug['manchester-islamabad']).toMatchObject({
+      id: 'fare-watcher-obs-man-isb-economy-20260825-8w-v1',
+      currentFare: 480,
+      baselineMedian: 621,
+      differencePounds: 141,
+      qualification: 'standout-candidate',
+      checkedDate: '2026-08-25',
+    });
+    expect(bySlug['manchester-islamabad'].differencePercent).toBeCloseTo(22.7, 1);
+    expect(bySlug['manchester-islamabad'].verifiedObservation).toMatchObject({ observationReason: 'emergency-recheck', price: 480 });
+
+    expect(bySlug['manchester-lahore']).toMatchObject({
+      id: 'fare-watcher-obs-man-lhe-economy-20260825-8w-v1',
+      currentFare: 547,
+      baselineMedian: 620,
+      differencePounds: 73,
+      qualification: 'standout-candidate',
+    });
+    expect(bySlug['manchester-lahore'].differencePercent).toBeCloseTo(11.8, 1);
+    expect(bySlug['manchester-lahore'].verifiedObservation).toMatchObject({ observationReason: 'emergency-recheck', price: 547 });
+
+    // LHR-JED and BHX-ATQ: verified price stayed the same or moved only
+    // slightly, evaluated against the engine's own current median -- both
+    // still qualify (their exact tier is not asserted here, since it is a
+    // function of the live archive rather than this fix).
+    expect(bySlug['london-heathrow-jeddah']).toBeDefined();
+    expect(bySlug['london-heathrow-jeddah'].currentFare).toBe(361);
+    expect(bySlug['london-heathrow-jeddah'].verifiedObservation).toMatchObject({ observationReason: 'emergency-recheck', price: 361 });
+    expect(bySlug['birmingham-amritsar']).toBeDefined();
+    expect(bySlug['birmingham-amritsar'].currentFare).toBe(591);
+    expect(bySlug['birmingham-amritsar'].verifiedObservation).toMatchObject({ observationReason: 'emergency-recheck', price: 591 });
+
+    // None of the four routes' emergency-recheck observations became a
+    // second, independent candidate in their own right.
+    const rechecks = ['obs-man-isb-economy-20260825-recheck-v1', 'obs-man-lhe-economy-20260825-recheck-v1', 'obs-lhr-jed-economy-20260825-recheck-v1', 'obs-bhx-atq-economy-20260825-recheck-v1'];
+    expect(candidates.map((candidate) => candidate.id)).not.toEqual(expect.arrayContaining(rechecks.map((id) => `fare-watcher-${id}`)));
+  });
+
+  it('a matching verification recheck that raises the price can still qualify when it remains a meaningful drop', () => {
+    const detection = fixture({ id: 'detection', price: 400, observationReason: 'routine-weekly' });
+    const recheck = fixture({ id: 'recheck', price: 430, observationReason: 'emergency-recheck', observedDate: '2026-08-10' });
+    const baseline = [
+      baselineFixture('a', '2026-08-01', '2026-09-26', 500),
+      baselineFixture('b', '2026-08-02', '2026-09-27', 510),
+      baselineFixture('c', '2026-08-03', '2026-09-28', 520),
+    ];
+    const candidates = generateFareWatcherCandidates([detection, recheck, ...baseline], '2026-08-11');
+    expect(candidates).toHaveLength(1);
+    expect(candidates[0]).toMatchObject({ id: 'fare-watcher-detection', currentFare: 430, checkedDate: '2026-08-10', qualification: 'standout-candidate' });
+    expect(candidates[0].verifiedObservation).toMatchObject({ id: 'recheck', price: 430 });
+  });
+
+  it('a matching verification recheck that raises the price enough to stop qualifying is no longer publication-eligible, even though the stale detection price would have qualified', () => {
+    const detection = fixture({ id: 'detection', price: 400, observationReason: 'routine-weekly' });
+    const recheck = fixture({ id: 'recheck', price: 505, observationReason: 'emergency-recheck', observedDate: '2026-08-10' });
+    const baseline = [
+      baselineFixture('a', '2026-08-01', '2026-09-26', 500),
+      baselineFixture('b', '2026-08-02', '2026-09-27', 510),
+      baselineFixture('c', '2026-08-03', '2026-09-28', 520),
+    ];
+    // Sanity check: the stale £400 detection price alone would have qualified.
+    expect(qualifyFareWatcherObservation(detection, [detection, ...baseline], '2026-08-11').qualification).toBe('standout-candidate');
+    const candidates = generateFareWatcherCandidates([detection, recheck, ...baseline], '2026-08-11');
+    expect(candidates).toHaveLength(0);
+  });
+
+  it('a matching verification recheck that falls even further is used as the evaluated evidence', () => {
+    const detection = fixture({ id: 'detection', price: 500, observationReason: 'routine-weekly' });
+    const recheck = fixture({ id: 'recheck', price: 450, observationReason: 'emergency-recheck', observedDate: '2026-08-10' });
+    const baseline = [
+      baselineFixture('a', '2026-08-01', '2026-09-26', 560),
+      baselineFixture('b', '2026-08-02', '2026-09-27', 570),
+      baselineFixture('c', '2026-08-03', '2026-09-28', 580),
+    ];
+    const candidates = generateFareWatcherCandidates([detection, recheck, ...baseline], '2026-08-11');
+    expect(candidates).toHaveLength(1);
+    expect(candidates[0]).toMatchObject({ id: 'fare-watcher-detection', currentFare: 450 });
+    expect(candidates[0].verifiedObservation.price).toBe(450);
+  });
+
+  it('a matching verification recheck at the same price is still recognized as current evidence without creating a second candidate or baseline sample', () => {
+    const detection = fixture({ id: 'detection', price: 361, observationReason: 'routine-weekly' });
+    const recheck = fixture({ id: 'recheck', price: 361, observationReason: 'emergency-recheck', observedDate: '2026-08-10' });
+    const baseline = [
+      baselineFixture('a', '2026-08-01', '2026-09-26', 480),
+      baselineFixture('b', '2026-08-02', '2026-09-27', 490),
+      baselineFixture('c', '2026-08-03', '2026-09-28', 500),
+    ];
+    const candidates = generateFareWatcherCandidates([detection, recheck, ...baseline], '2026-08-11');
+    expect(candidates).toHaveLength(1);
+    expect(candidates[0].currentFare).toBe(361);
+    expect(candidates[0].baselineSampleSize).toBe(3);
+    expect(candidates[0].verifiedObservation.id).toBe('recheck');
+  });
+
+  it('an unrelated emergency-recheck (different travel dates) does not affect the candidate and is not itself promoted', () => {
+    const detection = fixture({ id: 'detection', price: 400, observationReason: 'routine-weekly' });
+    const unrelatedRecheck = fixture({ id: 'unrelated-recheck', price: 999, observationReason: 'emergency-recheck', observedDate: '2026-08-10', departureDate: '2026-11-20', returnDate: '2026-12-04' });
+    const baseline = [
+      baselineFixture('a', '2026-08-01', '2026-09-26', 500),
+      baselineFixture('b', '2026-08-02', '2026-09-27', 510),
+      baselineFixture('c', '2026-08-03', '2026-09-28', 520),
+    ];
+    const candidates = generateFareWatcherCandidates([detection, unrelatedRecheck, ...baseline], '2026-08-11');
+    expect(candidates).toHaveLength(1);
+    expect(candidates[0]).toMatchObject({ id: 'fare-watcher-detection', currentFare: 400 });
+    expect(candidates[0].verifiedObservation.id).toBe('detection');
+  });
+
+  it('an unrelated emergency-recheck (different profile) does not affect the candidate either', () => {
+    const detection = fixture({ id: 'detection', price: 400, observationReason: 'routine-weekly' });
+    const unrelatedRecheck = fixture({ id: 'unrelated-recheck', price: 999, observationReason: 'emergency-recheck', observedDate: '2026-08-10', profileId: 'different-profile-v1' });
+    const baseline = [
+      baselineFixture('a', '2026-08-01', '2026-09-26', 500),
+      baselineFixture('b', '2026-08-02', '2026-09-27', 510),
+      baselineFixture('c', '2026-08-03', '2026-09-28', 520),
+    ];
+    const candidates = generateFareWatcherCandidates([detection, unrelatedRecheck, ...baseline], '2026-08-11');
+    expect(candidates[0]).toMatchObject({ currentFare: 400 });
+    expect(candidates[0].verifiedObservation.id).toBe('detection');
+  });
+
+  it('when multiple matching rechecks exist, the latest one (by the shared observation-ordering rule) wins', () => {
+    const detection = fixture({ id: 'detection', price: 400, observationReason: 'routine-weekly' });
+    const earlierRecheck = fixture({ id: 'earlier-recheck', price: 420, observationReason: 'emergency-recheck', observedDate: '2026-08-09' });
+    const laterRecheck = fixture({ id: 'later-recheck', price: 440, observationReason: 'emergency-recheck', observedDate: '2026-08-10' });
+    const baseline = [
+      baselineFixture('a', '2026-08-01', '2026-09-26', 500),
+      baselineFixture('b', '2026-08-02', '2026-09-27', 510),
+      baselineFixture('c', '2026-08-03', '2026-09-28', 520),
+    ];
+    const candidates = generateFareWatcherCandidates([detection, earlierRecheck, laterRecheck, ...baseline], '2026-08-11');
+    expect(candidates[0].currentFare).toBe(440);
+    expect(candidates[0].verifiedObservation.id).toBe('later-recheck');
+  });
+
+  it('an ordinary candidate with no matching recheck at all behaves exactly as before this fix', () => {
+    const detection = fixture({ id: 'detection', price: 400, observationReason: 'routine-weekly' });
+    const baseline = [
+      baselineFixture('a', '2026-08-01', '2026-09-26', 500),
+      baselineFixture('b', '2026-08-02', '2026-09-27', 510),
+      baselineFixture('c', '2026-08-03', '2026-09-28', 520),
+    ];
+    const candidates = generateFareWatcherCandidates([detection, ...baseline], '2026-08-11');
+    expect(candidates).toHaveLength(1);
+    expect(candidates[0]).toMatchObject({ id: 'fare-watcher-detection', currentFare: 400, checkedDate: '2026-08-10', qualification: 'standout-candidate' });
+    expect(candidates[0].verifiedObservation.id).toBe('detection');
+  });
+
+  it('an emergency-recheck with no matching detection observation never becomes a candidate on its own', () => {
+    const orphanRecheck = fixture({ id: 'orphan-recheck', price: 400, observationReason: 'emergency-recheck' });
+    const baseline = [
+      baselineFixture('a', '2026-08-01', '2026-09-26', 500),
+      baselineFixture('b', '2026-08-02', '2026-09-27', 510),
+      baselineFixture('c', '2026-08-03', '2026-09-28', 520),
+    ];
+    const candidates = generateFareWatcherCandidates([orphanRecheck, ...baseline], '2026-08-11');
+    expect(candidates).toHaveLength(0);
+  });
+
   it('never emits public market-wide language or an automatic approval', () => {
     const candidate = generateFareWatcherCandidates([
       fixture({ id: 'candidate', routeSlug: 'manchester-lahore', price: 400 }),
