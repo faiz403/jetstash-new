@@ -346,7 +346,12 @@ describe('Trip.com CTA is primary, singular, and correctly wired on Fare Signal'
 
   it('fires tripcom_click with exactly the two properties standard Vercel Pro can store — route and source, never origin/destination (both derivable from the route slug)', () => {
     expect(fareSignalSrc).toContain("event=\"tripcom_click\"");
-    expect(fareSignalSrc).toMatch(/properties=\{\{ route: routeSlug, source: 'fare-signal' \}\}/);
+    // First Standout Fare Pilot (25 Aug 2026): `source`'s value is now
+    // conditional (still exactly the same two properties, route and
+    // source — see SignalCta's own doc comment) so the pilot's CTA can be
+    // told apart from the ordinary Fare Signal CTA in Vercel Analytics
+    // without adding a new event or a third property.
+    expect(fareSignalSrc).toMatch(/properties=\{\{ route: routeSlug, source: standout \? 'fare-signal-standout' : 'fare-signal' \}\}/);
     expect(fareSignalSrc).not.toMatch(/properties=\{\{[^}]*origin:/);
     expect(fareSignalSrc).not.toMatch(/properties=\{\{[^}]*destination:/);
   });

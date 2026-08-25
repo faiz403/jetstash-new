@@ -603,6 +603,40 @@ candidate). Two pre-existing tests that had hardcoded the stale-detection bug's 
 20260825`) were updated to the corrected values — same test-maintenance pattern as PR #178/#183.
 Full Vitest (134 files / 2,733 tests), `tsc --noEmit`, `next lint` and `next build` all pass.
 
+**First Public Standout Fare Pilot (25 Aug 2026, founder-approved, OPEN PR, NOT MERGED):**
+manchester-islamabad only — JetStash's first customer-facing Fare Watcher surface. Deliberately
+does NOT add a new route-page section: `components/route/fare-signal.tsx`'s existing "Fare
+spotted" eyebrow becomes "Standout Fare" plus two short evidence lines ("£141 below JetStash's
+comparable tracked median of £621." and a verbatim baggage caveat) only when the fare Fare Signal
+is already showing IS the exact founder-approved verified evidence — added footprint measured at
+~94px mobile (390×844) / ~55px desktop (1440×900), against a ~689px/458px Fare Signal section and
+an ~13,450px/8,476px page, with Journey Choice's position, the first CTA's position and the
+existing Trip.com handoff/disclosure all unchanged. New small auditable founder-approval ledger
+(`data/standout-fare-approvals.ts`, one record) plus its pure derivation
+(`lib/standout-fare.ts`'s `getApprovedStandoutFare()`) — never a CMS. Fail-closed on four
+independent conditions checked in order: an unrevoked approval exists; Fare Watcher currently
+produces a candidate anchored to the approval's exact detection observation; that candidate isn't
+expired under Fare Watcher's OWN existing `isFareWatcherCandidateExpired` rule (no new expiry
+window invented); the candidate's current `verifiedObservation.id` still exactly matches the
+approval's `approvedVerifiedObservationId` — a later recheck at ANY price, even one that would
+still qualify, mints a new observation id and makes the Standout state disappear until a human
+re-approves, so founder approval of £480 is never silently carried forward onto unreviewed
+evidence. Reuses the existing `tripcom_click` event with a conditional `source` value
+(`fare-signal-standout` vs `fare-signal`) rather than adding a new analytics surface. MAN-LHE
+(£547), LHR-JED (£361) and BHX-ATQ (£591) confirmed to remain ordinary Fare Signals — no generic
+public listing page, no incidental approval via shared route logic. Journey Choice's frozen
+£601/£621/£626 pilot and its window-reconciliation sentence are unaffected (read from, never
+modified); the Trip.com affiliate URL/IDs for manchester-islamabad are unchanged. 19 new tests in
+`tests/standout-fare.test.ts` cover all 17 founder-required cases (exact-evidence rendering, median/
+diff derivation, baggage safety, all three other candidates staying unpublished, four independent
+fail-closed scenarios, Journey Choice/reconciliation/affiliate-ID non-regression, no banned-word or
+baggage-included claim) plus two defense-in-depth cases. Three pre-existing tests
+(`fare-signal.test.ts`, `fare-signal-route-vs-fare-clarity.test.ts`, `booking-providers.test.ts`)
+had asserted the narrower pre-pilot invariant "this component never mentions baggage as a fact at
+all" / a literal `source: 'fare-signal'` — updated to the still-binding rule (no fabricated
+figure, no inclusion/£0 claim) now that one evidence-safe baggage line legitimately exists. Full
+Vitest (135 files / 2,752 tests), `tsc --noEmit`, `next lint` and `next build` all pass.
+
 ## NEXT
 
 ### FARE-001 — Begin building the editorial fare observation archive

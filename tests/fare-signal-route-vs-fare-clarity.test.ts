@@ -211,11 +211,18 @@ describe('baggage unknown remains unknown', () => {
   // real rule this test protects -- no fabricated baggage allowance FACT
   // (a figure, an "included"/"free" claim, an airline-specific promise) --
   // still holds and is asserted directly below.
-  it('mentions baggage only as an instruction to check, never as a stated allowance fact', () => {
+  it('mentions baggage only as an instruction to check, or as verbatim archive evidence -- never a fabricated allowance fact', () => {
+    // First Standout Fare Pilot (25 Aug 2026, founder-approved): the
+    // component now also renders one evidence-safe baggage line for the
+    // Standout Fare state ("Baggage: <verbatim archive text>.", see
+    // StandoutEvidence) -- always the observation's own recorded uncertainty
+    // ("not stated; optional charges may apply" etc.), never a fabricated
+    // figure or an inclusion/free claim. The narrower, still-binding rule
+    // this test protects is checked directly below.
     expect(componentSrc).toContain('Check the itinerary, baggage allowance and booking terms before paying.');
     expect(componentSrc).not.toMatch(/\d+\s*(kg|kilograms?)\b/i);
     expect(componentSrc).not.toMatch(/baggage (included|free|allowance:)/i);
-    expect(componentSrc).not.toContain('Baggage');
+    expect(componentSrc).not.toMatch(/baggage (is |are )?included/i);
   });
 });
 

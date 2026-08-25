@@ -35,7 +35,16 @@ export interface FareSignal {
   strongerSignal: string | null;
 }
 
-function toSignalObservation(observation: FareObservation): FareSignalObservation | null {
+/**
+ * Exported for lib/standout-fare.ts (First Standout Fare Pilot, 25 Aug
+ * 2026): the public Standout Fare presentation must derive its
+ * customer-facing evidence (airline, routing, dates, self-transfer flag)
+ * from the exact same view-model builder Fare Signal itself uses, rather
+ * than re-deriving those fields independently from a raw FareObservation —
+ * one mapping, reused, so the two surfaces can never silently disagree
+ * about what a given observation's public-safe fields are.
+ */
+export function toSignalObservation(observation: FareObservation): FareSignalObservation | null {
   if (!isPubliclyPublishable(observation)) return null;
 
   return {
