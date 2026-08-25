@@ -196,15 +196,16 @@ describe('Real archive expectation (19 August 2026, post-supersession-fix) — o
   // drop threshold against its own comparable median (as 'notable-drop',
   // not 'standout-candidate' — a smaller but still real margin);
   // london-heathrow-jeddah's £535 does not clear it at all. One genuine,
-  // currently-reproducible candidate is therefore the correct, expected
-  // result — not a regression from the two-candidate count this
-  // describe block asserted before the 19 August recheck existed.
-  it('the real fareObservations archive produces exactly one Route Watch fare candidate today (birmingham-amritsar, notable-drop) — the 19 August verification recheck correctly superseded both 18 August standout observations, one of which no longer clears the threshold', () => {
+  // currently-reproducible candidate was the correct result before the
+  // 25 August controlled weekly batch. That batch intentionally adds three
+  // new standout candidates and one notable drop, all founder-review-only.
+  it('the real fareObservations archive produces the four current Route Watch candidates from the controlled weekly batch', () => {
     const nowIso = new Date().toISOString().slice(0, 10);
     const candidates = generateRouteWatchFareCandidates(fareObservations, nowIso);
-    expect(candidates).toHaveLength(1);
-    expect(candidates.map((c) => c.routeSlug)).toEqual(['birmingham-amritsar']);
-    expect(candidates[0].qualification).toBe('notable-drop');
+    expect(candidates).toHaveLength(4);
+    expect(candidates.map((c) => c.routeSlug)).toEqual(['manchester-islamabad', 'manchester-lahore', 'birmingham-amritsar', 'london-heathrow-jeddah']);
+    expect(candidates.map((c) => c.qualification)).toEqual(['standout-candidate', 'standout-candidate', 'notable-drop', 'standout-candidate']);
+    expect(candidates.every((c) => c.lifecycle === 'detected' && c.founderVerificationRequired)).toBe(true);
   });
 });
 
@@ -258,15 +259,12 @@ describe('I. Trust wording — no overclaim in rendered founder copy or customer
   });
 
   it('the non-empty state clearly states how many candidates cleared the threshold, never overclaiming urgency', () => {
-    // 19 August 2026: the real archive now has one genuine notable-drop
-    // candidate (see the "Real archive expectation" describe block above
-    // for why this dropped from two to one after the supersession fix) —
-    // exercise the actual non-empty-state copy rather than the
-    // (no-longer-true) empty state.
+    // The controlled 25 August batch now has four founder-review-only
+    // candidates; exercise the actual non-empty-state copy.
     const snapshot = getFounderSnapshot(new Date());
     const section = snapshot.grouped['nice-to-have'].find((s) => s.id === 'route-watch-fare-candidates')!;
-    expect(section.items).toHaveLength(1);
-    expect(section.headline).toMatch(/1 fare observation clear Fare Watcher's strong evidence threshold/i);
+    expect(section.items).toHaveLength(4);
+    expect(section.headline).toMatch(/4 fare observations clear Fare Watcher's strong evidence threshold/i);
     expect(section.headline).toMatch(/Nothing sends itself/i);
     for (const pattern of forbidden) expect(section.headline).not.toMatch(pattern);
   });

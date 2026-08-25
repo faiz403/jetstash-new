@@ -171,16 +171,16 @@ describe('Business-specific surfaces are unaffected by construction', () => {
 });
 
 describe('real-network sanity: manchester-lahore\'s generic Fare Signal correctly stays Economy even with Business Fare Evidence Batch 1\'s real Business observation present', () => {
-  it('manchester-lahore\'s Fare Signal is £628 Economy, not the newer £3,051 Business observation — the flagship case this fix exists for', () => {
+  it('manchester-lahore\'s Fare Signal is £538 Economy, not the newer £3,051 Business observation — the flagship case this fix exists for', () => {
     // This fix was originally authored and verified on clean main, before
     // PR #166's Business observations existed, via a read-only cross-branch
     // check (no route anywhere changed on main itself — confirmed at the
     // time). PR #166 has since been merged onto this branch's own history,
     // so this assertion now runs directly against the real, merged data:
-    // the generic signal still correctly resolves to the £628 Economy
+    // the generic signal still correctly resolves to the current £538 Economy
     // observation, not the £3,051 Business one dated four days later.
     const signal = getFareSignalForRoute('manchester-lahore', NOW_ISO);
     expect(signal.observation?.cabin).toBe('Economy');
-    expect(signal.observation?.price).toBe(628);
+    expect(signal.observation?.price).toBe(538);
   });
 });

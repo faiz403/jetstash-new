@@ -93,11 +93,11 @@ describe('Fare Signal is the one remaining first commercial decision unit', () =
       })
     ).replace(/\s+/g, ' ');
 
-    expect(html).toContain('630'); // tracked fare
-    expect(html).toContain('Etihad'); // airline/cabin
-    expect(html).toContain('Checked 18 August 2026'); // checked date
-    expect(html).toContain('Connecting journey'); // routing
-    expect(html).toContain('13 October 2026'); // dates
+    expect(html).toContain('460'); // tracked fare
+    expect(html).toContain('Riyadh Air'); // airline/cabin
+    expect(html).toContain('Checked 25 August 2026'); // checked date
+    expect(html).toContain('Connecting · 1 stop each way'); // routing
+    expect(html).toContain('20 October 2026'); // dates
     expect(html).toContain('Route service'); // PR #155 distinction (mismatch case)
     expect(html).toContain('PIA · Direct');
     expect(html).toContain('Check current price'); // CTA

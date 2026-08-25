@@ -249,10 +249,10 @@ describe('No profileId or invented-baggage leakage into the customer-facing comp
 });
 
 describe('Everything outside Journey Choice stays unchanged', () => {
-  it('Fare Signal for manchester-islamabad is untouched — the newer £630 observation, a genuinely different batch from Journey Choice\'s own £601-£626 comparison', () => {
+  it('Fare Signal for manchester-islamabad is updated by the weekly observation while Journey Choice remains frozen', () => {
     const signal = getFareSignalForRoute('manchester-islamabad', NOW_ISO);
-    expect(signal.observation?.price).toBe(630);
-    expect(signal.observation?.observedDate).toBe('2026-08-18');
+    expect(signal.observation?.price).toBe(460);
+    expect(signal.observation?.observedDate).toBe('2026-08-25');
     // Confirms the founder's correction directly: Fare Signal's own pick is
     // NOT one of Journey Choice's three comparable options.
     const journeyChoiceIds = [

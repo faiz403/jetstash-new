@@ -1,8 +1,8 @@
 # Editorial Fare Observation Archive
 
 **Owner:** JetStash editorial workflow
-**Status:** Active - Batch A + Batch B plus four scheduled checks recorded; latest check 13 August 2026;
-47 of 88 routes publishable
+**Status:** Active - Batch A + Batch B plus the 25 August 2026 controlled weekly batch; latest check
+25 August 2026; append-only archive
 **Canonical data file:** `data/fare-observations.ts`
 
 ## Purpose
@@ -80,6 +80,34 @@ included, that warning is retained rather than converted into a baggage allowanc
 The contemporaneous evidence table and exact search URLs are in
 `docs/project-control/fare-evidence/fare-coverage-batch-1-2026-08-13.md`. No Fare Watcher
 candidate was promoted automatically.
+
+## Controlled weekly batch — 25 August 2026
+
+This was the first portfolio-controlled weekly run after the decision not to repeat an 88-route
+sweep. It covered the three provisional Flagships and four rotating Core routes; Reference routes
+were not checked, and the seven Truth Watch routes were deliberately skipped. All seven entries use
+the established one-adult, return-Economy, GBP profile for the exact named airports, with the fixed
+eight-week horizon (20 October–3 November 2026) and `observationReason: routine-weekly`. Every fare
+was read manually in Google Flights with both legs opened. The exact search URLs and field-by-field
+evidence are in `docs/project-control/fare-evidence/weekly-controlled-batch-2026-08-25.md`.
+
+| Route | Price | Result actually observed | Baggage | Publishable | Fare Watcher |
+|---|---:|---|---|---|---|
+| Manchester–Islamabad | £460 | Riyadh Air, connecting via Riyadh both ways | Not stated; optional charges may apply | Yes | Standout candidate (7 comparable; median £621; previous low £524; £161 / 25.9% below; lifecycle `detected`, founder verification required) |
+| Manchester–Lahore | £538 | Self-transfer: Ryanair/Air Cairo/flyadeal/Fly Jinnah outbound; Pakistan International Airlines/Pegasus/Ryanair return | Not stated; overhead-bin access excluded | Yes | Standout candidate (5 comparable; median £620; previous low £574; £82 / 13.2% below; lifecycle `detected`, founder verification required) |
+| Manchester–Dubai | £314 | Self-transfer: Ryanair UK/Pegasus outbound; Pegasus/Ryanair return; via Cologne/Sabiha and Sabiha/Copenhagen | Not stated; overhead-bin access excluded | Yes | Insufficient baseline (2 comparable prior observations) |
+| Heathrow–Jeddah | £361 | Self-transfer: Turkish/flyadeal outbound; Wizz Air/Vueling return | Not stated; overhead-bin access excluded | Yes | Standout candidate (5 comparable; median £495; previous low £367; £134 / 27.1% below; lifecycle `detected`, founder verification required) |
+| Heathrow–Doha | £425 | Self-transfer: Vueling/Pegasus outbound; Etihad return | Not stated; overhead-bin access excluded | Yes | Insufficient baseline (2 comparable prior observations) |
+| Birmingham–Amritsar | £589 | Self-transfer: Ryanair/Lufthansa/Air India outbound; IndiGo/Air Arabia/Ryanair return | Not stated; overhead-bin access excluded | Yes | Notable drop (6 comparable; median £723.50; previous low £579; £134.50 / 18.6% below; lifecycle `detected`, founder verification required) |
+| Gatwick–Amritsar | £582 | Self-transfer: Ryanair/Etihad/IndiGo outbound; Air India/Emirates return | Not stated; overhead-bin access excluded | Yes | Insufficient baseline (1 comparable prior observation) |
+
+Fare Watcher detected four internal candidates: standout candidates on Manchester–Islamabad,
+Manchester–Lahore and London Heathrow–Jeddah, plus a notable-drop candidate on Birmingham–Amritsar.
+All remain at lifecycle `detected` with `founderVerificationRequired: true`; none was promoted or
+published automatically. The new Manchester–Islamabad record does not enter the frozen Journey Choice comparison: its 20 October–3 November dates do not
+match the controlled comparison group’s exact contract. Fare Signal remains Economy-safe; the
+Business observation on Manchester–Lahore is not replaced or reinterpreted. No route-truth,
+affiliate URL, Book-By, or Journey Choice data changed.
 
 # What may be observed
 
