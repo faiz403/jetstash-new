@@ -194,15 +194,15 @@ describe('F. No eligible representative fare — the existing honest empty/fallb
   });
 });
 
-describe('Smart Fare Comparison is completely untouched by this fix', () => {
-  it('manchester-islamabad, birmingham-amritsar and london-heathrow-jeddah remain the exact 3-route Smart Fare Comparison result from PR #171', async () => {
+describe('Smart Fare Comparison respects the verification-recheck evidence role', () => {
+  it('only manchester-islamabad remains an independent Smart Fare Comparison after verification rechecks are excluded', async () => {
     const { getSmartFareComparisonForRoute } = await import('@/lib/smart-fare-route-adapter');
     const { routes } = await import('@/data/routes');
     const validRoutes = routes
       .filter((route) => getSmartFareComparisonForRoute(route.slug, NOW_ISO) !== null)
       .map((route) => route.slug)
       .sort();
-    expect(validRoutes).toEqual(['birmingham-amritsar', 'london-heathrow-jeddah', 'manchester-islamabad'].sort());
+    expect(validRoutes).toEqual(['manchester-islamabad']);
   });
 });
 

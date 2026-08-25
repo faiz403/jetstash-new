@@ -1,4 +1,4 @@
-import { isMethodologyExcluded, type FareObservation } from '@/data/fare-observations';
+import { isIndependentComparisonObservation, isMethodologyExcluded, type FareObservation } from '@/data/fare-observations';
 import { hasTripComRoute } from '@/lib/booking-providers';
 import { daysBetweenIso, OBSERVATION_FRESH_DAYS, OBSERVATION_STALE_DAYS } from '@/lib/freshness-thresholds';
 
@@ -36,7 +36,8 @@ export interface FareWatcherExclusion {
     | 'different-trip-length'
     | 'outside-baseline-window'
     | 'not-earlier-than-candidate'
-    | 'methodology-excluded';
+    | 'methodology-excluded'
+    | 'verification-recheck';
 }
 
 export interface FareWatcherQualificationResult {
@@ -188,6 +189,10 @@ export function qualifyFareWatcherObservation(
     // that route's sole comparable baseline point in PR #163.
     if (isMethodologyExcluded(observation.id)) {
       exclusions.push(exclusion(observation, 'methodology-excluded'));
+      continue;
+    }
+    if (!isIndependentComparisonObservation(observation)) {
+      exclusions.push(exclusion(observation, 'verification-recheck'));
       continue;
     }
     if (observation.comparisonEligibility === 'historical') {

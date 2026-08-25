@@ -93,6 +93,23 @@ describe('Fare Watcher / Standout Fares', () => {
     expect(result.exclusions.map((item) => item.reason)).toEqual(expect.arrayContaining(['historical', 'same-snapshot', 'different-profile', 'different-booking-horizon']));
   });
 
+  it('allows an emergency-recheck to be verified as a candidate but never counts it as an independent baseline point', () => {
+    const candidate = fixture({ id: 'recheck-candidate', price: 400, observationReason: 'emergency-recheck' });
+    const recheckBaseline = baselineFixture('recheck-baseline', '2026-08-09', '2026-10-05', 450);
+    recheckBaseline.observationReason = 'emergency-recheck';
+    const ordinaryBaseline = [
+      baselineFixture('ordinary-a', '2026-08-01', '2026-09-26', 500),
+      baselineFixture('ordinary-b', '2026-08-02', '2026-09-27', 510),
+      baselineFixture('ordinary-c', '2026-08-03', '2026-09-28', 520),
+    ];
+
+    const result = qualifyFareWatcherObservation(candidate, [candidate, recheckBaseline, ...ordinaryBaseline], '2026-08-11');
+    expect(result.qualification).toBe('standout-candidate');
+    expect(result.baselineSampleSize).toBe(3);
+    expect(result.comparableBaseline.map((observation) => observation.id)).not.toContain('recheck-baseline');
+    expect(result.exclusions).toContainEqual({ observationId: 'recheck-baseline', reason: 'verification-recheck' });
+  });
+
   it('requires an explicitly current candidate and excludes stale baselines', () => {
     const candidate = fixture({ comparisonEligibility: undefined });
     expect(qualifyFareWatcherObservation(candidate, [candidate], '2026-08-11').qualification).toBe('insufficient-baseline');
@@ -166,6 +183,18 @@ describe('Fare Watcher / Standout Fares', () => {
     expect(result.comparableBaseline).toEqual([]);
     expect(result.baselineSampleSize).toBe(0);
     expect(result.exclusions).toContainEqual({ observationId: 'obs-bhx-lhe-economy-20260818-8w-v1', reason: 'methodology-excluded' });
+  });
+
+  it('real archive: emergency rechecks do not deepen the later 25 August baselines', () => {
+    const bhx = fareObservations.find((observation) => observation.id === 'obs-bhx-atq-economy-20260825-8w-v1')!;
+    const jed = fareObservations.find((observation) => observation.id === 'obs-lhr-jed-economy-20260825-8w-v1')!;
+    const bhxResult = qualifyFareWatcherObservation(bhx, fareObservations, '2026-08-25');
+    const jedResult = qualifyFareWatcherObservation(jed, fareObservations, '2026-08-25');
+
+    expect(bhxResult.baselineSampleSize).toBe(5);
+    expect(jedResult.baselineSampleSize).toBe(4);
+    expect(bhxResult.exclusions).toContainEqual({ observationId: 'obs-bhx-atq-economy-20260819-8w-v1', reason: 'verification-recheck' });
+    expect(jedResult.exclusions).toContainEqual({ observationId: 'obs-lhr-jed-economy-20260819-8w-v1', reason: 'verification-recheck' });
   });
 
   it('never emits public market-wide language or an automatic approval', () => {
