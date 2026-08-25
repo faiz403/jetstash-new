@@ -6,6 +6,7 @@ import {
 } from '@/data/fare-observations';
 import type { DealCabin } from '@/data/deals';
 import { daysBetweenIso, getFareFreshnessState, type FareFreshnessState } from '@/lib/freshness-thresholds';
+import { isSelfTransferItinerary } from '@/lib/fare-self-transfer';
 
 export type FareSignalState = 'current' | 'recent' | 'none';
 
@@ -22,6 +23,8 @@ export interface FareSignalObservation {
   outboundStops: number | null;
   returnStops: number | null;
   connectionAirports: string[];
+  /** See lib/fare-self-transfer.ts -- true only when the observation's own priceNote explicitly, unambiguously records a self-transfer or separate-ticket itinerary. Never inferred from stop/airline count. */
+  isSelfTransfer: boolean;
 }
 
 export interface FareSignal {
@@ -53,6 +56,7 @@ function toSignalObservation(observation: FareObservation): FareSignalObservatio
       ...(observation.outboundConnectionAirports ?? []),
       ...(observation.returnConnectionAirports ?? []),
     ])],
+    isSelfTransfer: isSelfTransferItinerary(observation.priceNote),
   };
 }
 
