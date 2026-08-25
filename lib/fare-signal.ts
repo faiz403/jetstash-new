@@ -60,12 +60,52 @@ function toSignalObservation(observation: FareObservation): FareSignalObservatio
   };
 }
 
+/**
+ * Same-day verification-recheck representative priority (25 Aug 2026,
+ * founder-approved narrow rule, following the confirmed £480/£547/£361/£591
+ * finding: the deferred four-observation append would have left every one
+ * of those routes still displaying its cheaper, same-day, already-superseded
+ * routine fare, since the old chain broke an observedDate tie on price
+ * alone).
+ *
+ * The schema records only a calendar date, never a time of day, so two
+ * observations logged on the same date are otherwise indistinguishable in
+ * sequence. An `emergency-recheck` is explicitly a LATER verification step
+ * of evidence already observed earlier that same day (see
+ * data/fare-observations.ts's `isIndependentComparisonObservation()` doc
+ * comment: "A verification recheck is evidence about the current
+ * representative fare, not an independent option"). Preferring it on a
+ * same-day tie is an evidence-recency rule, not a price preference — it
+ * must win regardless of whether its price is higher, lower or equal to the
+ * routine observation it re-verifies (see
+ * tests/fare-signal-recheck-priority.test.ts's "same-day recheck falls"
+ * case, where a CHEAPER recheck must still win on the same evidentiary
+ * ground).
+ *
+ * Deliberately generic: no route slug, price or date is hardcoded here.
+ * This only reorders observations already eligible under every existing
+ * rule (cabin, currentness, freshness, publishability) — those filters run
+ * BEFORE this comparator is ever applied (see selectCurrentEconomyObservation
+ * and selectLatestObservation's own filter chains), so recheck priority can
+ * never let an otherwise-ineligible observation win, and it never expands
+ * or bypasses the existing profile/date-window-blind nature of the prior
+ * price tie-break (a pre-existing characteristic of this sort, not
+ * something this change introduces or widens).
+ */
+function compareByRepresentativePriority(a: FareObservation, b: FareObservation): number {
+  const byDate = b.observedDate.localeCompare(a.observedDate);
+  if (byDate !== 0) return byDate;
+  const aIsRecheck = a.observationReason === 'emergency-recheck';
+  const bIsRecheck = b.observationReason === 'emergency-recheck';
+  if (aIsRecheck !== bIsRecheck) return aIsRecheck ? -1 : 1;
+  return a.price - b.price || a.id.localeCompare(b.id);
+}
+
 function selectLatestObservation(observations: FareObservation[]): { observation?: FareObservation; historicalOnly: boolean } {
   const nonHistorical = observations.filter((observation) => observation.comparisonEligibility !== 'historical');
   const candidates = nonHistorical.length > 0 ? nonHistorical : observations;
   return {
-    observation: [...candidates]
-      .sort((a, b) => b.observedDate.localeCompare(a.observedDate) || a.price - b.price || a.id.localeCompare(b.id))[0],
+    observation: [...candidates].sort(compareByRepresentativePriority)[0],
     historicalOnly: nonHistorical.length === 0 && candidates.length > 0,
   };
 }
@@ -119,7 +159,7 @@ function selectCurrentEconomyObservation(observations: FareObservation[], nowIso
       && isPubliclyPublishable(observation)
       && getFareFreshnessState(daysBetweenIso(observation.observedDate, nowIso)) === 'fresh'
     )
-    .sort((a, b) => b.observedDate.localeCompare(a.observedDate) || a.price - b.price || a.id.localeCompare(b.id))[0];
+    .sort(compareByRepresentativePriority)[0];
 }
 
 /**
