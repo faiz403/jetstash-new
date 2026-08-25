@@ -3,6 +3,7 @@ import { fareObservations, type FareObservation } from '@/data/fare-observations
 import { routes } from '@/data/routes';
 import { selectComparableSmartFareOptions, getSmartFareComparisonForRoute } from '@/lib/smart-fare-route-adapter';
 import { deriveSmartFareComparison } from '@/lib/smart-fare-comparison';
+import { deriveFareSignal } from '@/lib/fare-signal';
 
 /**
  * Smart Fare Comparison integrity reset (23 Aug 2026) — founder-approved P0
@@ -139,6 +140,27 @@ describe('Negative fixtures — each of these must never produce a comparison', 
     const b = baseObservation({ id: 'j2', comparisonEligibility: 'historical' });
     expect(selectComparableSmartFareOptions([a, b])).toHaveLength(0);
   });
+
+  it('a verification recheck updates the representative fare but is not an independent Smart Fare option', () => {
+    const controlled = [
+      baseObservation({ id: 'man-isb-lower', departureDate: '2026-10-06', returnDate: '2026-10-20', observedDate: '2026-08-10', price: 601 }),
+      baseObservation({ id: 'man-isb-other', departureDate: '2026-10-06', returnDate: '2026-10-20', observedDate: '2026-08-10', price: 621 }),
+      baseObservation({ id: 'man-isb-faster', departureDate: '2026-10-06', returnDate: '2026-10-20', observedDate: '2026-08-10', price: 626 }),
+      baseObservation({ id: 'man-isb-routine', departureDate: '2026-10-20', returnDate: '2026-11-03', observedDate: '2026-08-24', price: 460 }),
+      baseObservation({ id: 'man-isb-recheck', departureDate: '2026-10-20', returnDate: '2026-11-03', observedDate: '2026-08-25', price: 480, observationReason: 'emergency-recheck' }),
+    ];
+
+    expect(deriveFareSignal(controlled, '2026-08-25').observation?.price).toBe(480);
+    expect(selectComparableSmartFareOptions(controlled).map((option) => option.id).sort()).toEqual([
+      'man-isb-faster', 'man-isb-lower', 'man-isb-other',
+    ].sort());
+  });
+
+  it('two ordinary observations with the same exact comparison contract still form a group', () => {
+    const a = baseObservation({ id: 'ordinary-a' });
+    const b = baseObservation({ id: 'ordinary-b', price: 520, observedDate: '2026-08-21' });
+    expect(selectComparableSmartFareOptions([a, b]).map((option) => option.id).sort()).toEqual(['ordinary-a', 'ordinary-b']);
+  });
 });
 
 describe('Group-selection tie-break policy (founder correction, 23 Aug 2026, PR #171 review) — recency outranks richness, never the reverse', () => {
@@ -211,24 +233,12 @@ describe('Network-wide current truth — derived, not hardcoded, so this suite f
       .filter((route) => getSmartFareComparisonForRoute(route.slug, NOW_ISO) !== null)
       .map((route) => route.slug)
       .sort();
-    // Verified by independent audit (23 Aug 2026) as the true current
-    // state: manchester-islamabad (the original pilot) plus two routes
-    // that turn out to also have a genuine exact-match pair today
-    // (birmingham-amritsar, london-heathrow-jeddah — both checked on
-    // consecutive days, 18-19 Aug, landing on the same rolling travel
-    // window by coincidence; both currently lack structured journey-time
-    // data, so per case F above they render price/baggage facts only,
-    // never a longer/shorter claim). This is a stronger, more precise
-    // result than the founder's own rough "64 -> 1" prediction, and
-    // exactly the outcome the founder's own instruction anticipated:
-    // "all other currently-rendering routes: comparison disappears unless
-    // the implementation proves they satisfy the exact contract." Re-
-    // confirmed unchanged after the group-selection tie-break policy
-    // amendment (23 Aug 2026, PR #171 review) — none of today's real
-    // routes currently has more than one qualifying exact-match group, so
-    // that amendment has no effect on today's set; it only changes future
-    // behaviour once a route does have competing groups.
-    expect(validRoutes).toEqual(['birmingham-amritsar', 'london-heathrow-jeddah', 'manchester-islamabad'].sort());
+    // The prior independent audit (23 Aug 2026) found two additional exact
+    // groups on Birmingham-Amritsar and London-Heathrow-Jeddah. Each group
+    // included an emergency-recheck logged on the following day, so those
+    // records were not independent comparison options. After applying the
+    // evidence-role rule, only the original proven pilot remains comparable.
+    expect(validRoutes).toEqual(['manchester-islamabad']);
   });
 
   it('every currently-valid route\'s options genuinely share identical cabin, dates and profileId', () => {

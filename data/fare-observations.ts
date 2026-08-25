@@ -133,6 +133,16 @@ export function isPubliclyPublishable(o: FareObservation): boolean {
 }
 
 /**
+ * A verification recheck is evidence about the current representative fare,
+ * not an independent option in a customer comparison. Keep this semantic
+ * role in one shared predicate so Smart Fare, Journey Choice and Fare Watcher
+ * cannot accidentally treat a recheck as a second baseline point.
+ */
+export function isIndependentComparisonObservation(o: FareObservation): boolean {
+  return o.observationReason !== 'emergency-recheck';
+}
+
+/**
  * Whether this observation id is in the methodology-exclusion list —
  * exported so other derivation layers that must never let an
  * evidence-insufficient record silently influence anything can respect the

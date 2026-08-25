@@ -161,11 +161,10 @@ describe('Journey Choice fails closed rather than fabricating a trade-off', () =
     expect(deriveJourneyChoice(options)).toBeNull();
   });
 
-  it('birmingham-amritsar and london-heathrow-jeddah currently have no structured journey-duration evidence — a real, not synthetic, example of the same fail-closed behaviour', () => {
+  it('birmingham-amritsar and london-heathrow-jeddah do not form comparison groups from a routine observation plus a verification recheck', () => {
     for (const slug of ['birmingham-amritsar', 'london-heathrow-jeddah']) {
       const comparison = getSmartFareComparisonForRoute(slug, NOW_ISO);
-      expect(comparison, slug).not.toBeNull();
-      expect(deriveJourneyChoice(comparison!.options), slug).toBeNull();
+      expect(comparison, slug).toBeNull();
     }
   });
 });
@@ -175,13 +174,13 @@ describe('Pilot allowlist — one route only, not a pre-decided second route', (
     expect(JOURNEY_CHOICE_PILOT_ROUTE_SLUGS).toEqual(['manchester-islamabad']);
   });
 
-  it('birmingham-amritsar does not become Journey Choice yet, even though it satisfies the lower-level Smart Fare contract', () => {
-    expect(getSmartFareComparisonForRoute('birmingham-amritsar', NOW_ISO)).not.toBeNull();
+  it('birmingham-amritsar does not become Journey Choice yet, because its verification recheck is not a second comparison option', () => {
+    expect(getSmartFareComparisonForRoute('birmingham-amritsar', NOW_ISO)).toBeNull();
     expect(getJourneyChoiceForRoute('birmingham-amritsar', NOW_ISO)).toBeNull();
   });
 
-  it('london-heathrow-jeddah does not become Journey Choice yet, even though it satisfies the lower-level Smart Fare contract', () => {
-    expect(getSmartFareComparisonForRoute('london-heathrow-jeddah', NOW_ISO)).not.toBeNull();
+  it('london-heathrow-jeddah does not become Journey Choice yet, because its verification recheck is not a second comparison option', () => {
+    expect(getSmartFareComparisonForRoute('london-heathrow-jeddah', NOW_ISO)).toBeNull();
     expect(getJourneyChoiceForRoute('london-heathrow-jeddah', NOW_ISO)).toBeNull();
   });
 
@@ -276,10 +275,10 @@ describe('Everything outside Journey Choice stays unchanged', () => {
     expect(url).toContain('trip_sub3=D19082296');
   });
 
-  it('the underlying Smart Fare Comparison 3-route result (PR #171) is untouched', () => {
+  it('the underlying Smart Fare Comparison result keeps only the independent comparison route', () => {
     const validRoutes = ['manchester-islamabad', 'birmingham-amritsar', 'london-heathrow-jeddah']
       .filter((slug) => getSmartFareComparisonForRoute(slug, NOW_ISO) !== null)
       .sort();
-    expect(validRoutes).toEqual(['birmingham-amritsar', 'london-heathrow-jeddah', 'manchester-islamabad']);
+    expect(validRoutes).toEqual(['manchester-islamabad']);
   });
 });

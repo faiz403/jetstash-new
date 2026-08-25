@@ -1,5 +1,6 @@
 import {
   getPublishableObservationsByRoute,
+  isIndependentComparisonObservation,
   type FareObservation,
 } from '@/data/fare-observations';
 import {
@@ -115,6 +116,8 @@ function comparisonGroupKey(observation: ComparableObservation): string {
 
 function isComparable(observation: FareObservation): observation is ComparableObservation {
   return (
+    isIndependentComparisonObservation(observation)
+    &&
     observation.comparisonEligibility === 'current'
     && Boolean(observation.departureDate)
     && Boolean(observation.returnDate)
