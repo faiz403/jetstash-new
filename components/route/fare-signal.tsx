@@ -1,7 +1,7 @@
 import { AlertTriangle, ArrowUpRight, CalendarDays, Info, Plane, Search, Route as RouteIcon } from 'lucide-react';
 import type { FareSignal as FareSignalData, FareSignalObservation } from '@/lib/fare-signal';
 import { formatChecked } from '@/data/deals';
-import { PROVIDER_REL, TRIPCOM_FRESH_SEARCH_NOTE } from '@/lib/booking-providers';
+import { NO_VERIFIED_PARTNER_LINK_NOTE, PROVIDER_REL, TRIPCOM_FRESH_SEARCH_NOTE } from '@/lib/booking-providers';
 import { SELF_TRANSFER_LABEL } from '@/lib/fare-self-transfer';
 import { TrackedOutboundLink } from '@/components/ui/tracked-outbound-link';
 import { AffiliateLinkDisclosure } from '@/components/ui/affiliate-link-disclosure';
@@ -90,10 +90,16 @@ function SignalCta({ href, routeSlug }: { href: string; routeSlug: string }) {
  * no current fare (e.g. birmingham-lahore) doesn't lose its one working
  * booking link, and a route with neither gets the same honest sentence a
  * no-fare route always showed for its CTA slot.
+ *
+ * Route Page Simplification Phase 1 (25 Aug 2026): the sentence itself is
+ * byte-for-byte unchanged — it has simply moved into
+ * NO_VERIFIED_PARTNER_LINK_NOTE (lib/booking-providers.ts) so Book-By
+ * Countdown can render the identical sentence for the identical state
+ * instead of its own divergent one.
  */
 function NoCtaFallback() {
   return (
-    <p className="mt-5 text-sm text-ink-400">Exact partner booking link is not currently verified for this route.</p>
+    <p className="mt-5 text-sm text-ink-400">{NO_VERIFIED_PARTNER_LINK_NOTE}</p>
   );
 }
 

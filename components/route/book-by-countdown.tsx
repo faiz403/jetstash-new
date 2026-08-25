@@ -14,7 +14,7 @@ import {
 } from '@/lib/booking-intelligence';
 import { computeReadiness, VERDICT_COPY, type EngineSnapshot, type TravelReadySignal } from '@/lib/travel-intelligence-engine';
 import { getRouteBySlug, getRouteAirport, getRouteDestination } from '@/data/routes';
-import { getTripComFlightHandoffUrl, PROVIDER_REL } from '@/lib/booking-providers';
+import { getTripComFlightHandoffUrl, NO_VERIFIED_PARTNER_LINK_NOTE, PROVIDER_REL } from '@/lib/booking-providers';
 import { AffiliateLinkDisclosure } from '@/components/ui/affiliate-link-disclosure';
 import { WhatsAppShareButton } from '@/components/route/whatsapp-share-button';
 import { siteConfig } from '@/lib/site-config';
@@ -299,8 +299,18 @@ export function BookByCountdown({
                 <ArrowUpRight className="h-4 w-4" strokeWidth={2.25} />
               </a>
             ) : (
-              // Fail-closed, deliberately understated — no CTA, no generic Trip.com link.
-              <p className="text-sm text-ink-400">Direct flight comparison is not available for this airport yet.</p>
+              // Fail-closed, deliberately understated — no CTA, no generic
+              // Trip.com link. Route Page Simplification Phase 1 (25 Aug
+              // 2026): this used to read "Direct flight comparison is not
+              // available for this airport yet." — a second, divergent
+              // sentence for the exact state Fare Signal already describes
+              // ~1.2 screens above on the same page (london-heathrow-jeddah
+              // shows both), and arguably inaccurate on a route whose hero
+              // badge says DIRECT: the limitation is Trip.com's own
+              // airport-specific link tooling, not the flights. Now the one
+              // shared constant. The fail-closed DECISION is unchanged —
+              // bookingUrl is still null for exactly the same routes.
+              <p className="text-sm text-ink-400">{NO_VERIFIED_PARTNER_LINK_NOTE}</p>
             )}
             <a
               href="#route-watch"

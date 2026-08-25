@@ -5,7 +5,7 @@ import { join } from 'node:path';
 import { routes, getRouteAirport, getRouteDestination, getRouteBySlug } from '@/data/routes';
 import { routeStatusEvents } from '@/data/route-status-events';
 import { getEffectiveRoutePresentation } from '@/lib/route-status-copy';
-import { getTripComFlightHandoffUrl } from '@/lib/booking-providers';
+import { getTripComFlightHandoffUrl, NO_VERIFIED_PARTNER_LINK_NOTE } from '@/lib/booking-providers';
 import { getFareSignalForRoute } from '@/lib/fare-signal';
 import { FareSignal } from '@/components/route/fare-signal';
 
@@ -120,7 +120,16 @@ describe('no-CTA routes still show the exact fail-closed message, in Fare Signal
   });
 
   it('the sentence is byte-identical to the one the hero used to show (moved, not reworded)', () => {
-    expect(fareSignalSrc).toContain('Exact partner booking link is not currently verified for this route.');
+    // Route Page Simplification Phase 1 (25 Aug 2026): the literal moved out
+    // of fare-signal.tsx into NO_VERIFIED_PARTNER_LINK_NOTE so Book-By
+    // Countdown renders the identical sentence. The guarantee this test
+    // exists for — that the wording is byte-identical to the hero's original
+    // — is unchanged and now asserted against the shared constant, plus that
+    // Fare Signal actually references it. Every rendered-HTML assertion in
+    // this file (including the full 88-route sweep below) still checks the
+    // literal string, so the rendered output is still guarded verbatim.
+    expect(NO_VERIFIED_PARTNER_LINK_NOTE).toBe('Exact partner booking link is not currently verified for this route.');
+    expect(fareSignalSrc).toContain('NO_VERIFIED_PARTNER_LINK_NOTE');
   });
 });
 

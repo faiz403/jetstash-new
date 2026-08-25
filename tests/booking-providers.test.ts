@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync, readdirSync } from 'fs';
 import { join } from 'path';
 import { routes } from '@/data/routes';
-import { getTripComRouteUrl, getTripComFlightHandoffUrl, hasTripComRoute, PROVIDER_NAME, PROVIDER_REL } from '@/lib/booking-providers';
+import { getTripComRouteUrl, getTripComFlightHandoffUrl, hasTripComRoute, NO_VERIFIED_PARTNER_LINK_NOTE, PROVIDER_NAME, PROVIDER_REL } from '@/lib/booking-providers';
 
 /**
  * Trip.com sole-provider migration — TravelUp removed entirely. Covers the
@@ -352,7 +352,13 @@ describe('Trip.com CTA is primary, singular, and correctly wired on Fare Signal'
   });
 
   it('renders the required clean unavailable state when no Trip.com URL exists', () => {
-    expect(fareSignalSrc).toContain('Exact partner booking link is not currently verified for this route.');
+    // Route Page Simplification Phase 1 (25 Aug 2026): wording unchanged,
+    // now sourced from the one shared constant (see
+    // NO_VERIFIED_PARTNER_LINK_NOTE's doc comment) rather than a literal in
+    // fare-signal.tsx, so Book-By Countdown can render the identical
+    // sentence for the identical state.
+    expect(NO_VERIFIED_PARTNER_LINK_NOTE).toBe('Exact partner booking link is not currently verified for this route.');
+    expect(fareSignalSrc).toContain('NO_VERIFIED_PARTNER_LINK_NOTE');
     expect(routePageSrc).not.toContain('Direct flight comparison is not available for this airport yet.');
   });
 
