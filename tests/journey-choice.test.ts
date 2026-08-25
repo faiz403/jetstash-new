@@ -250,7 +250,10 @@ describe('No profileId or invented-baggage leakage into the customer-facing comp
 describe('Everything outside Journey Choice stays unchanged', () => {
   it('Fare Signal for manchester-islamabad is updated by the weekly observation while Journey Choice remains frozen', () => {
     const signal = getFareSignalForRoute('manchester-islamabad', NOW_ISO);
-    expect(signal.observation?.price).toBe(460);
+    // PR #182 (25 Aug): the same-day emergency-recheck (£480) now outranks
+    // the routine check (£460) it re-verifies as the representative
+    // observation -- either way, neither is a Journey Choice comparison ID.
+    expect(signal.observation?.price).toBe(480);
     expect(signal.observation?.observedDate).toBe('2026-08-25');
     // Confirms the founder's correction directly: Fare Signal's own pick is
     // NOT one of Journey Choice's three comparable options.

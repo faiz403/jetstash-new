@@ -217,7 +217,7 @@ describe('Regression: everything the founder\'s spec required unchanged actually
   it('the generic Fare Signal on both target routes still leads with Economy, not the newer Business observation — PR #167\'s fix, unaffected by this SEO batch', () => {
     const lahoreSignal = getFareSignalForRoute('manchester-lahore', NOW_ISO);
     expect(lahoreSignal.observation?.cabin).toBe('Economy');
-    expect(lahoreSignal.observation?.price).toBe(538);
+    expect(lahoreSignal.observation?.price).toBe(547); // 25 Aug same-day emergency-recheck, PR #182
 
     const dohaSignal = getFareSignalForRoute('london-heathrow-doha', NOW_ISO);
     expect(dohaSignal.observation?.cabin).toBe('Economy');

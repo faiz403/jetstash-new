@@ -553,6 +553,24 @@ of `generateFareWatcherCandidates()`'s actual output, not assumed. The real four
 remains deferred pending this PR's review and merge; a synthetic four-fare simulation (test-only,
 nothing written to `data/fare-observations.ts`) proves it will resolve correctly once merged.
 
+**Fare Watcher verification recheck append (25 August 2026, founder-approved, OPEN PR, NOT
+MERGED):** the deferred four-observation append is done — data-only, no logic changed. Four
+`emergency-recheck` records added for manchester-islamabad (£480), manchester-lahore (£547),
+london-heathrow-jeddah (£361, reproduced exactly) and birmingham-amritsar (£591), each re-verifying
+its route's same-day routine observation from the controlled weekly batch. Archive count 222 → 226.
+Confirmed via the live selector, not array order: all four routes' representative Fare Signal and
+Book-By evidence now correctly resolve to the recheck (not the cheaper same-day routine record it
+re-verifies), self-transfer labelling is unaffected (present on three, absent on
+manchester-islamabad, driven entirely by each record's own `priceNote`), Journey Choice stays
+exactly £601/£621/£626 and "£25 more saves 14h 15m of journey time" (the £480 recheck's 20 Oct–3 Nov
+window still doesn't match the pilot's 6–20 Oct contract), and Fare Watcher's baseline counts for
+all four routes are unchanged from before the append — no candidate moved past
+`lifecycle: 'detected'` / `founderVerificationRequired: true`. Seven pre-existing tests that
+hardcoded the old routine-fare values (`book-by-cabin-safety`, `fare-self-transfer`,
+`fare-signal-cabin-safety`, `fare-signal`, `journey-choice`, `route-and-fare-integrity`,
+`route-hero-scanability`, `seo-domination-batch-1b`) were updated to the new correct values — same
+pattern PR #178 itself used when it last changed representative fares.
+
 ## NEXT
 
 ### FARE-001 — Begin building the editorial fare observation archive

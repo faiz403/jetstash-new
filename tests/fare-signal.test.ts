@@ -35,7 +35,10 @@ describe('universal Fare Signal derivation', () => {
     // 2026-08-18: Weekly Full Fare Refresh #1 added a newer, later-dated
     // observation for this route, which now becomes the latest — the
     // function selects the latest observedDate regardless of nowIso.
-    expect(signal.observation?.price).toBe(460);
+    // PR #182 (25 Aug): a same-day emergency-recheck now outranks the
+    // routine check it re-verifies, so this resolves to the £480 recheck,
+    // not the £460 routine observation — evidence recency, not a price rule.
+    expect(signal.observation?.price).toBe(480);
     expect(signal.observation?.airline).toBe('Riyadh Air');
     expect(signal.observation?.observedDate).toBe('2026-08-25');
     expect(signal.observation?.id).not.toContain('ey-645');
@@ -83,7 +86,7 @@ describe('Fare Signal presentation and CTA boundaries', () => {
     const text = renderToStaticMarkup(FareSignal({ signal, tripComUrl: getTripComRouteUrl('manchester-islamabad'), routeSlug: 'manchester-islamabad' })).replace(/\s+/g, ' ');
     expect(text).toContain('Fare Signal');
     expect(text).toContain('Fare spotted');
-    expect(text).toContain('460');
+    expect(text).toContain('480');
     expect(text).toContain('Riyadh Air');
     expect(text).toContain('Checked 25 August 2026');
     expect(text).toContain('Check current price');

@@ -93,7 +93,7 @@ describe('Fare Signal is the one remaining first commercial decision unit', () =
       })
     ).replace(/\s+/g, ' ');
 
-    expect(html).toContain('460'); // tracked fare
+    expect(html).toContain('480'); // tracked fare (25 Aug same-day emergency-recheck, PR #182)
     expect(html).toContain('Riyadh Air'); // airline/cabin
     expect(html).toContain('Checked 25 August 2026'); // checked date
     expect(html).toContain('Connecting · 1 stop each way'); // routing

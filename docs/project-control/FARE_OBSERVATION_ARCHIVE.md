@@ -109,6 +109,35 @@ match the controlled comparison group’s exact contract. Fare Signal remains Ec
 Business observation on Manchester–Lahore is not replaced or reinterpreted. No route-truth,
 affiliate URL, Book-By, or Journey Choice data changed.
 
+## Fare Watcher verification rechecks — 25 August 2026
+
+Same day as the controlled weekly batch above, on the same locked 20 October–3 November 2026
+profile. Four of that batch's own results (Manchester–Islamabad, Manchester–Lahore, London
+Heathrow–Jeddah, Birmingham–Amritsar) were detected by Fare Watcher as internal candidates
+requiring founder verification; these four records are the fresh, independent Google Flights
+rechecks performed that same day to confirm each fare, not a correction or edit of the routine
+entries above, which remain exactly as first logged (append-only).
+
+| Route | Recheck price | Routine price (same day) | Result |
+|---|---:|---:|---|
+| Manchester–Islamabad | £480 | £460 | Higher on recheck; Riyadh Air, no self-transfer notice |
+| Manchester–Lahore | £547 | £538 | Higher on recheck; self-transfer, different routing (via Bergamo/Sharjah outbound) |
+| Heathrow–Jeddah | £361 | £361 | Reproduced exactly; self-transfer |
+| Birmingham–Amritsar | £591 | £589 | Higher on recheck; self-transfer, same airlines, different layover timing |
+
+Every recheck uses `observationReason: 'emergency-recheck'`, which
+`isIndependentComparisonObservation()` (`data/fare-observations.ts`) keeps out of any other
+candidate's comparable baseline and out of Smart Fare/Journey Choice's independent comparison
+membership — see `lib/fare-watcher.ts`'s `verification-recheck` exclusion reason and PR #179 ("fix:
+keep verification rechecks out of comparisons"). Same-day representative-selection priority
+(`compareByRepresentativePriority()`, `lib/fare-signal.ts`, merged PR #182) means each of these
+four records — not the cheaper same-day routine one — is now the route's actual representative
+Fare Signal and Book-By evidence: verified against the live selector, not inferred from array
+order. The Manchester–Islamabad recheck does not enter the frozen Journey Choice comparison for
+the same reason the routine £460 record didn't: its 20 October–3 November dates don't match the
+controlled comparison group's 6–20 October contract. No route-truth, affiliate URL, Book-By logic,
+Journey Choice logic, Fare Watcher logic, self-transfer logic, or analytics changed by this append.
+
 # What may be observed
 
 A human editor may manually check a return fare on:
