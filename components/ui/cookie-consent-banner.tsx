@@ -117,7 +117,9 @@ export function CookieConsentBanner() {
             <div className="text-sm leading-relaxed text-ink-600">
               <p>
                 JetStash uses optional Google Ads measurement to understand whether advertising leads to partner-link
-                clicks. We do not use it for personalised advertising. See our{' '}
+                clicks. Accepting loads that Google tag; declining keeps it from loading. Vercel Analytics and Speed
+                Insights run separately either way. The current JetStash implementation does not configure
+                personalised advertising. See our{' '}
                 <Link href="/privacy-policy" className="underline hover:text-brass-700">
                   Privacy Policy
                 </Link>

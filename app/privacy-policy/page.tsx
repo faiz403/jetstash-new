@@ -72,8 +72,11 @@ const sections: { title: string; body: React.ReactNode }[] = [
           </li>
           <li>Aggregate, cookieless usage information, described under Cookies and analytics below.</li>
           <li>
-            Only if you explicitly accept the optional advertising cookie described under Cookies and analytics: a
-            signal that a flight, hotel or baggage partner link was clicked. It never tells us who clicked it.
+            Only if you explicitly accept optional Google Ads measurement: JetStash loads the Google Ads tag and
+            sends configured conversion signals for certain flight, hotel or baggage-partner clicks. JetStash&apos;s
+            current code does not put your name, email address, phone number, address, form contents or the partner
+            URL into those conversion-event payloads. Google may also process ordinary browser, page, device or
+            referrer information according to Google&apos;s own service behaviour and policies.
           </li>
         </ul>
         <p>
@@ -111,28 +114,30 @@ const sections: { title: string; body: React.ReactNode }[] = [
     body: (
       <>
         <p>
-          JetStash doesn&apos;t use cookies for anything by default. The one analytics tool on this site, Vercel Web
-          Analytics, is built to work without cookies or any other tracking identifier, and only ever receives
-          page-view and named-event data with route or destination context, never a name, email address or anything
-          else that identifies you personally. We also use Vercel Speed Insights, which measures page performance in
-          the same cookieless way.
+          JetStash doesn&apos;t use cookies for anything by default. Vercel Web Analytics and Vercel Speed Insights
+          operate independently of Google Ads consent and are built to work without cookies. JetStash&apos;s own
+          analytics event payloads contain named events with limited contextual fields such as route, destination,
+          state, source, trip type, region, intent, verdict or interest — not names, email addresses, phone numbers
+          or form contents. Vercel and its services may process ordinary technical information needed to provide
+          those services.
         </p>
         <p>
-          Separately, a cookie banner shown on your first visit offers one optional, off-by-default measurement
-          cookie for Google Ads. Nothing about it loads until you actively accept: no Google script is requested, and
-          nothing is sent to Google, before that point, or if you decline, or if you close the banner without
-          choosing. Only once you accept does JetStash load a Google Ads measurement tag, and only then does it tell
-          Google whether a Google ad led to a genuine click on a flight, hotel or baggage-affiliate partner link —
-          nothing else. Google is the only third party this ever reaches.
+          Separately, a cookie banner shown on your first visit offers optional Google Ads measurement. Nothing about
+          the Google Ads tag loads until you actively accept: no Google script is requested before that point, or if
+          you decline, or if you close the banner without choosing. If you accept, JetStash loads the Google Ads tag
+          and sends configured conversion signals for certain flight, hotel or baggage-partner clicks. The current
+          JetStash code does not put your name, email address, phone number, address, form contents or the partner
+          URL into those conversion-event payloads. Google&apos;s tag may also process ordinary browser, page, device or
+          referrer information according to Google&apos;s own service behaviour and policies.
         </p>
         <p>
           Your choice is remembered locally in your own browser, not in a JetStash account or server-side profile.
           You can see and change it at any time using &lsquo;Cookie settings&rsquo; in the footer of every page —
           declining after previously accepting switches this measurement off again for every page you load after
           that (a one-off page reload may be needed to fully clear an already-loaded Google script from the current
-          tab, which the control handles for you). We don&apos;t use this tag for remarketing or personalised
-          advertising under any circumstance, and it never receives your name, email address, or the partner
-          link&apos;s own web address.
+          tab, which the control handles for you). The current JetStash implementation does not configure
+          remarketing or personalised advertising. That describes JetStash&apos;s code, not every setting or behaviour
+          in Google&apos;s wider account ecosystem.
         </p>
       </>
     ),
@@ -168,8 +173,9 @@ const sections: { title: string; body: React.ReactNode }[] = [
             legitimate interests and, where relevant, legal obligation.
           </li>
           <li>
-            <strong className="font-semibold text-ink-800">Aggregate analytics:</strong> legitimate interests,
-            limited to understanding overall site usage, never to identifying you.
+            <strong className="font-semibold text-ink-800">Analytics and Speed Insights:</strong> legitimate
+            interests, limited to understanding overall site usage and product or route interaction. JetStash&apos;s
+            event payloads do not include direct identifiers.
           </li>
           <li>
             <strong className="font-semibold text-ink-800">Optional Google Ads measurement:</strong> consent. It
@@ -187,7 +193,7 @@ const sections: { title: string; body: React.ReactNode }[] = [
     title: 'Who we share information with',
     body: (
       <>
-        <p>We don&apos;t sell your personal data, and we don&apos;t share it with advertisers. We use:</p>
+        <p>We don&apos;t sell your personal data. We use:</p>
         <ul className="flex list-disc flex-col gap-1.5 pl-5">
           <li>Vercel, to host this website and its server logs.</li>
           <li>Resend, to deliver contact form and quote request emails to us.</li>
@@ -200,10 +206,12 @@ const sections: { title: string; body: React.ReactNode }[] = [
         <p>
           We may also share the minimum necessary detail with a professional adviser, such as an accountant or
           solicitor, or with an authority such as the Information Commissioner&apos;s Office, where the law requires
-          it. If, and only if, you accept the optional advertising cookie described under Cookies and analytics,
-          Google Ads receives a simple signal that a flight, hotel or baggage partner link was clicked — never your
-          name, email address, or the partner link itself. We do not use Google Analytics, advertising pixels, or
-          any other tracking or marketing technology, and we don&apos;t run remarketing or personalised advertising.
+          it. If, and only if, you accept optional Google Ads measurement, Google Ads receives the configured
+          conversion signals described under Cookies and analytics. The current JetStash code does not put your
+          name, email address, phone number, form contents or the partner URL into those conversion-event payloads.
+          Google&apos;s tag may also process ordinary browser, page, device or referrer information according to Google&apos;s
+          own service behaviour and policies. We do not use Google Analytics, and the current JetStash implementation
+          does not configure remarketing or personalised advertising.
         </p>
       </>
     ),
