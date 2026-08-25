@@ -1,5 +1,6 @@
-import { AlertTriangle, ArrowUpRight, CalendarDays, Info, Plane, Search, Route as RouteIcon } from 'lucide-react';
+import { AlertTriangle, ArrowUpRight, CalendarDays, Info, Plane, Search, Sparkles, Route as RouteIcon } from 'lucide-react';
 import type { FareSignal as FareSignalData, FareSignalObservation } from '@/lib/fare-signal';
+import type { StandoutFarePresentation } from '@/lib/standout-fare';
 import { formatChecked } from '@/data/deals';
 import { NO_VERIFIED_PARTNER_LINK_NOTE, PROVIDER_REL, TRIPCOM_FRESH_SEARCH_NOTE } from '@/lib/booking-providers';
 import { SELF_TRANSFER_LABEL } from '@/lib/fare-self-transfer';
@@ -28,6 +29,36 @@ function SelfTransferNote() {
   );
 }
 
+/**
+ * First Standout Fare Pilot (25 Aug 2026, founder-approved). Renders only
+ * when the observation CurrentSignal is already showing IS the exact
+ * founder-approved verified evidence (matched by id in CurrentSignal below,
+ * never by price or route slug alone) — see lib/standout-fare.ts's
+ * fail-closed contract. Deliberately extends the existing Fare Signal
+ * layout rather than adding a new section: the only structural change is
+ * the eyebrow label below ("Standout Fare" in place of "Fare spotted") plus
+ * this one short evidence line and the existing baggage caveat, immediately
+ * after the routing/dates row CurrentSignal already renders.
+ *
+ * Wording is deliberately restrained: "£141 below JetStash's comparable
+ * tracked median of £621" names JetStash's own tracked archive explicitly
+ * (never "the market" or "average price"), and never uses superlative or
+ * urgency language (see the banned-word list this file's own tests check
+ * against). Baggage text is rendered verbatim
+ * from the archive's own `baggage` field — never reworded into an
+ * inclusion or free-baggage claim.
+ */
+function StandoutEvidence({ standout }: { standout: StandoutFarePresentation }) {
+  return (
+    <>
+      <p className="mt-3 text-sm leading-relaxed text-ink-700">
+        £{Math.round(standout.differencePounds).toLocaleString('en-GB')} below JetStash&apos;s comparable tracked median of £{Math.round(standout.baselineMedian).toLocaleString('en-GB')}.
+      </p>
+      <p className="mt-1 text-xs text-ink-500">Baggage: {standout.baggageDetail}.</p>
+    </>
+  );
+}
+
 function formatStops(observation: FareSignalObservation): string | null {
   if (observation.outboundStops === null || observation.returnStops === null) return null;
   return `${observation.outboundStops} stop${observation.outboundStops === 1 ? '' : 's'} each way`;
@@ -44,13 +75,22 @@ function formatRouting(observation: FareSignalObservation): string | null {
   return null;
 }
 
-function SignalCta({ href, routeSlug }: { href: string; routeSlug: string }) {
+/**
+ * First Standout Fare Pilot (25 Aug 2026): `standout` reuses the EXISTING
+ * `tripcom_click` event and its existing `source` property (already at the
+ * two-property-per-event limit — see lib/analytics.ts) rather than adding a
+ * new event. Its only effect is which string `source` carries
+ * ('fare-signal-standout' vs the ordinary 'fare-signal'), which is already
+ * enough to tell whether the pilot's CTA specifically is generating
+ * engagement, with zero new analytics surface added.
+ */
+function SignalCta({ href, routeSlug, standout = false }: { href: string; routeSlug: string; standout?: boolean }) {
   return (
     <div className="mt-5">
       <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:gap-4">
         <TrackedOutboundLink
           event="tripcom_click"
-          properties={{ route: routeSlug, source: 'fare-signal' }}
+          properties={{ route: routeSlug, source: standout ? 'fare-signal-standout' : 'fare-signal' }}
           href={href}
           target="_blank"
           rel={PROVIDER_REL}
@@ -242,15 +282,26 @@ interface RouteContextProps {
   routeServiceConnections?: { outbound?: string[]; return?: string[] } | null;
 }
 
-function CurrentSignal({ data, tripComUrl, routeSlug, routeDirectness, routeStatusLabel, routeAirlineLabel, routeServiceConnections }: { data: FareSignalObservation; tripComUrl: string | null; routeSlug: string } & RouteContextProps) {
+function CurrentSignal({ data, tripComUrl, routeSlug, routeDirectness, routeStatusLabel, routeAirlineLabel, routeServiceConnections, standoutFare }: { data: FareSignalObservation; tripComUrl: string | null; routeSlug: string; standoutFare?: StandoutFarePresentation | null } & RouteContextProps) {
   const routing = formatRouting(data);
   const mismatch = routeVsFareMismatch(routeDirectness, routeStatusLabel, routeAirlineLabel, data.directness)
     ?? routeServiceFareMismatch(routeServiceConnections, routeStatusLabel, routeAirlineLabel, data.directness, data.connectionAirports);
+  // First Standout Fare Pilot (25 Aug 2026): only ever applies when the
+  // approved verified evidence IS the exact observation this Fare Signal is
+  // already showing (matched by id, never by price or route slug alone) —
+  // see lib/standout-fare.ts's getApprovedStandoutFare(). Any mismatch
+  // (evidence moved, approval expired, candidate no longer qualifies) means
+  // standoutFare is null by the time it reaches here, and this renders the
+  // exact same ordinary Fare Signal it always has.
+  const standout = standoutFare && standoutFare.observation.id === data.id ? standoutFare : null;
   return (
     <>
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-terracotta-600">Fare spotted</p>
+          <p className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-terracotta-600">
+            {standout && <Sparkles className="h-3.5 w-3.5" strokeWidth={2.25} aria-hidden="true" />}
+            {standout ? 'Standout Fare' : 'Fare spotted'}
+          </p>
           <p className="mt-1 font-display text-3xl text-ink-900">£{data.price.toLocaleString('en-GB')} return</p>
         </div>
         <div className="text-sm text-ink-600 sm:text-right">
@@ -263,8 +314,9 @@ function CurrentSignal({ data, tripComUrl, routeSlug, routeDirectness, routeStat
         <span className="inline-flex items-center gap-2"><CalendarDays className="h-4 w-4 text-terracotta-600" />{formatChecked(data.departureDate)} – {formatChecked(data.returnDate)}</span>
         {data.isSelfTransfer && <SelfTransferNote />}
       </div>
+      {standout && <StandoutEvidence standout={standout} />}
       {mismatch && <RouteVsFareCallout mismatch={mismatch} />}
-      {tripComUrl ? <SignalCta href={tripComUrl} routeSlug={routeSlug} /> : <NoCtaFallback />}
+      {tripComUrl ? <SignalCta href={tripComUrl} routeSlug={routeSlug} standout={Boolean(standout)} /> : <NoCtaFallback />}
     </>
   );
 }
@@ -297,6 +349,7 @@ export function FareSignal({
   routeStatusLabel = null,
   routeAirlineLabel = null,
   routeServiceConnections = null,
+  standoutFare = null,
 }: {
   signal: FareSignalData;
   tripComUrl: string | null;
@@ -308,6 +361,15 @@ export function FareSignal({
   routeAirlineLabel?: string | null;
   /** data/routes.ts `route.routeServiceConnections` -- omit/null for any route without structured, evidenced connection data (the default for almost every route). */
   routeServiceConnections?: { outbound?: string[]; return?: string[] } | null;
+  /**
+   * First Standout Fare Pilot (25 Aug 2026) -- lib/standout-fare.ts's
+   * getApprovedStandoutFare() result, or null for every route without an
+   * active founder approval (i.e. every route except the pilot). Only ever
+   * has a visible effect inside CurrentSignal, and only when its
+   * `observation.id` exactly matches the fare already being shown there --
+   * see CurrentSignal's own doc comment.
+   */
+  standoutFare?: StandoutFarePresentation | null;
 }) {
   return (
     <section aria-labelledby="fare-signal-heading" className="rounded-md border border-ink-200 bg-sand-50 p-5 sm:p-6">
@@ -319,7 +381,7 @@ export function FareSignal({
         <p className="mt-4 text-sm font-medium text-ink-700">{signal.strongerSignal}</p>
       )}
       <div className="mt-4">
-        {signal.state === 'current' && signal.observation ? <CurrentSignal data={signal.observation} tripComUrl={tripComUrl} routeSlug={routeSlug} routeDirectness={routeDirectness} routeStatusLabel={routeStatusLabel} routeAirlineLabel={routeAirlineLabel} routeServiceConnections={routeServiceConnections} /> : null}
+        {signal.state === 'current' && signal.observation ? <CurrentSignal data={signal.observation} tripComUrl={tripComUrl} routeSlug={routeSlug} routeDirectness={routeDirectness} routeStatusLabel={routeStatusLabel} routeAirlineLabel={routeAirlineLabel} routeServiceConnections={routeServiceConnections} standoutFare={standoutFare} /> : null}
         {signal.state === 'recent' && signal.observation ? <RecentSignal data={signal.observation} tripComUrl={tripComUrl} routeSlug={routeSlug} routeDirectness={routeDirectness} routeStatusLabel={routeStatusLabel} routeAirlineLabel={routeAirlineLabel} routeServiceConnections={routeServiceConnections} /> : null}
         {signal.state === 'none' ? (
           <>

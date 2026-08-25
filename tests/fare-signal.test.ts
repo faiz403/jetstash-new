@@ -159,7 +159,15 @@ describe('Fare Signal presentation and CTA boundaries', () => {
   });
 
   it('does not carry unknown baggage or unsupported stronger-signal language in the reusable component', () => {
-    expect(componentSrc).not.toContain('Baggage');
+    // First Standout Fare Pilot (25 Aug 2026, founder-approved): this
+    // component now legitimately renders one evidence-safe baggage caveat
+    // line ("Baggage: <verbatim archive text>.") for the Standout Fare
+    // state only — see StandoutEvidence's own doc comment. The blanket "no
+    // mention of baggage at all" assertion this test previously enforced
+    // predates that feature; the narrower, still-binding guarantee is that
+    // the component never claims baggage is included or costs £0 — checked
+    // explicitly below.
+    expect(componentSrc).not.toMatch(/baggage (is |are )?included/i);
     expect(componentSrc).not.toContain('£0');
     expect(componentSrc).not.toContain('cheap');
     expect(componentSrc).not.toContain('below average');

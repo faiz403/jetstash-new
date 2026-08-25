@@ -9,7 +9,7 @@ import { getAirlinesBySlugs } from '@/data/airlines';
 import { getDealsByDestination } from '@/data/deals';
 import { getTimelineByRoute } from '@/data/route-timeline';
 import { getActiveWarningsByRoute } from '@/data/route-warnings';
-import { getPublishableObservationsByRoute, getFareRangeSummary } from '@/data/fare-observations';
+import { getPublishableObservationsByRoute, getFareRangeSummary, fareObservations as allFareObservations } from '@/data/fare-observations';
 import { getBookingWindowsByRoute } from '@/data/booking-windows';
 import { getTipsForScope } from '@/data/traveller-tips';
 import { getCommunityNotesForScope } from '@/data/community-notes';
@@ -41,6 +41,7 @@ import { getJourneyChoiceForRoute } from '@/lib/journey-choice-route-adapter';
 import { getJourneyChoiceTripComHandoff } from '@/lib/tripcom-dated-handoff';
 import { FareSignal } from '@/components/route/fare-signal';
 import { getFareSignalForRoute, shouldShowNoFareFallback } from '@/lib/fare-signal';
+import { getApprovedStandoutFare } from '@/lib/standout-fare';
 import { FareWindowReconciliationNote } from '@/components/route/fare-window-reconciliation-note';
 import { deriveFareWindowReconciliation } from '@/lib/fare-window-reconciliation';
 import { getRouteIntelligenceDisplayForRoute } from '@/lib/route-intelligence-display';
@@ -158,6 +159,16 @@ export default async function RoutePage({ params }: { params: Promise<{ slug: st
   // evidence than Journey Choice's own exact-match comparison batch.
   const journeyChoice = getJourneyChoiceForRoute(route.slug, nowIso);
   const fareSignal = getFareSignalForRoute(route.slug, nowIso);
+  // First Standout Fare Pilot (25 Aug 2026, founder-approved,
+  // manchester-islamabad only — see data/standout-fare-approvals.ts).
+  // Evaluated against the FULL archive (not the route-scoped
+  // `fareObservations` above) because it must reproduce exactly the same
+  // Fare Watcher candidate Step 6/7 verified against — see
+  // lib/standout-fare.ts's own doc comment. Fails closed to null for every
+  // route without an active approval, which is every route except the
+  // pilot; FareSignal only ever shows it when its evidence exactly matches
+  // the fare already being displayed there.
+  const standoutFare = getApprovedStandoutFare(route.slug, 'Economy', allFareObservations, nowIso);
   // Fare copy must reflect the data actually available — see getFareSectionCopy.
   const fareSectionCopy = getFareSectionCopy(fareObservations.length > 0, dealsHere.length > 0);
   const bookingWindows = getBookingWindowsByRoute(route.slug);
@@ -338,6 +349,7 @@ export default async function RoutePage({ params }: { params: Promise<{ slug: st
             routeStatusLabel={presentation.status === 'direct' || presentation.status === 'connecting' ? presentation.statusLabel : null}
             routeAirlineLabel={presentationAirlines.length > 0 ? presentationAirlines.map((a) => a.name).join(', ') : null}
             routeServiceConnections={route.routeServiceConnections ?? null}
+            standoutFare={standoutFare}
           />
         </div>
       </section>
