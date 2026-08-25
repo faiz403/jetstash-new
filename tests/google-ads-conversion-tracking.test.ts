@@ -270,7 +270,8 @@ describe('components/ui/cookie-consent-banner.tsx — Basic Consent Mode: the ta
     expect(bannerSrc).toContain(
       'JetStash uses optional Google Ads measurement to understand whether advertising leads to partner-link'
     );
-    expect(bannerSrc).toContain('We do not use it for personalised advertising.');
+    expect(bannerSrc).toContain('The current JetStash implementation does not configure');
+    expect(bannerSrc).toContain('personalised advertising.');
   });
 
   it('links to the Privacy Policy and mentions the footer Cookie settings control', () => {
