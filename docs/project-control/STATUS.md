@@ -571,6 +571,38 @@ hardcoded the old routine-fare values (`book-by-cabin-safety`, `fare-self-transf
 `route-hero-scanability`, `seo-domination-batch-1b`) were updated to the new correct values — same
 pattern PR #178 itself used when it last changed representative fares.
 
+**Fare Watcher verified-candidate price integrity (25 August 2026, founder-approved, OPEN PR, NOT
+MERGED):** logic/tests-only fix, no fare data changed. The prior fix above corrected Fare
+Signal/Book-By's *public* representative-fare selection but left a separate, undiscovered gap in
+`lib/fare-watcher.ts`'s own internal candidate evaluation: `generateFareWatcherCandidates()` still
+promoted the original routine detection as "the candidate," so all four 25 August rechecks
+(MAN-ISB, MAN-LHE, LHR-JED, BHX-ATQ) kept being evaluated at their stale routine price — MAN-ISB
+still read £460 internally even though its verified evidence is £480. Fixed by adding
+`isMatchingVerificationRecheck()`/`findLatestVerificationRecheck()` (exact route/cabin/profileId/
+departureDate/returnDate/currency match, deliberately NOT requiring the same airline/routing/stops/
+price — verification exists to discover the currently available lowest fare for that exact
+profile) and excluding `emergency-recheck` observations from ever entering
+`latestCurrentObservationsByIdentity()`'s own detection map, so a recheck can never mint a second
+candidate. `generateFareWatcherCandidates()` now evaluates each detection's matching recheck (when
+one exists) through the unchanged `qualifyFareWatcherObservation()` — its pre-existing same-day
+`'same-snapshot'` exclusion already correctly keeps the original detection out of the recheck's own
+baseline with no new logic needed — while `toCandidate()` anchors `id`/`checkedDate` to the
+original detection so candidate identity and lifecycle never drift just because verification
+evidence moved. A new `verifiedObservation` field on `FareWatcherCandidate` carries the full
+evaluated observation (fare, routing, baggage, priceNote) for a future publication surface to draw
+from, since none exists yet — `route-watch-fare-trigger.ts` is confirmed to read only
+`.qualification` and is unaffected. Verified against the real archive, not hardcoded:
+manchester-islamabad now correctly reads £480 (£141/22.7% below its £621 median, still
+`standout-candidate`), manchester-lahore £547 (£73/11.8% below £620, still `standout-candidate`),
+london-heathrow-jeddah £361 (still `standout-candidate`), birmingham-amritsar £591 (still
+`notable-drop`) — all four still qualify. Twelve new tests cover both price-movement directions
+(rises-still-qualifies, rises-stops-qualifying, falls-further, same-price, unrelated recheck by
+date/profile, multiple-rechecks-latest-wins, no-recheck-unchanged, orphan-recheck-never-a-
+candidate). Two pre-existing tests that had hardcoded the stale-detection bug's own values
+(`fare-watcher-candidate-supersession`'s real-archive regression, `weekly-fare-observation-
+20260825`) were updated to the corrected values — same test-maintenance pattern as PR #178/#183.
+Full Vitest (134 files / 2,733 tests), `tsc --noEmit`, `next lint` and `next build` all pass.
+
 ## NEXT
 
 ### FARE-001 — Begin building the editorial fare observation archive

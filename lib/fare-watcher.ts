@@ -71,6 +71,22 @@ export interface FareWatcherCandidate {
   founderVerificationRequired: true;
   safeExactPartnerUrl: boolean;
   evidenceLimits: string[];
+  /**
+   * Verified-Candidate Price Integrity (25 Aug 2026). The full observation
+   * that `currentFare`/`airlineOrProvider`/`differencePounds`/`differencePercent`/
+   * `qualification` above were actually evaluated from -- the matching
+   * `emergency-recheck` when one exists, otherwise the original detection
+   * observation itself (never null; a candidate always has SOME evidence).
+   * Carries every field a future publication surface would need (routing,
+   * baggage, priceNote -- self-transfer evidence is derivable from
+   * priceNote via lib/fare-self-transfer.ts) without this interface having
+   * to enumerate each one individually. `verifiedObservation.observationReason
+   * === 'emergency-recheck'` is how a consumer distinguishes "detected and
+   * later re-verified" from "detected, not yet rechecked" -- `id` and
+   * `checkedDate` above stay anchored to the ORIGINAL detection either way
+   * (see findLatestVerificationRecheck()'s doc comment for why).
+   */
+  verifiedObservation: FareObservation;
 }
 
 function median(values: number[]): number {
@@ -277,18 +293,26 @@ export function qualifyFareWatcherObservation(
   };
 }
 
-function toCandidate(result: FareWatcherQualificationResult): FareWatcherCandidate | null {
+/**
+ * `detection` is the observation that first surfaced this candidate identity
+ * (`latestCurrentObservationsByIdentity()`'s output) -- `id` and `checkedDate`
+ * are always anchored to it, preserving detection identity/lifecycle
+ * continuity even when `result` was actually evaluated from a later
+ * verification recheck (see generateFareWatcherCandidates() and
+ * findLatestVerificationRecheck()).
+ */
+function toCandidate(result: FareWatcherQualificationResult, detection: FareObservation): FareWatcherCandidate | null {
   if (result.qualification === 'insufficient-baseline' || result.qualification === 'ordinary-fare') return null;
-  const { candidate } = result;
-  if (!candidate.departureDate || !candidate.returnDate || result.baselineMedian === null || result.previousLow === null || result.differencePounds === null || result.differencePercent === null) return null;
+  const { candidate: evaluatedObservation } = result;
+  if (!evaluatedObservation.departureDate || !evaluatedObservation.returnDate || result.baselineMedian === null || result.previousLow === null || result.differencePounds === null || result.differencePercent === null) return null;
   return {
-    id: `fare-watcher-${candidate.id}`,
-    routeSlug: candidate.routeSlug,
-    currentFare: candidate.price,
+    id: `fare-watcher-${detection.id}`,
+    routeSlug: detection.routeSlug,
+    currentFare: evaluatedObservation.price,
     currency: 'GBP',
-    travelDates: { departureDate: candidate.departureDate, returnDate: candidate.returnDate },
-    airlineOrProvider: candidate.source,
-    checkedDate: candidate.observedDate,
+    travelDates: { departureDate: evaluatedObservation.departureDate, returnDate: evaluatedObservation.returnDate },
+    airlineOrProvider: evaluatedObservation.source,
+    checkedDate: detection.observedDate,
     baselineMedian: result.baselineMedian,
     previousLow: result.previousLow,
     differencePounds: result.differencePounds,
@@ -297,8 +321,9 @@ function toCandidate(result: FareWatcherQualificationResult): FareWatcherCandida
     qualification: result.qualification,
     lifecycle: 'detected',
     founderVerificationRequired: true,
-    safeExactPartnerUrl: hasTripComRoute(candidate.routeSlug),
+    safeExactPartnerUrl: hasTripComRoute(detection.routeSlug),
     evidenceLimits: result.evidenceLimits,
+    verifiedObservation: evaluatedObservation,
   };
 }
 
@@ -349,6 +374,16 @@ function latestCurrentObservationsByIdentity(observations: readonly FareObservat
   const latestByIdentity = new Map<string, FareObservation>();
   for (const observation of observations) {
     if (observation.comparisonEligibility !== 'current') continue;
+    // Verified-Candidate Price Integrity (25 August 2026): an
+    // emergency-recheck is evidence *about* an already-detected candidate
+    // (see isMatchingVerificationRecheck() / findLatestVerificationRecheck()
+    // below), never a detection in its own right. Without this exclusion, a
+    // recheck with no matching earlier detection in the identity group (or
+    // one that simply won isNewerCandidate() on date/price) could become the
+    // detection observation itself, which would both mint a second
+    // candidate id for the same real-world fare lead and let the recheck
+    // count as a comparable baseline point for its own evaluation.
+    if (observation.observationReason === 'emergency-recheck') continue;
     // Never let an observation dated after nowIso supersede one that is
     // valid as of nowIso — an evaluation "as of" a given date must only
     // ever see what was actually known by then, exactly like
@@ -366,10 +401,57 @@ function latestCurrentObservationsByIdentity(observations: readonly FareObservat
   return [...latestByIdentity.values()];
 }
 
+/**
+ * True when `other` is an `emergency-recheck` that verifies `detection`
+ * under the exact same comparison identity: same route, cabin, exact travel
+ * dates, opaque profile and currency. Airline/routing/stops/price are
+ * deliberately NOT required to match — the entire point of a verification
+ * recheck is to discover the currently available lowest fare for that exact
+ * profile, which may legitimately differ in every one of those fields.
+ * `other.observedDate >= detection.observedDate` guards against an
+ * unrelated, earlier recheck of a different (e.g. superseded) detection
+ * accidentally matching a later one that happens to share every other field.
+ */
+function isMatchingVerificationRecheck(detection: FareObservation, other: FareObservation): boolean {
+  return other.observationReason === 'emergency-recheck'
+    && other.routeSlug === detection.routeSlug
+    && other.cabin === detection.cabin
+    && other.profileId === detection.profileId
+    && other.departureDate === detection.departureDate
+    && other.returnDate === detection.returnDate
+    && other.currency === detection.currency
+    && other.observedDate >= detection.observedDate;
+}
+
+/**
+ * Finds the current verification evidence for a detected candidate: the
+ * latest `emergency-recheck` observation matching `detection` under
+ * `isMatchingVerificationRecheck()`'s exact-profile contract, or `null` when
+ * no matching recheck exists yet. Reuses `isNewerCandidate()` — the same
+ * "latest observation" tie-break already used everywhere else in this file
+ * — so "latest matching recheck wins" follows one shared ordering rule
+ * rather than a second one invented here.
+ */
+function findLatestVerificationRecheck(detection: FareObservation, observations: readonly FareObservation[]): FareObservation | null {
+  let latest: FareObservation | null = null;
+  for (const observation of observations) {
+    if (!isMatchingVerificationRecheck(detection, observation)) continue;
+    if (!latest || isNewerCandidate(observation, latest)) {
+      latest = observation;
+    }
+  }
+  return latest;
+}
+
 /** Generates internal leads only. It never writes the archive or publishes UI copy. */
 export function generateFareWatcherCandidates(observations: FareObservation[], nowIso: string): FareWatcherCandidate[] {
   return latestCurrentObservationsByIdentity(observations, nowIso)
-    .map((candidate) => toCandidate(qualifyFareWatcherObservation(candidate, observations, nowIso)))
+    .map((detection) => {
+      const recheck = findLatestVerificationRecheck(detection, observations);
+      const evaluationSource = recheck ?? detection;
+      const result = qualifyFareWatcherObservation(evaluationSource, observations, nowIso);
+      return toCandidate(result, detection);
+    })
     .filter((candidate): candidate is FareWatcherCandidate => candidate !== null);
 }
 

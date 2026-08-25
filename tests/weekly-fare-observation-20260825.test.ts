@@ -51,13 +51,21 @@ describe('controlled weekly fare observation batch — 25 August 2026', () => {
       'standout-candidate', 'insufficient-baseline', 'notable-drop', 'insufficient-baseline',
     ]);
     expect(results.every((result) => result.evidenceLimits.length > 0)).toBe(true);
+    // Verified-Candidate Price Integrity (25 August 2026): each of these
+    // four routes has a same-day `emergency-recheck` that verifies this
+    // exact routine detection (same route/cabin/profile/travel-dates/
+    // currency) -- generateFareWatcherCandidates() now evaluates the
+    // candidate's currentFare/qualification from that verified evidence
+    // rather than the stale routine price, while checkedDate/id stay
+    // anchored to the routine detection observed here (see
+    // lib/fare-watcher.ts's findLatestVerificationRecheck()).
     const candidates = generateFareWatcherCandidates(fareObservations, '2026-08-25');
     expect(candidates.filter((candidate) => BATCH_IDS.includes(candidate.id.replace('fare-watcher-', '') as typeof BATCH_IDS[number]))).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({ routeSlug: 'manchester-islamabad', currentFare: 460, qualification: 'standout-candidate', lifecycle: 'detected', founderVerificationRequired: true }),
-        expect.objectContaining({ routeSlug: 'manchester-lahore', currentFare: 538, qualification: 'standout-candidate', lifecycle: 'detected', founderVerificationRequired: true }),
-        expect.objectContaining({ routeSlug: 'london-heathrow-jeddah', currentFare: 361, qualification: 'standout-candidate', lifecycle: 'detected', founderVerificationRequired: true }),
-        expect.objectContaining({ routeSlug: 'birmingham-amritsar', currentFare: 589, qualification: 'notable-drop', lifecycle: 'detected', founderVerificationRequired: true }),
+        expect.objectContaining({ routeSlug: 'manchester-islamabad', currentFare: 480, qualification: 'standout-candidate', lifecycle: 'detected', founderVerificationRequired: true, checkedDate: '2026-08-25' }),
+        expect.objectContaining({ routeSlug: 'manchester-lahore', currentFare: 547, qualification: 'standout-candidate', lifecycle: 'detected', founderVerificationRequired: true, checkedDate: '2026-08-25' }),
+        expect.objectContaining({ routeSlug: 'london-heathrow-jeddah', currentFare: 361, qualification: 'standout-candidate', lifecycle: 'detected', founderVerificationRequired: true, checkedDate: '2026-08-25' }),
+        expect.objectContaining({ routeSlug: 'birmingham-amritsar', currentFare: 591, qualification: 'notable-drop', lifecycle: 'detected', founderVerificationRequired: true, checkedDate: '2026-08-25' }),
       ])
     );
     expect(results.find((result) => result.candidate.id === BATCH_IDS[1])).toMatchObject({

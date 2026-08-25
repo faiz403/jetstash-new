@@ -215,7 +215,17 @@ describe('Fare Watcher candidate supersession — 19 August 2026 fix', () => {
 
     const amritsar = candidates.filter((c) => c.routeSlug === 'birmingham-amritsar');
     expect(amritsar).toHaveLength(1);
-    expect(amritsar[0]).toMatchObject({ currentFare: 603, qualification: 'notable-drop', checkedDate: '2026-08-19' });
+    // Verified-Candidate Price Integrity (25 August 2026): the 19 August
+    // observation is an `emergency-recheck` that verifies the 18 August
+    // routine detection under the exact same route/cabin/profile/travel-
+    // dates/currency (its own priceNote: "The 18 August £579 fare could not
+    // be reproduced; this is the fresh lowest eligible result."). Candidate
+    // identity/checkedDate now correctly anchor to the 18 August detection
+    // -- currentFare still comes from the verified 19 August evidence (603),
+    // exactly as it did before this fix, since that was already the recheck
+    // observation's own price either way.
+    expect(amritsar[0]).toMatchObject({ currentFare: 603, qualification: 'notable-drop', checkedDate: '2026-08-18' });
+    expect(amritsar[0].verifiedObservation).toMatchObject({ observationReason: 'emergency-recheck', observedDate: '2026-08-19', price: 603 });
 
     const jeddah = candidates.filter((c) => c.routeSlug === 'london-heathrow-jeddah');
     expect(jeddah).toHaveLength(0);
