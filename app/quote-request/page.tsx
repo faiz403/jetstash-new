@@ -27,13 +27,13 @@ const steps = [
   },
   {
     icon: Search,
-    title: 'We look into it properly',
+    title: 'We research it properly',
     body: 'We check your actual dates and routes, not a generic price band pulled from a lookup table.',
   },
   {
     icon: UserRound,
     title: 'A person comes back to you',
-    body: 'You get the options and the reasoning behind them by email, current at the time we check — no obligation, and no automated follow-up chase. Any booking is completed directly with the airline, hotel or travel provider, never through JetStash.',
+    body: 'You get the options and the reasoning behind them by email, current at the time we check — no obligation, and no automated follow-up chase.',
   },
 ];
 
@@ -51,8 +51,8 @@ export default async function QuoteRequestPage({
       <PageHero
         heroKey="quote-request"
         eyebrow="Reviewed by a real person"
-        title="Tell us the trip. We'll look into it properly."
-        description="Tell us where you're travelling, who's going and what matters most. A real person looks into the journey and sends back the options and reasoning worth knowing, current at the time we check. Any booking happens directly with the airline, hotel or provider — JetStash doesn't take payment or make it for you."
+        title="Tell us the trip. We'll research the options properly."
+        description="Tell us where you're travelling, who's going and what matters most. A real person looks into the journey and sends back the options, trade-offs and details worth knowing, current at the time we check. Any booking is completed directly with the relevant provider. JetStash does not take payment or make bookings on your behalf."
       />
 
       <section className="border-b border-white/5 bg-ink-950 py-10">

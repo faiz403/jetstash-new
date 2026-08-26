@@ -517,6 +517,7 @@ describe('Requirements 18–20: no invented content, unchanged rendering', () =>
   it('the /quote-request heading no longer implies JetStash prices or arranges the booking itself', () => {
     const quoteSrc = read('app/quote-request/page.tsx');
     expect(quoteSrc).not.toContain("We'll price it properly");
-    expect(quoteSrc).toContain("Tell us the trip. We'll look into it properly.");
+    expect(quoteSrc).not.toContain("We'll look into it properly");
+    expect(quoteSrc).toContain("Tell us the trip. We'll research the options properly.");
   });
 });
