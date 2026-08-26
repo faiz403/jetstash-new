@@ -102,8 +102,8 @@ export function QuoteRequestForm({ initialTripType, initialRegion }: QuoteReques
       <div role="status" aria-live="polite" className="flex items-center gap-3 rounded-md border border-brass/30 bg-brass-50 p-5">
         <CheckCircle2 className="h-6 w-6 flex-shrink-0 text-brass-600" />
         <p className="text-sm text-ink-700">
-          Thanks. We've got your quote request and will follow up by email. This goes to a real person, not an
-          automated pricing engine.
+          Thanks. We've got your quote request. A real person will look into it and follow up by email with the
+          options and reasoning — any booking is completed directly with the provider, not through JetStash.
         </p>
       </div>
     );
@@ -225,7 +225,8 @@ export function QuoteRequestForm({ initialTripType, initialRegion }: QuoteReques
         {status === 'submitting' ? 'Sending…' : 'Request a quote'}
       </button>
       <p className="text-xs text-ink-400">
-        This is a request for a human to follow up with real pricing, not an instant automated quote.
+        This is a request for a human to look into your journey and follow up with useful options, not an instant
+        automated quote.
       </p>
       <p className="text-xs leading-relaxed text-ink-500">
         Read our{' '}

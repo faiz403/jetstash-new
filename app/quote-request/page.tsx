@@ -15,7 +15,7 @@ export const metadata: Metadata = {
   // search snippet shouldn't carry. The form itself still offers every
   // option unchanged; only this summary is more concise.
   description:
-    'Request a real quote for any trip to Pakistan, India, the Gulf, Turkey, Morocco or beyond — followed up by a real person, not an automated price.',
+    'Tell JetStash about a trip to Pakistan, India, the Gulf, Turkey, Morocco or beyond — reviewed by a real person, not an automated price.',
   alternates: { canonical: `${siteConfig.url}/quote-request` },
 };
 
@@ -27,13 +27,13 @@ const steps = [
   },
   {
     icon: Search,
-    title: 'We research it properly',
-    body: 'Real availability on your actual dates, not a generic price band pulled from a lookup table.',
+    title: 'We look into it properly',
+    body: 'We check your actual dates and routes, not a generic price band pulled from a lookup table.',
   },
   {
     icon: UserRound,
     title: 'A person comes back to you',
-    body: 'You get a real quote by email, with the reasoning behind it. No obligation, and no automated follow-up chase.',
+    body: 'You get the options and the reasoning behind them by email, current at the time we check — no obligation, and no automated follow-up chase. Any booking is completed directly with the airline, hotel or travel provider, never through JetStash.',
   },
 ];
 
@@ -50,9 +50,9 @@ export default async function QuoteRequestPage({
     <>
       <PageHero
         heroKey="quote-request"
-        eyebrow="Real quotes, from a person"
-        title="Tell us the trip. We'll price it properly."
-        description="Tell us where you're travelling, who's going and what matters most. JetStash will review the journey and come back with a personalised quote, from a real person, not an automated price."
+        eyebrow="Reviewed by a real person"
+        title="Tell us the trip. We'll look into it properly."
+        description="Tell us where you're travelling, who's going and what matters most. A real person looks into the journey and sends back the options and reasoning worth knowing, current at the time we check. Any booking happens directly with the airline, hotel or provider — JetStash doesn't take payment or make it for you."
       />
 
       <section className="border-b border-white/5 bg-ink-950 py-10">
