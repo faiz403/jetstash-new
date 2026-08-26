@@ -502,10 +502,22 @@ describe('Requirements 18–20: no invented content, unchanged rendering', () =>
     expect(src).toContain('{airport.description}</p>');
   });
 
-  it('req 20b: family-holidays and quote-request pages still render their original, untouched visible headings — only their metadata text changed', () => {
+  it('req 20b: family-holidays page still renders its original, untouched visible heading — only its metadata text changed', () => {
     const familySrc = read('app/family-holidays/page.tsx');
     expect(familySrc).toContain('Holidays that work with children, not despite them');
+  });
+
+  // Quote Request role-clarity fix (26 Aug 2026, founder-approved): the
+  // visible H1 itself was one of the exact phrases the audit flagged
+  // ("We'll price it properly" implies JetStash prices/arranges the
+  // booking) — updated deliberately, not incidentally, so req 20b's
+  // original "heading is untouched" claim no longer applies to this page.
+  // See tests/quote-request-trip-type.test.ts for the full coverage of the
+  // corrected copy.
+  it('the /quote-request heading no longer implies JetStash prices or arranges the booking itself', () => {
     const quoteSrc = read('app/quote-request/page.tsx');
-    expect(quoteSrc).toContain("Tell us the trip. We'll price it properly.");
+    expect(quoteSrc).not.toContain("We'll price it properly");
+    expect(quoteSrc).not.toContain("We'll look into it properly");
+    expect(quoteSrc).toContain("Tell us the trip. We'll research the options properly.");
   });
 });
