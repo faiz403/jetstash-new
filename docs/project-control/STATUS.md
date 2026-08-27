@@ -1,32 +1,83 @@
 # JetStash Current Status
 
-**Last reconciled:** 21 August 2026 (Big Review Clean-up Batch 1)
+**Last reconciled:** 27 August 2026 (project-control truth through PR #187)
 
 **Production branch:** `main`
 
-**Application release baseline:** `65db09cf39cd8d09e51b458d86a8947351c5edff` (PR #161 merge —
-Participant 1 defect follow-up; PR #160 — Birmingham–Islamabad stale booking-window copy fix; PR
-#159 — COV-001 4-route reclassification; PR #156 — Route Page Scanability fix; PR #155 — Route Page
-Journey Clarity System). **Known gap in this ledger:** PRs #137–#151 (18–19 August 2026:
-route-verification batches, weekly fare refresh, standout-candidate verification, fare-note jargon
-fix, route-verification review visibility) shipped and are live in production, but are not
-individually reconciled into this document — the 21 August reconciliation passes have covered
-#152–#161 (this pass closes #159–#161; a prior 21 August pass closed #152–#156; #157 was itself a
-reconciliation PR; #158 created the validation procedure this pass now records the outcome of). Do
-not assume everything between PR #136 and #152 is undocumented-because-unimportant; it is
-undocumented-because-not-yet-reconciled. A future pass should close that specific gap rather than
-re-deriving it from git history each time.
+**Application release baseline:** `4494fd3561ac533a9ba787c04ef77b6ae44626ad` (PR #187 merge —
+Quote Request role clarity). This reconciliation closes the previously recorded PR #137–#151 gap
+and brings the operating record through PR #187 without turning this file into a commit-by-commit
+changelog. Older dated counts and delivery notes below remain historical evidence of what was true
+at the time; the current operating snapshot immediately below overrides them for present decisions.
 
-**Launch readiness:** see `LAUNCH_READINESS_AUDIT_2026-07-29.md` and `LAUNCH_CHECKLIST.md` — ready
-for public organic launch after a short hardening pass; paid advertising remains blocked until
-analytics/conversion events are verified in the real dashboard.
+**Launch readiness:** ready for controlled public organic use. Google Ads Basic Consent Mode and
+conversion tracking are live; missing instrumentation is no longer the paid-growth blocker.
+Serious paid/commercial promotion still requires meaningful conversion evidence, the open
+founder/professional legal decisions in `LAUNCH_CHECKLIST.md` B2, and distributed/WAF-backed form
+rate limiting rather than the current process-local limiter.
 
 **Production site:** `https://jetstash.co.uk`
 
+## Current operating snapshot — 27 August 2026
+
+The following counts were derived from code at the release baseline above, using 27 August 2026 as
+the freshness/status date. They are current operating truth, not copied forward from an older
+project-control snapshot.
+
+| Measure | Current state | Canonical derivation |
+|---|---:|---|
+| Public routes | 88 | `data/routes.ts` |
+| Destinations | 27 | `data/destinations.ts` |
+| Total append-only fare observations | 226 | `data/fare-observations.ts` |
+| Methodology-complete observations | 202 | `isPubliclyPublishable()` — complete dates/currency and not methodology-excluded |
+| Public-safe observations at the current route-evidence state | 195 | `getPublishableObservationsByRoute()` across all 88 routes |
+| Routes with at least one public-safe observation | 83 | Distinct route slugs among those 195 observations |
+| Current display-ready Fare Signals | 83 of 88 | `getFareSignalForRoute(...).state === 'current'` |
+| Curated `Deal` records | 50 | `data/deals.ts`; a separate presentation catalogue, not fare coverage |
+| Safe Trip.com flight handoffs | 63 of 88 | 45 route-level links + 18 exact airport-pair fallbacks |
+| Fail-closed flight handoffs | 25 of 88 | No safe exact partner handoff; never a generic `LON` substitute |
+| Hotel Intelligence destinations | 10 | Public allowlist in `lib/holiday-intelligence.ts` |
+| Exact-property hotel handoffs | 29 | 29 public hotel examples, all mapped to a dashboard-generated property URL |
+| Route Intelligence | 11 Strong / 77 Useful / 0 Expanding | `computeRouteIntelligenceLevel()` across the 88 routes |
+
+The five routes without a current Fare Signal are the same five routes whose current route evidence
+remains unresolved: Birmingham–Ahmedabad, Gatwick–Ahmedabad, Heathrow–Dhaka, Heathrow–Sylhet and
+Manchester–Sylhet. Their archive records are preserved; public presentation remains fail-closed.
+
+### Programme state
+
+- **Journey Choice:** one-route Manchester–Islamabad public pilot, with impression/evidence/CTA
+  measurement and a dated Trip.com handoff. Expansion remains frozen pending meaningful real
+  traffic; no second route is approved.
+- **Fare Watcher / Standout Fare:** Phase 1 is live on Manchester–Islamabad with exactly one public,
+  founder-approved Standout Fare. The engine and approval gate are complete for this phase; further
+  routes, new UI and threshold changes are frozen pending real traffic evidence.
+- **Quote Request:** PR #187 is live. It is a research/decision-support enquiry: JetStash researches
+  options and trade-offs, but does not take booking payment or make bookings. Broader Quote Request
+  redesign is closed unless customer evidence exposes a new problem.
+- **Search Console discovery:** the founder-confirmed follow-up is closed; sitemap discovery reached
+  the current submitted inventory and there is no active indexing firefight. Live search performance
+  remains external evidence and must not be inferred from repository state.
+- **Affiliate/commercial:** Trip.com is the sole active flight partner. Unsupported exact-airport
+  pairs fail closed; the Heathrow/Gatwick gap is an external/provider limitation, not permission to
+  use a generic London handoff. No second provider is active.
+- **Legal/operator:** implemented consent, Privacy Policy, commercial disclosures and Quote Request
+  role clarity are separate from the unresolved B2 decisions. Draft Terms, public postal-address
+  position, final retention periods and professional review are not complete.
+- **Manchester–Mumbai / Manchester–Delhi:** the pre-map audit is complete. The service-truth
+  verification is scheduled for 31 August / 1 September 2026; no early conclusion is recorded here.
+
+### How to read the historical record below
+
+The remainder of this file preserves dated implementation and audit records. Phrases such as
+"current" inside a dated 16 or 21 August entry describe that snapshot, not the 27 August operating
+state above. Current-looking PR labels that became false after merge have been corrected, while the
+underlying delivery history remains intact.
+
 ## Current truth
 
-- **Route page simplification Phase 1 — fare reconciliation + unified fail-closed copy (OPEN PR,
-  NOT MERGED, refreshed 25 August 2026 onto the post-#180 baseline):** implements only §20 of the
+- **Route page simplification Phase 1 — fare reconciliation + unified fail-closed copy (PR #181,
+  merged 25 August 2026):** implements only §20 of the
   Route Page Decision-First & Density master audit, which is the audit's own Phase 1 and nothing
   else. Two changes. (1) The audit's single P0: on `manchester-islamabad` the page currently
   renders £460 for travel 20 October–3 November (Fare Signal, the 25 August controlled batch's
@@ -271,8 +322,8 @@ analytics/conversion events are verified in the real dashboard.
   files against the URL map. **Hotel Intelligence expansion is frozen at these 10 destinations**;
   adding an 11th requires a new, explicit founder decision backed by customer evidence, not more
   engineering capacity alone.
-- **Fare Signal / fare-observation terminology, recounted 21 August 2026 (Big Review Clean-up
-  Batch 1)** (see the canonical table below) — do not use "fare coverage" to mean more than one of
+- **Historical Fare Signal / fare-observation snapshot — 21 August 2026 (Big Review Clean-up
+  Batch 1)** (see the dated table below) — do not use "fare coverage" to mean more than one of
   these without saying which. **Correction to this table's prior 16 August figures**: the archive
   has grown substantially through ordinary editorial fare-collection work in the five days since
   (119→206 total records) — that growth is healthy, not a problem (see the freshness audit note
@@ -310,9 +361,10 @@ analytics/conversion events are verified in the real dashboard.
     Gatwick–Ahmedabad, Heathrow–Dhaka, Heathrow–Sylhet, Manchester–Sylhet — a fare cannot honestly
     render on an unverified route regardless of whether one is logged.
 
-- **Curated `Deal` count is 49** (`data/deals.ts`) — a separate, smaller, hand-curated set of
+- **Historical curated `Deal` snapshot — 21 August 2026:** the count was 49 (`data/deals.ts`) — a
+  separate, smaller, hand-curated set of
   airport→destination+cabin combinations chosen for card display; distinct from, and much smaller
-  than, the 81 routes that actually have fare evidence. Never conflate the two: a route can have a
+  than, the routes that had fare evidence in that dated snapshot. Never conflate the two: a route can have a
   real Fare Signal with no curated Deal card, and vice versa is architecturally impossible (every
   `Deal` derives its price display from `getFareRangeSummary()`, never a stored price).
 - **Google Ads Basic Consent Mode + conversion tracking (PR #135, merged 15 August 2026)** is live:
@@ -362,9 +414,13 @@ analytics/conversion events are verified in the real dashboard.
   silently regressed — see `tests/route-hero-scanability.test.ts`'s full 88-route safety check
   (63 routes keep a working CTA, 25 show the exact fail-closed sentence, never neither/both).
 
-## ACTIVE
+## Operating queue and recent delivery record
 
-### LAUNCH-001 — Seven-day controlled organic launch
+This section preserves the fuller programme narratives. The status shown in each heading is
+authoritative; completed entries remain here as delivery context and are also summarised in
+`COMPLETED.md`.
+
+### LAUNCH-001 — Seven-day controlled organic launch (ACTIVE — founder-operated)
 
 **Product freeze in effect.** The founder's own decision, 30 July 2026: the immediate goal is no
 longer "finish the website" — it's the first genuine users, the first useful feedback, and the
@@ -383,7 +439,7 @@ an active IndiGo withdrawal-announced notice (`data/route-status-events.ts`, eff
 seven-day plan are all in the pack itself. Draft only as of this entry — nothing sent yet; sending
 is the founder's own action, not something done from this repository.
 
-### DEST-001 — First destination expansion: Heathrow → Bengaluru
+### DEST-001 — First destination expansion: Heathrow → Bengaluru (DONE)
 
 An explicit founder decision, 30 July 2026, and an explicit exception to the LAUNCH-001 product
 freeze — not a violation of it (real evidence-led feature work the founder specifically
@@ -401,7 +457,7 @@ a minimal centre crop, no stretching or creative alteration — see `docs/visual
 Catalogue). No fare observation logged; none could be honestly recorded without a real, dated
 check. See PR for full detail.
 
-### BD-001 — Bangladesh workstream: Dhaka and Sylhet
+### BD-001 — Bangladesh workstream: Dhaka and Sylhet (DONE)
 
 An explicit founder decision, 30 July 2026, and an explicit exception to the LAUNCH-001 product
 freeze, on the same basis as DEST-001. Adds Dhaka and Sylhet as destinations, integrated through
@@ -449,7 +505,7 @@ have a genuine, route-specific Trip.com link; `london-heathrow-dhaka` and `londo
 have no booking CTA at all (Trip.com has no Heathrow-specific dateless link — see AFF-001 below).
 See PR for full detail.
 
-### HERO-002 — Homepage opening hero above the Route Atlas
+### HERO-002 — Homepage opening hero above the Route Atlas (DONE)
 
 **Done** — see `COMPLETED.md`. Customer-visible pre-launch priority, raised from a real mobile
 review on a Samsung Galaxy Z Fold 7: the homepage previously opened directly with the Route Atlas,
@@ -460,16 +516,18 @@ short "why JetStash is different" proof strip, both above the Atlas, which remai
 un-redesigned as the homepage's
 signature feature immediately below.
 
-### FARE-001 — Begin building the editorial fare observation archive
+### FARE-001 — Maintain the editorial fare observation archive (ACTIVE)
 
-The methodology is finalized (see "Current truth" above); the first two five-observation batches
-are logged, plus the 5 August 2026 Trip.com-sourced Doha/Madinah pair. A human may record a fare observed on Google Flights, Trip.com or an airline booking page, provided
+The methodology is finalized and the archive is now established rather than at its starting point:
+226 append-only records exist at the 27 August 2026 baseline, and 83 of 88 routes render a current
+Fare Signal. This remains an ongoing editorial cadence, not a completed one-off collection project.
+A human may record a fare observed on Google Flights, Trip.com or an airline booking page, provided
 the source, check date, outbound date, return date, cabin, currency and baggage treatment are
 captured, against a fixed 8-week booking horizon. Google Flights is an observation source only:
 service facts still require primary airline, airport or official sources. Historic incomplete
 entries remain private; a past price cannot be reconstructed honestly after the fact.
 
-### AFF-001 — Improve affiliate coverage
+### AFF-001 — Improve affiliate coverage (ACTIVE / WAITING ON PROVIDER)
 
 **Superseded 4 August 2026.** TravelUp has been removed entirely (its generic-search CTA reset the
 traveller's departure airport — an unacceptable user experience). Trip.com is now JetStash's sole
@@ -483,7 +541,7 @@ exact airport-specific link, or no CTA at all. Expedia and other potential partn
 until JetStash has approval, a genuine tracking link and a scoped validation of the customer
 journey.
 
-### COV-001 — Build verified route coverage deliberately
+### COV-001 — Build verified route coverage deliberately (ACTIVE)
 
 Route coverage now has a durable operating queue in `ROUTE_COVERAGE.md`. The 28 July pass resolved
 the qualifying direct-service records for Heathrow–Delhi, Manchester–Dubai, Heathrow–Doha,
@@ -500,19 +558,19 @@ untouched by that pass; see `ROUTE_COVERAGE.md`'s "Explicitly unresolved direct-
 for each one's specific open reason. Each cycle must add independently sourced service evidence or a
 date-complete fare observation; never fill a route simply to remove a pending state.
 
-The first evidence-bounded Turkey route-guide pilot is prepared for founder review across Manchester–Istanbul,
+Historical delivery record: the first evidence-bounded Turkey route-guide pilot shipped across Manchester–Istanbul,
 Manchester–Dalaman, Manchester–Bodrum, Manchester–Antalya and Manchester–Izmir. Antalya publishes seasonal direct-service
 context with varying published timings; Izmir publishes SunExpress's seasonal programme and Manchester
 Airport's planning figure without a fixed weekly frequency. All five preserve their exact Trip.com
 handoffs and publish no fares or unsupported booking claims.
 
-The Birmingham Turkey route-guide batch is prepared for founder review across Birmingham–Istanbul,
+Historical delivery record: the Birmingham Turkey route-guide batch shipped across Birmingham–Istanbul,
 Birmingham–Antalya, Birmingham–Dalaman and Birmingham–Bodrum. Birmingham Airport evidence supports
 direct service for all four; Istanbul preserves the IST/SAW arrival distinction, Dalaman keeps its
 approximate timing qualified, and Bodrum remains explicitly seasonal. All four preserve their exact
 Trip.com handoffs and publish no fares, baggage claims or fixed frequency promises.
 
-The Morocco route-guide batch is prepared for founder review across Manchester–Marrakech,
+Historical delivery record: the Morocco route-guide batch shipped across Manchester–Marrakech,
 Bristol–Marrakech, Gatwick–Marrakech, Manchester–Agadir, Birmingham–Agadir, Gatwick–Agadir,
 Heathrow–Casablanca and Gatwick–Tangier. Current airport and airline evidence supports bounded
 direct-service guidance for all eight; it does not support fixed fares, baggage claims or universal
@@ -531,8 +589,8 @@ not receive the label, since its own `priceNote` records no such evidence. Prese
 fare data, Fare Watcher maths, route truth, Journey Choice or Book-By logic changed, and no
 structured field was added to `FareObservation`.
 
-**Same-day verification-recheck representative priority (25 August 2026, founder-approved, OPEN
-PR, NOT MERGED):** logic-only fix, no data appended. A deferred four-observation append (£480
+**Same-day verification-recheck representative priority (25 August 2026, founder-approved, PR #182,
+merged):** logic-only fix, no data appended. A deferred four-observation append (£480
 MAN-ISB / £547 MAN-LHE / £361 LHR-JED / £591 BHX-ATQ, all `emergency-recheck`, all sharing their
 route's routine observation's exact `observedDate`) exposed a real evidence-ordering defect: the
 representative-observation tie-break (`lib/fare-signal.ts`) broke a same-day tie on price alone, so
@@ -549,12 +607,13 @@ sibling observation, so the new tie-break tier was never reached for either. Doe
 verification-recheck comparison-integrity fix (PR #179): `isIndependentComparisonObservation()` is
 untouched, so an emergency-recheck still never enters Smart Fare/Journey Choice comparison
 membership or independently increases Fare Watcher baseline depth — proven via a before/after diff
-of `generateFareWatcherCandidates()`'s actual output, not assumed. The real four-observation append
-remains deferred pending this PR's review and merge; a synthetic four-fare simulation (test-only,
-nothing written to `data/fare-observations.ts`) proves it will resolve correctly once merged.
+of `generateFareWatcherCandidates()`'s actual output, not assumed. At this point in the delivery
+sequence the real four-observation append was still deferred; it subsequently shipped in PR #183.
+The PR #182 validation used a synthetic four-fare simulation only, with nothing then written to
+`data/fare-observations.ts`.
 
-**Fare Watcher verification recheck append (25 August 2026, founder-approved, OPEN PR, NOT
-MERGED):** the deferred four-observation append is done — data-only, no logic changed. Four
+**Fare Watcher verification recheck append (25 August 2026, founder-approved, PR #183, merged):**
+the deferred four-observation append is done — data-only, no logic changed. Four
 `emergency-recheck` records added for manchester-islamabad (£480), manchester-lahore (£547),
 london-heathrow-jeddah (£361, reproduced exactly) and birmingham-amritsar (£591), each re-verifying
 its route's same-day routine observation from the controlled weekly batch. Archive count 222 → 226.
@@ -571,8 +630,8 @@ hardcoded the old routine-fare values (`book-by-cabin-safety`, `fare-self-transf
 `route-hero-scanability`, `seo-domination-batch-1b`) were updated to the new correct values — same
 pattern PR #178 itself used when it last changed representative fares.
 
-**Fare Watcher verified-candidate price integrity (25 August 2026, founder-approved, OPEN PR, NOT
-MERGED):** logic/tests-only fix, no fare data changed. The prior fix above corrected Fare
+**Fare Watcher verified-candidate price integrity (25 August 2026, founder-approved, PR #184,
+merged):** logic/tests-only fix, no fare data changed. The prior fix above corrected Fare
 Signal/Book-By's *public* representative-fare selection but left a separate, undiscovered gap in
 `lib/fare-watcher.ts`'s own internal candidate evaluation: `generateFareWatcherCandidates()` still
 promoted the original routine detection as "the candidate," so all four 25 August rechecks

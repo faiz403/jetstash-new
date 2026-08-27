@@ -5,6 +5,37 @@ evidence and an explicit founder decision.
 
 ## Approved
 
+### Current operating truth and pilot freezes — 27 August 2026
+
+Reconciled `main` at `4494fd3561ac533a9ba787c04ef77b6ae44626ad` (PR #187) after the
+Big Review work arc. This entry is the current decision layer; older 16/21 August entries below are
+preserved as dated snapshots rather than rewritten.
+
+- Current code-derived scale is 88 routes, 27 destinations, 226 append-only fare observations,
+  83 current Fare Signals, 63 safe Trip.com flight handoffs / 25 fail-closed routes, and 29 exact
+  hotel-property handoffs across the frozen 10-destination Hotel Intelligence set.
+- Journey Choice remains a one-route Manchester–Islamabad evidence/measurement pilot. No second
+  route is approved until meaningful real traffic supports a founder decision.
+- Fare Watcher Phase 1 is live with one founder-approved public Standout Fare on
+  Manchester–Islamabad. Further routes, new Fare Watcher UI, threshold changes and homepage
+  promotion remain frozen pending real evidence.
+- Quote Request role clarity is closed by PR #187: JetStash researches options and trade-offs but
+  does not take booking payment or make bookings. Reopen only on customer evidence of a new issue.
+- The Search Console sitemap/discovery follow-up is closed: the current submitted inventory was
+  discovered and there is no active indexing firefight. This does not claim ranking or traffic
+  success, which remains external evidence.
+- Trip.com remains the only active flight partner. The 25 unsupported exact-airport pairs fail
+  closed; a generic London handoff and an unapproved second provider remain prohibited.
+- Implemented privacy/consent/disclosure work does not close the separate legal B2 gate. Public
+  address, final retention decisions, professional Terms review and an explicit publish decision
+  remain founder/external work.
+- Manchester–Mumbai and Manchester–Delhi have a completed pre-map audit only. Their service-truth
+  check remains scheduled for 31 August / 1 September 2026; no early conclusion is authorised.
+
+**Operating consequence:** current pilots should collect evidence, not expand. The active work is
+truth maintenance, honest commercial measurement and resolution of external/founder gates — not
+another speculative product build.
+
 ### Big Review Clean-up Batch 1 — 21 August 2026
 
 A full numerical reconciliation of `main` at `65db09cf39cd8d09e51b458d86a8947351c5edff` (PR #161

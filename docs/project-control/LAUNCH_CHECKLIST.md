@@ -3,6 +3,9 @@
 **Established:** 29 July 2026, following founder review and acceptance of
 `LAUNCH_READINESS_AUDIT_2026-07-29.md`.
 
+**Current-state reconciliation:** 27 August 2026 at
+`4494fd3561ac533a9ba787c04ef77b6ae44626ad` (PR #187).
+
 This is the single checklist of record for launch readiness. Do not create a competing or
 duplicate checklist elsewhere — update this file as items close, and add newly discovered items
 here rather than starting a fresh document.
@@ -11,22 +14,40 @@ here rather than starting a fresh document.
 
 - The Route Atlas is complete, interactive and live on the public homepage.
 - Intended airport and destination imagery is complete and live.
-- Contact, Quote Request and Newsletter delivery all work — freshly re-verified live 29 July 2026.
+- Contact, Quote Request and Newsletter delivery work. Quote Request's role was clarified in PR
+  #187: JetStash researches options but does not take payment or make bookings.
 - Fare-observation governance and methodology are complete; fare *coverage* (how many routes have
-  logged observations) remains an ongoing, ever-growing series, not a one-time deliverable.
-- JetStash is ready for public organic launch after the short hardening pass below (section A).
-- Paid advertising remains blocked until analytics and conversion events are verified in the real
-  dashboard (section F).
+  logged observations) remains an ongoing series. Current code-derived state is 226 append-only
+  observations and 83 of 88 routes with a current Fare Signal.
+- JetStash is ready for controlled public organic use.
+- Google Ads Basic Consent Mode and conversion tracking are live. Missing instrumentation is no
+  longer the paid-readiness blocker; meaningful settled conversion evidence is still absent.
 - No required production fix is stranded in `fix/verification-pending-leakage` or
   `fix/trust-cracks-july` — both were checked directly against `origin/main` on 29 July 2026 and
   contain nothing that isn't already live via later, independent commits.
 
 ## Verdict
 
-**READY FOR PUBLIC ORGANIC LAUNCH.** Not yet ready for paid advertising or partner promotion — see
-section F for the specific, verifiable reason.
+**READY FOR CONTROLLED PUBLIC ORGANIC USE.** Do not materially scale paid advertising or partner
+promotion yet. The open gates are meaningful commercial evidence, B2's founder/professional legal
+decisions and A6's distributed/WAF-backed rate limit — not a missing Google Ads tag.
 
 Full detail, scoring, and evidence: `LAUNCH_READINESS_AUDIT_2026-07-29.md`.
+
+### Current gate summary — 27 August 2026
+
+- **Implemented/closed:** security headers; public trust corrections; consent and conversion-event
+  code; promotion-specific fare evidence (G1); Quote Request role clarity; sitemap discovery
+  follow-up; current affiliate disclosures.
+- **Waiting on founder/professional input:** B2 public operator/address/retention/Terms decisions.
+- **Waiting on infrastructure:** A6 distributed or WAF-backed rate limiting. The process-local
+  limiter remains an honest limitation before meaningful paid scale.
+- **Waiting on real evidence:** F1/commercial measurement. Instrumentation exists; the question is
+  what real users and attributed commercial outcomes show, not whether another event can be added.
+- **Deliberately deferred:** real assistive-technology certification/field Core Web Vitals, CSP
+  enforcement/major dependency upgrade and post-launch housekeeping, each under its existing item.
+- **Date-locked truth task:** Manchester–Mumbai/Manchester–Delhi verification is scheduled for
+  31 August / 1 September. The pre-map audit is complete; no early conclusion is authorised.
 
 ---
 
@@ -385,8 +406,13 @@ wider organic promotion.
 
 ## F–G — Paid-advertising readiness
 
-Do not begin paid spend or partner-promotion conversations until these close. Keep this list
-separate from section A — organic readiness does not require these.
+Do not materially scale paid spend or partner-promotion conversations until the genuinely open
+gates close. Historical controlled pilots do not change this rule. Keep this list separate from
+section A — controlled organic use does not require these.
+
+**Current interpretation (27 August 2026):** conversion instrumentation is complete; F1 remains
+open for meaningful settled evidence. G1's original promotion-specific fare requirement is closed,
+while `FARE-001` remains an ongoing editorial maintenance programme in `STATUS.md`/`ROADMAP.md`.
 
 - [ ] **F1.** Confirm real Vercel Analytics events exist and are visible in the dashboard for:
       page visits, Route Atlas interaction, Travel Ready Check completion, affiliate-link clicks,
@@ -441,9 +467,11 @@ separate from section A — organic readiness does not require these.
       results are recorded in either file yet. **This item remains partly complete, not closed,
       until real evidence is actually collected using this process** — writing the process down is
       not the same as having run it.
-- [ ] **G1.** Add genuine fare observations, following the existing methodology in
-      `FARE_OBSERVATION_ARCHIVE.md`, prioritising the specific routes intended for paid promotion
-      before that spend begins. Never backfill a price for a day that wasn't actually checked.
+- [x] **G1.** ~~Add genuine fare observations for promoted routes.~~ **Closed by 27 August 2026.**
+      The archive now contains 226 append-only observations and 83 current Fare Signals, including
+      the controlled campaign corridors. No past fare was reconstructed to close this item. This
+      closes the original paid-promotion evidence gap; it does not close the separate, ongoing
+      `FARE-001` freshness cadence.
 
 ## H–J — Post-launch / housekeeping
 
