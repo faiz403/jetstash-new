@@ -4,24 +4,30 @@ This roadmap contains unfinished work only. Completed work belongs in `COMPLETED
 
 ## Delivery queue
 
+**Current baseline:** `4494fd3561ac533a9ba787c04ef77b6ae44626ad`, reconciled 27 August
+2026. `ACTIVE` means continuing evidence/operations work; `WAITING` means no repository change is
+authorised until an external fact, founder decision or meaningful traffic exists; `FROZEN` means a
+live pilot must collect evidence before expansion.
+
 | Order | ID | Status | Work | Definition of done |
 |---:|---|---|---|---|
-| 1 | `FARE-001` | ACTIVE — Batch C deliberately paused, see below | Build the editorial fare observation archive. The route catalogue has grown to 88 routes since Batch A/B were sequenced (Turkey/Morocco/Bangladesh/Bengaluru expansions) — the original "of 32" framing is obsolete; current reconciled counts (16 August 2026, see `STATUS.md`'s canonical table) are **99 of 119 archive records publicly publishable, 81 of 88 routes with ≥1 publishable observation, 79 of 88 routes with a current display-ready Fare Signal**. | Fresh, manually checked observations for priority routes with travel dates, cabin, source, observation method, currency, baggage treatment, a fixed 8-week booking horizon and an evidence-backed `fareDirectness` (both legs confirmed, or honestly `'unknown'`/itinerary-level `'connecting'` — see `FARE_COLLECTION_CHECKLIST.md` §6), accumulated honestly over time. |
-| 2 | `COV-001` | ACTIVE | Build verified route coverage deliberately. | The route queue is evidence-led, each change is sourced and reviewed, and price context appears only from date-complete observations. |
-| 3 | `VIS-001` | COMPLETE | Complete the UK airport visual collection. | Premium, airport-specific WebP artwork for every supported UK airport, using one consistent 1672×941 composition. |
-| 4 | `AFF-001` | ACTIVE | Improve affiliate coverage. | Current partner state reconciled; only approved, tracked integrations with directly validated customer journeys are enabled. Expedia and other candidates remain off until approved. Reconciled 16 August 2026: 45/88 routes exact, 18/88 fallback, 63/88 total working CTA, 25/88 none (see `STATUS.md`). |
-| 5 | `CONV-001` | ACTIVE | Validate homepage/campaign conversion. | Funnel analytics reviewed; changes made only where data identifies a real drop-off. The paid-advertising analytics blocker this item originally tracked is now resolved: Google Ads Basic Consent Mode + conversion tracking shipped (PR #135, 15 August 2026) and Pilot #2 is live. This item now covers reading that data once a meaningful sample exists — do not close it or act on it from a same-day click count. |
-| 6 | `HOTEL-001` | COMPLETE, FROZEN | Hotel Intelligence expansion. | Shipped across 10 destinations with 29 exact-property Trip.com handoffs (PR #136, 15 August 2026). Expansion is explicitly frozen — do not add an 11th destination without a new founder decision backed by customer usage evidence, not engineering capacity. |
+| 1 | `LEGAL-001` | WAITING — founder/professional input | Resolve the public operator/legal foundation. | Founder confirms the public identity/address/legal-notices/retention decisions; a qualified professional reviews the draft Terms and related wording; only then is a separate publish decision made. Repository preparation is complete in `docs/legal/A4_LEGAL_REVIEW_PACK.md`; do not invent the missing facts. |
+| 2 | `FARE-001` | ACTIVE — ongoing editorial cadence | Maintain the fare observation archive. Current code-derived state: **226 append-only records, 202 methodology-complete, 195 public-safe at the current route-evidence state, and 83 of 88 routes with a current Fare Signal**. | Fresh, manually checked observations with travel dates, cabin, source, observation method, currency, baggage treatment and evidence-backed directness. Preserve history; never backfill or scrape. |
+| 3 | `COV-001` | ACTIVE — evidence/date driven | Maintain verified route coverage deliberately. Five routes remain unresolved and fail closed. Manchester–Mumbai/Manchester–Delhi have a completed pre-map audit and a scheduled 31 August / 1 September truth check that must not be pre-empted. | Every status change is primary-sourced and review-dated; unresolved facts stay unresolved. |
+| 4 | `AFF-001` | ACTIVE / WAITING ON PROVIDER | Improve evidence-safe affiliate coverage. | Current state is 45 route-level + 18 exact-pair fallback handoffs = 63 of 88; 25 fail closed. Trip.com is the only active flight partner. A second provider or London fallback is not enabled without approval and direct journey validation. |
+| 5 | `CONV-001` | WAITING FOR MEANINGFUL EVIDENCE | Validate homepage/campaign conversion and commercial value. | Google Ads Basic Consent Mode and conversion tracking are live (PR #135). The remaining work is reading a meaningful settled sample — not adding more instrumentation or acting on same-day counts. |
+| 6 | `PILOT-001` | FROZEN | Evaluate Journey Choice and Fare Watcher / Standout Fare. | MAN→ISB remains the sole Journey Choice route and sole public Standout Fare pilot. Do not expand, add UI or change thresholds until real traffic evidence supports a founder decision. |
+| 7 | `HOTEL-001` | COMPLETE, FROZEN | Hotel Intelligence expansion. | Shipped across 10 destinations with 29 exact-property Trip.com handoffs (PR #136, 15 August 2026). Do not add an 11th destination without customer-usage evidence and a new founder decision. |
 
 `RIS-001` (Route Intelligence Scoring v2) shipped 6 August 2026 — see `COMPLETED.md`. **Fare Coverage
 Expansion sequencing (agreed 6 August 2026, after Batch A's audit, completed the same week):** Batch A
 → Route Intelligence Scoring v2 (`RIS-001`) → Batch B. All three stages are now done, merged and
 verified in production.
 
-**Post-Batch-B sequencing decision (6 August 2026, founder-reviewed after PR #78's pre-merge truth
+**Historical Post-Batch-B sequencing decision (6 August 2026, founder-reviewed after PR #78's pre-merge truth
 audit): Batch C is deliberately not the next task.** With the fare database no longer empty (23 of 32
 routes publishable, 22 of 32 customer-visible **at the time of this decision** — the catalogue has
-since grown to 88 routes; see `FARE-001` above for the current 16 August 2026 reconciled counts),
+since grown to 88 routes; see `FARE-001` above for the current state),
 the open question changes from "is there any fare evidence" to "are the strongest routes genuinely
 the best travel-intelligence pages." Agreed order:
 
@@ -39,6 +45,9 @@ the best travel-intelligence pages." Agreed order:
    `connectingAlternative`/airline-verification/baggage depth to routes Batch B left at exactly one
    category, and closing the known gaps above, against a further pure fare-collection round —
    decided against real usage data from step 1, not assumed.
+
+This three-step note is preserved as the decision that governed the August expansion; it is not the
+current queue. Fare collection subsequently advanced to the 27 August counts in `FARE-001` above.
 
 ## Product-development roadmap
 
@@ -71,6 +80,11 @@ defensible asset is the longitudinal data. Never turn it into unsupported price 
 
 Expand from a route guide into a trusted briefing that can eventually support the pre-booking,
 pre-travel, in-journey and after-arrival lifecycle. Build one evidence-backed layer at a time.
+
+**Current experiment:** Journey Choice is live only on Manchester–Islamabad, with measurement and a
+dated Trip.com handoff. It remains a one-route evidence phase. The founder has frozen further
+Journey Choice work until meaningful traffic exists; do not interpret the longer-term paragraph
+above as authority to start a second route now.
 
 **Note (29 July 2026):** the public homepage's discovery/browse surface for this idea is now the
 Route Atlas (`components/founder/atlas-feel-test.tsx`, wired into `journey-desk-home.tsx`), not the
