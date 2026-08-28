@@ -18,13 +18,42 @@ export const airportNotes: AirportPracticalNote[] = [
   { id: 'man-terminal-2', airportSlug: 'manchester', title: 'Terminal 2 handles most long-haul South Asia and Gulf routes', body: 'PIA, Emirates and Qatar Airways operate primarily from Terminal 2. Confirm your terminal at booking, since Terminal 1 and 3 serve different carriers and a wrong assumption costs real time on departure day.' },
   { id: 'man-pia-checkin', airportSlug: 'manchester', title: 'Allow 3 hours for PIA departures specifically', body: 'PIA check-in for Lahore and Islamabad routes is consistently busier than scheduled-carrier norms, particularly around Eid and wedding season. Arriving at the standard 2.5-hour mark has caused missed flights during peak weeks.' },
   { id: 'man-metrolink', airportSlug: 'manchester', title: 'The Metrolink tram link removes the parking cost entirely', body: 'For Manchester, Salford, Bury, Rochdale and Altrincham-based travellers, the direct tram connection to the airport is often cheaper and less stressful than even pre-booked parking, particularly for trips longer than a week.' },
-  { id: 'bhx-gulf-connections', airportSlug: 'birmingham', title: 'Most, but not all, South Asia routes connect via the Gulf', body: "Birmingham has direct Air India service to Amritsar, but most of its other India and Pakistan routes are one-stop via Dubai, Doha or Sharjah. Check whether your specific destination has a direct option before assuming a connection is required, and factor the connection time into family travel plans if it isn't." },
+  // Freshness verification batch (28 Aug 2026): was "Birmingham has direct
+  // Air India service to Amritsar" — contradicted by data/routes.ts's own
+  // verified evidence (birmingham-amritsar is isDirect: false, a
+  // connection-based route). None of Birmingham's India/Pakistan routes are
+  // currently confirmed direct: Lahore, Islamabad, Mumbai, Delhi and
+  // Amritsar are all isDirect: false, and Ahmedabad — the one isDirect:
+  // true record — is itself verification.status: 'unverified' with a
+  // genuine, unresolved contradiction in Air India's own source (see
+  // birmingham-ahmedabad's own note). Reworded to state only what's
+  // supported and point to each route guide rather than name a specific
+  // "direct" exception the evidence doesn't currently back.
+  { id: 'bhx-gulf-connections', airportSlug: 'birmingham', title: 'Birmingham South Asia routes are generally connection-based', body: "Most of Birmingham's current India and Pakistan routes are one-stop via Dubai, Doha or Sharjah rather than direct. Check the specific route guide for your destination before assuming either a direct or connecting service, and factor the connection time into family travel plans if a connection is confirmed." },
   { id: 'bhx-train-station', airportSlug: 'birmingham', title: "The airport's own train station cuts journey time from central Birmingham to under 15 minutes", body: 'Birmingham International station sits directly at the terminal. For travellers coming from the city centre this is consistently faster and cheaper than driving and parking.' },
   { id: 'lhr-terminal-confirm', airportSlug: 'london-heathrow', title: 'Terminal assignment varies by airline, so always confirm', body: 'British Airways, Virgin Atlantic and Air India each operate from different terminals at Heathrow. A terminal mix-up here costs considerably more time than at a smaller regional airport, given Heathrow\'s scale.' },
   { id: 'lhr-terminal-4', airportSlug: 'london-heathrow', title: 'Allow extra time for Terminal 4, where most Gulf and Indian carriers operate', body: 'Terminal 4 has historically had longer security queues during peak summer and Diwali-season travel than Heathrow\'s other terminals.' },
   { id: 'lhr-rail-links', airportSlug: 'london-heathrow', title: 'Heathrow Express and the Elizabeth line both connect from central London in under 20 minutes', body: 'For travellers without a car, this consistently beats taxi cost and traffic-dependent journey times, especially during rush hour.' },
-  { id: 'lgw-south-terminal', airportSlug: 'london-gatwick', title: 'South Terminal handles the long-haul Gulf and India routes', body: 'Emirates, Qatar Airways and Air India all operate from the South Terminal. Confirm this rather than defaulting to North Terminal, which is mostly short-haul and charter.' },
-  { id: 'lgw-reduced-frequency', airportSlug: 'london-gatwick', title: 'The Ahmedabad and Amritsar services run 3 times a week, not daily', body: 'Unlike the daily Gulf routes, both Air India South Asia services from Gatwick run on a reduced weekly schedule. Confirm your travel dates align with an active flight day before booking.' },
+  // Freshness verification batch (28 Aug 2026): was "Emirates, Qatar
+  // Airways and Air India all operate from the South Terminal" —
+  // cross-checked against multiple current airport-terminal-guide sources
+  // (not a single canonical primary source; treat as PARTIALLY VERIFIED),
+  // which consistently place Emirates and Qatar Airways at Gatwick's North
+  // Terminal, with only Air India in the South Terminal. Corrected; kept
+  // the underlying "don't assume the wrong terminal" warning, which is the
+  // genuinely useful, evergreen part of the note.
+  { id: 'lgw-south-terminal', airportSlug: 'london-gatwick', title: 'Confirm your terminal — Gatwick\'s Gulf and India carriers are split', body: 'Air India operates from the South Terminal, while Emirates and Qatar Airways operate from the North Terminal. Airlines can move terminals without much notice, so check your specific booking rather than assuming.' },
+  // Freshness verification batch (28 Aug 2026): was "run 3 times a week,
+  // not daily" for both Ahmedabad and Amritsar — overclaimed certainty
+  // neither route's own verified evidence supports. london-gatwick-
+  // ahmedabad is verification.status: 'unverified', with a genuine,
+  // unresolved conflict in Air India's own sources over whether it even
+  // flies from Gatwick currently (see that route's own note,
+  // reviewDueDate 2026-09-01). london-gatwick-amritsar IS confirmed direct
+  // and verified, but its own frequency field deliberately says "exact
+  // operating days vary" rather than a specific weekly count. Reframed to
+  // match what each route guide actually supports.
+  { id: 'lgw-reduced-frequency', airportSlug: 'london-gatwick', title: 'Confirm the current status of Gatwick\'s Gujarat and Punjab services', body: 'Air India\'s Gatwick–Amritsar service is confirmed direct but does not run daily — check operating days before booking. Its Gatwick–Ahmedabad service currently has a genuine, unresolved conflict over which London airport it actually uses; confirm the departure airport directly with Air India before assuming either Gatwick or Heathrow.' },
   { id: 'lgw-express', airportSlug: 'london-gatwick', title: 'The Gatwick Express from Victoria is the fastest non-car option', body: 'A reliable 30-minute journey that avoids the variability of the M23 during peak travel periods.' },
   { id: 'ema-short-haul-only', airportSlug: 'birmingham-east-midlands', title: 'Best treated as a short-haul and charter airport for this audience', body: 'Its real value for South Asia and Gulf-focused travellers is Mediterranean leisure travel, not the long-haul routes. Always price-compare Birmingham and Manchester before booking a connecting itinerary from here.' },
   { id: 'lba-verify-direct-claims', airportSlug: 'leeds-bradford', title: "Verify any direct service claim before booking, and don't assume one exists", body: 'Direct Leeds Bradford to Pakistan services have been announced and then failed to materialise more than once. Confirm directly with the airline\'s own booking system that a specific flight number and date genuinely exists before committing.' },

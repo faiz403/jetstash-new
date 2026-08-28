@@ -153,7 +153,16 @@ export const destinations: Destination[] = [
     description:
       'Amritsar is centred on the Harmandir Sahib, the Golden Temple, and is a destination for Punjabi family, heritage and religious travel. Check the exact airport and service for your dates before booking.',
     bestFor: ['Pilgrimage', 'Family visits', 'Heritage travel'],
-    flightTimeFromUK: '9h direct from Birmingham',
+    // Freshness verification batch (28 Aug 2026): was "9h direct from
+    // Birmingham" — contradicted by data/routes.ts's own verified evidence.
+    // Of Amritsar's four UK routes, only london-gatwick-amritsar is
+    // isDirect: true (verification.status: 'verified', re-checked 18 Aug
+    // 2026); birmingham-amritsar, leeds-bradford-amritsar and
+    // manchester-amritsar are all isDirect: false. Corrected to name the
+    // airport the route guide actually supports, and to match that route's
+    // own duration hedge ("Direct; check the live schedule for duration")
+    // rather than invent a precise figure route.ts itself declines to give.
+    flightTimeFromUK: 'Direct from London Gatwick; check the live schedule for exact duration',
     ukAirports: ['birmingham', 'london-gatwick', 'manchester'],
     visaNote: 'e-Visa required for UK passport holders, apply at least 4 days before travel.',
     familyVisitContent: {
@@ -162,7 +171,7 @@ export const destinations: Destination[] = [
       documentNote:
         'OCI cardholders do not require a separate visa; other UK passport holders need the standard e-Visa, applied for at least 4 days ahead.',
       packingNote:
-        'Air India\'s direct Amritsar services run at reduced midweek frequency rather than daily, so confirm specific flight days before assuming a non-stop option exists on your preferred date.',
+        'Air India\'s direct Amritsar service (London Gatwick) does not operate daily, so confirm specific flight days before assuming a non-stop option exists on your preferred date — and check whether a Birmingham, Leeds Bradford or Manchester departure would mean a connecting itinerary instead.',
       peakPeriodIds: ['baisakhi', 'diwali', 'uk-summer-holidays'],
     },
   },
@@ -184,8 +193,17 @@ export const destinations: Destination[] = [
         'Most UK Gujarati family travel to Ahmedabad is timed around Navratri and Diwali, both major festival periods in the Gujarati and wider Hindu calendars. Trips often stretch to cover the festival and a longer family stay together.',
       documentNote:
         'OCI cardholders do not require a separate visa. Other UK passport holders need the standard e-Visa, applied for at least 4 days ahead; sort it alongside the flights rather than leaving it until closer to departure.',
+      // Freshness verification batch (28 Aug 2026): was "runs 3 times a
+      // week, not daily" — the london-gatwick-ahmedabad route itself is
+      // verification.status: 'unverified' with a genuine, currently
+      // unresolved conflict in Air India's own current sources over
+      // whether this service even flies from Gatwick or Heathrow (see
+      // data/routes.ts's own note, reviewDueDate 2026-09-01). Asserting a
+      // specific weekly frequency here overclaimed certainty the route's
+      // own record doesn't have. Reframed to match that route's own
+      // language rather than restate a number.
       packingNote:
-        'Air India\'s direct Gatwick service runs 3 times a week, not daily. Confirm your travel dates fall on an active flight day before booking, and price a Mumbai or Delhi-connecting fallback for the days in between.',
+        'Air India\'s Ahmedabad service currently has a genuine, unresolved conflict over which London airport it uses (Gatwick or Heathrow) — confirm the actual departure airport and flight day directly with Air India before booking, and price a Mumbai or Delhi-connecting fallback as a backup.',
       peakPeriodIds: ['navratri', 'diwali', 'uk-summer-holidays'],
     },
   },

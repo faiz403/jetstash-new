@@ -673,7 +673,12 @@ describe('Cross-surface leakage fix — airport-scoped notes no longer render as
   it('Birmingham\'s airport-note text (Gulf-connections and train-station notes) does not render on birmingham-mumbai', async () => {
     const element = await RoutePage({ params: Promise.resolve({ slug: 'birmingham-mumbai' }) });
     const text = collectStrings(element).join(' ');
-    expect(text).not.toMatch(/South Asia routes connect via the Gulf/i);
+    // Freshness verification batch (28 Aug 2026): airport-notes.ts's
+    // bhx-gulf-connections wording was corrected (the old "direct Air
+    // India service to Amritsar" claim was contradicted by
+    // birmingham-amritsar's own isDirect: false) — this leakage test now
+    // anchors on the corrected phrase, same leakage intent unchanged.
+    expect(text).not.toMatch(/South Asia routes are generally connection-based/i);
     expect(text).not.toMatch(/direct Air India service to Amritsar/i);
     expect(text).not.toMatch(/Dubai, Doha or Sharjah/i);
     expect(text).not.toMatch(/under 15 minutes/i);
@@ -690,7 +695,7 @@ describe('Cross-surface leakage fix — airport-scoped notes no longer render as
   it('the same Birmingham notes still render in full on the Birmingham airport page itself', async () => {
     const element = await AirportPage({ params: Promise.resolve({ slug: 'birmingham' }) });
     const text = collectStrings(element).join(' ');
-    expect(text).toMatch(/South Asia routes connect via the Gulf/i);
+    expect(text).toMatch(/South Asia routes are generally connection-based/i);
     expect(text).toMatch(/under 15 minutes/i);
   });
 
