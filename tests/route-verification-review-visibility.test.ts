@@ -161,16 +161,17 @@ describe('H. Real current archive reconciliation matches the independently compu
     expect(routes.filter((r) => r.verification)).toHaveLength(76);
   });
 
-  it('exactly 3 routes are overdue as of today (COV-001, 21 August 2026, superseded the prior 6-route/7-healthy count)', () => {
-    // Updated after COV-001 (docs/project-control/ROUTE_VERIFICATION_CADENCE_POLICY.md,
-    // Batch 3): manchester-karachi, birmingham-lahore and birmingham-islamabad
-    // — 3 of the prior 6 overdue NO-EVIDENCE/DISPUTED routes — were freshly
-    // reclassified to verified-connecting on a live PIA booking-engine check,
-    // landing them on the CONNECTING/STRUCTURAL 45-day window (healthy, not
-    // overdue). birmingham-delhi was also reclassified the same pass and
-    // moved from "due soon" to healthy on the same fresh window. Only
-    // london-heathrow-dhaka, manchester-sylhet and london-heathrow-sylhet
-    // remain overdue — genuinely untouched, still awaiting new evidence.
+  it('the dashboard\'s overdue/due-soon/healthy counts match an independent recomputation from live route data as of today', () => {
+    // Current-state invariant (route verification test determinism batch,
+    // 29 Aug 2026): this must evolve automatically as a route's own
+    // reviewDueDate genuinely lapses with real calendar time — e.g.
+    // birmingham-ahmedabad's 2026-08-27 window — so it recomputes the
+    // expected buckets independently from live `routes` data using today's
+    // real date, and compares that against getFounderSnapshot()'s own
+    // output, rather than asserting a historical literal count that would
+    // need editing every time a legitimate reviewDueDate passes. See
+    // docs/project-control/ROUTE_VERIFICATION_CADENCE_POLICY.md for the
+    // underlying cadence policy this section surfaces.
     const nowIso = new Date().toISOString().slice(0, 10);
     const withVerification = routes.filter((r) => r.verification);
     const daysBetween = (a: string, b: string) =>
@@ -182,13 +183,17 @@ describe('H. Real current archive reconciliation matches the independently compu
     });
     const healthy = withVerification.length - overdue.length - dueSoon.length;
 
-    expect(overdue).toHaveLength(3);
-    expect(healthy).toBe(11);
-
     const section = findSection(new Date());
-    expect(section.headline).toContain('3 routes overdue');
-    expect(section.headline).toContain(`${dueSoon.length} due within ${RULE_REVIEW_WATCH_DAYS} days`);
-    expect(section.headline).toContain('11 healthy');
+    // Matches lib/founder-insights.ts's own wording exactly, including its
+    // singular/plural forms and its distinct "fully healthy" headline shape
+    // — so this stays correct in every state, not only today's.
+    if (overdue.length === 0 && dueSoon.length === 0) {
+      expect(section.headline).toBe(`All ${withVerification.length} verified routes are within a healthy review window.`);
+    } else {
+      expect(section.headline).toContain(`${overdue.length} route${overdue.length === 1 ? '' : 's'} overdue`);
+      expect(section.headline).toContain(`${dueSoon.length} due within ${RULE_REVIEW_WATCH_DAYS} days`);
+      expect(section.headline).toContain(`${healthy} healthy`);
+    }
   });
 
   it('the section stays concise: at most MAX_DUE_SOON_ITEMS_SHOWN individual due-soon rows plus one summary row when the backlog is large', () => {

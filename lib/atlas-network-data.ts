@@ -11,7 +11,14 @@ import { travellerTips } from '@/data/traveller-tips';
 import { deals, hasTrackedFare } from '@/data/deals';
 import type { AirportNetworkData, CountryData, DestinationPoint, RouteIntelligenceLevel, CountryIntelligenceLevel } from '@/components/founder/atlas-feel-test';
 
-const nowIso = new Date().toISOString().slice(0, 10);
+// Read once at module load, not per call — a long-lived server process must
+// keep this fixed for its lifetime rather than rolling over at midnight
+// mid-process. buildAtlasAirports() below exposes this as an overridable
+// default parameter purely as a test-determinism seam; production callers
+// must never pass an explicit value, so this exact module-load semantics is
+// preserved unchanged. See the route verification test determinism batch,
+// 29 Aug 2026.
+const defaultNowIso = new Date().toISOString().slice(0, 10);
 
 /**
  * Route Coverage Truth (August 2026) — the honest, three-level answer to
@@ -153,7 +160,7 @@ export function computeRouteIntelligenceLevel(route: NonNullable<ReturnType<type
   return 'strong';
 }
 
-function buildDestinationPoint(airportSlug: string, destSlug: string, x: number, y: number): DestinationPoint | null {
+function buildDestinationPoint(airportSlug: string, destSlug: string, x: number, y: number, nowIso: string): DestinationPoint | null {
   const dest = getDestinationBySlug(destSlug);
   const route = getRouteBySlug(`${airportSlug}-${destSlug}`);
   if (!dest || !route) return null;
@@ -371,27 +378,27 @@ export function aggregateCountryIntelligence(points: DestinationPoint[]): Countr
 // Nothing about this function's SHAPE is Manchester-specific either — only
 // the coordinates and route slugs inside it are, because those are this
 // airport's own real, audited network.
-function buildManchesterNetwork(): AirportNetworkData {
+function buildManchesterNetwork(nowIso: string): AirportNetworkData {
   // Manchester Airport: 53.365Â°N, 2.275Â°W. The vertical ordering here is
   // intentionally geographic: Scottish airports sit above Newcastle, Leeds
   // and Manchester, with the Midlands and London further south.
   const origin = { x: 471.2, y: 286.4 };
 
   const indiaPoints = [
-    buildDestinationPoint('manchester', 'mumbai', 690, 414), // west coast, lower-middle
-    buildDestinationPoint('manchester', 'delhi', 701, 388), // north, near top
-    buildDestinationPoint('manchester', 'amritsar', 695, 380), // far north
-    buildDestinationPoint('manchester', 'ahmedabad', 690, 403), // west, mid-latitude
+    buildDestinationPoint('manchester', 'mumbai', 690, 414, nowIso), // west coast, lower-middle
+    buildDestinationPoint('manchester', 'delhi', 701, 388, nowIso), // north, near top
+    buildDestinationPoint('manchester', 'amritsar', 695, 380, nowIso), // far north
+    buildDestinationPoint('manchester', 'ahmedabad', 690, 403, nowIso), // west, mid-latitude
   ].filter((p): p is DestinationPoint => p !== null);
 
   const uaePoints = [
-    buildDestinationPoint('manchester', 'dubai', 630, 391), // NE Gulf coast, near Strait of Hormuz
+    buildDestinationPoint('manchester', 'dubai', 630, 391, nowIso), // NE Gulf coast, near Strait of Hormuz
   ].filter((p): p is DestinationPoint => p !== null);
 
   const pakistanPoints = [
-    buildDestinationPoint('manchester', 'lahore', 690.58, 356.42),
-    buildDestinationPoint('manchester', 'islamabad', 689.74, 355.52),
-    buildDestinationPoint('manchester', 'karachi', 686.32, 360),
+    buildDestinationPoint('manchester', 'lahore', 690.58, 356.42, nowIso),
+    buildDestinationPoint('manchester', 'islamabad', 689.74, 355.52, nowIso),
+    buildDestinationPoint('manchester', 'karachi', 686.32, 360, nowIso),
   ].filter((p): p is DestinationPoint => p !== null);
 
   const bangladeshPoints = [
@@ -402,17 +409,17 @@ function buildManchesterNetwork(): AirportNetworkData {
     // (lib/atlas-country-geometry.ts, 728.17/394.60) - both land within a
     // few px of that independently-computed centroid, the same margin the
     // Bengaluru regression already validated against.
-    buildDestinationPoint('manchester', 'dhaka', 732.3, 401.2),
-    buildDestinationPoint('manchester', 'sylhet', 735.75, 398.25),
+    buildDestinationPoint('manchester', 'dhaka', 732.3, 401.2, nowIso),
+    buildDestinationPoint('manchester', 'sylhet', 735.75, 398.25, nowIso),
   ].filter((p): p is DestinationPoint => p !== null);
 
   const qatarPoints = [
-    buildDestinationPoint('manchester', 'doha', 619.44, 389.82),
+    buildDestinationPoint('manchester', 'doha', 619.44, 389.82, nowIso),
   ].filter((p): p is DestinationPoint => p !== null);
 
   const saudiPoints = [
-    buildDestinationPoint('manchester', 'jeddah', 584.88, 400.03),
-    buildDestinationPoint('manchester', 'madinah', 586.05, 391.24),
+    buildDestinationPoint('manchester', 'jeddah', 584.88, 400.03, nowIso),
+    buildDestinationPoint('manchester', 'madinah', 586.05, 391.24, nowIso),
   ].filter((p): p is DestinationPoint => p !== null);
 
   // Route Intelligence Completion (August 2026): Turkey, Morocco (excl.
@@ -428,32 +435,32 @@ function buildManchesterNetwork(): AirportNetworkData {
   // computeRouteIntelligenceLevel was built to report honestly, just never
   // wired in here after the route guides shipped.
   const turkeyPoints = [
-    buildDestinationPoint('manchester', 'istanbul', 557.16, 337.18),
-    buildDestinationPoint('manchester', 'antalya', 561.92, 351.8),
-    buildDestinationPoint('manchester', 'dalaman', 556.64, 352.48),
-    buildDestinationPoint('manchester', 'bodrum', 552.9, 351.34),
-    buildDestinationPoint('manchester', 'izmir', 552.1, 346.39),
+    buildDestinationPoint('manchester', 'istanbul', 557.16, 337.18, nowIso),
+    buildDestinationPoint('manchester', 'antalya', 561.92, 351.8, nowIso),
+    buildDestinationPoint('manchester', 'dalaman', 556.64, 352.48, nowIso),
+    buildDestinationPoint('manchester', 'bodrum', 552.9, 351.34, nowIso),
+    buildDestinationPoint('manchester', 'izmir', 552.1, 346.39, nowIso),
   ].filter((p): p is DestinationPoint => p !== null);
 
   const moroccoPoints = [
-    buildDestinationPoint('manchester', 'marrakech', 452.46, 369.56),
-    buildDestinationPoint('manchester', 'agadir', 447.94, 373.58),
+    buildDestinationPoint('manchester', 'marrakech', 452.46, 369.56, nowIso),
+    buildDestinationPoint('manchester', 'agadir', 447.94, 373.58, nowIso),
   ].filter((p): p is DestinationPoint => p !== null);
 
   const spainPoints = [
-    buildDestinationPoint('manchester', 'barcelona', 480.8, 336.16),
+    buildDestinationPoint('manchester', 'barcelona', 480.8, 336.16, nowIso),
   ].filter((p): p is DestinationPoint => p !== null);
 
   const portugalPoints = [
-    buildDestinationPoint('manchester', 'faro', 452.66, 351.2),
+    buildDestinationPoint('manchester', 'faro', 452.66, 351.2, nowIso),
   ].filter((p): p is DestinationPoint => p !== null);
 
   const greecePoints = [
-    buildDestinationPoint('manchester', 'athens', 542.34, 348.05),
+    buildDestinationPoint('manchester', 'athens', 542.34, 348.05, nowIso),
   ].filter((p): p is DestinationPoint => p !== null);
 
   const italyPoints = [
-    buildDestinationPoint('manchester', 'rome', 510, 330.8),
+    buildDestinationPoint('manchester', 'rome', 510, 330.8, nowIso),
   ].filter((p): p is DestinationPoint => p !== null);
 
   const countries: CountryData[] = [
@@ -559,7 +566,7 @@ function buildManchesterNetwork(): AirportNetworkData {
  * already established elsewhere in this file. Only the origin (Birmingham
  * Airport's own real position) is airport-specific.
  */
-function buildBirminghamNetwork(): AirportNetworkData {
+function buildBirminghamNetwork(nowIso: string): AirportNetworkData {
   // Birmingham Airport (BHX): 52.4539Â°N, 1.7480Â°W — standard, publicly
   // known airport coordinates. Projected with the same method and the same
   // implied UK reference extent as Manchester's origin, verified against the
@@ -568,20 +575,20 @@ function buildBirminghamNetwork(): AirportNetworkData {
   const origin = { x: 474.0, y: 292.2 };
 
   const indiaPoints = [
-    buildDestinationPoint('birmingham', 'mumbai', 690, 414),
-    buildDestinationPoint('birmingham', 'amritsar', 695, 380),
+    buildDestinationPoint('birmingham', 'mumbai', 690, 414, nowIso),
+    buildDestinationPoint('birmingham', 'amritsar', 695, 380, nowIso),
     // Delhi and Ahmedabad added in the Final Route-Guide Completion
     // batch's second evidence pass (13 August 2026) — Delhi's Route
     // Intelligence deliberately reflects a genuine, disclosed evidence
     // conflict (see data/routes.ts's birmingham-delhi record) rather than
     // asserting a resolved direct/connecting answer.
-    buildDestinationPoint('birmingham', 'delhi', 701, 388),
-    buildDestinationPoint('birmingham', 'ahmedabad', 690, 403),
+    buildDestinationPoint('birmingham', 'delhi', 701, 388, nowIso),
+    buildDestinationPoint('birmingham', 'ahmedabad', 690, 403, nowIso),
   ].filter((p): p is DestinationPoint => p !== null);
 
   const pakistanPoints = [
-    buildDestinationPoint('birmingham', 'lahore', 690.58, 356.42),
-    buildDestinationPoint('birmingham', 'islamabad', 689.74, 355.52),
+    buildDestinationPoint('birmingham', 'lahore', 690.58, 356.42, nowIso),
+    buildDestinationPoint('birmingham', 'islamabad', 689.74, 355.52, nowIso),
   ].filter((p): p is DestinationPoint => p !== null);
 
   const uaePoints = [
@@ -590,49 +597,49 @@ function buildBirminghamNetwork(): AirportNetworkData {
     // Dubai destination page, confirmed via search-indexed content after
     // direct WebFetch to birminghamairport.co.uk returned 403 (see
     // data/routes.ts's birmingham-dubai record for the full evidence).
-    buildDestinationPoint('birmingham', 'dubai', 630, 391),
+    buildDestinationPoint('birmingham', 'dubai', 630, 391, nowIso),
   ].filter((p): p is DestinationPoint => p !== null);
 
   const qatarPoints = [
     // Birmingham–Doha added in the same second evidence pass — Birmingham
     // Airport's own "Qatar Airways Returns to Birmingham Airport" press
     // release.
-    buildDestinationPoint('birmingham', 'doha', 619.44, 389.82),
+    buildDestinationPoint('birmingham', 'doha', 619.44, 389.82, nowIso),
   ].filter((p): p is DestinationPoint => p !== null);
 
   const saudiPoints = [
-    buildDestinationPoint('birmingham', 'madinah', 586.05, 391.24),
+    buildDestinationPoint('birmingham', 'madinah', 586.05, 391.24, nowIso),
     // Jeddah added in the same second evidence pass — Birmingham Airport's
     // own "Saudia Launches Three-Times-A-Week Jeddah Service from BHX"
     // press release.
-    buildDestinationPoint('birmingham', 'jeddah', 584.88, 400.03),
+    buildDestinationPoint('birmingham', 'jeddah', 584.88, 400.03, nowIso),
   ].filter((p): p is DestinationPoint => p !== null);
 
   const turkeyPoints = [
-    buildDestinationPoint('birmingham', 'istanbul', 557.16, 337.18),
-    buildDestinationPoint('birmingham', 'antalya', 561.92, 351.8),
-    buildDestinationPoint('birmingham', 'dalaman', 556.64, 352.48),
-    buildDestinationPoint('birmingham', 'bodrum', 552.9, 351.34),
+    buildDestinationPoint('birmingham', 'istanbul', 557.16, 337.18, nowIso),
+    buildDestinationPoint('birmingham', 'antalya', 561.92, 351.8, nowIso),
+    buildDestinationPoint('birmingham', 'dalaman', 556.64, 352.48, nowIso),
+    buildDestinationPoint('birmingham', 'bodrum', 552.9, 351.34, nowIso),
   ].filter((p): p is DestinationPoint => p !== null);
 
   const moroccoPoints = [
-    buildDestinationPoint('birmingham', 'agadir', 447.94, 373.58),
+    buildDestinationPoint('birmingham', 'agadir', 447.94, 373.58, nowIso),
   ].filter((p): p is DestinationPoint => p !== null);
 
   const spainPoints = [
-    buildDestinationPoint('birmingham', 'barcelona', 480.8, 336.16),
+    buildDestinationPoint('birmingham', 'barcelona', 480.8, 336.16, nowIso),
   ].filter((p): p is DestinationPoint => p !== null);
 
   const portugalPoints = [
-    buildDestinationPoint('birmingham', 'faro', 452.66, 351.2),
+    buildDestinationPoint('birmingham', 'faro', 452.66, 351.2, nowIso),
   ].filter((p): p is DestinationPoint => p !== null);
 
   const greecePoints = [
-    buildDestinationPoint('birmingham', 'athens', 542.34, 348.05),
+    buildDestinationPoint('birmingham', 'athens', 542.34, 348.05, nowIso),
   ].filter((p): p is DestinationPoint => p !== null);
 
   const italyPoints = [
-    buildDestinationPoint('birmingham', 'rome', 510, 330.8),
+    buildDestinationPoint('birmingham', 'rome', 510, 330.8, nowIso),
   ].filter((p): p is DestinationPoint => p !== null);
 
   const countries: CountryData[] = [
@@ -687,7 +694,7 @@ function buildBirminghamNetwork(): AirportNetworkData {
  * evidence was found for either across both evidence passes (see
  * docs/project-control/ROUTE_COVERAGE.md), so neither is included.
  */
-function buildHeathrowNetwork(): AirportNetworkData {
+function buildHeathrowNetwork(nowIso: string): AirportNetworkData {
   // London Heathrow (LHR): 51.4700Â°N, 0.4543Â°W.
   const origin = { x: 476.6, y: 298.0 };
 
@@ -701,13 +708,13 @@ function buildHeathrowNetwork(): AirportNetworkData {
     // reference points before use. Bengaluru sits south of every other
     // plotted India destination (larger y), which matches its real
     // geography.
-    buildDestinationPoint('london-heathrow', 'bengaluru', 701.9, 430.6),
-    buildDestinationPoint('london-heathrow', 'delhi', 701, 388),
-    buildDestinationPoint('london-heathrow', 'mumbai', 690, 414),
+    buildDestinationPoint('london-heathrow', 'bengaluru', 701.9, 430.6, nowIso),
+    buildDestinationPoint('london-heathrow', 'delhi', 701, 388, nowIso),
+    buildDestinationPoint('london-heathrow', 'mumbai', 690, 414, nowIso),
   ].filter((p): p is DestinationPoint => p !== null);
 
   const pakistanPoints = [
-    buildDestinationPoint('london-heathrow', 'lahore', 690.58, 356.42),
+    buildDestinationPoint('london-heathrow', 'lahore', 690.58, 356.42, nowIso),
   ].filter((p): p is DestinationPoint => p !== null);
 
   const uaePoints = [
@@ -716,15 +723,15 @@ function buildHeathrowNetwork(): AirportNetworkData {
     // flight-tracking system indexes multiple current Emirates
     // Heathrow-Dubai flight-detail pages (see data/routes.ts's
     // london-heathrow-dubai record for the full evidence).
-    buildDestinationPoint('london-heathrow', 'dubai', 630, 391),
+    buildDestinationPoint('london-heathrow', 'dubai', 630, 391, nowIso),
   ].filter((p): p is DestinationPoint => p !== null);
 
   const qatarPoints = [
-    buildDestinationPoint('london-heathrow', 'doha', 619.44, 389.82),
+    buildDestinationPoint('london-heathrow', 'doha', 619.44, 389.82, nowIso),
   ].filter((p): p is DestinationPoint => p !== null);
 
   const saudiPoints = [
-    buildDestinationPoint('london-heathrow', 'jeddah', 584.88, 400.03),
+    buildDestinationPoint('london-heathrow', 'jeddah', 584.88, 400.03, nowIso),
   ].filter((p): p is DestinationPoint => p !== null);
 
   const bangladeshPoints = [
@@ -735,15 +742,15 @@ function buildHeathrowNetwork(): AirportNetworkData {
     // path data (lib/atlas-country-geometry.ts, 728.17/394.60) - the
     // independent methods land within a few px of each other, the same
     // margin the Bengaluru regression already validated against.
-    buildDestinationPoint('london-heathrow', 'dhaka', 732.3, 401.2),
-    buildDestinationPoint('london-heathrow', 'sylhet', 735.75, 398.25),
+    buildDestinationPoint('london-heathrow', 'dhaka', 732.3, 401.2, nowIso),
+    buildDestinationPoint('london-heathrow', 'sylhet', 735.75, 398.25, nowIso),
   ].filter((p): p is DestinationPoint => p !== null);
 
   // Casablanca 33.5731,-7.5898 -> x453.55,y363.10 — see the geometry
   // comment above buildManchesterNetwork for the exact regression this was
   // computed with (anchored on Marrakech/Agadir).
   const moroccoPoints = [
-    buildDestinationPoint('london-heathrow', 'casablanca', 453.55, 363.1),
+    buildDestinationPoint('london-heathrow', 'casablanca', 453.55, 363.1, nowIso),
   ].filter((p): p is DestinationPoint => p !== null);
 
   const countries: CountryData[] = [
@@ -775,49 +782,49 @@ function buildHeathrowNetwork(): AirportNetworkData {
  * verified via Gatwick's own destinations.html page ("Dubai, UAE... 7-8
  * hours flight time... Serviced by Emirates").
  */
-function buildGatwickNetwork(): AirportNetworkData {
+function buildGatwickNetwork(nowIso: string): AirportNetworkData {
   // London Gatwick (LGW): 51.1537Â°N, 0.1821Â°W.
   const origin = { x: 477.4, y: 300.0 };
 
   const indiaPoints = [
-    buildDestinationPoint('london-gatwick', 'ahmedabad', 690, 403),
-    buildDestinationPoint('london-gatwick', 'amritsar', 695, 380),
+    buildDestinationPoint('london-gatwick', 'ahmedabad', 690, 403, nowIso),
+    buildDestinationPoint('london-gatwick', 'amritsar', 695, 380, nowIso),
   ].filter((p): p is DestinationPoint => p !== null);
 
   const uaePoints = [
-    buildDestinationPoint('london-gatwick', 'dubai', 630, 391),
+    buildDestinationPoint('london-gatwick', 'dubai', 630, 391, nowIso),
   ].filter((p): p is DestinationPoint => p !== null);
 
   const turkeyPoints = [
-    buildDestinationPoint('london-gatwick', 'istanbul', 557.16, 337.18),
-    buildDestinationPoint('london-gatwick', 'antalya', 561.92, 351.8),
-    buildDestinationPoint('london-gatwick', 'dalaman', 556.64, 352.48),
-    buildDestinationPoint('london-gatwick', 'bodrum', 552.9, 351.34),
-    buildDestinationPoint('london-gatwick', 'izmir', 552.1, 346.39),
+    buildDestinationPoint('london-gatwick', 'istanbul', 557.16, 337.18, nowIso),
+    buildDestinationPoint('london-gatwick', 'antalya', 561.92, 351.8, nowIso),
+    buildDestinationPoint('london-gatwick', 'dalaman', 556.64, 352.48, nowIso),
+    buildDestinationPoint('london-gatwick', 'bodrum', 552.9, 351.34, nowIso),
+    buildDestinationPoint('london-gatwick', 'izmir', 552.1, 346.39, nowIso),
   ].filter((p): p is DestinationPoint => p !== null);
 
   // Tangier 35.7595,-5.834 -> x458.45,y355.84 — see the geometry comment
   // above buildManchesterNetwork for the regression this was computed with.
   const moroccoPoints = [
-    buildDestinationPoint('london-gatwick', 'marrakech', 452.46, 369.56),
-    buildDestinationPoint('london-gatwick', 'agadir', 447.94, 373.58),
-    buildDestinationPoint('london-gatwick', 'tangier', 458.45, 355.84),
+    buildDestinationPoint('london-gatwick', 'marrakech', 452.46, 369.56, nowIso),
+    buildDestinationPoint('london-gatwick', 'agadir', 447.94, 373.58, nowIso),
+    buildDestinationPoint('london-gatwick', 'tangier', 458.45, 355.84, nowIso),
   ].filter((p): p is DestinationPoint => p !== null);
 
   const spainPoints = [
-    buildDestinationPoint('london-gatwick', 'barcelona', 480.8, 336.16),
+    buildDestinationPoint('london-gatwick', 'barcelona', 480.8, 336.16, nowIso),
   ].filter((p): p is DestinationPoint => p !== null);
 
   const portugalPoints = [
-    buildDestinationPoint('london-gatwick', 'faro', 452.66, 351.2),
+    buildDestinationPoint('london-gatwick', 'faro', 452.66, 351.2, nowIso),
   ].filter((p): p is DestinationPoint => p !== null);
 
   const greecePoints = [
-    buildDestinationPoint('london-gatwick', 'athens', 542.34, 348.05),
+    buildDestinationPoint('london-gatwick', 'athens', 542.34, 348.05, nowIso),
   ].filter((p): p is DestinationPoint => p !== null);
 
   const italyPoints = [
-    buildDestinationPoint('london-gatwick', 'rome', 510, 330.8),
+    buildDestinationPoint('london-gatwick', 'rome', 510, 330.8, nowIso),
   ].filter((p): p is DestinationPoint => p !== null);
 
   const countries: CountryData[] = [
@@ -843,18 +850,18 @@ function buildGatwickNetwork(): AirportNetworkData {
  * had a genuine route guide with zero Atlas presence. Added below using the
  * same buildDestinationPoint mechanism as the original Dubai entry.
  */
-function buildGlasgowNetwork(): AirportNetworkData {
+function buildGlasgowNetwork(nowIso: string): AirportNetworkData {
   // Glasgow Airport (GLA): 55.8642Â°N, 4.4331Â°W.
   const origin = { x: 464.4, y: 273.2 };
 
   const uaePoints = [
-    buildDestinationPoint('glasgow', 'dubai', 630, 391),
+    buildDestinationPoint('glasgow', 'dubai', 630, 391, nowIso),
   ].filter((p): p is DestinationPoint => p !== null);
 
   const turkeyPoints = [
-    buildDestinationPoint('glasgow', 'antalya', 561.92, 351.8),
-    buildDestinationPoint('glasgow', 'dalaman', 556.64, 352.48),
-    buildDestinationPoint('glasgow', 'bodrum', 552.9, 351.34),
+    buildDestinationPoint('glasgow', 'antalya', 561.92, 351.8, nowIso),
+    buildDestinationPoint('glasgow', 'dalaman', 556.64, 352.48, nowIso),
+    buildDestinationPoint('glasgow', 'bodrum', 552.9, 351.34, nowIso),
   ].filter((p): p is DestinationPoint => p !== null);
 
   const countries: CountryData[] = [
@@ -866,12 +873,12 @@ function buildGlasgowNetwork(): AirportNetworkData {
 }
 
 /** Edinburgh — exactly one routes.ts entry (dubai), same shape as Glasgow. */
-function buildEdinburghNetwork(): AirportNetworkData {
+function buildEdinburghNetwork(nowIso: string): AirportNetworkData {
   // Edinburgh Airport (EDI): 55.9500Â°N, 3.3725Â°W.
   const origin = { x: 468.0, y: 274.4 };
 
   const uaePoints = [
-    buildDestinationPoint('edinburgh', 'dubai', 630, 391),
+    buildDestinationPoint('edinburgh', 'dubai', 630, 391, nowIso),
   ].filter((p): p is DestinationPoint => p !== null);
 
   const countries: CountryData[] = [
@@ -888,16 +895,16 @@ function buildEdinburghNetwork(): AirportNetworkData {
  * (12 August 2026) added one real data/routes.ts entry for Newcastle —
  * Dalaman, its only Turkey route — never wired into this function.
  */
-function buildNewcastleNetwork(): AirportNetworkData {
+function buildNewcastleNetwork(nowIso: string): AirportNetworkData {
   // Newcastle International Airport (NCL): 55.0375Â°N, 1.6917Â°W.
   const origin = { x: 473.7, y: 280.0 };
 
   const uaePoints = [
-    buildDestinationPoint('newcastle', 'dubai', 630, 391),
+    buildDestinationPoint('newcastle', 'dubai', 630, 391, nowIso),
   ].filter((p): p is DestinationPoint => p !== null);
 
   const turkeyPoints = [
-    buildDestinationPoint('newcastle', 'dalaman', 556.64, 352.48),
+    buildDestinationPoint('newcastle', 'dalaman', 556.64, 352.48, nowIso),
   ].filter((p): p is DestinationPoint => p !== null);
 
   const countries: CountryData[] = [
@@ -925,30 +932,30 @@ function buildNewcastleNetwork(): AirportNetworkData {
  * a genuine route guide with zero Atlas presence. Leeds Bradford has no
  * Morocco, Greece or Italy route.
  */
-function buildLeedsBradfordNetwork(): AirportNetworkData {
+function buildLeedsBradfordNetwork(nowIso: string): AirportNetworkData {
   // Leeds Bradford Airport (LBA): 53.8659Â°N, 1.6606Â°W.
   const origin = { x: 473.1, y: 287.6 };
 
   const indiaPoints = [
-    buildDestinationPoint('leeds-bradford', 'amritsar', 695, 380),
+    buildDestinationPoint('leeds-bradford', 'amritsar', 695, 380, nowIso),
   ].filter((p): p is DestinationPoint => p !== null);
 
   const pakistanPoints = [
-    buildDestinationPoint('leeds-bradford', 'islamabad', 689.74, 355.52),
+    buildDestinationPoint('leeds-bradford', 'islamabad', 689.74, 355.52, nowIso),
   ].filter((p): p is DestinationPoint => p !== null);
 
   const turkeyPoints = [
-    buildDestinationPoint('leeds-bradford', 'antalya', 561.92, 351.8),
-    buildDestinationPoint('leeds-bradford', 'dalaman', 556.64, 352.48),
-    buildDestinationPoint('leeds-bradford', 'bodrum', 552.9, 351.34),
+    buildDestinationPoint('leeds-bradford', 'antalya', 561.92, 351.8, nowIso),
+    buildDestinationPoint('leeds-bradford', 'dalaman', 556.64, 352.48, nowIso),
+    buildDestinationPoint('leeds-bradford', 'bodrum', 552.9, 351.34, nowIso),
   ].filter((p): p is DestinationPoint => p !== null);
 
   const spainPoints = [
-    buildDestinationPoint('leeds-bradford', 'barcelona', 480.8, 336.16),
+    buildDestinationPoint('leeds-bradford', 'barcelona', 480.8, 336.16, nowIso),
   ].filter((p): p is DestinationPoint => p !== null);
 
   const portugalPoints = [
-    buildDestinationPoint('leeds-bradford', 'faro', 452.66, 351.2),
+    buildDestinationPoint('leeds-bradford', 'faro', 452.66, 351.2, nowIso),
   ].filter((p): p is DestinationPoint => p !== null);
 
   const countries: CountryData[] = [
@@ -978,29 +985,29 @@ function buildLeedsBradfordNetwork(): AirportNetworkData {
  * or Casablanca route — Turkey appears via Antalya/Dalaman only, Morocco via
  * Marrakech only, and there is no Greece destination at all.
  */
-function buildBristolNetwork(): AirportNetworkData {
+function buildBristolNetwork(nowIso: string): AirportNetworkData {
   // Bristol Airport (BRS): 51.3827Â°N, 2.7191Â°W.
   const origin = { x: 465.9, y: 302.4 };
 
   const turkeyPoints = [
-    buildDestinationPoint('bristol', 'antalya', 561.92, 351.8),
-    buildDestinationPoint('bristol', 'dalaman', 556.64, 352.48),
+    buildDestinationPoint('bristol', 'antalya', 561.92, 351.8, nowIso),
+    buildDestinationPoint('bristol', 'dalaman', 556.64, 352.48, nowIso),
   ].filter((p): p is DestinationPoint => p !== null);
 
   const moroccoPoints = [
-    buildDestinationPoint('bristol', 'marrakech', 452.46, 369.56),
+    buildDestinationPoint('bristol', 'marrakech', 452.46, 369.56, nowIso),
   ].filter((p): p is DestinationPoint => p !== null);
 
   const spainPoints = [
-    buildDestinationPoint('bristol', 'barcelona', 480.8, 336.16),
+    buildDestinationPoint('bristol', 'barcelona', 480.8, 336.16, nowIso),
   ].filter((p): p is DestinationPoint => p !== null);
 
   const portugalPoints = [
-    buildDestinationPoint('bristol', 'faro', 452.66, 351.2),
+    buildDestinationPoint('bristol', 'faro', 452.66, 351.2, nowIso),
   ].filter((p): p is DestinationPoint => p !== null);
 
   const italyPoints = [
-    buildDestinationPoint('bristol', 'rome', 510, 330.8),
+    buildDestinationPoint('bristol', 'rome', 510, 330.8, nowIso),
   ].filter((p): p is DestinationPoint => p !== null);
 
   const countries: CountryData[] = [
@@ -1028,16 +1035,21 @@ function buildBristolNetwork(): AirportNetworkData {
 // Bristol gained real routes.ts entries the 2026-07-26 audit predates). An
 // Airport Pack with zero destinations isn't a smaller honest network, it's
 // nothing to render — flagged back rather than built empty.
-export function buildAtlasAirports(): AirportNetworkData[] {
+// Optional injection seam for deterministic tests only — production callers
+// (app/founder/atlas-feel-test/page.tsx, components/homepage-v2/journey-desk-home.tsx)
+// pass nothing and get the exact prior behaviour: the module-load-time date
+// above, never a fresh `new Date()` per call. Never pass an explicit value
+// from application code.
+export function buildAtlasAirports(nowIso: string = defaultNowIso): AirportNetworkData[] {
   return [
-    buildManchesterNetwork(),
-    buildBirminghamNetwork(),
-    buildHeathrowNetwork(),
-    buildGatwickNetwork(),
-    buildGlasgowNetwork(),
-    buildEdinburghNetwork(),
-    buildNewcastleNetwork(),
-    buildLeedsBradfordNetwork(),
-    buildBristolNetwork(),
+    buildManchesterNetwork(nowIso),
+    buildBirminghamNetwork(nowIso),
+    buildHeathrowNetwork(nowIso),
+    buildGatwickNetwork(nowIso),
+    buildGlasgowNetwork(nowIso),
+    buildEdinburghNetwork(nowIso),
+    buildNewcastleNetwork(nowIso),
+    buildLeedsBradfordNetwork(nowIso),
+    buildBristolNetwork(nowIso),
   ];
 }

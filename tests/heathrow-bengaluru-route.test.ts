@@ -280,7 +280,17 @@ describe('DEST-001 — Interactive Route Atlas integration', () => {
   });
 
   it('Route Coverage Truth fix (August 2026): Bengaluru\'s verified status now matches Delhi\'s and Mumbai\'s — all three show a confirmed "Direct service verified" verdict, never "pending", because computeRouteIntelligenceLevel()/buildDestinationPoint() route through getDisplayDirectness(), which checks per-airline `airlineVerifications` as well as the route-level `verification` field. This closes the pre-existing gap this test used to document (buildDestinationPoint() previously only checked route-level verification, quietly under-stating all three routes as "pending" despite each having a current, primary-sourced airline verification) — not a regression, a fix, and not special-cased to any one of the three routes.', () => {
-    const airports = buildAtlasAirports();
+    // Historical/business-rule invariant: this documents a specific past
+    // regression fix (per-airline verification now feeds the Atlas verdict,
+    // not just route-level verification) and the specific evidence state
+    // that proved it at the time — not today's live verification state.
+    // Frozen to this file's own existing FIXED_TODAY so it stays true
+    // regardless of a later, independent per-airline verification expiring
+    // (e.g. london-heathrow-delhi's British Airways verification, due
+    // 2026-08-28) — see the route verification test determinism batch, 29
+    // Aug 2026. That expiry is a real, separate, current-state fact; it
+    // does not retroactively change what this fix proved in July.
+    const airports = buildAtlasAirports(FIXED_TODAY);
     const heathrow = airports.find((a) => a.airportSlug === 'london-heathrow')!;
     const india = heathrow.countries.find((c) => c.slug === 'india')!;
     const bengaluru = india.destinations.find((d) => d.slug === 'bengaluru')!;

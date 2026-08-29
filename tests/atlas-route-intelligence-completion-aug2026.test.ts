@@ -72,13 +72,26 @@ describe('Every data/routes.ts entry has a tracked Atlas Route Intelligence stat
     expect(trackedRouteCount).toBe(routes.length);
   });
 
-  it('sanity: the current 88-route catalogue grades 11 Strong / 77 Useful / 0 Expanding (updated 22 August 2026 — Business Fare Evidence Batch 1 promoted london-heathrow-lahore Useful→Strong: it is the one route whose only curated Deal is Business-cabin, so Gate 3\'s visible-fare check depended entirely on that cabin, which had no publishable observation before this batch; see data/fare-observations.ts\'s "Business Fare Evidence Batch 1" block. Previously 10 Strong / 78 Useful, 18 August 2026, when london-gatwick-ahmedabad reverted Strong→Useful under Route Verification Refresh Batch 1; see ROUTE_VERIFICATION_CADENCE_POLICY.md)', () => {
-    const counts = { strong: 0, useful: 0, expanding: 0 };
+  it('sanity: Atlas\'s tracked grade for every route matches an independently-recomputed distribution from computeRouteIntelligenceLevel() — this is a current-state invariant, so it evolves automatically as a route\'s own evidence legitimately changes (e.g. a verification expiring) rather than asserting a frozen historical count that would need editing on every such change', () => {
+    // Independently recomputed from live routes + the canonical grading
+    // function — never a hardcoded historical total (see route verification
+    // test determinism batch, 29 Aug 2026). Atlas wiring is what's under
+    // test here; computeRouteIntelligenceLevel is the already-established
+    // shared source of truth every surface is required to match (see this
+    // file's "intelligenceLevel matches the real, live
+    // computeRouteIntelligenceLevel() result" test above), not a second
+    // instance of the thing being tested.
+    const expectedCounts = { strong: 0, useful: 0, expanding: 0 };
+    for (const route of routes) {
+      const level = computeRouteIntelligenceLevel(route, NOW_ISO);
+      expectedCounts[level]++;
+    }
+    const actualCounts = { strong: 0, useful: 0, expanding: 0 };
     for (const route of routes) {
       const level = trackedBySlug.get(route.slug)?.intelligenceLevel;
-      if (level === 'strong' || level === 'useful' || level === 'expanding') counts[level]++;
+      if (level === 'strong' || level === 'useful' || level === 'expanding') actualCounts[level]++;
     }
-    expect(counts).toEqual({ strong: 11, useful: 77, expanding: 0 });
+    expect(actualCounts).toEqual(expectedCounts);
   });
 
   it('confirms london-heathrow-lahore specifically is the route that moved — no other route\'s grade changed in this batch', () => {

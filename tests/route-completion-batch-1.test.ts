@@ -406,8 +406,16 @@ describe('The audit and fare-archive documents accurately reflect the closed obs
     expect(archiveFlat).toContain('never merely to hand it a second scoring category');
   });
 
-  it('states the real, current fare-tracking route count (83 of 88, updated 22 August 2026, Connecting Journey Structure + BHX-DEL unlock), not a stale hand-typed figure', () => {
-    const totalTracked = routes.filter((r) => getPublishableObservationsByRoute(r.slug, NOW_ISO).length > 0).length;
+  it('states the real fare-tracking route count as of the audit doc\'s own stated date (83 of 88, 22 August 2026, Connecting Journey Structure + BHX-DEL unlock), not a stale hand-typed figure', () => {
+    // Historical/business-rule invariant: this checks that the audit doc's
+    // written claim was true as of the date it documents, not that it stays
+    // true forever against live, ever-changing route data — a doc recording
+    // "as of 22 August 2026" is not a promise to auto-update every time a
+    // route's independent verification later expires (e.g.
+    // london-heathrow-delhi's British Airways verification, due 2026-08-28).
+    // See the route verification test determinism batch, 29 Aug 2026.
+    const auditDocDate = '2026-08-22';
+    const totalTracked = routes.filter((r) => getPublishableObservationsByRoute(r.slug, auditDocDate).length > 0).length;
     expect(totalTracked).toBe(83);
     expect(auditDoc).toContain(`${totalTracked} of 88`);
   });

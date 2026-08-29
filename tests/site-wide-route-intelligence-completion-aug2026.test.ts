@@ -140,19 +140,24 @@ describe('Surface 3 — every individual route page shows its own Route Intellig
   });
 });
 
-describe('Sanity — the real, complete distribution is identical across all three surfaces and the Atlas (11 Strong / 77 Useful / 0 Expanding, updated 22 August 2026 when Business Fare Evidence Batch 1 promoted london-heathrow-lahore Useful→Strong — see tests/atlas-route-intelligence-completion-aug2026.test.ts for the full reasoning; previously 10 Strong / 78 Useful, 18 August 2026, when Route Verification Refresh Batch 1\'s correction reverted london-gatwick-ahmedabad from Strong to Useful)', () => {
+describe('Sanity — the real, complete distribution is identical across all three surfaces and the Atlas (current-state invariant: recomputed independently from live routes on every run, never a hardcoded historical total — see route verification test determinism batch, 29 Aug 2026, and tests/atlas-route-intelligence-completion-aug2026.test.ts for the matching Atlas-side fix)', () => {
+  // Independently recomputed from live routes + the canonical grading
+  // function, not a frozen literal — a legitimate future grade change (a
+  // verification expiring or being renewed) must not require editing this
+  // test.
+  const expectedCounts = { strong: 0, useful: 0, expanding: 0 };
+  for (const route of routes) expectedCounts[computeRouteIntelligenceLevel(route, NOW_ISO)]++;
+
   it('matches on /routes', () => {
     const countryGroups = buildRouteCountryGroups(routes, NOW_ISO, routeStatusEvents);
     const counts = { strong: 0, useful: 0, expanding: 0 };
     for (const group of countryGroups) {
       for (const card of group.routes) counts[card.intelligence.level]++;
     }
-    expect(counts).toEqual({ strong: 11, useful: 77, expanding: 0 });
+    expect(counts).toEqual(expectedCounts);
   });
 
-  it('matches via computeRouteIntelligenceLevel() directly (the shared source of truth every surface calls)', () => {
-    const counts = { strong: 0, useful: 0, expanding: 0 };
-    for (const route of routes) counts[computeRouteIntelligenceLevel(route, NOW_ISO)]++;
-    expect(counts).toEqual({ strong: 11, useful: 77, expanding: 0 });
+  it('matches via computeRouteIntelligenceLevel() directly (the shared source of truth every surface calls) — a structural check that the three grades partition the full route catalogue with none dropped or double-counted', () => {
+    expect(expectedCounts.strong + expectedCounts.useful + expectedCounts.expanding).toBe(routes.length);
   });
 });

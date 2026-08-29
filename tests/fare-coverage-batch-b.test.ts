@@ -273,7 +273,7 @@ describe('Fare Coverage Expansion Batch B — RIS-001 mechanical grade changes',
   });
 
   it('Heathrow India is Strong when every destination has sufficient evidenced depth', () => {
-    const airports = buildAtlasAirports();
+    const airports = buildAtlasAirports(NOW_ISO);
     const heathrow = airports.find((a) => a.airportSlug === 'london-heathrow')!;
     const heathrowIndia = heathrow.countries.find((c) => c.slug === 'india')!;
     expect(heathrowIndia.intelligenceLevel).toBe('strong');
@@ -281,7 +281,7 @@ describe('Fare Coverage Expansion Batch B — RIS-001 mechanical grade changes',
   });
 
   it('Gatwick India was genuinely Strong on 6 August 2026 (both destinations individually Strong at the time) but reverted to Mixed on 18 August 2026 when london-gatwick-ahmedabad\'s verification state changed — the conservative aggregation rule (Strong only if every destination is Strong) correctly stops carrying it once one sibling is no longer Strong', () => {
-    const airports = buildAtlasAirports();
+    const airports = buildAtlasAirports(NOW_ISO);
     const gatwick = airports.find((a) => a.airportSlug === 'london-gatwick')!;
     const gatwickIndia = gatwick.countries.find((c) => c.slug === 'india')!;
     expect(gatwickIndia.intelligenceLevel).toBe('mixed');

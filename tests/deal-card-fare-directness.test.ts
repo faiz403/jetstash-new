@@ -66,10 +66,21 @@ describe('getDealFareDirectnessLabel — a route being direct never implies a sp
   });
 
   it('11 August full round-trip evidence upgrades the previously under-evidenced fares to Connecting', () => {
+    // Historical/business-rule invariant: this documents a specific past
+    // evidence event (the 11 August full round-trip observations), not
+    // today's live classification — so it uses a fixed reference date
+    // shortly after that event rather than the file's live NOW_ISO. Without
+    // this, the assertion silently rode on live route-verification state and
+    // broke when london-heathrow-delhi's unrelated British Airways
+    // verification later expired (28 Aug 2026) and made its fares
+    // temporarily unpublishable — a real, current, and correct production
+    // change that this historical fact should not be sensitive to. See the
+    // route verification test determinism batch, 29 Aug 2026.
+    const historicalNowIso = '2026-08-20';
     for (const id of ['lhr-del-economy', 'bhx-atq-economy']) {
       const deal = deals.find((d) => d.id === id)!;
       expect(deal, id).toBeDefined();
-      expect(getDealFareDirectnessLabel(deal, NOW_ISO), id).toBe('Connecting');
+      expect(getDealFareDirectnessLabel(deal, historicalNowIso), id).toBe('Connecting');
     }
   });
 

@@ -56,7 +56,7 @@ function dealsByObservationCount() {
 
 function renderDealLinks(dealId: string) {
   const deal = deals.find((d) => d.id === dealId)!;
-  const html = renderToStaticMarkup(DealCard({ deal }));
+  const html = renderToStaticMarkup(DealCard({ deal, nowIso: NOW_ISO }));
   const route = getRouteByAirportAndDestination(deal.fromAirportSlug, deal.toDestinationSlug)!;
   const routeHref = `/routes/${route.slug}`;
   const hasRouteGuideLink = html.includes(`href="${routeHref}"`);
@@ -115,7 +115,7 @@ describe('DealCard route-guide link — full blast-radius breakdown, scoped fix'
     for (const id of [...zero, ...one]) {
       const deal = deals.find((d) => d.id === id)!;
       const route = getRouteByAirportAndDestination(deal.fromAirportSlug, deal.toDestinationSlug)!;
-      const html = renderToStaticMarkup(DealCard({ deal }));
+      const html = renderToStaticMarkup(DealCard({ deal, nowIso: NOW_ISO }));
       expect(html, id).toContain(`href="/routes/${route.slug}"`);
     }
   });
