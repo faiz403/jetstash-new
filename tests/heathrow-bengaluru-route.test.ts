@@ -95,7 +95,14 @@ describe('DEST-001 — displays as direct, on real evidence only', () => {
     const vs = route.airlineVerifications!.find((v) => v.airlineSlug === 'virgin-atlantic');
     expect(ba).toBeDefined();
     expect(ba!.status).toBe('verified');
-    expect(ba!.sourceUrl).toBe('https://mediacentre.britishairways.com/pressrelease/details/24270');
+    // Route Verification (29 August 2026): sourceUrl now points at BA's
+    // later, corroborating 31 Mar 2026 press release, which independently
+    // reconfirmed the same "daily" claim as still current — a genuinely
+    // newer primary source, not a weakening of the evidence-quality bar
+    // this test enforces (see the "explicitly says daily" test below,
+    // which still passes against the same underlying 12 Nov 2025 wording,
+    // preserved verbatim in supportedClaim).
+    expect(ba!.sourceUrl).toBe('https://mediacentre.britishairways.com/pressrelease/details/25098');
     expect(vs).toBeDefined();
     expect(vs!.status).toBe('verified');
     expect(vs!.sourceUrl).toBe('https://www.virginatlantic.com/where-we-fly/asia/india/bengaluru');
