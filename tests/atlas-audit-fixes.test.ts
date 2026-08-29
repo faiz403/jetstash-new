@@ -79,7 +79,12 @@ describe('A. Manchester default route — stability', () => {
 
   it('3. Mumbai remains in Manchester\'s India network, unchanged, still selectable', () => {
     const indiaBlock = manchesterBuilderSrc.match(/const indiaPoints = \[([\s\S]*?)\]\.filter/)?.[1] ?? '';
-    expect(indiaBlock).toContain("buildDestinationPoint('manchester', 'mumbai', 690, 414)");
+    // Matches only the fixed x/y coordinates, not the exact closing
+    // arguments — the route verification test determinism batch (29 Aug
+    // 2026) added a required nowIso injection parameter to every
+    // buildDestinationPoint() call, which this test's own subject
+    // (unchanged coordinates) doesn't concern.
+    expect(indiaBlock).toContain("buildDestinationPoint('manchester', 'mumbai', 690, 414,");
   });
 
   it('3. Mumbai\'s honest withdrawal-status derivation logic is preserved (Route Coverage Truth, August 2026: now an additive serviceNotice, kept deliberately separate from intelligenceLevel rather than overriding it — see computeRouteIntelligenceLevel\'s own doc comment)', () => {

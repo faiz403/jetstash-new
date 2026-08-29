@@ -18,8 +18,11 @@ const cabinLabel: Record<DealCabin, string> = {
   Business: 'Business class',
 };
 
-export function DealCard({ deal }: { deal: Deal }) {
-  const nowIso = new Date().toISOString().slice(0, 10);
+export function DealCard({ deal, nowIso }: { deal: Deal; nowIso?: string }) {
+  // Optional injection seam for deterministic tests only — production
+  // callers pass nothing and get the exact prior behaviour (today's real
+  // date). Never pass an explicit value from application code.
+  const effectiveNowIso = nowIso ?? new Date().toISOString().slice(0, 10);
   const matchedRoute = getRouteByAirportAndDestination(deal.fromAirportSlug, deal.toDestinationSlug);
   // The only source of truth for what this card shows as a price: a real
   // logged range/check, or nothing at all — never a hardcoded figure that
@@ -27,11 +30,11 @@ export function DealCard({ deal }: { deal: Deal }) {
   // package/Umrah deal (isBundledProductDeal) — the archive logs flight-only
   // fares, which are not evidence for a bundled product's price; see
   // isBundledProductDeal's doc comment in data/deals.ts.
-  const range = matchedRoute && !isBundledProductDeal(deal) ? getFareRangeSummary(matchedRoute.slug, deal.cabin, nowIso) : null;
+  const range = matchedRoute && !isBundledProductDeal(deal) ? getFareRangeSummary(matchedRoute.slug, deal.cabin, effectiveNowIso) : null;
   // A duration belongs to a specific airport-to-destination route, never to
   // a destination in general. This presentation removes duration facts when
   // the route is unverified or the service has ended.
-  const presentation = matchedRoute ? getEffectiveRoutePresentation(matchedRoute, routeStatusEvents, nowIso) : undefined;
+  const presentation = matchedRoute ? getEffectiveRoutePresentation(matchedRoute, routeStatusEvents, effectiveNowIso) : undefined;
   // Never fall back to destination flight summaries: they can name a UK
   // airport other than the card's actual departure airport.
   const flightTime = presentation?.flightTime;
@@ -50,7 +53,7 @@ export function DealCard({ deal }: { deal: Deal }) {
   // getDealFareDirectnessLabel() is the one gate for that combination; see
   // its doc comment in data/deals.ts for the full resolution order. Never
   // use the route-only getDealDirectnessLabel() here directly. See TR-009.
-  const topBadge = deal.categoryTag ?? getDealFareDirectnessLabel(deal, nowIso);
+  const topBadge = deal.categoryTag ?? getDealFareDirectnessLabel(deal, effectiveNowIso);
   // Truth Reset (final correction): route directness and airline attribution
   // are separate claims — a verified-direct route never automatically
   // verifies the specific airline named on the card. `deal.airline` must
@@ -58,14 +61,14 @@ export function DealCard({ deal }: { deal: Deal }) {
   // via getDealAirlineLabel(), which returns undefined (nothing shown) with
   // no matching Route record, or 'Verification pending' when that exact
   // airline isn't currently verified on the matched route. See TR-010.
-  const airlineLabel = getDealAirlineLabel(deal, nowIso);
+  const airlineLabel = getDealAirlineLabel(deal, effectiveNowIso);
   const airlineFactLabel = airlineLabel === 'Verification pending'
     ? 'Airline: verification pending'
     : airlineLabel
       ? `Airline: ${airlineLabel}`
       : null;
   const routeFactLabel = directness ? `Route: ${directness}` : null;
-  const freshness = range ? getFareFreshnessState(daysBetweenIso(range.latestDate, nowIso)) : null;
+  const freshness = range ? getFareFreshnessState(daysBetweenIso(range.latestDate, effectiveNowIso)) : null;
   const isStale = freshness === 'stale';
   // The airline named by a Deal is separate curation data. Once a fare is
   // shown, its attribution must come only from the observation(s) that

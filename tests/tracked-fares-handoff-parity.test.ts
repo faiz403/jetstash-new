@@ -87,9 +87,23 @@ describe('Semantic parity: every current tracked-fare entry resolves identically
   });
 
   it('a genuine no-handoff route (London-origin, no aggregate broadening) correctly fails closed on both surfaces', () => {
-    const entry = allEntries.find((e) => e.routeSlug === 'london-heathrow-delhi');
-    expect(entry?.tripComUrl).toBeNull();
-    expect(routeGuideHandoffUrl('london-heathrow-delhi')).toBeNull();
+    // Current-state invariant: find a live example rather than hardcoding
+    // one route slug — a route that was a no-handoff example when this test
+    // was written (london-heathrow-delhi) can legitimately drop out of
+    // tracked-fares entirely once its own independent verification expires
+    // (see london-heathrow-delhi's British Airways verification, due
+    // 2026-08-28) and fails closed even harder than "tracked with no
+    // handoff". The property this test protects — a tracked London-origin
+    // entry with no aggregate-broadened handoff fails closed identically on
+    // both surfaces — still needs at least one live example to be
+    // meaningful. See the route verification test determinism batch, 29 Aug
+    // 2026.
+    const noHandoffEntry = allEntries.find(
+      (e) => e.tripComUrl === null && ['london-heathrow', 'london-gatwick'].includes(getRouteAirport(routes.find((r) => r.slug === e.routeSlug)!)!.slug)
+    );
+    expect(noHandoffEntry, 'expected at least one currently-tracked London-origin no-handoff entry to exist').toBeDefined();
+    expect(noHandoffEntry!.tripComUrl).toBeNull();
+    expect(routeGuideHandoffUrl(noHandoffEntry!.routeSlug)).toBeNull();
   });
 
   it('no handoff URL was broadened to a generic "LON" aggregate for any entry', () => {
@@ -99,22 +113,23 @@ describe('Semantic parity: every current tracked-fare entry resolves identically
   });
 });
 
-describe('Current-dataset reconciliation (documented evidence, not a hardcoded production rule)', () => {
-  it('83 current tracked fares: 61 with a verified handoff, 22 with the explicit unavailable state (updated 22 August 2026, Connecting Journey Structure + BHX-DEL unlock)', () => {
-    // Was 78/56/22 as of 18 August 2026. Fare Coverage Batch 1 (22 August)
-    // added four routes' first current Fare Signal (leeds-bradford-bodrum,
-    // manchester-karachi, birmingham-lahore, birmingham-islamabad) — all
-    // four already had a working Trip.com handoff before this batch, so
-    // the +4 total landed entirely on the with-handoff count (82/60/22).
-    // Connecting Journey Structure + BHX-DEL unlock (same day) then gave
-    // birmingham-delhi its own first current Fare Signal too — it already
-    // had a working Trip.com handoff, so this +1 also lands entirely on
-    // the with-handoff count (83/61/22).
+describe('Current-dataset reconciliation (current-state invariant: recomputed independently from live routes on every run, never a hardcoded historical total — see route verification test determinism batch, 29 Aug 2026)', () => {
+  it('every currently-tracked route (a real, current Fare Signal) appears exactly once, with the handoff/no-handoff split matching an independent recomputation', () => {
+    // Independently recomputed from live routes via getFareSignalForRoute()
+    // (the membership test) and routeGuideHandoffUrl() (the route guide's
+    // own ground-truth resolver, already defined above) — neither is the
+    // buildTrackedFareAirportGroups()/grouping logic actually under test
+    // here. A legitimate route-verification expiry or renewal changes this
+    // expectation automatically; it must never require editing this test.
+    const currentlyTrackedSlugs = routes.filter((r) => getFareSignalForRoute(r.slug, nowIso).state === 'current').map((r) => r.slug);
+    const expectedWithHandoff = currentlyTrackedSlugs.filter((slug) => routeGuideHandoffUrl(slug) !== null).length;
+    const expectedNoHandoff = currentlyTrackedSlugs.length - expectedWithHandoff;
+
     const airportGroups = buildTrackedFareAirportGroups(routes, undefined, nowIso);
     const allEntries = airportGroups.flatMap((g) => g.entries);
-    expect(allEntries).toHaveLength(83);
-    expect(allEntries.filter((e) => e.tripComUrl !== null)).toHaveLength(61);
-    expect(allEntries.filter((e) => e.tripComUrl === null)).toHaveLength(22);
+    expect(allEntries).toHaveLength(currentlyTrackedSlugs.length);
+    expect(allEntries.filter((e) => e.tripComUrl !== null)).toHaveLength(expectedWithHandoff);
+    expect(allEntries.filter((e) => e.tripComUrl === null)).toHaveLength(expectedNoHandoff);
   });
 
   // The exact 16 routes the audit named — asserted as regression evidence
@@ -135,10 +150,13 @@ describe('Current-dataset reconciliation (documented evidence, not a hardcoded p
     }
   });
 
-  it('all 22 remaining no-handoff routes are London Heathrow/Gatwick — the documented aggregate-search limitation, not a new gap', () => {
+  it('every remaining no-handoff route is London Heathrow/Gatwick — the documented aggregate-search limitation, not a new gap', () => {
+    // Structural invariant: the durable property is "no-handoff routes are
+    // always London-origin", not a specific count of them — that count
+    // moves as routes enter/leave current tracking, which is expected.
     const airportGroups = buildTrackedFareAirportGroups(routes, undefined, nowIso);
     const blocked = airportGroups.flatMap((g) => g.entries).filter((e) => e.tripComUrl === null);
-    expect(blocked).toHaveLength(22);
+    expect(blocked.length).toBeGreaterThan(0);
     for (const e of blocked) {
       const route = routes.find((r) => r.slug === e.routeSlug)!;
       const airport = getRouteAirport(route)!;

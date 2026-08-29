@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { routes } from '@/data/routes';
+import { routes, getRouteAirport, getRouteDestination } from '@/data/routes';
 import { getFareSignalForRoute } from '@/lib/fare-signal';
 import { getTripComFlightHandoffUrl, TRIPCOM_FRESH_SEARCH_NOTE } from '@/lib/booking-providers';
 import { buildTrackedFareAirportGroups } from '@/lib/tracked-fare-groups';
@@ -131,22 +131,27 @@ describe('5. resolver, URLs and handoff state are untouched', () => {
     expect(getTripComFlightHandoffUrl('manchester-barcelona', 'manchester', 'barcelona')).toContain('MAN-BCN');
   });
 
-  it('updated 22 August 2026 (Connecting Journey Structure + BHX-DEL unlock): 83 total, 61 with a verified handoff, 22 unavailable', () => {
-    // Was 78/56/22 as of 18 August 2026 (PR #141). Fare Coverage Batch 1
-    // added four routes' first current Fare Signal (leeds-bradford-bodrum,
-    // manchester-karachi, birmingham-lahore, birmingham-islamabad) — all
-    // four already had a working Trip.com handoff before this batch, which
-    // didn't touch Trip.com/affiliate logic at all, so the +4 total landed
-    // entirely on the with-handoff count (56->60), no-handoff count (22)
-    // unchanged (82/60/22). Connecting Journey Structure + BHX-DEL unlock
-    // (same day) then gave birmingham-delhi its own first current Fare
-    // Signal too — it already had a working Trip.com handoff, so this +1
-    // also lands entirely on the with-handoff count (83/61/22). Neither
-    // change touched Trip.com/affiliate logic itself.
+  it('total tracked and with/without-handoff counts match an independent recomputation from live routes (current-state invariant — never a hardcoded historical total; see route verification test determinism batch, 29 Aug 2026)', () => {
+    // Independently recomputed from live routes via getFareSignalForRoute()
+    // (the membership test) and getTripComFlightHandoffUrl() called the same
+    // way the route guide calls it (the ground-truth resolver) — neither is
+    // the buildTrackedFareAirportGroups() grouping logic actually under
+    // test here. A legitimate route-verification expiry or renewal changes
+    // this expectation automatically; it must never require editing this
+    // test.
+    const currentlyTrackedSlugs = routes.filter((r) => getFareSignalForRoute(r.slug, nowIso).state === 'current').map((r) => r.slug);
+    const expectedWithHandoff = currentlyTrackedSlugs.filter((slug) => {
+      const route = routes.find((r) => r.slug === slug)!;
+      const airport = getRouteAirport(route);
+      const dest = getRouteDestination(route);
+      return getTripComFlightHandoffUrl(route.slug, airport?.slug, dest?.slug) !== null;
+    }).length;
+    const expectedNoHandoff = currentlyTrackedSlugs.length - expectedWithHandoff;
+
     const groups = buildTrackedFareAirportGroups(routes, undefined, nowIso);
     const entries = groups.flatMap((g) => g.entries);
-    expect(entries).toHaveLength(83);
-    expect(entries.filter((e) => e.tripComUrl !== null)).toHaveLength(61);
-    expect(entries.filter((e) => e.tripComUrl === null)).toHaveLength(22);
+    expect(entries).toHaveLength(currentlyTrackedSlugs.length);
+    expect(entries.filter((e) => e.tripComUrl !== null)).toHaveLength(expectedWithHandoff);
+    expect(entries.filter((e) => e.tripComUrl === null)).toHaveLength(expectedNoHandoff);
   });
 });
