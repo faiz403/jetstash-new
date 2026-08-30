@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, FormEvent } from 'react';
+import type { RefObject } from 'react';
 import { ShieldCheck, ArrowUpRight, BellRing, CheckCircle2, AlertTriangle, HelpCircle } from 'lucide-react';
 import { destinations, getDestinationBySlug } from '@/data/destinations';
 import {
@@ -87,7 +88,21 @@ export function TravelReadyCheck({
   const [returnDate, setReturnDate] = useState('');
   const [passportExpiryDate, setPassportExpiryDate] = useState('');
   const [result, setResult] = useState<TravelReadyResult | null>(null);
+  // Real-user validation, Stage A (30 Aug 2026): handleSubmit used to return
+  // silently whenever a required field's React state wasn't set — no
+  // message, no focus, no visible sign anything was wrong. A tester who hit
+  // this (most plausibly via the passport radios' small touch targets, see
+  // the radio labels' className below) reported pressing the button and
+  // "nothing visibly happened", repeatedly. This state makes that failure
+  // impossible: the guard below always leaves a visible, human explanation
+  // on screen.
+  const [submissionError, setSubmissionError] = useState<string | null>(null);
   const startedRef = useRef(false);
+  const destinationRef = useRef<HTMLSelectElement | null>(null);
+  const passportYesRadioRef = useRef<HTMLInputElement | null>(null);
+  const departureRef = useRef<HTMLInputElement | null>(null);
+  const returnRef = useRef<HTMLInputElement | null>(null);
+  const passportExpiryRef = useRef<HTMLInputElement | null>(null);
 
   const destination = destinationSlug ? getDestinationBySlug(destinationSlug) : undefined;
   const country = destination?.country;
@@ -98,9 +113,35 @@ export function TravelReadyCheck({
     track('travel_ready_check_started');
   }
 
+  // Clears any stale "please complete" message the moment the visitor
+  // touches a field again, rather than leaving it on screen after they've
+  // already fixed the thing it was about.
+  function clearSubmissionError() {
+    if (submissionError) setSubmissionError(null);
+  }
+
   function handleSubmit(e: FormEvent) {
     e.preventDefault();
-    if (!destinationSlug || !isBritishPassport || !departureDate || !returnDate || !passportExpiryDate) return;
+    // Ordered to match the form's own field order, so "the first missing
+    // field" always means the first one the visitor would actually see.
+    const requiredFields: { ok: boolean; ref: RefObject<HTMLElement | null> }[] = [
+      { ok: Boolean(destinationSlug), ref: destinationRef },
+      { ok: Boolean(isBritishPassport), ref: passportYesRadioRef },
+      { ok: Boolean(departureDate), ref: departureRef },
+      { ok: Boolean(returnDate), ref: returnRef },
+      { ok: Boolean(passportExpiryDate), ref: passportExpiryRef },
+    ];
+    const firstMissing = requiredFields.find((f) => !f.ok);
+    if (firstMissing) {
+      // Silent submission must be impossible: a visible, human explanation
+      // always appears here — never a bare, unexplained no-op. Deliberately
+      // doesn't say "error" or imply anything technical failed.
+      setSubmissionError('Please complete all the questions above.');
+      firstMissing.ref.current?.focus();
+      firstMissing.ref.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+    setSubmissionError(null);
     const outcome = evaluateTravelReadiness(
       {
         destinationSlug,
@@ -159,10 +200,12 @@ export function TravelReadyCheck({
             <label htmlFor="ready-destination" className="text-xs text-ink-400">Destination</label>
             <select
               id="ready-destination"
+              ref={destinationRef}
               required
               value={destinationSlug}
               onChange={(e) => {
                 markStarted();
+                clearSubmissionError();
                 setDestinationSlug(e.target.value);
                 // A document exemption (e.g. NICOP) only makes sense for the
                 // country it was selected for — never carry it over silently
@@ -184,15 +227,29 @@ export function TravelReadyCheck({
 
           <fieldset>
             <legend className="text-xs text-ink-400">Are you travelling on a British passport?</legend>
-            <div className="mt-1.5 flex gap-4">
+            {/* Touch-target fix (real-user validation, Stage A, 30 Aug 2026):
+                the radio itself is a native 13x13px control — comfortably
+                below any real touch-target guideline. min-h-11 (44px, the
+                same token this file already uses for every input/select/
+                button) plus horizontal padding makes the WHOLE label the hit
+                area, not just the visible circle, with -mx-2 keeping the
+                text's own visual position unchanged. */}
+            <div className="mt-1.5 flex gap-2">
               {(['yes', 'no'] as const).map((v) => (
-                <label key={v} className="flex items-center gap-1.5 text-sm text-ink-700">
+                <label
+                  key={v}
+                  className="flex min-h-11 cursor-pointer items-center gap-2 rounded-sm px-2 -mx-2 text-sm text-ink-700"
+                >
                   <input
                     type="radio"
                     name="british-passport"
+                    ref={v === 'yes' ? passportYesRadioRef : undefined}
                     required
                     checked={isBritishPassport === v}
-                    onChange={() => setIsBritishPassport(v)}
+                    onChange={() => {
+                      clearSubmissionError();
+                      setIsBritishPassport(v);
+                    }}
                   />
                   {v === 'yes' ? 'Yes' : 'No'}
                 </label>
@@ -237,10 +294,14 @@ export function TravelReadyCheck({
               <label htmlFor="ready-departure" className="text-xs text-ink-400">Departure date</label>
               <input
                 id="ready-departure"
+                ref={departureRef}
                 type="date"
                 required
                 value={departureDate}
-                onChange={(e) => setDepartureDate(e.target.value)}
+                onChange={(e) => {
+                  clearSubmissionError();
+                  setDepartureDate(e.target.value);
+                }}
                 className="mt-1.5 h-11 w-full rounded-sm border border-ink-200 px-3 text-sm text-ink-900 focus-visible:border-brass"
               />
             </div>
@@ -248,10 +309,14 @@ export function TravelReadyCheck({
               <label htmlFor="ready-return" className="text-xs text-ink-400">Return date</label>
               <input
                 id="ready-return"
+                ref={returnRef}
                 type="date"
                 required
                 value={returnDate}
-                onChange={(e) => setReturnDate(e.target.value)}
+                onChange={(e) => {
+                  clearSubmissionError();
+                  setReturnDate(e.target.value);
+                }}
                 className="mt-1.5 h-11 w-full rounded-sm border border-ink-200 px-3 text-sm text-ink-900 focus-visible:border-brass"
               />
             </div>
@@ -259,15 +324,25 @@ export function TravelReadyCheck({
               <label htmlFor="ready-passport-expiry" className="text-xs text-ink-400">Passport expiry date</label>
               <input
                 id="ready-passport-expiry"
+                ref={passportExpiryRef}
                 type="date"
                 required
                 value={passportExpiryDate}
-                onChange={(e) => setPassportExpiryDate(e.target.value)}
+                onChange={(e) => {
+                  clearSubmissionError();
+                  setPassportExpiryDate(e.target.value);
+                }}
                 className="mt-1.5 h-11 w-full rounded-sm border border-ink-200 px-3 text-sm text-ink-900 focus-visible:border-brass"
               />
             </div>
           </div>
 
+          {submissionError && (
+            <p role="alert" className="flex items-center gap-1.5 text-sm font-medium text-terracotta-600">
+              <AlertTriangle className="h-4 w-4 shrink-0" strokeWidth={2} />
+              {submissionError}
+            </p>
+          )}
           <div>
             <button
               type="submit"

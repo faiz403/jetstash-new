@@ -23,6 +23,15 @@ export interface RouteCardData {
   airportImage: { src: string; alt: string } | null;
   destCity: string;
   destCountry: string;
+  /**
+   * Real-user validation, Stage A search-precision follow-up (30 Aug 2026):
+   * the destination's own IATA code, exposed alongside airportCode so
+   * components/routes/routes-catalogue.tsx's search can require an EXACT
+   * match for a recognised code token (never a coincidental substring —
+   * see that file's own doc comment for the "lhe" inside "Sylhet" case
+   * this was added to fix).
+   */
+  destIataCode: string;
   statusLabel: string;
   isDirectStatus: boolean;
   /** Sub-line under the h3: flightTime for direct/connecting routes, statusLabel for pending/ended. */
@@ -38,7 +47,15 @@ export interface RouteCardData {
    * distinction.
    */
   intelligence: RouteIntelligenceDisplay;
-  /** Pre-lowercased "country + destination city + origin airport/city + route title" — the exact fields the search box must match. */
+  /**
+   * Pre-lowercased "country + destination city + destination IATA code +
+   * origin airport/city + origin IATA code + route title" — the exact
+   * fields the search box's token matcher (matchesRouteQuery in
+   * components/routes/routes-catalogue.tsx) checks each query token
+   * against. IATA codes added in the real-user validation Stage A fix
+   * (30 Aug 2026) so a query like "MAN BOM" resolves the same as
+   * "Manchester Mumbai".
+   */
   searchIndex: string;
 }
 
@@ -182,11 +199,12 @@ export function buildRouteCountryGroups(
           airportImage,
           destCity: dest.city,
           destCountry: dest.country,
+          destIataCode: dest.iataCode,
           statusLabel: presentation.statusLabel,
           isDirectStatus: presentation.status === 'direct',
           subLine,
           intelligence: getRouteIntelligenceDisplayForRoute(route, nowIso),
-          searchIndex: `${dest.country} ${dest.city} ${airport.city} ${airport.name} ${airport.city} to ${dest.city}`.toLowerCase(),
+          searchIndex: `${dest.country} ${dest.city} ${dest.iataCode} ${airport.city} ${airport.name} ${airport.code} ${airport.city} to ${dest.city}`.toLowerCase(),
         };
       })
       .filter((card): card is RouteCardData => card !== null),

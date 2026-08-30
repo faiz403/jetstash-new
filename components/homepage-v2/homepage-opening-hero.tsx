@@ -70,6 +70,12 @@ export function HomepageOpeningHero() {
       size="compact"
       className={SHORT_VIEWPORT_HERO_PADDING}
       stats={[{ value: `${routesWithTrackedFare} of ${routes.length}`, label: 'UK routes with tracked fares' }]}
+      // Real-user validation, Stage A (30 Aug 2026): this is the very first
+      // thing every visitor sees, on every device, every time — the one
+      // PageHero caller where the headline and primary CTAs must never
+      // start invisible. See PageHero's own doc comment for exactly what
+      // this does and doesn't change.
+      immediate
     >
       <div className="flex flex-wrap items-center gap-3">
         <LinkButton href="#your-journey" variant="primary" size="lg" className={SHORT_VIEWPORT_BUTTON}>

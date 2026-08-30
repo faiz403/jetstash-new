@@ -23,6 +23,7 @@ export function PageHero({
   children,
   size = 'default',
   className,
+  immediate = false,
 }: {
   eyebrow?: string;
   title: React.ReactNode;
@@ -39,6 +40,20 @@ export function PageHero({
    * other PageHero-based page being affected. Leave unset to keep the default exactly
    * as before. */
   className?: string;
+  /**
+   * Real-user validation, Stage A (30 Aug 2026): skips the staggered
+   * entrance treatment for the h1 and children (the primary headline and
+   * primary action) ONLY — they render fully visible from first paint
+   * instead of starting at opacity:0 for ~0.75-0.95s. A real mobile tester
+   * saw the badge and background but not the headline or buttons for about
+   * a second and reported the page looked like it had failed to load (see
+   * the Stage A diagnostic, Issue 4). Defaults to false — every existing
+   * PageHero caller keeps the exact prior staggered arrival unchanged.
+   * Eyebrow, description and stats keep their own entrance animation
+   * either way; this is scoped to exactly the two elements the finding
+   * was about, not a site-wide animation change.
+   */
+  immediate?: boolean;
 }) {
   return (
     <section className={cn('relative overflow-hidden bg-ink-900', size === 'compact' ? 'py-12 sm:py-14' : 'py-16 sm:py-20', className)}>
@@ -56,7 +71,12 @@ export function PageHero({
             <Badge variant="dark">{eyebrow}</Badge>
           </div>
         )}
-        <h1 className="stagger-in stagger-2 mt-4 max-w-2xl animate-fade-up font-display text-4xl leading-[1.08] tracking-tight text-sand-50 sm:text-5xl">
+        <h1
+          className={cn(
+            'mt-4 max-w-2xl font-display text-4xl leading-[1.08] tracking-tight text-sand-50 sm:text-5xl',
+            !immediate && 'stagger-in stagger-2 animate-fade-up'
+          )}
+        >
           {title}
         </h1>
         {description && (
@@ -74,7 +94,9 @@ export function PageHero({
             ))}
           </dl>
         )}
-        {children && <div className="stagger-in stagger-4 mt-7 animate-fade-up">{children}</div>}
+        {children && (
+          <div className={cn('mt-7', !immediate && 'stagger-in stagger-4 animate-fade-up')}>{children}</div>
+        )}
       </div>
     </section>
   );

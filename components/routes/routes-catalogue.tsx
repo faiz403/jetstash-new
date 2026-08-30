@@ -33,19 +33,105 @@ export type { CountryGroup, RouteCardData };
 // split reuses the same line rather than inventing a new one.
 const DESKTOP_MEDIA_QUERY = '(min-width: 640px)';
 
-/** Case-insensitive, whitespace-trimmed substring match against a route's pre-built searchIndex (country + destination city + origin airport/city + route title). */
-export function matchesRouteQuery(route: RouteCardData, query: string): boolean {
-  const normalized = query.trim().toLowerCase();
-  if (normalized.length === 0) return true;
-  return route.searchIndex.includes(normalized);
+/**
+ * Real-user validation, Stage A (30 Aug 2026) — a genuine tester typed
+ * "Manchester Mumbai" and got "No routes match", even though both cities
+ * individually matched. Root cause: the search was one contiguous substring
+ * check against a fixed-order index, so only the literal phrasing baked
+ * into that index (or a lucky reversal) could ever match — never the most
+ * natural two-city phrasing. See docs/project-control (Stage A report,
+ * Issue 2) for the full diagnostic.
+ *
+ * Connector words a real sentence carries but no route record ever will —
+ * stripping these is what lets "flights from Manchester to Mumbai" match on
+ * exactly the same two tokens as "Manchester Mumbai", instead of requiring
+ * those filler words to somehow appear in the index too.
+ */
+const SEARCH_FILLER_WORDS = new Set(['flight', 'flights', 'from', 'to']);
+
+/**
+ * Lowercases, strips punctuation (keeping letters/digits), collapses
+ * whitespace, and drops harmless filler words — leaving only the terms that
+ * actually carry meaning ("manchester", "mumbai", "man", "bom", ...).
+ * Deliberately no fuzzy/typo matching and no external dependency — see the
+ * doc comment above.
+ */
+export function tokenizeSearchQuery(query: string): string[] {
+  return query
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}\s]/gu, ' ')
+    .split(/\s+/)
+    .map((t) => t.trim())
+    .filter((t) => t.length > 0 && !SEARCH_FILLER_WORDS.has(t));
+}
+
+/**
+ * Real-user validation, Stage A search-precision follow-up (30 Aug 2026):
+ * plain substring-per-token matching let "MAN LHE" also list
+ * Manchester-Sylhet, because "lhe" (Lahore's real IATA code) is a literal
+ * substring of "Sylhet". Fix: a query token that is itself a *real* IATA
+ * code somewhere in the current route list is matched EXACTLY against a
+ * route's own two codes, never as a text substring — so "lhe" can only ever
+ * mean the actual airport/destination coded LHE, regardless of what other
+ * city names happen to contain those three letters. A token that ISN'T a
+ * recognised code (most searches — "lon", "dha", "mumbai", ...) keeps the
+ * original substring behaviour, so incremental typing of a city name is
+ * completely unaffected. Recognising a code requires it to be a genuine
+ * code drawn from the live route list — never a bare "exactly 3 letters"
+ * heuristic, which would misfire on a real 3-letter city-name prefix that
+ * doesn't happen to equal that place's own code (e.g. "Dha" for Dhaka,
+ * whose actual code is DAC, not DHA).
+ */
+function buildKnownIataCodes(routes: RouteCardData[]): Set<string> {
+  const codes = new Set<string>();
+  for (const route of routes) {
+    codes.add(route.airportCode.toLowerCase());
+    codes.add(route.destIataCode.toLowerCase());
+  }
+  return codes;
+}
+
+/**
+ * A route matches when every meaningful token in the query is satisfied
+ * (AND across tokens) — never one contiguous phrase. A token recognised as
+ * a real IATA code (see buildKnownIataCodes) must exactly equal this
+ * route's own origin or destination code; every other token keeps the
+ * original substring-against-searchIndex behaviour. This is what lets
+ * "Manchester Mumbai", "Mumbai Manchester", "MAN BOM" and "flights from
+ * Manchester to Mumbai" all resolve to the same route (different orderings/
+ * phrasings of the same two terms), while "MAN LHE" resolves to exactly
+ * Manchester-Lahore, never Manchester-Sylhet. A query with no meaningful
+ * tokens left after filtering (empty, or filler-words-only) matches every
+ * route — the same "no filter yet" behaviour an empty search box always had.
+ *
+ * `knownIataCodes` is optional so this stays callable with just a single
+ * route (existing tests, and any future standalone use) — omitted, it
+ * falls back to recognising only that one route's own two codes, which is
+ * enough to answer "does this route match" correctly for that route in
+ * isolation. The real search box always calls this via filterCountryGroups
+ * below, which builds the true, whole-catalogue set of known codes.
+ */
+export function matchesRouteQuery(route: RouteCardData, query: string, knownIataCodes?: Set<string>): boolean {
+  const tokens = tokenizeSearchQuery(query);
+  const codes = knownIataCodes ?? buildKnownIataCodes([route]);
+  const routeCodes = [route.airportCode.toLowerCase(), route.destIataCode.toLowerCase()];
+  return tokens.every((token) => (codes.has(token) ? routeCodes.includes(token) : route.searchIndex.includes(token)));
 }
 
 /** Filters every group's routes by the query, dropping any country group left with zero matches — never an empty header shown for a non-matching country. */
 export function filterCountryGroups(countryGroups: CountryGroup[], query: string): CountryGroup[] {
-  const normalized = query.trim().toLowerCase();
-  if (normalized.length === 0) return countryGroups;
+  if (tokenizeSearchQuery(query).length === 0) return countryGroups;
+  // Built once from the whole catalogue passed in, not per-route — this is
+  // what lets a code recognised anywhere in the list (e.g. Lahore's LHE)
+  // correctly rule out a route that merely contains those letters as text
+  // (Sylhet), even though that other route itself never uses the code.
+  const knownIataCodes = buildKnownIataCodes(countryGroups.flatMap((g) => g.routes));
   return countryGroups
-    .map((g) => ({ country: g.country, image: g.image, routes: g.routes.filter((r) => matchesRouteQuery(r, normalized)) }))
+    .map((g) => ({
+      country: g.country,
+      image: g.image,
+      routes: g.routes.filter((r) => matchesRouteQuery(r, query, knownIataCodes)),
+    }))
     .filter((g) => g.routes.length > 0);
 }
 
