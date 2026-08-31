@@ -12,6 +12,7 @@ import {
 } from '@/lib/booking-intelligence';
 import { getBookingWindowsByRoute } from '@/data/booking-windows';
 import { getRouteBySlug } from '@/data/routes';
+import { routeTimelineEvents } from '@/data/route-timeline';
 import { getEffectiveRoutePresentation } from '@/lib/route-status-copy';
 import { routeStatusEvents } from '@/data/route-status-events';
 import { getActiveWarningsByRoute } from '@/data/route-warnings';
@@ -109,11 +110,23 @@ describe('Book-By copy never overclaims price prediction or absolute safety', ()
     expect(label).not.toMatch(/sharp/i);
   });
 
-  it('planning guidance remains useful: every headline is non-empty, names the event, and gives an actionable date or instruction', () => {
+  it('planning guidance remains useful: every headline is non-empty, and (with one deliberate, founder-approved exception) names the event and gives an actionable date or instruction', () => {
     for (const snap of snapshots) {
       const headline = bookByHeadline(snap);
       expect(headline.length).toBeGreaterThan(10);
-      expect(headline).toContain(snap.event.periodLabel);
+      // Stale-advice fix (31 Aug 2026): a RANGED occurrence already
+      // 'inside-period' deliberately uses a generic sentence with no event
+      // name (see bookByHeadline's own doc comment) — periodLabel has no
+      // stored grammatical number, so a name-specific sentence can't agree
+      // its verb for every label without a pluralisation system this fix
+      // isn't building. The event/range stays visible right next to the
+      // headline (eyebrow line, "Why this advice?" disclosure), so this is
+      // the one approved exception to "names the event" — every other state
+      // is unaffected and still must contain periodLabel.
+      const isGenericRangedInsidePeriod = snap.state === 'inside-period' && Boolean(snap.event.endDate);
+      if (!isGenericRangedInsidePeriod) {
+        expect(headline).toContain(snap.event.periodLabel);
+      }
     }
   });
 
@@ -193,6 +206,21 @@ describe('data/routes.ts bookingWindowNote and intro text for the 6 soft-launch 
   it('the Manchester–Lahore intro no longer makes an absolute "no risk" baggage claim', () => {
     expect(getRouteBySlug('manchester-lahore')!.intro).not.toMatch(/no risk of/i);
   });
+
+  it('Stale-tense fix (31 Aug 2026): the Manchester–Mumbai intro no longer makes an unintended present-tense "remains the only non-stop link" claim about its July 2025 launch', () => {
+    const intro = getRouteBySlug('manchester-mumbai')!.intro;
+    expect(intro).not.toMatch(/remains the only non-stop link/i);
+    expect(intro).toMatch(/at the time/i);
+  });
+});
+
+describe('Stale-tense fix (31 Aug 2026): data/route-timeline.ts\'s Manchester–Mumbai launch entry', () => {
+  it('no longer makes an unintended present-tense "remains" claim about a 2025 launch', () => {
+    const entry = routeTimelineEvents.find((e) => e.id === 'man-bom-2025-launch')!;
+    expect(entry).toBeDefined();
+    expect(entry.description).not.toMatch(/remains the only non-stop link/i);
+    expect(entry.description).toMatch(/at the time/i);
+  });
 });
 
 describe('sitewide "peak demand periods" panel copy (app/routes/[slug]/page.tsx) never overclaims', () => {
@@ -219,6 +247,11 @@ describe('components/route/book-by-countdown.tsx and booking-moment-strip.tsx so
 
   it('booking-moment-strip.tsx contains no banned phrase anywhere in its rendered copy', () => {
     assertNoBannedPhrases('booking-moment-strip.tsx', stripSrc);
+  });
+
+  it('Stale-urgency badge fix (31 Aug 2026, part 2): the panel still contains its urgency-badge suppression guard for a ranged occurrence already inside its own window — a structural safety net (no render harness in this project) so this can\'t silently regress', () => {
+    expect(countdownSrc).toMatch(/suppressUrgencyBadge/);
+    expect(countdownSrc).toMatch(/verdict && !suppressUrgencyBadge/);
   });
 });
 

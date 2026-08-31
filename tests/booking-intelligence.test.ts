@@ -1,8 +1,17 @@
 import { describe, it, expect } from 'vitest';
-import { computeBookBySnapshot, computeBookByState, getBookByDateLabel, getBookByTopLabel, SURGE_WEEKS } from '@/lib/booking-intelligence';
+import {
+  computeBookBySnapshot,
+  computeBookByState,
+  bookByHeadline,
+  formatEventDateRange,
+  getBookByDateLabel,
+  getBookByTopLabel,
+  SURGE_WEEKS,
+} from '@/lib/booking-intelligence';
 import { getUpcomingOccurrences } from '@/data/peak-period-dates';
 import { getBookingWindowsByRoute } from '@/data/booking-windows';
 import { getRouteBySlug } from '@/data/routes';
+import { computeReadiness } from '@/lib/travel-intelligence-engine';
 
 /**
  * Truth Reset (July 2026) — fixed-clock tests for the Book-By state machine.
@@ -218,5 +227,141 @@ describe('getBookByDateLabel / getBookByTopLabel (founder correction, Section 7)
     });
     expect(label).toBe('Recommended window closed 22 June 2026');
     expect(label).not.toMatch(/window opens/i);
+  });
+});
+
+/**
+ * Stale-advice fix (31 Aug 2026, User 3 real-user validation): a ranged
+ * occurrence (school-holiday season, wedding season, Ramadan, etc.) stayed
+ * 'inside-period' for its whole span with identical maximum-urgency wording
+ * regardless of proximity to its own endDate — reproduced live on
+ * Manchester–Lahore's uk-summer-2026 occurrence (20 Jul – 1 Sep 2026) on the
+ * real date 31 Aug 2026. Fixed with a semantic rule, not an arbitrary
+ * day-count cutoff: from occurrence start through endDate, a ranged
+ * occurrence may state it's current context but must not carry imperative
+ * booking urgency; after endDate, the existing fail-closed
+ * (occurrence-drops) behaviour is unchanged. Single-day occurrences (no
+ * endDate) are untouched.
+ */
+describe('bookByHeadline — ranged occurrences stop giving imperative urgency once inside their own window (31 Aug 2026 fix)', () => {
+  const routeSlug = 'manchester-lahore';
+  const occurrence = getUpcomingOccurrences(getRouteBySlug(routeSlug)!.peakPeriodIds, '2026-01-01').find(
+    (o) => o.peakPeriodId === 'uk-summer-holidays'
+  )!;
+
+  it('sanity: the fixture occurrence really is ranged (20 Jul – 1 Sep 2026)', () => {
+    expect(occurrence.startDate).toBe('2026-07-20');
+    expect(occurrence.endDate).toBe('2026-09-01');
+  });
+
+  it('1. before the occurrence starts: the existing supported booking recommendation (surge state) is completely unchanged, badge included', () => {
+    const surgeStart = addDaysIso(occurrence.startDate, -SURGE_WEEKS * 7);
+    const now = new Date(`${surgeStart}T12:00:00Z`);
+    const snapshot = computeBookBySnapshot(routeSlug, now);
+    expect(snapshot!.state).toBe('surge');
+    const headline = bookByHeadline(snapshot!);
+    expect(headline).toMatch(/book as soon as possible/i);
+    // The 'Book soon' verdict is legitimate here — timing genuinely is the
+    // reason to act, not a ranged period merely having started — so the
+    // badge-suppression fix must not touch this case.
+    expect(computeReadiness(routeSlug, now)!.verdict).toBe('book-soon');
+  });
+
+  it('2. shortly after the occurrence starts: described as underway, with NO imperative urgency wording and NO "Book soon" urgency badge', () => {
+    const shortlyAfterStart = addDaysIso(occurrence.startDate, 5);
+    const now = new Date(`${shortlyAfterStart}T12:00:00Z`);
+    const snapshot = computeBookBySnapshot(routeSlug, now);
+    expect(snapshot!.state).toBe('inside-period');
+    const headline = bookByHeadline(snapshot!);
+    expect(headline).toMatch(/underway/i);
+    expect(headline).not.toMatch(/book as soon as possible/i);
+    expect(headline).not.toMatch(/most expensive time to buy/i);
+    // The raw engine verdict is still 'book-soon' here — that's the
+    // decision tree's existing, unmodified behaviour (this fix doesn't
+    // touch lib/travel-intelligence-engine.ts at all, so founder-insights.ts
+    // and the Journey Brief keep reading exactly what they read today).
+    // What must change is only whether the *panel* renders it as a badge —
+    // asserted directly against the same suppression condition
+    // components/route/book-by-countdown.tsx uses.
+    const engineSnapshot = computeReadiness(routeSlug, now)!;
+    expect(engineSnapshot.verdict).toBe('book-soon');
+    const suppressUrgencyBadge =
+      engineSnapshot.verdict === 'book-soon' && snapshot!.state === 'inside-period' && Boolean(snapshot!.event.endDate);
+    expect(suppressUrgencyBadge).toBe(true);
+  });
+
+  it('3. exact reproduced case — Manchester–Lahore, uk-summer-2026, 31 Aug 2026: current ranged context shown including the real end date, no stale urgency headline, no "Book soon" urgency badge', () => {
+    const now = new Date('2026-08-31T12:00:00Z');
+    const snapshot = computeBookBySnapshot(routeSlug, now)!;
+    expect(snapshot.state).toBe('inside-period');
+    expect(snapshot.event.periodId).toBe('uk-summer-holidays');
+    const headline = bookByHeadline(snapshot);
+    expect(headline).toBe('Peak travel period underway until around 1 September 2026.');
+    expect(headline).not.toMatch(/book as soon as possible/i);
+    expect(headline).not.toMatch(/most expensive time to buy/i);
+    expect(headline).not.toMatch(/is underway/i); // grammar fix: no bare "is underway" for a ranged period
+    // The end date must actually be visible wherever the event is shown, not
+    // just inferable — this is the "missing end date" User 3 reasonably
+    // read as stale. The named event/range lives here, right next to the
+    // now-generic headline, so context is not lost.
+    expect(formatEventDateRange(snapshot.event)).toBe('around 20 July 2026 to around 1 September 2026');
+    // The badge itself: the panel must not render "Book soon" for this
+    // exact real-world case, per the same suppression condition the
+    // component applies.
+    const engineSnapshot = computeReadiness(routeSlug, now)!;
+    expect(engineSnapshot.verdict).toBe('book-soon');
+    const suppressUrgencyBadge =
+      engineSnapshot.verdict === 'book-soon' && snapshot.state === 'inside-period' && Boolean(snapshot.event.endDate);
+    expect(suppressUrgencyBadge).toBe(true);
+  });
+
+  it('4. after endDate: the existing fail-closed behaviour is preserved — the expired occurrence drops, the route moves on to its next real occurrence, and that occurrence gets its own correct (non-suppressed) badge/headline treatment', () => {
+    const dayAfterEnd = addDaysIso(occurrence.endDate!, 1);
+    expect(dayAfterEnd).toBe('2026-09-02');
+    const now = new Date(`${dayAfterEnd}T12:00:00Z`);
+    const snapshot = computeBookBySnapshot(routeSlug, now);
+    expect(snapshot).not.toBeNull();
+    // Must not still be the expired uk-summer-2026 occurrence.
+    expect(snapshot!.event.occurrenceId).not.toBe(occurrence.id);
+    expect(snapshot!.event.periodId).not.toBe('uk-summer-holidays');
+  });
+
+  it('5. single-day occurrence (no endDate): existing "book as soon as possible" wording is completely unchanged', () => {
+    const eidOccurrence = getUpcomingOccurrences(['eid-al-fitr'], '2026-01-01')[0];
+    expect(eidOccurrence.endDate).toBeUndefined();
+    const state = computeBookByState(eidOccurrence.startDate, eidOccurrence.startDate, null, addDaysIso(eidOccurrence.startDate, -SURGE_WEEKS * 7));
+    expect(state).toBe('inside-period');
+    const snapshot: Parameters<typeof bookByHeadline>[0] = {
+      routeSlug: 'manchester-lahore',
+      airportCity: 'Manchester',
+      destinationCity: 'Lahore',
+      event: {
+        occurrenceId: eidOccurrence.id,
+        periodId: eidOccurrence.peakPeriodId,
+        periodLabel: 'Eid al-Fitr',
+        startDate: eidOccurrence.startDate,
+        endDate: eidOccurrence.endDate,
+        precision: eidOccurrence.precision,
+        dateNote: eidOccurrence.dateNote,
+      },
+      surgeStartDate: addDaysIso(eidOccurrence.startDate, -SURGE_WEEKS * 7),
+      recommendedWindow: null,
+      bookByDate: addDaysIso(eidOccurrence.startDate, -SURGE_WEEKS * 7),
+      bookByBasis: 'surge-avoidance',
+      latestObservation: null,
+      state,
+      daysToEvent: 0,
+      daysToBookBy: 0,
+      computedForDate: eidOccurrence.startDate,
+    };
+    const headline = bookByHeadline(snapshot);
+    expect(headline).toBe(
+      'Eid al-Fitr is underway. If you still need to travel, book as soon as possible — this is typically the most expensive time to buy.'
+    );
+    // Badge-suppression fix must not touch a single-day occurrence: no
+    // endDate means the suppression condition is false, so its 'Book soon'
+    // badge (a real engine verdict, unrelated to this fix) still renders.
+    const suppressUrgencyBadge = snapshot.state === 'inside-period' && Boolean(snapshot.event.endDate);
+    expect(suppressUrgencyBadge).toBe(false);
   });
 });

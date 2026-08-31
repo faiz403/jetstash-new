@@ -7,7 +7,7 @@ import {
   bookByHeadline,
   buildBookByShareText,
   formatBookByDate,
-  formatEventDate,
+  formatEventDateRange,
   getBookByDateLabel,
   getBookByTopLabel,
   type BookBySnapshot,
@@ -136,7 +136,23 @@ export function BookByCountdown({
   const observation = snapshot.latestObservation;
   const observationIsOld = observation ? observation.ageDays > OBSERVATION_FRESH_DAYS : false;
 
+  // Stale-urgency badge fix (31 Aug 2026, User 3 validation, part 2): the
+  // engine's decision tree (lib/travel-intelligence-engine.ts) maps
+  // 'surge' | 'late' | 'inside-period' all to the single 'book-soon'
+  // verdict — correct for the first two, but for a RANGED occurrence
+  // already 'inside-period' this verdict exists *solely* because the
+  // period has started, the exact same manufactured-urgency problem the
+  // headline fix above corrects. Suppressing only this one combination
+  // (never touching the engine's decision tree, its other verdicts, or any
+  // other consumer of computeReadiness — founder-insights.ts and the
+  // Journey Brief both read the same verdict for their own unrelated,
+  // out-of-scope purposes and are untouched) means a genuinely critical
+  // fact still overrides correctly: a critical warning or Travel Ready
+  // signal produces 'wait-critical', not 'book-soon', so it's never
+  // suppressed by this check.
   const verdict = engineSnapshot?.verdict;
+  const suppressUrgencyBadge =
+    verdict === 'book-soon' && snapshot.state === 'inside-period' && Boolean(snapshot.event.endDate);
   const warningReasons =
     engineSnapshot?.reasons.filter((r) => r.source === 'route-warning' || r.source === 'travel-ready-check') ?? [];
 
@@ -146,10 +162,10 @@ export function BookByCountdown({
         <div className="flex items-center gap-2.5">
           <CalendarClock className="h-4.5 w-4.5 text-terracotta-600" strokeWidth={2} />
           <span className="text-xs font-semibold uppercase tracking-wide text-terracotta-600">
-            When to book · {snapshot.event.periodLabel} {formatEventDate(snapshot.event)}
+            When to book · {snapshot.event.periodLabel} {formatEventDateRange(snapshot.event)}
           </span>
         </div>
-        {verdict && (
+        {verdict && !suppressUrgencyBadge && (
           <span
             className={`inline-flex items-center rounded-full border px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide ${VERDICT_BADGE_STYLES[verdict]}`}
           >
@@ -344,7 +360,7 @@ export function BookByCountdown({
         </summary>
         <ul className="mt-3 flex flex-col gap-2 text-sm leading-relaxed text-ink-600">
           <li>
-            <span className="font-medium text-ink-900">{snapshot.event.periodLabel}, {formatEventDate(snapshot.event)}.</span>{' '}
+            <span className="font-medium text-ink-900">{snapshot.event.periodLabel}, {formatEventDateRange(snapshot.event)}.</span>{' '}
             {snapshot.event.dateNote}
           </li>
           {snapshot.recommendedWindow ? (

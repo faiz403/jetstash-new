@@ -1152,6 +1152,17 @@ describe('Route Status V1 — evidence-validated customer copy (lib/route-status
     expect(viewModel.citations.length).toBeGreaterThan(0);
   });
 
+  it('Wording fix (31 Aug 2026, User 3 validation): transition-boundary-pending copy states the announced DATE has been reached, and explicitly that JetStash has not independently confirmed the SERVICE has ceased — never the settled-sounding "has passed"', () => {
+    const route = getRouteBySlug('manchester-mumbai')!;
+    const result = getRouteStatus(route, routeStatusEvents, '2026-08-31')!;
+    const viewModel = getRouteStatusCopy(route, result, routeStatusEvents, '2026-08-31');
+    expect(viewModel.kind).toBe('transition-boundary-pending');
+    if (viewModel.kind !== 'transition-boundary-pending') return;
+    expect(viewModel.body).toMatch(/announced withdrawal date has been reached/i);
+    expect(viewModel.body).toMatch(/has not yet independently confirmed whether the service has ceased/i);
+    expect(viewModel.body).not.toMatch(/withdrawal date has passed/i);
+  });
+
   it('neutral pending carries no publisher/date/citation fields at all', () => {
     const route = makeRoute({ slug: 'fixture-copy-neutral', airlineSlugs: ['pia'], isDirect: true });
     const launch = makeEvent({ id: 'ev-copy-neutral-launch', routeSlug: 'fixture-copy-neutral', serviceId: 'pia-fixture-direct', scope: { kind: 'airline', airlineSlug: 'pia' }, type: 'service-launched', basis: 'observed', effectiveFrom: '2025-01-01' });

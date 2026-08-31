@@ -349,11 +349,35 @@ export function getBookByTopLabel(
 }
 
 /** "expected 10 March 2027" vs "8 November 2026" vs "around 20 July 2026" — precision stays visible. */
-export function formatEventDate(event: BookByEvent): string {
-  const date = formatBookByDate(event.startDate);
-  if (event.precision === 'estimated-lunar') return `expected ${date}`;
-  if (event.precision === 'approximate-seasonal') return `around ${date}`;
+function formatPrecisionDate(iso: string, precision: PeakDatePrecision): string {
+  const date = formatBookByDate(iso);
+  if (precision === 'estimated-lunar') return `expected ${date}`;
+  if (precision === 'approximate-seasonal') return `around ${date}`;
   return date;
+}
+
+/** "expected 10 March 2027" vs "8 November 2026" vs "around 20 July 2026" — precision stays visible. */
+export function formatEventDate(event: BookByEvent): string {
+  return formatPrecisionDate(event.startDate, event.precision);
+}
+
+/**
+ * Same as formatEventDate, but includes the occurrence's end date for a
+ * ranged period (e.g. a school-holiday season, wedding season, Ramadan) —
+ * "around 20 July 2026 to around 1 September 2026" rather than just the
+ * start. Falls back to formatEventDate unchanged for a single-day
+ * occurrence (no endDate).
+ *
+ * Stale-advice fix (31 Aug 2026, User 3 real-user validation): every
+ * surface that names an event previously showed only its start date, which
+ * reads as stale once well inside a multi-week ranged period — nothing on
+ * the page otherwise showed when the period actually ends. Used wherever an
+ * event is displayed to a visitor, in place of formatEventDate.
+ */
+export function formatEventDateRange(event: BookByEvent): string {
+  const start = formatEventDate(event);
+  if (!event.endDate) return start;
+  return `${start} to ${formatPrecisionDate(event.endDate, event.precision)}`;
 }
 
 /**
@@ -376,7 +400,35 @@ export function bookByHeadline(s: BookBySnapshot): string {
     case 'surge':
       return `${event} is close. Fares on peak-period routes often move in these final weeks — if you still need to travel, book as soon as possible.`;
     case 'inside-period':
-      return `${event} is underway. If you still need to travel, book as soon as possible — this is typically the most expensive time to buy.`;
+      // Stale-advice fix (31 Aug 2026, User 3 validation): a ranged
+      // occurrence (school-holiday season, wedding season, Ramadan, etc.)
+      // stays 'inside-period' for its whole span — sometimes six weeks or
+      // more — and the old wording below ("is underway... book as soon as
+      // possible... most expensive time to buy") was written for a
+      // single-day event. Near the tail of a long range it's genuinely
+      // unsupported advice: there's no "as soon as possible" window left to
+      // act on, and JetStash has no evidence the remaining days are still
+      // the most expensive time to buy. Per the founder's semantic rule
+      // (not an arbitrary day-count cutoff): once ranged (endDate present),
+      // state the period as current context only — no imperative urgency,
+      // no invented replacement recommendation — and show the real end date
+      // so the date shown is never stale-looking on its own. A single-day
+      // event (no endDate) keeps the original wording unchanged; the
+      // occurrence disappears entirely once its own endDate passes (see
+      // getUpcomingOccurrences in data/peak-period-dates.ts) — that
+      // fail-closed behaviour is untouched by this fix.
+      //
+      // Deliberately generic, not "${event} is/are underway": periodLabel
+      // is a data string ("UK summer holidays", "Wedding season", "Ramadan")
+      // with no stored grammatical number, so a name-specific sentence can't
+      // agree its verb correctly for every label without a pluralisation
+      // system this fix isn't building. The named event/range stays visible
+      // immediately next to this headline (the eyebrow line and "Why this
+      // advice?" disclosure both show it via formatEventDateRange), so
+      // context isn't lost by leaving the name out of this one sentence.
+      return s.event.endDate
+        ? `Peak travel period underway until ${formatPrecisionDate(s.event.endDate, s.event.precision)}.`
+        : `${event} is underway. If you still need to travel, book as soon as possible — this is typically the most expensive time to buy.`;
   }
 }
 
@@ -387,7 +439,7 @@ export function bookByHeadline(s: BookBySnapshot): string {
  */
 export function buildBookByShareText(s: BookBySnapshot): string {
   const lines = [
-    `Flying ${s.airportCity} to ${s.destinationCity} for ${s.event.periodLabel} (${formatEventDate(s.event)})?`,
+    `Flying ${s.airportCity} to ${s.destinationCity} for ${s.event.periodLabel} (${formatEventDateRange(s.event)})?`,
     s.recommendedWindow
       ? `JetStash's guidance: book by ${formatBookByDate(s.bookByDate)} — fares on this route often move in the final weeks before ${s.event.periodLabel}. Planning guidance, not a fare prediction.`
       : `JetStash's guidance: aim to book before ${formatBookByDate(s.bookByDate)} — fares on peak-period routes often move in the final 3–4 weeks. Planning guidance, not a fare prediction.`,

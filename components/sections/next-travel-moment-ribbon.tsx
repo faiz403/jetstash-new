@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { ArrowUpRight, CalendarClock } from 'lucide-react';
-import { formatEventDate, type BookBySnapshot } from '@/lib/booking-intelligence';
+import { formatEventDateRange, type BookBySnapshot } from '@/lib/booking-intelligence';
 
 /**
  * Homepage "next travel moment" ribbon — the first, restrained statement of
@@ -29,7 +29,7 @@ export function NextTravelMomentRibbon({ snapshots }: { snapshots: BookBySnapsho
             <div>
               <p className="text-xs font-semibold uppercase tracking-wide text-brass-300">Next travel moment</p>
               <p className="mt-1.5 font-display text-lg leading-snug text-sand-50 sm:text-xl">
-                {soonest.event.periodLabel} — {formatEventDate(soonest.event)}
+                {soonest.event.periodLabel} — {formatEventDateRange(soonest.event)}
               </p>
               <p className="mt-1 text-sm text-ink-300">
                 {openNow.length > 0
