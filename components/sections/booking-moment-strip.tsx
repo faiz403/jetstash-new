@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { ArrowUpRight, CalendarClock } from 'lucide-react';
-import { formatEventDate, type BookBySnapshot } from '@/lib/booking-intelligence';
+import { formatEventDateRange, type BookBySnapshot } from '@/lib/booking-intelligence';
 
 /**
  * Compact booking-intelligence strip for destination pages — one line per
@@ -26,7 +26,7 @@ export function BookingMomentStrip({ snapshots }: { snapshots: BookBySnapshot[] 
               <span className="font-semibold text-ink-900">
                 {s.airportCity} → {s.destinationCity}:
               </span>{' '}
-              next big travel moment is {s.event.periodLabel}, {formatEventDate(s.event)}
+              next big travel moment is {s.event.periodLabel}, {formatEventDateRange(s.event)}
               {s.state === 'window-open' && ' — the recommended booking window is open now'}
               {(s.state === 'surge' || s.state === 'late') && ' — fares on peak-period routes often move from here'}
               .

@@ -50,8 +50,13 @@ export const routeTimelineEvents: RouteTimelineEvent[] = [
     date: '2025-07-01',
     type: 'service-launched',
     title: "IndiGo launches Manchester to Mumbai, the airline's first long-haul route (July 2025)",
+    // Stale-tense fix (31 Aug 2026, User 3 validation): "remains the only
+    // non-stop link" was present-tense and never expired on its own — see
+    // the identical fix to this route's intro in data/routes.ts. Rewritten
+    // as a time-bounded historical fact so a timeline entry about a 2025
+    // launch can never make an unintended claim about today's service.
     description:
-      "IndiGo's Mumbai to Manchester service was the airline's first ever long-haul route and remains the only non-stop link between Manchester and Mumbai.",
+      "IndiGo's Mumbai to Manchester service was the airline's first ever long-haul route, creating Manchester's only non-stop link to Mumbai at the time.",
   },
   {
     id: 'man-bom-2026-withdrawal',

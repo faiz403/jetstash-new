@@ -369,7 +369,13 @@ export function getRouteStatusCopy(route: Route, result: RouteStatusResult, allE
     return {
       kind: 'transition-boundary-pending',
       badgeLabel: 'Verification pending',
-      body: `${publisher}'s announced withdrawal date has passed. We haven't yet re-confirmed whether the direct service ended, was postponed, or continues — check current options with the airline before booking.`,
+      // Wording fix (31 Aug 2026, User 3 validation): "has passed" read as
+      // settled/past-tense about the service itself, when only the
+      // announced DATE has passed — actual cessation remains genuinely
+      // unconfirmed. This makes explicit which fact is established (the
+      // date was reached) and which isn't (whether the service stopped),
+      // so the fail-closed state reads as deliberate rather than vague.
+      body: `${publisher}'s announced withdrawal date has been reached. JetStash has not yet independently confirmed whether the service has ceased — check current options with the airline before booking.`,
       publisher,
       effectiveFrom,
       drivingEventId: event.id,
