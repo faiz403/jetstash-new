@@ -150,7 +150,23 @@ describe('FareRangeSummary.observedDirectness aggregates per-observation fareDir
   });
 
   it('manchester-mumbai now resolves to a real, evidenced "connecting" once the 18 August Weekly Full Fare Refresh #1 observation supplied its first ever stated fareDirectness value (previously undefined: its only observation was explicitly \'unknown\', which never counts toward an aggregate)', () => {
-    const range = getFareRangeSummary('manchester-mumbai', 'Economy', NOW_ISO);
+    // Historical/business-rule invariant: this documents a specific past
+    // evidence event (the 18 August Weekly Full Fare Refresh #1
+    // observation), not today's live classification — so, following the
+    // same fix already applied above to the 11 August round-trip evidence
+    // test, it uses a fixed reference date shortly after that event rather
+    // than the file's live NOW_ISO. Without this, the assertion silently
+    // rode on live route-verification state and broke when
+    // manchester-mumbai's own IndiGo verification (route.verification
+    // reviewDueDate, and separately the Route Status ledger's
+    // withdrawal-announced currentClaimValidBefore) both expired on 31 Aug
+    // 2026 — the pre-protected IndiGo Manchester withdrawal boundary — and
+    // correctly made the route fail closed to 'unverified', suppressing its
+    // fares. That is a real, current, and correct production change (see
+    // the 31 Aug 2026 IndiGo withdrawal verification) that this historical
+    // fact about an 18 August observation should not be sensitive to.
+    const historicalNowIso = '2026-08-20';
+    const range = getFareRangeSummary('manchester-mumbai', 'Economy', historicalNowIso);
     expect(range).not.toBeNull();
     expect(range!.observedDirectness).toBe('connecting');
   });
