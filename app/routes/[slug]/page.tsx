@@ -464,7 +464,19 @@ export default async function RoutePage({ params }: { params: Promise<{ slug: st
         TRAVEL_READY_SUPPORTED_COUNTRIES.includes(dest.country) && (
           <section className="bg-sand-50 py-10 sm:py-12">
             <div className="mx-auto max-w-content px-5 sm:px-8">
-              <TravelReadyCheck defaultDestinationSlug={dest.slug} airportSlugForCta={airport.slug} />
+              {/* Duplicate Route Watch fix (real-user validation follow-up,
+                  30 Aug 2026): this route page always renders its own
+                  separate RouteWatchForm further down (see below) — without
+                  this prop, a non-"ready-to-continue" Travel Ready verdict
+                  also rendered a second, inline Route Watch form right here,
+                  which a founder testing this exact page (Manchester-Mumbai)
+                  reasonably perceived as "it navigated me to Route Watch
+                  instead of showing my result". No navigation ever occurred;
+                  see TravelReadyCheck's own showInlineRouteWatch doc comment,
+                  which has said routes pages must set this false since the
+                  feature's original commit — this call site was simply never
+                  updated to do it. */}
+              <TravelReadyCheck defaultDestinationSlug={dest.slug} airportSlugForCta={airport.slug} showInlineRouteWatch={false} />
             </div>
           </section>
         )
