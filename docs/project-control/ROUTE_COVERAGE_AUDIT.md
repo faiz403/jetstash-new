@@ -170,7 +170,7 @@ Machine-checkable manifest — every one of the 32 routes, exactly once, with it
 | `leeds-bradford-amritsar` | Useful |
 | `leeds-bradford-islamabad` | Useful |
 | `london-gatwick-ahmedabad` | Useful |
-| `london-gatwick-amritsar` | Strong |
+| `london-gatwick-amritsar` | Useful |
 | `london-heathrow-bengaluru` | Strong |
 | `london-heathrow-delhi` | Strong |
 | `london-heathrow-dhaka` | Useful |

@@ -135,13 +135,26 @@ describe('Strongest ("strong") route status requires BROAD depth evidence — at
     // fresh fare observation - its second category. Three of the four
     // (Gatwick-Ahmedabad, Gatwick-Amritsar, Heathrow-Bengaluru) are direct
     // routes with an already-substantive pre-existing category, so they
-    // correctly clear all three RIS-001 gates and are now 'strong' - see
+    // correctly cleared all three RIS-001 gates and became 'strong' - see
     // tests/fare-coverage-batch-b.test.ts, not this one. Leeds
     // Bradford-Islamabad stays here: it's now genuinely two categories, but
     // RIS-001's Gate 3 (visible-content) still blocks it, because it's a
     // connecting route with no connectingAlternative block.
+    //
+    // london-gatwick-amritsar rejoined this single-signal list on 31 August
+    // 2026 (Route-warning truth alignment): its "pre-existing substantive
+    // category" was lgw-atq-reduced-frequency, an unsourced "Runs 3 times a
+    // week" warning that predated a later truth correction hedging this
+    // route's own frequency field. Resolving that warning (see
+    // data/route-warnings.ts) correctly removes it as a depth category — it
+    // was never genuinely "sourced, investigated" research (this file's own
+    // hasWarningDepth comment's own standard), so the route's fare
+    // observation is now its only real depth category. See
+    // tests/fare-coverage-batch-b.test.ts for the corresponding grade
+    // reversion.
     const singleSignalRoutes = [
       'manchester-doha', // fare only
+      'london-gatwick-amritsar', // fare only, since 31 Aug 2026 (warning resolved)
     ];
     for (const slug of singleSignalRoutes) {
       const route = getRouteBySlug(slug)!;
@@ -159,8 +172,8 @@ describe('Strongest ("strong") route status requires BROAD depth evidence — at
     expect(computeRouteIntelligenceLevel(lba, NOW_ISO)).toBe('useful');
   });
 
-  it('leeds-bradford-islamabad, london-gatwick-ahmedabad, london-gatwick-amritsar and london-heathrow-bengaluru each gained a fresh fare observation from Fare Coverage Expansion Batch B (6 August 2026), and three of the four correctly moved to "strong" on that plus their pre-existing substantive category', () => {
-    const upgraded = ['london-gatwick-amritsar', 'london-heathrow-bengaluru'];
+  it('leeds-bradford-islamabad, london-gatwick-ahmedabad, london-gatwick-amritsar and london-heathrow-bengaluru each gained a fresh fare observation from Fare Coverage Expansion Batch B (6 August 2026); london-heathrow-bengaluru correctly remains "strong" on that plus its pre-existing substantive category (london-gatwick-amritsar also cleared this gate at the time, but see the reversion test below — it no longer does)', () => {
+    const upgraded = ['london-heathrow-bengaluru'];
     for (const slug of upgraded) {
       const route = getRouteBySlug(slug)!;
       expect(depthCategoryCount(route), slug).toBe(2);
@@ -172,7 +185,22 @@ describe('Strongest ("strong") route status requires BROAD depth evidence — at
   it('london-gatwick-ahmedabad reverted to "useful" on 18 August 2026 — Route Verification Refresh Batch 1\'s correction reclassified it unverified after a fresh check found current Air India surfaces genuinely conflict, which both drops its fare observation from publishable (isObservationPublishable requires a current, confirmed direct/connecting status) and blocks Strong at the prerequisite gate regardless of category count. It genuinely was Strong for 6 August-18 August 2026, on real evidence at the time — this is not a walk-back of that history, only its current state.', () => {
     const route = getRouteBySlug('london-gatwick-ahmedabad')!;
     expect(route.verification!.status).toBe('unverified');
-    expect(depthCategoryCount(route)).toBe(1); // the pre-existing warning; fare no longer publishable
+    // Route-warning truth alignment (31 Aug 2026): the pre-existing warning
+    // this route counted as its one depth category (lgw-amd-reduced-frequency)
+    // is now resolved — unsourced, and directly contradicted this route's own
+    // "frequency not published until independently confirmed" copy. Its
+    // depth-category count correctly drops to 0; the final grade is
+    // unchanged ('useful'), since the unverified short-circuit in
+    // computeRouteIntelligenceLevel already produced 'useful' regardless of
+    // category count.
+    expect(depthCategoryCount(route)).toBe(0); // fare not publishable, warning resolved
+    expect(computeRouteIntelligenceLevel(route, NOW_ISO)).toBe('useful');
+  });
+
+  it('london-gatwick-amritsar reverted to "useful" on 31 August 2026 (Route-warning truth alignment) — its "pre-existing substantive category" was lgw-atq-reduced-frequency, an unsourced "Runs 3 times a week" warning that predated a later truth correction hedging this route\'s own frequency field. Resolving that warning correctly drops it below RIS-001\'s two-category threshold, on real evidence changing, not a scoring-rule change.', () => {
+    const route = getRouteBySlug('london-gatwick-amritsar')!;
+    expect(route.isDirect).toBe(true);
+    expect(depthCategoryCount(route)).toBe(1); // fare only; warning resolved
     expect(computeRouteIntelligenceLevel(route, NOW_ISO)).toBe('useful');
   });
 
