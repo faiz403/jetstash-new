@@ -51,11 +51,34 @@ export const routeWarnings: RouteWarning[] = [
     body:
       'Current 2026 reporting on PIA\'s expanded UK network describes its direct Manchester services as Lahore and Islamabad only. Confirm the current routing directly with PIA before booking — a connecting itinerary via Islamabad or Lahore is realistic.',
   },
+  // Route-warning truth alignment (31 Aug 2026, User 4 validation follow-up):
+  // the three "Runs 3 times a week, not daily" warnings below all asserted a
+  // specific numeric frequency with no `sources`, no `startDate`, and no
+  // supporting citation anywhere else in the codebase. Each one predates a
+  // later route-truth correction to the route it describes, and none was
+  // reconciled against it:
+  //  - lgw-amd-reduced-frequency: added 4 Jul 2026, but this route is now
+  //    `verification.status: 'unverified'` (genuinely disputed, 14-day
+  //    DISPUTED review cadence) -- the live page already says "frequency...
+  //    aren't published until independently confirmed" immediately above
+  //    where this warning rendered a specific "3 times a week" claim. A
+  //    direct, self-contradicting statement on the same page.
+  //  - lgw-atq-reduced-frequency / bhx-atq-reduced-frequency: both predate
+  //    the 28 Jul 2026 truth correction that deliberately hedged each
+  //    route's own `frequency` field ("exact operating days vary" /
+  //    "exact schedule varies") -- the warning was never updated to match.
+  // Marked resolved rather than deleted, per this file's own "never delete
+  // a resolved warning" rule (see man-khi-frequency-settling above for the
+  // same pattern). Deliberately no replacement wording is added: each
+  // route's own current, deliberately hedged frequency field (or, for
+  // LGW-AMD, its explicit "unverified" status) already carries the
+  // supported truth -- inventing softer frequency language here would just
+  // be a second, competing claim about the same fact.
   {
     id: 'lgw-amd-reduced-frequency',
     routeSlug: 'london-gatwick-ahmedabad',
     severity: 'info',
-    status: 'active',
+    status: 'resolved',
     title: 'Runs 3 times a week, not daily',
     body:
       'This is a reduced-frequency route rather than a daily one. Confirm your travel dates align with an active flight day before booking.',
@@ -64,7 +87,7 @@ export const routeWarnings: RouteWarning[] = [
     id: 'lgw-atq-reduced-frequency',
     routeSlug: 'london-gatwick-amritsar',
     severity: 'info',
-    status: 'active',
+    status: 'resolved',
     title: 'Runs 3 times a week, not daily',
     body:
       'Like the Birmingham service, this runs 3 times a week rather than daily. Confirm the specific flight day before booking, and compare both Gatwick and Birmingham schedules for your travel dates.',
@@ -73,7 +96,7 @@ export const routeWarnings: RouteWarning[] = [
     id: 'bhx-atq-reduced-frequency',
     routeSlug: 'birmingham-amritsar',
     severity: 'info',
-    status: 'active',
+    status: 'resolved',
     title: 'Runs 3 times a week, not daily',
     body:
       'This is a reduced-frequency scheduled service. Confirm your travel dates fall on an active flight day before booking, and have a Delhi or Gatwick-connecting fallback priced as backup for off-schedule dates.',

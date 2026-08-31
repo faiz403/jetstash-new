@@ -54,7 +54,20 @@ const NEW_DEAL_IDS = ['lhr-blr-economy', 'man-jed-economy', 'bhx-bom-economy', '
 // fresh check found current Air India surfaces genuinely conflict, which
 // mechanically drops it back to 'useful'. See
 // docs/project-control/ROUTE_VERIFICATION_CADENCE_POLICY.md.
-const UPGRADED_TO_STRONG = ['london-heathrow-bengaluru', 'london-gatwick-amritsar'];
+//
+// london-gatwick-amritsar was also upgraded to Strong on 6 August 2026 on
+// this same basis, but its "pre-existing substantive category" was
+// lgw-atq-reduced-frequency — an unsourced "Runs 3 times a week" warning
+// that predated a later route-truth correction hedging this route's own
+// frequency field. Route-warning truth alignment (31 Aug 2026) resolved
+// that warning (data/route-warnings.ts): getActiveWarningsByRoute() has no
+// date parameter of its own (unlike the Route Status ledger's nowIso-aware
+// functions), so a resolved warning is inactive for every date query,
+// including this file's fixed 6 August 2026 snapshot — the historical
+// narrative stays true in these comments, but the live category count
+// genuinely no longer includes it, at any date. This mechanically drops
+// the route below RIS-001's two-category threshold.
+const UPGRADED_TO_STRONG = ['london-heathrow-bengaluru'];
 const REVERTED_TO_USEFUL_18_AUG = ['london-gatwick-ahmedabad'];
 
 describe('Fare Coverage Expansion Batch B — observation methodology', () => {
@@ -239,7 +252,7 @@ describe('Fare Coverage Expansion Batch B — publishability and customer visibi
 });
 
 describe('Fare Coverage Expansion Batch B — RIS-001 mechanical grade changes', () => {
-  it('the 2 routes still upgraded clear all three RIS-001 gates on a pre-existing substantive category plus the new fare — not a manual override (originally 3; see the reversion test below)', () => {
+  it('the 1 route still upgraded clears all three RIS-001 gates on a pre-existing substantive category plus the new fare — not a manual override (originally 3, then 2; see the two reversion tests below)', () => {
     for (const slug of UPGRADED_TO_STRONG) {
       const route = routes.find((r) => r.slug === slug)!;
       expect(route.isDirect, slug).toBe(true); // confirms Gate 3's connecting-depth check never applies here
@@ -256,9 +269,16 @@ describe('Fare Coverage Expansion Batch B — RIS-001 mechanical grade changes',
     expect(computeRouteIntelligenceLevel(route, NOW_ISO)).toBe('useful');
   });
 
-  it('the 8 non-upgraded new routes stay useful, each failing a specific, identifiable gate', () => {
+  it('london-gatwick-amritsar genuinely cleared the RIS-001 gates on 6 August 2026 (real evidence, not a manual override) but reverted to useful on 31 August 2026 (Route-warning truth alignment) when its pre-existing category — an unsourced "Runs 3 times a week" warning — was resolved, not because RIS-001 itself changed', () => {
+    const route = routes.find((r) => r.slug === 'london-gatwick-amritsar')!;
+    const hasWarning = getActiveWarningsByRoute('london-gatwick-amritsar').length > 0;
+    expect(hasWarning, 'the unsourced frequency warning is resolved, not active').toBe(false);
+    expect(computeRouteIntelligenceLevel(route, NOW_ISO)).toBe('useful');
+  });
+
+  it('the 9 non-upgraded new routes stay useful, each failing a specific, identifiable gate', () => {
     const stillUseful = NEW_ROUTES.filter((s) => !UPGRADED_TO_STRONG.includes(s));
-    expect(stillUseful.length).toBe(8);
+    expect(stillUseful.length).toBe(9);
     for (const slug of stillUseful) {
       const route = routes.find((r) => r.slug === slug)!;
       expect(computeRouteIntelligenceLevel(route, NOW_ISO), slug).toBe('useful');
@@ -280,15 +300,15 @@ describe('Fare Coverage Expansion Batch B — RIS-001 mechanical grade changes',
     expect(heathrowIndia.destinations.every((d) => d.intelligenceLevel === 'strong')).toBe(true);
   });
 
-  it('Gatwick India was genuinely Strong on 6 August 2026 (both destinations individually Strong at the time) but reverted to Mixed on 18 August 2026 when london-gatwick-ahmedabad\'s verification state changed — the conservative aggregation rule (Strong only if every destination is Strong) correctly stops carrying it once one sibling is no longer Strong', () => {
+  it('Gatwick India was genuinely Strong on 6 August 2026 (both destinations individually Strong at the time), briefly Mixed on 18 August 2026 when london-gatwick-ahmedabad\'s verification state changed, and is now Useful since 31 August 2026 (Route-warning truth alignment) once london-gatwick-amritsar\'s own pre-existing category — an unsourced warning — was also resolved, leaving both siblings Useful and nothing left to be "mixed" between', () => {
     const airports = buildAtlasAirports(NOW_ISO);
     const gatwick = airports.find((a) => a.airportSlug === 'london-gatwick')!;
     const gatwickIndia = gatwick.countries.find((c) => c.slug === 'india')!;
-    expect(gatwickIndia.intelligenceLevel).toBe('mixed');
+    expect(gatwickIndia.intelligenceLevel).toBe('useful');
     const ahmedabad = gatwickIndia.destinations.find((d) => d.slug === 'ahmedabad');
-    expect(ahmedabad?.intelligenceLevel, 'ahmedabad should have reverted to useful').toBe('useful');
+    expect(ahmedabad?.intelligenceLevel, 'ahmedabad should remain useful (unverified since 18 Aug)').toBe('useful');
     const amritsar = gatwickIndia.destinations.find((d) => d.slug === 'amritsar');
-    expect(amritsar?.intelligenceLevel, 'amritsar should remain strong').toBe('strong');
+    expect(amritsar?.intelligenceLevel, 'amritsar should have reverted to useful (warning resolved 31 Aug)').toBe('useful');
   });
 
   it('a single non-strong destination in either group would prevent Strong (the conservative rule is not bypassed)', () => {

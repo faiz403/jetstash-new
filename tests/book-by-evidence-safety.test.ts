@@ -264,9 +264,9 @@ describe('app/business-class/page.tsx no longer makes an absolute "no risk" clai
 });
 
 describe('unaffected surfaces: route warnings, verification states, Trip.com links and analytics event names are unchanged by this copy-only pass', () => {
-  it('withdrawal/route warnings remain visible: Birmingham–Amritsar\'s reduced-frequency warning is still active', () => {
+  it('Route-warning truth alignment (31 Aug 2026): Birmingham–Amritsar\'s unsourced "3 times a week" warning is now resolved (removed from public exposure), not active — see data/route-warnings.ts\'s own comment for why', () => {
     const active = getActiveWarningsByRoute('birmingham-amritsar');
-    expect(active.some((w) => w.id === 'bhx-atq-reduced-frequency')).toBe(true);
+    expect(active.some((w) => w.id === 'bhx-atq-reduced-frequency')).toBe(false);
   });
 
   it('route verification/status presentation is untouched: Manchester–Lahore is still presented as verified-direct at a fixed pre-review date', () => {
