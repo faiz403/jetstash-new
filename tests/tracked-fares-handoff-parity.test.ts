@@ -73,10 +73,15 @@ describe('Semantic parity: every current tracked-fare entry resolves identically
     expect(mismatches, `routes with a parity mismatch: ${mismatches.join(', ')}`).toEqual([]);
   });
 
-  it('existing direct route-slug handoff still works (e.g. manchester-lahore, in TRIPCOM_ROUTE_URLS)', () => {
-    const entry = allEntries.find((e) => e.routeSlug === 'manchester-lahore');
+  it('existing direct route-slug handoff still works (e.g. manchester-islamabad, in TRIPCOM_ROUTE_URLS)', () => {
+    // Not manchester-lahore: since Fare Signal poor-itinerary suppression
+    // (31 Aug 2026), it has no current Fare Signal at all and so no longer
+    // appears on the tracked-fares listing — see tests/fare-signal.test.ts
+    // for the full account. manchester-islamabad is unaffected and still
+    // has a direct route-slug handoff entry.
+    const entry = allEntries.find((e) => e.routeSlug === 'manchester-islamabad');
     expect(entry?.tripComUrl).not.toBeNull();
-    expect(entry?.tripComUrl).toBe(routeGuideHandoffUrl('manchester-lahore'));
+    expect(entry?.tripComUrl).toBe(routeGuideHandoffUrl('manchester-islamabad'));
   });
 
   it('a restored exact-pair fallback handoff now works (manchester-barcelona, only in TRIPCOM_DESTINATION_URLS)', () => {

@@ -85,8 +85,17 @@ describe('Fare Coverage Programme Batch 5', () => {
     // accurate historical record for 14 August 2026.
     const current = routes.filter((route) => getPublishableObservationsByRoute(route.slug, NOW_ISO).length > 0);
     expect(current).toHaveLength(83);
+    // Fare Signal poor-itinerary suppression (31 Aug 2026): 7 of these 83
+    // tracked routes now correctly DO show the no-fare fallback — see
+    // tests/fare-coverage-batch-3.test.ts's identical update for the full
+    // account.
+    const knownSuppressed = new Set([
+      'manchester-lahore', 'birmingham-amritsar', 'manchester-dubai', 'london-heathrow-doha',
+      'london-heathrow-jeddah', 'london-gatwick-amritsar', 'birmingham-delhi',
+    ]);
     for (const route of current) {
-      expect(shouldShowNoFareFallback(getFareSignalForRoute(route.slug, NOW_ISO)), route.slug).toBe(false);
+      const shouldFallback = shouldShowNoFareFallback(getFareSignalForRoute(route.slug, NOW_ISO));
+      expect(shouldFallback, route.slug).toBe(knownSuppressed.has(route.slug));
     }
   });
 

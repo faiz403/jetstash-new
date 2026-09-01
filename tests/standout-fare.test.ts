@@ -102,30 +102,33 @@ describe('Standout Fare — First Public Standout Fare Pilot', () => {
     expect(standout).toBeNull();
   });
 
-  it('7. MAN-LHE remains an ordinary Fare Signal, not a Standout Fare', () => {
+  it('7. MAN-LHE was never a Standout Fare, and now shows no current Fare Signal at all (Fare Signal poor-itinerary suppression, 31 Aug 2026) — Standout Fare\'s own qualification logic is untouched and independent, confirmed by standout staying null exactly as before', () => {
     const standout = getApprovedStandoutFare('manchester-lahore', 'Economy', fareObservations, NOW);
     expect(standout).toBeNull();
     const signal = getFareSignalForRoute('manchester-lahore', NOW);
     const html = renderToStaticMarkup(FareSignal({ signal, tripComUrl: getTripComRouteUrl('manchester-lahore'), routeSlug: 'manchester-lahore', standoutFare: standout }));
-    expect(html).toContain('Fare spotted');
+    expect(html).toContain('No current fare tracked');
+    expect(html).not.toContain('Fare spotted');
     expect(html).not.toContain('Standout Fare');
   });
 
-  it('8. LHR-JED remains an ordinary Fare Signal, not a Standout Fare', () => {
+  it('8. LHR-JED was never a Standout Fare, and now shows no current Fare Signal at all (Fare Signal poor-itinerary suppression, 31 Aug 2026)', () => {
     const standout = getApprovedStandoutFare('london-heathrow-jeddah', 'Economy', fareObservations, NOW);
     expect(standout).toBeNull();
     const signal = getFareSignalForRoute('london-heathrow-jeddah', NOW);
     const html = renderToStaticMarkup(FareSignal({ signal, tripComUrl: getTripComRouteUrl('london-heathrow-jeddah'), routeSlug: 'london-heathrow-jeddah', standoutFare: standout }));
-    expect(html).toContain('Fare spotted');
+    expect(html).toContain('No current fare tracked');
+    expect(html).not.toContain('Fare spotted');
     expect(html).not.toContain('Standout Fare');
   });
 
-  it('9. BHX-ATQ remains an ordinary Fare Signal, not a Standout Fare', () => {
+  it('9. BHX-ATQ was never a Standout Fare, and now shows no current Fare Signal at all (Fare Signal poor-itinerary suppression, 31 Aug 2026)', () => {
     const standout = getApprovedStandoutFare('birmingham-amritsar', 'Economy', fareObservations, NOW);
     expect(standout).toBeNull();
     const signal = getFareSignalForRoute('birmingham-amritsar', NOW);
     const html = renderToStaticMarkup(FareSignal({ signal, tripComUrl: getTripComRouteUrl('birmingham-amritsar'), routeSlug: 'birmingham-amritsar', standoutFare: standout }));
-    expect(html).toContain('Fare spotted');
+    expect(html).toContain('No current fare tracked');
+    expect(html).not.toContain('Fare spotted');
     expect(html).not.toContain('Standout Fare');
   });
 

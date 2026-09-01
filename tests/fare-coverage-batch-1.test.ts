@@ -156,10 +156,12 @@ describe('birmingham-delhi was held by this batch — since unlocked by Connecti
     expect(isPubliclyPublishable(obs18)).toBe(false);
   });
 
-  it('birmingham-delhi Fare Signal now shows the fresh 22 August fare', () => {
+  it('birmingham-delhi\'s fresh 22 August fare is publishable, but its Fare Signal now correctly shows no current fare — that observation is a confirmed self-transfer, 3-stop-each-way itinerary and fails Fare Signal poor-itinerary suppression (31 Aug 2026, see tests/connecting-journey-structure.test.ts for the full account)', () => {
+    const obs22 = fareObservations.find((o) => o.id === 'obs-bhx-del-economy-20260822-8w-v1')!;
+    expect(isPubliclyPublishable(obs22)).toBe(true);
     const signal = getFareSignalForRoute('birmingham-delhi', nowIso);
-    expect(signal.state).toBe('current');
-    expect(signal.observation?.id).toBe('obs-bhx-del-economy-20260822-8w-v1');
+    expect(signal.state).toBe('none');
+    expect(signal.observation).toBeNull();
   });
 
   it('birmingham-delhi route data is untouched — still verified-connecting via Amritsar, per COV-001', () => {

@@ -214,14 +214,14 @@ describe('Withdrawal-aware metadata still wins unconditionally over any seoTitle
 });
 
 describe('Regression: everything the founder\'s spec required unchanged actually stayed unchanged', () => {
-  it('the generic Fare Signal on both target routes still leads with Economy, not the newer Business observation — PR #167\'s fix, unaffected by this SEO batch', () => {
+  it('both target routes\' generic Fare Signal now correctly shows no current fare of any cabin (Fare Signal poor-itinerary suppression, 31 Aug 2026) — PR #167\'s Economy-preference fix is unaffected by this SEO batch or by that later suppression fix; it is simply that neither route\'s Economy nor Business observation currently qualifies as suitable to show', () => {
     const lahoreSignal = getFareSignalForRoute('manchester-lahore', NOW_ISO);
-    expect(lahoreSignal.observation?.cabin).toBe('Economy');
-    expect(lahoreSignal.observation?.price).toBe(547); // 25 Aug same-day emergency-recheck, PR #182
+    expect(lahoreSignal.state).toBe('none');
+    expect(lahoreSignal.observation).toBeNull();
 
     const dohaSignal = getFareSignalForRoute('london-heathrow-doha', NOW_ISO);
-    expect(dohaSignal.observation?.cabin).toBe('Economy');
-    expect(dohaSignal.observation?.price).toBe(425);
+    expect(dohaSignal.state).toBe('none');
+    expect(dohaSignal.observation).toBeNull();
   });
 
   it('both routes\' Business fare directness/self-transfer disclosures are byte-for-byte unchanged from Business Fare Evidence Batch 1 — this SEO batch never touched fare-observations.ts', () => {

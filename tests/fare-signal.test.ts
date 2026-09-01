@@ -178,19 +178,44 @@ describe('Fare Signal presentation and CTA boundaries', () => {
 });
 
 describe('Fare Signal production coverage counts', () => {
-  it('reports 83 routes with a current publishable fare and 5 without one at the current archive date (updated 22 August 2026, Connecting Journey Structure + BHX-DEL unlock)', () => {
-    // Was 78/10 as of 18 August 2026. COV-001 (21 August) then Fare
-    // Coverage Batch 1 (22 August) together moved 4 routes into "current"
-    // (leeds-bradford-bodrum, manchester-karachi, birmingham-lahore,
-    // birmingham-islamabad), leaving birmingham-delhi held (82/6). Later the
-    // same day, Connecting Journey Structure + BHX-DEL unlock unsuppressed
-    // birmingham-delhi's 13 August observation and appended a fresh 22
-    // August one, moving it into "current" too (83/5) — the "none" bucket
-    // is now exactly the 5 still-unverified routes.
+  it('reports 76 routes with a current publishable fare and 12 without one, EVALUATED AT THE FIXED REFERENCE DATE 2026-08-14 (not live/today — see the dedicated live-date reconciliation note below)', () => {
+    // This test has always used a fixed reference date, 2026-08-14 — not
+    // "today" — matching this describe block's own established convention
+    // (see the Heathrow-Mumbai and readiness-boundary tests below, both
+    // pinned to 2026-08-13). getFareSignalForRoute() reads the archive's
+    // real, single, non-date-versioned observation list regardless of the
+    // nowIso passed in (nowIso only governs freshness/route-status
+    // validity as of that date, never which observations exist) — so this
+    // count reflects route-status/verification lifecycle changes up to and
+    // including 22 August 2026 landing on top of the archive as it now
+    // stands, evaluated through the lens of 14 August's route-status
+    // snapshot. It does NOT represent live "today" coverage — do not quote
+    // this number as "current" coverage in any report; see the separate
+    // live-date figures in tests/fare-signal-poor-itinerary-suppression.test.ts
+    // and the 31 Aug 2026 implementation report for that (81 -> 74 as of
+    // late 31 August/1 September 2026, live).
+    //
+    // Was 78/10 as of 18 August 2026 (at this same fixed reference date).
+    // COV-001 (21 August) then Fare Coverage Batch 1 (22 August) together
+    // moved 4 routes into "current" (leeds-bradford-bodrum,
+    // manchester-karachi, birmingham-lahore, birmingham-islamabad), leaving
+    // birmingham-delhi held (82/6). Later the same day, Connecting Journey
+    // Structure + BHX-DEL unlock unsuppressed birmingham-delhi's 13 August
+    // observation and appended a fresh 22 August one, moving it into
+    // "current" too (83/5) — this 83/5 figure was already correct and
+    // already passing on main before this branch existed.
+    //
+    // Fare Signal poor-itinerary suppression (31 Aug 2026, Users 3 & 4
+    // real-user validation): of the 7 routes this fix suppresses
+    // (manchester-lahore, birmingham-amritsar, manchester-dubai,
+    // london-heathrow-doha, london-heathrow-jeddah, london-gatwick-amritsar,
+    // birmingham-delhi), all 7 were already 'current' at this fixed
+    // reference date too, so the same delta applies here: 83 - 7 = 76; the
+    // "none" bucket grows from 5 to 12.
     const signals = routes.map((route) => getFareSignalForRoute(route.slug, '2026-08-14'));
-    expect(signals.filter((signal) => signal.state === 'current')).toHaveLength(83);
+    expect(signals.filter((signal) => signal.state === 'current')).toHaveLength(76);
     expect(signals.filter((signal) => signal.state === 'recent')).toHaveLength(0);
-    expect(signals.filter((signal) => signal.state === 'none')).toHaveLength(5);
+    expect(signals.filter((signal) => signal.state === 'none')).toHaveLength(12);
     expect(routes.filter((route) => getTripComRouteUrl(route.slug)).length).toBe(45);
   });
 
@@ -207,14 +232,33 @@ describe('Fare Signal production coverage counts', () => {
     expect(hasTrackedFare(deal!, '2026-08-13')).toBe(true);
   });
 
-  it('uses one display-readiness standard for tracked coverage and non-empty Fare Signals', () => {
+  it('every route with a non-empty Fare Signal genuinely has tracked observations backing it — a signal can never appear from nowhere', () => {
+    // Fare Signal poor-itinerary suppression (31 Aug 2026) deliberately
+    // breaks the previous exact-equality invariant here: "tracked" (has
+    // ANY publishable observation) and "signalled" (has a DISPLAYABLE
+    // current Fare Signal) are no longer the same question by design — a
+    // route can be tracked (real archive evidence exists) while correctly
+    // showing no current signal, because its only current-Economy
+    // candidate is a confirmed self-transfer, 2+-stop Frankenstein
+    // itinerary (manchester-lahore, birmingham-amritsar, manchester-dubai,
+    // london-heathrow-doha, london-heathrow-jeddah, london-gatwick-amritsar,
+    // birmingham-delhi). What must still hold — and does — is the weaker,
+    // still-real invariant: signalledRoutes is always a SUBSET of
+    // trackedRoutes, never the reverse. shouldShowNoFareFallback() is the
+    // dedicated helper for exactly this "tracked but not signalled" case.
     const trackedRoutes = routes
       .filter((route) => getPublishableObservationsByRoute(route.slug, '2026-08-13').length > 0)
       .map((route) => route.slug);
     const signalledRoutes = routes
       .filter((route) => getFareSignalForRoute(route.slug, '2026-08-13').state !== 'none')
       .map((route) => route.slug);
-    expect(trackedRoutes).toEqual(signalledRoutes);
+    for (const slug of signalledRoutes) {
+      expect(trackedRoutes, slug).toContain(slug);
+    }
+    const suppressedButTracked = trackedRoutes.filter((slug) => !signalledRoutes.includes(slug));
+    expect(suppressedButTracked.sort()).toEqual(
+      ['birmingham-amritsar', 'birmingham-delhi', 'london-gatwick-amritsar', 'london-heathrow-doha', 'london-heathrow-jeddah', 'manchester-dubai', 'manchester-lahore'].sort()
+    );
   });
 });
 

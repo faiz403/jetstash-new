@@ -80,9 +80,15 @@ describe('2. grouped under the correct departure airport', () => {
 
 describe('3. entry fields are exactly what the observation carries — nothing invented', () => {
   it('price, dates, airline and directness all come from the same FareSignalObservation the route guide itself uses', () => {
-    const dubaiEntry = airportGroups.flatMap((g) => g.entries).find((e) => e.routeSlug === 'manchester-dubai');
+    // london-gatwick-dubai, not manchester-dubai: since Fare Signal
+    // poor-itinerary suppression (31 Aug 2026), manchester-dubai's only
+    // current Economy observation is a confirmed self-transfer, 2-stop-
+    // each-way itinerary and no longer has a current Fare Signal at all,
+    // so it correctly no longer appears on this listing — see
+    // tests/fare-signal.test.ts for the full account.
+    const dubaiEntry = airportGroups.flatMap((g) => g.entries).find((e) => e.routeSlug === 'london-gatwick-dubai');
     expect(dubaiEntry).toBeDefined();
-    const signal = getFareSignalForRoute('manchester-dubai', FIXED_TODAY);
+    const signal = getFareSignalForRoute('london-gatwick-dubai', FIXED_TODAY);
     expect(dubaiEntry!.observation).toEqual(signal.observation);
   });
 
@@ -131,19 +137,19 @@ describe('7, 8 & 9. search matching — destination, country, airport, case-inse
   const allEntries = airportGroups.flatMap((g) => g.entries);
 
   it('searching a destination city finds the matching entry', () => {
-    const dubaiEntry = allEntries.find((e) => e.routeSlug === 'manchester-dubai')!;
+    const dubaiEntry = allEntries.find((e) => e.routeSlug === 'london-gatwick-dubai')!;
     expect(matchesTrackedFareQuery(dubaiEntry, 'dubai')).toBe(true);
     expect(matchesTrackedFareQuery(dubaiEntry, 'DUBAI')).toBe(true);
     expect(matchesTrackedFareQuery(dubaiEntry, '  dubai  ')).toBe(true);
   });
 
   it('searching a non-matching term returns false', () => {
-    const dubaiEntry = allEntries.find((e) => e.routeSlug === 'manchester-dubai')!;
+    const dubaiEntry = allEntries.find((e) => e.routeSlug === 'london-gatwick-dubai')!;
     expect(matchesTrackedFareQuery(dubaiEntry, 'lahore')).toBe(false);
   });
 
   it('an empty/whitespace-only query matches everything', () => {
-    const dubaiEntry = allEntries.find((e) => e.routeSlug === 'manchester-dubai')!;
+    const dubaiEntry = allEntries.find((e) => e.routeSlug === 'london-gatwick-dubai')!;
     expect(matchesTrackedFareQuery(dubaiEntry, '')).toBe(true);
     expect(matchesTrackedFareQuery(dubaiEntry, '   ')).toBe(true);
   });

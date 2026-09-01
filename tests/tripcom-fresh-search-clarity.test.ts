@@ -64,11 +64,16 @@ describe('2. wording preserves the required meaning and implies nothing false', 
 
 describe('3. appears on the two intended Fare Signal → Trip.com handoff surfaces, and only when a handoff exists', () => {
   it('route-page Fare Signal (current state): renders the note next to the CTA when a Trip.com URL is present', () => {
-    const signal = getFareSignalForRoute('manchester-dubai', nowIso);
+    // manchester-antalya, not manchester-dubai: since Fare Signal
+    // poor-itinerary suppression (31 Aug 2026), manchester-dubai's only
+    // current Economy observation is a confirmed self-transfer, 2-stop-
+    // each-way itinerary and no longer has a current Fare Signal — see
+    // tests/fare-signal.test.ts for the full account.
+    const signal = getFareSignalForRoute('manchester-antalya', nowIso);
     expect(signal.state).toBe('current');
-    const tripComUrl = getTripComFlightHandoffUrl('manchester-dubai');
+    const tripComUrl = getTripComFlightHandoffUrl('manchester-antalya');
     expect(tripComUrl).not.toBeNull();
-    const html = renderToStaticMarkup(FareSignal({ signal, tripComUrl, routeSlug: 'manchester-dubai' }));
+    const html = renderToStaticMarkup(FareSignal({ signal, tripComUrl, routeSlug: 'manchester-antalya' }));
     expect(html).toContain(TRIPCOM_FRESH_SEARCH_NOTE);
   });
 
