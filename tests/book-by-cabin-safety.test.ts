@@ -58,18 +58,15 @@ function businessObservation(overrides: Partial<FareObservation> = {}): FareObse
 }
 
 describe('A. Real Manchester-Lahore data — the exact confirmed live defect', () => {
-  it('Fare Signal selects the latest £547 Economy observation (the 25 Aug same-day emergency-recheck, which now outranks the £538 routine check it re-verifies — see lib/fare-signal.ts compareByRepresentativePriority, PR #182)', () => {
+  it('Fare Signal shows no current signal at all for Manchester-Lahore (Fare Signal poor-itinerary suppression, 31 Aug 2026) — its £547 Economy observation (the 25 Aug same-day emergency-recheck) is a confirmed self-transfer, 2+-stop itinerary and its £3,051 Business observation is the same class of confirmed-poor evidence, so neither cabin has a representative fare to show; this is NOT a regression of the cabin-safety fix below — Economy is still correctly preferred over Business whenever both are shown, it is simply that neither currently qualifies', () => {
     const signal = getFareSignalForRoute('manchester-lahore', NOW_ISO);
-    expect(signal.observation?.cabin).toBe('Economy');
-    expect(signal.observation?.price).toBe(547);
-    expect(signal.observation?.id).toBe('obs-man-lhe-economy-20260825-recheck-v1');
+    expect(signal.state).toBe('none');
+    expect(signal.observation).toBeNull();
   });
 
-  it('Book-By now selects the SAME Economy observation — the confirmed defect is gone', () => {
+  it('Book-By agrees with Fare Signal — both correctly show no representative fare, never disagreeing (the shared selectRepresentativeObservation() choke point this whole file exists to guard)', () => {
     const snapshot = computeBookBySnapshot('manchester-lahore', NOW_DATE);
-    expect(snapshot?.latestObservation?.cabin).toBe('Economy');
-    expect(snapshot?.latestObservation?.price).toBe(547);
-    expect(snapshot?.latestObservation?.observedDate).toBe('2026-08-25');
+    expect(snapshot?.latestObservation).toBeNull();
   });
 
   it('the £3,051 Business observation remains completely untouched in the append-only archive', () => {
@@ -137,12 +134,17 @@ describe('D. Every current Book-By priority route — Book-By matches Fare Signa
     for (const slug of BOOK_BY_PRIORITY_ROUTE_SLUGS) {
       result[slug] = computeBookBySnapshot(slug, NOW_DATE)?.latestObservation?.cabin ?? null;
     }
+    // Fare Signal poor-itinerary suppression (31 Aug 2026): 3 of the 5
+    // priority routes now correctly have no representative fare of any
+    // cabin — their only current observations are confirmed self-transfer,
+    // 2+-stop-per-leg itineraries. manchester-islamabad and
+    // london-heathrow-delhi are unaffected.
     expect(result).toEqual({
-      'manchester-lahore': 'Economy',
+      'manchester-lahore': null,
       'manchester-islamabad': 'Economy',
       'london-heathrow-delhi': 'Economy',
-      'london-heathrow-jeddah': 'Economy',
-      'birmingham-amritsar': 'Economy',
+      'london-heathrow-jeddah': null,
+      'birmingham-amritsar': null,
     });
   });
 });

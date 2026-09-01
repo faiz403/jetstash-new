@@ -196,12 +196,68 @@ function selectCurrentEconomyObservation(observations: FareObservation[], nowIso
  * again, this is the ONE representative-fare selection policy, and
  * deriveFareSignal() itself is now just a thin wrapper around it.
  */
+/**
+ * Fare Signal / Book-By poor-itinerary suppression (31 Aug 2026, Users 3 & 4
+ * real-user validation). Selection previously optimised purely for
+ * recency/price (see selectRepresentativeObservation below) with no
+ * itinerary-suitability check at all — a self-transfer, multi-stop
+ * itinerary could win simply by being the newest same-day recheck,
+ * regardless of how operationally unreasonable it is for a normal
+ * traveller to consider (confirmed live: Manchester-Lahore's £547 and
+ * Birmingham-Amritsar's £591 "Frankenstein" itineraries, both explicitly
+ * flagged by real testers as reducing trust in JetStash's fare numbers).
+ *
+ * Deliberately the smallest possible, non-arbitrary gate: no invented
+ * duration threshold, no airline-coherence rule, no new suitability score
+ * — just the one signature the read-only Fare Signal audit found common to
+ * every confirmed-poor case and to none of the confirmed-fine ones:
+ * self-transfer AND 2+ stops on at least one leg. Self-transfer detection
+ * (isSelfTransferItinerary) is itself already conservative — true only
+ * when the observation's own priceNote explicitly, unambiguously records a
+ * self-transfer or separate-ticket itinerary, never inferred from stop or
+ * airline count — so this never fires on stop count alone.
+ *
+ * Suppression only, never a fallback: known-bad fails closed to "no
+ * current fare" rather than fishing backwards through the archive for an
+ * older observation, which could itself be stale, incomplete, or
+ * genuinely no better (the founder's own audit of all 7 known cases found
+ * 6 of 7 fallback candidates were equally bad, worse, cabin-mismatched, or
+ * themselves unstructured/unmeasured). An observation with missing
+ * outboundStops/returnStops/self-transfer evidence is UNKNOWN quality,
+ * never silently treated as safe by this check — it simply can't match
+ * this rule's condition, so it passes through unaffected exactly as
+ * before; that is a known gap in the archive's evidence, not a claim this
+ * gate certifies those observations as representative.
+ *
+ * The underlying FareObservation, the full fare-history archive, and
+ * every other route's own signal are completely untouched — this only
+ * changes what a caller receives as "the" current representative
+ * observation for the affected route.
+ */
+export function isPoorItinerarySuitability(o: Pick<FareObservation, 'priceNote' | 'outboundStops' | 'returnStops'>): boolean {
+  return isSelfTransferItinerary(o.priceNote) && ((o.outboundStops ?? 0) >= 2 || (o.returnStops ?? 0) >= 2);
+}
+
+/**
+ * The ONE representative-fare selection policy — see this function's own
+ * pre-existing doc comment above (Book-By cabin safety, 23 August 2026) for
+ * why Fare Signal and Book-By Countdown must never derive this
+ * independently. The poor-itinerary suppression check below is applied
+ * HERE, at the single shared choke point, precisely so it can never again
+ * let the two surfaces drift apart the way they did before that fix — a
+ * route whose only current observation is a suppressed Frankenstein
+ * itinerary must show "no current fare" identically on both the generic
+ * Fare Signal and the Book-By "Verified check" callout.
+ */
 export function selectRepresentativeObservation(
   observations: FareObservation[],
   nowIso: string
 ): { observation: FareObservation | null; state: FareSignalState; freshness: FareFreshnessState | null } {
   const currentEconomy = selectCurrentEconomyObservation(observations, nowIso);
   if (currentEconomy) {
+    if (isPoorItinerarySuitability(currentEconomy)) {
+      return { observation: null, state: 'none', freshness: null };
+    }
     return {
       observation: currentEconomy,
       state: 'current',
@@ -210,7 +266,7 @@ export function selectRepresentativeObservation(
   }
 
   const { observation: latest, historicalOnly } = selectLatestObservation(observations);
-  if (!latest || !isPubliclyPublishable(latest)) {
+  if (!latest || !isPubliclyPublishable(latest) || isPoorItinerarySuitability(latest)) {
     return { observation: null, state: 'none', freshness: null };
   }
 

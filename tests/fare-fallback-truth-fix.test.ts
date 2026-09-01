@@ -30,8 +30,13 @@ const nowIso = new Date().toISOString().slice(0, 10);
 
 describe('hasCurrentFareSignalAmongRoutes — the canonical multi-route check', () => {
   it('is true when at least one route in scope has a current Fare Signal', () => {
-    // Manchester-Dubai is a long-standing, consistently fresh route.
-    expect(hasCurrentFareSignalAmongRoutes(['manchester-dubai', 'not-a-real-route'], nowIso)).toBe(true);
+    // Manchester-Antalya is a long-standing, consistently fresh route.
+    // (Not manchester-dubai: since Fare Signal poor-itinerary suppression,
+    // 31 Aug 2026, its only current Economy observation is a confirmed
+    // self-transfer, 2-stop-each-way itinerary — see
+    // tests/fare-signal-cabin-safety.test.ts and tests/fare-signal.test.ts
+    // for the full account.)
+    expect(hasCurrentFareSignalAmongRoutes(['manchester-antalya', 'not-a-real-route'], nowIso)).toBe(true);
   });
 
   it('is false for an empty scope', () => {
@@ -54,7 +59,7 @@ describe('hasCurrentFareSignalAmongRoutes — the canonical multi-route check', 
 
 describe('hasCurrentFareSignalForCabinAmongRoutes — cabin-scoped sibling for /business-class', () => {
   it('is true for Economy cabin among routes that include a current Economy fare', () => {
-    expect(hasCurrentFareSignalForCabinAmongRoutes(['manchester-dubai'], 'Economy', nowIso)).toBe(true);
+    expect(hasCurrentFareSignalForCabinAmongRoutes(['manchester-antalya'], 'Economy', nowIso)).toBe(true);
   });
 
   it('is false when no route in scope has evidence for that cabin', () => {
@@ -70,10 +75,19 @@ describe('hasCurrentFareSignalForCabinAmongRoutes — cabin-scoped sibling for /
   // trusting a cabin with no evidence; it must now correctly flip true for
   // scopes that include one of those four routes, and stay false for
   // scopes that genuinely have none.
-  it('is true for Business cabin among the four routes Business Fare Evidence Batch 1 evidenced', () => {
+  //
+  // Fare Signal poor-itinerary suppression (31 Aug 2026): 2 of those 4
+  // routes' own Business observations are themselves confirmed
+  // self-transfer, 2+-stop-per-leg itineraries — manchester-lahore's
+  // £3,051 (3/3 stops) and london-heathrow-lahore's Business record — and
+  // are now correctly suppressed too, same as their Economy signals.
+  // london-heathrow-doha (1/1 stops) and manchester-karachi (1/1 stops)
+  // are unaffected; the aggregate check across the whole catalogue still
+  // holds true because of those two.
+  it('is true for Business cabin among the four routes Business Fare Evidence Batch 1 evidenced — 2 of the 4 individually, 2 more now suppressed by poor-itinerary evidence', () => {
     expect(hasCurrentFareSignalForCabinAmongRoutes(routes.map((r) => r.slug), 'Business', nowIso)).toBe(true);
-    expect(hasCurrentFareSignalForCabinAmongRoutes(['manchester-lahore'], 'Business', nowIso)).toBe(true);
-    expect(hasCurrentFareSignalForCabinAmongRoutes(['london-heathrow-lahore'], 'Business', nowIso)).toBe(true);
+    expect(hasCurrentFareSignalForCabinAmongRoutes(['manchester-lahore'], 'Business', nowIso)).toBe(false);
+    expect(hasCurrentFareSignalForCabinAmongRoutes(['london-heathrow-lahore'], 'Business', nowIso)).toBe(false);
     expect(hasCurrentFareSignalForCabinAmongRoutes(['london-heathrow-doha'], 'Business', nowIso)).toBe(true);
     expect(hasCurrentFareSignalForCabinAmongRoutes(['manchester-karachi'], 'Business', nowIso)).toBe(true);
   });

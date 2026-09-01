@@ -75,7 +75,21 @@ describe('isSelfTransferItinerary() -- the one evidence predicate', () => {
 });
 
 describe('the 25 August 2026 batch -- real observations, real founder-specified expectations', () => {
-  const expectedLabelled = [
+  // Fare Signal poor-itinerary suppression (31 Aug 2026): all six of these
+  // routes' current-cabin observations are confirmed self-transfer AND
+  // 2+-stop-per-leg itineraries -- exactly the signature that gate now
+  // suppresses outright, superseding the self-transfer LABEL as the
+  // mitigation (no fare shown at all, rather than a bad fare shown with a
+  // caveat). The self-transfer evidence predicate (isSelfTransferItinerary)
+  // and its label are unchanged and still correctly evaluated -- it is
+  // simply that none of these six now has a current Fare Signal for it to
+  // attach to. See tests/fare-signal.test.ts and
+  // tests/fare-coverage-batch-3.test.ts for the full account. The label
+  // mechanism's continued correctness for a route that IS self-transfer but
+  // does NOT meet the suppression bar is proven separately below
+  // (manchester-barcelona: self-transfer via separate tickets, but both
+  // legs nonstop with no structured stop count recorded).
+  const nowSuppressed = [
     'manchester-lahore',
     'manchester-dubai',
     'london-heathrow-jeddah',
@@ -84,10 +98,18 @@ describe('the 25 August 2026 batch -- real observations, real founder-specified 
     'london-gatwick-amritsar',
   ];
 
-  it.each(expectedLabelled)('%s\'s current Fare Signal is flagged self-transfer', (slug) => {
+  it.each(nowSuppressed)('%s has no current Fare Signal at all (poor-itinerary suppression) -- its self-transfer evidence remains true in the archive, but there is no longer a displayed observation to flag', (slug) => {
     const signal = getFareSignalForRoute(slug, NOW_ISO);
+    expect(signal.state).toBe('none');
+    expect(signal.observation).toBeNull();
+  });
+
+  it('manchester-barcelona\'s current Fare Signal is genuinely self-transfer (separate tickets, both legs nonstop) and correctly NOT suppressed -- its evidence has no structured stop count at all, so it cannot meet the 2+-stop suppression bar, and remains exactly the case the self-transfer label exists for', () => {
+    const signal = getFareSignalForRoute('manchester-barcelona', NOW_ISO);
     expect(signal.state).toBe('current');
     expect(signal.observation?.isSelfTransfer).toBe(true);
+    expect(signal.observation?.outboundStops).toBeNull();
+    expect(signal.observation?.returnStops).toBeNull();
   });
 
   it('manchester-islamabad\'s representative Riyadh Air observation is NOT flagged -- its priceNote records no self-transfer/separate-ticket evidence (now the 25 Aug emergency-recheck, £480, which outranks the £460 routine check on the same-day representative-priority rule -- PR #182 -- but carries the same "no self-transfer notice" evidence)', () => {
@@ -111,14 +133,16 @@ describe('rendered Fare Signal -- label appears in the primary/prominent area, n
     return html.replace(/\s+/g, ' ');
   }
 
-  it('renders the exact label text on a self-transfer route (manchester-lahore)', () => {
-    const html = renderFareSignalForRoute('manchester-lahore');
+  it('renders the exact label text on a self-transfer route that is not itself suppressed (manchester-barcelona)', () => {
+    const html = renderFareSignalForRoute('manchester-barcelona');
     expect(html).toContain(SELF_TRANSFER_LABEL);
   });
 
-  it('renders the label on every one of the six affected routes', () => {
+  it('renders no current signal at all -- and so no label -- on every one of the six now-suppressed routes (Fare Signal poor-itinerary suppression, 31 Aug 2026)', () => {
     for (const slug of ['manchester-lahore', 'manchester-dubai', 'london-heathrow-jeddah', 'london-heathrow-doha', 'birmingham-amritsar', 'london-gatwick-amritsar']) {
-      expect(renderFareSignalForRoute(slug)).toContain(SELF_TRANSFER_LABEL);
+      const html = renderFareSignalForRoute(slug);
+      expect(html, slug).toContain('No current fare tracked');
+      expect(html, slug).not.toContain(SELF_TRANSFER_LABEL);
     }
   });
 
@@ -132,14 +156,14 @@ describe('rendered Fare Signal -- label appears in the primary/prominent area, n
     expect(html).not.toContain(SELF_TRANSFER_LABEL);
   });
 
-  it('existing caveats remain: baggage/optional-charges disclosure and the fresh-search note still render alongside the new label', () => {
-    const html = renderFareSignalForRoute('manchester-lahore');
-    expect(html).toContain('Check the itinerary, baggage allowance and booking terms before paying.');
+  it('existing caveats remain: the no-verified-partner-link note still renders alongside the label, not replaced by it', () => {
+    const html = renderFareSignalForRoute('manchester-barcelona');
+    expect(html).toContain('Exact partner booking link is not currently verified for this route.');
     expect(html).toContain(SELF_TRANSFER_LABEL);
   });
 
   it('makes no claim beyond the recorded evidence -- no "guaranteed", "protected", or baggage-transfer promise text is introduced', () => {
-    const html = renderFareSignalForRoute('manchester-lahore');
+    const html = renderFareSignalForRoute('manchester-barcelona');
     expect(html).not.toMatch(/guarantee/i);
     expect(html).not.toMatch(/protected/i);
     expect(html).not.toMatch(/baggage (will|is) transfer/i);

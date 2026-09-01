@@ -154,17 +154,16 @@ describe('Lahore/Doha route-vs-fare mismatch behaviour is correct against their 
   // below), which is the intended split: a normal visitor still sees the
   // route's real Economy price up top, and Business shoppers still see the
   // new evidence exactly where they'd look for it.
-  it('Manchester-Lahore: the generic Fare Signal correctly stays Economy; the mismatch callout still fires correctly against PIA · Direct for that Economy fare; the new Business fare is separately confirmed visible via its own Deal', () => {
+  it('Manchester-Lahore: Fare Signal poor-itinerary suppression (31 Aug 2026) now correctly shows no current signal at all — its Economy fare is a confirmed self-transfer, 2+-stop itinerary, so there is no mismatch callout to fire (nothing to mismatch against); the new Business fare remains separately confirmed visible via its own Deal, since Deal/fare-history surfaces are independent of Fare Signal selection', () => {
     const { presentation } = presentationFor('manchester-lahore');
     expect(presentation.status).toBe('direct');
     const signal = getFareSignalForRoute('manchester-lahore', NOW_ISO);
-    expect(signal.observation?.cabin).toBe('Economy');
-    expect(signal.observation?.directness).toBe('connecting');
+    expect(signal.state).toBe('none');
+    expect(signal.observation).toBeNull();
 
     const html = renderFareSignalForRoute('manchester-lahore');
-    expect(html).toContain('Route service');
-    expect(html).toContain('PIA · Direct');
-    expect(html).toContain('This tracked fare is a different, connecting journey.');
+    expect(html).toContain('No current fare tracked');
+    expect(html).not.toContain('Route service');
 
     const businessDeal = deals.find((d) => d.id === 'man-lhe-business')!;
     expect(hasTrackedFare(businessDeal, NOW_ISO)).toBe(true);
@@ -185,16 +184,16 @@ describe('Lahore/Doha route-vs-fare mismatch behaviour is correct against their 
     expect(hasTrackedFare(businessDeal, NOW_ISO)).toBe(true);
   });
 
-  it('Heathrow-Doha: the generic Fare Signal correctly stays Economy; the mismatch callout still fires correctly against Qatar Airways · Direct for that Economy fare; the new Business fare is separately confirmed visible via its own Deal', () => {
+  it('Heathrow-Doha: Fare Signal poor-itinerary suppression (31 Aug 2026) now correctly shows no current signal at all — its Economy fare is a confirmed self-transfer, 2+-stop itinerary, so there is no mismatch callout to fire (nothing to mismatch against); the new Business fare remains separately confirmed visible via its own Deal', () => {
     const { presentation } = presentationFor('london-heathrow-doha');
     expect(presentation.status).toBe('direct');
     const signal = getFareSignalForRoute('london-heathrow-doha', NOW_ISO);
-    expect(signal.observation?.cabin).toBe('Economy');
+    expect(signal.state).toBe('none');
+    expect(signal.observation).toBeNull();
 
     const html = renderFareSignalForRoute('london-heathrow-doha');
-    expect(html).toContain('Route service');
-    expect(html).toContain('Qatar Airways · Direct');
-    expect(html).toContain('This tracked fare is a different, connecting journey.');
+    expect(html).toContain('No current fare tracked');
+    expect(html).not.toContain('Route service');
 
     const businessDeal = deals.find((d) => d.id === 'lhr-doh-business')!;
     expect(hasTrackedFare(businessDeal, NOW_ISO)).toBe(true);

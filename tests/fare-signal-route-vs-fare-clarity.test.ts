@@ -91,11 +91,15 @@ describe('direct-route + direct-fare: matching state renders no callout (no unne
 });
 
 describe('connecting-only route: never falsely mentions a direct service', () => {
-  it('a connecting route with a matching connecting fare shows no callout, and the word "Direct" never appears', () => {
+  it('a connecting route whose matching connecting fare is now suppressed (Fare Signal poor-itinerary suppression, 31 Aug 2026) shows no callout, and the word "Direct" never appears', () => {
     const { presentation } = presentationFor('birmingham-amritsar');
     expect(presentation.status).toBe('connecting');
+    // birmingham-amritsar's only current observation (£591, 3/3 stops,
+    // self-transfer) is now correctly suppressed entirely — there is no
+    // observation left to check directness on, and a fortiori no callout
+    // or "Direct" wording, which remains this test's real point.
     const signal = getFareSignalForRoute('birmingham-amritsar', NOW_ISO);
-    expect(signal.observation?.directness).toBe('connecting');
+    expect(signal.observation).toBeNull();
 
     const html = renderFareSignalForRoute('birmingham-amritsar');
     expect(html).not.toContain('Route service');
@@ -388,11 +392,22 @@ describe('full 88-route dataset safety check (Phase 8)', () => {
     // delhi's 13 August observation and adding a fresh 22 August one,
     // dropping noFare to 0 and moving connectingConnectingFare 13->14.
     // unverified stays 5, untouched by either 22 August change.
-    expect(directConnectingFare).toBe(56);
+    //
+    // noFare 0 -> 7 (Fare Signal poor-itinerary suppression, 31 Aug 2026):
+    // 7 routes' only current observations are confirmed self-transfer,
+    // 2+-stop-per-leg itineraries and are now correctly suppressed
+    // entirely, so signal.observation (and therefore fareDirectness) is
+    // null for each. 5 of the 7 were direct routes with a connecting fare
+    // (manchester-lahore, manchester-dubai, london-heathrow-doha,
+    // london-heathrow-jeddah, london-gatwick-amritsar), moving out of
+    // directConnectingFare: 56 -> 51. The other 2 were connecting routes
+    // with a connecting fare (birmingham-amritsar, birmingham-delhi),
+    // moving out of connectingConnectingFare: 14 -> 12.
+    expect(directConnectingFare).toBe(51);
     expect(directDirectFare).toBe(13);
-    expect(connectingConnectingFare).toBe(14);
+    expect(connectingConnectingFare).toBe(12);
     expect(connectingDirectFare).toBe(0);
-    expect(noFare).toBe(0);
+    expect(noFare).toBe(7);
     expect(unverified).toBe(5);
     expect(directConnectingFare + directDirectFare + connectingConnectingFare + connectingDirectFare + noFare + unverified).toBe(88);
   });

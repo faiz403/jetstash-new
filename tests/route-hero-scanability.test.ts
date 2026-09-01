@@ -246,11 +246,18 @@ describe('no evidence or trust wording was accidentally lost — full 88-route s
     // then unsuppressed birmingham-delhi's 13 August observation and added
     // a fresh 22 August one, dropping noFare to 0 and moving
     // connectingConnectingFare 13->14.
-    expect(directConnectingFare).toBe(56);
+    //
+    // noFare 0 -> 7 (Fare Signal poor-itinerary suppression, 31 Aug 2026) —
+    // see tests/fare-signal-route-vs-fare-clarity.test.ts's identical
+    // update for the full account: 5 direct-route/connecting-fare routes
+    // move out of directConnectingFare (56->51), 2 connecting-route/
+    // connecting-fare routes move out of connectingConnectingFare
+    // (14->12).
+    expect(directConnectingFare).toBe(51);
     expect(directDirectFare).toBe(13);
-    expect(connectingConnectingFare).toBe(14);
+    expect(connectingConnectingFare).toBe(12);
     expect(connectingDirectFare).toBe(0);
-    expect(noFare).toBe(0);
+    expect(noFare).toBe(7);
     expect(unverified).toBe(5);
   });
 });

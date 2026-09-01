@@ -79,8 +79,24 @@ describe('Fare Coverage Programme Batch 3', () => {
     // vs nowIso, so both already count as publishable at this file's own
     // NOW_ISO (13 August).
     expect(current).toHaveLength(83);
+    // Fare Signal poor-itinerary suppression (31 Aug 2026): "tracked" (has
+    // any publishable observation, checked above) and "signalled" (has a
+    // displayable current Fare Signal) are no longer the same question by
+    // design — 7 of these 83 tracked routes correctly show no current fare
+    // because their only publishable observation is a confirmed
+    // self-transfer, 2+-stop-per-leg itinerary. See
+    // tests/fare-signal.test.ts's "every route with a non-empty Fare Signal
+    // genuinely has tracked observations" test for the full account.
+    const knownSuppressed = new Set([
+      'manchester-lahore', 'birmingham-amritsar', 'manchester-dubai', 'london-heathrow-doha',
+      'london-heathrow-jeddah', 'london-gatwick-amritsar', 'birmingham-delhi',
+    ]);
     for (const route of current) {
       const signal = getFareSignalForRoute(route.slug, NOW_ISO);
+      if (knownSuppressed.has(route.slug)) {
+        expect(signal.state, route.slug).toBe('none');
+        continue;
+      }
       expect(signal.state, route.slug).toBe('current');
       expect(shouldShowNoFareFallback(signal), route.slug).toBe(false);
     }

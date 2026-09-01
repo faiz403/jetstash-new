@@ -154,13 +154,17 @@ describe('deriveFareSignal — Economy-preference fallback cases', () => {
 
 describe('Business-specific surfaces are unaffected by construction', () => {
   it('hasCurrentFareSignalForCabinAmongRoutes still correctly reports Business evidence — its input is always pre-filtered to one cabin, so the new Economy preference never applies', () => {
-    // manchester-lahore is one of the four real routes Business Fare
-    // Evidence Batch 1 (PR #166) evidenced; PR #166 is now merged onto this
-    // branch's history, so this correctly resolves true — proving the
-    // Economy-preference fix genuinely never reaches this cabin-scoped
-    // helper, exactly as predicted when this fix was first verified via a
-    // read-only cross-branch check (before #166 had landed here).
-    expect(hasCurrentFareSignalForCabinAmongRoutes(['manchester-lahore'], 'Business', NOW_ISO)).toBe(true);
+    // manchester-karachi is one of the four real routes Business Fare
+    // Evidence Batch 1 (PR #166) evidenced, and is unaffected by Fare
+    // Signal poor-itinerary suppression (31 Aug 2026) — its Business
+    // observation is 1 stop each way, not self-transfer. (Not
+    // manchester-lahore: its own £3,051 Business observation is itself a
+    // confirmed self-transfer, 3-stop-each-way itinerary and is now
+    // correctly suppressed too — see
+    // tests/fare-fallback-truth-fix.test.ts for the full account.) This
+    // still proves the Economy-preference fix genuinely never reaches this
+    // cabin-scoped helper.
+    expect(hasCurrentFareSignalForCabinAmongRoutes(['manchester-karachi'], 'Business', NOW_ISO)).toBe(true);
   });
 
   it('a single-cabin Business-only input is completely untouched by the Economy-preference branch', () => {
@@ -170,20 +174,19 @@ describe('Business-specific surfaces are unaffected by construction', () => {
   });
 });
 
-describe('real-network sanity: manchester-lahore\'s generic Fare Signal correctly stays Economy even with Business Fare Evidence Batch 1\'s real Business observation present', () => {
-  it('manchester-lahore\'s Fare Signal is Economy, not the newer £3,051 Business observation — the flagship case this fix exists for', () => {
+describe('real-network sanity: manchester-lahore now correctly shows no current Fare Signal of either cabin (Fare Signal poor-itinerary suppression, 31 Aug 2026)', () => {
+  it('manchester-lahore\'s generic Fare Signal is neither its Economy nor its Business observation — both are confirmed self-transfer, 2+/3-stop-per-leg itineraries, so neither cabin has a representative fare to show; this is not a regression of the cabin-safety fix above — Economy would still correctly be preferred over Business whenever both are shown, it is simply that neither currently qualifies', () => {
     // This fix was originally authored and verified on clean main, before
     // PR #166's Business observations existed, via a read-only cross-branch
     // check (no route anywhere changed on main itself — confirmed at the
-    // time). PR #166 has since been merged onto this branch's own history,
-    // so this assertion now runs directly against the real, merged data:
-    // the generic signal still correctly resolves to the current Economy
-    // observation, not the £3,051 Business one dated four days later. The
-    // exact Economy price moved from £538 to £547 (PR #182's same-day
-    // emergency-recheck priority rule, plus the 25 Aug recheck append) —
-    // this test's own point (cabin safety) is untouched by that.
+    // time). PR #166 has since been merged onto this branch's own history.
+    // Fare Signal poor-itinerary suppression (31 Aug 2026) then found the
+    // Economy observation this test used to check (£547, 2/3 stops,
+    // self-transfer) and the £3,051 Business one (3/3 stops, self-transfer)
+    // are both confirmed-poor itineraries, so the generic signal correctly
+    // resolves to nothing rather than either.
     const signal = getFareSignalForRoute('manchester-lahore', NOW_ISO);
-    expect(signal.observation?.cabin).toBe('Economy');
-    expect(signal.observation?.price).toBe(547);
+    expect(signal.state).toBe('none');
+    expect(signal.observation).toBeNull();
   });
 });
