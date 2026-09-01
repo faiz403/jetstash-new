@@ -30,28 +30,55 @@ import { FareHistoryPanel } from '@/components/route/fare-history-panel';
 // failing because of that drift.
 const FIXED_TODAY = '2026-08-31';
 
+// Manchester-Dubai representative-direct-fare pilot (1 September 2026):
+// deliberately removed from this list. It gained a new, separate-profileId,
+// non-self-transfer, 0-stop Emirates-direct observation (see
+// FARE_OBSERVATION_ARCHIVE.md's "Manchester-Dubai representative-direct-
+// fare pilot" section) that is now its Fare Signal's selected observation
+// at ANY evaluation date, including this frozen one -- fare-observation
+// selection has no observedDate-vs-nowIso gate (a pre-existing
+// characteristic, not something this pilot changed). This is the pilot's
+// own intended outcome, not a coherence-fix regression: see the dedicated
+// "1. Manchester-Dubai" describe block below for the proof that the
+// heading correctly reverts to normal now that a genuine representative
+// fare exists, exactly as this fix's own `hasCurrentRepresentativeFare`
+// condition was designed to do.
 const KNOWN_NO_REPRESENTATIVE_FARE_ROUTES = [
   'manchester-lahore',
   'birmingham-amritsar',
-  'manchester-dubai',
   'london-heathrow-doha',
   'london-heathrow-jeddah',
   'london-gatwick-amritsar',
   'birmingham-delhi',
 ];
 
-describe('1. Manchester-Dubai: the exact reproduced case', () => {
-  it('current Fare Signal is none, observations remain present, heading no longer claims "current example"', () => {
+describe('1. Manchester-Dubai: the originally-reproduced case, now resolved by real evidence (Manchester-Dubai representative-direct-fare pilot, 1 September 2026)', () => {
+  it('current Fare Signal is "current" again, backed by the new representative-direct Emirates observation -- the heading correctly REVERTS to the normal wording, proving hasCurrentRepresentativeFare tracks real evidence rather than being a one-way flag', () => {
     const signal = getFareSignalForRoute('manchester-dubai', FIXED_TODAY);
-    expect(signal.state).toBe('none');
+    expect(signal.state).toBe('current');
+    expect(signal.observation?.price).toBe(755);
     const observations = getPublishableObservationsByRoute('manchester-dubai', FIXED_TODAY);
     expect(observations.length).toBeGreaterThan(0);
     const copy = getFareSectionCopy(observations.length > 0, true, signal.state !== 'none');
-    expect(copy.heading).toBe('Fare history');
-    expect(copy.heading).not.toMatch(/current example/i);
+    expect(copy.heading).toBe('Fare history & current example');
+    expect(copy.caption).toMatch(/checked on the date shown/);
   });
 
-  it('the contextual explanation renders, without claiming the observations are invalid, wrong, or that no fares/flights exist', () => {
+  it('£314 and the other underlying baseline-series observations remain completely intact in the archive, alongside the new £755 one', () => {
+    const obs = fareObservations.find((o) => o.id === 'obs-man-dxb-economy-20260825-8w-v1');
+    expect(obs).toBeDefined();
+    expect(obs!.price).toBe(314);
+    expect(obs!.outboundStops).toBe(2);
+    expect(obs!.returnStops).toBe(2);
+    // Still rendered in Fare History, unaffected by this copy-only fix or
+    // by the later representative-direct-fare pilot.
+    const observations = getPublishableObservationsByRoute('manchester-dubai', FIXED_TODAY);
+    const html = renderToStaticMarkup(FareHistoryPanel({ observations }));
+    expect(html).toContain('£314');
+    expect(html).toContain('£755');
+  });
+
+  it('the contextual "no representative fare" copy this fix introduced is still exercised correctly by a genuinely no-representative-fare route (see describe block 2 below), even though manchester-dubai itself no longer needs it', () => {
     const copy = getFareSectionCopy(true, true, false);
     expect(copy.caption).toMatch(/context/i);
     expect(copy.caption).toMatch(/does not currently have a representative fare/i);
@@ -61,21 +88,9 @@ describe('1. Manchester-Dubai: the exact reproduced case', () => {
     expect(copy.caption).not.toMatch(/direct fare/i);
     expect(copy.caption).not.toMatch(/recommended/i);
   });
-
-  it('£314 and the other underlying observations remain completely intact in the archive', () => {
-    const obs = fareObservations.find((o) => o.id === 'obs-man-dxb-economy-20260825-8w-v1');
-    expect(obs).toBeDefined();
-    expect(obs!.price).toBe(314);
-    expect(obs!.outboundStops).toBe(2);
-    expect(obs!.returnStops).toBe(2);
-    // Still rendered in Fare History, unaffected by this copy-only fix.
-    const observations = getPublishableObservationsByRoute('manchester-dubai', FIXED_TODAY);
-    const html = renderToStaticMarkup(FareHistoryPanel({ observations }));
-    expect(html).toContain('£314');
-  });
 });
 
-describe('2. All seven currently no-representative-fare routes receive the coherent history presentation', () => {
+describe('2. All six currently no-representative-fare routes receive the coherent history presentation', () => {
   it.each(KNOWN_NO_REPRESENTATIVE_FARE_ROUTES)('%s: Fare Signal is none, observations exist, heading is "Fare history" (no "current example")', (slug) => {
     const signal = getFareSignalForRoute(slug, FIXED_TODAY);
     expect(signal.state, slug).toBe('none');

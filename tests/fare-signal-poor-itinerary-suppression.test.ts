@@ -31,12 +31,35 @@ import { standoutFareApprovals } from '@/data/standout-fare-approvals';
  * Watcher, Standout Fare and fare history.
  */
 
-const NOW_ISO = new Date().toISOString().slice(0, 10);
+// Frozen at 2026-08-31 -- this file's own real-world evidence date (see the
+// doc comment above and this file's own AUDIT_REFERENCE_DATE further down,
+// which already froze the same date independently). Originally the live
+// clock; fixed here (1 September 2026, MAN-DXB representative-direct-fare
+// pilot) so every "exact current state" assertion below is immune to the
+// live clock advancing and ageing a fixture past OBSERVATION_FRESH_DAYS --
+// the same class of defect just fixed in tests/fare-history-coherence.test.ts.
+const NOW_ISO = '2026-08-31';
 
+// Manchester-Dubai representative-direct-fare pilot (1 September 2026):
+// manchester-dubai is deliberately REMOVED from this list. It gained a new,
+// separate-profileId, non-self-transfer, 0-stop Emirates-direct observation
+// (see FARE_OBSERVATION_ARCHIVE.md's "Manchester-Dubai representative-
+// direct-fare pilot" section) that is now its Fare Signal's selected
+// observation -- fare-observation selection has no observedDate-vs-nowIso
+// gate (a pre-existing characteristic of getFareSignalForRoute, not
+// something this pilot changed), so manchester-dubai resolves to a current
+// Fare Signal at ANY evaluation date once this observation exists in the
+// archive, not only from 1 September 2026 onward. This is the pilot's own
+// intended, evidence-driven outcome, not a suppression-rule regression --
+// the underlying rule (isPoorItinerarySuitability) is completely unweakened
+// and the original £314 baseline-series observation remains, on its own,
+// exactly as suppressed as ever; see
+// tests/manchester-dubai-representative-direct-pilot.test.ts's "suppression
+// policy itself is unweakened" coverage for the direct proof. The other 6
+// routes below are completely unaffected by this pilot.
 const KNOWN_SUPPRESSED_ROUTES = [
   'manchester-lahore',
   'birmingham-amritsar',
-  'manchester-dubai',
   'london-heathrow-doha',
   'london-heathrow-jeddah',
   'london-gatwick-amritsar',
@@ -125,7 +148,7 @@ describe('6. exact regression cases: MAN-LHE and BHX-ATQ become no-current-Fare-
   });
 });
 
-describe('7. all seven audited routes are suppressed while they still match the known-bad signature', () => {
+describe('7. all six remaining audited routes are suppressed while they still match the known-bad signature (manchester-dubai excluded -- see the Manchester-Dubai representative-direct-fare pilot note on KNOWN_SUPPRESSED_ROUTES)', () => {
   it.each(KNOWN_SUPPRESSED_ROUTES)('%s has no current Fare Signal', (slug) => {
     const signal = getFareSignalForRoute(slug, NOW_ISO);
     expect(signal.state, slug).toBe('none');
@@ -290,7 +313,7 @@ describe('C. customer-facing aggregate consequences honestly stop counting suppr
 });
 
 describe('13. Standout Fare is unaffected -- its own qualification path never calls deriveFareSignal/selectRepresentativeObservation', () => {
-  it('no Standout Fare approval exists for any of the seven suppressed routes, so none of this is masking a lost approval', () => {
+  it('no Standout Fare approval exists for any of the six remaining suppressed routes, so none of this is masking a lost approval', () => {
     expect(standoutFareApprovals.some((a) => KNOWN_SUPPRESSED_ROUTES.includes(a.routeSlug) && !a.revokedDate)).toBe(false);
   });
 
@@ -320,6 +343,22 @@ describe('Coverage reconciliation, frozen at 2026-08-31 (the original audit\'s o
   // (e0b7109): PR #199's merged diff touched only data/route-warnings.ts,
   // 5 test files and docs/project-control/ROUTE_COVERAGE_AUDIT.md -- zero
   // lines in data/fare-observations.ts.
+  //
+  // Manchester-Dubai representative-direct-fare pilot (1 September 2026):
+  // manchester-dubai's new, separate-profileId Emirates-direct observation
+  // makes its Fare Signal resolve 'current' at ANY evaluation date,
+  // including this historical AUDIT_REFERENCE_DATE, because fare-observation
+  // selection has no observedDate-vs-nowIso gate (a pre-existing
+  // characteristic, not something this pilot changed) -- so it can no
+  // longer be independently reconstructed as "suppressed as of 31 August
+  // 2026" via this technique, permanently, regardless of reference date.
+  // manchester-dubai is therefore counted directly in currentCount below
+  // (a real, current route) rather than via KNOWN_SUPPRESSED_ROUTES (now 6
+  // routes, not 7) -- the arithmetic below still nets out to the same 81
+  // pre-suppression total by construction (74 other-route baseline + 6
+  // still-suppressed + manchester-dubai's own now-current 1 = 81), so this
+  // remains the same historical fact, not a changed one. The other 6
+  // routes' reconstruction is completely unaffected and unchanged.
   const AUDIT_REFERENCE_DATE = '2026-08-31';
 
   it('pre-suppression Fare Signal coverage, reconstructed at the frozen audit date, is exactly 81 current / 7 none, matching the original audit on main @ c62399a', () => {
@@ -327,8 +366,8 @@ describe('Coverage reconciliation, frozen at 2026-08-31 (the original audit\'s o
     const currentCount = allSignals.filter((s) => s.state === 'current').length;
     const noneCount = allSignals.filter((s) => s.state === 'none').length;
     // Reconstructing "as if the suppression gate did not exist" is valid
-    // here because every one of the 7 known-suppressed routes was itself
-    // 'current' immediately before this fix (that is the fix's whole
+    // here because every one of the remaining 6 known-suppressed routes was
+    // itself 'current' immediately before this fix (that is the fix's whole
     // premise), and no other route's state depends on the gate at all.
     for (const slug of KNOWN_SUPPRESSED_ROUTES) {
       expect(getFareSignalForRoute(slug, AUDIT_REFERENCE_DATE).state, slug).toBe('none');
@@ -337,17 +376,17 @@ describe('Coverage reconciliation, frozen at 2026-08-31 (the original audit\'s o
     expect(noneCount - KNOWN_SUPPRESSED_ROUTES.length).toBe(7);
   });
 
-  it('post-suppression coverage at the frozen audit date is exactly 74 current / 14 none -- an exact delta of 7 from the pre-suppression baseline', () => {
+  it('post-suppression coverage at the frozen audit date is exactly 75 current / 13 none -- manchester-dubai\'s new representative-direct evidence moves it from the "none" bucket to "current", an exact delta of 6 from the pre-suppression baseline for the remaining suppressed routes', () => {
     const allSignals = routes.map((route) => getFareSignalForRoute(route.slug, AUDIT_REFERENCE_DATE));
     const currentCount = allSignals.filter((s) => s.state === 'current').length;
     const noneCount = allSignals.filter((s) => s.state === 'none').length;
-    expect(currentCount).toBe(74);
+    expect(currentCount).toBe(75);
     expect(allSignals.filter((s) => s.state === 'recent').length).toBe(0);
-    expect(noneCount).toBe(14);
-    expect(81 - currentCount).toBe(7); // exact delta, matching the 7 known-suppressed routes exactly
+    expect(noneCount).toBe(13);
+    expect(81 - currentCount).toBe(6); // exact delta, matching the remaining 6 known-suppressed routes exactly
   });
 
-  it('the exact suppressed slugs at the frozen audit date are precisely the seven named routes -- no more, no fewer', () => {
+  it('the exact suppressed slugs at the frozen audit date are precisely the six named routes -- no more, no fewer (manchester-dubai excluded: see this describe block\'s own doc comment)', () => {
     const suppressedNow = routes
       .filter((route) => KNOWN_SUPPRESSED_ROUTES.includes(route.slug))
       .filter((route) => getFareSignalForRoute(route.slug, AUDIT_REFERENCE_DATE).state === 'none')
@@ -357,7 +396,6 @@ describe('Coverage reconciliation, frozen at 2026-08-31 (the original audit\'s o
       [
         'manchester-lahore',
         'birmingham-amritsar',
-        'manchester-dubai',
         'london-heathrow-doha',
         'london-heathrow-jeddah',
         'london-gatwick-amritsar',

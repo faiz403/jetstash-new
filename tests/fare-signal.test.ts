@@ -212,10 +212,21 @@ describe('Fare Signal production coverage counts', () => {
     // birmingham-delhi), all 7 were already 'current' at this fixed
     // reference date too, so the same delta applies here: 83 - 7 = 76; the
     // "none" bucket grows from 5 to 12.
+    //
+    // Manchester-Dubai representative-direct-fare pilot (1 September 2026):
+    // a new, separate-profileId Emirates-direct observation now exists in
+    // the archive with no self-transfer/2+-stop signature, so
+    // manchester-dubai's Fare Signal resolves to 'current' again --
+    // including when evaluated at this fixed historical reference date,
+    // since fare-observation selection has no observedDate-vs-nowIso gate
+    // (a pre-existing characteristic of getFareSignalForRoute/
+    // isObservationPublishable, not something this pilot changed): 76 -> 77
+    // current, 12 -> 11 none. The other 6 poor-itinerary-suppressed routes
+    // are completely unaffected.
     const signals = routes.map((route) => getFareSignalForRoute(route.slug, '2026-08-14'));
-    expect(signals.filter((signal) => signal.state === 'current')).toHaveLength(76);
+    expect(signals.filter((signal) => signal.state === 'current')).toHaveLength(77);
     expect(signals.filter((signal) => signal.state === 'recent')).toHaveLength(0);
-    expect(signals.filter((signal) => signal.state === 'none')).toHaveLength(12);
+    expect(signals.filter((signal) => signal.state === 'none')).toHaveLength(11);
     expect(routes.filter((route) => getTripComRouteUrl(route.slug)).length).toBe(45);
   });
 
@@ -255,9 +266,14 @@ describe('Fare Signal production coverage counts', () => {
     for (const slug of signalledRoutes) {
       expect(trackedRoutes, slug).toContain(slug);
     }
+    // Manchester-Dubai representative-direct-fare pilot (1 September 2026)
+    // removes manchester-dubai from this list: a new, separate-profileId
+    // Emirates-direct observation gives it a genuine current Fare Signal
+    // again, so it is no longer "tracked but not signalled" — the other 6
+    // poor-itinerary-suppressed routes are unaffected.
     const suppressedButTracked = trackedRoutes.filter((slug) => !signalledRoutes.includes(slug));
     expect(suppressedButTracked.sort()).toEqual(
-      ['birmingham-amritsar', 'birmingham-delhi', 'london-gatwick-amritsar', 'london-heathrow-doha', 'london-heathrow-jeddah', 'manchester-dubai', 'manchester-lahore'].sort()
+      ['birmingham-amritsar', 'birmingham-delhi', 'london-gatwick-amritsar', 'london-heathrow-doha', 'london-heathrow-jeddah', 'manchester-lahore'].sort()
     );
   });
 });

@@ -675,6 +675,104 @@ Leeds Bradford–Amritsar, Leeds Bradford–Islamabad). London Heathrow–Doha s
 fare observation is still only one category. See `ROUTE_COVERAGE_AUDIT.md`'s Batch B addendum for the
 full recomputed table.
 
+## Manchester–Dubai representative-direct-fare pilot — closed 1 September 2026
+
+Following the 31 August 2026 Fare Signal poor-itinerary suppression fix and the 1 September 2026
+Fare History coherence fix, `manchester-dubai`'s existing `manchester-dubai-economy-1adult-baseline-v1`
+series had, three checks running (6/18/25 August), surfaced only self-transfer or otherwise
+connecting itineraries — the 25 August entry was correctly suppressed as a poor-itinerary Fare
+Signal, leaving the route showing "no current fare tracked" despite Emirates verifiably operating
+the route direct 21 times a week. The founder commissioned a targeted pilot: test whether pairing
+that verified route truth with one genuinely representative direct Emirates fare materially changes
+the product, without building a new feature.
+
+- **Recorded as:** `obs-man-dxb-economy-20260901-representative-direct-v1` in
+  `data/fare-observations.ts`
+- **Route:** `manchester-dubai` — Manchester (MAN) → Dubai (DXB), return, Economy
+- **Profile:** `manchester-dubai-economy-1adult-representative-direct-v1` — a deliberately **new,
+  separate** series, not a continuation of `manchester-dubai-economy-1adult-baseline-v1`. Per the
+  founder's own instruction, representative-direct-service selection and cheapest-visible selection
+  are different comparison methodologies and must never share a series — doing so would let Fare
+  Watcher compute medians or "standout" differences across unlike selection policies.
+- **Travel dates:** 20 October 2026 – 3 November 2026 — reused deliberately from the route's most
+  recent (25 August 2026) baseline-series checks, per the founder's instruction not to invent new
+  dates when the existing comparable search parameters can reasonably be reused.
+- **Price:** £755 return, per person, one adult — genuinely the top "Best"-ranked Google Flights
+  result for the exact search (not hand-picked as cheapest; the cheapest visible fare for the same
+  dates was £334, a connecting itinerary). Booking directly with Emirates, not the lower £704
+  third-party (EaseMyTrip) price shown for the identical flights — see the evidence record for why:
+  Google Flights explicitly states bag-fee info is not available for that third-party channel, so
+  using the Emirates-direct price keeps the price and the baggage evidence on the same channel.
+- **Source/provider:** Emirates, via Google Flights (`observedVia: 'google-flights'`)
+- **Routing:** direct both ways — outbound MAN→DXB flight EK22, nonstop, 7h10m; return DXB→MAN
+  flight EK21, nonstop, 8h5m. Both legs independently reviewed and each confirmed nonstop
+  (`fareDirectness: 'direct'`, `outboundStops: 0`, `returnStops: 0`), satisfying
+  `FARE_COLLECTION_CHECKLIST.md`'s stricter bar for a `'direct'` value.
+- **Baggage:** recorded as `1 free carry-on; 1st checked bag free` — shown by Google Flights for
+  this itinerary when booking directly with Emirates; the same page explicitly states this bag-fee
+  information is not available when booking via any of the cheaper third-party sellers shown for
+  the same flights.
+- **Checked:** 1 September 2026
+- **Evidence:** `docs/project-control/fare-evidence/manchester-dubai-2026-09-01-representative-direct.md`
+  — DOM/accessibility-tree data only (the browser screenshot tool remains unavailable this session,
+  a standing, previously-confirmed limitation, disclosed plainly rather than implied away).
+
+**Confirmed `isPubliclyPublishable()` returns `true`** (both dates present, currency present, route
+status `'direct'`).
+
+**Mechanical, unmodified consequences** — no route-specific code was added anywhere:
+
+- **Fare Signal:** this observation is now `manchester-dubai`'s most recent, fresh, publicly
+  publishable Economy check with `comparisonEligibility: 'current'`, and does not match
+  `isPoorItinerarySuitability()` (no self-transfer wording; 0 stops both ways). The existing,
+  unmodified `selectRepresentativeObservation()` selection logic in `lib/fare-signal.ts` naturally
+  selects it as the route's current representative fare — Fare Signal moves from `'none'` to
+  `'current'` for `manchester-dubai` as a direct result of this evidence, not a selector change.
+- **Fare History:** the existing £314/£350/£480 baseline-series entries remain fully visible and
+  unedited — `FareHistoryPanel` reads every publishable observation regardless of Fare Signal
+  state. Because a current representative fare now exists, `getFareSectionCopy()`'s existing
+  `hasCurrentRepresentativeFare` condition (added the same day) naturally returns the normal "Fare
+  history & current example" wording for this route again — a mechanical consequence of the new
+  evidence, not a special case.
+- **Fare Watcher:** the new `profileId` groups separately from the baseline series
+  (`lib/fare-watcher.ts` groups strictly by `(routeSlug, cabin, profileId)`), so it is
+  `insufficient-baseline` by construction and can never be compared against, or mixed into a
+  median/standout calculation with, the baseline series' history.
+- **Standout Fare:** no approval entry exists for `manchester-dubai` in
+  `data/standout-fare-approvals.ts` (confirmed before this check) — `getApprovedStandoutFare()`
+  stays `null` for this route regardless of this observation.
+- **Journey Choice:** scoped to `manchester-islamabad` only — `manchester-dubai` is unaffected by
+  construction.
+- **Route-vs-fare mismatch:** absent — the route's own verified status (`isDirect: true`, Emirates)
+  now matches this observation's `fareDirectness: 'direct'` exactly, so
+  `routeVsFareMismatch()`/`routeServiceFareMismatch()` (`components/route/fare-signal.tsx`) render
+  nothing.
+- **DealCard directness badge (`man-dxb-economy`):** changes from "Connecting" to no badge at all.
+  `aggregateFareDirectness()` only returns a single value when every observation for the
+  route+cabin agrees; the fare pool now genuinely spans both connecting (£314/£350/£480, the
+  baseline series) and direct (£755, this pilot's observation), so it honestly returns `undefined`
+  rather than picking one. `getDealFareDirectnessLabel()` then checks whether every source airline
+  is a verified route operator before falling back to the route-level label — it isn't (only
+  Emirates is; Ryanair UK/Pegasus/Gulf Air are not) — so it fails closed to no badge, exactly the
+  documented behaviour for genuinely ambiguous evidence (see the "Evidence-completeness audit"
+  section above). This is a mechanical, correct consequence of the new evidence, not a code change,
+  and arguably more honest than the prior "Connecting" badge, which no longer describes every fare
+  in the pool.
+
+**A note on fare-observation selection and evaluation dates.** Adding this observation surfaced a
+pre-existing characteristic worth recording plainly: `isObservationPublishable()` /
+`getFareSignalForRoute()` never gate an observation by `observedDate <= nowIso` — they check only
+date-completeness, methodology exclusion, route match and route status. This means a newly-appended
+observation is visible to, and can become the selected representative fare for, ANY evaluation date
+passed to `getFareSignalForRoute()` — past, present or future — not only dates on or after its own
+`observedDate`. This was never previously exercised because no observation had been dated later than
+a surviving frozen-reference-date test elsewhere in the suite; this pilot's 1 September 2026
+observation is the first to do so, which is why several pre-existing frozen-date tests across the
+suite required an evidence-driven update (documented in each file's own comments) rather than being
+literal historical reconstructions immune to later appends. Nothing about this characteristic was
+changed by this pilot, and no fix was made — it is noted here for whoever next investigates a
+similar cross-test cascade after appending new fare data.
+
 ## Review standard
 
 Before a record can influence a public fare range or Book-By context:

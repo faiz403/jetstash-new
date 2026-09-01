@@ -52,13 +52,15 @@ describe('Fare Coverage Programme Batch 4', () => {
     // BHX-DEL unlock) — see tests/fare-coverage-batch-3.test.ts's
     // identical update for the full explanation.
     expect(current).toHaveLength(83);
-    // Fare Signal poor-itinerary suppression (31 Aug 2026): 7 of these 83
+    // Fare Signal poor-itinerary suppression (31 Aug 2026): 6 of these 83
     // tracked routes now correctly DO show the no-fare fallback — their
     // only publishable observation is a confirmed self-transfer,
     // 2+-stop-per-leg itinerary. See tests/fare-coverage-batch-3.test.ts's
-    // identical update for the full account.
+    // identical update for the full account. manchester-dubai is
+    // deliberately excluded (Manchester-Dubai representative-direct-fare
+    // pilot, 1 September 2026) — see that same file's comment.
     const knownSuppressed = new Set([
-      'manchester-lahore', 'birmingham-amritsar', 'manchester-dubai', 'london-heathrow-doha',
+      'manchester-lahore', 'birmingham-amritsar', 'london-heathrow-doha',
       'london-heathrow-jeddah', 'london-gatwick-amritsar', 'birmingham-delhi',
     ]);
     for (const route of current) {

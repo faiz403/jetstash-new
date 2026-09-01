@@ -93,9 +93,14 @@ describe('fareDirectness resolution rules the audit established', () => {
     expect(range!.observedDirectness).toBe('connecting');
   });
 
-  it('Manchester-Dubai and Manchester-Lahore keep their genuine, evidence-backed directness after the audit', () => {
-    expect(getFareRangeSummary('manchester-dubai', 'Economy', NOW_ISO)!.observedDirectness).toBe('connecting');
+  it('Manchester-Lahore keeps its genuine, evidence-backed directness after the audit', () => {
     expect(getFareRangeSummary('manchester-lahore', 'Economy', NOW_ISO)!.observedDirectness).toBe('connecting');
+  });
+
+  it('Manchester-Dubai\'s aggregate directness honestly becomes undefined once its evidence is genuinely mixed (Manchester-Dubai representative-direct-fare pilot, 1 September 2026) -- aggregateFareDirectness() only returns a single value when every observation agrees, and the route now has both connecting (£314/£350/£480, the baseline cheapest-visible series) and direct (£755, the new representative-direct series) observations, which is a real fact about the archive\'s evidence, not a data-integrity regression', () => {
+    const range = getFareRangeSummary('manchester-dubai', 'Economy', NOW_ISO)!;
+    expect(range.count).toBe(4);
+    expect(range.observedDirectness).toBeUndefined();
   });
 });
 

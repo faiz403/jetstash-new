@@ -82,13 +82,17 @@ describe('Fare Coverage Programme Batch 3', () => {
     // Fare Signal poor-itinerary suppression (31 Aug 2026): "tracked" (has
     // any publishable observation, checked above) and "signalled" (has a
     // displayable current Fare Signal) are no longer the same question by
-    // design — 7 of these 83 tracked routes correctly show no current fare
+    // design — 6 of these 83 tracked routes correctly show no current fare
     // because their only publishable observation is a confirmed
     // self-transfer, 2+-stop-per-leg itinerary. See
     // tests/fare-signal.test.ts's "every route with a non-empty Fare Signal
     // genuinely has tracked observations" test for the full account.
+    // manchester-dubai is deliberately excluded here (Manchester-Dubai
+    // representative-direct-fare pilot, 1 September 2026): a new, separate
+    // Emirates-direct observation gives it a genuine current Fare Signal
+    // again, so it is no longer one of the suppressed routes.
     const knownSuppressed = new Set([
-      'manchester-lahore', 'birmingham-amritsar', 'manchester-dubai', 'london-heathrow-doha',
+      'manchester-lahore', 'birmingham-amritsar', 'london-heathrow-doha',
       'london-heathrow-jeddah', 'london-gatwick-amritsar', 'birmingham-delhi',
     ]);
     for (const route of current) {

@@ -26,13 +26,23 @@ import { getTripComRouteUrl } from '@/lib/booking-providers';
 const NOW_ISO = new Date().toISOString().slice(0, 10);
 
 describe('getDealFareDirectnessLabel — a route being direct never implies a specific displayed fare is direct', () => {
-  it('Manchester-Dubai (a verified-direct route) displays "Connecting" for its Gulf Air fare, never "Direct flight"', () => {
+  it('Manchester-Dubai (a verified-direct route) now shows no fare-directness badge at all -- its evidence became genuinely mixed once a representative-direct Emirates observation joined the existing connecting ones (Manchester-Dubai representative-direct-fare pilot, 1 September 2026)', () => {
     const deal = deals.find((d) => d.id === 'man-dxb-economy')!;
     expect(deal).toBeDefined();
     // Confirm the premise: the route itself IS verified direct.
     expect(getDealDirectnessLabel(deal, NOW_ISO)).toBe('Direct flight');
-    // But the fare-aware label must reflect the fare's own recorded routing.
-    expect(getDealFareDirectnessLabel(deal, NOW_ISO)).toBe('Connecting');
+    // The fare pool now has both connecting (£314/£350/£480, the baseline
+    // series) and direct (£755, Emirates, the new representative-direct
+    // series) observations, so aggregateFareDirectness() honestly returns
+    // undefined (mixed, not uniform) rather than 'connecting'. Falling
+    // through to the route-operator check: not every source is a verified
+    // route operator (Ryanair UK/Pegasus/Gulf Air are not, only Emirates
+    // is), so getDealFareDirectnessLabel() correctly fails closed to no
+    // badge at all, exactly as documented for genuinely ambiguous evidence
+    // -- never "Direct flight" (the route's own status would over-claim
+    // for the connecting fares still in the pool) and never "Connecting"
+    // (which would now under-claim for the genuine direct fare).
+    expect(getDealFareDirectnessLabel(deal, NOW_ISO)).toBeUndefined();
   });
 
   it('a connecting fare on a route with any status never receives "Direct flight"', () => {
@@ -131,10 +141,11 @@ describe('getDealFareDirectnessLabel — a route being direct never implies a sp
 });
 
 describe('FareRangeSummary.observedDirectness aggregates per-observation fareDirectness honestly', () => {
-  it('Manchester-Dubai\'s range reports "connecting", matching its one observation\'s explicit fareDirectness', () => {
+  it('Manchester-Dubai\'s range now reports undefined -- its evidence spans both connecting and direct observations (Manchester-Dubai representative-direct-fare pilot, 1 September 2026), so aggregateFareDirectness() honestly declines to pick one', () => {
     const range = getFareRangeSummary('manchester-dubai', 'Economy', NOW_ISO);
     expect(range).not.toBeNull();
-    expect(range!.observedDirectness).toBe('connecting');
+    expect(range!.count).toBe(4);
+    expect(range!.observedDirectness).toBeUndefined();
   });
 
   it('Manchester-Lahore\'s range now reports "connecting", matching its Batch A observation\'s explicit fareDirectness (its two older Etihad observations predate the field and stay unset)', () => {

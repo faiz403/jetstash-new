@@ -75,23 +75,31 @@ describe('isSelfTransferItinerary() -- the one evidence predicate', () => {
 });
 
 describe('the 25 August 2026 batch -- real observations, real founder-specified expectations', () => {
-  // Fare Signal poor-itinerary suppression (31 Aug 2026): all six of these
+  // Fare Signal poor-itinerary suppression (31 Aug 2026): all five of these
   // routes' current-cabin observations are confirmed self-transfer AND
   // 2+-stop-per-leg itineraries -- exactly the signature that gate now
   // suppresses outright, superseding the self-transfer LABEL as the
   // mitigation (no fare shown at all, rather than a bad fare shown with a
   // caveat). The self-transfer evidence predicate (isSelfTransferItinerary)
   // and its label are unchanged and still correctly evaluated -- it is
-  // simply that none of these six now has a current Fare Signal for it to
+  // simply that none of these five now has a current Fare Signal for it to
   // attach to. See tests/fare-signal.test.ts and
   // tests/fare-coverage-batch-3.test.ts for the full account. The label
   // mechanism's continued correctness for a route that IS self-transfer but
   // does NOT meet the suppression bar is proven separately below
   // (manchester-barcelona: self-transfer via separate tickets, but both
   // legs nonstop with no structured stop count recorded).
+  //
+  // manchester-dubai is deliberately removed from this list (Manchester-
+  // Dubai representative-direct-fare pilot, 1 September 2026): its old
+  // self-transfer, 2+-stop baseline-series observation remains true and
+  // still individually meets this suppression signature (see
+  // tests/manchester-dubai-representative-direct-pilot.test.ts's own
+  // "suppression policy itself is unweakened" proof), but the route now
+  // has a separate, non-self-transfer, direct Emirates observation that is
+  // its Fare Signal's current selection instead.
   const nowSuppressed = [
     'manchester-lahore',
-    'manchester-dubai',
     'london-heathrow-jeddah',
     'london-heathrow-doha',
     'birmingham-amritsar',
@@ -138,8 +146,8 @@ describe('rendered Fare Signal -- label appears in the primary/prominent area, n
     expect(html).toContain(SELF_TRANSFER_LABEL);
   });
 
-  it('renders no current signal at all -- and so no label -- on every one of the six now-suppressed routes (Fare Signal poor-itinerary suppression, 31 Aug 2026)', () => {
-    for (const slug of ['manchester-lahore', 'manchester-dubai', 'london-heathrow-jeddah', 'london-heathrow-doha', 'birmingham-amritsar', 'london-gatwick-amritsar']) {
+  it('renders no current signal at all -- and so no label -- on every one of the five now-suppressed routes (Fare Signal poor-itinerary suppression, 31 Aug 2026; manchester-dubai excluded -- see this file\'s "the 25 August 2026 batch" describe block for why)', () => {
+    for (const slug of ['manchester-lahore', 'london-heathrow-jeddah', 'london-heathrow-doha', 'birmingham-amritsar', 'london-gatwick-amritsar']) {
       const html = renderFareSignalForRoute(slug);
       expect(html, slug).toContain('No current fare tracked');
       expect(html, slug).not.toContain(SELF_TRANSFER_LABEL);

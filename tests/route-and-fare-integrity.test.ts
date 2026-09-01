@@ -409,7 +409,10 @@ describe('FARE-001 pilot — historic examples stay private; only fully dated, e
     // manchester-islamabad, manchester-lahore, london-heathrow-jeddah and
     // birmingham-amritsar, verifying the controlled weekly batch's own
     // Fare Watcher candidates on that route.
-    expect(fareObservations).toHaveLength(226);
+    // 226 -> 227 (Manchester-Dubai representative-direct-fare pilot, 1
+    // September 2026): one new observation appended under a deliberately
+    // separate profileId — see FARE_OBSERVATION_ARCHIVE.md.
+    expect(fareObservations).toHaveLength(227);
   });
 
   it('keeps every historic observation incomplete and private', () => {
@@ -655,6 +658,10 @@ describe('FARE-001 pilot — historic examples stay private; only fully dated, e
       'obs-man-lhe-economy-20260825-recheck-v1',
       'obs-lhr-jed-economy-20260825-recheck-v1',
       'obs-bhx-atq-economy-20260825-recheck-v1',
+      // Manchester-Dubai representative-direct-fare pilot (1 September
+      // 2026) — a new, separate profileId, not part of the baseline
+      // cheapest-visible series above. See FARE_OBSERVATION_ARCHIVE.md.
+      'obs-man-dxb-economy-20260901-representative-direct-v1',
     ]);
     expect(published).toEqual(expect.arrayContaining([
       expect.objectContaining({

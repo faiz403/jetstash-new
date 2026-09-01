@@ -253,11 +253,16 @@ describe('no evidence or trust wording was accidentally lost — full 88-route s
     // move out of directConnectingFare (56->51), 2 connecting-route/
     // connecting-fare routes move out of connectingConnectingFare
     // (14->12).
+    //
+    // noFare 7 -> 6, directDirectFare 13 -> 14 (Manchester-Dubai
+    // representative-direct-fare pilot, 1 September 2026) — see
+    // tests/fare-signal-route-vs-fare-clarity.test.ts's identical update
+    // for the full account.
     expect(directConnectingFare).toBe(51);
-    expect(directDirectFare).toBe(13);
+    expect(directDirectFare).toBe(14);
     expect(connectingConnectingFare).toBe(12);
     expect(connectingDirectFare).toBe(0);
-    expect(noFare).toBe(7);
+    expect(noFare).toBe(6);
     expect(unverified).toBe(5);
   });
 });

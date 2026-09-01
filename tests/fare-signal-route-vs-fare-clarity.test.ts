@@ -403,11 +403,20 @@ describe('full 88-route dataset safety check (Phase 8)', () => {
     // directConnectingFare: 56 -> 51. The other 2 were connecting routes
     // with a connecting fare (birmingham-amritsar, birmingham-delhi),
     // moving out of connectingConnectingFare: 14 -> 12.
+    //
+    // noFare 7 -> 6, directDirectFare 13 -> 14 (Manchester-Dubai
+    // representative-direct-fare pilot, 1 September 2026): manchester-dubai
+    // gains a new, separate-profileId, direct Emirates observation, which
+    // becomes its Fare Signal's current selection. Its route status is
+    // already 'direct', so it joins directDirectFare fresh rather than
+    // leaving any other bucket (it had no fareDirectness counted anywhere
+    // while suppressed). The other 6 previously-suppressed routes are
+    // unaffected.
     expect(directConnectingFare).toBe(51);
-    expect(directDirectFare).toBe(13);
+    expect(directDirectFare).toBe(14);
     expect(connectingConnectingFare).toBe(12);
     expect(connectingDirectFare).toBe(0);
-    expect(noFare).toBe(7);
+    expect(noFare).toBe(6);
     expect(unverified).toBe(5);
     expect(directConnectingFare + directDirectFare + connectingConnectingFare + connectingDirectFare + noFare + unverified).toBe(88);
   });
