@@ -199,12 +199,28 @@ describe('Real archive expectation (19 August 2026, post-supersession-fix) — o
   // currently-reproducible candidate was the correct result before the
   // 25 August controlled weekly batch. That batch intentionally adds three
   // new standout candidates and one notable drop, all founder-review-only.
+  //
+  // 1 September 2026 Tuesday weekly batch update: this test's `nowIso` is
+  // the live clock date, so it honestly re-derives against the current
+  // archive rather than pinning a historical snapshot. Four routine
+  // observations qualified past the meaningful-drop threshold this week
+  // (manchester-islamabad, manchester-lahore, birmingham-amritsar,
+  // london-heathrow-doha) and each got a same-day emergency recheck per
+  // established policy; birmingham-amritsar's own recheck (£562) came back
+  // even lower than its routine check (£587) -- a new recent low as well as
+  // a meaningful drop -- so Fare Watcher's verified-candidate evaluation
+  // (which always evaluates through the matching recheck when one exists,
+  // per PR #184) correctly upgrades it from 'notable-drop' to
+  // 'standout-candidate' alongside the other three. london-heathrow-jeddah's
+  // £464 routine check does not clear the meaningful-drop threshold this
+  // week, so it's honestly no longer one of the four current candidates —
+  // both are genuine consequences of new evidence, not loosened assertions.
   it('the real fareObservations archive produces the four current Route Watch candidates from the controlled weekly batch', () => {
     const nowIso = new Date().toISOString().slice(0, 10);
     const candidates = generateRouteWatchFareCandidates(fareObservations, nowIso);
     expect(candidates).toHaveLength(4);
-    expect(candidates.map((c) => c.routeSlug)).toEqual(['manchester-islamabad', 'manchester-lahore', 'birmingham-amritsar', 'london-heathrow-jeddah']);
-    expect(candidates.map((c) => c.qualification)).toEqual(['standout-candidate', 'standout-candidate', 'notable-drop', 'standout-candidate']);
+    expect(candidates.map((c) => c.routeSlug)).toEqual(['manchester-islamabad', 'manchester-lahore', 'birmingham-amritsar', 'london-heathrow-doha']);
+    expect(candidates.map((c) => c.qualification)).toEqual(['standout-candidate', 'standout-candidate', 'standout-candidate', 'standout-candidate']);
     expect(candidates.every((c) => c.lifecycle === 'detected' && c.founderVerificationRequired)).toBe(true);
   });
 });
