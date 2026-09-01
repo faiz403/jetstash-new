@@ -147,7 +147,10 @@ describe('No fabricated fare ever appears for this route', () => {
   });
 
   it('now has real, non-fabricated fare observations (Batch A 6 August 2026, plus Weekly Full Fare Refresh #1 18 August 2026) - getFareRangeSummary correctly returns them, not null', () => {
-    const range = getFareRangeSummary('manchester-mumbai', 'Economy', '2026-08-06');
+    // Classification B: this test's own title names the 18 August 2026
+    // Weekly Full Fare Refresh #1 observation, after this file's usual 6
+    // Aug date.
+    const range = getFareRangeSummary('manchester-mumbai', 'Economy', '2026-08-18');
     expect(range).not.toBeNull();
     expect(range!.min).toBe(445);
     expect(range!.max).toBe(461);

@@ -723,9 +723,39 @@ export function getObservationsByRouteAndCabin(routeSlug: string, cabin: DealCab
  * needing (or risking) a real, fabricated entry in the production dataset.
  * See tests/verification-pending-leakage.test.ts.
  */
+/**
+ * Causal availability (temporal-causality fix, 1 September 2026, founder-
+ * approved). An observation cannot participate in ANY derivation evaluated
+ * as of a date before the observation was actually made:
+ * `observation.observedDate > evaluationDateIso` means the observation is
+ * invisible at that evaluation point — not stale, not suppressed, not
+ * deleted, simply not yet observed from that point of view. A same-day
+ * observation (`observedDate === evaluationDateIso`) IS available.
+ *
+ * This is the single central seam every publishability check funnels
+ * through — see isObservationPublishable() below, which every fare-
+ * derivation path (Fare Signal, Fare History, Journey Choice, Book-By)
+ * reaches via getPublishableObservationsByRoute()/
+ * getPublishableObservationsByRouteAndCabin(). Fare Watcher
+ * (lib/fare-watcher.ts) already carries its own independent, correct
+ * temporal guards and does not call through this seam.
+ *
+ * Date-format contract: every production caller of isObservationPublishable
+ * (and therefore of this function) passes a YYYY-MM-DD date-only string —
+ * confirmed by exhaustive grep of every `nowIso` construction site
+ * (`new Date().toISOString().slice(0, 10)`) and by
+ * lib/freshness-thresholds.ts's daysBetweenIso(), which appends
+ * `T12:00:00Z` to its inputs and would break on a full ISO timestamp. A
+ * plain string comparison is therefore safe here without normalisation.
+ */
+export function isObservationCausallyAvailable(observation: Pick<FareObservation, 'observedDate'>, evaluationDateIso: string): boolean {
+  return observation.observedDate <= evaluationDateIso;
+}
+
 export function isObservationPublishable(observation: FareObservation, route: Route | undefined, nowIso: string): boolean {
   if (!isPubliclyPublishable(observation)) return false;
   if (methodologyExcludedObservationIds.has(observation.id)) return false;
+  if (!isObservationCausallyAvailable(observation, nowIso)) return false;
   if (!route) return false;
   if (route.slug !== observation.routeSlug) return false;
   const status = getEffectiveRoutePresentation(route, routeStatusEvents, nowIso).status;

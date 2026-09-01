@@ -185,7 +185,11 @@ describe('real-network sanity: manchester-lahore now correctly shows no current 
     // self-transfer) and the £3,051 Business one (3/3 stops, self-transfer)
     // are both confirmed-poor itineraries, so the generic signal correctly
     // resolves to nothing rather than either.
-    const signal = getFareSignalForRoute('manchester-lahore', NOW_ISO);
+    // Classification B: the poor-itinerary suppression fix's own evidence
+    // (the 25 Aug £547 self-transfer recheck) is dated after this file's
+    // 23 Aug NOW_ISO.
+    const SUPPRESSION_EVIDENCE_ISO = '2026-08-25';
+    const signal = getFareSignalForRoute('manchester-lahore', SUPPRESSION_EVIDENCE_ISO);
     expect(signal.state).toBe('none');
     expect(signal.observation).toBeNull();
   });

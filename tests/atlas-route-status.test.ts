@@ -430,6 +430,16 @@ describe('Accessible labels expose the status meaning, not colour alone', () => 
 describe('The route coverage audit document stays in sync with the real data', () => {
   const auditDoc = readFileSync(join(process.cwd(), 'docs/project-control/ROUTE_COVERAGE_AUDIT.md'), 'utf8');
   const SOFT_LAUNCH_SLUGS = ['manchester-lahore', 'manchester-islamabad', 'manchester-dubai', 'birmingham-amritsar', 'manchester-madinah', 'manchester-doha'];
+  // Classification C: the doc's own slug index and "83 of 88" figure (its
+  // last addendum, "Fare Coverage Expansion Batch B") are its CURRENT, kept-
+  // up-to-date state — each addendum revises the same single table forward,
+  // it isn't a historical snapshot pinned to the doc's original 6 August
+  // 2026 header date. This file's NOW_ISO (6 Aug) is used elsewhere in this
+  // file for genuinely dated 6-Aug scenarios; this describe block alone
+  // needs the later, honest date the doc's current content actually
+  // reflects (verified against the real archive: 83 tracked routes and
+  // london-gatwick-izmir at "strong" both hold from 22 Aug 2026 onward).
+  const AUDIT_CURRENT_ISO = '2026-08-22';
 
   it('every real route has an entry in the audit\'s slug index — a route added later without an audit update fails this test', () => {
     for (const route of routes) {
@@ -439,7 +449,7 @@ describe('The route coverage audit document stays in sync with the real data', (
 
   it('the audit\'s slug index grade matches the real, current computeRouteIntelligenceLevel() result for every route — the document cannot silently drift from the code', () => {
     for (const route of routes) {
-      const level = computeRouteIntelligenceLevel(route, NOW_ISO);
+      const level = computeRouteIntelligenceLevel(route, AUDIT_CURRENT_ISO);
       const expectedGrade = level === 'strong' ? 'Strong' : level === 'useful' ? 'Useful' : 'Expanding';
       const rowPattern = new RegExp('\\|\\s*`' + route.slug + '`\\s*\\|\\s*' + expectedGrade + '\\s*\\|');
       expect(auditDoc, `${route.slug} expected ${expectedGrade}`).toMatch(rowPattern);
@@ -459,7 +469,7 @@ describe('The route coverage audit document stays in sync with the real data', (
   });
 
   it('the audit states the real, current fare-tracking route count, not a stale hand-typed figure (88, not 80/82, after the Final Route-Guide Completion batch\'s two evidence passes)', () => {
-    const totalTracked = routes.filter((r) => getPublishableObservationsByRoute(r.slug, NOW_ISO).length > 0).length;
+    const totalTracked = routes.filter((r) => getPublishableObservationsByRoute(r.slug, AUDIT_CURRENT_ISO).length > 0).length;
     expect(auditDoc).toContain(`${totalTracked} of 88`);
   });
 
@@ -479,8 +489,8 @@ describe('The route coverage audit document stays in sync with the real data', (
   it('the audit\'s current, real grade for each Batch 1 route matches computeRouteIntelligenceLevel() exactly — Dubai is now Strong (a real fare observation closed its gap), Doha stays Useful', () => {
     const dubai = getRouteBySlug('manchester-dubai')!;
     const doha = getRouteBySlug('manchester-doha')!;
-    expect(computeRouteIntelligenceLevel(dubai, NOW_ISO)).toBe('strong');
-    expect(computeRouteIntelligenceLevel(doha, NOW_ISO)).toBe('useful');
+    expect(computeRouteIntelligenceLevel(dubai, AUDIT_CURRENT_ISO)).toBe('strong');
+    expect(computeRouteIntelligenceLevel(doha, AUDIT_CURRENT_ISO)).toBe('useful');
     // The slug index (the doc's own machine-checkable manifest) must agree.
     expect(auditDoc).toMatch(/\|\s*`manchester-dubai`\s*\|\s*Strong\s*\|/);
     expect(auditDoc).toMatch(/\|\s*`manchester-doha`\s*\|\s*Useful\s*\|/);

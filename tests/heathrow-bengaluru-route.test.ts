@@ -297,7 +297,16 @@ describe('DEST-001 — Interactive Route Atlas integration', () => {
     // 2026-08-28) — see the route verification test determinism batch, 29
     // Aug 2026. That expiry is a real, separate, current-state fact; it
     // does not retroactively change what this fix proved in July.
-    const airports = buildAtlasAirports(FIXED_TODAY);
+    // Classification B: the intelligence-LEVEL assertions below (all three
+    // destinations reaching "strong") name evidence after this file's usual
+    // FIXED_TODAY (30 July): Bengaluru's own Fare Coverage Expansion Batch
+    // B fare (6 August 2026), and Heathrow-Mumbai's second depth category
+    // from the 18 August 2026 Weekly Full Fare Refresh #1 (Etihad, £450 --
+    // see tests/fare-signal.test.ts's identical dependency). Fixed at the
+    // later of the two, still well before the 28 Aug BA-verification-expiry
+    // concern this file's own comment guards against.
+    const LATEST_NEEDED_EVIDENCE_ISO = '2026-08-18';
+    const airports = buildAtlasAirports(LATEST_NEEDED_EVIDENCE_ISO);
     const heathrow = airports.find((a) => a.airportSlug === 'london-heathrow')!;
     const india = heathrow.countries.find((c) => c.slug === 'india')!;
     const bengaluru = india.destinations.find((d) => d.slug === 'bengaluru')!;

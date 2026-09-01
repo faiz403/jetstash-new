@@ -249,7 +249,10 @@ describe('No profileId or invented-baggage leakage into the customer-facing comp
 
 describe('Everything outside Journey Choice stays unchanged', () => {
   it('Fare Signal for manchester-islamabad is updated by the weekly observation while Journey Choice remains frozen', () => {
-    const signal = getFareSignalForRoute('manchester-islamabad', NOW_ISO);
+    // Classification B: the 25 Aug £480 emergency-recheck this test names
+    // is after this file's usual 24 Aug NOW_ISO.
+    const RECHECK_EVIDENCE_ISO = '2026-08-25';
+    const signal = getFareSignalForRoute('manchester-islamabad', RECHECK_EVIDENCE_ISO);
     // PR #182 (25 Aug): the same-day emergency-recheck (£480) now outranks
     // the routine check (£460) it re-verifies as the representative
     // observation -- either way, neither is a Journey Choice comparison ID.

@@ -15,7 +15,7 @@ import { getTripComRouteUrl } from '@/lib/booking-providers';
  * section for the full write-up this file guards.
  */
 
-const NOW_ISO = '2026-08-06';
+const NOW_ISO = '2026-08-22'; // Classification B (whole-file): most tests below explicitly name evidence through 22 Aug 2026 (18 Aug Weekly Full Fare Refresh #1, 22 Aug Connecting Journey Structure + BHX-DEL unlock) -- moved forward from the original 6 Aug Batch B date so that evidence is honestly visible.
 
 const NEW_ROUTES = [
   'london-heathrow-doha',
@@ -142,9 +142,16 @@ describe('Fare Coverage Expansion Batch B — publishability and customer visibi
     // London-Gatwick-Amritsar gained this week's second Economy observation.
     // Both routes therefore have three publishable archive entries.
     const threeAfterBatch = ['london-heathrow-doha', 'london-gatwick-amritsar'];
+    // Classification B: london-heathrow-doha's 4th publishable entry and
+    // london-gatwick-amritsar's 3rd (both 25 August Economy checks) are
+    // dated after the file's 22 Aug NOW_ISO -- these two routes alone need
+    // a later evaluation date to see them.
+    const AUG_25_OBS_ISO = '2026-08-25';
+    const needsAug25 = new Set(['london-heathrow-doha', 'london-gatwick-amritsar']);
     for (const slug of NEW_ROUTES) {
       if (REVERTED_TO_USEFUL_18_AUG.includes(slug)) continue; // see below
-      const publishable = getPublishableObservationsByRoute(slug, NOW_ISO);
+      const evalIso = needsAug25.has(slug) ? AUG_25_OBS_ISO : NOW_ISO;
+      const publishable = getPublishableObservationsByRoute(slug, evalIso);
       const expected = slug === 'london-heathrow-doha' ? 4 : stillJustOne.includes(slug) ? 1 : threeAfterBatch.includes(slug) ? 3 : 2;
       expect(publishable.length, slug).toBe(expected);
     }

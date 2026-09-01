@@ -215,11 +215,15 @@ describe('Withdrawal-aware metadata still wins unconditionally over any seoTitle
 
 describe('Regression: everything the founder\'s spec required unchanged actually stayed unchanged', () => {
   it('both target routes\' generic Fare Signal now correctly shows no current fare of any cabin (Fare Signal poor-itinerary suppression, 31 Aug 2026) — PR #167\'s Economy-preference fix is unaffected by this SEO batch or by that later suppression fix; it is simply that neither route\'s Economy nor Business observation currently qualifies as suitable to show', () => {
-    const lahoreSignal = getFareSignalForRoute('manchester-lahore', NOW_ISO);
+    // Classification B: this test's own title names the 31 August 2026
+    // suppression evidence it exercises, after this file's usual 23 Aug
+    // NOW_ISO — evaluate at the date that evidence actually exists.
+    const SUPPRESSION_ISO = '2026-08-31';
+    const lahoreSignal = getFareSignalForRoute('manchester-lahore', SUPPRESSION_ISO);
     expect(lahoreSignal.state).toBe('none');
     expect(lahoreSignal.observation).toBeNull();
 
-    const dohaSignal = getFareSignalForRoute('london-heathrow-doha', NOW_ISO);
+    const dohaSignal = getFareSignalForRoute('london-heathrow-doha', SUPPRESSION_ISO);
     expect(dohaSignal.state).toBe('none');
     expect(dohaSignal.observation).toBeNull();
   });
