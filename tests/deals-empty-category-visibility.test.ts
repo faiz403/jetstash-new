@@ -16,7 +16,15 @@ import { deals, hasTrackedFare, type DealCabin } from '@/data/deals';
  * route facts or the deal cards themselves is touched by this fix.
  */
 
-const NOW_ISO = '2026-08-01';
+// Classification C: this describe block's own tests 2/6/9 explicitly name
+// "Business Fare Evidence Batch 1 (22 Aug 2026)" and the "Manchester-Karachi
+// product-completion PR (23 Aug 2026)" as evidence they intentionally
+// exercise -- the structural "what does the filter bar look like right now"
+// invariant this file tests was never meant to freeze at a moment before
+// that evidence existed. Fixed at the later of the two named dates; tests
+// 1/3/4 (Packages/Umrah permanently empty, Flights always populated) hold
+// unchanged at this later date too.
+const NOW_ISO = '2026-08-23';
 const explorerSrc = readFileSync(join(process.cwd(), 'components/sections/deals-explorer.tsx'), 'utf8');
 
 describe('getVisibleFilters — real current production data', () => {
@@ -30,7 +38,7 @@ describe('getVisibleFilters — real current production data', () => {
     expect(visibleValues).not.toContain('package');
   });
 
-  it('2. Business class is now visible — Business Fare Evidence Batch 1 (22 Aug 2026) plus the later Manchester-Karachi product-completion PR (23 Aug 2026) give four of the eleven existing business-category deals a genuine, current, publishable fare, which is enough to flip visibility (getVisibleFilters gates on deals.some(...), not every) — most business-category deals still have none (append-only archive: no observedDate<=nowIso gate, so this test\'s earlier-dated NOW_ISO still sees all the new evidence)', () => {
+  it('2. Business class is now visible — Business Fare Evidence Batch 1 (22 Aug 2026) plus the later Manchester-Karachi product-completion PR (23 Aug 2026) give four of the eleven existing business-category deals a genuine, current, publishable fare, which is enough to flip visibility (getVisibleFilters gates on deals.some(...), not every) — most business-category deals still have none (NOW_ISO above is fixed at 23 Aug 2026, the later of the two named dates, per the temporal-causality fix -- an evaluation date must be on/after evidence to see it)', () => {
     const businessDeals = deals.filter((d) => d.category === 'business');
     expect(businessDeals.length).toBeGreaterThan(0);
     const withTrackedFare = businessDeals.filter((d) => hasTrackedFare(d, NOW_ISO)).map((d) => d.id).sort();

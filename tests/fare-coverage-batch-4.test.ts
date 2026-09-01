@@ -44,7 +44,14 @@ describe('Fare Coverage Programme Batch 4', () => {
   });
 
   it('keeps current display-ready coverage aligned after later append-only batches', () => {
-    const current = routes.filter((route) => getPublishableObservationsByRoute(route.slug, NOW_ISO).length > 0);
+    // Classification B: see tests/fare-coverage-batch-3.test.ts's identical
+    // fix for the full account, including why coverage (83 routes) is
+    // fixed at 22 Aug specifically -- it is NOT monotonic through 31 Aug,
+    // since manchester-delhi and manchester-mumbai genuinely drop out by
+    // then (IndiGo's announced direct-service withdrawal, effective 31 Aug
+    // 2026 — data/route-status-events.ts).
+    const COVERAGE_83_ROUTES_ISO = '2026-08-22';
+    const current = routes.filter((route) => getPublishableObservationsByRoute(route.slug, COVERAGE_83_ROUTES_ISO).length > 0);
     // 79→78 on 18 August 2026: Route Verification Refresh Batch 1's correction
     // reclassified london-gatwick-ahmedabad unverified, dropping its fare
     // observation out of isObservationPublishable(). 78→82→83 on 22 August
@@ -57,12 +64,15 @@ describe('Fare Coverage Programme Batch 4', () => {
     // only publishable observation is a confirmed self-transfer,
     // 2+-stop-per-leg itinerary. See tests/fare-coverage-batch-3.test.ts's
     // identical update for the full account.
+    const SUPPRESSION_ISO = '2026-08-31';
     const knownSuppressed = new Set([
       'manchester-lahore', 'birmingham-amritsar', 'manchester-dubai', 'london-heathrow-doha',
       'london-heathrow-jeddah', 'london-gatwick-amritsar', 'birmingham-delhi',
     ]);
+    const routeStatusWithdrawnBy31Aug = new Set(['manchester-delhi', 'manchester-mumbai']);
     for (const route of current) {
-      const shouldFallback = shouldShowNoFareFallback(getFareSignalForRoute(route.slug, NOW_ISO));
+      if (routeStatusWithdrawnBy31Aug.has(route.slug)) continue;
+      const shouldFallback = shouldShowNoFareFallback(getFareSignalForRoute(route.slug, SUPPRESSION_ISO));
       expect(shouldFallback, route.slug).toBe(knownSuppressed.has(route.slug));
     }
   });

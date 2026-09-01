@@ -30,7 +30,10 @@ const recentFixture: FareObservation = {
 
 describe('universal Fare Signal derivation', () => {
   it('shows the latest current publishable fare without promoting the historical Etihad check', () => {
-    const signal = getFareSignalForRoute('manchester-islamabad', '2026-08-11');
+    // Classification B: this test's own assertions name the 25 Aug Riyadh
+    // Air recheck (PR #182) -- evaluated at that date, not 11 Aug.
+    const RIYADH_AIR_EVIDENCE_ISO = '2026-08-25';
+    const signal = getFareSignalForRoute('manchester-islamabad', RIYADH_AIR_EVIDENCE_ISO);
     expect(signal.state).toBe('current');
     // 2026-08-18: Weekly Full Fare Refresh #1 added a newer, later-dated
     // observation for this route, which now becomes the latest — the
@@ -82,7 +85,9 @@ describe('universal Fare Signal derivation', () => {
 
 describe('Fare Signal presentation and CTA boundaries', () => {
   it('renders an evidenced current fare and the approved exact partner disclosure', () => {
-    const signal = getFareSignalForRoute('manchester-islamabad', '2026-08-11');
+    // Classification B: see the identical test above -- the £480 Riyadh
+    // Air evidence this test names is dated 25 Aug.
+    const signal = getFareSignalForRoute('manchester-islamabad', '2026-08-25');
     const text = renderToStaticMarkup(FareSignal({ signal, tripComUrl: getTripComRouteUrl('manchester-islamabad'), routeSlug: 'manchester-islamabad' })).replace(/\s+/g, ' ');
     expect(text).toContain('Fare Signal');
     expect(text).toContain('Fare spotted');
@@ -178,32 +183,35 @@ describe('Fare Signal presentation and CTA boundaries', () => {
 });
 
 describe('Fare Signal production coverage counts', () => {
-  it('reports 76 routes with a current publishable fare and 12 without one, EVALUATED AT THE FIXED REFERENCE DATE 2026-08-14 (not live/today — see the dedicated live-date reconciliation note below)', () => {
-    // This test has always used a fixed reference date, 2026-08-14 — not
-    // "today" — matching this describe block's own established convention
-    // (see the Heathrow-Mumbai and readiness-boundary tests below, both
-    // pinned to 2026-08-13). getFareSignalForRoute() reads the archive's
-    // real, single, non-date-versioned observation list regardless of the
-    // nowIso passed in (nowIso only governs freshness/route-status
-    // validity as of that date, never which observations exist) — so this
-    // count reflects route-status/verification lifecycle changes up to and
-    // including 22 August 2026 landing on top of the archive as it now
-    // stands, evaluated through the lens of 14 August's route-status
-    // snapshot. It does NOT represent live "today" coverage — do not quote
-    // this number as "current" coverage in any report; see the separate
-    // live-date figures in tests/fare-signal-poor-itinerary-suppression.test.ts
-    // and the 31 Aug 2026 implementation report for that (81 -> 74 as of
-    // late 31 August/1 September 2026, live).
+  it('reports 76 routes with a current publishable fare and 12 without one, EVALUATED AT THE FIXED REFERENCE DATE 2026-08-25 (not live/today — see the dedicated live-date reconciliation note below)', () => {
+    // Classification C, corrected by the temporal-causality fix (1 Sep
+    // 2026): this test was originally pinned to 2026-08-14 and relied on
+    // getFareSignalForRoute() reading the archive's fare-observation list
+    // with NO regard for nowIso at all (only route-status validity was
+    // date-scoped) — an intentional-at-the-time "14 August route-status
+    // lens over the full, ever-growing archive" hybrid that is no longer a
+    // coherent quantity once observations are also gated by
+    // observedDate <= evaluation date. Moved to 2026-08-25 — the earliest
+    // single, internally-consistent date at which BOTH the 83-route
+    // coverage (reached 22 Aug) AND all 7 poor-itinerary-suppressed
+    // routes' own evidence (dated 25 Aug) are genuinely, simultaneously
+    // knowable — so route status and fare evidence are now evaluated at
+    // the same point, honestly. It does NOT represent live "today"
+    // coverage — do not quote this number as "current" coverage in any
+    // report; see the separate live-date figures in
+    // tests/fare-signal-poor-itinerary-suppression.test.ts and the 31 Aug
+    // 2026 implementation report for that (81 -> 74 as of late 31
+    // August/1 September 2026, live).
     //
-    // Was 78/10 as of 18 August 2026 (at this same fixed reference date).
-    // COV-001 (21 August) then Fare Coverage Batch 1 (22 August) together
-    // moved 4 routes into "current" (leeds-bradford-bodrum,
-    // manchester-karachi, birmingham-lahore, birmingham-islamabad), leaving
-    // birmingham-delhi held (82/6). Later the same day, Connecting Journey
-    // Structure + BHX-DEL unlock unsuppressed birmingham-delhi's 13 August
-    // observation and appended a fresh 22 August one, moving it into
-    // "current" too (83/5) — this 83/5 figure was already correct and
-    // already passing on main before this branch existed.
+    // Was 78/10 as of 18 August 2026. COV-001 (21 August) then Fare
+    // Coverage Batch 1 (22 August) together moved 4 routes into "current"
+    // (leeds-bradford-bodrum, manchester-karachi, birmingham-lahore,
+    // birmingham-islamabad), leaving birmingham-delhi held (82/6). Later
+    // the same day, Connecting Journey Structure + BHX-DEL unlock
+    // unsuppressed birmingham-delhi's 13 August observation and appended a
+    // fresh 22 August one, moving it into "current" too (83/5) — this 83/5
+    // figure was already correct and already passing on main before this
+    // branch existed.
     //
     // Fare Signal poor-itinerary suppression (31 Aug 2026, Users 3 & 4
     // real-user validation): of the 7 routes this fix suppresses
@@ -212,7 +220,7 @@ describe('Fare Signal production coverage counts', () => {
     // birmingham-delhi), all 7 were already 'current' at this fixed
     // reference date too, so the same delta applies here: 83 - 7 = 76; the
     // "none" bucket grows from 5 to 12.
-    const signals = routes.map((route) => getFareSignalForRoute(route.slug, '2026-08-14'));
+    const signals = routes.map((route) => getFareSignalForRoute(route.slug, '2026-08-25'));
     expect(signals.filter((signal) => signal.state === 'current')).toHaveLength(76);
     expect(signals.filter((signal) => signal.state === 'recent')).toHaveLength(0);
     expect(signals.filter((signal) => signal.state === 'none')).toHaveLength(12);
@@ -220,16 +228,19 @@ describe('Fare Signal production coverage counts', () => {
   });
 
   it('does not backfill Heathrow-Mumbai’s incomplete historic record, while allowing the fresh complete observation to render', () => {
+    // Classification B: the 18 August 2026 Weekly Full Fare Refresh #1
+    // observation this test names is after the file's usual 13 Aug date.
+    const WEEKLY_FULL_FARE_REFRESH_1_ISO = '2026-08-18';
     const historic = fareObservations.find((observation) => observation.id === 'obs-lhr-bom-economy-2');
     expect(historic?.currency).toBeUndefined();
     // 2026-08-18: Weekly Full Fare Refresh #1 added a second complete
     // observation (Etihad, £450) for this route, alongside the 13 August
     // one (Gulf Air, £424) — both are complete and publishable.
-    expect(getPublishableObservationsByRoute('london-heathrow-mumbai', '2026-08-13')).toHaveLength(2);
-    expect(getFareSignalForRoute('london-heathrow-mumbai', '2026-08-13')).toMatchObject({ state: 'current', observation: { id: 'obs-lhr-bom-economy-20260818-8w-v1', price: 450 } });
+    expect(getPublishableObservationsByRoute('london-heathrow-mumbai', WEEKLY_FULL_FARE_REFRESH_1_ISO)).toHaveLength(2);
+    expect(getFareSignalForRoute('london-heathrow-mumbai', WEEKLY_FULL_FARE_REFRESH_1_ISO)).toMatchObject({ state: 'current', observation: { id: 'obs-lhr-bom-economy-20260818-8w-v1', price: 450 } });
     const deal = deals.find((entry) => entry.id === 'lhr-bom-economy');
     expect(deal).toBeDefined();
-    expect(hasTrackedFare(deal!, '2026-08-13')).toBe(true);
+    expect(hasTrackedFare(deal!, WEEKLY_FULL_FARE_REFRESH_1_ISO)).toBe(true);
   });
 
   it('every route with a non-empty Fare Signal genuinely has tracked observations backing it — a signal can never appear from nowhere', () => {
@@ -246,11 +257,15 @@ describe('Fare Signal production coverage counts', () => {
     // still-real invariant: signalledRoutes is always a SUBSET of
     // trackedRoutes, never the reverse. shouldShowNoFareFallback() is the
     // dedicated helper for exactly this "tracked but not signalled" case.
+    // Classification B: the 7-route poor-itinerary suppression list this
+    // test names is only reachable once each route's own 25 August
+    // evidence exists — after the file's usual 13 Aug date.
+    const SUPPRESSION_EVIDENCE_ISO = '2026-08-25';
     const trackedRoutes = routes
-      .filter((route) => getPublishableObservationsByRoute(route.slug, '2026-08-13').length > 0)
+      .filter((route) => getPublishableObservationsByRoute(route.slug, SUPPRESSION_EVIDENCE_ISO).length > 0)
       .map((route) => route.slug);
     const signalledRoutes = routes
-      .filter((route) => getFareSignalForRoute(route.slug, '2026-08-13').state !== 'none')
+      .filter((route) => getFareSignalForRoute(route.slug, SUPPRESSION_EVIDENCE_ISO).state !== 'none')
       .map((route) => route.slug);
     for (const slug of signalledRoutes) {
       expect(trackedRoutes, slug).toContain(slug);

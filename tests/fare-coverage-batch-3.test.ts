@@ -49,23 +49,37 @@ describe('Fare Coverage Programme Batch 3', () => {
   });
 
   it('restores a complete fresh Heathrow-Mumbai signal without altering the incomplete historic observation', () => {
+    // Classification B: the 18 August 2026 Weekly Full Fare Refresh #1
+    // observation this test names is after the file's 13 Aug NOW_ISO.
+    const WEEKLY_FULL_FARE_REFRESH_1_ISO = '2026-08-18';
     const historic = fareObservations.find((entry) => entry.id === 'obs-lhr-bom-economy-2');
     expect(historic).toMatchObject({ price: 491 });
     expect(historic?.currency).toBeUndefined();
     // 18 August 2026: Weekly Full Fare Refresh #1 added a newer, later
     // observation (Etihad, £450), which is now the latest.
-    expect(getFareSignalForRoute('london-heathrow-mumbai', NOW_ISO)).toMatchObject({ state: 'current', observation: { id: 'obs-lhr-bom-economy-20260818-8w-v1', price: 450 } });
+    expect(getFareSignalForRoute('london-heathrow-mumbai', WEEKLY_FULL_FARE_REFRESH_1_ISO)).toMatchObject({ state: 'current', observation: { id: 'obs-lhr-bom-economy-20260818-8w-v1', price: 450 } });
   });
 
   it('uses the approved Birmingham-Athens replacement because the exact Leeds Bradford-Bodrum search returned no result', () => {
+    // Classification B: see the identical Heathrow-Mumbai test above.
+    const WEEKLY_FULL_FARE_REFRESH_1_ISO = '2026-08-18';
     expect(fareObservations.some((entry) => entry.routeSlug === 'leeds-bradford-bodrum' && entry.observedDate === NOW_ISO)).toBe(false);
     // 18 August 2026: Weekly Full Fare Refresh #1 appended a second
     // genuine, publishable observation for birmingham-athens.
-    expect(getPublishableObservationsByRoute('birmingham-athens', NOW_ISO)).toHaveLength(2);
+    expect(getPublishableObservationsByRoute('birmingham-athens', WEEKLY_FULL_FARE_REFRESH_1_ISO)).toHaveLength(2);
   });
 
   it('keeps current display-ready coverage aligned with Fare Signals after later append-only batches', () => {
-    const current = routes.filter((route) => getPublishableObservationsByRoute(route.slug, NOW_ISO).length > 0);
+    // Classification B: this test's own comment trail narrates the 83-route
+    // coverage count through 22 August 2026 (79→78→82→83). Deliberately NOT
+    // moved further forward to 31 August: by then manchester-delhi and
+    // manchester-mumbai genuinely drop out of coverage too (IndiGo's
+    // announced direct-service withdrawal, effective 31 Aug 2026 --
+    // data/route-status-events.ts -- a real, unrelated route-truth event,
+    // not a data or fix defect), so coverage is NOT monotonic across that
+    // boundary and 83 is only true at 22 Aug specifically.
+    const COVERAGE_83_ROUTES_ISO = '2026-08-22';
+    const current = routes.filter((route) => getPublishableObservationsByRoute(route.slug, COVERAGE_83_ROUTES_ISO).length > 0);
     // 79→78 on 18 August 2026: Route Verification Refresh Batch 1's correction
     // reclassified london-gatwick-ahmedabad unverified, dropping its fare
     // observation out of isObservationPublishable(). 78→82 on 22 August 2026
@@ -75,9 +89,7 @@ describe('Fare Coverage Programme Batch 3', () => {
     // following COV-001's 21 August reclassification). 82→83, same day
     // (Connecting Journey Structure + BHX-DEL unlock): birmingham-delhi's
     // 13 August observation was unsuppressed and a fresh 22 August one
-    // appended — isObservationPublishable() doesn't gate on observedDate
-    // vs nowIso, so both already count as publishable at this file's own
-    // NOW_ISO (13 August).
+    // appended.
     expect(current).toHaveLength(83);
     // Fare Signal poor-itinerary suppression (31 Aug 2026): "tracked" (has
     // any publishable observation, checked above) and "signalled" (has a
@@ -87,12 +99,22 @@ describe('Fare Coverage Programme Batch 3', () => {
     // self-transfer, 2+-stop-per-leg itinerary. See
     // tests/fare-signal.test.ts's "every route with a non-empty Fare Signal
     // genuinely has tracked observations" test for the full account.
+    // Checked at 31 Aug (later than the 22 Aug coverage snapshot) so this
+    // suppression fix's own evidence is visible.
+    const SUPPRESSION_ISO = '2026-08-31';
     const knownSuppressed = new Set([
       'manchester-lahore', 'birmingham-amritsar', 'manchester-dubai', 'london-heathrow-doha',
       'london-heathrow-jeddah', 'london-gatwick-amritsar', 'birmingham-delhi',
     ]);
+    // manchester-delhi and manchester-mumbai are excluded from this loop:
+    // by 31 Aug they correctly lose their Fare Signal too, but for the
+    // unrelated IndiGo-withdrawal reason above, not poor-itinerary
+    // suppression — asserting either branch for them here would conflate
+    // two different product facts.
+    const routeStatusWithdrawnBy31Aug = new Set(['manchester-delhi', 'manchester-mumbai']);
     for (const route of current) {
-      const signal = getFareSignalForRoute(route.slug, NOW_ISO);
+      if (routeStatusWithdrawnBy31Aug.has(route.slug)) continue;
+      const signal = getFareSignalForRoute(route.slug, SUPPRESSION_ISO);
       if (knownSuppressed.has(route.slug)) {
         expect(signal.state, route.slug).toBe('none');
         continue;

@@ -198,7 +198,11 @@ describe('Defect 2 follow-up (founder review) — cabin-specific fallback wordin
     // london-gatwick-ahmedabad) is untouched by this batch (its own
     // unrelated verification dispute is why it stays no-fare — see
     // ROUTE_VERIFICATION_CADENCE_POLICY.md).
-    const nowIsoLocal = nowIso;
+    // Classification B: this test's own title names "22 Aug 2026, after
+    // Business Fare Evidence Batch 1" -- one day after the file's own
+    // nowIso (21 Aug). Fixed at the earliest date that batch's evidence
+    // actually existed.
+    const nowIsoLocal = '2026-08-22';
     const affected: { id: string; cabin: DealCabin; sentence: string }[] = [];
 
     for (const d of deals) {
@@ -231,6 +235,9 @@ describe('Defect 2 follow-up (founder review) — cabin-specific fallback wordin
     // a mix of has-fare and no-fare. (london-heathrow-lahore and
     // manchester-karachi were never on this list at all — each has only
     // one curated Deal, so there's no second cabin to be "mixed" with.)
+    // Classification B: this test's own comment names "Business Fare
+    // Evidence Batch 1" (22 Aug 2026), one day after the file's own nowIso.
+    const mixedRoutesEvaluationIso = '2026-08-22';
     const groups = new Map<string, typeof deals>();
     for (const d of deals) {
       const key = `${d.fromAirportSlug}|${d.toDestinationSlug}`;
@@ -245,8 +252,8 @@ describe('Defect 2 follow-up (founder review) — cabin-specific fallback wordin
       const route = getRouteByAirportAndDestination(fromAirportSlug, toDestinationSlug);
       if (!route) continue;
       const flightDeals = group.filter((d) => !isBundledProductDeal(d));
-      const withRange = flightDeals.filter((d) => getFareRangeSummary(route.slug, d.cabin, nowIso));
-      const withoutRange = flightDeals.filter((d) => !getFareRangeSummary(route.slug, d.cabin, nowIso));
+      const withRange = flightDeals.filter((d) => getFareRangeSummary(route.slug, d.cabin, mixedRoutesEvaluationIso));
+      const withoutRange = flightDeals.filter((d) => !getFareRangeSummary(route.slug, d.cabin, mixedRoutesEvaluationIso));
       if (withRange.length > 0 && withoutRange.length > 0) {
         mixedRoutes.push(route.slug);
         for (const d of withoutRange) {

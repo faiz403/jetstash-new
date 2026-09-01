@@ -413,7 +413,16 @@ describe('Fare-observation publication predicate — pure, synthetic-fixture-tes
     // observations over time (see FARE_OBSERVATION_ARCHIVE.md) - this test's
     // actual purpose is confirming the route-evidence check doesn't gate a
     // genuinely evidenced route, not pinning its exact growing series.
-    const range = getFareRangeSummary('manchester-lahore', 'Economy', FIXED_TODAY);
+    //
+    // Classification B: this file's FIXED_TODAY (23 July 2026) predates
+    // every Manchester-Lahore Economy observation the assertions below name
+    // (min 538 is the 25 Aug 2026 self-transfer check) — with the temporal-
+    // causality fix, evaluating at FIXED_TODAY now correctly returns null
+    // (no Manchester-Lahore Economy observation existed that early), so this
+    // specific test needs its own later, honest evaluation date to exercise
+    // the evidenced-route behaviour it's actually about.
+    const GENUINELY_EVIDENCED_ISO = '2026-08-25';
+    const range = getFareRangeSummary('manchester-lahore', 'Economy', GENUINELY_EVIDENCED_ISO);
     expect(range).not.toBeNull();
     expect(range!.count).toBeGreaterThanOrEqual(2);
     expect(range!.min).toBe(538);

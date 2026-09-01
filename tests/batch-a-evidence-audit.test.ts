@@ -80,14 +80,29 @@ describe('Every Batch A observation has complete round-trip evidence, or explici
 });
 
 describe('fareDirectness resolution rules the audit established', () => {
+  // Temporal-causality fix (1 Sep 2026): both tests below explicitly test
+  // what a LATER round of evidence resolves to (Classification B — the
+  // test's own title names the later evidence it depends on), not the 6
+  // August Batch A snapshot the rest of this file reconstructs. Each gets
+  // its own local evaluation date fixed to the earliest date the specific
+  // evidence it names actually existed, rather than sharing the file's
+  // NOW_ISO — moving the shared constant would incorrectly let this later
+  // evidence leak into the genuine 6-August reconstructions above.
   it('the 6 August unknown value is not a guess, while the later fully reviewed options aggregate as connecting', () => {
-    const range = getFareRangeSummary('manchester-islamabad', 'Economy', NOW_ISO);
+    // Earliest date manchester-islamabad has real, stated 'connecting'
+    // evidence (the three 10 August Turkish Airlines/Etihad checks) --
+    // the 6 August entry itself is 'unknown' and correctly excluded from
+    // the aggregate by aggregateFareDirectness().
+    const EARLIEST_CONNECTING_EVIDENCE_ISO = '2026-08-10';
+    const range = getFareRangeSummary('manchester-islamabad', 'Economy', EARLIEST_CONNECTING_EVIDENCE_ISO);
     expect(range).not.toBeNull();
     expect(range!.observedDirectness).toBe('connecting');
   });
 
   it('Manchester-Doha now resolves to a real, evidenced "connecting" once the 18 August Weekly Full Fare Refresh #1 observation supplied the route/cabin\'s first ever stated fareDirectness value - honest aggregation, not a guess (previously undefined: one observation predates the field, one is explicitly \'unknown\', neither states \'direct\'/\'connecting\')', () => {
-    const range = getFareRangeSummary('manchester-doha', 'Economy', NOW_ISO);
+    // The 18 August observation this test's own title names.
+    const WEEKLY_FULL_FARE_REFRESH_1_ISO = '2026-08-18';
+    const range = getFareRangeSummary('manchester-doha', 'Economy', WEEKLY_FULL_FARE_REFRESH_1_ISO);
     expect(range).not.toBeNull();
     expect(range!.count).toBe(3);
     expect(range!.observedDirectness).toBe('connecting');
@@ -101,8 +116,12 @@ describe('fareDirectness resolution rules the audit established', () => {
 
 describe('bhx-atq-economy reflects the latest evidence-complete observation', () => {
   it('shows Connecting only after both legs were reviewed', () => {
+    // Classification B: birmingham-amritsar's 6 August entry is itself
+    // 'unknown' (outbound-only); the earliest stated 'connecting' evidence
+    // is the 11 August KLM/IndiGo/Air India check.
+    const EARLIEST_CONNECTING_EVIDENCE_ISO = '2026-08-11';
     const deal = deals.find((d) => d.id === 'bhx-atq-economy')!;
-    const label = getDealFareDirectnessLabel(deal, NOW_ISO);
+    const label = getDealFareDirectnessLabel(deal, EARLIEST_CONNECTING_EVIDENCE_ISO);
     expect(label).toBe('Connecting');
     expect(label).not.toBe('Direct flight');
   });
@@ -178,7 +197,12 @@ describe('Route-level Fare Signal coverage and curated Deal-card coverage remain
   ]);
 
   it('every route-level tracked fare is either represented by a curated Economy card or explicitly remains Fare-Signal-only', () => {
-    const trackedRoutes = routes.filter((r) => getPublishableObservationsByRoute(r.slug, NOW_ISO).length > 0);
+    // Classification B: this test's own comment trail narrates coverage
+    // through 22 August 2026 (79→78→82→83) — the file's 6 August NOW_ISO
+    // was never this test's true evaluation date. Fixed at the date the
+    // narrated 83-route state actually existed.
+    const COVERAGE_83_ROUTES_ISO = '2026-08-22';
+    const trackedRoutes = routes.filter((r) => getPublishableObservationsByRoute(r.slug, COVERAGE_83_ROUTES_ISO).length > 0);
     // 79→78 on 18 August 2026: Route Verification Refresh Batch 1's correction
     // reclassified london-gatwick-ahmedabad unverified, which drops its fare
     // observation out of isObservationPublishable() — see ROUTE_VERIFICATION_CADENCE_POLICY.md.

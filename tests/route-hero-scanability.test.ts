@@ -33,11 +33,11 @@ const fareSignalSrc = readFileSync(join(process.cwd(), 'components/route/fare-si
 
 const NOW_ISO = '2026-08-21';
 
-function presentationFor(slug: string) {
+function presentationFor(slug: string, evaluationDateIso: string = NOW_ISO) {
   const route = getRouteBySlug(slug)!;
   const airport = getRouteAirport(route);
   const dest = getRouteDestination(route);
-  const presentation = getEffectiveRoutePresentation(route, routeStatusEvents, NOW_ISO);
+  const presentation = getEffectiveRoutePresentation(route, routeStatusEvents, evaluationDateIso);
   return { route, airport, dest, presentation };
 }
 
@@ -75,8 +75,14 @@ describe('Fare Signal is the one remaining first commercial decision unit', () =
   });
 
   it('a route with a valid handoff still gets: tracked fare, airline/cabin, checked date, routing, dates, the Route Service distinction where applicable, the CTA, and one complete caveat', () => {
-    const { route, presentation } = presentationFor('manchester-islamabad');
-    const signal = getFareSignalForRoute(route.slug, NOW_ISO);
+    // Classification B: this test's own inline comment below names the 25
+    // August 2026 same-day emergency-recheck (PR #182) as the evidence it
+    // exercises — the file's usual 21 Aug NOW_ISO predates that evidence, so
+    // (post temporal-causality fix) it's causally invisible there. Evaluate
+    // this test at the date the evidence it names actually exists.
+    const RIYADH_AIR_EVIDENCE_ISO = '2026-08-25';
+    const { route, presentation } = presentationFor('manchester-islamabad', RIYADH_AIR_EVIDENCE_ISO);
+    const signal = getFareSignalForRoute(route.slug, RIYADH_AIR_EVIDENCE_ISO);
     const dest = getRouteDestination(route)!;
     const airport = getRouteAirport(route)!;
     const tripComUrl = getTripComFlightHandoffUrl(route.slug, airport.slug, dest.slug);
@@ -211,6 +217,19 @@ describe('no evidence or trust wording was accidentally lost — full 88-route s
   });
 
   it('the PR #155 Route Service distinction is completely unaffected by this fix — the mismatch counts from that audit still hold', () => {
+    // Classification B: the comment trail below names the 31 August 2026
+    // Fare Signal poor-itinerary suppression evidence this test exercises.
+    // The file's usual 21 Aug NOW_ISO predates that evidence, so (post
+    // temporal-causality fix) the suppressing observations are causally
+    // invisible there and the honest 21-Aug count reverts to the pre-
+    // suppression 56/14 figures. Evaluate at the date the evidence this
+    // test is actually about exists — which also brings the IndiGo
+    // manchester-mumbai/manchester-delhi withdrawal (effective 31 Aug 2026,
+    // data/route-status-events.ts) into view, moving those two routes from
+    // their prior verified bucket into `unverified` (5->7) alongside the
+    // suppression effect. Both are real, unrelated route-truth events; this
+    // count simply reports what's true as of 31 Aug.
+    const SUPPRESSION_ISO = '2026-08-31';
     let directConnectingFare = 0;
     let directDirectFare = 0;
     let connectingConnectingFare = 0;
@@ -221,8 +240,8 @@ describe('no evidence or trust wording was accidentally lost — full 88-route s
       const airport = getRouteAirport(route);
       const dest = getRouteDestination(route);
       if (!airport || !dest) continue;
-      const { presentation } = presentationFor(route.slug);
-      const signal = getFareSignalForRoute(route.slug, NOW_ISO);
+      const { presentation } = presentationFor(route.slug, SUPPRESSION_ISO);
+      const signal = getFareSignalForRoute(route.slug, SUPPRESSION_ISO);
       const fareDirectness = signal.observation?.directness ?? null;
       if (presentation.status === 'unverified') { unverified += 1; continue; }
       if (fareDirectness === null) { noFare += 1; continue; }
@@ -252,12 +271,14 @@ describe('no evidence or trust wording was accidentally lost — full 88-route s
     // update for the full account: 5 direct-route/connecting-fare routes
     // move out of directConnectingFare (56->51), 2 connecting-route/
     // connecting-fare routes move out of connectingConnectingFare
-    // (14->12).
-    expect(directConnectingFare).toBe(51);
+    // (14->12). Then unverified 5->7 (IndiGo withdrawal, 31 Aug 2026,
+    // manchester-mumbai + manchester-delhi), which also pulls
+    // directConnectingFare down its final step, 51->49.
+    expect(directConnectingFare).toBe(49);
     expect(directDirectFare).toBe(13);
     expect(connectingConnectingFare).toBe(12);
     expect(connectingDirectFare).toBe(0);
     expect(noFare).toBe(7);
-    expect(unverified).toBe(5);
+    expect(unverified).toBe(7);
   });
 });

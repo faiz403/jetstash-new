@@ -76,8 +76,12 @@ describe('Birmingham → Amritsar and Heathrow → Jeddah customer-facing fare c
   });
 
   it('the Book-By Countdown\'s Verified Check citation is now correctly absent for both routes (Fare Signal poor-itinerary suppression, 31 Aug 2026) — neither route\'s only current-cabin observation qualifies (both are confirmed self-transfer, 2+-stop-per-leg itineraries — birmingham-amritsar and london-heathrow-jeddah are two of the seven), so computeBookBySnapshot() correctly renders no citation to check for hygiene at all; the underlying archive text (proven clean above) and the Fare History panel (proven clean below, which is unaffected by this suppression) already cover the same raw priceNote text this test used to check via a different render path', () => {
-    const bhxSnapshot = computeBookBySnapshot('birmingham-amritsar', new Date(`${nowIso}T12:00:00Z`));
-    const jedSnapshot = computeBookBySnapshot('london-heathrow-jeddah', new Date(`${nowIso}T12:00:00Z`));
+    // Classification B: this test's own title names the 31 Aug 2026
+    // suppression fix and its 25 Aug self-transfer evidence, both after
+    // this block's own 19 Aug nowIso.
+    const suppressionEvidenceIso = '2026-08-25';
+    const bhxSnapshot = computeBookBySnapshot('birmingham-amritsar', new Date(`${suppressionEvidenceIso}T12:00:00Z`));
+    const jedSnapshot = computeBookBySnapshot('london-heathrow-jeddah', new Date(`${suppressionEvidenceIso}T12:00:00Z`));
     expect(bhxSnapshot?.latestObservation).toBeNull();
     expect(jedSnapshot?.latestObservation).toBeNull();
   });

@@ -58,23 +58,28 @@ describe('Fare Coverage Programme Batch 2', () => {
   });
 
   it('renders twelve eligible Batch 2 replacements while keeping verification-pending routes excluded', () => {
+    // Classification B: this test's own comments name evidence from 18 Aug
+    // (Weekly Full Fare Refresh #1) and 22 Aug (Connecting Journey
+    // Structure + BHX-DEL unlock) — both after the file's 13 Aug NOW_ISO.
+    // Fixed at the later of the two named dates, the earliest point every
+    // observation this test depends on actually existed.
+    const BATCH_2_PLUS_LATER_REFRESHES_ISO = '2026-08-22';
     for (const routeSlug of Object.keys(BATCH_2).filter((slug) => !VERIFICATION_PENDING_BATCH_2.includes(slug) && slug !== 'birmingham-delhi')) {
       // 18 August 2026: Weekly Full Fare Refresh #1 appended a second
       // genuine, publishable observation for each of these twelve routes.
-      expect(getPublishableObservationsByRoute(routeSlug, NOW_ISO), routeSlug).toHaveLength(2);
+      expect(getPublishableObservationsByRoute(routeSlug, BATCH_2_PLUS_LATER_REFRESHES_ISO), routeSlug).toHaveLength(2);
       expect(routes.some((route) => route.slug === routeSlug), routeSlug).toBe(true);
     }
     for (const routeSlug of VERIFICATION_PENDING_BATCH_2) {
-      expect(getPublishableObservationsByRoute(routeSlug, NOW_ISO), routeSlug).toHaveLength(0);
+      expect(getPublishableObservationsByRoute(routeSlug, BATCH_2_PLUS_LATER_REFRESHES_ISO), routeSlug).toHaveLength(0);
     }
     // birmingham-delhi: also 2 publishable observations at this date, but
     // for a different reason than the other twelve — its 18 August refresh
     // (obs-bhx-del-economy-20260818-8w-v1) stays methodology-excluded, so
     // the 2 here are the 13 August observation (unsuppressed by Connecting
-    // Journey Structure + BHX-DEL unlock) and the fresh 22 August one
-    // (isObservationPublishable doesn't gate on observedDate vs nowIso, so
-    // the later-dated 22 August record counts here too).
-    expect(getPublishableObservationsByRoute('birmingham-delhi', NOW_ISO)).toHaveLength(2);
+    // Journey Structure + BHX-DEL unlock) and the fresh 22 August one,
+    // both genuinely on/before this test's own 22 Aug evaluation date.
+    expect(getPublishableObservationsByRoute('birmingham-delhi', BATCH_2_PLUS_LATER_REFRESHES_ISO)).toHaveLength(2);
     // Batch 2's own public/non-public boundary must remain true even as later
     // controlled observation batches legitimately expand total coverage.
   });

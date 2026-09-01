@@ -107,7 +107,11 @@ describe('Fare-observation completeness gating (TR-002) — Verified Check must 
   });
 
   it('getFareRangeSummary derives the exact dated Manchester–Lahore weekly series, now including the 25 August controlled weekly check and its same-day emergency-recheck', () => {
-    const range = getFareRangeSummary('manchester-lahore', 'Economy', FIXED_TODAY);
+    // Classification B: this test's own title names the 25 August 2026
+    // controlled weekly check, well after this file's FIXED_TODAY (13
+    // July, before any manchester-lahore Economy observation existed).
+    const CONTROLLED_WEEKLY_CHECK_ISO = '2026-08-25';
+    const range = getFareRangeSummary('manchester-lahore', 'Economy', CONTROLLED_WEEKLY_CHECK_ISO);
     expect(range).not.toBeNull();
     expect(range!.count).toBe(7);
     expect(range!.min).toBe(538);
@@ -121,7 +125,11 @@ describe('Fare-observation completeness gating (TR-002) — Verified Check must 
 
 describe('Deal counts (TR-004) — a card with no tracked fare must not count as one', () => {
   it('counts exactly the deals with fully dated observations', () => {
-    const trackedDeals = deals.filter((d) => hasTrackedFare(d, FIXED_TODAY));
+    // Classification B: this test's own comment trail narrates the exact
+    // Deal list through 23 August 2026 (man-khi-business) -- fixed at that
+    // date, after this file's FIXED_TODAY (13 July).
+    const DEAL_LIST_ISO = '2026-08-23';
+    const trackedDeals = deals.filter((d) => hasTrackedFare(d, DEAL_LIST_ISO));
     // umrah-package-jed and umrah-package-extended are deliberately excluded:
     // both are bundled flight+hotel products (isBundledProductDeal), and the
     // archive currently only logs flight-only fares for their routes — never
@@ -702,10 +710,13 @@ describe('FARE-001 pilot — historic examples stay private; only fully dated, e
   it('keeps Heathrow-Mumbai’s historic currency-incomplete observation private while using the fresh complete observations', () => {
     const historic = fareObservations.find((observation) => observation.id === 'obs-lhr-bom-economy-2');
     expect(historic?.currency).toBeUndefined();
+    // Classification B: the 18 August 2026 Weekly Full Fare Refresh #1
+    // observation this test names is after this file's FIXED_TODAY.
+    const WEEKLY_FULL_FARE_REFRESH_1_ISO = '2026-08-18';
     // 2026-08-18: Weekly Full Fare Refresh #1 added a second complete
     // observation (Etihad, £450), alongside the existing 13 August one
     // (Gulf Air, £424).
-    expect(getFareRangeSummary('london-heathrow-mumbai', 'Economy', FIXED_TODAY)).toMatchObject({ count: 2, min: 424, max: 450 });
+    expect(getFareRangeSummary('london-heathrow-mumbai', 'Economy', WEEKLY_FULL_FARE_REFRESH_1_ISO)).toMatchObject({ count: 2, min: 424, max: 450 });
   });
 
   it('keeps every remaining methodology-excluded or structurally-incomplete observation out of public output, even once its own route has other publishable data', () => {

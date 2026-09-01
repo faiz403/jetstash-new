@@ -58,14 +58,22 @@ function businessObservation(overrides: Partial<FareObservation> = {}): FareObse
 }
 
 describe('A. Real Manchester-Lahore data — the exact confirmed live defect', () => {
+  // Classification B: both tests below name evidence (the 25 Aug £547
+  // same-day emergency-recheck, and the 31 Aug poor-itinerary suppression
+  // fix that acts on it) dated after this file's own NOW_ISO (24 Aug) --
+  // one day too early to see it. Fixed at the earliest date that evidence
+  // actually existed, local to this block only.
+  const LAHORE_SUPPRESSION_ISO = '2026-08-25';
+  const LAHORE_SUPPRESSION_DATE = new Date('2026-08-25T12:00:00Z');
+
   it('Fare Signal shows no current signal at all for Manchester-Lahore (Fare Signal poor-itinerary suppression, 31 Aug 2026) — its £547 Economy observation (the 25 Aug same-day emergency-recheck) is a confirmed self-transfer, 2+-stop itinerary and its £3,051 Business observation is the same class of confirmed-poor evidence, so neither cabin has a representative fare to show; this is NOT a regression of the cabin-safety fix below — Economy is still correctly preferred over Business whenever both are shown, it is simply that neither currently qualifies', () => {
-    const signal = getFareSignalForRoute('manchester-lahore', NOW_ISO);
+    const signal = getFareSignalForRoute('manchester-lahore', LAHORE_SUPPRESSION_ISO);
     expect(signal.state).toBe('none');
     expect(signal.observation).toBeNull();
   });
 
   it('Book-By agrees with Fare Signal — both correctly show no representative fare, never disagreeing (the shared selectRepresentativeObservation() choke point this whole file exists to guard)', () => {
-    const snapshot = computeBookBySnapshot('manchester-lahore', NOW_DATE);
+    const snapshot = computeBookBySnapshot('manchester-lahore', LAHORE_SUPPRESSION_DATE);
     expect(snapshot?.latestObservation).toBeNull();
   });
 
@@ -130,9 +138,15 @@ describe('D. Every current Book-By priority route — Book-By matches Fare Signa
   });
 
   it('today\'s real result for every priority route is Economy — recorded as a snapshot so a future genuine Economy-evidence gap is visible as a real diff, not silently assumed', () => {
+    // Classification C: a structural snapshot, but the state it snapshots
+    // (Fare Signal poor-itinerary suppression) is explicitly dated 31 Aug
+    // 2026 in its own comment below and depends on 25 Aug evidence -- fixed
+    // one day later than the earliest such evidence exists (matching block
+    // A's own reference date) so the snapshot reflects that evidence.
+    const SNAPSHOT_ISO_DATE = new Date('2026-08-25T12:00:00Z');
     const result: Record<string, string | null> = {};
     for (const slug of BOOK_BY_PRIORITY_ROUTE_SLUGS) {
-      result[slug] = computeBookBySnapshot(slug, NOW_DATE)?.latestObservation?.cabin ?? null;
+      result[slug] = computeBookBySnapshot(slug, SNAPSHOT_ISO_DATE)?.latestObservation?.cabin ?? null;
     }
     // Fare Signal poor-itinerary suppression (31 Aug 2026): 3 of the 5
     // priority routes now correctly have no representative fare of any

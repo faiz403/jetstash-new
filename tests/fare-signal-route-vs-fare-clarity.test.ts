@@ -36,18 +36,18 @@ import type { FareSignalObservation } from '@/lib/fare-signal';
 const NOW_ISO = '2026-08-20';
 const componentSrc = readFileSync(join(process.cwd(), 'components/route/fare-signal.tsx'), 'utf-8');
 
-function presentationFor(slug: string) {
+function presentationFor(slug: string, evaluationDateIso: string = NOW_ISO) {
   const route = getRouteBySlug(slug)!;
   const airport = getRouteAirport(route);
   const dest = getRouteDestination(route);
-  const presentation = getEffectiveRoutePresentation(route, routeStatusEvents, NOW_ISO);
+  const presentation = getEffectiveRoutePresentation(route, routeStatusEvents, evaluationDateIso);
   const airlines = getAirlinesBySlugs(presentation.airlineSlugs);
   return { route, airport, dest, presentation, airlines };
 }
 
-function renderFareSignalForRoute(slug: string): string {
-  const { route, presentation, airlines } = presentationFor(slug);
-  const signal = getFareSignalForRoute(route.slug, NOW_ISO);
+function renderFareSignalForRoute(slug: string, evaluationDateIso: string = NOW_ISO): string {
+  const { route, presentation, airlines } = presentationFor(slug, evaluationDateIso);
+  const signal = getFareSignalForRoute(route.slug, evaluationDateIso);
   const html = renderToStaticMarkup(
     FareSignal({
       signal,
@@ -63,13 +63,16 @@ function renderFareSignalForRoute(slug: string): string {
 
 describe('direct-route + connecting-fare: the distinction is explicit (Manchester-Islamabad, the reported case)', () => {
   it('names the route\'s real airline (PIA) and directness, distinct from the tracked fare\'s own directness', () => {
-    const { presentation, airlines } = presentationFor('manchester-islamabad');
+    // Classification B: the Riyadh Air evidence this test names is dated
+    // 25 Aug, after this file's 20 Aug NOW_ISO.
+    const RIYADH_AIR_EVIDENCE_ISO = '2026-08-25';
+    const { presentation, airlines } = presentationFor('manchester-islamabad', RIYADH_AIR_EVIDENCE_ISO);
     expect(presentation.status).toBe('direct');
     expect(airlines.map((a) => a.name)).toEqual(['PIA']);
-    const signal = getFareSignalForRoute('manchester-islamabad', NOW_ISO);
+    const signal = getFareSignalForRoute('manchester-islamabad', RIYADH_AIR_EVIDENCE_ISO);
     expect(signal.observation?.directness).toBe('connecting');
 
-    const html = renderFareSignalForRoute('manchester-islamabad');
+    const html = renderFareSignalForRoute('manchester-islamabad', RIYADH_AIR_EVIDENCE_ISO);
     expect(html).toContain('Route service');
     expect(html).toContain('PIA · Direct');
     expect(html).toContain('This tracked fare is a different, connecting journey.');
@@ -92,16 +95,20 @@ describe('direct-route + direct-fare: matching state renders no callout (no unne
 
 describe('connecting-only route: never falsely mentions a direct service', () => {
   it('a connecting route whose matching connecting fare is now suppressed (Fare Signal poor-itinerary suppression, 31 Aug 2026) shows no callout, and the word "Direct" never appears', () => {
-    const { presentation } = presentationFor('birmingham-amritsar');
+    // Classification B: the poor-itinerary suppression evidence this test
+    // names (the 25 Aug £591 self-transfer recheck) is dated after this
+    // file's 20 Aug NOW_ISO.
+    const SUPPRESSION_EVIDENCE_ISO = '2026-08-25';
+    const { presentation } = presentationFor('birmingham-amritsar', SUPPRESSION_EVIDENCE_ISO);
     expect(presentation.status).toBe('connecting');
     // birmingham-amritsar's only current observation (£591, 3/3 stops,
     // self-transfer) is now correctly suppressed entirely — there is no
     // observation left to check directness on, and a fortiori no callout
     // or "Direct" wording, which remains this test's real point.
-    const signal = getFareSignalForRoute('birmingham-amritsar', NOW_ISO);
+    const signal = getFareSignalForRoute('birmingham-amritsar', SUPPRESSION_EVIDENCE_ISO);
     expect(signal.observation).toBeNull();
 
-    const html = renderFareSignalForRoute('birmingham-amritsar');
+    const html = renderFareSignalForRoute('birmingham-amritsar', SUPPRESSION_EVIDENCE_ISO);
     expect(html).not.toContain('Route service');
     expect(html).not.toMatch(/\bDirect\b/);
   });
@@ -354,6 +361,10 @@ describe('full 88-route dataset safety check (Phase 8)', () => {
   });
 
   it('records the exact current counts so any future data change that shifts them is a visible, reviewed diff, not a silent drift', () => {
+    // Classification B: this test's own comment trail narrates the counts
+    // through 31 August 2026 (Fare Signal poor-itinerary suppression) —
+    // fixed at that date, after this file's 20 Aug NOW_ISO.
+    const SUPPRESSION_ISO = '2026-08-31';
     let directConnectingFare = 0;
     let directDirectFare = 0;
     let connectingConnectingFare = 0;
@@ -365,8 +376,8 @@ describe('full 88-route dataset safety check (Phase 8)', () => {
       const airport = getRouteAirport(route);
       const dest = getRouteDestination(route);
       if (!airport || !dest) continue;
-      const { presentation } = presentationFor(route.slug);
-      const signal = getFareSignalForRoute(route.slug, NOW_ISO);
+      const { presentation } = presentationFor(route.slug, SUPPRESSION_ISO);
+      const signal = getFareSignalForRoute(route.slug, SUPPRESSION_ISO);
       const fareDirectness = signal.observation?.directness ?? null;
 
       if (presentation.status === 'unverified') { unverified += 1; continue; }
@@ -403,12 +414,22 @@ describe('full 88-route dataset safety check (Phase 8)', () => {
     // directConnectingFare: 56 -> 51. The other 2 were connecting routes
     // with a connecting fare (birmingham-amritsar, birmingham-delhi),
     // moving out of connectingConnectingFare: 14 -> 12.
-    expect(directConnectingFare).toBe(51);
+    //
+    // directConnectingFare 51 -> 49, unverified 5 -> 7 (temporal-causality
+    // fix, 1 Sep 2026 -- this test's own SUPPRESSION_ISO=31 Aug is now
+    // honestly reachable): manchester-delhi and manchester-mumbai's
+    // IndiGo direct services both have an announced withdrawal effective
+    // 31 August 2026 (data/route-status-events.ts) -- a real, unrelated
+    // route-truth event, not a data or fix defect. Both routes were
+    // direct+connecting-fare (in directConnectingFare) up to 30 Aug, and
+    // become unverified/service-ended from 31 Aug, exactly the boundary
+    // this test now evaluates at.
+    expect(directConnectingFare).toBe(49);
     expect(directDirectFare).toBe(13);
     expect(connectingConnectingFare).toBe(12);
     expect(connectingDirectFare).toBe(0);
     expect(noFare).toBe(7);
-    expect(unverified).toBe(5);
+    expect(unverified).toBe(7);
     expect(directConnectingFare + directDirectFare + connectingConnectingFare + connectingDirectFare + noFare + unverified).toBe(88);
   });
 });
