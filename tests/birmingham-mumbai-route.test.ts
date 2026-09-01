@@ -591,21 +591,21 @@ describe('Cross-surface leakage fix — fare section heading is content-aware, n
   // departureDate/returnDate pair isPubliclyPublishable requires, so
   // getPublishableObservationsByRoute is currently [] for every route. See
   // that function's doc comment in app/routes/[slug]/page.tsx.
-  it('with fare history: keeps the "Fare history & current example" heading and its "checked on the date shown" caption', () => {
-    const copy = getFareSectionCopy(true, true);
+  it('with fare history and a current representative Fare Signal: keeps the "Fare history & current example" heading and its "checked on the date shown" caption', () => {
+    const copy = getFareSectionCopy(true, true, true);
     expect(copy.heading).toBe('Fare history & current example');
     expect(copy.caption).toMatch(/checked on the date shown/);
   });
 
   it('with deals but no publishable fare history: a truthful "what we know" heading, no "history" or "example" claim', () => {
-    const copy = getFareSectionCopy(false, true);
+    const copy = getFareSectionCopy(false, true, false);
     expect(copy.heading).toBe('What we know about this route');
     expect(copy.heading).not.toMatch(/history|example/i);
     expect(copy.caption).toMatch(/haven't logged fare history/);
   });
 
   it('with neither deals nor fare history: "No tracked fare yet" with a null caption — NoFareFallback below it already explains this route-specifically, so a caption here would just repeat it', () => {
-    const copy = getFareSectionCopy(false, false);
+    const copy = getFareSectionCopy(false, false, false);
     expect(copy.heading).toBe('No tracked fare yet');
     expect(copy.caption).toBeNull();
   });
@@ -647,11 +647,13 @@ describe('Cross-surface leakage fix — fare section heading is content-aware, n
     expect(text).toMatch(/Fare history & current example/);
   });
 
-  it('manchester-lahore now has a dated editorial observation and renders the fare-history heading end-to-end', async () => {
+  it('manchester-lahore has dated editorial observations, but renders the coherent "Fare history" heading (not "current example") end-to-end — Fare History coherence fix, 1 Sep 2026: its only current-cabin observation is a confirmed self-transfer, 2/3-stop-per-leg itinerary and has no current representative Fare Signal, so the section correctly no longer claims a "current example"', async () => {
     expect(deals.some((d) => d.fromAirportSlug === 'manchester' && d.toDestinationSlug === 'lahore')).toBe(true);
     const element = await RoutePage({ params: Promise.resolve({ slug: 'manchester-lahore' }) });
     const text = collectStrings(element).join(' ');
-    expect(text).toMatch(/Fare history & current example/);
+    expect(text).toMatch(/Fare history/);
+    expect(text).not.toMatch(/Fare history & current example/);
+    expect(text).toMatch(/does not currently have a representative fare/i);
   });
 
   it('birmingham-mumbai\'s fare section itself contributes no explanatory no-fare prose now that its caption is null — NoFareFallback (rendered separately below it, see the next assertion) is the only place that message lives', async () => {
