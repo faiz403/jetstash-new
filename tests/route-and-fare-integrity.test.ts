@@ -417,7 +417,17 @@ describe('FARE-001 pilot — historic examples stay private; only fully dated, e
     // manchester-islamabad, manchester-lahore, london-heathrow-jeddah and
     // birmingham-amritsar, verifying the controlled weekly batch's own
     // Fare Watcher candidates on that route.
-    expect(fareObservations).toHaveLength(226);
+    // 226 -> 237 (Tuesday weekly batch, 1 September 2026): seven
+    // routine-weekly observations (manchester-islamabad, manchester-lahore,
+    // manchester-dubai, london-heathrow-jeddah, london-heathrow-doha,
+    // birmingham-amritsar, london-gatwick-amritsar) plus four same-day
+    // emergency-recheck observations for the routes whose routine check
+    // qualified past Fare Watcher's meaningful-drop threshold
+    // (manchester-islamabad, manchester-lahore, london-heathrow-doha,
+    // birmingham-amritsar); manchester-dubai, london-heathrow-jeddah and
+    // london-gatwick-amritsar stayed 'ordinary-fare' and did not qualify
+    // for a recheck.
+    expect(fareObservations).toHaveLength(237);
   });
 
   it('keeps every historic observation incomplete and private', () => {
@@ -663,6 +673,21 @@ describe('FARE-001 pilot — historic examples stay private; only fully dated, e
       'obs-man-lhe-economy-20260825-recheck-v1',
       'obs-lhr-jed-economy-20260825-recheck-v1',
       'obs-bhx-atq-economy-20260825-recheck-v1',
+      // Tuesday weekly batch, 1 September 2026: seven routine-weekly
+      // observations, then four same-day emergency rechecks for the routes
+      // whose routine check qualified past Fare Watcher's meaningful-drop
+      // threshold.
+      'obs-man-isb-economy-20260901-8w-v1',
+      'obs-man-lhe-economy-20260901-8w-v1',
+      'obs-man-dxb-economy-20260901-8w-v1',
+      'obs-lhr-jed-economy-20260901-8w-v1',
+      'obs-lhr-doh-economy-20260901-8w-v1',
+      'obs-bhx-atq-economy-20260901-8w-v1',
+      'obs-lgw-atq-economy-20260901-8w-v1',
+      'obs-man-isb-economy-20260901-recheck-v1',
+      'obs-man-lhe-economy-20260901-recheck-v1',
+      'obs-lhr-doh-economy-20260901-recheck-v1',
+      'obs-bhx-atq-economy-20260901-recheck-v1',
     ]);
     expect(published).toEqual(expect.arrayContaining([
       expect.objectContaining({

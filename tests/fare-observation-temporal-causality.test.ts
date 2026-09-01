@@ -132,22 +132,28 @@ describe('isObservationPublishable() wires the causal gate in without touching a
     expect(isObservationPublishable(MAN_ISB_HYPOTHETICAL, route, SEP_1)).toBe(true);
   });
 
-  it('every other existing rule (shape completeness, methodology exclusion, route match, route status) is completely unchanged -- proven against the real archive with no hypothetical involved', () => {
+  // Update (1 September 2026, Tuesday weekly batch): when this test was
+  // first written, AUG_31 genuinely predated every real manchester-
+  // islamabad observation in the archive, so a single before/after loop
+  // proved "nothing changes for existing evidence." The weekly batch has
+  // since appended real observations dated SEP_1 itself (this file's
+  // hypothetical fixtures mirrored their exact ids in advance) -- so the
+  // loop is now split: pre-SEP_1 evidence must still show no change at all
+  // (the invariant this test was built to prove), while the two SEP_1
+  // observations are EXPECTED to flip from not-publishable at AUG_31 to
+  // publishable at SEP_1, purely because they didn't causally exist yet at
+  // AUG_31 -- the fix working exactly as designed, not a regression.
+  it('every other existing rule (shape completeness, methodology exclusion, route match, route status) is completely unchanged for pre-existing evidence -- and the two real SEP_1 observations flip purely because of the causal gate, exactly as designed', () => {
     const route = getRouteBySlug('manchester-islamabad')!;
     for (const observation of getObservationsByRoute('manchester-islamabad')) {
-      // Same result at both dates for every REAL existing observation --
-      // this fix only ever removes future-dated entries, never changes the
-      // verdict for one that was already causally available.
       const before = isObservationPublishable(observation, route, AUG_31);
-      // AUG_31 is itself the frozen date every real existing observation
-      // predates, so re-checking at SEP_1 (later) must never flip a real
-      // observation from publishable to not, or vice versa, purely from
-      // the causal gate (route-status effective-dating could still differ
-      // between the two dates for unrelated reasons -- irrelevant here
-      // since none of manchester-islamabad's real observations trigger
-      // that).
-      const afterSameRoute = isObservationPublishable(observation, route, SEP_1);
-      expect(afterSameRoute, observation.id).toBe(before);
+      const after = isObservationPublishable(observation, route, SEP_1);
+      if (observation.observedDate <= AUG_31) {
+        expect(after, observation.id).toBe(before);
+      } else {
+        expect(before, observation.id).toBe(false);
+        expect(after, observation.id).toBe(true);
+      }
     }
   });
 });
@@ -309,35 +315,30 @@ describe('14. Standout Fare policy is completely unchanged', () => {
   it('manchester-islamabad DOES have a live approval (the First Standout Fare Pilot, £480) -- unaffected by this fix at 31 August, and correctly retires at 1 September for an entirely pre-existing, unrelated reason: Fare Watcher\'s own supersession rule, not the causal-availability gate', () => {
     expect(standoutFareApprovals.some((a) => a.routeSlug === 'manchester-islamabad' && !a.revokedDate)).toBe(true);
 
-    // Real archive, no hypothetical: the approval resolves normally at
-    // both dates -- this fix changes nothing about today's live pilot.
+    // Real archive, no hypothetical needed: the Tuesday weekly batch (1
+    // September 2026) has since landed a real observation matching this
+    // file's hypothetical exactly (same id, price, profileId, self-
+    // transfer/stops signature) -- getObservationsByRoute() now returns it
+    // directly, so the augmented-array trick this test used before that
+    // data existed is no longer necessary and would double-count the same
+    // identity under one id. At Aug 31 the approval still resolves
+    // normally (that evidence is causally invisible this early, both to
+    // this fix's gate and to Fare Watcher's own pre-existing
+    // `observedDate > nowIso` guard). At Sep 1 it correctly retires: the
+    // real Sep-1 observation shares the approval's exact (routeSlug,
+    // cabin, profileId) identity and is newer, so it supersedes
+    // obs-man-isb-economy-20260825-8w-v1 as the "current" detection under
+    // Fare Watcher's own, pre-existing latestCurrentObservationsByIdentity()
+    // rule -- the approval's own doc comment (data/standout-fare-
+    // approvals.ts) states this exact consequence explicitly: "this
+    // approval simply stops resolving to any live candidate". This is Fare
+    // Watcher policy working as designed, completely unmodified by this
+    // PR -- not a defect this fix introduces or must prevent.
     const realArchive = getObservationsByRoute('manchester-islamabad');
     const realAtAug31 = getApprovedStandoutFare('manchester-islamabad', 'Economy', realArchive, AUG_31);
     const realAtSep1 = getApprovedStandoutFare('manchester-islamabad', 'Economy', realArchive, SEP_1);
     expect(realAtAug31?.observation.price).toBe(480);
-    expect(realAtSep1?.observation.price).toBe(480);
-
-    // With the hypothetical Sep-1 observation present: at Aug 31 it is
-    // invisible (both to this fix's causal gate AND to Fare Watcher's own
-    // pre-existing `observedDate > nowIso` guard in
-    // latestCurrentObservationsByIdentity), so the approval is completely
-    // unaffected.
-    const augmented = [...realArchive, MAN_ISB_HYPOTHETICAL];
-    const withHypotheticalAtAug31 = getApprovedStandoutFare('manchester-islamabad', 'Economy', augmented, AUG_31);
-    expect(withHypotheticalAtAug31?.observation.price).toBe(480);
-
-    // At Sep 1, the hypothetical shares the approval's exact
-    // (routeSlug, cabin, profileId) identity and is newer, so it correctly
-    // supersedes obs-man-isb-economy-20260825-8w-v1 as the "current"
-    // detection under Fare Watcher's own, pre-existing
-    // latestCurrentObservationsByIdentity() rule -- the approval's own doc
-    // comment (data/standout-fare-approvals.ts) states this exact
-    // consequence explicitly: "this approval simply stops resolving to any
-    // live candidate". This is Fare Watcher policy working as designed,
-    // completely unmodified by this PR -- not a defect this fix introduces
-    // or must prevent.
-    const withHypotheticalAtSep1 = getApprovedStandoutFare('manchester-islamabad', 'Economy', augmented, SEP_1);
-    expect(withHypotheticalAtSep1).toBeNull();
+    expect(realAtSep1).toBeNull();
   });
 });
 

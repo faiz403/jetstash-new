@@ -151,13 +151,14 @@ describe('Manchester-Dubai\'s new fare observation matches the approved specific
     expect(obs!.observationReason).toBe('routine-weekly');
   });
 
-  it('Manchester-Dubai\'s historic entries remain untouched — further genuine observations were appended on 6, 18 and 25 August 2026', () => {
+  it('Manchester-Dubai\'s historic entries remain untouched — further genuine observations were appended on 6, 18, 25 August and 1 September 2026', () => {
     const dubaiObs = fareObservations.filter((o) => o.routeSlug === 'manchester-dubai');
-    expect(dubaiObs.length).toBe(5);
+    expect(dubaiObs.length).toBe(6);
     const historic = dubaiObs.filter((o) => ![
       NEW_DUBAI_OBS_ID,
       'obs-man-dxb-economy-20260818-8w-v1',
       'obs-man-dxb-economy-20260825-8w-v1',
+      'obs-man-dxb-economy-20260901-8w-v1',
     ].includes(o.id));
     expect(historic.length).toBe(2);
     for (const o of historic) {
@@ -175,7 +176,7 @@ describe('Manchester-Dubai\'s new fare observation matches the approved specific
 
   it('remains publishable alongside the 18 August 2026 refresh observation', () => {
     const publishable = getPublishableObservationsByRoute('manchester-dubai', NOW_ISO);
-    expect(publishable.length).toBe(3);
+    expect(publishable.length).toBe(4);
     expect(publishable.map((o) => o.id)).toContain(NEW_DUBAI_OBS_ID);
   });
 });
