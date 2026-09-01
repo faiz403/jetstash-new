@@ -170,7 +170,11 @@ export default async function RoutePage({ params }: { params: Promise<{ slug: st
   // the fare already being displayed there.
   const standoutFare = getApprovedStandoutFare(route.slug, 'Economy', allFareObservations, nowIso);
   // Fare copy must reflect the data actually available — see getFareSectionCopy.
-  const fareSectionCopy = getFareSectionCopy(fareObservations.length > 0, dealsHere.length > 0);
+  // hasCurrentRepresentativeFare reuses the exact same fareSignal computed
+  // above for the Fare Signal card itself — this heading and that card can
+  // never silently disagree about whether a current representative fare
+  // exists.
+  const fareSectionCopy = getFareSectionCopy(fareObservations.length > 0, dealsHere.length > 0, fareSignal.state !== 'none');
   const bookingWindows = getBookingWindowsByRoute(route.slug);
   const travellerTips = getTipsForScope({ routeSlug: route.slug, destinationSlug: dest.slug });
   const communityNotes = getCommunityNotesForScope({ routeSlug: route.slug, destinationSlug: dest.slug });

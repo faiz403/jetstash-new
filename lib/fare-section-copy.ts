@@ -4,8 +4,34 @@
  * Exported from lib/ rather than page.tsx since Next's typed-routes plugin
  * rejects extra exports from a page module; see tests for the "has
  * observations" case, which has no live example in current data yet.
+ *
+ * Fare History coherence fix (1 Sep 2026, User 5 real-user validation,
+ * following the 31 Aug 2026 Fare Signal poor-itinerary suppression fix).
+ * The rows this heading sits above are always truthful — every one states
+ * its own checked date and price plainly. The heading itself went stale
+ * for exactly the routes where the top (most recent) row is the same
+ * observation Fare Signal just declined to show as "the" answer:
+ * `hasObservations` alone can't tell "this route has a genuinely current
+ * representative fare" from "this route has real archive evidence but no
+ * current representative fare" — and "current example" asserts the
+ * former unconditionally.
+ *
+ * `hasCurrentRepresentativeFare` is the durable, general condition —
+ * literally "does getFareSignalForRoute() currently return a non-'none'
+ * state for this route" — not a narrower "was this specific route
+ * suppressed" flag. Today the false case maps exactly to the 7
+ * poor-itinerary-suppressed routes, but the wording stays honest for any
+ * other route that ever ends up with real observations and no current
+ * representative signal for a different reason, without this function
+ * needing to know why.
  */
-export function getFareSectionCopy(hasObservations: boolean, hasDeals: boolean): { heading: string; caption: string | null } {
+export function getFareSectionCopy(hasObservations: boolean, hasDeals: boolean, hasCurrentRepresentativeFare: boolean): { heading: string; caption: string | null } {
+  if (hasObservations && !hasCurrentRepresentativeFare) {
+    return {
+      heading: 'Fare history',
+      caption: 'Previous tracked checks are shown for context. JetStash does not currently have a representative fare for this route.',
+    };
+  }
   if (hasObservations) {
     return {
       heading: 'Fare history & current example',
