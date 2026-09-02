@@ -432,7 +432,7 @@ describe('FARE-001 pilot — historic examples stay private; only fully dated, e
     // full weekly refresh's 85-route scope (5 more returned no bookable
     // itinerary on these exact dates and were recorded as an explicit skip,
     // not guessed — see data/fare-observations.ts's own comment there).
-    expect(fareObservations).toHaveLength(310);
+    expect(fareObservations).toHaveLength(313);
   });
 
   it('keeps every historic observation incomplete and private', () => {
@@ -771,6 +771,9 @@ describe('FARE-001 pilot — historic examples stay private; only fully dated, e
       'obs-man-zyl-economy-20260901-8w-v1',
       'obs-ncl-dlm-economy-20260901-8w-v1',
       'obs-ncl-dxb-economy-20260901-8w-v1',
+      'obs-lhr-del-economy-20260901-recheck-v1',
+      'obs-man-doh-economy-20260901-recheck-v1',
+      'obs-man-med-economy-20260901-recheck-v1',
     ]);
     expect(published).toEqual(expect.arrayContaining([
       expect.objectContaining({
