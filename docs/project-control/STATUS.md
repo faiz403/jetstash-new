@@ -539,6 +539,48 @@ Verified before commit: 2950/2950 tests, TypeScript clean, lint clean, productio
 new dependency, homepage bundle size unchanged, journey finder confirmed working end-to-end (both
 locally and on the PR's Vercel Preview). See PR for full detail.
 
+### HERO-004 — Mobile consent-banner overlap on the homepage hero console (DONE)
+
+**A genuine functional/mobile UX defect fix already permitted under the LAUNCH-001 freeze's own
+stated exception ("unless a real user hits a real, reproducible problem") — not another founder
+exception like HERO-003.** HERO-003 moved the real journey finder into the hero's first screen;
+that first screen is exactly where the site-wide fixed-bottom cookie consent banner
+(`components/ui/cookie-consent-banner.tsx`) already sat on mobile, at up to ~292px tall on a
+genuine first visit before any consent choice is made. Measured precisely via DOM bounding-rect
+overlap (not assumed): on a real first visit at 390×844, the banner fully covered both selectors
+and the "Check my journey" button; at 412×915 it covered the "Going to" selector and the button.
+This pre-dates HERO-003 and is not caused by it — HERO-003 just moved a primary control into the
+zone the banner already occupied.
+
+Fix, confined to exactly two files:
+- **The banner** (`components/ui/cookie-consent-banner.tsx`): shorter, factually-equivalent public
+  copy (still discloses the measurement is optional, still names partner link clicks specifically
+  — never anything implying confirmed bookings — still names Vercel Analytics and Speed Insights
+  running separately, still links to the Privacy Policy and the footer's Cookie settings control);
+  tighter mobile-only layout; both Accept and Decline kept at an explicit, height-guaranteed 44px
+  tap target (`h-11`, flex-centred, not estimated from padding). No wording change past what's
+  needed for length and JetStash's standing no-dash public-copy rule (no em/en dash, no hyphenated
+  word pairing) — "partner-link" became "partner link", the opening em dash removed.
+- **The homepage hero** (`components/homepage-v2/homepage-opening-hero.tsx`): a small mobile-only
+  spacing recovery — the console's own top padding, the label-to-form gap, and (the largest single
+  piece) a negative top margin that exploits ordinary CSS margin collapsing against `PageHero`'s
+  shared `mt-7` wrapper, recovering headroom from that gap without editing `PageHero` itself (still
+  used unchanged by 13 other pages) or `JourneyCheckForm`'s own internal spacing (left untouched).
+
+**Safe-area correctness, verified not assumed:** the app's viewport metadata does not set
+`viewportFit: 'cover'`, so `env(safe-area-inset-bottom)` genuinely evaluates to 0 on every real
+device under the current configuration — the zero-inset measurement is the real, current
+production condition, not a test-environment artefact. The fix is still written to hold correctly
+if that ever changes: the banner's bottom padding and the hero's compensating margin both carry the
+identical `env(safe-area-inset-bottom, 0px)` term, so they move together and the net clearance is
+provably constant regardless of device inset — confirmed by temporarily substituting 20px and 34px
+literal values in place of `env()` locally (clearance held exactly, 21.6px at 390×844 in all three
+conditions), then reverting to the real formula before shipping.
+
+Verified before commit: 2951/2951 tests, TypeScript clean, lint clean, production build clean, no
+new dependency; 390×844 and 412×915 both clear (≥16px CTA clearance) under zero and simulated
+nonzero safe-area; desktop confirmed pixel-identical via computed styles. See PR for full detail.
+
 ### FARE-001 — Maintain the editorial fare observation archive (ACTIVE)
 
 The methodology is finalized and the archive is now established rather than at its starting point:

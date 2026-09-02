@@ -266,12 +266,26 @@ describe('components/ui/cookie-consent-banner.tsx — Basic Consent Mode: the ta
     expect(bannerSrc).toContain("handleChoice('granted')");
   });
 
-  it('carries the required banner copy verbatim', () => {
-    expect(bannerSrc).toContain(
-      'JetStash uses optional Google Ads measurement to understand whether advertising leads to partner-link'
-    );
-    expect(bannerSrc).toContain('The current JetStash implementation does not configure');
-    expect(bannerSrc).toContain('personalised advertising.');
+  // Compact mobile treatment (September 2026, homepage-hero-console overlap
+  // fix): shorter wording, same facts — specifically still "partner link
+  // clicks", never anything implying a confirmed booking/sale is measured.
+  // No dash styling: JetStash's standing public-copy rule against em/en
+  // dashes and hyphen separators in customer-facing text.
+  it('carries the required banner facts, in the current (shortened, no-dash) wording', () => {
+    expect(bannerSrc).toContain('Optional Google Ads measurement');
+    expect(bannerSrc).toContain('partner link clicks');
+    expect(bannerSrc).toContain('No personalised ads');
+    expect(bannerSrc).toContain('Vercel Analytics and Speed Insights');
+    // Never implies the measurement tracks confirmed bookings/sales.
+    expect(bannerSrc.toLowerCase()).not.toMatch(/leads? to (a )?booking/);
+  });
+
+  it('the public consent paragraph has no em dash, en dash or hyphenated word pairing', () => {
+    const paragraphMatch = bannerSrc.match(/Optional Google Ads measurement[\s\S]*?Cookie settings\./);
+    expect(paragraphMatch).not.toBeNull();
+    const paragraph = paragraphMatch![0];
+    expect(paragraph).not.toMatch(/[—–]/); // em dash, en dash
+    expect(paragraph).not.toMatch(/partner-link/);
   });
 
   it('links to the Privacy Policy and mentions the footer Cookie settings control', () => {

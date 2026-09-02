@@ -104,11 +104,50 @@ export function HomepageOpeningHero({ journeyCheck }: { journeyCheck: JourneyChe
       {/* id="your-journey": the anchor target for the footer's "Check my
           trip" link and the Atlas's own "Already know where you're going?"
           link — both point at #your-journey and previously scrolled down to
-          the standalone section this console replaces. */}
-      <div id="your-journey" className="max-w-2xl">
-        <div className="rounded-lg border border-white/10 bg-ink-900/70 p-5 shadow-[0_24px_70px_-24px_rgba(0,0,0,0.65)] backdrop-blur-md sm:p-6">
+          the standalone section this console replaces.
+
+          Mobile pull-up margin (September 2026, consent-overlay fix):
+          PageHero wraps every caller's children in its own fixed `mt-7`
+          (28px) — shared by 13 other pages, not something this component
+          can change. That wrapper has no padding/border of its own, so its
+          margin and this div's margin are adjoining and collapse per normal
+          CSS rules: parent +28px against this div's negative margin nets to
+          a smaller real gap above the console, on mobile only (sm:mt-0
+          cancels it back to PageHero's untouched 28px at sm: and up —
+          desktop is pixel-identical to before, confirmed via
+          getComputedStyle).
+
+          The margin is calc(-1rem - env(safe-area-inset-bottom,0px)), not a
+          plain -16px, so it exactly cancels the *same* term the consent
+          banner's own bottom padding grows by (see
+          cookie-consent-banner.tsx's own comment). The banner is
+          `fixed bottom:0`, so any growth in its bottom padding pushes its
+          top upward by the same amount; without this, a nonzero safe-area
+          inset would eat directly into the console's clearance. Because
+          both sides add the identical env() term, the net clearance is
+          provably constant regardless of the device's real inset — verified
+          by temporarily hardcoding 20px and 34px in place of env() locally,
+          confirming clearance held (see the founder investigation report;
+          no simulation code remains here, this calc() is the real,
+          permanent formula). JourneyCheckForm and PageHero are both
+          untouched. */}
+      <div id="your-journey" className="mt-[calc(-1rem_-_env(safe-area-inset-bottom,0px))] max-w-2xl sm:mt-0">
+        {/* Mobile-only spacing trim (September 2026, consent-overlay fix):
+            only the two gaps ABOVE the form's submit button are tightened —
+            the card's own top padding and the label-to-form gap — since
+            those are the only spacing in this component that actually
+            affects the button's vertical position; a first pass here
+            mistakenly also trimmed spacing below the button (the trust
+            line, the secondary CTA row), which does nothing for clearance
+            and was reverted. sm: values are untouched, so desktop is
+            pixel-identical to before. This exists solely to buy back
+            headroom the fixed-bottom consent banner needs at 390×844 to
+            clear the console without shrinking its 12px text or its 44px
+            buttons — see cookie-consent-banner.tsx's own comment. No copy,
+            heading, or control changed here. */}
+        <div className="rounded-lg border border-white/10 bg-ink-900/70 px-5 pb-5 pt-1.5 shadow-[0_24px_70px_-24px_rgba(0,0,0,0.65)] backdrop-blur-md sm:p-6">
           <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-brass-200">Check your journey</p>
-          <div className="mt-3">
+          <div className="mt-1 sm:mt-3">
             <JourneyCheckForm origins={journeyCheck.origins} destinations={journeyCheck.destinations} routeIndex={journeyCheck.routeIndex} />
           </div>
         </div>
