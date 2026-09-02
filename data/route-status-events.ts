@@ -557,6 +557,49 @@ const INDIGO_WITHDRAWAL_SOURCE: SourceRef = {
   accessedAt: '2026-07-23',
 };
 
+/**
+ * Post-withdrawal verification (2 September 2026), shared by both
+ * service-ended events below. IndiGo's own live booking engine
+ * (www.goindigo.in) has no fixed, shareable deep link for a session-based
+ * fare search — this cites the general site, not a marketing page, exactly
+ * like the PIA-booking-engine citation pattern already used on
+ * `route.verification` elsewhere in data/routes.ts. Both Manchester-origin
+ * searches (MAN-BOM, MAN-DEL) returned every listed option, across the
+ * full visible 2 September-1 October 2026 date range, as "Sold Out" — zero
+ * bookable IndiGo-sold inventory in either direction. Both India-origin
+ * searches (BOM-MAN, DEL-MAN) DID return one bookable itinerary each, but
+ * expanding its fare details showed it is a Turkish Airlines codeshare via
+ * Istanbul (e.g. "DEL - IST | 6E 4268 (OPERATED BY TK AS 717)", "IST - MAN
+ * | 6E 4081 (OPERATED BY TK AS 1995)") — IndiGo selling seats on a
+ * Turkish-operated routing, never IndiGo's own widebody nonstop aircraft.
+ * No IndiGo-operated (6E-operated) nonstop flight exists in either
+ * direction on either route.
+ */
+const INDIGO_BOOKING_ENGINE_VERIFICATION_SOURCE: SourceRef = {
+  publisher: 'IndiGo',
+  title:
+    'IndiGo\'s own live booking engine (www.goindigo.in) — direct MAN-BOM/BOM-MAN and MAN-DEL/DEL-MAN availability searches, not a marketing or aggregator page',
+  url: 'https://www.goindigo.in/',
+  accessedAt: '2026-09-02',
+};
+
+/** Corroborating aviation-industry schedule-filing report — already used to cross-check the original withdrawal announcement (see INDIGO_WITHDRAWAL_SOURCE's own doc comment); re-checked here as independent confirmation that IndiGo actually filed the cancellation in the OAG/GDS, not merely announced an intention. */
+const AEROROUTES_CANCELLATION_SOURCE: SourceRef = {
+  publisher: 'AeroRoutes',
+  title: 'IndiGo Discontinues Manchester Service in late-August 2026',
+  url: 'https://www.aeroroutes.com/eng/260603-6eaug26man',
+  publishedAt: '2026-06-04',
+  accessedAt: '2026-09-02',
+};
+
+/** Manchester Airport's own live departures board — a same-day operational snapshot, not a permanent timetable; re-check on the normal cadence rather than treating this single day as a settled fact on its own. Cited as corroboration alongside the two sources above, not as the sole basis for either verdict. */
+const MANCHESTER_AIRPORT_DEPARTURES_SOURCE: SourceRef = {
+  publisher: 'Manchester Airport',
+  title: 'Live flight departures board, Wednesday 2 September 2026 — zero IndiGo (6E) departures among all scheduled flights',
+  url: 'https://www.manchesterairport.co.uk/flight-information/flight-departures/',
+  accessedAt: '2026-09-02',
+};
+
 export const routeStatusEvents: RouteStatusEvent[] = [
   {
     id: 'man-bom-indigo-withdrawal-2026-06',
@@ -587,5 +630,37 @@ export const routeStatusEvents: RouteStatusEvent[] = [
     announcedAt: '2026-06-02',
     effectiveFrom: '2026-08-31',
     currentClaimValidBefore: '2026-08-31',
+  },
+  {
+    id: 'man-bom-indigo-service-ended-2026-09',
+    routeSlug: 'manchester-mumbai',
+    serviceId: 'indigo-manchester-mumbai-direct',
+    scope: { kind: 'airline', airlineSlug: 'indigo' },
+    type: 'service-ended',
+    verifiedOccurrence: true,
+    relatedEventId: 'man-bom-indigo-withdrawal-2026-06',
+    headline: 'IndiGo direct service confirmed ended',
+    explanation:
+      "Post-effective-date verification (2 September 2026): IndiGo's own live booking engine shows zero IndiGo-operated (6E-operated) nonstop flight in either direction on this route across the full visible 2 September-1 October 2026 date range. Every Manchester-to-Mumbai search result is Sold Out; the only bookable Mumbai-to-Manchester result is a Turkish Airlines codeshare via Istanbul (IndiGo ticket, Turkish Airlines aircraft), not IndiGo's own widebody service. Corroborated by AeroRoutes' report that IndiGo filed to cancel this route in the OAG/GDS effective 1 September 2026, and by Manchester Airport's own live departures board showing no IndiGo departure among any of its 2 September 2026 flights. IndiGo's original release describes the discontinuation as temporary; no resumption date has been announced, and none is recorded here. No specific last-operating date is evidenced, so none is inferred — this event asserts only that the direct service has verifiably ended, not when the final flight actually operated.",
+    sources: [INDIGO_BOOKING_ENGINE_VERIFICATION_SOURCE, AEROROUTES_CANCELLATION_SOURCE, MANCHESTER_AIRPORT_DEPARTURES_SOURCE],
+    verifiedAt: '2026-09-02',
+    effectiveFrom: '2026-08-31',
+    currentClaimValidBefore: '2027-03-02',
+  },
+  {
+    id: 'man-del-indigo-service-ended-2026-09',
+    routeSlug: 'manchester-delhi',
+    serviceId: 'indigo-manchester-delhi-direct',
+    scope: { kind: 'airline', airlineSlug: 'indigo' },
+    type: 'service-ended',
+    verifiedOccurrence: true,
+    relatedEventId: 'man-del-indigo-withdrawal-2026-06',
+    headline: 'IndiGo direct service confirmed ended',
+    explanation:
+      "Post-effective-date verification (2 September 2026): IndiGo's own live booking engine shows zero IndiGo-operated (6E-operated) nonstop flight in either direction on this route across the full visible 2 September-1 October 2026 date range. Every Manchester-to-Delhi search result is Sold Out; the only bookable Delhi-to-Manchester result is a Turkish Airlines codeshare via Istanbul (IndiGo ticket, Turkish Airlines aircraft), not IndiGo's own widebody service. Corroborated by AeroRoutes' report that IndiGo filed to cancel this route in the OAG/GDS effective 1 September 2026, and by Manchester Airport's own live departures board showing no IndiGo departure among any of its 2 September 2026 flights. IndiGo's original release describes the discontinuation as temporary; no resumption date has been announced, and none is recorded here. No specific last-operating date is evidenced, so none is inferred — this event asserts only that the direct service has verifiably ended, not when the final flight actually operated.",
+    sources: [INDIGO_BOOKING_ENGINE_VERIFICATION_SOURCE, AEROROUTES_CANCELLATION_SOURCE, MANCHESTER_AIRPORT_DEPARTURES_SOURCE],
+    verifiedAt: '2026-09-02',
+    effectiveFrom: '2026-08-31',
+    currentClaimValidBefore: '2027-03-02',
   },
 ];

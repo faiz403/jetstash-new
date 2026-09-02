@@ -87,13 +87,32 @@ describe('Route Status V1 — real corridor data integrity', () => {
 
   it('manchester-mumbai and manchester-delhi each have exactly one withdrawal-announced event, sourced only to the June release', () => {
     for (const slug of ['manchester-mumbai', 'manchester-delhi']) {
-      const events = routeStatusEvents.filter((e) => e.routeSlug === slug);
-      expect(events).toHaveLength(1);
-      expect(events[0].type).toBe('withdrawal-announced');
-      expect(events[0].sources).toHaveLength(1);
-      expect(events[0].sources[0].publisher).toBe('IndiGo');
-      expect(events[0].sources[0].url).toContain('indigo-temporarily-discontinues-manchester-flights');
-      expect(events[0].sources[0].url).not.toContain('adjusts-wide-body-network');
+      const withdrawal = routeStatusEvents.filter((e) => e.routeSlug === slug && e.type === 'withdrawal-announced');
+      expect(withdrawal).toHaveLength(1);
+      expect(withdrawal[0].sources).toHaveLength(1);
+      expect(withdrawal[0].sources[0].publisher).toBe('IndiGo');
+      expect(withdrawal[0].sources[0].url).toContain('indigo-temporarily-discontinues-manchester-flights');
+      expect(withdrawal[0].sources[0].url).not.toContain('adjusts-wide-body-network');
+    }
+  });
+
+  // Post-withdrawal verification (2 September 2026): each corridor now also
+  // has exactly one 'service-ended' event, linked back to its own
+  // withdrawal-announced event via relatedEventId — see
+  // data/route-status-events.ts's own doc comments for the primary-source
+  // evidence (IndiGo's own booking engine, AeroRoutes' GDS schedule-filing
+  // report, Manchester Airport's live departures board).
+  it('manchester-mumbai and manchester-delhi each also have exactly one verified service-ended event, linked to their own withdrawal-announced event', () => {
+    for (const slug of ['manchester-mumbai', 'manchester-delhi']) {
+      const withdrawal = routeStatusEvents.find((e) => e.routeSlug === slug && e.type === 'withdrawal-announced')!;
+      const ended = routeStatusEvents.filter((e) => e.routeSlug === slug && e.type === 'service-ended');
+      expect(ended).toHaveLength(1);
+      expect(ended[0].type).toBe('service-ended');
+      if (ended[0].type !== 'service-ended') return;
+      expect(ended[0].verifiedOccurrence).toBe(true);
+      expect(ended[0].relatedEventId).toBe(withdrawal.id);
+      expect(ended[0].serviceId).toBe(withdrawal.serviceId);
+      expect(ended[0].sources.length).toBeGreaterThan(0);
     }
   });
 
@@ -145,21 +164,33 @@ describe('Route Status V1 — real corridors: date-boundary derivation', () => {
     }
   });
 
-  it('2026-08-31 (effectiveFrom itself): both corridors report verification-pending with transition-boundary-reached, carrying the real driving event id — never service-ended and never verified-direct', () => {
+  // Post-withdrawal verification (2 September 2026) added a real, verified
+  // 'service-ended' event for both corridors (currentClaimValidBefore
+  // 2027-03-02) — from this point on, both dates below correctly resolve
+  // to 'service-ended', not the announcement-only transition-boundary-
+  // pending state these tests originally documented before that evidence
+  // existed. This is the exact "announcement alone never becomes an
+  // occurrence... until freshly verified" rule finally being satisfied by
+  // real evidence, not a loosened assertion.
+  it('2026-08-31 (effectiveFrom itself): both corridors now report the verified service-ended state, carrying the real driving event id', () => {
     for (const slug of ['manchester-mumbai', 'manchester-delhi']) {
       const route = getRouteBySlug(slug)!;
-      const realEventId = routeStatusEvents.find((e) => e.routeSlug === slug)!.id;
+      const endedEventId = routeStatusEvents.find((e) => e.routeSlug === slug && e.type === 'service-ended')!.id;
       const result = getRouteStatus(route, routeStatusEvents, '2026-08-31');
-      expectTransitionBoundary(result, realEventId);
+      expect(result).not.toBeNull();
+      expect(result!.status).toBe('service-ended');
+      if (result!.status === 'service-ended') expect(result!.drivingEventId).toBe(endedEventId);
     }
   });
 
-  it('2026-09-15 (long after effectiveFrom, still no fresh service-ended evidence): stays verification-pending / transition-boundary-reached, still carrying the driving event id — an announcement alone never becomes an occurrence and is never forgotten', () => {
+  it('2026-09-15 (long after effectiveFrom, within the service-ended event\'s own claim horizon): still reports the verified service-ended state', () => {
     for (const slug of ['manchester-mumbai', 'manchester-delhi']) {
       const route = getRouteBySlug(slug)!;
-      const realEventId = routeStatusEvents.find((e) => e.routeSlug === slug)!.id;
+      const endedEventId = routeStatusEvents.find((e) => e.routeSlug === slug && e.type === 'service-ended')!.id;
       const result = getRouteStatus(route, routeStatusEvents, '2026-09-15');
-      expectTransitionBoundary(result, realEventId);
+      expect(result).not.toBeNull();
+      expect(result!.status).toBe('service-ended');
+      if (result!.status === 'service-ended') expect(result!.drivingEventId).toBe(endedEventId);
     }
   });
 
@@ -981,8 +1012,22 @@ describe('Route Status V1 — review fix: corrections must stay on the same logi
     expect(errors.some((e) => e.code === 'cross-route-link')).toBe(true);
   });
 
-  it('the real ledger has no supersession or lifecycle events at all in Phase 1, so none of these new checks fire against real data', () => {
-    expect(routeStatusEvents.every((e) => !e.supersedesEventId && !e.relatedEventId)).toBe(true);
+  // Post-withdrawal verification (2 September 2026) added the first real
+  // relatedEventId lifecycle links in the ledger: each corridor's
+  // service-ended event points back to its own withdrawal-announced event.
+  // supersedesEventId (factual correction, a different mechanism entirely
+  // — see this file's own doc comment) remains genuinely unused.
+  it('the real ledger has no supersession events, and its only lifecycle (relatedEventId) links are the two verified service-ended events pointing back to their own withdrawal-announced event', () => {
+    expect(routeStatusEvents.every((e) => !e.supersedesEventId)).toBe(true);
+    const withRelated = routeStatusEvents.filter((e) => e.relatedEventId);
+    expect(withRelated).toHaveLength(2);
+    for (const e of withRelated) {
+      expect(e.type).toBe('service-ended');
+      const target = routeStatusEvents.find((t) => t.id === e.relatedEventId)!;
+      expect(target.type).toBe('withdrawal-announced');
+      expect(target.routeSlug).toBe(e.routeSlug);
+      expect(target.serviceId).toBe(e.serviceId);
+    }
   });
 });
 
@@ -1140,13 +1185,22 @@ describe('Route Status V1 final errata §1 — NonEmptyArray compile-time enforc
 });
 
 describe('Route Status V1 — evidence-validated customer copy (lib/route-status-copy.ts)', () => {
+  // Post-withdrawal verification (2 September 2026) gave manchester-mumbai
+  // a real, verified service-ended event valid through 2027-03-02 — the
+  // transition-boundary-pending window these two tests originally
+  // documented at 2026-08-31 no longer exists for real data on that date
+  // (it now correctly resolves to the more specific 'service-ended' state
+  // instead). The permanent transition-boundary-reached behaviour these
+  // tests exist to lock in is still real, just reachable only once that
+  // service-ended claim's own horizon has expired — 2027-04-01 exercises
+  // the exact same code path against real data that 2026-08-31 used to.
   it('the real Manchester–Mumbai transition-boundary pending copy carries the real driving event id, publisher, effective date and a non-empty citation list', () => {
     const route = getRouteBySlug('manchester-mumbai')!;
-    const result = getRouteStatus(route, routeStatusEvents, '2026-08-31')!;
-    const viewModel = getRouteStatusCopy(route, result, routeStatusEvents, '2026-08-31');
+    const result = getRouteStatus(route, routeStatusEvents, '2027-04-01')!;
+    const viewModel = getRouteStatusCopy(route, result, routeStatusEvents, '2027-04-01');
     expect(viewModel.kind).toBe('transition-boundary-pending');
     if (viewModel.kind !== 'transition-boundary-pending') return;
-    expect(viewModel.drivingEventId).toBe(routeStatusEvents.find((e) => e.routeSlug === 'manchester-mumbai')!.id);
+    expect(viewModel.drivingEventId).toBe(routeStatusEvents.find((e) => e.routeSlug === 'manchester-mumbai' && e.type === 'withdrawal-announced')!.id);
     expect(viewModel.effectiveFrom).toBe('2026-08-31');
     expect(viewModel.publisher).toBe('IndiGo');
     expect(viewModel.citations.length).toBeGreaterThan(0);
@@ -1154,8 +1208,8 @@ describe('Route Status V1 — evidence-validated customer copy (lib/route-status
 
   it('Wording fix (31 Aug 2026, User 3 validation): transition-boundary-pending copy states the announced DATE has been reached, and explicitly that JetStash has not independently confirmed the SERVICE has ceased — never the settled-sounding "has passed"', () => {
     const route = getRouteBySlug('manchester-mumbai')!;
-    const result = getRouteStatus(route, routeStatusEvents, '2026-08-31')!;
-    const viewModel = getRouteStatusCopy(route, result, routeStatusEvents, '2026-08-31');
+    const result = getRouteStatus(route, routeStatusEvents, '2027-04-01')!;
+    const viewModel = getRouteStatusCopy(route, result, routeStatusEvents, '2027-04-01');
     expect(viewModel.kind).toBe('transition-boundary-pending');
     if (viewModel.kind !== 'transition-boundary-pending') return;
     expect(viewModel.body).toMatch(/announced withdrawal date has been reached/i);
