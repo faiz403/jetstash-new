@@ -229,11 +229,20 @@ describe('11. route-vs-fare mismatch behaviour', () => {
     expect(html).not.toContain('Route service');
   });
 
-  it('D. an unaffected route WITH a genuine, currently-live route-vs-fare mismatch (manchester-antalya: route verified direct, current fare a connecting itinerary via a mixed-carrier return leg) still renders the full mismatch disclosure, unchanged by this fix', () => {
-    const route = getRouteBySlug('manchester-antalya')!;
+  it('D. an unaffected route WITH a genuine, currently-live route-vs-fare mismatch (manchester-barcelona: route verified direct, current fare a connecting itinerary via a self-transfer return leg) still renders the full mismatch disclosure, unchanged by this fix', () => {
+    // Was manchester-antalya until the Tuesday full weekly refresh (1
+    // September 2026) gave it a genuine nonstop-both-ways observation
+    // (SunExpress, single carrier) — the route's own verified-direct status
+    // and its current fare converged, so that route no longer demonstrates
+    // a mismatch at all (a real, evidence-driven resolution, not a
+    // regression). manchester-barcelona is a live substitute with the same
+    // shape: verified direct, but the same refresh's own new observation is
+    // a nonstop outbound + self-transfer 1-stop return, so the aggregate
+    // fareDirectness is still genuinely 'connecting'.
+    const route = getRouteBySlug('manchester-barcelona')!;
     const presentation = getEffectiveRoutePresentation(route, routeStatusEvents, NOW_ISO);
     expect(presentation.status).toBe('direct');
-    const signal = getFareSignalForRoute('manchester-antalya', NOW_ISO);
+    const signal = getFareSignalForRoute('manchester-barcelona', NOW_ISO);
     expect(signal.state).toBe('current');
     expect(signal.observation).not.toBeNull();
     expect(signal.observation!.directness).toBe('connecting');
@@ -243,7 +252,7 @@ describe('11. route-vs-fare mismatch behaviour', () => {
     const { isSelfTransfer, outboundStops, returnStops } = signal.observation!;
     expect(isSelfTransfer && ((outboundStops ?? 0) >= 2 || (returnStops ?? 0) >= 2)).toBe(false);
 
-    const html = renderFareSignalForRoute('manchester-antalya');
+    const html = renderFareSignalForRoute('manchester-barcelona');
     expect(html).toContain('Fare spotted');
     expect(html).toContain('Route service');
     expect(html).toContain('This tracked fare is a different, connecting journey.');
