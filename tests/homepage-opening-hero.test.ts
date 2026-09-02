@@ -55,13 +55,16 @@ describe('homepage opening hero uses the approved copy', () => {
     expect(heroSrc).toContain('Checked against airline and official sources. Booking links come last.');
   });
 
-  it('has the exact primary and secondary CTA labels, with no duplicate CTA introduced', () => {
-    expect(heroSrc).toContain('Check a journey');
+  // Homepage hero integration (September 2026): the "Check a journey"
+  // button (which used to scroll down to a separate section) is retired —
+  // the real JourneyCheckForm control renders directly in the hero now, so
+  // there's nothing left for that button to defer to. "Explore the Route
+  // Atlas" is unchanged as the one remaining secondary CTA.
+  it('embeds the real JourneyCheckForm control directly, with exactly one secondary "Explore the Route Atlas" link and no separate "Check a journey" button', () => {
+    expect(heroSrc).toContain('<JourneyCheckForm');
     expect(heroSrc).toContain('Explore the Route Atlas');
-    // Exactly one "Check a journey" and one "Explore the Route Atlas" — a
-    // second copy of either would mean a duplicate CTA was accidentally added.
-    expect(heroSrc.match(/Check a journey/g)).toHaveLength(1);
     expect(heroSrc.match(/Explore the Route Atlas/g)?.length).toBe(1);
+    expect(heroSrc).not.toContain('Check a journey');
   });
 
   // First-screen restructuring (August 2026, founder-reviewed homepage
@@ -82,12 +85,19 @@ describe('homepage opening hero uses the approved copy', () => {
     expect(heroSrc).not.toContain('When the journey is clear, JetStash points you to a booking partner.');
   });
 
-  it('adds a single live-computed credibility stat via PageHero\'s own stats prop, never a hardcoded figure', () => {
-    expect(heroSrc).toMatch(/stats=\{\[\{ value: `\$\{routesWithTrackedFare\} of \$\{routes\.length\}`/);
+  // Homepage hero integration (September 2026): leading with a coverage
+  // number was itself part of the "explains JetStash before you can use it"
+  // problem — the stat moved out of PageHero's own dedicated `stats` slot
+  // (a large, prominent display) into a small, de-emphasised inline line
+  // beside the secondary CTA. Still the same live-computed value, never a
+  // hardcoded figure — only its visual weight changed.
+  it('shows the live-computed credibility stat inline and de-emphasised, never via PageHero\'s stats slot or a hardcoded figure', () => {
     expect(heroSrc).toContain("import { routes } from '@/data/routes'");
     expect(heroSrc).toContain("import { getPublishableObservationsByRoute } from '@/data/fare-observations'");
+    expect(heroSrc).toMatch(/\{routesWithTrackedFare\} of \{routes\.length\}/);
+    expect(heroSrc).not.toMatch(/stats=\{/);
     // Never a hand-typed number standing in for the live count.
-    expect(heroSrc).not.toMatch(/value: ['"]\d+ of \d+['"]/);
+    expect(heroSrc).not.toMatch(/\d+ of \d+ UK routes/);
   });
 
   it('reuses the shared PageHero and an existing approved image, not a new one', () => {
@@ -108,10 +118,19 @@ describe('homepage opening hero uses the approved copy', () => {
   });
 });
 
-describe('the two hero CTAs point at real, matching anchors', () => {
-  it('"Check a journey" targets #your-journey, which exists on the homepage', () => {
-    expect(heroSrc).toContain('href="#your-journey"');
-    expect(homeSrc).toContain('id="your-journey"');
+describe('the hero owns #your-journey, and the Route Atlas CTA points at a real anchor', () => {
+  // Homepage hero integration (September 2026): id="your-journey" moved
+  // onto the hero's own journey console — the standalone section that used
+  // to own this id is gone from journey-desk-home.tsx entirely.
+  it('id="your-journey" now lives on the hero\'s own journey console, not a separate section', () => {
+    expect(heroSrc).toContain('id="your-journey"');
+    expect(homeSrc).not.toContain('id="your-journey"');
+  });
+
+  it('the footer and Atlas "Check a journey" links still point at #your-journey — now resolving inside the hero instead of a section further down the page', () => {
+    const sectionsSrc = readFileSync(join(process.cwd(), 'components/homepage-v2/homepage-sections.tsx'), 'utf8');
+    expect(sectionsSrc).toContain('href="#your-journey"');
+    expect(atlasSrc).toContain('href="#your-journey"');
   });
 
   it('"Explore the Route Atlas" targets #route-atlas, which exists on the Atlas', () => {
@@ -221,13 +240,13 @@ describe('CommercialPaths is wired into the live homepage (August 2026, founder-
     expect(homeSrc).toMatch(/<CommercialPaths\s*\/>/);
   });
 
-  it('renders after the "your-journey" JourneyCheckForm section and the merged WhyJetStash section, and before RouteWatchInvite (density + hierarchy fix, August 2026: understand JetStash and check a route first, then see the specialist paths)', () => {
-    const yourJourneyIndex = homeSrc.indexOf('id="your-journey"');
+  it('renders after the hero (which now contains the primary journey task) and the merged WhyJetStash section, and before RouteWatchInvite (density + hierarchy fix, August 2026: understand JetStash and check a route first, then see the specialist paths)', () => {
+    const heroIndex = homeSrc.indexOf('<HomepageOpeningHero');
     const whyJetStashIndex = homeSrc.indexOf('<WhyJetStash');
     const commercialPathsIndex = homeSrc.indexOf('<CommercialPaths');
     const routeWatchIndex = homeSrc.indexOf('<RouteWatchInvite');
-    expect(yourJourneyIndex).toBeGreaterThan(-1);
-    expect(whyJetStashIndex).toBeGreaterThan(yourJourneyIndex);
+    expect(heroIndex).toBeGreaterThan(-1);
+    expect(whyJetStashIndex).toBeGreaterThan(heroIndex);
     expect(commercialPathsIndex).toBeGreaterThan(whyJetStashIndex);
     expect(routeWatchIndex).toBeGreaterThan(commercialPathsIndex);
   });
@@ -237,13 +256,11 @@ describe('CommercialPaths is wired into the live homepage (August 2026, founder-
   // the scroll path must match that hierarchy even for a visitor who never
   // clicks either hero CTA. Your Journey now renders directly beneath the
   // hero, before the Atlas.
-  it('renders the primary Your Journey task directly beneath the hero, before the secondary Route Atlas', () => {
+  it('the hero (containing the primary Your Journey task) renders before the secondary Route Atlas', () => {
     const heroIndex = homeSrc.indexOf('<HomepageOpeningHero');
-    const yourJourneyIndex = homeSrc.indexOf('id="your-journey"');
     const atlasIndex = homeSrc.indexOf('<AtlasFeelTest');
     expect(heroIndex).toBeGreaterThan(-1);
-    expect(yourJourneyIndex).toBeGreaterThan(heroIndex);
-    expect(atlasIndex).toBeGreaterThan(yourJourneyIndex);
+    expect(atlasIndex).toBeGreaterThan(heroIndex);
   });
 
   it('the component itself is untouched — no new copy was written, the existing Economy/Business/Umrah content is reused verbatim', () => {

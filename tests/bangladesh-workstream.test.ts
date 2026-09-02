@@ -18,7 +18,8 @@ import { getVisaLinkForCountry } from '@/lib/visa-links';
 import { regionGroups } from '@/lib/site-config';
 import { buildAtlasAirports } from '@/lib/atlas-network-data';
 import { JourneyDeskHome } from '@/components/homepage-v2/journey-desk-home';
-import { JourneyCheckForm } from '@/components/homepage-v2/journey-check-form';
+import { JourneyCheckForm, type JourneyCheckData } from '@/components/homepage-v2/journey-check-form';
+import { HomepageOpeningHero } from '@/components/homepage-v2/homepage-opening-hero';
 import sitemap from '@/app/sitemap';
 import RoutePage from '@/app/routes/[slug]/page';
 import DestinationPage from '@/app/destinations/[slug]/page';
@@ -477,10 +478,26 @@ describe('BD-001 — sitemap and static generation', () => {
   });
 });
 
+// Homepage hero integration (September 2026): JourneyCheckForm now renders
+// inside HomepageOpeningHero, one level deeper than journey-desk-home.tsx's
+// own returned element tree. findElementOfType only descends into
+// props.children (never invokes a nested function component — see its own
+// doc comment above), so reaching the form now takes one extra, explicit
+// step: find the <HomepageOpeningHero> element JourneyDeskHome() actually
+// returned, then call that function directly with its own real props — the
+// same "call a component directly, walk its non-invoked children" approach
+// this file already uses for JourneyDeskHome() itself, just one level deeper.
+function getJourneyCheckFormFromHomepage() {
+  const homeElement = JourneyDeskHome();
+  const heroElement = findElementOfType(homeElement, HomepageOpeningHero);
+  expect(heroElement).not.toBeNull();
+  const heroOutput = HomepageOpeningHero(heroElement!.props as { journeyCheck: JourneyCheckData });
+  return findElementOfType(heroOutput, JourneyCheckForm);
+}
+
 describe('BD-001 — Journey Check selector', () => {
   it('the homepage Journey Desk passes Dhaka and Sylhet into JourneyCheckForm as selectable destinations, derived purely from routes.ts', () => {
-    const element = JourneyDeskHome();
-    const form = findElementOfType(element, JourneyCheckForm);
+    const form = getJourneyCheckFormFromHomepage();
     expect(form).not.toBeNull();
     const destinationLabels = (form!.props.destinations as { slug: string; label: string }[]).map((d) => d.label);
     expect(destinationLabels).toContain('Dhaka, Bangladesh');
@@ -488,16 +505,14 @@ describe('BD-001 — Journey Check selector', () => {
   });
 
   it('every existing India/Pakistan destination label is still present alongside the new Bangladesh ones', () => {
-    const element = JourneyDeskHome();
-    const form = findElementOfType(element, JourneyCheckForm)!;
+    const form = getJourneyCheckFormFromHomepage()!;
     const destinationLabels = (form.props.destinations as { slug: string; label: string }[]).map((d) => d.label);
     expect(destinationLabels).toContain('Lahore, Pakistan');
     expect(destinationLabels).toContain('Delhi, India');
   });
 
   it('the routeIndex maps each Bangladesh origin/destination pair to the correct route slug', () => {
-    const element = JourneyDeskHome();
-    const form = findElementOfType(element, JourneyCheckForm)!;
+    const form = getJourneyCheckFormFromHomepage()!;
     const routeIndex = form.props.routeIndex as Record<string, string>;
     expect(routeIndex['manchester|dhaka']).toBe('manchester-dhaka');
     expect(routeIndex['manchester|sylhet']).toBe('manchester-sylhet');
