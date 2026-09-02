@@ -516,3 +516,62 @@ describe('No route facts, fare observations or verification states were altered 
     expect(after).toBe(before);
   });
 });
+
+describe('Atlas correctly suppresses stale direct-service facts once a real service-ended event exists (IndiGo Manchester post-withdrawal verification, 2 Sep 2026)', () => {
+  // Before this fix, buildDestinationPoint() only branched on
+  // status?.status === 'withdrawal-announced' — a genuinely verified
+  // 'service-ended' event (the first this ledger has ever carried) fell
+  // through with no override at all, leaving flightTime as the raw,
+  // unfiltered route.flightTime string ("9h 45m direct (currently)") next
+  // to a verdict that still read "Direct service not yet independently
+  // verified" — live on the public homepage's Atlas, the exact stale-claim
+  // leakage Route Status V1 exists to prevent everywhere else.
+  const ENDED_ISO = '2026-09-02';
+
+  function findDestination(airportSlug: string, destSlug: string, nowIso: string = ENDED_ISO): DestinationPoint {
+    const airport = buildAtlasAirports(nowIso).find((a) => a.airportSlug === airportSlug)!;
+    for (const country of airport.countries) {
+      const found = country.destinations.find((d) => d.slug === destSlug);
+      if (found) return found;
+    }
+    throw new Error(`${destSlug} not found under ${airportSlug} in the Atlas tree`);
+  }
+
+  it('manchester-mumbai no longer shows the raw, stale "9h 45m direct (currently)" flightTime once the direct service is verifiably ended', () => {
+    const mumbai = findDestination('manchester', 'mumbai');
+    expect(mumbai.flightTime).not.toContain('currently');
+    expect(mumbai.flightTime).not.toBe(getRouteBySlug('manchester-mumbai')!.flightTime);
+    expect(mumbai.flightTime).toMatch(/ended/i);
+  });
+
+  it('manchester-delhi gets the identical treatment — architectural, not route-specific', () => {
+    const delhi = findDestination('manchester', 'delhi');
+    expect(delhi.flightTime).not.toContain('currently');
+    expect(delhi.flightTime).not.toBe(getRouteBySlug('manchester-delhi')!.flightTime);
+    expect(delhi.flightTime).toMatch(/ended/i);
+  });
+
+  it('both routes\' verdict and serviceNotice honestly state the service has ended, not merely that a change was announced', () => {
+    for (const dest of [findDestination('manchester', 'mumbai'), findDestination('manchester', 'delhi')]) {
+      expect(dest.verdict.toLowerCase()).toContain('ended');
+      expect(dest.serviceNotice).not.toBeNull();
+      expect(dest.serviceNotice!.label.toLowerCase()).toContain('ended');
+      expect(dest.serviceNotice!.label).toContain('IndiGo');
+    }
+  });
+
+  it('before this evidence existed (a date within the withdrawal-announced-only window), the same two routes correctly showed the additive withdrawal notice instead — proves the new branch is genuinely gated on status, not a permanent override', () => {
+    const PRE_VERIFICATION_ISO = '2026-08-25';
+    for (const [destSlug] of [['mumbai'], ['delhi']] as const) {
+      const dest = findDestination('manchester', destSlug, PRE_VERIFICATION_ISO);
+      expect(dest.flightTime).toBe(getRouteBySlug(`manchester-${destSlug}`)!.flightTime);
+      expect(dest.serviceNotice).not.toBeNull();
+      expect(dest.serviceNotice!.label).not.toContain('ended');
+      expect(dest.serviceNotice!.label).toContain('announced a change');
+    }
+    // Sanity: PRE_VERIFICATION_ISO really is before the withdrawal's own
+    // effective date, i.e. genuinely exercising 'withdrawal-announced', not
+    // 'service-ended' by coincidence.
+    expect(PRE_VERIFICATION_ISO < '2026-08-31').toBe(true);
+  });
+});

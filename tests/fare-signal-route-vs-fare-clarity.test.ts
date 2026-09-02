@@ -424,12 +424,28 @@ describe('full 88-route dataset safety check (Phase 8)', () => {
     // direct+connecting-fare (in directConnectingFare) up to 30 Aug, and
     // become unverified/service-ended from 31 Aug, exactly the boundary
     // this test now evaluates at.
+    //
+    // unverified 7 -> 5, noFare 7 -> 9 (IndiGo Manchester post-withdrawal
+    // verification, 2 Sep 2026): a real, freshly-verified 'service-ended'
+    // route-status event was added for both manchester-mumbai and
+    // manchester-delhi (data/route-status-events.ts) -- IndiGo's own
+    // booking engine, corroborated by AeroRoutes' GDS schedule-filing
+    // report and Manchester Airport's live departures board, confirms the
+    // direct service has actually ceased, not merely that its announced
+    // effective date has passed. At this test's own SUPPRESSION_ISO=31
+    // August boundary, both routes' presentation.status is now
+    // 'service-ended' rather than 'unverified' -- this loop's own first
+    // branch (`presentation.status === 'unverified'`) no longer catches
+    // them, so they fall through to the `fareDirectness === null` branch
+    // instead (a service-ended route's Fare Signal is suppressed exactly
+    // like an unverified one). Moves both routes from the unverified
+    // bucket into the noFare bucket; the total is unchanged.
     expect(directConnectingFare).toBe(49);
     expect(directDirectFare).toBe(13);
     expect(connectingConnectingFare).toBe(12);
     expect(connectingDirectFare).toBe(0);
-    expect(noFare).toBe(7);
-    expect(unverified).toBe(7);
+    expect(noFare).toBe(9);
+    expect(unverified).toBe(5);
     expect(directConnectingFare + directDirectFare + connectingConnectingFare + connectingDirectFare + noFare + unverified).toBe(88);
   });
 });

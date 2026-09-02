@@ -274,11 +274,19 @@ describe('no evidence or trust wording was accidentally lost — full 88-route s
     // (14->12). Then unverified 5->7 (IndiGo withdrawal, 31 Aug 2026,
     // manchester-mumbai + manchester-delhi), which also pulls
     // directConnectingFare down its final step, 51->49.
+    //
+    // unverified 7 -> 5, noFare 7 -> 9 (IndiGo Manchester post-withdrawal
+    // verification, 2 Sep 2026) — see
+    // tests/fare-signal-route-vs-fare-clarity.test.ts's identical update
+    // for the full account: a freshly-verified 'service-ended' event now
+    // exists for both routes, so at this test's own 31 August boundary
+    // their presentation.status is 'service-ended', not 'unverified' —
+    // they fall into the noFare bucket instead. Total unchanged.
     expect(directConnectingFare).toBe(49);
     expect(directDirectFare).toBe(13);
     expect(connectingConnectingFare).toBe(12);
     expect(connectingDirectFare).toBe(0);
-    expect(noFare).toBe(7);
-    expect(unverified).toBe(7);
+    expect(noFare).toBe(9);
+    expect(unverified).toBe(5);
   });
 });

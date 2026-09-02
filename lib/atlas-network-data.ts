@@ -212,6 +212,32 @@ function buildDestinationPoint(airportSlug: string, destSlug: string, x: number,
     }
   }
 
+  // A freshly-verified 'service-ended' Route Status event proves the
+  // direct service has actually ceased — a stronger, settled fact than
+  // 'withdrawal-announced' above, not merely additive to it. Unlike that
+  // branch, this one MUST override verdict/detail/flightTime (never leave
+  // them alongside a "9h 45m direct (currently)"-style raw route.flightTime
+  // string) — the exact same "direct service ended" rule
+  // buildServiceEndedPresentation() already enforces on the route page
+  // itself (data/routes.ts), applied here because this module reads
+  // route.flightTime directly rather than through that adapter. First
+  // exercised by the IndiGo Manchester-Mumbai/Delhi post-withdrawal
+  // verification, 2 September 2026 — the first 'service-ended' event this
+  // ledger has ever carried.
+  let flightTimeOverride: string | null = null;
+  if (status?.status === 'service-ended') {
+    const viewModel = getRouteStatusCopy(route, status, routeStatusEvents, nowIso);
+    if (viewModel.kind === 'service-ended') {
+      verdict = 'Direct service ended — check current options directly with the airline.';
+      detail = viewModel.explanation;
+      flightTimeOverride = `Direct service ended ${formatRouteStatusDate(viewModel.effectiveFrom)}`;
+      serviceNotice = {
+        label: `${viewModel.citations[0]?.publisher ?? 'The airline'}'s direct service has ended, effective ${formatRouteStatusDate(viewModel.effectiveFrom)}.`,
+        detail: viewModel.explanation,
+      };
+    }
+  }
+
   return {
     slug: destSlug,
     label: dest.city,
@@ -228,7 +254,7 @@ function buildDestinationPoint(airportSlug: string, destSlug: string, x: number,
     serviceNotice,
     verdict,
     detail,
-    flightTime: route.flightTime,
+    flightTime: flightTimeOverride ?? route.flightTime,
     href: `/destinations/${destSlug}`,
     routeHref: `/routes/${route.slug}`,
   };

@@ -102,9 +102,27 @@ describe('Target 3: Manchester-Mumbai route-status recheck before optimising "di
     expect(presentation.metadataDescription).toContain('withdrawal announced, effective 31 August 2026');
   });
 
-  it('the fix self-corrects once the withdrawal effective date passes — no redeploy required, matching the Route Status V1 design goal', () => {
+  // IndiGo Manchester post-withdrawal verification (2 Sep 2026): a real,
+  // freshly-verified 'service-ended' route-status event now exists for
+  // this route (data/route-status-events.ts), so 2026-09-05 correctly
+  // resolves to 'service-ended', not the automatic-fail-closed
+  // 'unverified' state this test originally documented before that
+  // evidence existed. The self-correcting, no-redeploy-required design
+  // goal this test exists to lock in is still real and still true — see
+  // the sibling test directly below, which exercises the exact same code
+  // path at a date before this verification was ever added.
+  it('the fix self-corrects once the withdrawal effective date passes and is freshly verified — no redeploy required, matching the Route Status V1 design goal', () => {
     const route = getRouteBySlug('manchester-mumbai')!;
     const presentation = getEffectiveRoutePresentation(route, routeStatusEvents, '2026-09-05');
+    expect(presentation.status).toBe('service-ended');
+    expect(presentation.metadataTitle).not.toContain('Direct Flight Status Update');
+    expect(presentation.metadataTitle).toBe('Manchester to Mumbai: Route Guide');
+  });
+
+  it('before fresh verification existed, the same boundary correctly self-corrected to the automatic fail-closed "unverified" state — still true today for any route in that position', () => {
+    const route = getRouteBySlug('manchester-mumbai')!;
+    const withdrawalOnly = routeStatusEvents.filter((e) => e.routeSlug !== 'manchester-mumbai' || e.type !== 'service-ended');
+    const presentation = getEffectiveRoutePresentation(route, withdrawalOnly, '2026-09-05');
     expect(presentation.status).toBe('unverified');
     expect(presentation.metadataTitle).not.toContain('Direct Flight Status Update');
     expect(presentation.metadataTitle).toMatch(/Verification in Progress/i);

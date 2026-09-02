@@ -266,14 +266,27 @@ describe('buildFlagshipStatusCopy — end-to-end pipeline against a synthetic le
     expect(copy.changeDetail).not.toMatch(/announced/i);
   });
 
+  // Post-withdrawal verification (2 September 2026) gave manchester-mumbai
+  // a real, verified service-ended event (currentClaimValidBefore
+  // 2027-03-02) — 2026-08-31 now correctly resolves to 'service-ended',
+  // not the transition-boundary-pending state this test originally
+  // exercised at that date. 2027-04-01 (past that claim's own expiry)
+  // exercises the exact same transition-boundary-pending code path against
+  // real data that 2026-08-31 used to.
   it('the real Manchester–Mumbai corridor end-to-end at the real transition boundary produces the real publisher/date, still with no literal hard-coded elsewhere in the source (this is a behavioural check, not a source-grep)', () => {
-    const copy = buildFlagshipStatusCopy('manchester-mumbai', routeStatusEvents, '2026-08-31');
+    const copy = buildFlagshipStatusCopy('manchester-mumbai', routeStatusEvents, '2027-04-01');
     expect(copy.verdictLine.length).toBeGreaterThan(0);
     // The real event's own real publisher/date are expected to appear here —
     // this is the correct, evidence-driven behaviour, not a hard-coded
     // literal in source (see the synthetic-fixture tests above, which prove
     // the mapper has no IndiGo/31-August literal of its own).
     expect(copy.verdictLine).toContain('IndiGo');
+  });
+
+  it('the real Manchester–Mumbai corridor end-to-end once verifiably ended produces the real publisher in evidenceDetail, and a generic (non-airline-named) verdict line', () => {
+    const copy = buildFlagshipStatusCopy('manchester-mumbai', routeStatusEvents, '2026-08-31');
+    expect(copy.verdictLine).toBe('This direct service has ended. Check current options directly with the airline before booking.');
+    expect(copy.evidenceDetail).toContain('IndiGo');
   });
 });
 
