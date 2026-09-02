@@ -70,12 +70,27 @@ export const travellerTips: TravellerTip[] = [
   {
     id: 'mumbai-baggage-allowance',
     // Scoped to the specific route, not the whole destination — the advice
-    // names the Manchester direct service and would be misleading shown
-    // against, say, the Heathrow–Mumbai page's different carriers.
+    // names Manchester specifically and would be misleading shown against,
+    // say, the Heathrow–Mumbai page's different carriers.
+    //
+    // Reworded 2 Sep 2026 (traveller-POV live product review): the previous
+    // wording ("if flying the Manchester direct service, check...") was a
+    // genuine stale-truth bug — present tense, on a route whose own direct
+    // service is now SERVICE ENDED CONFIRMED (PR #206). This module has no
+    // route-status awareness at all (getTipsForScope() is a plain scope
+    // filter), so nothing else on this page would have caught the
+    // contradiction. Reworded to past tense rather than deleted: the
+    // baggage-allowance advice is still genuinely useful once any current
+    // or future Manchester-Mumbai itinerary exists (connecting today, or
+    // direct again if the service resumes), and deleting the entry
+    // entirely would have silently dropped this route's only 'baggage'
+    // depth signal — a real, unrelated consequence
+    // (computeRouteIntelligenceLevel(), the RIS-001 Atlas grading system)
+    // that a wording-only fix correctly avoids disturbing.
     scope: { routeSlug: 'manchester-mumbai' },
     category: 'baggage',
-    title: "Confirm the Manchester direct service's baggage allowance directly",
-    body: "If flying the Manchester direct service, check the current baggage allowance directly with the airline rather than assuming it matches a full-service carrier's standard.",
+    title: "Confirm the current baggage allowance directly before booking",
+    body: "Manchester's direct Mumbai service has ended (check the route guide for its current status). Whatever itinerary you book instead, confirm the baggage allowance directly with the operating airline rather than assuming it matches a full-service carrier's standard.",
   },
   {
     id: 'ahmedabad-evisa-timing',

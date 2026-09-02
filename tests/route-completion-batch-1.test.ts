@@ -83,6 +83,31 @@ describe('The baggage-guidance entry is tied to a real source record, not invent
   });
 });
 
+describe('The Manchester-Mumbai baggage tip no longer claims a currently-operating direct service (2 Sep 2026, traveller-POV live product review)', () => {
+  // Found live on production: this tip's original wording ("if flying the
+  // Manchester direct service, check...") directly contradicted the route
+  // page's own "DIRECT SERVICE ENDED" badge two sections above it (PR
+  // #206, IndiGo Manchester-Mumbai/Delhi post-withdrawal verification).
+  // Reworded to past tense rather than deleted, so the route keeps its
+  // genuine 'baggage' depth category (computeRouteIntelligenceLevel()) --
+  // deleting it would have silently downgraded manchester-mumbai's Atlas
+  // grade and the Manchester-India country aggregation, an unrelated
+  // consequence this narrow, wording-only fix deliberately avoids.
+  const mumbaiBaggageTip = travellerTips.find((t) => t.id === 'mumbai-baggage-allowance');
+
+  it('still exists, still scoped to manchester-mumbai, still categorised as baggage', () => {
+    expect(mumbaiBaggageTip).toBeDefined();
+    expect(mumbaiBaggageTip!.scope.routeSlug).toBe('manchester-mumbai');
+    expect(mumbaiBaggageTip!.category).toBe('baggage');
+  });
+
+  it('never claims the Manchester direct service currently operates', () => {
+    const text = `${mumbaiBaggageTip!.title} ${mumbaiBaggageTip!.body}`;
+    expect(text).not.toMatch(/if flying the manchester direct service/i);
+    expect(text.toLowerCase()).toContain('ended');
+  });
+});
+
 describe('No unsupported claim wording was introduced anywhere in this batch\'s new content', () => {
   const forbidden = /\b(cheapest|fastest|safest|guaranteed|stable[- ]fare)\b/i;
 

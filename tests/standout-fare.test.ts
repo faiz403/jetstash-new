@@ -107,7 +107,11 @@ describe('Standout Fare — First Public Standout Fare Pilot', () => {
     expect(standout).toBeNull();
     const signal = getFareSignalForRoute('manchester-lahore', NOW);
     const html = renderToStaticMarkup(FareSignal({ signal, tripComUrl: getTripComRouteUrl('manchester-lahore'), routeSlug: 'manchester-lahore', standoutFare: standout }));
-    expect(html).toContain('No current fare tracked');
+    // Suppressed-fare explanation (2 Sep 2026, traveller-POV live product
+    // review): renders the explanatory "Recent fares checked" copy instead
+    // of the plain "No current fare tracked" it used to; Standout Fare's
+    // own absence is unaffected either way.
+    expect(html).toContain('Recent fares checked');
     expect(html).not.toContain('Fare spotted');
     expect(html).not.toContain('Standout Fare');
   });
@@ -117,7 +121,11 @@ describe('Standout Fare — First Public Standout Fare Pilot', () => {
     expect(standout).toBeNull();
     const signal = getFareSignalForRoute('london-heathrow-jeddah', NOW);
     const html = renderToStaticMarkup(FareSignal({ signal, tripComUrl: getTripComRouteUrl('london-heathrow-jeddah'), routeSlug: 'london-heathrow-jeddah', standoutFare: standout }));
-    expect(html).toContain('No current fare tracked');
+    // Suppressed-fare explanation (2 Sep 2026, traveller-POV live product
+    // review): renders the explanatory "Recent fares checked" copy instead
+    // of the plain "No current fare tracked" it used to; Standout Fare's
+    // own absence is unaffected either way.
+    expect(html).toContain('Recent fares checked');
     expect(html).not.toContain('Fare spotted');
     expect(html).not.toContain('Standout Fare');
   });
@@ -127,7 +135,11 @@ describe('Standout Fare — First Public Standout Fare Pilot', () => {
     expect(standout).toBeNull();
     const signal = getFareSignalForRoute('birmingham-amritsar', NOW);
     const html = renderToStaticMarkup(FareSignal({ signal, tripComUrl: getTripComRouteUrl('birmingham-amritsar'), routeSlug: 'birmingham-amritsar', standoutFare: standout }));
-    expect(html).toContain('No current fare tracked');
+    // Suppressed-fare explanation (2 Sep 2026, traveller-POV live product
+    // review): renders the explanatory "Recent fares checked" copy instead
+    // of the plain "No current fare tracked" it used to; Standout Fare's
+    // own absence is unaffected either way.
+    expect(html).toContain('Recent fares checked');
     expect(html).not.toContain('Fare spotted');
     expect(html).not.toContain('Standout Fare');
   });

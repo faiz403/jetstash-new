@@ -5,7 +5,7 @@ import { getPeakPeriodById } from '@/data/peak-periods';
 import { getUpcomingOccurrences, type PeakDatePrecision } from '@/data/peak-period-dates';
 import { getBookingWindowsByRoute } from '@/data/booking-windows';
 import { getPublishableObservationsByRoute } from '@/data/fare-observations';
-import { selectRepresentativeObservation } from '@/lib/fare-signal';
+import { selectRepresentativeObservation, type FareSignalNoneReason } from '@/lib/fare-signal';
 
 /**
  * Book-By Countdown — the single derivation layer for every booking-
@@ -114,6 +114,16 @@ export interface BookBySnapshot {
     /** Age in days at snapshot time — callers add the caveat past OBSERVATION_FRESH_DAYS. */
     ageDays: number;
   } | null;
+  /**
+   * Suppressed-fare explanation (2 Sep 2026, traveller-POV live product
+   * review) — the same selectRepresentativeObservation() call above
+   * already tags why latestObservation is null when the reason is
+   * isPoorItinerarySuitability(); threaded straight through so
+   * BookByCountdown can explain the suppression instead of implying no
+   * fare has ever been checked. Null for every other cause, matching
+   * lib/fare-signal.ts's own FareSignal.noneReason exactly.
+   */
+  latestObservationNoneReason: FareSignalNoneReason | null;
   state: BookByState;
   daysToEvent: number;
   daysToBookBy: number;
@@ -250,7 +260,7 @@ export function computeBookBySnapshot(routeSlug: string, now: Date): BookBySnaps
   // Economy fare (£628). selectRepresentativeObservation() is the one
   // canonical policy both surfaces now share — see its own doc comment in
   // lib/fare-signal.ts for the full reasoning and the confirmed defect.
-  const { observation: representative } = selectRepresentativeObservation(
+  const { observation: representative, noneReason: latestObservationNoneReason } = selectRepresentativeObservation(
     getPublishableObservationsByRoute(routeSlug, nowIso),
     nowIso
   );
@@ -283,6 +293,7 @@ export function computeBookBySnapshot(routeSlug: string, now: Date): BookBySnaps
     bookByDate,
     bookByBasis,
     latestObservation,
+    latestObservationNoneReason,
     state,
     daysToEvent: daysBetweenIso(nowIso, occurrence.startDate),
     daysToBookBy: daysBetweenIso(nowIso, bookByDate),

@@ -139,9 +139,14 @@ describe('rendered Fare Signal -- label appears in the primary/prominent area, n
   });
 
   it('renders no current signal at all -- and so no label -- on every one of the six now-suppressed routes (Fare Signal poor-itinerary suppression, 31 Aug 2026)', () => {
+    // Suppressed-fare explanation (2 Sep 2026, traveller-POV live product
+    // review): the suppressed state now explains itself ("Recent fares
+    // checked") rather than the plain "No current fare tracked" it used to
+    // -- see components/route/fare-signal.tsx's SuppressedFareExplanation.
+    // The self-transfer label's own absence is unaffected either way.
     for (const slug of ['manchester-lahore', 'manchester-dubai', 'london-heathrow-jeddah', 'london-heathrow-doha', 'birmingham-amritsar', 'london-gatwick-amritsar']) {
       const html = renderFareSignalForRoute(slug);
-      expect(html, slug).toContain('No current fare tracked');
+      expect(html, slug).toContain('Recent fares checked');
       expect(html, slug).not.toContain(SELF_TRANSFER_LABEL);
     }
   });

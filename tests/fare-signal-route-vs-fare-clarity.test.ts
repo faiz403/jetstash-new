@@ -131,7 +131,7 @@ describe('connecting-only route: never falsely mentions a direct service', () =>
     };
     const html = renderToStaticMarkup(
       FareSignal({
-        signal: { state: 'current', observation: directFareFixture, freshness: 'fresh', strongerSignal: null },
+        signal: { state: 'current', observation: directFareFixture, freshness: 'fresh', strongerSignal: null, noneReason: null },
         tripComUrl: null,
         routeSlug: 'fixture-route',
         routeDirectness: 'connecting',
@@ -263,7 +263,7 @@ describe('airline identity cannot drift between route intelligence and the fare 
     };
     const html = renderToStaticMarkup(
       FareSignal({
-        signal: { state: 'current', observation: sameAirlineFixture, freshness: 'fresh', strongerSignal: null },
+        signal: { state: 'current', observation: sameAirlineFixture, freshness: 'fresh', strongerSignal: null, noneReason: null },
         tripComUrl: null,
         routeSlug: 'manchester-islamabad',
         routeDirectness: 'direct',

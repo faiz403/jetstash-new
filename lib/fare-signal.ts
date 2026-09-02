@@ -10,6 +10,18 @@ import { isSelfTransferItinerary } from '@/lib/fare-self-transfer';
 
 export type FareSignalState = 'current' | 'recent' | 'none';
 
+/**
+ * Suppressed-fare explanation (2 Sep 2026, traveller-POV live product
+ * review). The only reason ever recorded here is the one
+ * isPoorItinerarySuitability() itself decided — never inferred from a
+ * sibling fact like "Fare History has entries" (a route could have history
+ * for a completely different reason, e.g. an old historical-only record).
+ * `null` covers every other 'none' cause (no observations at all, an
+ * observation that failed publishability, etc.) and must keep rendering the
+ * existing plain "No current fare tracked" copy unchanged.
+ */
+export type FareSignalNoneReason = 'poor-itinerary-suppressed';
+
 export interface FareSignalObservation {
   id: string;
   cabin: FareObservation['cabin'];
@@ -33,6 +45,8 @@ export interface FareSignal {
   freshness: FareFreshnessState | null;
   /** Reserved for a future evidence-backed archive comparison. Never populated by V1. */
   strongerSignal: string | null;
+  /** Populated only when state === 'none' AND the specific reason is isPoorItinerarySuitability() — see FareSignalNoneReason's own doc comment. Every other 'none' cause leaves this null. */
+  noneReason: FareSignalNoneReason | null;
 }
 
 /**
@@ -252,22 +266,30 @@ export function isPoorItinerarySuitability(o: Pick<FareObservation, 'priceNote' 
 export function selectRepresentativeObservation(
   observations: FareObservation[],
   nowIso: string
-): { observation: FareObservation | null; state: FareSignalState; freshness: FareFreshnessState | null } {
+): { observation: FareObservation | null; state: FareSignalState; freshness: FareFreshnessState | null; noneReason: FareSignalNoneReason | null } {
   const currentEconomy = selectCurrentEconomyObservation(observations, nowIso);
   if (currentEconomy) {
     if (isPoorItinerarySuitability(currentEconomy)) {
-      return { observation: null, state: 'none', freshness: null };
+      return { observation: null, state: 'none', freshness: null, noneReason: 'poor-itinerary-suppressed' };
     }
     return {
       observation: currentEconomy,
       state: 'current',
       freshness: getFareFreshnessState(daysBetweenIso(currentEconomy.observedDate, nowIso)),
+      noneReason: null,
     };
   }
 
   const { observation: latest, historicalOnly } = selectLatestObservation(observations);
-  if (!latest || !isPubliclyPublishable(latest) || isPoorItinerarySuitability(latest)) {
-    return { observation: null, state: 'none', freshness: null };
+  if (!latest || !isPubliclyPublishable(latest)) {
+    return { observation: null, state: 'none', freshness: null, noneReason: null };
+  }
+  // Same reason, reached via the fallback (no current Economy) path rather
+  // than the preferred-Economy path above — kept as its own check so the
+  // OR-condition this replaced can no longer blur "genuinely no evidence"
+  // and "evidence exists but is unsuitable" into the same untagged 'none'.
+  if (isPoorItinerarySuitability(latest)) {
+    return { observation: null, state: 'none', freshness: null, noneReason: 'poor-itinerary-suppressed' };
   }
 
   const freshness = getFareFreshnessState(daysBetweenIso(latest.observedDate, nowIso));
@@ -275,6 +297,7 @@ export function selectRepresentativeObservation(
     observation: latest,
     state: freshness === 'fresh' && !historicalOnly ? 'current' : 'recent',
     freshness,
+    noneReason: null,
   };
 }
 
@@ -286,12 +309,12 @@ export function selectRepresentativeObservation(
  * not yet provide a defensible same-profile baseline for every route.
  */
 export function deriveFareSignal(observations: FareObservation[], nowIso: string): FareSignal {
-  const { observation: selected, state, freshness } = selectRepresentativeObservation(observations, nowIso);
+  const { observation: selected, state, freshness, noneReason } = selectRepresentativeObservation(observations, nowIso);
   const signalObservation = selected ? toSignalObservation(selected) : null;
   if (!selected || !signalObservation) {
-    return { state: 'none', observation: null, freshness: null, strongerSignal: null };
+    return { state: 'none', observation: null, freshness: null, strongerSignal: null, noneReason };
   }
-  return { state, observation: signalObservation, freshness, strongerSignal: null };
+  return { state, observation: signalObservation, freshness, strongerSignal: null, noneReason: null };
 }
 
 export function getFareSignalForRoute(routeSlug: string, nowIso: string): FareSignal {
