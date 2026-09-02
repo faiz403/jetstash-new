@@ -23,6 +23,12 @@ export function organizationSchema() {
     url: siteConfig.url,
     description: siteConfig.description,
     logo: `${siteConfig.url}/icon.png`,
+    // sameAs: only real, actively-maintained profiles that genuinely
+    // identify JetStash go here — never a placeholder or an inactive
+    // account (a stale/empty sameAs target is worse than omitting it).
+    // Verified 2 Sep 2026: the profile's bio and this link are publicly
+    // visible while logged out.
+    sameAs: ['https://www.reddit.com/user/quietlayover1/'],
     // No `email` field: there is no working public inbox yet. Structured
     // data gets cached/indexed long-term, so this stays omitted rather
     // than pointing at an address that doesn't exist — add it back once
