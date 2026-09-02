@@ -72,7 +72,7 @@ describe('universal Fare Signal derivation', () => {
     // observation for the same reason it has always had none: route
     // verification status, not fare-observation completeness.
     const signal = getFareSignalForRoute('birmingham-ahmedabad', '2026-08-11');
-    expect(signal).toEqual({ state: 'none', observation: null, freshness: null, strongerSignal: null });
+    expect(signal).toEqual({ state: 'none', observation: null, freshness: null, strongerSignal: null, noneReason: null });
   });
 
   it('resolves a valid signal state for every public route', () => {

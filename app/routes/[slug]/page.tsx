@@ -695,7 +695,15 @@ export default async function RoutePage({ params }: { params: Promise<{ slug: st
             </div>
           )}
           {fareObservations.length > 0 && (
-            <div className="mt-8">
+            // id anchors Fare Signal's and Book-By's "See recent fare checks"
+            // link when the current representative fare is withheld
+            // specifically for poor itinerary suitability
+            // (components/route/fare-signal.tsx's SuppressedFareExplanation,
+            // components/route/book-by-countdown.tsx) -- 2 Sep 2026,
+            // traveller-POV live product review. The global scroll-padding-top
+            // (see the id="route-watch" div below) keeps it clear of the
+            // sticky header.
+            <div id="fare-history" className="mt-8">
               <FareHistoryPanel observations={fareObservations} />
             </div>
           )}

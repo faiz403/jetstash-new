@@ -89,9 +89,14 @@ describe('2. Birmingham-Delhi\'s connecting-vs-connecting mismatch is no longer 
     expect(signal.observation).toBeNull();
   });
 
-  it('renders the no-current-fare fallback, not the "different connecting journey" callout -- there is nothing left to mismatch against', () => {
+  it('renders the suppressed-fare explanation, not the "different connecting journey" callout -- there is nothing left to mismatch against', () => {
+    // Suppressed-fare explanation (2 Sep 2026, traveller-POV live product
+    // review): birmingham-delhi's Economy fare fails
+    // isPoorItinerarySuitability(), so this now renders the explanatory
+    // "Recent fares checked" copy instead of the plain "No current fare
+    // tracked" it used to.
     const html = renderFareSignalForRoute('birmingham-delhi');
-    expect(html).toContain('No current fare tracked');
+    expect(html).toContain('Recent fares checked');
     expect(html).not.toContain('Route service');
     expect(html).not.toContain('This tracked fare is a different connecting journey.');
   });

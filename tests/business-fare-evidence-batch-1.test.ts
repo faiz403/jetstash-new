@@ -167,7 +167,12 @@ describe('Lahore/Doha route-vs-fare mismatch behaviour is correct against their 
     expect(signal.observation).toBeNull();
 
     const html = renderFareSignalForRoute('manchester-lahore', SUPPRESSION_EVIDENCE_ISO);
-    expect(html).toContain('No current fare tracked');
+    // Suppressed-fare explanation (2 Sep 2026, traveller-POV live product
+    // review): both routes' Economy fare failed isPoorItinerarySuitability(),
+    // so this now renders the explanatory "Recent fares checked" copy
+    // instead of the plain "No current fare tracked" it used to -- see
+    // components/route/fare-signal.tsx's SuppressedFareExplanation.
+    expect(html).toContain('Recent fares checked');
     expect(html).not.toContain('Route service');
 
     const businessDeal = deals.find((d) => d.id === 'man-lhe-business')!;
@@ -200,7 +205,12 @@ describe('Lahore/Doha route-vs-fare mismatch behaviour is correct against their 
     expect(signal.observation).toBeNull();
 
     const html = renderFareSignalForRoute('london-heathrow-doha', SUPPRESSION_EVIDENCE_ISO);
-    expect(html).toContain('No current fare tracked');
+    // Suppressed-fare explanation (2 Sep 2026, traveller-POV live product
+    // review): both routes' Economy fare failed isPoorItinerarySuitability(),
+    // so this now renders the explanatory "Recent fares checked" copy
+    // instead of the plain "No current fare tracked" it used to -- see
+    // components/route/fare-signal.tsx's SuppressedFareExplanation.
+    expect(html).toContain('Recent fares checked');
     expect(html).not.toContain('Route service');
 
     const businessDeal = deals.find((d) => d.id === 'lhr-doh-business')!;

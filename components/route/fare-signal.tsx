@@ -144,6 +144,45 @@ function NoCtaFallback() {
 }
 
 /**
+ * Suppressed-fare explanation (2 Sep 2026, traveller-POV live product
+ * review). Renders only when signal.noneReason === 'poor-itinerary-
+ * suppressed' -- i.e. JetStash DID check recent fares, but the latest
+ * candidate failed the existing itinerary-quality gate
+ * (isPoorItinerarySuitability(), lib/fare-signal.ts) and was correctly
+ * withheld. Plain "No current fare tracked." reads, to a first-time
+ * visitor, as "JetStash has no recent price data" -- which is untrue here
+ * and undersells the actual reason JetStash exists: it checked, and
+ * deliberately chose not to present a bad itinerary as representative.
+ * This never weakens the suppression itself (still no price shown, still
+ * fails closed) -- it only explains it, and only when the system can
+ * positively say why, never inferred from Fare History merely existing
+ * (a route could have history for an unrelated reason).
+ *
+ * Links to #fare-history, which is guaranteed to exist whenever this
+ * renders: the poor-itinerary observation causing this suppression is
+ * itself always a member of the same publishable-observations list the
+ * route page uses to decide whether to render FareHistoryPanel at all
+ * (both read getPublishableObservationsByRoute() for the same routeSlug/
+ * nowIso) -- see app/routes/[slug]/page.tsx.
+ */
+function SuppressedFareExplanation() {
+  return (
+    <div className="flex items-start gap-3 text-sm text-ink-600">
+      <RouteIcon className="mt-0.5 h-4 w-4 shrink-0 text-ink-400" strokeWidth={2} />
+      <div>
+        <p className="font-medium text-ink-900">Recent fares checked</p>
+        <p className="mt-1 leading-relaxed">
+          The latest options involved extra stops or self-transfers, so JetStash isn&apos;t showing them as a representative fare.{' '}
+          <a href="#fare-history" className="font-medium text-terracotta-600 underline decoration-terracotta-300 underline-offset-2 hover:text-terracotta-700">
+            See recent fare checks
+          </a>
+        </p>
+      </div>
+    </div>
+  );
+}
+
+/**
  * Route Page Journey Clarity System (20 Aug 2026). Two genuine first-time
  * users independently found the same P1 problem: a route's own verified
  * service (e.g. PIA direct) and the tracked fare shown right below it (e.g.
@@ -385,10 +424,14 @@ export function FareSignal({
         {signal.state === 'recent' && signal.observation ? <RecentSignal data={signal.observation} tripComUrl={tripComUrl} routeSlug={routeSlug} routeDirectness={routeDirectness} routeStatusLabel={routeStatusLabel} routeAirlineLabel={routeAirlineLabel} routeServiceConnections={routeServiceConnections} /> : null}
         {signal.state === 'none' ? (
           <>
-            <div className="flex items-start gap-3 text-sm text-ink-600">
-              <RouteIcon className="mt-0.5 h-4 w-4 shrink-0 text-ink-400" strokeWidth={2} />
-              <p>No current fare tracked.</p>
-            </div>
+            {signal.noneReason === 'poor-itinerary-suppressed' ? (
+              <SuppressedFareExplanation />
+            ) : (
+              <div className="flex items-start gap-3 text-sm text-ink-600">
+                <RouteIcon className="mt-0.5 h-4 w-4 shrink-0 text-ink-400" strokeWidth={2} />
+                <p>No current fare tracked.</p>
+              </div>
+            )}
             {/* Route Page Scanability fix (21 Aug 2026): a route can have a
                 verified Trip.com CTA with no current fare logged (e.g.
                 birmingham-lahore) -- that CTA must still render here now

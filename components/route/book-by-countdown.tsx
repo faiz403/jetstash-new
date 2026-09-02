@@ -263,6 +263,21 @@ export function BookByCountdown({
             </p>
           </div>
         </div>
+      ) : snapshot.latestObservationNoneReason === 'poor-itinerary-suppressed' ? (
+        // Suppressed-fare explanation (2 Sep 2026, traveller-POV live
+        // product review) — mirrors components/route/fare-signal.tsx's
+        // SuppressedFareExplanation exactly (same reason, same "See recent
+        // fare checks" link to #fare-history), adapted only for this
+        // panel's own "guidance above is calendar-based" framing. Never
+        // rendered unless computeBookBySnapshot's shared
+        // selectRepresentativeObservation() call positively tagged this
+        // specific reason — see lib/fare-signal.ts's FareSignalNoneReason.
+        <p className="mt-5 text-sm text-ink-600">
+          Recent fares checked, but the latest options involved extra stops or self-transfers, so JetStash isn&apos;t using them as a verified check here — the guidance above is calendar-based, from this route&apos;s stated booking pattern.{' '}
+          <a href="#fare-history" className="font-medium text-terracotta-600 underline decoration-terracotta-300 underline-offset-2 hover:text-terracotta-700">
+            See recent fare checks
+          </a>
+        </p>
       ) : (
         <p className="mt-5 text-sm text-ink-600">
           No fare checks logged for this route yet — the guidance above is calendar-based, from this route’s stated booking pattern.

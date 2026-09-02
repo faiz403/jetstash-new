@@ -111,10 +111,10 @@ describe('5. no fallback: a poor current-Economy candidate suppresses the whole 
     expect(observation).toBeNull();
   });
 
-  it('deriveFareSignal itself also returns none, not the raw observation, for a poor-only input', () => {
+  it('deriveFareSignal itself also returns none, not the raw observation, for a poor-only input -- and tags noneReason so callers can explain the suppression rather than claim no evidence exists', () => {
     const poor = fixtureObservation({ priceNote: 'self-transfer', outboundStops: 2, returnStops: 3 });
     const signal = deriveFareSignal([poor], NOW_ISO);
-    expect(signal).toEqual({ state: 'none', observation: null, freshness: null, strongerSignal: null });
+    expect(signal).toEqual({ state: 'none', observation: null, freshness: null, strongerSignal: null, noneReason: 'poor-itinerary-suppressed' });
   });
 });
 
@@ -218,8 +218,12 @@ describe('11. route-vs-fare mismatch behaviour', () => {
   }
 
   it.each(KNOWN_SUPPRESSED_ROUTES)('%s no longer renders a Fare Signal or a mismatch callout -- there is nothing left to mismatch against', (slug) => {
+    // Suppressed-fare explanation (2 Sep 2026, traveller-POV live product
+    // review): every KNOWN_SUPPRESSED_ROUTES entry now renders the
+    // explanatory "Recent fares checked" copy instead of the plain
+    // "No current fare tracked" it used to.
     const html = renderFareSignalForRoute(slug);
-    expect(html, slug).toContain('No current fare tracked');
+    expect(html, slug).toContain('Recent fares checked');
     expect(html, slug).not.toContain('Route service');
   });
 

@@ -349,6 +349,7 @@ describe('bookByHeadline — ranged occurrences stop giving imperative urgency o
       bookByDate: addDaysIso(eidOccurrence.startDate, -SURGE_WEEKS * 7),
       bookByBasis: 'surge-avoidance',
       latestObservation: null,
+      latestObservationNoneReason: null,
       state,
       daysToEvent: 0,
       daysToBookBy: 0,
