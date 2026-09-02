@@ -285,11 +285,13 @@ describe('TR-017 — no unsupported duration, frequency, urgency, demand, or far
     const observations = fareObservations.filter((o) => o.routeSlug === 'birmingham-mumbai');
     // 18 August 2026: Weekly Full Fare Refresh #1 appended a second,
     // genuine observation for this route — append-only, the original is
-    // untouched.
-    expect(observations).toHaveLength(2);
+    // untouched. 1 September 2026: the Tuesday full weekly refresh appended
+    // a third, again append-only.
+    expect(observations).toHaveLength(3);
     expect(observations[0].id).toBe('obs-bhx-bom-economy-20260806-8w-v1');
     expect(observations[0].source).toBe('Qatar Airways');
     expect(observations[1].id).toBe('obs-bhx-bom-economy-20260818-8w-v1');
+    expect(observations[2].id).toBe('obs-bhx-bom-economy-20260901-8w-v1');
   });
 });
 
@@ -639,12 +641,14 @@ describe('Cross-surface leakage fix — fare section heading is content-aware, n
     expect(text).not.toMatch(/Fare history & current example/);
   });
 
-  it('birmingham-mumbai now has a dated Batch B observation and renders the fare-history heading end-to-end', async () => {
+  it('birmingham-mumbai has a dated Batch B observation, but renders the coherent "Fare history" heading (not "current example") end-to-end — Fare History coherence, 1 Sep 2026: the Tuesday full weekly refresh\'s new observation is a confirmed self-transfer, 2-stop-per-leg itinerary, so the route has no current representative Fare Signal and the section correctly no longer claims a "current example"', async () => {
     expect(fareObservations.some((o) => o.routeSlug === 'birmingham-mumbai')).toBe(true);
     expect(deals.some((d) => d.fromAirportSlug === 'birmingham' && d.toDestinationSlug === 'mumbai')).toBe(true);
     const element = await RoutePage({ params: Promise.resolve({ slug: 'birmingham-mumbai' }) });
     const text = collectStrings(element).join(' ');
-    expect(text).toMatch(/Fare history & current example/);
+    expect(text).toMatch(/Fare history/);
+    expect(text).not.toMatch(/Fare history & current example/);
+    expect(text).toMatch(/does not currently have a representative fare/i);
   });
 
   it('manchester-lahore has dated editorial observations, but renders the coherent "Fare history" heading (not "current example") end-to-end — Fare History coherence fix, 1 Sep 2026: its only current-cabin observation is a confirmed self-transfer, 2/3-stop-per-leg itinerary and has no current representative Fare Signal, so the section correctly no longer claims a "current example"', async () => {

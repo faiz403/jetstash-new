@@ -212,11 +212,24 @@ describe('CTA resolution is unchanged by this batch — no Trip.com/affiliate lo
 });
 
 describe('no Fare Watcher candidate is created merely because this PR adds an observation', () => {
-  it('each of the four routes has only 1 comparable publishable observation — below FARE_WATCHER_MIN_BASELINE (3), so no candidate can form', () => {
+  it('each of the four routes stays below FARE_WATCHER_MIN_BASELINE (3), so no candidate can form', () => {
+    // The Tuesday full weekly refresh (1 September 2026) appended one more
+    // genuine, structurally-complete observation each for manchester-karachi,
+    // birmingham-lahore and birmingham-islamabad (all three in scope for that
+    // run) — 2 comparable observations now, still below the 3-observation
+    // baseline. leeds-bradford-bodrum was outside that run's scope and stays
+    // at 1.
     const publishable = fareObservations.filter((o) => isPubliclyPublishable(o));
+    const expectedCount: Record<string, number> = {
+      'leeds-bradford-bodrum': 1,
+      'manchester-karachi': 2,
+      'birmingham-lahore': 2,
+      'birmingham-islamabad': 2,
+    };
     for (const { routeSlug } of APPROVED) {
       const comparable = publishable.filter((o) => o.routeSlug === routeSlug && o.cabin === 'Economy');
-      expect(comparable.length, routeSlug).toBe(1);
+      expect(comparable.length, routeSlug).toBe(expectedCount[routeSlug]);
+      expect(comparable.length, routeSlug).toBeLessThan(3);
     }
   });
 

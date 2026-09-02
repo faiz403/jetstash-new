@@ -50,10 +50,29 @@ describe('hasCurrentFareSignalAmongRoutes — the canonical multi-route check', 
   // The exact three airports the audit named — reproduced directly against
   // real data, not a synthetic fixture, so this fails immediately if the
   // underlying archive ever genuinely loses this evidence.
-  it.each(['glasgow', 'newcastle', 'edinburgh'])('%s airport currently has zero curated Deals but a genuine current Fare Signal', (airportSlug) => {
-    const routeSlugs = getRoutesByAirport(airportSlug).map((r) => r.slug);
-    expect(getDealsByAirport(airportSlug)).toHaveLength(0);
+  //
+  // Only glasgow still qualifies here. The Tuesday full weekly refresh (1
+  // September 2026) gave newcastle-dalaman, newcastle-dubai and
+  // edinburgh-dubai their first genuinely both-legs-evidenced self-transfer
+  // itineraries with explicit stop counts (previously-recorded evidence for
+  // these routes predated outboundStops/returnStops and so never tripped
+  // the 31 August 2026 poor-itinerary suppression rule) — all of newcastle's
+  // and edinburgh's own routes are now confirmed 2+-stop-per-leg
+  // self-transfer itineraries, so both airports genuinely have no current
+  // Fare Signal any more (see the dedicated regression below). glasgow-
+  // antalya's return leg is only 1 stop, so it stays under the suppression
+  // threshold and keeps glasgow's signal.
+  it('glasgow airport currently has zero curated Deals but a genuine current Fare Signal', () => {
+    const routeSlugs = getRoutesByAirport('glasgow').map((r) => r.slug);
+    expect(getDealsByAirport('glasgow')).toHaveLength(0);
     expect(hasCurrentFareSignalAmongRoutes(routeSlugs, nowIso)).toBe(true);
+  });
+
+  it.each(['newcastle', 'edinburgh'])('%s airport now genuinely has no current Fare Signal — Tuesday full weekly refresh, 1 Sep 2026: every one of its own routes is a confirmed 2+-stop-per-leg self-transfer itinerary, suppressed by the same 31 August 2026 poor-itinerary rule that already governs manchester-dubai and manchester-lahore', (airportSlug) => {
+    const routeSlugs = getRoutesByAirport(airportSlug).map((r) => r.slug);
+    expect(routeSlugs.length, airportSlug).toBeGreaterThan(0);
+    expect(getDealsByAirport(airportSlug), airportSlug).toHaveLength(0);
+    expect(hasCurrentFareSignalAmongRoutes(routeSlugs, nowIso), airportSlug).toBe(false);
   });
 });
 
@@ -116,12 +135,20 @@ describe('NoFareFallback — renders the correct claim for each state', () => {
   });
 });
 
-describe('Real Glasgow/Newcastle/Edinburgh airport pages — before/after regression', () => {
-  it.each(['glasgow', 'newcastle', 'edinburgh'])('%s airport page never renders the false "no tracked fare" claim', async (slug) => {
-    const element = await AirportPage({ params: Promise.resolve({ slug }) });
+describe('Real Glasgow airport page — before/after regression', () => {
+  it('glasgow airport page never renders the false "no tracked fare" claim', async () => {
+    const element = await AirportPage({ params: Promise.resolve({ slug: 'glasgow' }) });
     const html = renderToStaticMarkup(element);
     expect(html).not.toMatch(NO_TRACKED_FARE_PHRASE);
     expect(html).toMatch(NEUTRAL_PHRASE);
+  });
+});
+
+describe('Newcastle/Edinburgh airport pages now correctly render the genuine "no tracked fare" state (Tuesday full weekly refresh, 1 Sep 2026 — see the hasCurrentFareSignalAmongRoutes regression above for why)', () => {
+  it.each(['newcastle', 'edinburgh'])('%s airport page renders the honest "no tracked fare" claim, because it is now true, not because of the fixed conflation bug', async (slug) => {
+    const element = await AirportPage({ params: Promise.resolve({ slug }) });
+    const html = renderToStaticMarkup(element);
+    expect(html).toMatch(NO_TRACKED_FARE_PHRASE);
   });
 });
 

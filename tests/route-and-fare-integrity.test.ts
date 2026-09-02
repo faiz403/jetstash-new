@@ -427,7 +427,12 @@ describe('FARE-001 pilot — historic examples stay private; only fully dated, e
     // birmingham-amritsar); manchester-dubai, london-heathrow-jeddah and
     // london-gatwick-amritsar stayed 'ordinary-fare' and did not qualify
     // for a recheck.
-    expect(fareObservations).toHaveLength(237);
+    // 237 -> 310 (Tuesday full weekly refresh, 1 September 2026): the
+    // remaining 73 of the 78 routes left over from the 18 August 2026 first
+    // full weekly refresh's 85-route scope (5 more returned no bookable
+    // itinerary on these exact dates and were recorded as an explicit skip,
+    // not guessed — see data/fare-observations.ts's own comment there).
+    expect(fareObservations).toHaveLength(313);
   });
 
   it('keeps every historic observation incomplete and private', () => {
@@ -688,6 +693,87 @@ describe('FARE-001 pilot — historic examples stay private; only fully dated, e
       'obs-man-lhe-economy-20260901-recheck-v1',
       'obs-lhr-doh-economy-20260901-recheck-v1',
       'obs-bhx-atq-economy-20260901-recheck-v1',
+      // Tuesday full weekly refresh (1 September 2026) — the remaining 73
+      // of the 78 routes left over from the 18 August 2026 first full
+      // weekly refresh's 85-route scope (5 more returned no bookable
+      // itinerary and were recorded as an explicit skip, not guessed; see
+      // data/fare-observations.ts's own comment above these entries).
+      'obs-bhx-aga-economy-20260901-8w-v1',
+      'obs-bhx-amd-economy-20260901-8w-v1',
+      'obs-bhx-ayt-economy-20260901-8w-v1',
+      'obs-bhx-ath-economy-20260901-8w-v1',
+      'obs-bhx-bcn-economy-20260901-8w-v1',
+      'obs-bhx-bjv-economy-20260901-8w-v1',
+      'obs-bhx-dlm-economy-20260901-8w-v1',
+      'obs-bhx-del-economy-20260901-8w-v1',
+      'obs-bhx-doh-economy-20260901-8w-v1',
+      'obs-bhx-dxb-economy-20260901-8w-v1',
+      'obs-bhx-fao-economy-20260901-8w-v1',
+      'obs-bhx-isb-economy-20260901-8w-v1',
+      'obs-bhx-ist-economy-20260901-8w-v1',
+      'obs-bhx-jed-economy-20260901-8w-v1',
+      'obs-bhx-lhe-economy-20260901-8w-v1',
+      'obs-bhx-med-economy-20260901-8w-v1',
+      'obs-bhx-bom-economy-20260901-8w-v1',
+      'obs-bhx-fco-economy-20260901-8w-v1',
+      'obs-brs-bcn-economy-20260901-8w-v1',
+      'obs-brs-fao-economy-20260901-8w-v1',
+      'obs-brs-rak-economy-20260901-8w-v1',
+      'obs-brs-fco-economy-20260901-8w-v1',
+      'obs-edi-dxb-economy-20260901-8w-v1',
+      'obs-gla-ayt-economy-20260901-8w-v1',
+      'obs-gla-dxb-economy-20260901-8w-v1',
+      'obs-lba-atq-economy-20260901-8w-v1',
+      'obs-lba-bcn-economy-20260901-8w-v1',
+      'obs-lba-fao-economy-20260901-8w-v1',
+      'obs-lgw-aga-economy-20260901-8w-v1',
+      'obs-lgw-amd-economy-20260901-8w-v1',
+      'obs-lgw-ayt-economy-20260901-8w-v1',
+      'obs-lgw-ath-economy-20260901-8w-v1',
+      'obs-lgw-bcn-economy-20260901-8w-v1',
+      'obs-lgw-bjv-economy-20260901-8w-v1',
+      'obs-lgw-dlm-economy-20260901-8w-v1',
+      'obs-lgw-dxb-economy-20260901-8w-v1',
+      'obs-lgw-fao-economy-20260901-8w-v1',
+      'obs-lgw-ist-economy-20260901-8w-v1',
+      'obs-lgw-adb-economy-20260901-8w-v1',
+      'obs-lgw-rak-economy-20260901-8w-v1',
+      'obs-lgw-fco-economy-20260901-8w-v1',
+      'obs-lgw-tng-economy-20260901-8w-v1',
+      'obs-lhr-blr-economy-20260901-8w-v1',
+      'obs-lhr-cmn-economy-20260901-8w-v1',
+      'obs-lhr-del-economy-20260901-8w-v1',
+      'obs-lhr-dac-economy-20260901-8w-v1',
+      'obs-lhr-dxb-economy-20260901-8w-v1',
+      'obs-lhr-lhe-economy-20260901-8w-v1',
+      'obs-lhr-bom-economy-20260901-8w-v1',
+      'obs-lhr-zyl-economy-20260901-8w-v1',
+      'obs-man-aga-economy-20260901-8w-v1',
+      'obs-man-amd-economy-20260901-8w-v1',
+      'obs-man-atq-economy-20260901-8w-v1',
+      'obs-man-ayt-economy-20260901-8w-v1',
+      'obs-man-ath-economy-20260901-8w-v1',
+      'obs-man-bcn-economy-20260901-8w-v1',
+      'obs-man-bjv-economy-20260901-8w-v1',
+      'obs-man-dlm-economy-20260901-8w-v1',
+      'obs-man-del-economy-20260901-8w-v1',
+      'obs-man-dac-economy-20260901-8w-v1',
+      'obs-man-doh-economy-20260901-8w-v1',
+      'obs-man-fao-economy-20260901-8w-v1',
+      'obs-man-ist-economy-20260901-8w-v1',
+      'obs-man-adb-economy-20260901-8w-v1',
+      'obs-man-jed-economy-20260901-8w-v1',
+      'obs-man-khi-economy-20260901-8w-v1',
+      'obs-man-med-economy-20260901-8w-v1',
+      'obs-man-rak-economy-20260901-8w-v1',
+      'obs-man-bom-economy-20260901-8w-v1',
+      'obs-man-fco-economy-20260901-8w-v1',
+      'obs-man-zyl-economy-20260901-8w-v1',
+      'obs-ncl-dlm-economy-20260901-8w-v1',
+      'obs-ncl-dxb-economy-20260901-8w-v1',
+      'obs-lhr-del-economy-20260901-recheck-v1',
+      'obs-man-doh-economy-20260901-recheck-v1',
+      'obs-man-med-economy-20260901-recheck-v1',
     ]);
     expect(published).toEqual(expect.arrayContaining([
       expect.objectContaining({

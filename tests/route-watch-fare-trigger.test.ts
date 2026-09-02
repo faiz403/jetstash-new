@@ -215,12 +215,41 @@ describe('Real archive expectation (19 August 2026, post-supersession-fix) — o
   // £464 routine check does not clear the meaningful-drop threshold this
   // week, so it's honestly no longer one of the four current candidates —
   // both are genuine consequences of new evidence, not loosened assertions.
-  it('the real fareObservations archive produces the four current Route Watch candidates from the controlled weekly batch', () => {
+  //
+  // Tuesday full weekly refresh, remaining 73 routes: three further routes'
+  // routine checks independently cleared the same standout threshold —
+  // london-heathrow-delhi (£403), manchester-doha (£257) and
+  // manchester-madinah (£313) — the same trigger FARE_WATCHER_DESIGN.md's
+  // candidate-flow step 4 and the established 25 Aug/1 Sep precedent apply
+  // to every qualifying candidate, not only a controlled batch, so all three
+  // got the same same-day emergency recheck as the original four. Two
+  // reproduced almost exactly (manchester-doha £257 unchanged;
+  // manchester-madinah £313 -> £309, still a standout candidate). The third
+  // did not survive verification: london-heathrow-delhi's Cheapest-tab tile
+  // price (£407, close to the routine check's £403) did not survive
+  // click-through — Google's own itinerary page corrected it to £433, a RISE
+  // against the route's baseline median that no longer clears the
+  // meaningful-drop threshold at all. Fare Watcher's verified-candidate
+  // evaluation (which always evaluates through the matching recheck when one
+  // exists) correctly drops it from the queue — exactly the
+  // "rises-stops-qualifying" scenario this same evaluation logic was built
+  // to handle, and exactly why the recheck step exists: an unverified
+  // routine tile price would have silently published a candidate that was
+  // never actually available.
+  it('the real fareObservations archive produces six current Route Watch candidates after the Tuesday full weekly refresh and its emergency rechecks', () => {
     const nowIso = new Date().toISOString().slice(0, 10);
     const candidates = generateRouteWatchFareCandidates(fareObservations, nowIso);
-    expect(candidates).toHaveLength(4);
-    expect(candidates.map((c) => c.routeSlug)).toEqual(['manchester-islamabad', 'manchester-lahore', 'birmingham-amritsar', 'london-heathrow-doha']);
-    expect(candidates.map((c) => c.qualification)).toEqual(['standout-candidate', 'standout-candidate', 'standout-candidate', 'standout-candidate']);
+    expect(candidates).toHaveLength(6);
+    expect(candidates.map((c) => c.routeSlug)).toEqual([
+      'manchester-islamabad',
+      'manchester-lahore',
+      'birmingham-amritsar',
+      'london-heathrow-doha',
+      'manchester-doha',
+      'manchester-madinah',
+    ]);
+    expect(candidates.map((c) => c.routeSlug)).not.toContain('london-heathrow-delhi');
+    expect(candidates.every((c) => c.qualification === 'standout-candidate')).toBe(true);
     expect(candidates.every((c) => c.lifecycle === 'detected' && c.founderVerificationRequired)).toBe(true);
   });
 });
@@ -275,12 +304,15 @@ describe('I. Trust wording — no overclaim in rendered founder copy or customer
   });
 
   it('the non-empty state clearly states how many candidates cleared the threshold, never overclaiming urgency', () => {
-    // The controlled 25 August batch now has four founder-review-only
-    // candidates; exercise the actual non-empty-state copy.
+    // 4 -> 7 -> 6 (Tuesday full weekly refresh, 1 September 2026, and its
+    // same-day emergency rechecks) — see the dedicated regression above:
+    // two of the three newly-qualifying routes survived verification,
+    // one (london-heathrow-delhi) did not. Exercise the actual
+    // non-empty-state copy against that final, verified count.
     const snapshot = getFounderSnapshot(new Date());
     const section = snapshot.grouped['nice-to-have'].find((s) => s.id === 'route-watch-fare-candidates')!;
-    expect(section.items).toHaveLength(4);
-    expect(section.headline).toMatch(/4 fare observations clear Fare Watcher's strong evidence threshold/i);
+    expect(section.items).toHaveLength(6);
+    expect(section.headline).toMatch(/6 fare observations clear Fare Watcher's strong evidence threshold/i);
     expect(section.headline).toMatch(/Nothing sends itself/i);
     for (const pattern of forbidden) expect(section.headline).not.toMatch(pattern);
   });
