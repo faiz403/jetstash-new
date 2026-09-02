@@ -516,6 +516,29 @@ short "why JetStash is different" proof strip, both above the Atlas, which remai
 un-redesigned as the homepage's
 signature feature immediately below.
 
+### HERO-003 — Homepage hero integration: the journey finder moves into the hero (DONE)
+
+**Founder-approved explicit exception to the LAUNCH-001 product freeze, 2 September 2026** — not a
+violation of it and not a broadening of it: the founder explicitly prioritised improving the
+homepage's first impression and "wow factor" ahead of wider launch, scoped to exactly this one
+change. This exception is limited to the homepage hero integration described below; it does not
+lift, suspend or otherwise alter the LAUNCH-001 freeze, which remains ACTIVE for everything else.
+
+Builds on HERO-002 rather than replacing it: the compact `PageHero` hero, its approved copy and the
+existing `heroes/routes.webp` backdrop are unchanged. What changed is where the actual "Flying from
+/ Going to" journey finder (`JourneyCheckForm`) lives — moved from a separate standalone section
+beneath the hero into the hero itself, inside a glass console card on the photographic backdrop, so
+a visitor can use the finder within the first screen rather than clicking a CTA and scrolling to a
+duplicate section further down. The standalone section (and its now-redundant "Check a journey"
+button, which used to scroll down to it) is removed entirely — `JourneyCheckForm`'s own selection
+logic, analytics events and routing are unchanged, only relocated. The "81 of 88 tracked fares"
+stat is retained but de-emphasised (still live-computed, never hardcoded); it no longer leads the
+hero.
+
+Verified before commit: 2950/2950 tests, TypeScript clean, lint clean, production build clean, no
+new dependency, homepage bundle size unchanged, journey finder confirmed working end-to-end (both
+locally and on the PR's Vercel Preview). See PR for full detail.
+
 ### FARE-001 — Maintain the editorial fare observation archive (ACTIVE)
 
 The methodology is finalized and the archive is now established rather than at its starting point:

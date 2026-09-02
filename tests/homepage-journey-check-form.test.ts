@@ -19,23 +19,31 @@ import { getDestinationBySlug } from '@/data/destinations';
 const homeSrc = readFileSync(join(process.cwd(), 'components/homepage-v2/journey-desk-home.tsx'), 'utf8');
 const formSrc = readFileSync(join(process.cwd(), 'components/homepage-v2/journey-check-form.tsx'), 'utf8');
 
-describe('JourneyCheckForm is wired onto the public homepage', () => {
-  it('journey-desk-home.tsx imports and renders it', () => {
-    expect(homeSrc).toContain("import { JourneyCheckForm, type JourneyCheckData } from '@/components/homepage-v2/journey-check-form';");
-    expect(homeSrc).toContain('<JourneyCheckForm origins={journeyCheck.origins} destinations={journeyCheck.destinations} routeIndex={journeyCheck.routeIndex} />');
+// Homepage hero integration (September 2026): JourneyCheckForm now renders
+// inside HomepageOpeningHero itself, not directly in journey-desk-home.tsx —
+// journey-desk-home.tsx still computes the underlying data and passes it
+// down as a prop.
+const heroSrc = readFileSync(join(process.cwd(), 'components/homepage-v2/homepage-opening-hero.tsx'), 'utf8');
+
+describe('JourneyCheckForm is wired onto the public homepage — inside the hero itself', () => {
+  it('journey-desk-home.tsx computes journeyCheck and passes it to the hero, which imports and renders the real form', () => {
+    expect(homeSrc).toContain("import type { JourneyCheckData } from '@/components/homepage-v2/journey-check-form';");
+    expect(homeSrc).toContain('<HomepageOpeningHero journeyCheck={journeyCheck} />');
+    expect(heroSrc).toContain("import { JourneyCheckForm, type JourneyCheckData } from '@/components/homepage-v2/journey-check-form';");
+    expect(heroSrc).toContain('<JourneyCheckForm origins={journeyCheck.origins} destinations={journeyCheck.destinations} routeIndex={journeyCheck.routeIndex} />');
   });
 
-  // Founder final order (August 2026): "Check a journey" is the PRIMARY
-  // customer task and now renders directly beneath the hero, before the
-  // SECONDARY Route Atlas exploration experience — previously the reverse.
-  // The Atlas remains the homepage's flagship browse/discovery surface;
-  // only the scroll order relative to this form changed.
-  it('renders before the Atlas — the form is the primary task, the Atlas the secondary exploration experience below it', () => {
+  // Founder final order (August 2026, superseded September 2026): "Check a
+  // journey" is the PRIMARY customer task; the SECONDARY Route Atlas
+  // exploration experience renders below it. Previously that meant the form
+  // rendered in its own section before the Atlas; now the form lives inside
+  // the hero, which itself renders before the Atlas — same ordering intent.
+  it('the hero (containing the form) renders before the Atlas — the primary task, then the secondary exploration experience below it', () => {
     const atlasIndex = homeSrc.indexOf('<AtlasFeelTest');
-    const formIndex = homeSrc.indexOf('<JourneyCheckForm');
+    const heroIndex = homeSrc.indexOf('<HomepageOpeningHero');
     expect(atlasIndex).toBeGreaterThan(-1);
-    expect(formIndex).toBeGreaterThan(-1);
-    expect(formIndex).toBeLessThan(atlasIndex);
+    expect(heroIndex).toBeGreaterThan(-1);
+    expect(heroIndex).toBeLessThan(atlasIndex);
   });
 
   it('origins/destinations/routeIndex are computed from the real tracked-route data, not fabricated', () => {
