@@ -21,6 +21,18 @@ import { getFareFreshnessState, daysBetweenIso } from '@/lib/freshness-threshold
  * Rows past OBSERVATION_STALE_DAYS are visually de-emphasised (never
  * hidden — the history stays honest and complete) so a years-old check
  * doesn't read as current at a glance.
+ *
+ * Collapsed by default (MAN→ISB Flagship Verdict pilot, Phase 1, September
+ * 2026 — applied universally, not just on the pilot route, since this is a
+ * single shared component with no per-route branching; see
+ * tests/fare-history-panel-collapse.test.ts for the regression coverage
+ * this needed across the wider route catalogue). A native <details> element
+ * needs no client-side state, so this stays a server component exactly as
+ * before. The header above it (cabin + check count) stays always visible —
+ * only the individual checks collapse — so a visitor always sees how much
+ * history exists before deciding whether to open it. No observation is
+ * removed, reordered or reworded; this changes only whether the list starts
+ * open or closed.
  */
 export function FareHistoryPanel({ observations }: { observations: FareObservation[] }) {
   const publishable = observations.filter(isPubliclyPublishable);
@@ -47,31 +59,36 @@ export function FareHistoryPanel({ observations }: { observations: FareObservati
                 {cabin} · {chronological.length} comparable check{chronological.length === 1 ? '' : 's'} tracked
               </h3>
             </div>
-            <div className="flex flex-col divide-y divide-ink-100">
-              {chronological.map((obs) => {
-                const isStale = getFareFreshnessState(daysBetweenIso(obs.observedDate, nowIso)) === 'stale';
-                return (
-                  <div key={obs.id} className="flex flex-col gap-3 px-6 py-3.5 sm:flex-row sm:items-center sm:justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-ink-700">{obs.cabin} · {obs.source}</p>
-                      <p className="text-xs text-ink-400">
-                        Checked {formatChecked(obs.observedDate)}
-                        {isStale && ' · old check, for history only'}
-                      </p>
-                      <p className="mt-1 text-xs text-ink-500">
-                        Travel dates: {formatChecked(obs.departureDate!)} – {formatChecked(obs.returnDate!)}
-                      </p>
+            <details>
+              <summary className="cursor-pointer select-none px-6 py-3 text-sm font-semibold text-ink-700 transition-colors hover:text-ink-900">
+                See all {chronological.length} check{chronological.length === 1 ? '' : 's'}
+              </summary>
+              <div className="flex flex-col divide-y divide-ink-100 border-t border-ink-100">
+                {chronological.map((obs) => {
+                  const isStale = getFareFreshnessState(daysBetweenIso(obs.observedDate, nowIso)) === 'stale';
+                  return (
+                    <div key={obs.id} className="flex flex-col gap-3 px-6 py-3.5 sm:flex-row sm:items-center sm:justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-ink-700">{obs.cabin} · {obs.source}</p>
+                        <p className="text-xs text-ink-400">
+                          Checked {formatChecked(obs.observedDate)}
+                          {isStale && ' · old check, for history only'}
+                        </p>
+                        <p className="mt-1 text-xs text-ink-500">
+                          Travel dates: {formatChecked(obs.departureDate!)} – {formatChecked(obs.returnDate!)}
+                        </p>
+                      </div>
+                      <div className="sm:text-right">
+                        <p className={`font-display text-lg ${isStale ? 'text-ink-500' : 'text-ink-900'}`}>
+                          £{obs.price.toLocaleString('en-GB')}
+                        </p>
+                        <p className="text-[11px] text-ink-400">{obs.priceNote}</p>
+                      </div>
                     </div>
-                    <div className="sm:text-right">
-                      <p className={`font-display text-lg ${isStale ? 'text-ink-500' : 'text-ink-900'}`}>
-                        £{obs.price.toLocaleString('en-GB')}
-                      </p>
-                      <p className="text-[11px] text-ink-400">{obs.priceNote}</p>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+                  );
+                })}
+              </div>
+            </details>
             <p className="border-t border-ink-100 px-6 py-3 text-xs text-ink-400">
               Every figure above is a fare checked and recorded on the date shown, not a live price feed. Use
               the partner link below to check live prices.

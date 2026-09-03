@@ -41,7 +41,12 @@ import { JourneyChoiceImpressionSection } from '@/components/route/journey-choic
  * `tripComHandoff.datesPreserved` — never inferred from the URL string.
  */
 
-function formatDate(iso: string): string {
+// Exported (MAN→ISB Flagship Verdict pilot, September 2026) so
+// components/route/route-verdict.tsx can name Journey Choice's own checked/
+// travel dates in the exact same format Journey Choice itself renders them
+// in, rather than a second, potentially-drifting date formatter. Nothing
+// about this function changed to enable the export.
+export function formatDate(iso: string): string {
   return new Intl.DateTimeFormat('en-GB', {
     day: 'numeric',
     month: 'long',
@@ -79,10 +84,20 @@ function baggageLabel(option: JourneyChoiceOption): string {
   }
 }
 
-function checkedDateRange(options: JourneyChoiceOption[]): string {
+// Exported for the same reason as formatDate above — the Verdict shows this
+// exact checked-date range, never a re-derived one.
+//
+// "to", not an en dash (MAN→ISB Flagship Verdict pilot, Phase 1 finishing
+// pass, September 2026): a date range is exactly the kind of dash-separator
+// use JetStash's locked public-copy standard rules out, even though this
+// particular one predates the Verdict and had gone unnoticed until this
+// fix's own copy sweep. Fixed at this one shared source rather than in
+// either caller, since JourneyChoice's own rendering and the Verdict's both
+// read from it — see tests/route-verdict.test.ts and tests/journey-choice.test.ts.
+export function checkedDateRange(options: JourneyChoiceOption[]): string {
   const dates = [...new Set(options.map((o) => o.checkedDate))].sort();
   if (dates.length === 1) return formatDate(dates[0]);
-  return `${formatDate(dates[0])} – ${formatDate(dates[dates.length - 1])}`;
+  return `${formatDate(dates[0])} to ${formatDate(dates[dates.length - 1])}`;
 }
 
 function PrimaryOptionCard({ label, option }: { label: string; option: JourneyChoiceOption }) {
@@ -149,17 +164,35 @@ export interface JourneyChoiceRouteServiceContext {
   routeAirlineLabel: string | null;
 }
 
-function routeServiceNote(
+export interface JourneyChoiceRouteServiceNote {
+  value: string;
+  note: string;
+}
+
+// Exported for the same reason as formatDate/checkedDateRange above — the
+// Verdict must preserve the exact same PIA-direct-vs-connecting-fares
+// distinction Journey Choice itself already computes, never a second,
+// independently-worded version of it.
+//
+// Wording made context-neutral (MAN→ISB Flagship Verdict pilot, Phase 1
+// finishing pass, September 2026): the original note said "the fares above
+// are different, connecting journeys", which is spatially accurate inside
+// Journey Choice's own layout (the two option cards genuinely sit above
+// this note there) but becomes wrong once the same derived value renders
+// inside the Verdict, which has no fare cards above it at all. Naming
+// Journey Choice explicitly instead of relying on position works correctly
+// in both places. No dash separator, per JetStash's public-copy rule.
+export function routeServiceNote(
   context: JourneyChoiceRouteServiceContext,
   allOptionsConnecting: boolean
-): { value: string; note: string } | null {
+): JourneyChoiceRouteServiceNote | null {
   const { routeDirectness, routeStatusLabel, routeAirlineLabel } = context;
   if (!routeDirectness || routeDirectness !== 'direct' || !allOptionsConnecting) return null;
   const label = routeStatusLabel ?? 'direct';
   const value = routeAirlineLabel ? `${routeAirlineLabel} · ${label}` : label;
   return {
     value,
-    note: 'The fares above are different, connecting journeys.',
+    note: 'Journey Choice compares different, connecting journeys.',
   };
 }
 

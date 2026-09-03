@@ -46,6 +46,7 @@ import { FareWindowReconciliationNote } from '@/components/route/fare-window-rec
 import { deriveFareWindowReconciliation } from '@/lib/fare-window-reconciliation';
 import { getRouteIntelligenceDisplayForRoute } from '@/lib/route-intelligence-display';
 import { BusinessClarityPanel } from '@/components/route/business-clarity-panel';
+import { RouteVerdict } from '@/components/route/route-verdict';
 
 /**
  * Route-hero focal-position overrides, keyed by destination slug. HeroBackdrop's default
@@ -331,6 +332,35 @@ export default async function RoutePage({ params }: { params: Promise<{ slug: st
         </div>
       </section>
 
+      {/* MAN→ISB Flagship Verdict pilot, Phase 1 (September 2026,
+          founder-approved narrow scope). Renders only when journeyChoice
+          exists — today that means manchester-islamabad only, the same
+          gate Journey Choice itself already uses. Placed as the very first
+          thing after the hero so the page's actual decision (Journey
+          Choice's own trade-off) is visible within the first 1-2 mobile
+          screens instead of ~6 screens down, without duplicating either
+          Journey Choice's cards or Fare Signal's own detail card below —
+          see components/route/route-verdict.tsx's own doc comment for the
+          full evidence-separation rule this component enforces. */}
+      {journeyChoice && (
+        <section className="bg-sand-50 py-10 sm:py-12">
+          <div className="mx-auto max-w-content px-5 sm:px-8">
+            <RouteVerdict
+              routeLabel={`${airport.city} to ${dest.city}`}
+              routeSlug={route.slug}
+              routeStatus={presentation.status}
+              flightTime={presentation.status === 'direct' || presentation.status === 'connecting' ? presentation.flightTime : null}
+              routeDirectness={presentation.status === 'direct' || presentation.status === 'connecting' ? presentation.status : null}
+              routeStatusLabel={presentation.status === 'direct' || presentation.status === 'connecting' ? presentation.statusLabel : null}
+              routeAirlineLabel={presentationAirlines.length > 0 ? presentationAirlines.map((a) => a.name).join(', ') : null}
+              journeyChoice={journeyChoice}
+              tripComHandoff={journeyChoiceTripComHandoff}
+              fareSignal={fareSignal}
+            />
+          </div>
+        </section>
+      )}
+
       <section className="bg-white py-8 sm:py-10">
         <div className="mx-auto max-w-content px-5 sm:px-8">
           {/* Route Page Journey Clarity System (20 Aug 2026): routeStatusLabel
@@ -357,6 +387,38 @@ export default async function RoutePage({ params }: { params: Promise<{ slug: st
           />
         </div>
       </section>
+
+      {/* Journey Choice, moved up from its previous position deep in the
+          fare section below (MAN→ISB Flagship Verdict pilot, Phase 1) so it
+          sits immediately after Fare Signal rather than ~6 screens down.
+          Relative order preserved deliberately: Fare Signal still renders
+          BEFORE Journey Choice, exactly as before this change, because
+          lib/fare-window-reconciliation.ts's own reconciliation sentence is
+          written assuming that order ("The Fare Signal higher up this
+          page..."; "the options below are...") — swapping them would make
+          that sentence false. Nothing here recomputes Journey Choice or its
+          reconciliation; both are the exact same values already computed
+          above, just rendered in a new position. */}
+      {journeyChoice && (
+        <section className="bg-white py-8 sm:py-10">
+          <div className="mx-auto max-w-content px-5 sm:px-8">
+            {fareWindowReconciliation && (
+              <div className="mb-8">
+                <FareWindowReconciliationNote reconciliation={fareWindowReconciliation} />
+              </div>
+            )}
+            <JourneyChoice
+              journeyChoice={journeyChoice}
+              routeLabel={`${airport.city} to ${dest.city}`}
+              routeSlug={route.slug}
+              tripComHandoff={journeyChoiceTripComHandoff}
+              routeDirectness={presentation.status === 'direct' || presentation.status === 'connecting' ? presentation.status : null}
+              routeStatusLabel={presentation.status === 'direct' || presentation.status === 'connecting' ? presentation.statusLabel : null}
+              routeAirlineLabel={presentationAirlines.length > 0 ? presentationAirlines.map((a) => a.name).join(', ') : null}
+            />
+          </div>
+        </section>
+      )}
 
       {/* Route Status V1 — renders only for ledger-managed routes
           (routeStatusCopy is null otherwise). Every word here is sourced:
@@ -676,24 +738,12 @@ export default async function RoutePage({ params }: { params: Promise<{ slug: st
         <div className="mx-auto max-w-content px-5 sm:px-8">
           <h2 className="font-display text-2xl text-ink-900 sm:text-3xl">{fareSectionCopy.heading}</h2>
           {fareSectionCopy.caption && <p className="mt-2 max-w-xl text-sm text-ink-500">{fareSectionCopy.caption}</p>}
-          {journeyChoice && fareWindowReconciliation && (
-            <div className="mt-8">
-              <FareWindowReconciliationNote reconciliation={fareWindowReconciliation} />
-            </div>
-          )}
-          {journeyChoice && (
-            <div className={fareWindowReconciliation ? 'mt-4' : 'mt-8'}>
-              <JourneyChoice
-                journeyChoice={journeyChoice}
-                routeLabel={`${airport.city} to ${dest.city}`}
-                routeSlug={route.slug}
-                tripComHandoff={journeyChoiceTripComHandoff}
-                routeDirectness={presentation.status === 'direct' || presentation.status === 'connecting' ? presentation.status : null}
-                routeStatusLabel={presentation.status === 'direct' || presentation.status === 'connecting' ? presentation.statusLabel : null}
-                routeAirlineLabel={presentationAirlines.length > 0 ? presentationAirlines.map((a) => a.name).join(', ') : null}
-              />
-            </div>
-          )}
+          {/* Journey Choice and its fare-window reconciliation note used to
+              render here — moved up to directly follow Fare Signal (MAN→ISB
+              Flagship Verdict pilot, Phase 1, September 2026), so this
+              heading now introduces exactly what follows it: fare history
+              and deals, nothing else. See the new section immediately after
+              Fare Signal, above. */}
           {fareObservations.length > 0 && (
             // id anchors Fare Signal's and Book-By's "See recent fare checks"
             // link when the current representative fare is withheld
