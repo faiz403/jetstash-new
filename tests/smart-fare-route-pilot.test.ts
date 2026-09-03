@@ -77,11 +77,20 @@ describe('Smart Fare Comparison Manchester–Islamabad pilot', () => {
     // selection PR #171 built is still exactly what's reused; only the
     // page-level presentation call site moved. See
     // tests/journey-choice.test.ts for the new component's own coverage.
+    //
+    // MAN→ISB Flagship Verdict pilot, Phase 1 (September 2026): <JourneyChoice>
+    // moved from just before the fare-section heading to just after Fare
+    // Signal, near the top of the page (see tests/route-verdict.test.ts for
+    // the full before/after position coverage) — it now renders BEFORE
+    // {fareSectionCopy.heading}, not after. <FareHistoryPanel> stays exactly
+    // where it was, inside that fare section, so it's still the last of the
+    // three markers.
     const fareSectionIndex = routePageSrc.indexOf('{fareSectionCopy.heading}');
     const journeyChoiceIndex = routePageSrc.indexOf('<JourneyChoice');
     const historyIndex = routePageSrc.indexOf('<FareHistoryPanel');
-    expect(journeyChoiceIndex).toBeGreaterThan(fareSectionIndex);
-    expect(journeyChoiceIndex).toBeLessThan(historyIndex);
+    expect(journeyChoiceIndex).toBeGreaterThan(-1);
+    expect(journeyChoiceIndex).toBeLessThan(fareSectionIndex);
+    expect(fareSectionIndex).toBeLessThan(historyIndex);
     expect(routePageSrc).not.toContain('<SmartFareComparison');
     expect(routePageSrc).toContain('getJourneyChoiceForRoute(route.slug, nowIso)');
     expect(routePageSrc).not.toContain('deriveTripValueVerdict');

@@ -234,7 +234,12 @@ describe('No profileId or invented-baggage leakage into the customer-facing comp
 
   it('states Route Service distinctly from the compared fares: PIA direct, fares shown are a different connecting journey', () => {
     expect(rendered).toContain('PIA · Direct');
-    expect(rendered).toContain('The fares above are different, connecting journeys.');
+    // Wording made context-neutral (MAN→ISB Flagship Verdict pilot, Phase 1
+    // finishing pass, September 2026) — see routeServiceNote()'s own doc
+    // comment in components/route/journey-choice.tsx: naming Journey Choice
+    // explicitly (rather than "the fares above") reads correctly both here
+    // and inside the new Verdict, which has no fare cards above it.
+    expect(rendered).toContain('Journey Choice compares different, connecting journeys.');
   });
 
   it('renders the exact founder-approved decision sentence and the genuine-middle-option framing', () => {

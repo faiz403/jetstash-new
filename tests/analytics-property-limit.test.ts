@@ -169,8 +169,17 @@ describe('the four reduced events keep exactly the right two properties', () => 
     // (components/route/journey-choice.tsx, event 'journey_choice_cta_click',
     // source: 'journey-choice') — manchester-islamabad only, alongside
     // Fare Signal's own CTA, never replacing it. 6 → 7.
-    const tripcomSites = sites.filter((s) => s.label === 'properties={{...}}');
-    expect(tripcomSites.length).toBe(7);
+    // MAN→ISB Flagship Verdict pilot, Phase 1 (September 2026): one new site
+    // (components/route/route-verdict.tsx, reusing the existing
+    // 'journey_choice_cta_click' event with source: 'journey-choice-verdict'
+    // rather than a new event) — manchester-islamabad only. 7 → 8. Filtered
+    // on `source:` presence specifically now, because the same file also
+    // adds a second, deliberately route-only properties={{...}} site (the
+    // new route_verdict_watch_click event) — see its own dedicated check
+    // immediately below, since that one shape doesn't belong in this
+    // route+source category.
+    const tripcomSites = sites.filter((s) => s.label === 'properties={{...}}' && s.raw.includes('source:'));
+    expect(tripcomSites.length).toBe(8);
     for (const s of tripcomSites) {
       expect(s.props.length, `${s.file}: ${s.raw}`).toBe(2);
       expect(s.raw).toMatch(/route:/);
@@ -178,6 +187,15 @@ describe('the four reduced events keep exactly the right two properties', () => 
       expect(s.raw).not.toMatch(/origin:/);
       expect(s.raw).not.toMatch(/destination:/);
     }
+  });
+
+  it('route_verdict_watch_click sends only a route property — one surface today, nothing to disambiguate with a source yet', () => {
+    const s = sites.find((site) => site.label === 'properties={{...}}' && !site.raw.includes('source:') && site.raw.includes('routeSlug'));
+    expect(s).toBeDefined();
+    expect(s!.props).toHaveLength(1);
+    expect(s!.raw).toMatch(/route:/);
+    expect(s!.raw).not.toMatch(/origin:/);
+    expect(s!.raw).not.toMatch(/destination:/);
   });
 
   it('route_watch_signup sends a composite route slug plus intent', () => {

@@ -168,7 +168,17 @@ describe('the rendered note is orientation, not a new commercial surface', () =>
 
   it('page.tsx gates it on BOTH blocks rendering, and renders it outside the JourneyChoice component', () => {
     expect(routePageSrc).toContain('deriveFareWindowReconciliation(');
-    expect(routePageSrc).toContain('{journeyChoice && fareWindowReconciliation && (');
+    // MAN→ISB Flagship Verdict pilot, Phase 1 (September 2026): the note now
+    // sits inside its own `{journeyChoice && (<section>...)}` wrapper
+    // (moved up alongside the relocated <JourneyChoice>, see
+    // tests/route-verdict.test.ts), so the combined condition is now two
+    // nested checks — `{journeyChoice && (` outside, `{fareWindowReconciliation && (`
+    // inside — rather than one single `&&` chain. The invariant this test
+    // exists to protect is unchanged: the note still renders only when BOTH
+    // journeyChoice AND fareWindowReconciliation are truthy (nesting one
+    // inside the other is exactly that), and still outside JourneyChoice.
+    expect(routePageSrc).toContain('{journeyChoice && (');
+    expect(routePageSrc).toContain('{fareWindowReconciliation && (');
     expect(routePageSrc).toContain('<FareWindowReconciliationNote reconciliation={fareWindowReconciliation} />');
     // The note is never rendered from inside the frozen pilot component.
     expect(journeyChoiceComponentSrc).not.toContain('FareWindowReconciliationNote');

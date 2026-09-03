@@ -79,7 +79,17 @@ export type AnalyticsEvent =
   // Journey Choice measurement instrumentation (24 Aug 2026, one-time
   // founder-approved exception to the Journey Choice freeze — see
   // components/route/journey-choice-impression-section.tsx)
-  | 'journey_choice_impression';
+  | 'journey_choice_impression'
+  // MAN→ISB Flagship Verdict pilot, Phase 1 (September 2026). Deliberately
+  // its own event rather than reusing 'bookby_watch_click' — that event is
+  // scoped to Book-By Countdown's own "Watch this route" button
+  // (components/route/book-by-countdown.tsx); this one fires from the new
+  // Verdict's compact watch link (components/route/route-verdict.tsx), a
+  // different surface, so the two must stay distinguishable in the data.
+  // The Verdict's primary CTA click reuses the existing
+  // 'journey_choice_cta_click' event with a new source value
+  // ('journey-choice-verdict') instead of a second new event.
+  | 'route_verdict_watch_click';
 
 export function track(event: AnalyticsEvent, properties?: Record<string, string | number | boolean>): void {
   try {
