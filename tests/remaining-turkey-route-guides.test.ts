@@ -32,11 +32,18 @@ describe('remaining Turkey route guides', () => {
   });
 
   it('keeps all fourteen new routes direct and currently verified', () => {
+    // Route Intelligence Freshness rolling-review Batch 3 (4 September
+    // 2026): london-gatwick-istanbul was reconfirmed and its verifiedDate
+    // moved -- the other thirteen were not part of that batch and are
+    // unchanged, deliberately no longer sharing one synchronised date.
+    const reverifiedDates: Partial<Record<(typeof BUILT)[number], string>> = {
+      'london-gatwick-istanbul': '2026-09-04',
+    };
     for (const slug of BUILT) {
       const route = getRouteBySlug(slug)!;
       expect(route.isDirect, slug).toBe(true);
       expect(route.verification?.status, slug).toBe('verified');
-      expect(route.verification?.verifiedDate, slug).toBe(NOW_ISO);
+      expect(route.verification?.verifiedDate, slug).toBe(reverifiedDates[slug] ?? NOW_ISO);
       expect(getRoutePresentation(route, NOW_ISO).status, slug).toBe('direct');
     }
   });
