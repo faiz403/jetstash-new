@@ -157,8 +157,12 @@ describe('G. No network/provider/Brevo dependency exists in the new section', ()
 });
 
 describe('H. Real current archive reconciliation matches the independently computed counts', () => {
-  it('exactly 76 routes carry a verification record', () => {
-    expect(routes.filter((r) => r.verification)).toHaveLength(76);
+  it('exactly 77 routes carry a verification record', () => {
+    // 76 -> 77 (3 September 2026): london-heathrow-jeddah gained a
+    // route-level verification for the first time (TR-010, Round 4) --
+    // previously it had only per-airline airlineVerifications entries and no
+    // route-level record at all.
+    expect(routes.filter((r) => r.verification)).toHaveLength(77);
   });
 
   it('the dashboard\'s overdue/due-soon/healthy counts match an independent recomputation from live route data as of today', () => {
@@ -207,18 +211,22 @@ describe('H. Real current archive reconciliation matches the independently compu
     expect(summaryRow).toBeDefined();
   });
 
-  it('verified/unverified split: COV-001 (21 August 2026) moved 4 routes from unverified to verified without changing the 76-record total', () => {
+  it('verified/unverified split: COV-001 (21 August 2026) moved 4 routes from unverified to verified, and london-heathrow-jeddah later gained its first route-level record', () => {
     // manchester-karachi, birmingham-lahore, birmingham-islamabad and
     // birmingham-delhi moved from unverified to verified-connecting — see
     // docs/project-control/ROUTE_VERIFICATION_CADENCE_POLICY.md, Batch 3.
-    // The 76-record total is unaffected; only the status split moved (67/9 -> 71/5).
+    // That change left the total at 76 with a 71/5 split. Separately (3
+    // September 2026, TR-010 Round 4), london-heathrow-jeddah gained a
+    // route-level verification for the first time (previously per-airline
+    // only), taking the total to 77 and verified to 72; unverified is
+    // unaffected at 5.
     const withVerification = routes.filter((r) => r.verification);
     const verified = withVerification.filter((r) => r.verification!.status === 'verified');
     const unverified = withVerification.filter((r) => r.verification!.status !== 'verified');
 
-    expect(withVerification).toHaveLength(76);
-    expect(verified.length + unverified.length).toBe(76);
-    expect(verified.length).toBe(71);
+    expect(withVerification).toHaveLength(77);
+    expect(verified.length + unverified.length).toBe(77);
+    expect(verified.length).toBe(72);
     expect(unverified.length).toBe(5);
   });
 });

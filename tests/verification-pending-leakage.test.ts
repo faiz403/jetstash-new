@@ -160,11 +160,17 @@ describe('getRoutePresentation — verified direct routes (real dataset) keep wo
     expect(p.frequency).toMatch(/not confirmed/i);
   });
 
-  it('london-heathrow-jeddah: current primary evidence names both individually-verified airlines', () => {
+  it('london-heathrow-jeddah: current primary evidence names Saudia as the sole current operator (TR-010, Round 4)', () => {
+    // British Airways was removed 3 September 2026 -- independently
+    // corroborated reporting (Reuters, The Independent, a reproduced BA
+    // trade notice) plus Heathrow's own routes table converge on BA having
+    // permanently suspended this service from 24 April 2026. The route
+    // itself remains direct via Saudia's own current, independently
+    // verified evidence.
     const route = getRouteBySlug('london-heathrow-jeddah')!;
     const p = getRoutePresentation(route, FIXED_TODAY);
     expect(p.status).toBe('direct');
-    expect(p.airlineSlugs).toContain('british-airways');
+    expect(p.airlineSlugs).not.toContain('british-airways');
     expect(p.airlineSlugs).toContain('saudia');
   });
 });

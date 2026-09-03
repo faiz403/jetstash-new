@@ -1260,36 +1260,44 @@ export const routes: Route[] = [
     slug: 'london-heathrow-jeddah',
     airportSlug: 'london-heathrow',
     destinationSlug: 'jeddah',
-    flightTime: '6h 15m direct (per BA\'s own destination page)',
-    frequency: 'British Airways and Saudia have current direct-service evidence; exact frequency should be checked for the travel date',
-    airlineSlugs: ['saudia', 'british-airways'],
+    flightTime: '6h 15m, per Saudia\'s published route figure; not independently reconfirmed against a current Saudia source this session',
+    frequency: 'Saudia operates direct service; exact current frequency not confirmed by a current official schedule',
+    airlineSlugs: ['saudia'],
     isDirect: true,
-    airlineVerifications: [
-      {
-        airlineSlug: 'british-airways',
-        status: 'verified',
-        sourceName: "British Airways' own current destination/booking page, \"Direct Flights to Jeddah Deals (JED) 2026 | Book now with BA\" (britishairways.com/content/flights/saudi-arabia/jeddah) — live and current at time of access, presenting Jeddah as an active BA destination with a working flight-search widget, cabin options and a stated 6h15m flight time.",
-        sourceUrl: 'https://www.britishairways.com/content/flights/saudi-arabia/jeddah',
-        verifiedDate: '2026-08-14',
-        reviewDueDate: '2026-09-14',
-        effectivePeriod: 'Current at access',
-        supportedClaim: 'Confirms BA publicly markets and sells direct Heathrow–Jeddah flights. Does not state a current frequency, and BA\'s own schedule-search tool could not be made to render this session (a recurring cookie-consent technical-issue block), so none is published.',
-        remainingUncertainty: 'A specific secondary source (Head for Points, 10 Apr 2026) claims BA terminated this route on 24 April 2026 — unreconciled with BA\'s current destination page and Heathrow\'s current route material. Treated as a genuine, disclosed conflict, not resolved either way — see docs/LAUNCH_BLOCKERS.md TR-010.',
-      },
-      {
-        airlineSlug: 'saudia',
-        status: 'verified',
-        sourceName: 'Heathrow\'s current official route page, "Fly direct from Heathrow to Saudi Arabia"',
-        sourceUrl: 'https://www.heathrow.com/heathrow-blog/fly-direct-from-heathrow-to-saudi-arabia',
-        verifiedDate: '2026-08-14',
-        reviewDueDate: '2026-09-14',
-        effectivePeriod: 'Current at access on 14 August 2026',
-        supportedClaim: 'Heathrow states that direct Heathrow–Jeddah flights are current and identifies Saudia with up to 2 daily Jeddah flights. This independently verifies Saudia\'s direct route evidence without relying on the BA record.',
-        remainingUncertainty: 'Exact Saudia operating dates for a particular itinerary should still be checked. The separate BA conflict remains disclosed above.',
-      },
-    ],
+    // TR-010, Round 4 (Route Intelligence Freshness rolling-review, 3
+    // September 2026): British Airways removed from airlineSlugs and from
+    // airlineVerifications. Prior rounds (see route-and-fare-integrity.test.ts's
+    // own "revised three times" history) had already disclosed an unresolved
+    // conflict between BA's own live destination page and a secondary report
+    // (Head for Points, 10 Apr 2026) claiming BA terminated this route on 24
+    // April 2026. This round resolves that conflict: independently-verified
+    // reporting (Reuters, 9 Apr 2026; The Independent, 9 Apr 2026) and a
+    // reproduced British Airways trade communication ("we have taken the
+    // difficult decision to permanently suspend services to Jeddah from the
+    // 24 April") converge on the same date and reason (part of a wider BA
+    // Middle East capacity reduction). This is independently corroborated by
+    // Heathrow's own "Fly direct from Heathrow to Saudi Arabia" airlines-and-
+    // routes table, which lists British Airways for Riyadh only, not Jeddah,
+    // while separately confirming Saudia's Jeddah service. BA's own
+    // destination/booking page for Jeddah remained live and current-dated
+    // (a live September 2026 sale) at the time of this check — this is
+    // treated as a stale marketing/SEO surface that outlived the route, not
+    // current operational evidence; a destination page can remain online
+    // after a route ends, and it does not outweigh a dated, converging
+    // permanent-suspension announcement corroborated by the airport's own
+    // route table. This is an airline-level correction only: the route
+    // itself remains direct, verified via Saudia alone, and unaffected — no
+    // route-status event was added, since the route has not ended.
+    verification: {
+      status: 'verified',
+      sourceName: "Saudia's own current London-Jeddah booking page",
+      sourceUrl: 'https://www.saudia.com/en-gb/flight-deals-from-london-to-saudi-arabia',
+      verifiedDate: '2026-09-03',
+      reviewDueDate: '2026-10-03',
+      note: 'Saudia\'s own live booking page lists London (LHR) to Jeddah (JED) as a current, bookable route, with genuinely fresh fare timestamps ("Viewed 8 minutes ago") across multiple date ranges spanning September through October 2026 -- this is current, dated, primary evidence, not a marketing page alone. No specific current frequency figure was independently reconfirmed this session (Heathrow\'s own routes table separately states 2 daily flights, but that table\'s surrounding article carries an older 2025 dateline, so it is not relied on alone here). Classified RECENT / CHANGING (30-day window), not STABLE, because this route just lost an operator (British Airways) and its full current operating pattern under Saudia alone has not yet been independently reconfirmed over time.',
+    },
     intro:
-      'The primary direct Umrah arrival route from the UK. British Airways and Saudia both have current primary-source direct-service evidence, although the BA record retains a disclosed conflict with a secondary withdrawal report. Check the exact airline and date before booking. Most flight-inclusive Umrah packages are built around the Jeddah corridor, with onward ground transport to Makkah.',
+      'The primary direct Umrah arrival route from the UK. Saudia operates direct service, confirmed via its own current booking page. British Airways ended its Heathrow-Jeddah service from 24 April 2026, as part of a wider Middle East network reduction, and is no longer included as a current operator here. Check the exact date and current schedule before booking. Most flight-inclusive Umrah packages are built around the Jeddah corridor, with onward ground transport to Makkah.',
     bookingWindowNote:
       'Ramadan and the weeks immediately before Hajj season are typically the highest-demand windows on this route. Outside them, pricing tends to be calmer.',
     peakPeriodIds: ['ramadan', 'pre-hajj', 'school-half-terms-umrah'],
