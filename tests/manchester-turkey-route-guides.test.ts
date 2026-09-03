@@ -14,8 +14,14 @@ describe('Manchester Turkey route guides', () => {
     expect(routes.every(Boolean)).toBe(true);
     expect(routes.map((route) => route?.airportSlug)).toEqual(['manchester', 'manchester', 'manchester', 'manchester', 'manchester']);
     expect(routes.map((route) => route?.verification?.status)).toEqual(['verified', 'verified', 'verified', 'verified', 'verified']);
-    expect(routes.map((route) => route?.verification?.verifiedDate)).toEqual(['2026-08-12', '2026-08-12', '2026-08-12', '2026-08-12', '2026-08-12']);
-    expect(routes.map((route) => route?.verification?.reviewDueDate)).toEqual(['2026-09-12', '2026-09-12', '2026-09-12', '2026-09-12', '2026-09-12']);
+    // Route Intelligence Freshness rolling-review Batch 1 (3 September 2026):
+    // manchester-istanbul was reconfirmed and moved to the STABLE 90-day
+    // window on fresh evidence (Turkish Airlines' own page now states "no
+    // changes occur in the number of flights throughout the year") -- the
+    // other four Turkey routes were not part of that batch and are
+    // unchanged, deliberately no longer sharing one synchronised date.
+    expect(routes.map((route) => route?.verification?.verifiedDate)).toEqual(['2026-09-03', '2026-08-12', '2026-08-12', '2026-08-12', '2026-08-12']);
+    expect(routes.map((route) => route?.verification?.reviewDueDate)).toEqual(['2026-12-02', '2026-09-12', '2026-09-12', '2026-09-12', '2026-09-12']);
   });
 
   it('keeps Istanbul wording specific to Turkish Airlines rather than total route frequency', () => {
