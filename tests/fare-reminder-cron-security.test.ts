@@ -105,7 +105,12 @@ describe('fare-check reminder cron authorization', () => {
     const response = await GET(request('Bearer test-cron-secret'));
 
     expect(response.status).toBe(200);
-    expect(await response.json()).toEqual({ sent: true, count: 1 });
+    expect(await response.json()).toEqual({
+      sent: true,
+      fareCount: 1,
+      routeVerificationOverdueCount: 0,
+      routeVerificationDueSoonCount: 0,
+    });
     expect(mocks.getFounderSnapshot).toHaveBeenCalledOnce();
     expect(mocks.sendResendEmail).toHaveBeenCalledOnce();
     expect(mocks.sendResendEmail).toHaveBeenCalledWith(expect.objectContaining({
