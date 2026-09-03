@@ -227,22 +227,30 @@ describe('Deal counts (TR-004) — a card with no tracked fare must not count as
   });
 });
 
-describe('Route.airlineSlugs — TR-010, revised three times after successive primary-source re-checks', () => {
-  it('London Heathrow–Jeddah lists Saudia and British Airways, each with independent current evidence', () => {
+describe('Route.airlineSlugs — TR-010, revised four times after successive primary-source re-checks', () => {
+  it('London Heathrow–Jeddah lists Saudia only, after British Airways\' service ended (Round 4)', () => {
     // TR-010 originally removed British Airways based on secondary aviation-
     // news reporting only (Head for Points et al). Round 1 restored BA but
     // marked the whole route 'unverified'. Round 2 verified the route overall
-    // on BA's live destination page. Round 3 (this founder correction) split
-    // the claim per airline: BA's own page proves BA, not Saudia — a route
-    // must never treat one airline's evidence as covering another.
+    // on BA's live destination page. Round 3 split the claim per airline:
+    // BA's own page proves BA, not Saudia. Round 4 (3 September 2026): BA
+    // removed again, this time on stronger, converging evidence -- Reuters
+    // and The Independent (9 Apr 2026) plus a reproduced BA trade notice
+    // ("permanently suspend services to Jeddah from the 24 April"),
+    // independently corroborated by Heathrow's own airlines-and-routes table
+    // listing BA for Riyadh only, not Jeddah. This is an airline-level
+    // correction, not a route-level one -- the route itself remains direct
+    // via Saudia's own current, independently verified evidence.
     const route = getRouteBySlug('london-heathrow-jeddah')!;
     expect(route.airlineSlugs).toContain('saudia');
-    expect(route.airlineSlugs).toContain('british-airways');
-    expect(getAirlineDisplayStatus(route, 'british-airways', FIXED_TODAY)).toBe('verified');
-    expect(getAirlineDisplayStatus(route, 'saudia', FIXED_TODAY)).toBe('verified');
+    expect(route.airlineSlugs).not.toContain('british-airways');
+    // Saudia is now the sole airline with no separate airlineVerifications
+    // array, so it resolves via the sole-unsplit-airline fallback (the same
+    // pattern manchester-lahore/PIA uses) rather than a per-airline record.
+    expect(getDealAirlineDisplayStatus(route, 'saudia', FIXED_TODAY)).toBe('verified');
   });
 
-  it('the route still shows Direct overall, because at least one airline (BA) has current verified evidence', () => {
+  it('the route still shows Direct overall, because Saudia has current verified evidence', () => {
     const route = getRouteBySlug('london-heathrow-jeddah')!;
     expect(getDisplayDirectness(route, FIXED_TODAY)).toBe('direct');
   });
@@ -257,8 +265,9 @@ describe('Per-airline verification (founder correction) — one airline\'s evide
   });
 
   it('an airline with no verification record on a route is unverified, even though other airlines on the same route are verified', () => {
-    // London Heathrow–Jeddah now has independent BA and Saudia records;
-    // this absent fixture still proves that one record cannot bleed into another.
+    // London Heathrow–Jeddah now has a single route-level Saudia record
+    // (British Airways removed, Round 4, 3 September 2026); this absent
+    // fixture still proves an unrelated airline never inherits it.
     const route = getRouteBySlug('london-heathrow-jeddah')!;
     expect(getAirlineVerification(route, 'not-a-real-airline')).toBeUndefined();
     expect(getAirlineDisplayStatus(route, 'not-a-real-airline', FIXED_TODAY)).toBe('unverified');
@@ -943,12 +952,14 @@ describe('getDealAirlineLabel (TR-010, final correction) — a deal/search card 
     expect(getDealAirlineLabel(jed2, FIXED_TODAY)).toBe('Saudia');
   });
 
-  it('2. BA evidence and Saudia evidence remain independently gated on the same route', () => {
+  it('2. BA no longer displays as a verified operator; Saudia remains independently gated (Round 4, 3 September 2026)', () => {
     const route = getRouteBySlug('london-heathrow-jeddah')!;
-    expect(getDealAirlineDisplayStatus(route, 'british-airways', FIXED_TODAY)).toBe('verified');
+    expect(getDealAirlineDisplayStatus(route, 'british-airways', FIXED_TODAY)).toBe('unverified');
     expect(getDealAirlineDisplayStatus(route, 'saudia', FIXED_TODAY)).toBe('verified');
-    // The route itself still shows Direct (BA's evidence is sufficient for route-level directness),
-    // proving directness and airline attribution are tracked as genuinely separate claims.
+    // The route itself still shows Direct -- Saudia's own evidence is sufficient for
+    // route-level directness, proving directness and airline attribution are tracked
+    // as genuinely separate claims, and that one airline's withdrawal does not by
+    // itself end the route.
     expect(getDisplayDirectness(route, FIXED_TODAY)).toBe('direct');
   });
 

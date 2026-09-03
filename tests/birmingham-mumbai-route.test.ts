@@ -534,13 +534,19 @@ describe('Direct-route share-text formatting fix — no nested parentheses, no r
     expect(p.shareText).not.toMatch(/[()]/);
   });
 
-  it('a direct route with an existing attribution qualifier (london-heathrow-jeddah, "6h 15m direct (per BA\'s own destination page)") preserves the attribution and drops only the word "direct"', () => {
-    const route = getRouteBySlug('london-heathrow-jeddah')!;
-    expect(route.flightTime).toBe("6h 15m direct (per BA's own destination page)");
+  it('a direct route with an existing attribution qualifier (manchester-doha, "Under 7h direct (Qatar Airways route page)") preserves the attribution and drops only the word "direct"', () => {
+    // Previously fixtured on london-heathrow-jeddah, whose flightTime text
+    // changed (Route Intelligence Freshness rolling-review, TR-010 Round 4,
+    // 3 September 2026 -- British Airways removed as an operator). This test
+    // is about the general share-text formatting behaviour, not about that
+    // specific route, so it's repointed to another real route carrying the
+    // same "direct (attribution)" pattern.
+    const route = getRouteBySlug('manchester-doha')!;
+    expect(route.flightTime).toBe('Under 7h direct (Qatar Airways route page)');
     const p = getRoutePresentation(route, FIXED_TODAY);
     expect(p.status).toBe('direct');
-    expect(p.shareText).toContain("6h 15m (per BA's own destination page)");
-    expect(p.shareText).not.toContain('direct (per');
+    expect(p.shareText).toContain('Under 7h (Qatar Airways route page)');
+    expect(p.shareText).not.toContain('direct (Qatar');
   });
 
   it('connecting-route share text is unaffected by this fix — birmingham-mumbai\'s message is unchanged', () => {
