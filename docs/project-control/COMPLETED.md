@@ -62,6 +62,22 @@ evidence shows a regression, changed requirement or stale external fact.
 | `SEO-002` | Completed the evidence-led Search Console/CTR correction arc for peak-period titles, visa guidance, Gulf-connecting guidance and selected Business-cabin pages without inventing route/fare claims. The later sitemap discovery follow-up reached the submitted inventory and is closed by founder confirmation. | PRs #152–#154 and #165–#170; external Search Console follow-up recorded in `STATUS.md` | Live / follow-up closed |
 | `QUOTE-001` | Clarified the Quote Request service as independent journey research and decision support: any booking is completed with the provider; JetStash does not take payment or book on the traveller's behalf. | PR #187, merge `4494fd3` | Live; do not reopen without customer evidence |
 
+## September 2026
+
+| ID | Completed work | Evidence | Production state |
+|---|---|---|---|
+| `SEO-003` | Added the verified Reddit profile to the homepage's organization schema `sameAs`. | PR #208, merge `9e6ea57` | Live |
+| `HERO-005` | Moved the homepage journey finder into the hero itself, on the existing photographic backdrop, so it's usable within the first screen. | PR #209, merge `7673b92` | Live |
+| `HERO-004` | Fixed the mobile cookie-consent banner overlapping the homepage hero console's journey-finder controls on first visit. | PR #210, merge `fa07725` | Live |
+| `ATLAS-004` | Fixed the Route Atlas's travelling-dot SVG animation to respect `prefers-reduced-motion`. A broader Atlas visual redesign was drafted and deliberately **not** shipped — the founder judged the Atlas already strong and stopped the redesign before merge; only this accessibility fix landed. | PR #211, merge `e3b3da1` | Live |
+| `INDIA-002` | Propagated the confirmed `service-ended` status for Manchester–Mumbai and Manchester–Delhi's former direct IndiGo service to remaining public route/destination surfaces. | PR #212, merge `35be0ed` | Live |
+| `ISB-VERDICT-001` | Added a "JetStash Verdict" to the Manchester–Islamabad route page, surfacing Journey Choice's decision sentence within the first two mobile screens instead of ~6 screens down, without blending it with Fare Signal's separately-dated evidence. | PR #213, merge `0982f2b` | Live; one-route pilot, matches Journey Choice's own frozen scope |
+| `DEALCARD-001` | Fixed `DealCard` to state a route's own verified directness in its own text whenever it genuinely differs from a specific tracked fare's directness — most exposed on manchester-lahore and manchester-doha, where Fare Signal is suppressed and the deal card was the only fare content with no reconciliation. | PR #214, merge `6cca768` | Live |
+| `AUDIT-TIER1-001` | Tier-1 Commercial Readiness QA across the 10 locked Tier-1 routes: one genuine P1 found and fixed (`DEALCARD-001` above); a MAN→Antalya "Direct journey" + "Self-transfer itinerary" pairing traced to genuine, correctly-recorded Google Flights evidence, not a defect. | Read-only audit, closed 3 September 2026 | 0 P0 / 0 P1 |
+| `AUDIT-SAFETY-001` | Internal Surface Safety audit: confirmed the Founder Dashboard and every founder-only route are unreachable, unindexed and absent from the sitemap in production; no secret or operational-data exposure found. | Read-only audit, closed 3 September 2026 | 0 P0 / 0 P1 |
+| `AUDIT-PERF-001` | Production Performance + Reliability audit: no customer-facing performance or reliability defect proven. Broader traffic is technically ready; real-user field Core Web Vitals data is still maturing, not yet enough real traffic for CrUX to report — evidence still growing, not a defect. | Read-only audit, closed 3 September 2026 | 0 P0 / 0 P1 |
+| `AUDIT-RISK-001` | Remaining Launch Risk Audit: confirmed no unstarted, buildable launch blocker remains — every item already tracked in this document's roadmap is closed, waiting, frozen or ongoing maintenance. First-revenue bottleneck recorded as NOT YET PROVEN, not a partner-economics conclusion. | Read-only audit, closed 3 September 2026 | 0 P0 / 0 P1 |
+
 ## Launch readiness
 
 | ID | Completed work | Evidence | Production state |
