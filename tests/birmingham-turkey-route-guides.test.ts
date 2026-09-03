@@ -15,7 +15,13 @@ describe('Birmingham Turkey route guides', () => {
     expect(routes.every(Boolean)).toBe(true);
     expect(routes.map((route) => route?.airportSlug)).toEqual(['birmingham', 'birmingham', 'birmingham', 'birmingham']);
     expect(routes.map((route) => route?.verification?.status)).toEqual(['verified', 'verified', 'verified', 'verified']);
-    expect(routes.map((route) => route?.verification?.verifiedDate)).toEqual(['2026-08-12', '2026-08-12', '2026-08-12', '2026-08-12']);
+    // Route Intelligence Freshness rolling-review Batch 2 (3 September 2026):
+    // birmingham-istanbul was reconfirmed and moved to the STABLE 90-day
+    // window on fresh evidence (Birmingham Airport's current destination
+    // page names both operators and matches exactly) -- the other three
+    // Birmingham Turkey routes were not part of that batch and are
+    // unchanged, deliberately no longer sharing one synchronised date.
+    expect(routes.map((route) => route?.verification?.verifiedDate)).toEqual(['2026-09-03', '2026-08-12', '2026-08-12', '2026-08-12']);
   });
 
   it('publishes the Istanbul airport distinction without inventing frequency', () => {
