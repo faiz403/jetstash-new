@@ -567,19 +567,21 @@ Fix, confined to exactly two files:
   shared `mt-7` wrapper, recovering headroom from that gap without editing `PageHero` itself (still
   used unchanged by 13 other pages) or `JourneyCheckForm`'s own internal spacing (left untouched).
 
-**Safe-area correctness, verified not assumed:** the app's viewport metadata does not set
+**Safe-area consideration, deliberately not coupled in:** the app's viewport metadata does not set
 `viewportFit: 'cover'`, so `env(safe-area-inset-bottom)` genuinely evaluates to 0 on every real
-device under the current configuration — the zero-inset measurement is the real, current
-production condition, not a test-environment artefact. The fix is still written to hold correctly
-if that ever changes: the banner's bottom padding and the hero's compensating margin both carry the
-identical `env(safe-area-inset-bottom, 0px)` term, so they move together and the net clearance is
-provably constant regardless of device inset — confirmed by temporarily substituting 20px and 34px
-literal values in place of `env()` locally (clearance held exactly, 21.6px at 390×844 in all three
-conditions), then reverting to the real formula before shipping.
+device under the current configuration — plain fixed padding is the correct choice for the
+production layout as it actually exists today, not an approximation of it. An earlier draft of
+this fix coupled the banner's bottom padding and the hero's pull-up margin to
+`env(safe-area-inset-bottom)` as forward-looking insurance; removed on founder review (2 Sep 2026)
+because it was a latent bug of its own — the hero's margin is a static CSS rule with no way to know
+whether the banner is even visible, so a safe-area-dependent version would have stayed pulled up by
+the same amount after the visitor dismissed the banner via Accept or Decline. If `viewport-fit=cover`
+is ever adopted, that should trigger its own site-wide safe-area review, not a homepage-specific
+coupling landed years earlier for a configuration the site didn't use yet.
 
 Verified before commit: 2951/2951 tests, TypeScript clean, lint clean, production build clean, no
-new dependency; 390×844 and 412×915 both clear (≥16px CTA clearance) under zero and simulated
-nonzero safe-area; desktop confirmed pixel-identical via computed styles. See PR for full detail.
+new dependency; 390×844 (17.6px CTA clearance) and 412×915 (88.6px) both clear; desktop confirmed
+pixel-identical via computed styles. See PR for full detail.
 
 ### FARE-001 — Maintain the editorial fare observation archive (ACTIVE)
 

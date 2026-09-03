@@ -116,25 +116,26 @@ export function CookieConsentBanner() {
           homepage hero instead of shrinking the privacy notice
           (homepage-opening-hero.tsx's own doc comment explains why).
 
-          Safe-area note: `app/layout.tsx`'s viewport metadata does not set
-          `viewportFit: 'cover'`, so under the current app configuration
-          `env(safe-area-inset-bottom)` genuinely evaluates to 0 on every
-          real device today — WebKit only lets a page's layout extend under
-          the home-indicator/gesture area (and therefore only reports a
-          nonzero inset back) once a page opts into viewport-fit=cover,
-          which this app does not. This banner's own `pb` still uses
-          `env(safe-area-inset-bottom, 0px)` directly (no artificial floor)
-          as forward-looking correctness in case that ever changes — paired
-          with an exactly-cancelling compensation in
-          homepage-opening-hero.tsx's own mobile pull-up margin, verified
-          by simulating 20px/34px insets locally (see that file's own
-          comment). Ships with genuinely zero simulation code — this is the
-          real, permanent formula either way. */}
+          Ordinary fixed padding, not safe-area-aware: JetStash's viewport
+          metadata (app/layout.tsx) does not set `viewportFit: 'cover'`, so
+          under the current app configuration `env(safe-area-inset-bottom)`
+          genuinely evaluates to 0 on every real device today — WebKit only
+          reports a nonzero inset once a page opts into viewport-fit=cover,
+          which this app does not. An earlier draft of this fix coupled this
+          padding to `env(safe-area-inset-bottom)` with a matching
+          compensation in homepage-opening-hero.tsx's own margin, as
+          forward-looking insurance — deliberately removed (2 Sep 2026,
+          founder review): that coupling only reads the banner's own state
+          while the banner is visible, but the hero's compensating margin is
+          a static CSS rule with no such condition, so it would have stayed
+          pulled up after Accept/Decline too. If viewport-fit=cover is ever
+          adopted, that should trigger its own site-wide safe-area review,
+          not a homepage-specific hidden coupling landed years earlier. */}
       {visible && (
         <div
           role="region"
           aria-label="Cookie consent"
-          className="fixed inset-x-0 bottom-0 z-50 border-t border-ink-200 bg-white px-3 pb-[env(safe-area-inset-bottom,0px)] pt-1 shadow-[0_-4px_16px_rgba(0,0,0,0.12)] sm:px-8 sm:pb-4 sm:pt-4"
+          className="fixed inset-x-0 bottom-0 z-50 border-t border-ink-200 bg-white px-3 pb-1 pt-1 shadow-[0_-4px_16px_rgba(0,0,0,0.12)] sm:px-8 sm:pb-4 sm:pt-4"
         >
           <div className="mx-auto flex max-w-content flex-col gap-0.5 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
             <div className="text-xs leading-snug text-ink-600 sm:text-sm sm:leading-relaxed">
