@@ -107,23 +107,46 @@ export function CookieConsentBanner() {
         </>
       )}
 
+      {/* Compact mobile treatment (September 2026, homepage-hero-console
+          overlap fix): shorter, factually-equivalent copy plus explicit
+          h-11 (44px) buttons — a fixed height via flex centring, not a
+          padding/line-height estimate, so the tap target is exact regardless
+          of font metrics. Fine print stays at the normal text-xs (12px) —
+          clearance comes from a small mobile-only spacing trim in the
+          homepage hero instead of shrinking the privacy notice
+          (homepage-opening-hero.tsx's own doc comment explains why).
+
+          Ordinary fixed padding, not safe-area-aware: JetStash's viewport
+          metadata (app/layout.tsx) does not set `viewportFit: 'cover'`, so
+          under the current app configuration `env(safe-area-inset-bottom)`
+          genuinely evaluates to 0 on every real device today — WebKit only
+          reports a nonzero inset once a page opts into viewport-fit=cover,
+          which this app does not. An earlier draft of this fix coupled this
+          padding to `env(safe-area-inset-bottom)` with a matching
+          compensation in homepage-opening-hero.tsx's own margin, as
+          forward-looking insurance — deliberately removed (2 Sep 2026,
+          founder review): that coupling only reads the banner's own state
+          while the banner is visible, but the hero's compensating margin is
+          a static CSS rule with no such condition, so it would have stayed
+          pulled up after Accept/Decline too. If viewport-fit=cover is ever
+          adopted, that should trigger its own site-wide safe-area review,
+          not a homepage-specific hidden coupling landed years earlier. */}
       {visible && (
         <div
           role="region"
           aria-label="Cookie consent"
-          className="fixed inset-x-0 bottom-0 z-50 border-t border-ink-200 bg-white px-5 py-4 shadow-[0_-4px_16px_rgba(0,0,0,0.12)] sm:px-8"
+          className="fixed inset-x-0 bottom-0 z-50 border-t border-ink-200 bg-white px-3 pb-1 pt-1 shadow-[0_-4px_16px_rgba(0,0,0,0.12)] sm:px-8 sm:pb-4 sm:pt-4"
         >
-          <div className="mx-auto flex max-w-content flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div className="text-sm leading-relaxed text-ink-600">
+          <div className="mx-auto flex max-w-content flex-col gap-0.5 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+            <div className="text-xs leading-snug text-ink-600 sm:text-sm sm:leading-relaxed">
               <p>
-                JetStash uses optional Google Ads measurement to understand whether advertising leads to partner-link
-                clicks. Accepting loads that Google tag; declining keeps it from loading. Vercel Analytics and Speed
-                Insights run separately either way. The current JetStash implementation does not configure
-                personalised advertising. See our{' '}
+                Optional Google Ads measurement checks whether ads lead to partner link clicks. Accept loads the
+                tag; Decline keeps it off. No personalised ads. Vercel Analytics and Speed Insights run
+                separately.{' '}
                 <Link href="/privacy-policy" className="underline hover:text-brass-700">
                   Privacy Policy
-                </Link>
-                . You can change this later from Cookie settings in the footer.
+                </Link>{' '}
+                · Cookie settings.
               </p>
               {choice && (
                 <p className="mt-1 text-xs text-ink-400">
@@ -135,14 +158,14 @@ export function CookieConsentBanner() {
               <button
                 type="button"
                 onClick={() => handleChoice('denied')}
-                className="rounded-sm border border-ink-200 px-4 py-2.5 text-sm font-semibold text-ink-700 transition-colors hover:bg-ink-50"
+                className="flex h-11 items-center justify-center rounded-sm border border-ink-200 px-4 text-xs font-semibold text-ink-700 transition-colors hover:bg-ink-50 sm:text-sm"
               >
                 Decline
               </button>
               <button
                 type="button"
                 onClick={() => handleChoice('granted')}
-                className="rounded-sm bg-ink-900 px-4 py-2.5 text-sm font-semibold text-sand-50 transition-all hover:bg-brass-600 active:scale-[0.985]"
+                className="flex h-11 items-center justify-center rounded-sm bg-ink-900 px-4 text-xs font-semibold text-sand-50 transition-all hover:bg-brass-600 active:scale-[0.985] sm:text-sm"
               >
                 Accept measurement
               </button>

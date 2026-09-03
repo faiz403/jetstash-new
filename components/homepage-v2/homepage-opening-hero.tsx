@@ -104,11 +104,48 @@ export function HomepageOpeningHero({ journeyCheck }: { journeyCheck: JourneyChe
       {/* id="your-journey": the anchor target for the footer's "Check my
           trip" link and the Atlas's own "Already know where you're going?"
           link — both point at #your-journey and previously scrolled down to
-          the standalone section this console replaces. */}
-      <div id="your-journey" className="max-w-2xl">
-        <div className="rounded-lg border border-white/10 bg-ink-900/70 p-5 shadow-[0_24px_70px_-24px_rgba(0,0,0,0.65)] backdrop-blur-md sm:p-6">
+          the standalone section this console replaces.
+
+          Mobile pull-up margin (September 2026, consent-overlay fix):
+          PageHero wraps every caller's children in its own fixed `mt-7`
+          (28px) — shared by 13 other pages, not something this component
+          can change. That wrapper has no padding/border of its own, so its
+          margin and this div's margin are adjoining and collapse per normal
+          CSS rules: parent +28px against this div's -16px nets to a smaller
+          real gap above the console, on mobile only (sm:mt-0 cancels it
+          back to PageHero's untouched 28px at sm: and up — desktop is
+          pixel-identical to before, confirmed via getComputedStyle).
+          JourneyCheckForm and PageHero are both untouched.
+
+          Deliberately a plain fixed -16px, not tied to the consent banner's
+          own state or to env(safe-area-inset-bottom) (2 Sep 2026, founder
+          review, reverting an earlier draft that coupled the two): this
+          margin is a static CSS rule with no way to know whether the
+          banner is even visible, so a safe-area-dependent version would
+          have stayed pulled up by the same amount after the visitor
+          dismisses it — a real latent bug, not just unneeded complexity.
+          JetStash currently does not use viewport-fit=cover, so
+          env(safe-area-inset-bottom) is 0 on every real device today
+          anyway (see cookie-consent-banner.tsx's own comment); if that
+          config is ever adopted, it needs a proper site-wide safe-area
+          review, not a homepage-specific coupling landed years earlier. */}
+      <div id="your-journey" className="-mt-4 max-w-2xl sm:mt-0">
+        {/* Mobile-only spacing trim (September 2026, consent-overlay fix):
+            only the two gaps ABOVE the form's submit button are tightened —
+            the card's own top padding and the label-to-form gap — since
+            those are the only spacing in this component that actually
+            affects the button's vertical position; a first pass here
+            mistakenly also trimmed spacing below the button (the trust
+            line, the secondary CTA row), which does nothing for clearance
+            and was reverted. sm: values are untouched, so desktop is
+            pixel-identical to before. This exists solely to buy back
+            headroom the fixed-bottom consent banner needs at 390×844 to
+            clear the console without shrinking its 12px text or its 44px
+            buttons — see cookie-consent-banner.tsx's own comment. No copy,
+            heading, or control changed here. */}
+        <div className="rounded-lg border border-white/10 bg-ink-900/70 px-5 pb-5 pt-1.5 shadow-[0_24px_70px_-24px_rgba(0,0,0,0.65)] backdrop-blur-md sm:p-6">
           <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-brass-200">Check your journey</p>
-          <div className="mt-3">
+          <div className="mt-1 sm:mt-3">
             <JourneyCheckForm origins={journeyCheck.origins} destinations={journeyCheck.destinations} routeIndex={journeyCheck.routeIndex} />
           </div>
         </div>

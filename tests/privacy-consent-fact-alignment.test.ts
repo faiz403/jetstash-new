@@ -39,10 +39,14 @@ describe('privacy notice: Google/Vercel fact alignment', () => {
 });
 
 describe('consent banner: Google Ads remains separate from always-on Vercel telemetry', () => {
+  // Compact mobile treatment (September 2026): shorter wording, same facts —
+  // Accept/Decline still have their exact existing effect, Vercel's two
+  // services are still named as running regardless of the choice, and no
+  // personalised advertising is configured either way.
   it('explains the accept/decline effect and independent Vercel services', () => {
-    expect(banner).toContain('Accepting loads that Google tag; declining keeps it from loading.');
-    expect(banner).toContain('Vercel Analytics and Speed Insights run separately either way.');
-    expect(banner).toContain('The current JetStash implementation does not configure');
+    expect(banner).toContain('Accept loads the tag; Decline');
+    expect(banner).toContain('Vercel Analytics and Speed Insights');
+    expect(banner).toContain('No personalised ads');
   });
 
   it('keeps the existing consent implementation and Google payload unchanged', () => {
