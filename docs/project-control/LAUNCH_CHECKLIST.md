@@ -3,8 +3,8 @@
 **Established:** 29 July 2026, following founder review and acceptance of
 `LAUNCH_READINESS_AUDIT_2026-07-29.md`.
 
-**Current-state reconciliation:** 27 August 2026 at
-`4494fd3561ac533a9ba787c04ef77b6ae44626ad` (PR #187).
+**Current-state reconciliation:** 3 September 2026 at
+`6cca7686f72d44145590917db06e141ff3c293ba` (PR #214).
 
 This is the single checklist of record for launch readiness. Do not create a competing or
 duplicate checklist elsewhere — update this file as items close, and add newly discovered items
@@ -34,20 +34,32 @@ decisions and A6's distributed/WAF-backed rate limit — not a missing Google Ad
 
 Full detail, scoring, and evidence: `LAUNCH_READINESS_AUDIT_2026-07-29.md`.
 
-### Current gate summary — 27 August 2026
+### Current gate summary — 3 September 2026
 
 - **Implemented/closed:** security headers; public trust corrections; consent and conversion-event
   code; promotion-specific fare evidence (G1); Quote Request role clarity; sitemap discovery
   follow-up; current affiliate disclosures.
 - **Waiting on founder/professional input:** B2 public operator/address/retention/Terms decisions.
 - **Waiting on infrastructure:** A6 distributed or WAF-backed rate limiting. The process-local
-  limiter remains an honest limitation before meaningful paid scale.
+  limiter remains an honest limitation before meaningful paid scale — not needed for the current
+  organic-only traffic.
 - **Waiting on real evidence:** F1/commercial measurement. Instrumentation exists; the question is
   what real users and attributed commercial outcomes show, not whether another event can be added.
+  This is what the active MAN→ISB/MAN→LHE/Reddit evidence gates below are for.
 - **Deliberately deferred:** real assistive-technology certification/field Core Web Vitals, CSP
   enforcement/major dependency upgrade and post-launch housekeeping, each under its existing item.
-- **Date-locked truth task:** Manchester–Mumbai/Manchester–Delhi verification is scheduled for
-  31 August / 1 September. The pre-map audit is complete; no early conclusion is authorised.
+- **Resolved, not date-locked any more:** Manchester–Mumbai/Manchester–Delhi verification (scheduled
+  31 August / 1 September) is complete — both routes' former direct service is confirmed
+  **service-ended**; see `STATUS.md`'s Programme state.
+- **Hold, not active:** hotel attribution (Madinah/Antalya observation, promotion, expansion, any
+  new test click or URL change) is on hold pending an authenticated Trip.com report proving the
+  existing Algarve hotel click row exposes its unique Ad ID/`trip_sub3`. That check is the only
+  permitted next hotel action.
+- **Four launch-level read-only audits closed this week** (Tier-1 Commercial Readiness, Internal
+  Surface Safety, Production Performance + Reliability, Remaining Launch Risk), all 0 P0/0 P1 — see
+  `STATUS.md`'s "Launch-level audit state" section for the full record and the current evidence-gate
+  schedule (6/9/10 September). **Genuine current launch blockers: 0.** No new major workstream is
+  currently justified; the current job is observing those gates, not building.
 
 ---
 

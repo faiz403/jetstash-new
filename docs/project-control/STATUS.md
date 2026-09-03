@@ -1,14 +1,15 @@
 # JetStash Current Status
 
-**Last reconciled:** 27 August 2026 (project-control truth through PR #187)
+**Last reconciled:** 3 September 2026 (project-control truth through PR #214)
 
 **Production branch:** `main`
 
-**Application release baseline:** `4494fd3561ac533a9ba787c04ef77b6ae44626ad` (PR #187 merge —
-Quote Request role clarity). This reconciliation closes the previously recorded PR #137–#151 gap
-and brings the operating record through PR #187 without turning this file into a commit-by-commit
-changelog. Older dated counts and delivery notes below remain historical evidence of what was true
-at the time; the current operating snapshot immediately below overrides them for present decisions.
+**Application release baseline:** `6cca7686f72d44145590917db06e141ff3c293ba` (PR #214 merge —
+deal card route/fare reconciliation). This reconciliation closes the previously recorded PR
+#137–#187 gap and brings the operating record through PR #214 without turning this file into a
+commit-by-commit changelog. Older dated counts and delivery notes below remain historical evidence
+of what was true at the time; the current operating snapshot immediately below overrides them for
+present decisions.
 
 **Launch readiness:** ready for controlled public organic use. Google Ads Basic Consent Mode and
 conversion tracking are live; missing instrumentation is no longer the paid-growth blocker.
@@ -64,8 +65,63 @@ Manchester–Sylhet. Their archive records are preserved; public presentation re
 - **Legal/operator:** implemented consent, Privacy Policy, commercial disclosures and Quote Request
   role clarity are separate from the unresolved B2 decisions. Draft Terms, public postal-address
   position, final retention periods and professional review are not complete.
-- **Manchester–Mumbai / Manchester–Delhi:** the pre-map audit is complete. The service-truth
-  verification is scheduled for 31 August / 1 September 2026; no early conclusion is recorded here.
+- **Manchester–Mumbai / Manchester–Delhi:** the service-truth verification scheduled for 31
+  August / 1 September 2026 is complete. Both routes' former direct service is confirmed
+  **ended** (`data/route-status-events.ts`, `service-ended`) — no resumption, operator or
+  frequency claim is made beyond that. This status has been propagated to public route and
+  destination presentation (PR #206, PR #212).
+
+### Launch-level audit state — 3 September 2026
+
+Four launch-level read-only audits closed this week, each with **0 P0 / 0 P1** found:
+
+- **Tier-1 Commercial Readiness** — the 10 locked Tier-1 routes checked for trust/UX/commercial
+  blockers; one genuine P1 fixed (PR #214, deal-card route/fare reconciliation).
+- **Internal Surface Safety** — confirmed the Founder Dashboard and all founder-only routes are
+  unreachable, unindexed and absent from the sitemap in production.
+- **Production Performance + Reliability** — no customer-facing performance/reliability defect
+  proven. Broader traffic is technically ready; real-user field Core Web Vitals data is still
+  maturing (traffic volume is not yet enough for CrUX to report), which is evidence still growing,
+  not a defect.
+- **Remaining Launch Risk Audit** — confirmed no unstarted, buildable launch blocker remains; every
+  item in this document's own delivery queue is already closed, waiting, frozen, or ongoing
+  maintenance.
+
+**Current first-revenue bottleneck: NOT YET PROVEN.** The immediate unknown is whether qualified
+organic traffic converts through JetStash into partner activity and eventually a booking. Trip.com's
+0.5% flight commission and the 25 London-origin handoff gaps are scaling constraints on what
+JetStash can become as a business, not proven blockers of the first booking.
+
+**Active experiments:**
+- MAN→ISB organic acquisition
+- MAN→LHE observation
+- Reddit distribution experiment
+
+**Waiting on external commercial evidence:**
+- Trip.com's reply on LHR/LGW handoff support, attribution confirmation and commercial terms
+
+**Hold / gated:**
+- **Hotel attribution: HOLD, waiting for attribution proof.** No Madinah or Antalya observation,
+  no hotel promotion, no hotel expansion, no new test click and no hotel URL or product change
+  until an authenticated Trip.com report proves the existing Algarve hotel click row exposes the
+  property's unique Ad ID / `trip_sub3`. That check is the only permitted next hotel action.
+
+**Ongoing maintenance:** the weekly fare-observation cadence (`FARE-001`) and route-verification
+cadence (`COV-001`) continue as before, unaffected by the above.
+
+**Background, independent of the above:** a public-copy dash-separator cleanup
+(`data/routes.ts`'s manchester-lahore frequency field) is running in a separate session as of this
+entry; do not duplicate it here.
+
+**Next evidence gates** (project decision checkpoints, not automations):
+- **6 September 2026** — MAN→ISB Day 3: read Search Console, Vercel and Trip.com for the signal.
+- **Around 9 September 2026** — Trip.com follow-up, only if there has still been no reply by then.
+- **10 September 2026** — MAN→ISB Day 7 decision, and a MAN→LHE indexation recheck.
+
+Cooperation Agreement: review around 22 October 2026, ahead of its 5 November 2026 deadline.
+
+No new major Claude/Codex workstream is currently justified. The correct current job is observing
+these gates, not building — see `LAUNCH_CHECKLIST.md`'s current-state note for the same conclusion.
 
 ### How to read the historical record below
 
