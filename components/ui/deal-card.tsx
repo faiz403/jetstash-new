@@ -118,6 +118,27 @@ export function DealCard({ deal, nowIso }: { deal: Deal; nowIso?: string }) {
               <span className="text-sm text-ink-400">{range.priceNote}</span>
             </div>
             {fareSourceLabel && <p className="mt-1 text-sm font-medium text-ink-500">{fareSourceLabel}</p>}
+            {/* Route/fare reconciliation (Tier-1 Commercial Readiness QA
+                follow-up, September 2026): the top-right badge above already
+                states THIS FARE's own directness (via
+                getDealFareDirectnessLabel — e.g. "Connecting" on a Gulf Air
+                fare found under a route whose own verified service is
+                direct), but until this fix nothing in the card's own text
+                said so when a real price was shown — only the no-fare
+                branch below rendered routeFactLabel/airlineFactLabel, even
+                though both were already computed unconditionally above.
+                Gated on a genuine mismatch (never shown when the fare
+                already agrees with the route, so cards where there's
+                nothing to reconcile stay exactly as they were) — mirrors
+                the same distinction fare-signal.tsx's RouteVsFareCallout
+                already draws elsewhere on the route page itself, reusing
+                the already-computed local values rather than a new
+                component or a new derivation. */}
+            {directness && range.observedDirectness && range.observedDirectness !== presentation?.status && (
+              <p className="mt-1 text-xs text-ink-400">
+                {airlineFactLabel ? `${airlineFactLabel} · ${routeFactLabel}` : routeFactLabel}. This fare is a different, {range.observedDirectness} journey.
+              </p>
+            )}
 
             <div className="mt-4 flex items-center gap-1.5 text-xs text-ink-400">
               <span className={`h-1.5 w-1.5 rounded-full ${isStale ? 'bg-ink-300' : 'bg-brass-400'}`} />
