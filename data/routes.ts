@@ -219,9 +219,9 @@ export const routes: Route[] = [
       status: 'verified',
       sourceName: 'Turkish Airlines official Manchester–Istanbul route page, corroborated by Manchester Airport destination guide',
       sourceUrl: 'https://www.turkishairlines.com/uk-int/flights/city/from-manchester-to-istanbul-flights/',
-      verifiedDate: '2026-08-12',
-      reviewDueDate: '2026-09-12',
-      note: 'Turkish Airlines states it operates two direct flights a day from Manchester to Istanbul Airport (IST), taking a little more than four hours. Manchester Airport lists a 4h30m scheduled flight time. Exact dates, departure times and any other operator must be checked before booking.',
+      verifiedDate: '2026-09-03',
+      reviewDueDate: '2026-12-02',
+      note: 'Route Intelligence Freshness rolling-review Batch 1 (3 September 2026): reconfirmed via the same primary source. Turkish Airlines\' own page still states it operates two direct flights a day from Manchester to Istanbul Airport (IST), taking a little more than four hours, and adds "no changes occur in the number of flights throughout the year" — a genuinely stable, year-round schedule claim from the airline itself, not seasonal or route-launch-recent. Reclassified STABLE (90-day window) on this evidence, up from the prior 31-day pre-policy window. Exact dates, departure times and any other operator must still be checked before booking.',
     },
     intro:
       'Turkish Airlines currently publishes two direct Manchester–Istanbul flights a day to Istanbul Airport (IST). Manchester Airport lists a scheduled flight time of 4h30m, while Turkish Airlines describes the flight as taking a little more than four hours. Check your dates for the exact departure and fare.',
@@ -1211,9 +1211,9 @@ export const routes: Route[] = [
       status: 'verified',
       sourceName: 'Qatar Airways official London-Doha booking route',
       sourceUrl: 'https://www.qatarairways.com/en-sa/destinations/flights-to-doha/from-london.html',
-      verifiedDate: '2026-08-18',
-      reviewDueDate: '2026-09-17',
-      note: 'Route Verification Refresh Batch 1 (18 August 2026): Qatar Airways\' own booking route for this pair is still live; direct service is not in dispute. However, independent reporting (not a primary source, kept out of public copy) describes a Qatar Airways schedule reduction for this pair announced for spring 2026 — a genuine future change-risk signal even though nothing has changed yet. Classified RECENT / CHANGING rather than STABLE for that reason — 30-day review window per the locked verification cadence policy, not the 90-day STABLE window.',
+      verifiedDate: '2026-09-03',
+      reviewDueDate: '2026-10-03',
+      note: 'Route Intelligence Freshness rolling-review Batch 1 (3 September 2026): reconfirmed via the same primary source, still live, no specific frequency figure published. The spring-2026 schedule-reduction signal noted at the 18 August check (independent reporting, not a primary source, kept out of public copy) has not been independently confirmed or refuted this session. Kept on RECENT / CHANGING pending that resolution — 30-day review window per the locked verification cadence policy, not the 90-day STABLE window.',
     },
     // SEO Domination Batch 1B (23 Aug 2026): re-targets "business class to
     // doha from uk" / "business class flights to doha" now that the
@@ -2027,7 +2027,7 @@ export const routes: Route[] = [
   {
     slug: 'manchester-rome', airportSlug: 'manchester', destinationSlug: 'rome',
     flightTime: 'Published planning duration: 2h 45m; check the exact flight for your dates', frequency: 'Manchester Airport lists direct service to Rome; exact airport, operators and frequency vary', airlineSlugs: [], isDirect: true,
-    verification: { status: 'verified', sourceName: "Manchester Airport's official Rome destination guide", sourceUrl: 'https://www.manchesterairport.co.uk/destinations-and-guides/rome/', verifiedDate: '2026-08-13', reviewDueDate: '2026-09-13', note: 'Manchester Airport lists direct Rome service and a 2h45m planning figure, with both CIA and FCO shown. Check the exact airport and flight for your dates.' },
+    verification: { status: 'verified', sourceName: "Manchester Airport's official Rome destination guide", sourceUrl: 'https://www.manchesterairport.co.uk/destinations-and-guides/rome/', verifiedDate: '2026-09-03', reviewDueDate: '2026-10-03', note: 'Route Intelligence Freshness rolling-review Batch 1 (3 September 2026): reconfirmed via the same primary source, still live, still lists Rome as a current direct destination. No specific operator or frequency figure is published on this page, matching the prior check -- evidence depth has not improved, so this stays on the shorter RECENT / CHANGING 30-day window rather than STABLE, deliberately not upgraded on thin evidence.' },
     intro: 'Manchester Airport lists direct service to Rome and publishes a 2h45m planning figure. Rome can use different airports, so check the exact airport, operator and date before booking.',
     bookingWindowNote: 'Confirm the Rome airport, live schedule, fare conditions and baggage terms on the exact itinerary.', peakPeriodIds: [],
   },
@@ -2153,11 +2153,11 @@ export const routes: Route[] = [
     isDirect: true,
     verification: {
       status: 'verified',
-      sourceName: 'Birmingham Airport\'s own media centre: "Qatar Airways Returns to Birmingham Airport"',
-      sourceUrl: 'https://www.birminghamairport.co.uk/latest-news/qatar-airways-returns-to-birmingham-airport/',
-      verifiedDate: '2026-08-13',
-      reviewDueDate: '2026-09-13',
-      note: 'Birmingham Airport\'s own press release, confirmed current via search-indexed content this session (direct WebFetch to birminghamairport.co.uk returns 403 across every subdomain — see the birmingham-dubai record above for the same standing note), confirms Qatar Airways resumed direct Birmingham–Doha service on 6 July 2023, "one flight a day, 7 days a week... throughout this summer", via Hamad International Airport, operated by a Boeing 787-8 Dreamliner. This is founding/launch evidence, over three years old — daily is the launch figure, not independently reconfirmed as the current frequency. Qatar Airways\' own route page for this pair (qatarairways.com) returns 403 to this session\'s tooling.',
+      sourceName: "Qatar Airways' own current Birmingham–Doha booking page, corroborated by Birmingham Airport's 2023 launch announcement",
+      sourceUrl: 'https://www.qatarairways.com/en-gb/destinations/flights-to-doha/from-birmingham.html',
+      verifiedDate: '2026-09-03',
+      reviewDueDate: '2026-12-02',
+      note: 'Route Intelligence Freshness rolling-review Batch 1 (3 September 2026): a genuine evidence upgrade over the prior check — Qatar Airways\' own current booking page for this exact pair was directly reachable this session (unlike the 18 August check, which found it returning 403), and confirms the route is live today, not just at its 2023 launch. No specific frequency figure is published on this marketing page, so the launch-era "daily" figure in frequency above remains the launch figure, not independently reconfirmed as current -- unchanged from before. Reclassified STABLE (90-day window) on the strength of the airline\'s own current-route confirmation.',
     },
     intro:
       'Qatar Airways resumed a direct Birmingham to Doha service on 6 July 2023 (confirmed via Birmingham Airport\'s own announcement), launched as a daily service via Hamad International Airport. Check Qatar Airways\' own booking system directly for the current schedule and fare.',
@@ -2175,11 +2175,11 @@ export const routes: Route[] = [
     isDirect: true,
     verification: {
       status: 'verified',
-      sourceName: 'Birmingham Airport\'s own media centre: "Saudia Launches Three-Times-A-Week Jeddah Service from BHX"',
-      sourceUrl: 'https://www.birminghamairport.co.uk/latest-news/saudia-launches-three-times-a-week-jeddah-service-from-bhx/',
-      verifiedDate: '2026-08-13',
-      reviewDueDate: '2026-09-13',
-      note: 'Birmingham Airport\'s own press release, confirmed current via search-indexed content this session (direct WebFetch to birminghamairport.co.uk returns 403 across every subdomain — see the birmingham-dubai record above for the same standing note), confirms Saudia launched direct Birmingham–Jeddah service on 2 July 2023, three times weekly (Tuesdays, Thursdays, Sundays), operated by a Boeing 787 Dreamliner (inaugural flight SV0250), with Birmingham Airport CEO Nick Barton quoted confirming the launch. This is founding/launch evidence, over three years old — three-times-weekly is the launch figure, not independently reconfirmed as the current frequency. Saudia\'s own route page for this pair (saudia.com) returns a bot-detection interruption page to this session\'s tooling.',
+      sourceName: "Birmingham Airport's own current destinations page for Jeddah, corroborated by its 2023 launch announcement",
+      sourceUrl: 'https://www.birminghamairport.co.uk/destinations/where-we-fly/jeddah/',
+      verifiedDate: '2026-09-03',
+      reviewDueDate: '2026-12-02',
+      note: 'Route Intelligence Freshness rolling-review Batch 1 (3 September 2026): a genuine evidence upgrade over the prior check -- Birmingham Airport\'s own current "where we fly" page for Jeddah was directly reachable this session (unlike the 18 August check, which found the site returning 403), and lists Saudia as the direct operator with an approximate 6h15m flight time, matching the launch-era figures exactly and confirming the route is current today, not just at its 2023 launch. No frequency figure is published on this current page, so the launch-era "three times weekly" figure in frequency above remains the launch figure, not independently reconfirmed as current -- unchanged from before. Reclassified STABLE (90-day window) on the strength of the airport\'s own current-route confirmation.',
     },
     intro:
       'Saudia launched a direct Birmingham to Jeddah service on 2 July 2023 (confirmed via Birmingham Airport\'s own announcement), three times weekly at launch. Check Saudia\'s own booking system directly for the current schedule and fare.',
