@@ -37,7 +37,7 @@ marketing; it is to make each one source-complete and add real, dated observatio
 | Manchester → Islamabad | Direct service verified through Manchester Airport; launch frequency is documented, current frequency is not. Review due 13 August 2026. | Recheck current service and frequency separately; do not publish an inferred frequency. |
 | Heathrow → Delhi | British Airways direct service is verified; other operators remain separately scoped. | Recheck BA before 28 August 2026 and obtain separate primary evidence before naming another airline; continue dated fare observations. |
 | Birmingham → Amritsar | Air India’s current booking page shows connection options and no direct flight. | Keep the connecting-only framing; add a fare only after travel dates are recorded. |
-| Heathrow → Jeddah | British Airways direct service is individually verified; Saudia remains unverified. | Resolve only with a Saudia or airport primary source; preserve the existing airline-specific uncertainty until then. |
+| Heathrow → Jeddah | Saudia direct service is individually verified via its own current booking page (3 September 2026, RECENT/CHANGING, review due 3 October 2026); British Airways permanently ended this service from 24 April 2026 (TR-010, Round 4) and is no longer a current operator. | Recheck Saudia's current evidence before the review date; do not reintroduce British Airways without new primary evidence that it has resumed. |
 
 ### Tier B — strengthen proven, high-value corridors
 
