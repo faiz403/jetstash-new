@@ -1,5 +1,6 @@
 import { ImageResponse } from 'next/og';
 import { getDestinationBySlug } from '@/data/destinations';
+import { getDestinationFlightTimeFromUK } from '@/lib/destination-flight-time';
 
 // Same rationale as the route OG image: @vercel/og's Node runtime fails to
 // resolve its bundled font on some platforms (ERR_INVALID_URL); the edge
@@ -23,7 +24,7 @@ export default async function OgImage({ params }: { params: Promise<{ slug: stri
 
   const city = dest?.city ?? 'Destinations';
   const country = dest?.country ?? '';
-  const detail = dest?.flightTimeFromUK ?? '';
+  const detail = dest ? getDestinationFlightTimeFromUK(dest, new Date().toISOString().slice(0, 10)) : '';
 
   return new ImageResponse(
     (

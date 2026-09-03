@@ -14,6 +14,7 @@ import { TRAVEL_READY_SUPPORTED_COUNTRIES } from '@/lib/travel-ready-check';
 import { DestinationVisual } from '@/components/ui/destination-visual';
 import { HeroBackdrop } from '@/components/ui/hero-backdrop';
 import type { QuoteRegion } from '@/lib/quote-request-options';
+import { getDestinationFlightTimeFromUK } from '@/lib/destination-flight-time';
 
 interface RegionHubProps {
   eyebrow: string;
@@ -94,7 +95,7 @@ export function RegionHubPage({
                   </span>
                   <h3 className="mt-2 font-display text-2xl text-ink-900">{dest.city}</h3>
                   <p className="mt-1.5 text-sm leading-relaxed text-ink-500">{dest.tagline}</p>
-                  <p className="mt-4 text-xs font-medium text-ink-400">{dest.flightTimeFromUK}</p>
+                  <p className="mt-4 text-xs font-medium text-ink-400">{getDestinationFlightTimeFromUK(dest, new Date().toISOString().slice(0, 10))}</p>
                   <span className="mt-4 flex items-center gap-1.5 text-sm font-semibold text-ink-900">
                     View destination guide
                     <ArrowUpRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" strokeWidth={2.25} />

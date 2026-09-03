@@ -107,7 +107,7 @@ export const destinations: Destination[] = [
     description:
       'Delhi is the practical gateway to North India. The Red Fort and Chandni Chowk\'s street food reward a few days in their own right, and the city is the natural connecting point for travellers heading on to Punjab, Rajasthan or the hills.',
     bestFor: ['Heritage travel', 'Family visits', 'Onward travel'],
-    flightTimeFromUK: '8h 45m direct from London Heathrow or Manchester',
+    flightTimeFromUK: '8h 45m direct from London Heathrow; former Manchester direct service ended',
     ukAirports: ['london-heathrow', 'birmingham', 'manchester'],
     visaNote: 'e-Visa required for UK passport holders, apply at least 4 days before travel.',
     familyVisitContent: {
@@ -130,7 +130,7 @@ export const destinations: Destination[] = [
     description:
       'Mumbai brings together Bollywood, the Gateway of India and a major financial district on India\'s west coast. Check the exact UK airport, dates and routing before booking.',
     bestFor: ['Business travel', 'City breaks', 'Family visits'],
-    flightTimeFromUK: '9h direct from London Heathrow or Manchester',
+    flightTimeFromUK: '9h direct from London Heathrow; former Manchester direct service ended',
     ukAirports: ['london-heathrow', 'manchester', 'birmingham'],
     visaNote: 'e-Visa required for UK passport holders, apply at least 4 days before travel.',
     familyVisitContent: {
@@ -139,7 +139,7 @@ export const destinations: Destination[] = [
       documentNote:
         'OCI (Overseas Citizen of India) cardholders do not require a separate visa. Standard e-Tourist or e-Business visas apply to other UK passport holders; apply at least 4 days ahead, and earlier still during Diwali or December.',
       packingNote:
-        'If flying the Manchester direct service, check the current baggage allowance directly with the airline rather than assuming it matches a full-service carrier\'s standard. Allowances and any extra-baggage charges can differ from the Heathrow route\'s operators.',
+        'The former Manchester direct service has ended. For any itinerary you book instead, check the current baggage allowance directly with the operating airline rather than assuming it matches a full-service carrier\'s standard. Allowances and any extra-baggage charges can differ from the Heathrow route\'s operators.',
       peakPeriodIds: ['diwali', 'christmas-new-year', 'uk-summer-holidays'],
     },
   },
