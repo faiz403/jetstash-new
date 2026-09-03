@@ -448,9 +448,10 @@ describe('Cross-surface leakage fix — FamilyVisitBlock no longer asserts a fix
     expect(text).toMatch(/Diwali/i);
   });
 
-  it('data/destinations.ts source content is unchanged by this fix — only the shared component copy changed, not any destination\'s own facts (the Manchester-specific Mumbai packingNote and the other flagged entries are a separate, reported concern, not touched here)', () => {
+  it('keeps the Manchester-specific Mumbai packing note safe after the service ended', () => {
     const mumbai = getDestinationBySlug('mumbai')!;
-    expect(mumbai.familyVisitContent!.packingNote).toMatch(/Manchester direct service/);
+    expect(mumbai.familyVisitContent!.packingNote).toMatch(/former Manchester direct service has ended/i);
+    expect(mumbai.familyVisitContent!.packingNote).not.toMatch(/If flying the Manchester direct service/i);
   });
 });
 

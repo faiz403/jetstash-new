@@ -39,7 +39,7 @@ export default function IndiaHubPage() {
         },
         {
           title: 'Check current status before booking Manchester\'s Delhi and Mumbai services',
-          body: 'Manchester–Delhi and Manchester–Mumbai have been single-airline direct routes with IndiGo — check the Route Status panel on each route guide for current verified status before booking.',
+          body: 'The former Manchester–Delhi and Manchester–Mumbai IndiGo direct services have ended. Check the Route Status panel on each route guide for current options before booking.',
         },
         {
           title: 'Domestic onward connections add up',
