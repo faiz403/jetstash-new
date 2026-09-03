@@ -82,6 +82,28 @@ describe('Atlas <style> tag renders via dangerouslySetInnerHTML, never a JSX tex
   });
 });
 
+describe('Reduced-motion fix: the travelling route dot is hidden under prefers-reduced-motion', () => {
+  // Regression test for a real defect (September 2026): the active route's
+  // travelling light uses SVG SMIL (animateMotion), a separate animation
+  // system the CSS `animation: none` rule in the block above cannot reach —
+  // it only ever stops CSS animations. Before this fix, the dot kept moving
+  // indefinitely regardless of a visitor's OS-level reduced-motion
+  // preference. Fixed with a `.travel-dot` class on the circle plus one
+  // `display: none` rule inside the existing @media block — no new React
+  // state/effect. Locks in both halves so neither can silently regress:
+  // removing the class from the circle, or removing/relocating the CSS rule
+  // out of the reduced-motion block, would each break one of these.
+  it('the travelling route dot circle carries the travel-dot class', () => {
+    expect(atlasSrc).toContain('<circle r="0.8" fill="#F7F2E9" className="travel-dot">');
+  });
+
+  it('.travel-dot is hidden inside the existing prefers-reduced-motion block', () => {
+    const mediaStart = atlasSrc.indexOf('@media (prefers-reduced-motion: reduce)');
+    const reducedMotionSection = atlasSrc.slice(mediaStart, atlasSrc.indexOf('`;', mediaStart));
+    expect(reducedMotionSection).toContain('.travel-dot { display: none; }');
+  });
+});
+
 describe('Atlas rendering and accessibility behaviour are unchanged by this fix', () => {
   // Mirrors tests/atlas-audit-fixes.test.ts and tests/atlas-route-status.test.ts's
   // own structural assertions — re-affirmed here from the style-tag fix's

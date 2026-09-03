@@ -544,6 +544,17 @@ export function AtlasFeelTest({
         @keyframes destReveal { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: scale(1); } }
         @media (prefers-reduced-motion: reduce) {
           .origin-breathe, .country-pulse, .country-landmass-breathe, .destination-reveal { animation: none !important; }
+          /* Accessibility fix (September 2026): the active route's travelling
+             light uses SVG SMIL (animateMotion), a separate animation
+             system that the animation:none rule above cannot reach — it
+             only ever stops CSS animations. Without this, the dot kept
+             moving indefinitely for a visitor who has asked their OS for
+             reduced motion, silently missed by the same safeguard already
+             correctly applied to every other Atlas animation. Hiding the
+             dot entirely (rather than trying to freeze a SMIL animation
+             from CSS, which isn't possible) removes the motion outright;
+             the route line itself is unaffected and stays fully visible. */
+          .travel-dot { display: none; }
         }
       `;
 
@@ -739,7 +750,7 @@ export function AtlasFeelTest({
           {/* the active route — brighter, with ambient travelling light, not just a static highlight */}
           <path d={activeRouteD} fill="none" stroke={COUNTRY_INTELLIGENCE_COLOUR[activeCountry.intelligenceLevel].stroke} strokeWidth="1.8" strokeOpacity="0.12" filter="url(#ft-glow-blur)" />
           <path d={activeRouteD} fill="none" stroke="url(#ft-route-active)" strokeWidth="0.6" />
-          <circle r="0.8" fill="#F7F2E9">
+          <circle r="0.8" fill="#F7F2E9" className="travel-dot">
             <animateMotion dur="3.5s" repeatCount="indefinite" path={activeRouteD} />
           </circle>
 
