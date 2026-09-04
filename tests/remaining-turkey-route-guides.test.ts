@@ -39,10 +39,23 @@ describe('remaining Turkey route guides', () => {
     // Rolling Reverification Batch 5 (4 September 2026): glasgow-antalya and
     // glasgow-dalaman were both reconfirmed and reclassified STABLE
     // (90-day window) -- the remaining eleven were not part of that batch.
+    // Rolling Reverification Batch 6 (4 September 2026): leeds-bradford-
+    // antalya, leeds-bradford-bodrum, glasgow-bodrum, bristol-antalya,
+    // bristol-dalaman, newcastle-dalaman and london-gatwick-antalya were
+    // all reconfirmed -- leeds-bradford-dalaman, london-gatwick-dalaman,
+    // london-gatwick-bodrum and london-gatwick-izmir were not part of
+    // this batch.
     const reverifiedDates: Partial<Record<(typeof BUILT)[number], string>> = {
       'london-gatwick-istanbul': '2026-09-04',
       'glasgow-antalya': '2026-09-04',
       'glasgow-dalaman': '2026-09-04',
+      'leeds-bradford-antalya': '2026-09-04',
+      'leeds-bradford-bodrum': '2026-09-04',
+      'glasgow-bodrum': '2026-09-04',
+      'bristol-antalya': '2026-09-04',
+      'bristol-dalaman': '2026-09-04',
+      'newcastle-dalaman': '2026-09-04',
+      'london-gatwick-antalya': '2026-09-04',
     };
     for (const slug of BUILT) {
       const route = getRouteBySlug(slug)!;
@@ -54,10 +67,14 @@ describe('remaining Turkey route guides', () => {
   });
 
   it('preserves only the facts supported by each airport source', () => {
+    // Rolling Reverification Batch 6 (4 September 2026): leeds-bradford-
+    // antalya's page names three operators not previously recorded here --
+    // this is a genuine evidence upgrade, not a fabricated fact (see that
+    // route's own updated verification note).
     const lba = getRoutePresentation(getRouteBySlug('leeds-bradford-antalya')!, NOW_ISO);
-    expect(lba.airlineSlugs).toEqual([]);
+    expect(getAirlinesBySlugs(lba.airlineSlugs).map((airline) => airline.name)).toEqual(['Jet2', 'TUI', 'SunExpress']);
     expect(lba.flightTime).toContain('Published duration not listed');
-    expect(lba.frequency).toContain('Direct destination listed');
+    expect(lba.frequency).toContain('Jet2, TUI and SunExpress');
 
     const glasgowDalaman = getRoutePresentation(getRouteBySlug('glasgow-dalaman')!, NOW_ISO);
     expect(getAirlinesBySlugs(glasgowDalaman.airlineSlugs).map((airline) => airline.name)).toEqual(['TUI', 'Jet2', 'easyJet']);
@@ -67,8 +84,12 @@ describe('remaining Turkey route guides', () => {
     expect(glasgowBodrum.flightTime).toContain('4h 33m');
     expect(glasgowBodrum.frequency).toContain('seasonal direct Jet2');
 
+    // Rolling Reverification Batch 6: bristol-antalya's page also named
+    // TUI, Jet2.com and SunExpress alongside easyJet -- a genuine evidence
+    // upgrade from the prior "operators vary" framing.
     const bristolAntalya = getRoutePresentation(getRouteBySlug('bristol-antalya')!, NOW_ISO);
-    expect(bristolAntalya.frequency).toContain('up to 18 flights a week');
+    expect(getAirlinesBySlugs(bristolAntalya.airlineSlugs).map((airline) => airline.name)).toEqual(['easyJet', 'TUI', 'Jet2', 'SunExpress']);
+    expect(bristolAntalya.frequency).toContain('up to 18 times a week');
     expect(bristolAntalya.summary).not.toMatch(/recommended|best|cheapest|leading/i);
 
     const newcastleDalaman = getRoutePresentation(getRouteBySlug('newcastle-dalaman')!, NOW_ISO);
