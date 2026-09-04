@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'fs';
 import { join } from 'path';
-import { routes } from '@/data/routes';
+import { routes, getRouteStatus } from '@/data/routes';
 import { routeStatusEvents } from '@/data/route-status-events';
 import { getEffectiveRoutePresentation } from '@/lib/route-status-copy';
 import { getFounderSnapshot } from '@/lib/founder-insights';
@@ -195,8 +195,17 @@ describe('H. Real current archive reconciliation matches the independently compu
     // need editing every time a legitimate reviewDueDate passes. See
     // docs/project-control/ROUTE_VERIFICATION_CADENCE_POLICY.md for the
     // underlying cadence policy this section surfaces.
+    // Service-ended reminder suppression (4 September 2026 follow-up): a
+    // route whose current effective status is a verified service-ended
+    // event (e.g. manchester-mumbai, manchester-delhi) is excluded from the
+    // production section entirely — see lib/founder-insights.ts's
+    // hasCurrentlyEndedService(). This independent recomputation must apply
+    // the same exclusion or it will permanently disagree with production
+    // for as long as any such route exists.
     const nowIso = new Date().toISOString().slice(0, 10);
-    const withVerification = routes.filter((r) => r.verification);
+    const withVerification = routes.filter(
+      (r) => r.verification && getRouteStatus(r, routeStatusEvents, nowIso)?.status !== 'service-ended'
+    );
     const daysBetween = (a: string, b: string) =>
       Math.floor((new Date(`${b}T00:00:00Z`).getTime() - new Date(`${a}T00:00:00Z`).getTime()) / 86_400_000);
     const overdue = withVerification.filter((r) => daysBetween(nowIso, r.verification!.reviewDueDate) < 0);
