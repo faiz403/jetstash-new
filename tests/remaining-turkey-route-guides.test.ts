@@ -40,17 +40,20 @@ describe('remaining Turkey route guides', () => {
     // glasgow-dalaman were both reconfirmed and reclassified STABLE
     // (90-day window) -- the remaining eleven were not part of that batch.
     // Rolling Reverification Batch 6 (4 September 2026): leeds-bradford-
-    // antalya, leeds-bradford-bodrum, glasgow-bodrum, bristol-antalya,
-    // bristol-dalaman, newcastle-dalaman and london-gatwick-antalya were
-    // all reconfirmed -- leeds-bradford-dalaman, london-gatwick-dalaman,
-    // london-gatwick-bodrum and london-gatwick-izmir were not part of
-    // this batch.
+    // antalya, glasgow-bodrum, bristol-antalya, bristol-dalaman,
+    // newcastle-dalaman and london-gatwick-antalya were all reconfirmed.
+    // leeds-bradford-bodrum was also rechecked but found too thin to
+    // support any formal cadence classification (see its own note in
+    // data/routes.ts) -- left on its pre-existing 2026-08-12 date rather
+    // than administratively refreshed, so it correctly keeps the
+    // fallback NOW_ISO value below, not a Batch 6 date. leeds-bradford-
+    // dalaman, london-gatwick-dalaman, london-gatwick-bodrum and
+    // london-gatwick-izmir were not part of this batch.
     const reverifiedDates: Partial<Record<(typeof BUILT)[number], string>> = {
       'london-gatwick-istanbul': '2026-09-04',
       'glasgow-antalya': '2026-09-04',
       'glasgow-dalaman': '2026-09-04',
       'leeds-bradford-antalya': '2026-09-04',
-      'leeds-bradford-bodrum': '2026-09-04',
       'glasgow-bodrum': '2026-09-04',
       'bristol-antalya': '2026-09-04',
       'bristol-dalaman': '2026-09-04',

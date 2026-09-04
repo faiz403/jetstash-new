@@ -510,8 +510,8 @@ export const routes: Route[] = [
       sourceName: "Leeds Bradford Airport's current Antalya destination page",
       sourceUrl: 'https://www.leedsbradfordairport.co.uk/destinations/turkey/antalya',
       verifiedDate: '2026-09-04',
-      reviewDueDate: '2026-12-03',
-      note: 'Rolling Reverification Batch 6 (4 September 2026): a genuine evidence upgrade -- the page\'s own "Book with Jet2", "Book with Tui" and "Book with SunExpress" links name three current operators not previously recorded here (the prior check found the booking links present but did not extract the airline names). All three are in the airline catalogue (data/airlines.ts) and are added to airlineSlugs. No route-specific duration, fixed frequency or explicit seasonality statement is published on this page. Reclassified STABLE (90-day window) on three confirmed current operators and no identified volatility signal -- a single operator or an absent "year-round" sentence is not itself disqualifying (see the Batches 1-2 STABLE cadence consistency review); three independently confirmed carriers is a stronger maturity signal than that baseline.',
+      reviewDueDate: '2026-10-04',
+      note: 'Rolling Reverification Batch 6 (4 September 2026): a genuine evidence upgrade -- the page\'s own "Book with Jet2", "Book with Tui" and "Book with SunExpress" links name three current operators not previously recorded here (the prior check found the booking links present but did not extract the airline names). All three are in the airline catalogue (data/airlines.ts) and are added to airlineSlugs -- this specific fact is real and verified. Corrected on PR review (route-specific continuity check): this was first reclassified as an established, low-frequency-review service on the strength of the three-operator count alone -- that reasoning was withdrawn because it relied on Glasgow and Bristol\'s OWN Antalya continuity evidence as a substitute for evidence about this specific route, which is not valid (a different origin airport serving the same destination reliably says nothing conclusive about this route). Taken on Leeds Bradford\'s own evidence alone: no duration, frequency, launch history or seasonality statement exists on this page to establish genuine route-specific continuity, so STABLE is not supported. No actual volatility signal exists either, so RECENT/CHANGING is not supported. As with leeds-bradford-bodrum, this record is left without a formal cadence classification rather than mislabelled -- kept on a short, precautionary 30-day check-back as a founder reminder pending either a genuine future evidence upgrade or a founder decision on how thin-but-verified records should be handled generally.',
     },
     airlineVerifications: ['jet2', 'tui', 'sunexpress'].map((airlineSlug) => ({
       airlineSlug,
@@ -519,7 +519,7 @@ export const routes: Route[] = [
       sourceName: "Leeds Bradford Airport's current Antalya destination page",
       sourceUrl: 'https://www.leedsbradfordairport.co.uk/destinations/turkey/antalya',
       verifiedDate: '2026-09-04',
-      reviewDueDate: '2026-12-03',
+      reviewDueDate: '2026-10-04',
       effectivePeriod: 'Current at access',
       supportedClaim: 'Named as flying direct from Leeds Bradford to Antalya, on the airport\'s own destination page.',
       remainingUncertainty: 'Exact dates, frequency and duration are not stated on this page.',
@@ -564,9 +564,9 @@ export const routes: Route[] = [
       status: 'verified',
       sourceName: "Leeds Bradford Airport's current destinations directory and Bodrum destination page",
       sourceUrl: 'https://www.leedsbradfordairport.co.uk/destinations/turkey/bodrum',
-      verifiedDate: '2026-09-04',
-      reviewDueDate: '2026-10-04',
-      note: 'Leeds Bradford Airport currently lists Bodrum as a direct destination. The reviewed airport pages do not publish a route-specific duration, named operator or fixed frequency, so those details remain for the traveller to check. Rolling Reverification Batch 6 (4 September 2026): reconfirmed via the same primary source, still live -- no named operator, duration or frequency figure found on this specific page, unlike the sibling Antalya page from the same airport. First formal cadence classification: RECENT / CHANGING (30-day window) -- no operator or duration evidence exists to support a maturity call either way, so the conservative classification is kept rather than assumed stable on thin evidence.',
+      verifiedDate: '2026-08-12',
+      reviewDueDate: '2026-09-12',
+      note: 'Leeds Bradford Airport currently lists Bodrum as a direct destination. The reviewed airport pages do not publish a route-specific duration, named operator or fixed frequency, so those details remain for the traveller to check. Rolling Reverification Batch 6 (4 September 2026): reconfirmed via the same primary source, still live and unchanged -- no named operator, duration or frequency figure exists on this specific page (unlike the sibling Antalya page from the same airport, which does name operators). This evidence is too thin to support either a genuine STABLE call (no established-service/continuity signal exists) or a genuine RECENT/CHANGING call (no actual launch, relaunch, operator-change, seasonality or instability signal was found) -- the current 5-category cadence policy has no clean state for "verified as currently existing, but too thin to judge maturity either way," and this record is deliberately left without a formal classification rather than mislabelled into either category on this evidence. Left on its existing review date pending either a genuine future evidence upgrade or a founder decision on how this class of thin-but-verified record should be handled generally.',
     },
     intro:
       'Leeds Bradford Airport currently lists direct service to Bodrum. The airport does not publish a fixed duration, named operator or frequency on the reviewed pages, so check the exact flight and season before booking.',
@@ -678,7 +678,7 @@ export const routes: Route[] = [
     airportSlug: 'bristol',
     destinationSlug: 'antalya',
     flightTime: 'Published duration not listed on Bristol Airport\'s route page; check the exact flight for your dates',
-    frequency: 'Bristol Airport\'s own page states it flies all year round, up to 18 times a week, with easyJet, TUI, Jet2.com and SunExpress',
+    frequency: 'Bristol Airport\'s own page states the route operates all year round, up to 18 times a week. Airlines listed on the route include easyJet, TUI, Jet2.com and SunExpress',
     airlineSlugs: ['easyjet', 'tui', 'jet2', 'sunexpress'],
     isDirect: true,
     verification: {
@@ -687,7 +687,7 @@ export const routes: Route[] = [
       sourceUrl: 'https://www.bristolairport.co.uk/where-can-i-fly/destinations/europe/turkey/antalya/',
       verifiedDate: '2026-09-04',
       reviewDueDate: '2026-12-03',
-      note: 'Rolling Reverification Batch 6 (4 September 2026): a genuine evidence upgrade -- Bristol Airport\'s own page states plainly "We fly: All year round" and "Fly up to 18 times a week", and its airlines section names easyJet, TUI, Jet2.com and SunExpress. All four are in the airline catalogue (data/airlines.ts) and are added to airlineSlugs. Reclassified STABLE (90-day window) on the airport\'s own explicit "all year round" and 18x-weekly statement, matching the standard already applied to bristol-faro and bristol-rome.',
+      note: 'Rolling Reverification Batch 6 (4 September 2026): a genuine evidence upgrade -- Bristol Airport\'s own page states plainly "We fly: All year round" and "Fly up to 18 times a week", and its airlines section names easyJet, TUI, Jet2.com and SunExpress. All four are in the airline catalogue (data/airlines.ts) and are added to airlineSlugs. Reclassified STABLE (90-day window) on the airport\'s own explicit "all year round" and 18x-weekly statement, matching the standard already applied to bristol-faro and bristol-rome. Corrected on PR review (public-copy semantic check): the route-level "all year round, 18x weekly" claim and the roster of four named airlines are two separate facts from two separate fields on the source page, not one combined sentence -- public copy is worded to keep them separate rather than imply each individual airline flies year-round or 18 times a week.',
     },
     airlineVerifications: ['easyjet', 'tui', 'jet2', 'sunexpress'].map((airlineSlug) => ({
       airlineSlug,
@@ -697,11 +697,11 @@ export const routes: Route[] = [
       verifiedDate: '2026-09-04',
       reviewDueDate: '2026-12-03',
       effectivePeriod: 'Current at access',
-      supportedClaim: 'Named as flying direct from Bristol to Antalya, all year round, on the airport\'s own destination page.',
+      supportedClaim: 'Named as an operator on Bristol Airport\'s own destination page, for a route the airport states operates all year round -- not a claim that this specific airline individually flies year-round.',
       remainingUncertainty: 'Exact daily frequency split between operators and duration are not stated on this page.',
     })),
     intro:
-      "Bristol Airport's own page says it flies direct to Antalya all year round, up to 18 times a week, naming easyJet, TUI, Jet2.com and SunExpress among its operators. Exact duration and the airline for your specific date still vary, so check the exact flight before booking.",
+      "Bristol Airport's own page says this route operates all year round, up to 18 times a week. Airlines listed on the route include easyJet, TUI, Jet2.com and SunExpress. Exact duration and the airline for your specific date still vary, so check the exact flight before booking.",
     bookingWindowNote:
       'This guide is route context, not a booking prediction. Check the exact service, duration, fare conditions and baggage terms before booking.',
     peakPeriodIds: [],
@@ -1034,7 +1034,7 @@ export const routes: Route[] = [
       sourceUrl: 'https://www.mediacentre.gatwickairport.com/news/london-gatwick-grows-african-connectivity-with-only-uk-to-uganda-service-a35e1-40f32.html',
       verifiedDate: '2026-09-04',
       reviewDueDate: '2026-12-03',
-      note: 'Rolling Reverification Batch 6 (4 September 2026): a genuine evidence upgrade -- this session\'s check read the source\'s own route table in full and found a specific, dated operator and frequency entry not previously extracted: "Agadir, Morocco -- EasyJet, British Airways, TUI -- 8 x weekly". All three are in the airline catalogue (data/airlines.ts) and are added to airlineSlugs. Reclassified STABLE (90-day window) on three independently-named, established scheduled carriers plus a specific, real frequency figure -- comparable in kind to the evidence that already justified STABLE for london-gatwick-tangier (Batch 2) and london-gatwick-dubai (Batch 3) from the same source. Duration remains unpublished on this table; Trip.com remains unavailable for an airport-specific dateless handoff.',
+      note: 'Rolling Reverification Batch 6 (4 September 2026): a genuine evidence upgrade -- this session\'s check read the source\'s own route table in full and found a specific, dated operator and frequency entry not previously extracted: "Agadir, Morocco -- EasyJet, British Airways, TUI -- 8 x weekly". All three are in the airline catalogue (data/airlines.ts) and are added to airlineSlugs. Corrected on PR review (route-specific continuity check): the cadence basis is this route\'s OWN dated evidence, not the fact that london-gatwick-tangier/dubai were separately called STABLE from the same source -- a precedent from a different route is not evidence for this one. This press release itself is dated 19 May 2025, over 16 months before this session\'s live re-check (4 September 2026), and its own text explicitly frames Agadir as pre-existing background context, not a new route -- the article\'s actual headline news is two unrelated launches (Uganda Airlines to Entebbe, Kenya Airways to Nairobi). The identical fact-set (three named established carriers, 8x weekly) has therefore been independently confirmed unchanged across a 16-month span on a source that explicitly does not describe this route as new. Reclassified STABLE (90-day window) on that genuine, dated, route-specific continuity -- not on operator count or frequency alone, and not on another route\'s precedent. Duration remains unpublished on this table; Trip.com remains unavailable for an airport-specific dateless handoff.',
     },
     airlineVerifications: ['easyjet', 'british-airways', 'tui'].map((airlineSlug) => ({
       airlineSlug,
