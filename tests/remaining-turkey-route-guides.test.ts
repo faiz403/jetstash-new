@@ -36,8 +36,13 @@ describe('remaining Turkey route guides', () => {
     // 2026): london-gatwick-istanbul was reconfirmed and its verifiedDate
     // moved -- the other thirteen were not part of that batch and are
     // unchanged, deliberately no longer sharing one synchronised date.
+    // Rolling Reverification Batch 5 (4 September 2026): glasgow-antalya and
+    // glasgow-dalaman were both reconfirmed and reclassified STABLE
+    // (90-day window) -- the remaining eleven were not part of that batch.
     const reverifiedDates: Partial<Record<(typeof BUILT)[number], string>> = {
       'london-gatwick-istanbul': '2026-09-04',
+      'glasgow-antalya': '2026-09-04',
+      'glasgow-dalaman': '2026-09-04',
     };
     for (const slug of BUILT) {
       const route = getRouteBySlug(slug)!;
