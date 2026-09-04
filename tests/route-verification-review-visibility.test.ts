@@ -32,13 +32,19 @@ function findSection(now: Date) {
 }
 
 describe('A. An overdue verified route appears and is identified as overdue', () => {
-  it('a real currently-overdue route (Heathrow-Dhaka) appears with an "overdue" item at today\'s date', () => {
+  it('a real currently-overdue route (Manchester-Mumbai) appears with an "overdue" item at today\'s date', () => {
     // manchester-karachi was this fixture until COV-001 (21 August 2026)
     // reclassified it to verified-connecting with a fresh, non-overdue
     // reviewDueDate (2026-10-05) — see
     // docs/project-control/ROUTE_VERIFICATION_CADENCE_POLICY.md, Batch 3.
+    // london-heathrow-dhaka was this fixture until Rolling Reverification
+    // Batch 4 (4 September 2026) genuinely rechecked it, moving its
+    // reviewDueDate forward — manchester-mumbai's IndiGo verification
+    // (tied to a schedule that predates the route's own service-ended
+    // status, deliberately not reconfirmed as a live schedule fact — see
+    // that route's own comments) remains genuinely overdue and untouched.
     const section = findSection(new Date());
-    const item = section.items.find((i) => i.label.includes('London') && i.label.includes('Dhaka'));
+    const item = section.items.find((i) => i.label.includes('Manchester') && i.label.includes('Mumbai'));
     expect(item).toBeDefined();
     expect(item!.label).toMatch(/overdue by \d+ days?/);
     expect(item!.status).toBe('attention');
@@ -239,8 +245,11 @@ describe('I. London Gatwick–Ahmedabad Batch 1 correction (18 August 2026)', ()
   });
 
   it('carries the fresh check date and the DISPUTED category\'s 14-day window, not an administratively-extended old date', () => {
-    expect(route.verification!.verifiedDate).toBe('2026-08-18');
-    expect(route.verification!.reviewDueDate).toBe('2026-09-01');
+    // Rolling Reverification Batch 4 (4 September 2026) genuinely re-opened
+    // Air India's own cited pages again -- still unresolved (in fact more
+    // specifically contradictory than before) -- so the date moved again.
+    expect(route.verification!.verifiedDate).toBe('2026-09-04');
+    expect(route.verification!.reviewDueDate).toBe('2026-09-18');
   });
 
   it('customer presentation fails closed immediately as of today, not on the old 28 August expiry', () => {
