@@ -1,5 +1,5 @@
 import { deals } from '@/data/deals';
-import { routes, getRouteAirport, getRouteDestination, getRouteStatus } from '@/data/routes';
+import { routes, getRouteAirport, getRouteDestination, getRouteStatus, type Route } from '@/data/routes';
 import { routeStatusEvents } from '@/data/route-status-events';
 import { destinations, getDestinationBySlug } from '@/data/destinations';
 import { getAirportBySlug } from '@/data/airports';
@@ -548,11 +548,39 @@ function travelReadyOpsStatus(now: Date): FounderSection {
 // rules — not a new threshold invented for this section. That horizon
 // controls only when this dashboard shows a reminder; it never changes
 // what reviewDueDate itself means or how the public site behaves.
+//
+// Service-ended reminder suppression (Rolling Reverification Batch 4
+// follow-up, 4 September 2026): a route's verification.reviewDueDate can
+// lapse long after its current truth has already been fully and separately
+// settled by a verified `service-ended` event in the Route Status V1 ledger
+// (data/route-status-events.ts) — re-verifying a schedule for a service
+// that has verifiably stopped operating is not useful founder work.
+// hasCurrentlyEndedService() below reuses getRouteStatus(), the same
+// ledger-derivation helper serviceChangesStatus() (§7b above) already
+// calls, rather than inventing a second interpretation of route status.
+// Confirmed cases at time of writing: manchester-mumbai and
+// manchester-delhi (both IndiGo withdrawals, effective 31 August 2026).
 const MAX_DUE_SOON_ITEMS_SHOWN = 15;
+
+/**
+ * True when a route's CURRENT effective truth is a verified service-ended
+ * state — not merely "this route once had a service-ended event." getRouteStatus()
+ * re-derives this fresh against nowIso every call: a service-ended event
+ * carries its own currentClaimValidBefore and can itself go stale, and a
+ * later event can supersede an earlier one (see data/route-status-events.ts
+ * and resolveServiceLifecycle()'s doc comment in data/routes.ts) — so a
+ * route whose service later resumed, or whose ended-claim itself expires
+ * without being refreshed, automatically falls back out of this check with
+ * no separate tracking needed here. Routes the ledger doesn't manage at all
+ * (getRouteStatus() returns null) are never affected.
+ */
+function hasCurrentlyEndedService(route: Route, nowIso: string): boolean {
+  return getRouteStatus(route, routeStatusEvents, nowIso)?.status === 'service-ended';
+}
 
 function routeVerificationReviewStatus(now: Date): FounderSection {
   const nowIso = now.toISOString().slice(0, 10);
-  const verifiedRoutes = routes.filter((r) => r.verification);
+  const verifiedRoutes = routes.filter((r) => r.verification && !hasCurrentlyEndedService(r, nowIso));
 
   const withDays = verifiedRoutes.map((route) => ({
     route,
