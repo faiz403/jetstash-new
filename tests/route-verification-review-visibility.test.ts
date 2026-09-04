@@ -32,13 +32,32 @@ function findSection(now: Date) {
 }
 
 describe('A. An overdue verified route appears and is identified as overdue', () => {
-  it('a real currently-overdue route (Heathrow-Dhaka) appears with an "overdue" item at today\'s date', () => {
+  it('a real verified route (Birmingham-Doha) appears with an "overdue" item once its own reviewDueDate has passed', () => {
     // manchester-karachi was this fixture until COV-001 (21 August 2026)
     // reclassified it to verified-connecting with a fresh, non-overdue
     // reviewDueDate (2026-10-05) — see
     // docs/project-control/ROUTE_VERIFICATION_CADENCE_POLICY.md, Batch 3.
-    const section = findSection(new Date());
-    const item = section.items.find((i) => i.label.includes('London') && i.label.includes('Dhaka'));
+    // london-heathrow-dhaka was this fixture until Rolling Reverification
+    // Batch 4 (4 September 2026) genuinely rechecked it, moving its
+    // reviewDueDate forward. manchester-mumbai briefly replaced it but was
+    // itself unsound: its IndiGo verification concerns a schedule that
+    // predates the route's own verified `service-ended` route-status event
+    // (data/route-status-events.ts), so "overdue for re-verification" is a
+    // moot signal there — there is nothing left to re-check. Using a real,
+    // ordinary, unaffected route (birmingham-doha, no route-status event,
+    // no dispute) against a hypothetical "now" derived from its own
+    // reviewDueDate — not a second hardcoded date — is deterministic
+    // regardless of real wall-clock time, and self-adjusts if a future
+    // rolling-reverification batch genuinely re-checks this route and
+    // pushes its date forward, rather than silently drifting like the
+    // fixtures above it had to be replaced for. Still exercises the real
+    // routeVerificationReviewStatus() path against real production data,
+    // not a mock.
+    const route = routes.find((r) => r.slug === 'birmingham-doha')!;
+    const dueDate = new Date(`${route.verification!.reviewDueDate}T00:00:00Z`);
+    const now = new Date(dueDate.getTime() + 8 * 86_400_000); // 8 days after its own review due date
+    const section = findSection(now);
+    const item = section.items.find((i) => i.label.includes('Birmingham') && i.label.includes('Doha'));
     expect(item).toBeDefined();
     expect(item!.label).toMatch(/overdue by \d+ days?/);
     expect(item!.status).toBe('attention');
@@ -239,8 +258,11 @@ describe('I. London Gatwick–Ahmedabad Batch 1 correction (18 August 2026)', ()
   });
 
   it('carries the fresh check date and the DISPUTED category\'s 14-day window, not an administratively-extended old date', () => {
-    expect(route.verification!.verifiedDate).toBe('2026-08-18');
-    expect(route.verification!.reviewDueDate).toBe('2026-09-01');
+    // Rolling Reverification Batch 4 (4 September 2026) genuinely re-opened
+    // Air India's own cited pages again -- still unresolved (in fact more
+    // specifically contradictory than before) -- so the date moved again.
+    expect(route.verification!.verifiedDate).toBe('2026-09-04');
+    expect(route.verification!.reviewDueDate).toBe('2026-09-18');
   });
 
   it('customer presentation fails closed immediately as of today, not on the old 28 August expiry', () => {

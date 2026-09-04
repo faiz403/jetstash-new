@@ -21,7 +21,11 @@ describe('Birmingham Turkey route guides', () => {
     // page names both operators and matches exactly) -- the other three
     // Birmingham Turkey routes were not part of that batch and are
     // unchanged, deliberately no longer sharing one synchronised date.
-    expect(routes.map((route) => route?.verification?.verifiedDate)).toEqual(['2026-09-03', '2026-08-12', '2026-08-12', '2026-08-12']);
+    // Rolling Reverification Batch 4 (4 September 2026): birmingham-antalya
+    // was reconfirmed and given its first formal cadence classification
+    // (RECENT/CHANGING, 30-day window) -- birmingham-dalaman and
+    // birmingham-bodrum were not part of that batch and remain unchanged.
+    expect(routes.map((route) => route?.verification?.verifiedDate)).toEqual(['2026-09-03', '2026-09-04', '2026-08-12', '2026-08-12']);
   });
 
   it('publishes the Istanbul airport distinction without inventing frequency', () => {
