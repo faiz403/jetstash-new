@@ -373,7 +373,7 @@ describe('BD-001 — Travel Ready Check: Bangladesh rules, NVR exemption, no dup
 
   it('British passport, Dhaka, no NVR, no visa held — needs a visa', () => {
     const result = evaluateTravelReadiness(
-      { destinationSlug: 'dhaka', isBritishPassport: true, exemptionDocument: 'none', departureDate: '2027-03-01', returnDate: '2027-03-20', passportExpiryDate: '2029-01-01' },
+      { destinationSlug: 'dhaka', isBritishPassport: true, exemptionDocument: 'none', departureDate: '2027-03-01', arrivalDate: '2027-03-01', returnDate: '2027-03-20', passportExpiryDate: '2029-01-01' },
       NOW
     );
     expect(['visa-or-entry-permission-needed', 'document-timing-may-affect-booking']).toContain(result.verdict);
@@ -382,7 +382,7 @@ describe('BD-001 — Travel Ready Check: Bangladesh rules, NVR exemption, no dup
 
   it('British passport, Sylhet, NVR endorsement held — ready to continue, NVR exemption handling is correct', () => {
     const result = evaluateTravelReadiness(
-      { destinationSlug: 'sylhet', isBritishPassport: true, exemptionDocument: 'nvr', departureDate: '2027-03-01', returnDate: '2027-03-20', passportExpiryDate: '2029-01-01' },
+      { destinationSlug: 'sylhet', isBritishPassport: true, exemptionDocument: 'nvr', departureDate: '2027-03-01', arrivalDate: '2027-03-01', returnDate: '2027-03-20', passportExpiryDate: '2029-01-01' },
       NOW
     );
     expect(result.verdict).toBe('ready-to-continue');
@@ -390,7 +390,7 @@ describe('BD-001 — Travel Ready Check: Bangladesh rules, NVR exemption, no dup
 
   it('NVR exemption only applies to Bangladesh — selecting it for India (a stale leftover selection) does not grant a false exemption', () => {
     const result = evaluateTravelReadiness(
-      { destinationSlug: 'delhi', isBritishPassport: true, exemptionDocument: 'nvr', departureDate: '2027-03-01', returnDate: '2027-03-20', passportExpiryDate: '2029-01-01' },
+      { destinationSlug: 'delhi', isBritishPassport: true, exemptionDocument: 'nvr', departureDate: '2027-03-01', arrivalDate: '2027-03-01', returnDate: '2027-03-20', passportExpiryDate: '2029-01-01' },
       NOW
     );
     expect(result.verdict).not.toBe('ready-to-continue');
@@ -399,7 +399,7 @@ describe('BD-001 — Travel Ready Check: Bangladesh rules, NVR exemption, no dup
   it('selecting Dhaka or Sylhet never falls back to not-enough-information — no missing-rule or generic-country failure was introduced', () => {
     for (const slug of ['dhaka', 'sylhet']) {
       const result = evaluateTravelReadiness(
-        { destinationSlug: slug, isBritishPassport: true, exemptionDocument: 'none', departureDate: '2027-03-01', returnDate: '2027-03-20', passportExpiryDate: '2029-01-01' },
+        { destinationSlug: slug, isBritishPassport: true, exemptionDocument: 'none', departureDate: '2027-03-01', arrivalDate: '2027-03-01', returnDate: '2027-03-20', passportExpiryDate: '2029-01-01' },
         NOW
       );
       expect(result.checks.length).toBeGreaterThan(0);
@@ -409,11 +409,11 @@ describe('BD-001 — Travel Ready Check: Bangladesh rules, NVR exemption, no dup
 
   it('existing Pakistan and India destinations are completely unaffected — Lahore (NICOP) and Delhi (OCI) still resolve exactly as before', () => {
     const lahore = evaluateTravelReadiness(
-      { destinationSlug: 'lahore', isBritishPassport: true, exemptionDocument: 'nicop-poc', departureDate: '2027-03-01', returnDate: '2027-03-20', passportExpiryDate: '2029-01-01' },
+      { destinationSlug: 'lahore', isBritishPassport: true, exemptionDocument: 'nicop-poc', departureDate: '2027-03-01', arrivalDate: '2027-03-01', returnDate: '2027-03-20', passportExpiryDate: '2029-01-01' },
       NOW
     );
     const delhi = evaluateTravelReadiness(
-      { destinationSlug: 'delhi', isBritishPassport: true, exemptionDocument: 'oci', departureDate: '2027-03-01', returnDate: '2027-03-20', passportExpiryDate: '2029-01-01' },
+      { destinationSlug: 'delhi', isBritishPassport: true, exemptionDocument: 'oci', departureDate: '2027-03-01', arrivalDate: '2027-03-01', returnDate: '2027-03-20', passportExpiryDate: '2029-01-01' },
       NOW
     );
     expect(lahore.verdict).toBe('ready-to-continue');

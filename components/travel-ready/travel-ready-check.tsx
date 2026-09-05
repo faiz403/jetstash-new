@@ -46,6 +46,7 @@ const VERDICT_TONE: Record<TravelReadyVerdict, 'critical' | 'caution' | 'ready' 
   'not-enough-information': 'neutral',
   'invalid-date-range': 'neutral',
   'invalid-departure-date': 'neutral',
+  'invalid-arrival-date': 'neutral',
   'stay-length-unconfirmed': 'caution',
 };
 
@@ -86,6 +87,13 @@ export function TravelReadyCheck({
   const [isBritishPassport, setIsBritishPassport] = useState<'yes' | 'no' | ''>('');
   const [exemptionDocument, setExemptionDocument] = useState<ExemptionDocument>('none');
   const [departureDate, setDepartureDate] = useState('');
+  // PR #230 final reference-event correction (5 September 2026): a real,
+  // separately-collected arrival date — every arrival-anchored rule
+  // (passport-validity buffer, stay-limit day count) now uses this
+  // directly rather than a disclosed departureDate proxy, which could
+  // still produce a false pass for any itinerary where arrival crosses
+  // into a later calendar date than UK departure.
+  const [arrivalDate, setArrivalDate] = useState('');
   const [returnDate, setReturnDate] = useState('');
   const [passportExpiryDate, setPassportExpiryDate] = useState('');
   const [result, setResult] = useState<TravelReadyResult | null>(null);
@@ -102,6 +110,7 @@ export function TravelReadyCheck({
   const destinationRef = useRef<HTMLSelectElement | null>(null);
   const passportYesRadioRef = useRef<HTMLInputElement | null>(null);
   const departureRef = useRef<HTMLInputElement | null>(null);
+  const arrivalRef = useRef<HTMLInputElement | null>(null);
   const returnRef = useRef<HTMLInputElement | null>(null);
   const passportExpiryRef = useRef<HTMLInputElement | null>(null);
 
@@ -129,6 +138,7 @@ export function TravelReadyCheck({
       { ok: Boolean(destinationSlug), ref: destinationRef },
       { ok: Boolean(isBritishPassport), ref: passportYesRadioRef },
       { ok: Boolean(departureDate), ref: departureRef },
+      { ok: Boolean(arrivalDate), ref: arrivalRef },
       { ok: Boolean(returnDate), ref: returnRef },
       { ok: Boolean(passportExpiryDate), ref: passportExpiryRef },
     ];
@@ -149,6 +159,7 @@ export function TravelReadyCheck({
         isBritishPassport: isBritishPassport === 'yes',
         exemptionDocument,
         departureDate,
+        arrivalDate,
         returnDate,
         passportExpiryDate,
       },
@@ -290,7 +301,7 @@ export function TravelReadyCheck({
             </div>
           )}
 
-          <div className="grid gap-4 sm:grid-cols-3">
+          <div className="grid gap-4 sm:grid-cols-2">
             <div>
               <label htmlFor="ready-departure" className="text-xs text-ink-400">Departure date</label>
               <input
@@ -305,6 +316,25 @@ export function TravelReadyCheck({
                 }}
                 className="mt-1.5 h-11 w-full rounded-sm border border-ink-200 px-3 text-sm text-ink-900 focus-visible:border-brass"
               />
+            </div>
+            <div>
+              <label htmlFor="ready-arrival" className="text-xs text-ink-400">Arrival date in destination</label>
+              <input
+                id="ready-arrival"
+                ref={arrivalRef}
+                type="date"
+                required
+                value={arrivalDate}
+                onChange={(e) => {
+                  clearSubmissionError();
+                  setArrivalDate(e.target.value);
+                }}
+                className="mt-1.5 h-11 w-full rounded-sm border border-ink-200 px-3 text-sm text-ink-900 focus-visible:border-brass"
+              />
+              <p className="mt-1.5 text-xs text-ink-400">
+                The date you land, not your UK departure date — some passport and stay rules are measured from
+                arrival, and a long-haul or connecting flight can land a day later than it takes off.
+              </p>
             </div>
             <div>
               <label htmlFor="ready-return" className="text-xs text-ink-400">Return date</label>
@@ -377,6 +407,7 @@ export function TravelReadyCheck({
                 result.verdict === 'not-enough-information' ||
                 result.verdict === 'invalid-date-range' ||
                 result.verdict === 'invalid-departure-date' ||
+                result.verdict === 'invalid-arrival-date' ||
                 result.verdict === 'stay-length-unconfirmed') && <HelpCircle className="mr-1 h-3.5 w-3.5" />}
               {result.verdict.replace(/-/g, ' ')}
             </span>

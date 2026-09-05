@@ -4,6 +4,7 @@ import {
   isRuleStale,
   type TravelReadyNationalityScope,
   type TravelReadyRule,
+  type TravelReadyValidityRequirement,
 } from '@/data/travel-ready-rules';
 import type { TravelReadySignal } from '@/lib/travel-intelligence-engine';
 
@@ -46,6 +47,12 @@ export type TravelReadyVerdict =
   /** Departure date is in the past relative to `now` — an input error, not a travel-readiness judgement. Never reaches the rule engine. */
   | 'invalid-departure-date'
   /**
+   * Arrival date falls outside the departure/return window — an input
+   * error, not a travel-readiness judgement. Never reaches the rule engine.
+   * PR #230 final reference-event correction, 5 September 2026.
+   */
+  | 'invalid-arrival-date'
+  /**
    * The entered trip is within a rolling-window stay limit's stated maximum
    * on its own (e.g. under Turkey/UAE's 90-day figure), but JetStash doesn't
    * collect the traveller's other visits within that window, so full
@@ -68,8 +75,17 @@ export interface TravelReadyCheckInput {
   destinationSlug: string;
   isBritishPassport: boolean;
   exemptionDocument: ExemptionDocument;
-  /** ISO date. */
+  /** ISO date. UK departure. */
   departureDate: string;
+  /**
+   * ISO date. The traveller's actual arrival date in the destination —
+   * genuinely distinct from `departureDate` for any itinerary where arrival
+   * crosses into a later calendar date (PR #230 final reference-event
+   * correction, 5 September 2026: a disclosed departure-date proxy was not
+   * sufficient — every arrival-anchored passport-validity and stay-limit
+   * rule now uses this field directly, never a substitute).
+   */
+  arrivalDate: string;
   /** ISO date. */
   returnDate: string;
   /** ISO date. */
@@ -110,16 +126,80 @@ function daysBetweenIso(fromIso: string, toIso: string): number {
 }
 
 /**
- * Trip length for stay-limit purposes. No official source we hold (GOV.UK)
- * specifies entry/exit-day counting convention, so this is JetStash's own
- * documented, conservative assumption: both the day of arrival and the day
- * of departure count as days present in the country, i.e. inclusive of both
- * endpoints. This can only ever overstate a trip's length relative to the
- * official rule, never understate it — the safe direction for a limit check
- * (Trust Integrity fix, 5 September 2026).
+ * Calendar/reference-event audit (5 September 2026). Adds a whole number of
+ * exact calendar days to an ISO date — a pure, unambiguous operation (no
+ * month-length or leap-year clamping needed), used for `validityRequirement`
+ * entries an official source states as an exact day count (Turkey's 150
+ * days), never as a stand-in for an unconverted month figure.
  */
-function tripLengthDaysInclusive(departureIso: string, returnIso: string): number {
-  return daysBetweenIso(departureIso, returnIso) + 1;
+function addCalendarDays(iso: string, days: number): string {
+  return new Date(toUtcNoon(iso) + days * DAY_MS).toISOString().slice(0, 10);
+}
+
+/**
+ * Adds a whole number of calendar months to an ISO date, using explicit,
+ * deterministic date-library-style semantics rather than JS's native
+ * `Date.setMonth()` (which silently rolls over into the wrong month for a
+ * day that doesn't exist in the target month — e.g. naively adding 1 month
+ * to 31 January rolls into March, not February). This clamps to the last
+ * real day of the target month instead: 31 January + 1 month = 28 February
+ * (or 29 in a leap year), never 3 March. This is the standard civil/legal
+ * calendar-month convention and the one used throughout this audit's
+ * boundary tests.
+ */
+function addCalendarMonths(iso: string, months: number): string {
+  const [year, month, day] = iso.split('-').map(Number);
+  const totalMonths = (month - 1) + months;
+  const targetYear = year + Math.floor(totalMonths / 12);
+  const targetMonthIndex = ((totalMonths % 12) + 12) % 12; // 0-11, always positive
+  const daysInTargetMonth = new Date(Date.UTC(targetYear, targetMonthIndex + 1, 0)).getUTCDate();
+  const targetDay = Math.min(day, daysInTargetMonth);
+  return `${targetYear}-${String(targetMonthIndex + 1).padStart(2, '0')}-${String(targetDay).padStart(2, '0')}`;
+}
+
+/**
+ * The exact ISO date a passport-validity `validityRequirement` requires the
+ * expiry date to be on or after. PR #230 final reference-event correction
+ * (5 September 2026): a disclosed departureDate proxy was not sufficient —
+ * a traveller whose real destination arrival lands on a later calendar date
+ * than UK departure could still see a false pass on an arrival-anchored
+ * rule. Every `'arrival'` rule now uses the traveller's real `arrivalDate`
+ * directly. `'departure-conservative-proxy'` rules (Pakistan, Bangladesh)
+ * deliberately still use `departureDate` — see
+ * `TravelReadyValidityRequirement`'s own doc comment for the proof this
+ * can never produce a false positive for those two specifically.
+ */
+function requiredExpiryThreshold(requirement: TravelReadyValidityRequirement, input: TravelReadyCheckInput): string {
+  const referenceDateIso = requirement.referenceEvent === 'arrival' ? input.arrivalDate : input.departureDate;
+  return requirement.unit === 'calendar-months'
+    ? addCalendarMonths(referenceDateIso, requirement.value)
+    : addCalendarDays(referenceDateIso, requirement.value);
+}
+
+/**
+ * Shown only on the two `'departure-conservative-proxy'` rules (Pakistan,
+ * Bangladesh) — the six `'arrival'` rules now use the traveller's real
+ * arrivalDate directly and need no caveat at all.
+ */
+const CONSERVATIVE_PROXY_CAVEAT =
+  "This rule's official reference date (your visa application or issue date) must fall on or before your departure date, since the visa has to be arranged in advance — JetStash deliberately uses your later departure date here instead, which can only make this check stricter than the true rule, never more lenient.";
+
+/**
+ * Days actually present in the destination for stay-limit purposes:
+ * arrival date to return date, inclusive of both endpoints. PR #230 final
+ * reference-event correction (5 September 2026): previously measured from
+ * UK departure, which doesn't match any stay-limit rule's own wording
+ * (UAE's own source: the 90-day allowance "will begin from the date of
+ * first entry") and could reject a genuinely compliant trip by counting UK-
+ * to-destination travel time as days present. Now starts from the
+ * traveller's real destination arrival. No official source we hold
+ * specifies exact entry/exit-day counting convention beyond "begins from
+ * entry", so inclusive-of-both-endpoints remains JetStash's own documented,
+ * conservative assumption for the day count itself — see
+ * `STAY_LIMIT_COUNTING_CAVEAT` below.
+ */
+function tripLengthDaysInclusive(arrivalIso: string, returnIso: string): number {
+  return daysBetweenIso(arrivalIso, returnIso) + 1;
 }
 
 /**
@@ -143,7 +223,7 @@ function evaluateStayLimit(
   input: TravelReadyCheckInput
 ): { status: 'exceeds' | 'window-unconfirmed'; tripLengthDays: number } | null {
   if (!visaRule.stayLimit) return null;
-  const tripLengthDays = tripLengthDaysInclusive(input.departureDate, input.returnDate);
+  const tripLengthDays = tripLengthDaysInclusive(input.arrivalDate, input.returnDate);
   if (tripLengthDays > visaRule.stayLimit.maxDays) return { status: 'exceeds', tripLengthDays };
   if (visaRule.stayLimit.windowDays) return { status: 'window-unconfirmed', tripLengthDays };
   return null;
@@ -187,7 +267,7 @@ function notEnoughInformation(reason: string): TravelReadyResult {
  * below — "a definite result" or "a non-empty headline" alone isn't
  * sufficient; the wording must name the actual problem.
  */
-function invalidDateResult(verdict: 'invalid-date-range' | 'invalid-departure-date', headline: string, nextAction: string): TravelReadyResult {
+function invalidDateResult(verdict: 'invalid-date-range' | 'invalid-departure-date' | 'invalid-arrival-date', headline: string, nextAction: string): TravelReadyResult {
   return {
     verdict,
     headline,
@@ -225,6 +305,24 @@ export function evaluateTravelReadiness(input: TravelReadyCheckInput, now: Date)
       'invalid-departure-date',
       'Your departure date is in the past — check your dates before continuing.',
       'Re-enter a departure date that hasn’t already passed, then check again.'
+    );
+  }
+  // PR #230 final reference-event correction, 5 September 2026: arrival is
+  // now a real, separately-collected date, not derived from departure — it
+  // must sit inside the departure/return window or every downstream
+  // arrival-anchored calculation would be meaningless.
+  if (input.arrivalDate && input.departureDate && input.arrivalDate < input.departureDate) {
+    return invalidDateResult(
+      'invalid-arrival-date',
+      'Your arrival date is before your departure date — check your dates before continuing.',
+      'Re-enter your arrival date so it falls on or after your departure date, then check again.'
+    );
+  }
+  if (input.arrivalDate && input.returnDate && input.arrivalDate > input.returnDate) {
+    return invalidDateResult(
+      'invalid-arrival-date',
+      'Your arrival date is after your return date — check your dates before continuing.',
+      'Re-enter your arrival date so it falls on or before your return date, then check again.'
     );
   }
 
@@ -307,18 +405,33 @@ export function evaluateTravelReadiness(input: TravelReadyCheckInput, now: Date)
       stale: true,
     });
   } else {
+    // PR #230 final reference-event correction (5 September 2026): the
+    // passport must not expire on or before the return date, AND must meet
+    // the rule's own calendar-based buffer measured from the real
+    // reference event (arrivalDate for 'arrival' rules — no longer a
+    // disclosed departureDate proxy; departureDate remains a genuinely
+    // safe, provably-conservative proxy only for the two
+    // 'departure-conservative-proxy' rules). These are independent checks:
+    // a long trip can exceed a short buffer window while still returning
+    // before expiry, or vice versa.
     const expiresDuringTrip = input.passportExpiryDate <= input.returnDate;
-    const validityDays = daysBetweenIso(input.departureDate, input.passportExpiryDate);
-    const meetsBuffer = passportRule.minDaysValidityBeyondEntry === undefined || validityDays >= passportRule.minDaysValidityBeyondEntry;
+    const requiredExpiry = passportRule.validityRequirement
+      ? requiredExpiryThreshold(passportRule.validityRequirement, input)
+      : null;
+    const meetsBuffer = requiredExpiry === null || input.passportExpiryDate >= requiredExpiry;
     const pass = !expiresDuringTrip && meetsBuffer;
     passportOutcome = pass ? 'pass' : 'fail';
+    const referenceCaveat =
+      passportRule.validityRequirement?.referenceEvent === 'departure-conservative-proxy'
+        ? ` ${CONSERVATIVE_PROXY_CAVEAT}`
+        : '';
     checks.push({
       id: 'passport-validity',
       label: 'Passport validity',
       status: pass ? 'pass' : 'fail',
       detail: pass
-        ? `${passportRule.requirement} Your entered expiry date appears to satisfy this.`
-        : `${passportRule.requirement} Your entered expiry date does not appear to satisfy this — check before booking.`,
+        ? `${passportRule.requirement} Your entered expiry date appears to satisfy this.${referenceCaveat}`
+        : `${passportRule.requirement} Your entered expiry date does not appear to satisfy this — check before booking.${referenceCaveat}`,
       officialSource: passportRule.officialSource,
       lastVerifiedDate: passportRule.lastVerifiedDate,
       reviewDueDate: passportRule.reviewDueDate,
@@ -526,6 +639,7 @@ export function evaluateTravelReadiness(input: TravelReadyCheckInput, now: Date)
     'not-enough-information': 'Not enough information to assess this yet.',
     'invalid-date-range': 'Your return date is before your departure date — check your dates before continuing.',
     'invalid-departure-date': 'Your departure date is in the past — check your dates before continuing.',
+    'invalid-arrival-date': 'Your arrival date doesn’t fit within your departure and return dates — check your dates before continuing.',
     'stay-length-unconfirmed': 'Your trip length works on its own, but JetStash can’t confirm you’re within a rolling visa-free allowance without your other visits — check before booking.',
   };
 
@@ -538,6 +652,7 @@ export function evaluateTravelReadiness(input: TravelReadyCheckInput, now: Date)
     'not-enough-information': 'Check official government guidance directly for your specific nationality and destination.',
     'invalid-date-range': 'Re-enter your departure and return dates so the return date falls on or after the departure date, then check again.',
     'invalid-departure-date': 'Re-enter a departure date that hasn’t already passed, then check again.',
+    'invalid-arrival-date': 'Re-enter your arrival date so it falls between your departure and return dates, then check again.',
     'stay-length-unconfirmed': 'Check the official source below for exactly how the rolling window is calculated, and count any other visits within that window before booking a non-refundable fare.',
   };
 

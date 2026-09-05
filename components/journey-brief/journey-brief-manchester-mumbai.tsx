@@ -60,6 +60,11 @@ export function JourneyBriefManchesterMumbai() {
   const [destinationSlug, setDestinationSlug] = useState('mumbai');
   const [flexibleDates, setFlexibleDates] = useState(false);
   const [departureDate, setDepartureDate] = useState('');
+  // PR #230 final reference-event correction (5 September 2026): India's
+  // passport-validity rule is arrival-anchored — this founder-only
+  // prototype now collects a real arrival date too, rather than passing
+  // departureDate as a stand-in, matching the production Travel Ready form.
+  const [arrivalDate, setArrivalDate] = useState('');
   const [returnDate, setReturnDate] = useState('');
   const [isBritishPassport, setIsBritishPassport] = useState<'yes' | 'no' | ''>('');
   const [exemptionDocument, setExemptionDocument] = useState<ExemptionDocument>('none');
@@ -72,19 +77,20 @@ export function JourneyBriefManchesterMumbai() {
   const boundaryState: DateBoundaryState | null = stage === 'result' && departureDate ? getDateBoundaryState(departureDate) : null;
 
   const travelReadyResult = useMemo(() => {
-    if (stage !== 'result' || !isBritishPassport || !departureDate || !returnDate || !passportExpiryDate) return null;
+    if (stage !== 'result' || !isBritishPassport || !departureDate || !arrivalDate || !returnDate || !passportExpiryDate) return null;
     return evaluateTravelReadiness(
       {
         destinationSlug: 'mumbai',
         isBritishPassport: isBritishPassport === 'yes',
         exemptionDocument,
         departureDate,
+        arrivalDate,
         returnDate,
         passportExpiryDate,
       },
       new Date()
     );
-  }, [stage, isBritishPassport, exemptionDocument, departureDate, returnDate, passportExpiryDate]);
+  }, [stage, isBritishPassport, exemptionDocument, departureDate, arrivalDate, returnDate, passportExpiryDate]);
 
   const dominantAction = useMemo(
     () => getDominantAction({ boundaryState, travelReadySignal: travelReadyResult?.engineSignal ?? null }),
@@ -164,6 +170,19 @@ export function JourneyBriefManchesterMumbai() {
                   />
                 </div>
                 <div>
+                  <label htmlFor="jb-arrival" className="text-xs font-semibold uppercase tracking-wide text-ink-300">
+                    Arrival date in Mumbai
+                  </label>
+                  <input
+                    id="jb-arrival"
+                    type="date"
+                    disabled={flexibleDates}
+                    value={arrivalDate}
+                    onChange={(e) => setArrivalDate(e.target.value)}
+                    className="mt-1.5 h-11 w-full rounded-sm border border-white/15 bg-white/5 px-3 text-sm text-sand-50 focus-visible:border-brass disabled:opacity-40"
+                  />
+                </div>
+                <div>
                   <label htmlFor="jb-return" className="text-xs font-semibold uppercase tracking-wide text-ink-300">
                     Return date
                   </label>
@@ -186,6 +205,7 @@ export function JourneyBriefManchesterMumbai() {
                         setFlexibleDates(checked);
                         if (checked) {
                           setDepartureDate('');
+                          setArrivalDate('');
                           setReturnDate('');
                         }
                       }}
