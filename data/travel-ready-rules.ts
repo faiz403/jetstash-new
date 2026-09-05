@@ -40,6 +40,29 @@ export interface TravelReadyOfficialSource {
   url: string;
 }
 
+/**
+ * Machine-readable stay-length allowance for a visa-free (`visaRequired:
+ * false`) visa-requirement rule. Revalidated against each country's live
+ * GOV.UK entry-requirements page on 5 September 2026 (Trust Integrity fix):
+ *
+ * - UAE and Turkey are genuinely rolling-window rules — GOV.UK states "up to
+ *   90 days in any 180-day period" for both. `windowDays` is set for these.
+ * - Qatar (30 days) and Morocco (90 days) are simple per-visit maximums,
+ *   extendable in-country before expiry — GOV.UK does not frame either as a
+ *   rolling window. `windowDays` is left unset for these.
+ *
+ * See `lib/travel-ready-check.ts` for why a rolling-window rule is never
+ * simplified to "this trip alone is under the limit, therefore pass" — a
+ * single itinerary can't prove compliance with a window that depends on the
+ * traveller's other visits, which JetStash doesn't collect.
+ */
+export interface TravelReadyStayLimit {
+  /** Maximum days allowed in a single stay, or within the window below if one is set. */
+  maxDays: number;
+  /** Present only for a genuine rolling-window rule (e.g. "90 days in any 180-day period"). */
+  windowDays?: number;
+}
+
 export interface TravelReadyRule {
   id: string;
   /** Matches Destination.country in data/destinations.ts and VisaLink.country in lib/visa-links.ts. */
@@ -52,6 +75,8 @@ export interface TravelReadyRule {
   minDaysValidityBeyondEntry?: number;
   /** Machine-readable condition for visa-requirement rules. */
   visaRequired?: boolean;
+  /** Only set on a `visaRequired: false` rule that itself carries a stated stay-length limit. */
+  stayLimit?: TravelReadyStayLimit;
   /**
    * Only set where an official source states a firm figure (e.g. India's
    * e-Visa portal: "apply online minimum 4 days in advance"). Left unset —
@@ -253,6 +278,7 @@ export const travelReadyRules: TravelReadyRule[] = [
     requirement: 'A visitor visa is issued free of charge on arrival for up to 90 days within a 180-day period — no advance application is needed.',
     visaRequired: true,
     typicalProcessingDays: 0,
+    stayLimit: { maxDays: 90, windowDays: 180 },
     officialSource: GOVUK('United Arab Emirates', 'united-arab-emirates'),
     lastVerifiedDate: VERIFIED,
     reviewDueDate: REVIEW_DUE,
@@ -278,6 +304,7 @@ export const travelReadyRules: TravelReadyRule[] = [
     requirement: 'A tourist visa is issued on arrival, free, for up to 30 days, for full British Citizen passport holders travelling for tourism.',
     visaRequired: true,
     typicalProcessingDays: 0,
+    stayLimit: { maxDays: 30 },
     caveat: 'This on-arrival visa only covers tourism — travelling for any other purpose requires a visa arranged in advance.',
     officialSource: GOVUK('Qatar', 'qatar'),
     lastVerifiedDate: VERIFIED,
@@ -304,6 +331,7 @@ export const travelReadyRules: TravelReadyRule[] = [
     ruleType: 'visa-requirement',
     requirement: 'No visa is needed for business or tourism stays of up to 90 days in any 180-day period.',
     visaRequired: false,
+    stayLimit: { maxDays: 90, windowDays: 180 },
     officialSource: GOVUK('Turkey', 'turkey'),
     lastVerifiedDate: VERIFIED,
     reviewDueDate: REVIEW_DUE,
@@ -328,6 +356,7 @@ export const travelReadyRules: TravelReadyRule[] = [
     ruleType: 'visa-requirement',
     requirement: 'No visa is needed for tourism stays of up to 90 days.',
     visaRequired: false,
+    stayLimit: { maxDays: 90 },
     officialSource: GOVUK('Morocco', 'morocco'),
     lastVerifiedDate: VERIFIED,
     reviewDueDate: REVIEW_DUE,

@@ -209,7 +209,7 @@ describe('Travel Ready Check — the 11 required journeys', () => {
     expect(result.verdict).toBe('not-enough-information');
   });
 
-  it('12. TR-016 regression: British passport, UAE (visa-on-arrival, zero processing days) — ready to continue, not a false "start your application" caution', () => {
+  it('12. TR-016 regression: British passport, UAE (visa-on-arrival, zero processing days) — not a false "start your application" caution', () => {
     const result = evaluateTravelReadiness(
       {
         destinationSlug: 'dubai',
@@ -224,8 +224,18 @@ describe('Travel Ready Check — the 11 required journeys', () => {
     // Found via live browser testing, not the original 11 journeys (none of
     // which covered a visa-on-arrival destination): typicalProcessingDays: 0
     // was being treated as "you haven't arranged this yet" instead of "there
-    // is nothing to arrange in advance."
-    expect(result.verdict).toBe('ready-to-continue');
+    // is nothing to arrange in advance." That specific false-friction bug
+    // must still not reappear (see the negative assertion below).
+    //
+    // Trust Integrity fix (5 September 2026): this no longer reaches
+    // 'ready-to-continue' outright — UAE's 90-day allowance is a genuine
+    // rolling window ("90 days in any 180 days"), and JetStash doesn't
+    // collect the traveller's other visits, so a single short trip can't
+    // honestly be certified compliant. See
+    // tests/travel-ready-trust-integrity-fix.test.ts for the full stay-limit
+    // coverage this fix added.
+    expect(result.verdict).toBe('stay-length-unconfirmed');
+    expect(result.nextAction).not.toMatch(/start your application/i);
   });
 
   it('13. TR-016 regression: same check for Qatar (also visa-on-arrival, zero processing days)', () => {
