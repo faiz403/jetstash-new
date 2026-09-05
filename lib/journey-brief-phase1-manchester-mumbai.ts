@@ -186,7 +186,24 @@ export { formatRouteStatusDate };
 
 export type PrimaryNextAction =
   | { kind: 'check-travel-ready'; label: string; reason: string }
-  | { kind: 'search-current-options'; label: string; reason: string }
+  | {
+      kind: 'search-current-options';
+      label: string;
+      reason: string;
+      /**
+       * PR #233 final product-acceptance fix (5 Sept 2026, founder review).
+       * Set only when a genuine, still-open Travel Ready caution exists
+       * (severity 'caution' — e.g. document-timing-may-affect-booking) at
+       * the moment the primary action becomes "search current options".
+       * Carries that signal's own `label` verbatim — never a second,
+       * independently-worded reminder — so the open document task can't be
+       * silently forgotten the moment the reader reaches the actual action,
+       * even though it correctly isn't escalated to become the PRIMARY
+       * action itself (see this function's own doc comment for why
+       * 'caution' correctly stays secondary here).
+       */
+      openDocumentTask: string | null;
+    }
   | { kind: 'enter-travel-details'; label: string; reason: string };
 
 /**
@@ -199,6 +216,35 @@ export type PrimaryNextAction =
  * it, so that branch could never again return anything but the same
  * "search current options" outcome; keeping dead comparison logic around
  * would only invite it to silently disagree with the ledger again).
+ *
+ * PR #233 final product-acceptance check (5 Sept 2026, founder review): the
+ * founder asked whether "search current options" outranking an unresolved
+ * Travel Ready document task was a deliberate product decision or an
+ * accident of the generic severity enum. Traced through
+ * lib/travel-ready-check.ts's own verdict→severity mapping (unchanged by
+ * this fix): 'critical' is reserved for the two verdicts whose own
+ * NEXT_ACTIONS text says "before booking" — check-passport-validity and
+ * visa-or-entry-permission-needed, i.e. states where continuing to shop for
+ * a fare is actively premature. 'caution' covers
+ * document-timing-may-affect-booking, official-confirmation-required and
+ * stay-length-unconfirmed — states whose own NEXT_ACTIONS text explicitly
+ * ALLOWS continued shopping ("Start your application now. Consider a
+ * flexible or refundable fare until it's confirmed."), just with a caveat.
+ * So deferring to 'critical' alone to decide whether Travel Ready should
+ * become the PRIMARY action is not an accident of the enum — it already
+ * encodes exactly the founder's own stated rule ("if the document checker
+ * says the traveller needs to obtain/confirm entry permission before
+ * relying on the journey, Travel Ready is primary; if it simply informs the
+ * traveller of a known requirement that doesn't prevent continuing
+ * research, a fresh search remains reasonable").
+ *
+ * What was missing, and is what this fix actually adds: a 'caution' signal
+ * was previously invisible again the moment the reader reached this final
+ * section — Entry Readiness (answer 4) stated it, but What To Do Next
+ * (answer 5) said nothing about it. `openDocumentTask` closes that gap by
+ * carrying the caution forward as a secondary reminder next to the primary
+ * CTA, without re-litigating which action is primary and without
+ * introducing a second severity/suitability policy.
  */
 export function getManchesterMumbaiNextAction(input: {
   hasEnteredTravelDetails: boolean;
@@ -226,5 +272,6 @@ export function getManchesterMumbaiNextAction(input: {
     reason: hasCurrentFareSignal
       ? 'JetStash has a recent tracked fare for this route.'
       : "JetStash doesn't currently track a live representative fare for this route since the direct service ended — search current options directly.",
+    openDocumentTask: travelReadySignal?.severity === 'caution' ? travelReadySignal.label : null,
   };
 }

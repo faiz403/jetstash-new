@@ -152,3 +152,80 @@ describe('Primary next action — worst-true-signal-wins, no obsolete withdrawal
     expect(action.reason).toBe('JetStash has a recent tracked fare for this route.');
   });
 });
+
+describe('PR #233 final product-acceptance fix: a "caution" Travel Ready signal correctly stays secondary, but is never silently dropped', () => {
+  it('a "caution" signal (e.g. document-timing-may-affect-booking — its own next-action text explicitly allows continued shopping with a flexible fare) does NOT escalate to check-travel-ready — "critical" alone gates that, matching the two verdicts whose own wording says "before booking"', () => {
+    const action = getManchesterMumbaiNextAction({
+      hasEnteredTravelDetails: true,
+      travelReadySignal: { severity: 'caution', label: 'A document you still need to arrange may affect your timing — avoid a non-refundable fare for now.', detail: 'Start your application now.' },
+      hasCurrentFareSignal: false,
+    });
+    expect(action.kind).toBe('search-current-options');
+  });
+
+  it('...but the same caution IS carried forward as openDocumentTask, verbatim from the signal\'s own label — never a second, independently-worded reminder', () => {
+    const action = getManchesterMumbaiNextAction({
+      hasEnteredTravelDetails: true,
+      travelReadySignal: { severity: 'caution', label: 'A document you still need to arrange may affect your timing — avoid a non-refundable fare for now.', detail: 'Start your application now.' },
+      hasCurrentFareSignal: false,
+    });
+    expect(action.kind).toBe('search-current-options');
+    if (action.kind === 'search-current-options') {
+      expect(action.openDocumentTask).toBe('A document you still need to arrange may affect your timing — avoid a non-refundable fare for now.');
+    }
+  });
+
+  it('with no Travel Ready signal at all (nothing entered, or a clean "ready to continue"), openDocumentTask is null — never a fabricated reminder', () => {
+    const action = getManchesterMumbaiNextAction({
+      hasEnteredTravelDetails: true,
+      travelReadySignal: null,
+      hasCurrentFareSignal: false,
+    });
+    expect(action.kind).toBe('search-current-options');
+    if (action.kind === 'search-current-options') {
+      expect(action.openDocumentTask).toBeNull();
+    }
+  });
+
+  it('an "info"-severity signal (e.g. ready-to-continue never produces a signal, but a hypothetical low-priority one) does not populate openDocumentTask either — only a genuine caution does', () => {
+    const action = getManchesterMumbaiNextAction({
+      hasEnteredTravelDetails: true,
+      travelReadySignal: { severity: 'info', label: 'x', detail: 'y' },
+      hasCurrentFareSignal: false,
+    });
+    expect(action.kind).toBe('search-current-options');
+    if (action.kind === 'search-current-options') {
+      expect(action.openDocumentTask).toBeNull();
+    }
+  });
+});
+
+describe('The real India visa-timing scenario, end to end (evaluateTravelReadiness itself, unmodified)', () => {
+  it('a British passport holder with no OCI/exemption, travelling comfortably ahead of India\'s eVisa processing window, produces "document-timing-may-affect-booking" — caution, not critical — and Journey Brief correctly keeps "search options" primary while surfacing the open task', async () => {
+    const { evaluateTravelReadiness } = await import('@/lib/travel-ready-check');
+    const result = evaluateTravelReadiness(
+      {
+        destinationSlug: 'mumbai',
+        isBritishPassport: true,
+        exemptionDocument: 'none',
+        departureDate: '2026-11-01',
+        arrivalDate: '2026-11-02',
+        returnDate: '2026-11-15',
+        passportExpiryDate: '2031-01-01',
+      },
+      new Date('2026-09-05T12:00:00Z')
+    );
+    expect(result.verdict).toBe('document-timing-may-affect-booking');
+    expect(result.engineSignal?.severity).toBe('caution');
+
+    const action = getManchesterMumbaiNextAction({
+      hasEnteredTravelDetails: true,
+      travelReadySignal: result.engineSignal,
+      hasCurrentFareSignal: false,
+    });
+    expect(action.kind).toBe('search-current-options');
+    if (action.kind === 'search-current-options') {
+      expect(action.openDocumentTask).toBe(result.engineSignal!.label);
+    }
+  });
+});

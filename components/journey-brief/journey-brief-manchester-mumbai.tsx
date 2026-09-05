@@ -425,6 +425,19 @@ export function JourneyBriefManchesterMumbai() {
               </h2>
               <p className="mt-2 max-w-2xl text-sm leading-relaxed text-ink-300">{nextAction.reason}</p>
 
+              {/* PR #233 final product-acceptance fix: a still-open Travel
+                  Ready caution (e.g. a document to arrange) stays visible
+                  right beside the primary action, not just in the Entry
+                  Readiness section above it — see getManchesterMumbaiNextAction's
+                  own doc comment for why this stays a reminder, not an
+                  escalation to a different primary action. */}
+              {nextAction.kind === 'search-current-options' && nextAction.openDocumentTask && (
+                <p className="mt-3 flex items-start gap-2 max-w-2xl rounded-sm border border-brass/30 bg-brass/10 px-4 py-3 text-sm leading-relaxed text-brass-100">
+                  <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-brass-300" strokeWidth={2} aria-hidden="true" />
+                  <span>Still open: {nextAction.openDocumentTask}</span>
+                </p>
+              )}
+
               {nextAction.kind === 'search-current-options' && tripComUrl && (
                 <div className="mt-5">
                   <TrackedOutboundLink

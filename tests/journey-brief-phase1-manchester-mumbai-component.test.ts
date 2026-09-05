@@ -133,3 +133,30 @@ describe('Trip.com URL construction is untouched', () => {
     expect(componentSrc).not.toContain('Allianceid');
   });
 });
+
+describe('PR #233 final product-acceptance fix: an open Travel Ready caution stays visible beside the primary action', () => {
+  it('renders the reminder from nextAction.openDocumentTask (never a second, hand-written sentence), gated so it only ever appears alongside the search-current-options primary action', () => {
+    expect(componentSrc).toContain('nextAction.openDocumentTask');
+    expect(componentSrc).toContain('Still open:');
+    // Gated inside the same 'search-current-options' branch, never rendered
+    // for check-travel-ready (which already IS the Travel Ready action) or
+    // enter-travel-details (no signal exists yet to remind about).
+    const reminderIdx = componentSrc.indexOf('Still open:');
+    const nearestKindCheck = componentSrc.lastIndexOf("nextAction.kind === 'search-current-options'", reminderIdx);
+    expect(nearestKindCheck).toBeGreaterThan(-1);
+  });
+
+  it('the reminder appears before the Trip.com CTA in source order — seen on the way to the action, not after it', () => {
+    const reminderIdx = componentSrc.indexOf('Still open:');
+    const ctaIdx = componentSrc.indexOf('Search on Trip.com');
+    expect(reminderIdx).toBeLessThan(ctaIdx);
+  });
+
+  it('the reminder text is never invented independently — it comes verbatim from the SAME travelReadySignal already rendered in the Entry Readiness section above, not a second copy', () => {
+    // Only one place in the component hand-authors Travel Ready copy: the
+    // travelReadyResult.headline/nextAction/disclaimer rendered in section
+    // 4. Section 5's reminder must reuse the engine's own signal label,
+    // never a parallel hardcoded sentence.
+    expect(componentSrc).not.toMatch(/Still open:.*['"][A-Za-z]/);
+  });
+});
