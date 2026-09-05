@@ -135,7 +135,7 @@ describe('Manchester–Dubai (£336, obs-man-dxb-economy-20260901-8w-v1) — arr
     expect(c.returnDuration).toBe('11h 50m');
   });
 
-  it('neither leg\'s duration is decisive — both are known but ordinary (no airport change, no long layover, well under the notable-duration threshold), so the summary must not show them merely for decoration', () => {
+  it('neither leg\'s duration is decisive — both are known but ordinary: no airport change, no long layover stated on either leg, and this record has no self-transfer at all so it can\'t match isPoorItinerarySuitability either — the summary must not show a duration merely for decoration', () => {
     expect(c.outboundDurationIsDecisive).toBe(false);
     expect(c.returnDurationIsDecisive).toBe(false);
     const summary = formatJourneyConsequenceSummary(c);
@@ -174,7 +174,7 @@ describe('Manchester–Lahore (£3,051 Business, obs-man-lhe-business-20260822-8
     expect(c.hasLongLayover).toBe(false);
   });
 
-  it('PR #232: both legs are decisive ONLY via the NOTABLE_LEG_DURATION_HOURS fallback (no ground transfer, no long layover stated on either leg — 34h50m and 43h20m are each independently >= 24h)', () => {
+  it('PR #232 (corrected): both legs are decisive because the WHOLE observation already matches the EXISTING canonical isPoorItinerarySuitability() rule (self-transfer + 3 stops each way) — not a newly invented duration threshold. No ground transfer or long layover is stated on either leg; this is the only path either flag can be true here.', () => {
     expect(c.outboundDurationIsDecisive).toBe(true);
     expect(c.returnDurationIsDecisive).toBe(true);
   });
@@ -256,18 +256,38 @@ describe('PR #232 decisive-duration correction — regression guard against "sho
     expect(summary).not.toContain('Return: 2h 30m');
   });
 
-  it('NOTABLE_LEG_DURATION_HOURS boundary: exactly 24h is decisive, 23h59m (just under) is not, with no other stated reason on that leg', () => {
-    const atThreshold = getJourneyConsequences(
-      { priceNote: 'return, per person, one adult; outbound MAN-XYZ, Fixture Air, nonstop, 24h; return XYZ-MAN, Fixture Air, nonstop, 2h; baggage not stated' },
+  it('a plainly long duration alone — no self-transfer, no ground transfer, no long layover, no poor-itinerary match — is never treated as decisive: there is no generic duration threshold in this module', () => {
+    const c = getJourneyConsequences(
+      { priceNote: 'return, per person, one adult; single ticket, no self-transfer; outbound MAN-XYZ, Fixture Air, nonstop, 30h; return XYZ-MAN, Fixture Air, nonstop, 2h; baggage not stated' },
       null
     );
-    expect(atThreshold.outboundDurationIsDecisive).toBe(true);
+    expect(c.outboundDuration).toBe('30h');
+    expect(c.outboundDurationIsDecisive).toBe(false);
+    expect(formatJourneyConsequenceSummary(c)).not.toContain('Outbound: 30h');
+  });
 
-    const justUnder = getJourneyConsequences(
-      { priceNote: 'return, per person, one adult; outbound MAN-XYZ, Fixture Air, nonstop, 23h59m; return XYZ-MAN, Fixture Air, nonstop, 2h; baggage not stated' },
+  it('self-transfer with only 1 stop (below isPoorItinerarySuitability\'s 2-stop bar) and a long duration but no stated reason on that leg is NOT decisive — mirrors the real Manchester-Istanbul/Agadir shape (1 stop each), proving the fallback genuinely requires the full existing rule to match, not "self-transfer alone"', () => {
+    const c = getJourneyConsequences(
+      {
+        priceNote: 'return, per person, one adult; self-transfer; outbound MAN-XYZ, Fixture Air, 1 stop, 30h; return XYZ-MAN, Fixture Air, nonstop, 2h; baggage not stated',
+        outboundStops: 1,
+        returnStops: 0,
+      },
       null
     );
-    expect(justUnder.outboundDurationIsDecisive).toBe(false);
+    expect(c.outboundDurationIsDecisive).toBe(false);
+  });
+
+  it('the same self-transfer fixture WITH 2+ stops on the long leg DOES trip the existing isPoorItinerarySuitability rule and becomes decisive — proving the fallback is genuinely the existing canonical rule, not a disguised duration threshold', () => {
+    const c = getJourneyConsequences(
+      {
+        priceNote: 'return, per person, one adult; self-transfer; outbound MAN-XYZ, Fixture Air, 2 stops, 30h; return XYZ-MAN, Fixture Air, nonstop, 2h; baggage not stated',
+        outboundStops: 2,
+        returnStops: 0,
+      },
+      null
+    );
+    expect(c.outboundDurationIsDecisive).toBe(true);
   });
 });
 

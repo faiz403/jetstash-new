@@ -1,5 +1,6 @@
 import type { FareObservation } from '@/data/fare-observations';
 import { isSelfTransferItinerary } from '@/lib/fare-self-transfer';
+import { isPoorItinerarySuitability } from '@/lib/itinerary-suitability';
 
 /**
  * Bad-fare prominence / journey-consequence fix (5 September 2026,
@@ -12,7 +13,7 @@ import { isSelfTransferItinerary } from '@/lib/fare-self-transfer';
  * fare summary (Fare Signal, Tracked Fares Explorer, DealCard) can show an
  * attractive price with no decisive journey consequence visible beside it,
  * so a traveller has to open deep evidence to discover a self-transfer,
- * an airport change, an extreme elapsed duration, or an arrival airport
+ * an airport change, a decisive elapsed duration, or an arrival airport
  * that differs from the route's own destination.
  *
  * This module is the ONE place that reads a `FareObservation`'s own
@@ -22,7 +23,10 @@ import { isSelfTransferItinerary } from '@/lib/fare-self-transfer';
  *   - Reads only `priceNote` (plus the already-structured
  *     outboundJourneyMinutes/returnJourneyMinutes fields when present) —
  *     never infers a consequence from price, stop count, or airline count
- *     alone.
+ *     alone. The one exception is deliberate and narrow: whether a leg's
+ *     own KNOWN duration is worth SHOWING (not detecting) can also reuse
+ *     the existing, canonical isPoorItinerarySuitability() self-transfer
+ *     + stop-count verdict — see getJourneyConsequences's own doc comment.
  *   - Every text-based extractor is deliberately conservative: it returns
  *     `null` (no signal) rather than a guess whenever the priceNote's
  *     routing description has embedded complexity (airline names, nested
@@ -40,15 +44,22 @@ import { isSelfTransferItinerary } from '@/lib/fare-self-transfer';
  *     is never rendered as a fact.
  *
  * The suppression threshold for a genuinely poor itinerary already exists
- * (`isPoorItinerarySuitability()`, lib/fare-signal.ts — self-transfer AND
- * 2+ stops on either leg) and is untouched by this module: that governs
- * WHETHER an observation is shown as the current representative fare at
- * all. This module governs WHAT a shown observation's own summary says —
- * a fare that correctly passes the suitability threshold (e.g. a genuine
- * 1-stop self-transfer) can still have a decisive consequence worth
- * surfacing prominently, which is exactly the Manchester-Istanbul and
+ * (`isPoorItinerarySuitability()`, lib/itinerary-suitability.ts —
+ * self-transfer AND 2+ stops on either leg, re-exported from
+ * lib/fare-signal.ts for backward compatibility) and its own SUPPRESSION
+ * behaviour is untouched by this module: that governs WHETHER an
+ * observation is shown as the current representative fare at all. This
+ * module governs WHAT a shown observation's own summary says — a fare
+ * that correctly passes the suitability threshold (e.g. a genuine 1-stop
+ * self-transfer) can still have a decisive consequence worth surfacing
+ * prominently, which is exactly the Manchester-Istanbul and
  * Manchester-Agadir cases: both pass suppression (1 stop, not 2+) but both
- * have a materially long, ground-transfer-airport-changing return leg.
+ * have a materially long, ground-transfer-airport-changing leg. This
+ * module DOES reuse isPoorItinerarySuitability() itself, once, as a
+ * signal (never a new threshold) for whether a shown-but-poor
+ * observation's own known durations are worth surfacing — see
+ * getJourneyConsequences's own "PR #232 decisive-duration correction"
+ * comment for exactly where and why.
  */
 
 export interface JourneyConsequences {
@@ -88,12 +99,19 @@ export interface JourneyConsequences {
    * be decided per leg, not "show whichever leg happened to parse". A leg
    * is decisive when either (a) that leg's own priceNote clause states the
    * ground-transfer airport change or a long layover — the fact making
-   * that specific leg cumbersome — or (b) as a fallback for a leg with no
-   * such stated reason but a plainly extreme elapsed time (see
-   * NOTABLE_LEG_DURATION_HOURS's own doc comment), so a case like
-   * Manchester-Lahore's 34h50m/43h20m Business fare — genuinely long on
-   * both legs, but with neither leg's clause stating a layover or airport
-   * change — still surfaces both durations.
+   * that specific leg cumbersome — or (b) the WHOLE observation already
+   * matches the existing, canonical isPoorItinerarySuitability() rule
+   * (self-transfer AND 2+ stops on either leg — see
+   * lib/itinerary-suitability.ts). (b) is deliberately NOT a new duration
+   * threshold: it reuses the same evidenced product state JetStash already
+   * uses elsewhere to decide an itinerary is operationally unreasonable,
+   * rather than inventing a second, independent definition of "long". This
+   * is exactly why Manchester-Lahore's 34h50m/43h20m Business fare — no
+   * leg stating a layover or airport change, but self-transfer with 3
+   * stops each way, which already trips isPoorItinerarySuitability() —
+   * still surfaces both known durations: JetStash has already, elsewhere,
+   * evidenced that this itinerary is materially unreasonable; that
+   * existing verdict is reused here, not re-derived.
    */
   outboundDurationIsDecisive: boolean;
   returnDurationIsDecisive: boolean;
@@ -115,36 +133,6 @@ const GROUND_TRANSFER_PATTERN = /ground transfer between ([A-Z]{3}) and ([A-Z]{3
 const LONG_LAYOVER_PATTERN = /\blong layover\b/i;
 /** Captures the city name the observation's own text already states immediately before "long layover", e.g. "(16h10m Milan long layover" -> "Milan". */
 const LONG_LAYOVER_CITY_PATTERN = /\(\s*[\dh\s]+m?\s+([A-Z][a-zA-Z]+)\s+long layover/i;
-
-/**
- * PR #232 decisive-duration correction (5 Sept 2026, founder review of the
- * original PR #232 submission). No existing canonical JetStash rule
- * defines an "extremely long journey" duration threshold anywhere in the
- * codebase (isPoorItinerarySuitability, lib/fare-signal.ts, is the closest
- * relative and is entirely duration-blind — self-transfer + stop count
- * only) — this is confirmed by a direct search of lib/ before introducing
- * this constant, deliberately named and isolated here rather than reused
- * or duplicated silently.
- *
- * This is NOT a second suitability policy: isPoorItinerarySuitability()
- * still exclusively governs whether an observation is shown as the
- * representative fare AT ALL (untouched by this module). This constant
- * answers a narrower, purely presentational question — once an
- * observation IS being shown, is a specific leg's own elapsed time, on its
- * own, worth calling out even when its priceNote states no explicit
- * ground-transfer/long-layover reason? It exists only as the fallback
- * signal for exactly that case (see outboundDurationIsDecisive/
- * returnDurationIsDecisive's own doc comment) — Manchester-Lahore's
- * £3,051 Business fare (34h50m outbound, 43h20m return, neither leg's own
- * clause naming a layover or airport change) is the one confirmed live
- * case this fallback exists for. 24 hours — a full calendar day spent
- * travelling one way — is a round, defensible, non-arbitrary-feeling
- * line, not a tuned score. See tests/journey-consequence.test.ts for
- * dedicated coverage proving this fallback fires only when no more
- * specific reason (ground transfer / long layover) is already stated on
- * that same leg.
- */
-const NOTABLE_LEG_DURATION_HOURS = 24;
 
 /**
  * Deliberately strict: only matches a routing string that is PURELY
@@ -227,13 +215,6 @@ function legHasLongLayover(priceNote: string, leg: 'outbound' | 'return'): boole
   return clause !== null && LONG_LAYOVER_PATTERN.test(clause);
 }
 
-/** A leg's own duration is decisive when >= NOTABLE_LEG_DURATION_HOURS — see that constant's own doc comment for why this exists only as a fallback. */
-function isNotablyLongDuration(duration: string | null): boolean {
-  if (!duration) return false;
-  const hours = parseInt(duration, 10);
-  return Number.isFinite(hours) && hours >= NOTABLE_LEG_DURATION_HOURS;
-}
-
 /** "27h55m" / "26h" -> "27h 55m" / "26h" — matches the site's existing "Xh Ym" spacing convention. */
 function normaliseDurationSpacing(duration: string): string {
   return duration.replace(/^(\d+h)(\d)/, '$1 $2');
@@ -246,7 +227,7 @@ function formatMinutesAsDuration(minutes: number): string {
 }
 
 export function getJourneyConsequences(
-  observation: Pick<FareObservation, 'priceNote' | 'outboundJourneyMinutes' | 'returnJourneyMinutes'>,
+  observation: Pick<FareObservation, 'priceNote' | 'outboundJourneyMinutes' | 'returnJourneyMinutes' | 'outboundStops' | 'returnStops'>,
   destinationIataCode: string | null
 ): JourneyConsequences {
   const priceNote = observation.priceNote ?? '';
@@ -280,19 +261,32 @@ export function getJourneyConsequences(
   // PR #232 decisive-duration correction: each leg's own "is this duration
   // worth showing" decision is scoped to THAT leg's own clause — a leg is
   // decisive when its own text states the reason (ground transfer / long
-  // layover), or, failing that, when its own elapsed time is itself
-  // plainly extreme (NOTABLE_LEG_DURATION_HOURS's fallback). Never decided
-  // by the OTHER leg's facts, and never by "a duration exists" alone —
-  // Manchester-Agadir's short, unremarkable 3h50m outbound must stay
-  // hidden even though the record as a whole has a decisive return leg.
+  // layover). Never decided by the OTHER leg's facts, and never by "a
+  // duration exists" alone — Manchester-Agadir's short, unremarkable
+  // 3h50m outbound must stay hidden even though the record as a whole has
+  // a decisive return leg.
+  //
+  // The one fallback is deliberately NOT a new duration threshold: when
+  // the WHOLE observation already matches the existing, canonical
+  // isPoorItinerarySuitability() rule (self-transfer AND 2+ stops on
+  // either leg), JetStash has already, elsewhere, evidenced that this
+  // itinerary is materially unreasonable — that existing verdict is
+  // reused to justify showing both known durations (Manchester-Lahore's
+  // 34h50m/43h20m Business fare is the confirmed live case), never
+  // re-derived from a newly invented number.
+  const wholeItineraryIsPoor = isPoorItinerarySuitability({
+    priceNote,
+    outboundStops: observation.outboundStops,
+    returnStops: observation.returnStops,
+  });
   const outboundDurationIsDecisive =
     legHasGroundTransfer(priceNote, 'outbound') ||
     legHasLongLayover(priceNote, 'outbound') ||
-    isNotablyLongDuration(outboundDuration);
+    wholeItineraryIsPoor;
   const returnDurationIsDecisive =
     legHasGroundTransfer(priceNote, 'return') ||
     legHasLongLayover(priceNote, 'return') ||
-    isNotablyLongDuration(returnDuration);
+    wholeItineraryIsPoor;
 
   return {
     selfTransfer: isSelfTransferItinerary(priceNote),
