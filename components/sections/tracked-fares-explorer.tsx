@@ -198,13 +198,27 @@ function AirportSection({
   );
 }
 
-function directnessLabel(entry: TrackedFareEntry): string | null {
+/**
+ * Asymmetric-itinerary fix (5 Sept 2026, independently reproduced Astra
+ * finding). See the matching fix and full explanation in
+ * components/route/fare-signal.tsx's formatStops() — outboundStops and
+ * returnStops are independent facts, so a genuinely asymmetric itinerary
+ * must show both real numbers rather than reusing outboundStops alone as if
+ * it applied to the whole round trip.
+ */
+export function formatStops(observation: TrackedFareEntry['observation']): string | null {
+  if (observation.outboundStops === null || observation.returnStops === null) return null;
+  if (observation.outboundStops === observation.returnStops) {
+    return `${observation.outboundStops} stop${observation.outboundStops === 1 ? '' : 's'} each way`;
+  }
+  return `${observation.outboundStops} stop${observation.outboundStops === 1 ? '' : 's'} outbound, ${observation.returnStops} stop${observation.returnStops === 1 ? '' : 's'} return`;
+}
+
+export function directnessLabel(entry: TrackedFareEntry): string | null {
   const { observation } = entry;
   if (observation.directness === 'direct') return 'Direct';
   if (observation.directness === 'connecting') {
-    const stops = observation.outboundStops !== null && observation.returnStops !== null
-      ? `${observation.outboundStops} stop${observation.outboundStops === 1 ? '' : 's'} each way`
-      : null;
+    const stops = formatStops(observation);
     return stops ? `Connecting · ${stops}` : 'Connecting';
   }
   return null;

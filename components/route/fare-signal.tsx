@@ -59,12 +59,29 @@ function StandoutEvidence({ standout }: { standout: StandoutFarePresentation }) 
   );
 }
 
-function formatStops(observation: FareSignalObservation): string | null {
+/**
+ * Asymmetric-itinerary fix (5 Sept 2026, independently reproduced Astra
+ * finding — confirmed on manchester-agadir and bristol-faro in production).
+ * outboundStops and returnStops are genuinely independent facts — a return
+ * leg can be routed differently from the outbound leg (e.g. a Milan airport
+ * change with a long layover) — so collapsing both into one "each way"
+ * figure using only outboundStops silently discarded the return leg's real
+ * routing and could print a self-contradictory "0 stops" summary next to a
+ * "Connecting" label. Mirrors the equality check already correct in
+ * components/route/journey-choice.tsx and smart-fare-comparison.tsx, but
+ * states both real numbers instead of falling back to a vague "not shown"
+ * placeholder — JetStash already knows both figures, so showing them beats
+ * hiding them.
+ */
+export function formatStops(observation: FareSignalObservation): string | null {
   if (observation.outboundStops === null || observation.returnStops === null) return null;
-  return `${observation.outboundStops} stop${observation.outboundStops === 1 ? '' : 's'} each way`;
+  if (observation.outboundStops === observation.returnStops) {
+    return `${observation.outboundStops} stop${observation.outboundStops === 1 ? '' : 's'} each way`;
+  }
+  return `${observation.outboundStops} stop${observation.outboundStops === 1 ? '' : 's'} outbound, ${observation.returnStops} stop${observation.returnStops === 1 ? '' : 's'} return`;
 }
 
-function formatRouting(observation: FareSignalObservation): string | null {
+export function formatRouting(observation: FareSignalObservation): string | null {
   const stops = formatStops(observation);
   const connection = observation.connectionAirports.length > 0
     ? ` via ${observation.connectionAirports.join(' and ')}`
