@@ -47,19 +47,44 @@ describe('The six confirmed unsupported phrases no longer appear anywhere in rou
   });
 });
 
-describe('Gatwick: the undated absolute Ahmedabad claim is removed, not just softened', () => {
+describe('Gatwick: the undated absolute Ahmedabad claim is removed, not just softened (August 2026 fix)', () => {
   it('does not claim to be the "only UK airport" with a direct Ahmedabad service', () => {
     expect(gatwickAirport.whyThisAirport).not.toMatch(/only UK airport with a direct/i);
   });
 
-  it('the Ahmedabad service is now framed conditionally ("when it\'s operating"), not as an absolute', () => {
-    expect(gatwickAirport.whyThisAirport).toContain('direct, non-stop service to Ahmedabad when it\'s operating');
-  });
-
-  it('still contains useful Gujarati/Ahmedabad context without an absolute ranking claim', () => {
-    expect(gatwickAirport.whyThisAirport).toMatch(/Gujarati heritage travellers/i);
+  it('still contains useful Ahmedabad context without an absolute ranking claim', () => {
     expect(gatwickAirport.whyThisAirport).toMatch(/Ahmedabad/);
     expect(gatwickAirport.whyThisAirport).not.toMatch(/first choice|best airport|only UK airport|guaranteed/i);
+  });
+});
+
+describe('Gatwick: the conditional Ahmedabad claim is corrected to match the route\'s genuine unresolved status, not just softened again (Cross-surface truth fix, 5 September 2026)', () => {
+  // The August 2026 fix above correctly removed an unsupported superlative
+  // ("only UK airport"), but kept a conditional "direct, non-stop service
+  // ...when it's operating" framing — which was still wrong once Rolling
+  // Reverification Batch 4 (4 September 2026) established that
+  // london-gatwick-ahmedabad's own directness/airport is a genuine,
+  // currently unresolved conflict across Air India's own sources (not an
+  // intermittent-but-real direct service). "When it's operating" implied
+  // the only uncertainty was scheduling; the real uncertainty is whether
+  // the service is even at this airport.
+  it('no longer frames Ahmedabad as a direct/non-stop service, conditionally or otherwise', () => {
+    expect(gatwickAirport.whyThisAirport).not.toMatch(/direct,?\s*non-stop service to ahmedabad/i);
+    expect(gatwickAirport.description).not.toMatch(/only non-stop service to ahmedabad/i);
+  });
+
+  it('states the genuine, unresolved Gatwick-vs-Heathrow conflict instead', () => {
+    expect(gatwickAirport.whyThisAirport).toMatch(/genuine, unresolved conflict/i);
+    expect(gatwickAirport.description).toMatch(/disputed ahmedabad service/i);
+  });
+
+  it('no longer claims Birmingham shares a direct Amritsar service — birmingham-amritsar is connecting-only', () => {
+    expect(gatwickAirport.whyThisAirport).not.toMatch(/direct amritsar service shared with birmingham/i);
+    expect(gatwickAirport.whyThisAirport).toMatch(/birmingham.{0,20}amritsar route is a connection, not a direct flight/i);
+  });
+
+  it('still correctly states Gatwick\'s own genuinely-confirmed direct Amritsar service', () => {
+    expect(gatwickAirport.whyThisAirport).toMatch(/confirmed direct amritsar service/i);
   });
 });
 

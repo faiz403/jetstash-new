@@ -168,15 +168,66 @@ export default function UmrahHubPage() {
             </div>
             <div className="rounded-md border border-ink-100 bg-white p-7">
               <h3 className="font-display text-xl text-ink-900">Visa requirements</h3>
+              {/*
+                Cross-surface truth fix (5 September 2026, independently
+                reproduced Astra finding): this previously stated flatly
+                that "an Umrah visa is required... separate from a standard
+                tourist visa" — Saudi Arabia's own official eVisa portal
+                (visa.visitsaudi.com) states the tourist eVisa itself
+                explicitly permits "Umrah (excluding Hajj)" for eligible
+                nationalities, including the UK. GOV.UK's foreign travel
+                advice corroborates the same general principle for its ETA
+                and electronic-visa-waiver categories, both of which
+                explicitly list "Umrah (outside the Hajj season)" as a
+                covered purpose, and confirms Hajj always needs its own
+                separate Hajj visa regardless of which visa a traveller
+                holds. Corrected to state both real paths (tourist eVisa,
+                or an operator/Nusuk-arranged Umrah visa) rather than one
+                false absolute, per the founder's explicit instruction not
+                to replace one absolute with another — this does not claim
+                every traveller qualifies for the eVisa, and keeps the
+                Hajj exclusion and permit/access uncertainty explicit
+                rather than manufacturing certainty this session couldn't
+                verify against a primary source (the specific in-person
+                Grand Mosque access/permit mechanism is widely reported by
+                Umrah operators but wasn't confirmed here against an
+                official primary source, so it's phrased as a caveat to
+                check, not a stated fact).
+              */}
               <p className="mt-3 text-sm leading-relaxed text-ink-600">
-                An Umrah visa is required and is typically arranged through an authorised Umrah travel provider, or
-                directly via the Saudi government's Nusuk platform. It is separate from a standard tourist visa and
-                is tied to your Umrah package dates.
+                A dedicated Umrah visa is not always required. Saudi Arabia's official tourist eVisa — available to
+                UK passport holders — explicitly allows Umrah, excluding Hajj, which always needs its own separate
+                Hajj visa regardless of which visa you hold. Many Umrah packages are still sold with their own visa
+                arranged by the operator or directly through Nusuk, which remains a normal and often simpler route
+                for a package booking.
+              </p>
+              <p className="mt-3 text-sm leading-relaxed text-ink-600">
+                Saudi authorities may set additional registration or permit requirements to access specific
+                religious sites during Umrah — check the current process with your provider or directly via Nusuk
+                before travelling.
               </p>
               <p className="mt-4 text-xs text-ink-400">
                 Requirements change, so always confirm directly with your Umrah provider or the Saudi authorities
                 before booking.
               </p>
+              <div className="mt-5 flex flex-wrap gap-3 text-xs">
+                <a
+                  href="https://visa.visitsaudi.com/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-semibold text-terracotta-600 underline underline-offset-2 hover:text-terracotta-700"
+                >
+                  Saudi eVisa portal (official)
+                </a>
+                <a
+                  href="https://umrah.nusuk.sa/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-semibold text-terracotta-600 underline underline-offset-2 hover:text-terracotta-700"
+                >
+                  Nusuk, Saudi Ministry of Hajj and Umrah (official)
+                </a>
+              </div>
               <div className="mt-5 flex flex-wrap gap-3">
                 <LinkButton href="/contact" variant="ghost" size="sm">
                   Ask us a question
