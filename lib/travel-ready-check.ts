@@ -150,6 +150,17 @@ function evaluateStayLimit(
 }
 
 /**
+ * Founder correction (5 September 2026, PR #228 boundary check): re-checked
+ * GOV.UK's own live pages for UAE, Qatar, Turkey and Morocco specifically
+ * for an explicit day-counting rule — none states one. JetStash must not
+ * pretend to know the precise legal boundary, so every stay-limit-driven
+ * result says plainly how *we* counted the days, rather than presenting
+ * `tripLengthDaysInclusive`'s figure as if it were an official count.
+ */
+const STAY_LIMIT_COUNTING_CAVEAT =
+  "JetStash counts both your departure and return dates as full days present — the official source doesn't publish an exact day-counting rule, so treat this as a careful estimate and check your exact dates against the source below if you're close to the limit.";
+
+/**
  * JetStash's own conservative planning buffer, used only when a destination's
  * official visa process publishes no guaranteed processing time (Pakistan,
  * Saudi Arabia) — explicitly presented in copy as our general advice, never
@@ -376,7 +387,7 @@ export function evaluateTravelReadiness(input: TravelReadyCheckInput, now: Date)
           id: 'visa-requirement',
           label: 'Visa or entry permission',
           status: 'fail',
-          detail: `${visaRule.requirement} Your entered dates are ${stayLimitResult.tripLengthDays} days — longer than the ${visaRule.stayLimit!.maxDays}-day visa-free allowance${visaRule.stayLimit!.windowDays ? ` within any ${visaRule.stayLimit!.windowDays}-day period` : ''}. You'll need to arrange a visa or check current entry requirements before booking.`,
+          detail: `${visaRule.requirement} Your entered dates are ${stayLimitResult.tripLengthDays} days — longer than the ${visaRule.stayLimit!.maxDays}-day visa-free allowance${visaRule.stayLimit!.windowDays ? ` within any ${visaRule.stayLimit!.windowDays}-day period` : ''}. You'll need to arrange a visa or check current entry requirements before booking. ${STAY_LIMIT_COUNTING_CAVEAT}`,
           officialSource: visaRule.officialSource,
           lastVerifiedDate: visaRule.lastVerifiedDate,
           reviewDueDate: visaRule.reviewDueDate,
@@ -387,7 +398,7 @@ export function evaluateTravelReadiness(input: TravelReadyCheckInput, now: Date)
           id: 'visa-requirement',
           label: 'Visa or entry permission',
           status: 'caution',
-          detail: `${visaRule.requirement} Your entered dates are ${stayLimitResult.tripLengthDays} days, within the ${visaRule.stayLimit!.maxDays}-day limit on their own — but that's a rolling ${visaRule.stayLimit!.windowDays}-day allowance, and JetStash doesn't know about any other visits you've made within that window. We can't confirm you're within the allowance from this trip alone — check your own recent travel history against the official rule before booking.`,
+          detail: `${visaRule.requirement} Your entered dates are ${stayLimitResult.tripLengthDays} days, within the ${visaRule.stayLimit!.maxDays}-day limit on their own — but that's a rolling ${visaRule.stayLimit!.windowDays}-day allowance, and JetStash doesn't know about any other visits you've made within that window. We can't confirm you're within the allowance from this trip alone — check your own recent travel history against the official rule before booking. ${STAY_LIMIT_COUNTING_CAVEAT}`,
           officialSource: visaRule.officialSource,
           lastVerifiedDate: visaRule.lastVerifiedDate,
           reviewDueDate: visaRule.reviewDueDate,
@@ -398,7 +409,7 @@ export function evaluateTravelReadiness(input: TravelReadyCheckInput, now: Date)
           id: 'visa-requirement',
           label: 'Visa or entry permission',
           status: 'pass',
-          detail: visaRule.requirement,
+          detail: `${visaRule.requirement}${visaRule.stayLimit ? ` ${STAY_LIMIT_COUNTING_CAVEAT}` : ''}`,
           officialSource: visaRule.officialSource,
           lastVerifiedDate: visaRule.lastVerifiedDate,
           reviewDueDate: visaRule.reviewDueDate,
@@ -432,7 +443,7 @@ export function evaluateTravelReadiness(input: TravelReadyCheckInput, now: Date)
           id: 'visa-requirement',
           label: 'Visa or entry permission',
           status: 'fail',
-          detail: `${visaRule.requirement}${visaRule.caveat ? ` ${visaRule.caveat}` : ''} Your entered dates are ${stayLimitResult.tripLengthDays} days — longer than the ${visaRule.stayLimit!.maxDays}-day allowance${visaRule.stayLimit!.windowDays ? ` within any ${visaRule.stayLimit!.windowDays}-day period` : ''}. You'll need to check current entry requirements before booking.`,
+          detail: `${visaRule.requirement}${visaRule.caveat ? ` ${visaRule.caveat}` : ''} Your entered dates are ${stayLimitResult.tripLengthDays} days — longer than the ${visaRule.stayLimit!.maxDays}-day allowance${visaRule.stayLimit!.windowDays ? ` within any ${visaRule.stayLimit!.windowDays}-day period` : ''}. You'll need to check current entry requirements before booking. ${STAY_LIMIT_COUNTING_CAVEAT}`,
           officialSource: visaRule.officialSource,
           lastVerifiedDate: visaRule.lastVerifiedDate,
           reviewDueDate: visaRule.reviewDueDate,
@@ -443,7 +454,7 @@ export function evaluateTravelReadiness(input: TravelReadyCheckInput, now: Date)
           id: 'visa-requirement',
           label: 'Visa or entry permission',
           status: 'caution',
-          detail: `${visaRule.requirement}${visaRule.caveat ? ` ${visaRule.caveat}` : ''} Your entered dates are ${stayLimitResult.tripLengthDays} days, within the ${visaRule.stayLimit!.maxDays}-day limit on their own — but that's a rolling ${visaRule.stayLimit!.windowDays}-day allowance, and JetStash doesn't know about any other visits you've made within that window. We can't confirm you're within the allowance from this trip alone — check your own recent travel history against the official rule before booking.`,
+          detail: `${visaRule.requirement}${visaRule.caveat ? ` ${visaRule.caveat}` : ''} Your entered dates are ${stayLimitResult.tripLengthDays} days, within the ${visaRule.stayLimit!.maxDays}-day limit on their own — but that's a rolling ${visaRule.stayLimit!.windowDays}-day allowance, and JetStash doesn't know about any other visits you've made within that window. We can't confirm you're within the allowance from this trip alone — check your own recent travel history against the official rule before booking. ${STAY_LIMIT_COUNTING_CAVEAT}`,
           officialSource: visaRule.officialSource,
           lastVerifiedDate: visaRule.lastVerifiedDate,
           reviewDueDate: visaRule.reviewDueDate,
@@ -454,7 +465,7 @@ export function evaluateTravelReadiness(input: TravelReadyCheckInput, now: Date)
           id: 'visa-requirement',
           label: 'Visa or entry permission',
           status: 'pass',
-          detail: `${visaRule.requirement}${visaRule.caveat ? ` ${visaRule.caveat}` : ''}`,
+          detail: `${visaRule.requirement}${visaRule.caveat ? ` ${visaRule.caveat}` : ''}${visaRule.stayLimit ? ` ${STAY_LIMIT_COUNTING_CAVEAT}` : ''}`,
           officialSource: visaRule.officialSource,
           lastVerifiedDate: visaRule.lastVerifiedDate,
           reviewDueDate: visaRule.reviewDueDate,

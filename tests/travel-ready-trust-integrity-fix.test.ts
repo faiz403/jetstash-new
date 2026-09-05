@@ -167,6 +167,23 @@ describe('Trust Integrity fix — visa-free/on-arrival stay-length limits', () =
     expect(result.verdict).not.toBe('visa-or-entry-permission-needed');
   });
 
+  it('Turkey boundary: 89 days inclusive is within the limit but still rolling-window-unconfirmed, not ready', () => {
+    const result = evaluateTravelReadiness(
+      {
+        destinationSlug: 'antalya',
+        isBritishPassport: true,
+        exemptionDocument: 'none',
+        departureDate: '2027-01-01',
+        returnDate: '2027-03-30', // 89 days inclusive
+        passportExpiryDate: '2029-01-01',
+      },
+      NOW
+    );
+    const visaCheck = result.checks.find((c) => c.id === 'visa-requirement');
+    expect(visaCheck?.status).not.toBe('fail');
+    expect(result.verdict).toBe('stay-length-unconfirmed');
+  });
+
   it('Turkey boundary: exactly 90 days inclusive passes the stay-limit check (still rolling-window-unconfirmed, not a fail)', () => {
     const result = evaluateTravelReadiness(
       {
@@ -253,6 +270,22 @@ describe('Trust Integrity fix — visa-free/on-arrival stay-length limits', () =
     expect(result.checks.find((c) => c.id === 'visa-requirement')?.status).toBe('fail');
   });
 
+  it('Qatar boundary: 29 days inclusive is a genuine, unconditional pass', () => {
+    const result = evaluateTravelReadiness(
+      {
+        destinationSlug: 'doha',
+        isBritishPassport: true,
+        exemptionDocument: 'none',
+        departureDate: '2027-03-01',
+        returnDate: '2027-03-29', // 29 days inclusive
+        passportExpiryDate: '2029-01-01',
+      },
+      NOW
+    );
+    expect(result.verdict).toBe('ready-to-continue');
+    expect(result.checks.find((c) => c.id === 'visa-requirement')?.status).toBe('pass');
+  });
+
   it('Qatar boundary: exactly 30 days inclusive is a genuine, unconditional pass (simple maximum, no rolling-window caveat)', () => {
     const result = evaluateTravelReadiness(
       {
@@ -308,6 +341,22 @@ describe('Trust Integrity fix — visa-free/on-arrival stay-length limits', () =
     expect(result.checks.find((c) => c.id === 'visa-requirement')?.status).toBe('fail');
   });
 
+  it('Morocco boundary: 89 days inclusive is a genuine, unconditional pass', () => {
+    const result = evaluateTravelReadiness(
+      {
+        destinationSlug: 'marrakech',
+        isBritishPassport: true,
+        exemptionDocument: 'none',
+        departureDate: '2027-01-01',
+        returnDate: '2027-03-30', // 89 days inclusive
+        passportExpiryDate: '2029-01-01',
+      },
+      NOW
+    );
+    expect(result.verdict).toBe('ready-to-continue');
+    expect(result.checks.find((c) => c.id === 'visa-requirement')?.status).toBe('pass');
+  });
+
   it('Morocco boundary: exactly 90 days inclusive is a genuine, unconditional pass', () => {
     const result = evaluateTravelReadiness(
       {
@@ -345,6 +394,34 @@ describe('Trust Integrity fix — visa-free/on-arrival stay-length limits', () =
       NOW
     );
     expect(result.verdict).toBe('ready-to-continue');
+  });
+
+  it('Boundary check follow-up (PR #228, 5 September 2026): every stay-limit-driven result discloses JetStash\'s own day-counting assumption, since no official source (re-checked live) states one', () => {
+    const exceeds = evaluateTravelReadiness(
+      { destinationSlug: 'antalya', isBritishPassport: true, exemptionDocument: 'none', departureDate: '2026-10-01', returnDate: '2027-03-01', passportExpiryDate: '2029-01-01' },
+      NOW
+    );
+    const windowUnconfirmed = evaluateTravelReadiness(
+      { destinationSlug: 'antalya', isBritishPassport: true, exemptionDocument: 'none', ...SHORT_TRIP },
+      NOW
+    );
+    const simplePass = evaluateTravelReadiness(
+      { destinationSlug: 'doha', isBritishPassport: true, exemptionDocument: 'none', departureDate: '2027-03-01', returnDate: '2027-03-30', passportExpiryDate: '2029-01-01' },
+      NOW
+    );
+    for (const result of [exceeds, windowUnconfirmed, simplePass]) {
+      const detail = result.checks.find((c) => c.id === 'visa-requirement')?.detail;
+      expect(detail).toMatch(/counts both your departure and return dates as full days present/i);
+      expect(detail).toMatch(/doesn't publish an exact day-counting rule/i);
+    }
+    // A country with no stay-limit rule at all (e.g. Saudi Arabia's advance-
+    // visa requirement) has nothing to disclose — the caveat must not leak
+    // into unrelated visa-requirement messaging.
+    const noStayLimit = evaluateTravelReadiness(
+      { destinationSlug: 'jeddah', isBritishPassport: true, exemptionDocument: 'none', ...SHORT_TRIP },
+      NOW
+    );
+    expect(noStayLimit.checks.find((c) => c.id === 'visa-requirement')?.detail).not.toMatch(/day-counting/i);
   });
 
   it('Saudi Arabia (no stay-limit rule at all) is entirely unaffected by this fix', () => {
