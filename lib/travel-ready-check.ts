@@ -4,6 +4,7 @@ import {
   isRuleStale,
   type TravelReadyNationalityScope,
   type TravelReadyRule,
+  type TravelReadyValidityRequirement,
 } from '@/data/travel-ready-rules';
 import type { TravelReadySignal } from '@/lib/travel-intelligence-engine';
 
@@ -108,6 +109,75 @@ function toUtcNoon(iso: string): number {
 function daysBetweenIso(fromIso: string, toIso: string): number {
   return Math.round((toUtcNoon(toIso) - toUtcNoon(fromIso)) / DAY_MS);
 }
+
+/**
+ * Calendar/reference-event audit (5 September 2026). Adds a whole number of
+ * exact calendar days to an ISO date — a pure, unambiguous operation (no
+ * month-length or leap-year clamping needed), used for `validityRequirement`
+ * entries an official source states as an exact day count (Turkey's 150
+ * days), never as a stand-in for an unconverted month figure.
+ */
+function addCalendarDays(iso: string, days: number): string {
+  return new Date(toUtcNoon(iso) + days * DAY_MS).toISOString().slice(0, 10);
+}
+
+/**
+ * Adds a whole number of calendar months to an ISO date, using explicit,
+ * deterministic date-library-style semantics rather than JS's native
+ * `Date.setMonth()` (which silently rolls over into the wrong month for a
+ * day that doesn't exist in the target month — e.g. naively adding 1 month
+ * to 31 January rolls into March, not February). This clamps to the last
+ * real day of the target month instead: 31 January + 1 month = 28 February
+ * (or 29 in a leap year), never 3 March. This is the standard civil/legal
+ * calendar-month convention and the one used throughout this audit's
+ * boundary tests.
+ */
+function addCalendarMonths(iso: string, months: number): string {
+  const [year, month, day] = iso.split('-').map(Number);
+  const totalMonths = (month - 1) + months;
+  const targetYear = year + Math.floor(totalMonths / 12);
+  const targetMonthIndex = ((totalMonths % 12) + 12) % 12; // 0-11, always positive
+  const daysInTargetMonth = new Date(Date.UTC(targetYear, targetMonthIndex + 1, 0)).getUTCDate();
+  const targetDay = Math.min(day, daysInTargetMonth);
+  return `${targetYear}-${String(targetMonthIndex + 1).padStart(2, '0')}-${String(targetDay).padStart(2, '0')}`;
+}
+
+/**
+ * The exact ISO date a passport-validity `validityRequirement` requires the
+ * expiry date to be on or after, given the reference date JetStash is
+ * measuring from. Never approximates a calendar-month rule as a fixed day
+ * count (see `TravelReadyValidityRequirement`'s own doc comment) — this is
+ * the single place that distinction is applied, so every passport-validity
+ * check goes through the same correct arithmetic.
+ */
+function requiredExpiryThreshold(requirement: TravelReadyValidityRequirement, referenceDateIso: string): string {
+  return requirement.unit === 'calendar-months'
+    ? addCalendarMonths(referenceDateIso, requirement.value)
+    : addCalendarDays(referenceDateIso, requirement.value);
+}
+
+/**
+ * Calendar/reference-event audit (5 September 2026): every passport-validity
+ * rule's own official wording measures its buffer from a real-world event —
+ * arrival (India, Saudi Arabia, UAE, Qatar, Turkey, Morocco), the date a
+ * visa application is made (Pakistan), or the date a visa is issued, "not
+ * the date of travel" (Bangladesh, GOV.UK's own words). `TravelReadyCheckInput`
+ * only ever collects a UK departure date — there is no separate destination-
+ * arrival, visa-application or visa-issue date field, and this audit
+ * deliberately does not add one (broadening the form is out of scope; a
+ * fabricated arrival/application date would be worse than an honestly
+ * disclosed proxy). Using departureDate as that proxy is the safe direction
+ * for Pakistan and Bangladesh specifically (application/issue almost always
+ * precedes departure, so measuring from the later departure date can only
+ * make the buffer requirement stricter, never looser); for the six
+ * arrival-referenced countries it is usually exact (JetStash's routes are
+ * direct or same-day connections) but could differ by a day for a long-haul
+ * itinerary where arrival crosses into the next calendar date — this is
+ * disclosed explicitly rather than silently assumed, per the same standard
+ * already set by `STAY_LIMIT_COUNTING_CAVEAT`.
+ */
+const VALIDITY_REFERENCE_EVENT_CAVEAT =
+  "JetStash calculates this from your entered departure date, the earliest date we collect, as a stand-in for the event the rule actually measures from (arrival for most countries; for Pakistan and Bangladesh specifically, your visa application or issue date, which the official source says is not the same as your travel date). If your actual arrival, application or issue date falls on a different day than your departure date, check your exact dates against the official source below.";
 
 /**
  * Trip length for stay-limit purposes. No official source we hold (GOV.UK)
@@ -307,18 +377,27 @@ export function evaluateTravelReadiness(input: TravelReadyCheckInput, now: Date)
       stale: true,
     });
   } else {
+    // Calendar/reference-event audit (5 September 2026): the passport must
+    // not expire on or before the return date, AND must meet the rule's own
+    // calendar-based buffer measured from the reference-event proxy
+    // (departureDate — see VALIDITY_REFERENCE_EVENT_CAVEAT). These are
+    // genuinely independent checks: a long trip can exceed a short buffer
+    // window while still returning before expiry, or vice versa.
     const expiresDuringTrip = input.passportExpiryDate <= input.returnDate;
-    const validityDays = daysBetweenIso(input.departureDate, input.passportExpiryDate);
-    const meetsBuffer = passportRule.minDaysValidityBeyondEntry === undefined || validityDays >= passportRule.minDaysValidityBeyondEntry;
+    const requiredExpiry = passportRule.validityRequirement
+      ? requiredExpiryThreshold(passportRule.validityRequirement, input.departureDate)
+      : null;
+    const meetsBuffer = requiredExpiry === null || input.passportExpiryDate >= requiredExpiry;
     const pass = !expiresDuringTrip && meetsBuffer;
     passportOutcome = pass ? 'pass' : 'fail';
+    const referenceCaveat = passportRule.validityRequirement ? ` ${VALIDITY_REFERENCE_EVENT_CAVEAT}` : '';
     checks.push({
       id: 'passport-validity',
       label: 'Passport validity',
       status: pass ? 'pass' : 'fail',
       detail: pass
-        ? `${passportRule.requirement} Your entered expiry date appears to satisfy this.`
-        : `${passportRule.requirement} Your entered expiry date does not appear to satisfy this — check before booking.`,
+        ? `${passportRule.requirement} Your entered expiry date appears to satisfy this.${referenceCaveat}`
+        : `${passportRule.requirement} Your entered expiry date does not appear to satisfy this — check before booking.${referenceCaveat}`,
       officialSource: passportRule.officialSource,
       lastVerifiedDate: passportRule.lastVerifiedDate,
       reviewDueDate: passportRule.reviewDueDate,
