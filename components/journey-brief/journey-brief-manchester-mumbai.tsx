@@ -2,82 +2,82 @@
 
 import { useMemo, useState, type FormEvent } from 'react';
 import {
+  AlertTriangle,
   ArrowUpRight,
-  BellRing,
-  CalendarClock,
-  MapPinned,
   Plane,
   ShieldCheck,
 } from 'lucide-react';
 import { airports } from '@/data/airports';
 import { destinations } from '@/data/destinations';
-import { getTripComFlightHandoffUrl, PROVIDER_REL } from '@/lib/booking-providers';
+import { formatChecked } from '@/data/deals';
+import { PROVIDER_REL } from '@/lib/booking-providers';
 import { AffiliateLinkDisclosure } from '@/components/ui/affiliate-link-disclosure';
+import { TrackedOutboundLink } from '@/components/ui/tracked-outbound-link';
 import { track } from '@/lib/analytics';
-import { RouteMapHero } from '@/components/sections/route-map-hero';
 import { Badge } from '@/components/ui/badge';
 import { HeroBackdrop } from '@/components/ui/hero-backdrop';
 import { getDestinationImage } from '@/lib/brand-images';
 import { evaluateTravelReadiness, type ExemptionDocument } from '@/lib/travel-ready-check';
 import {
-  BAGGAGE_NEED_OPTIONS,
-  BOOK_BY_UNAVAILABLE_COPY,
-  BOUNDARY_STATE_COPY,
-  BUSINESS_CLASS_COPY,
-  CABIN_PREFERENCE_OPTIONS,
-  ECONOMY_COPY,
-  EVIDENCE_BUNDLE,
-  FLIGHT_CONSIDERATIONS,
-  WITHDRAWAL_BOUNDARY_DATE,
-  getBaggageNote,
-  getDateBoundaryState,
-  getDominantAction,
-  type BaggageNeed,
-  type CabinPreference,
-  type DateBoundaryState,
-} from '@/lib/journey-brief-manchester-mumbai';
+  assembleManchesterMumbaiBrief,
+  formatRouteStatusDate,
+  getManchesterMumbaiNextAction,
+  MANCHESTER_MUMBAI_ROUTE_SLUG,
+} from '@/lib/journey-brief-phase1-manchester-mumbai';
 
 /**
- * Manchester → Mumbai Journey Brief.
+ * Journey Brief Phase 1 — Manchester → Mumbai founder-only pilot (5 Sept
+ * 2026, product implementation following Astra's "30-second Journey Brief"
+ * recommendation — a concise briefing built around five answers: what
+ * actually operates, the viable journey choice, the decisive consequence a
+ * traveller could otherwise miss, entry-readiness, and one clear next step).
+ *
+ * Full rewrite of the Gate 1/2 prototype this founder-only page previously
+ * rendered. That prototype's own hardcoded evidence bundle
+ * (lib/journey-brief-manchester-mumbai.ts) had gone stale — see this
+ * session's Phase 0 audit — so this version is built entirely on canonical,
+ * reused sources instead (see lib/journey-brief-phase1-manchester-mumbai.ts's
+ * own header comment for exactly which ones and why). The old file and its
+ * exports are left completely untouched: components/homepage-v2/
+ * journey-brief-hero.tsx (a separate, protected homepage-v2 preview) still
+ * depends on them and is out of this task's scope.
  *
  * Founder-only surface — access is gated entirely at the route level (see
  * app/founder/journey-brief/manchester-mumbai/page.tsx), not by any wording
- * on this page. The Book-By and fare-integrity honesty rules from Gate 1/2
- * carry over unchanged: no fare is ever shown without a complete, dated
- * observation on record; Book-By stays in its honest-unavailable state;
- * Business Class shows no cabin claim; Route Watch and Save stay disabled
- * (no infrastructure exists yet), with wording that discloses that plainly
- * without labelling it a "prototype".
+ * on this page.
  */
 
-function formatDate(iso: string): string {
-  return new Date(`${iso}T12:00:00Z`).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+const NOW_ISO = new Date().toISOString().slice(0, 10);
+
+function EyebrowLabel({ children, tone = 'ink' }: { children: React.ReactNode; tone?: 'ink' | 'terracotta' }) {
+  return (
+    <p className={`text-xs font-semibold uppercase tracking-[0.14em] ${tone === 'terracotta' ? 'text-terracotta-600' : 'text-ink-500'}`}>
+      {children}
+    </p>
+  );
 }
 
 export function JourneyBriefManchesterMumbai() {
   const [stage, setStage] = useState<'entry' | 'result'>('entry');
   const [airportSlug, setAirportSlug] = useState('manchester');
   const [destinationSlug, setDestinationSlug] = useState('mumbai');
-  const [flexibleDates, setFlexibleDates] = useState(false);
   const [departureDate, setDepartureDate] = useState('');
   // PR #230 final reference-event correction (5 September 2026): India's
-  // passport-validity rule is arrival-anchored — this founder-only
-  // prototype now collects a real arrival date too, rather than passing
-  // departureDate as a stand-in, matching the production Travel Ready form.
+  // passport-validity rule is arrival-anchored — this brief collects a real
+  // arrival date too, rather than passing departureDate as a stand-in.
   const [arrivalDate, setArrivalDate] = useState('');
   const [returnDate, setReturnDate] = useState('');
   const [isBritishPassport, setIsBritishPassport] = useState<'yes' | 'no' | ''>('');
   const [exemptionDocument, setExemptionDocument] = useState<ExemptionDocument>('none');
   const [passportExpiryDate, setPassportExpiryDate] = useState('');
-  const [cabinPreference, setCabinPreference] = useState<CabinPreference>('Economy');
-  const [baggageNeed, setBaggageNeed] = useState<BaggageNeed>('not-sure');
   const [routeUnavailable, setRouteUnavailable] = useState(false);
-  const [mapMessage, setMapMessage] = useState<string | null>(null);
 
-  const boundaryState: DateBoundaryState | null = stage === 'result' && departureDate ? getDateBoundaryState(departureDate) : null;
+  const brief = useMemo(() => assembleManchesterMumbaiBrief(NOW_ISO), []);
+
+  const hasEnteredTravelDetails = Boolean(isBritishPassport && departureDate && arrivalDate && returnDate && passportExpiryDate);
 
   const travelReadyResult = useMemo(() => {
-    if (stage !== 'result' || !isBritishPassport || !departureDate || !arrivalDate || !returnDate || !passportExpiryDate) return null;
+    if (stage !== 'result' || !hasEnteredTravelDetails) return null;
     return evaluateTravelReadiness(
       {
         destinationSlug: 'mumbai',
@@ -90,11 +90,16 @@ export function JourneyBriefManchesterMumbai() {
       },
       new Date()
     );
-  }, [stage, isBritishPassport, exemptionDocument, departureDate, arrivalDate, returnDate, passportExpiryDate]);
+  }, [stage, hasEnteredTravelDetails, isBritishPassport, exemptionDocument, departureDate, arrivalDate, returnDate, passportExpiryDate]);
 
-  const dominantAction = useMemo(
-    () => getDominantAction({ boundaryState, travelReadySignal: travelReadyResult?.engineSignal ?? null }),
-    [boundaryState, travelReadyResult]
+  const nextAction = useMemo(
+    () =>
+      getManchesterMumbaiNextAction({
+        hasEnteredTravelDetails,
+        travelReadySignal: travelReadyResult?.engineSignal ?? null,
+        hasCurrentFareSignal: brief?.hasCurrentFareSignal ?? false,
+      }),
+    [hasEnteredTravelDetails, travelReadyResult, brief]
   );
 
   function handleSubmit(e: FormEvent) {
@@ -108,9 +113,22 @@ export function JourneyBriefManchesterMumbai() {
     track('journey_brief_started', { route: `${airportSlug}-${destinationSlug}` });
   }
 
+  if (!brief) {
+    // Fails closed rather than throwing — should never happen in production
+    // for this hardcoded route slug (see assembleManchesterMumbaiBrief's own
+    // doc comment).
+    return (
+      <div className="mx-auto max-w-content px-5 py-16 sm:px-8">
+        <p className="text-sm text-ink-600">This Journey Brief isn&apos;t available right now.</p>
+      </div>
+    );
+  }
+
+  const { routeReality, evidencedOption, hasCurrentFareSignal, tripComUrl } = brief;
+
   return (
     <div className="bg-sand-50">
-      {/* ── Hero ─────────────────────────────────────────────────────── */}
+      {/* ── Hero + entry form ────────────────────────────────────────── */}
       <section className="relative overflow-hidden bg-ink-900 py-16 sm:py-24">
         <HeroBackdrop image={(() => { const img = getDestinationImage('mumbai'); return img ? { ...img, alt: '' } : null; })()} />
         <div className="relative mx-auto max-w-content px-5 sm:px-8">
@@ -119,7 +137,7 @@ export function JourneyBriefManchesterMumbai() {
             Manchester to Mumbai
           </h1>
           <p className="mt-4 max-w-2xl text-lg leading-relaxed text-ink-200">
-            Everything that matters before you book — checked, dated and sourced, not assumed.
+            What actually operates, your realistic choice, and the one thing you could miss — in about 30 seconds.
           </p>
 
           {stage === 'entry' && (
@@ -163,10 +181,9 @@ export function JourneyBriefManchesterMumbai() {
                   <input
                     id="jb-departure"
                     type="date"
-                    disabled={flexibleDates}
                     value={departureDate}
                     onChange={(e) => setDepartureDate(e.target.value)}
-                    className="mt-1.5 h-11 w-full rounded-sm border border-white/15 bg-white/5 px-3 text-sm text-sand-50 focus-visible:border-brass disabled:opacity-40"
+                    className="mt-1.5 h-11 w-full rounded-sm border border-white/15 bg-white/5 px-3 text-sm text-sand-50 focus-visible:border-brass"
                   />
                 </div>
                 <div>
@@ -176,10 +193,9 @@ export function JourneyBriefManchesterMumbai() {
                   <input
                     id="jb-arrival"
                     type="date"
-                    disabled={flexibleDates}
                     value={arrivalDate}
                     onChange={(e) => setArrivalDate(e.target.value)}
-                    className="mt-1.5 h-11 w-full rounded-sm border border-white/15 bg-white/5 px-3 text-sm text-sand-50 focus-visible:border-brass disabled:opacity-40"
+                    className="mt-1.5 h-11 w-full rounded-sm border border-white/15 bg-white/5 px-3 text-sm text-sand-50 focus-visible:border-brass"
                   />
                 </div>
                 <div>
@@ -189,29 +205,10 @@ export function JourneyBriefManchesterMumbai() {
                   <input
                     id="jb-return"
                     type="date"
-                    disabled={flexibleDates}
                     value={returnDate}
                     onChange={(e) => setReturnDate(e.target.value)}
-                    className="mt-1.5 h-11 w-full rounded-sm border border-white/15 bg-white/5 px-3 text-sm text-sand-50 focus-visible:border-brass disabled:opacity-40"
+                    className="mt-1.5 h-11 w-full rounded-sm border border-white/15 bg-white/5 px-3 text-sm text-sand-50 focus-visible:border-brass"
                   />
-                </div>
-                <div className="sm:col-span-2">
-                  <label className="flex items-center gap-2 text-sm text-ink-200">
-                    <input
-                      type="checkbox"
-                      checked={flexibleDates}
-                      onChange={(e) => {
-                        const checked = e.target.checked;
-                        setFlexibleDates(checked);
-                        if (checked) {
-                          setDepartureDate('');
-                          setArrivalDate('');
-                          setReturnDate('');
-                        }
-                      }}
-                    />
-                    My dates are flexible
-                  </label>
                 </div>
 
                 <div className="sm:col-span-2">
@@ -257,38 +254,6 @@ export function JourneyBriefManchesterMumbai() {
                     </div>
                   </>
                 )}
-
-                <div>
-                  <span className="text-xs font-semibold uppercase tracking-wide text-ink-300">Cabin</span>
-                  <div className="mt-2 flex flex-wrap gap-4">
-                    {CABIN_PREFERENCE_OPTIONS.map((opt) => (
-                      <label key={opt.value} className="flex items-center gap-1.5 text-sm text-ink-200">
-                        <input
-                          type="radio"
-                          name="jb-cabin"
-                          checked={cabinPreference === opt.value}
-                          onChange={() => setCabinPreference(opt.value)}
-                        />
-                        {opt.label}
-                      </label>
-                    ))}
-                  </div>
-                </div>
-                <div>
-                  <label htmlFor="jb-baggage" className="text-xs font-semibold uppercase tracking-wide text-ink-300">
-                    Baggage
-                  </label>
-                  <select
-                    id="jb-baggage"
-                    value={baggageNeed}
-                    onChange={(e) => setBaggageNeed(e.target.value as BaggageNeed)}
-                    className="mt-1.5 h-11 w-full rounded-sm border border-white/15 bg-white/5 px-3 text-sm text-sand-50 focus-visible:border-brass"
-                  >
-                    {BAGGAGE_NEED_OPTIONS.map((opt) => (
-                      <option key={opt.value} value={opt.value} className="bg-ink-900 text-sand-50">{opt.label}</option>
-                    ))}
-                  </select>
-                </div>
               </div>
 
               {routeUnavailable && (
@@ -304,8 +269,8 @@ export function JourneyBriefManchesterMumbai() {
                 Build my Journey Brief
               </button>
               <p className="mt-3 text-xs text-ink-400">
-                Dates, passport details and baggage are optional — add what you know now and JetStash will show exactly
-                what it can and can't confirm yet.
+                Dates and passport details are optional — add what you know now and JetStash will show exactly what it
+                can and can&apos;t confirm yet.
               </p>
             </form>
           )}
@@ -314,88 +279,106 @@ export function JourneyBriefManchesterMumbai() {
 
       {stage === 'result' && (
         <>
-          {/* ── Route overview + evidence ────────────────────────────────── */}
-          <section className="border-b border-ink-100 bg-white py-8 sm:py-10" aria-labelledby="jb-verdict-heading">
+          {/* ── The Brief: Route Reality → Journey Choice → What You Could
+              Miss, one restrained card, mobile-first order matches reading
+              order ──────────────────────────────────────────────────── */}
+          <section className="bg-white py-8 sm:py-10" aria-labelledby="jb-heading">
             <div className="mx-auto max-w-content px-5 sm:px-8">
-              <p className="text-xs font-semibold uppercase tracking-wide text-ink-400">Route overview</p>
-              <div className="mt-2 flex flex-wrap items-center gap-2">
-                <Badge variant="brass">Direct service on record</Badge>
-                <Badge variant="ink">Time-bound — see below</Badge>
-              </div>
-              <h2 id="jb-verdict-heading" className="mt-3 font-display text-2xl text-ink-900 sm:text-3xl">
-                {EVIDENCE_BUNDLE.route.airline} operates this route direct, with an announced end date.
-              </h2>
-              <p className="mt-2 max-w-2xl text-sm leading-relaxed text-ink-600">
-                IndiGo has announced it will temporarily discontinue Manchester services from{' '}
-                {formatDate(WITHDRAWAL_BOUNDARY_DATE)}. {EVIDENCE_BUNDLE.characterisation}
-              </p>
+              <div className="max-w-2xl rounded-md border border-ink-200 bg-sand-50 p-5 sm:p-6">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-terracotta-600">Journey Brief</p>
+                <h2 id="jb-heading" className="mt-1 font-display text-2xl text-ink-900 sm:text-3xl">Manchester to Mumbai</h2>
 
-              <details className="mt-5 max-w-2xl rounded-md border border-ink-100 bg-sand-50 p-4">
-                <summary className="cursor-pointer text-sm font-semibold text-ink-700">How JetStash checked this</summary>
-                <div className="mt-3 space-y-2 text-sm leading-relaxed text-ink-600">
-                  <p>
-                    <strong>Source:</strong> {EVIDENCE_BUNDLE.primarySource.organisation} — “{EVIDENCE_BUNDLE.primarySource.title}”
-                    (published {formatDate(EVIDENCE_BUNDLE.primarySource.publicationDate)}), and{' '}
-                    {EVIDENCE_BUNDLE.corroboratingSource.organisation} — “{EVIDENCE_BUNDLE.corroboratingSource.title}”
-                    (published {formatDate(EVIDENCE_BUNDLE.corroboratingSource.publicationDate)}).
-                  </p>
-                  <p>
-                    <strong>Last checked:</strong> {formatDate(EVIDENCE_BUNDLE.primarySource.accessedDate)}. <strong>Next
-                    review:</strong> {formatDate(EVIDENCE_BUNDLE.nextReviewDate)}, with a mandatory boundary review on{' '}
-                    {formatDate(EVIDENCE_BUNDLE.boundaryReviewDate)}.
-                  </p>
-                  <p>
-                    <strong>What this doesn&apos;t confirm:</strong> current-week frequency, whether{' '}
-                    {formatDate(WITHDRAWAL_BOUNDARY_DATE)} itself is a still-operating day, or Business Class availability.
-                    Confirm your exact travel date directly with IndiGo before booking.
-                  </p>
-                </div>
-              </details>
+                {/* 1. Route reality */}
+                <div className="mt-5">
+                  <EyebrowLabel>Route reality</EyebrowLabel>
+                  <div className="mt-1.5 flex flex-wrap items-center gap-2">
+                    <Badge variant="ink">{routeReality.badgeLabel}</Badge>
+                  </div>
+                  <p className="mt-2 text-base leading-relaxed text-ink-800">{routeReality.headline}</p>
 
-              {/* ── Flight and airport considerations ───────────────────── */}
-              <div className="mt-6 max-w-2xl rounded-md border border-ink-100 bg-sand-50 p-5">
-                <div className="flex items-center gap-2 text-sm font-semibold text-ink-700">
-                  <Plane className="h-4 w-4" strokeWidth={2} />
-                  Flight and airport considerations
+                  {routeReality.detail && routeReality.detail.kind !== 'neutral-pending' && (
+                    <details className="mt-3 rounded-md border border-ink-100 bg-white p-4">
+                      <summary className="cursor-pointer text-sm font-semibold text-ink-700">How JetStash checked this</summary>
+                      <div className="mt-3 space-y-2 text-sm leading-relaxed text-ink-600">
+                        {'headline' in routeReality.detail && (
+                          <p className="font-medium text-ink-800">{routeReality.detail.headline}</p>
+                        )}
+                        {'explanation' in routeReality.detail && <p>{routeReality.detail.explanation}</p>}
+                        {'effectiveFrom' in routeReality.detail && (
+                          <p>
+                            <strong>Effective from:</strong> {formatRouteStatusDate(routeReality.detail.effectiveFrom)}.
+                          </p>
+                        )}
+                        {'citations' in routeReality.detail && routeReality.detail.citations.length > 0 && (
+                          <ul className="mt-1 space-y-1">
+                            {routeReality.detail.citations.map((c, i) => (
+                              <li key={i}>
+                                <strong>{c.publisher}</strong>
+                                {c.title ? ` — ${c.title}` : ''}
+                                {c.accessedAt ? ` (checked ${formatRouteStatusDate(c.accessedAt)})` : ''}
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </div>
+                    </details>
+                  )}
                 </div>
-                <dl className="mt-3 space-y-2 text-sm text-ink-600">
-                  <div className="flex flex-wrap justify-between gap-x-4"><dt className="text-ink-500">Departure airport</dt><dd className="font-medium text-ink-800">{FLIGHT_CONSIDERATIONS.departureAirport}</dd></div>
-                  <div className="flex flex-wrap justify-between gap-x-4"><dt className="text-ink-500">Arrival airport</dt><dd className="font-medium text-ink-800">{FLIGHT_CONSIDERATIONS.arrivalAirport}</dd></div>
-                  <div className="flex flex-wrap justify-between gap-x-4"><dt className="text-ink-500">Flight numbers</dt><dd className="font-medium text-ink-800">{FLIGHT_CONSIDERATIONS.flightNumbers}</dd></div>
-                </dl>
-                <p className="mt-3 text-xs text-ink-500">{FLIGHT_CONSIDERATIONS.note}</p>
-              </div>
 
-              {/* ── Journey Map, focused on this one route ──────────────── */}
-              <div className="mt-8">
-                <div className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-ink-400">
-                  <MapPinned className="h-3.5 w-3.5" strokeWidth={2} />
-                  Journey Map — focused on this route
+                {/* 2. Viable journey choice */}
+                <div className="mt-5 border-t border-ink-100 pt-5">
+                  <EyebrowLabel>Your journey option</EyebrowLabel>
+                  {evidencedOption ? (
+                    <>
+                      <div className="mt-1.5 flex items-baseline gap-2">
+                        <span className="font-display text-2xl text-ink-900">
+                          £{evidencedOption.price.toLocaleString('en-GB')}
+                        </span>
+                        <span className="text-sm text-ink-500">return · {evidencedOption.cabin}</span>
+                      </div>
+                      <p className="mt-1 text-sm text-ink-600">
+                        {evidencedOption.airline}
+                        {evidencedOption.directness === 'direct' ? ' · Direct' : evidencedOption.directness === 'connecting' ? ' · Connecting' : ''}
+                        {' · '}
+                        {evidencedOption.isCurrentRepresentativeFare
+                          ? `tracked, checked ${formatChecked(evidencedOption.observedDate)}`
+                          : `a recent check JetStash logged, ${formatChecked(evidencedOption.observedDate)}`}
+                      </p>
+                      {!hasCurrentFareSignal && (
+                        <p className="mt-2 text-sm leading-relaxed text-ink-500">
+                          JetStash doesn&apos;t currently track a live representative fare for this route since the
+                          direct service ended — this is the most recent check on file, not today&apos;s price.
+                        </p>
+                      )}
+                    </>
+                  ) : (
+                    <p className="mt-1.5 text-sm leading-relaxed text-ink-600">
+                      JetStash has no fare evidence on file for this route right now — search current options directly
+                      below.
+                    </p>
+                  )}
                 </div>
-                <RouteMapHero
-                  initialActiveSlug="mumbai"
-                  lockedSlug="mumbai"
-                  onDestinationActivate={(slug) =>
-                    setMapMessage(
-                      slug === 'mumbai' ? null : 'Journey Brief is currently available for Manchester → Mumbai only.'
-                    )
-                  }
-                />
-                {mapMessage && (
-                  <p role="status" aria-live="polite" className="mt-3 max-w-2xl text-sm leading-relaxed text-terracotta-700">
-                    {mapMessage}
-                  </p>
+
+                {/* 3. The thing you could miss */}
+                {evidencedOption && evidencedOption.journeyConsequences.length > 0 && (
+                  <div className="mt-5 border-t border-ink-100 pt-5">
+                    <EyebrowLabel tone="terracotta">What you could miss</EyebrowLabel>
+                    <p className="mt-1.5 flex items-start gap-2 text-base font-medium leading-relaxed text-terracotta-700">
+                      <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" strokeWidth={2.25} aria-hidden="true" />
+                      <span>{evidencedOption.journeyConsequences.join(' · ')}</span>
+                    </p>
+                  </div>
                 )}
               </div>
             </div>
           </section>
 
-          {/* ── Entry-readiness summary ──────────────────────────────────── */}
+          {/* ── 4. Travel Ready — compact, bounded, reuses the existing engine ── */}
           <section className="bg-sand-50 py-8 sm:py-10" aria-labelledby="jb-readiness-heading">
             <div className="mx-auto max-w-content px-5 sm:px-8">
               <div className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-ink-400">
                 <ShieldCheck className="h-3.5 w-3.5" strokeWidth={2} />
-                Entry-readiness summary
+                Entry readiness
               </div>
               {travelReadyResult ? (
                 <div
@@ -411,179 +394,76 @@ export function JourneyBriefManchesterMumbai() {
                   <h2 id="jb-readiness-heading" className="font-display text-xl text-ink-900">{travelReadyResult.headline}</h2>
                   <p className="mt-2 text-sm leading-relaxed text-ink-700">{travelReadyResult.nextAction}</p>
                   <p className="mt-3 text-xs text-ink-500">{travelReadyResult.disclaimer}</p>
+                  <a
+                    href="/travel-ready-check"
+                    className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-ink-700 hover:text-terracotta-600"
+                  >
+                    Open the full Travel Ready Check
+                    <ArrowUpRight className="h-3 w-3" strokeWidth={2.25} />
+                  </a>
                 </div>
               ) : (
                 <div className="max-w-2xl rounded-md border border-dashed border-ink-200 bg-white p-5">
                   <h2 id="jb-readiness-heading" className="font-display text-lg text-ink-900">
-                    {flexibleDates
-                      ? 'Add your passport details and a specific date when you have one, for a full entry-readiness check.'
-                      : 'Add your travel dates and passport details above for a specific entry-readiness check.'}
+                    Add your travel dates and passport details above for a specific entry-readiness check.
                   </h2>
                   <p className="mt-2 text-sm leading-relaxed text-ink-600">
-                    Passport validity and visa guidance depend on your exact dates and document status — JetStash won&apos;t
-                    guess at these.
+                    Passport validity and visa guidance depend on your exact dates and document status — JetStash
+                    won&apos;t guess at these.
                   </p>
                 </div>
               )}
             </div>
           </section>
 
-          {/* ── What to check before booking ─────────────────────────────── */}
-          <section className="bg-white py-8 sm:py-10" aria-labelledby="jb-boundary-heading">
+          {/* ── 5. What to do next — one primary action ─────────────────── */}
+          <section className="bg-ink-900 py-8 sm:py-10" aria-labelledby="jb-next-heading">
             <div className="mx-auto max-w-content px-5 sm:px-8">
-              <p className="text-xs font-semibold uppercase tracking-wide text-ink-400">What to check before booking</p>
-
-              {boundaryState ? (
-                <div
-                  role="status"
-                  aria-live="polite"
-                  className={
-                    (boundaryState === 'after'
-                      ? 'rounded-md border border-terracotta-200 bg-terracotta-50 p-5'
-                      : boundaryState === 'boundary'
-                        ? 'rounded-md border border-brass/40 bg-brass-50 p-5'
-                        : 'rounded-md border border-ink-100 bg-sand-50 p-5') + ' mt-3 max-w-2xl'
-                  }
-                >
-                  <Badge variant={boundaryState === 'after' ? 'terracotta' : boundaryState === 'boundary' ? 'brass' : 'ink'}>
-                    {BOUNDARY_STATE_COPY[boundaryState].label}
-                  </Badge>
-                  <h2 id="jb-boundary-heading" className="mt-2.5 font-display text-xl text-ink-900">
-                    {BOUNDARY_STATE_COPY[boundaryState].headline}
-                  </h2>
-                  <p className="mt-2 text-sm leading-relaxed text-ink-700">{BOUNDARY_STATE_COPY[boundaryState].body}</p>
-                </div>
-              ) : (
-                <p id="jb-boundary-heading" className="mt-3 max-w-2xl text-sm leading-relaxed text-ink-600">
-                  {flexibleDates
-                    ? "You said your dates are flexible — once you have a specific date in mind, add it above to check it against IndiGo's announced 31 August 2026 change."
-                    : "Add a departure date above for a date-specific check against IndiGo's announced 31 August 2026 change."}
-                </p>
-              )}
-
-              <div className="mt-6 max-w-2xl rounded-md border border-dashed border-ink-200 bg-sand-50 p-5">
-                <div className="flex items-center gap-2 text-sm font-semibold text-ink-700">
-                  <CalendarClock className="h-4 w-4" strokeWidth={2} />
-                  Book By guidance
-                </div>
-                <p className="mt-2 text-sm leading-relaxed text-ink-600">{BOOK_BY_UNAVAILABLE_COPY.headline}</p>
-                <ul className="mt-3 space-y-1.5 text-sm leading-relaxed text-ink-600">
-                  {BOOK_BY_UNAVAILABLE_COPY.actions.map((a) => (
-                    <li key={a} className="flex gap-2">
-                      <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-ink-400" aria-hidden="true" />
-                      {a}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              <p className="mt-4 max-w-2xl text-sm leading-relaxed text-ink-600">{getBaggageNote(baggageNeed)}</p>
-            </div>
-          </section>
-
-          {/* ── Cabin ────────────────────────────────────────────────────── */}
-          <section className="bg-sand-50 py-8 sm:py-10" aria-labelledby="jb-cabin-heading">
-            <div className="mx-auto max-w-content px-5 sm:px-8">
-              <h2 id="jb-cabin-heading" className="font-display text-xl text-ink-900 sm:text-2xl">
-                How would you like to travel?
+              <p className="text-xs font-semibold uppercase tracking-wide text-brass-200">What to do next</p>
+              <h2 id="jb-next-heading" className="mt-2 font-display text-2xl text-sand-50 sm:text-3xl">
+                {nextAction.label}
               </h2>
-              <div className="mt-5 grid gap-5 sm:grid-cols-2">
-                <div className={`rounded-md border bg-white p-5 ${cabinPreference !== 'Business' ? 'border-brass/50' : 'border-ink-100'}`}>
-                  <div className="flex items-center justify-between">
-                    <p className="text-xs font-semibold uppercase tracking-wide text-ink-400">Economy</p>
-                    {cabinPreference !== 'Business' && <Badge variant="brass">Your preference</Badge>}
-                  </div>
-                  <p className="mt-2 font-display text-lg text-ink-900">{ECONOMY_COPY.headline}</p>
-                  <p className="mt-1.5 text-sm leading-relaxed text-ink-600">{ECONOMY_COPY.body}</p>
-                  <a
-                    // manchester-mumbai is always in booking-providers.ts's dashboard-verified
-                    // map — this flagship Journey Brief is hardcoded to that one route.
-                    href={getTripComFlightHandoffUrl('manchester-mumbai')!}
+              <p className="mt-2 max-w-2xl text-sm leading-relaxed text-ink-300">{nextAction.reason}</p>
+
+              {nextAction.kind === 'search-current-options' && tripComUrl && (
+                <div className="mt-5">
+                  <TrackedOutboundLink
+                    event="journey_brief_live_price_click"
+                    properties={{ route: MANCHESTER_MUMBAI_ROUTE_SLUG, source: 'journey-brief' }}
+                    href={tripComUrl}
                     target="_blank"
                     rel={PROVIDER_REL}
-                    onClick={() => track('journey_brief_live_price_click', { route: 'manchester-mumbai', cabin: 'economy' })}
-                    className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-ink-900 underline underline-offset-2 hover:text-brass-600"
+                    className="inline-flex items-center gap-1.5 rounded-sm bg-brass px-5 py-2.5 text-sm font-semibold text-ink-900 transition-all hover:bg-brass-400 hover:shadow-brass-glow active:scale-[0.985]"
                   >
-                    Compare flights on Trip.com
-                    <ArrowUpRight className="h-3.5 w-3.5" strokeWidth={2.25} />
-                  </a>
-                  <AffiliateLinkDisclosure providerName="Trip.com" className="mt-1.5 text-ink-400">
-                    Check the itinerary, baggage allowance and booking terms before paying.
-                  </AffiliateLinkDisclosure>
-                </div>
-                <div className={`rounded-md border bg-white p-5 ${cabinPreference === 'Business' ? 'border-brass/50' : 'border-ink-100'}`}>
-                  <div className="flex items-center justify-between">
-                    <p className="text-xs font-semibold uppercase tracking-wide text-ink-400">Business Class</p>
-                    {cabinPreference === 'Business' && <Badge variant="brass">Your preference</Badge>}
+                    <Plane className="h-4 w-4" strokeWidth={2.25} />
+                    Search on Trip.com
+                    <ArrowUpRight className="h-4 w-4" strokeWidth={2.25} />
+                  </TrackedOutboundLink>
+                  <div className="mt-2">
+                    <AffiliateLinkDisclosure providerName="Trip.com" className="text-ink-400">
+                      Check the itinerary, baggage allowance and booking terms before paying.
+                    </AffiliateLinkDisclosure>
                   </div>
-                  <p className="mt-2 font-display text-lg text-ink-900">{BUSINESS_CLASS_COPY.headline}</p>
-                  <p className="mt-1.5 text-sm leading-relaxed text-ink-600">{BUSINESS_CLASS_COPY.body}</p>
                 </div>
-              </div>
-            </div>
-          </section>
+              )}
 
-          {/* ── One dominant recommendation ─────────────────────────────── */}
-          <section className="bg-ink-900 py-8 sm:py-10" aria-labelledby="jb-decision-heading">
-            <div className="mx-auto max-w-content px-5 sm:px-8">
-              <p className="text-xs font-semibold uppercase tracking-wide text-brass-200">Your recommendation</p>
-              <h2 id="jb-decision-heading" className="mt-2 font-display text-2xl text-sand-50 sm:text-3xl">
-                {dominantAction.label}
-              </h2>
-              <p className="mt-2 max-w-2xl text-sm leading-relaxed text-ink-300">{dominantAction.reason}</p>
-            </div>
-          </section>
+              {nextAction.kind === 'check-travel-ready' && (
+                <a
+                  href="#jb-readiness-heading"
+                  className="mt-5 inline-flex h-12 items-center justify-center gap-1.5 rounded-sm bg-brass px-6 text-sm font-semibold text-ink-900 transition-all hover:bg-brass-400 hover:shadow-brass-glow active:scale-[0.985]"
+                >
+                  Go to entry readiness
+                </a>
+              )}
 
-          {/* ── Route Watch ──────────────────────────────────────────────── */}
-          <section className="bg-sand-50 py-8 sm:py-10" aria-labelledby="jb-watch-heading">
-            <div className="mx-auto max-w-content px-5 sm:px-8">
-              <div className="max-w-xl rounded-md border border-ink-100 bg-white p-6">
-                <div className="flex items-center gap-2.5">
-                  <BellRing className="h-4.5 w-4.5 text-terracotta-600" strokeWidth={2} />
-                  <h2 id="jb-watch-heading" className="font-display text-lg text-ink-900">Register for route updates</h2>
-                </div>
-                <p className="mt-1.5 text-sm text-ink-500">Updates are reviewed and sent manually when available.</p>
-
-                <form className="mt-5 flex flex-col gap-3 sm:flex-row" onSubmit={(e) => e.preventDefault()}>
-                  <label htmlFor="jb-watch-email" className="sr-only">Email address</label>
-                  <input
-                    id="jb-watch-email"
-                    type="email"
-                    disabled
-                    placeholder="you@example.com"
-                    className="h-11 flex-1 rounded-sm border border-ink-200 bg-ink-50 px-4 text-sm text-ink-400"
-                  />
-                  <button
-                    type="submit"
-                    disabled
-                    aria-disabled="true"
-                    className="inline-flex h-11 cursor-not-allowed items-center justify-center rounded-sm bg-ink-200 px-5 text-sm font-semibold text-ink-500"
-                  >
-                    Register
-                  </button>
-                </form>
-                <p className="mt-3 text-xs text-ink-500">Sign-up isn&apos;t connected yet — nothing is sent until this is switched on.</p>
-              </div>
-            </div>
-          </section>
-
-          {/* ── Save ─────────────────────────────────────────────────────── */}
-          <section className="bg-white py-8 sm:py-10" aria-labelledby="jb-save-heading">
-            <div className="mx-auto max-w-content px-5 sm:px-8">
-              <h2 id="jb-save-heading" className="font-display text-lg text-ink-900">Save this Journey Brief</h2>
-              <p className="mt-2 max-w-xl text-sm leading-relaxed text-ink-600">
-                My Stash doesn&apos;t exist yet — this button is disabled, since saving here would not actually store
-                anything.
-              </p>
-              <button
-                type="button"
-                disabled
-                aria-disabled="true"
-                className="mt-4 inline-flex h-11 cursor-not-allowed items-center justify-center gap-1.5 rounded-sm border border-ink-200 bg-ink-50 px-5 text-sm font-semibold text-ink-400"
-              >
-                Save this Journey Brief
-              </button>
-              <p className="mt-3 text-xs text-ink-500">Not connected yet — nothing is stored when you click save.</p>
+              {nextAction.kind === 'enter-travel-details' && (
+                <a
+                  href="#jb-readiness-heading"
+                  className="mt-5 inline-flex h-12 items-center justify-center gap-1.5 rounded-sm border border-white/20 px-6 text-sm font-semibold text-sand-50 transition-colors hover:bg-white/5"
+                >
+                  Add travel dates and passport details
+                </a>
+              )}
             </div>
           </section>
         </>
