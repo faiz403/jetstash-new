@@ -89,7 +89,17 @@ describe('No fabricated facts in the rendered copy', () => {
   });
 
   it('the historical fallback option is explicitly framed as a past check, never as "today\'s price" or a live claim', () => {
-    expect(componentSrc).toContain('a recent check JetStash logged');
+    // PR #233 product-acceptance correction: "Your journey option" renamed
+    // to a neutral "Recorded example" label, with the observation's
+    // "Recorded"/"Checked" date shown explicitly rather than folded into
+    // one "a recent check JetStash logged" sentence.
+    // Strip JSX comments first — the source legitimately documents the OLD
+    // label name in a code comment explaining the rename; only the actual
+    // rendered-copy strings matter for this check.
+    const srcWithoutComments = componentSrc.replace(/\{\/\*[\s\S]*?\*\/\}/g, '');
+    expect(srcWithoutComments).toContain('Recorded example');
+    expect(srcWithoutComments).not.toContain('Your journey option');
+    expect(srcWithoutComments).not.toMatch(/\brecommended\b|\bbest\b|\bcurrent option\b|\bdeal\b/i);
     // Apostrophe rendered as &apos; in JSX text (this codebase's lint rule
     // for unescaped entities) — matched either side of it rather than as
     // one literal string.
@@ -158,5 +168,81 @@ describe('PR #233 final product-acceptance fix: an open Travel Ready caution sta
     // 4. Section 5's reminder must reuse the engine's own signal label,
     // never a parallel hardcoded sentence.
     expect(componentSrc).not.toMatch(/Still open:.*['"][A-Za-z]/);
+  });
+});
+
+describe('PR #233 product-acceptance correction — Finding 1: no functional dead end', () => {
+  it('an "Edit journey details" action exists in the result card header, wired to a real onClick handler that returns to the entry stage — never a plain anchor to a non-existent form', () => {
+    const srcWithoutComments = componentSrc.replace(/\{\/\*[\s\S]*?\*\/\}/g, '');
+    expect(srcWithoutComments).toContain('Edit journey details');
+    expect(srcWithoutComments).toContain('onClick={editJourneyDetails}');
+  });
+
+  it('the "Add travel dates and passport details above" enter-travel-details action is a real <button> calling the same editJourneyDetails handler, not the old dead anchor to "#jb-readiness-heading"', () => {
+    const enterDetailsBlockStart = componentSrc.indexOf("nextAction.kind === 'enter-travel-details'");
+    const enterDetailsBlock = componentSrc.slice(enterDetailsBlockStart, enterDetailsBlockStart + 400);
+    expect(enterDetailsBlock).toContain('<button');
+    expect(enterDetailsBlock).toContain('onClick={editJourneyDetails}');
+    expect(enterDetailsBlock).not.toContain('href="#jb-readiness-heading"');
+  });
+
+  it('editJourneyDetails() switches stage back to entry and requests focus on the first field — the same state the previously-entered form values already live in, never cleared by a stage change', () => {
+    const fnStart = componentSrc.indexOf('function editJourneyDetails()');
+    const fnBody = componentSrc.slice(fnStart, fnStart + 200);
+    expect(fnBody).toContain("setStage('entry')");
+    expect(fnBody).toContain('setFocusEntryOnReturn(true)');
+    // No new state is introduced for the form fields themselves — the
+    // existing useState calls (airportSlug, departureDate, etc.) are
+    // untouched by this fix, which is exactly why returning to 'entry'
+    // preserves them for free.
+    expect(componentSrc).not.toMatch(/setAirportSlug\(''\)|setDepartureDate\(''\)|setArrivalDate\(''\)|setReturnDate\(''\)/);
+  });
+});
+
+describe('PR #233 product-acceptance correction — Finding 2: "What remains unconfirmed" is a first-class answer', () => {
+  it('renders as its own labelled section, reusing getManchesterMumbaiUnconfirmedItems() rather than a hand-written list', () => {
+    const srcWithoutComments = componentSrc.replace(/\{\/\*[\s\S]*?\*\/\}/g, '');
+    expect(srcWithoutComments).toContain('What remains unconfirmed');
+    expect(componentSrc).toContain('getManchesterMumbaiUnconfirmedItems({ evidencedOption, hasCurrentFareSignal })');
+    expect(componentSrc).toContain('NO_UNCONFIRMED_ITEMS_COPY');
+  });
+
+  it('appears after "What you could miss" and before Travel Ready in source order, matching the locked six-answer hierarchy', () => {
+    const missIdx = componentSrc.indexOf('What you could miss');
+    const unconfirmedIdx = componentSrc.replace(/\{\/\*[\s\S]*?\*\/\}/g, '').indexOf('What remains unconfirmed');
+    const readinessIdx = componentSrc.indexOf('Entry readiness');
+    expect(missIdx).toBeLessThan(unconfirmedIdx);
+    expect(unconfirmedIdx).toBeLessThan(readinessIdx);
+  });
+});
+
+describe('PR #233 product-acceptance correction — Finding 3: specific decisive facts, self-transfer explanation, no-false-drama state', () => {
+  it('uses formatWhatYouCouldMiss() rather than rendering journeyConsequences directly, and shows the bounded self-transfer explanation only alongside a genuine self-transfer flag', () => {
+    expect(componentSrc).toContain('formatWhatYouCouldMiss(evidencedOption)');
+    expect(componentSrc).toContain('SELF_TRANSFER_EXPLANATION');
+    expect(componentSrc).toContain("evidencedOption.journeyConsequences.includes('Self-transfer')");
+  });
+
+  it('renders the honest "no material issue" sentence via hasNoMaterialConsequence(), never an empty section masquerading as "nothing to report"', () => {
+    expect(componentSrc).toContain('hasNoMaterialConsequence(evidencedOption)');
+    expect(componentSrc).toContain('NO_MATERIAL_CONSEQUENCE_COPY');
+  });
+});
+
+describe('PR #233 product-acceptance correction — Finding 4: no endorsement language for the recorded example', () => {
+  it('the recorded example shows its own travel dates distinctly from the date it was checked/recorded', () => {
+    expect(componentSrc).toContain('evidencedOption.departureDate && evidencedOption.returnDate');
+    expect(componentSrc).toMatch(/For travel \{formatChecked\(evidencedOption\.departureDate\)\}/);
+    expect(componentSrc).toMatch(/\{evidencedOption\.isCurrentRepresentativeFare \? 'Checked' : 'Recorded'\}/);
+  });
+});
+
+describe('PR #233 product-acceptance correction — Finding 5: fresh search distinguished from the recorded example, verification sequence explicit', () => {
+  it('the Trip.com CTA carries the founder-approved supporting verification sentence, distinct from the affiliate disclosure', () => {
+    expect(componentSrc).toContain('VERIFY_BEFORE_PAYING_COPY');
+    const ctaBlockStart = componentSrc.indexOf("nextAction.kind === 'search-current-options' && tripComUrl");
+    const ctaBlock = componentSrc.slice(ctaBlockStart, ctaBlockStart + 1500);
+    expect(ctaBlock).toContain('VERIFY_BEFORE_PAYING_COPY');
+    expect(ctaBlock).toContain('AffiliateLinkDisclosure');
   });
 });

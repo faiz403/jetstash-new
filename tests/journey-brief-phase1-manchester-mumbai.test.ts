@@ -3,7 +3,17 @@ import {
   assembleManchesterMumbaiBrief,
   getManchesterMumbaiNextAction,
   formatRouteStatusDate,
+  formatWhatYouCouldMiss,
+  hasNoMaterialConsequence,
+  getManchesterMumbaiUnconfirmedItems,
+  extractLongestNamedWait,
+  SELF_TRANSFER_EXPLANATION,
+  NO_MATERIAL_CONSEQUENCE_COPY,
+  NO_UNCONFIRMED_ITEMS_COPY,
+  type EvidencedFareOption,
 } from '@/lib/journey-brief-phase1-manchester-mumbai';
+import { getJourneyConsequences, formatJourneyConsequenceSummary } from '@/lib/journey-consequence';
+import { fareObservations } from '@/data/fare-observations';
 
 /**
  * Journey Brief Phase 1 — Manchester → Mumbai (5 Sept 2026). Protects the
@@ -61,11 +71,9 @@ describe('Journey option: no live representative fare, honest historical fallbac
     expect(brief.evidencedOption!.price).toBe(395);
   });
 
-  it('never claims unknown baggage as included or free — this route\'s observations never populate a baggage field at all, and EvidencedFareOption has no baggage field to fabricate one into', () => {
-    // Structural guard: if a future edit adds a baggage field to
-    // EvidencedFareOption, it must come from the observation's own
-    // recorded value, never default to "included" or a £0 claim.
-    expect(brief.evidencedOption).not.toHaveProperty('baggage');
+  it('never claims unknown baggage as included or free — PR #233 added a real `baggage` field, reused verbatim from the observation\'s own recorded value ("not stated"), never defaulted to "included" or a £0 claim', () => {
+    expect(brief.evidencedOption!.baggage).toBe('not stated');
+    expect(brief.evidencedOption!.baggage).not.toMatch(/included|£0|free/i);
   });
 });
 
@@ -227,5 +235,135 @@ describe('The real India visa-timing scenario, end to end (evaluateTravelReadine
     if (action.kind === 'search-current-options') {
       expect(action.openDocumentTask).toBe(result.engineSignal!.label);
     }
+  });
+});
+
+describe('PR #233 product-acceptance correction — Finding 3: the decisive facts, verified against the real canonical record', () => {
+  const NOW_ISO = '2026-09-05';
+  const brief = assembleManchesterMumbaiBrief(NOW_ISO)!;
+  const rawObservation = fareObservations.find((o) => o.id === 'obs-man-bom-economy-20260901-8w-v1')!;
+
+  it('the real observation genuinely records 3 outbound stops and a 23h15m Katowice wait among its layovers — confirmed directly against the canonical record, not trusted from the review alone', () => {
+    expect(rawObservation).toBeDefined();
+    expect(rawObservation.outboundStops).toBe(3);
+    expect(rawObservation.priceNote).toContain('23h15m Katowice');
+    expect(rawObservation.priceNote).toContain('3 stops');
+  });
+
+  it('extractLongestNamedWait finds the same 23h15m Katowice wait directly from that priceNote', () => {
+    expect(extractLongestNamedWait(rawObservation.priceNote, 'outbound')).toEqual({ city: 'Katowice', duration: '23h 15m' });
+  });
+
+  it('the assembled brief surfaces both facts prominently — 3 stops outbound AND the 23h15m Katowice wait — not just the generic 43h total', () => {
+    const summary = formatWhatYouCouldMiss(brief.evidencedOption!);
+    expect(summary).toContain('3 stops outbound');
+    expect(summary).toContain('23h 15m wait in Katowice');
+    expect(summary).toContain('Self-transfer');
+  });
+
+  it('does not overload the summary with the return leg\'s own unremarkable 2h30m Riyadh wait — only the leg getJourneyConsequences() already flags as decisive', () => {
+    const summary = formatWhatYouCouldMiss(brief.evidencedOption!);
+    expect(summary.join(' ')).not.toContain('Riyadh');
+  });
+
+  it('PR #232 consequence truth is not contradicted: the underlying journeyConsequences field is exactly what lib/journey-consequence.ts itself produces for this record, unmodified', () => {
+    const destinationIataCode = 'BOM';
+    const expected = formatJourneyConsequenceSummary(getJourneyConsequences(rawObservation, destinationIataCode));
+    expect(brief.evidencedOption!.journeyConsequences).toEqual(expected);
+    expect(expected).toEqual(['Self-transfer', 'Outbound: 43h', 'Return: 14h 30m']);
+  });
+
+  it('self-transfer gets the founder-approved bounded explanation, never an invented consequence', () => {
+    expect(brief.evidencedOption!.journeyConsequences).toContain('Self-transfer');
+    expect(SELF_TRANSFER_EXPLANATION).toBe('This itinerary includes a self-transfer, so check the connection and baggage conditions carefully before booking.');
+    expect(SELF_TRANSFER_EXPLANATION).not.toMatch(/missed.connection.responsibility|baggage.recheck|not protected/i);
+  });
+});
+
+describe('PR #233 product-acceptance correction — Finding 3: no false drama for a genuinely clean itinerary', () => {
+  const cleanOption: EvidencedFareOption = {
+    price: 200,
+    currency: 'GBP',
+    cabin: 'Economy',
+    airline: 'Fixture Air',
+    observedDate: '2026-09-01',
+    departureDate: '2026-10-01',
+    returnDate: '2026-10-15',
+    baggage: '1 free checked bag included',
+    directness: 'direct',
+    outboundStops: 0,
+    returnStops: 0,
+    outboundDuration: '7h',
+    returnDuration: '7h 30m',
+    journeyConsequences: [],
+    longestNamedWait: null,
+    connectionProtectionMentioned: false,
+    isCurrentRepresentativeFare: true,
+  };
+
+  it('hasNoMaterialConsequence is true when neither PR #232\'s journeyConsequences nor a named wait was found', () => {
+    expect(hasNoMaterialConsequence(cleanOption)).toBe(true);
+  });
+
+  it('formatWhatYouCouldMiss falls back to the (empty) canonical summary — never fabricates an airport change, self-transfer, long connection or baggage problem for a clean itinerary', () => {
+    const summary = formatWhatYouCouldMiss(cleanOption);
+    expect(summary).toEqual([]);
+  });
+
+  it('the component-facing copy for this state is the plain, honest "no material issue" sentence, not silence and not an invented warning', () => {
+    expect(NO_MATERIAL_CONSEQUENCE_COPY).toBe('No material issue identified within the checks performed.');
+    expect(NO_MATERIAL_CONSEQUENCE_COPY.toLowerCase()).not.toMatch(/self-transfer|airport change|risk|warning|delay/);
+  });
+});
+
+describe('PR #233 product-acceptance correction — Finding 2: "What remains unconfirmed" is explicit and data-driven', () => {
+  it('the real Manchester-Mumbai brief lists genuinely unconfirmed items: no current fare, not the current exact itinerary, unknown baggage, unconfirmed connection protection', () => {
+    const brief = assembleManchesterMumbaiBrief('2026-09-05')!;
+    const items = getManchesterMumbaiUnconfirmedItems(brief);
+    expect(items).toEqual([
+      'A current, live representative fare for this route',
+      'The exact itinerary and operating airline for a fresh search — the recorded example below may no longer be offered as shown',
+      'Checked baggage allowance and cost',
+      'Whether a missed connection is protected, since this itinerary includes a self-transfer',
+    ]);
+  });
+
+  it('never lists an item as unknown when the evidence actually establishes it — a fully-confirmed synthetic current fare with known baggage, no self-transfer, produces zero unconfirmed items', () => {
+    const confirmedOption: EvidencedFareOption = {
+      price: 400,
+      currency: 'GBP',
+      cabin: 'Economy',
+      airline: 'Fixture Air',
+      observedDate: '2026-09-05',
+      departureDate: '2026-10-01',
+      returnDate: '2026-10-15',
+      baggage: '1 free checked bag included',
+      directness: 'direct',
+      outboundStops: 0,
+      returnStops: 0,
+      outboundDuration: '7h',
+      returnDuration: '7h 30m',
+      journeyConsequences: [],
+      longestNamedWait: null,
+      connectionProtectionMentioned: false,
+      isCurrentRepresentativeFare: true,
+    };
+    const items = getManchesterMumbaiUnconfirmedItems({ evidencedOption: confirmedOption, hasCurrentFareSignal: true });
+    expect(items).toEqual([]);
+  });
+
+  it('the connection-protection item only ever appears when self-transfer is actually present — never a generic checklist entry for a direct or single-ticket itinerary', () => {
+    const directOption: EvidencedFareOption = {
+      price: 400, currency: 'GBP', cabin: 'Economy', airline: 'Fixture Air', observedDate: '2026-09-05',
+      departureDate: '2026-10-01', returnDate: '2026-10-15', baggage: 'not stated', directness: 'direct',
+      outboundStops: 0, returnStops: 0, outboundDuration: '7h', returnDuration: '7h 30m',
+      journeyConsequences: [], longestNamedWait: null, connectionProtectionMentioned: false, isCurrentRepresentativeFare: true,
+    };
+    const items = getManchesterMumbaiUnconfirmedItems({ evidencedOption: directOption, hasCurrentFareSignal: true });
+    expect(items.some((i) => i.includes('missed connection'))).toBe(false);
+  });
+
+  it('the component-facing fallback copy for zero unconfirmed items is explicit, not silence', () => {
+    expect(NO_UNCONFIRMED_ITEMS_COPY).toBe('No material unknown identified within these checks.');
   });
 });

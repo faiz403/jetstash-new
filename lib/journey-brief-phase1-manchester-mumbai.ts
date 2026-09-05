@@ -82,10 +82,46 @@ export interface EvidencedFareOption {
   cabin: string;
   airline: string;
   observedDate: string;
+  /**
+   * PR #233 product-acceptance correction (5 Sept 2026): the RECORDED
+   * example's own travel dates — distinct from `observedDate` (when
+   * JetStash checked it). Null only when the source view model doesn't
+   * carry them (never fabricated).
+   */
+  departureDate: string | null;
+  returnDate: string | null;
+  /** Reused verbatim from the observation's own `baggage` field — null only when unavailable (the current/recent Fare Signal branch, whose sanitised view model doesn't carry it). */
+  baggage: string | null;
   directness: 'direct' | 'connecting' | null;
   outboundStops: number | null;
   returnStops: number | null;
+  /** The same formatted duration strings lib/journey-consequence.ts computed internally — exposed directly (not just pre-joined into journeyConsequences) so formatWhatYouCouldMiss() can build a more specific sentence without re-parsing. */
+  outboundDuration: string | null;
+  returnDuration: string | null;
+  /** Unmodified PR #232 output — see lib/journey-consequence.ts. Never overridden, only ever supplemented by longestNamedWait below. */
   journeyConsequences: string[];
+  /**
+   * PR #233 product-acceptance correction: the single longest individually
+   * NAMED wait among this observation's own recorded layover breakdown, on
+   * whichever leg lib/journey-consequence.ts's own getJourneyConsequences()
+   * already flagged as decisive — e.g. Manchester-Mumbai's real "23h15m
+   * Katowice" wait, which PR #232's own extractor doesn't surface today
+   * (its `hasLongLayover` check only matches singular "long layover", and
+   * this record's own text says "long layovers" — plural, describing three
+   * named legs together). See extractLongestNamedWait's own doc comment for
+   * the full extraction discipline (conservative, `null` when the pattern
+   * doesn't cleanly match). Deliberately NOT a fix to the shared
+   * lib/journey-consequence.ts module itself — that module is used live by
+   * Fare Signal, DealCard and Tracked Fares Explorer for the wider route
+   * catalogue, and widening its regex would change already-shipped,
+   * already-reviewed production behaviour on other routes without those
+   * surfaces having been through their own dedicated review. Flagged in
+   * this PR's own report as a genuine candidate for a FUTURE, separately-
+   * reviewed generalisation — not silently done here.
+   */
+  longestNamedWait: { leg: 'outbound' | 'return'; city: string; duration: string } | null;
+  /** Whether the observation's own priceNote explicitly states a missed connection may be protected by the booking terms — never inferred, read directly from the record's own text. False (unconfirmed) whenever unavailable, e.g. the current/recent Fare Signal branch. */
+  connectionProtectionMentioned: boolean;
   isCurrentRepresentativeFare: boolean;
 }
 
@@ -98,18 +134,103 @@ export interface ManchesterMumbaiBrief {
   tripComUrl: string | null;
 }
 
+/**
+ * Isolates one leg's own clause from a priceNote — the same `;`-delimited
+ * convention lib/journey-consequence.ts's own (private, unexported)
+ * legClause() relies on. Duplicated here narrowly (a few lines, one regex)
+ * rather than imported, because that helper isn't exported and this
+ * extractor answers a genuinely different question from anything in that
+ * module's own public contract — see extractLongestNamedWait's doc
+ * comment. Not a second source of route/fare TRUTH, just a second reader of
+ * the same already-canonical priceNote field.
+ */
+function legClauseFor(priceNote: string, leg: 'outbound' | 'return'): string | null {
+  const match = priceNote.match(new RegExp(`\\b${leg}\\s+([^;]+)`, 'i'));
+  return match ? match[1] : null;
+}
+
+/**
+ * PR #233 product-acceptance correction (5 Sept 2026). Finds every
+ * individually-named "<duration> <City>" segment inside a leg's own
+ * recorded layover breakdown (the parenthetical ending in "layover(s)") and
+ * returns whichever one has the largest total minutes — e.g. "(23h15m
+ * Katowice + 4h50m Abu Dhabi + 2h35m Ahmedabad long layovers)" -> Katowice,
+ * 23h 15m. Deliberately conservative: returns `null` whenever no such
+ * parenthetical breakdown exists for that leg at all (a clean nonstop leg,
+ * or a record that states duration without a layover breakdown) — never a
+ * guess. Verified against the full set of currently-known layover-bearing
+ * priceNote shapes (single-layover MAN-IST/MAN-AGA style, this multi-leg
+ * MAN-BOM style, and MAN-LHE's structured-duration-only style with no
+ * layover text at all) before being trusted — see
+ * tests/journey-brief-phase1-manchester-mumbai.test.ts.
+ */
+export function extractLongestNamedWait(priceNote: string, leg: 'outbound' | 'return'): { city: string; duration: string } | null {
+  const clause = legClauseFor(priceNote, leg);
+  if (!clause) return null;
+  const parenMatch = clause.match(/\(([^()]*layovers?[^()]*)\)/i);
+  if (!parenMatch) return null;
+  const breakdown = parenMatch[1];
+  const segmentPattern = /(\d+)h(\d+)?m?\s+([A-Z][a-zA-Z]+(?:\s[A-Z][a-zA-Z]+)?)/g;
+  let best: { city: string; duration: string; totalMinutes: number } | null = null;
+  let m: RegExpExecArray | null;
+  while ((m = segmentPattern.exec(breakdown))) {
+    const hours = parseInt(m[1], 10);
+    const minutes = m[2] ? parseInt(m[2], 10) : 0;
+    const totalMinutes = hours * 60 + minutes;
+    if (!best || totalMinutes > best.totalMinutes) {
+      best = { city: m[3], duration: `${hours}h${minutes ? ' ' + minutes + 'm' : ''}`, totalMinutes };
+    }
+  }
+  return best ? { city: best.city, duration: best.duration } : null;
+}
+
+/**
+ * Picks the single longest named wait across whichever leg(s)
+ * getJourneyConsequences() already flagged as decisive — never the OTHER
+ * leg's unremarkable wait (e.g. Manchester-Mumbai's own 2h30m Riyadh
+ * layover on the return leg, which is real but not material). `null` when
+ * neither decisive leg has an extractable named wait.
+ */
+function pickLongestNamedWait(
+  priceNote: string,
+  outboundDurationIsDecisive: boolean,
+  returnDurationIsDecisive: boolean
+): { leg: 'outbound' | 'return'; city: string; duration: string } | null {
+  const candidates: { leg: 'outbound' | 'return'; city: string; duration: string; minutes: number }[] = [];
+  for (const [leg, decisive] of [['outbound', outboundDurationIsDecisive], ['return', returnDurationIsDecisive]] as const) {
+    if (!decisive) continue;
+    const wait = extractLongestNamedWait(priceNote, leg);
+    if (!wait) continue;
+    const match = wait.duration.match(/^(\d+)h(?:\s(\d+)m)?$/);
+    const minutes = match ? parseInt(match[1], 10) * 60 + (match[2] ? parseInt(match[2], 10) : 0) : 0;
+    candidates.push({ leg, ...wait, minutes });
+  }
+  if (candidates.length === 0) return null;
+  candidates.sort((a, b) => b.minutes - a.minutes);
+  const { minutes: _minutes, ...rest } = candidates[0];
+  return rest;
+}
+
 function toEvidencedOption(observation: FareObservation, destinationIataCode: string | null, isCurrentRepresentativeFare: boolean): EvidencedFareOption {
-  const consequences = formatJourneyConsequenceSummary(getJourneyConsequences(observation, destinationIataCode));
+  const consequences = getJourneyConsequences(observation, destinationIataCode);
+  const priceNote = observation.priceNote ?? '';
   return {
     price: observation.price,
     currency: observation.currency ?? 'GBP',
     cabin: observation.cabin,
     airline: observation.source,
     observedDate: observation.observedDate,
+    departureDate: observation.departureDate ?? null,
+    returnDate: observation.returnDate ?? null,
+    baggage: observation.baggage ?? null,
     directness: observation.fareDirectness === 'direct' || observation.fareDirectness === 'connecting' ? observation.fareDirectness : null,
     outboundStops: observation.outboundStops ?? null,
     returnStops: observation.returnStops ?? null,
-    journeyConsequences: consequences,
+    outboundDuration: consequences.outboundDuration,
+    returnDuration: consequences.returnDuration,
+    journeyConsequences: formatJourneyConsequenceSummary(consequences),
+    longestNamedWait: pickLongestNamedWait(priceNote, consequences.outboundDurationIsDecisive, consequences.returnDurationIsDecisive),
+    connectionProtectionMentioned: /protected by the booking terms/i.test(priceNote),
     isCurrentRepresentativeFare,
   };
 }
@@ -147,10 +268,22 @@ export function assembleManchesterMumbaiBrief(nowIso: string): ManchesterMumbaiB
       cabin: fareSignal.observation.cabin,
       airline: fareSignal.observation.airline,
       observedDate: fareSignal.observation.observedDate,
+      departureDate: fareSignal.observation.departureDate,
+      returnDate: fareSignal.observation.returnDate,
+      // FareSignalObservation's sanitised view model deliberately doesn't
+      // carry the raw priceNote/baggage fields (see lib/fare-signal.ts) —
+      // these stay honestly null/false rather than guessed. A genuine
+      // current Fare Signal's own baggage/protection facts remain
+      // "unconfirmed" here until that view model is extended to carry them.
+      baggage: null,
       directness: fareSignal.observation.directness,
       outboundStops: fareSignal.observation.outboundStops,
       returnStops: fareSignal.observation.returnStops,
+      outboundDuration: null,
+      returnDuration: null,
       journeyConsequences: fareSignal.observation.journeyConsequences,
+      longestNamedWait: null,
+      connectionProtectionMentioned: false,
       isCurrentRepresentativeFare: fareSignal.state === 'current',
     };
   } else {
@@ -183,6 +316,104 @@ export function assembleManchesterMumbaiBrief(nowIso: string): ManchesterMumbaiB
 }
 
 export { formatRouteStatusDate };
+
+/**
+ * PR #233 product-acceptance correction (5 Sept 2026, founder + Astra
+ * review): the visible "What you could miss" summary must lead with the
+ * decision-changing facts (stop count, the single material named wait) a
+ * traveller would otherwise have to open evidence to find — not the same
+ * "Outbound: 43h" total figure alone, which is technically true but too
+ * abstract on its own to be the "I would have missed that" moment this
+ * whole workstream exists to create.
+ *
+ * When a longestNamedWait was found, builds a specific line: stop count for
+ * that leg, the named wait itself, self-transfer (if present), then the
+ * leg's own total duration as supporting context. When it wasn't found
+ * (no layover breakdown for this record, or an entirely clean itinerary),
+ * falls back to PR #232's own canonical journeyConsequences verbatim —
+ * never a claim beyond what that shared, already-reviewed module
+ * established.
+ */
+export function formatWhatYouCouldMiss(evidencedOption: EvidencedFareOption): string[] {
+  const wait = evidencedOption.longestNamedWait;
+  if (!wait) return evidencedOption.journeyConsequences;
+
+  const isSelfTransfer = evidencedOption.journeyConsequences.includes('Self-transfer');
+  const stopsForLeg = wait.leg === 'outbound' ? evidencedOption.outboundStops : evidencedOption.returnStops;
+  const totalDuration = wait.leg === 'outbound' ? evidencedOption.outboundDuration : evidencedOption.returnDuration;
+
+  const parts: string[] = [];
+  if (stopsForLeg !== null && stopsForLeg > 0) {
+    parts.push(`${stopsForLeg} stop${stopsForLeg === 1 ? '' : 's'} ${wait.leg}`);
+  }
+  parts.push(`${wait.duration} wait in ${wait.city}`);
+  if (isSelfTransfer) parts.push('Self-transfer');
+  if (totalDuration) parts.push(`${totalDuration} ${wait.leg} journey`);
+  return parts;
+}
+
+/** True only when neither PR #232's canonical journeyConsequences nor this file's own longestNamedWait extraction found anything decisive — the brief must say so plainly rather than render an empty section (founder: "the brief must also be comfortable saying: no material problem identified"). */
+export function hasNoMaterialConsequence(evidencedOption: EvidencedFareOption): boolean {
+  return evidencedOption.journeyConsequences.length === 0 && evidencedOption.longestNamedWait === null;
+}
+
+export const NO_MATERIAL_CONSEQUENCE_COPY = 'No material issue identified within the checks performed.';
+
+/**
+ * Founder-approved bounded wording (5 Sept 2026) — deliberately does not
+ * claim a specific consequence (missed-connection responsibility, baggage
+ * recheck, etc.) this observation's own evidence doesn't establish either
+ * way; only ever shown alongside a genuine self-transfer flag.
+ */
+export const SELF_TRANSFER_EXPLANATION =
+  'This itinerary includes a self-transfer, so check the connection and baggage conditions carefully before booking.';
+
+/**
+ * Founder-approved supporting next step (5 Sept 2026) — locks the product
+ * meaning that the recorded example above is evidence, not the booking
+ * itself, and that Trip.com is a fresh search whose results still need
+ * verifying before paying.
+ */
+export const VERIFY_BEFORE_PAYING_COPY =
+  'When you find an itinerary, verify its airline/service and unresolved details before paying.';
+
+/**
+ * PR #233 product-acceptance correction (5 Sept 2026): "What remains
+ * unconfirmed" as an explicit, first-class answer — not something a reader
+ * has to infer by cross-referencing several cards. Every item here is
+ * gated on a genuine, checkable data gap; nothing is a generic checklist
+ * entry unless the current evidence actually leaves it open. Returns an
+ * empty array when nothing material is unconfirmed (the component renders
+ * a plain "nothing left unconfirmed" sentence in that case, never silence).
+ */
+export function getManchesterMumbaiUnconfirmedItems(brief: Pick<ManchesterMumbaiBrief, 'evidencedOption' | 'hasCurrentFareSignal'>): string[] {
+  const { evidencedOption, hasCurrentFareSignal } = brief;
+  const items: string[] = [];
+
+  if (!hasCurrentFareSignal) {
+    items.push('A current, live representative fare for this route');
+  }
+
+  if (evidencedOption) {
+    if (!evidencedOption.isCurrentRepresentativeFare) {
+      items.push('The exact itinerary and operating airline for a fresh search — the recorded example below may no longer be offered as shown');
+    }
+
+    const baggageKnown = Boolean(evidencedOption.baggage) && !/not stated|not disclosed|unknown/i.test(evidencedOption.baggage!);
+    if (!baggageKnown) {
+      items.push('Checked baggage allowance and cost');
+    }
+
+    const isSelfTransfer = evidencedOption.journeyConsequences.includes('Self-transfer');
+    if (isSelfTransfer && !evidencedOption.connectionProtectionMentioned) {
+      items.push('Whether a missed connection is protected, since this itinerary includes a self-transfer');
+    }
+  }
+
+  return items;
+}
+
+export const NO_UNCONFIRMED_ITEMS_COPY = 'No material unknown identified within these checks.';
 
 export type PrimaryNextAction =
   | { kind: 'check-travel-ready'; label: string; reason: string }

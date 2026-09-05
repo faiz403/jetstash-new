@@ -1,9 +1,10 @@
 'use client';
 
-import { useMemo, useState, type FormEvent } from 'react';
+import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import {
   AlertTriangle,
   ArrowUpRight,
+  Pencil,
   Plane,
   ShieldCheck,
 } from 'lucide-react';
@@ -21,8 +22,15 @@ import { evaluateTravelReadiness, type ExemptionDocument } from '@/lib/travel-re
 import {
   assembleManchesterMumbaiBrief,
   formatRouteStatusDate,
+  formatWhatYouCouldMiss,
   getManchesterMumbaiNextAction,
+  getManchesterMumbaiUnconfirmedItems,
+  hasNoMaterialConsequence,
   MANCHESTER_MUMBAI_ROUTE_SLUG,
+  NO_MATERIAL_CONSEQUENCE_COPY,
+  NO_UNCONFIRMED_ITEMS_COPY,
+  SELF_TRANSFER_EXPLANATION,
+  VERIFY_BEFORE_PAYING_COPY,
 } from '@/lib/journey-brief-phase1-manchester-mumbai';
 
 /**
@@ -71,8 +79,29 @@ export function JourneyBriefManchesterMumbai() {
   const [exemptionDocument, setExemptionDocument] = useState<ExemptionDocument>('none');
   const [passportExpiryDate, setPassportExpiryDate] = useState('');
   const [routeUnavailable, setRouteUnavailable] = useState(false);
+  // PR #233 product-acceptance correction (5 Sept 2026, founder review):
+  // Finding 1 — the entry form previously unmounted entirely once
+  // stage === 'result', so "Add your travel dates and passport details
+  // above" pointed at nothing. All the field values below already live in
+  // this component's own state (never cleared by a stage change), so
+  // returning to 'entry' restores a fully usable, pre-filled form for
+  // free — this ref+effect only adds the missing focus outcome.
+  const fromFieldRef = useRef<HTMLSelectElement>(null);
+  const [focusEntryOnReturn, setFocusEntryOnReturn] = useState(false);
 
   const brief = useMemo(() => assembleManchesterMumbaiBrief(NOW_ISO), []);
+
+  function editJourneyDetails() {
+    setStage('entry');
+    setFocusEntryOnReturn(true);
+  }
+
+  useEffect(() => {
+    if (stage === 'entry' && focusEntryOnReturn) {
+      fromFieldRef.current?.focus();
+      setFocusEntryOnReturn(false);
+    }
+  }, [stage, focusEntryOnReturn]);
 
   const hasEnteredTravelDetails = Boolean(isBritishPassport && departureDate && arrivalDate && returnDate && passportExpiryDate);
 
@@ -149,6 +178,7 @@ export function JourneyBriefManchesterMumbai() {
                   </label>
                   <select
                     id="jb-from"
+                    ref={fromFieldRef}
                     value={airportSlug}
                     onChange={(e) => { setAirportSlug(e.target.value); setRouteUnavailable(false); }}
                     className="mt-1.5 h-11 w-full rounded-sm border border-white/15 bg-white/5 px-3 text-sm text-sand-50 focus-visible:border-brass"
@@ -285,8 +315,24 @@ export function JourneyBriefManchesterMumbai() {
           <section className="bg-white py-8 sm:py-10" aria-labelledby="jb-heading">
             <div className="mx-auto max-w-content px-5 sm:px-8">
               <div className="max-w-2xl rounded-md border border-ink-200 bg-sand-50 p-5 sm:p-6">
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-terracotta-600">Journey Brief</p>
-                <h2 id="jb-heading" className="mt-1 font-display text-2xl text-ink-900 sm:text-3xl">Manchester to Mumbai</h2>
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-terracotta-600">Journey Brief</p>
+                    <h2 id="jb-heading" className="mt-1 font-display text-2xl text-ink-900 sm:text-3xl">Manchester to Mumbai</h2>
+                  </div>
+                  {/* PR #233 product-acceptance correction: Finding 1 — a
+                      real, keyboard-reachable way back to the entry form.
+                      A plain <button>, not an anchor to a non-existent
+                      form. */}
+                  <button
+                    type="button"
+                    onClick={editJourneyDetails}
+                    className="inline-flex shrink-0 items-center gap-1 text-xs font-semibold text-ink-600 underline decoration-ink-300 underline-offset-2 hover:text-terracotta-600"
+                  >
+                    <Pencil className="h-3 w-3" strokeWidth={2.25} aria-hidden="true" />
+                    Edit journey details
+                  </button>
+                </div>
 
                 {/* 1. Route reality */}
                 <div className="mt-5">
@@ -325,9 +371,13 @@ export function JourneyBriefManchesterMumbai() {
                   )}
                 </div>
 
-                {/* 2. Viable journey choice */}
+                {/* 2. Recorded example — PR #233 product-acceptance
+                    correction: renamed from "Your journey option" (read as
+                    endorsement) to a neutral evidence label, and now shows
+                    the recorded example's own travel dates distinctly from
+                    the date JetStash checked it. */}
                 <div className="mt-5 border-t border-ink-100 pt-5">
-                  <EyebrowLabel>Your journey option</EyebrowLabel>
+                  <EyebrowLabel>{evidencedOption?.isCurrentRepresentativeFare ? 'Tracked fare' : 'Recorded example'}</EyebrowLabel>
                   {evidencedOption ? (
                     <>
                       <div className="mt-1.5 flex items-baseline gap-2">
@@ -339,10 +389,14 @@ export function JourneyBriefManchesterMumbai() {
                       <p className="mt-1 text-sm text-ink-600">
                         {evidencedOption.airline}
                         {evidencedOption.directness === 'direct' ? ' · Direct' : evidencedOption.directness === 'connecting' ? ' · Connecting' : ''}
-                        {' · '}
-                        {evidencedOption.isCurrentRepresentativeFare
-                          ? `tracked, checked ${formatChecked(evidencedOption.observedDate)}`
-                          : `a recent check JetStash logged, ${formatChecked(evidencedOption.observedDate)}`}
+                      </p>
+                      {evidencedOption.departureDate && evidencedOption.returnDate && (
+                        <p className="mt-1 text-sm text-ink-600">
+                          For travel {formatChecked(evidencedOption.departureDate)} – {formatChecked(evidencedOption.returnDate)}
+                        </p>
+                      )}
+                      <p className="mt-1 text-xs text-ink-400">
+                        {evidencedOption.isCurrentRepresentativeFare ? 'Checked' : 'Recorded'} {formatChecked(evidencedOption.observedDate)}
                       </p>
                       {!hasCurrentFareSignal && (
                         <p className="mt-2 text-sm leading-relaxed text-ink-500">
@@ -359,16 +413,57 @@ export function JourneyBriefManchesterMumbai() {
                   )}
                 </div>
 
-                {/* 3. The thing you could miss */}
-                {evidencedOption && evidencedOption.journeyConsequences.length > 0 && (
+                {/* 3. What you could miss — PR #233 product-acceptance
+                    correction: leads with the specific decision-changing
+                    facts (formatWhatYouCouldMiss(), which surfaces the
+                    single longest named wait when one exists) rather than
+                    only the generic total-duration figure, states plainly
+                    when nothing material was found, and gives self-transfer
+                    a bounded, founder-approved explanation. */}
+                {evidencedOption && (
                   <div className="mt-5 border-t border-ink-100 pt-5">
-                    <EyebrowLabel tone="terracotta">What you could miss</EyebrowLabel>
-                    <p className="mt-1.5 flex items-start gap-2 text-base font-medium leading-relaxed text-terracotta-700">
-                      <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" strokeWidth={2.25} aria-hidden="true" />
-                      <span>{evidencedOption.journeyConsequences.join(' · ')}</span>
-                    </p>
+                    <EyebrowLabel tone={hasNoMaterialConsequence(evidencedOption) ? 'ink' : 'terracotta'}>What you could miss</EyebrowLabel>
+                    {hasNoMaterialConsequence(evidencedOption) ? (
+                      <p className="mt-1.5 text-sm leading-relaxed text-ink-600">{NO_MATERIAL_CONSEQUENCE_COPY}</p>
+                    ) : (
+                      <>
+                        <p className="mt-1.5 flex items-start gap-2 text-base font-medium leading-relaxed text-terracotta-700">
+                          <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" strokeWidth={2.25} aria-hidden="true" />
+                          <span>{formatWhatYouCouldMiss(evidencedOption).join(' · ')}</span>
+                        </p>
+                        {evidencedOption.journeyConsequences.includes('Self-transfer') && (
+                          <p className="mt-2 text-sm leading-relaxed text-ink-600">{SELF_TRANSFER_EXPLANATION}</p>
+                        )}
+                      </>
+                    )}
                   </div>
                 )}
+
+                {/* 4. What remains unconfirmed — PR #233 product-acceptance
+                    correction: a first-class, explicit answer rather than
+                    something scattered across disclaimers. Data-driven —
+                    see getManchesterMumbaiUnconfirmedItems()'s own doc
+                    comment for exactly what each item is gated on. */}
+                {evidencedOption && (() => {
+                  const unconfirmed = getManchesterMumbaiUnconfirmedItems({ evidencedOption, hasCurrentFareSignal });
+                  return (
+                    <div className="mt-5 border-t border-ink-100 pt-5">
+                      <EyebrowLabel>What remains unconfirmed</EyebrowLabel>
+                      {unconfirmed.length > 0 ? (
+                        <ul className="mt-1.5 flex flex-col gap-1.5 text-sm leading-relaxed text-ink-600">
+                          {unconfirmed.map((item) => (
+                            <li key={item} className="flex gap-2">
+                              <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-ink-400" aria-hidden="true" />
+                              {item}
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <p className="mt-1.5 text-sm leading-relaxed text-ink-600">{NO_UNCONFIRMED_ITEMS_COPY}</p>
+                      )}
+                    </div>
+                  );
+                })()}
               </div>
             </div>
           </section>
@@ -452,6 +547,12 @@ export function JourneyBriefManchesterMumbai() {
                     Search on Trip.com
                     <ArrowUpRight className="h-4 w-4" strokeWidth={2.25} />
                   </TrackedOutboundLink>
+                  {/* PR #233 product-acceptance correction, Finding 5: locks
+                      the product meaning that Trip.com is a fresh search,
+                      not a promise the recorded example above is still
+                      bookable — the shortlisted result still needs
+                      verifying before paying. */}
+                  <p className="mt-2 max-w-2xl text-sm leading-relaxed text-ink-300">{VERIFY_BEFORE_PAYING_COPY}</p>
                   <div className="mt-2">
                     <AffiliateLinkDisclosure providerName="Trip.com" className="text-ink-400">
                       Check the itinerary, baggage allowance and booking terms before paying.
@@ -469,13 +570,21 @@ export function JourneyBriefManchesterMumbai() {
                 </a>
               )}
 
+              {/* PR #233 product-acceptance correction, Finding 1: this
+                  used to link to "#jb-readiness-heading" — a dead end,
+                  since the input form no longer exists once stage ===
+                  'result'. A real button that returns to the entry stage
+                  (preserving already-entered values) and moves focus to
+                  the first field, matching the "Edit journey details"
+                  action in the card header above. */}
               {nextAction.kind === 'enter-travel-details' && (
-                <a
-                  href="#jb-readiness-heading"
+                <button
+                  type="button"
+                  onClick={editJourneyDetails}
                   className="mt-5 inline-flex h-12 items-center justify-center gap-1.5 rounded-sm border border-white/20 px-6 text-sm font-semibold text-sand-50 transition-colors hover:bg-white/5"
                 >
                   Add travel dates and passport details
-                </a>
+                </button>
               )}
             </div>
           </section>
