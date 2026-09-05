@@ -58,7 +58,7 @@ export interface JourneyConsequences {
    * The two airport codes named in an explicit "ground transfer between X
    * and Y airports" statement already in the observation's own priceNote —
    * e.g. Manchester-Agadir's MXP/BGY (Milan Malpensa to Milan Bergamo).
-   * `null` when no such statement is present.
+   * `null` when no such statement is present anywhere in the observation.
    */
   groundTransferAirports: readonly [string, string] | null;
   /**
@@ -82,6 +82,22 @@ export interface JourneyConsequences {
   outboundDuration: string | null;
   returnDuration: string | null;
   /**
+   * Whether THIS specific leg's own duration is itself a decisive fact
+   * worth surfacing prominently — see formatJourneyConsequenceSummary's
+   * doc comment ("PR #232 decisive-duration correction") for why this must
+   * be decided per leg, not "show whichever leg happened to parse". A leg
+   * is decisive when either (a) that leg's own priceNote clause states the
+   * ground-transfer airport change or a long layover — the fact making
+   * that specific leg cumbersome — or (b) as a fallback for a leg with no
+   * such stated reason but a plainly extreme elapsed time (see
+   * NOTABLE_LEG_DURATION_HOURS's own doc comment), so a case like
+   * Manchester-Lahore's 34h50m/43h20m Business fare — genuinely long on
+   * both legs, but with neither leg's clause stating a layover or airport
+   * change — still surfaces both durations.
+   */
+  outboundDurationIsDecisive: boolean;
+  returnDurationIsDecisive: boolean;
+  /**
    * The actual final airport code the outbound leg's own priceNote states
    * it arrives at, only when it could be confidently extracted AND differs
    * from the destination's own recorded IATA code — e.g.
@@ -101,6 +117,36 @@ const LONG_LAYOVER_PATTERN = /\blong layover\b/i;
 const LONG_LAYOVER_CITY_PATTERN = /\(\s*[\dh\s]+m?\s+([A-Z][a-zA-Z]+)\s+long layover/i;
 
 /**
+ * PR #232 decisive-duration correction (5 Sept 2026, founder review of the
+ * original PR #232 submission). No existing canonical JetStash rule
+ * defines an "extremely long journey" duration threshold anywhere in the
+ * codebase (isPoorItinerarySuitability, lib/fare-signal.ts, is the closest
+ * relative and is entirely duration-blind — self-transfer + stop count
+ * only) — this is confirmed by a direct search of lib/ before introducing
+ * this constant, deliberately named and isolated here rather than reused
+ * or duplicated silently.
+ *
+ * This is NOT a second suitability policy: isPoorItinerarySuitability()
+ * still exclusively governs whether an observation is shown as the
+ * representative fare AT ALL (untouched by this module). This constant
+ * answers a narrower, purely presentational question — once an
+ * observation IS being shown, is a specific leg's own elapsed time, on its
+ * own, worth calling out even when its priceNote states no explicit
+ * ground-transfer/long-layover reason? It exists only as the fallback
+ * signal for exactly that case (see outboundDurationIsDecisive/
+ * returnDurationIsDecisive's own doc comment) — Manchester-Lahore's
+ * £3,051 Business fare (34h50m outbound, 43h20m return, neither leg's own
+ * clause naming a layover or airport change) is the one confirmed live
+ * case this fallback exists for. 24 hours — a full calendar day spent
+ * travelling one way — is a round, defensible, non-arbitrary-feeling
+ * line, not a tuned score. See tests/journey-consequence.test.ts for
+ * dedicated coverage proving this fallback fires only when no more
+ * specific reason (ground transfer / long layover) is already stated on
+ * that same leg.
+ */
+const NOTABLE_LEG_DURATION_HOURS = 24;
+
+/**
  * Deliberately strict: only matches a routing string that is PURELY
  * hyphen-separated 3-letter airport codes with nothing else interspersed
  * (no airline names, no parenthetical detail) — e.g. "MAN-SAW-SHJ", not
@@ -108,8 +154,12 @@ const LONG_LAYOVER_CITY_PATTERN = /\(\s*[\dh\s]+m?\s+([A-Z][a-zA-Z]+)\s+long lay
  * BCN)-IST". Returns `null` for anything it isn't fully confident about,
  * by construction (a partial/best-effort parse of a messy string risks
  * silently dropping a leg and returning a wrong final airport, which is
- * worse than surfacing nothing). Verified against all four of this fix's
- * confirmed live examples — see tests/journey-consequence.test.ts.
+ * worse than surfacing nothing). This strict precondition is deliberately
+ * kept ONLY for arrival-airport-mismatch detection (the highest-stakes
+ * claim this module makes) — see extractLegDurationFromText below for why
+ * duration extraction itself no longer needs this same precondition.
+ * Verified against all four of this fix's confirmed live examples — see
+ * tests/journey-consequence.test.ts.
  */
 export function extractCleanRoutingCodes(priceNote: string, leg: 'outbound' | 'return'): string[] | null {
   const pattern = new RegExp(`\\b${leg}\\s+([A-Z]{3}(?:-[A-Z]{3})+)(?=[,;])`);
@@ -118,15 +168,70 @@ export function extractCleanRoutingCodes(priceNote: string, leg: 'outbound' | 'r
 }
 
 /**
- * Same strict precondition as extractCleanRoutingCodes (the routing string
- * right after the leg keyword must be a clean hyphen-separated code
- * sequence) before trusting a trailing duration figure — if that
- * precondition isn't met, returns `null` rather than a guess.
+ * Isolates one leg's own clause — from the leg keyword up to the next
+ * semicolon — the same `;`-delimited-fact convention every observation's
+ * priceNote already follows throughout the archive. Requiring whitespace
+ * directly after the keyword (`\s+`, not merely present anywhere) is what
+ * keeps this from matching the "return, per person, one adult;" preamble
+ * every priceNote opens with — that "return" is always followed by a
+ * comma, never whitespace, so it's structurally excluded, not filtered by
+ * special-casing.
+ */
+function legClause(priceNote: string, leg: 'outbound' | 'return'): string | null {
+  const match = priceNote.match(new RegExp(`\\b${leg}\\s+([^;]+)`, 'i'));
+  return match ? match[1] : null;
+}
+
+/**
+ * PR #232 decisive-duration correction (5 Sept 2026). The original version
+ * of this function required extractCleanRoutingCodes' strict clean-routing
+ * precondition before trusting a duration figure — which meant a
+ * ground-transfer-annotated leg (e.g. Manchester-Agadir's return,
+ * "AGA-MXP(-ground transfer to BGY)-MAN") could never yield a duration at
+ * all, even though the total elapsed time is stated in plain text right
+ * there. Founder review confirmed this was the wrong trade-off: the exact
+ * cases this module exists to surface (an airport change, a long layover)
+ * are precisely the cases whose routing string carries this extra
+ * parenthetical detail.
+ *
+ * The safe alternative doesn't need the routing string to be clean at
+ * all: within one leg's own clause (see legClause), the leg's TOTAL
+ * elapsed duration is always the first "Nh" / "NhNm" - shaped figure that
+ * appears — a layover's own duration, when stated, always appears
+ * afterward inside its own trailing parenthetical (e.g. "27h55m (22h
+ * Barcelona long layover...)", "20h55m (16h10m Milan long layover...)"),
+ * and no flight/airline code in the archive's own format (e.g. "FR1227",
+ * "W62430", "TK1993") contains a digit-h-digit-m shaped substring — so the
+ * first match is never ambiguous with a flight number or a layover figure.
+ * This was verified against the full archive (314 records, 193 outbound +
+ * 166 return durations successfully extracted, zero anomalous values)
+ * before being trusted here — see tests/journey-consequence.test.ts's
+ * dataset-wide sweep.
  */
 function extractLegDurationFromText(priceNote: string, leg: 'outbound' | 'return'): string | null {
-  const pattern = new RegExp(`\\b${leg}\\s+[A-Z]{3}(?:-[A-Z]{3})+,[^;]*?(\\d+h\\s?\\d*m?)\\b`);
-  const match = priceNote.match(pattern);
-  return match ? match[1].trim() : null;
+  const clause = legClause(priceNote, leg);
+  if (!clause) return null;
+  const durationMatch = clause.match(/\d+h\s?\d*m?\b/);
+  return durationMatch ? durationMatch[0].trim() : null;
+}
+
+/** Whether this leg's own clause states the ground-transfer airport change itself — narrower than the observation-wide GROUND_TRANSFER_PATTERN check, used only to decide whether THIS leg's duration is decisive (see outboundDurationIsDecisive/returnDurationIsDecisive). */
+function legHasGroundTransfer(priceNote: string, leg: 'outbound' | 'return'): boolean {
+  const clause = legClause(priceNote, leg);
+  return clause !== null && GROUND_TRANSFER_PATTERN.test(clause);
+}
+
+/** Whether this leg's own clause states a long layover itself — see legHasGroundTransfer's doc comment for why this is scoped per leg rather than observation-wide. */
+function legHasLongLayover(priceNote: string, leg: 'outbound' | 'return'): boolean {
+  const clause = legClause(priceNote, leg);
+  return clause !== null && LONG_LAYOVER_PATTERN.test(clause);
+}
+
+/** A leg's own duration is decisive when >= NOTABLE_LEG_DURATION_HOURS — see that constant's own doc comment for why this exists only as a fallback. */
+function isNotablyLongDuration(duration: string | null): boolean {
+  if (!duration) return false;
+  const hours = parseInt(duration, 10);
+  return Number.isFinite(hours) && hours >= NOTABLE_LEG_DURATION_HOURS;
 }
 
 /** "27h55m" / "26h" -> "27h 55m" / "26h" — matches the site's existing "Xh Ym" spacing convention. */
@@ -172,6 +277,23 @@ export function getJourneyConsequences(
     }
   }
 
+  // PR #232 decisive-duration correction: each leg's own "is this duration
+  // worth showing" decision is scoped to THAT leg's own clause — a leg is
+  // decisive when its own text states the reason (ground transfer / long
+  // layover), or, failing that, when its own elapsed time is itself
+  // plainly extreme (NOTABLE_LEG_DURATION_HOURS's fallback). Never decided
+  // by the OTHER leg's facts, and never by "a duration exists" alone —
+  // Manchester-Agadir's short, unremarkable 3h50m outbound must stay
+  // hidden even though the record as a whole has a decisive return leg.
+  const outboundDurationIsDecisive =
+    legHasGroundTransfer(priceNote, 'outbound') ||
+    legHasLongLayover(priceNote, 'outbound') ||
+    isNotablyLongDuration(outboundDuration);
+  const returnDurationIsDecisive =
+    legHasGroundTransfer(priceNote, 'return') ||
+    legHasLongLayover(priceNote, 'return') ||
+    isNotablyLongDuration(returnDuration);
+
   return {
     selfTransfer: isSelfTransferItinerary(priceNote),
     groundTransferAirports: groundTransferMatch ? [groundTransferMatch[1], groundTransferMatch[2]] : null,
@@ -179,22 +301,10 @@ export function getJourneyConsequences(
     hasLongLayover,
     outboundDuration,
     returnDuration,
+    outboundDurationIsDecisive,
+    returnDurationIsDecisive,
     arrivalAirportMismatch,
   };
-}
-
-/**
- * Whether a formatted "Xh Ym" duration is extreme enough to be a decisive
- * consequence on its own — a full calendar day (24h) or more spent
- * travelling, a round, defensible, non-arbitrary-feeling threshold rather
- * than a fine-tuned score. Only ever applied to a duration this module
- * already confidently knows (structured field or a conservative text
- * extraction) — never estimated.
- */
-function isExtremeDuration(duration: string | null): boolean {
-  if (!duration) return false;
-  const hours = parseInt(duration, 10);
-  return Number.isFinite(hours) && hours >= 24;
 }
 
 /** True when any decisive consequence was actually found — used to gate whether the summary line renders at all. */
@@ -204,8 +314,8 @@ export function hasAnyJourneyConsequence(c: JourneyConsequences): boolean {
     c.groundTransferAirports !== null ||
     c.hasLongLayover ||
     c.arrivalAirportMismatch !== null ||
-    isExtremeDuration(c.outboundDuration) ||
-    isExtremeDuration(c.returnDuration)
+    c.outboundDurationIsDecisive ||
+    c.returnDurationIsDecisive
   );
 }
 
@@ -219,6 +329,18 @@ export function hasAnyJourneyConsequence(c: JourneyConsequences): boolean {
  * as long as it does), then the duration figures themselves. Deliberately
  * short — this is not a general-purpose itinerary dump; see this module's
  * own doc comment for the "decisive consequence" scope.
+ *
+ * PR #232 decisive-duration correction (5 Sept 2026, founder review): the
+ * original version showed BOTH outbound and return whenever ANY
+ * observation-wide signal fired, which surfaced Manchester-Agadir's
+ * short, unremarkable "Outbound: 3h 50m" while still failing to show the
+ * actually-decisive "Return: 20h 55m" (the return leg's duration couldn't
+ * be extracted at all under the old strict-clean-routing precondition).
+ * Each duration is now gated independently on THAT leg's own
+ * outboundDurationIsDecisive/returnDurationIsDecisive — so Agadir now
+ * shows only "Return: 20h 55m" (the leg the airport change and long
+ * layover actually belong to), while Manchester-Istanbul, where BOTH legs
+ * independently state their own long layover, correctly shows both.
  */
 export function formatJourneyConsequenceSummary(c: JourneyConsequences): string[] {
   const parts: string[] = [];
@@ -235,15 +357,7 @@ export function formatJourneyConsequenceSummary(c: JourneyConsequences): string[
   } else if (c.hasLongLayover) {
     parts.push('Long layover');
   }
-  // Duration is supporting context for a consequence that specifically
-  // implies an inflated journey time (an airport change, a long layover,
-  // or the duration itself being extreme — a full day or more) — never
-  // attached to self-transfer alone, since an ordinary short self-transfer
-  // flight's duration is not itself a "decisive consequence" (Part 5: "a
-  // normal protected journey should remain concise").
-  if (c.groundTransferAirports || c.hasLongLayover || isExtremeDuration(c.outboundDuration) || isExtremeDuration(c.returnDuration)) {
-    if (c.outboundDuration) parts.push(`Outbound: ${c.outboundDuration}`);
-    if (c.returnDuration) parts.push(`Return: ${c.returnDuration}`);
-  }
+  if (c.outboundDurationIsDecisive && c.outboundDuration) parts.push(`Outbound: ${c.outboundDuration}`);
+  if (c.returnDurationIsDecisive && c.returnDuration) parts.push(`Return: ${c.returnDuration}`);
   return parts;
 }

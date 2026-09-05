@@ -67,29 +67,31 @@ const trackedFaresHtml = renderToStaticMarkup(
 describe('Manchester-Istanbul (£153 self-transfer, Barcelona airport change) — Fare Signal', () => {
   const html = renderFareSignalForRoute('manchester-istanbul');
 
-  it('shows the price and the decisive consequence together, before the CTA', () => {
+  it('shows the price and the decisive consequence together, before the CTA — PR #232: BOTH legs are independently decisive (each states its own long layover), so both durations now appear', () => {
     const priceIdx = html.indexOf('£153');
-    const consequenceIdx = html.indexOf('Self-transfer · Barcelona airport change');
+    const consequenceIdx = html.indexOf('Self-transfer · Barcelona airport change · Outbound: 27h 55m · Return: 26h');
     const ctaIdx = html.indexOf('Check current price');
     expect(priceIdx).toBeGreaterThan(-1);
     expect(consequenceIdx).toBeGreaterThan(priceIdx);
     expect(consequenceIdx).toBeLessThan(ctaIdx);
   });
-
-  it('states the real return duration, never a fabricated outbound one', () => {
-    expect(html).toContain('Return: 26h');
-    expect(html).not.toMatch(/Outbound: \d/);
-  });
 });
 
-describe('Manchester-Agadir (£72, Milan airport change on the return) — Fare Signal', () => {
+describe('Manchester-Agadir (£72, Milan airport change on the RETURN) — Fare Signal', () => {
+  // PR #232 decisive-duration correction (founder review): the original
+  // submission surfaced "Outbound: 3h 50m" -- the short, ordinary leg --
+  // while omitting the actually-decisive "Return: 20h 55m", the leg the
+  // airport change and long layover both belong to. Fixed: duration
+  // display is now gated per leg, tied to which leg's own text states the
+  // reason.
   const html = renderFareSignalForRoute('manchester-agadir');
 
-  it('shows the price and the decisive consequence together', () => {
+  it('shows the price and the DECISIVE consequence together — the long return, never the short outbound', () => {
     const priceIdx = html.indexOf('£72');
-    const consequenceIdx = html.indexOf('Self-transfer · Milan airport change · Outbound: 3h 50m');
+    const consequenceIdx = html.indexOf('Self-transfer · Milan airport change · Return: 20h 55m');
     expect(priceIdx).toBeGreaterThan(-1);
     expect(consequenceIdx).toBeGreaterThan(priceIdx);
+    expect(html).not.toContain('Outbound: 3h 50m');
   });
 
   it('still states both real, independent stop counts (PR #229, 5 Sept 2026) — the new consequence line adds to this, never replaces it', () => {
@@ -146,12 +148,13 @@ describe('Controls (Fare Signal) — a normal fare gains zero extra density', ()
 });
 
 describe('Tracked Fares Explorer — the same four examples, the same shared summary text', () => {
-  it('Manchester-Istanbul card shows the airport-change consequence', () => {
-    expect(trackedFaresHtml).toContain('Self-transfer · Barcelona airport change');
+  it('Manchester-Istanbul card shows both decisive durations', () => {
+    expect(trackedFaresHtml).toContain('Self-transfer · Barcelona airport change · Outbound: 27h 55m · Return: 26h');
   });
 
-  it('Manchester-Agadir card shows the airport-change consequence and preserves the asymmetric stop count', () => {
-    expect(trackedFaresHtml).toContain('Self-transfer · Milan airport change · Outbound: 3h 50m');
+  it('Manchester-Agadir card shows the DECISIVE return duration, never the short outbound one, and preserves the asymmetric stop count', () => {
+    expect(trackedFaresHtml).toContain('Self-transfer · Milan airport change · Return: 20h 55m');
+    expect(trackedFaresHtml).not.toContain('Outbound: 3h 50m');
     expect(trackedFaresHtml).toContain('0 stops outbound, 1 stop return');
   });
 
