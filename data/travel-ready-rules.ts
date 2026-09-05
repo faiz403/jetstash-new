@@ -81,6 +81,30 @@ export interface TravelReadyStayLimit {
 export interface TravelReadyValidityRequirement {
   unit: 'calendar-months' | 'days';
   value: number;
+  /**
+   * Founder correction (PR #230 final reference-event check, 5 September
+   * 2026): the calendar-month audit disclosed departureDate as a proxy for
+   * the real reference event, but a disclosure does not stop a genuine
+   * false pass — a traveller whose actual destination arrival lands on a
+   * later calendar date than UK departure could still see READY on a
+   * passport that fails the true, arrival-anchored rule. Fixed properly:
+   * `TravelReadyCheckInput` now collects a real `arrivalDate`, and
+   * `'arrival'` rules use it directly, never departureDate.
+   *
+   * `'departure-conservative-proxy'` is reserved for the two rules whose
+   * official reference event (Pakistan: visa application date; Bangladesh:
+   * visa issue date, "not the date of travel" per GOV.UK's own words) is
+   * provably always on or before UK departure — Pakistan requires the visa
+   * arranged in advance (no visa-on-arrival for British passport holders)
+   * and Bangladesh's NVR is "an endorsement applied for in advance", so
+   * application/issue date <= departureDate always holds. Because the
+   * buffer requirement only gets stricter as the reference date moves
+   * later, using the later departureDate in place of the true, earlier
+   * application/issue date can only ever make the check MORE demanding
+   * than the real rule, never less — it cannot produce a false pass. This
+   * is proven, not assumed, and covered by its own regression tests.
+   */
+  referenceEvent: 'arrival' | 'departure-conservative-proxy';
 }
 
 export interface TravelReadyRule {
@@ -150,7 +174,7 @@ export const travelReadyRules: TravelReadyRule[] = [
     nationalityScope: 'british-passport',
     ruleType: 'passport-validity',
     requirement: 'Your passport must have an expiry date at least 6 months after the date of your visa application.',
-    validityRequirement: { unit: 'calendar-months', value: 6 },
+    validityRequirement: { unit: 'calendar-months', value: 6, referenceEvent: 'departure-conservative-proxy' },
     officialSource: GOVUK('Pakistan', 'pakistan'),
     lastVerifiedDate: VERIFIED,
     reviewDueDate: REVIEW_DUE,
@@ -187,7 +211,7 @@ export const travelReadyRules: TravelReadyRule[] = [
     nationalityScope: 'british-passport',
     ruleType: 'passport-validity',
     requirement: 'Your passport must have an expiry date at least 6 months after your arrival date, with at least 2 blank pages.',
-    validityRequirement: { unit: 'calendar-months', value: 6 },
+    validityRequirement: { unit: 'calendar-months', value: 6, referenceEvent: 'arrival' },
     caveat: 'The 2-blank-page requirement can’t be checked by this tool — confirm it yourself before travelling.',
     officialSource: GOVUK('India', 'india'),
     lastVerifiedDate: VERIFIED,
@@ -225,7 +249,7 @@ export const travelReadyRules: TravelReadyRule[] = [
     nationalityScope: 'british-passport',
     ruleType: 'passport-validity',
     requirement: 'Your passport must have at least 2 blank pages and no damage. For a visa application, it must also have an expiry date at least 6 months after the date your visa starts.',
-    validityRequirement: { unit: 'calendar-months', value: 6 },
+    validityRequirement: { unit: 'calendar-months', value: 6, referenceEvent: 'departure-conservative-proxy' },
     caveat: 'The 2-blank-page and no-damage requirements can’t be checked by this tool — confirm them yourself before travelling.',
     officialSource: GOVUK('Bangladesh', 'bangladesh'),
     lastVerifiedDate: VERIFIED,
@@ -263,7 +287,7 @@ export const travelReadyRules: TravelReadyRule[] = [
     nationalityScope: 'british-passport',
     ruleType: 'passport-validity',
     requirement: 'Your passport must have an expiry date at least 6 months after the date you arrive.',
-    validityRequirement: { unit: 'calendar-months', value: 6 },
+    validityRequirement: { unit: 'calendar-months', value: 6, referenceEvent: 'arrival' },
     officialSource: GOVUK('Saudi Arabia', 'saudi-arabia'),
     lastVerifiedDate: VERIFIED,
     reviewDueDate: REVIEW_DUE,
@@ -288,7 +312,7 @@ export const travelReadyRules: TravelReadyRule[] = [
     nationalityScope: 'british-passport',
     ruleType: 'passport-validity',
     requirement: 'Your passport must have an expiry date at least 6 months after the date you arrive (3 months if you hold a UAE residence permit).',
-    validityRequirement: { unit: 'calendar-months', value: 6 },
+    validityRequirement: { unit: 'calendar-months', value: 6, referenceEvent: 'arrival' },
     caveat: 'The shorter 3-month rule only applies if you already hold a UAE residence permit — Travel Ready Check doesn’t collect residence-permit status, so this tool always applies the stricter 6-month figure. If you hold a UAE residence permit, the true requirement may be shorter than what this check shows.',
     officialSource: GOVUK('United Arab Emirates', 'united-arab-emirates'),
     lastVerifiedDate: VERIFIED,
@@ -315,7 +339,7 @@ export const travelReadyRules: TravelReadyRule[] = [
     nationalityScope: 'british-passport',
     ruleType: 'passport-validity',
     requirement: 'Your passport should be valid for at least 6 months from the date you arrive.',
-    validityRequirement: { unit: 'calendar-months', value: 6 },
+    validityRequirement: { unit: 'calendar-months', value: 6, referenceEvent: 'arrival' },
     officialSource: GOVUK('Qatar', 'qatar'),
     lastVerifiedDate: VERIFIED,
     reviewDueDate: REVIEW_DUE,
@@ -342,7 +366,7 @@ export const travelReadyRules: TravelReadyRule[] = [
     nationalityScope: 'british-passport',
     ruleType: 'passport-validity',
     requirement: 'Your passport must have an expiry date at least 150 days after the date you arrive, and at least 1 blank page.',
-    validityRequirement: { unit: 'days', value: 150 },
+    validityRequirement: { unit: 'days', value: 150, referenceEvent: 'arrival' },
     caveat: 'The blank-page requirement can’t be checked by this tool — confirm it yourself before travelling.',
     officialSource: GOVUK('Turkey', 'turkey'),
     lastVerifiedDate: VERIFIED,
@@ -368,7 +392,7 @@ export const travelReadyRules: TravelReadyRule[] = [
     nationalityScope: 'british-passport',
     ruleType: 'passport-validity',
     requirement: 'Your passport must have an expiry date at least 3 months after the date you arrive.',
-    validityRequirement: { unit: 'calendar-months', value: 3 },
+    validityRequirement: { unit: 'calendar-months', value: 3, referenceEvent: 'arrival' },
     officialSource: GOVUK('Morocco', 'morocco'),
     lastVerifiedDate: VERIFIED,
     reviewDueDate: REVIEW_DUE,

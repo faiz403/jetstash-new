@@ -31,7 +31,7 @@ import { evaluateTravelReadiness } from '@/lib/travel-ready-check';
  */
 const NOW = new Date('2026-07-12T12:00:00Z');
 
-const SHORT_TRIP = { departureDate: '2027-03-01', returnDate: '2027-03-20', passportExpiryDate: '2029-01-01' };
+const SHORT_TRIP = { departureDate: '2027-03-01', arrivalDate: '2027-03-01', returnDate: '2027-03-20', passportExpiryDate: '2029-01-01' };
 
 describe('Trust Integrity fix — passport contradiction (non-British passport + exemption document)', () => {
   it('Pakistan: non-British passport + NICOP/POC selected does not leak British-passport guidance and does not return ready', () => {
@@ -123,6 +123,7 @@ describe('Trust Integrity fix — visa-free/on-arrival stay-length limits', () =
         isBritishPassport: true,
         exemptionDocument: 'none',
         departureDate: '2026-10-01',
+        arrivalDate: '2026-10-01',
         returnDate: '2027-03-01', // 152 days inclusive — reproduces the Astra/founder report
         passportExpiryDate: '2029-01-01',
       },
@@ -143,6 +144,7 @@ describe('Trust Integrity fix — visa-free/on-arrival stay-length limits', () =
         isBritishPassport: true,
         exemptionDocument: 'none',
         departureDate: '2027-03-01',
+        arrivalDate: '2027-03-01',
         returnDate: '2027-03-20', // 20 days — well within 90, but rolling-window compliance is still unproven
         passportExpiryDate: '2029-01-01',
       },
@@ -174,6 +176,7 @@ describe('Trust Integrity fix — visa-free/on-arrival stay-length limits', () =
         isBritishPassport: true,
         exemptionDocument: 'none',
         departureDate: '2027-01-01',
+        arrivalDate: '2027-01-01',
         returnDate: '2027-03-30', // 89 days inclusive
         passportExpiryDate: '2029-01-01',
       },
@@ -191,6 +194,7 @@ describe('Trust Integrity fix — visa-free/on-arrival stay-length limits', () =
         isBritishPassport: true,
         exemptionDocument: 'none',
         departureDate: '2027-01-01',
+        arrivalDate: '2027-01-01',
         returnDate: '2027-03-31', // exactly 90 days inclusive of both ends
         passportExpiryDate: '2029-01-01',
       },
@@ -208,6 +212,7 @@ describe('Trust Integrity fix — visa-free/on-arrival stay-length limits', () =
         isBritishPassport: true,
         exemptionDocument: 'none',
         departureDate: '2027-01-01',
+        arrivalDate: '2027-01-01',
         returnDate: '2027-04-01', // 91 days inclusive
         passportExpiryDate: '2029-01-01',
       },
@@ -225,6 +230,7 @@ describe('Trust Integrity fix — visa-free/on-arrival stay-length limits', () =
         isBritishPassport: true,
         exemptionDocument: 'none',
         departureDate: '2026-10-01',
+        arrivalDate: '2026-10-01',
         returnDate: '2027-03-01',
         passportExpiryDate: '2029-01-01',
       },
@@ -261,6 +267,7 @@ describe('Trust Integrity fix — visa-free/on-arrival stay-length limits', () =
         isBritishPassport: true,
         exemptionDocument: 'none',
         departureDate: '2027-03-01',
+        arrivalDate: '2027-03-01',
         returnDate: '2027-04-15', // 46 days inclusive
         passportExpiryDate: '2029-01-01',
       },
@@ -277,6 +284,7 @@ describe('Trust Integrity fix — visa-free/on-arrival stay-length limits', () =
         isBritishPassport: true,
         exemptionDocument: 'none',
         departureDate: '2027-03-01',
+        arrivalDate: '2027-03-01',
         returnDate: '2027-03-29', // 29 days inclusive
         passportExpiryDate: '2029-01-01',
       },
@@ -293,6 +301,7 @@ describe('Trust Integrity fix — visa-free/on-arrival stay-length limits', () =
         isBritishPassport: true,
         exemptionDocument: 'none',
         departureDate: '2027-03-01',
+        arrivalDate: '2027-03-01',
         returnDate: '2027-03-30', // 30 days inclusive
         passportExpiryDate: '2029-01-01',
       },
@@ -309,6 +318,7 @@ describe('Trust Integrity fix — visa-free/on-arrival stay-length limits', () =
         isBritishPassport: true,
         exemptionDocument: 'none',
         departureDate: '2027-03-01',
+        arrivalDate: '2027-03-01',
         returnDate: '2027-03-31', // 31 days inclusive
         passportExpiryDate: '2029-01-01',
       },
@@ -332,6 +342,7 @@ describe('Trust Integrity fix — visa-free/on-arrival stay-length limits', () =
         isBritishPassport: true,
         exemptionDocument: 'none',
         departureDate: '2026-10-01',
+        arrivalDate: '2026-10-01',
         returnDate: '2027-03-01', // 152 days inclusive
         passportExpiryDate: '2029-01-01',
       },
@@ -348,6 +359,7 @@ describe('Trust Integrity fix — visa-free/on-arrival stay-length limits', () =
         isBritishPassport: true,
         exemptionDocument: 'none',
         departureDate: '2027-01-01',
+        arrivalDate: '2027-01-01',
         returnDate: '2027-03-30', // 89 days inclusive
         passportExpiryDate: '2029-01-01',
       },
@@ -364,6 +376,7 @@ describe('Trust Integrity fix — visa-free/on-arrival stay-length limits', () =
         isBritishPassport: true,
         exemptionDocument: 'none',
         departureDate: '2027-01-01',
+        arrivalDate: '2027-01-01',
         returnDate: '2027-03-31', // exactly 90 days inclusive
         passportExpiryDate: '2029-01-01',
       },
@@ -380,6 +393,7 @@ describe('Trust Integrity fix — visa-free/on-arrival stay-length limits', () =
         isBritishPassport: true,
         exemptionDocument: 'none',
         departureDate: '2027-01-01',
+        arrivalDate: '2027-01-01',
         returnDate: '2027-04-01', // 91 days inclusive
         passportExpiryDate: '2029-01-01',
       },
@@ -398,7 +412,7 @@ describe('Trust Integrity fix — visa-free/on-arrival stay-length limits', () =
 
   it('Boundary check follow-up (PR #228, 5 September 2026): every stay-limit-driven result discloses JetStash\'s own day-counting assumption, since no official source (re-checked live) states one', () => {
     const exceeds = evaluateTravelReadiness(
-      { destinationSlug: 'antalya', isBritishPassport: true, exemptionDocument: 'none', departureDate: '2026-10-01', returnDate: '2027-03-01', passportExpiryDate: '2029-01-01' },
+      { destinationSlug: 'antalya', isBritishPassport: true, exemptionDocument: 'none', departureDate: '2026-10-01', arrivalDate: '2026-10-01', returnDate: '2027-03-01', passportExpiryDate: '2029-01-01' },
       NOW
     );
     const windowUnconfirmed = evaluateTravelReadiness(
@@ -406,7 +420,7 @@ describe('Trust Integrity fix — visa-free/on-arrival stay-length limits', () =
       NOW
     );
     const simplePass = evaluateTravelReadiness(
-      { destinationSlug: 'doha', isBritishPassport: true, exemptionDocument: 'none', departureDate: '2027-03-01', returnDate: '2027-03-30', passportExpiryDate: '2029-01-01' },
+      { destinationSlug: 'doha', isBritishPassport: true, exemptionDocument: 'none', departureDate: '2027-03-01', arrivalDate: '2027-03-01', returnDate: '2027-03-30', passportExpiryDate: '2029-01-01' },
       NOW
     );
     for (const result of [exceeds, windowUnconfirmed, simplePass]) {
@@ -431,6 +445,7 @@ describe('Trust Integrity fix — visa-free/on-arrival stay-length limits', () =
         isBritishPassport: true,
         exemptionDocument: 'none',
         departureDate: '2026-10-01',
+        arrivalDate: '2026-10-01',
         returnDate: '2027-03-01', // a long trip, but Saudi Arabia's rule always required an arranged visa regardless of length
         passportExpiryDate: '2029-01-01',
       },

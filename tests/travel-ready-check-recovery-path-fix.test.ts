@@ -41,6 +41,7 @@ describe('Fix 1a — a fully valid submission still produces the same real resul
         isBritishPassport: true,
         exemptionDocument: 'none',
         departureDate: '2026-11-01',
+        arrivalDate: '2026-11-01',
         returnDate: '2026-11-15',
         passportExpiryDate: '2030-01-01',
       },

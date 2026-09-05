@@ -3,37 +3,38 @@ import { evaluateTravelReadiness } from '@/lib/travel-ready-check';
 
 /**
  * Calendar / reference-event integrity audit (5 September 2026) —
- * independently reproduced and fixed the remaining Astra-reported Travel
- * Ready defect: passport-validity rules stated by GOV.UK in calendar
- * months ("6 months after the date you arrive", "3 months after the date
- * you arrive") were being approximated as a fixed day count
- * (`minDaysValidityBeyondEntry: 182` / `91`), which silently diverges from
- * the true calendar-month boundary whenever the buffer spans months of
- * different lengths or a leap-year February.
+ * independently reproduced and fixed two related Astra-reported Travel
+ * Ready defects, in two rounds:
  *
- * Confirmed live reproduction (Morocco): departure 1 October 2026, return
- * 10 October 2026, passport expiry 31 December 2026 returned READY under
- * the old fixed-91-day model (91 days from 1 October lands on 31 December
- * exactly). The true rule — 3 CALENDAR months after arrival — reaches
- * 1 January 2027, one day later than the old model's threshold. 31 December
- * should fail; the old code passed it.
+ * ROUND 1 (calendar-month arithmetic): passport-validity rules stated by
+ * GOV.UK in calendar months ("6 months after the date you arrive", "3
+ * months after the date you arrive") were being approximated as a fixed
+ * day count (`minDaysValidityBeyondEntry: 182` / `91`), which silently
+ * diverges from the true calendar-month boundary whenever the buffer spans
+ * months of different lengths or a leap-year February. Fixed with real
+ * calendar arithmetic (`addCalendarMonths()`), reference date still
+ * departureDate at that point (disclosed as a proxy).
  *
- * Root cause fix: `TravelReadyRule.validityRequirement` now carries an
- * explicit `{ unit: 'calendar-months' | 'days', value }` pair instead of a
- * single fixed day count, and `lib/travel-ready-check.ts`'s
- * `addCalendarMonths()` performs real calendar arithmetic (with explicit,
- * documented day-clamping for a target month that's shorter than the
- * source day — e.g. 31 January + 1 month = 28/29 February, never rolling
- * into March). Turkey's rule (stated in exact days, 150) is unaffected —
- * `unit: 'days'` is reserved for a genuinely day-stated rule, never used as
- * an unconverted stand-in for a month figure.
+ * ROUND 2 (this file, founder correction to Round 1): a disclosed
+ * departureDate proxy was not actually sufficient. A traveller whose real
+ * destination arrival lands on a LATER calendar date than UK departure
+ * could still see a false pass on an arrival-anchored rule — disclosure
+ * doesn't change the underlying arithmetic. `TravelReadyCheckInput` now
+ * collects a genuine `arrivalDate`, and every `'arrival'`-anchored rule
+ * (India, Saudi Arabia, UAE, Qatar, Turkey, Morocco passport-validity, plus
+ * every stay-limit day count) uses it directly. `'departure-conservative-
+ * proxy'` rules (Pakistan, Bangladesh) deliberately still use departureDate
+ * — proven below to never produce a false positive, since visa
+ * application/issue always happens on or before departure.
  */
 const NOW = new Date('2026-07-12T12:00:00Z');
 
 const passportCheck = (result: ReturnType<typeof evaluateTravelReadiness>) =>
   result.checks.find((c) => c.id === 'passport-validity');
+const visaCheck = (result: ReturnType<typeof evaluateTravelReadiness>) =>
+  result.checks.find((c) => c.id === 'visa-requirement');
 
-describe('Calendar audit — Morocco reproduction (the exact founder-confirmed case)', () => {
+describe('Reference-event correction — the founder-confirmed false-positive scenario (Morocco, departure ≠ arrival)', () => {
   const base = {
     destinationSlug: 'marrakech',
     isBritishPassport: true,
@@ -42,74 +43,71 @@ describe('Calendar audit — Morocco reproduction (the exact founder-confirmed c
     returnDate: '2026-10-10',
   };
 
-  it('2026-12-31 expiry: FAILS under correct calendar-month arithmetic (was a false READY under the old fixed-91-day model)', () => {
-    const result = evaluateTravelReadiness({ ...base, passportExpiryDate: '2026-12-31' }, NOW);
+  it('arrival one day after departure: expiry exactly 3 calendar months after DEPARTURE (not arrival) must FAIL — this is the exact false-positive the founder identified', () => {
+    const result = evaluateTravelReadiness({ ...base, arrivalDate: '2026-10-02', passportExpiryDate: '2027-01-01' }, NOW);
     expect(passportCheck(result)?.status).toBe('fail');
     expect(result.verdict).toBe('check-passport-validity');
   });
 
-  it('2027-01-01 expiry: PASSES — exactly 3 calendar months after 1 October 2026', () => {
-    const result = evaluateTravelReadiness({ ...base, passportExpiryDate: '2027-01-01' }, NOW);
+  it('arrival one day after departure: expiry exactly 3 calendar months after the REAL arrival date PASSES', () => {
+    const result = evaluateTravelReadiness({ ...base, arrivalDate: '2026-10-02', passportExpiryDate: '2027-01-02' }, NOW);
     expect(passportCheck(result)?.status).toBe('pass');
   });
 
-  it('2027-01-02 expiry: PASSES — comfortably beyond the 3-calendar-month threshold', () => {
-    const result = evaluateTravelReadiness({ ...base, passportExpiryDate: '2027-01-02' }, NOW);
-    expect(passportCheck(result)?.status).toBe('pass');
+  it('same-day arrival and departure: behaves exactly as the original Morocco reproduction (2026-12-31 fails, 2027-01-01 passes)', () => {
+    const sameDayFail = evaluateTravelReadiness({ ...base, arrivalDate: '2026-10-01', passportExpiryDate: '2026-12-31' }, NOW);
+    const sameDayPass = evaluateTravelReadiness({ ...base, arrivalDate: '2026-10-01', passportExpiryDate: '2027-01-01' }, NOW);
+    expect(passportCheck(sameDayFail)?.status).toBe('fail');
+    expect(passportCheck(sameDayPass)?.status).toBe('pass');
   });
 
-  it('the passport-validity check discloses the departure-date-as-reference-event assumption', () => {
-    const result = evaluateTravelReadiness({ ...base, passportExpiryDate: '2027-01-02' }, NOW);
-    expect(passportCheck(result)?.detail).toMatch(/stand-in for the event the rule actually measures from/i);
+  it('a multi-day connection (arrival several days after departure) is not accidentally built around a +1-day assumption', () => {
+    // Departure 1 Oct, arrival 5 Oct (a genuinely long connection) — the
+    // buffer must measure from the real arrival date, however many days
+    // after departure it falls.
+    const result = evaluateTravelReadiness(
+      { ...base, arrivalDate: '2026-10-05', passportExpiryDate: '2027-01-04' },
+      NOW
+    );
+    // 3 calendar months after 5 Oct 2026 = 5 Jan 2027 — 4 Jan is one day short.
+    expect(passportCheck(result)?.status).toBe('fail');
+    const passResult = evaluateTravelReadiness(
+      { ...base, arrivalDate: '2026-10-05', passportExpiryDate: '2027-01-05' },
+      NOW
+    );
+    expect(passportCheck(passResult)?.status).toBe('pass');
+  });
+
+  it('the passport-validity detail no longer discloses a departure-date proxy for this arrival-anchored rule — it states the requirement plainly, since the real arrival date is now used', () => {
+    const result = evaluateTravelReadiness({ ...base, arrivalDate: '2026-10-02', passportExpiryDate: '2027-01-02' }, NOW);
+    expect(passportCheck(result)?.detail).not.toMatch(/stand-in for the event/i);
   });
 });
 
-describe('Calendar audit — six-calendar-month boundary (Pakistan, India, Bangladesh, Saudi Arabia, UAE, Qatar all state "6 months")', () => {
-  it('Pakistan: 1 September + 6 calendar months = 1 March — one day either side of the boundary', () => {
-    const base = {
-      destinationSlug: 'lahore',
-      isBritishPassport: true,
-      exemptionDocument: 'nicop-poc' as const,
-      departureDate: '2026-09-01',
-      returnDate: '2026-09-15',
-    };
-    const fail = evaluateTravelReadiness({ ...base, passportExpiryDate: '2027-02-28' }, NOW);
-    const passExact = evaluateTravelReadiness({ ...base, passportExpiryDate: '2027-03-01' }, NOW);
-    const passAfter = evaluateTravelReadiness({ ...base, passportExpiryDate: '2027-03-02' }, NOW);
-    expect(passportCheck(fail)?.status).toBe('fail');
-    expect(passportCheck(passExact)?.status).toBe('pass');
-    expect(passportCheck(passAfter)?.status).toBe('pass');
-  });
-
-  it('India: end-of-month clamping — 31 August + 6 months = 28 February (non-leap year), not 3 March', () => {
+describe('Reference-event correction — six-calendar-month arrival-anchored countries (India, Saudi Arabia, UAE, Qatar)', () => {
+  it('India: arrival one day after departure shifts the true boundary by exactly one day', () => {
     const base = {
       destinationSlug: 'delhi',
       isBritishPassport: true,
       exemptionDocument: 'none' as const,
-      departureDate: '2026-08-31',
-      returnDate: '2026-09-10',
+      departureDate: '2026-09-01',
+      arrivalDate: '2026-09-02',
+      returnDate: '2026-09-15',
     };
-    // The true calendar-month threshold is 28 Feb 2027. The old fixed-
-    // 182-day model computed 1 March 2027 instead — one day past the true
-    // boundary, so it would have wrongly FAILED a passport expiring exactly
-    // 28 Feb 2027, even though that genuinely satisfies "6 months after
-    // arrival". This is the opposite-direction defect from Morocco's
-    // false-pass: the same fixed-day-approximation bug produces a false
-    // fail here and a false pass there, depending on which specific months
-    // the buffer spans — proof this needed real calendar arithmetic, not a
-    // "just add a safety day" patch.
-    const belowBoundary = evaluateTravelReadiness({ ...base, passportExpiryDate: '2027-02-27' }, NOW);
-    const atTrueCalendarBoundary = evaluateTravelReadiness({ ...base, passportExpiryDate: '2027-02-28' }, NOW);
-    expect(passportCheck(belowBoundary)?.status).toBe('fail');
-    expect(passportCheck(atTrueCalendarBoundary)?.status).toBe('pass');
+    // 6 calendar months after arrival (2 Sept) = 2 March 2027.
+    const fail = evaluateTravelReadiness({ ...base, passportExpiryDate: '2027-03-01' }, NOW);
+    const pass = evaluateTravelReadiness({ ...base, passportExpiryDate: '2027-03-02' }, NOW);
+    expect(passportCheck(fail)?.status).toBe('fail');
+    expect(passportCheck(pass)?.status).toBe('pass');
   });
 
-  it('Saudi Arabia: leap-year February — 29 August 2028 (leap year) + 6 months clamps to 29 February 2029 is impossible (2029 not leap), so lands on 28 February 2029', () => {
+  it('Saudi Arabia: same-day arrival still uses exact calendar-month arithmetic from arrival', () => {
     const base = {
       destinationSlug: 'jeddah',
       isBritishPassport: true,
       exemptionDocument: 'none' as const,
       departureDate: '2028-08-29',
+      arrivalDate: '2028-08-29',
       returnDate: '2028-09-10',
     };
     const fail = evaluateTravelReadiness({ ...base, passportExpiryDate: '2029-02-27' }, NOW);
@@ -118,26 +116,32 @@ describe('Calendar audit — six-calendar-month boundary (Pakistan, India, Bangl
     expect(passportCheck(pass)?.status).toBe('pass');
   });
 
-  it('UAE: 29 February in a leap year departure — 29 Feb 2028 + 6 months = 29 August 2028 (August has 31 days, no clamping needed)', () => {
+  it('UAE: arrival crossing a leap-year 29 February changes the boundary from what departure alone would have given', () => {
+    // Departure 28 Feb 2028 (not a leap day), arrival 29 Feb 2028 (the
+    // leap day itself, one day later) — the true buffer must anchor to the
+    // 29th, not the 28th.
     const base = {
       destinationSlug: 'dubai',
       isBritishPassport: true,
       exemptionDocument: 'none' as const,
-      departureDate: '2028-02-29',
+      departureDate: '2028-02-28',
+      arrivalDate: '2028-02-29',
       returnDate: '2028-03-10',
     };
+    // 6 months after 29 Feb 2028 = 29 Aug 2028.
     const fail = evaluateTravelReadiness({ ...base, passportExpiryDate: '2028-08-28' }, NOW);
     const pass = evaluateTravelReadiness({ ...base, passportExpiryDate: '2028-08-29' }, NOW);
     expect(passportCheck(fail)?.status).toBe('fail');
     expect(passportCheck(pass)?.status).toBe('pass');
   });
 
-  it('Qatar: ordinary mid-length-month boundary (30 April + 6 months = 30 October, no clamping)', () => {
+  it('Qatar: ordinary mid-length-month boundary, arrival same day as departure', () => {
     const base = {
       destinationSlug: 'doha',
       isBritishPassport: true,
       exemptionDocument: 'none' as const,
       departureDate: '2027-04-30',
+      arrivalDate: '2027-04-30',
       returnDate: '2027-05-10',
     };
     const fail = evaluateTravelReadiness({ ...base, passportExpiryDate: '2027-10-29' }, NOW);
@@ -145,15 +149,19 @@ describe('Calendar audit — six-calendar-month boundary (Pakistan, India, Bangl
     expect(passportCheck(fail)?.status).toBe('fail');
     expect(passportCheck(pass)?.status).toBe('pass');
   });
+});
 
-  it('Bangladesh: 6-month boundary also applies (rule text references visa issue date, not travel date — see the reference-event disclosure test below)', () => {
+describe('Reference-event correction — Turkey (150-day arrival-anchored rule, an exact day count, not a month approximation)', () => {
+  it('arrival one day after departure shifts the 150-day threshold by exactly one day', () => {
     const base = {
-      destinationSlug: 'dhaka',
+      destinationSlug: 'antalya',
       isBritishPassport: true,
       exemptionDocument: 'none' as const,
-      departureDate: '2026-09-01',
-      returnDate: '2026-09-15',
+      departureDate: '2026-10-01',
+      arrivalDate: '2026-10-02',
+      returnDate: '2026-10-10',
     };
+    // 150 days after arrival (2 Oct) = 1 March 2027.
     const fail = evaluateTravelReadiness({ ...base, passportExpiryDate: '2027-02-28' }, NOW);
     const pass = evaluateTravelReadiness({ ...base, passportExpiryDate: '2027-03-01' }, NOW);
     expect(passportCheck(fail)?.status).toBe('fail');
@@ -161,85 +169,230 @@ describe('Calendar audit — six-calendar-month boundary (Pakistan, India, Bangl
   });
 });
 
-describe('Calendar audit — Turkey stays a pure fixed-day rule (150 days is the official unit itself, not a month approximation)', () => {
-  it('150 days after departure, not calendar-month arithmetic', () => {
-    const base = {
-      destinationSlug: 'antalya',
-      isBritishPassport: true,
-      exemptionDocument: 'none' as const,
-      departureDate: '2026-10-01',
-      returnDate: '2026-10-10',
-    };
-    // 1 October 2026 + 150 days = 28 February 2027 (exact day count, not a
-    // "5 months" calendar approximation, which would land on 1 March).
-    const fail = evaluateTravelReadiness({ ...base, passportExpiryDate: '2027-02-27' }, NOW);
-    const pass = evaluateTravelReadiness({ ...base, passportExpiryDate: '2027-02-28' }, NOW);
-    expect(passportCheck(fail)?.status).toBe('fail');
-    expect(passportCheck(pass)?.status).toBe('pass');
+describe('Reference-event correction — Pakistan and Bangladesh (departure-conservative-proxy, arrival must NOT affect the result)', () => {
+  it('Pakistan: changing arrivalDate while keeping departureDate fixed does not change the passport-validity verdict — the rule genuinely still measures from departure, proven never to produce a false positive since visa application always precedes it', () => {
+    const sameDay = evaluateTravelReadiness(
+      {
+        destinationSlug: 'lahore',
+        isBritishPassport: true,
+        exemptionDocument: 'nicop-poc',
+        departureDate: '2026-09-01',
+        arrivalDate: '2026-09-01',
+        returnDate: '2026-09-15',
+        passportExpiryDate: '2027-03-01',
+      },
+      NOW
+    );
+    const arrivalFiveDaysLater = evaluateTravelReadiness(
+      {
+        destinationSlug: 'lahore',
+        isBritishPassport: true,
+        exemptionDocument: 'nicop-poc',
+        departureDate: '2026-09-01',
+        arrivalDate: '2026-09-06',
+        returnDate: '2026-09-15',
+        passportExpiryDate: '2027-03-01',
+      },
+      NOW
+    );
+    // Both must produce the exact same passport-validity outcome — arrival
+    // is irrelevant to this specific rule.
+    expect(passportCheck(sameDay)?.status).toBe(passportCheck(arrivalFiveDaysLater)?.status);
+    expect(passportCheck(sameDay)?.status).toBe('pass');
   });
-});
 
-describe('Calendar audit — reference-event disclosure', () => {
-  it('Pakistan (visa-application-referenced rule): the disclosure names the application/issue-date distinction', () => {
+  it('Pakistan: the conservative-proxy caveat explains the reasoning honestly, without claiming the actual application date was evaluated', () => {
     const result = evaluateTravelReadiness(
       {
         destinationSlug: 'lahore',
         isBritishPassport: true,
-        exemptionDocument: 'none',
+        exemptionDocument: 'nicop-poc',
         departureDate: '2027-03-01',
+        arrivalDate: '2027-03-02',
         returnDate: '2027-03-20',
         passportExpiryDate: '2029-01-01',
       },
       NOW
     );
     expect(passportCheck(result)?.detail).toMatch(/visa application or issue date/i);
+    expect(passportCheck(result)?.detail).toMatch(/can only make this check stricter/i);
   });
 
-  it('an unaffected rule with no validityRequirement (there is none left in the current dataset) would show no caveat — sanity: every currently supported passport-validity rule DOES carry validityRequirement and DOES show the caveat', () => {
-    for (const [slug, exemption] of [
-      ['lahore', 'nicop-poc'],
-      ['delhi', 'oci'],
-      ['dhaka', 'nvr'],
-      ['jeddah', 'none'],
-      ['dubai', 'none'],
-      ['doha', 'none'],
-      ['antalya', 'none'],
-      ['marrakech', 'none'],
-    ] as const) {
-      const result = evaluateTravelReadiness(
-        {
-          destinationSlug: slug,
-          isBritishPassport: true,
-          exemptionDocument: exemption,
-          departureDate: '2027-03-01',
-          returnDate: '2027-03-20',
-          passportExpiryDate: '2035-01-01',
-        },
-        NOW
-      );
-      expect(passportCheck(result)?.detail, slug).toMatch(/stand-in for the event the rule actually measures from/i);
-    }
+  it('Bangladesh: changing arrivalDate while keeping departureDate fixed does not change the passport-validity verdict', () => {
+    const sameDay = evaluateTravelReadiness(
+      {
+        destinationSlug: 'dhaka',
+        isBritishPassport: true,
+        exemptionDocument: 'none',
+        departureDate: '2026-09-01',
+        arrivalDate: '2026-09-01',
+        returnDate: '2026-09-15',
+        passportExpiryDate: '2027-03-01',
+      },
+      NOW
+    );
+    const arrivalLater = evaluateTravelReadiness(
+      {
+        destinationSlug: 'dhaka',
+        isBritishPassport: true,
+        exemptionDocument: 'none',
+        departureDate: '2026-09-01',
+        arrivalDate: '2026-09-06',
+        returnDate: '2026-09-15',
+        passportExpiryDate: '2027-03-01',
+      },
+      NOW
+    );
+    expect(passportCheck(sameDay)?.status).toBe(passportCheck(arrivalLater)?.status);
+    expect(passportCheck(sameDay)?.status).toBe('pass');
   });
 });
 
-describe('Calendar audit — the fix does not regress the independent "expires during trip" check', () => {
-  it('a passport that meets the calendar-month buffer but expires before the return date still fails (long-trip edge case)', () => {
-    // Trip longer than the 3-month buffer itself: departure 1 Jan, return 1
-    // May (4 months), passport expiry 1 April — meets neither the calendar
-    // buffer (needs >= 1 April, exactly meets it) NOR survives past the
-    // return date (1 May) — the independent expires-during-trip check must
-    // still catch this.
+describe('Reference-event correction — stay-limit day counting now starts from arrival, not UK departure', () => {
+  it('Morocco: a trip that only exceeds the 90-day stay limit when counted from departure (not arrival) must not be falsely rejected', () => {
+    // Departure 1 Jan, arrival 2 Jan (one day later), return 1 Apr.
+    // From departure: 1 Jan -> 1 Apr inclusive = 91 days (would exceed 90).
+    // From arrival:   2 Jan -> 1 Apr inclusive = 90 days (exactly at the limit, still allowed).
+    // The correct behaviour counts real days present in Morocco, from
+    // arrival — not UK-to-Morocco travel time.
     const result = evaluateTravelReadiness(
       {
         destinationSlug: 'marrakech',
         isBritishPassport: true,
         exemptionDocument: 'none',
         departureDate: '2027-01-01',
-        returnDate: '2027-05-01',
-        passportExpiryDate: '2027-04-01',
+        arrivalDate: '2027-01-02',
+        returnDate: '2027-04-01',
+        passportExpiryDate: '2035-01-01',
       },
       NOW
     );
-    expect(passportCheck(result)?.status).toBe('fail');
+    expect(visaCheck(result)?.status).not.toBe('fail');
+    expect(result.verdict).toBe('ready-to-continue');
+  });
+
+  it('Morocco: the same trip genuinely exceeding 90 days even counted from arrival is still correctly rejected', () => {
+    const result = evaluateTravelReadiness(
+      {
+        destinationSlug: 'marrakech',
+        isBritishPassport: true,
+        exemptionDocument: 'none',
+        departureDate: '2027-01-01',
+        arrivalDate: '2027-01-02',
+        returnDate: '2027-04-02', // 91 days from arrival
+        passportExpiryDate: '2035-01-01',
+      },
+      NOW
+    );
+    expect(visaCheck(result)?.status).toBe('fail');
+  });
+
+  it('Turkey rolling window: stay-limit day count also anchors to arrival, not departure', () => {
+    const result = evaluateTravelReadiness(
+      {
+        destinationSlug: 'antalya',
+        isBritishPassport: true,
+        exemptionDocument: 'none',
+        departureDate: '2027-01-01',
+        arrivalDate: '2027-01-02',
+        returnDate: '2027-03-31', // 89 days from arrival, not 90
+        passportExpiryDate: '2035-01-01',
+      },
+      NOW
+    );
+    // 89 days from arrival is within the 90-day headline figure — still
+    // rolling-window-unconfirmed, not a fail.
+    expect(visaCheck(result)?.status).not.toBe('fail');
+    expect(result.verdict).toBe('stay-length-unconfirmed');
+  });
+});
+
+describe('Reference-event correction — arrival-date input validation (never reaches the rule engine)', () => {
+  it('arrival before departure is rejected with its own specific verdict', () => {
+    const result = evaluateTravelReadiness(
+      {
+        destinationSlug: 'marrakech',
+        isBritishPassport: true,
+        exemptionDocument: 'none',
+        departureDate: '2027-03-10',
+        arrivalDate: '2027-03-09', // before departure — impossible
+        returnDate: '2027-03-20',
+        passportExpiryDate: '2029-01-01',
+      },
+      NOW
+    );
+    expect(result.verdict).toBe('invalid-arrival-date');
+    expect(result.checks).toHaveLength(0);
+    expect(result.engineSignal).toBeNull();
+    expect(result.headline).toMatch(/arrival date is before your departure date/i);
+  });
+
+  it('arrival after the return date is rejected with the same verdict', () => {
+    const result = evaluateTravelReadiness(
+      {
+        destinationSlug: 'marrakech',
+        isBritishPassport: true,
+        exemptionDocument: 'none',
+        departureDate: '2027-03-01',
+        arrivalDate: '2027-03-25', // after return — impossible
+        returnDate: '2027-03-20',
+        passportExpiryDate: '2029-01-01',
+      },
+      NOW
+    );
+    expect(result.verdict).toBe('invalid-arrival-date');
+    expect(result.checks).toHaveLength(0);
+    expect(result.headline).toMatch(/arrival date is after your return date/i);
+  });
+
+  it('arrival exactly equal to departure is valid (same-day arrival) and reaches the rule engine', () => {
+    const result = evaluateTravelReadiness(
+      {
+        destinationSlug: 'marrakech',
+        isBritishPassport: true,
+        exemptionDocument: 'none',
+        departureDate: '2027-03-01',
+        arrivalDate: '2027-03-01',
+        returnDate: '2027-03-20',
+        passportExpiryDate: '2029-01-01',
+      },
+      NOW
+    );
+    expect(result.verdict).not.toBe('invalid-arrival-date');
+  });
+
+  it('arrival exactly equal to the return date is valid (a same-day round trip) and reaches the rule engine', () => {
+    const result = evaluateTravelReadiness(
+      {
+        destinationSlug: 'marrakech',
+        isBritishPassport: true,
+        exemptionDocument: 'none',
+        departureDate: '2027-03-01',
+        arrivalDate: '2027-03-20',
+        returnDate: '2027-03-20',
+        passportExpiryDate: '2029-01-01',
+      },
+      NOW
+    );
+    expect(result.verdict).not.toBe('invalid-arrival-date');
+  });
+});
+
+describe('Calendar audit — reviewDueDate and canonical baseline checks are unaffected', () => {
+  it('PR #228 protections remain intact: non-British passport + exemption document still fails closed', () => {
+    const result = evaluateTravelReadiness(
+      {
+        destinationSlug: 'lahore',
+        isBritishPassport: false,
+        exemptionDocument: 'nicop-poc',
+        departureDate: '2027-03-01',
+        arrivalDate: '2027-03-01',
+        returnDate: '2027-03-20',
+        passportExpiryDate: '2029-01-01',
+      },
+      NOW
+    );
+    expect(result.verdict).toBe('not-enough-information');
+    expect(passportCheck(result)).toBeUndefined();
   });
 });
