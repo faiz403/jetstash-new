@@ -3,6 +3,7 @@ import {
   getRule,
   isRuleStale,
   type TravelReadyNationalityScope,
+  type TravelReadyRule,
 } from '@/data/travel-ready-rules';
 import type { TravelReadySignal } from '@/lib/travel-intelligence-engine';
 
@@ -43,7 +44,16 @@ export type TravelReadyVerdict =
   /** Return date is before the departure date — an input error, not a travel-readiness judgement. Never reaches the rule engine. */
   | 'invalid-date-range'
   /** Departure date is in the past relative to `now` — an input error, not a travel-readiness judgement. Never reaches the rule engine. */
-  | 'invalid-departure-date';
+  | 'invalid-departure-date'
+  /**
+   * The entered trip is within a rolling-window stay limit's stated maximum
+   * on its own (e.g. under Turkey/UAE's 90-day figure), but JetStash doesn't
+   * collect the traveller's other visits within that window, so full
+   * compliance with the rolling window can't be confirmed from this trip
+   * alone — a distinct state from `ready-to-continue`, never collapsed into
+   * it (Trust Integrity fix, 5 September 2026). See `evaluateStayLimit()`.
+   */
+  | 'stay-length-unconfirmed';
 
 /** What the traveller told us they already hold, if anything. */
 export type ExemptionDocument = 'nicop-poc' | 'oci' | 'nvr' | 'visa-or-permit' | 'none';
@@ -97,6 +107,46 @@ function toUtcNoon(iso: string): number {
 }
 function daysBetweenIso(fromIso: string, toIso: string): number {
   return Math.round((toUtcNoon(toIso) - toUtcNoon(fromIso)) / DAY_MS);
+}
+
+/**
+ * Trip length for stay-limit purposes. No official source we hold (GOV.UK)
+ * specifies entry/exit-day counting convention, so this is JetStash's own
+ * documented, conservative assumption: both the day of arrival and the day
+ * of departure count as days present in the country, i.e. inclusive of both
+ * endpoints. This can only ever overstate a trip's length relative to the
+ * official rule, never understate it — the safe direction for a limit check
+ * (Trust Integrity fix, 5 September 2026).
+ */
+function tripLengthDaysInclusive(departureIso: string, returnIso: string): number {
+  return daysBetweenIso(departureIso, returnIso) + 1;
+}
+
+/**
+ * Evaluates a visa-requirement rule's own `stayLimit` (only set on rules
+ * that grant visa-free/on-arrival entry up to a stated stay length — UAE,
+ * Qatar, Turkey, Morocco as of this fix) against the traveller's entered
+ * dates. Returns `null` when the rule has no stay limit, or when the trip is
+ * safely within a simple (non-rolling-window) limit.
+ *
+ * A rolling-window rule (`windowDays` set, e.g. "90 days in any 180-day
+ * period") is deliberately never simplified to "this trip alone is under
+ * the limit, therefore pass" — a single itinerary cannot prove compliance
+ * with a window that depends on the traveller's other visits within it,
+ * which JetStash does not collect. `'window-unconfirmed'` is the honest
+ * result for that case; only a trip that exceeds `maxDays` outright (which
+ * by definition also breaches any rolling window built on top of it) is a
+ * definite `'exceeds'`.
+ */
+function evaluateStayLimit(
+  visaRule: TravelReadyRule,
+  input: TravelReadyCheckInput
+): { status: 'exceeds' | 'window-unconfirmed'; tripLengthDays: number } | null {
+  if (!visaRule.stayLimit) return null;
+  const tripLengthDays = tripLengthDaysInclusive(input.departureDate, input.returnDate);
+  if (tripLengthDays > visaRule.stayLimit.maxDays) return { status: 'exceeds', tripLengthDays };
+  if (visaRule.stayLimit.windowDays) return { status: 'window-unconfirmed', tripLengthDays };
+  return null;
 }
 
 /**
@@ -181,10 +231,43 @@ export function evaluateTravelReadiness(input: TravelReadyCheckInput, now: Date)
   // only trust it once a real rule confirms it applies here.
   const exemptionRule = exemptionScope ? getRule(country, exemptionScope, 'document-exemption') : undefined;
 
-  if (!input.isBritishPassport && !exemptionRule) {
-    return notEnoughInformation(
-      'Travel Ready Check currently supports British passport holders, plus NICOP/POC document holders for Pakistan, OCI document holders for India, and NVR document holders for Bangladesh. We don’t yet have verified guidance for other passports.'
-    );
+  if (!input.isBritishPassport) {
+    if (!exemptionRule) {
+      return notEnoughInformation(
+        'Travel Ready Check currently supports British passport holders, plus NICOP/POC document holders for Pakistan, OCI document holders for India, and NVR document holders for Bangladesh. We don’t yet have verified guidance for other passports.'
+      );
+    }
+    // Trust Integrity fix, 5 September 2026: a real exemption document alone
+    // is not enough to proceed. Every exemption rule we hold verified
+    // evidence for (NICOP/POC, OCI, NVR) is itself framed by its own
+    // official source as a British-passport-holder mechanism — see each
+    // rule's own `requirement`/`caveat` text in data/travel-ready-rules.ts
+    // ("used together with your valid British passport", "an endorsement IN
+    // YOUR BRITISH PASSPORT"). None of that establishes anything about a
+    // traveller who has told us their passport isn't British. Previously
+    // this fell through and applied the British-passport passport-validity
+    // rule anyway, producing a confirmed "READY TO CONTINUE" while showing
+    // British-passport-specific guidance to a traveller who said they don't
+    // hold one. This must fail closed instead: no British-passport guidance
+    // leaks in, no "ready", no guess at the traveller's actual nationality.
+    return {
+      verdict: 'not-enough-information',
+      headline: `JetStash can't confirm passport or entry requirements for your document combination — our verified guidance for this document is specifically for British passport holders.`,
+      checks: [
+        {
+          id: 'visa-requirement',
+          label: 'Document exemption',
+          status: 'unknown',
+          detail: `${exemptionRule.requirement} This exemption is specifically framed for a British passport holder. You've told us your passport isn't British, so JetStash can't confirm this exemption — or your passport's own entry requirements — apply to you. Check official guidance for your specific passport's nationality before booking.`,
+          officialSource: exemptionRule.officialSource,
+          lastVerifiedDate: exemptionRule.lastVerifiedDate,
+          reviewDueDate: exemptionRule.reviewDueDate,
+        },
+      ],
+      nextAction: 'Check official government guidance directly for your specific passport nationality and destination — JetStash only holds verified rules for British passport holders.',
+      disclaimer: DISCLAIMER,
+      engineSignal: null,
+    };
   }
 
   const checks: TravelReadyCheckItem[] = [];
@@ -232,7 +315,12 @@ export function evaluateTravelReadiness(input: TravelReadyCheckInput, now: Date)
   }
 
   // ── 2. Visa / entry permission, or a held exemption document ────────────
-  let visaOutcome: 'pass' | 'fail' | 'caution' | 'stale' | 'unknown' = 'unknown';
+  // 'stay-limit-caution' is distinct from the generic 'caution' below (which
+  // means "a document you haven't arranged yet") — it means "your stay is
+  // within a rolling window's headline number on its own, but JetStash can't
+  // confirm the window without your other visits," a different reason that
+  // needs its own honest verdict/copy rather than reusing mismatched text.
+  let visaOutcome: 'pass' | 'fail' | 'caution' | 'stale' | 'unknown' | 'stay-limit-caution' = 'unknown';
 
   if (exemptionRule) {
     if (isRuleStale(exemptionRule, nowIso)) {
@@ -281,16 +369,41 @@ export function evaluateTravelReadiness(input: TravelReadyCheckInput, now: Date)
         stale: true,
       });
     } else if (!visaRule.visaRequired) {
-      visaOutcome = 'pass';
-      checks.push({
-        id: 'visa-requirement',
-        label: 'Visa or entry permission',
-        status: 'pass',
-        detail: visaRule.requirement,
-        officialSource: visaRule.officialSource,
-        lastVerifiedDate: visaRule.lastVerifiedDate,
-        reviewDueDate: visaRule.reviewDueDate,
-      });
+      const stayLimitResult = evaluateStayLimit(visaRule, input);
+      if (stayLimitResult?.status === 'exceeds') {
+        visaOutcome = 'fail';
+        checks.push({
+          id: 'visa-requirement',
+          label: 'Visa or entry permission',
+          status: 'fail',
+          detail: `${visaRule.requirement} Your entered dates are ${stayLimitResult.tripLengthDays} days — longer than the ${visaRule.stayLimit!.maxDays}-day visa-free allowance${visaRule.stayLimit!.windowDays ? ` within any ${visaRule.stayLimit!.windowDays}-day period` : ''}. You'll need to arrange a visa or check current entry requirements before booking.`,
+          officialSource: visaRule.officialSource,
+          lastVerifiedDate: visaRule.lastVerifiedDate,
+          reviewDueDate: visaRule.reviewDueDate,
+        });
+      } else if (stayLimitResult?.status === 'window-unconfirmed') {
+        visaOutcome = 'stay-limit-caution';
+        checks.push({
+          id: 'visa-requirement',
+          label: 'Visa or entry permission',
+          status: 'caution',
+          detail: `${visaRule.requirement} Your entered dates are ${stayLimitResult.tripLengthDays} days, within the ${visaRule.stayLimit!.maxDays}-day limit on their own — but that's a rolling ${visaRule.stayLimit!.windowDays}-day allowance, and JetStash doesn't know about any other visits you've made within that window. We can't confirm you're within the allowance from this trip alone — check your own recent travel history against the official rule before booking.`,
+          officialSource: visaRule.officialSource,
+          lastVerifiedDate: visaRule.lastVerifiedDate,
+          reviewDueDate: visaRule.reviewDueDate,
+        });
+      } else {
+        visaOutcome = 'pass';
+        checks.push({
+          id: 'visa-requirement',
+          label: 'Visa or entry permission',
+          status: 'pass',
+          detail: visaRule.requirement,
+          officialSource: visaRule.officialSource,
+          lastVerifiedDate: visaRule.lastVerifiedDate,
+          reviewDueDate: visaRule.reviewDueDate,
+        });
+      }
     } else if (input.exemptionDocument === 'visa-or-permit') {
       visaOutcome = 'pass';
       checks.push({
@@ -309,17 +422,44 @@ export function evaluateTravelReadiness(input: TravelReadyCheckInput, now: Date)
       // branch below) produced a confirmed false-friction bug: it told
       // travellers to "start your application now" for a visa that has no
       // application step at all. Zero processing days is a pass, not a
-      // caution.
-      visaOutcome = 'pass';
-      checks.push({
-        id: 'visa-requirement',
-        label: 'Visa or entry permission',
-        status: 'pass',
-        detail: `${visaRule.requirement}${visaRule.caveat ? ` ${visaRule.caveat}` : ''}`,
-        officialSource: visaRule.officialSource,
-        lastVerifiedDate: visaRule.lastVerifiedDate,
-        reviewDueDate: visaRule.reviewDueDate,
-      });
+      // caution — but the visa-on-arrival's own stay limit (Trust Integrity
+      // fix, 5 September 2026) is checked before defaulting to pass, same as
+      // the visa-free branch above.
+      const stayLimitResult = evaluateStayLimit(visaRule, input);
+      if (stayLimitResult?.status === 'exceeds') {
+        visaOutcome = 'fail';
+        checks.push({
+          id: 'visa-requirement',
+          label: 'Visa or entry permission',
+          status: 'fail',
+          detail: `${visaRule.requirement}${visaRule.caveat ? ` ${visaRule.caveat}` : ''} Your entered dates are ${stayLimitResult.tripLengthDays} days — longer than the ${visaRule.stayLimit!.maxDays}-day allowance${visaRule.stayLimit!.windowDays ? ` within any ${visaRule.stayLimit!.windowDays}-day period` : ''}. You'll need to check current entry requirements before booking.`,
+          officialSource: visaRule.officialSource,
+          lastVerifiedDate: visaRule.lastVerifiedDate,
+          reviewDueDate: visaRule.reviewDueDate,
+        });
+      } else if (stayLimitResult?.status === 'window-unconfirmed') {
+        visaOutcome = 'stay-limit-caution';
+        checks.push({
+          id: 'visa-requirement',
+          label: 'Visa or entry permission',
+          status: 'caution',
+          detail: `${visaRule.requirement}${visaRule.caveat ? ` ${visaRule.caveat}` : ''} Your entered dates are ${stayLimitResult.tripLengthDays} days, within the ${visaRule.stayLimit!.maxDays}-day limit on their own — but that's a rolling ${visaRule.stayLimit!.windowDays}-day allowance, and JetStash doesn't know about any other visits you've made within that window. We can't confirm you're within the allowance from this trip alone — check your own recent travel history against the official rule before booking.`,
+          officialSource: visaRule.officialSource,
+          lastVerifiedDate: visaRule.lastVerifiedDate,
+          reviewDueDate: visaRule.reviewDueDate,
+        });
+      } else {
+        visaOutcome = 'pass';
+        checks.push({
+          id: 'visa-requirement',
+          label: 'Visa or entry permission',
+          status: 'pass',
+          detail: `${visaRule.requirement}${visaRule.caveat ? ` ${visaRule.caveat}` : ''}`,
+          officialSource: visaRule.officialSource,
+          lastVerifiedDate: visaRule.lastVerifiedDate,
+          reviewDueDate: visaRule.reviewDueDate,
+        });
+      }
     } else {
       const daysToDeparture = daysBetweenIso(nowIso, input.departureDate);
       if (visaRule.typicalProcessingDays !== undefined) {
@@ -356,6 +496,8 @@ export function evaluateTravelReadiness(input: TravelReadyCheckInput, now: Date)
     verdict = 'check-passport-validity';
   } else if (visaOutcome === 'fail') {
     verdict = 'visa-or-entry-permission-needed';
+  } else if (visaOutcome === 'stay-limit-caution') {
+    verdict = 'stay-length-unconfirmed';
   } else if (visaOutcome === 'caution') {
     verdict = 'document-timing-may-affect-booking';
   } else if (passportOutcome === 'stale' || visaOutcome === 'stale' || passportOutcome === 'unknown' || visaOutcome === 'unknown') {
@@ -373,6 +515,7 @@ export function evaluateTravelReadiness(input: TravelReadyCheckInput, now: Date)
     'not-enough-information': 'Not enough information to assess this yet.',
     'invalid-date-range': 'Your return date is before your departure date — check your dates before continuing.',
     'invalid-departure-date': 'Your departure date is in the past — check your dates before continuing.',
+    'stay-length-unconfirmed': 'Your trip length works on its own, but JetStash can’t confirm you’re within a rolling visa-free allowance without your other visits — check before booking.',
   };
 
   const NEXT_ACTIONS: Record<TravelReadyVerdict, string> = {
@@ -384,12 +527,13 @@ export function evaluateTravelReadiness(input: TravelReadyCheckInput, now: Date)
     'not-enough-information': 'Check official government guidance directly for your specific nationality and destination.',
     'invalid-date-range': 'Re-enter your departure and return dates so the return date falls on or after the departure date, then check again.',
     'invalid-departure-date': 'Re-enter a departure date that hasn’t already passed, then check again.',
+    'stay-length-unconfirmed': 'Check the official source below for exactly how the rolling window is calculated, and count any other visits within that window before booking a non-refundable fare.',
   };
 
   const engineSignal: TravelReadySignal | null =
     verdict === 'check-passport-validity' || verdict === 'visa-or-entry-permission-needed'
       ? { severity: 'critical', label: HEADLINES[verdict], detail: NEXT_ACTIONS[verdict] }
-      : verdict === 'document-timing-may-affect-booking' || verdict === 'official-confirmation-required'
+      : verdict === 'document-timing-may-affect-booking' || verdict === 'official-confirmation-required' || verdict === 'stay-length-unconfirmed'
         ? { severity: 'caution', label: HEADLINES[verdict], detail: NEXT_ACTIONS[verdict] }
         : null;
 
