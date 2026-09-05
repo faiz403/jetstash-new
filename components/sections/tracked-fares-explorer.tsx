@@ -2,7 +2,7 @@
 
 import { useEffect, useId, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { ArrowUpRight, ChevronDown, Search, X } from 'lucide-react';
+import { AlertTriangle, ArrowUpRight, ChevronDown, Search, X } from 'lucide-react';
 import { formatChecked } from '@/data/deals';
 import { PROVIDER_REL, TRIPCOM_FRESH_SEARCH_NOTE } from '@/lib/booking-providers';
 import { TrackedOutboundLink } from '@/components/ui/tracked-outbound-link';
@@ -224,6 +224,25 @@ export function directnessLabel(entry: TrackedFareEntry): string | null {
   return null;
 }
 
+/**
+ * Bad-fare prominence / journey-consequence fix (5 Sept 2026) — see the
+ * matching component and full explanation in
+ * components/route/fare-signal.tsx's JourneyConsequenceLine(). Same rule
+ * here: renders directly beneath the price, nothing when the array is
+ * empty, and the summary text itself is computed once in
+ * lib/fare-signal.ts's toSignalObservation() so this card can never drift
+ * from what Fare Signal itself would show for the same observation.
+ */
+function JourneyConsequenceLine({ consequences }: { consequences: string[] }) {
+  if (consequences.length === 0) return null;
+  return (
+    <p className="mt-1 flex items-start gap-1 text-xs font-medium text-terracotta-700">
+      <AlertTriangle className="mt-0.5 h-3 w-3 shrink-0" strokeWidth={2.25} aria-hidden="true" />
+      <span>{consequences.join(' · ')}</span>
+    </p>
+  );
+}
+
 function TrackedFareCard({ airportCity, entry }: { airportCity: string; entry: TrackedFareEntry }) {
   const { observation, tripComUrl } = entry;
   const directness = directnessLabel(entry);
@@ -243,6 +262,7 @@ function TrackedFareCard({ airportCity, entry }: { airportCity: string; entry: T
         <span className="text-xs text-ink-400">return</span>
       </div>
       <p className="mt-1 text-xs text-ink-500">{observation.airline}{directness ? ` · ${directness}` : ''}</p>
+      <JourneyConsequenceLine consequences={observation.journeyConsequences} />
       <p className="mt-2 text-xs text-ink-400">
         {formatChecked(observation.departureDate)} – {formatChecked(observation.returnDate)}
       </p>

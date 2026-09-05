@@ -1,10 +1,14 @@
 import type { DealCabin } from './deals';
 import { getRouteBySlug, type Route } from './routes';
 import { routeStatusEvents } from './route-status-events';
+import { getDestinationBySlug } from './destinations';
 // lib/route-status-copy.ts imports FROM data/routes.ts — importing it here
 // (data/fare-observations.ts also imports from data/routes.ts, never the
 // reverse) does not create a cycle.
 import { getEffectiveRoutePresentation } from '@/lib/route-status-copy';
+// lib/journey-consequence.ts only imports FareObservation as a TYPE from
+// this file (erased at compile time, never a runtime import) -- no cycle.
+import { getJourneyConsequences, formatJourneyConsequenceSummary } from '@/lib/journey-consequence';
 
 export interface FareObservation {
   id: string;
@@ -928,6 +932,18 @@ export interface FareRangeSummary {
    * the route in general.
    */
   observedDirectness: 'direct' | 'connecting' | undefined;
+  /**
+   * Bad-fare prominence / journey-consequence fix (5 Sept 2026,
+   * independently reproduced Astra findings — DealCard was the specifically
+   * flagged "lower card" showing complex Economy/Business examples with no
+   * self-transfer, airport-change or duration information at all). Computed
+   * from the SAME most-recent observation `priceNote` above is taken from,
+   * via lib/journey-consequence.ts's one shared extractor — never a second,
+   * DealCard-specific derivation that could drift from what Fare Signal
+   * itself would show for the same observation. Empty array when nothing
+   * decisive was found or confidently extractable.
+   */
+  journeyConsequences: string[];
 }
 
 /**
@@ -967,6 +983,9 @@ export function getFareRangeSummary(routeSlug: string, cabin: DealCabin, nowIso:
   if (observations.length === 0) return null;
   const prices = observations.map((o) => o.price);
   const observedDirectness = aggregateFareDirectness(observations);
+  const mostRecent = observations[observations.length - 1];
+  const route = getRouteBySlug(routeSlug);
+  const destinationIataCode = route ? getDestinationBySlug(route.destinationSlug)?.iataCode ?? null : null;
   return {
     count: observations.length,
     min: Math.min(...prices),
@@ -974,7 +993,8 @@ export function getFareRangeSummary(routeSlug: string, cabin: DealCabin, nowIso:
     earliestDate: observations[0].observedDate,
     latestDate: observations[observations.length - 1].observedDate,
     sources: [...new Set(observations.map((o) => o.source))],
-    priceNote: observations[observations.length - 1].priceNote,
+    priceNote: mostRecent.priceNote,
     observedDirectness,
+    journeyConsequences: formatJourneyConsequenceSummary(getJourneyConsequences(mostRecent, destinationIataCode)),
   };
 }

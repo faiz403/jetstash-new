@@ -30,6 +30,39 @@ function SelfTransferNote() {
 }
 
 /**
+ * Bad-fare prominence / journey-consequence fix (5 Sept 2026,
+ * independently reproduced Astra findings — Manchester-Istanbul's 27h55m
+ * self-transfer via a Barcelona airport change, Manchester-Agadir's 20h55m
+ * return via a Milan airport change, Manchester-Dubai's fare actually
+ * arriving at Sharjah not Dubai, Manchester-Lahore's 34h50m/43h20m Business
+ * self-transfer). The underlying evidence for all four already existed --
+ * isSelfTransferItinerary() correctly flagged three of them, and the raw
+ * priceNote text always recorded the real routing -- but no surface ever
+ * pulled that evidence into the one place a visitor actually looks first:
+ * next to the price. See lib/journey-consequence.ts for the full
+ * "decisive consequence" extraction (conservative by construction: never
+ * infers a fact the observation doesn't already record, returns nothing
+ * rather than a guess) and lib/fare-signal.ts's toSignalObservation() for
+ * where FareSignalObservation.journeyConsequences is computed.
+ *
+ * Deliberately placed directly beneath the price -- not in Fare History, not
+ * behind a click, not only in the routing-info row several lines down --
+ * per the locked prominence standard: price and decisive consequence must
+ * appear together. Renders nothing when the array is empty (the ordinary
+ * case for a direct or simple one-stop fare), so a normal fare's card gains
+ * zero extra density.
+ */
+function JourneyConsequenceLine({ consequences }: { consequences: string[] }) {
+  if (consequences.length === 0) return null;
+  return (
+    <p className="mt-1.5 flex items-start gap-1.5 text-sm font-medium text-terracotta-700">
+      <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" strokeWidth={2.25} aria-hidden="true" />
+      <span>{consequences.join(' · ')}</span>
+    </p>
+  );
+}
+
+/**
  * First Standout Fare Pilot (25 Aug 2026, founder-approved). Renders only
  * when the observation CurrentSignal is already showing IS the exact
  * founder-approved verified evidence (matched by id in CurrentSignal below,
@@ -359,6 +392,7 @@ function CurrentSignal({ data, tripComUrl, routeSlug, routeDirectness, routeStat
             {standout ? 'Standout Fare' : 'Fare spotted'}
           </p>
           <p className="mt-1 font-display text-3xl text-ink-900">£{data.price.toLocaleString('en-GB')} return</p>
+          <JourneyConsequenceLine consequences={data.journeyConsequences} />
         </div>
         <div className="text-sm text-ink-600 sm:text-right">
           <p>{data.airline} · {data.cabin}</p>
@@ -386,6 +420,7 @@ function RecentSignal({ data, tripComUrl, routeSlug, routeDirectness, routeStatu
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-terracotta-600">Last tracked fare</p>
           <p className="mt-1 font-display text-3xl text-ink-900">£{data.price.toLocaleString('en-GB')} return</p>
+          <JourneyConsequenceLine consequences={data.journeyConsequences} />
         </div>
         <p className="text-sm text-ink-600">Checked {formatChecked(data.observedDate)}</p>
       </div>

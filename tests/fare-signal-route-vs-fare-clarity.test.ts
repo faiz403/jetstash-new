@@ -128,6 +128,7 @@ describe('connecting-only route: never falsely mentions a direct service', () =>
       returnStops: 0,
       connectionAirports: [],
       isSelfTransfer: false,
+      journeyConsequences: [],
     };
     const html = renderToStaticMarkup(
       FareSignal({
@@ -260,6 +261,7 @@ describe('airline identity cannot drift between route intelligence and the fare 
       returnStops: 1,
       connectionAirports: ['Doha'],
       isSelfTransfer: false,
+      journeyConsequences: [],
     };
     const html = renderToStaticMarkup(
       FareSignal({

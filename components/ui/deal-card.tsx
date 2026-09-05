@@ -6,11 +6,35 @@ import { getEffectiveRoutePresentation } from '@/lib/route-status-copy';
 import { getFareRangeSummary } from '@/data/fare-observations';
 import { getTripComFlightHandoffUrl, PROVIDER_REL } from '@/lib/booking-providers';
 import { getFareFreshnessState, daysBetweenIso, OBSERVATION_STALE_DAYS } from '@/lib/freshness-thresholds';
-import { Plane, ArrowUpRight } from 'lucide-react';
+import { Plane, ArrowUpRight, AlertTriangle } from 'lucide-react';
 import { Badge } from './badge';
 import { DestinationVisual } from './destination-visual';
 import { TrackedOutboundLink } from './tracked-outbound-link';
 import { AffiliateLinkDisclosure } from './affiliate-link-disclosure';
+
+/**
+ * Bad-fare prominence / journey-consequence fix (5 Sept 2026,
+ * independently reproduced Astra findings). DealCard is the specific
+ * "lower card" Astra's own review quoted directly: "Lower cards still show
+ * complex Economy and £3,051 Business examples with three stops each way"
+ * — this card previously showed zero self-transfer/airport-change/duration
+ * information regardless of how cumbersome the underlying itinerary was.
+ * range.journeyConsequences is computed once, in
+ * data/fare-observations.ts's getFareRangeSummary(), from the exact same
+ * most-recent observation range.priceNote itself is taken from — never a
+ * second, DealCard-specific derivation. See
+ * components/route/fare-signal.tsx's matching JourneyConsequenceLine() for
+ * the sibling implementation on the route page itself.
+ */
+function JourneyConsequenceLine({ consequences }: { consequences: string[] }) {
+  if (consequences.length === 0) return null;
+  return (
+    <p className="mt-1.5 flex items-start gap-1.5 text-xs font-medium text-terracotta-700">
+      <AlertTriangle className="mt-0.5 h-3 w-3 shrink-0" strokeWidth={2.25} aria-hidden="true" />
+      <span>{consequences.join(' · ')}</span>
+    </p>
+  );
+}
 
 const cabinLabel: Record<DealCabin, string> = {
   Economy: 'Economy',
@@ -117,6 +141,7 @@ export function DealCard({ deal, nowIso }: { deal: Deal; nowIso?: string }) {
               </span>
               <span className="text-sm text-ink-400">{range.priceNote}</span>
             </div>
+            <JourneyConsequenceLine consequences={range.journeyConsequences} />
             {fareSourceLabel && <p className="mt-1 text-sm font-medium text-ink-500">{fareSourceLabel}</p>}
             {/* Route/fare reconciliation (Tier-1 Commercial Readiness QA
                 follow-up, September 2026): the top-right badge above already
