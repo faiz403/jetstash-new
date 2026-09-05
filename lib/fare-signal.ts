@@ -5,8 +5,11 @@ import {
   type FareObservation,
 } from '@/data/fare-observations';
 import type { DealCabin } from '@/data/deals';
+import { getRouteBySlug } from '@/data/routes';
+import { getDestinationBySlug } from '@/data/destinations';
 import { daysBetweenIso, getFareFreshnessState, type FareFreshnessState } from '@/lib/freshness-thresholds';
 import { isSelfTransferItinerary } from '@/lib/fare-self-transfer';
+import { getJourneyConsequences, formatJourneyConsequenceSummary } from '@/lib/journey-consequence';
 
 export type FareSignalState = 'current' | 'recent' | 'none';
 
@@ -37,6 +40,15 @@ export interface FareSignalObservation {
   connectionAirports: string[];
   /** See lib/fare-self-transfer.ts -- true only when the observation's own priceNote explicitly, unambiguously records a self-transfer or separate-ticket itinerary. Never inferred from stop/airline count. */
   isSelfTransfer: boolean;
+  /**
+   * Bad-fare prominence fix (5 Sept 2026, independently reproduced Astra
+   * findings) — see lib/journey-consequence.ts's own doc comment for the
+   * full "decisive consequence" scope and extraction discipline. Empty
+   * array when no decisive consequence was found (or none is confidently
+   * extractable); never a claim beyond what the observation's own priceNote
+   * or structured fields actually record.
+   */
+  journeyConsequences: string[];
 }
 
 export interface FareSignal {
@@ -80,7 +92,17 @@ export function toSignalObservation(observation: FareObservation): FareSignalObs
       ...(observation.returnConnectionAirports ?? []),
     ])],
     isSelfTransfer: isSelfTransferItinerary(observation.priceNote),
+    journeyConsequences: formatJourneyConsequenceSummary(
+      getJourneyConsequences(observation, getDestinationIataCode(observation.routeSlug))
+    ),
   };
+}
+
+/** The route's own destination IATA code, or null if the route/destination can't be resolved — used only to detect an arrival-airport mismatch; see lib/journey-consequence.ts. */
+function getDestinationIataCode(routeSlug: string): string | null {
+  const route = getRouteBySlug(routeSlug);
+  if (!route) return null;
+  return getDestinationBySlug(route.destinationSlug)?.iataCode ?? null;
 }
 
 /**
