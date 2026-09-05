@@ -185,7 +185,17 @@ export const destinations: Destination[] = [
     description:
       'Ahmedabad combines Sabarmati Ashram, Gujarati heritage and a large urban centre. Travellers can compare direct and connecting options from the UK rather than assuming one airport is the best fit.',
     bestFor: ['Family visits', 'Heritage travel', 'Business travel'],
-    flightTimeFromUK: '9h 40m direct from London Gatwick',
+    // Cross-surface truth fix (5 September 2026, independently reproduced
+    // Astra finding): was '9h 40m direct from London Gatwick' — the
+    // london-gatwick-ahmedabad route itself is verification.status:
+    // 'unverified', a genuine, currently unresolved conflict across Air
+    // India's own current pages over whether this service flies from
+    // Gatwick or Heathrow at all (see data/routes.ts's own note). This
+    // hub-card summary asserted a confident duration and airport the
+    // route's own canonical record explicitly can't confirm — reworded to
+    // match this same destination's own familyVisitContent.packingNote,
+    // which was already worded honestly.
+    flightTimeFromUK: 'Air India\'s Ahmedabad service has a genuine, unresolved conflict over which London airport it uses — check the exact flight before booking',
     ukAirports: ['london-gatwick', 'manchester', 'birmingham'],
     visaNote: 'e-Visa required for UK passport holders, apply at least 4 days before travel.',
     familyVisitContent: {

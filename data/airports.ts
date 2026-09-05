@@ -68,12 +68,27 @@ export const airports: Airport[] = [
     code: 'LGW',
     city: 'London',
     region: 'Greater London',
+    // Cross-surface truth fix (5 September 2026, independently reproduced
+    // Astra finding): both fields previously claimed a confident "UK's
+    // only non-stop service to Ahmedabad" / "direct, non-stop service to
+    // Ahmedabad when it's operating" — the london-gatwick-ahmedabad route
+    // itself is verification.status: 'unverified', a genuine, currently
+    // unresolved conflict across Air India's own current pages over
+    // whether this service flies from Gatwick or Heathrow at all (see
+    // data/routes.ts's own note). Both fields also claimed Birmingham
+    // shares "a direct Amritsar service" — birmingham-amritsar is
+    // isDirect: false, connecting only, per that route's own record. This
+    // specific pair of claims was already reproduced and fixed on the
+    // India hub (app/india/page.tsx) and Ahmedabad's own destination card
+    // (this file's ahmedabad entry, flightTimeFromUK) as part of the same
+    // fix — this was a third, independent duplicate of the identical
+    // underlying facts.
     description:
-      'A major leisure and long-haul airport south of London, with direct Gulf links and the UK\'s only non-stop service to Ahmedabad: a genuine gateway for Gujarat alongside its established Amritsar and Mediterranean network.',
+      'A major leisure and long-haul airport south of London, with direct Gulf links and an established Amritsar service, alongside a currently disputed Ahmedabad service — check the exact departure airport before booking a Gujarat trip.',
     longHaulRoutes: ['Dubai', 'Doha', 'Ahmedabad', 'Amritsar'],
     shortHaulHighlights: ['Barcelona', 'Rome', 'Malaga', 'Antalya', 'Agadir', 'Tangier'],
     whyThisAirport:
-      'Gatwick works well as a Gulf gateway and Mediterranean leisure airport, with a direct, non-stop service to Ahmedabad when it\'s operating — worth checking for Gujarati heritage travellers, alongside a direct Amritsar service shared with Birmingham. For Pakistan and Delhi/Mumbai-bound India travel specifically, Heathrow still has the wider network.',
+      'Gatwick works well as a Gulf gateway and Mediterranean leisure airport, with a confirmed direct Amritsar service, though not daily — check operating days before booking. Its Ahmedabad service currently has a genuine, unresolved conflict over which London airport Air India actually uses, so confirm the exact departure airport before assuming Gatwick. Birmingham\'s Amritsar route is a connection, not a direct flight. For Pakistan and Delhi/Mumbai-bound India travel specifically, Heathrow still has the wider network.',
     servesCommunities: ['South London', 'Croydon', 'Surrey', 'Sussex'],
     hasDirectLongHaul: true,
   },

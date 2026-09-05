@@ -34,8 +34,21 @@ export default function IndiaHubPage() {
           body: 'Festival season and the Christmas–New Year period are the highest-demand windows on UK–India routes, and fares often move during them. Outside these windows, particularly February–April and September–October, this is generally a lower-pressure time to book. Planning guidance, not a fare prediction.',
         },
         {
-          title: 'Gatwick is the direct gateway for Gujarat and Punjab specifically',
-          body: 'Air India\'s only non-stop UK routes to Ahmedabad and Amritsar both depart from Gatwick, alongside Birmingham\'s direct Amritsar service. Both run 3 times a week rather than daily, so confirm your dates align with an active flight day.',
+          // Cross-surface truth fix (5 September 2026, independently
+          // reproduced Astra finding): this previously claimed "Air
+          // India's only non-stop UK routes to Ahmedabad and Amritsar
+          // both depart from Gatwick, alongside Birmingham's direct
+          // Amritsar service" — directly contradicting two of this same
+          // hub's own route cards (london-gatwick-ahmedabad is
+          // verification.status: 'unverified', a genuine unresolved
+          // Gatwick-vs-Heathrow conflict across Air India's own current
+          // pages, per that route's own note in data/routes.ts;
+          // birmingham-amritsar is isDirect: false, connecting only, per
+          // that route's own record). Reworded to match each route's own
+          // canonical status instead of overstating it — Gatwick-Amritsar
+          // is the one genuinely confirmed non-stop claim here.
+          title: 'Gatwick is the confirmed direct gateway for Amritsar',
+          body: 'Air India runs a non-stop Gatwick–Amritsar service, though not daily — confirm your date lines up with an active flight day. Its Ahmedabad service currently sits on a genuine, unresolved conflict between Air India\'s own sources over whether it flies from Gatwick or Heathrow, so confirm the exact departure airport before booking. Birmingham\'s Amritsar service is a connection, not a direct flight.',
         },
         {
           title: 'Check current status before booking Manchester\'s Delhi and Mumbai services',
