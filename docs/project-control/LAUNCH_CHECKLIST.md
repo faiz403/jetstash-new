@@ -268,9 +268,9 @@ wider organic promotion.
           gathered or acted on in this PR, which made no performance changes.
 - [ ] **A3.** Dependency-security review (governance re-audit; supersedes D1 below as the current
       source of truth — D1's own findings from 29 July 2026 are kept as history, not restated here).
-      **Partly closed 8 August 2026** — every advisory this repository can safely resolve without a
-      major upgrade is resolved; the remaining 3 are documented with a defensible, re-verified
-      mitigation and acceptance decision, not dismissed.
+      **Partly closed, re-verified and further remediated 6 September 2026** — every advisory this
+      repository can safely resolve without a major upgrade is resolved; the remaining 2 are
+      documented with a defensible, re-verified mitigation and acceptance decision, not dismissed.
       - **Re-audited from scratch, not from the old report.** `npm audit --omit=dev` (production
         tree) and `npm audit` (full tree, 490 packages: 24 prod, 432 dev, 91 optional) both re-run
         against the current lockfile. Before this pass: 4 production-tree findings (`nanoid`, `next`,
@@ -287,23 +287,22 @@ wider organic promotion.
         5.0.9 (nested under `@typescript-eslint/typescript-estree`'s `minimatch`, dev-only). All 4
         genuinely resolved — full audit dropped from 6 findings to 3, all dev-only advisories now
         clear.
-      - **Remaining 3 (all high, all production-tree, all require `next@16.3.0` — a `isSemVerMajor`
-        upgrade, correctly not performed here):**
-        - `next` itself (flagged only because it depends on the two below).
+      - **Remaining 2, as of 6 September 2026 (both high, both production-tree, both require
+        `next@16.3.0` — a `isSemVerMajor` upgrade, correctly not performed here — see the 6
+        September re-audit below for `sharp`'s resolution):**
+        - `next` itself (flagged only because it depends on the one below).
         - `postcss` <=8.5.22, nested at `node_modules/next/node_modules/postcss@8.4.31` — Next's own
           bundled build-time CSS processor, a **separate install from the top-level devDependency
           `postcss@8.5.25`** (already patched, unaffected by these CVEs). Four CVEs: XSS via
           unescaped `</style>` in stringify output, and three arbitrary-file-read/path-traversal
           issues via attacker-controlled `sourceMappingURL` in CSS comments.
-        - `sharp` <0.35.0 — Next's built-in image-optimization library (`next/image`'s server-side
-          resize/reformat path), inherited libvips CVEs (CVE-2026-33327/33328/35590/35591).
       - **Production relevance, re-verified against the current code (not assumed from the prior
         review):** `next.config.js` was read directly — no `images.remotePatterns` or
         `images.domains` is configured (`// No remote image hosts: all destination imagery is
         rendered locally by <DestinationMark />`), so Next's Image Optimization API cannot fetch or
-        process an attacker-supplied remote URL through the vulnerable `sharp`; `next/image` usage
-        was checked across all 9 call sites (`app/airports/page.tsx`, `app/guides/page.tsx`,
-        `components/homepage-v2/journey-brief-hero.tsx`, `pull-brief.tsx`,
+        process an attacker-supplied remote URL (relevant to `sharp`'s CVEs before its 6 September
+        fix, below); `next/image` usage was checked across all 9 call sites (`app/airports/page.tsx`,
+        `app/guides/page.tsx`, `components/homepage-v2/journey-brief-hero.tsx`, `pull-brief.tsx`,
         `components/routes/routes-catalogue.tsx`, `components/sections/route-map-hero.tsx`,
         `components/ui/destination-visual.tsx`, `hero-backdrop.tsx`, `hub-card.tsx`) — every one
         renders a static, repo-committed file under `public/images/`, never a remote or
@@ -311,10 +310,10 @@ wider organic promotion.
         own `globals.css`/Tailwind output on Vercel's build infrastructure from the repository's own
         source — there is no runtime endpoint, form field, or API route anywhere in this codebase
         (`app/api/contact`, `quote-request`, `subscribe`, `route-watch`, `cron/fare-check-reminder`)
-        that accepts or renders freeform CSS or image bytes from an untrusted user. **Both remaining
-        vulnerable code paths are present in the production dependency tree, but neither is reachable
-        by an untrusted user given the current, re-verified absence of any user-controlled CSS or
-        remote-image input.**
+        that accepts or renders freeform CSS or image bytes from an untrusted user. **The remaining
+        vulnerable code path (`postcss`, now that `sharp` is resolved — see 6 September below) is
+        present in the production dependency tree, but not reachable by an untrusted user given the
+        current, re-verified absence of any user-controlled CSS input.**
       - **Risk decision: temporarily accepted, not dismissed.** Explicitly not resolved because doing
         so requires `next@16.3.0`, a semver-major upgrade — out of scope for a dependency-governance
         PR per this task's own instruction not to combine major upgrades with routine remediation.
@@ -334,13 +333,40 @@ wider organic promotion.
         every route class (homepage, route/destination/airport `[slug]` pages, forms), full canonical
         test suite green, production build clean, and a manual pass confirming the Atlas and every
         public form still function identically — only then re-run `npm audit fix --force` (or the
-        now-current major) to actually close the postcss/sharp advisories.
+        now-current major) to actually close the postcss advisory.
+      - **Re-audited and further remediated, 6 September 2026** (identified as the single best
+        independent launch-critical task available during the MAN→ISB Day 3→Day 7 evidence hold —
+        see `STATUS.md`'s Programme state). Re-ran `npm audit` from scratch against the current
+        lockfile rather than trusting the 8 August count: **4 findings (1 moderate, 3 high)**, not
+        the 3 this item's own 8 August record still said. One genuinely new advisory had appeared
+        since 8 August — `browserslist` <=4.28.6 (high: unbounded memory growth/OOM via uncached
+        query results, GHSA-c83g-rgw3-j3cx; a prototype-write crash via untrusted
+        `browserslist-stats.json`, GHSA-73wf-gq98-2v4g) — and `sharp`'s own status had changed: a
+        safe, non-major fix now exists where the 8 August review correctly found none.
+        Applied `npm audit fix` (no `--force`, previewed via `--dry-run` first; `package-lock.json`
+        only, zero `package.json` changes): `sharp` 0.34.5 → 0.35.4 (with its per-platform
+        `@img/sharp-*` binaries and bundled `libvips`) and `browserslist` 4.28.4 → 4.28.9 (with its
+        standard companion packages `caniuse-lite`, `electron-to-chromium`, `node-releases`,
+        `update-browserslist-db`, `baseline-browser-mapping`, which always version together in the
+        browserslist ecosystem) — 34 lockfile entries changed in total, all within these two
+        clusters, confirmed via a full before/after package-version diff; no unrelated dependency
+        moved. Full audit dropped from 4 findings to **2** (`next`/`postcss`, unchanged from 8
+        August, still correctly deferred to the Next.js major-upgrade branch below). **Sharp/image
+        check performed explicitly** (sharp participates in `next/image`'s server-side path):
+        production build succeeded; a real production server was started and `/_next/image` was
+        requested directly for a genuine `public/images/` asset — returned `200`, correct
+        `Content-Type: image/jpeg`, a valid re-encoded JPEG at the requested width, confirmed by
+        reading the actual output bytes, not just the HTTP status; server logs showed zero
+        sharp/image errors. Full quality gate re-run and clean: `tsc --noEmit`, lint, full Vitest
+        suite (3249/3249), production build, `git diff --check`. No product, content, route, fare or
+        visa change of any kind — `package-lock.json` and this checklist entry only.
       - **Why this is "partly closed," not "closed":** every advisory this repository can safely
-        resolve without a major upgrade has been resolved (0 dev-only findings remain). The 3
-        remaining production-tree advisories are not silently accepted — each has a defensible,
-        re-verified mitigation (no reachable input path) and an explicit deferral decision with named
-        next steps. Do not mark this item fully closed until the Next.js major upgrade lands and
-        `postcss`/`sharp` are genuinely patched, not just judged low-risk.
+        resolve without a major upgrade has been resolved (0 dev-only findings remain, and `sharp` is
+        now resolved alongside them). The 2 remaining production-tree advisories (`next`/`postcss`)
+        are not silently accepted — each has a defensible, re-verified mitigation (no reachable input
+        path) and an explicit deferral decision with named next steps. Do not mark this item fully
+        closed until the Next.js major upgrade lands and `postcss` is genuinely patched, not just
+        judged low-risk.
 - [x] **A9.** ~~Reposition "Deals" as tracked fare evidence~~ **Done 8 August 2026.** "Deals" implies
       JetStash has proven a price is unusually good against historical data — it hasn't; every fare
       shown is a dated, hand-checked observation, never a claim of being the cheapest available (see
