@@ -3,7 +3,7 @@ import { readFileSync } from 'fs';
 import { join } from 'path';
 
 /**
- * Three heading-structure defects found by the 6 September 2026 155-URL
+ * Four heading-structure defects found by the 6 September 2026 155-URL
  * full-site crawl, affecting four public pages: /deals, /quote-request,
  * /travel-club and /routes/leeds-bradford-islamabad. Each is fixed by
  * examining the component's actual structural relationship to its
@@ -34,12 +34,20 @@ import { join } from 'path';
  *    situation (disputed status, no journeyChoice) — so this banner is
  *    effectively always the first heading-bearing content after h1
  *    whenever it renders, not a subordinate of an established h2 section.
+ * 4. /travel-club's own "why join" FeatureCard grid (page-local, used
+ *    nowhere else) is promoted h3 -> h2 — a residual defect the footer
+ *    fix alone didn't close, found by the required full 155-page re-sweep
+ *    after the first three fixes. Same reasoning as /deals and /airports
+ *    (PR #238): the grid has no section heading of its own between it
+ *    and the page's H1, so each card is effectively its own top-level
+ *    entry, not a subordinate of an established section.
  */
 
 const dealCardSrc = readFileSync(join(process.cwd(), 'components/ui/deal-card.tsx'), 'utf8');
 const dealsExplorerSrc = readFileSync(join(process.cwd(), 'components/sections/deals-explorer.tsx'), 'utf8');
 const footerSrc = readFileSync(join(process.cwd(), 'components/layout/footer.tsx'), 'utf8');
 const warningBannerSrc = readFileSync(join(process.cwd(), 'components/route/warning-banner.tsx'), 'utf8');
+const travelClubSrc = readFileSync(join(process.cwd(), 'app/travel-club/page.tsx'), 'utf8');
 
 describe('1. DealCard — context-aware heading level, not a global tag swap', () => {
   it('accepts an explicit headingLevel prop, defaulting to h3 (correct at 7 of 8 real call sites)', () => {
@@ -120,9 +128,36 @@ describe('3. WarningBanner — h3 -> h2, confirmed by tracing every conditional 
   });
 });
 
+describe('4. /travel-club FeatureCard grid — h3 -> h2, the residual defect the footer fix alone did not close', () => {
+  it('the feature-card title now renders as h2', () => {
+    expect(travelClubSrc).toMatch(/<h2 className="mt-4 font-display text-lg text-ink-900">\{title\}<\/h2>/);
+    expect(travelClubSrc).not.toMatch(/<h3[^>]*>\{title\}<\/h3>/);
+  });
+
+  it('FeatureCard is page-local — used only on this page, so this is not a shared-component change', () => {
+    const otherFiles = ['app/quote-request/page.tsx', 'app/business-class/page.tsx', 'app/family-holidays/page.tsx'];
+    for (const file of otherFiles) {
+      const src = readFileSync(join(process.cwd(), file), 'utf8');
+      expect(src).not.toContain('FeatureCard');
+    }
+  });
+
+  it('all four feature titles, bodies, icons and card classes are unchanged — only the heading tag moved', () => {
+    expect(travelClubSrc).toContain('Checked by us, not an algorithm');
+    expect(travelClubSrc).toContain('Focused on your routes');
+    expect(travelClubSrc).toContain("Told when a new route launches");
+    expect(travelClubSrc).toContain('Free, and easy to leave');
+    expect(travelClubSrc).toContain('className="rounded-md border border-ink-100 bg-sand-50 p-7 transition-all hover:-translate-y-1 hover:shadow-card-hover"');
+  });
+
+  it('no Travel Club signup/newsletter behaviour touched', () => {
+    expect(travelClubSrc).toContain('<NewsletterSection />');
+  });
+});
+
 describe('No frozen product behaviour touched', () => {
-  it('no MAN-ISB/Journey Choice/Standout Fare functional code (imports, props, or identifiers — not explanatory comments) exists in any of the three edited components', () => {
-    for (const src of [dealCardSrc, dealsExplorerSrc, footerSrc, warningBannerSrc]) {
+  it('no MAN-ISB/Journey Choice/Standout Fare functional code (imports, props, or identifiers — not explanatory comments) exists in any of the four edited files', () => {
+    for (const src of [dealCardSrc, dealsExplorerSrc, footerSrc, warningBannerSrc, travelClubSrc]) {
       const withoutComments = src.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*$/gm, '');
       expect(withoutComments).not.toMatch(/manchester-islamabad|journeyChoice|standoutFare/i);
     }
