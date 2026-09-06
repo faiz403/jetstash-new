@@ -140,16 +140,16 @@ export const destinations: Destination[] = [
     description:
       'Mumbai brings together Bollywood, the Gateway of India and a major financial district on India\'s west coast. Check the exact UK airport, dates and routing before booking.',
     bestFor: ['Business travel', 'City breaks', 'Family visits'],
-    flightTimeFromUK: '9h direct from London Heathrow; former Manchester direct service ended',
+    flightTimeFromUK: '9h direct from London Heathrow; Manchester options vary by route',
     ukAirports: ['london-heathrow', 'manchester', 'birmingham'],
     visaNote: 'e-Visa required for UK passport holders, apply at least 4 days before travel.',
     familyVisitContent: {
       travelPattern:
-        'Mumbai is increasingly a direct family-visit destination for North West-based travellers, not just a business or stopover city. IndiGo\'s Manchester service was launched explicitly to serve the large Indian diaspora in the region, alongside its business and tourism case.',
+        'Mumbai is an important family-visit destination for North West-based travellers, not just a business or stopover city. IndiGo launched a Manchester–Mumbai service in July 2025 with the region\'s large Indian diaspora among the intended audiences.',
       documentNote:
         'OCI (Overseas Citizen of India) cardholders do not require a separate visa. Standard e-Tourist or e-Business visas apply to other UK passport holders; apply at least 4 days ahead, and earlier still during Diwali or December.',
       packingNote:
-        'The former Manchester direct service has ended. For any itinerary you book instead, check the current baggage allowance directly with the operating airline rather than assuming it matches a full-service carrier\'s standard. Allowances and any extra-baggage charges can differ from the Heathrow route\'s operators.',
+        'For any itinerary from Manchester, check the current baggage allowance directly with the operating airline rather than assuming it matches a full-service carrier\'s standard. Allowances and any extra-baggage charges can differ from the Heathrow route\'s operators.',
       peakPeriodIds: ['diwali', 'christmas-new-year', 'uk-summer-holidays'],
     },
   },

@@ -448,9 +448,11 @@ describe('Cross-surface leakage fix — FamilyVisitBlock no longer asserts a fix
     expect(text).toMatch(/Diwali/i);
   });
 
-  it('keeps the Manchester-specific Mumbai packing note safe after the service ended', () => {
+  it('keeps the Manchester-specific Mumbai packing note useful without duplicating route lifecycle', () => {
     const mumbai = getDestinationBySlug('mumbai')!;
-    expect(mumbai.familyVisitContent!.packingNote).toMatch(/former Manchester direct service has ended/i);
+    expect(mumbai.familyVisitContent!.packingNote).toMatch(/itinerary from Manchester/i);
+    expect(mumbai.familyVisitContent!.packingNote).toMatch(/baggage allowance/i);
+    expect(mumbai.familyVisitContent!.packingNote).not.toMatch(/service (?:has )?ended|withdraw|pause|resum/i);
     expect(mumbai.familyVisitContent!.packingNote).not.toMatch(/If flying the Manchester direct service/i);
   });
 });

@@ -91,9 +91,13 @@ describe('3. Existing service-ended handling (Delhi/Mumbai) remains correct', ()
     expect(summary).toBe('8h 45m direct from London Heathrow; former Manchester direct service ended');
   });
 
-  it('suppresses the ended Manchester–Mumbai direct claim — already correctly worded by destinations.ts itself', () => {
-    const summary = getDestinationFlightTimeFromUK(getDestinationBySlug('mumbai')!, '2026-09-03');
-    expect(summary).toBe('9h direct from London Heathrow; former Manchester direct service ended');
+  it('derives the ended Manchester–Mumbai status instead of storing it in destination copy', () => {
+    const destination = getDestinationBySlug('mumbai')!;
+    expect(destination.flightTimeFromUK).toBe('9h direct from London Heathrow; Manchester options vary by route');
+    expect(destination.flightTimeFromUK).not.toMatch(/service ended/i);
+    expect(getDestinationFlightTimeFromUK(destination, '2026-09-03')).toBe(
+      '9h direct from London Heathrow; Manchester options vary by route; Manchester direct service ended',
+    );
   });
 
   it('preserves the destination fallback before service-ended evidence is effective', () => {
