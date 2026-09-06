@@ -132,8 +132,30 @@ export const guides: Guide[] = [
     slug: 'comparing-airlines-same-route',
     title: 'Comparing airlines on the same route is worth the extra five minutes',
     summary: 'On routes served by multiple carriers, service, baggage and pricing differ meaningfully, so it pays not to default to whichever appears first.',
+    // Trust fix (6 Sept 2026, independent audit): this guide previously
+    // named Heathrow-Delhi as an example "where British Airways, Virgin
+    // Atlantic and Air India all operate directly" — a specific, current
+    // three-airline operating claim. JetStash's own canonical evidence for
+    // london-heathrow-delhi (data/routes.ts's airlineVerifications) only
+    // currently verifies British Airways individually; Virgin Atlantic and
+    // Air India are listed in the route's airlineSlugs but have no current
+    // per-airline verification record, so getEffectiveRoutePresentation()
+    // itself only ever surfaces British Airways as this route's verified
+    // operator. This doesn't mean Virgin Atlantic/Air India don't actually
+    // fly it — only that this guide was independently asserting a current
+    // fact outside JetStash's own evidence boundary, exactly the pattern
+    // this project keeps finding and fixing elsewhere today.
+    //
+    // Rewritten so Heathrow-Delhi stays as the illustrative, well-known
+    // corridor (deleting the whole example would have made the guide less
+    // concrete for no reason), but the claim itself is now generic — no
+    // named airline triple, no "all operate directly" assertion — and
+    // explicitly defers to the route guide's own currently-verified
+    // operator for the specific facts. This also means the guide can never
+    // again independently drift from canonical evidence: it names no
+    // airline set of its own to go stale.
     paragraphs: [
-      'On routes served by more than one carrier, Heathrow to Delhi for example, where British Airways, Virgin Atlantic and Air India all operate directly, service standards, baggage allowances and typical pricing all differ meaningfully. Don\'t default to whichever airline appears first in a search. Compare at least two before booking, particularly for a long-haul family trip.',
+      'On routes served by more than one carrier — Heathrow to Delhi is a well-known example — service standards, baggage allowances and typical pricing can differ meaningfully between operators. Don\'t default to whichever airline appears first in a search, and don\'t assume every airline shown in a search result is one JetStash has independently confirmed: check the route guide for which carriers are currently verified on your specific pairing. Compare at least two before booking, particularly for a long-haul family trip.',
       'Price is the visible difference; the others surface mid-journey. Baggage allowance can vary by an entire suitcase between carriers on the same route. Departure and arrival times matter more than they look. An overnight flight landing in the morning and a daytime flight landing at midnight are very different propositions with children or an onward journey. Meal service, seat configuration and how the airline handles disruption all differ too, and none of it shows in a headline fare comparison.',
       'Five minutes covers it. Pick the two or three carriers on your route, check each one\'s baggage allowance and arrival time against your plans, then compare fares on equal terms. The route guides on this site list which airlines fly each pairing and what the fare has looked like when we\'ve checked it, useful context for judging whether the price in front of you is normal for the route or genuinely worth moving on.',
     ],
