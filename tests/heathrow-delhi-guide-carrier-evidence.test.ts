@@ -20,6 +20,17 @@ import { routeStatusEvents } from '@/data/route-status-events';
  * (Birmingham-Amritsar traveller tip, Travel Club copy, Manchester/
  * Gatwick airport records).
  *
+ * Amendment (same day, founder review): the first fix still named
+ * Heathrow-Delhi as "a well-known example" of a route "served by more
+ * than one carrier" — a smaller, less explicit version of the same
+ * problem, since JetStash currently only verifies one carrier (British
+ * Airways) on this exact pairing and explicitly withholds the other two
+ * pending separate evidence. The guide must not independently assert
+ * that ANY specific route currently has multiple operators — that is
+ * itself a current route/operator fact, and canonical route evidence
+ * alone owns it. The guide may explain HOW to compare options when they
+ * exist; it must not determine that they exist for a given pairing.
+ *
  * These tests deliberately compare the guide's copy against the route's
  * actual effective presentation (getEffectiveRoutePresentation()) and
  * per-airline verification status (getRouteAirlineDisplayStatus()) — the
@@ -51,10 +62,21 @@ describe('2. The guide no longer independently asserts current airlines outside 
     expect(carrierParagraph).not.toMatch(/air india/i);
   });
 
+  it('does not identify Heathrow-Delhi (or any other named route) as a current example of a multi-carrier route', () => {
+    // The core of this amendment: even an unnamed-airline claim that a
+    // *specific pairing* currently has more than one operator is itself
+    // an independent current-route fact outside the evidence boundary.
+    expect(carrierParagraph).not.toMatch(/heathrow to delhi/i);
+    expect(carrierParagraph).not.toMatch(/heathrow.{0,10}delhi/i);
+    expect(carrierParagraph).not.toMatch(/well-known example/i);
+    // No other specific route/city-pair example was added in its place.
+    expect(carrierParagraph).not.toMatch(/for example|e\.g\.|such as/i);
+  });
+
   it('makes no unqualified named-airline route-operation claim anywhere in the guide, matching the actual verified-airline set for the one route it names', () => {
-    // Structural check, not a fixed string: if Heathrow-Delhi is ever named
+    // Structural check, not a fixed string: if any route is ever named
     // alongside a specific airline claim again, that claim must be a subset
-    // of the route's own currently-verified operators.
+    // of that route's own currently-verified operators.
     const namedAirlines = ['british airways', 'virgin atlantic', 'air india']
       .filter((name) => guide.paragraphs.some((p) => p.toLowerCase().includes(name)));
     for (const name of namedAirlines) {
@@ -62,19 +84,29 @@ describe('2. The guide no longer independently asserts current airlines outside 
       expect(getRouteAirlineDisplayStatus(heathrowDelhi, slug, NOW_ISO), `${name} should be verified if named`).toBe('verified');
     }
   });
+
+  it('does not guarantee that at least two verified carriers exist for the reader\'s route — the comparison is conditional ("when several... appear"), not asserted as universally true', () => {
+    expect(carrierParagraph).toMatch(/when several airline options appear/i);
+    expect(carrierParagraph).not.toMatch(/compare at least two/i);
+  });
 });
 
-describe('3. The guide remains useful comparison guidance', () => {
-  it('still uses Heathrow-Delhi as a concrete, recognisable example rather than deleting it', () => {
-    expect(carrierParagraph).toMatch(/heathrow to delhi/i);
-    expect(carrierParagraph).toMatch(/well-known example/i);
-  });
-
-  it('still explains what to compare and defers to the route guide for current verified carriers', () => {
+describe('3. The guide remains useful comparison guidance, even with only one carrier currently verified', () => {
+  it('still explains what to compare and defers current-carrier verification to the route guide / canonical evidence', () => {
     expect(carrierParagraph).toMatch(/service standards, baggage allowances and typical pricing/i);
     expect(carrierParagraph).toMatch(/check the route guide/i);
-    expect(carrierParagraph).toMatch(/currently verified/i);
-    expect(carrierParagraph).toMatch(/compare at least two before booking/i);
+    expect(carrierParagraph).toMatch(/currently has verified/i);
+  });
+
+  it('the advice is phrased so it stays true and useful on a route where JetStash currently verifies only one carrier (like Heathrow-Delhi itself)', () => {
+    // Applying this exact guide's own advice to Heathrow-Delhi's real
+    // current evidence state (1 verified carrier, not 2+) must not produce
+    // a contradiction — proving the wording no longer presupposes plurality.
+    const verifiedCount = heathrowDelhi.airlineSlugs.filter(
+      (s) => getRouteAirlineDisplayStatus(heathrowDelhi, s, NOW_ISO) === 'verified'
+    ).length;
+    expect(verifiedCount).toBe(1);
+    expect(carrierParagraph).not.toMatch(/at least two|two or more carriers/i);
   });
 
   it('the other two paragraphs and the summary are unchanged', () => {

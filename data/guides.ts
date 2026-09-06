@@ -146,16 +146,22 @@ export const guides: Guide[] = [
     // fact outside JetStash's own evidence boundary, exactly the pattern
     // this project keeps finding and fixing elsewhere today.
     //
-    // Rewritten so Heathrow-Delhi stays as the illustrative, well-known
-    // corridor (deleting the whole example would have made the guide less
-    // concrete for no reason), but the claim itself is now generic — no
-    // named airline triple, no "all operate directly" assertion — and
-    // explicitly defers to the route guide's own currently-verified
-    // operator for the specific facts. This also means the guide can never
-    // again independently drift from canonical evidence: it names no
-    // airline set of its own to go stale.
+    // Amendment (same day, founder review): the first fix still named
+    // Heathrow-Delhi as "a well-known example" of a route "served by more
+    // than one carrier" — a smaller, less explicit version of the exact
+    // same problem. That's still an independent current-route-level fact
+    // (this specific pairing currently has multiple operators) outside
+    // JetStash's own evidence boundary, which currently verifies only
+    // British Airways here and explicitly withholds Virgin Atlantic and
+    // Air India pending separate evidence. Removed Heathrow-Delhi (or any
+    // other named route) as proof of multi-carrier status entirely — the
+    // guide explains HOW to compare options when they exist, without
+    // itself determining that they exist for any specific pairing. No
+    // replacement route example added, per instruction. This also means
+    // the advice stays useful even on a route where JetStash currently has
+    // only one carrier verified: it correctly doesn't promise a second.
     paragraphs: [
-      'On routes served by more than one carrier — Heathrow to Delhi is a well-known example — service standards, baggage allowances and typical pricing can differ meaningfully between operators. Don\'t default to whichever airline appears first in a search, and don\'t assume every airline shown in a search result is one JetStash has independently confirmed: check the route guide for which carriers are currently verified on your specific pairing. Compare at least two before booking, particularly for a long-haul family trip.',
+      'When several airline options appear for the same route, service standards, baggage allowances and typical pricing can differ meaningfully between operators. Don\'t default to whichever airline appears first in a search, and don\'t assume every airline shown in a search result is one JetStash has independently confirmed. Check the route guide for which carriers JetStash currently has verified for your specific pairing, then compare the options available for your dates before booking.',
       'Price is the visible difference; the others surface mid-journey. Baggage allowance can vary by an entire suitcase between carriers on the same route. Departure and arrival times matter more than they look. An overnight flight landing in the morning and a daytime flight landing at midnight are very different propositions with children or an onward journey. Meal service, seat configuration and how the airline handles disruption all differ too, and none of it shows in a headline fare comparison.',
       'Five minutes covers it. Pick the two or three carriers on your route, check each one\'s baggage allowance and arrival time against your plans, then compare fares on equal terms. The route guides on this site list which airlines fly each pairing and what the fare has looked like when we\'ve checked it, useful context for judging whether the price in front of you is normal for the route or genuinely worth moving on.',
     ],
