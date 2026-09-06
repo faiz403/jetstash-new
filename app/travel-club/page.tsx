@@ -36,7 +36,19 @@ export default function TravelClubPage() {
             <FeatureCard
               icon={<MapPinned className="h-5 w-5" strokeWidth={2} />}
               title="Told when a new route launches"
-              body="When we add a new direct or improved route in a region you've told us you care about, like Ahmedabad's Gatwick service, Travel Club hears about it first."
+              // Trust fix (6 Sept 2026, independent audit): this previously
+              // cited "Ahmedabad's Gatwick service" as a settled example of
+              // an added direct/improved route. JetStash's own canonical
+              // presentation for london-gatwick-ahmedabad is "Verification
+              // pending" (Route Verification Refresh Batch 1-2 + Rolling
+              // Reverification Batch 4: Air India's own current surfaces
+              // genuinely conflict on which London airport this service
+              // uses — see data/routes.ts), so citing it here as an example
+              // of a route already added contradicted the route's own badge.
+              // Rewritten generically so the proposition (Travel Club hears
+              // about new/improved routes first) no longer depends on any
+              // one route's current, possibly-unresolved status.
+              body="When we add a newly verified direct route or a meaningful route improvement in a region you've told us you care about, Travel Club hears about it first."
             />
             <FeatureCard
               icon={<ShieldCheck className="h-5 w-5" strokeWidth={2} />}
