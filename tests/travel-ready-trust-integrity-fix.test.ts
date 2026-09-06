@@ -428,9 +428,9 @@ describe('Trust Integrity fix — visa-free/on-arrival stay-length limits', () =
       expect(detail).toMatch(/counts both your departure and return dates as full days present/i);
       expect(detail).toMatch(/doesn't publish an exact day-counting rule/i);
     }
-    // A country with no stay-limit rule at all (e.g. Saudi Arabia's advance-
-    // visa requirement) has nothing to disclose — the caveat must not leak
-    // into unrelated visa-requirement messaging.
+    // A country with no machine-readable stay-limit rule (e.g. Saudi
+    // Arabia's purpose-dependent entry-permission routes) has nothing to
+    // disclose — the caveat must not leak into unrelated messaging.
     const noStayLimit = evaluateTravelReadiness(
       { destinationSlug: 'jeddah', isBritishPassport: true, exemptionDocument: 'none', ...SHORT_TRIP },
       NOW
@@ -438,7 +438,7 @@ describe('Trust Integrity fix — visa-free/on-arrival stay-length limits', () =
     expect(noStayLimit.checks.find((c) => c.id === 'visa-requirement')?.detail).not.toMatch(/day-counting/i);
   });
 
-  it('Saudi Arabia (no stay-limit rule at all) is entirely unaffected by this fix', () => {
+  it('Saudi Arabia (no machine-readable stay-limit rule) is entirely unaffected by this fix', () => {
     const result = evaluateTravelReadiness(
       {
         destinationSlug: 'jeddah',
@@ -446,7 +446,7 @@ describe('Trust Integrity fix — visa-free/on-arrival stay-length limits', () =
         exemptionDocument: 'none',
         departureDate: '2026-10-01',
         arrivalDate: '2026-10-01',
-        returnDate: '2027-03-01', // a long trip, but Saudi Arabia's rule always required an arranged visa regardless of length
+        returnDate: '2027-03-01', // a long trip, but this rule does not encode one universal permission route or stay limit
         passportExpiryDate: '2029-01-01',
       },
       NOW
