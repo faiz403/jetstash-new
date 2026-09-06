@@ -246,3 +246,46 @@ describe('PR #233 product-acceptance correction — Finding 5: fresh search dist
     expect(ctaBlock).toContain('AffiliateLinkDisclosure');
   });
 });
+
+describe('Result-viewport fix (6 Sept 2026): the entry->result transition deliberately lands the reader at the result, not wherever scrollY happened to be', () => {
+  it('a scroll ref on the result card and a focus ref on its heading both exist and are wired to the actual DOM elements', () => {
+    expect(componentSrc).toContain('ref={resultSectionRef}');
+    expect(componentSrc).toContain('ref={resultHeadingRef}');
+    // The scroll target is the card itself (starts with the "Journey
+    // Brief" eyebrow + heading), not some other element — confirmed by the
+    // ref sitting on the same div that also carries the card's own
+    // distinctive styling.
+    expect(componentSrc).toMatch(/ref=\{resultSectionRef\}\s+className="max-w-2xl rounded-md border border-ink-200 bg-sand-50/);
+  });
+
+  it('the heading is programmatically focusable (tabIndex={-1}) without joining the normal Tab order', () => {
+    expect(componentSrc).toMatch(/ref=\{resultHeadingRef\}\s+id="jb-heading"\s+tabIndex=\{-1\}/);
+  });
+
+  it('runs in a useEffect keyed on `stage` — after React commits the result render, never synchronously inside handleSubmit where the target wouldn\'t exist yet', () => {
+    const submitFnStart = componentSrc.indexOf('function handleSubmit');
+    const submitFnBody = componentSrc.slice(submitFnStart, submitFnStart + 400);
+    expect(submitFnBody).not.toMatch(/scrollIntoView|resultHeadingRef|resultSectionRef/);
+
+    const effectStart = componentSrc.indexOf("if (stage === 'result') {");
+    const effectBody = componentSrc.slice(effectStart, effectStart + 800);
+    expect(effectBody).toContain('resultSectionRef.current?.scrollIntoView');
+    expect(effectBody).toContain("resultHeadingRef.current?.focus({ preventScroll: true })");
+    // Confirms this specific scroll/focus call sits inside a useEffect (not
+    // the click handler) by checking the nearest preceding useEffect(.
+    const nearestUseEffect = componentSrc.lastIndexOf('useEffect(() => {', effectStart);
+    expect(nearestUseEffect).toBeGreaterThan(-1);
+    expect(nearestUseEffect).toBeLessThan(effectStart);
+  });
+
+  it('relies on the existing site-wide scroll-padding-top rule for sticky-header clearance, never a new offset calculation', () => {
+    expect(componentSrc).not.toMatch(/scrollBy|getBoundingClientRect\(\).*header|headerHeight/i);
+  });
+
+  it('re-fires on every entry->result transition (dependency array is exactly [stage]), so resubmitting after "Edit journey details" gets the same treatment', () => {
+    const effectStart = componentSrc.indexOf("if (stage === 'result') {");
+    const depArrayEnd = componentSrc.indexOf('}, [stage]);', effectStart);
+    expect(depArrayEnd).toBeGreaterThan(effectStart);
+    expect(depArrayEnd - effectStart).toBeLessThan(800);
+  });
+});
