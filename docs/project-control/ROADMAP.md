@@ -4,10 +4,11 @@ This roadmap contains unfinished work only. Completed work belongs in `COMPLETED
 
 ## Delivery queue
 
-**Current baseline:** `4494fd3561ac533a9ba787c04ef77b6ae44626ad`, reconciled 27 August
-2026. `ACTIVE` means continuing evidence/operations work; `WAITING` means no repository change is
-authorised until an external fact, founder decision or meaningful traffic exists; `FROZEN` means a
-live pilot must collect evidence before expansion.
+**Current baseline:** `f44e0b8`, reconciled 6 September 2026 — see `COMPLETED.md`'s September 2026
+table for everything merged since the 27 August baseline. `ACTIVE` means continuing
+evidence/operations work; `WAITING` means no repository change is authorised until an external
+fact, founder decision or meaningful traffic exists; `FROZEN` means a live pilot must collect
+evidence before expansion.
 
 | Order | ID | Status | Work | Definition of done |
 |---:|---|---|---|---|
@@ -92,6 +93,16 @@ retired `pull-brief*.tsx` components. Any future Journey Brief work should build
 the route-page architecture; the old pull-brief hero and its supporting
 `lib/homepage-flagship.ts`/`lib/flagship-status-copy.ts` are dead code pending cleanup (see
 `LAUNCH_CHECKLIST.md` item H), not a foundation to extend.
+
+**Journey Brief Phase 1 (built 5–6 September 2026, see `COMPLETED.md`'s `JOURNEY-BRIEF-PHASE1-001`):**
+a separate, founder-only prototype at `/founder/journey-brief/manchester-mumbai` (PR #233), gated
+behind `FOUNDER_DASHBOARD_ENABLED` and deliberately not the public Atlas/route-page surface the
+29 July note above describes — a founder-only pilot, not a homepage change. Rebuilds around a
+five-answer structure (route reality, journey option, decisive consequence, entry readiness, next
+action) assembled entirely from existing canonical sources. A founder-run 5-person comprehension
+test found one launch-blocking usability defect, which was fixed and merged (PR #235). This phase
+is now frozen: no second route, no public exposure and no further Journey Brief work is scheduled
+until the founder decides whether and how to expand or expose it.
 
 ### Travel Confidence
 

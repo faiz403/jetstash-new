@@ -1,15 +1,19 @@
 # JetStash Current Status
 
-**Last reconciled:** 3 September 2026 (project-control truth through PR #214)
+**Last reconciled:** 6 September 2026 (project-control truth through PR #235)
 
 **Production branch:** `main`
 
-**Application release baseline:** `6cca7686f72d44145590917db06e141ff3c293ba` (PR #214 merge —
-deal card route/fare reconciliation). This reconciliation closes the previously recorded PR
-#137–#187 gap and brings the operating record through PR #214 without turning this file into a
-commit-by-commit changelog. Older dated counts and delivery notes below remain historical evidence
-of what was true at the time; the current operating snapshot immediately below overrides them for
-present decisions.
+**Application release baseline:** `f44e0b8` (PR #235 merge — Journey Brief result-viewport fix).
+This reconciliation closes the previously recorded PR #215–#234 gap (20 merges: route-verification
+freshness and Batches 1–6, three Astra trust-integrity fixes, journey-consequence prominence, and
+Journey Brief Phase 1 with its usability fix) and brings the operating record through PR #235
+without turning this file into a commit-by-commit changelog — see `COMPLETED.md`'s September 2026
+table for the itemised record. Older dated counts and delivery notes below remain historical
+evidence of what was true at the time; the current operating snapshot immediately below overrides
+them for present decisions. None of this reconciliation window's work changed a route, fare or
+visa/passport fact beyond what `COMPLETED.md` records as corrected — no route-coverage count below
+needed recomputation.
 
 **Launch readiness:** ready for controlled public organic use. Google Ads Basic Consent Mode and
 conversion tracking are live; missing instrumentation is no longer the paid-growth blocker.
@@ -50,6 +54,19 @@ Manchester–Sylhet. Their archive records are preserved; public presentation re
 - **Journey Choice:** one-route Manchester–Islamabad public pilot, with impression/evidence/CTA
   measurement and a dated Trip.com handoff. Expansion remains frozen pending meaningful real
   traffic; no second route is approved.
+- **Journey Brief Phase 1:** a founder-only Manchester–Mumbai pilot
+  (`/founder/journey-brief/manchester-mumbai`, PR #233), gated behind `FOUNDER_DASHBOARD_ENABLED`
+  and not publicly reachable in production (confirmed 404 without the flag). A founder-run
+  5-person comprehension test found one launch-blocking usability defect — the result view
+  rendered correctly but the browser never adjusted scroll position across the layout collapse, so
+  users only saw the Mumbai hero image — fixed and merged (PR #235). No further Journey Brief work
+  is scheduled; expansion to another route or public exposure both await a founder decision.
+- **Route verification (`COV-001`):** Rolling Reverification Batches 1–6 closed 4 September 2026
+  (PRs #217, #218, #221, #222, #224, #227, plus supporting integrity fixes #223, #225, #226) —
+  49 routes due for review within 30 days, 26 healthy, 0 overdue at close. The standing rule this
+  work locked in: a source being reachable today does not by itself prove today's operational
+  truth — genuine continuity requires either a live/real-time source or two temporally distinct
+  observations of the same fact, not one static document re-opened. No Batch 7 is scheduled.
 - **Fare Watcher / Standout Fare:** Phase 1 is live on Manchester–Islamabad with exactly one public,
   founder-approved Standout Fare. The engine and approval gate are complete for this phase; further
   routes, new UI and threshold changes are frozen pending real traffic evidence.
