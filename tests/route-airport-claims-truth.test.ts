@@ -173,14 +173,14 @@ describe('No route/fare/verification data changed — this PR is editorial wordi
     expect(heathrowMumbai.frequency).toContain('Air India and Virgin Atlantic each confirmed 2x daily');
   });
 
-  it('gatwick, birmingham airports: route lists and hasDirectLongHaul are unchanged; manchester\'s list was further corrected for the same reason (see below)', () => {
+  it('birmingham airport: route list and hasDirectLongHaul are unchanged; gatwick and manchester\'s lists were each corrected for the same reason (see below)', () => {
     // Gatwick's own 'Ahmedabad' entry became stale by the same standard
     // this describes (london-gatwick-ahmedabad is now unverified, per the
     // 4 Sept Rolling Reverification Batch 4 note in data/routes.ts) —
     // flagged during the 6 Sept Manchester airport audit as a same-class
-    // finding, reported rather than fixed here since it's out of that
-    // task's scope; left unchanged in this test on purpose.
-    expect(gatwickAirport.longHaulRoutes).toEqual(['Dubai', 'Doha', 'Ahmedabad', 'Amritsar']);
+    // finding, then fixed in its own follow-up task the same day. Removed,
+    // not replaced: Dubai/Doha/Amritsar remain genuinely current.
+    expect(gatwickAirport.longHaulRoutes).toEqual(['Dubai', 'Doha', 'Amritsar']);
     expect(gatwickAirport.hasDirectLongHaul).toBe(true);
     // Route Verification Batch 2 pre-commit trust audit (19 August 2026):
     // both lists here previously named a destination whose only route from

@@ -128,12 +128,16 @@ describe('5 & 6. No unrelated airport data changed', () => {
     expect(manchesterAirport.servesCommunities).toEqual(['Manchester', 'Bolton', 'Rochdale', 'Oldham', 'Blackburn', 'Bradford (via M62 corridor)']);
   });
 
-  it('every other airport record is untouched', () => {
+  it('every other airport record is untouched by THIS fix', () => {
     const others = airports.filter((a) => a.slug !== 'manchester');
     expect(others).toHaveLength(10);
     const gatwick = others.find((a) => a.slug === 'london-gatwick')!;
     const birmingham = others.find((a) => a.slug === 'birmingham')!;
-    expect(gatwick.longHaulRoutes).toEqual(['Dubai', 'Doha', 'Ahmedabad', 'Amritsar']);
+    // Gatwick's list was flagged here (see this file's own describe block
+    // 3 comment) as a same-class finding and separately corrected the same
+    // day, in its own follow-up task — this assertion reflects that fix,
+    // not a change made by this PR.
+    expect(gatwick.longHaulRoutes).toEqual(['Dubai', 'Doha', 'Amritsar']);
     expect(birmingham.longHaulRoutes).toEqual(['Dubai', 'Sharjah', 'Doha']);
   });
 });
