@@ -23,12 +23,31 @@ export const airports: Airport[] = [
     code: 'MAN',
     city: 'Manchester',
     region: 'North West England',
+    // Trust fix (6 Sept 2026, independent audit): this record's summary
+    // fields still presented Manchester as a current direct India gateway
+    // after both manchester-delhi and manchester-mumbai were confirmed
+    // service-ended (data/route-status-events.ts, verified 2 Sept 2026) —
+    // a contradiction the route detail pages themselves don't have, since
+    // they render getEffectiveRoutePresentation() ("Direct service ended")
+    // rather than a static field. description dropped the "India" claim
+    // (Manchester's remaining currently-direct long-haul network is
+    // Pakistan + Gulf, per this same file's route data); longHaulRoutes
+    // dropped Delhi/Mumbai entirely, continuing the exact precedent Route
+    // Verification Batch 2 already set for this same list (removing
+    // Karachi/Islamabad once their routes stopped being currently-verified-
+    // direct — see route-airport-claims-truth.test.ts); whyThisAirport's
+    // "has also served ... since 2025" was rewritten from present-perfect
+    // (reads as ongoing) to plain past tense, the same stale-tense pattern
+    // already fixed once on manchester-mumbai's own intro copy (31 Aug
+    // 2026, User 3 validation) but which survived here since airport
+    // prose is a separate file. No exact end-date is stated here — that
+    // time-bound fact stays owned by the ledger/route record alone.
     description:
-      'The largest airport outside London and the busiest direct gateway in the North of England to Pakistan, India, the Gulf and South Asia, alongside year-round European routes.',
-    longHaulRoutes: ['Islamabad', 'Lahore', 'Dubai', 'Doha', 'Abu Dhabi', 'Delhi', 'Mumbai'],
+      'The largest airport outside London and the busiest direct gateway in the North of England to Pakistan and the Gulf, alongside year-round European routes.',
+    longHaulRoutes: ['Islamabad', 'Lahore', 'Dubai', 'Doha', 'Abu Dhabi'],
     shortHaulHighlights: ['Istanbul', 'Antalya', 'Dalaman', 'Marrakech', 'Barcelona'],
     whyThisAirport:
-      'Manchester is the only airport in the North of England with genuine daily-frequency direct services to Pakistan, which shapes travel patterns for the large Pakistani-heritage communities across Greater Manchester, Lancashire and West Yorkshire. For most of this audience, Manchester avoids the additional journey to a London airport — compare the available route and fare for your own dates once the drive to the airport is factored in. It has also served Delhi and Mumbai direct with IndiGo since 2025 — see the Manchester–Delhi and Manchester–Mumbai route guides for current verified status before booking.',
+      'Manchester is the only airport in the North of England with genuine daily-frequency direct services to Pakistan, which shapes travel patterns for the large Pakistani-heritage communities across Greater Manchester, Lancashire and West Yorkshire. For most of this audience, Manchester avoids the additional journey to a London airport — compare the available route and fare for your own dates once the drive to the airport is factored in. IndiGo also flew Manchester direct to Delhi and Mumbai from 2025 before pausing the service in 2026 — see the Manchester–Delhi and Manchester–Mumbai route guides for current verified status before booking.',
     servesCommunities: ['Manchester', 'Bolton', 'Rochdale', 'Oldham', 'Blackburn', 'Bradford (via M62 corridor)'],
     hasDirectLongHaul: true,
   },

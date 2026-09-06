@@ -173,7 +173,13 @@ describe('No route/fare/verification data changed — this PR is editorial wordi
     expect(heathrowMumbai.frequency).toContain('Air India and Virgin Atlantic each confirmed 2x daily');
   });
 
-  it('gatwick, manchester, birmingham airports: route lists and hasDirectLongHaul are unchanged', () => {
+  it('gatwick, birmingham airports: route lists and hasDirectLongHaul are unchanged; manchester\'s list was further corrected for the same reason (see below)', () => {
+    // Gatwick's own 'Ahmedabad' entry became stale by the same standard
+    // this describes (london-gatwick-ahmedabad is now unverified, per the
+    // 4 Sept Rolling Reverification Batch 4 note in data/routes.ts) —
+    // flagged during the 6 Sept Manchester airport audit as a same-class
+    // finding, reported rather than fixed here since it's out of that
+    // task's scope; left unchanged in this test on purpose.
     expect(gatwickAirport.longHaulRoutes).toEqual(['Dubai', 'Doha', 'Ahmedabad', 'Amritsar']);
     expect(gatwickAirport.hasDirectLongHaul).toBe(true);
     // Route Verification Batch 2 pre-commit trust audit (19 August 2026):
@@ -188,7 +194,17 @@ describe('No route/fare/verification data changed — this PR is editorial wordi
     // was left untouched because it already renders honestly). Removed
     // both entries; every remaining destination in each list has a
     // `verified` route from that airport.
-    expect(manchesterAirport.longHaulRoutes).toEqual(['Islamabad', 'Lahore', 'Dubai', 'Doha', 'Abu Dhabi', 'Delhi', 'Mumbai']);
+    //
+    // Trust fix (6 Sept 2026, independent audit): Manchester's own list
+    // later needed the identical treatment for a different reason —
+    // manchester-delhi and manchester-mumbai are `verified` (genuinely
+    // were direct), but both were confirmed `service-ended` by the Route
+    // Status ledger on 2 September 2026, after this list's last edit. A
+    // static field with no lifecycle awareness can't self-correct when a
+    // ledger event fires, so Delhi and Mumbai are removed here too —
+    // same precedent, applied to a route that stopped being direct after
+    // going live, rather than one that was never confirmed to begin with.
+    expect(manchesterAirport.longHaulRoutes).toEqual(['Islamabad', 'Lahore', 'Dubai', 'Doha', 'Abu Dhabi']);
     expect(birminghamAirport.longHaulRoutes).toEqual(['Dubai', 'Sharjah', 'Doha']);
   });
 });
