@@ -61,17 +61,41 @@ describe('3. Manchester airport summary no longer implies a current direct India
 
   it('whyThisAirport no longer uses present-perfect ("has ... served ... since") phrasing that reads as an ongoing service', () => {
     expect(manchesterAirport.whyThisAirport).not.toMatch(/has (also )?served/i);
-    // The historical fact is preserved in unambiguous past tense, not erased —
-    // this airport genuinely did have a real, verified direct India service,
-    // and that context remains useful even though it has since paused.
-    expect(manchesterAirport.whyThisAirport).toMatch(/flew Manchester direct to Delhi and Mumbai/i);
-    expect(manchesterAirport.whyThisAirport).toMatch(/pausing the service/i);
+    // The historical fact is preserved — this airport genuinely did have a
+    // real, verified direct India service — without airports.ts becoming a
+    // second, independent owner of *how* that service's current lifecycle
+    // changed. Only "it once existed" survives; whether/when/how it ended
+    // and whether it might resume are left entirely to the route guides.
+    expect(manchesterAirport.whyThisAirport).toMatch(/previously operated direct services from Manchester to Delhi and Mumbai/i);
     expect(manchesterAirport.whyThisAirport).toMatch(/route guides for current verified status/i);
+  });
+
+  it('whyThisAirport does not independently state the current lifecycle — no "paused"/"suspended", no ended/withdrawn year, no resumption implication, matching the canonical "Direct service ended" presentation rather than inventing a softer or different lifecycle claim', () => {
+    // "Paused"/"suspended" imply temporary interruption with an implied
+    // resumption the ledger's own "service-ended" state doesn't assert —
+    // exactly the kind of independent lifecycle claim this field must not
+    // make. A bare "in 2026" attached to the service's end is the same
+    // problem: a specific timing claim that belongs to the ledger alone.
+    expect(manchesterAirport.whyThisAirport).not.toMatch(/paus(e|ed|ing)|suspend(ed|ing)?|resum(e|ing|ed|ption)/i);
+    expect(manchesterAirport.whyThisAirport).not.toMatch(/in 2026|since 2026|2026\.|ended in|withdrawn/i);
+    // No frequency claim reintroduced for the Delhi/Mumbai service specifically
+    // (Pakistan's own, unrelated "daily-frequency" claim earlier in the same
+    // paragraph is pre-existing, evidenced content and must stay untouched).
+    const indigoSentence = manchesterAirport.whyThisAirport.match(/IndiGo[^.]*\./i)?.[0] ?? '';
+    expect(indigoSentence).not.toMatch(/\bdaily\b|\bweekly\b/i);
   });
 
   it('no field independently invents a specific end-date, resumption date, or new frequency claim beyond what the ledger/route already establish', () => {
     expect(manchesterAirport.description).not.toMatch(/2026|31 August/);
     expect(manchesterAirport.whyThisAirport).not.toMatch(/31 August|permanently|forever|resum(e|ing|ed)/i);
+  });
+
+  it('does not imply Delhi/Mumbai are current direct routes anywhere in the prose', () => {
+    // "previously operated" is the approved, unambiguous past-tense framing
+    // (asserted above) — this guards against a present-tense verb creeping
+    // back in around the same clause.
+    expect(manchesterAirport.whyThisAirport).not.toMatch(/\b(operates|flies|serves|runs)\b[^.]*Delhi/i);
+    expect(manchesterAirport.whyThisAirport).not.toMatch(/currently|now flies|still operates/i);
   });
 });
 
