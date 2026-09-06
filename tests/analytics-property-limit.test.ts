@@ -178,8 +178,14 @@ describe('the four reduced events keep exactly the right two properties', () => 
     // new route_verdict_watch_click event) — see its own dedicated check
     // immediately below, since that one shape doesn't belong in this
     // route+source category.
+    // Journey Brief Phase 1, Manchester-Mumbai founder-only pilot (5 Sept
+    // 2026): one new site (components/journey-brief/journey-brief-
+    // manchester-mumbai.tsx, new event 'journey_brief_live_price_click',
+    // source: 'journey-brief') — same route+source shape as every other
+    // site here, gated behind FOUNDER_DASHBOARD_ENABLED like every other
+    // founder-only surface. 8 → 9.
     const tripcomSites = sites.filter((s) => s.label === 'properties={{...}}' && s.raw.includes('source:'));
-    expect(tripcomSites.length).toBe(8);
+    expect(tripcomSites.length).toBe(9);
     for (const s of tripcomSites) {
       expect(s.props.length, `${s.file}: ${s.raw}`).toBe(2);
       expect(s.raw).toMatch(/route:/);
