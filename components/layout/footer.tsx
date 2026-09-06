@@ -62,10 +62,21 @@ export function Footer() {
   );
 }
 
+/**
+ * Heading-structure fix (6 Sept 2026, full-site crawl finding): promoted
+ * from h3 to h2, not just to fix the two pages where it produced a real
+ * H1->H3 skip (/quote-request, /travel-club, which have no other H2). The
+ * footer has exactly one call site (app/layout.tsx) and always renders as
+ * its own <footer> landmark after every page's main content, already
+ * distinctly labelled via each column's own <nav aria-label>. It's never
+ * nested inside a main-content H2 section on any page, so it's structurally
+ * a sibling of the page's own top-level sections, not their child -- h2 is
+ * the semantically correct level everywhere, not a page-specific patch.
+ */
 function FooterColumn({ title, links }: { title: string; links: { label: string; href: string }[] }) {
   return (
     <nav aria-label={title}>
-      <h3 className="text-xs font-semibold uppercase tracking-wide text-ink-300">{title}</h3>
+      <h2 className="text-xs font-semibold uppercase tracking-wide text-ink-300">{title}</h2>
       <ul className="mt-4 flex flex-col gap-3">
         {links.map((link) => (
           <li key={link.href}>

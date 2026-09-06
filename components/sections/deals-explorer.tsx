@@ -94,8 +94,14 @@ export function DealsExplorer() {
         </p>
 
         <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {/* Heading-structure fix (6 Sept 2026, full-site crawl finding):
+              /deals is a flat filterable grid with no section heading of
+              its own — each card's route label is the first heading-level
+              content after the page's H1, so it must be H2 here, not
+              DealCard's usual H3 (correct at every other call site, where
+              a real section H2 already precedes it). */}
           {filtered.map((deal) => (
-            <DealCard key={deal.id} deal={deal} />
+            <DealCard key={deal.id} deal={deal} headingLevel="h2" />
           ))}
         </div>
       </div>

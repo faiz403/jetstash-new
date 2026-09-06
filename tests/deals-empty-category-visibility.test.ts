@@ -159,9 +159,9 @@ describe('getVisibleFilters — a category reappears automatically once populate
 });
 
 describe('rendering — no blank containers, unchanged card/link/affiliate behaviour (requirements 7, 8, 10, 11, 13)', () => {
-  it('7/8. every deal still renders via the same untouched DealCard, keyed by its own id, from the full filtered list — no card, link or affiliate wiring touched', () => {
+  it('7/8. every deal still renders via the same DealCard, keyed by its own id, from the full filtered list — no card, link or affiliate wiring touched (headingLevel="h2" is the 6 Sept 2026 heading-structure fix, not card/link/affiliate wiring)', () => {
     expect(explorerSrc).toContain('{filtered.map((deal) => (');
-    expect(explorerSrc).toContain('<DealCard key={deal.id} deal={deal} />');
+    expect(explorerSrc).toContain('<DealCard key={deal.id} deal={deal} headingLevel="h2" />');
   });
 
   it('10. hidden categories leave nothing behind — the tab row is a single .map() over the now-filtered list, not a fixed-size layout with placeholders', () => {

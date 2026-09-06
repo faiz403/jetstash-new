@@ -23,7 +23,24 @@ const severityStyles: Record<RouteWarningSeverity, { icon: React.ReactNode; icon
   },
 };
 
-/** Renders active route warnings — a route with no active warnings renders nothing, not an empty section. */
+/**
+ * Renders active route warnings — a route with no active warnings renders
+ * nothing, not an empty section.
+ *
+ * Heading-structure fix (6 Sept 2026, full-site crawl finding): the
+ * warning title is h2, not h3. WarningBanner has exactly one call site
+ * (app/routes/[slug]/page.tsx) and FareSignal -- the only unconditionally
+ * rendered content between the page's H1 and this banner -- renders no
+ * heading of its own in any state; the Route Status/Journey Choice
+ * sections that can precede it are each independently gated and don't
+ * render for a route in this one's situation (leeds-bradford-islamabad:
+ * disputed status, no journeyChoice). So this banner is effectively
+ * always the first heading-bearing content after H1 whenever it renders,
+ * not a subordinate of an established section -- h2 reflects that
+ * directly, rather than assuming h3 from the previous single reproduced
+ * page alone. On a route where Route Status's own h2 does render first,
+ * this simply becomes a sibling h2, which is not a skip.
+ */
 export function WarningBanner({ warnings }: { warnings: RouteWarning[] }) {
   const active = warnings.filter((w) => w.status === 'active');
   if (active.length === 0) return null;
@@ -37,7 +54,7 @@ export function WarningBanner({ warnings }: { warnings: RouteWarning[] }) {
             <div className={cn('flex h-9 w-9 shrink-0 items-center justify-center rounded-sm', style.iconWrap)}>{style.icon}</div>
             <div>
               <span className="text-xs font-semibold uppercase tracking-wide text-ink-400">{style.label}</span>
-              <h3 className="mt-0.5 font-display text-lg text-ink-900">{warning.title}</h3>
+              <h2 className="mt-0.5 font-display text-lg text-ink-900">{warning.title}</h2>
               <p className="mt-1.5 max-w-2xl text-sm leading-relaxed text-ink-700">{warning.body}</p>
             </div>
           </div>

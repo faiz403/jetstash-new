@@ -42,7 +42,20 @@ const cabinLabel: Record<DealCabin, string> = {
   Business: 'Business class',
 };
 
-export function DealCard({ deal, nowIso }: { deal: Deal; nowIso?: string }) {
+/**
+ * Heading-structure fix (6 Sept 2026, full-site crawl finding): DealCard's
+ * route-label eyebrow is genuinely subordinate to a real H2 at 7 of its 8
+ * call sites (route/destination/airport pages' "Fares we're tracking...",
+ * region hubs, business-class, umrah, family-holidays), where h3 is
+ * correct. /deals is the one exception — a flat filterable grid with no
+ * section heading of its own to be subordinate to (confirmed: no natural
+ * H2 exists there to invent one for, matching the /airports precedent).
+ * headingLevel lets that one caller say so explicitly, rather than
+ * guessing from the route/page name — default stays 'h3', the correct
+ * level everywhere else.
+ */
+export function DealCard({ deal, nowIso, headingLevel = 'h3' }: { deal: Deal; nowIso?: string; headingLevel?: 'h2' | 'h3' }) {
+  const RouteHeading = headingLevel;
   // Optional injection seam for deterministic tests only — production
   // callers pass nothing and get the exact prior behaviour (today's real
   // date). Never pass an explicit value from application code.
@@ -123,10 +136,10 @@ export function DealCard({ deal, nowIso }: { deal: Deal; nowIso?: string }) {
       </div>
 
       <div className="flex items-center justify-between border-b border-ink-100 px-5 py-3">
-        <h3 className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-ink-400">
+        <RouteHeading className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-ink-400">
           <Plane className="h-3.5 w-3.5" strokeWidth={2.25} />
           {deal.fromCity} → {deal.toCity}
-        </h3>
+        </RouteHeading>
         <span className="text-xs font-medium text-ink-500">{cabinLabel[deal.cabin]}</span>
       </div>
 
