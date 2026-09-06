@@ -88,6 +88,23 @@ export function JourneyBriefManchesterMumbai() {
   // free — this ref+effect only adds the missing focus outcome.
   const fromFieldRef = useRef<HTMLSelectElement>(null);
   const [focusEntryOnReturn, setFocusEntryOnReturn] = useState(false);
+  // Result-viewport fix (6 Sept 2026, founder-directed following a 5-person
+  // usability failure investigation): the entry form lives inside the same
+  // dark hero as the h1/backdrop image. On submit, that tall form unmounts
+  // and the hero collapses (measured: 1336px -> 373px at 320px width) while
+  // the browser leaves scrollY exactly where it was — wherever the user had
+  // scrolled to reach the button. On mobile that stranded the viewport deep
+  // inside the newly-reflowed page, well past the result's own heading, in
+  // some cases still inside the now-much-shorter hero showing nothing but
+  // the dimmed backdrop image. resultSectionRef/resultHeadingRef below are
+  // the two-part fix: scroll the result card's own top into view (so
+  // "Journey Brief" is the first thing the reader sees, not blindly
+  // scrolling to page top), then move focus to its heading — the exact same
+  // ref+effect-after-commit pattern already established above for the
+  // return-to-entry direction, just for the forward direction, which never
+  // got the equivalent treatment.
+  const resultSectionRef = useRef<HTMLDivElement>(null);
+  const resultHeadingRef = useRef<HTMLHeadingElement>(null);
 
   const brief = useMemo(() => assembleManchesterMumbaiBrief(NOW_ISO), []);
 
@@ -102,6 +119,25 @@ export function JourneyBriefManchesterMumbai() {
       setFocusEntryOnReturn(false);
     }
   }, [stage, focusEntryOnReturn]);
+
+  // Runs after React has committed the 'result' render (a plain effect
+  // keyed on `stage`, not code run synchronously inside handleSubmit) —
+  // resultSectionRef/resultHeadingRef only resolve to real DOM nodes once
+  // that render has actually happened, which is exactly what this ordering
+  // guarantees. Re-fires on every entry->result transition, including
+  // resubmission after "Edit journey details".
+  useEffect(() => {
+    if (stage === 'result') {
+      // html { scroll-padding-top: 6rem } (app/globals.css) already keeps
+      // scroll targets clear of the sticky header site-wide — reused here
+      // rather than a new offset calculation local to this component.
+      resultSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      // preventScroll: focusing the heading must not trigger a second,
+      // competing scroll (the browser's own default focus-scroll
+      // behaviour) that could fight the scrollIntoView call above.
+      resultHeadingRef.current?.focus({ preventScroll: true });
+    }
+  }, [stage]);
 
   const hasEnteredTravelDetails = Boolean(isBritishPassport && departureDate && arrivalDate && returnDate && passportExpiryDate);
 
@@ -314,11 +350,16 @@ export function JourneyBriefManchesterMumbai() {
               order ──────────────────────────────────────────────────── */}
           <section className="bg-white py-8 sm:py-10" aria-labelledby="jb-heading">
             <div className="mx-auto max-w-content px-5 sm:px-8">
-              <div className="max-w-2xl rounded-md border border-ink-200 bg-sand-50 p-5 sm:p-6">
+              <div ref={resultSectionRef} className="max-w-2xl rounded-md border border-ink-200 bg-sand-50 p-5 sm:p-6">
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <p className="text-xs font-semibold uppercase tracking-[0.18em] text-terracotta-600">Journey Brief</p>
-                    <h2 id="jb-heading" className="mt-1 font-display text-2xl text-ink-900 sm:text-3xl">Manchester to Mumbai</h2>
+                    {/* tabIndex={-1}: programmatically focusable (via the
+                        effect above) without joining the normal Tab order —
+                        a heading isn't naturally interactive, and adding it
+                        to Tab order would be the "intrusive/unnatural
+                        keyboard behaviour" the fix must avoid. */}
+                    <h2 ref={resultHeadingRef} id="jb-heading" tabIndex={-1} className="mt-1 font-display text-2xl text-ink-900 sm:text-3xl">Manchester to Mumbai</h2>
                   </div>
                   {/* PR #233 product-acceptance correction: Finding 1 — a
                       real, keyboard-reachable way back to the entry form.
