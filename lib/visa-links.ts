@@ -10,12 +10,11 @@
  * from memory. Two link types:
  *
  *   'apply' — a genuine official online visa application portal exists.
- *   'info'  — entry is visa-free or visa-on-arrival, so there is nothing to
- *             apply for; this links to the official UK government entry-
- *             requirements page for that country instead (gov.uk/foreign-
- *             travel-advice/<country>/entry-requirements), per the rule
- *             that an information page is the correct link when no
- *             application exists.
+ *   'info'  — the correct action is to check current entry requirements,
+ *             either because there is no advance application or because
+ *             multiple purpose-dependent permission routes exist. This
+ *             links to the official UK government entry-requirements page
+ *             rather than steering every traveller into one route.
  *
  * JetStash is an independent travel guide, not a visa service — these links
  * exist to help visitors continue their own research on an official
@@ -61,10 +60,10 @@ export const visaLinks: VisaLink[] = [
   },
   {
     country: 'Saudi Arabia',
-    href: 'https://umrah.nusuk.sa/',
-    linkType: 'apply',
-    buttonLabel: 'Apply through the official website',
-    sourceName: 'Nusuk, Saudi Ministry of Hajj and Umrah',
+    href: 'https://www.gov.uk/foreign-travel-advice/saudi-arabia/entry-requirements',
+    linkType: 'info',
+    buttonLabel: 'Check current entry requirements',
+    sourceName: 'GOV.UK foreign travel advice — Saudi Arabia entry requirements',
   },
   {
     country: 'United Arab Emirates',

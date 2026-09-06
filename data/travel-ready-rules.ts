@@ -140,6 +140,8 @@ export interface TravelReadyRule {
 
 const VERIFIED = '2026-07-12';
 const REVIEW_DUE = '2027-01-12';
+const SAUDI_VERIFIED = '2026-09-06';
+const SAUDI_REVIEW_DUE = '2027-03-06';
 
 const GOVUK = (country: string, slug: string): TravelReadyOfficialSource => ({
   title: `GOV.UK foreign travel advice — ${country} entry requirements`,
@@ -154,11 +156,6 @@ const NADRA_POVS: TravelReadyOfficialSource = {
 const INDIA_EVISA: TravelReadyOfficialSource = {
   title: 'Government of India e-Visa portal',
   url: 'https://indianvisaonline.gov.in/evisa/',
-};
-
-const NUSUK: TravelReadyOfficialSource = {
-  title: 'Nusuk, Saudi Ministry of Hajj and Umrah',
-  url: 'https://umrah.nusuk.sa/',
 };
 
 const BANGLADESH_HC: TravelReadyOfficialSource = {
@@ -289,20 +286,20 @@ export const travelReadyRules: TravelReadyRule[] = [
     requirement: 'Your passport must have an expiry date at least 6 months after the date you arrive.',
     validityRequirement: { unit: 'calendar-months', value: 6, referenceEvent: 'arrival' },
     officialSource: GOVUK('Saudi Arabia', 'saudi-arabia'),
-    lastVerifiedDate: VERIFIED,
-    reviewDueDate: REVIEW_DUE,
+    lastVerifiedDate: SAUDI_VERIFIED,
+    reviewDueDate: SAUDI_REVIEW_DUE,
   },
   {
     id: 'sa-visa-requirement-british',
     country: 'Saudi Arabia',
     nationalityScope: 'british-passport',
     ruleType: 'visa-requirement',
-    requirement: 'Tourist e-visas and Electronic Travel Authorisations are available and can often be issued quickly, sometimes on arrival. Umrah visas must be booked through Nusuk and linked to confirmed hotel and transport bookings, with seasonal cut-off dates.',
+    requirement: 'Valid Saudi entry permission is required for a full British citizen passport. The right route depends on why you are travelling, how long you will stay and the conditions of each route. Current official guidance lists an electronic travel authorisation (ETA), tourist eVisa and electronic visa waiver among the electronic options. Where their conditions apply, these routes can cover Umrah outside the Hajj season; Hajj requires a separate Hajj visa.',
     visaRequired: true,
-    caveat: 'Neither GOV.UK nor Nusuk publish a guaranteed processing time. For Umrah travel specifically, check Nusuk directly for the current season’s visa cut-off date before booking flights.',
-    officialSource: NUSUK,
-    lastVerifiedDate: VERIFIED,
-    reviewDueDate: REVIEW_DUE,
+    caveat: "Based on the details you've entered, JetStash cannot determine your exact permission category because this check does not collect trip purpose or all route eligibility conditions. Check the current official requirements for your journey before travel.",
+    officialSource: GOVUK('Saudi Arabia', 'saudi-arabia'),
+    lastVerifiedDate: SAUDI_VERIFIED,
+    reviewDueDate: SAUDI_REVIEW_DUE,
   },
 
   // ── United Arab Emirates ────────────────────────────────────────────────

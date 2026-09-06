@@ -25,6 +25,16 @@ export interface Destination {
   familyVisitContent?: FamilyVisitContent;
 }
 
+/**
+ * General Saudi entry guidance shared by Jeddah and Madinah. These
+ * destination pages do not collect trip purpose, so they must not infer an
+ * Umrah-specific permission route. Rechecked against GOV.UK's Saudi entry
+ * and pilgrimage guidance and Saudi Arabia's official eVisa portal on
+ * 6 September 2026.
+ */
+export const SAUDI_ENTRY_NOTE =
+  "British passport holders need valid Saudi entry permission. The right route depends on the purpose and length of the trip and each route's conditions. Current official guidance lists electronic options including an ETA, tourist eVisa and electronic visa waiver; where their conditions apply, these can cover Umrah outside the Hajj season. Hajj requires a separate Hajj visa. Check the current official requirements for your journey before travel.";
+
 export const destinations: Destination[] = [
   // Pakistan
   {
@@ -319,7 +329,7 @@ export const destinations: Destination[] = [
     bestFor: ['Umrah', 'Pilgrimage', 'Heritage travel'],
     flightTimeFromUK: '6h direct from London Heathrow',
     ukAirports: ['london-heathrow', 'manchester', 'birmingham'],
-    visaNote: 'Umrah visa required; apply through an authorised UK travel provider or the Nusuk platform.',
+    visaNote: SAUDI_ENTRY_NOTE,
   },
   {
     slug: 'madinah',
@@ -333,7 +343,7 @@ export const destinations: Destination[] = [
     bestFor: ['Umrah', 'Pilgrimage'],
     flightTimeFromUK: '6h 15m direct from London Heathrow',
     ukAirports: ['london-heathrow', 'manchester'],
-    visaNote: 'Umrah visa required; apply through an authorised UK travel provider or the Nusuk platform.',
+    visaNote: SAUDI_ENTRY_NOTE,
   },
   // Secondary — Mediterranean & North Africa
   {
