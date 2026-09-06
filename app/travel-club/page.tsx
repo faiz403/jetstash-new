@@ -52,11 +52,21 @@ export default function TravelClubPage() {
   );
 }
 
+/**
+ * Heading-structure fix (6 Sept 2026, full-site crawl finding, residual
+ * defect completed on founder instruction): promoted h3 -> h2. This grid
+ * has no section heading of its own between it and the page's H1 —
+ * structurally the same shape as /airports' card grid (PR #238) and
+ * /deals' card grid (this same PR): each card is effectively its own
+ * top-level entry following H1, not a subordinate of an established
+ * section, so h2 is correct here too. FeatureCard is page-local, used
+ * only on this page.
+ */
 function FeatureCard({ icon, title, body }: { icon: React.ReactNode; title: string; body: string }) {
   return (
     <div className="rounded-md border border-ink-100 bg-sand-50 p-7 transition-all hover:-translate-y-1 hover:shadow-card-hover">
       <div className="flex h-10 w-10 items-center justify-center rounded-sm bg-terracotta-50 text-terracotta-600">{icon}</div>
-      <h3 className="mt-4 font-display text-lg text-ink-900">{title}</h3>
+      <h2 className="mt-4 font-display text-lg text-ink-900">{title}</h2>
       <p className="mt-1.5 text-sm leading-relaxed text-ink-500">{body}</p>
     </div>
   );
