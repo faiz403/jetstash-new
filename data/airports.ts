@@ -114,9 +114,21 @@ export const airports: Airport[] = [
     // (this file's ahmedabad entry, flightTimeFromUK) as part of the same
     // fix — this was a third, independent duplicate of the identical
     // underlying facts.
+    //
+    // Trust fix (6 Sept 2026, flagged during the Manchester airport audit,
+    // implemented separately): this list's own 'Ahmedabad' entry became
+    // stale by the same standard Route Verification Batch 2 (19 Aug 2026)
+    // already set for this exact field — london-gatwick-ahmedabad became
+    // `verification.status: 'unverified'` (Rolling Reverification Batch 4,
+    // 4 September 2026), postdating that cleanup pass, so it was never
+    // caught. description/whyThisAirport already correctly hedge Ahmedabad
+    // as "currently disputed" (fixed 5 Sept) — only this flat, unqualified
+    // list still presented it as an established route. Removed, not
+    // replaced: Dubai/Doha/Amritsar remain the airport's genuinely current
+    // long-haul entries.
     description:
       'A major leisure and long-haul airport south of London, with direct Gulf links and an established Amritsar service, alongside a currently disputed Ahmedabad service — check the exact departure airport before booking a Gujarat trip.',
-    longHaulRoutes: ['Dubai', 'Doha', 'Ahmedabad', 'Amritsar'],
+    longHaulRoutes: ['Dubai', 'Doha', 'Amritsar'],
     shortHaulHighlights: ['Barcelona', 'Rome', 'Malaga', 'Antalya', 'Agadir', 'Tangier'],
     whyThisAirport:
       'Gatwick works well as a Gulf gateway and Mediterranean leisure airport, with a confirmed direct Amritsar service, though not daily — check operating days before booking. Its Ahmedabad service currently has a genuine, unresolved conflict over which London airport Air India actually uses, so confirm the exact departure airport before assuming Gatwick. Birmingham\'s Amritsar route is a connection, not a direct flight. For Pakistan and Delhi/Mumbai-bound India travel specifically, Heathrow still has the wider network.',
