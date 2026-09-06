@@ -100,16 +100,25 @@ export const travellerTips: TravellerTip[] = [
     body: 'Other UK passport holders need the standard e-Visa, applied for at least 4 days ahead. Book it alongside flights rather than leaving it until closer to departure, especially around Navratri and Diwali.',
   },
   {
-    // Split per-route rather than scoped to the whole destination — this is
-    // specifically about the two DIRECT Amritsar services (Birmingham,
-    // Gatwick). Leeds Bradford and Manchester have no direct Amritsar
-    // service at all, so a "confirm the non-stop flight day" tip would
-    // directly contradict those routes' own "no direct service" copy.
-    id: 'birmingham-amritsar-reduced-frequency',
+    // Trust fix (6 Sept 2026, independent audit): this tip previously
+    // assumed Birmingham had a direct Amritsar service alongside Gatwick's
+    // genuinely-confirmed one (isDirect: true, verified 18 Aug 2026, PR
+    // #145's own doc comment above shows that was the belief when this
+    // file was first split per-route). Rolling Reverification later
+    // established birmingham-amritsar is connecting-only (isDirect: false,
+    // no verification block — see data/routes.ts) and the Gatwick airport
+    // page's own "direct Amritsar service shared with Birmingham" claim was
+    // already corrected for this during PR #231 (5 Sept) — this tip was the
+    // one surface that fix missed, since it lives in a different file.
+    // Rewritten to match the route's own canonical connecting status and
+    // its own intro/bookingWindowNote wording (check the actual hub, total
+    // journey time and baggage conditions) rather than inventing a specific
+    // hub, airline or connection guarantee this route's data doesn't state.
+    id: 'birmingham-amritsar-connecting-itinerary',
     scope: { routeSlug: 'birmingham-amritsar' },
     category: 'logistics',
-    title: 'Confirm the specific flight day before assuming a non-stop exists',
-    body: "Air India's direct Amritsar services run at reduced midweek frequency rather than daily. Confirm specific flight days before assuming a non-stop option exists on your preferred date.",
+    title: 'Compare the full connecting itinerary, not just a headline duration',
+    body: "Birmingham to Amritsar is a connecting service — Air India's current booking page does not show a direct flight. Check the specific connecting hub, total journey time and baggage conditions for your exact dates before booking, rather than assuming a single fixed routing.",
   },
   {
     id: 'gatwick-amritsar-reduced-frequency',
