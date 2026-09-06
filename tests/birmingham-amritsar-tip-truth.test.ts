@@ -15,12 +15,26 @@ import { travellerTips, getTipsForScope } from '@/data/traveller-tips';
  * own whyThisAirport copy during PR #231 (5 Sept) — this tip was the one
  * surface that fix missed.
  *
+ * Amendment (same day, founder review): the first fix still asserted an
+ * independent, time-sensitive fact of its own — "Air India's current
+ * booking page does not show a direct flight" — rather than staying
+ * subordinate to JetStash's own canonical route presentation. That
+ * recreated a smaller version of the exact "second source of truth for
+ * current service state" problem this fix exists to close. The tip now
+ * says only that JetStash *shows* the route as connecting (deferring to
+ * getEffectiveRoutePresentation(), not to any airline's own booking page),
+ * plus guidance already licensed by the route's own intro/bookingWindowNote.
+ *
  * These tests deliberately compare the tip against the ROUTE's actual
  * effective presentation (getEffectiveRoutePresentation, the same function
  * the public route page itself calls), not a hardcoded status string —
  * so this test keeps failing correctly if the route's directness or
  * verification state ever changes again, rather than silently going stale
- * the way the old tip did.
+ * the way the old tip did. They also guard the general principle, not one
+ * exact sentence: this tip (and by extension any future route-scoped tip)
+ * must not make an independent claim about what a specific airline's
+ * booking page currently shows — that is exactly the pattern that made
+ * the original version of this tip go stale.
  */
 
 const NOW_ISO = '2026-09-06';
@@ -60,20 +74,35 @@ describe('2. The traveller tip no longer contradicts the route\'s effective pres
     // sentence.
     if (presentation.status !== 'direct') {
       expect(tip.title).not.toMatch(/non-stop|direct\b/i);
-      expect(tip.body).not.toMatch(/non-stop|direct Amritsar service/i);
+      expect(tip.body).not.toMatch(/non-stop|direct Amritsar service|direct flight/i);
     }
+  });
+
+  it('agrees with the route\'s own effective presentation label rather than asserting its own status', () => {
+    // The tip must defer to JetStash's canonical presentation ("shown by
+    // JetStash as ...") rather than independently declaring a service
+    // state — so it should surface the same status word the route page
+    // itself renders, and do so as a description of what JetStash shows,
+    // not as a freestanding claim.
+    expect(tip.body.toLowerCase()).toContain(presentation.statusLabel.toLowerCase());
   });
 
   it('does not publish an unsupported frequency claim ("reduced midweek", "daily", or any specific day-of-week pattern)', () => {
     expect(tip.body).not.toMatch(/midweek|daily|weekly/i);
   });
 
-  it('states the connecting status plainly, matching the route\'s own presentation label', () => {
-    expect(tip.body).toMatch(/connecting service/i);
+  it('does not make an independent claim about what a specific airline\'s booking page currently shows', () => {
+    // This is the exact defect the founder's amendment targeted: the tip
+    // must not become a second source of truth for current service state
+    // by naming an airline or describing its booking page/website. It may
+    // rely on the route's own canonical presentation, nothing more.
+    expect(tip.body).not.toMatch(/air india/i);
+    expect(tip.body).not.toMatch(/booking page/i);
+    expect(tip.body).not.toMatch(/\bwebsite\b/i);
   });
 
-  it('only recommends checking things the route\'s own intro/bookingWindowNote already establish as unresolved (hub, journey time, baggage) — invents no airline, schedule, hub name, or baggage guarantee', () => {
-    expect(tip.body).toMatch(/connecting hub/i);
+  it('only recommends checking things the route\'s own intro/bookingWindowNote already establish as unresolved (connection point, journey time, baggage) — invents no airline, schedule, hub name, or baggage guarantee', () => {
+    expect(tip.body).toMatch(/connection point/i);
     expect(tip.body).toMatch(/journey time/i);
     expect(tip.body).toMatch(/baggage conditions/i);
     // No specific connection airport is named anywhere in this route's data

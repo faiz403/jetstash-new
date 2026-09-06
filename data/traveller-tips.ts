@@ -110,15 +110,23 @@ export const travellerTips: TravellerTip[] = [
     // page's own "direct Amritsar service shared with Birmingham" claim was
     // already corrected for this during PR #231 (5 Sept) — this tip was the
     // one surface that fix missed, since it lives in a different file.
-    // Rewritten to match the route's own canonical connecting status and
-    // its own intro/bookingWindowNote wording (check the actual hub, total
-    // journey time and baggage conditions) rather than inventing a specific
-    // hub, airline or connection guarantee this route's data doesn't state.
+    //
+    // Amendment (same day, founder review): the first fix still made its
+    // own separate, time-sensitive claim about what Air India's booking
+    // page currently shows — exactly the "second source of truth for
+    // current service state" pattern this fix exists to stop. This tip
+    // must stay strictly subordinate to JetStash's own canonical route
+    // presentation (getEffectiveRoutePresentation(), reused verbatim by
+    // the route-presentation test below) rather than asserting anything
+    // about the airline's own booking page independently. It recommends
+    // only what the route's own intro/bookingWindowNote already establish
+    // as unresolved (connection point, journey time, baggage) — no
+    // airline, schedule, hub, or baggage guarantee invented.
     id: 'birmingham-amritsar-connecting-itinerary',
     scope: { routeSlug: 'birmingham-amritsar' },
     category: 'logistics',
     title: 'Compare the full connecting itinerary, not just a headline duration',
-    body: "Birmingham to Amritsar is a connecting service — Air India's current booking page does not show a direct flight. Check the specific connecting hub, total journey time and baggage conditions for your exact dates before booking, rather than assuming a single fixed routing.",
+    body: 'Birmingham to Amritsar is currently shown by JetStash as a connecting journey. Check the connection point, total journey time and baggage conditions for your exact itinerary before booking, rather than assuming a single fixed routing.',
   },
   {
     id: 'gatwick-amritsar-reduced-frequency',
