@@ -61,7 +61,7 @@ export default function AirportsIndexPage() {
                     </span>
                   </div>
                   <div className="flex flex-1 flex-col p-6">
-                    <h3 className="font-display text-2xl text-ink-900">{airport.name}</h3>
+                    <h2 className="font-display text-2xl text-ink-900">{airport.name}</h2>
                     <div className="mt-3 flex flex-wrap items-center gap-2">
                       {airport.hasDirectLongHaul && (
                         <span className="inline-flex items-center gap-1.5 rounded-full bg-brass-50 px-2.5 py-0.5 text-xs font-semibold text-brass-700">

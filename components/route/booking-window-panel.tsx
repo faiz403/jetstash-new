@@ -18,7 +18,7 @@ export function BookingWindowPanel({ windows }: { windows: BookingWindow[] }) {
             <CalendarRange className="h-4 w-4 text-terracotta-600" strokeWidth={2} />
             <span className="text-xs font-semibold uppercase tracking-wide text-ink-400">{formatWeeks(window.weeksBeforeDeparture)}</span>
           </div>
-          <h4 className="mt-2 font-display text-base text-ink-900">{window.label}</h4>
+          <h3 className="mt-2 font-display text-base text-ink-900">{window.label}</h3>
           <p className="mt-1.5 text-sm leading-relaxed text-ink-500">{window.guidance}</p>
         </div>
       ))}
