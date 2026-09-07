@@ -71,7 +71,7 @@ export const airports: Airport[] = [
     region: 'West Midlands',
     description:
       'A key Midlands departure point with strong connections to the Gulf, Pakistan, and India, serving one of the UK\'s largest South Asian communities.',
-    longHaulRoutes: ['Dubai', 'Sharjah', 'Doha'],
+    longHaulRoutes: ['Dubai', 'Doha'],
     shortHaulHighlights: ['Malaga', 'Faro', 'Alicante', 'Antalya', 'Bodrum'],
     whyThisAirport:
       'Birmingham sits at the centre of the UK\'s largest concentration of British-Pakistani and British-Indian communities outside London, and its route network reflects that: strong Gulf-connecting options to both India and Pakistan, plus seasonal direct services that rotate by demand. For Midlands-based families, it avoids the drive to Heathrow — compare route, fare, parking and travel time for your own journey.',

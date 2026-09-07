@@ -128,7 +128,7 @@ describe('5 & 6. No unrelated airport data changed', () => {
     expect(manchesterAirport.servesCommunities).toEqual(['Manchester', 'Bolton', 'Rochdale', 'Oldham', 'Blackburn', 'Bradford (via M62 corridor)']);
   });
 
-  it('every other airport record is untouched by THIS fix', () => {
+  it('preserves the separately verified Gatwick and Birmingham route lists', () => {
     const others = airports.filter((a) => a.slug !== 'manchester');
     expect(others).toHaveLength(10);
     const gatwick = others.find((a) => a.slug === 'london-gatwick')!;
@@ -138,6 +138,6 @@ describe('5 & 6. No unrelated airport data changed', () => {
     // day, in its own follow-up task — this assertion reflects that fix,
     // not a change made by this PR.
     expect(gatwick.longHaulRoutes).toEqual(['Dubai', 'Doha', 'Amritsar']);
-    expect(birmingham.longHaulRoutes).toEqual(['Dubai', 'Sharjah', 'Doha']);
+    expect(birmingham.longHaulRoutes).toEqual(['Dubai', 'Doha']);
   });
 });
