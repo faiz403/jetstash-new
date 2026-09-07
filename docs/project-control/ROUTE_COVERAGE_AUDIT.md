@@ -1292,3 +1292,38 @@ The live, current Route Intelligence distribution is now **11 Strong / 77 Useful
 (previously 10 Strong / 78 Useful, 18 August 2026 — see above). The live, current fare-tracking
 figure remains **83 of 88** routes with a display-ready Fare Signal — this batch adds a second
 tracked cabin to four already-tracked routes, not a new route.
+
+## Canonical route addition — 7 September 2026 (London Gatwick–Doha)
+
+A genuine current direct Qatar Airways Gatwick–Doha service existed with no `data/routes.ts` Route
+record at all — Gatwick's own `longHaulRoutes` list (`data/airports.ts`) already named Doha, and
+Doha's other UK-origin sibling routes (`london-heathrow-doha`, `manchester-doha`, `birmingham-doha`)
+were already genuinely verified direct, but this specific pairing had never been added. A catalogue
+gap, not a public-copy trust defect.
+
+Independently reverified before adding: Qatar Airways' own "Book flights to Doha (DOH) from London
+Gatwick (LGW)" page (`qatarairways.com/en-gb/destinations/flights-to-doha/from-london-gatwick.html`)
+is live, matching the identical `from-<origin>.html` pattern already used as primary evidence for
+this airline's Heathrow-Doha and Manchester-Doha sibling records. Independently corroborated the
+same session via Qatar Airways' own live Flight Status system: flight QR330, Gatwick to Doha,
+status SCHEDULED, checked for 7 September 2026, departing 09:00 local London and arriving 17:40
+local Doha. Classified RECENT/CHANGING (30-day review window), matching `london-heathrow-doha`'s own
+current classification, since this is a first verification with no longer track record yet — see
+the route's own `verification.note` in `data/routes.ts` for the full evidence record.
+
+No specific weekly frequency or fixed flight duration is asserted — a single-day live-schedule
+observation doesn't support either claim durably, so `frequency` and `flightTime` both use the same
+evidence-bounded wording convention already established elsewhere in this file (e.g.
+`london-heathrow-doha`'s own "duration varies by schedule"). No Trip.com affiliate link exists for
+this route (Gatwick has no dashboard-generated link for this pairing); it fails closed with no
+booking CTA, exactly as the system already does for every other unsupported route — no link was
+manufactured to avoid this.
+
+The catalogue now contains **89 route guides** (88 plus this one addition). This route has no fare
+observation logged, so fare-tracking coverage is unaffected: **83 of 89** routes have a
+display-ready Fare Signal (was 83 of 88). Trip.com coverage is likewise unaffected in the numerator:
+**45 of 89** routes have an exact, dashboard-generated link (was 45 of 88).
+
+| Route slug | Grade |
+|---|---|
+| `london-gatwick-doha` | Useful |

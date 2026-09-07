@@ -104,6 +104,11 @@ const UNSUPPORTED_ROUTES = [
   // dateless link for either).
   'london-heathrow-lahore',
   'london-gatwick-dubai',
+  // Canonical route addition (7 September 2026): no TRIPCOM_ROUTE_URLS
+  // entry exists for this newly-added route — per instruction, no
+  // affiliate link was created to make one exist; it fails closed exactly
+  // as the system already does for every other unsupported route.
+  'london-gatwick-doha',
   // Final Route-Guide Completion, second evidence pass (13 August 2026):
   // none of these six have a route-level TRIPCOM_ROUTE_URLS entry either —
   // Birmingham has no dashboard-generated link for any of Dubai/Doha/
@@ -128,9 +133,9 @@ describe('every current route slug is classified exactly once', () => {
     expect(overlap).toEqual([]);
   });
 
-  it('is exactly 45 supported and 43 unsupported (43, not 35/37, after the Final Route-Guide Completion batch\'s two evidence passes added 8 more routes, none with a route-level Trip.com link)', () => {
+  it('is exactly 45 supported and 44 unsupported (44, not 43, after the 7 September 2026 canonical addition of london-gatwick-doha, which has no route-level Trip.com link)', () => {
     expect(SUPPORTED_ROUTES).toHaveLength(45);
-    expect(UNSUPPORTED_ROUTES).toHaveLength(43);
+    expect(UNSUPPORTED_ROUTES).toHaveLength(44);
   });
 });
 

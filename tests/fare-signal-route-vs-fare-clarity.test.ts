@@ -356,7 +356,7 @@ describe('full 88-route dataset safety check (Phase 8)', () => {
       unverifiedOrServiceEndedNoCallout: unverifiedNoCallout,
     });
 
-    expect(total).toBe(88);
+    expect(total).toBe(89);
     expect(mismatchRendered).toBe(mismatchExpected);
     // Every route accounted for in exactly one bucket.
     expect(mismatchRendered + matchNoCallout + noFareNoCallout + unverifiedNoCallout).toBe(total);
@@ -442,12 +442,18 @@ describe('full 88-route dataset safety check (Phase 8)', () => {
     // instead (a service-ended route's Fare Signal is suppressed exactly
     // like an unverified one). Moves both routes from the unverified
     // bucket into the noFare bucket; the total is unchanged.
+    //
+    // noFare 9 -> 10 (canonical route addition, 7 September 2026): the new
+    // london-gatwick-doha route is genuinely 'direct' (verified) but has no
+    // fare observation of its own, so fareDirectness is null and it falls
+    // into noFare — the same bucket every other fare-less route already
+    // uses. Total 88 -> 89.
     expect(directConnectingFare).toBe(49);
     expect(directDirectFare).toBe(13);
     expect(connectingConnectingFare).toBe(12);
     expect(connectingDirectFare).toBe(0);
-    expect(noFare).toBe(9);
+    expect(noFare).toBe(10);
     expect(unverified).toBe(5);
-    expect(directConnectingFare + directDirectFare + connectingConnectingFare + connectingDirectFare + noFare + unverified).toBe(88);
+    expect(directConnectingFare + directDirectFare + connectingConnectingFare + connectingDirectFare + noFare + unverified).toBe(89);
   });
 });

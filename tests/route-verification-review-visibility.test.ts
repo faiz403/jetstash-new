@@ -176,12 +176,14 @@ describe('G. No network/provider/Brevo dependency exists in the new section', ()
 });
 
 describe('H. Real current archive reconciliation matches the independently computed counts', () => {
-  it('exactly 77 routes carry a verification record', () => {
+  it('exactly 78 routes carry a verification record', () => {
     // 76 -> 77 (3 September 2026): london-heathrow-jeddah gained a
     // route-level verification for the first time (TR-010, Round 4) --
     // previously it had only per-airline airlineVerifications entries and no
-    // route-level record at all.
-    expect(routes.filter((r) => r.verification)).toHaveLength(77);
+    // route-level record at all. 77 -> 78 (7 September 2026): the new
+    // london-gatwick-doha canonical route addition carries its own
+    // route-level verification record from the start.
+    expect(routes.filter((r) => r.verification)).toHaveLength(78);
   });
 
   it('the dashboard\'s overdue/due-soon/healthy counts match an independent recomputation from live route data as of today', () => {
@@ -239,7 +241,7 @@ describe('H. Real current archive reconciliation matches the independently compu
     expect(summaryRow).toBeDefined();
   });
 
-  it('verified/unverified split: COV-001 (21 August 2026) moved 4 routes from unverified to verified, and london-heathrow-jeddah later gained its first route-level record', () => {
+  it('verified/unverified split: COV-001 (21 August 2026) moved 4 routes from unverified to verified, london-heathrow-jeddah later gained its first route-level record, and london-gatwick-doha was added as a genuinely verified canonical route', () => {
     // manchester-karachi, birmingham-lahore, birmingham-islamabad and
     // birmingham-delhi moved from unverified to verified-connecting — see
     // docs/project-control/ROUTE_VERIFICATION_CADENCE_POLICY.md, Batch 3.
@@ -247,14 +249,17 @@ describe('H. Real current archive reconciliation matches the independently compu
     // September 2026, TR-010 Round 4), london-heathrow-jeddah gained a
     // route-level verification for the first time (previously per-airline
     // only), taking the total to 77 and verified to 72; unverified is
-    // unaffected at 5.
+    // unaffected at 5. 7 September 2026: london-gatwick-doha added as a
+    // new, independently-verified direct route (see
+    // docs/project-control/ROUTE_COVERAGE_AUDIT.md's own addendum), taking
+    // the total to 78 and verified to 73; unverified remains 5.
     const withVerification = routes.filter((r) => r.verification);
     const verified = withVerification.filter((r) => r.verification!.status === 'verified');
     const unverified = withVerification.filter((r) => r.verification!.status !== 'verified');
 
-    expect(withVerification).toHaveLength(77);
-    expect(verified.length + unverified.length).toBe(77);
-    expect(verified.length).toBe(72);
+    expect(withVerification).toHaveLength(78);
+    expect(verified.length + unverified.length).toBe(78);
+    expect(verified.length).toBe(73);
     expect(unverified.length).toBe(5);
   });
 });

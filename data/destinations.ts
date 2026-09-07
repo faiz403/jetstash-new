@@ -314,7 +314,15 @@ export const destinations: Destination[] = [
       'Doha combines the Museum of Islamic Art, Souq Waqif and public beaches with a Gulf city break. It can be a stopover or a destination in its own right, so check whether your plans include time in the city or only a flight connection.',
     bestFor: ['Stopovers', 'Culture', 'Family holidays'],
     flightTimeFromUK: '6h 30m direct from London Heathrow',
-    ukAirports: ['london-heathrow', 'manchester', 'birmingham'],
+    // Canonical route addition (7 Sept 2026): london-gatwick-doha added to
+    // data/routes.ts as a genuine, independently-verified direct Qatar
+    // Airways route (see that record's own verification note) — added
+    // here so this destination's UK-airport list matches the route
+    // inventory it's meant to reflect. flightTimeFromUK is unchanged: this
+    // field only ever names one UK airport per its own established
+    // convention (see lib/destination-flight-time.ts), and Heathrow's
+    // figure remains independently accurate on its own terms.
+    ukAirports: ['london-heathrow', 'london-gatwick', 'manchester', 'birmingham'],
     visaNote: 'Visa on arrival for UK passport holders, free for stays up to 30 days.',
   },
   {

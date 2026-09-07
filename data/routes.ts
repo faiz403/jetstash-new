@@ -1839,6 +1839,44 @@ export const routes: Route[] = [
     peakPeriodIds: ['baisakhi', 'diwali', 'uk-summer-holidays'],
   },
   {
+    // Canonical route addition (7 Sept 2026): a genuine current direct
+    // Qatar Airways Gatwick-Doha service existed in Manchester's and
+    // Heathrow's own sibling records' evidence pattern (see
+    // manchester-doha, london-heathrow-doha) but had no Route record of
+    // its own — Gatwick's own longHaulRoutes list (data/airports.ts)
+    // already named Doha without any backing Route, the same class of
+    // catalogue gap already found and fixed for Karachi/Madinah elsewhere
+    // this session, but here the underlying service is genuinely real
+    // rather than unsupported. Independently reverified before adding,
+    // per this file's own verification note below.
+    slug: 'london-gatwick-doha',
+    airportSlug: 'london-gatwick',
+    destinationSlug: 'doha',
+    // Deliberately not a specific duration, matching london-heathrow-doha's
+    // own established wording for this exact city pair — a single-day
+    // flight-status observation supports a real flight (see verification
+    // note) but not a durable "typical duration" claim across the wider
+    // schedule.
+    flightTime: 'Direct; duration varies by schedule',
+    // Deliberately no specific weekly/daily figure — see verification note.
+    frequency: 'Qatar Airways confirmed direct; exact current weekly frequency not independently reconfirmed — see note.',
+    airlineSlugs: ['qatar-airways'],
+    isDirect: true,
+    verification: {
+      status: 'verified',
+      sourceName: "Qatar Airways' own official Gatwick-Doha booking route, corroborated by the airline's own live Flight Status system",
+      sourceUrl: 'https://www.qatarairways.com/en-gb/destinations/flights-to-doha/from-london-gatwick.html',
+      verifiedDate: '2026-09-07',
+      reviewDueDate: '2026-10-07',
+      note: "Canonical route addition (7 September 2026): Qatar Airways' own dedicated \"Book flights to Doha (DOH) from London Gatwick (LGW)\" page is live, matching the identical from-<origin>.html pattern already used as primary evidence for this airline's Heathrow-Doha and Manchester-Doha sibling records. Independently corroborated the same session via Qatar Airways' own live Flight Status search (fs.qatarairways.com/flightstatus): flight QR330, Gatwick (LGW) to Doha (DOH), status SCHEDULED, checked for 7 September 2026 (the same day), departing 09:00 local London and arriving 17:40 local Doha. This is a single-day live-schedule observation, not a published multi-day frequency table, so no specific weekly frequency is asserted from it and this is classified RECENT/CHANGING (30-day window) rather than STABLE for this first verification, per the locked verification cadence policy — matching london-heathrow-doha's own current classification for the same reason (a newly-added record gets the cautious window; a longer verification history can earn STABLE later). Qatar Airways' generic 'flights to Doha from London' marketing page resolves to Heathrow only and does not mention Gatwick, so it was not used as evidence for this specific pairing.",
+    },
+    intro:
+      'Qatar Airways operates a direct Gatwick to Doha service, confirmed via the airline\'s own booking route and live flight-status system. Check the current schedule directly with Qatar Airways before booking.',
+    bookingWindowNote:
+      'No route-specific demand pattern has been independently established yet for this pairing — compare fares and schedule for your own dates before booking.',
+    peakPeriodIds: [],
+  },
+  {
     slug: 'manchester-delhi',
     airportSlug: 'manchester',
     destinationSlug: 'delhi',

@@ -210,10 +210,12 @@ describe('no evidence or trust wording was accidentally lost — full 88-route s
       if (hasFailClosedText) failClosed += 1;
     }
     // 63 routes have a verified Trip.com link (unchanged by this fix — see
-    // the 21 Aug 2026 Trip.com dated-handoff readiness audit), 25 do not.
+    // the 21 Aug 2026 Trip.com dated-handoff readiness audit), 26 do not
+    // (25, plus the 7 September 2026 canonical addition of
+    // london-gatwick-doha, which has no route-level Trip.com link).
     expect(withCta).toBe(63);
-    expect(failClosed).toBe(25);
-    expect(withCta + failClosed).toBe(88);
+    expect(failClosed).toBe(26);
+    expect(withCta + failClosed).toBe(89);
   });
 
   it('the PR #155 Route Service distinction is completely unaffected by this fix — the mismatch counts from that audit still hold', () => {
@@ -282,11 +284,16 @@ describe('no evidence or trust wording was accidentally lost — full 88-route s
     // exists for both routes, so at this test's own 31 August boundary
     // their presentation.status is 'service-ended', not 'unverified' —
     // they fall into the noFare bucket instead. Total unchanged.
+    //
+    // noFare 9 -> 10 (canonical route addition, 7 September 2026): the new
+    // london-gatwick-doha route is genuinely 'direct' but has no fare
+    // observation, so it falls into noFare — see the identical update in
+    // tests/fare-signal-route-vs-fare-clarity.test.ts.
     expect(directConnectingFare).toBe(49);
     expect(directDirectFare).toBe(13);
     expect(connectingConnectingFare).toBe(12);
     expect(connectingDirectFare).toBe(0);
-    expect(noFare).toBe(9);
+    expect(noFare).toBe(10);
     expect(unverified).toBe(5);
   });
 });
