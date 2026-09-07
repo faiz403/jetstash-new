@@ -119,12 +119,13 @@ describe('11. No fares/affiliate/Travel Ready/verification-of-other-routes data 
     expect(gatwickDoha).toHaveLength(1);
   });
 
-  it('Gatwick and Doha airport/destination records are otherwise unchanged', () => {
+  it('Gatwick and Doha route data is preserved while Doha entry copy is precisely scoped', () => {
     const gatwick = airports.find((a) => a.slug === 'london-gatwick')!;
     expect(gatwick.longHaulRoutes).toContain('Doha'); // pre-existing entry, untouched
     expect(gatwick.description).toContain('currently disputed Ahmedabad service'); // untouched prose, unrelated finding
     const doha = getDestinationBySlug('doha')!;
     expect(doha.description).toContain('Museum of Islamic Art');
-    expect(doha.visaNote).toBe('Visa on arrival for UK passport holders, free for stays up to 30 days.');
+    expect(doha.visaNote).toMatch(/full British Citizen passport/i);
+    expect(doha.visaNote).toMatch(/30 days initially/i);
   });
 });

@@ -301,7 +301,8 @@ export const destinations: Destination[] = [
     bestFor: ['Family holidays', 'Stopovers', 'Shopping', 'Beach'],
     flightTimeFromUK: '7h direct from most UK airports',
     ukAirports: ['manchester', 'glasgow', 'edinburgh', 'newcastle', 'london-heathrow', 'birmingham', 'london-gatwick'],
-    visaNote: 'Visa on arrival for UK passport holders, free for stays up to 30 days.',
+    visaNote:
+      'Current GOV.UK guidance says travellers using a full British Citizen passport can receive visitor or tourist permission free on arrival for up to 90 days within a 180-day period. The allowance may be continuous or split across multiple visits. Check the current official requirements for your circumstances before travel.',
   },
   {
     slug: 'doha',
@@ -323,7 +324,8 @@ export const destinations: Destination[] = [
     // convention (see lib/destination-flight-time.ts), and Heathrow's
     // figure remains independently accurate on its own terms.
     ukAirports: ['london-heathrow', 'london-gatwick', 'manchester', 'birmingham'],
-    visaNote: 'Visa on arrival for UK passport holders, free for stays up to 30 days.',
+    visaNote:
+      'For tourism, travellers using a full British Citizen passport can receive free visitor permission on arrival for up to 30 days initially. Longer stays need an extension before expiry. Check the current official requirements for your circumstances before travel.',
   },
   {
     slug: 'jeddah',
