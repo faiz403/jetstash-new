@@ -7,9 +7,10 @@ import { getRouteByAirportAndDestination, routes } from '@/data/routes';
 
 /**
  * Trust fix (7 September 2026): London Heathrow's manually maintained
- * `longHaulRoutes` list named Karachi even though JetStash has no canonical
- * LHR-KHI Route record. The airport page renders this list verbatim under
- * "All long-haul routes", so the unqualified entry read as a current route.
+ * `longHaulRoutes` list named Karachi and Madinah even though JetStash has no
+ * canonical LHR-KHI or LHR-MED Route record. The airport page renders this
+ * list verbatim under "All long-haul routes", so each unqualified entry read
+ * as a current route.
  * Earlier Heathrow-Karachi Deal records had already been removed for the
  * same lack of supporting evidence.
  */
@@ -17,15 +18,16 @@ import { getRouteByAirportAndDestination, routes } from '@/data/routes';
 const heathrow = getAirportBySlug('london-heathrow')!;
 const airportPageSource = readFileSync(join(process.cwd(), 'app/airports/[slug]/page.tsx'), 'utf8');
 
-describe('Heathrow-Karachi airport-list trust fix', () => {
-  it('does not present Karachi in Heathrow\'s public long-haul route list', () => {
+describe('Heathrow Karachi and Madinah airport-list trust fix', () => {
+  it('does not present Karachi or Madinah in Heathrow\'s public long-haul route list', () => {
     expect(airportPageSource).toContain('All long-haul routes');
     expect(airportPageSource).toContain('airport.longHaulRoutes.map');
     expect(heathrow.longHaulRoutes).not.toContain('Karachi');
+    expect(heathrow.longHaulRoutes).not.toContain('Madinah');
   });
 
-  it('preserves every other Heathrow long-haul entry and its surrounding airport fields', () => {
-    expect(heathrow.longHaulRoutes).toEqual(['Delhi', 'Mumbai', 'Lahore', 'Dubai', 'Doha', 'Jeddah', 'Madinah']);
+  it('preserves every valid Heathrow long-haul entry and its surrounding airport fields', () => {
+    expect(heathrow.longHaulRoutes).toEqual(['Delhi', 'Mumbai', 'Lahore', 'Dubai', 'Doha', 'Jeddah']);
     expect(heathrow.name).toBe('London Heathrow');
     expect(heathrow.code).toBe('LHR');
     expect(heathrow.city).toBe('London');
@@ -33,9 +35,10 @@ describe('Heathrow-Karachi airport-list trust fix', () => {
     expect(heathrow.hasDirectLongHaul).toBe(true);
   });
 
-  it('does not add or alter route inventory to manufacture LHR-KHI support', () => {
+  it('does not add or alter route inventory to manufacture LHR-KHI or LHR-MED support', () => {
     expect(routes).toHaveLength(88);
     expect(getRouteByAirportAndDestination('london-heathrow', 'karachi')).toBeUndefined();
+    expect(getRouteByAirportAndDestination('london-heathrow', 'madinah')).toBeUndefined();
     expect(getRouteByAirportAndDestination('london-heathrow', 'lahore')?.slug).toBe('london-heathrow-lahore');
     expect(getRouteByAirportAndDestination('london-heathrow', 'jeddah')?.slug).toBe('london-heathrow-jeddah');
   });
@@ -47,6 +50,12 @@ describe('Heathrow-Karachi airport-list trust fix', () => {
       city: 'Karachi',
       country: 'Pakistan',
       region: 'pakistan',
+    });
+    expect(destinations.find((destination) => destination.slug === 'madinah')).toMatchObject({
+      iataCode: 'MED',
+      city: 'Madinah',
+      country: 'Saudi Arabia',
+      region: 'gulf',
     });
   });
 

@@ -86,7 +86,7 @@ export const airports: Airport[] = [
     region: 'Greater London',
     description:
       'The UK\'s primary long-haul hub, with the widest choice of direct flights to India, Pakistan, the Gulf and beyond on full-service carriers.',
-    longHaulRoutes: ['Delhi', 'Mumbai', 'Lahore', 'Dubai', 'Doha', 'Jeddah', 'Madinah'],
+    longHaulRoutes: ['Delhi', 'Mumbai', 'Lahore', 'Dubai', 'Doha', 'Jeddah'],
     shortHaulHighlights: ['Rome', 'Lisbon', 'Athens'],
     whyThisAirport:
       'Heathrow is the only UK airport with direct, daily, multi-carrier competition on the India and Pakistan corridors, which matters for price, because genuine airline competition, rather than a single operator with a route monopoly, is what keeps fares honest. It\'s also the principal UK gateway for Umrah travel to Jeddah and Madinah.',
