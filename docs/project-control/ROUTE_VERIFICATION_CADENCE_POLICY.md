@@ -264,3 +264,35 @@ contradict the current Heathrow claim, so it was not reclassified DISPUTED, but 
 RECENT/CHANGING window reflects the genuine new uncertainty this represents. Heathrow's own
 airline/terminal listing (the prior corroborating source) 404'd on every URL attempted this session
 and was not independently re-checked.
+
+### Batch 5 -- 8 September 2026 (12 September final five)
+
+Batch 4 left five routes genuinely unresolved rather than administratively extended: three
+Leeds Bradford Turkey routes with evidence too thin to classify, and two Gatwick Morocco routes
+backed only by a stale 19 May 2025 press release. This batch resolves all five with genuinely live,
+current operational evidence rather than re-reading the same static pages:
+
+| Route | Outcome | New window |
+|---|---|---:|
+| Leeds Bradford-Antalya | **Resolved -- live departures board confirms flight LS213 (Jet2), today** | RECENT/CHANGING, 30d |
+| Leeds Bradford-Dalaman | **Resolved -- live departures board confirms flight LS413 (Jet2), today** | RECENT/CHANGING, 30d |
+| Leeds Bradford-Bodrum | **Resolved -- live departures board confirms flight LS215 (Jet2), today; Jet2 named for the first time** | RECENT/CHANGING, 30d |
+| London Gatwick-Marrakech | **Resolved -- live flight-search system confirms two easyJet flights (EZY8705, EZY8709), today; easyJet named for the first time** | RECENT/CHANGING, 30d |
+| London Gatwick-Agadir | Genuinely live search attempted, found zero flights today -- left to fail closed, not administratively extended | unchanged (2026-09-12) |
+
+**The key evidence source: Leeds Bradford Airport's own live departures board
+(leedsbradfordairport.co.uk/flights/departures) and London Gatwick's own live flight-search system
+(gatwickairport.com/flights?destination=D), both queried directly today rather than re-reading
+static marketing pages.** These are exactly the cadence policy's "airport official current flight
+board" evidence category -- a real, timestamped, numbered scheduled flight is materially stronger
+continuity evidence than a "Book with X" link, because it proves the service is actually operating
+today, not merely that the airport's marketing page still lists the destination.
+
+**London Gatwick-Agadir remains genuinely unresolved, and this is the correct outcome, not a stalled
+one.** A real, current, live search (both the exact term "Agadir" and the partial term "Agad")
+returned zero matching flights today on the same system that successfully confirmed
+london-gatwick-marrakech the same session. This does not prove the route no longer operates -- an
+unmatched single day on a leisure route that may not fly daily is not proof of non-operation -- but
+it also does not positively reconfirm it. Per this policy's own rule, a route that cannot be
+reconfirmed is never administratively extended: the record is left to fail closed on its existing
+2026-09-12 date.

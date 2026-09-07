@@ -4,17 +4,19 @@ import { getEffectiveRoutePresentation } from '@/lib/route-status-copy';
 import { routeStatusEvents } from '@/data/route-status-events';
 
 /**
- * Route Verification Refresh, 12 September due-soon batch (7 September 2026).
+ * Route Verification, 12 September due-soon batch.
  *
- * Covers the 15 routes the Founder dashboard listed as "Review due 12 September 2026":
- * Manchester/Leeds Bradford/London Gatwick x Dalaman/Bodrum/Antalya/Izmir, plus
- * Manchester/Bristol/London Gatwick-Marrakech, London Gatwick-Agadir, and
- * London Heathrow-Casablanca.
+ * Two passes: the 7 September refresh covered the 15 routes the Founder
+ * dashboard listed as "Review due 12 September 2026"; the 8 September
+ * "final five" follow-up resolved the five records the first pass had
+ * deliberately left unresolved rather than administratively extended
+ * (three thin-but-verified Leeds Bradford Turkey routes, and two Gatwick
+ * Morocco routes backed only by stale evidence).
  *
- * Not every route was reclassified — several were rechecked and found either
- * genuinely unchanged (left untouched) or with only stale evidence available
- * (also left untouched, deliberately not administratively extended). This file
- * proves both outcomes are correct, not just the routes that changed.
+ * Not every route was reclassified — several were rechecked and found
+ * genuinely unchanged, or (for one route) still lacking any genuinely
+ * current, non-stale evidence even after a real live-search attempt. This
+ * file proves every outcome is correct, not just the routes that changed.
  */
 
 const NOW_ISO = '2026-09-08';
@@ -48,12 +50,11 @@ describe('1. All 15 due-soon routes have an evidence-backed current state', () =
 });
 
 describe('2. Renewed routes have a correct fresh verifiedDate', () => {
-  const renewedSlugs = [
+  const renewed0907 = [
     'manchester-dalaman',
     'manchester-bodrum',
     'manchester-antalya',
     'manchester-izmir',
-    'leeds-bradford-dalaman',
     'london-gatwick-dalaman',
     'london-gatwick-bodrum',
     'london-gatwick-izmir',
@@ -62,21 +63,32 @@ describe('2. Renewed routes have a correct fresh verifiedDate', () => {
     'london-heathrow-casablanca',
   ];
 
-  it.each(renewedSlugs)('%s has verifiedDate 2026-09-07', (slug) => {
+  it.each(renewed0907)('%s has verifiedDate 2026-09-07 (7 September refresh)', (slug) => {
     const route = getRouteBySlug(slug)!;
     expect(route.verification?.verifiedDate, slug).toBe('2026-09-07');
   });
 
-  const untouchedSlugs = ['leeds-bradford-antalya', 'leeds-bradford-bodrum', 'london-gatwick-marrakech', 'london-gatwick-agadir'];
+  const renewed0908 = [
+    'leeds-bradford-antalya',
+    'leeds-bradford-dalaman',
+    'leeds-bradford-bodrum',
+    'london-gatwick-marrakech',
+  ];
 
-  it.each(untouchedSlugs)('%s keeps its prior verifiedDate — no genuine new fact was found to justify a fresh one', (slug) => {
+  it.each(renewed0908)('%s has verifiedDate 2026-09-08 (12 September final-five follow-up)', (slug) => {
     const route = getRouteBySlug(slug)!;
-    expect(route.verification?.verifiedDate, slug).not.toBe('2026-09-07');
+    expect(route.verification?.verifiedDate, slug).toBe('2026-09-08');
+  });
+
+  it('london-gatwick-agadir keeps its original verifiedDate — no genuinely current evidence was found even on a real live-search attempt', () => {
+    const route = getRouteBySlug('london-gatwick-agadir')!;
+    expect(route.verification?.verifiedDate).not.toBe('2026-09-07');
+    expect(route.verification?.verifiedDate).not.toBe('2026-09-08');
   });
 });
 
 describe('3. Renewed routes have a policy-compliant reviewDueDate', () => {
-  const recentChanging30d = [
+  const recentChanging0907 = [
     'manchester-dalaman',
     'manchester-bodrum',
     'manchester-antalya',
@@ -87,9 +99,16 @@ describe('3. Renewed routes have a policy-compliant reviewDueDate', () => {
     'london-heathrow-casablanca',
   ];
 
-  it.each(recentChanging30d)('%s is classified RECENT/CHANGING — 30-day window from the fresh verifiedDate', (slug) => {
+  it.each(recentChanging0907)('%s is classified RECENT/CHANGING — 30-day window from its 2026-09-07 verifiedDate', (slug) => {
     const route = getRouteBySlug(slug)!;
     expect(route.verification?.reviewDueDate, slug).toBe('2026-10-07');
+  });
+
+  const recentChanging0908 = ['leeds-bradford-antalya', 'leeds-bradford-dalaman', 'leeds-bradford-bodrum', 'london-gatwick-marrakech'];
+
+  it.each(recentChanging0908)('%s is classified RECENT/CHANGING — 30-day window from its 2026-09-08 verifiedDate', (slug) => {
+    const route = getRouteBySlug(slug)!;
+    expect(route.verification?.reviewDueDate, slug).toBe('2026-10-08');
   });
 
   const stable90d = ['manchester-marrakech', 'bristol-marrakech'];
@@ -100,33 +119,36 @@ describe('3. Renewed routes have a policy-compliant reviewDueDate', () => {
   });
 });
 
-describe('4. Unsupported/unresolved routes do not receive administrative extensions', () => {
-  it('leeds-bradford-dalaman gets a genuine operator-name upgrade, but reviewDueDate is NOT recalculated from the new verifiedDate', () => {
-    const route = getRouteBySlug('leeds-bradford-dalaman')!;
-    // The operator upgrade is real...
-    expect(route.verification?.verifiedDate).toBe('2026-09-07');
-    expect(route.airlineSlugs).toEqual(expect.arrayContaining(['jet2', 'tui']));
-    // ...but the review window itself is left exactly as it was, not pushed out
-    // to a fresh 30-day window merely because the record was reread today.
+describe('4. The one still-unresolved route fails closed honestly, not administratively', () => {
+  it('london-gatwick-agadir keeps its original 2026-09-12 reviewDueDate after two real research attempts found nothing current', () => {
+    const route = getRouteBySlug('london-gatwick-agadir')!;
     expect(route.verification?.reviewDueDate).toBe('2026-09-12');
+    // No fresh-looking claim was invented despite the attempts.
+    expect(route.airlineSlugs).toEqual([]);
   });
 
-  it('leeds-bradford-antalya and leeds-bradford-bodrum keep their original reviewDueDate — rechecked but genuinely unchanged', () => {
-    for (const slug of ['leeds-bradford-antalya', 'leeds-bradford-bodrum']) {
-      const route = getRouteBySlug(slug)!;
-      expect(route.verification?.reviewDueDate, slug).toBe('2026-09-12');
-    }
-  });
-
-  it('london-gatwick-marrakech and london-gatwick-agadir keep their original reviewDueDate — only stale evidence was found', () => {
-    for (const slug of ['london-gatwick-marrakech', 'london-gatwick-agadir']) {
-      const route = getRouteBySlug(slug)!;
-      expect(route.verification?.reviewDueDate, slug).toBe('2026-09-12');
-    }
+  it('is the only route among the original 15 still due exactly 2026-09-12', () => {
+    const stillDue = DUE_SOON_SLUGS.filter((slug) => getRouteBySlug(slug)!.verification?.reviewDueDate === '2026-09-12');
+    expect(stillDue).toEqual(['london-gatwick-agadir']);
   });
 });
 
-describe('5. Effective route presentation matches the refreshed evidence', () => {
+describe('5. Live flight-board evidence produced genuine operator upgrades where none existed before', () => {
+  it('leeds-bradford-bodrum names Jet2 for the first time, backed by a live departures-board flight', () => {
+    const route = getRouteBySlug('leeds-bradford-bodrum')!;
+    expect(route.airlineSlugs).toEqual(['jet2']);
+    expect(route.airlineVerifications?.[0]?.effectivePeriod).toContain('LS215');
+  });
+
+  it('london-gatwick-marrakech names easyJet for the first time, backed by two live flight-search results', () => {
+    const route = getRouteBySlug('london-gatwick-marrakech')!;
+    expect(route.airlineSlugs).toEqual(['easyjet']);
+    expect(route.airlineVerifications?.[0]?.effectivePeriod).toContain('EZY8705');
+    expect(route.airlineVerifications?.[0]?.effectivePeriod).toContain('EZY8709');
+  });
+});
+
+describe('6. Effective route presentation matches the refreshed evidence', () => {
   it('every reclassified STABLE route genuinely resolves to direct on the new evidence', () => {
     for (const slug of ['manchester-marrakech', 'bristol-marrakech']) {
       const route = getRouteBySlug(slug)!;
@@ -135,20 +157,22 @@ describe('5. Effective route presentation matches the refreshed evidence', () =>
   });
 
   it('stripping verification from a refreshed route stops it resolving to direct — the status is genuinely evidence-gated', () => {
-    const route = getRouteBySlug('manchester-dalaman')!;
-    const stripped = { ...route, verification: undefined, airlineVerifications: undefined };
-    expect(getEffectiveRoutePresentation(stripped, routeStatusEvents, NOW_ISO).status).not.toBe('direct');
+    for (const slug of ['manchester-dalaman', 'leeds-bradford-bodrum', 'london-gatwick-marrakech']) {
+      const route = getRouteBySlug(slug)!;
+      const stripped = { ...route, verification: undefined, airlineVerifications: undefined };
+      expect(getEffectiveRoutePresentation(stripped, routeStatusEvents, NOW_ISO).status, slug).not.toBe('direct');
+    }
   });
 });
 
-describe('6. Direct/connecting status remains truthful — no route silently changed directness', () => {
+describe('7. Direct/connecting status remains truthful — no route silently changed directness', () => {
   it.each(DUE_SOON_SLUGS)('%s keeps isDirect: true — this batch never altered directness, only evidence freshness', (slug) => {
     const route = getRouteBySlug(slug)!;
     expect(route.isDirect, slug).toBe(true);
   });
 });
 
-describe('7. No unrelated route was changed by this batch', () => {
+describe('8. No unrelated route was changed by this batch', () => {
   it('the total route count is unchanged at 89 — this batch added zero new routes', () => {
     expect(routes).toHaveLength(89);
   });
@@ -166,14 +190,15 @@ describe('7. No unrelated route was changed by this batch', () => {
   it('a sibling route sharing an airport with this batch is untouched (london-gatwick-antalya, not in the due-soon batch)', () => {
     const route = getRouteBySlug('london-gatwick-antalya')!;
     expect(route.verification?.verifiedDate).not.toBe('2026-09-07');
+    expect(route.verification?.verifiedDate).not.toBe('2026-09-08');
   });
 });
 
-describe('8. New operator claims are backed by the airline catalogue, not invented', () => {
-  it('leeds-bradford-dalaman and bristol-marrakech only add airline slugs that exist in data/airlines.ts', async () => {
+describe('9. New operator claims are backed by the airline catalogue, not invented', () => {
+  it('every route touched by this batch only adds airline slugs that exist in data/airlines.ts', async () => {
     const { airlines } = await import('@/data/airlines');
     const knownSlugs = new Set(airlines.map((a) => a.slug));
-    for (const slug of ['leeds-bradford-dalaman', 'bristol-marrakech']) {
+    for (const slug of ['leeds-bradford-dalaman', 'leeds-bradford-bodrum', 'bristol-marrakech', 'london-gatwick-marrakech']) {
       const route = getRouteBySlug(slug)!;
       for (const airlineSlug of route.airlineSlugs) {
         expect(knownSlugs.has(airlineSlug), `${slug} -> ${airlineSlug}`).toBe(true);

@@ -39,32 +39,28 @@ describe('remaining Turkey route guides', () => {
     // Rolling Reverification Batch 5 (4 September 2026): glasgow-antalya and
     // glasgow-dalaman were both reconfirmed and reclassified STABLE
     // (90-day window) -- the remaining eleven were not part of that batch.
-    // Rolling Reverification Batch 6 (4 September 2026): leeds-bradford-
-    // antalya, glasgow-bodrum, bristol-antalya, bristol-dalaman,
-    // newcastle-dalaman and london-gatwick-antalya were all reconfirmed.
-    // leeds-bradford-bodrum was also rechecked but found too thin to
-    // support any formal cadence classification (see its own note in
-    // data/routes.ts) -- left on its pre-existing 2026-08-12 date rather
-    // than administratively refreshed, so it correctly keeps the
-    // fallback NOW_ISO value below, not a Batch 6 date.
-    // Route Verification Refresh, 12 September due-soon batch (7 September
-    // 2026): leeds-bradford-antalya was rechecked again and found
-    // genuinely unchanged, so it keeps its Batch 6 date below rather than
-    // gaining a second one. leeds-bradford-dalaman gained a genuine
-    // operator-name upgrade (verifiedDate moved, reviewDueDate deliberately
-    // did not -- see its own note). london-gatwick-dalaman, -bodrum and
-    // -izmir were all reconfirmed via still-live SunExpress sources.
+    // Rolling Reverification Batch 6 (4 September 2026): glasgow-bodrum,
+    // bristol-antalya, bristol-dalaman, newcastle-dalaman and
+    // london-gatwick-antalya were all reconfirmed.
+    // Route Verification 12 September final five (8 September 2026):
+    // leeds-bradford-antalya, leeds-bradford-dalaman and leeds-bradford-
+    // bodrum were all resolved via Leeds Bradford's own live departures
+    // board (real, current, numbered flights confirmed today), superseding
+    // their earlier thin-but-verified/unresolved state. london-gatwick-
+    // dalaman, -bodrum and -izmir were all reconfirmed via still-live
+    // SunExpress sources on 7 September.
     const reverifiedDates: Partial<Record<(typeof BUILT)[number], string>> = {
       'london-gatwick-istanbul': '2026-09-04',
       'glasgow-antalya': '2026-09-04',
       'glasgow-dalaman': '2026-09-04',
-      'leeds-bradford-antalya': '2026-09-04',
+      'leeds-bradford-antalya': '2026-09-08',
       'glasgow-bodrum': '2026-09-04',
       'bristol-antalya': '2026-09-04',
       'bristol-dalaman': '2026-09-04',
       'newcastle-dalaman': '2026-09-04',
       'london-gatwick-antalya': '2026-09-04',
-      'leeds-bradford-dalaman': '2026-09-07',
+      'leeds-bradford-dalaman': '2026-09-08',
+      'leeds-bradford-bodrum': '2026-09-08',
       'london-gatwick-dalaman': '2026-09-07',
       'london-gatwick-bodrum': '2026-09-07',
       'london-gatwick-izmir': '2026-09-07',
