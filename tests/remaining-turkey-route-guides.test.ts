@@ -46,9 +46,14 @@ describe('remaining Turkey route guides', () => {
     // support any formal cadence classification (see its own note in
     // data/routes.ts) -- left on its pre-existing 2026-08-12 date rather
     // than administratively refreshed, so it correctly keeps the
-    // fallback NOW_ISO value below, not a Batch 6 date. leeds-bradford-
-    // dalaman, london-gatwick-dalaman, london-gatwick-bodrum and
-    // london-gatwick-izmir were not part of this batch.
+    // fallback NOW_ISO value below, not a Batch 6 date.
+    // Route Verification Refresh, 12 September due-soon batch (7 September
+    // 2026): leeds-bradford-antalya was rechecked again and found
+    // genuinely unchanged, so it keeps its Batch 6 date below rather than
+    // gaining a second one. leeds-bradford-dalaman gained a genuine
+    // operator-name upgrade (verifiedDate moved, reviewDueDate deliberately
+    // did not -- see its own note). london-gatwick-dalaman, -bodrum and
+    // -izmir were all reconfirmed via still-live SunExpress sources.
     const reverifiedDates: Partial<Record<(typeof BUILT)[number], string>> = {
       'london-gatwick-istanbul': '2026-09-04',
       'glasgow-antalya': '2026-09-04',
@@ -59,6 +64,10 @@ describe('remaining Turkey route guides', () => {
       'bristol-dalaman': '2026-09-04',
       'newcastle-dalaman': '2026-09-04',
       'london-gatwick-antalya': '2026-09-04',
+      'leeds-bradford-dalaman': '2026-09-07',
+      'london-gatwick-dalaman': '2026-09-07',
+      'london-gatwick-bodrum': '2026-09-07',
+      'london-gatwick-izmir': '2026-09-07',
     };
     for (const slug of BUILT) {
       const route = getRouteBySlug(slug)!;
