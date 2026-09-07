@@ -28,6 +28,22 @@ import { getEffectiveRoutePresentation } from '@/lib/route-status-copy';
  * instances found — deliberately NOT editing data/destinations.ts itself
  * (reserved for a concurrent, unrelated fix), so the correction lives
  * entirely at this shared rendering/evidence boundary.
+ *
+ * Integration reconciliation (7 Sept 2026): a genuinely current primary
+ * claim can still be followed by plain prose naming a SECOND UK airport
+ * (e.g. Mumbai's "...; Manchester options vary by route" — worded that way
+ * specifically so route lifecycle isn't hardcoded into destination copy).
+ * resolveSecondaryOriginReferences() below resolves exactly that: an
+ * explicit secondary city mention is only ever turned into "<city> direct
+ * service ended" wording if it names a real airport AND a canonical Route
+ * exists from that airport to this destination AND that route's effective
+ * presentation is currently 'service-ended' — never a bare substring
+ * match, never an invented Route, and never for any other presentation
+ * status. This deliberately does not restore the old blanket /Manchester/i
+ * scan this file used before the rewrite above (see git history) — that
+ * version treated any mention of Manchester as lifecycle evidence
+ * regardless of Route existence or actual status, exactly the imprecision
+ * the rewrite above removed for the primary claim too.
  */
 
 const DIRECT_FROM_PATTERN = /\bdirect\s+from\s+([A-Za-z][A-Za-z\s]*?)(?=[;.,]|$)/i;
@@ -38,6 +54,54 @@ function findNamedAirport(claimedText: string) {
 
 function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function alreadyAnnotatedAsEnded(text: string, city: string): boolean {
+  return new RegExp(`${escapeRegExp(city)}\\s+direct service ended`, 'i').test(text);
+}
+
+/**
+ * Looks only at the semicolon-separated clauses of `base` OTHER than the
+ * one containing the already-evaluated primary "direct from <airport>"
+ * match. A clause is resolved into ended-service wording only when it
+ * names a different real airport with its own canonical Route to this
+ * destination whose current effective presentation is 'service-ended'.
+ * Every other case — no matching airport, no Route, or any other
+ * presentation status (direct/connecting/unverified) — leaves the clause
+ * exactly as written, since none of those are this function's evidence to
+ * act on.
+ */
+function resolveSecondaryOriginReferences(
+  base: string,
+  primaryMatchText: string,
+  primaryAirportSlug: string,
+  destinationSlug: string,
+  nowIso: string,
+): string {
+  const segments = base.split(';');
+  if (segments.length < 2) return base;
+
+  const resolved = segments.map((segment) => {
+    if (segment.includes(primaryMatchText)) return segment; // the already-evaluated primary clause
+
+    for (const candidate of airports) {
+      if (candidate.slug === primaryAirportSlug) continue;
+      if (!new RegExp(`\\b${escapeRegExp(candidate.city)}\\b`, 'i').test(segment)) continue;
+      if (alreadyAnnotatedAsEnded(segment, candidate.city)) return segment; // already correctly worded — never duplicate
+
+      const route = getRouteByAirportAndDestination(candidate.slug, destinationSlug);
+      if (!route) return segment; // named city has no canonical Route here — no evidence to act on
+
+      const presentation = getEffectiveRoutePresentation(route, routeStatusEvents, nowIso);
+      if (presentation.status !== 'service-ended') return segment; // only a confirmed ended state is canonically actionable here
+
+      return ` ${candidate.city} direct service ended`;
+    }
+
+    return segment;
+  });
+
+  return resolved.join(';');
 }
 
 export function getDestinationFlightTimeFromUK(destination: Destination, nowIso: string): string {
@@ -58,13 +122,20 @@ export function getDestinationFlightTimeFromUK(destination: Destination, nowIso:
   if (!route) return unsupported;
 
   const presentation = getEffectiveRoutePresentation(route, routeStatusEvents, nowIso);
-  if (presentation.status === 'direct') return base;
+
+  if (presentation.status === 'direct') {
+    // The primary claim is genuinely current. A further explicit mention of
+    // a DIFFERENT UK airport elsewhere in the same string is real editorial
+    // content, not the primary claim — resolve it against its own Route
+    // evidence rather than leaving it as unverifiable prose.
+    return resolveSecondaryOriginReferences(base, match[0], airport.slug, destination.slug, nowIso);
+  }
 
   if (presentation.status === 'service-ended') {
     // Already annotated by the destination's own editorial copy (e.g.
-    // Delhi/Mumbai's "former Manchester direct service ended") — leave it
+    // Delhi's "former Manchester direct service ended") — leave it
     // exactly as written rather than mangling an already-correct sentence.
-    if (new RegExp(`${escapeRegExp(airport.city)}\\s+direct service ended`, 'i').test(base)) return base;
+    if (alreadyAnnotatedAsEnded(base, airport.city)) return base;
     // Remove the whole matched "direct from <airport>" clause — not just
     // the airport name — so no bare, object-less "direct" survives.
     const stripped = base.replace(match[0], '').replace(/\s{2,}/g, ' ').trim().replace(/[;,]$/, '');

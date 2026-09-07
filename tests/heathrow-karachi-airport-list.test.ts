@@ -36,7 +36,9 @@ describe('Heathrow Karachi and Madinah airport-list trust fix', () => {
   });
 
   it('does not add or alter route inventory to manufacture LHR-KHI or LHR-MED support', () => {
-    expect(routes).toHaveLength(88);
+    // 89, not 88: london-gatwick-doha (a771262) is present in this integrated
+    // tree even though this fix's own isolated branch predates that route.
+    expect(routes).toHaveLength(89);
     expect(getRouteByAirportAndDestination('london-heathrow', 'karachi')).toBeUndefined();
     expect(getRouteByAirportAndDestination('london-heathrow', 'madinah')).toBeUndefined();
     expect(getRouteByAirportAndDestination('london-heathrow', 'lahore')?.slug).toBe('london-heathrow-lahore');
@@ -60,13 +62,16 @@ describe('Heathrow Karachi and Madinah airport-list trust fix', () => {
   });
 
   it('does not alter any unrelated airport route list', () => {
+    // Birmingham's 'Sharjah' entry is intentionally absent here: the
+    // separately-approved Birmingham-Sharjah airport-list fix (41d31715)
+    // removes it, and this integrated tree contains both fixes.
     expect(
       airports
         .filter((airport) => airport.slug !== 'london-heathrow')
         .map((airport) => [airport.slug, airport.longHaulRoutes]),
     ).toEqual([
       ['manchester', ['Islamabad', 'Lahore', 'Dubai', 'Doha', 'Abu Dhabi']],
-      ['birmingham', ['Dubai', 'Sharjah', 'Doha']],
+      ['birmingham', ['Dubai', 'Doha']],
       ['london-gatwick', ['Dubai', 'Doha', 'Amritsar']],
       ['birmingham-east-midlands', ['Dubai (via connection)']],
       ['leeds-bradford', ['Dubai (via connection)', 'Islamabad (via connection)']],

@@ -131,8 +131,11 @@ describe('Mumbai destination P1 trust fix', () => {
   });
 
   it('does not change any destination record outside Mumbai', () => {
+    // Digest recomputed for this integration: Doha's ukAirports/visaNote and
+    // Dubai's visaNote legitimately changed via the separately-approved
+    // a771262 (LGW-DOH) and 8b60ddf (UAE/Qatar) fixes, both present here.
     const otherDestinations = destinations.filter((item) => item.slug !== 'mumbai');
     const digest = createHash('sha256').update(JSON.stringify(otherDestinations)).digest('hex');
-    expect(digest).toBe('9a4e007d7fec3b77e4b5cd29dcd68e7c7937a95a8b01fca784a184d45caec541');
+    expect(digest).toBe('182555ea2b10a86ab7d3ee3c0a0ff3ccb588cb901ecfdccfe68c65be90b4bafb');
   });
 });

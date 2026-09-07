@@ -92,11 +92,18 @@ describe('3. Existing service-ended handling (Delhi/Mumbai) remains correct', ()
   });
 
   it('derives the ended Manchester–Mumbai status instead of storing it in destination copy', () => {
+    // Integration reconciliation (7 Sept 2026): the neutral secondary
+    // clause is REPLACED by canonically-derived wording, not appended
+    // alongside it — resolveSecondaryOriginReferences() in
+    // lib/destination-flight-time.ts resolves this explicit secondary
+    // Manchester mention against the real manchester-mumbai Route's
+    // effective presentation, rather than the raw string ever asserting
+    // its own lifecycle fact.
     const destination = getDestinationBySlug('mumbai')!;
     expect(destination.flightTimeFromUK).toBe('9h direct from London Heathrow; Manchester options vary by route');
     expect(destination.flightTimeFromUK).not.toMatch(/service ended/i);
     expect(getDestinationFlightTimeFromUK(destination, '2026-09-03')).toBe(
-      '9h direct from London Heathrow; Manchester options vary by route; Manchester direct service ended',
+      '9h direct from London Heathrow; Manchester direct service ended',
     );
   });
 
@@ -119,6 +126,54 @@ describe('3. Existing service-ended handling (Delhi/Mumbai) remains correct', ()
     const synthetic = { ...mumbai, flightTimeFromUK: '9h direct from Manchester' };
     const summary = getDestinationFlightTimeFromUK(synthetic, '2026-09-03');
     expect(summary).toBe('9h; Manchester direct service ended');
+  });
+
+  it('the secondary-reference ended status comes from getEffectiveRoutePresentation(), not from any pre-2026-08-31 date, matching the real manchester-mumbai withdrawal-announced/service-ended ledger', () => {
+    const mumbai = getDestinationBySlug('mumbai')!;
+    const route = getRouteByAirportAndDestination('manchester', 'mumbai')!;
+    // Before the ledger's currentClaimValidBefore boundary, the route is
+    // still presented as direct — the secondary clause must stay untouched.
+    expect(getEffectiveRoutePresentation(route, routeStatusEvents, '2026-08-25').status).not.toBe('service-ended');
+    expect(getDestinationFlightTimeFromUK(mumbai, '2026-08-25')).toBe(mumbai.flightTimeFromUK);
+    // After it, the same ledger reports service-ended, and only then does
+    // the secondary clause resolve into ended wording.
+    expect(getEffectiveRoutePresentation(route, routeStatusEvents, '2026-09-03').status).toBe('service-ended');
+    expect(getDestinationFlightTimeFromUK(mumbai, '2026-09-03')).toBe(
+      '9h direct from London Heathrow; Manchester direct service ended',
+    );
+  });
+
+  it('does not invent "service ended" wording for a secondary reference whose real Route is merely connecting, not ended', () => {
+    // manchester-jeddah is a genuinely connecting (isDirect: false) Route —
+    // never service-ended — so a synthetic secondary mention of Manchester
+    // against Jeddah must be left exactly as written, not upgraded to an
+    // ended-service claim the ledger never made.
+    const jeddah = getDestinationBySlug('jeddah')!;
+    const manchesterJeddah = getRouteByAirportAndDestination('manchester', 'jeddah')!;
+    expect(getEffectiveRoutePresentation(manchesterJeddah, routeStatusEvents, '2026-09-03').status).toBe('connecting');
+    const synthetic = {
+      ...jeddah,
+      flightTimeFromUK: `${jeddah.flightTimeFromUK}; Manchester options vary by route`,
+    };
+    expect(getDestinationFlightTimeFromUK(synthetic, '2026-09-03')).toBe(
+      `${jeddah.flightTimeFromUK}; Manchester options vary by route`,
+    );
+  });
+
+  it('a secondary city mention with no canonical Route to this destination is never treated as lifecycle evidence', () => {
+    const mumbai = getDestinationBySlug('mumbai')!;
+    // Leeds Bradford has no direct or connecting Route to Mumbai at all.
+    expect(getRouteByAirportAndDestination('leeds-bradford', 'mumbai')).toBeUndefined();
+    const synthetic = {
+      ...mumbai,
+      flightTimeFromUK: '9h direct from London Heathrow; Leeds Bradford options vary by route',
+    };
+    // No Route exists for Leeds Bradford here, so the clause must pass
+    // through completely unchanged — not resolved, not stripped, not
+    // flagged as unsupported.
+    expect(getDestinationFlightTimeFromUK(synthetic, '2026-09-03')).toBe(
+      '9h direct from London Heathrow; Leeds Bradford options vary by route',
+    );
   });
 });
 

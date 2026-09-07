@@ -39,7 +39,9 @@ describe('Birmingham-Sharjah airport-list trust fix', () => {
   });
 
   it('does not add or alter route inventory to manufacture BHX-SHJ support', () => {
-    expect(routes).toHaveLength(88);
+    // 89, not 88: london-gatwick-doha (a771262) is present in this integrated
+    // tree even though this fix's own isolated branch predates that route.
+    expect(routes).toHaveLength(89);
     expect(getRouteByAirportAndDestination('birmingham', 'sharjah')).toBeUndefined();
     expect(getRouteByAirportAndDestination('birmingham', 'dubai')?.slug).toBe('birmingham-dubai');
     expect(getRouteByAirportAndDestination('birmingham', 'doha')?.slug).toBe('birmingham-doha');
