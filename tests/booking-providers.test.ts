@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync, readdirSync } from 'fs';
 import { join } from 'path';
 import { routes } from '@/data/routes';
-import { getTripComRouteUrl, getTripComFlightHandoffUrl, hasTripComRoute, NO_VERIFIED_PARTNER_LINK_NOTE, PROVIDER_NAME, PROVIDER_REL } from '@/lib/booking-providers';
+import { getTripComRouteUrl, getTripComFlightHandoffUrl, getSafeTripComFlightHandoffUrl, hasTripComRoute, NO_VERIFIED_PARTNER_LINK_NOTE, PROVIDER_NAME, PROVIDER_REL } from '@/lib/booking-providers';
 
 /**
  * Trip.com sole-provider migration — TravelUp removed entirely. Covers the
@@ -123,6 +123,12 @@ const UNSUPPORTED_ROUTES = [
   'birmingham-ahmedabad',
 ];
 
+// These retain their dashboard-generated URLs as historical affiliate
+// records, but their current effective Route Status is service-ended. A
+// public CTA must fail closed rather than letting a stored link override
+// present route truth.
+const SERVICE_ENDED_EXACT_ROUTES = ['manchester-delhi', 'manchester-mumbai'];
+
 describe('every current route slug is classified exactly once', () => {
   it('SUPPORTED_ROUTES + UNSUPPORTED_ROUTES together equal every route in data/routes.ts, with no overlap', () => {
     const allSlugs = routes.map((r) => r.slug).sort();
@@ -235,7 +241,7 @@ describe('no Trip.com URL contains a fixed departure or return date', () => {
 });
 
 describe('public flight handoffs request the UK GBP presentation without changing attribution', () => {
-  it.each(SUPPORTED_ROUTES)('%s adds the supported locale/currency fields to the shared handoff URL', (slug) => {
+  it.each(SUPPORTED_ROUTES.filter((slug) => !SERVICE_ENDED_EXACT_ROUTES.includes(slug)))('%s adds the supported locale/currency fields to the shared handoff URL', (slug) => {
     const source = getTripComRouteUrl(slug)!;
     const handoff = getTripComFlightHandoffUrl(slug)!;
     expect(handoff).toContain('locale=en-XX&curr=GBP');
@@ -246,6 +252,11 @@ describe('public flight handoffs request the UK GBP presentation without changin
 
   it.each(UNSUPPORTED_ROUTES)('%s remains fail-closed with no handoff URL', (slug) => {
     expect(getTripComFlightHandoffUrl(slug)).toBeNull();
+  });
+
+  it.each(SERVICE_ENDED_EXACT_ROUTES)('%s remains fail-closed despite retaining a historical exact URL', (slug) => {
+    expect(getTripComRouteUrl(slug)).not.toBeNull();
+    expect(getSafeTripComFlightHandoffUrl(slug, undefined, undefined, '2026-09-08')).toBeNull();
   });
 
   it('does not introduce currency conversion or request USD', () => {
@@ -331,8 +342,8 @@ describe('Trip.com CTA is primary, singular, and correctly wired on Fare Signal'
   const routePageSrc = readFileSync(join(process.cwd(), 'app/routes/[slug]/page.tsx'), 'utf8');
   const fareSignalSrc = readFileSync(join(process.cwd(), 'components/route/fare-signal.tsx'), 'utf8');
 
-  it('the route page still computes the shared GBP flight handoff and hands it to Fare Signal', () => {
-    expect(routePageSrc).toContain('getTripComFlightHandoffUrl(route.slug, airport.slug, dest.slug)');
+  it('the route page computes the status-safe GBP flight handoff and hands it to Fare Signal', () => {
+    expect(routePageSrc).toContain('getSafeTripComFlightHandoffUrl(route.slug, airport.slug, dest.slug)');
     expect(routePageSrc).toMatch(/<FareSignal[\s\S]*?tripComUrl=\{tripComUrl\}/);
   });
 

@@ -199,10 +199,12 @@ describe('Unrelated behaviour is unchanged — URLs, rel, analytics, fail-closed
     expect(footerSrc).toMatch(/href=["'`]\/affiliate-disclosure["'`]/);
   });
 
-  it('all route-specific Trip.com handoffs still use the shared provider helper', () => {
-    for (const src of [dealCardSrc, noFareFallbackSrc, travelReadyCheckSrc, routePageSrc]) {
-      expect(src).toContain('getTripComFlightHandoffUrl');
+  it('public route-specific Trip.com handoffs use the status-safe shared provider helper', () => {
+    for (const src of [dealCardSrc, noFareFallbackSrc, routePageSrc]) {
+      expect(src).toContain('getSafeTripComFlightHandoffUrl');
     }
+    // Travel Ready is intentionally outside the First Revenue Sprint scope.
+    expect(travelReadyCheckSrc).toContain('getTripComFlightHandoffUrl');
   });
 });
 

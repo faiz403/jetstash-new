@@ -3,7 +3,7 @@ import { readFileSync } from 'fs';
 import { join } from 'path';
 import { routes, getRouteAirport, getRouteDestination } from '@/data/routes';
 import { getFareSignalForRoute } from '@/lib/fare-signal';
-import { getTripComFlightHandoffUrl } from '@/lib/booking-providers';
+import { getSafeTripComFlightHandoffUrl } from '@/lib/booking-providers';
 import { buildTrackedFareAirportGroups } from '@/lib/tracked-fare-groups';
 
 /**
@@ -38,22 +38,22 @@ function routeGuideHandoffUrl(routeSlug: string): string | null {
   const route = routes.find((r) => r.slug === routeSlug)!;
   const airport = getRouteAirport(route)!;
   const dest = getRouteDestination(route)!;
-  return getTripComFlightHandoffUrl(route.slug, airport.slug, dest.slug);
+  return getSafeTripComFlightHandoffUrl(route.slug, airport.slug, dest.slug, nowIso);
 }
 
 describe('Source-level parity: /tracked-fares calls the resolver with the same arguments the route guide does', () => {
   it('app/routes/[slug]/page.tsx passes route.slug, airport.slug and dest.slug', () => {
-    expect(routeGuideSrc).toMatch(/getTripComFlightHandoffUrl\(route\.slug, airport\.slug, dest\.slug\)/);
+    expect(routeGuideSrc).toMatch(/getSafeTripComFlightHandoffUrl\(route\.slug, airport\.slug, dest\.slug\)/);
   });
 
   it('lib/tracked-fare-groups.ts now passes the same three arguments, not route.slug alone', () => {
-    expect(groupsSrc).toMatch(/getTripComFlightHandoffUrl\(route\.slug, airport\.slug, dest\.slug\)/);
-    expect(groupsSrc).not.toMatch(/getTripComFlightHandoffUrl\(route\.slug\)/);
+    expect(groupsSrc).toMatch(/getSafeTripComFlightHandoffUrl\(route\.slug, airport\.slug, dest\.slug\)/);
+    expect(groupsSrc).not.toMatch(/getSafeTripComFlightHandoffUrl\(route\.slug\)/);
   });
 
-  it('no new resolver, fallback tier or manual URL was introduced', () => {
+  it('uses the shared status-safe resolver without a local fallback tier or manual URL', () => {
     expect(groupsSrc).not.toMatch(/https?:\/\//);
-    expect(groupsSrc).toContain("import { getTripComFlightHandoffUrl } from '@/lib/booking-providers'");
+    expect(groupsSrc).toContain("import { getSafeTripComFlightHandoffUrl } from '@/lib/booking-providers'");
   });
 });
 

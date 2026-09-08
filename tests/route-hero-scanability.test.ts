@@ -5,7 +5,7 @@ import { join } from 'node:path';
 import { routes, getRouteAirport, getRouteDestination, getRouteBySlug } from '@/data/routes';
 import { routeStatusEvents } from '@/data/route-status-events';
 import { getEffectiveRoutePresentation } from '@/lib/route-status-copy';
-import { getTripComFlightHandoffUrl, NO_VERIFIED_PARTNER_LINK_NOTE } from '@/lib/booking-providers';
+import { getTripComFlightHandoffUrl, getSafeTripComFlightHandoffUrl, NO_VERIFIED_PARTNER_LINK_NOTE } from '@/lib/booking-providers';
 import { getFareSignalForRoute } from '@/lib/fare-signal';
 import { FareSignal } from '@/components/route/fare-signal';
 
@@ -189,9 +189,10 @@ describe('no evidence or trust wording was accidentally lost — full 88-route s
       const airport = getRouteAirport(route);
       const dest = getRouteDestination(route);
       if (!airport || !dest) continue;
-      const tripComUrl = getTripComFlightHandoffUrl(route.slug, airport.slug, dest.slug);
-      const signal = getFareSignalForRoute(route.slug, NOW_ISO);
-      const { presentation } = presentationFor(route.slug);
+      const commercialNowIso = '2026-09-08';
+      const tripComUrl = getSafeTripComFlightHandoffUrl(route.slug, airport.slug, dest.slug, commercialNowIso);
+      const signal = getFareSignalForRoute(route.slug, commercialNowIso);
+      const { presentation } = presentationFor(route.slug, commercialNowIso);
       const html = renderToStaticMarkup(
         FareSignal({
           signal,
@@ -209,12 +210,12 @@ describe('no evidence or trust wording was accidentally lost — full 88-route s
       if (hasCtaText) withCta += 1;
       if (hasFailClosedText) failClosed += 1;
     }
-    // 63 routes have a verified Trip.com link (unchanged by this fix — see
-    // the 21 Aug 2026 Trip.com dated-handoff readiness audit), 26 do not
-    // (25, plus the 7 September 2026 canonical addition of
-    // london-gatwick-doha, which has no route-level Trip.com link).
-    expect(withCta).toBe(63);
-    expect(failClosed).toBe(26);
+    // 61 routes have a currently safe public Trip.com handoff. Two stored
+    // historical exact links (Manchester–Delhi and Manchester–Mumbai) are
+    // suppressed because their effective route status is service-ended; see
+    // the First Revenue Sprint handoff gate. The remaining 28 fail closed.
+    expect(withCta).toBe(61);
+    expect(failClosed).toBe(28);
     expect(withCta + failClosed).toBe(89);
   });
 

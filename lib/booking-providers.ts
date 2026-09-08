@@ -36,6 +36,10 @@
  * hand — every booking CTA in the app reads its outbound URL from here.
  */
 
+import { getRouteBySlug } from '@/data/routes';
+import { routeStatusEvents } from '@/data/route-status-events';
+import { getEffectiveRoutePresentation } from '@/lib/route-status-copy';
+
 export const PROVIDER_NAME = 'Trip.com';
 
 /**
@@ -315,7 +319,71 @@ export function getTripComRouteUrl(routeSlug: string): string | null {
  * visitor is explicitly sent a GBP search while route and attribution fields
  * remain unchanged.
  */
-export function getTripComFlightHandoffUrl(routeSlug: string, originSlug?: string, destinationSlug?: string): string | null {
+export type TripComFlightHandoffKind = 'exact-route' | 'destination-fallback';
+
+export interface TripComFlightHandoff {
+  url: string;
+  kind: TripComFlightHandoffKind;
+}
+
+/**
+ * Resolves the one public flight handoff for a published route.
+ *
+ * A dashboard-generated link proves that Trip.com can receive the airport
+ * pair; it does not override JetStash's route-status ledger. In particular,
+ * a route whose effective public state is `service-ended` must fail closed,
+ * even if an older exact link remains in the affiliate map. `unverified`
+ * remains eligible: it is a warning about JetStash's direct-service claim,
+ * not evidence that Trip.com cannot search the airport pair.
+ */
+export function getTripComFlightHandoff(
+  routeSlug: string,
+  originSlug?: string,
+  destinationSlug?: string,
+  nowIso = new Date().toISOString().slice(0, 10),
+): TripComFlightHandoff | null {
+  const route = getRouteBySlug(routeSlug);
+  if (route && getEffectiveRoutePresentation(route, routeStatusEvents, nowIso).status === 'service-ended') return null;
+
+  const routeUrl = getTripComRouteUrl(routeSlug)
+    ?? (originSlug && destinationSlug ? TRIPCOM_DESTINATION_URLS[`${originSlug}-${destinationSlug}`] : null);
+  if (!routeUrl) return null;
+  const url = routeUrl.includes('locale=') || routeUrl.includes('curr=') ? routeUrl : routeUrl.replace(
+    '&Allianceid=',
+    `&locale=${TRIPCOM_UK_LOCALE}&curr=${TRIPCOM_UK_CURRENCY}&Allianceid=`,
+  );
+  return {
+    url,
+    kind: getTripComRouteUrl(routeSlug) ? 'exact-route' : 'destination-fallback',
+  };
+}
+
+/**
+ * Applies the public-route trust gate to a handoff. Use this on public route,
+ * deal and tracked-fare surfaces; it protects those CTAs from a route status
+ * that has since become service-ended without rewriting stored affiliate
+ * provenance.
+ */
+export function getSafeTripComFlightHandoffUrl(
+  routeSlug: string,
+  originSlug?: string,
+  destinationSlug?: string,
+  nowIso?: string,
+): string | null {
+  return getTripComFlightHandoff(routeSlug, originSlug, destinationSlug, nowIso)?.url ?? null;
+}
+
+/**
+ * Raw dashboard-generated route/destination handoff. This preserves the
+ * existing contract for frozen, evidence-only products that deliberately
+ * show a historical route search rather than a public booking CTA. Public
+ * commercial CTAs must call getSafeTripComFlightHandoffUrl() instead.
+ */
+export function getTripComFlightHandoffUrl(
+  routeSlug: string,
+  originSlug?: string,
+  destinationSlug?: string,
+): string | null {
   const routeUrl = getTripComRouteUrl(routeSlug)
     ?? (originSlug && destinationSlug ? TRIPCOM_DESTINATION_URLS[`${originSlug}-${destinationSlug}`] : null);
   if (!routeUrl) return null;
