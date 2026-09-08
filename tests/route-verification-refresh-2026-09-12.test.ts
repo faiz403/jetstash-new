@@ -73,6 +73,7 @@ describe('2. Renewed routes have a correct fresh verifiedDate', () => {
     'leeds-bradford-dalaman',
     'leeds-bradford-bodrum',
     'london-gatwick-marrakech',
+    'london-gatwick-agadir',
   ];
 
   it.each(renewed0908)('%s has verifiedDate 2026-09-08 (12 September final-five follow-up)', (slug) => {
@@ -80,10 +81,9 @@ describe('2. Renewed routes have a correct fresh verifiedDate', () => {
     expect(route.verification?.verifiedDate, slug).toBe('2026-09-08');
   });
 
-  it('london-gatwick-agadir keeps its original verifiedDate — no genuinely current evidence was found even on a real live-search attempt', () => {
+  it('london-gatwick-agadir has a fresh verifiedDate after current airline booking evidence was found', () => {
     const route = getRouteBySlug('london-gatwick-agadir')!;
-    expect(route.verification?.verifiedDate).not.toBe('2026-09-07');
-    expect(route.verification?.verifiedDate).not.toBe('2026-09-08');
+    expect(route.verification?.verifiedDate).toBe('2026-09-08');
   });
 });
 
@@ -119,17 +119,17 @@ describe('3. Renewed routes have a policy-compliant reviewDueDate', () => {
   });
 });
 
-describe('4. The one still-unresolved route fails closed honestly, not administratively', () => {
-  it('london-gatwick-agadir keeps its original 2026-09-12 reviewDueDate after two real research attempts found nothing current', () => {
+describe('4. The previously unresolved route is renewed with bounded seasonal evidence', () => {
+  it('london-gatwick-agadir has a policy-compliant 30-day review window and named bounded operators', () => {
     const route = getRouteBySlug('london-gatwick-agadir')!;
-    expect(route.verification?.reviewDueDate).toBe('2026-09-12');
-    // No fresh-looking claim was invented despite the attempts.
-    expect(route.airlineSlugs).toEqual([]);
+    expect(route.verification?.reviewDueDate).toBe('2026-10-08');
+    expect(route.airlineSlugs).toEqual(['easyjet', 'british-airways']);
+    expect(route.airlineVerifications?.map((entry) => entry.airlineSlug)).toEqual(['easyjet', 'british-airways']);
   });
 
-  it('is the only route among the original 15 still due exactly 2026-09-12', () => {
+  it('none of the original 15 remains due exactly 2026-09-12 after this renewal', () => {
     const stillDue = DUE_SOON_SLUGS.filter((slug) => getRouteBySlug(slug)!.verification?.reviewDueDate === '2026-09-12');
-    expect(stillDue).toEqual(['london-gatwick-agadir']);
+    expect(stillDue).toEqual([]);
   });
 });
 

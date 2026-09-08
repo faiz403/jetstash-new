@@ -1078,7 +1078,7 @@ the historical 32-route figures elsewhere in this document remain preserved as t
 | `london-gatwick-marrakech` | Useful |
 | `manchester-agadir` | Useful |
 | `birmingham-agadir` | Useful |
-| `london-gatwick-agadir` | Useful |
+| `london-gatwick-agadir` | Strong |
 | `london-heathrow-casablanca` | Useful |
 | `london-gatwick-tangier` | Useful |
 
