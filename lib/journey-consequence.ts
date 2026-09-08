@@ -155,6 +155,52 @@ export function extractCleanRoutingCodes(priceNote: string, leg: 'outbound' | 'r
   return match ? match[1].split('-') : null;
 }
 
+const STOP_VIA_WORD_TO_NUMBER: Readonly<Record<string, number>> = {
+  no: 0,
+  zero: 0,
+  one: 1,
+  two: 2,
+  three: 3,
+  four: 4,
+  five: 5,
+};
+
+/**
+ * Captures "<count> stop(s) via <City>[, <duration>] outbound|return" — a
+ * phrasing convention the 8 September 2026 fare-collection batch
+ * introduced (e.g. Manchester-Dubai's "one stop via Zurich, 9h20
+ * outbound"; also seen on the same day's London Heathrow-Delhi/Jeddah/
+ * Mumbai/Doha observations) that states the itinerary shape in plain
+ * English but does not set the structured fareDirectness/outboundStops/
+ * outboundConnectionAirports fields — unlike this file's own `outbound
+ * <clause>;` convention (see legClause), this phrasing puts the leg word
+ * LAST, after the stop/city/duration detail, so the existing extractors
+ * above don't recognise it.
+ *
+ * Deliberately conservative, matching every other extractor in this file:
+ * only produces a result when the count word, city name and leg word all
+ * appear in exactly this relationship; returns `null` for anything else
+ * rather than guess. Confirmed against every current archive occurrence
+ * (5 records, all dated 2026-09-08) before being trusted here — see
+ * tests/journey-consequence.test.ts.
+ */
+export interface StopViaLegSummary {
+  leg: 'outbound' | 'return';
+  stops: number;
+  connectionCity: string;
+}
+
+const STOP_VIA_LEG_PATTERN = /\b(no|zero|one|two|three|four|five|\d+)\s+stops?\s+via\s+([A-Z][a-zA-Z]+)(?:,\s*[\dh\s]+m?)?\s+(outbound|return)\b/i;
+
+export function extractStopViaFromText(priceNote: string): StopViaLegSummary | null {
+  const match = priceNote.match(STOP_VIA_LEG_PATTERN);
+  if (!match) return null;
+  const stopsWord = match[1].toLowerCase();
+  const stops = stopsWord in STOP_VIA_WORD_TO_NUMBER ? STOP_VIA_WORD_TO_NUMBER[stopsWord] : Number(stopsWord);
+  if (!Number.isFinite(stops)) return null;
+  return { leg: match[3].toLowerCase() as 'outbound' | 'return', stops, connectionCity: match[2] };
+}
+
 /**
  * Isolates one leg's own clause — from the leg keyword up to the next
  * semicolon — the same `;`-delimited-fact convention every observation's
