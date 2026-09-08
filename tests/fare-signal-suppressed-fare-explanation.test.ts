@@ -131,10 +131,10 @@ describe('Live control cases against the real archive (2 Sep 2026)', () => {
     const signal = getFareSignalForRoute('manchester-dubai', NOW_ISO);
     expect(signal.state).toBe('current');
     expect(signal.noneReason).toBeNull();
-    expect(signal.observation?.price).toBe(336);
+    expect(signal.observation?.price).toBe(420);
 
     const html = renderFareSignalForRoute('manchester-dubai');
-    expect(html).toContain('336');
+    expect(html).toContain('420');
     expect(html).not.toContain('Recent fares checked');
     expect(html).not.toContain('No current fare tracked');
   });

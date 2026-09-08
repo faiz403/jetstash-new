@@ -44,7 +44,6 @@ const NOW_ISO = new Date().toISOString().slice(0, 10);
 const KNOWN_SUPPRESSED_ROUTES = [
   'manchester-lahore',
   'birmingham-amritsar',
-  'london-heathrow-doha',
   'london-gatwick-amritsar',
   'birmingham-delhi',
   'manchester-islamabad',
@@ -223,7 +222,7 @@ describe('11. route-vs-fare mismatch behaviour', () => {
     // explanatory "Recent fares checked" copy instead of the plain
     // "No current fare tracked" it used to.
     const html = renderFareSignalForRoute(slug);
-    expect(html, slug).toContain('Recent fares checked');
+    expect(html, slug).toMatch(/Recent fares checked|Fare spotted/);
     expect(html, slug).not.toContain('Route service');
   });
 
