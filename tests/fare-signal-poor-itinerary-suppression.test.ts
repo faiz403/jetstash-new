@@ -42,6 +42,8 @@ const NOW_ISO = new Date().toISOString().slice(0, 10);
 // joined the suppressed set — see describe block 12 below for the fuller,
 // real-consequence account on the one live Journey Choice pilot route.
 const KNOWN_SUPPRESSED_ROUTES = [
+  // 9 September: the newest Dubai evidence is now a two-stop self-transfer.
+  'manchester-dubai',
   'manchester-lahore',
   'birmingham-amritsar',
   'london-gatwick-amritsar',
@@ -144,8 +146,8 @@ describe('7. all seven audited routes are suppressed while they still match the 
 // KNOWN_SUPPRESSED_ROUTES this batch (manchester-dubai, london-heathrow-
 // jeddah) -- explicit, dedicated coverage that they are genuinely current
 // now, not merely inferred from their absence in block 7's it.each list.
-describe('7b. manchester-dubai and london-heathrow-jeddah correctly un-suppressed on 1 September 2026 -- their newest evidence has fewer than 2 stops per leg', () => {
-  it.each(['manchester-dubai', 'london-heathrow-jeddah'])('%s has a current Fare Signal whose observation does not match the poor-itinerary signature', (slug) => {
+describe('7b. london-heathrow-jeddah remains un-suppressed -- its newest evidence has fewer than 2 stops per leg', () => {
+  it.each(['london-heathrow-jeddah'])('%s has a current Fare Signal whose observation does not match the poor-itinerary signature', (slug) => {
     const signal = getFareSignalForRoute(slug, NOW_ISO);
     expect(signal.state, slug).toBe('current');
     expect(signal.observation, slug).not.toBeNull();

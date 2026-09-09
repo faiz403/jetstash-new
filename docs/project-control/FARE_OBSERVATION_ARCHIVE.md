@@ -696,3 +696,21 @@ Baggage is currently recorded as `included`, a stated allowance, or `not stated`
 distinct state for a fare that explicitly includes *no* checked bag versus a result that simply
 doesn't mention baggage at all. Both currently record as `not stated`. Worth a fourth `excluded`
 state in a future pass; not required before the archive can start.
+
+## Closed observation — 9 September 2026 routine baseline #2
+
+Four Google Flights observations appended in the authorised order: MAN–DXB £256,
+MAN–LHE £416, MAN–ISB £420, BHX–BOM £446. Fixed return Economy, one adult, GBP,
+3–17 November 2026; prior profile identifiers unchanged. Observed 15:45:20–15:50:17
+UTC, 9 September. Each complete selected round trip displayed the recorded amount
+beside a named booking option. Both legs connecting and explicitly self-transfer;
+carry-on and first checked bag available for a fee, complete baggage cost unknown.
+No old observation altered. No commercial candidate or savings evaluation performed.
+
+Full contemporaneous itinerary, timings, stops, layovers, airlines, timestamps,
+source URLs, selection/loading limitation and baggage evidence:
+[9 September evidence record](fare-evidence/routine-baseline-2026-09-09.md).
+No screenshot was saved. All four pass isPubliclyPublishable and
+isObservationPublishable at 2026-09-09 in focused tests. This validates archive
+completeness and route evidence, not self-transfer suitability or deal status.
+Local-only batch; no deployment or push.

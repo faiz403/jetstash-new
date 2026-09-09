@@ -3,7 +3,7 @@ import { readFileSync } from 'fs';
 import { join } from 'path';
 import { routes, getRouteAirport, getRouteDestination } from '@/data/routes';
 import { getFareSignalForRoute } from '@/lib/fare-signal';
-import { getSafeTripComFlightHandoffUrl } from '@/lib/booking-providers';
+import { getSafeTripComFlightHandoffUrl, getTripComRouteUrl } from '@/lib/booking-providers';
 import { buildTrackedFareAirportGroups } from '@/lib/tracked-fare-groups';
 
 /**
@@ -73,23 +73,12 @@ describe('Semantic parity: every current tracked-fare entry resolves identically
     expect(mismatches, `routes with a parity mismatch: ${mismatches.join(', ')}`).toEqual([]);
   });
 
-  it('existing direct route-slug handoff still works (e.g. manchester-dubai, in TRIPCOM_ROUTE_URLS)', () => {
-    // Not manchester-lahore: since Fare Signal poor-itinerary suppression
-    // (31 Aug 2026), it has no current Fare Signal at all and so no longer
-    // appears on the tracked-fares listing — see tests/fare-signal.test.ts
-    // for the full account. Not manchester-islamabad either, as of the 1
-    // September 2026 Tuesday weekly batch: its only current evidence became
-    // a poor-itinerary (self-transfer) observation, which the same
-    // suppression rule now correctly excludes, so it dropped out of the
-    // tracked-fares listing too — a genuine, evidence-driven consequence,
-    // not a regression (see tests/route-watch-fare-trigger.test.ts and
-    // tests/fare-signal-poor-itinerary-suppression.test.ts for the fuller
-    // account). manchester-dubai is unaffected (its routine-weekly
-    // observation is single-carrier, not self-transfer) and still has a
-    // direct route-slug handoff entry.
-    const entry = allEntries.find((e) => e.routeSlug === 'manchester-dubai');
-    expect(entry?.tripComUrl).not.toBeNull();
-    expect(entry?.tripComUrl).toBe(routeGuideHandoffUrl('manchester-dubai'));
+  it('an existing route-slug handoff retains parity for a currently listed fare', () => {
+    // Dubai legitimately leaves this list after its 9 September self-transfer.
+    const entry = allEntries.find((e) => getTripComRouteUrl(e.routeSlug) !== null);
+    expect(entry, 'a current entry with a route-slug handoff must exist').toBeDefined();
+    expect(entry!.tripComUrl).not.toBeNull();
+    expect(entry!.tripComUrl).toBe(routeGuideHandoffUrl(entry!.routeSlug));
   });
 
   it('a restored exact-pair fallback handoff now works (manchester-barcelona, only in TRIPCOM_DESTINATION_URLS)', () => {

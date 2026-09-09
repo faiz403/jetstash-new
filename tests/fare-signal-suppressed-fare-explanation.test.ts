@@ -127,16 +127,25 @@ describe('Live control cases against the real archive (2 Sep 2026)', () => {
     expect(html).not.toContain('No current fare tracked.');
   });
 
-  it('MAN→DXB control: the real £336 current Fare Signal is completely untouched -- no suppressed-fare copy, no methodology change', () => {
+  it('MAN→DXB: the 9 September two-stop self-transfer is suppressed with an honest explanation', () => {
     const signal = getFareSignalForRoute('manchester-dubai', NOW_ISO);
-    expect(signal.state).toBe('current');
-    expect(signal.noneReason).toBeNull();
-    expect(signal.observation?.price).toBe(420);
+    expect(signal.state).toBe('none');
+    expect(signal.noneReason).toBe('poor-itinerary-suppressed');
+    expect(signal.observation).toBeNull();
 
     const html = renderFareSignalForRoute('manchester-dubai');
-    expect(html).toContain('420');
-    expect(html).not.toContain('Recent fares checked');
+    expect(html).toContain('Recent fares checked');
     expect(html).not.toContain('No current fare tracked');
+  });
+
+  it('LHR→JED remains an unaffected current-fare control', () => {
+    const signal = getFareSignalForRoute('london-heathrow-jeddah', NOW_ISO);
+    expect(signal.state).toBe('current');
+    expect(signal.noneReason).toBeNull();
+    expect(signal.observation?.price).toBe(451);
+    const html = renderFareSignalForRoute('london-heathrow-jeddah');
+    expect(html).toContain('451');
+    expect(html).not.toContain('Recent fares checked');
   });
 
   it('genuine no-evidence control (birmingham-ahmedabad): retains the plain "No current fare tracked" copy -- never falsely claims recent fares were checked', () => {

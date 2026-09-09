@@ -183,6 +183,7 @@ describe('Manchester-Dubai\'s new fare observation matches the approved specific
     const historic = dubaiObs.filter((o) => ![
       NEW_DUBAI_OBS_ID,
       'obs-man-dxb-economy-20260908-8w-v1',
+      'obs-man-dxb-economy-20260909-8w-v1',
       'obs-man-dxb-economy-20260818-8w-v1',
       'obs-man-dxb-economy-20260825-8w-v1',
       'obs-man-dxb-economy-20260901-8w-v1',
