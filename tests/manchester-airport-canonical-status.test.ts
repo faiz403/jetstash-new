@@ -78,11 +78,14 @@ describe('3. Manchester airport summary no longer implies a current direct India
     // problem: a specific timing claim that belongs to the ledger alone.
     expect(manchesterAirport.whyThisAirport).not.toMatch(/paus(e|ed|ing)|suspend(ed|ing)?|resum(e|ing|ed|ption)/i);
     expect(manchesterAirport.whyThisAirport).not.toMatch(/in 2026|since 2026|2026\.|ended in|withdrawn/i);
-    // No frequency claim reintroduced for the Delhi/Mumbai service specifically
-    // (Pakistan's own, unrelated "daily-frequency" claim earlier in the same
-    // paragraph is pre-existing, evidenced content and must stay untouched).
+    // No frequency claim reintroduced for the Delhi/Mumbai service specifically.
     const indigoSentence = manchesterAirport.whyThisAirport.match(/IndiGo[^.]*\./i)?.[0] ?? '';
     expect(indigoSentence).not.toMatch(/\bdaily\b|\bweekly\b/i);
+  });
+
+  it('whyThisAirport no longer claims a blanket "daily-frequency" for Pakistan direct services (Astra bounded review, 10 Sept 2026) — manchester-islamabad isn\'t daily and manchester-lahore\'s frequency isn\'t confirmed to that level, so the field states only that direct services exist', () => {
+    expect(manchesterAirport.whyThisAirport).toMatch(/only airport in the North of England with direct services to Pakistan/i);
+    expect(manchesterAirport.whyThisAirport).not.toMatch(/daily-frequency/i);
   });
 
   it('no field independently invents a specific end-date, resumption date, or new frequency claim beyond what the ledger/route already establish', () => {

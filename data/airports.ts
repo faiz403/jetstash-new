@@ -58,8 +58,14 @@ export const airports: Airport[] = [
       'The largest airport outside London and the busiest direct gateway in the North of England to Pakistan and the Gulf, alongside year-round European routes.',
     longHaulRoutes: ['Islamabad', 'Lahore', 'Dubai', 'Doha', 'Abu Dhabi'],
     shortHaulHighlights: ['Istanbul', 'Antalya', 'Dalaman', 'Marrakech', 'Barcelona'],
+    // Trust fix (10 Sept 2026, Astra bounded review): "genuine
+    // daily-frequency direct services to Pakistan" outran what the route
+    // records here support — manchester-islamabad isn't daily, and
+    // manchester-lahore's frequency isn't confirmed to the level a blanket
+    // daily-frequency claim needs. Dropped the frequency claim entirely;
+    // "direct services to Pakistan" is what the route data actually backs.
     whyThisAirport:
-      'Manchester is the only airport in the North of England with genuine daily-frequency direct services to Pakistan, which shapes travel patterns for the large Pakistani-heritage communities across Greater Manchester, Lancashire and West Yorkshire. For most of this audience, Manchester avoids the additional journey to a London airport — compare the available route and fare for your own dates once the drive to the airport is factored in. IndiGo previously operated direct services from Manchester to Delhi and Mumbai. See the Manchester–Delhi and Manchester–Mumbai route guides for current verified status before booking.',
+      'Manchester is the only airport in the North of England with direct services to Pakistan, which shapes travel patterns for the large Pakistani-heritage communities across Greater Manchester, Lancashire and West Yorkshire. For most of this audience, Manchester avoids the additional journey to a London airport — compare the available route and fare for your own dates once the drive to the airport is factored in. IndiGo previously operated direct services from Manchester to Delhi and Mumbai. See the Manchester–Delhi and Manchester–Mumbai route guides for current verified status before booking.',
     servesCommunities: ['Manchester', 'Bolton', 'Rochdale', 'Oldham', 'Blackburn', 'Bradford (via M62 corridor)'],
     hasDirectLongHaul: true,
   },

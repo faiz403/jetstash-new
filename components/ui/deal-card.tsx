@@ -238,7 +238,25 @@ export function DealCard({ deal, nowIso, headingLevel = 'h3' }: { deal: Deal; no
                 // already-trusted `deal.cabin` via the same cabinLabel map
                 // the header row above already uses, never a new or
                 // route-specific string.
-                : `No ${cabinLabel[deal.cabin]} fare checks logged yet — check the live price below`}
+                //
+                // Trust fix (10 Sept 2026, Astra bounded review): "check the
+                // live price below" used to render unconditionally here, but
+                // the CTA area a few lines down only shows a live-price
+                // action when tripComUrl is non-null — for a service-ended
+                // route (e.g. manchester-mumbai, whose only fare
+                // observations became unpublishable the moment the route's
+                // effective status became 'service-ended', per
+                // isObservationPublishable in data/fare-observations.ts)
+                // getSafeTripComFlightHandoffUrl() returns null, so the card
+                // promised a live-price check immediately above a fail-closed
+                // "Direct flight comparison is not available for this
+                // airport yet" message. Gated on the same tripComUrl this
+                // component already computes for the CTA below — never a
+                // second, independent check — so the promise can never
+                // outrun what actually renders beneath it.
+                : tripComUrl
+                  ? `No ${cabinLabel[deal.cabin]} fare checks logged yet — check the live price below`
+                  : `No ${cabinLabel[deal.cabin]} fare checks logged yet, and live-price comparison isn't available for this airport`}
             </div>
             {matchedRoute && (
               <Link

@@ -165,6 +165,10 @@ describe('Defect 2 follow-up (founder review) — cabin-specific fallback wordin
   });
 
   it('the no-fare fallback is derived from the card\'s own cabin, not hardcoded to any route or cabin', () => {
+    // Astra bounded trust fix (10 Sept 2026) gated this sentence on
+    // tripComUrl (see tests/dealcard-live-price-promise-truth.test.ts) —
+    // the cabin-derived template literal itself is unchanged, just now one
+    // of two branches rather than the only one.
     expect(dealCardSrc).toContain('`No ${cabinLabel[deal.cabin]} fare checks logged yet — check the live price below`');
     // The generic, cabin-agnostic sentence must be gone — this is exactly
     // the wording Participant 1 misread as contradicting the fare shown
