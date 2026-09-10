@@ -861,6 +861,18 @@ coverage instead.
 
 ## NEXT
 
+### FUNNEL-001 — Weekly Commercial Funnel reconciliation (methodology built, 10 Sept 2026)
+
+`docs/project-control/commercial-funnel/` now exists: a manually-populated weekly reconciliation
+(README + reusable template + `lib/commercial-funnel.ts`'s fail-closed rate engine, tested) for the
+VISITORS → USEFUL INTERACTION → PARTNER CTA CLICK → VALIDATED BOOKING → COMMISSION → FOUNDER EFFORT
+loop referenced above (line ~855) and in "Current first-revenue bottleneck: NOT YET PROVEN." No new
+analytics infrastructure — every figure is a manual dashboard read, tagged ATTRIBUTED /
+UNALLOCATED / NOT OBSERVABLE, never a fabricated proxy or a cross-scope rate. First week
+(2026-09-03 to 2026-09-09) is populated but structural only — this session had no dashboard access,
+so every cell is `NOT OBSERVABLE`; the schema is proven, not yet the commercial answer. Next actual
+step is running a week with real Vercel/Trip.com dashboard access, not more tooling.
+
 ### FARE-001 — Begin building the editorial fare observation archive
 
 Follow FARE_OBSERVATION_ARCHIVE.md: check the priority queue on a fixed editorial cadence and
