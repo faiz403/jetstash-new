@@ -134,7 +134,13 @@ describe('4. A genuinely no-evidence flight-only deal keeps the accurate, cabin-
     };
     expect(isBundledProductDeal(syntheticDeal)).toBe(false);
     const html = renderToStaticMarkup(DealCard({ deal: syntheticDeal }));
-    expect(html).toContain('No Economy fare checks logged yet — check the live price below');
+    // Astra bounded trust fix (10 Sept 2026): with no matching route at
+    // all, there is no live-price CTA rendered below this card either, so
+    // the card no longer promises "check the live price below" here — see
+    // tests/dealcard-live-price-promise-truth.test.ts for the dedicated
+    // coverage of that fix. This deal's cabin-scoped no-evidence wording
+    // is still what it always was otherwise.
+    expect(html).toContain('No Economy fare checks logged yet');
     expect(html).not.toContain('No package price tracked yet.');
   });
 });

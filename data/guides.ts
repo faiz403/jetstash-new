@@ -72,16 +72,18 @@ export const guides: Guide[] = [
     // clipping -- see tests/guide-metadata-gulf-connecting-fares.test.ts.
     title: 'Direct vs Gulf-Connecting Fares to Pakistan or India',
     summary: 'Comparing direct and Gulf-connecting fares to Pakistan or India means weighing journey time and baggage transfers too, not just the headline price.',
-    // Trust fix (10 Sept 2026, Astra bounded review): "your bags are
-    // checked through" was stated as a fact of booking on a single ticket,
-    // but a protected/through-ticket itinerary guarantees connection
-    // protection, not that baggage is necessarily checked all the way to
-    // the final destination — that depends on the actual ticket/airline
-    // arrangement. Rewritten to state the itinerary-protection benefit as
-    // fact and the baggage outcome as something to confirm at booking.
+    // Trust fix (10 Sept 2026, Astra bounded review; corrected same day,
+    // founder review): "your bags are checked through" was stated as a
+    // fact of booking on a single ticket. First pass said "one booking
+    // generally means the airline owns the problem" — still risked reading
+    // as if any single booking were a protected through-ticket. Narrowed to
+    // name the protected through-ticket/protected-connection itinerary
+    // specifically as what gives the airline that responsibility, keeping
+    // the baggage outcome as a separate fact that depends on the actual
+    // ticket/airline arrangement and needs confirming at booking.
     paragraphs: [
       'A one-stop fare via Dubai, Doha or Abu Dhabi is sometimes cheaper than a direct flight to Pakistan or India, but the comparison needs to include total journey time, connection risk, and whether checked luggage transfers automatically. For trips with young children or elderly relatives, a direct flight is often worth a moderate price premium.',
-      'Compare like with like: total door-to-door time, not flight time. A connection adds the layover itself plus the slack you should build around it. A tight connection saves an hour on paper and costs a day when it goes wrong. Check whether both legs sit on a single ticket. One booking generally means the airline owns the problem if you misconnect, though whether your bags are actually checked through to the final destination depends on the specific ticket and airline arrangement — confirm this when you book; two separate cheap tickets stitched together means you own the problem entirely, and that risk is rarely priced into the "saving".',
+      'Compare like with like: total door-to-door time, not flight time. A connection adds the layover itself plus the slack you should build around it. A tight connection saves an hour on paper and costs a day when it goes wrong. Check whether both legs sit on a single, protected through-ticket. A genuine protected connection means the airline owns the problem if you misconnect, though whether your bags are actually checked through to the final destination still depends on the specific ticket and airline arrangement — confirm this when you book; two separate cheap tickets stitched together means you own the problem entirely, and that risk is rarely priced into the "saving".',
       'The connecting option earns its place in specific situations: when your dates are flexible enough to catch the better one-stop pricing, when the layover is long enough to be genuinely restful rather than stressful, or when you\'re comparing cabins. A one-stop business class fare via the Gulf sometimes prices below what you\'d expect against a direct fare in the same cabin. The mistake is treating the headline price as the whole comparison.',
     ],
   },

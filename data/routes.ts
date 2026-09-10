@@ -2009,18 +2009,8 @@ export const routes: Route[] = [
     // can never contradict a later ledger-verified status change.
     intro:
       'IndiGo launched its Mumbai to Manchester service in July 2025 — the airline\'s first ever long-haul route — creating Manchester\'s only non-stop link to Mumbai at the time. As with the Delhi route, it\'s a single-airline direct service rather than a long-established one. See the Route Status panel below for the latest verified service status.',
-    // Trust fix (10 Sept 2026, Astra bounded review): "fares often rise on
-    // this route" and "since this is a single-airline direct service" both
-    // asserted an actively-priceable direct service — but IndiGo's
-    // Manchester-Mumbai direct service is confirmed ended
-    // (data/route-status-events.ts, verified 2 Sept 2026; see the Route
-    // Status panel this same page renders). Rewritten to state the
-    // seasonal Mumbai fare pattern generically (true regardless of which
-    // route a traveller flies) rather than as a live claim about this
-    // now-ended direct service, while still pointing at the connecting
-    // alternative, which remains genuinely comparable.
     bookingWindowNote:
-      'Diwali and the December to January window are the two periods when Mumbai fares typically rise, whichever route you fly. The well-established one-stop Gulf-carrier options below run far more frequently and are worth comparing on price and convenience for these dates.',
+      'Diwali and the December to January window are the two periods when fares often rise on this route. The well-established one-stop Gulf-carrier options below run far more frequently and are worth comparing on price and convenience regardless of season, since this is a single-airline direct service.',
     peakPeriodIds: ['diwali', 'christmas-new-year', 'uk-summer-holidays'],
     connectingAlternative: {
       typicalStops: 1,
