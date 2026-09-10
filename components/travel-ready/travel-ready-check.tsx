@@ -201,9 +201,20 @@ export function TravelReadyCheck({
       <h2 className="mt-3 max-w-2xl font-display text-2xl leading-snug text-ink-900 sm:text-[1.7rem]">
         Can you actually travel on these dates, with the documents you have?
       </h2>
+      {/*
+        Trust fix (10 Sept 2026, Astra bounded review): this subtext gave no
+        scope boundary before a traveller starts relying on the result, even
+        though the supported truth model (lib/travel-ready-check.ts,
+        data/travel-ready-rules.ts) only covers British passport holders
+        (plus NICOP/POC/OCI/NVR document holders) travelling to the 8
+        supported destinations. Added "for British passport holders" so the
+        boundary is visible up front, not just inside the form itself
+        (which already asks the British-passport question). Wording only —
+        no nationality/passport added, no rules-engine change.
+      */}
       <p className="mt-2 max-w-2xl text-sm text-ink-500">
-        A private readiness check, not a price check — passport validity and visa guidance for your specific trip,
-        sourced from official government pages.
+        A private readiness check, not a price check — passport validity and visa guidance for British passport
+        holders on your specific trip, sourced from official government pages.
       </p>
 
       {!result ? (
