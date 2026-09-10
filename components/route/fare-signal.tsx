@@ -466,7 +466,17 @@ export function FareSignal({
     <section aria-labelledby="fare-signal-heading" className="rounded-md border border-ink-200 bg-sand-50 p-5 sm:p-6">
       <div className="flex items-center gap-2.5">
         <Search className="h-5 w-5 text-terracotta-600" strokeWidth={2} />
-        <p id="fare-signal-heading" className="text-xs font-semibold uppercase tracking-[0.18em] text-terracotta-600">Fare Signal</p>
+        {/* Fare Answer Simplification (Astra product review, 10-11 Sept
+            2026): "Fare Signal" was the one public occurrence of an
+            internal product-taxonomy name — every other eyebrow on this
+            page (Tracked fares, Worth comparing, Route history) is a
+            plain, sentence-case description, not a proper-noun brand a
+            visitor has to learn. Renamed to "Fare check" to match that
+            house style. The id (fare-signal-heading, referenced by this
+            section's aria-labelledby) and the component/file name are
+            unchanged — this is public wording only, not a rename of the
+            underlying Fare Signal concept or its data. */}
+        <p id="fare-signal-heading" className="text-xs font-semibold uppercase tracking-[0.18em] text-terracotta-600">Fare check</p>
       </div>
       {signal.strongerSignal && (
         <p className="mt-4 text-sm font-medium text-ink-700">{signal.strongerSignal}</p>

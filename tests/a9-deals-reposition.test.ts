@@ -89,7 +89,11 @@ describe('The /deals route keeps its URL while clarifying curated card scope', (
     expect(dealsPageSrc).toContain("title: 'Tracked Fares from UK Airports'");
     expect(dealsPageSrc).toContain('alternates: { canonical: `${siteConfig.url}/deals` }');
     expect(dealsPageSrc).toContain('curated selection of routes and categories');
-    expect(dealsPageSrc).toContain('not listed as a Deal card here');
+    // Fare Answer Simplification (10-11 Sept 2026): this sentence used to
+    // name two internal product labels ("Fare Signal", "Deal card") to
+    // explain the distinction to visitors -- rewritten in plain terms.
+    expect(dealsPageSrc).toContain('not shown as one of the cards here');
+    expect(dealsPageSrc).not.toContain('tracked Fare Signal');
   });
 
   it('DealCard never rendered the word "Deal" in customer-facing text, and still does not', () => {
