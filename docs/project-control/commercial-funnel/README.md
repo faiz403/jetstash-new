@@ -46,6 +46,18 @@ from quietly turning a real gap into a fabricated number:
   it (e.g. no authorised session access to a dashboard this week). Never filled with a proxy,
   estimate, or last week's number carried forward silently.
 
+**Historical dashboard observations already recorded in project-control evidence are observable
+evidence and may be reused, provided their original scope and observation window are preserved.**
+Lack of *live* dashboard access in the session populating a given week does not, on its own, make a
+figure `NOT OBSERVABLE` — check `docs/project-control/` for a genuinely recorded figure first (see
+`2026-09-03-to-2026-09-09.md`'s own "What was searched" section for the search this produced in
+practice). A figure recovered this way keeps its own real observation date/window in the report,
+even when that window doesn't exactly match the nominal reporting week — never silently normalised
+to fit. If the mismatch is small and the evidence is otherwise clean, prefer renaming the report to
+the evidence-aligned window; if the nominal week is worth keeping regardless, label the figure
+PARTIAL / DIFFERENT SOURCE WINDOW and exclude it from any conversion calculation that would compare
+it against a figure from a genuinely different period.
+
 ## Fail-closed calculation rules
 
 `lib/commercial-funnel.ts`'s `computeRate()` is the one place a rate is computed, and it refuses to
