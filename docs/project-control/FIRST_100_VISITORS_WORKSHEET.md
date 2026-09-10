@@ -1,8 +1,11 @@
 # First 100 Visitors — Weekly Measurement Worksheet
 
 **Recorded:** 8 August 2026, alongside `FIRST_10_USER_TEST.md` as the first-users measurement pack.
-**Status:** template only — no week has been filled in yet. This document defines the weekly
-fields and the rules for reading them; it deliberately contains zero populated figures.
+**Status:** no full weekly cycle has been filled in yet under the weekly template below. One
+route-scoped, non-weekly evidence-gate reading has been backfilled (10 September 2026) — see
+"Evidence-gate readings" — to stop a genuine observation from existing only in chat history where a
+future session (or `docs/project-control/commercial-funnel/`) can't find it. This document still
+defines the weekly fields and the rules for reading them.
 
 ## Why this exists
 
@@ -96,6 +99,71 @@ than inventing a plausible-looking number.
 
 **Notes:** 
 ```
+
+## Evidence-gate readings (non-weekly, route-scoped)
+
+Some readings are a single-route, single-date checkpoint tied to a specific project decision gate
+(see `STATUS.md`'s "Next evidence gates"), not a calendar week of site-wide activity. Force-fitting
+one of these into the weekly template's "Week of [date] – [date]" framing would misrepresent both
+its scope (one route, not the whole site) and its window (a single evidence-gate date, not a
+7-day period) — so they get their own dated entries here instead, using the same field names as the
+weekly template where they apply.
+
+**Provenance note:** the entry below is backfilled on 10 September 2026 from this session's own
+record of the check actually performed on 6 September 2026 — it is not a fresh dashboard read taken
+today, and no dashboard was re-opened to produce it. Where a figure below states a range or a
+qualitative read (e.g. "ramping"), that imprecision is preserved from the original check rather than
+rounded into false precision.
+
+### MAN→ISB Day 3 evidence gate — 6 September 2026
+
+**Scope:** Manchester–Islamabad (`manchester-islamabad`) only — the sole Journey Choice pilot route.
+Not a site-wide reading.
+
+**Trigger:** the founder-set "6 September 2026 — MAN→ISB Day 3: read Search Console, Vercel and
+Trip.com for the signal" evidence gate (`STATUS.md`, "Next evidence gates").
+
+- Vercel visitors: not observed — Vercel Web Analytics was not part of what was actually read at
+  this checkpoint; only Search Console was checked with a result
+- Vercel page views: not observed, same reason
+- Top pages (in order): not observed
+- Device split: not observed
+
+- Search Console clicks: not recorded as a discrete count — 0% CTR was the read (see CTR row), which
+  implies clicks did not exceed a negligible number at the impression volume below, but no exact
+  click count was noted at the time
+- Search Console impressions: **ramping toward roughly 80–84 per day** — recorded as a trend read at
+  the time of the check, not a single exact daily count; do not treat "80–84" as a precise total for
+  6 September specifically
+- Search Console CTR: **0%** at the time of the check
+- Search Console average position: **roughly 45–49**
+- Top queries: not recorded at the time
+- Top landing pages: not recorded at the time (route scope was already known — manchester-islamabad)
+
+- Trip.com outbound clicks / dashboard activity: not observed — the Trip.com affiliate dashboard was
+  inaccessible during this specific check
+- Commissions / bookings: not observed, same reason
+
+- Contact enquiries: not checked as part of this gate
+- Quote requests: not checked as part of this gate
+- Newsletter signups: not checked as part of this gate
+- Route Watch signups: not checked as part of this gate
+
+- Repeated route views / return behaviour observed: not checked as part of this gate
+- Founder observations and support burden this week: not recorded
+
+**Founder ruling recorded at the time:** HOLD until the 10 September Day 7 checkpoint — a weak
+upstream (search-impression) signal is not read as a verdict on Journey Choice itself, since no
+site-visitor or CTA-click figure was available to complete the picture. Vercel Pro was declined as a
+way to unblock the missing rows above.
+
+**Notes:** This reading answers "was there any search-visibility signal by Day 3" (weak: real
+impression ramp, but zero measured click-through and a poor average position) — it does not answer
+"are visitors converting," since the Vercel and Trip.com rows that would show that were both
+unavailable at the time. Treat the two gaps above (no Vercel figure, no Trip.com figure) as exactly
+the kind of missing evidence `docs/project-control/commercial-funnel/README.md` now has a standing
+rule for reusing once they *are* recorded — this entry is what "recorded" looks like for the one row
+that was.
 
 ## Reading the worksheet over time — what this is for, and what it isn't
 
