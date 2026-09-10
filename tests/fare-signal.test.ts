@@ -89,7 +89,9 @@ describe('Fare Signal presentation and CTA boundaries', () => {
     // Air evidence this test names is dated 25 Aug.
     const signal = getFareSignalForRoute('manchester-islamabad', '2026-08-25');
     const text = renderToStaticMarkup(FareSignal({ signal, tripComUrl: getTripComRouteUrl('manchester-islamabad'), routeSlug: 'manchester-islamabad' })).replace(/\s+/g, ' ');
-    expect(text).toContain('Fare Signal');
+    // Fare Answer Simplification (10-11 Sept 2026): the public eyebrow was
+    // renamed "Fare Signal" -> "Fare check" -- see components/route/fare-signal.tsx.
+    expect(text).toContain('Fare check');
     expect(text).toContain('Fare spotted');
     expect(text).toContain('480');
     expect(text).toContain('Riyadh Air');

@@ -52,8 +52,8 @@ export default function DealsPage() {
             being expanded gradually using manually verified observations, not a live price feed. Every fare shown
             below is a real check logged by hand, dated. Where we've checked a route more than
             once, you'll see the range we've actually observed — never a single price left to quietly go stale.
-            The cards below are a curated selection of routes and categories, so a route can have a tracked Fare
-            Signal even when it is not listed as a Deal card here. Always confirm the final price before booking.{' '}
+            The cards below are a curated selection of routes and categories, so a route can have a tracked fare
+            even when it is not shown as one of the cards here. Always confirm the final price before booking.{' '}
             <Link href="/about" className="font-medium text-brass-300 underline underline-offset-2 hover:text-brass-200">
               Read our standards
             </Link>
@@ -61,7 +61,7 @@ export default function DealsPage() {
           </>
         }
         stats={[
-          { value: `${routesWithTrackedFare} of ${routes.length}`, label: 'Routes with tracked Fare Signals' },
+          { value: `${routesWithTrackedFare} of ${routes.length}`, label: 'Routes with a tracked fare' },
           { value: String(fareObservations.length), label: 'Fare checks logged' },
           { value: String(airportCount), label: 'UK airports' },
           { value: formatChecked(latestCheck), label: 'Most recent check' },

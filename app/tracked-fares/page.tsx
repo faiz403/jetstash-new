@@ -23,8 +23,14 @@ import { siteConfig } from '@/lib/site-config';
  */
 export const revalidate = 21600;
 
+// Fare Answer Simplification (Astra product review, 10-11 Sept 2026): the
+// title previously combined two internal-sounding names ("Tracked Fares" and
+// "Fare Signal") in one browser-tab/SEO title, even though the page's own
+// visible copy below never mentions "Fare Signal" at all -- the mismatch was
+// the title teaching taxonomy the page itself doesn't. No page content,
+// route/fare data or route logic changed.
 export const metadata: Metadata = {
-  title: 'Tracked Fares — Every Current Fare Signal',
+  title: 'Tracked Fares — Every Current Fare',
   description:
     'Every route JetStash currently has a checked, dated fare for — grouped by UK departure airport. Independent of the curated Deals selection. Never a live price feed.',
   alternates: { canonical: `${siteConfig.url}/tracked-fares` },
