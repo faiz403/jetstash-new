@@ -619,6 +619,69 @@ export default async function RoutePage({ params }: { params: Promise<{ slug: st
         </div>
       </section>
 
+      {/* Answer-first hierarchy (Astra product review, 10 Sept 2026): the
+          three sections that used to render here — Connecting Alternative,
+          Route History timeline, and the "Other UK airports" comparison —
+          are pure supporting narrative/comparison, not part of the
+          traveller's immediate decision (that's the hero, RouteVerdict/
+          FareSignal/JourneyChoice above, plus the trust-critical Route
+          Status/Warning panels and the Book-By/Travel Ready next-action
+          tools). Moved to after the fare-evidence block below (Fare
+          History, Deals, RouteWatch) so a first-time visitor reaches the
+          answer, the safety-relevant status information, and a next action
+          before wading through comparison detail. No component, gate,
+          route data or copy was changed — this is a pure JSX reorder; see
+          tests/route-page-answer-first-hierarchy.test.ts. */}
+
+      <section className="bg-white py-14 sm:py-16">
+        <div className="mx-auto max-w-content px-5 sm:px-8">
+          <h2 className="font-display text-2xl text-ink-900 sm:text-3xl">{fareSectionCopy.heading}</h2>
+          {fareSectionCopy.caption && <p className="mt-2 max-w-xl text-sm text-ink-500">{fareSectionCopy.caption}</p>}
+          {/* Journey Choice and its fare-window reconciliation note used to
+              render here — moved up to directly follow Fare Signal (MAN→ISB
+              Flagship Verdict pilot, Phase 1, September 2026), so this
+              heading now introduces exactly what follows it: fare history
+              and deals, nothing else. See the new section immediately after
+              Fare Signal, above. */}
+          {fareObservations.length > 0 && (
+            // id anchors Fare Signal's and Book-By's "See recent fare checks"
+            // link when the current representative fare is withheld
+            // specifically for poor itinerary suitability
+            // (components/route/fare-signal.tsx's SuppressedFareExplanation,
+            // components/route/book-by-countdown.tsx) -- 2 Sep 2026,
+            // traveller-POV live product review. The global scroll-padding-top
+            // (see the id="route-watch" div below) keeps it clear of the
+            // sticky header.
+            <div id="fare-history" className="mt-8">
+              <FareHistoryPanel observations={fareObservations} />
+            </div>
+          )}
+          {dealsHere.length > 0 ? (
+            <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              {dealsHere.map((deal) => (
+                <DealCard key={deal.id} deal={deal} />
+              ))}
+            </div>
+          ) : shouldShowNoFareFallback(fareSignal) ? (
+            <div className="mt-8">
+              <NoFareFallback cityLabel={`${airport.city} to ${dest.city}`} routeSlug={route.slug} />
+            </div>
+          ) : null}
+          {/* SEO Domination Batch 1B (23 Aug 2026) — sits directly below the
+              Business Deal card it's about, only when a genuine current
+              Business observation backs it (businessFareRange is null
+              otherwise; see its own computation above). */}
+          {route.businessClarity && businessFareRange && (
+            <BusinessClarityPanel clarity={route.businessClarity} fareRange={businessFareRange} />
+          )}
+          {/* id anchors the Book-By panel's "Watch this route" CTA; the global
+              scroll-padding-top keeps it clear of the sticky header. */}
+          <div id="route-watch" className="mt-8 max-w-xl">
+            <RouteWatchForm defaultAirportSlug={airport.slug} defaultDestinationSlug={dest.slug} />
+          </div>
+        </div>
+      </section>
+
       {/* Verification-pending leakage fix: pending must never be mapped to
           the 'connecting' branch here — canShowConnectingAlternative is
           false for every pending route, regardless of what
@@ -733,55 +796,6 @@ export default async function RoutePage({ params }: { params: Promise<{ slug: st
           </div>
         </section>
       )}
-
-      <section className="bg-white py-14 sm:py-16">
-        <div className="mx-auto max-w-content px-5 sm:px-8">
-          <h2 className="font-display text-2xl text-ink-900 sm:text-3xl">{fareSectionCopy.heading}</h2>
-          {fareSectionCopy.caption && <p className="mt-2 max-w-xl text-sm text-ink-500">{fareSectionCopy.caption}</p>}
-          {/* Journey Choice and its fare-window reconciliation note used to
-              render here — moved up to directly follow Fare Signal (MAN→ISB
-              Flagship Verdict pilot, Phase 1, September 2026), so this
-              heading now introduces exactly what follows it: fare history
-              and deals, nothing else. See the new section immediately after
-              Fare Signal, above. */}
-          {fareObservations.length > 0 && (
-            // id anchors Fare Signal's and Book-By's "See recent fare checks"
-            // link when the current representative fare is withheld
-            // specifically for poor itinerary suitability
-            // (components/route/fare-signal.tsx's SuppressedFareExplanation,
-            // components/route/book-by-countdown.tsx) -- 2 Sep 2026,
-            // traveller-POV live product review. The global scroll-padding-top
-            // (see the id="route-watch" div below) keeps it clear of the
-            // sticky header.
-            <div id="fare-history" className="mt-8">
-              <FareHistoryPanel observations={fareObservations} />
-            </div>
-          )}
-          {dealsHere.length > 0 ? (
-            <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-              {dealsHere.map((deal) => (
-                <DealCard key={deal.id} deal={deal} />
-              ))}
-            </div>
-          ) : shouldShowNoFareFallback(fareSignal) ? (
-            <div className="mt-8">
-              <NoFareFallback cityLabel={`${airport.city} to ${dest.city}`} routeSlug={route.slug} />
-            </div>
-          ) : null}
-          {/* SEO Domination Batch 1B (23 Aug 2026) — sits directly below the
-              Business Deal card it's about, only when a genuine current
-              Business observation backs it (businessFareRange is null
-              otherwise; see its own computation above). */}
-          {route.businessClarity && businessFareRange && (
-            <BusinessClarityPanel clarity={route.businessClarity} fareRange={businessFareRange} />
-          )}
-          {/* id anchors the Book-By panel's "Watch this route" CTA; the global
-              scroll-padding-top keeps it clear of the sticky header. */}
-          <div id="route-watch" className="mt-8 max-w-xl">
-            <RouteWatchForm defaultAirportSlug={airport.slug} defaultDestinationSlug={dest.slug} />
-          </div>
-        </div>
-      </section>
 
       {travellerTips.length > 0 && (
         <section className="bg-sand-50 py-14 sm:py-16">
