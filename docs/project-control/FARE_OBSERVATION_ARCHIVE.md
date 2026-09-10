@@ -714,3 +714,16 @@ No screenshot was saved. All four pass isPubliclyPublishable and
 isObservationPublishable at 2026-09-09 in focused tests. This validates archive
 completeness and route evidence, not self-transfer suitability or deal status.
 Local-only batch; no deployment or push.
+
+## Closed observation — 10 September 2026 routine baseline #3
+
+Four Google Flights observations were appended in the authorised order:
+MAN–DXB £252, MAN–LHE £418, MAN–ISB £421 and BHX–BOM £446. The fixed
+return Economy, one-adult, GBP, 3–17 November profile and prior profile
+identifiers were retained. All selected itineraries were self-transfer with
+at least two stops in both directions, so existing poor-itinerary suppression
+remains appropriate. Baggage was fee-based and its complete cost was not
+stated. No commercial evaluation was performed.
+
+Full evidence: [10 September baseline #3](fare-evidence/routine-baseline-2026-09-10.md).
+No screenshot was saved. Local only; no deployment or push.
