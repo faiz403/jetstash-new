@@ -3,7 +3,6 @@ import { readFileSync, readdirSync, statSync } from 'fs';
 import { join, relative } from 'path';
 import { isValidElement } from 'react';
 import { CommercialPaths } from '@/components/homepage-v2/homepage-sections';
-import { routes } from '@/data/routes';
 
 /**
  * Plain recursive .tsx walker (no `glob` dependency — this repo doesn't have
@@ -82,7 +81,7 @@ function collectHrefs(node: unknown, out: string[] = []): string[] {
   return out;
 }
 
-describe('Fix 1 — the broken /founder homepage CTA is replaced with a real public route', () => {
+describe('Fix 1 — specialist homepage links remain public and safe', () => {
   // CommercialPaths (exported directly from homepage-sections.tsx) is called
   // here rather than the full JourneyDeskHome tree — JourneyDeskHome also
   // composes 'use client' components with their own hooks (AtlasFeelTest,
@@ -91,27 +90,19 @@ describe('Fix 1 — the broken /founder homepage CTA is replaced with a real pub
   // hooks and is the actual component that contained the bug, so calling it
   // directly and walking its real returned element tree is both safe and
   // precise — this proves the actual rendered output, not just source text.
-  it('the actual rendered Economy card contains no /founder link', () => {
+  it('the actual rendered specialist links contain no /founder link', () => {
     const hrefs = collectHrefs(CommercialPaths());
     expect(hrefs.some((h) => h.startsWith('/founder'))).toBe(false);
   });
 
-  it('the Economy card now links to the public Manchester–Mumbai route guide', () => {
+  it('keeps the public Business and Umrah destinations discoverable', () => {
     const hrefs = collectHrefs(CommercialPaths());
-    expect(hrefs).toContain('/routes/manchester-mumbai');
+    expect(hrefs).toContain('/business-class');
+    expect(hrefs).toContain('/umrah');
   });
 
-  it('manchester-mumbai is a real, statically-generated public route (would return 200)', () => {
-    // generateStaticParams in app/routes/[slug]/page.tsx maps routes.map(r => ({ slug: r.slug }))
-    // directly — being present in this array IS what makes a route slug a real, pre-rendered
-    // public page rather than a 404. Confirming this from the actual data module the route
-    // page's own generateStaticParams reads from, not a separate assumption.
-    expect(routes.some((r) => r.slug === 'manchester-mumbai')).toBe(true);
-  });
-
-  it('the CTA label no longer references the private "Journey Brief" product name', () => {
+  it('the compact specialist row does not introduce the private "Journey Brief" product name', () => {
     expect(homepageSectionsSrc).not.toMatch(/Start with the Journey Brief/);
-    expect(homepageSectionsSrc).toContain('See the Manchester–Mumbai route guide');
   });
 
   it('a meaningful internal-link scan: no public source file links to /founder', () => {
@@ -223,7 +214,7 @@ describe('Fix 3 — credibility wording corrected: no invented team, no JetStash
 
   it('the homepage no longer claims JetStash itself "hands you a live-fare check"', () => {
     expect(homepageSectionsSrc).not.toMatch(/JetStash hands you a live-fare check/);
-    expect(homepageSectionsSrc).toMatch(/current Trip\.com partner search/);
+    expect(homepageSectionsSrc).not.toMatch(/Trip\.com partner search/);
   });
 
   it('the underlying facts these sentences convey are still present, just without the invented team/live-fare claim', () => {

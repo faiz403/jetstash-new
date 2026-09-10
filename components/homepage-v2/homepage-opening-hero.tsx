@@ -1,8 +1,6 @@
 import Link from 'next/link';
 import { ArrowUpRight } from 'lucide-react';
 import { PageHero } from '@/components/sections/page-hero';
-import { routes } from '@/data/routes';
-import { getPublishableObservationsByRoute } from '@/data/fare-observations';
 import { JourneyCheckForm, type JourneyCheckData } from '@/components/homepage-v2/journey-check-form';
 
 /**
@@ -47,14 +45,8 @@ import { JourneyCheckForm, type JourneyCheckData } from '@/components/homepage-v
  * three-word sets before a visitor ever reaches the product reads as a
  * manifesto, not a tool. Removed the proof-point chip row and the closing
  * "When the journey is clear..." line entirely (WhyJetStash is now the one
- * place that explanation lives). The live-computed credibility stat (see
- * `routesWithTrackedFare` below) moved out of PageHero's own dedicated
- * `stats` slot — leading with a coverage number was itself part of the
- * "explains JetStash before letting someone experience it" problem this
- * hero integration fixes — into a small, de-emphasised line beside the
- * secondary CTA instead. Still the same live-computed value, from the same
- * data, never a hardcoded figure (see CLAUDE.md "No invented stats"); only
- * its visual weight changed.
+ * place that explanation lives). Coverage counts now sit below the product
+ * explanation, rather than competing with the first action in the hero.
  */
 
 // Short-viewport-only tightening (e.g. 320x720): reduces PageHero's own section
@@ -71,12 +63,6 @@ import { JourneyCheckForm, type JourneyCheckData } from '@/components/homepage-v
 const SHORT_VIEWPORT_HERO_PADDING = '[@media(max-height:800px)]:py-8';
 
 export function HomepageOpeningHero({ journeyCheck }: { journeyCheck: JourneyCheckData }) {
-  // Live-computed, same function and phrasing convention as /deals's own
-  // hero stat — never a hand-typed figure that could silently drift from
-  // what's actually tracked.
-  const nowIsoForCoverage = new Date().toISOString().slice(0, 10);
-  const routesWithTrackedFare = routes.filter((r) => getPublishableObservationsByRoute(r.slug, nowIsoForCoverage).length > 0).length;
-
   return (
     <PageHero
       eyebrow="Before you book a flight"
@@ -87,8 +73,8 @@ export function HomepageOpeningHero({ journeyCheck }: { journeyCheck: JourneyChe
       // this text, not a change to PageHero's own h1 (which keeps font-display
       // for every other page and every other heading on this one) — see
       // PageHero's own doc comment, still unchanged.
-      title={<span className="font-sans">Check the whole journey, not just the fare.</span>}
-      description="Choose your UK airport and destination. JetStash shows which routes are operating, what has changed, what travel requirements apply and when the information was last checked."
+      title={<span className="font-sans">Understand your journey before you pay.</span>}
+      description="Choose your UK airport and destination. See the route, what has changed and what you still need to check before booking."
       heroKey="routes"
       size="compact"
       className={SHORT_VIEWPORT_HERO_PADDING}
@@ -170,9 +156,6 @@ export function HomepageOpeningHero({ journeyCheck }: { journeyCheck: JourneyChe
             Explore the Route Atlas
             <ArrowUpRight className="h-4 w-4" strokeWidth={2.25} aria-hidden="true" />
           </Link>
-          <span className="text-xs text-ink-400">
-            {routesWithTrackedFare} of {routes.length} UK routes have tracked fares
-          </span>
         </div>
       </div>
     </PageHero>

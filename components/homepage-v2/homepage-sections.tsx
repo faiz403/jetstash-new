@@ -1,6 +1,8 @@
 import Link from 'next/link';
-import { ArrowUpRight, ArrowRight, Plane, Crown, Compass, BellRing, ShieldCheck, FileCheck2, Receipt } from 'lucide-react';
+import { ArrowUpRight, ArrowRight, Plane, BellRing, ShieldCheck, FileCheck2, Receipt } from 'lucide-react';
 import { ROUTE_WATCH_INITIAL_COPY } from '@/lib/route-watch-config';
+import { routes } from '@/data/routes';
+import { getPublishableObservationsByRoute } from '@/data/fare-observations';
 
 /**
  * Homepage v2 — server-rendered sections below the signature hero (protected
@@ -9,19 +11,12 @@ import { ROUTE_WATCH_INITIAL_COPY } from '@/lib/route-watch-config';
  * alternative. No affiliate link fires from this page; the current-fare
  * hand-off lives inside the route guides these link to.
  *
- * Public-trust fix (A1/A9, August 2026): the Economy card used to link to
- * /founder/journey-brief/manchester-mumbai — a founder-only surface (see its
- * own doc comment in components/journey-brief/journey-brief-manchester-mumbai.tsx)
- * that a public visitor could never actually reach, and its copy claimed
- * JetStash itself "hands you a live-fare check", which could be read as
- * JetStash supplying live fares rather than pointing to Trip.com's own
- * current search. Both fixed: the link now goes to the real public route
- * guide for this exact featured journey (/routes/manchester-mumbai, the
- * homepage's own flagship thread — see journey-desk-home.tsx), and the copy
- * now names Trip.com's search as the current/live part.
+ * Public-trust fix (A1/A9, August 2026) removed a founder-only homepage link
+ * and bounded booking language. The primary homepage path is now the journey
+ * selector; specialist links below remain public and informational.
  */
 
-/* ── Contextual commercial paths — journey paths, not three sales cards ──
+/* ── Specialist links — secondary to the journey task, not sales cards ──
    Background is deliberately bg-sand-100, not the bg-sand-50 every other
    light section on this page uses (density + hierarchy fix, premium
    rhythm pass, August 2026): "What JetStash checks" directly above and
@@ -39,65 +34,24 @@ import { ROUTE_WATCH_INITIAL_COPY } from '@/lib/route-watch-config';
    fix. */
 export function CommercialPaths() {
   return (
-    <section className="bg-sand-100 py-16 sm:py-24">
+    <section className="bg-sand-100 py-10 sm:py-14">
       <div className="mx-auto max-w-content px-5 sm:px-8">
-        <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-terracotta-600">However you travel</span>
-        <h2 className="mt-2 max-w-2xl font-display text-3xl leading-tight text-ink-900 sm:text-4xl">
-          The same checked journey, three ways to fly it
-        </h2>
-        <p className="mt-3 max-w-xl text-sm leading-relaxed text-ink-500">
-          One checked route underneath all three — the difference is how you want to fly it, not how much we checked.
-        </p>
-        <div className="mt-9 grid gap-5 lg:grid-cols-3">
-          {/* Economy — intelligence first, then the route guide's own Trip.com hand-off */}
-          <article className="flex flex-col rounded-lg border border-ink-100 bg-white p-6 shadow-card">
-            <span className="flex h-10 w-10 items-center justify-center rounded-sm bg-terracotta-50 text-terracotta-600">
-              <Plane className="h-5 w-5" strokeWidth={2} />
-            </span>
-            <h3 className="mt-4 font-display text-xl text-ink-900">Economy</h3>
-            <p className="mt-2 flex-1 text-sm leading-relaxed text-ink-600">
-              See the route status, service change and booking timing first. When you&apos;re ready, we hand you to a
-              current Trip.com partner search — never a stale or half-built price.
-            </p>
-            <Link href="/routes/manchester-mumbai" className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-ink-900 hover:text-terracotta-600">
-              See the Manchester–Mumbai route guide <ArrowRight className="h-4 w-4" strokeWidth={2.25} />
+        <div className="flex flex-col gap-4 border-y border-ink-100 py-6 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-sm font-semibold text-ink-900">Planning a specialist trip?</p>
+            <p className="mt-1 text-sm text-ink-600">Explore dedicated guidance when it fits your journey.</p>
+          </div>
+          <div className="flex flex-wrap gap-x-5 gap-y-2 text-sm font-semibold">
+            <Link href="/business-class" className="inline-flex items-center gap-1.5 text-ink-900 hover:text-terracotta-600">
+              Business Class <ArrowRight className="h-4 w-4" strokeWidth={2.25} />
             </Link>
-          </article>
-
-          {/* Business Class — premium planning path, no deal card, no fake quote */}
-          <article className="flex flex-col rounded-lg border border-ink-100 bg-ink-900 p-6 shadow-card">
-            <span className="flex h-10 w-10 items-center justify-center rounded-sm bg-white/5 text-brass-300">
-              <Crown className="h-5 w-5" strokeWidth={2} />
-            </span>
-            <h3 className="mt-4 font-display text-xl text-sand-50">Business Class</h3>
-            <p className="mt-2 flex-1 text-sm leading-relaxed text-ink-300">
-              A planning path, not a deal feed. Long-haul premium fares move on their own patterns — we track the routes
-              UK travellers actually fly and flag when a fare is genuinely worth it.
-            </p>
-            <Link href="/business-class" className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-brass-300 hover:text-brass-200">
-              Explore Business Class <ArrowRight className="h-4 w-4" strokeWidth={2.25} />
+            <Link href="/umrah" className="inline-flex items-center gap-1.5 text-ink-900 hover:text-terracotta-600">
+              Umrah guidance <ArrowRight className="h-4 w-4" strokeWidth={2.25} />
             </Link>
-          </article>
-
-          {/* Umrah — discoverable, operationally supported wording */}
-          <article className="flex flex-col rounded-lg border border-ink-100 bg-white p-6 shadow-card">
-            <span className="flex h-10 w-10 items-center justify-center rounded-sm bg-terracotta-50 text-terracotta-600">
-              <Compass className="h-5 w-5" strokeWidth={2} />
-            </span>
-            <h3 className="mt-4 font-display text-xl text-ink-900">Umrah</h3>
-            <p className="mt-2 flex-1 text-sm leading-relaxed text-ink-600">
-              What a package really includes, how Makkah hotel distance affects price, and the Nusuk visa route. Tell us
-              your dates and group and a person comes back with real pricing.
-            </p>
-            <div className="mt-5 flex flex-wrap gap-x-4 gap-y-2">
-              <Link href="/umrah" className="inline-flex items-center gap-1.5 text-sm font-semibold text-ink-900 hover:text-terracotta-600">
-                Umrah hub <ArrowRight className="h-4 w-4" strokeWidth={2.25} />
-              </Link>
-              <Link href="/quote-request?tripType=umrah&region=gulf" className="inline-flex items-center gap-1.5 text-sm font-semibold text-terracotta-600 hover:text-terracotta-500">
-                Request a quote
-              </Link>
-            </div>
-          </article>
+            <Link href="/quote-request?tripType=umrah&region=gulf" className="inline-flex items-center gap-1.5 text-ink-900 hover:text-terracotta-600">
+              Umrah quotes <ArrowRight className="h-4 w-4" strokeWidth={2.25} />
+            </Link>
+          </div>
         </div>
       </div>
     </section>
@@ -147,6 +101,9 @@ const JOURNEY_CHECKS: { icon: typeof Plane; title: string; body: string; href?: 
 ];
 
 export function WhyJetStash() {
+  const todayIso = new Date().toISOString().slice(0, 10);
+  const routesWithTrackedFare = routes.filter((route) => getPublishableObservationsByRoute(route.slug, todayIso).length > 0).length;
+
   return (
     <section className="bg-sand-50 py-14 sm:py-20">
       <div className="mx-auto max-w-content px-5 sm:px-8">
@@ -196,6 +153,9 @@ export function WhyJetStash() {
             <ArrowUpRight className="h-4 w-4" strokeWidth={2.25} />
           </Link>
         </div>
+        <p className="mt-4 text-xs text-ink-500">
+          Coverage note: {routesWithTrackedFare} of {routes.length} UK routes currently have tracked fares.
+        </p>
       </div>
     </section>
   );

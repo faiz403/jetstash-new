@@ -24,9 +24,9 @@ const atlasSrc = readFileSync(join(process.cwd(), 'components/founder/atlas-feel
 describe('homepage opening hero uses the approved copy', () => {
   it('has the exact eyebrow, headline and supporting copy', () => {
     expect(heroSrc).toContain('Before you book a flight');
-    expect(heroSrc).toContain('Check the whole journey, not just the fare.');
+    expect(heroSrc).toContain('Understand your journey before you pay.');
     expect(heroSrc).toContain(
-      'Choose your UK airport and destination. JetStash shows which routes are operating, what has changed, what travel requirements apply and when the information was last checked.'
+      'Choose your UK airport and destination. See the route, what has changed and what you still need to check before booking.'
     );
   });
 
@@ -46,7 +46,7 @@ describe('homepage opening hero uses the approved copy', () => {
   // just the title text (not a change to PageHero's own h1, which keeps
   // font-display for every other page and heading, homepage included).
   it('the headline renders in font-sans, not font-display, via a scoped span — PageHero itself is untouched', () => {
-    expect(heroSrc).toMatch(/title=\{<span className="font-sans">Check the whole journey, not just the fare\.<\/span>\}/);
+    expect(heroSrc).toMatch(/title=\{<span className="font-sans">Understand your journey before you pay\.<\/span>\}/);
     const pageHeroSrc = readFileSync(join(process.cwd(), 'components/sections/page-hero.tsx'), 'utf8');
     expect(pageHeroSrc).toContain('font-display text-4xl leading-[1.08] tracking-tight text-sand-50 sm:text-5xl');
   });
@@ -85,19 +85,15 @@ describe('homepage opening hero uses the approved copy', () => {
     expect(heroSrc).not.toContain('When the journey is clear, JetStash points you to a booking partner.');
   });
 
-  // Homepage hero integration (September 2026): leading with a coverage
-  // number was itself part of the "explains JetStash before you can use it"
-  // problem — the stat moved out of PageHero's own dedicated `stats` slot
-  // (a large, prominent display) into a small, de-emphasised inline line
-  // beside the secondary CTA. Still the same live-computed value, never a
-  // hardcoded figure — only its visual weight changed.
-  it('shows the live-computed credibility stat inline and de-emphasised, never via PageHero\'s stats slot or a hardcoded figure', () => {
-    expect(heroSrc).toContain("import { routes } from '@/data/routes'");
-    expect(heroSrc).toContain("import { getPublishableObservationsByRoute } from '@/data/fare-observations'");
-    expect(heroSrc).toMatch(/\{routesWithTrackedFare\} of \{routes\.length\}/);
+  it('keeps the coverage count live-computed but moves it below the primary journey task', () => {
+    const sectionsSrc = readFileSync(join(process.cwd(), 'components/homepage-v2/homepage-sections.tsx'), 'utf8');
+    expect(heroSrc).not.toContain("import { routes } from '@/data/routes'");
+    expect(heroSrc).not.toContain("import { getPublishableObservationsByRoute } from '@/data/fare-observations'");
+    expect(sectionsSrc).toContain("import { routes } from '@/data/routes'");
+    expect(sectionsSrc).toContain("import { getPublishableObservationsByRoute } from '@/data/fare-observations'");
+    expect(sectionsSrc).toMatch(/Coverage note: \{routesWithTrackedFare\} of \{routes\.length\}/);
     expect(heroSrc).not.toMatch(/stats=\{/);
-    // Never a hand-typed number standing in for the live count.
-    expect(heroSrc).not.toMatch(/\d+ of \d+ UK routes/);
+    expect(sectionsSrc).not.toMatch(/\d+ of \d+ UK routes/);
   });
 
   it('reuses the shared PageHero and an existing approved image, not a new one', () => {
@@ -263,10 +259,12 @@ describe('CommercialPaths is wired into the live homepage (August 2026, founder-
     expect(atlasIndex).toBeGreaterThan(heroIndex);
   });
 
-  it('the component itself is untouched — no new copy was written, the existing Economy/Business/Umrah content is reused verbatim', () => {
-    expect(sectionsSrc).toContain('The same checked journey, three ways to fly it');
-    expect(sectionsSrc).toContain('A planning path, not a deal feed');
-    expect(sectionsSrc).toContain('a person comes back with real pricing');
+  it('keeps Business and Umrah discoverable without presenting Economy, Business and Umrah as equal homepage propositions', () => {
+    expect(sectionsSrc).toContain('Planning a specialist trip?');
+    expect(sectionsSrc).toContain('href="/business-class"');
+    expect(sectionsSrc).toContain('href="/umrah"');
+    expect(sectionsSrc).not.toContain('The same checked journey, three ways to fly it');
+    expect(sectionsSrc).not.toContain('<h3 className="mt-4 font-display text-xl text-ink-900">Economy</h3>');
   });
 });
 
