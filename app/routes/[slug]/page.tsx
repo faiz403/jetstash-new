@@ -29,7 +29,7 @@ import { RouteReadinessPanel } from '@/components/route/route-readiness-panel';
 import { TravelReadyCheck } from '@/components/travel-ready/travel-ready-check';
 import { JsonLd, breadcrumbSchema } from '@/components/seo/json-ld';
 import { siteConfig } from '@/lib/site-config';
-import { getTripComFlightHandoffUrl } from '@/lib/booking-providers';
+import { getSafeTripComFlightHandoffUrl } from '@/lib/booking-providers';
 import { computeBookBySnapshot } from '@/lib/booking-intelligence';
 import { computeReadiness } from '@/lib/travel-intelligence-engine';
 import { TRAVEL_READY_SUPPORTED_COUNTRIES } from '@/lib/travel-ready-check';
@@ -192,7 +192,7 @@ export default async function RoutePage({ params }: { params: Promise<{ slug: st
   // Fail-closed by construction: null for any route not in booking-providers.ts's
   // dashboard-verified map (the 9 London-origin routes today) — never a generic
   // Trip.com fallback. See getTripComFlightHandoffUrl's doc comment.
-  const tripComUrl = getTripComFlightHandoffUrl(route.slug, airport.slug, dest.slug);
+  const tripComUrl = getSafeTripComFlightHandoffUrl(route.slug, airport.slug, dest.slug);
   // Journey Choice dated Trip.com handoff pilot (24 Aug 2026, founder-
   // approved, manchester-islamabad only — see lib/tripcom-dated-handoff.ts's
   // own doc comment for the two-part commercial evidence this pilot rests

@@ -9,7 +9,7 @@ import { getRouteBySlug } from '@/data/routes';
 import { getDestinationBySlug } from '@/data/destinations';
 import { daysBetweenIso, getFareFreshnessState, type FareFreshnessState } from '@/lib/freshness-thresholds';
 import { isSelfTransferItinerary } from '@/lib/fare-self-transfer';
-import { getJourneyConsequences, formatJourneyConsequenceSummary } from '@/lib/journey-consequence';
+import { getJourneyConsequences, formatJourneyConsequenceSummary, extractStopViaFromText } from '@/lib/journey-consequence';
 import { isPoorItinerarySuitability } from '@/lib/itinerary-suitability';
 
 export type FareSignalState = 'current' | 'recent' | 'none';
@@ -74,6 +74,21 @@ export interface FareSignal {
 export function toSignalObservation(observation: FareObservation): FareSignalObservation | null {
   if (!isPubliclyPublishable(observation)) return null;
 
+  // Itinerary-shape disclosure fix (8 September 2026, founder review):
+  // when the observation's own structured fareDirectness/outboundStops/
+  // outboundConnectionAirports fields are absent, fall back to the
+  // conservative "N stop(s) via City ... outbound|return" text extraction
+  // (lib/journey-consequence.ts's extractStopViaFromText) rather than
+  // silently rendering no itinerary-shape information at all next to the
+  // price. Only ever ADDS to a structured field that's genuinely missing —
+  // never overrides one that's already set, and never asserts anything
+  // about the OTHER leg the text doesn't itself state (see formatStops()'s
+  // existing null-if-either-unknown rule in components/route/fare-signal.tsx,
+  // which already handles that asymmetry correctly once fed this).
+  const stopVia = !observation.fareDirectness || observation.fareDirectness === 'unknown'
+    ? extractStopViaFromText(observation.priceNote)
+    : null;
+
   return {
     id: observation.id,
     cabin: observation.cabin,
@@ -85,12 +100,13 @@ export function toSignalObservation(observation: FareObservation): FareSignalObs
     returnDate: observation.returnDate!,
     directness: observation.fareDirectness === 'direct' || observation.fareDirectness === 'connecting'
       ? observation.fareDirectness
-      : null,
-    outboundStops: observation.outboundStops ?? null,
-    returnStops: observation.returnStops ?? null,
+      : (stopVia ? 'connecting' : null),
+    outboundStops: observation.outboundStops ?? (stopVia?.leg === 'outbound' ? stopVia.stops : null),
+    returnStops: observation.returnStops ?? (stopVia?.leg === 'return' ? stopVia.stops : null),
     connectionAirports: [...new Set([
       ...(observation.outboundConnectionAirports ?? []),
       ...(observation.returnConnectionAirports ?? []),
+      ...(stopVia ? [stopVia.connectionCity] : []),
     ])],
     isSelfTransfer: isSelfTransferItinerary(observation.priceNote),
     journeyConsequences: formatJourneyConsequenceSummary(

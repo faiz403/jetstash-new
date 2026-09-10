@@ -209,3 +209,90 @@ route from unverified to verified-connecting would have made these five observat
 from `isPubliclyPublishable()` regardless of route status. They remain in the archive, correctly
 attributed, pending a separate, deliberate founder decision on whether to unlock them — see
 `STATUS.md`'s Current truth for that open item. Trip.com handoff logic was not touched.
+
+### Batch 4 -- 7 September 2026 (12 September due-soon batch)
+
+Fresh primary-source evidence checks against the 15 `verified`-status routes due 12 September 2026
+(local-only, built on top of the direct-Vercel-deployed `integration/trust-route-fixes-2026-09-07`
+production snapshot while GitHub remained suspended):
+
+| Route | Outcome | New window |
+|---|---|---:|
+| Manchester-Dalaman | Reconfirmed, genuine upgrade (15 weekly flights, exact overnight timings) | RECENT/CHANGING, 30d |
+| Manchester-Bodrum | Reconfirmed unchanged (Manchester Airport still states summer-only) | RECENT/CHANGING, 30d |
+| Manchester-Antalya | Reconfirmed via Manchester Airport + SunExpress (Jet2/Corendon not re-checked -- bot-challenge) | RECENT/CHANGING, 30d |
+| Manchester-Izmir | Reconfirmed via Manchester Airport + SunExpress corroboration | RECENT/CHANGING, 30d |
+| Leeds Bradford-Antalya | Rechecked, identical to 4 Sept finding -- left completely untouched | unchanged (2026-09-12) |
+| Leeds Bradford-Dalaman | Genuine upgrade -- Jet2 Holidays + TUI now named as operators | unchanged (2026-09-12; see below) |
+| Leeds Bradford-Bodrum | Rechecked, identical to 4 Sept finding -- left completely untouched | unchanged (2026-09-12) |
+| London Gatwick-Dalaman | Reconfirmed via the same SunExpress source, still live | RECENT/CHANGING, 30d |
+| London Gatwick-Bodrum | Reconfirmed via the same SunExpress source, still live | RECENT/CHANGING, 30d |
+| London Gatwick-Izmir | Reconfirmed via a different current SunExpress source (flight-plan PDF unreadable this session) | RECENT/CHANGING, 30d |
+| **Manchester-Marrakech** | **Reclassified -- genuine year-round signal found** | **STABLE, 90d** |
+| **Bristol-Marrakech** | **Reclassified -- named operators (easyJet, TUI) + explicit "all year round"** | **STABLE, 90d** |
+| London Gatwick-Marrakech | No fresh non-stale evidence found -- left completely untouched | unchanged (2026-09-12) |
+| London Gatwick-Agadir | No fresh non-stale evidence found (same finding as Batch 6) -- left completely untouched | unchanged (2026-09-12) |
+| London Heathrow-Casablanca | Reconfirmed, but a real relative-prominence shift toward Stansted/Gatwick observed | RECENT/CHANGING, 30d |
+
+**Leeds Bradford-Dalaman -- the same "thin-but-verified" pattern as the already-recorded Leeds
+Bradford-Antalya/Bodrum precedent (Batch 6).** A genuine operator-name upgrade was found (Jet2
+Holidays, TUI), so `verifiedDate` was updated to reflect it -- but no duration, frequency or
+seasonality signal exists on the page to support classifying this record as either STABLE or
+RECENT/CHANGING, so `reviewDueDate` was deliberately left at its existing 2026-09-12 date rather
+than recalculated from the new `verifiedDate`, exactly matching the reasoning already established
+for its sibling records.
+
+**Leeds Bradford-Antalya and -Bodrum were rechecked and found identical to the 4 September check** --
+no genuine new fact, so per this policy's own precedent (a reconfirmation without new evidence does
+not meet the bar for a fresh `verifiedDate`), both were left completely untouched.
+
+**London Gatwick-Marrakech and -Agadir**: fresh research was attempted (Gatwick's own "Browse all
+destinations" link now resolves to a third-party booking aggregator rather than an official
+destination page; direct URL attempts at easyJet, TUI and British Airways route-specific pages did
+not resolve). The only Marrakech/Agadir-specific evidence found was the same static Gatwick press
+release already dated 19 May 2025 and already correctly ruled inadequate for Agadir in Batch 6 -- the
+identical reasoning now applies to Marrakech too. Both records are left completely untouched rather
+than administratively extended.
+
+**London Heathrow-Casablanca -- a genuine volatility signal, not a contradiction.** Royal Air
+Maroc's own live "from London" booking page still shows a genuine current LHR-CMN fare today,
+reconfirming Heathrow service continues to exist. But the same live page now shows Stansted (STN)
+and Gatwick (LGW) city-pair labels far more often (9 and 5 occurrences respectively, versus 1 for
+LHR, at a lower price point) -- a materially new observation not previously recorded, suggesting the
+airline may now be prioritising other London airports over Heathrow for this route. This does not
+contradict the current Heathrow claim, so it was not reclassified DISPUTED, but the shorter
+RECENT/CHANGING window reflects the genuine new uncertainty this represents. Heathrow's own
+airline/terminal listing (the prior corroborating source) 404'd on every URL attempted this session
+and was not independently re-checked.
+
+### Batch 5 -- 8 September 2026 (12 September final five)
+
+Batch 4 left five routes genuinely unresolved rather than administratively extended: three
+Leeds Bradford Turkey routes with evidence too thin to classify, and two Gatwick Morocco routes
+backed only by a stale 19 May 2025 press release. This batch resolves all five with genuinely live,
+current operational evidence rather than re-reading the same static pages:
+
+| Route | Outcome | New window |
+|---|---|---:|
+| Leeds Bradford-Antalya | **Resolved -- live departures board confirms flight LS213 (Jet2), today** | RECENT/CHANGING, 30d |
+| Leeds Bradford-Dalaman | **Resolved -- live departures board confirms flight LS413 (Jet2), today** | RECENT/CHANGING, 30d |
+| Leeds Bradford-Bodrum | **Resolved -- live departures board confirms flight LS215 (Jet2), today; Jet2 named for the first time** | RECENT/CHANGING, 30d |
+| London Gatwick-Marrakech | **Resolved -- live flight-search system confirms two easyJet flights (EZY8705, EZY8709), today; easyJet named for the first time** | RECENT/CHANGING, 30d |
+| London Gatwick-Agadir | Genuinely live search attempted, found zero flights today -- left to fail closed, not administratively extended | unchanged (2026-09-12) |
+
+**The key evidence source: Leeds Bradford Airport's own live departures board
+(leedsbradfordairport.co.uk/flights/departures) and London Gatwick's own live flight-search system
+(gatwickairport.com/flights?destination=D), both queried directly today rather than re-reading
+static marketing pages.** These are exactly the cadence policy's "airport official current flight
+board" evidence category -- a real, timestamped, numbered scheduled flight is materially stronger
+continuity evidence than a "Book with X" link, because it proves the service is actually operating
+today, not merely that the airport's marketing page still lists the destination.
+
+**London Gatwick-Agadir remains genuinely unresolved, and this is the correct outcome, not a stalled
+one.** A real, current, live search (both the exact term "Agadir" and the partial term "Agad")
+returned zero matching flights today on the same system that successfully confirmed
+london-gatwick-marrakech the same session. This does not prove the route no longer operates -- an
+unmatched single day on a leisure route that may not fly daily is not proof of non-operation -- but
+it also does not positively reconfirm it. Per this policy's own rule, a route that cannot be
+reconfirmed is never administratively extended: the record is left to fail closed on its existing
+2026-09-12 date.

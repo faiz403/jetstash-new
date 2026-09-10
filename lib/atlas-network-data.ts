@@ -807,6 +807,12 @@ function buildHeathrowNetwork(nowIso: string): AirportNetworkData {
  * Dubai added in the Final Route-Guide Completion batch (13 August 2026) —
  * verified via Gatwick's own destinations.html page ("Dubai, UAE... 7-8
  * hours flight time... Serviced by Emirates").
+ *
+ * Doha added 7 September 2026 alongside the new london-gatwick-doha Route
+ * record — a genuine current direct Qatar Airways service, independently
+ * verified via the airline's own "from London Gatwick" booking page and
+ * corroborated by its live Flight Status system (see that route's own
+ * verification note in data/routes.ts).
  */
 function buildGatwickNetwork(nowIso: string): AirportNetworkData {
   // London Gatwick (LGW): 51.1537Â°N, 0.1821Â°W.
@@ -819,6 +825,13 @@ function buildGatwickNetwork(nowIso: string): AirportNetworkData {
 
   const uaePoints = [
     buildDestinationPoint('london-gatwick', 'dubai', 630, 391, nowIso),
+  ].filter((p): p is DestinationPoint => p !== null);
+
+  // Doha added 7 September 2026 alongside the new london-gatwick-doha
+  // Route record — same real-world coordinates already used for Doha from
+  // every other origin airport (Manchester, Birmingham, Heathrow).
+  const qatarPoints = [
+    buildDestinationPoint('london-gatwick', 'doha', 619.44, 389.82, nowIso),
   ].filter((p): p is DestinationPoint => p !== null);
 
   const turkeyPoints = [
@@ -856,6 +869,7 @@ function buildGatwickNetwork(nowIso: string): AirportNetworkData {
   const countries: CountryData[] = [
     { slug: 'india', label: 'India', x: 722, y: 400, intelligenceLevel: aggregateCountryIntelligence(indiaPoints), destinations: indiaPoints },
     { slug: 'uae', label: 'United Arab Emirates', x: 628, y: 394, intelligenceLevel: aggregateCountryIntelligence(uaePoints), destinations: uaePoints },
+    { slug: 'qatar', label: 'Qatar', x: 618.56, y: 390.2, intelligenceLevel: aggregateCountryIntelligence(qatarPoints), destinations: qatarPoints },
     { slug: 'turkey', label: 'Turkey', x: 575.31, y: 345.75, intelligenceLevel: aggregateCountryIntelligence(turkeyPoints), destinations: turkeyPoints },
     { slug: 'morocco', label: 'Morocco', x: 459.51, y: 369.31, intelligenceLevel: aggregateCountryIntelligence(moroccoPoints), destinations: moroccoPoints },
     { slug: 'spain', label: 'Spain', x: 464.61, y: 338.83, intelligenceLevel: aggregateCountryIntelligence(spainPoints), destinations: spainPoints },

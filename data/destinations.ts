@@ -140,16 +140,16 @@ export const destinations: Destination[] = [
     description:
       'Mumbai brings together Bollywood, the Gateway of India and a major financial district on India\'s west coast. Check the exact UK airport, dates and routing before booking.',
     bestFor: ['Business travel', 'City breaks', 'Family visits'],
-    flightTimeFromUK: '9h direct from London Heathrow; former Manchester direct service ended',
+    flightTimeFromUK: '9h direct from London Heathrow; Manchester options vary by route',
     ukAirports: ['london-heathrow', 'manchester', 'birmingham'],
     visaNote: 'e-Visa required for UK passport holders, apply at least 4 days before travel.',
     familyVisitContent: {
       travelPattern:
-        'Mumbai is increasingly a direct family-visit destination for North West-based travellers, not just a business or stopover city. IndiGo\'s Manchester service was launched explicitly to serve the large Indian diaspora in the region, alongside its business and tourism case.',
+        'Mumbai is an important family-visit destination for North West-based travellers, not just a business or stopover city. IndiGo launched a Manchester–Mumbai service in July 2025 with the region\'s large Indian diaspora among the intended audiences.',
       documentNote:
         'OCI (Overseas Citizen of India) cardholders do not require a separate visa. Standard e-Tourist or e-Business visas apply to other UK passport holders; apply at least 4 days ahead, and earlier still during Diwali or December.',
       packingNote:
-        'The former Manchester direct service has ended. For any itinerary you book instead, check the current baggage allowance directly with the operating airline rather than assuming it matches a full-service carrier\'s standard. Allowances and any extra-baggage charges can differ from the Heathrow route\'s operators.',
+        'For any itinerary from Manchester, check the current baggage allowance directly with the operating airline rather than assuming it matches a full-service carrier\'s standard. Allowances and any extra-baggage charges can differ from the Heathrow route\'s operators.',
       peakPeriodIds: ['diwali', 'christmas-new-year', 'uk-summer-holidays'],
     },
   },
@@ -301,7 +301,8 @@ export const destinations: Destination[] = [
     bestFor: ['Family holidays', 'Stopovers', 'Shopping', 'Beach'],
     flightTimeFromUK: '7h direct from most UK airports',
     ukAirports: ['manchester', 'glasgow', 'edinburgh', 'newcastle', 'london-heathrow', 'birmingham', 'london-gatwick'],
-    visaNote: 'Visa on arrival for UK passport holders, free for stays up to 30 days.',
+    visaNote:
+      'Current GOV.UK guidance says travellers using a full British Citizen passport can receive visitor or tourist permission free on arrival for up to 90 days within a 180-day period. The allowance may be continuous or split across multiple visits. Check the current official requirements for your circumstances before travel.',
   },
   {
     slug: 'doha',
@@ -314,8 +315,17 @@ export const destinations: Destination[] = [
       'Doha combines the Museum of Islamic Art, Souq Waqif and public beaches with a Gulf city break. It can be a stopover or a destination in its own right, so check whether your plans include time in the city or only a flight connection.',
     bestFor: ['Stopovers', 'Culture', 'Family holidays'],
     flightTimeFromUK: '6h 30m direct from London Heathrow',
-    ukAirports: ['london-heathrow', 'manchester', 'birmingham'],
-    visaNote: 'Visa on arrival for UK passport holders, free for stays up to 30 days.',
+    // Canonical route addition (7 Sept 2026): london-gatwick-doha added to
+    // data/routes.ts as a genuine, independently-verified direct Qatar
+    // Airways route (see that record's own verification note) — added
+    // here so this destination's UK-airport list matches the route
+    // inventory it's meant to reflect. flightTimeFromUK is unchanged: this
+    // field only ever names one UK airport per its own established
+    // convention (see lib/destination-flight-time.ts), and Heathrow's
+    // figure remains independently accurate on its own terms.
+    ukAirports: ['london-heathrow', 'london-gatwick', 'manchester', 'birmingham'],
+    visaNote:
+      'For tourism, travellers using a full British Citizen passport can receive free visitor permission on arrival for up to 30 days initially. Longer stays need an extension before expiry. Check the current official requirements for your circumstances before travel.',
   },
   {
     slug: 'jeddah',

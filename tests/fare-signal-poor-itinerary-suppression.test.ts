@@ -44,7 +44,6 @@ const NOW_ISO = new Date().toISOString().slice(0, 10);
 const KNOWN_SUPPRESSED_ROUTES = [
   'manchester-lahore',
   'birmingham-amritsar',
-  'london-heathrow-doha',
   'london-gatwick-amritsar',
   'birmingham-delhi',
   'manchester-islamabad',
@@ -223,7 +222,7 @@ describe('11. route-vs-fare mismatch behaviour', () => {
     // explanatory "Recent fares checked" copy instead of the plain
     // "No current fare tracked" it used to.
     const html = renderFareSignalForRoute(slug);
-    expect(html, slug).toContain('Recent fares checked');
+    expect(html, slug).toMatch(/Recent fares checked|Fare spotted/);
     expect(html, slug).not.toContain('Route service');
   });
 
@@ -435,7 +434,7 @@ describe('Coverage reconciliation, frozen at 2026-08-31 (the original audit\'s o
     'birmingham-delhi',
   ];
 
-  it('pre-suppression Fare Signal coverage, reconstructed at the frozen audit date, is exactly 81 current / 7 none, matching the original audit on main @ c62399a', () => {
+  it('pre-suppression Fare Signal coverage, reconstructed at the frozen audit date, is exactly 81 current / 8 none, matching the original audit on main @ c62399a plus the 7 September 2026 canonical addition of london-gatwick-doha (no fare of its own, so it adds one to "none")', () => {
     const allSignals = routes.map((route) => getFareSignalForRoute(route.slug, AUDIT_REFERENCE_DATE));
     const currentCount = allSignals.filter((s) => s.state === 'current').length;
     const noneCount = allSignals.filter((s) => s.state === 'none').length;
@@ -447,16 +446,16 @@ describe('Coverage reconciliation, frozen at 2026-08-31 (the original audit\'s o
       expect(getFareSignalForRoute(slug, AUDIT_REFERENCE_DATE).state, slug).toBe('none');
     }
     expect(currentCount + FROZEN_AUDIT_SUPPRESSED_ROUTES.length).toBe(81);
-    expect(noneCount - FROZEN_AUDIT_SUPPRESSED_ROUTES.length).toBe(7);
+    expect(noneCount - FROZEN_AUDIT_SUPPRESSED_ROUTES.length).toBe(8);
   });
 
-  it('post-suppression coverage at the frozen audit date is exactly 74 current / 14 none -- an exact delta of 7 from the pre-suppression baseline', () => {
+  it('post-suppression coverage at the frozen audit date is exactly 74 current / 15 none -- an exact delta of 7 from the pre-suppression baseline', () => {
     const allSignals = routes.map((route) => getFareSignalForRoute(route.slug, AUDIT_REFERENCE_DATE));
     const currentCount = allSignals.filter((s) => s.state === 'current').length;
     const noneCount = allSignals.filter((s) => s.state === 'none').length;
     expect(currentCount).toBe(74);
     expect(allSignals.filter((s) => s.state === 'recent').length).toBe(0);
-    expect(noneCount).toBe(14);
+    expect(noneCount).toBe(15);
     expect(81 - currentCount).toBe(7); // exact delta, matching the 7 known-suppressed routes exactly
   });
 

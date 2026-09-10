@@ -58,13 +58,13 @@ describe('3. country counts are correct', () => {
     }
   });
 
-  it('known counts: India 14, Pakistan 7, Bangladesh 4, UAE 7, Qatar 3, Saudi Arabia 5 — after the Final Route-Guide Completion batch\'s two evidence passes added birmingham-delhi/-ahmedabad (India), london-heathrow-lahore (Pakistan), london-gatwick-dubai/birmingham-dubai/london-heathrow-dubai (UAE, 4 -> 7), birmingham-doha (Qatar) and birmingham-jeddah (Saudi Arabia)', () => {
+  it('known counts: India 14, Pakistan 7, Bangladesh 4, UAE 7, Qatar 4, Saudi Arabia 5 — after the Final Route-Guide Completion batch\'s two evidence passes added birmingham-delhi/-ahmedabad (India), london-heathrow-lahore (Pakistan), london-gatwick-dubai/birmingham-dubai/london-heathrow-dubai (UAE, 4 -> 7), birmingham-doha (Qatar) and birmingham-jeddah (Saudi Arabia), and the 7 September 2026 canonical addition of london-gatwick-doha took Qatar to 4', () => {
     const countOf = (country: string) => countryGroups.find((g) => g.country === country)?.routes.length;
     expect(countOf('India')).toBe(14);
     expect(countOf('Pakistan')).toBe(7);
     expect(countOf('Bangladesh')).toBe(4);
     expect(countOf('United Arab Emirates')).toBe(7);
-    expect(countOf('Qatar')).toBe(3);
+    expect(countOf('Qatar')).toBe(4);
     expect(countOf('Saudi Arabia')).toBe(5);
   });
 });

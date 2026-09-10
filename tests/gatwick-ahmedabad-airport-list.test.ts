@@ -68,13 +68,13 @@ describe('4. No route verification data changed — this is an airport-list-only
 });
 
 describe('5. No unrelated airport data changed', () => {
-  it('every other airport record is untouched', () => {
+  it('preserves the separately verified Manchester and Birmingham route lists', () => {
     const others = airports.filter((a) => a.slug !== 'london-gatwick');
     expect(others).toHaveLength(10);
     const manchester = others.find((a) => a.slug === 'manchester')!;
     const birmingham = others.find((a) => a.slug === 'birmingham')!;
     expect(manchester.longHaulRoutes).toEqual(['Islamabad', 'Lahore', 'Dubai', 'Doha', 'Abu Dhabi']);
-    expect(birmingham.longHaulRoutes).toEqual(['Dubai', 'Sharjah', 'Doha']);
+    expect(birmingham.longHaulRoutes).toEqual(['Dubai', 'Doha']);
   });
 
   it('Gatwick\'s other fields (name, code, city, servesCommunities, shortHaulHighlights) are unchanged', () => {

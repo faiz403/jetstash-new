@@ -150,9 +150,12 @@ describe('isObservationPublishable() wires the causal gate in without touching a
       const after = isObservationPublishable(observation, route, SEP_1);
       if (observation.observedDate <= AUG_31) {
         expect(after, observation.id).toBe(before);
-      } else {
+      } else if (observation.observedDate === SEP_1) {
         expect(before, observation.id).toBe(false);
         expect(after, observation.id).toBe(true);
+      } else {
+        expect(before, observation.id).toBe(false);
+        expect(after, observation.id).toBe(false);
       }
     }
   });

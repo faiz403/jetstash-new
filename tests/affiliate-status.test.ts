@@ -10,9 +10,10 @@ describe('affiliate-status founder guidance', () => {
     expect(affiliate).toBeDefined();
     expect(affiliate?.status).toBe('ok');
     expect(affiliate?.headline).toContain('Trip.com is the sole active provider');
-    // 45 of 88, not 45 of 80/82 — the count is live-computed in lib/founder-insights.ts;
-    // the denominator moved after the Final Route-Guide Completion batch's two evidence passes.
-    expect(affiliate?.headline).toContain('45 of 88');
+    // 45 of 89, not 45 of 80/82/88 — the count is live-computed in lib/founder-insights.ts;
+    // the denominator moved to 89 after the 7 September 2026 canonical
+    // addition of london-gatwick-doha (no route-level Trip.com link).
+    expect(affiliate?.headline).toContain('45 of 89');
     expect(affiliate?.headline).not.toMatch(/TravelUp is/i);
     expect(affiliate?.action).not.toContain('travelup.com');
   });

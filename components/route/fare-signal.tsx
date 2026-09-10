@@ -146,7 +146,7 @@ function SignalCta({ href, routeSlug, standout = false }: { href: string; routeS
           rel={PROVIDER_REL}
           className="inline-flex items-center gap-1.5 rounded-sm bg-ink-900 px-4 py-2.5 text-sm font-semibold text-sand-50 transition-all hover:bg-brass-600 active:scale-[0.985]"
         >
-          Check current price
+          Check current price on Trip.com
           <ArrowUpRight className="h-4 w-4" strokeWidth={2.25} />
         </TrackedOutboundLink>
         {/* Route Page Scanability fix (21 Aug 2026): this is now the one

@@ -4,7 +4,7 @@ import { getRouteByAirportAndDestination } from '@/data/routes';
 import { routeStatusEvents } from '@/data/route-status-events';
 import { getEffectiveRoutePresentation } from '@/lib/route-status-copy';
 import { getFareRangeSummary } from '@/data/fare-observations';
-import { getTripComFlightHandoffUrl, PROVIDER_REL } from '@/lib/booking-providers';
+import { getSafeTripComFlightHandoffUrl, PROVIDER_REL } from '@/lib/booking-providers';
 import { getFareFreshnessState, daysBetweenIso, OBSERVATION_STALE_DAYS } from '@/lib/freshness-thresholds';
 import { Plane, ArrowUpRight, AlertTriangle } from 'lucide-react';
 import { Badge } from './badge';
@@ -117,7 +117,7 @@ export function DealCard({ deal, nowIso, headingLevel = 'h3' }: { deal: Deal; no
     : null;
   // Fail-closed by construction: null for any route not in booking-providers.ts's
   // dashboard-verified map — never a generic Trip.com fallback.
-  const tripComUrl = matchedRoute ? getTripComFlightHandoffUrl(matchedRoute.slug) : null;
+  const tripComUrl = matchedRoute ? getSafeTripComFlightHandoffUrl(matchedRoute.slug) : null;
 
   return (
     <article className="group relative flex flex-col overflow-hidden rounded-md border border-ink-100 bg-white shadow-card transition-all duration-300 hover:-translate-y-1 hover:shadow-card-hover">

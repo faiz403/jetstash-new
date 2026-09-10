@@ -217,10 +217,12 @@ describe('the two divergent fail-closed sentences are now one shared constant', 
       if (getTripComFlightHandoffUrl(route.slug, airport.slug, dest.slug)) withUrl += 1;
       else withoutUrl += 1;
     }
-    // Same 63 / 25 split guarded by tests/route-hero-scanability.test.ts —
-    // this PR adds no CTA and removes none.
+    // Same 63 / 26 split guarded by tests/route-hero-scanability.test.ts —
+    // this PR adds no CTA and removes none (26, not 25, after the
+    // 7 September 2026 canonical addition of london-gatwick-doha, which
+    // has no route-level Trip.com link).
     expect(withUrl).toBe(63);
-    expect(withoutUrl).toBe(25);
+    expect(withoutUrl).toBe(26);
   });
 });
 

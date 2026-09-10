@@ -1,5 +1,5 @@
 import { SearchX, ArrowUpRight } from 'lucide-react';
-import { getTripComFlightHandoffUrl, PROVIDER_REL } from '@/lib/booking-providers';
+import { getSafeTripComFlightHandoffUrl, PROVIDER_REL } from '@/lib/booking-providers';
 import { TrackedOutboundLink } from './tracked-outbound-link';
 import { AffiliateLinkDisclosure } from './affiliate-link-disclosure';
 
@@ -29,7 +29,7 @@ import { AffiliateLinkDisclosure } from './affiliate-link-disclosure';
  * changes nothing.
  */
 export function NoFareFallback({ cityLabel, routeSlug, hasFareSignalElsewhere = false }: { cityLabel: string; routeSlug?: string; hasFareSignalElsewhere?: boolean }) {
-  const tripComUrl = routeSlug ? getTripComFlightHandoffUrl(routeSlug) : null;
+  const tripComUrl = routeSlug ? getSafeTripComFlightHandoffUrl(routeSlug) : null;
   return (
     <div className="flex flex-col items-center rounded-md border border-dashed border-ink-200 bg-white px-6 py-12 text-center">
       <div className="flex h-11 w-11 items-center justify-center rounded-full bg-ink-50 text-ink-400">

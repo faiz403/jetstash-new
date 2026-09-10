@@ -26,7 +26,7 @@ export default function GulfHubPage() {
       airportsServed={['London Heathrow', 'Manchester', 'Birmingham', 'London Gatwick', 'Glasgow', 'Leeds Bradford']}
       quoteRegion="gulf"
       heroKey="gulf"
-      visaNote="UK passport holders receive a visa on arrival for both the UAE and Qatar, typically valid for 30 days and free of charge. Always check the latest requirements with the relevant embassy before travel, as policies can change."
+      visaNote="UAE: Current GOV.UK guidance says travellers using a full British Citizen passport can receive visitor or tourist permission free on arrival for up to 90 days within a 180-day period. The allowance may be continuous or split across multiple visits. Qatar: For tourism, travellers using a full British Citizen passport can receive free visitor permission on arrival for up to 30 days initially. Longer stays need an extension through Qatar's Ministry of Interior before expiry. Check the current official requirements for your passport, trip and supporting documents."
       practicalNotes={[
         {
           title: 'Winter is peak season, and peak price',

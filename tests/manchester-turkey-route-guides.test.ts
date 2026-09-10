@@ -18,10 +18,13 @@ describe('Manchester Turkey route guides', () => {
     // manchester-istanbul was reconfirmed and moved to the STABLE 90-day
     // window on fresh evidence (Turkish Airlines' own page now states "no
     // changes occur in the number of flights throughout the year") -- the
-    // other four Turkey routes were not part of that batch and are
-    // unchanged, deliberately no longer sharing one synchronised date.
-    expect(routes.map((route) => route?.verification?.verifiedDate)).toEqual(['2026-09-03', '2026-08-12', '2026-08-12', '2026-08-12', '2026-08-12']);
-    expect(routes.map((route) => route?.verification?.reviewDueDate)).toEqual(['2026-12-02', '2026-09-12', '2026-09-12', '2026-09-12', '2026-09-12']);
+    // other four Turkey routes were not part of that batch, and were then
+    // refreshed together in the Route Verification Refresh, 12 September
+    // due-soon batch (7 September 2026), landing on a shared date because
+    // they were reverified together in that batch, not because of any
+    // synchronisation rule.
+    expect(routes.map((route) => route?.verification?.verifiedDate)).toEqual(['2026-09-03', '2026-09-07', '2026-09-07', '2026-09-07', '2026-09-07']);
+    expect(routes.map((route) => route?.verification?.reviewDueDate)).toEqual(['2026-12-02', '2026-10-07', '2026-10-07', '2026-10-07', '2026-10-07']);
   });
 
   it('keeps Istanbul wording specific to Turkish Airlines rather than total route frequency', () => {
@@ -41,7 +44,7 @@ describe('Manchester Turkey route guides', () => {
 
     expect(presentation.status).toBe('direct');
     expect(getAirlinesBySlugs(presentation.airlineSlugs).map((airline) => airline.name)).toEqual(['SunExpress']);
-    expect(presentation.frequency).toContain('daily direct overnight service from 19 May 2026');
+    expect(presentation.frequency).toContain('15 weekly direct overnight flights');
     expect(presentation.summary).toContain('Check the exact dates, schedule and baggage terms before booking.');
   });
 

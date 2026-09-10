@@ -183,7 +183,7 @@ describe('Fare Signal presentation and CTA boundaries', () => {
 });
 
 describe('Fare Signal production coverage counts', () => {
-  it('reports 76 routes with a current publishable fare and 12 without one, EVALUATED AT THE FIXED REFERENCE DATE 2026-08-25 (not live/today — see the dedicated live-date reconciliation note below)', () => {
+  it('reports 76 routes with a current publishable fare and 13 without one, EVALUATED AT THE FIXED REFERENCE DATE 2026-08-25 (not live/today — see the dedicated live-date reconciliation note below)', () => {
     // Classification C, corrected by the temporal-causality fix (1 Sep
     // 2026): this test was originally pinned to 2026-08-14 and relied on
     // getFareSignalForRoute() reading the archive's fare-observation list
@@ -220,10 +220,14 @@ describe('Fare Signal production coverage counts', () => {
     // birmingham-delhi), all 7 were already 'current' at this fixed
     // reference date too, so the same delta applies here: 83 - 7 = 76; the
     // "none" bucket grows from 5 to 12.
+    //
+    // 7 September 2026: london-gatwick-doha added as a new canonical route
+    // with no fare observation of its own — it falls into "none", taking
+    // that bucket from 12 to 13. "current" (76) is unaffected.
     const signals = routes.map((route) => getFareSignalForRoute(route.slug, '2026-08-25'));
     expect(signals.filter((signal) => signal.state === 'current')).toHaveLength(76);
     expect(signals.filter((signal) => signal.state === 'recent')).toHaveLength(0);
-    expect(signals.filter((signal) => signal.state === 'none')).toHaveLength(12);
+    expect(signals.filter((signal) => signal.state === 'none')).toHaveLength(13);
     expect(routes.filter((route) => getTripComRouteUrl(route.slug)).length).toBe(45);
   });
 

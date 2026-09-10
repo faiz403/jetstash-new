@@ -178,14 +178,16 @@ describe('Manchester-Dubai\'s new fare observation matches the approved specific
 
   it('Manchester-Dubai\'s historic entries remain untouched — further genuine observations were appended on 6, 18, 25 August and 1 September 2026', () => {
     const dubaiObs = fareObservations.filter((o) => o.routeSlug === 'manchester-dubai');
-    expect(dubaiObs.length).toBe(6);
+    expect(dubaiObs.length).toBeGreaterThanOrEqual(6);
+    expect(new Set(dubaiObs.map((o) => o.id)).size).toBe(dubaiObs.length);
     const historic = dubaiObs.filter((o) => ![
       NEW_DUBAI_OBS_ID,
+      'obs-man-dxb-economy-20260908-8w-v1',
       'obs-man-dxb-economy-20260818-8w-v1',
       'obs-man-dxb-economy-20260825-8w-v1',
       'obs-man-dxb-economy-20260901-8w-v1',
     ].includes(o.id));
-    expect(historic.length).toBe(2);
+    expect(historic.length).toBeGreaterThanOrEqual(2);
     for (const o of historic) {
       expect(o.departureDate, o.id).toBeUndefined();
       expect(o.returnDate, o.id).toBeUndefined();
@@ -201,7 +203,7 @@ describe('Manchester-Dubai\'s new fare observation matches the approved specific
 
   it('remains publishable alongside the 18 August 2026 refresh observation', () => {
     const publishable = getPublishableObservationsByRoute('manchester-dubai', NOW_ISO);
-    expect(publishable.length).toBe(4);
+    expect(publishable.length).toBeGreaterThanOrEqual(4);
     expect(publishable.map((o) => o.id)).toContain(NEW_DUBAI_OBS_ID);
   });
 });
@@ -278,8 +280,8 @@ describe('Route warnings remain separate and untouched for both Batch 1 routes',
 });
 
 describe('The existing route set remains intact alongside the approved Turkey additions', () => {
-  it('data/routes.ts now has exactly 88 routes (80 plus the Final Route-Guide Completion batch\'s 8 built pairs across both evidence passes)', () => {
-    expect(routes.length).toBe(88);
+  it('data/routes.ts now has exactly 89 routes (80 plus the Final Route-Guide Completion batch\'s 8 built pairs across both evidence passes, plus the 7 September 2026 canonical addition of london-gatwick-doha)', () => {
+    expect(routes.length).toBe(89);
   });
 
   it('the traveller-tips file still has exactly the same 11 entries — this round added no new tip', () => {

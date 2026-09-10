@@ -468,9 +468,9 @@ describe('The route coverage audit document stays in sync with the real data', (
     }
   });
 
-  it('the audit states the real, current fare-tracking route count, not a stale hand-typed figure (88, not 80/82, after the Final Route-Guide Completion batch\'s two evidence passes)', () => {
+  it('the audit states the real, current fare-tracking route count, not a stale hand-typed figure (89, not 80/82/88, after the 7 September 2026 canonical addition of london-gatwick-doha)', () => {
     const totalTracked = routes.filter((r) => getPublishableObservationsByRoute(r.slug, AUDIT_CURRENT_ISO).length > 0).length;
-    expect(auditDoc).toContain(`${totalTracked} of 88`);
+    expect(auditDoc).toContain(`${totalTracked} of 89`);
   });
 
   it('the audit explicitly flags Manchester–Dubai\'s remaining fare-observation gap (Route Completion Batch 1 finding)', () => {
@@ -504,8 +504,8 @@ describe('The route coverage audit document stays in sync with the real data', (
 });
 
 describe('No route facts, fare observations or verification states were altered by this phase', () => {
-  it('data/routes.ts is untouched by this test suite\'s own import (sanity: current route count, 88 after the Final Route-Guide Completion batch\'s two evidence passes)', () => {
-    expect(routes.length).toBe(88);
+  it('data/routes.ts is untouched by this test suite\'s own import (sanity: current route count, 89 after the 7 September 2026 canonical addition of london-gatwick-doha)', () => {
+    expect(routes.length).toBe(89);
   });
 
   it('computeRouteIntelligenceLevel never mutates the route object it reads', () => {

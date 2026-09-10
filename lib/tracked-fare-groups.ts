@@ -1,7 +1,7 @@
 import { routes as defaultRoutes, getRouteAirport, getRouteDestination, type Route } from '@/data/routes';
 import { airports as defaultAirports, type Airport } from '@/data/airports';
 import { getFareSignalForRoute, type FareSignalObservation } from '@/lib/fare-signal';
-import { getTripComFlightHandoffUrl } from '@/lib/booking-providers';
+import { getSafeTripComFlightHandoffUrl } from '@/lib/booking-providers';
 
 /**
  * Exhaustive Tracked Fares (PR #140) — the data/grouping half, mirroring
@@ -85,7 +85,7 @@ export function buildTrackedFareAirportGroups(
       // comment) — never a broadened "LON" aggregate. Omitting these two
       // arguments here silently lost 16 already-approved handoffs that
       // the corresponding route guide correctly showed all along.
-      tripComUrl: getTripComFlightHandoffUrl(route.slug, airport.slug, dest.slug),
+      tripComUrl: getSafeTripComFlightHandoffUrl(route.slug, airport.slug, dest.slug),
       searchIndex: `${dest.city} ${dest.country} ${airport.city} ${airport.name}`.toLowerCase(),
     };
 

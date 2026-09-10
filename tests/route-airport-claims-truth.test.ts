@@ -173,7 +173,7 @@ describe('No route/fare/verification data changed — this PR is editorial wordi
     expect(heathrowMumbai.frequency).toContain('Air India and Virgin Atlantic each confirmed 2x daily');
   });
 
-  it('birmingham airport: route list and hasDirectLongHaul are unchanged; gatwick and manchester\'s lists were each corrected for the same reason (see below)', () => {
+  it('airport route lists reflect their separate evidence-based corrections', () => {
     // Gatwick's own 'Ahmedabad' entry became stale by the same standard
     // this describes (london-gatwick-ahmedabad is now unverified, per the
     // 4 Sept Rolling Reverification Batch 4 note in data/routes.ts) —
@@ -205,6 +205,6 @@ describe('No route/fare/verification data changed — this PR is editorial wordi
     // same precedent, applied to a route that stopped being direct after
     // going live, rather than one that was never confirmed to begin with.
     expect(manchesterAirport.longHaulRoutes).toEqual(['Islamabad', 'Lahore', 'Dubai', 'Doha', 'Abu Dhabi']);
-    expect(birminghamAirport.longHaulRoutes).toEqual(['Dubai', 'Sharjah', 'Doha']);
+    expect(birminghamAirport.longHaulRoutes).toEqual(['Dubai', 'Doha']);
   });
 });
