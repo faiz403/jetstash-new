@@ -643,7 +643,185 @@ export function AtlasFeelTest({
         <p className="hidden text-[13px] text-ink-300 sm:block">Select a country to explore its destinations.</p>
 
         <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_22rem] lg:gap-10">
-          <div className="min-w-0">
+          {/* Mobile Atlas hierarchy correction (Astra product review, 11
+              Sept 2026 — founder follow-up): the first pass moved the
+              answer above the map but left this chip selector — the
+              country/destination controls a mobile visitor actually taps —
+              nested inside the map block below, so the real mobile order
+              was still answer -> controls -> map. This is the same
+              country/destination chip selector JSX as before (still
+              sm:hidden, still calling the same activateCountry/
+              selectDestination handlers the desktop map hover uses),
+              relocated to be the grid's first DOM child: controls -> answer
+              -> map. It renders `display:none` above `sm`, so desktop's
+              accessibility tree and tab order are unaffected by this move —
+              a hidden element takes no grid track and is never reachable by
+              Tab regardless of its DOM position. */}
+          <div className="flex flex-col gap-2 sm:hidden">
+            <div className="-mx-6 flex gap-2 overflow-x-auto px-6 pb-1 no-scrollbar" role="group" aria-label="Choose a country">
+              {countries.map((c) => {
+                const isActive = c.slug === activeCountrySlug;
+                return (
+                  <button
+                    key={`country-chip-${c.slug}`}
+                    type="button"
+                    onClick={() => activateCountry(c.slug)}
+                    aria-pressed={isActive}
+                    className={
+                      isActive
+                        ? 'shrink-0 inline-flex items-center gap-1.5 rounded-full bg-brass px-4 py-2 text-sm font-semibold text-ink-900'
+                        : 'shrink-0 inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/5 px-4 py-2 text-sm font-medium text-ink-200'
+                    }
+                  >
+                    {/* Same confidence colour already explained in the legend below —
+                        applied here too so the chip row itself carries the same "how
+                        well do we know this" signal the desktop map's halo colour
+                        gives for free, instead of every country reading as equal
+                        weight until tapped. */}
+                    <span className="inline-block h-1.5 w-1.5 shrink-0 rounded-full" style={{ backgroundColor: COUNTRY_INTELLIGENCE_COLOUR[c.intelligenceLevel].stroke }} aria-hidden="true" />
+                    {c.label}
+                  </button>
+                );
+              })}
+            </div>
+            <div className="-mx-6 flex gap-2 overflow-x-auto px-6 pb-1 no-scrollbar" role="group" aria-label={`Choose a destination in ${activeCountry.label}`}>
+              {activeCountry.destinations.map((d) => {
+                const isActive = d.slug === activeDestSlug;
+                return (
+                  <button
+                    key={`dest-chip-${d.slug}`}
+                    type="button"
+                    onClick={() => selectDestination(d.slug)}
+                    aria-pressed={isActive}
+                    className={
+                      isActive
+                        ? 'shrink-0 inline-flex items-center gap-1.5 rounded-full bg-brass-100 px-3.5 py-1.5 text-[13px] font-semibold text-ink-900'
+                        : 'shrink-0 inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.03] px-3.5 py-1.5 text-[13px] font-medium text-ink-300'
+                    }
+                  >
+                    <span className="inline-block h-1.5 w-1.5 shrink-0 rounded-full" style={{ backgroundColor: ROUTE_INTELLIGENCE_COLOUR[d.intelligenceLevel].fill }} aria-hidden="true" />
+                    {d.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Mobile Atlas hierarchy (Astra product review, 11 Sept 2026):
+              this panel used to sit after the map+chips+legend block below —
+              on mobile (a single-column stack, no lg:grid-cols), that meant a
+              visitor had to scroll past the entire map before reaching the
+              answer for whatever they'd already selected. Moved here, as the
+              grid's second DOM child (after the controls above), so mobile
+              shows it right after the country/destination chips and the
+              always-visible "Flying from" airport control in the header,
+              before the map. Desktop's visual layout is restored via
+              `lg:order-2` here and `lg:order-1` on the map block below —
+              CSS `order` participates in Grid auto-placement, so at lg+
+              this still lands in the narrow right column exactly as
+              before, with the map in the wide left column. Deliberately a
+              real DOM move, not a CSS-only reorder: `order` changes visual
+              position but not tab order, and a CSS-only version would have
+              left mobile keyboard/screen-reader users tabbing through the
+              entire map before ever reaching this answer — the exact
+              opposite of the fix. No content, state, logic, or route/fare
+              data changed; this is the same {activeDest && (...)} block,
+              unmoved except in the DOM. */}
+          {activeDest && (
+            <div
+              aria-live="polite"
+              // Progressive disclosure (density fix, August 2026): below lg the
+              // panel stays out of the default layout — "hidden" here, not a
+              // conditional `{mobileRevealed && (...)}` unmount, so a keyboard
+              // user tabbing through this panel before ever selecting a
+              // destination doesn't lose this landmark from the DOM — until
+              // mobileRevealed flips true from a genuine destination selection
+              // (see selectDestination above). lg+ always shows it immediately,
+              // exactly as before this change.
+              className={`max-w-md overflow-hidden rounded-md border border-white/10 bg-ink-900/90 shadow-[0_18px_40px_-24px_rgba(0,0,0,0.65)] lg:order-2 lg:sticky lg:top-6 lg:block ${mobileRevealed ? '' : 'hidden'}`}
+            >
+              <div
+                className="h-[3px] w-full transition-colors duration-500"
+                style={{ backgroundColor: ROUTE_INTELLIGENCE_COLOUR[activeDest.intelligenceLevel].fill }}
+                aria-hidden="true"
+              />
+              <div className="p-6">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.24em]" style={{ color: ROUTE_INTELLIGENCE_COLOUR[activeDest.intelligenceLevel].fill }}>
+                  {airportName} → {activeDest.label}
+                </p>
+                <div className="mt-2 flex flex-wrap items-center gap-2.5">
+                  <h3 className="font-display text-2xl leading-tight text-sand-50">{activeDest.label}</h3>
+                  {activeDest.networkMembership === 'seasonal' && <Badge variant="terracotta">Seasonal</Badge>}
+                </div>
+
+                {/* The honest three-level status, stated in plain words —
+                    never relies on the accent bar's colour alone (see the
+                    legend's own accessible-text rule). This is the single
+                    most-visible answer to "how well does JetStash know this
+                    route", so it sits first, above the more detailed verdict
+                    text below. */}
+                <p
+                  className="mt-2.5 inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-semibold"
+                  style={{ borderColor: `${ROUTE_INTELLIGENCE_COLOUR[activeDest.intelligenceLevel].fill}66`, color: ROUTE_INTELLIGENCE_COLOUR[activeDest.intelligenceLevel].fill }}
+                >
+                  <span className="inline-block h-1.5 w-1.5 rounded-full" style={{ backgroundColor: ROUTE_INTELLIGENCE_COLOUR[activeDest.intelligenceLevel].fill }} aria-hidden="true" />
+                  {ROUTE_INTELLIGENCE_COLOUR[activeDest.intelligenceLevel].label}
+                </p>
+
+                {/* Truth 1 — route intelligence: how much has JetStash itself
+                    independently researched about this route. */}
+                <div className="mt-4 border-l-2 pl-3.5" style={{ borderColor: ROUTE_INTELLIGENCE_COLOUR[activeDest.intelligenceLevel].fill }}>
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-300">Route intelligence</p>
+                  <p className="mt-1.5 text-[15px] leading-snug text-ink-100">{activeDest.verdict}</p>
+                  {activeDest.detail && <p className="mt-1.5 text-xs leading-relaxed text-ink-300">{activeDest.detail}</p>}
+                  <p className="mt-2 text-xs text-ink-300">{activeDest.flightTime}</p>
+                </div>
+
+                {/* Active service notice — additive, only rendered when real
+                    (never demotes the tier badge above). Kept visually
+                    distinct (its own accent colour, its own label) from the
+                    tier so a visitor never confuses "how well-researched is
+                    this route" with "is something about it changing right
+                    now" — two different, honest facts. */}
+                {activeDest.serviceNotice && (
+                  <div className="mt-4 rounded-sm border px-3.5 py-3" style={{ borderColor: `${SERVICE_NOTICE_ACCENT}55`, backgroundColor: `${SERVICE_NOTICE_ACCENT}14` }}>
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.18em]" style={{ color: SERVICE_NOTICE_ACCENT }}>Active service notice</p>
+                    <p className="mt-1.5 text-sm leading-snug text-ink-100">{activeDest.serviceNotice.label}</p>
+                    <p className="mt-1.5 text-xs leading-relaxed text-ink-300">{activeDest.serviceNotice.detail}</p>
+                  </div>
+                )}
+
+                {/* Truth 2 — network evidence: is this destination genuinely
+                    reachable from Manchester at all. Only rendered for
+                    destinations sourced from data/network-evidence.ts — for
+                    the original 11, the Route Status verdict above already
+                    says enough (see the DestinationPoint comment for why). */}
+                {activeDest.networkNote && (
+                  <div className="mt-4 border-l-2 border-brass-500/50 pl-3.5">
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-300">Network evidence</p>
+                    <p className="mt-1.5 text-[11px] leading-relaxed text-ink-300">{activeDest.networkNote}</p>
+                  </div>
+                )}
+
+                <div className="mt-5 flex gap-5 border-t border-white/10 pt-4">
+                  {activeDest.routeHref && (
+                    <Link
+                      href={activeDest.routeHref}
+                      onClick={() => track('atlas_route_opened', { route: activeDest.routeHref!.split('/').pop()! })}
+                      className="inline-flex items-center gap-1 text-sm font-semibold text-brass-300 hover:text-brass-200"
+                    >
+                      Route guide <ArrowUpRight className="h-3.5 w-3.5" />
+                    </Link>
+                  )}
+                  <Link href={activeDest.href} className="inline-flex items-center gap-1 text-sm font-semibold text-ink-300 hover:text-sand-50">
+                    Explore destination <ArrowUpRight className="h-3.5 w-3.5" />
+                  </Link>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <div className="min-w-0 lg:order-1">
         {/* Below sm the map's own label text (set in SVG units, not px) would
             be crushed down to a few CSS pixels if the svg were simply
             stretched to the narrow viewport width — so instead it keeps a
@@ -912,64 +1090,6 @@ export function AtlasFeelTest({
         )}
         </div>
 
-        {/* mobile chip selector — the map's fine hit-targets don't work below
-            sm, same reasoning and pattern as route-map-hero.tsx's own mobile
-            fallback. Both rows call the exact same activateCountry/
-            setActiveDestSlug used by the desktop hover handlers, so tapping
-            drives the identical state transition hovering does — no second
-            interaction model, just a different input method. Sits right
-            below the map (not above it) so the map is visible first and the
-            chips read as "select within what you're looking at". */}
-        <div className="mt-3 flex flex-col gap-2 sm:hidden">
-          <div className="-mx-6 flex gap-2 overflow-x-auto px-6 pb-1 no-scrollbar" role="group" aria-label="Choose a country">
-            {countries.map((c) => {
-              const isActive = c.slug === activeCountrySlug;
-              return (
-                <button
-                  key={`country-chip-${c.slug}`}
-                  type="button"
-                  onClick={() => activateCountry(c.slug)}
-                  aria-pressed={isActive}
-                  className={
-                    isActive
-                      ? 'shrink-0 inline-flex items-center gap-1.5 rounded-full bg-brass px-4 py-2 text-sm font-semibold text-ink-900'
-                      : 'shrink-0 inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/5 px-4 py-2 text-sm font-medium text-ink-200'
-                  }
-                >
-                  {/* Same confidence colour already explained in the legend below —
-                      applied here too so the chip row itself carries the same "how
-                      well do we know this" signal the desktop map's halo colour
-                      gives for free, instead of every country reading as equal
-                      weight until tapped. */}
-                  <span className="inline-block h-1.5 w-1.5 shrink-0 rounded-full" style={{ backgroundColor: COUNTRY_INTELLIGENCE_COLOUR[c.intelligenceLevel].stroke }} aria-hidden="true" />
-                  {c.label}
-                </button>
-              );
-            })}
-          </div>
-          <div className="-mx-6 flex gap-2 overflow-x-auto px-6 pb-1 no-scrollbar" role="group" aria-label={`Choose a destination in ${activeCountry.label}`}>
-            {activeCountry.destinations.map((d) => {
-              const isActive = d.slug === activeDestSlug;
-              return (
-                <button
-                  key={`dest-chip-${d.slug}`}
-                  type="button"
-                  onClick={() => selectDestination(d.slug)}
-                  aria-pressed={isActive}
-                  className={
-                    isActive
-                      ? 'shrink-0 inline-flex items-center gap-1.5 rounded-full bg-brass-100 px-3.5 py-1.5 text-[13px] font-semibold text-ink-900'
-                      : 'shrink-0 inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.03] px-3.5 py-1.5 text-[13px] font-medium text-ink-300'
-                  }
-                >
-                  <span className="inline-block h-1.5 w-1.5 shrink-0 rounded-full" style={{ backgroundColor: ROUTE_INTELLIGENCE_COLOUR[d.intelligenceLevel].fill }} aria-hidden="true" />
-                  {d.label}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
         {/* One customer-facing legend keeps the two genuine data layers together:
             the country glow summarises coverage across a country, while the
             destination dot answers how much this specific route is researched.
@@ -1004,106 +1124,6 @@ export function AtlasFeelTest({
           Geography: CC BY 4.0 (MapSVG, via VictorCazanave/svg-maps).
         </p>
           </div>
-
-        {/* destination panel — composed as one deliberate reading order rather
-            than the stack of independently-added fields this grew from:
-            eyebrow, title, then the two evidence truths each under their own
-            small label so the distinction between them reads immediately,
-            not just structurally. Every word of evidence text below is
-            unchanged from before; only its typography and grouping is new. */}
-        {activeDest && (
-          <div
-            aria-live="polite"
-            // Progressive disclosure (density fix, August 2026): below lg the
-            // panel stays out of the default layout — "hidden" here, not a
-            // conditional `{mobileRevealed && (...)}` unmount, so a keyboard
-            // user tabbing through the map/chips before ever selecting a
-            // destination doesn't lose this landmark from the DOM — until
-            // mobileRevealed flips true from a genuine destination selection
-            // (see selectDestination above). lg+ always shows it immediately,
-            // exactly as before this change.
-            className={`mt-6 max-w-md overflow-hidden rounded-md border border-white/10 bg-ink-900/90 shadow-[0_18px_40px_-24px_rgba(0,0,0,0.65)] lg:sticky lg:top-6 lg:mt-0 lg:block ${mobileRevealed ? '' : 'hidden'}`}
-          >
-            <div
-              className="h-[3px] w-full transition-colors duration-500"
-              style={{ backgroundColor: ROUTE_INTELLIGENCE_COLOUR[activeDest.intelligenceLevel].fill }}
-              aria-hidden="true"
-            />
-            <div className="p-6">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.24em]" style={{ color: ROUTE_INTELLIGENCE_COLOUR[activeDest.intelligenceLevel].fill }}>
-                {airportName} → {activeDest.label}
-              </p>
-              <div className="mt-2 flex flex-wrap items-center gap-2.5">
-                <h3 className="font-display text-2xl leading-tight text-sand-50">{activeDest.label}</h3>
-                {activeDest.networkMembership === 'seasonal' && <Badge variant="terracotta">Seasonal</Badge>}
-              </div>
-
-              {/* The honest three-level status, stated in plain words —
-                  never relies on the accent bar's colour alone (see the
-                  legend's own accessible-text rule). This is the single
-                  most-visible answer to "how well does JetStash know this
-                  route", so it sits first, above the more detailed verdict
-                  text below. */}
-              <p
-                className="mt-2.5 inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-semibold"
-                style={{ borderColor: `${ROUTE_INTELLIGENCE_COLOUR[activeDest.intelligenceLevel].fill}66`, color: ROUTE_INTELLIGENCE_COLOUR[activeDest.intelligenceLevel].fill }}
-              >
-                <span className="inline-block h-1.5 w-1.5 rounded-full" style={{ backgroundColor: ROUTE_INTELLIGENCE_COLOUR[activeDest.intelligenceLevel].fill }} aria-hidden="true" />
-                {ROUTE_INTELLIGENCE_COLOUR[activeDest.intelligenceLevel].label}
-              </p>
-
-              {/* Truth 1 — route intelligence: how much has JetStash itself
-                  independently researched about this route. */}
-              <div className="mt-4 border-l-2 pl-3.5" style={{ borderColor: ROUTE_INTELLIGENCE_COLOUR[activeDest.intelligenceLevel].fill }}>
-                <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-300">Route intelligence</p>
-                <p className="mt-1.5 text-[15px] leading-snug text-ink-100">{activeDest.verdict}</p>
-                {activeDest.detail && <p className="mt-1.5 text-xs leading-relaxed text-ink-300">{activeDest.detail}</p>}
-                <p className="mt-2 text-xs text-ink-300">{activeDest.flightTime}</p>
-              </div>
-
-              {/* Active service notice — additive, only rendered when real
-                  (never demotes the tier badge above). Kept visually
-                  distinct (its own accent colour, its own label) from the
-                  tier so a visitor never confuses "how well-researched is
-                  this route" with "is something about it changing right
-                  now" — two different, honest facts. */}
-              {activeDest.serviceNotice && (
-                <div className="mt-4 rounded-sm border px-3.5 py-3" style={{ borderColor: `${SERVICE_NOTICE_ACCENT}55`, backgroundColor: `${SERVICE_NOTICE_ACCENT}14` }}>
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.18em]" style={{ color: SERVICE_NOTICE_ACCENT }}>Active service notice</p>
-                  <p className="mt-1.5 text-sm leading-snug text-ink-100">{activeDest.serviceNotice.label}</p>
-                  <p className="mt-1.5 text-xs leading-relaxed text-ink-300">{activeDest.serviceNotice.detail}</p>
-                </div>
-              )}
-
-              {/* Truth 2 — network evidence: is this destination genuinely
-                  reachable from Manchester at all. Only rendered for
-                  destinations sourced from data/network-evidence.ts — for
-                  the original 11, the Route Status verdict above already
-                  says enough (see the DestinationPoint comment for why). */}
-              {activeDest.networkNote && (
-                <div className="mt-4 border-l-2 border-brass-500/50 pl-3.5">
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-300">Network evidence</p>
-                  <p className="mt-1.5 text-[11px] leading-relaxed text-ink-300">{activeDest.networkNote}</p>
-                </div>
-              )}
-
-              <div className="mt-5 flex gap-5 border-t border-white/10 pt-4">
-                {activeDest.routeHref && (
-                  <Link
-                    href={activeDest.routeHref}
-                    onClick={() => track('atlas_route_opened', { route: activeDest.routeHref!.split('/').pop()! })}
-                    className="inline-flex items-center gap-1 text-sm font-semibold text-brass-300 hover:text-brass-200"
-                  >
-                    Route guide <ArrowUpRight className="h-3.5 w-3.5" />
-                  </Link>
-                )}
-                <Link href={activeDest.href} className="inline-flex items-center gap-1 text-sm font-semibold text-ink-300 hover:text-sand-50">
-                  Explore destination <ArrowUpRight className="h-3.5 w-3.5" />
-                </Link>
-              </div>
-            </div>
-          </div>
-        )}
         </div>
       </div>
 
