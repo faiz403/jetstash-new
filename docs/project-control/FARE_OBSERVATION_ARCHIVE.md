@@ -727,3 +727,16 @@ stated. No commercial evaluation was performed.
 
 Full evidence: [10 September baseline #3](fare-evidence/routine-baseline-2026-09-10.md).
 No screenshot was saved. Local only; no deployment or push.
+
+## Fare Watcher candidate check — 11 September 2026
+
+Four Google Flights observations were appended on the fixed return-Economy,
+one-adult, GBP, 3–17 November profile: MAN–DXB £252, MAN–LHE £412, MAN–ISB
+£415 and BHX–BOM £446. For each route, the 8, 9 and 10 September observations
+are the only comparison baseline; the new record is excluded from its own
+baseline. All four selected itineraries were self-transfer with at least two
+stops in each direction, so existing poor-itinerary suppression remains in
+force. Baggage was fee-based and its complete cost was not stated.
+
+Full evidence: [11 September Fare Watcher check](fare-evidence/fare-watcher-2026-09-11.md).
+No screenshot was saved. Local only; no deployment or push.
