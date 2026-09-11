@@ -25,7 +25,9 @@ import {
   formatWhatYouCouldMiss,
   getManchesterMumbaiNextAction,
   getManchesterMumbaiUnconfirmedItems,
+  hasMaterialDurationConsequence,
   hasNoMaterialConsequence,
+  JOURNEY_DURATION_REFLECTION_COPY,
   MANCHESTER_MUMBAI_ROUTE_SLUG,
   NO_MATERIAL_CONSEQUENCE_COPY,
   NO_UNCONFIRMED_ITEMS_COPY,
@@ -474,6 +476,15 @@ export function JourneyBriefManchesterMumbai() {
                         </p>
                         {evidencedOption.journeyConsequences.includes('Self-transfer') && (
                           <p className="mt-2 text-sm leading-relaxed text-ink-600">{SELF_TRANSFER_EXPLANATION}</p>
+                        )}
+                        {/* Reddit experiment #2 qualitative learning (Astra
+                            product review, 11 Sept 2026): travellers weigh
+                            absolute journey duration differently from each
+                            other and differently from fare alone. A single
+                            plain-language prompt, not a calculator — reuses
+                            only the duration facts already shown above. */}
+                        {hasMaterialDurationConsequence(evidencedOption) && (
+                          <p className="mt-2 text-sm leading-relaxed text-ink-600">{JOURNEY_DURATION_REFLECTION_COPY}</p>
                         )}
                       </>
                     )}

@@ -369,6 +369,29 @@ export const SELF_TRANSFER_EXPLANATION =
   'This itinerary includes a self-transfer, so check the connection and baggage conditions carefully before booking.';
 
 /**
+ * Journey Brief public-readiness pilot (Astra review, 11 Sept 2026) —
+ * incorporates two qualitative traveller-decision factors surfaced in
+ * Reddit experiment #2: (1) travellers have their own maximum acceptable
+ * journey time, distinct from fare, and (2) the personal value of saved
+ * time differs from person to person. Deliberately NOT a calculator, a
+ * scoring engine, or a hardcoded universal threshold — no salary input, no
+ * "worth £X/hour" claim, no ranking. This is a single, plain-language
+ * prompt that reuses ONLY the already-computed, canonical duration facts
+ * (evidencedOption.journeyConsequences' own "Outbound:"/"Return:" entries)
+ * to help a reader notice that the absolute duration itself — not just the
+ * fare — is worth weighing, and that how much it's worth weighing is a
+ * personal call JetStash cannot make for them. Never shown for a genuinely
+ * clean itinerary (see hasMaterialDurationConsequence below) — there is
+ * nothing to reflect on when no decisive duration consequence exists.
+ */
+export function hasMaterialDurationConsequence(evidencedOption: EvidencedFareOption): boolean {
+  return evidencedOption.journeyConsequences.some((c) => c.startsWith('Outbound:') || c.startsWith('Return:'));
+}
+
+export const JOURNEY_DURATION_REFLECTION_COPY =
+  'A journey this long affects travellers differently — some would pay more for a shorter one, others would rather keep the lower fare. Worth deciding which matters more to you before you compare on price alone.';
+
+/**
  * Founder-approved supporting next step (5 Sept 2026) — locks the product
  * meaning that the recorded example above is evidence, not the booking
  * itself, and that Trip.com is a fresh search whose results still need
