@@ -106,8 +106,12 @@ export interface WeeklyFareEvidenceEntry {
   /** Airline(s) actually named by the result — free text, e.g. "KLM outbound, Air India return". */
   airline?: string;
   outboundDirectness?: 'direct' | 'connecting' | 'unknown';
+  /** Number of outbound stops actually shown by the source. Never inferred. */
+  outboundStops?: number;
   outboundConnectionAirports?: string[];
   returnDirectness?: 'direct' | 'connecting' | 'unknown';
+  /** Number of return stops actually shown by the source. Never inferred. */
+  returnStops?: number;
   returnConnectionAirports?: string[];
   /** Exactly what the source showed, or the literal string 'not stated'. Never inferred. */
   baggage?: string;
@@ -370,6 +374,22 @@ export function validateWeeklyFareEntry(
   if (!entry.returnDirectness || !APPROVED_DIRECTNESS.includes(entry.returnDirectness)) {
     issues.push(issue('returnDirectness', "Missing or invalid returnDirectness — must be 'direct', 'connecting' or 'unknown'. This is a RETURN fare: the return leg must actually be inspected, never assumed from the outbound alone."));
   }
+  for (const [leg, directness, stops] of [
+    ['outbound', entry.outboundDirectness, entry.outboundStops],
+    ['return', entry.returnDirectness, entry.returnStops],
+  ] as const) {
+    // Older archive records predate per-leg stop capture. Keep this ingest
+    // helper backwards-compatible, but validate any new stop evidence that
+    // is supplied; the operator report treats missing stops as incomplete
+    // suitability evidence and never calls it safe.
+    if (stops !== undefined && (!Number.isInteger(stops) || stops < 0)) {
+      issues.push(issue(`${leg}Stops`, `Invalid ${leg}Stops — record the non-negative stop count the source showed.`));
+    } else if (stops !== undefined && directness === 'direct' && stops !== 0) {
+      issues.push(issue(`${leg}Stops`, `${leg}Directness is direct, so ${leg}Stops must be 0.`));
+    } else if (stops !== undefined && directness === 'connecting' && stops < 1) {
+      issues.push(issue(`${leg}Stops`, `${leg}Directness is connecting, so ${leg}Stops must be at least 1.`));
+    }
+  }
   if (!entry.baggage || entry.baggage.trim().length === 0) {
     issues.push(issue('baggage', "Missing baggage — record exactly what the source showed, or the literal string 'not stated'. Never leave unset."));
   }
@@ -453,7 +473,9 @@ export function validateWeeklyFareEntry(
     returnDate: profile.returnDate,
     fareDirectness,
     outboundDirectness: entry.outboundDirectness,
+    outboundStops: entry.outboundStops,
     returnDirectness: entry.returnDirectness,
+    returnStops: entry.returnStops,
     outboundConnectionAirports: entry.outboundConnectionAirports,
     returnConnectionAirports: entry.returnConnectionAirports,
   };
@@ -546,7 +568,9 @@ export function generateFareObservationCode(result: WeeklyFareValidationResult):
   if (o.returnDate) fields.push(`returnDate: '${o.returnDate}'`);
   if (o.fareDirectness) fields.push(`fareDirectness: '${o.fareDirectness}'`);
   if (o.outboundDirectness) fields.push(`outboundDirectness: '${o.outboundDirectness}'`);
+  if (o.outboundStops !== undefined) fields.push(`outboundStops: ${o.outboundStops}`);
   if (o.returnDirectness) fields.push(`returnDirectness: '${o.returnDirectness}'`);
+  if (o.returnStops !== undefined) fields.push(`returnStops: ${o.returnStops}`);
   if (o.outboundConnectionAirports?.length) fields.push(`outboundConnectionAirports: ${JSON.stringify(o.outboundConnectionAirports)}`);
   if (o.returnConnectionAirports?.length) fields.push(`returnConnectionAirports: ${JSON.stringify(o.returnConnectionAirports)}`);
 
