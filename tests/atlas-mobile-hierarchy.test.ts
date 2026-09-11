@@ -5,44 +5,70 @@ import { join } from 'path';
 /**
  * Astra product review, 11 Sept 2026 — Mobile Atlas hierarchy.
  *
- * Finding: on mobile the Route Atlas rendered the compact selected-route
- * answer AFTER the entire map block (SVG + swipe hint + mobile chip rows +
- * legend + footnote), because the two-column desktop grid collapses to a
- * single stacked column below `lg`, and the answer panel was the grid's
- * *second* DOM child. A mobile visitor had to scroll past the whole map to
- * see the answer for whatever they'd already selected.
+ * Finding (original): on mobile the Route Atlas rendered the compact
+ * selected-route answer AFTER the entire map block (SVG + swipe hint +
+ * mobile chip rows + legend + footnote), because the two-column desktop
+ * grid collapses to a single stacked column below `lg`, and the answer
+ * panel was the grid's *second* DOM child. A mobile visitor had to scroll
+ * past the whole map to see the answer for whatever they'd already
+ * selected.
  *
- * Fix: the answer panel is now the grid's *first* DOM child (source-order
- * before the map wrapper), so mobile's natural single-column stack reads
- * controls -> compact answer -> map, with no `order` class at the base
- * breakpoint (visual order = DOM order = focus order on mobile). Desktop's
- * existing two-column visual layout (map wide-left, answer narrow-right) is
+ * Correction (founder follow-up, same day): the first pass moved the
+ * answer above the map, but left the country/destination chip selector —
+ * the actual mobile controls — nested inside the map block, so the real
+ * mobile order was still answer -> controls -> map, not the agreed
+ * controls -> answer -> map. Fixed by also relocating the chip-selector
+ * JSX (unchanged, still sm:hidden, still the same handlers) to be the
+ * grid's first DOM child, ahead of the answer panel.
+ *
+ * Final mobile source order asserted below: chip-selector controls, then
+ * the selected-route answer panel, then the map wrapper. No `order` class
+ * at the base breakpoint, so mobile's stack is governed purely by this DOM
+ * order (visual order = DOM order = focus order). Desktop's existing
+ * two-column visual layout (map wide-left, answer narrow-right) is
  * restored purely via `lg:order-1` (map) / `lg:order-2` (answer) — CSS
- * Grid's `order` property affects auto-placement, so at `lg:` and above the
- * columns land exactly where they did before this change.
+ * Grid's `order` property affects auto-placement, so at `lg:` and above
+ * the columns land exactly where they did before this change. The chip
+ * selector stays `sm:hidden` (display:none from `sm` upward), so it takes
+ * no grid track and is never reachable by Tab on desktop/tablet regardless
+ * of where it sits in the DOM — its relocation has no desktop effect.
  *
- * Explicitly NOT part of this fix, and asserted here so a future edit can't
- * accidentally reintroduce them: no new swipe/drag hint, no hand animation,
- * no second instruction line, no onboarding overlay, no duplicate answer
- * panel, no change to route/fare/destination data or its derivation.
+ * Explicitly NOT part of this fix, and asserted below so a future edit
+ * can't accidentally reintroduce them: no new swipe/drag hint, no hand
+ * animation, no second instruction line, no onboarding overlay, no
+ * duplicate controls, no duplicate answer panel, no change to
+ * route/fare/destination data or its derivation.
  */
 
 const atlasSrc = readFileSync(join(process.cwd(), 'components/founder/atlas-feel-test.tsx'), 'utf8');
 
-describe('Mobile Atlas hierarchy: answer precedes map in source (and therefore in the mobile stack)', () => {
-  it('the grid opens, then the selected-route answer panel appears, then the map wrapper — in that source order', () => {
+describe('Mobile Atlas hierarchy: controls precede the answer, which precedes the map, in source', () => {
+  it('the grid opens, then the chip-selector controls, then the selected-route answer panel, then the map wrapper — in that order', () => {
     const gridIndex = atlasSrc.indexOf('lg:grid-cols-[minmax(0,1fr)_22rem]');
+    const controlsIndex = atlasSrc.indexOf('aria-label="Choose a country"', gridIndex);
     const answerIndex = atlasSrc.indexOf('{activeDest && (', gridIndex);
     const mapWrapperIndex = atlasSrc.indexOf('<div className="min-w-0 lg:order-1">', gridIndex);
 
     expect(gridIndex).toBeGreaterThan(-1);
-    expect(answerIndex).toBeGreaterThan(gridIndex);
+    expect(controlsIndex).toBeGreaterThan(gridIndex);
+    expect(answerIndex).toBeGreaterThan(controlsIndex);
     expect(mapWrapperIndex).toBeGreaterThan(answerIndex);
+  });
+
+  it('there is exactly one country chip selector and one destination chip selector — no duplication from the move', () => {
+    expect(atlasSrc.match(/aria-label="Choose a country"/g) ?? []).toHaveLength(1);
+    expect(atlasSrc.match(/aria-label=\{`Choose a destination in/g) ?? []).toHaveLength(1);
   });
 
   it('there is exactly one selected-route answer panel — no duplication from the move', () => {
     const occurrences = atlasSrc.match(/aria-live="polite"/g) ?? [];
     expect(occurrences).toHaveLength(1);
+  });
+
+  it('the chip selector stays sm:hidden, so its relocation has no effect on desktop/tablet layout or tab order', () => {
+    const start = atlasSrc.indexOf('aria-label="Choose a country"', atlasSrc.indexOf('lg:grid-cols-[minmax(0,1fr)_22rem]'));
+    const wrapperOpenIdx = atlasSrc.lastIndexOf('<div className="flex flex-col gap-2 sm:hidden">', start);
+    expect(wrapperOpenIdx).toBeGreaterThan(-1);
   });
 
   it('applies lg:order classes so desktop keeps its existing visual column arrangement (map left, answer right)', () => {
@@ -72,7 +98,24 @@ describe('Mobile Atlas hierarchy: no new interaction hint was added', () => {
   });
 });
 
-describe('Mobile Atlas hierarchy: existing panel content and behaviour are unchanged, only relocated', () => {
+describe('Mobile Atlas hierarchy: chip-selector controls are unchanged, only relocated', () => {
+  it('the country chips still call the same activateCountry handler used by the desktop map', () => {
+    expect(atlasSrc).toContain('onClick={() => activateCountry(c.slug)}');
+    expect(atlasSrc).toContain('key={`country-chip-${c.slug}`}');
+  });
+
+  it('the destination chips still call the same selectDestination handler used by the desktop map', () => {
+    expect(atlasSrc).toContain('onClick={() => selectDestination(d.slug)}');
+    expect(atlasSrc).toContain('key={`dest-chip-${d.slug}`}');
+  });
+
+  it('both chip rows keep their accessible group semantics', () => {
+    expect(atlasSrc).toContain('role="group" aria-label="Choose a country"');
+    expect(atlasSrc).toMatch(/role="group" aria-label=\{`Choose a destination in \$\{activeCountry\.label\}`\}/);
+  });
+});
+
+describe('Mobile Atlas hierarchy: existing answer-panel content and behaviour are unchanged, only relocated', () => {
   it('progressive disclosure (mobileRevealed hidden/shown via className, not unmount) is preserved', () => {
     expect(atlasSrc).toMatch(/\$\{mobileRevealed \? '' : 'hidden'\}/);
   });

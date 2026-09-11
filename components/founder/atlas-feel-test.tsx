@@ -643,24 +643,90 @@ export function AtlasFeelTest({
         <p className="hidden text-[13px] text-ink-300 sm:block">Select a country to explore its destinations.</p>
 
         <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_22rem] lg:gap-10">
+          {/* Mobile Atlas hierarchy correction (Astra product review, 11
+              Sept 2026 — founder follow-up): the first pass moved the
+              answer above the map but left this chip selector — the
+              country/destination controls a mobile visitor actually taps —
+              nested inside the map block below, so the real mobile order
+              was still answer -> controls -> map. This is the same
+              country/destination chip selector JSX as before (still
+              sm:hidden, still calling the same activateCountry/
+              selectDestination handlers the desktop map hover uses),
+              relocated to be the grid's first DOM child: controls -> answer
+              -> map. It renders `display:none` above `sm`, so desktop's
+              accessibility tree and tab order are unaffected by this move —
+              a hidden element takes no grid track and is never reachable by
+              Tab regardless of its DOM position. */}
+          <div className="flex flex-col gap-2 sm:hidden">
+            <div className="-mx-6 flex gap-2 overflow-x-auto px-6 pb-1 no-scrollbar" role="group" aria-label="Choose a country">
+              {countries.map((c) => {
+                const isActive = c.slug === activeCountrySlug;
+                return (
+                  <button
+                    key={`country-chip-${c.slug}`}
+                    type="button"
+                    onClick={() => activateCountry(c.slug)}
+                    aria-pressed={isActive}
+                    className={
+                      isActive
+                        ? 'shrink-0 inline-flex items-center gap-1.5 rounded-full bg-brass px-4 py-2 text-sm font-semibold text-ink-900'
+                        : 'shrink-0 inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/5 px-4 py-2 text-sm font-medium text-ink-200'
+                    }
+                  >
+                    {/* Same confidence colour already explained in the legend below —
+                        applied here too so the chip row itself carries the same "how
+                        well do we know this" signal the desktop map's halo colour
+                        gives for free, instead of every country reading as equal
+                        weight until tapped. */}
+                    <span className="inline-block h-1.5 w-1.5 shrink-0 rounded-full" style={{ backgroundColor: COUNTRY_INTELLIGENCE_COLOUR[c.intelligenceLevel].stroke }} aria-hidden="true" />
+                    {c.label}
+                  </button>
+                );
+              })}
+            </div>
+            <div className="-mx-6 flex gap-2 overflow-x-auto px-6 pb-1 no-scrollbar" role="group" aria-label={`Choose a destination in ${activeCountry.label}`}>
+              {activeCountry.destinations.map((d) => {
+                const isActive = d.slug === activeDestSlug;
+                return (
+                  <button
+                    key={`dest-chip-${d.slug}`}
+                    type="button"
+                    onClick={() => selectDestination(d.slug)}
+                    aria-pressed={isActive}
+                    className={
+                      isActive
+                        ? 'shrink-0 inline-flex items-center gap-1.5 rounded-full bg-brass-100 px-3.5 py-1.5 text-[13px] font-semibold text-ink-900'
+                        : 'shrink-0 inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.03] px-3.5 py-1.5 text-[13px] font-medium text-ink-300'
+                    }
+                  >
+                    <span className="inline-block h-1.5 w-1.5 shrink-0 rounded-full" style={{ backgroundColor: ROUTE_INTELLIGENCE_COLOUR[d.intelligenceLevel].fill }} aria-hidden="true" />
+                    {d.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
           {/* Mobile Atlas hierarchy (Astra product review, 11 Sept 2026):
               this panel used to sit after the map+chips+legend block below —
               on mobile (a single-column stack, no lg:grid-cols), that meant a
               visitor had to scroll past the entire map before reaching the
               answer for whatever they'd already selected. Moved here, as the
-              grid's first DOM child, so mobile shows it immediately after the
-              "Flying from" control, before the map. Desktop's visual layout
-              is restored via `lg:order-2` here and `lg:order-1` on the map
-              block below — CSS `order` participates in Grid auto-placement,
-              so at lg+ this still lands in the narrow right column exactly
-              as before, with the map in the wide left column. Deliberately a
+              grid's second DOM child (after the controls above), so mobile
+              shows it right after the country/destination chips and the
+              always-visible "Flying from" airport control in the header,
+              before the map. Desktop's visual layout is restored via
+              `lg:order-2` here and `lg:order-1` on the map block below —
+              CSS `order` participates in Grid auto-placement, so at lg+
+              this still lands in the narrow right column exactly as
+              before, with the map in the wide left column. Deliberately a
               real DOM move, not a CSS-only reorder: `order` changes visual
               position but not tab order, and a CSS-only version would have
               left mobile keyboard/screen-reader users tabbing through the
-              entire map and its chip controls before ever reaching this
-              answer — the exact opposite of the fix. No content, state,
-              logic, or route/fare data changed; this is the same
-              {activeDest && (...)} block, unmoved except in the DOM. */}
+              entire map before ever reaching this answer — the exact
+              opposite of the fix. No content, state, logic, or route/fare
+              data changed; this is the same {activeDest && (...)} block,
+              unmoved except in the DOM. */}
           {activeDest && (
             <div
               aria-live="polite"
@@ -1022,64 +1088,6 @@ export function AtlasFeelTest({
             </div>
           </>
         )}
-        </div>
-
-        {/* mobile chip selector — the map's fine hit-targets don't work below
-            sm, same reasoning and pattern as route-map-hero.tsx's own mobile
-            fallback. Both rows call the exact same activateCountry/
-            setActiveDestSlug used by the desktop hover handlers, so tapping
-            drives the identical state transition hovering does — no second
-            interaction model, just a different input method. Sits right
-            below the map (not above it) so the map is visible first and the
-            chips read as "select within what you're looking at". */}
-        <div className="mt-3 flex flex-col gap-2 sm:hidden">
-          <div className="-mx-6 flex gap-2 overflow-x-auto px-6 pb-1 no-scrollbar" role="group" aria-label="Choose a country">
-            {countries.map((c) => {
-              const isActive = c.slug === activeCountrySlug;
-              return (
-                <button
-                  key={`country-chip-${c.slug}`}
-                  type="button"
-                  onClick={() => activateCountry(c.slug)}
-                  aria-pressed={isActive}
-                  className={
-                    isActive
-                      ? 'shrink-0 inline-flex items-center gap-1.5 rounded-full bg-brass px-4 py-2 text-sm font-semibold text-ink-900'
-                      : 'shrink-0 inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/5 px-4 py-2 text-sm font-medium text-ink-200'
-                  }
-                >
-                  {/* Same confidence colour already explained in the legend below —
-                      applied here too so the chip row itself carries the same "how
-                      well do we know this" signal the desktop map's halo colour
-                      gives for free, instead of every country reading as equal
-                      weight until tapped. */}
-                  <span className="inline-block h-1.5 w-1.5 shrink-0 rounded-full" style={{ backgroundColor: COUNTRY_INTELLIGENCE_COLOUR[c.intelligenceLevel].stroke }} aria-hidden="true" />
-                  {c.label}
-                </button>
-              );
-            })}
-          </div>
-          <div className="-mx-6 flex gap-2 overflow-x-auto px-6 pb-1 no-scrollbar" role="group" aria-label={`Choose a destination in ${activeCountry.label}`}>
-            {activeCountry.destinations.map((d) => {
-              const isActive = d.slug === activeDestSlug;
-              return (
-                <button
-                  key={`dest-chip-${d.slug}`}
-                  type="button"
-                  onClick={() => selectDestination(d.slug)}
-                  aria-pressed={isActive}
-                  className={
-                    isActive
-                      ? 'shrink-0 inline-flex items-center gap-1.5 rounded-full bg-brass-100 px-3.5 py-1.5 text-[13px] font-semibold text-ink-900'
-                      : 'shrink-0 inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.03] px-3.5 py-1.5 text-[13px] font-medium text-ink-300'
-                  }
-                >
-                  <span className="inline-block h-1.5 w-1.5 shrink-0 rounded-full" style={{ backgroundColor: ROUTE_INTELLIGENCE_COLOUR[d.intelligenceLevel].fill }} aria-hidden="true" />
-                  {d.label}
-                </button>
-              );
-            })}
-          </div>
         </div>
 
         {/* One customer-facing legend keeps the two genuine data layers together:
