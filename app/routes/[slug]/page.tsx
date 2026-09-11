@@ -7,6 +7,7 @@ import { routeStatusEvents } from '@/data/route-status-events';
 import { getRouteStatusCopy, getEffectiveRoutePresentation, formatRouteStatusDate } from '@/lib/route-status-copy';
 import { getAirlinesBySlugs } from '@/data/airlines';
 import { getDealsByDestination } from '@/data/deals';
+import { shouldRenderRouteDealCard } from '@/lib/business-class-presentation';
 import { getTimelineByRoute } from '@/data/route-timeline';
 import { getActiveWarningsByRoute } from '@/data/route-warnings';
 import { getPublishableObservationsByRoute, getFareRangeSummary, fareObservations as allFareObservations } from '@/data/fare-observations';
@@ -140,7 +141,13 @@ export default async function RoutePage({ params }: { params: Promise<{ slug: st
     return null;
   }
 
-  const dealsHere = getDealsByDestination(dest.slug).filter((d) => d.fromAirportSlug === airport.slug);
+  const dealsHere = getDealsByDestination(dest.slug)
+    .filter((d) => d.fromAirportSlug === airport.slug)
+    // A route can retain a curated Business card after its dated Business
+    // evidence has expired. Keep supported Economy/package cards as-is, but
+    // do not let a full-size empty premium card compete with the route's
+    // current journey answer or fare evidence.
+    .filter((d) => shouldRenderRouteDealCard(d, nowIso));
   const alternativeRoutes = getRoutesByDestination(dest.slug).filter((r) => r.slug !== route.slug);
   const peakPeriods = getRoutePeakPeriods(route);
   const activeWarnings = getActiveWarningsByRoute(route.slug);
@@ -211,7 +218,13 @@ export default async function RoutePage({ params }: { params: Promise<{ slug: st
   // Business observation ever stops being current/publishable,
   // businessFareRange is null and the whole panel simply doesn't render,
   // rather than showing a broken or invented fare.
-  const businessFareRange = route.businessClarity ? getFareRangeSummary(route.slug, 'Business', nowIso) : null;
+  // The explanatory Business panel is secondary context, not a way to
+  // re-promote an itinerary that the shared suitability guard has already
+  // ruled out for premium-card treatment. The evidence remains in Fare
+  // History; this only controls the extra promotional panel.
+  const businessFareRange = route.businessClarity && dealsHere.some((deal) => deal.cabin === 'Business')
+    ? getFareRangeSummary(route.slug, 'Business', nowIso)
+    : null;
   // Route Page Simplification Phase 1 (25 Aug 2026) — the audit's single P0.
   // When BOTH fare blocks render and they cover DIFFERENT travel-date
   // windows, the page says so once, at the point of contrast. Derived

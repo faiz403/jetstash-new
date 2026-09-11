@@ -3,10 +3,10 @@ import Link from 'next/link';
 import { ArrowUpRight, Crown, Plane, BadgeCheck, Briefcase } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { DealCard } from '@/components/ui/deal-card';
-import { NoFareFallback } from '@/components/ui/no-fare-fallback';
 import { NewsletterSection } from '@/components/sections/newsletter-section';
 import { HeroBackdrop } from '@/components/ui/hero-backdrop';
 import { getDealsByCategory, getDealsByDestination } from '@/data/deals';
+import { hasPresentableBusinessFare } from '@/lib/business-class-presentation';
 import { hasCurrentFareSignalForCabinAmongRoutes } from '@/lib/fare-signal';
 import { routes, getRouteAirport, getRouteDestination } from '@/data/routes';
 import { routeStatusEvents } from '@/data/route-status-events';
@@ -40,7 +40,10 @@ const liveResultChecks = [
 
 export default function BusinessClassPage() {
   const nowIso = new Date().toISOString().slice(0, 10);
-  const businessDeals = getDealsByCategory('business');
+  // A curated Business card can outlive its dated Business observation. The
+  // Business page remains available, but only a card with current evidence
+  // earns grid-level prominence.
+  const businessDeals = getDealsByCategory('business').filter((deal) => hasPresentableBusinessFare(deal, nowIso));
   // Fare fallback truth fix (August 2026): zero curated Business-class Deals
   // must never be presented as zero tracked Business fares — a separate,
   // unrelated fact (data/deals.ts vs data/fare-observations.ts). Cabin-
@@ -63,7 +66,7 @@ export default function BusinessClassPage() {
     if (!airport) return false;
     if (getEffectiveRoutePresentation(r, routeStatusEvents, nowIso).status !== 'direct') return false;
     return getDealsByDestination(r.destinationSlug).some(
-      (d) => d.cabin === 'Business' && d.fromAirportSlug === r.airportSlug
+      (d) => d.cabin === 'Business' && d.fromAirportSlug === r.airportSlug && hasPresentableBusinessFare(d, nowIso)
     );
   });
 
@@ -106,8 +109,8 @@ export default function BusinessClassPage() {
         </div>
       </section>
 
-      {/* Route coverage — links into route hubs */}
-      <section className="bg-sand-50 py-14 sm:py-16">
+      {/* Route coverage — shown only while current Business evidence makes it useful. */}
+      {businessCapableRoutes.length > 0 && <section className="bg-sand-50 py-14 sm:py-16">
         <div className="mx-auto max-w-content px-5 sm:px-8">
           <h2 className="font-display text-2xl text-ink-900 sm:text-3xl">Verified-direct routes in this Business fare set</h2>
           <p className="mt-2 max-w-xl text-sm text-ink-500">
@@ -146,7 +149,7 @@ export default function BusinessClassPage() {
             })}
           </div>
         </div>
-      </section>
+      </section>}
 
       <section className="bg-white py-14 sm:py-16">
         <div className="mx-auto max-w-content px-5 sm:px-8">
@@ -158,9 +161,11 @@ export default function BusinessClassPage() {
               ))}
             </div>
           ) : (
-            <div className="mt-8">
-              <NoFareFallback cityLabel="business class routes" hasFareSignalElsewhere={hasCurrentBusinessFareSignal} />
-            </div>
+            <p className="mt-4 max-w-xl text-sm leading-relaxed text-ink-500">
+              {hasCurrentBusinessFareSignal
+                ? 'No curated Business Class example is current here today. Check individual route guides for dated fare evidence.'
+                : 'No current Business Class fare examples are available today. Check back when JetStash has a dated route-specific observation.'}
+            </p>
           )}
         </div>
       </section>
