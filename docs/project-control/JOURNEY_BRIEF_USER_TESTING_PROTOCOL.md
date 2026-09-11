@@ -85,12 +85,17 @@ misinformation finding can be traced back to the exact sentence that caused it.
 ## Readiness gate
 
 The pilot is ready to move from "controlled user test" toward a real traveller-facing pilot only
-if **both** of the following hold:
+if **both** of the following hold, evaluated on the **first 10 participants tested** — a fixed
+count, not a percentage that scales with sample size:
 
-- **At least 8 of 10 (or the equivalent ≥80% at a larger N) participants correctly explain all
-  three answers unaided.**
+- **At least 8 of the first 10 participants correctly explain all three answers unaided.**
 - **No unresolved material misinformation is found** — no participant came away believing a false
   claim about price, availability, or a recommendation JetStash didn't make.
+
+This is the only gate. If 11–20 participants are tested in the same batch, the first-10 result
+above remains the primary, authoritative verdict; the total-sample pass rate is reported
+separately as supporting context (see the execution pack's final-readout template) and never
+replaces, recalculates, or overrides the first-10 result in either direction.
 
 Falling short of either bar means: fix the specific evidenced misreading (word the copy more
 plainly, reorder if the actual issue is discoverability, or add a missing signpost) and re-test
