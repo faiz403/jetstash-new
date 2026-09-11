@@ -174,10 +174,13 @@ Recurring confusion themes (list every theme raised by 2+ participants, with whi
 Material misinformation found: YES / NO
   If YES, list every entry from the misinformation log (§6) by number:
 
-READINESS VERDICT (per the protocol's own gate — both conditions required):
-  [ ] >=8/10 (or >=80% at larger N) correctly explained all three, unaided
-  [ ] No unresolved material misinformation found
+READINESS VERDICT — primary gate, evaluated on the FIRST 10 participants only (both required):
+  [ ] >=8/10 of the first 10 correctly explained all three, unaided
+  [ ] No unresolved material misinformation found (across the full sample tested)
   => READY FOR NEXT PHASE  /  NOT READY — reasons:
+
+(Total-sample result above is supporting evidence for context only — it does not replace or
+ recalculate the primary gate, which is fixed at 8/10 of the first 10 participants.)
 ```
 
 ## 8. Recruitment guidance
@@ -217,15 +220,27 @@ guidance for who to approach:
   single readiness verdict. Fix the defect, then start a **fresh** batch against the corrected
   version if a re-test is warranted.
 
-## Readiness gate (preserved exactly from the merged protocol — not restated with different wording)
+## Readiness gate
 
-> At least 8 of 10 (or the equivalent ≥80% at a larger N) participants correctly explain all three
-> answers unaided, **and** no unresolved material misinformation is found.
+The approved gate, exactly as authorised — a fixed count, not a scaling percentage:
 
-For a batch larger than 10 participants, report **both** results in the final readout (§7): the
-first-10 gate result and the total-sample result. This does not change the 8/10 threshold — it
-only makes sure a larger batch can't obscure a genuine first-10 failure by averaging it against
-a stronger back half, or vice versa.
+> At least 8 of the first 10 participants correctly explain all three answers unaided, **and** no
+> unresolved material misinformation is found.
+
+This is the **only** gate. It is evaluated on the first 10 participants tested, full stop — it does
+not scale, recalculate, or get replaced by a percentage at a larger sample size.
+
+If 11–20 participants are tested in the same batch, report **both** results in the final readout
+(§7):
+
+1. the **first-10 gate result** — the primary, authoritative readiness verdict, unchanged by
+   anything that happens afterward, and
+2. the **total-sample all-three pass rate** — reported separately as supporting context (e.g. "14
+   of 18 passed all three overall") — informative, but never a substitute gate and never used to
+   override a first-10 result that didn't clear 8/10.
+
+A stronger total-sample number never overrides a first-10 miss, and a weaker total-sample number
+never overrides a first-10 pass — the two are reported side by side, not blended into one figure.
 
 ## What this pack explicitly does not do
 
