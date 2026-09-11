@@ -34,6 +34,25 @@ export function RouteWatchForm({ defaultAirportSlug, defaultDestinationSlug, def
   const [status, setStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
   const [errorMsg, setErrorMsg] = useState('');
 
+  // Route context continuity (Astra product review, 11 Sept 2026): derived
+  // from the actual current selection, never from the entry-point props
+  // directly — so it's accurate whether the route arrived pre-filled (a
+  // route page's own on-page form) or was picked by hand (the standalone
+  // /travel-ready-check page's generic entry, which passes no
+  // defaultAirportSlug). Naturally absent until a route is genuinely known
+  // on both sides, so the generic entry point is never given a fabricated
+  // route identity.
+  const selectedAirport = airportSlug ? airports.find((a) => a.slug === airportSlug) : undefined;
+  const selectedDestination = destinationSlug ? destinations.find((d) => d.slug === destinationSlug) : undefined;
+  const routeLabel = selectedAirport && selectedDestination ? `${selectedAirport.city} to ${selectedDestination.city}` : null;
+  // Submission requires both fields (see handleSubmit's guard below), so by
+  // the time `status === 'success'` renders, routeLabel is always set —
+  // this substitutes the generic "this route" in the shared, tested
+  // ROUTE_WATCH_SUCCESS_COPY for the concrete route, without editing that
+  // exported constant (still asserted verbatim elsewhere, e.g. the homepage
+  // invitation) or its underlying capability claim.
+  const successMessage = routeLabel ? ROUTE_WATCH_SUCCESS_COPY.replace('this route', routeLabel) : ROUTE_WATCH_SUCCESS_COPY;
+
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     if (!email || !airportSlug || !destinationSlug) return;
@@ -76,10 +95,24 @@ export function RouteWatchForm({ defaultAirportSlug, defaultDestinationSlug, def
       {status === 'success' ? (
         <div role="status" aria-live="polite" className="mt-5 flex items-center gap-3 rounded-sm border border-brass/30 bg-brass-50 p-4">
           <CheckCircle2 className="h-5 w-5 flex-shrink-0 text-brass-600" />
-          <p className="text-sm text-ink-700">{ROUTE_WATCH_SUCCESS_COPY}</p>
+          <p className="text-sm text-ink-700">{successMessage}</p>
         </div>
       ) : (
         <form onSubmit={handleSubmit} className="mt-5 flex flex-col gap-3">
+          {/* Route identity (Astra product review, 11 Sept 2026): a
+              traveller arriving from a specific route page already sees
+              this reflected in the two selects below via their pre-filled
+              values, but as two separate dropdowns rather than one clear
+              statement — easy to miss that "this is already set to my
+              route" rather than a blank tool to configure from scratch.
+              This line makes it explicit, and stays live as the selects
+              change, so it's never stale relative to what will actually be
+              submitted. */}
+          {routeLabel && (
+            <p aria-live="polite" className="inline-flex w-fit items-center gap-1.5 rounded-full border border-ink-200 bg-ink-50 px-3 py-1 text-xs font-semibold text-ink-700">
+              {routeLabel}
+            </p>
+          )}
           <HoneypotField value={honeypot} onChange={setHoneypot} />
           <div className="grid gap-3 sm:grid-cols-2">
             <div>
