@@ -48,7 +48,7 @@ describe('deal card no longer carries Madinah-specific CTA-caption logic', () =>
     // pass moved the commercial wording into the shared disclosure component;
     // the underlying itinerary/baggage/booking warning remains unchanged.
     const normalised = dealCardSrc.replace(/\s+/g, ' ');
-    expect(normalised).toContain('Compare flights on Trip.com');
+    expect(normalised).toContain('TRIPCOM_DEFAULT_CTA_LABEL');
     expect(normalised).toContain('AffiliateLinkDisclosure');
     expect(normalised).toContain('Check the itinerary, baggage allowance and booking terms before paying.');
   });

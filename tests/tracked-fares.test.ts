@@ -194,7 +194,7 @@ describe('10. the page itself — live stat, terminology, cross-link, no fabrica
   it('CTA is fail-closed per entry — either a real Trip.com link or the explicit no-handoff sentence, never both, never neither silently', () => {
     for (const entry of airportGroups.flatMap((g) => g.entries).slice(0, 5)) {
       if (entry.tripComUrl) {
-        expect(explorerSrc).toContain('Compare flights on Trip.com');
+        expect(explorerSrc).toContain('TRIPCOM_DEFAULT_CTA_LABEL');
       } else {
         expect(explorerSrc).toContain('Direct flight comparison is not available for this airport yet.');
       }

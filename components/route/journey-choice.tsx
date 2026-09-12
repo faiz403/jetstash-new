@@ -1,6 +1,6 @@
 import { ArrowUpRight, Clock3, Info, Plane } from 'lucide-react';
 import type { JourneyChoice as JourneyChoiceData, JourneyChoiceOption } from '@/lib/journey-choice';
-import { PROVIDER_REL, TRIPCOM_FRESH_SEARCH_NOTE } from '@/lib/booking-providers';
+import { PROVIDER_REL, TRIPCOM_DEFAULT_CTA_LABEL, TRIPCOM_FRESH_SEARCH_NOTE } from '@/lib/booking-providers';
 import { JOURNEY_CHOICE_DATED_HANDOFF_NOTE, type JourneyChoiceTripComHandoff } from '@/lib/tripcom-dated-handoff';
 import { TrackedOutboundLink } from '@/components/ui/tracked-outbound-link';
 import { AffiliateLinkDisclosure } from '@/components/ui/affiliate-link-disclosure';
@@ -283,7 +283,7 @@ export function JourneyChoice({
               rel={PROVIDER_REL}
               className="inline-flex items-center gap-1.5 rounded-sm bg-ink-900 px-4 py-2.5 text-sm font-semibold text-sand-50 transition-all hover:bg-brass-600 active:scale-[0.985]"
             >
-              Check today&apos;s price
+              {TRIPCOM_DEFAULT_CTA_LABEL}
               <ArrowUpRight className="h-4 w-4" strokeWidth={2.25} />
             </TrackedOutboundLink>
             <AffiliateLinkDisclosure providerName="Trip.com">

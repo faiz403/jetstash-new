@@ -263,7 +263,7 @@ describe('Standout Fare — First Public Standout Fare Pilot', () => {
     const standout = getApprovedStandoutFare('manchester-islamabad', 'Economy', fareObservations, NOW);
     const signal = getFareSignalForRoute('manchester-islamabad', NOW);
     const html = renderToStaticMarkup(FareSignal({ signal, tripComUrl: getTripComRouteUrl('manchester-islamabad'), routeSlug: 'manchester-islamabad', standoutFare: standout }));
-    expect(html).toContain('Check current price');
+    expect(html).toContain('Compare flights on Trip.com');
     // TrackedOutboundLink's onClick handler isn't visible in static markup
     // (client-only), so this asserts the actual wiring at the source level
     // -- same convention tests/fare-signal.test.ts already uses (reading

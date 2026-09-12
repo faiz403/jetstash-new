@@ -361,9 +361,15 @@ describe('Trip.com CTA is primary, singular, and correctly wired on Fare Signal'
   // tests/route-hero-scanability.test.ts for the removal itself. Fare
   // Signal (components/route/fare-signal.tsx) is now the one place a
   // route's Trip.com action, its wiring and its fail-closed fallback live,
-  // so the file under test moves there. The hero's old "Compare flights on
-  // Trip.com" wording is retired, not relocated — Fare Signal keeps its own
-  // pre-existing "Check current price" wording as the one surviving label.
+  // so the file under test moves there.
+  //
+  // CTA label consolidation (12 Sept 2026, founder-approved): the funnel
+  // audit found this exact wording ("Check current price on Trip.com") was
+  // one of five inconsistent labels for the same ordinary Trip.com click
+  // across the site. Fare Signal's CTA now reads the shared
+  // TRIPCOM_DEFAULT_CTA_LABEL constant ("Compare flights on Trip.com") —
+  // the same label the old hero CTA and every other ordinary surface use —
+  // rather than its own one-off wording.
   const routePageSrc = readFileSync(join(process.cwd(), 'app/routes/[slug]/page.tsx'), 'utf8');
   const fareSignalSrc = readFileSync(join(process.cwd(), 'components/route/fare-signal.tsx'), 'utf8');
 
@@ -377,7 +383,7 @@ describe('Trip.com CTA is primary, singular, and correctly wired on Fare Signal'
   });
 
   it('uses the required CTA wording', () => {
-    expect(fareSignalSrc).toContain('Check current price');
+    expect(fareSignalSrc).toContain('TRIPCOM_DEFAULT_CTA_LABEL');
     expect(routePageSrc).not.toContain('Compare flights on Trip.com');
   });
 

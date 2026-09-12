@@ -13,7 +13,7 @@ import {
 } from '@/lib/travel-ready-check';
 import type { TravelReadySignal } from '@/lib/travel-intelligence-engine';
 import { getRouteByAirportAndDestination } from '@/data/routes';
-import { getTripComFlightHandoff, PROVIDER_REL, SERVICE_ENDED_CTA_LABEL } from '@/lib/booking-providers';
+import { getTripComFlightHandoff, PROVIDER_REL, SERVICE_ENDED_CTA_LABEL, TRIPCOM_DEFAULT_CTA_LABEL } from '@/lib/booking-providers';
 import { getBaggageAffiliateUrl, BAGGAGE_PROVIDER_REL } from '@/lib/baggage-affiliate-link';
 import { AffiliateLinkDisclosure } from '@/components/ui/affiliate-link-disclosure';
 import { RouteWatchForm } from '@/components/route/route-watch-form';
@@ -200,7 +200,7 @@ export function TravelReadyCheck({
     airportSlugForCta && destinationSlug ? getRouteByAirportAndDestination(airportSlugForCta, destinationSlug) : undefined;
   const bookingHandoff = matchedRoute ? getTripComFlightHandoff(matchedRoute.slug, airportSlugForCta, destinationSlug) : null;
   const bookingUrl = bookingHandoff?.url ?? null;
-  const bookingCtaLabel = bookingHandoff?.kind === 'service-ended-connecting' ? SERVICE_ENDED_CTA_LABEL : 'Compare flights on Trip.com';
+  const bookingCtaLabel = bookingHandoff?.kind === 'service-ended-connecting' ? SERVICE_ENDED_CTA_LABEL : TRIPCOM_DEFAULT_CTA_LABEL;
 
   // Independent of the readiness verdict/logic above — a static commercial
   // handoff, not a Travel Ready signal. Fail-closed: renders nothing at all

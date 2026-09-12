@@ -183,7 +183,7 @@ describe('Defect 2 follow-up (founder review) — cabin-specific fallback wordin
   it('the CTA below the fallback (route-guide link, Trip.com button) is structurally unchanged', () => {
     expect(dealCardSrc).toContain('More on the route guide');
     expect(dealCardSrc).toContain('Booking-window guidance on the route guide');
-    expect(dealCardSrc).toContain('Compare flights on Trip.com');
+    expect(dealCardSrc).toContain('TRIPCOM_DEFAULT_CTA_LABEL');
     expect(dealCardSrc).toContain('Direct flight comparison is not available for this airport yet.');
   });
 
