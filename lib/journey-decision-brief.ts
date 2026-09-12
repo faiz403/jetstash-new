@@ -25,6 +25,8 @@
  *   data actually supports.
  */
 
+import type { DealCabin } from '@/data/deals';
+
 export type PriceBasis = 'per-person' | 'party-total';
 
 export type TriState = 'yes' | 'no' | 'unknown';
@@ -55,6 +57,63 @@ export interface JourneyOptionInput {
   baggage: BaggageState;
   /** Only meaningful when baggage === 'known-extra-cost'. */
   baggageCostGBP?: number;
+  /**
+   * Journey Brief decision-safety fix (12 Sept 2026, real 10-case
+   * evaluation, Case 10). Optional — reuses the site's existing
+   * `DealCabin` type (data/deals.ts) rather than a new enum. Left unset
+   * when the traveller doesn't know or didn't record it; a cabin mismatch
+   * is only ever flagged when BOTH options have this set (see
+   * `compareJourneyOptions`) — never inferred, never assumed equal.
+   */
+  cabin?: DealCabin;
+  /**
+   * Decision-safety fix, Case 6 correction (12 Sept 2026, founder-approved
+   * addendum after an external review identified a real data-model
+   * ambiguity): the traveller's own entered duration of the SPECIFIC
+   * self-transfer connection, deliberately a distinct field from
+   * `layoverMinutes` ("the longest single layover"). For a single-connection
+   * itinerary the two happen to be the same number, which is why the
+   * original Case 6 example (7h vs 1h20) didn't surface this — but for a
+   * multi-stop option the longest layover and the actual self-transfer leg
+   * can genuinely be different connections, and substituting one for the
+   * other would misrepresent which connection the traveller actually has to
+   * manage themselves. Only meaningful when `selfTransfer === 'yes'`; never
+   * inferred from `layoverMinutes` or any other field.
+   */
+  shortestSelfTransferMinutes?: number;
+}
+
+// ---------------------------------------------------------------------------
+// Self-transfer interval (decision-safety fix, 12 Sept 2026, Case 6 +
+// founder-approved correction)
+// ---------------------------------------------------------------------------
+//
+// Real 10-case evaluation finding: two self-transfer options (7h vs 1h20
+// connection) were shown with the same "Self-transfer: yes" fact and no
+// distinction. The first fix (since corrected) surfaced a caution only below
+// an internal duration threshold — an external review correctly identified
+// that ANY such threshold is itself a soft "invented minimum-connection
+// rule", even if the displayed copy never stated the number. The
+// founder-approved correction removes the threshold entirely: the actual
+// entered self-transfer interval is stated as a plain fact, every time one
+// is entered, with the same standing checklist reminder — never a judgement
+// that a given duration is safe, risky, tight, or comfortable, and never a
+// claim that any duration is impossible.
+
+/**
+ * Plain factual statement of the traveller's own entered self-transfer
+ * interval, or `null` when there's nothing to state. Deliberately makes NO
+ * duration-based distinction — a 20-minute and a 7-hour interval produce the
+ * exact same sentence shape, just a different stated number; there is no
+ * internal threshold anywhere in this function. Only ever shown when
+ * self-transfer is positively confirmed ('yes') and a real interval was
+ * entered — never for 'no'/'unknown' self-transfer, and never substituting
+ * `layoverMinutes` when the interval itself is missing (see
+ * `buildStillUnknown`, which surfaces that gap as its own honest unknown).
+ */
+export function selfTransferIntervalStatement(option: Pick<JourneyOptionInput, 'selfTransfer' | 'shortestSelfTransferMinutes'>): string | null {
+  if (option.selfTransfer !== 'yes' || option.shortestSelfTransferMinutes === undefined) return null;
+  return `Self-transfer interval entered: ${formatMinutes(option.shortestSelfTransferMinutes)}. Check terminal, immigration, baggage reclaim/re-check-in and onward-booking terms before relying on this connection.`;
 }
 
 /** The fields a valid option must have before any comparison can run. */
@@ -203,9 +262,26 @@ export interface OptionSummary {
 
 export interface JourneyComparisonResult {
   priceComparable: boolean;
-  /** A minus B, in GBP. Only present when priceComparable. */
+  /**
+   * A minus B, in GBP. Only present when priceComparable. Decision-safety
+   * fix (12 Sept 2026, Case 8): computed from each option's confirmed
+   * payable total (price + any known baggage extra) whenever BOTH options
+   * have one — never the raw entered price alone when a known baggage cost
+   * would change the answer. See `priceComparisonUsesPayableTotal`.
+   */
   priceDifferenceGBP?: number;
   priceIncomparableReason?: string;
+  /**
+   * True when priceDifferenceGBP above reflects each option's confirmed
+   * payable total (baggage-inclusive) rather than the entered price alone —
+   * only possible when priceComparable and both options' baggage state
+   * resolves to a confirmed total ('included', or 'known-extra-cost' with a
+   * real cost figure). False whenever at least one side's baggage cost is
+   * 'not-stated' or 'extra-cost-unknown' — the comparison then falls back
+   * to the entered price, and `comparisonStatements` carries an explicit
+   * qualifier saying so, never a silent £0 assumption.
+   */
+  priceComparisonUsesPayableTotal: boolean;
 
   totalTimeDifferenceMinutes: number;
   outboundStopsDifference: number;
@@ -250,10 +326,32 @@ function pluralStops(n: number, leg: 'outbound' | 'return'): string {
 
 function buildOptionSummary(identifier: 'Option A' | 'Option B', option: JourneyOptionInput): OptionSummary {
   const extras: string[] = [];
-  if (option.connectionAirports) extras.push(`Connection: ${option.connectionAirports}`);
-  if (option.layoverMinutes !== undefined) extras.push(`Longest layover: ${formatMinutes(option.layoverMinutes)}`);
-  if (option.airportChange !== 'unknown') extras.push(`Airport change: ${option.airportChange}`);
-  if (option.selfTransfer !== 'unknown') extras.push(`Self-transfer: ${option.selfTransfer}`);
+  // Robustness fix (12 Sept 2026, follow-up review on the direct-flight
+  // form-logic fix): a connection airport or layover value can only be
+  // stale/contradictory data for an option confirmed direct on both legs
+  // (0 stops) — the form no longer collects either field once an option is
+  // direct, but this summary must not trust leftover state (e.g. connection
+  // details entered before the traveller changed stops to 0) and display an
+  // inapplicable fact as though it were real. Self-transfer is gated the
+  // same way — a self-transfer connection cannot exist without a stop.
+  const isFullyDirect = option.outboundStops === 0 && option.returnStops === 0;
+  if (option.cabin) extras.push(`Cabin: ${option.cabin}`);
+  if (!isFullyDirect) {
+    if (option.connectionAirports) extras.push(`Connection: ${option.connectionAirports}`);
+    if (option.layoverMinutes !== undefined) extras.push(`Longest layover: ${formatMinutes(option.layoverMinutes)}`);
+  }
+  if (option.airportChange !== 'unknown' && !isFullyDirect) extras.push(`Airport change: ${option.airportChange}`);
+  if (option.selfTransfer !== 'unknown' && !isFullyDirect) extras.push(`Self-transfer: ${option.selfTransfer}`);
+  // Decision-safety fix, Case 6 (corrected): the traveller's own entered
+  // self-transfer interval is stated as its own distinct fact — never
+  // folded into the plain "Self-transfer: yes" line, and never a judgement
+  // on whether the stated duration is safe/risky/tight/comfortable. Gated
+  // the same way as the other connection-only facts — never shown for a
+  // fully-direct option regardless of stray state.
+  if (!isFullyDirect) {
+    const intervalStatement = selfTransferIntervalStatement(option);
+    if (intervalStatement) extras.push(intervalStatement);
+  }
   if (option.baggage === 'included') extras.push('Baggage: included');
   if (option.baggage === 'known-extra-cost') extras.push(`Baggage: extra £${option.baggageCostGBP} on top of the entered price`);
 
@@ -274,9 +372,74 @@ function buildStillUnknown(identifier: 'Option A' | 'Option B', option: JourneyO
   if (option.selfTransfer === 'unknown') lines.push(`${identifier}: self-transfer unknown.`);
   if (option.baggage === 'not-stated') lines.push(`${identifier}: baggage not stated.`);
   if (option.baggage === 'extra-cost-unknown') lines.push(`${identifier}: baggage extra cost unknown.`);
-  if (!option.connectionAirports) lines.push(`${identifier}: connection airport(s) not entered.`);
-  if (option.layoverMinutes === undefined) lines.push(`${identifier}: layover not entered.`);
+  // Decision-safety fix, Case 6/direct-flight logic: a connection airport or
+  // layover genuinely cannot apply to an option that is direct on both legs
+  // — that isn't an unconfirmed fact, it's an inapplicable one, so it must
+  // not be listed alongside genuine unknowns. Only asked about, and only
+  // flagged as unentered, when at least one leg actually has a stop.
+  const isFullyDirect = option.outboundStops === 0 && option.returnStops === 0;
+  if (!isFullyDirect) {
+    if (!option.connectionAirports) lines.push(`${identifier}: connection airport(s) not entered.`);
+    if (option.layoverMinutes === undefined) lines.push(`${identifier}: layover not entered.`);
+    // Case 6 correction: self-transfer is positively confirmed but the
+    // specific interval wasn't entered — an honest, distinct unknown, never
+    // silently substituted with `layoverMinutes` (which may describe a
+    // different connection entirely on a multi-stop itinerary).
+    if (option.selfTransfer === 'yes' && option.shortestSelfTransferMinutes === undefined) {
+      lines.push(`${identifier}: self-transfer interval not entered.`);
+    }
+  }
   return lines;
+}
+
+// ---------------------------------------------------------------------------
+// Baggage-adjusted payable total (decision-safety fix, 12 Sept 2026, Case 8)
+// ---------------------------------------------------------------------------
+//
+// Real 10-case evaluation finding: Option A = £500 including bag, Option B =
+// £455 + £70 bag. The engine compared the two ENTERED prices (£500 vs £455 —
+// "Option A costs £45 more") when the real payable totals are £500 vs £525 —
+// Option A is actually £25 CHEAPER. A material wrong-decision defect.
+//
+// Fix: the headline price comparison uses each option's confirmed PAYABLE
+// total whenever it is fully known (baggage included, or a known extra
+// cost) for BOTH options — never a silent guess. When baggage is
+// 'extra-cost-unknown' or 'not-stated' on either side, the payable total for
+// that side genuinely isn't confirmed, so the comparison falls back to the
+// entered price alone and says so explicitly — it never invents an unknown
+// baggage charge as £0.
+
+/**
+ * The confirmed amount the traveller would actually pay for this option, or
+ * `null` when that isn't fully knowable from what was entered. Only
+ * 'included' (no extra) and 'known-extra-cost' with a real cost figure
+ * produce a confirmed total — 'not-stated' and 'extra-cost-unknown' cannot,
+ * by definition, and must never be treated as a £0 addition.
+ */
+function payableTotalGBP(option: JourneyOptionInput): number | null {
+  if (option.baggage === 'included') return option.priceGBP;
+  if (option.baggage === 'known-extra-cost' && option.baggageCostGBP !== undefined) {
+    return Number((option.priceGBP + option.baggageCostGBP).toFixed(2));
+  }
+  return null;
+}
+
+/** True only when a confirmed baggage extra genuinely exists on at least one side — i.e. when using the payable total actually changes anything versus the raw entered price. */
+function baggageAffectsPayableTotal(a: JourneyOptionInput, b: JourneyOptionInput): boolean {
+  const extra = (o: JourneyOptionInput) => (o.baggage === 'known-extra-cost' ? o.baggageCostGBP ?? 0 : 0);
+  return extra(a) > 0 || extra(b) > 0;
+}
+
+/** One sentence naming which option(s)' baggage cost is not confirmed, so the entered-price-only comparison above it can't be mistaken for the full payable total. `null` when both sides are fully confirmed. */
+function unconfirmedBaggageQualifier(a: JourneyOptionInput, b: JourneyOptionInput): string | null {
+  const aUnconfirmed = payableTotalGBP(a) === null;
+  const bUnconfirmed = payableTotalGBP(b) === null;
+  if (!aUnconfirmed && !bUnconfirmed) return null;
+  if (aUnconfirmed && bUnconfirmed) {
+    return "Neither option's baggage cost is fully confirmed, so this compares the entered price only — the actual payable total may differ for either.";
+  }
+  const which = aUnconfirmed ? 'Option A' : 'Option B';
+  return `${which}'s baggage cost is not fully confirmed, so this compares the entered price only — the actual payable total may be higher.`;
 }
 
 /**
@@ -287,11 +450,23 @@ function buildStillUnknown(identifier: 'Option A' | 'Option B', option: JourneyO
  */
 export function compareJourneyOptions(a: JourneyOptionInput, b: JourneyOptionInput): JourneyComparisonResult {
   const priceComparable = a.priceBasis === b.priceBasis;
-  const priceDifferenceGBP = priceComparable ? Number((a.priceGBP - b.priceGBP).toFixed(2)) : undefined;
   const basisText = (basis: PriceBasis) => (basis === 'per-person' ? 'per person' : 'as a party total');
+  const basisWord = (basis: PriceBasis) => (basis === 'per-person' ? 'per person' : 'party total');
   const priceIncomparableReason = priceComparable
     ? undefined
     : `Option A is priced ${basisText(a.priceBasis)}; Option B is priced ${basisText(b.priceBasis)} — these cannot be compared directly.`;
+
+  const payableA = priceComparable ? payableTotalGBP(a) : null;
+  const payableB = priceComparable ? payableTotalGBP(b) : null;
+  const bothPayableKnown = payableA !== null && payableB !== null;
+  const useBaggageAdjustedTotal = bothPayableKnown && baggageAffectsPayableTotal(a, b);
+
+  // The one canonical comparison basis: the confirmed payable total when
+  // both sides have one, otherwise the entered price (with a qualifier
+  // statement below making clear that's all it is). Never both at once.
+  const priceDifferenceGBP = priceComparable
+    ? Number(((bothPayableKnown ? payableA! : a.priceGBP) - (bothPayableKnown ? payableB! : b.priceGBP)).toFixed(2))
+    : undefined;
 
   const totalA = a.outboundDurationMinutes + a.returnDurationMinutes;
   const totalB = b.outboundDurationMinutes + b.returnDurationMinutes;
@@ -303,13 +478,46 @@ export function compareJourneyOptions(a: JourneyOptionInput, b: JourneyOptionInp
   // ---- Section A: comparisonStatements — always "Option A"/"Option B" ----
   const comparisonStatements: string[] = [];
 
+  // Decision-safety fix, Case 10: different cabin products must never read
+  // as a plain like-for-like fare comparison. Stated first, before any
+  // price/time/stops line, and only when BOTH options record a cabin (never
+  // inferred, never assumed equal when one or both are unset).
+  if (a.cabin && b.cabin && a.cabin !== b.cabin) {
+    comparisonStatements.push(
+      `Option A is ${a.cabin} and Option B is ${b.cabin} — these are different cabin products, not a like-for-like comparison.`
+    );
+  }
+
   if (priceComparable && priceDifferenceGBP !== undefined) {
-    if (priceDifferenceGBP === 0) {
-      comparisonStatements.push(`Option A and Option B are the same price (£${a.priceGBP}, ${a.priceBasis === 'per-person' ? 'per person' : 'party total'}).`);
-    } else if (priceDifferenceGBP > 0) {
-      comparisonStatements.push(`Option A costs £${priceDifferenceGBP} more than Option B (${a.priceBasis === 'per-person' ? 'per person' : 'party total'}).`);
+    if (bothPayableKnown) {
+      // A. Known payable-total comparison — the authoritative headline,
+      // baggage-inclusive, only ever shown when confirmed for both sides.
+      const qualifier = useBaggageAdjustedTotal ? ' once baggage is included' : '';
+      if (priceDifferenceGBP === 0) {
+        comparisonStatements.push(`Option A and Option B are the same price${qualifier} (£${payableA}, ${basisWord(a.priceBasis)}).`);
+      } else if (priceDifferenceGBP > 0) {
+        const detail = useBaggageAdjustedTotal ? ` (£${payableA} vs £${payableB}, ${basisWord(a.priceBasis)})` : ` (${basisWord(a.priceBasis)})`;
+        comparisonStatements.push(`Option A costs £${priceDifferenceGBP} more than Option B${qualifier}${detail}.`);
+      } else {
+        const detail = useBaggageAdjustedTotal ? ` (£${payableB} vs £${payableA}, ${basisWord(a.priceBasis)})` : ` (${basisWord(a.priceBasis)})`;
+        comparisonStatements.push(`Option B costs £${Math.abs(priceDifferenceGBP)} more than Option A${qualifier}${detail}.`);
+      }
     } else {
-      comparisonStatements.push(`Option B costs £${Math.abs(priceDifferenceGBP)} more than Option A (${a.priceBasis === 'per-person' ? 'per person' : 'party total'}).`);
+      // B. Entered/base-fare comparison — Point 2 (founder decision, 12
+      // Sept 2026): never suppressed just because baggage is unknown, but
+      // never worded as the definitive payable-price outcome either. Every
+      // sentence here explicitly says "entered fare" and "not yet the final
+      // payable-price comparison", and the qualifier below always follows,
+      // naming exactly which side's baggage cost is unconfirmed.
+      if (priceDifferenceGBP === 0) {
+        comparisonStatements.push(`Option A and Option B have the same entered fare (£${a.priceGBP}, ${basisWord(a.priceBasis)}) — not yet the final payable-price comparison.`);
+      } else if (priceDifferenceGBP > 0) {
+        comparisonStatements.push(`Option A's entered fare is £${priceDifferenceGBP} more than Option B's (${basisWord(a.priceBasis)}) — based on entered fares only, not yet the final payable-price comparison.`);
+      } else {
+        comparisonStatements.push(`Option B's entered fare is £${Math.abs(priceDifferenceGBP)} more than Option A's (${basisWord(a.priceBasis)}) — based on entered fares only, not yet the final payable-price comparison.`);
+      }
+      const note = unconfirmedBaggageQualifier(a, b);
+      if (note) comparisonStatements.push(note);
     }
   } else if (priceIncomparableReason) {
     comparisonStatements.push(priceIncomparableReason);
@@ -343,6 +551,7 @@ export function compareJourneyOptions(a: JourneyOptionInput, b: JourneyOptionInp
     priceComparable,
     priceDifferenceGBP,
     priceIncomparableReason,
+    priceComparisonUsesPayableTotal: bothPayableKnown,
     totalTimeDifferenceMinutes,
     outboundStopsDifference,
     returnStopsDifference,
@@ -366,14 +575,27 @@ export function compareJourneyOptions(a: JourneyOptionInput, b: JourneyOptionInp
 // known to be unknown, does not hide anything, and does not convert an
 // unknown into a fact — it only changes how the same information reads.
 
+// Decision-safety fix (12 Sept 2026): 'baggage extra cost unknown.' used to
+// collapse into the same 'baggage' topic as 'baggage not stated.', so both
+// rendered inside the generic "...were not entered" sentence — but an
+// extra-cost-unknown baggage state was NOT left unentered; the traveller
+// positively confirmed an extra charge exists, just not its amount. Folding
+// it into "not entered" wording is itself a misleading collapse of two
+// genuinely different states (see the file header's three-state
+// distinction: not-entered/unknown status, extra cost known to exist but
+// amount unknown, and a known amount). It is deliberately excluded from this
+// map — and therefore from the generic bucket entirely — and given its own
+// clause in `toSentence` below instead.
 const UNKNOWN_TOPIC_BY_SUFFIX: Readonly<Record<string, string>> = {
   'airport change unknown.': 'airport change',
   'self-transfer unknown.': 'self-transfer',
   'baggage not stated.': 'baggage',
-  'baggage extra cost unknown.': 'baggage',
   'connection airport(s) not entered.': 'connection airport',
   'layover not entered.': 'layover',
+  'self-transfer interval not entered.': 'self-transfer interval',
 };
+
+const BAGGAGE_EXTRA_COST_UNKNOWN_SUFFIX = 'baggage extra cost unknown.';
 
 function joinWithAnd(items: string[]): string {
   if (items.length === 1) return items[0];
@@ -387,24 +609,44 @@ function joinWithAnd(items: string[]): string {
  * airport and layover were not entered." Lists only the topics that are
  * genuinely unknown for that option; returns `null` for an option with
  * nothing left unknown, rather than an empty sentence.
+ *
+ * A confirmed-but-unquantified baggage extra cost ('extra-cost-unknown') is
+ * never folded into that "not entered" sentence — see this file's own
+ * decision-safety-fix comment above `UNKNOWN_TOPIC_BY_SUFFIX` — and instead
+ * gets its own explicit, distinctly-worded clause appended after it.
  */
 export function groupStillUnknownByOption(stillUnknown: readonly string[]): { optionA: string | null; optionB: string | null } {
   const topicsFor: Record<'Option A' | 'Option B', string[]> = { 'Option A': [], 'Option B': [] };
+  const baggageExtraCostUnknownFor: Record<'Option A' | 'Option B', boolean> = { 'Option A': false, 'Option B': false };
 
   for (const line of stillUnknown) {
     const match = line.match(/^(Option A|Option B): (.+)$/);
     if (!match) continue;
     const identifier = match[1] as 'Option A' | 'Option B';
+    if (match[2] === BAGGAGE_EXTRA_COST_UNKNOWN_SUFFIX) {
+      baggageExtraCostUnknownFor[identifier] = true;
+      continue;
+    }
     const topic = UNKNOWN_TOPIC_BY_SUFFIX[match[2]];
     if (topic && !topicsFor[identifier].includes(topic)) topicsFor[identifier].push(topic);
   }
 
-  function toSentence(topics: string[]): string | null {
-    if (topics.length === 0) return null;
-    const capitalizedList = topics.map((topic, i) => (i === 0 ? topic.charAt(0).toUpperCase() + topic.slice(1) : topic));
-    const verb = topics.length === 1 ? 'was' : 'were';
-    return `${joinWithAnd(capitalizedList)} ${verb} not entered.`;
+  function toSentence(topics: string[], baggageExtraCostUnknown: boolean): string | null {
+    const clauses: string[] = [];
+    if (topics.length > 0) {
+      const capitalizedList = topics.map((topic, i) => (i === 0 ? topic.charAt(0).toUpperCase() + topic.slice(1) : topic));
+      const verb = topics.length === 1 ? 'was' : 'were';
+      clauses.push(`${joinWithAnd(capitalizedList)} ${verb} not entered.`);
+    }
+    if (baggageExtraCostUnknown) {
+      clauses.push('An extra baggage cost applies, but the amount is not confirmed.');
+    }
+    if (clauses.length === 0) return null;
+    return clauses.join(' ');
   }
 
-  return { optionA: toSentence(topicsFor['Option A']), optionB: toSentence(topicsFor['Option B']) };
+  return {
+    optionA: toSentence(topicsFor['Option A'], baggageExtraCostUnknownFor['Option A']),
+    optionB: toSentence(topicsFor['Option B'], baggageExtraCostUnknownFor['Option B']),
+  };
 }
