@@ -5,7 +5,7 @@ import { join } from 'node:path';
 import { routes, getRouteAirport, getRouteDestination, getRouteBySlug } from '@/data/routes';
 import { routeStatusEvents } from '@/data/route-status-events';
 import { getEffectiveRoutePresentation } from '@/lib/route-status-copy';
-import { getTripComFlightHandoffUrl, getSafeTripComFlightHandoffUrl, NO_VERIFIED_PARTNER_LINK_NOTE } from '@/lib/booking-providers';
+import { getTripComFlightHandoffUrl, getSafeTripComFlightHandoffUrl, NO_VERIFIED_PARTNER_LINK_NOTE, SERVICE_ENDED_CTA_LABEL } from '@/lib/booking-providers';
 import { getFareSignalForRoute } from '@/lib/fare-signal';
 import { FareSignal } from '@/components/route/fare-signal';
 
@@ -113,7 +113,11 @@ describe('Fare Signal is the one remaining first commercial decision unit', () =
 });
 
 describe('no-CTA routes still show the exact fail-closed message, in Fare Signal now instead of the hero', () => {
-  it('a route with no safe Trip.com handoff (london-heathrow-mumbai) shows the exact sentence and no CTA', () => {
+  it('a route with no safe Trip.com handoff (london-heathrow-mumbai) shows the temporary generic current-flight-search fallback and no Trip.com CTA', () => {
+    // Google Flights fallback (12 Sept 2026, founder-approved): this route
+    // is not service-ended, so it now gets GenericFlightSearchFallback
+    // instead of the plain NO_VERIFIED_PARTNER_LINK_NOTE sentence — see
+    // components/route/fare-signal.tsx.
     const { route } = presentationFor('london-heathrow-mumbai');
     const dest = getRouteDestination(route)!;
     const airport = getRouteAirport(route)!;
@@ -121,7 +125,8 @@ describe('no-CTA routes still show the exact fail-closed message, in Fare Signal
     expect(tripComUrl).toBeNull();
     const signal = getFareSignalForRoute(route.slug, NOW_ISO);
     const html = renderToStaticMarkup(FareSignal({ signal, tripComUrl, routeSlug: route.slug })).replace(/\s+/g, ' ');
-    expect(html).toContain('Exact partner booking link is not currently verified for this route.');
+    expect(html).toContain('Search current flights');
+    expect(html).not.toContain('Exact partner booking link is not currently verified for this route.');
     expect(html).not.toContain('Check current price');
   });
 
@@ -164,7 +169,7 @@ describe('verification-pending routes remain fail-closed on route-service claims
     expect(html).toContain('Check current price');
   });
 
-  it('a route with neither a fare nor a verified CTA (unverified + no handoff) shows the fail-closed sentence, not a silent gap', () => {
+  it('a route with neither a fare nor a verified CTA (unverified + no handoff) shows the generic current-flight-search fallback, not a silent gap (Google Flights fallback, 12 Sept 2026, founder-approved — explicitly includes unverified routes like LHR-Dhaka/LHR-Sylhet since the fallback makes no service-verification claim)', () => {
     const unverifiedNoCta = routes.find((r) => {
       const { presentation } = presentationFor(r.slug);
       if (presentation.status !== 'unverified') return false;
@@ -176,15 +181,26 @@ describe('verification-pending routes remain fail-closed on route-service claims
     expect(unverifiedNoCta, 'expected at least one unverified route with no Trip.com handoff in the current dataset').toBeDefined();
     const { route } = presentationFor(unverifiedNoCta!.slug);
     const signal = getFareSignalForRoute(route.slug, NOW_ISO);
-    const html = renderToStaticMarkup(FareSignal({ signal, tripComUrl: null, routeSlug: route.slug })).replace(/\s+/g, ' ');
+    const html = renderToStaticMarkup(FareSignal({ signal, tripComUrl: null, routeSlug: route.slug, isServiceEnded: false })).replace(/\s+/g, ' ');
+    expect(html).toContain('Search current flights');
+    expect(html).not.toContain('Exact partner booking link is not currently verified for this route.');
+  });
+
+  it('a synthetic service-ended-without-connecting-alternative state still shows the true fail-closed sentence, never the generic fallback (no real route is currently in this state, but the gate must hold if one is ever added)', () => {
+    const signal = getFareSignalForRoute('birmingham-ahmedabad', NOW_ISO);
+    const html = renderToStaticMarkup(
+      FareSignal({ signal, tripComUrl: null, routeSlug: 'birmingham-ahmedabad', isServiceEnded: true })
+    ).replace(/\s+/g, ' ');
     expect(html).toContain('Exact partner booking link is not currently verified for this route.');
+    expect(html).not.toContain('Search current flights');
   });
 });
 
 describe('no evidence or trust wording was accidentally lost — full 88-route safety check', () => {
-  it('every route resolves to exactly one of: a working CTA, or the exact fail-closed sentence — never neither, never both', () => {
+  it('every route resolves to exactly one of: a working CTA, the generic current-flight-search fallback, or the exact fail-closed sentence — never none, never more than one', () => {
     let withCta = 0;
     let failClosed = 0;
+    let genericFallback = 0;
     for (const route of routes) {
       const airport = getRouteAirport(route);
       const dest = getRouteDestination(route);
@@ -193,6 +209,7 @@ describe('no evidence or trust wording was accidentally lost — full 88-route s
       const tripComUrl = getSafeTripComFlightHandoffUrl(route.slug, airport.slug, dest.slug, commercialNowIso);
       const signal = getFareSignalForRoute(route.slug, commercialNowIso);
       const { presentation } = presentationFor(route.slug, commercialNowIso);
+      const isServiceEnded = presentation.status === 'service-ended';
       const html = renderToStaticMarkup(
         FareSignal({
           signal,
@@ -201,14 +218,20 @@ describe('no evidence or trust wording was accidentally lost — full 88-route s
           routeDirectness: presentation.status === 'direct' || presentation.status === 'connecting' ? presentation.status : null,
           routeStatusLabel: presentation.status === 'direct' || presentation.status === 'connecting' ? presentation.statusLabel : null,
           routeAirlineLabel: null,
+          isServiceEnded,
         })
       );
-      const hasCtaText = html.includes('Check current price');
+      const hasCtaText = html.includes('Check current price') || html.includes(SERVICE_ENDED_CTA_LABEL);
       const hasFailClosedText = html.includes('Exact partner booking link is not currently verified for this route.');
+      const hasGenericFallback = html.includes('Search current flights');
+      // Exactly one of the three must be true.
+      expect([hasCtaText, hasFailClosedText, hasGenericFallback].filter(Boolean).length, route.slug).toBe(1);
       expect(hasCtaText, route.slug).toBe(Boolean(tripComUrl));
-      expect(hasFailClosedText, route.slug).toBe(!tripComUrl);
+      expect(hasFailClosedText, route.slug).toBe(!tripComUrl && isServiceEnded);
+      expect(hasGenericFallback, route.slug).toBe(!tripComUrl && !isServiceEnded);
       if (hasCtaText) withCta += 1;
       if (hasFailClosedText) failClosed += 1;
+      if (hasGenericFallback) genericFallback += 1;
     }
     // 61 routes have a currently safe public Trip.com handoff, plus, since
     // the Commercial Funnel Fix (12 Sept 2026, founder-approved),
@@ -217,10 +240,14 @@ describe('no evidence or trust wording was accidentally lost — full 88-route s
     // connectingAlternative AND an exact verified Trip.com link, which
     // together unlock a current-connecting-search handoff (never the old
     // nonstop) — see getTripComFlightHandoff()'s doc comment in
-    // lib/booking-providers.ts. The remaining 26 fail closed.
+    // lib/booking-providers.ts. The remaining 26 (all non-service-ended, no
+    // monetised handoff) now get the temporary generic Google Flights
+    // fallback instead of failing fully closed — see this file's Google
+    // Flights fallback tests above and tests/lhr-lgw-google-flights-fallback.test.ts.
     expect(withCta).toBe(63);
-    expect(failClosed).toBe(26);
-    expect(withCta + failClosed).toBe(89);
+    expect(genericFallback).toBe(26);
+    expect(failClosed).toBe(0);
+    expect(withCta + failClosed + genericFallback).toBe(89);
   });
 
   it('the PR #155 Route Service distinction is completely unaffected by this fix — the mismatch counts from that audit still hold', () => {

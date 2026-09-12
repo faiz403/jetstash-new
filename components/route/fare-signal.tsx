@@ -2,7 +2,7 @@ import { AlertTriangle, ArrowUpRight, CalendarDays, Info, Plane, Search, Sparkle
 import type { FareSignal as FareSignalData, FareSignalObservation } from '@/lib/fare-signal';
 import type { StandoutFarePresentation } from '@/lib/standout-fare';
 import { formatChecked } from '@/data/deals';
-import { NO_VERIFIED_PARTNER_LINK_NOTE, PROVIDER_REL, SERVICE_ENDED_CTA_LABEL, TRIPCOM_FRESH_SEARCH_NOTE } from '@/lib/booking-providers';
+import { NO_VERIFIED_PARTNER_LINK_NOTE, PROVIDER_REL, SERVICE_ENDED_CTA_LABEL, GENERIC_FLIGHT_SEARCH_URL, GENERIC_FLIGHT_SEARCH_CTA_LABEL, GENERIC_FLIGHT_SEARCH_REL, GENERIC_FLIGHT_SEARCH_NOTE, TRIPCOM_FRESH_SEARCH_NOTE } from '@/lib/booking-providers';
 import { SELF_TRANSFER_LABEL } from '@/lib/fare-self-transfer';
 import { TrackedOutboundLink } from '@/components/ui/tracked-outbound-link';
 import { AffiliateLinkDisclosure } from '@/components/ui/affiliate-link-disclosure';
@@ -194,6 +194,39 @@ function NoCtaFallback() {
 }
 
 /**
+ * Temporary non-monetised current-flight-search fallback (Heathrow/Gatwick
+ * dead-end fix, 12 Sept 2026, founder-approved). Renders instead of
+ * NoCtaFallback's plain fail-closed sentence for any route with no
+ * monetised handoff that is NOT service-ended — see
+ * GENERIC_FLIGHT_SEARCH_URL's doc comment in lib/booking-providers.ts for
+ * the full gating rule and why Delhi/Mumbai never reach this branch.
+ *
+ * Deliberately visually distinct from SignalCta's solid brass-hover button:
+ * an outlined, quieter treatment so this can never be mistaken for a paid
+ * JetStash partner CTA. Untracked by design — no TrackedOutboundLink, no
+ * analytics event — see this component's own PR notes: tripcom_click would
+ * misrepresent this as a Trip.com partner conversion, and no other existing
+ * event correctly names a generic, non-partner outbound click. A minimal
+ * dedicated event is a candidate for later, not bundled into this fix.
+ */
+function GenericFlightSearchFallback() {
+  return (
+    <div className="mt-5">
+      <a
+        href={GENERIC_FLIGHT_SEARCH_URL}
+        target="_blank"
+        rel={GENERIC_FLIGHT_SEARCH_REL}
+        className="inline-flex items-center gap-1.5 rounded-sm border border-ink-300 px-4 py-2.5 text-sm font-semibold text-ink-700 transition-all hover:border-ink-500 hover:text-ink-900 active:scale-[0.985]"
+      >
+        {GENERIC_FLIGHT_SEARCH_CTA_LABEL}
+        <ArrowUpRight className="h-4 w-4" strokeWidth={2.25} />
+      </a>
+      <p className="mt-2 text-xs leading-snug text-ink-400">{GENERIC_FLIGHT_SEARCH_NOTE}</p>
+    </div>
+  );
+}
+
+/**
  * Suppressed-fare explanation (2 Sep 2026, traveller-POV live product
  * review). Renders only when signal.noneReason === 'poor-itinerary-
  * suppressed' -- i.e. JetStash DID check recent fares, but the latest
@@ -371,7 +404,7 @@ interface RouteContextProps {
   routeServiceConnections?: { outbound?: string[]; return?: string[] } | null;
 }
 
-function CurrentSignal({ data, tripComUrl, routeSlug, routeDirectness, routeStatusLabel, routeAirlineLabel, routeServiceConnections, standoutFare }: { data: FareSignalObservation; tripComUrl: string | null; routeSlug: string; standoutFare?: StandoutFarePresentation | null } & RouteContextProps) {
+function CurrentSignal({ data, tripComUrl, routeSlug, routeDirectness, routeStatusLabel, routeAirlineLabel, routeServiceConnections, standoutFare, isServiceEnded = false }: { data: FareSignalObservation; tripComUrl: string | null; routeSlug: string; standoutFare?: StandoutFarePresentation | null; isServiceEnded?: boolean } & RouteContextProps) {
   const routing = formatRouting(data);
   const mismatch = routeVsFareMismatch(routeDirectness, routeStatusLabel, routeAirlineLabel, data.directness)
     ?? routeServiceFareMismatch(routeServiceConnections, routeStatusLabel, routeAirlineLabel, data.directness, data.connectionAirports);
@@ -406,12 +439,18 @@ function CurrentSignal({ data, tripComUrl, routeSlug, routeDirectness, routeStat
       </div>
       {standout && <StandoutEvidence standout={standout} />}
       {mismatch && <RouteVsFareCallout mismatch={mismatch} />}
-      {tripComUrl ? <SignalCta href={tripComUrl} routeSlug={routeSlug} standout={Boolean(standout)} /> : <NoCtaFallback />}
+      {tripComUrl ? (
+        <SignalCta href={tripComUrl} routeSlug={routeSlug} standout={Boolean(standout)} />
+      ) : isServiceEnded ? (
+        <NoCtaFallback />
+      ) : (
+        <GenericFlightSearchFallback />
+      )}
     </>
   );
 }
 
-function RecentSignal({ data, tripComUrl, routeSlug, routeDirectness, routeStatusLabel, routeAirlineLabel, routeServiceConnections }: { data: FareSignalObservation; tripComUrl: string | null; routeSlug: string } & RouteContextProps) {
+function RecentSignal({ data, tripComUrl, routeSlug, routeDirectness, routeStatusLabel, routeAirlineLabel, routeServiceConnections, isServiceEnded = false }: { data: FareSignalObservation; tripComUrl: string | null; routeSlug: string; isServiceEnded?: boolean } & RouteContextProps) {
   const mismatch = routeVsFareMismatch(routeDirectness, routeStatusLabel, routeAirlineLabel, data.directness)
     ?? routeServiceFareMismatch(routeServiceConnections, routeStatusLabel, routeAirlineLabel, data.directness, data.connectionAirports);
   return (
@@ -427,7 +466,13 @@ function RecentSignal({ data, tripComUrl, routeSlug, routeDirectness, routeStatu
       {data.isSelfTransfer && <div className="mt-3"><SelfTransferNote /></div>}
       <p className="mt-4 text-sm leading-relaxed text-ink-600">Price may have changed.</p>
       {mismatch && <RouteVsFareCallout mismatch={mismatch} />}
-      {tripComUrl ? <SignalCta href={tripComUrl} routeSlug={routeSlug} /> : <NoCtaFallback />}
+      {tripComUrl ? (
+        <SignalCta href={tripComUrl} routeSlug={routeSlug} />
+      ) : isServiceEnded ? (
+        <NoCtaFallback />
+      ) : (
+        <GenericFlightSearchFallback />
+      )}
     </>
   );
 }
@@ -493,8 +538,8 @@ export function FareSignal({
         <p className="mt-4 text-sm font-medium text-ink-700">{signal.strongerSignal}</p>
       )}
       <div className="mt-4">
-        {signal.state === 'current' && signal.observation ? <CurrentSignal data={signal.observation} tripComUrl={tripComUrl} routeSlug={routeSlug} routeDirectness={routeDirectness} routeStatusLabel={routeStatusLabel} routeAirlineLabel={routeAirlineLabel} routeServiceConnections={routeServiceConnections} standoutFare={standoutFare} /> : null}
-        {signal.state === 'recent' && signal.observation ? <RecentSignal data={signal.observation} tripComUrl={tripComUrl} routeSlug={routeSlug} routeDirectness={routeDirectness} routeStatusLabel={routeStatusLabel} routeAirlineLabel={routeAirlineLabel} routeServiceConnections={routeServiceConnections} /> : null}
+        {signal.state === 'current' && signal.observation ? <CurrentSignal data={signal.observation} tripComUrl={tripComUrl} routeSlug={routeSlug} routeDirectness={routeDirectness} routeStatusLabel={routeStatusLabel} routeAirlineLabel={routeAirlineLabel} routeServiceConnections={routeServiceConnections} standoutFare={standoutFare} isServiceEnded={isServiceEnded} /> : null}
+        {signal.state === 'recent' && signal.observation ? <RecentSignal data={signal.observation} tripComUrl={tripComUrl} routeSlug={routeSlug} routeDirectness={routeDirectness} routeStatusLabel={routeStatusLabel} routeAirlineLabel={routeAirlineLabel} routeServiceConnections={routeServiceConnections} isServiceEnded={isServiceEnded} /> : null}
         {signal.state === 'none' ? (
           <>
             {signal.noneReason === 'poor-itinerary-suppressed' ? (
@@ -516,8 +561,10 @@ export function FareSignal({
                 routeSlug={routeSlug}
                 label={isServiceEnded ? SERVICE_ENDED_CTA_LABEL : undefined}
               />
-            ) : (
+            ) : isServiceEnded ? (
               <NoCtaFallback />
+            ) : (
+              <GenericFlightSearchFallback />
             )}
           </>
         ) : null}

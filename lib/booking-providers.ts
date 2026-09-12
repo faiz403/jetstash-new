@@ -338,6 +338,43 @@ export interface TripComFlightHandoff {
 export const SERVICE_ENDED_CTA_LABEL = 'Compare current connecting flights on Trip.com';
 
 /**
+ * Temporary non-monetised current-flight-search fallback (12 Sept 2026,
+ * founder-approved). Covers routes with no verified monetised handoff at
+ * all — today the 26 Heathrow/Gatwick routes (see
+ * getRouteAirport/booking-providers.ts's TRIPCOM_ROUTE_URLS/
+ * TRIPCOM_DESTINATION_URLS: Trip.com's own tools have no dateless
+ * airport-specific entry for LHR/LGW) — while Trip.com's affiliate-relations
+ * enquiry is still unanswered and no second affiliate provider is approved
+ * (Skyscanner's application remains declined; see README and this file's own
+ * header comment).
+ *
+ * Deliberately NOT a partner/affiliate link: GENERIC_FLIGHT_SEARCH_URL is
+ * Google's own generic flight-search homepage with no query string — no
+ * route/date parameters are constructed or guessed, since Google Flights'
+ * deep-link query format isn't public/stable enough to rely on. The
+ * traveller lands on a blank search and enters their own airports and
+ * dates. GENERIC_FLIGHT_SEARCH_REL deliberately excludes "sponsored" (that
+ * keyword is reserved for PROVIDER_REL's compensated links; applying it
+ * here would be a false disclosure to search engines about a link that
+ * earns nothing).
+ *
+ * Callers must gate this on: no monetised handoff resolves (tripComUrl is
+ * null) AND the route's effective status is not 'service-ended' — a
+ * service-ended route without a qualifying connectingAlternative+exact-URL
+ * pair (see getTripComFlightHandoff below) keeps its own distinct
+ * fail-closed messaging (NO_VERIFIED_PARTNER_LINK_NOTE) rather than gaining
+ * a second, potentially confusing "search anyway" action. Manchester-Delhi
+ * and Manchester-Mumbai never reach this fallback in practice: both resolve
+ * a real service-ended-connecting handoff (see getTripComFlightHandoff), so
+ * tripComUrl is never null for them.
+ */
+export const GENERIC_FLIGHT_SEARCH_URL = 'https://www.google.com/travel/flights';
+export const GENERIC_FLIGHT_SEARCH_CTA_LABEL = 'Search current flights';
+export const GENERIC_FLIGHT_SEARCH_REL = 'nofollow noopener noreferrer';
+export const GENERIC_FLIGHT_SEARCH_NOTE =
+  'Opens Google Flights. JetStash does not earn commission from this link. Enter your airports and dates there.';
+
+/**
  * Resolves the one public flight handoff for a published route.
  *
  * A dashboard-generated link proves that Trip.com can receive the airport

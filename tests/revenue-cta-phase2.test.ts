@@ -25,10 +25,12 @@ describe('Phase 2 public CTA clarity', () => {
     expect(html).toContain('Ad · Affiliate link.');
   });
 
-  it('fails closed when the route has no safe partner handoff', () => {
+  it('fails closed on the monetised-partner claim when the route has no safe partner handoff (Google Flights fallback, 12 Sept 2026, founder-approved: a non-monetised current-flight-search action now renders instead of the plain fail-closed sentence)', () => {
     const signal = getFareSignalForRoute('london-heathrow-mumbai', '2026-08-11');
     const html = renderToStaticMarkup(FareSignal({ signal, tripComUrl: getSafeTripComFlightHandoffUrl('london-heathrow-mumbai'), routeSlug: 'london-heathrow-mumbai' }));
-    expect(html).toContain('Exact partner booking link is not currently verified for this route.');
     expect(html).not.toContain('Check current price on Trip.com');
+    expect(html).not.toContain('Ad · Affiliate link.');
+    expect(html).toContain('Search current flights');
+    expect(html).toContain('JetStash does not earn commission from this link');
   });
 });

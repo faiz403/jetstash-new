@@ -133,13 +133,15 @@ describe('Fare Signal presentation and CTA boundaries', () => {
     expect(text).not.toMatch(/deal|cheap|cheapest|below average|good value|save/i);
   });
 
-  it('renders the exact fail-closed sentence, not a CTA, when the route has no safe exact Trip.com link (Route Page Scanability fix, 21 Aug 2026 — this sentence used to live only in the hero, which no longer carries a CTA at all)', () => {
+  it('renders the temporary generic current-flight-search fallback, not a Trip.com CTA, when the route has no safe exact Trip.com link (Google Flights fallback, 12 Sept 2026, founder-approved — supersedes the plain fail-closed sentence for non-service-ended routes)', () => {
     const signal = getFareSignalForRoute('london-heathrow-mumbai', '2026-08-11');
     const text = renderToStaticMarkup(FareSignal({ signal, tripComUrl: getTripComRouteUrl('london-heathrow-mumbai'), routeSlug: 'london-heathrow-mumbai' }));
     expect(getTripComRouteUrl('london-heathrow-mumbai')).toBeNull();
     expect(text).not.toContain('Check current price');
     expect(text).not.toContain('Trip.com');
-    expect(text).toContain('Exact partner booking link is not currently verified for this route.');
+    expect(text).toContain('Search current flights');
+    expect(text).toContain('https://www.google.com/travel/flights');
+    expect(text).not.toContain('Exact partner booking link is not currently verified for this route.');
   });
 
   it('keeps the Fare Signal above Journey Choice and leaves the stricter verdict private', () => {
