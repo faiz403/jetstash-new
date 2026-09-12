@@ -227,6 +227,57 @@ describe('Direct-flight form logic — a direct option is not asked for connecti
     expect(result.stillUnknown.some((u) => u === 'Option A: connection airport(s) not entered.')).toBe(true);
     expect(result.stillUnknown.some((u) => u === 'Option A: layover not entered.')).toBe(true);
   });
+
+  // Robustness follow-up (12 Sept 2026, external code review of this PR):
+  // buildOptionSummary must not trust stale connection/layover/self-transfer
+  // state left over from before a traveller changed an option's stops to 0
+  // (or from any caller supplying contradictory data directly) — a direct
+  // option's summary must never display these as though they were real,
+  // applicable facts.
+  it('never displays a connection or layover value in the option summary for a confirmed-direct option, even if that state is present', () => {
+    const direct = option({
+      label: 'A',
+      outboundStops: 0,
+      returnStops: 0,
+      connectionAirports: 'Istanbul (IST)', // stale/contradictory — should never render
+      layoverMinutes: 90,
+    });
+    const result = compareJourneyOptions(direct, option({ label: 'B' }));
+    expect(result.optionASummary.extras.some((e) => e.startsWith('Connection:'))).toBe(false);
+    expect(result.optionASummary.extras.some((e) => e.startsWith('Longest layover:'))).toBe(false);
+  });
+
+  it('never displays airport-change or self-transfer facts (including the short-self-transfer caution) for a confirmed-direct option', () => {
+    const direct = option({
+      label: 'A',
+      outboundStops: 0,
+      returnStops: 0,
+      airportChange: 'yes',
+      selfTransfer: 'yes',
+      layoverMinutes: 40, // would otherwise trigger the short-self-transfer caution
+    });
+    const result = compareJourneyOptions(direct, option({ label: 'B' }));
+    expect(result.optionASummary.extras.some((e) => e.startsWith('Airport change:'))).toBe(false);
+    expect(result.optionASummary.extras.some((e) => e.startsWith('Self-transfer:'))).toBe(false);
+    expect(result.optionASummary.extras).not.toContain(SHORT_SELF_TRANSFER_CAUTION_COPY);
+  });
+
+  it('a genuinely connecting option (at least one stop) is unaffected — connection/layover/self-transfer facts still render normally', () => {
+    const connecting = option({
+      label: 'A',
+      outboundStops: 1,
+      returnStops: 1,
+      connectionAirports: 'Istanbul (IST)',
+      layoverMinutes: 90,
+      airportChange: 'yes',
+      selfTransfer: 'yes',
+    });
+    const result = compareJourneyOptions(connecting, option({ label: 'B' }));
+    expect(result.optionASummary.extras).toContain('Connection: Istanbul (IST)');
+    expect(result.optionASummary.extras).toContain('Longest layover: 1h 30m');
+    expect(result.optionASummary.extras).toContain('Airport change: yes');
+    expect(result.optionASummary.extras).toContain('Self-transfer: yes');
+  });
 });
 
 describe('Baggage-state wording — "extra cost, amount unknown" stays distinct from "not entered"', () => {

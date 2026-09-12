@@ -317,16 +317,28 @@ function pluralStops(n: number, leg: 'outbound' | 'return'): string {
 
 function buildOptionSummary(identifier: 'Option A' | 'Option B', option: JourneyOptionInput): OptionSummary {
   const extras: string[] = [];
+  // Robustness fix (12 Sept 2026, follow-up review on the direct-flight
+  // form-logic fix): a connection airport or layover value can only be
+  // stale/contradictory data for an option confirmed direct on both legs
+  // (0 stops) — the form no longer collects either field once an option is
+  // direct, but this summary must not trust leftover state (e.g. connection
+  // details entered before the traveller changed stops to 0) and display an
+  // inapplicable fact as though it were real. Self-transfer is gated the
+  // same way — a self-transfer connection cannot exist without a stop.
+  const isFullyDirect = option.outboundStops === 0 && option.returnStops === 0;
   if (option.cabin) extras.push(`Cabin: ${option.cabin}`);
-  if (option.connectionAirports) extras.push(`Connection: ${option.connectionAirports}`);
-  if (option.layoverMinutes !== undefined) extras.push(`Longest layover: ${formatMinutes(option.layoverMinutes)}`);
-  if (option.airportChange !== 'unknown') extras.push(`Airport change: ${option.airportChange}`);
-  if (option.selfTransfer !== 'unknown') extras.push(`Self-transfer: ${option.selfTransfer}`);
+  if (!isFullyDirect) {
+    if (option.connectionAirports) extras.push(`Connection: ${option.connectionAirports}`);
+    if (option.layoverMinutes !== undefined) extras.push(`Longest layover: ${formatMinutes(option.layoverMinutes)}`);
+  }
+  if (option.airportChange !== 'unknown' && !isFullyDirect) extras.push(`Airport change: ${option.airportChange}`);
+  if (option.selfTransfer !== 'unknown' && !isFullyDirect) extras.push(`Self-transfer: ${option.selfTransfer}`);
   // Decision-safety fix, Case 6: a short self-transfer connection gets an
   // additional, distinct caution line — never folded into the plain
   // "Self-transfer: yes" fact, so it can't be mistaken for equivalent to a
-  // generous connection buffer.
-  if (hasShortSelfTransferCaution(option)) extras.push(SHORT_SELF_TRANSFER_CAUTION_COPY);
+  // generous connection buffer. Gated the same way — never shown for a
+  // fully-direct option regardless of stray state.
+  if (!isFullyDirect && hasShortSelfTransferCaution(option)) extras.push(SHORT_SELF_TRANSFER_CAUTION_COPY);
   if (option.baggage === 'included') extras.push('Baggage: included');
   if (option.baggage === 'known-extra-cost') extras.push(`Baggage: extra £${option.baggageCostGBP} on top of the entered price`);
 
