@@ -161,9 +161,19 @@ describe('rendered Fare Signal -- label appears in the primary/prominent area, n
     expect(html).not.toContain(SELF_TRANSFER_LABEL);
   });
 
-  it('existing caveats remain: the no-verified-partner-link note still renders alongside the label, not replaced by it', () => {
+  it('existing caveats remain: the no-CTA fallback still renders alongside the label, not replaced by it', () => {
+    // Google Flights temporary fallback (12 Sept 2026, founder-approved):
+    // this test deliberately feeds a null tripComUrl via the raw
+    // getTripComRouteUrl (exact map only) to isolate the self-transfer
+    // label from the CTA/no-CTA branch — manchester-barcelona's real
+    // production tripComUrl is non-null via the destination-fallback map,
+    // so this null-tripComUrl scenario only exists inside this test
+    // fixture. With no monetised handoff and a non-service-ended route,
+    // that now renders the new generic current-flight-search fallback
+    // rather than the old plain fail-closed sentence — see
+    // GenericFlightSearchFallback in components/route/fare-signal.tsx.
     const html = renderFareSignalForRoute('manchester-barcelona');
-    expect(html).toContain('Exact partner booking link is not currently verified for this route.');
+    expect(html).toContain('Search current flights');
     expect(html).toContain(SELF_TRANSFER_LABEL);
   });
 
