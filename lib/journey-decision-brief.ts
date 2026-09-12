@@ -66,45 +66,54 @@ export interface JourneyOptionInput {
    * `compareJourneyOptions`) — never inferred, never assumed equal.
    */
   cabin?: DealCabin;
+  /**
+   * Decision-safety fix, Case 6 correction (12 Sept 2026, founder-approved
+   * addendum after an external review identified a real data-model
+   * ambiguity): the traveller's own entered duration of the SPECIFIC
+   * self-transfer connection, deliberately a distinct field from
+   * `layoverMinutes` ("the longest single layover"). For a single-connection
+   * itinerary the two happen to be the same number, which is why the
+   * original Case 6 example (7h vs 1h20) didn't surface this — but for a
+   * multi-stop option the longest layover and the actual self-transfer leg
+   * can genuinely be different connections, and substituting one for the
+   * other would misrepresent which connection the traveller actually has to
+   * manage themselves. Only meaningful when `selfTransfer === 'yes'`; never
+   * inferred from `layoverMinutes` or any other field.
+   */
+  shortestSelfTransferMinutes?: number;
 }
 
 // ---------------------------------------------------------------------------
-// Short self-transfer caution (decision-safety fix, 12 Sept 2026, Case 6)
+// Self-transfer interval (decision-safety fix, 12 Sept 2026, Case 6 +
+// founder-approved correction)
 // ---------------------------------------------------------------------------
 //
 // Real 10-case evaluation finding: two self-transfer options (7h vs 1h20
 // connection) were shown with the same "Self-transfer: yes" fact and no
-// distinction — reading as though a 1h20 self-transfer carries the same
-// practical risk as a 7h one. This does NOT invent a minimum-connection-time
-// rule, and never declares a short connection impossible or unsafe — it only
-// decides when to surface a plain, fail-closed prompt to check for yourself.
-// The threshold below is a caution-surfacing trigger, not a claimed safe/
-// unsafe boundary, and the copy itself states no number to the traveller —
-// only "short self-transfer", so no specific minute count is ever presented
-// as an authoritative rule.
+// distinction. The first fix (since corrected) surfaced a caution only below
+// an internal duration threshold — an external review correctly identified
+// that ANY such threshold is itself a soft "invented minimum-connection
+// rule", even if the displayed copy never stated the number. The
+// founder-approved correction removes the threshold entirely: the actual
+// entered self-transfer interval is stated as a plain fact, every time one
+// is entered, with the same standing checklist reminder — never a judgement
+// that a given duration is safe, risky, tight, or comfortable, and never a
+// claim that any duration is impossible.
 
 /**
- * Below this many minutes, a self-transfer connection surfaces the caution
- * copy below. Chosen to separate the two real evaluation examples (a 1h20
- * connection triggers it; a 7h connection does not) — not a claim that any
- * duration at or above this is safe, only where JetStash starts prompting a
- * traveller to check for themselves.
+ * Plain factual statement of the traveller's own entered self-transfer
+ * interval, or `null` when there's nothing to state. Deliberately makes NO
+ * duration-based distinction — a 20-minute and a 7-hour interval produce the
+ * exact same sentence shape, just a different stated number; there is no
+ * internal threshold anywhere in this function. Only ever shown when
+ * self-transfer is positively confirmed ('yes') and a real interval was
+ * entered — never for 'no'/'unknown' self-transfer, and never substituting
+ * `layoverMinutes` when the interval itself is missing (see
+ * `buildStillUnknown`, which surfaces that gap as its own honest unknown).
  */
-export const SELF_TRANSFER_SHORT_CONNECTION_MINUTES = 120;
-
-export const SHORT_SELF_TRANSFER_CAUTION_COPY =
-  'Short self-transfer — check terminal, immigration, baggage reclaim and re-check-in time before relying on this connection.';
-
-/**
- * True only when the traveller has confirmed this option IS a self-transfer
- * (never inferred from stops/airline count) AND entered a known layover
- * duration under the caution threshold. A self-transfer with an unentered
- * layover duration is already surfaced as "layover not entered" in
- * `stillUnknown` — it does not additionally get this caution, since we
- * genuinely don't know whether it's short or long.
- */
-export function hasShortSelfTransferCaution(option: Pick<JourneyOptionInput, 'selfTransfer' | 'layoverMinutes'>): boolean {
-  return option.selfTransfer === 'yes' && option.layoverMinutes !== undefined && option.layoverMinutes < SELF_TRANSFER_SHORT_CONNECTION_MINUTES;
+export function selfTransferIntervalStatement(option: Pick<JourneyOptionInput, 'selfTransfer' | 'shortestSelfTransferMinutes'>): string | null {
+  if (option.selfTransfer !== 'yes' || option.shortestSelfTransferMinutes === undefined) return null;
+  return `Self-transfer interval entered: ${formatMinutes(option.shortestSelfTransferMinutes)}. Check terminal, immigration, baggage reclaim/re-check-in and onward-booking terms before relying on this connection.`;
 }
 
 /** The fields a valid option must have before any comparison can run. */
@@ -333,12 +342,16 @@ function buildOptionSummary(identifier: 'Option A' | 'Option B', option: Journey
   }
   if (option.airportChange !== 'unknown' && !isFullyDirect) extras.push(`Airport change: ${option.airportChange}`);
   if (option.selfTransfer !== 'unknown' && !isFullyDirect) extras.push(`Self-transfer: ${option.selfTransfer}`);
-  // Decision-safety fix, Case 6: a short self-transfer connection gets an
-  // additional, distinct caution line — never folded into the plain
-  // "Self-transfer: yes" fact, so it can't be mistaken for equivalent to a
-  // generous connection buffer. Gated the same way — never shown for a
+  // Decision-safety fix, Case 6 (corrected): the traveller's own entered
+  // self-transfer interval is stated as its own distinct fact — never
+  // folded into the plain "Self-transfer: yes" line, and never a judgement
+  // on whether the stated duration is safe/risky/tight/comfortable. Gated
+  // the same way as the other connection-only facts — never shown for a
   // fully-direct option regardless of stray state.
-  if (!isFullyDirect && hasShortSelfTransferCaution(option)) extras.push(SHORT_SELF_TRANSFER_CAUTION_COPY);
+  if (!isFullyDirect) {
+    const intervalStatement = selfTransferIntervalStatement(option);
+    if (intervalStatement) extras.push(intervalStatement);
+  }
   if (option.baggage === 'included') extras.push('Baggage: included');
   if (option.baggage === 'known-extra-cost') extras.push(`Baggage: extra £${option.baggageCostGBP} on top of the entered price`);
 
@@ -368,6 +381,13 @@ function buildStillUnknown(identifier: 'Option A' | 'Option B', option: JourneyO
   if (!isFullyDirect) {
     if (!option.connectionAirports) lines.push(`${identifier}: connection airport(s) not entered.`);
     if (option.layoverMinutes === undefined) lines.push(`${identifier}: layover not entered.`);
+    // Case 6 correction: self-transfer is positively confirmed but the
+    // specific interval wasn't entered — an honest, distinct unknown, never
+    // silently substituted with `layoverMinutes` (which may describe a
+    // different connection entirely on a multi-stop itinerary).
+    if (option.selfTransfer === 'yes' && option.shortestSelfTransferMinutes === undefined) {
+      lines.push(`${identifier}: self-transfer interval not entered.`);
+    }
   }
   return lines;
 }
@@ -469,18 +489,33 @@ export function compareJourneyOptions(a: JourneyOptionInput, b: JourneyOptionInp
   }
 
   if (priceComparable && priceDifferenceGBP !== undefined) {
-    const qualifier = useBaggageAdjustedTotal ? ' once baggage is included' : '';
-    if (priceDifferenceGBP === 0) {
-      const shownPrice = bothPayableKnown ? payableA! : a.priceGBP;
-      comparisonStatements.push(`Option A and Option B are the same price${qualifier} (£${shownPrice}, ${basisWord(a.priceBasis)}).`);
-    } else if (priceDifferenceGBP > 0) {
-      const detail = useBaggageAdjustedTotal ? ` (£${payableA} vs £${payableB}, ${basisWord(a.priceBasis)})` : ` (${basisWord(a.priceBasis)})`;
-      comparisonStatements.push(`Option A costs £${priceDifferenceGBP} more than Option B${qualifier}${detail}.`);
+    if (bothPayableKnown) {
+      // A. Known payable-total comparison — the authoritative headline,
+      // baggage-inclusive, only ever shown when confirmed for both sides.
+      const qualifier = useBaggageAdjustedTotal ? ' once baggage is included' : '';
+      if (priceDifferenceGBP === 0) {
+        comparisonStatements.push(`Option A and Option B are the same price${qualifier} (£${payableA}, ${basisWord(a.priceBasis)}).`);
+      } else if (priceDifferenceGBP > 0) {
+        const detail = useBaggageAdjustedTotal ? ` (£${payableA} vs £${payableB}, ${basisWord(a.priceBasis)})` : ` (${basisWord(a.priceBasis)})`;
+        comparisonStatements.push(`Option A costs £${priceDifferenceGBP} more than Option B${qualifier}${detail}.`);
+      } else {
+        const detail = useBaggageAdjustedTotal ? ` (£${payableB} vs £${payableA}, ${basisWord(a.priceBasis)})` : ` (${basisWord(a.priceBasis)})`;
+        comparisonStatements.push(`Option B costs £${Math.abs(priceDifferenceGBP)} more than Option A${qualifier}${detail}.`);
+      }
     } else {
-      const detail = useBaggageAdjustedTotal ? ` (£${payableB} vs £${payableA}, ${basisWord(a.priceBasis)})` : ` (${basisWord(a.priceBasis)})`;
-      comparisonStatements.push(`Option B costs £${Math.abs(priceDifferenceGBP)} more than Option A${qualifier}${detail}.`);
-    }
-    if (!bothPayableKnown) {
+      // B. Entered/base-fare comparison — Point 2 (founder decision, 12
+      // Sept 2026): never suppressed just because baggage is unknown, but
+      // never worded as the definitive payable-price outcome either. Every
+      // sentence here explicitly says "entered fare" and "not yet the final
+      // payable-price comparison", and the qualifier below always follows,
+      // naming exactly which side's baggage cost is unconfirmed.
+      if (priceDifferenceGBP === 0) {
+        comparisonStatements.push(`Option A and Option B have the same entered fare (£${a.priceGBP}, ${basisWord(a.priceBasis)}) — not yet the final payable-price comparison.`);
+      } else if (priceDifferenceGBP > 0) {
+        comparisonStatements.push(`Option A's entered fare is £${priceDifferenceGBP} more than Option B's (${basisWord(a.priceBasis)}) — based on entered fares only, not yet the final payable-price comparison.`);
+      } else {
+        comparisonStatements.push(`Option B's entered fare is £${Math.abs(priceDifferenceGBP)} more than Option A's (${basisWord(a.priceBasis)}) — based on entered fares only, not yet the final payable-price comparison.`);
+      }
       const note = unconfirmedBaggageQualifier(a, b);
       if (note) comparisonStatements.push(note);
     }
@@ -557,6 +592,7 @@ const UNKNOWN_TOPIC_BY_SUFFIX: Readonly<Record<string, string>> = {
   'baggage not stated.': 'baggage',
   'connection airport(s) not entered.': 'connection airport',
   'layover not entered.': 'layover',
+  'self-transfer interval not entered.': 'self-transfer interval',
 };
 
 const BAGGAGE_EXTRA_COST_UNKNOWN_SUFFIX = 'baggage extra cost unknown.';

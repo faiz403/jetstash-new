@@ -338,6 +338,24 @@ function OptionForm({
                 </label>
               ))}
             </div>
+            {/* Decision-safety fix, Case 6 correction (12 Sept 2026): a
+                dedicated field for the SPECIFIC self-transfer connection's
+                own duration — deliberately distinct from "Longest layover"
+                above, which may describe a different connection entirely on
+                a multi-stop itinerary. Only asked once self-transfer is
+                positively confirmed; suppressed for a fully-direct option,
+                same as the other connection-only fields. */}
+            {option.selfTransfer === 'yes' && !isFullyDirect && (
+              <div className="mt-3">
+                <DurationField
+                  idPrefix={`${idPrefix}-self-transfer-interval`}
+                  label="Self-transfer interval"
+                  hint="The specific connection you'll make yourself — not necessarily the longest layover above."
+                  totalMinutes={option.shortestSelfTransferMinutes}
+                  onChange={(v) => set('shortestSelfTransferMinutes', v)}
+                />
+              </div>
+            )}
           </div>
         </div>
 

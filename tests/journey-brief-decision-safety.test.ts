@@ -4,9 +4,7 @@ import { describe, expect, it } from 'vitest';
 import {
   compareJourneyOptions,
   groupStillUnknownByOption,
-  hasShortSelfTransferCaution,
-  SELF_TRANSFER_SHORT_CONNECTION_MINUTES,
-  SHORT_SELF_TRANSFER_CAUTION_COPY,
+  selfTransferIntervalStatement,
   type JourneyOptionInput,
 } from '@/lib/journey-decision-brief';
 
@@ -39,49 +37,80 @@ function option(overrides: Partial<JourneyOptionInput>): JourneyOptionInput {
   return { ...baseOption, ...overrides };
 }
 
-describe('Case 6 — short self-transfer must not read as safely equivalent to a generous buffer', () => {
-  it('a self-transfer with a layover under the caution threshold triggers the fail-closed caution copy', () => {
-    const a = option({ label: 'A', selfTransfer: 'yes', layoverMinutes: 80 }); // 1h20
+describe('Case 6 (corrected, 12 Sept 2026) — structured self-transfer interval, distinct from longest layover', () => {
+  it('a 1h20 self-transfer interval displays factually, with the standing checklist reminder', () => {
+    const a = option({ label: 'A', selfTransfer: 'yes', shortestSelfTransferMinutes: 80 });
     const result = compareJourneyOptions(a, option({ label: 'B' }));
-    expect(result.optionASummary.extras).toContain(SHORT_SELF_TRANSFER_CAUTION_COPY);
+    expect(result.optionASummary.extras).toContain(
+      'Self-transfer interval entered: 1h 20m. Check terminal, immigration, baggage reclaim/re-check-in and onward-booking terms before relying on this connection.'
+    );
   });
 
-  it('a long self-transfer (well above the threshold) does NOT get the short-buffer caution', () => {
-    const a = option({ label: 'A', selfTransfer: 'yes', layoverMinutes: 7 * 60 }); // 7h
+  it('a 7h self-transfer interval displays factually, with the exact same standing checklist reminder — no differential judgement', () => {
+    const a = option({ label: 'A', selfTransfer: 'yes', shortestSelfTransferMinutes: 7 * 60 });
     const result = compareJourneyOptions(a, option({ label: 'B' }));
-    expect(result.optionASummary.extras).not.toContain(SHORT_SELF_TRANSFER_CAUTION_COPY);
+    expect(result.optionASummary.extras).toContain(
+      'Self-transfer interval entered: 7h. Check terminal, immigration, baggage reclaim/re-check-in and onward-booking terms before relying on this connection.'
+    );
   });
 
-  it('the exact founder-specified 7h vs 1h20 scenario: only the short connection gets the caution, the long one does not', () => {
-    const a = option({ label: 'A', selfTransfer: 'yes', layoverMinutes: 7 * 60 });
-    const b = option({ label: 'B', selfTransfer: 'yes', layoverMinutes: 80 });
+  it('the two remain distinct — a 1h20 and a 7h interval produce different stated numbers, not the same sentence', () => {
+    const a = option({ label: 'A', selfTransfer: 'yes', shortestSelfTransferMinutes: 80 });
+    const b = option({ label: 'B', selfTransfer: 'yes', shortestSelfTransferMinutes: 7 * 60 });
     const result = compareJourneyOptions(a, b);
-    expect(result.optionASummary.extras).not.toContain(SHORT_SELF_TRANSFER_CAUTION_COPY);
-    expect(result.optionBSummary.extras).toContain(SHORT_SELF_TRANSFER_CAUTION_COPY);
+    expect(result.optionASummary.extras.some((e) => e.includes('1h 20m'))).toBe(true);
+    expect(result.optionBSummary.extras.some((e) => e.includes('7h'))).toBe(true);
+    expect(result.optionASummary.extras.join(' ')).not.toEqual(result.optionBSummary.extras.join(' '));
   });
 
-  it('never fires for a self-transfer with no layover duration entered — that stays an honest "layover not entered" unknown, not a caution about a duration we don\'t actually know', () => {
-    const a = option({ label: 'A', selfTransfer: 'yes', layoverMinutes: undefined });
+  it('longest layover is never substituted for the self-transfer interval — a long layover with no interval entered states no interval fact at all', () => {
+    const a = option({ label: 'A', selfTransfer: 'yes', layoverMinutes: 7 * 60, shortestSelfTransferMinutes: undefined });
     const result = compareJourneyOptions(a, option({ label: 'B' }));
-    expect(result.optionASummary.extras).not.toContain(SHORT_SELF_TRANSFER_CAUTION_COPY);
-    expect(result.stillUnknown).toContain('Option A: layover not entered.');
+    expect(result.optionASummary.extras.some((e) => e.startsWith('Self-transfer interval entered:'))).toBe(false);
+    expect(result.optionASummary.extras).toContain('Longest layover: 7h');
   });
 
-  it('never fires when self-transfer is "no" or "unknown", regardless of layover duration', () => {
-    expect(hasShortSelfTransferCaution({ selfTransfer: 'no', layoverMinutes: 40 })).toBe(false);
-    expect(hasShortSelfTransferCaution({ selfTransfer: 'unknown', layoverMinutes: 40 })).toBe(false);
+  it('self-transfer confirmed "yes" with a missing interval is preserved as its own honest unknown — never silently backed by longest layover', () => {
+    const a = option({ label: 'A', selfTransfer: 'yes', layoverMinutes: 7 * 60, shortestSelfTransferMinutes: undefined });
+    const result = compareJourneyOptions(a, option({ label: 'B' }));
+    expect(result.stillUnknown).toContain('Option A: self-transfer interval not entered.');
   });
 
-  it('does not invent a universal minimum-connection-time RULE — the copy itself states no specific number, and the threshold is documented as a caution trigger only', () => {
-    expect(SHORT_SELF_TRANSFER_CAUTION_COPY).not.toMatch(/\d+\s*(min|hour|h\b)/i);
-    expect(SHORT_SELF_TRANSFER_CAUTION_COPY).not.toMatch(/impossible|invalid|not allowed|cannot connect/i);
-    expect(typeof SELF_TRANSFER_SHORT_CONNECTION_MINUTES).toBe('number');
+  it('an ordinary connection (self-transfer "no") receives no self-transfer-interval wording, even if a value happens to be present', () => {
+    expect(selfTransferIntervalStatement({ selfTransfer: 'no', shortestSelfTransferMinutes: 40 })).toBeNull();
+    expect(selfTransferIntervalStatement({ selfTransfer: 'unknown', shortestSelfTransferMinutes: 40 })).toBeNull();
   });
 
-  it('never declares a short connection impossible — it is additive advice, comparison output and all other facts are unaffected', () => {
-    const a = option({ label: 'A', selfTransfer: 'yes', layoverMinutes: 80 });
-    const b = option({ label: 'B' });
-    const result = compareJourneyOptions(a, b);
+  it('never infers safe/risky/tight/comfortable/impossible from the stated interval — the copy is the same regardless of duration', () => {
+    const short = selfTransferIntervalStatement({ selfTransfer: 'yes', shortestSelfTransferMinutes: 20 })!;
+    const long = selfTransferIntervalStatement({ selfTransfer: 'yes', shortestSelfTransferMinutes: 600 })!;
+    for (const statement of [short, long]) {
+      expect(statement).not.toMatch(/\bsafe\b|\brisky\b|\btight\b|\bcomfortable\b|\bimpossible\b/i);
+    }
+    // Same reminder clause on both — only the stated number differs.
+    expect(short.split('. ')[1]).toBe(long.split('. ')[1]);
+  });
+
+  it('a multi-stop itinerary can genuinely have longest layover != self-transfer interval, and both are shown as separate, correctly distinct facts', () => {
+    const a = option({
+      label: 'A',
+      outboundStops: 2,
+      selfTransfer: 'yes',
+      layoverMinutes: 6 * 60, // the longest layover overall — a different, protected connection
+      shortestSelfTransferMinutes: 45, // the actual self-transfer leg — much shorter
+    });
+    const result = compareJourneyOptions(a, option({ label: 'B' }));
+    expect(result.optionASummary.extras).toContain('Longest layover: 6h');
+    expect(result.optionASummary.extras).toContain(
+      'Self-transfer interval entered: 45m. Check terminal, immigration, baggage reclaim/re-check-in and onward-booking terms before relying on this connection.'
+    );
+  });
+
+  it('never declares a connection impossible or invents a minimum-connection-time rule — no number-based threshold exists anywhere in the function', () => {
+    const a = option({ label: 'A', selfTransfer: 'yes', shortestSelfTransferMinutes: 5 });
+    const result = compareJourneyOptions(a, option({ label: 'B' }));
+    const statement = result.optionASummary.extras.find((e) => e.startsWith('Self-transfer interval entered:'))!;
+    expect(statement).not.toMatch(/impossible|invalid|not allowed|cannot connect|too short|unsafe/i);
     expect(result.priceComparable).toBe(true);
     expect(result.comparisonStatements.length).toBeGreaterThan(0);
   });
@@ -247,19 +276,19 @@ describe('Direct-flight form logic — a direct option is not asked for connecti
     expect(result.optionASummary.extras.some((e) => e.startsWith('Longest layover:'))).toBe(false);
   });
 
-  it('never displays airport-change or self-transfer facts (including the short-self-transfer caution) for a confirmed-direct option', () => {
+  it('never displays airport-change, self-transfer, or the self-transfer-interval statement for a confirmed-direct option', () => {
     const direct = option({
       label: 'A',
       outboundStops: 0,
       returnStops: 0,
       airportChange: 'yes',
       selfTransfer: 'yes',
-      layoverMinutes: 40, // would otherwise trigger the short-self-transfer caution
+      shortestSelfTransferMinutes: 40, // would otherwise render the interval statement
     });
     const result = compareJourneyOptions(direct, option({ label: 'B' }));
     expect(result.optionASummary.extras.some((e) => e.startsWith('Airport change:'))).toBe(false);
     expect(result.optionASummary.extras.some((e) => e.startsWith('Self-transfer:'))).toBe(false);
-    expect(result.optionASummary.extras).not.toContain(SHORT_SELF_TRANSFER_CAUTION_COPY);
+    expect(result.optionASummary.extras.some((e) => e.startsWith('Self-transfer interval entered:'))).toBe(false);
   });
 
   it('a genuinely connecting option (at least one stop) is unaffected — connection/layover/self-transfer facts still render normally', () => {
