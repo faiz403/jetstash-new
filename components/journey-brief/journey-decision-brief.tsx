@@ -15,6 +15,7 @@ import {
   type PriceBasis,
   type TriState,
 } from '@/lib/journey-decision-brief';
+import type { DealCabin } from '@/data/deals';
 
 /**
  * Journey Decision Brief — generic founder-only MVP (August 2026).
@@ -187,6 +188,14 @@ function OptionForm({
   const set = <K extends keyof JourneyOptionInput>(key: K, value: JourneyOptionInput[K]) =>
     onChange({ ...option, [key]: value });
 
+  // Decision-safety fix (12 Sept 2026, direct-flight form logic): several of
+  // the real 10 evaluation cases were asked for a connection airport and
+  // layover duration on an option that was direct on both legs — neither
+  // field can apply there. Only suppressed when BOTH legs are confirmed
+  // direct (0 stops); a mixed or partially-unknown option keeps asking, so
+  // data collection for a genuinely connecting flight is never weakened.
+  const isFullyDirect = option.outboundStops === 0 && option.returnStops === 0;
+
   return (
     <div className="rounded-md border border-ink-100 bg-white p-5">
       <div>
@@ -204,7 +213,7 @@ function OptionForm({
         />
       </div>
 
-      <div className="mt-4 grid gap-4 sm:grid-cols-2">
+      <div className="mt-4 grid gap-4 sm:grid-cols-3">
         <NumberField id={`${idPrefix}-price`} label="Price" value={option.priceGBP} onChange={(v) => set('priceGBP', v as number)} min={0} prefix="£" />
         <div>
           <label htmlFor={`${idPrefix}-basis`} className="text-xs font-semibold uppercase tracking-wide text-ink-300">
@@ -218,6 +227,23 @@ function OptionForm({
           >
             <option value="per-person">Per person</option>
             <option value="party-total">Total for the party</option>
+          </select>
+        </div>
+        <div>
+          <label htmlFor={`${idPrefix}-cabin`} className="text-xs font-semibold uppercase tracking-wide text-ink-300">
+            Cabin
+          </label>
+          <p className="text-[11px] text-ink-300">Optional — leave blank if unsure.</p>
+          <select
+            id={`${idPrefix}-cabin`}
+            value={option.cabin ?? ''}
+            onChange={(e) => set('cabin', (e.target.value || undefined) as DealCabin | undefined)}
+            className="mt-1.5 h-11 w-full rounded-sm border border-ink-100 bg-white px-3 text-sm text-ink-900 focus-visible:border-brass"
+          >
+            <option value="">Not stated</option>
+            <option value="Economy">Economy</option>
+            <option value="Premium Economy">Premium Economy</option>
+            <option value="Business">Business</option>
           </select>
         </div>
       </div>
@@ -262,27 +288,33 @@ function OptionForm({
 
         <p className="mt-3 text-[11px] text-ink-300">Optional — leave unknown rather than guessing.</p>
 
-        <div className="mt-2 grid gap-4 sm:grid-cols-2">
-          <div>
-            <label htmlFor={`${idPrefix}-connection`} className="text-xs font-semibold uppercase tracking-wide text-ink-300">
-              Connection airport(s)
-            </label>
-            <input
-              id={`${idPrefix}-connection`}
-              type="text"
-              value={option.connectionAirports ?? ''}
-              onChange={(e) => set('connectionAirports', e.target.value || undefined)}
-              placeholder="e.g. Istanbul (IST)"
-              className="mt-1.5 h-11 w-full rounded-sm border border-ink-100 bg-white px-3 text-sm text-ink-900 focus-visible:border-brass"
+        {isFullyDirect ? (
+          <p className="mt-2 text-[11px] text-ink-300">
+            Connection and layover details don&apos;t apply — this option is direct on both legs.
+          </p>
+        ) : (
+          <div className="mt-2 grid gap-4 sm:grid-cols-2">
+            <div>
+              <label htmlFor={`${idPrefix}-connection`} className="text-xs font-semibold uppercase tracking-wide text-ink-300">
+                Connection airport(s)
+              </label>
+              <input
+                id={`${idPrefix}-connection`}
+                type="text"
+                value={option.connectionAirports ?? ''}
+                onChange={(e) => set('connectionAirports', e.target.value || undefined)}
+                placeholder="e.g. Istanbul (IST)"
+                className="mt-1.5 h-11 w-full rounded-sm border border-ink-100 bg-white px-3 text-sm text-ink-900 focus-visible:border-brass"
+              />
+            </div>
+            <DurationField
+              idPrefix={`${idPrefix}-layover`}
+              label="Longest layover"
+              totalMinutes={option.layoverMinutes}
+              onChange={(v) => set('layoverMinutes', v)}
             />
           </div>
-          <DurationField
-            idPrefix={`${idPrefix}-layover`}
-            label="Longest layover"
-            totalMinutes={option.layoverMinutes}
-            onChange={(v) => set('layoverMinutes', v)}
-          />
-        </div>
+        )}
 
         <div className="mt-4 grid gap-4 sm:grid-cols-2">
           <div>

@@ -334,9 +334,13 @@ describe('groupStillUnknownByOption — presentation-only grouping (pre-commit p
     const a = option({ label: 'A', airportChange: 'unknown', baggage: 'extra-cost-unknown' });
     const result = compareJourneyOptions(a, option({ label: 'B', airportChange: 'unknown', baggage: 'extra-cost-unknown' }));
     const grouped = groupStillUnknownByOption(result.stillUnknown);
-    // Both "baggage not stated" and "baggage extra cost unknown" collapse to one "baggage" topic —
-    // never double-counted, and connection/layover (also unset on this fixture) still appear too.
-    expect(grouped.optionA).toBe('Airport change, baggage, connection airport and layover were not entered.');
+    // Decision-safety fix (12 Sept 2026): a confirmed-but-unquantified extra
+    // baggage cost is NOT "not entered" — the traveller entered it, they
+    // just don't know the amount — so it no longer collapses into the
+    // generic "baggage ... were not entered" bucket; it gets its own,
+    // distinctly-worded clause. Connection/layover (also unset here) still
+    // appear in the generic clause, unaffected.
+    expect(grouped.optionA).toBe('Airport change, connection airport and layover were not entered. An extra baggage cost applies, but the amount is not confirmed.');
   });
 
   it('handles an empty stillUnknown array without throwing', () => {
