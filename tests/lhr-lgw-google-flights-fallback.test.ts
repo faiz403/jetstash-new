@@ -163,7 +163,7 @@ describe('16-17. no sponsored/affiliate disclosure falsely applied; correct non-
   it('the fallback never renders inside AffiliateLinkDisclosure and states no commission is earned', () => {
     const { html } = renderRouteFareSignal('london-heathrow-jeddah');
     expect(html).not.toContain('Ad · Affiliate link.');
-    expect(html).toContain('does not currently earn commission');
+    expect(html).toContain('does not earn commission from this link');
     expect(html).not.toContain('partner fare');
     expect(html).not.toContain('JetStash deal');
     expect(html).not.toContain('tracked fare');

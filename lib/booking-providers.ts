@@ -372,7 +372,7 @@ export const GENERIC_FLIGHT_SEARCH_URL = 'https://www.google.com/travel/flights'
 export const GENERIC_FLIGHT_SEARCH_CTA_LABEL = 'Search current flights';
 export const GENERIC_FLIGHT_SEARCH_REL = 'nofollow noopener noreferrer';
 export const GENERIC_FLIGHT_SEARCH_NOTE =
-  "Search powered by Google Flights. JetStash does not currently earn commission from this search — you'll enter your own airports and dates.";
+  'Opens Google Flights. JetStash does not earn commission from this link. Enter your airports and dates there.';
 
 /**
  * Resolves the one public flight handoff for a published route.

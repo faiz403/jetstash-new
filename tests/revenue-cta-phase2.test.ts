@@ -31,6 +31,6 @@ describe('Phase 2 public CTA clarity', () => {
     expect(html).not.toContain('Check current price on Trip.com');
     expect(html).not.toContain('Ad · Affiliate link.');
     expect(html).toContain('Search current flights');
-    expect(html).toContain('JetStash does not currently earn commission from this search');
+    expect(html).toContain('JetStash does not earn commission from this link');
   });
 });
