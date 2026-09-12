@@ -1225,13 +1225,16 @@ export const routes: Route[] = [
     // direct service runs). The prior "2 weekly" statement was itself
     // already flagged in this route's own verification note as needing a
     // recheck ("any later frequency increase remain unconfirmed"), and was
-    // genuinely stale: live flight-tracking data (see verification.note)
-    // shows a consistent 4x-weekly Mon/Tue/Thu/Sat pattern across multiple
-    // consecutive real weeks as of this check, not the earlier 2-weekly
-    // figure. Framed as a "typical current pattern", never a guarantee —
-    // see verification.note for exactly what the evidence does and doesn't
-    // support.
-    frequency: "4x weekly direct (typical current pattern: Mon/Tue/Thu/Sat ex-Manchester, per live flight-tracking data checked 12 September 2026); schedules can shift week to week, so check PIA for your exact travel date",
+    // genuinely stale: current operational flight-tracking evidence (see
+    // verification.note for the full detail, source description and
+    // corroboration) shows a consistent 4x-weekly Mon/Tue/Thu/Sat pattern
+    // across multiple consecutive real weeks, not the earlier 2-weekly
+    // figure. This hero-facing string is deliberately short (a family
+    // scanning the page, not an audit reader) — the dated evidence, exact
+    // source, and "typical current pattern, never a guarantee" explanation
+    // live in verification.note instead, per the same convention every
+    // other verified route fact already follows.
+    frequency: '4x weekly direct. Typical days: Mon, Tue, Thu & Sat. Check PIA for your exact date.',
     airlineSlugs: ['pia'],
     isDirect: true,
     verification: {
@@ -1240,7 +1243,7 @@ export const routes: Route[] = [
       sourceUrl: 'https://mediacentre.manchesterairport.co.uk/hundreds-of-thousands-of-people-to-benefit-as-pakistan-international-airlines-launches-new-route-from-manchester-airport/',
       verifiedDate: '2026-09-12',
       reviewDueDate: '2026-10-12',
-      note: 'Re-verified 12 September 2026, prompted by real MAN-ISB micro-seed user feedback asking which days the direct service actually runs. The prior 14 August check (2 weekly, per PIA\'s own homepage/news content) is superseded: live flight-tracking history for flight PK702 (flightaware.com/live/flight/PIA702, checked 12 September 2026) shows completed and scheduled Manchester departures on Tue 1 Sep, Thu 3 Sep, Sat 5 Sep, Mon 7 Sep, Tue 8 Sep, Thu 10 Sep, Sat 12 Sep (en route) and Mon 14 Sep (scheduled) — a consistent Mon/Tue/Thu/Sat, 4x-weekly pattern across multiple consecutive real weeks, not a single snapshot. This confirms direct status, PIA as operator, and today\'s real operating pattern. It is presented as a "typical current pattern" rather than a guarantee: flight-tracking history proves what has actually operated recently, not that every future week will match exactly, and JetStash has no real-time schedule inventory.',
+      note: 'Re-verified 12 September 2026, prompted by real MAN-ISB micro-seed user feedback asking which days the direct service actually runs. The prior 14 August check (2 weekly, per PIA\'s own homepage/news content) is superseded. PIA\'s own schedule/booking channel was inaccessible during this check (403 response), so the operating-day pattern is instead evidenced by current operational flight-tracking data for flight PK702 (flightaware.com/live/flight/PIA702, checked 12 September 2026) — not a primary operator source, but real completed and scheduled flight history: Manchester departures on Tue 1 Sep, Thu 3 Sep, Sat 5 Sep, Mon 7 Sep, Tue 8 Sep, Thu 10 Sep, Sat 12 Sep (en route) and Mon 14 Sep (scheduled), a consistent Mon/Tue/Thu/Sat, 4x-weekly pattern across multiple consecutive real weeks, not a single snapshot. This is corroborated by independent current schedule/search evidence (two separate current searches also describing the route as operating four times weekly). Together this confirms direct status, PIA as operator, and today\'s real operating pattern. It is presented as a "typical current pattern" rather than a guarantee: flight-tracking history proves what has actually operated recently, not that every future week will match exactly, and JetStash has no real-time schedule inventory.',
     },
     intro:
       'Manchester to Islamabad direct services (confirmed via Manchester Airport\'s own announcement, launched 25 October 2025) are the practical choice for families based across Yorkshire, Lancashire and the wider North West heading to Punjab or onward to Khyber Pakhtunkhwa.',

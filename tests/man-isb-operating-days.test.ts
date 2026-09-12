@@ -29,15 +29,28 @@ describe('1. MAN->ISB exposes the operating-day information', () => {
 
   it('renders live on the route page', async () => {
     const html = await renderManIsbPage();
-    expect(html).toMatch(/Mon\/Tue\/Thu\/Sat/);
+    // '&' is HTML-escaped to '&amp;' in rendered static markup.
+    expect(html).toMatch(/Mon, Tue, Thu (&|&amp;) Sat/);
   });
 });
 
 describe('2. wording uses non-guaranteed framing', () => {
-  it('the frequency field is explicitly framed as a "typical current pattern", never a guarantee', () => {
+  // Copy consolidation (12 Sept 2026, founder-approved): the hero-facing
+  // `frequency` string is deliberately short for a family scanning the
+  // page ("4x weekly direct. Typical days: Mon, Tue, Thu & Sat. Check PIA
+  // for your exact date.") — the fuller "typical current pattern, never a
+  // guarantee" explanation and its dated evidence live in
+  // verification.note instead, per the same convention every other
+  // verified route fact already follows.
+  it('the hero frequency string itself never claims a guarantee', () => {
     const route = getRouteBySlug('manchester-islamabad')!;
-    expect(route.frequency).toMatch(/typical current pattern/i);
     expect(route.frequency).not.toMatch(/guaranteed|every week|always operates/i);
+  });
+
+  it('the fuller "typical current pattern" / non-guarantee explanation lives in verification.note', () => {
+    const route = getRouteBySlug('manchester-islamabad')!;
+    expect(route.verification?.note).toMatch(/typical current pattern/i);
+    expect(route.verification?.note).not.toMatch(/\bguaranteed\b/i);
   });
 });
 
@@ -52,7 +65,18 @@ describe('3-6. Monday, Tuesday, Thursday, Saturday all appear', () => {
 describe('7. exact-date verification caveat appears', () => {
   it('the frequency field tells the reader to check PIA directly for their exact date', () => {
     const route = getRouteBySlug('manchester-islamabad')!;
-    expect(route.frequency).toMatch(/check PIA.*exact travel date|schedules can shift/i);
+    expect(route.frequency).toMatch(/Check PIA for your exact date/i);
+  });
+});
+
+describe('source description accuracy: FlightAware is never called a "primary source"', () => {
+  it('verification.note describes FlightAware as current operational flight-tracking evidence, not a primary source, and notes PIA was inaccessible', () => {
+    const route = getRouteBySlug('manchester-islamabad')!;
+    const note = route.verification?.note ?? '';
+    expect(note).toContain('flightaware.com');
+    expect(note).toMatch(/not a primary operator source/i);
+    expect(note).toMatch(/inaccessible/i);
+    expect(note).toMatch(/corroborated by independent current schedule/i);
   });
 });
 
@@ -113,12 +137,12 @@ describe('12. no direct fare is invented', () => {
 describe('13. no other route receives MAN->ISB weekday data accidentally', () => {
   it('manchester-lahore (a similarly-named PIA route) does not carry the Mon/Tue/Thu/Sat pattern', () => {
     const lahore = getRouteBySlug('manchester-lahore')!;
-    expect(lahore.frequency).not.toMatch(/Mon\/Tue\/Thu\/Sat/);
+    expect(lahore.frequency).not.toMatch(/Mon, Tue, Thu & Sat/);
   });
 
   it('no other route in the catalogue picked up this exact frequency string', () => {
     const matches = routes.filter((r) =>
-      r.slug !== 'manchester-islamabad' && r.frequency.includes('Mon/Tue/Thu/Sat ex-Manchester')
+      r.slug !== 'manchester-islamabad' && r.frequency.includes('Mon, Tue, Thu & Sat')
     );
     expect(matches).toHaveLength(0);
   });
