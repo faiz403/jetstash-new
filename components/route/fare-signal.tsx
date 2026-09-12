@@ -2,7 +2,7 @@ import { AlertTriangle, ArrowUpRight, CalendarDays, Info, Plane, Search, Sparkle
 import type { FareSignal as FareSignalData, FareSignalObservation } from '@/lib/fare-signal';
 import type { StandoutFarePresentation } from '@/lib/standout-fare';
 import { formatChecked } from '@/data/deals';
-import { NO_VERIFIED_PARTNER_LINK_NOTE, PROVIDER_REL, SERVICE_ENDED_CTA_LABEL, GENERIC_FLIGHT_SEARCH_URL, GENERIC_FLIGHT_SEARCH_CTA_LABEL, GENERIC_FLIGHT_SEARCH_REL, GENERIC_FLIGHT_SEARCH_NOTE, TRIPCOM_FRESH_SEARCH_NOTE } from '@/lib/booking-providers';
+import { NO_VERIFIED_PARTNER_LINK_NOTE, PROVIDER_REL, SERVICE_ENDED_CTA_LABEL, TRIPCOM_DEFAULT_CTA_LABEL, GENERIC_FLIGHT_SEARCH_URL, GENERIC_FLIGHT_SEARCH_CTA_LABEL, GENERIC_FLIGHT_SEARCH_REL, GENERIC_FLIGHT_SEARCH_NOTE, TRIPCOM_FRESH_SEARCH_NOTE } from '@/lib/booking-providers';
 import { SELF_TRANSFER_LABEL } from '@/lib/fare-self-transfer';
 import { TrackedOutboundLink } from '@/components/ui/tracked-outbound-link';
 import { AffiliateLinkDisclosure } from '@/components/ui/affiliate-link-disclosure';
@@ -134,7 +134,7 @@ export function formatRouting(observation: FareSignalObservation): string | null
  * enough to tell whether the pilot's CTA specifically is generating
  * engagement, with zero new analytics surface added.
  */
-function SignalCta({ href, routeSlug, standout = false, label = 'Check current price on Trip.com' }: { href: string; routeSlug: string; standout?: boolean; label?: string }) {
+function SignalCta({ href, routeSlug, standout = false, label = TRIPCOM_DEFAULT_CTA_LABEL }: { href: string; routeSlug: string; standout?: boolean; label?: string }) {
   return (
     <div className="mt-5">
       <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:gap-4">

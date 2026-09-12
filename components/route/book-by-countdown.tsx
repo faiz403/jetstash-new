@@ -14,7 +14,7 @@ import {
 } from '@/lib/booking-intelligence';
 import { computeReadiness, VERDICT_COPY, type EngineSnapshot, type TravelReadySignal } from '@/lib/travel-intelligence-engine';
 import { getRouteBySlug, getRouteAirport, getRouteDestination } from '@/data/routes';
-import { getSafeTripComFlightHandoffUrl, NO_VERIFIED_PARTNER_LINK_NOTE, PROVIDER_REL } from '@/lib/booking-providers';
+import { getSafeTripComFlightHandoffUrl, NO_VERIFIED_PARTNER_LINK_NOTE, PROVIDER_REL, TRIPCOM_DEFAULT_CTA_LABEL } from '@/lib/booking-providers';
 import { AffiliateLinkDisclosure } from '@/components/ui/affiliate-link-disclosure';
 import { WhatsAppShareButton } from '@/components/route/whatsapp-share-button';
 import { siteConfig } from '@/lib/site-config';
@@ -125,12 +125,14 @@ export function BookByCountdown({
 
   // ── CTA arrangement by state ───────────────────────────────────────────
   const watchPrimary = snapshot.state === 'too-early';
-  const bookLabel =
-    snapshot.state === 'window-open'
-      ? 'Good time to book — check live price'
-      : snapshot.state === 'surge' || snapshot.state === 'late' || snapshot.state === 'inside-period'
-        ? 'Check live price now'
-        : 'Check live price';
+  // CTA label consolidation (12 Sept 2026, founder-approved): this used to
+  // vary by state ("Good time to book — check live price" / "Check live
+  // price now" / "Check live price") — one of the five inconsistent
+  // Trip.com CTA wordings the 12 Sept funnel audit found. The urgency
+  // itself is still fully communicated by bookByTopLabel/bookByDateLabel
+  // and this panel's own state-dependent copy above; the clickable action
+  // text is now the same shared label every ordinary Trip.com handoff uses.
+  const bookLabel = TRIPCOM_DEFAULT_CTA_LABEL;
   const brassBook = snapshot.state !== 'too-early' && snapshot.state !== 'pre-surge';
 
   const observation = snapshot.latestObservation;
@@ -306,7 +308,7 @@ export function BookByCountdown({
                 onClick={() => track('bookby_cta_click', { route: snapshot.routeSlug, state: snapshot.state })}
                 className="inline-flex items-center gap-1.5 text-sm font-semibold text-ink-900 underline decoration-ink-300 underline-offset-4 transition-colors hover:text-brass-600 hover:decoration-brass-600"
               >
-                Check live price anyway
+                {TRIPCOM_DEFAULT_CTA_LABEL}
                 <ArrowUpRight className="h-4 w-4" strokeWidth={2.25} />
               </a>
             )}

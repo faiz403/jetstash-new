@@ -97,7 +97,7 @@ describe('3. appears on the two intended Fare Signal → Trip.com handoff surfac
   });
 
   it('/tracked-fares TrackedFareCard: the note sits inside the same conditional branch as the Trip.com CTA (renders only when tripComUrl exists)', () => {
-    expect(explorerSrc).toMatch(/tripComUrl \? \(\s*<>[\s\S]*Compare flights on Trip\.com[\s\S]*TRIPCOM_FRESH_SEARCH_NOTE[\s\S]*<\/>\s*\) : \(/);
+    expect(explorerSrc).toMatch(/tripComUrl \? \(\s*<>[\s\S]*TRIPCOM_DEFAULT_CTA_LABEL[\s\S]*TRIPCOM_FRESH_SEARCH_NOTE[\s\S]*<\/>\s*\) : \(/);
   });
 
   it('/tracked-fares: every current entry with a real handoff carries the note, none of the no-handoff entries would (source-conditional, not per-entry duplicated text)', () => {

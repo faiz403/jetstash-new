@@ -1,5 +1,5 @@
 import { SearchX, ArrowUpRight } from 'lucide-react';
-import { getSafeTripComFlightHandoffUrl, PROVIDER_REL } from '@/lib/booking-providers';
+import { getSafeTripComFlightHandoffUrl, PROVIDER_REL, TRIPCOM_DEFAULT_CTA_LABEL } from '@/lib/booking-providers';
 import { TrackedOutboundLink } from './tracked-outbound-link';
 import { AffiliateLinkDisclosure } from './affiliate-link-disclosure';
 
@@ -50,7 +50,7 @@ export function NoFareFallback({ cityLabel, routeSlug, hasFareSignalElsewhere = 
             rel={PROVIDER_REL}
             className="mt-5 inline-flex items-center gap-1.5 rounded-sm bg-ink-900 px-5 py-3 text-sm font-semibold text-sand-50 transition-all hover:bg-brass-600 active:scale-[0.985]"
           >
-            Compare flights on Trip.com
+            {TRIPCOM_DEFAULT_CTA_LABEL}
             <ArrowUpRight className="h-4 w-4" strokeWidth={2.25} />
           </TrackedOutboundLink>
           <AffiliateLinkDisclosure providerName="Trip.com" className="mt-3 text-ink-400">

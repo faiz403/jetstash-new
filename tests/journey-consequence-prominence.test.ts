@@ -70,7 +70,7 @@ describe('Manchester-Istanbul (£153 self-transfer, Barcelona airport change) �
   it('shows the price and the decisive consequence together, before the CTA — PR #232: BOTH legs are independently decisive (each states its own long layover), so both durations now appear', () => {
     const priceIdx = html.indexOf('£153');
     const consequenceIdx = html.indexOf('Self-transfer · Barcelona airport change · Outbound: 27h 55m · Return: 26h');
-    const ctaIdx = html.indexOf('Check current price');
+    const ctaIdx = html.indexOf('Compare flights on Trip.com');
     expect(priceIdx).toBeGreaterThan(-1);
     expect(consequenceIdx).toBeGreaterThan(priceIdx);
     expect(consequenceIdx).toBeLessThan(ctaIdx);
@@ -105,7 +105,7 @@ describe('Manchester-Dubai (£336, arrives at Sharjah not Dubai) — Fare Signal
   it('leads the consequence line with the arrival-airport mismatch, before the CTA', () => {
     const priceIdx = html.indexOf('£336');
     const mismatchIdx = html.indexOf('Arrives at SHJ');
-    const ctaIdx = html.indexOf('Check current price');
+    const ctaIdx = html.indexOf('Compare flights on Trip.com');
     expect(priceIdx).toBeGreaterThan(-1);
     expect(mismatchIdx).toBeGreaterThan(priceIdx);
     expect(mismatchIdx).toBeLessThan(ctaIdx);

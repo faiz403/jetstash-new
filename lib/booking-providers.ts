@@ -338,6 +338,34 @@ export interface TripComFlightHandoff {
 export const SERVICE_ENDED_CTA_LABEL = 'Compare current connecting flights on Trip.com';
 
 /**
+ * CTA label consolidation (12 Sept 2026, founder-approved, following the 12
+ * Sept monetised-route funnel audit). The audit found five different labels
+ * in production for the same ordinary Trip.com flight-handoff click ("Check
+ * today's price", "Check current price on Trip.com", "Check live price
+ * anyway", "Check live price"/"Check live price now", "Compare flights on
+ * Trip.com") spread across Book-By Countdown, Fare Signal, DealCard, Travel
+ * Ready Check, NoFareFallback and the Tracked Fares explorer. None of those
+ * wordings were individually wrong, but the inconsistency was real,
+ * verified friction — a scanning visitor could read several differently-
+ * worded buttons as several different offers rather than one action.
+ *
+ * This is the one shared label for every ORDINARY (non-service-ended)
+ * Trip.com flight-handoff CTA — chosen because it is clear, names the
+ * provider, and never implies JetStash already knows a specific live or
+ * date-specific fare (unlike "Check today's price"/"Check live price",
+ * which read as though a fare is already confirmed). It deliberately does
+ * NOT replace SERVICE_ENDED_CTA_LABEL above, which stays specific to the
+ * restored Manchester-Delhi/Manchester-Mumbai connecting-flight path and
+ * must never be confused with an ordinary direct/connecting handoff.
+ *
+ * This is a copy-only consolidation: no URL, affiliate id, rel, target,
+ * analytics event or route-resolution logic changes with it — every call
+ * site keeps its own existing href/rel/target/tracked-event exactly as
+ * before, only the visible label text now comes from here.
+ */
+export const TRIPCOM_DEFAULT_CTA_LABEL = 'Compare flights on Trip.com';
+
+/**
  * Temporary non-monetised current-flight-search fallback (12 Sept 2026,
  * founder-approved). Covers routes with no verified monetised handoff at
  * all — today the 26 Heathrow/Gatwick routes (see

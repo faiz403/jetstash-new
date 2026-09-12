@@ -96,7 +96,7 @@ describe('Fare Signal presentation and CTA boundaries', () => {
     expect(text).toContain('480');
     expect(text).toContain('Riyadh Air');
     expect(text).toContain('Checked 25 August 2026');
-    expect(text).toContain('Check current price');
+    expect(text).toContain('Compare flights on Trip.com');
     expect(text).toContain('Ad · Affiliate link.</span> JetStash earns commission on eligible bookings through this link, at no extra cost to you.');
     // Route Page Scanability fix (21 Aug 2026): the former hero-only caveat
     // ("Check the itinerary, baggage allowance and booking terms before

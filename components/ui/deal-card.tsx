@@ -4,7 +4,7 @@ import { getRouteByAirportAndDestination } from '@/data/routes';
 import { routeStatusEvents } from '@/data/route-status-events';
 import { getEffectiveRoutePresentation } from '@/lib/route-status-copy';
 import { getFareRangeSummary } from '@/data/fare-observations';
-import { getSafeTripComFlightHandoffUrl, SERVICE_ENDED_CTA_LABEL, PROVIDER_REL } from '@/lib/booking-providers';
+import { getSafeTripComFlightHandoffUrl, SERVICE_ENDED_CTA_LABEL, TRIPCOM_DEFAULT_CTA_LABEL, PROVIDER_REL } from '@/lib/booking-providers';
 import { getFareFreshnessState, daysBetweenIso, OBSERVATION_STALE_DAYS } from '@/lib/freshness-thresholds';
 import { Plane, ArrowUpRight, AlertTriangle } from 'lucide-react';
 import { Badge } from './badge';
@@ -330,7 +330,7 @@ export function DealCard({ deal, nowIso, headingLevel = 'h3' }: { deal: Deal; no
               rel={PROVIDER_REL}
               className="mt-5 inline-flex items-center justify-center gap-1.5 rounded-sm bg-ink-900 px-4 py-3 text-sm font-semibold text-sand-50 transition-all duration-200 hover:bg-brass-600 active:scale-[0.985]"
             >
-              {presentation?.status === 'service-ended' ? SERVICE_ENDED_CTA_LABEL : 'Compare flights on Trip.com'}
+              {presentation?.status === 'service-ended' ? SERVICE_ENDED_CTA_LABEL : TRIPCOM_DEFAULT_CTA_LABEL}
               <ArrowUpRight className="h-4 w-4" strokeWidth={2.25} />
             </TrackedOutboundLink>
             <AffiliateLinkDisclosure providerName="Trip.com" className="mt-2 text-center text-ink-400">
