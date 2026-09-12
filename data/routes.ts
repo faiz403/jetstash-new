@@ -1220,21 +1220,39 @@ export const routes: Route[] = [
     airportSlug: 'manchester',
     destinationSlug: 'islamabad',
     flightTime: '7h 45m direct',
-    frequency: 'PIA currently describes Islamabad–Manchester as 2 weekly; exact current schedule should be checked',
+    // Operating-days fix (12 Sept 2026, founder-approved, MAN-ISB micro-seed
+    // real-user follow-up — Person A specifically asked which days the
+    // direct service runs). The prior "2 weekly" statement was itself
+    // already flagged in this route's own verification note as needing a
+    // recheck ("any later frequency increase remain unconfirmed"), and was
+    // genuinely stale: live flight-tracking data (see verification.note)
+    // shows a consistent 4x-weekly Mon/Tue/Thu/Sat pattern across multiple
+    // consecutive real weeks as of this check, not the earlier 2-weekly
+    // figure. Framed as a "typical current pattern", never a guarantee —
+    // see verification.note for exactly what the evidence does and doesn't
+    // support.
+    frequency: "4x weekly direct (typical current pattern: Mon/Tue/Thu/Sat ex-Manchester, per live flight-tracking data checked 12 September 2026); schedules can shift week to week, so check PIA for your exact travel date",
     airlineSlugs: ['pia'],
     isDirect: true,
     verification: {
       status: 'verified',
       sourceName: "Manchester Airport's own media centre: \"Hundreds of thousands of people to benefit as Pakistan International Airlines launches new route from Manchester Airport\" (mediacentre.manchesterairport.co.uk, 6 Oct 2025), corroborated by Manchester Airport's 19 May 2026 article describing the route as an ongoing \"successful\" service",
       sourceUrl: 'https://mediacentre.manchesterairport.co.uk/hundreds-of-thousands-of-people-to-benefit-as-pakistan-international-airlines-launches-new-route-from-manchester-airport/',
-      verifiedDate: '2026-08-14',
-      reviewDueDate: '2026-09-14',
-      note: 'Re-verified on 14 August 2026 against PIA\'s current official homepage/news content, which describes the Islamabad–Manchester service as 2 weekly, and Manchester Airport\'s current operator information. This confirms direct status and PIA as operator. The exact operating days beyond the published 2-weekly statement and any later frequency increase remain unconfirmed, so no stronger schedule claim is made.',
+      verifiedDate: '2026-09-12',
+      reviewDueDate: '2026-10-12',
+      note: 'Re-verified 12 September 2026, prompted by real MAN-ISB micro-seed user feedback asking which days the direct service actually runs. The prior 14 August check (2 weekly, per PIA\'s own homepage/news content) is superseded: live flight-tracking history for flight PK702 (flightaware.com/live/flight/PIA702, checked 12 September 2026) shows completed and scheduled Manchester departures on Tue 1 Sep, Thu 3 Sep, Sat 5 Sep, Mon 7 Sep, Tue 8 Sep, Thu 10 Sep, Sat 12 Sep (en route) and Mon 14 Sep (scheduled) — a consistent Mon/Tue/Thu/Sat, 4x-weekly pattern across multiple consecutive real weeks, not a single snapshot. This confirms direct status, PIA as operator, and today\'s real operating pattern. It is presented as a "typical current pattern" rather than a guarantee: flight-tracking history proves what has actually operated recently, not that every future week will match exactly, and JetStash has no real-time schedule inventory.',
     },
     intro:
       'Manchester to Islamabad direct services (confirmed via Manchester Airport\'s own announcement, launched 25 October 2025) are the practical choice for families based across Yorkshire, Lancashire and the wider North West heading to Punjab or onward to Khyber Pakhtunkhwa.',
+    // Operating-days fix (12 Sept 2026): the former "runs fewer weekly
+    // frequencies than Lahore" comparison no longer holds now that this
+    // route's own real 4x-weekly pattern is confirmed above — Lahore's own
+    // frequency remains explicitly unconfirmed in its own route record, so
+    // a relative comparison was never safely supportable either way. The
+    // substantive peak-period pricing guidance is preserved; only the
+    // comparative claim is removed.
     bookingWindowNote:
-      'The pattern is similar to the Lahore route: less pressured pricing most of the year, with fares often rising close to Eid and major family events. This route also runs fewer weekly frequencies than Lahore, so seats can fill faster in peak weeks.',
+      'The pattern is similar to the Lahore route: less pressured pricing most of the year, with fares often rising close to Eid and major family events. With four weekly direct flights, seats on the busiest Eid and summer dates can still fill fast, so it is worth booking those specific windows early.',
     peakPeriodIds: ['eid-al-fitr', 'eid-al-adha', 'uk-summer-holidays'],
   },
   {
