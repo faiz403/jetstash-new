@@ -2773,19 +2773,30 @@ export type RoutePresentation =
       flightTime: null;
       frequency: null;
       /**
-       * Deliberately false, same as 'unverified' — a route whose direct
-       * service has ended must never show booking-window, peak-period or
-       * connecting-alternative content as if the route were still live.
-       * canShowConnectingAlternative in particular stays false here even
-       * though route.connectingAlternative data may exist on the record:
-       * "the direct service ended" and "a connecting journey exists" are
-       * separate facts requiring separate evidence — this ledger event
-       * proves only the former. See the Route Status V1 implementation
-       * addendum §4.
+       * Deliberately false — a route whose direct service has ended must
+       * never show booking-window or peak-period content as if the route's
+       * OWN service were still live. Unaffected by the commercial-funnel
+       * fix below: neither answers "does a connecting journey exist", only
+       * "is this specific direct service's booking-window/peak-period
+       * guidance still valid" (it isn't).
        */
       canShowBookingGuidance: false;
       canShowPeakPeriods: false;
-      canShowConnectingAlternative: false;
+      /**
+       * Commercial funnel fix (12 Sept 2026, founder-approved, following the
+       * 12 Sept read-only dead-end audit): previously hard-coded `false` —
+       * "the direct service ended" and "a connecting journey exists" are
+       * separate facts requiring separate evidence, and this ledger event
+       * proves only the former (Route Status V1 implementation addendum
+       * §4). That reasoning is preserved exactly: this is still never
+       * inferred, defaulted, or assumed true. It is now `true` only when
+       * `route.connectingAlternative` itself is independently, canonically
+       * present on the record (see buildServiceEndedPresentation below) —
+       * i.e. only when separate evidence for the connecting journey already
+       * exists. A service-ended route with no `connectingAlternative` data
+       * stays `false`, exactly as before.
+       */
+      canShowConnectingAlternative: boolean;
     });
 
 /**
@@ -2874,24 +2885,41 @@ export function buildUnverifiedPresentation(route: Route): RoutePresentation {
  * The 'service-ended' branch — a fresh, verified Route Status ledger event
  * proves a previously-verified direct service has actually ended. Every
  * former direct-service fact (duration, frequency, airline-as-current) is
- * suppressed, and canShowConnectingAlternative stays false: this event
- * proves only that the direct service ended, never that any connecting
- * service currently operates — see the Route Status V1 implementation
- * addendum §4 ("direct service ended" and "a connecting journey exists"
- * are separate facts requiring separate evidence).
+ * suppressed. canShowConnectingAlternative is now conditional (commercial
+ * funnel fix, 12 Sept 2026) — see its own doc comment on the
+ * RoutePresentation type above — true only when this exact route record
+ * independently carries `connectingAlternative` evidence, never inferred.
+ *
+ * Old-news repetition fix (12 Sept 2026, same founder brief): the read-only
+ * dead-end audit found the hero rendering TWO near-duplicate "has ended"
+ * paragraphs back to back (this `summary` field, plus a second, separately
+ * hard-coded sentence in app/routes/[slug]/page.tsx's hero note box) before
+ * a reader ever reached the one detailed, sourced Route Status explanation
+ * below it. `summary` here is now the ONE current-status answer — plain,
+ * unrepeated — and the route page's own former second paragraph is removed
+ * at the call site rather than duplicated here.
  */
 export function buildServiceEndedPresentation(route: Route): RoutePresentation {
   const airport = getRouteAirport(route);
   const dest = getRouteDestination(route);
   const pair = airport && dest ? `${airport.city} to ${dest.city}` : 'This route';
   const statusLabel = 'Direct service ended';
+  const hasConnectingAlternative = Boolean(route.connectingAlternative);
+  // The pivot sentence only ever promises what canShowConnectingAlternative
+  // (below) can actually deliver on this exact record — a future
+  // service-ended route with no connectingAlternative evidence gets the
+  // plain "ended" statement only, never a forward reference to content
+  // that won't render.
+  const summary = hasConnectingAlternative
+    ? `There's no current nonstop service on ${pair} — the previously-verified direct service has ended. See below for the current connecting journey and how to check today's price.`
+    : `The direct service on ${pair} that was previously verified has ended. Check current options directly with airlines before booking.`;
   return {
     status: 'service-ended',
     statusLabel,
     flightTime: null,
     frequency: null,
     airlineSlugs: [],
-    summary: `The direct service on ${pair} that was previously verified has ended. Check current options directly with airlines before booking.`,
+    summary,
     metadataDescription: `${pair}: the previously verified direct service has ended. Check current options before booking.`,
     metadataTitle: `${pair}: Route Guide`,
     shareText: `${pair}'s previously verified direct service has ended. Check current options directly with airlines before booking.`,
@@ -2899,7 +2927,7 @@ export function buildServiceEndedPresentation(route: Route): RoutePresentation {
     socialFooter: 'Route status updated · jetstash.co.uk',
     canShowBookingGuidance: false,
     canShowPeakPeriods: false,
-    canShowConnectingAlternative: false,
+    canShowConnectingAlternative: hasConnectingAlternative,
   };
 }
 

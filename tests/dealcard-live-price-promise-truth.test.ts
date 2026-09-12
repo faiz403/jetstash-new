@@ -1,9 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { deals } from '@/data/deals';
-import { getRouteBySlug } from '@/data/routes';
-import { getFareRangeSummary } from '@/data/fare-observations';
-import { getSafeTripComFlightHandoffUrl } from '@/lib/booking-providers';
+import { getRouteByAirportAndDestination } from '@/data/routes';
 import { DealCard } from '@/components/ui/deal-card';
 
 /**
@@ -32,25 +30,37 @@ import { DealCard } from '@/components/ui/deal-card';
  * price below" clause on the same `tripComUrl` the card already computes
  * for its own CTA, so the promise can never outrun what actually renders
  * beneath it. No new CTA or booking handoff was added.
+ *
+ * Commercial Funnel Fix update (12 Sept 2026, founder-approved): the
+ * service-ended Trip.com gate was deliberately loosened so a service-ended
+ * route with BOTH a canonical `connectingAlternative` AND an exact verified
+ * Trip.com link (manchester-delhi, manchester-mumbai specifically) now DOES
+ * get a handoff — see lib/booking-providers.ts's getTripComFlightHandoff()
+ * doc comment. man-bom-economy therefore no longer demonstrates the
+ * contradiction this file was written to catch; it now correctly promises
+ * and delivers a live CTA (see tests/service-ended-commercial-funnel.test.ts
+ * for that new, current behaviour). This file's fixture moved to
+ * lhr-isb-economy, a deal with no matching Route entry at all — a case this
+ * policy change does not and should not touch — so the "no live-price
+ * action renders beneath it" scenario stays genuinely tested.
  */
 
 const NOW_ISO = '2026-09-10';
 
 describe('DealCard never promises "check the live price below" when no live-price action renders beneath it', () => {
-  it('sanity check: manchester-mumbai is confirmed service-ended, has no publishable fare range, and no Trip.com handoff — the exact conditions this fix targets', () => {
-    const route = getRouteBySlug('manchester-mumbai')!;
-    expect(getFareRangeSummary(route.slug, 'Economy', NOW_ISO)).toBeNull();
-    expect(getSafeTripComFlightHandoffUrl(route.slug)).toBeNull();
+  it('sanity check: lhr-isb-economy has no matching Route entry, so no fare range and no Trip.com handoff can exist — the exact conditions this fix targets', () => {
+    const dealDef = deals.find((d) => d.id === 'lhr-isb-economy')!;
+    expect(getRouteByAirportAndDestination(dealDef.fromAirportSlug, dealDef.toDestinationSlug)).toBeUndefined();
   });
 
-  it('man-bom-economy no longer promises "check the live price below"', () => {
-    const dealDef = deals.find((d) => d.id === 'man-bom-economy')!;
+  it('lhr-isb-economy no longer promises "check the live price below"', () => {
+    const dealDef = deals.find((d) => d.id === 'lhr-isb-economy')!;
     const html = renderToStaticMarkup(DealCard({ deal: dealDef, nowIso: NOW_ISO }));
     expect(html).not.toContain('check the live price below');
   });
 
-  it('man-bom-economy states plainly that live-price comparison is not available, matching the fail-closed CTA it sits above', () => {
-    const dealDef = deals.find((d) => d.id === 'man-bom-economy')!;
+  it('lhr-isb-economy states plainly that live-price comparison is not available, matching the fail-closed CTA it sits above', () => {
+    const dealDef = deals.find((d) => d.id === 'lhr-isb-economy')!;
     const html = renderToStaticMarkup(DealCard({ deal: dealDef, nowIso: NOW_ISO }));
     expect(html).toContain('No Economy fare checks logged yet, and live-price comparison isn&#x27;t available for this airport');
     expect(html).toContain('Direct flight comparison is not available for this airport yet.');

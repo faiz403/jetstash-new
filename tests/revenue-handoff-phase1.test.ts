@@ -19,26 +19,35 @@ function handoffForRoute(route: (typeof routes)[number]) {
 
 describe('First Revenue Sprint Phase 1 — public route handoffs', () => {
   it('classifies every public route into exactly one safe handoff state', () => {
-    const counts = { exact: 0, fallback: 0, noSafe: 0 };
+    // Commercial Funnel Fix (12 Sept 2026, founder-approved): manchester-delhi
+    // and manchester-mumbai moved from `noSafe` into a distinct
+    // `serviceEndedConnecting` bucket — they now resolve to a handoff, but
+    // one gated on a stricter, service-ended-specific evidence rule (exact
+    // route + canonical connectingAlternative both required), never counted
+    // as an ordinary `exact` handoff. See getTripComFlightHandoff()'s doc
+    // comment in lib/booking-providers.ts.
+    const counts = { exact: 0, fallback: 0, serviceEndedConnecting: 0, noSafe: 0 };
 
     for (const route of routes) {
       const handoff = handoffForRoute(route);
       if (!handoff) counts.noSafe += 1;
       else if (handoff.kind === 'exact-route') counts.exact += 1;
+      else if (handoff.kind === 'service-ended-connecting') counts.serviceEndedConnecting += 1;
       else counts.fallback += 1;
     }
 
-    expect(counts.exact + counts.fallback + counts.noSafe).toBe(routes.length);
-    expect(counts).toEqual({ exact: 43, fallback: 18, noSafe: 28 });
+    expect(counts.exact + counts.fallback + counts.serviceEndedConnecting + counts.noSafe).toBe(routes.length);
+    expect(counts).toEqual({ exact: 43, fallback: 18, serviceEndedConnecting: 2, noSafe: 26 });
   });
 
-  it('uses effective route truth to fail closed for every currently service-ended route', () => {
+  it('uses effective route truth to allow only the service-ended-connecting handoff for a currently service-ended route, never the ordinary exact/fallback kinds', () => {
     const ended = routes.filter(
       (route) => getEffectiveRoutePresentation(route, routeStatusEvents, NOW).status === 'service-ended',
     );
 
     for (const route of ended) {
-      expect(handoffForRoute(route), route.slug).toBeNull();
+      const handoff = handoffForRoute(route);
+      expect(handoff?.kind, route.slug).toBe('service-ended-connecting');
     }
     expect(ended.map((route) => route.slug)).toEqual(['manchester-delhi', 'manchester-mumbai']);
   });

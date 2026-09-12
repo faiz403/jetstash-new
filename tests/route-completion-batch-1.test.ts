@@ -102,9 +102,16 @@ describe('The Manchester-Mumbai baggage tip no longer claims a currently-operati
   });
 
   it('never claims the Manchester direct service currently operates', () => {
+    // Redundant-withdrawal-copy fix (Commercial Funnel Fix, 12 Sept 2026):
+    // this tip no longer names "ended" itself — that fact now lives in
+    // exactly one place, the route guide's own status flag/Route
+    // Status/Route History (see
+    // tests/service-ended-commercial-funnel.test.ts, item 10). This test's
+    // own purpose — the tip must never claim a currently-operating direct
+    // Manchester service — still holds regardless of that wording change.
     const text = `${mumbaiBaggageTip!.title} ${mumbaiBaggageTip!.body}`;
     expect(text).not.toMatch(/if flying the manchester direct service/i);
-    expect(text.toLowerCase()).toContain('ended');
+    expect(text.toLowerCase()).not.toMatch(/direct.*(service|flight).*(operates|running|available)/);
   });
 });
 

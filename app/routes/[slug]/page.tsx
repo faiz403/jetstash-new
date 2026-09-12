@@ -301,10 +301,19 @@ export default async function RoutePage({ params }: { params: Promise<{ slug: st
                 </p>
               </div>
             ) : presentation.status === 'service-ended' ? (
+              // Old-news repetition fix (12 Sept 2026, founder-approved
+              // commercial funnel fix): this box previously repeated "has
+              // ended... check current options directly with airlines" —
+              // already stated immediately above by presentation.summary —
+              // a second time before a reader even reached the one detailed
+              // Route Status explanation further down the page. It now
+              // states only the ONE fact distinct to this box: which
+              // specific facts are no longer shown and why, never restating
+              // the ended/check-options framing a third time.
               <div className="flex max-w-lg items-start gap-3 rounded-md border border-white/15 bg-white/5 px-4 py-3.5">
                 <ShieldCheck className="mt-0.5 h-4.5 w-4.5 shrink-0 text-terracotta-300" strokeWidth={2} />
                 <p className="text-sm leading-relaxed text-ink-200">
-                  A previously-verified direct service on this route has ended. Flight time, frequency and airline facts from that service are no longer shown — check current options directly with airlines.
+                  Flight time, frequency and airline facts from the previous direct service are no longer shown.
                 </p>
               </div>
             ) : (
@@ -397,6 +406,7 @@ export default async function RoutePage({ params }: { params: Promise<{ slug: st
             routeAirlineLabel={presentationAirlines.length > 0 ? presentationAirlines.map((a) => a.name).join(', ') : null}
             routeServiceConnections={route.routeServiceConnections ?? null}
             standoutFare={standoutFare}
+            isServiceEnded={presentation.status === 'service-ended'}
           />
         </div>
       </section>
@@ -701,16 +711,31 @@ export default async function RoutePage({ params }: { params: Promise<{ slug: st
           route.connectingAlternative happens to contain, so stops/hubs/
           journey-time/airline facts for an unevidenced route can never
           render. This is its own gate, not derived from route.isDirect. */}
+      {/* Commercial funnel fix (12 Sept 2026, founder-approved): a
+          service-ended route now gets its own distinct heading/subtext —
+          "you can still fly this route with a connection" — rather than
+          falling into the generic 'connecting' route wording, which never
+          acknowledged that a direct service existed and ended here. Only
+          ever reached when canShowConnectingAlternative is true, which for
+          'service-ended' status now requires route.connectingAlternative to
+          genuinely exist on the record (see buildServiceEndedPresentation) —
+          never a claim invented for a route without that evidence. */}
       {presentation.canShowConnectingAlternative && route.connectingAlternative && (
         <section className="bg-sand-50 py-14 sm:py-16">
           <div className="mx-auto max-w-content px-5 sm:px-8">
             <h2 className="font-display text-2xl text-ink-900 sm:text-3xl">
-              {presentation.status === 'direct' ? 'The realistic 1-stop alternative' : 'How this connecting route usually works'}
+              {presentation.status === 'direct'
+                ? 'The realistic 1-stop alternative'
+                : presentation.status === 'service-ended'
+                  ? 'You can still fly this route with a connection'
+                  : 'How this connecting route usually works'}
             </h2>
             <p className="mt-2 max-w-2xl text-sm text-ink-500">
               {presentation.status === 'direct'
                 ? 'Worth knowing even if you book the direct flight. Useful as a fallback, and this is what the route looks like once the direct service is unavailable.'
-                : 'No confirmed direct service currently exists on this route. Here is the realistic connecting pattern most travellers use.'}
+                : presentation.status === 'service-ended'
+                  ? 'The direct service on this route has ended, but the journey itself is still possible with a connection. Here is the realistic connecting pattern travellers use instead.'
+                  : 'No confirmed direct service currently exists on this route. Here is the realistic connecting pattern most travellers use.'}
             </p>
             <div className="mt-7 grid gap-5 sm:grid-cols-3">
               <div className="rounded-md border border-ink-100 bg-white p-5">

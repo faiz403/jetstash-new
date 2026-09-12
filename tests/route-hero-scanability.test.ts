@@ -210,12 +210,16 @@ describe('no evidence or trust wording was accidentally lost — full 88-route s
       if (hasCtaText) withCta += 1;
       if (hasFailClosedText) failClosed += 1;
     }
-    // 61 routes have a currently safe public Trip.com handoff. Two stored
-    // historical exact links (Manchester–Delhi and Manchester–Mumbai) are
-    // suppressed because their effective route status is service-ended; see
-    // the First Revenue Sprint handoff gate. The remaining 28 fail closed.
-    expect(withCta).toBe(61);
-    expect(failClosed).toBe(28);
+    // 61 routes have a currently safe public Trip.com handoff, plus, since
+    // the Commercial Funnel Fix (12 Sept 2026, founder-approved),
+    // Manchester–Delhi and Manchester–Mumbai: their effective status is
+    // still service-ended, but each now has BOTH a canonical
+    // connectingAlternative AND an exact verified Trip.com link, which
+    // together unlock a current-connecting-search handoff (never the old
+    // nonstop) — see getTripComFlightHandoff()'s doc comment in
+    // lib/booking-providers.ts. The remaining 26 fail closed.
+    expect(withCta).toBe(63);
+    expect(failClosed).toBe(26);
     expect(withCta + failClosed).toBe(89);
   });
 

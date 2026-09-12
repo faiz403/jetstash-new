@@ -319,7 +319,7 @@ export function getTripComRouteUrl(routeSlug: string): string | null {
  * visitor is explicitly sent a GBP search while route and attribution fields
  * remain unchanged.
  */
-export type TripComFlightHandoffKind = 'exact-route' | 'destination-fallback';
+export type TripComFlightHandoffKind = 'exact-route' | 'destination-fallback' | 'service-ended-connecting';
 
 export interface TripComFlightHandoff {
   url: string;
@@ -327,14 +327,47 @@ export interface TripComFlightHandoff {
 }
 
 /**
+ * Commercial funnel fix (12 Sept 2026, founder-approved, following the 12
+ * Sept read-only dead-end audit). Shared copy for a service-ended route's
+ * CTA — used wherever `kind === 'service-ended-connecting'` — deliberately
+ * never says "direct", "nonstop", or "book this flight": it is a current
+ * origin-destination SEARCH action, not a claim the old direct service
+ * still operates. See the file's own header comment on
+ * getTripComFlightHandoff() below for the exact evidence gate this requires.
+ */
+export const SERVICE_ENDED_CTA_LABEL = 'Compare current connecting flights on Trip.com';
+
+/**
  * Resolves the one public flight handoff for a published route.
  *
  * A dashboard-generated link proves that Trip.com can receive the airport
- * pair; it does not override JetStash's route-status ledger. In particular,
- * a route whose effective public state is `service-ended` must fail closed,
- * even if an older exact link remains in the affiliate map. `unverified`
+ * pair; it does not override JetStash's route-status ledger. `unverified`
  * remains eligible: it is a warning about JetStash's direct-service claim,
  * not evidence that Trip.com cannot search the airport pair.
+ *
+ * Commercial funnel fix (12 Sept 2026, founder-approved): a route whose
+ * effective public state is `service-ended` no longer fails closed
+ * unconditionally. The dead-end audit (12 Sept 2026) found the prior
+ * blanket suppression left a genuinely working, exact, dashboard-verified
+ * search link unused on Manchester-Delhi/Mumbai, alongside canonical
+ * `connectingAlternative` evidence proving a connecting journey exists — and
+ * the page's own "Exact partner booking link is not currently verified for
+ * this route" copy was, for those two routes specifically, false: the link
+ * IS verified; only the route's own former direct-service claim is stale.
+ *
+ * The link is now allowed for a service-ended route ONLY when BOTH hold:
+ *   1. `route.connectingAlternative` is genuinely present on the record —
+ *      i.e. JetStash has independently evidenced that a connecting journey
+ *      exists, never inferred or defaulted; and
+ *   2. an EXACT route entry exists in TRIPCOM_ROUTE_URLS — never the
+ *      broader destination fallback, which says less about this specific
+ *      airport pair to begin with; stacking two lowered evidence bars is
+ *      not the fix.
+ * Failing either condition still fails closed exactly as before. The
+ * returned `kind` is `'service-ended-connecting'` in this case specifically
+ * so callers can render `SERVICE_ENDED_CTA_LABEL` (or equivalent wording
+ * that cannot imply a nonstop is operating) instead of their normal CTA
+ * copy.
  */
 export function getTripComFlightHandoff(
   routeSlug: string,
@@ -343,7 +376,18 @@ export function getTripComFlightHandoff(
   nowIso = new Date().toISOString().slice(0, 10),
 ): TripComFlightHandoff | null {
   const route = getRouteBySlug(routeSlug);
-  if (route && getEffectiveRoutePresentation(route, routeStatusEvents, nowIso).status === 'service-ended') return null;
+  const isServiceEnded = Boolean(route) && getEffectiveRoutePresentation(route!, routeStatusEvents, nowIso).status === 'service-ended';
+
+  if (isServiceEnded) {
+    if (!route?.connectingAlternative) return null;
+    const exactUrl = getTripComRouteUrl(routeSlug);
+    if (!exactUrl) return null;
+    const url = exactUrl.includes('locale=') || exactUrl.includes('curr=') ? exactUrl : exactUrl.replace(
+      '&Allianceid=',
+      `&locale=${TRIPCOM_UK_LOCALE}&curr=${TRIPCOM_UK_CURRENCY}&Allianceid=`,
+    );
+    return { url, kind: 'service-ended-connecting' };
+  }
 
   const routeUrl = getTripComRouteUrl(routeSlug)
     ?? (originSlug && destinationSlug ? TRIPCOM_DESTINATION_URLS[`${originSlug}-${destinationSlug}`] : null);

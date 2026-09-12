@@ -13,7 +13,7 @@ import {
 } from '@/lib/travel-ready-check';
 import type { TravelReadySignal } from '@/lib/travel-intelligence-engine';
 import { getRouteByAirportAndDestination } from '@/data/routes';
-import { getTripComFlightHandoffUrl, PROVIDER_REL } from '@/lib/booking-providers';
+import { getTripComFlightHandoff, PROVIDER_REL, SERVICE_ENDED_CTA_LABEL } from '@/lib/booking-providers';
 import { getBaggageAffiliateUrl, BAGGAGE_PROVIDER_REL } from '@/lib/baggage-affiliate-link';
 import { AffiliateLinkDisclosure } from '@/components/ui/affiliate-link-disclosure';
 import { RouteWatchForm } from '@/components/route/route-watch-form';
@@ -180,9 +180,27 @@ export function TravelReadyCheck({
   // (airportSlugForCta given) AND that exact route has a dashboard-verified
   // Trip.com link — the standalone /travel-ready-check page has no single
   // route to point at, so it gets no booking CTA rather than a generic one.
+  //
+  // Safe-handoff-policy parity fix (Commercial Funnel Fix, 12 Sept 2026):
+  // this used to call the raw getTripComFlightHandoffUrl(), which has no
+  // service-ended check at all — every other public surface (the route
+  // page, DealCard, Book-By Countdown, NoFareFallback, tracked-fare-groups)
+  // was migrated to the safety-gated resolver in d9842b4 (8 Sept 2026), but
+  // this call-site was missed. That produced a genuine live contradiction:
+  // this component rendered a working Trip.com CTA for a service-ended
+  // route while the same page's Fare Signal, right above it, said the exact
+  // partner link "is not currently verified for this route." Travel Ready
+  // and the route page must use the SAME approved handoff policy — never a
+  // second one here — so this now calls the identical
+  // getTripComFlightHandoff() resolver every other surface uses, and reuses
+  // its `kind` to pick the same non-nonstop-implying wording
+  // (SERVICE_ENDED_CTA_LABEL) the route page and DealCard use for a
+  // service-ended route with a verified connecting search available.
   const matchedRoute =
     airportSlugForCta && destinationSlug ? getRouteByAirportAndDestination(airportSlugForCta, destinationSlug) : undefined;
-  const bookingUrl = matchedRoute ? getTripComFlightHandoffUrl(matchedRoute.slug) : null;
+  const bookingHandoff = matchedRoute ? getTripComFlightHandoff(matchedRoute.slug, airportSlugForCta, destinationSlug) : null;
+  const bookingUrl = bookingHandoff?.url ?? null;
+  const bookingCtaLabel = bookingHandoff?.kind === 'service-ended-connecting' ? SERVICE_ENDED_CTA_LABEL : 'Compare flights on Trip.com';
 
   // Independent of the readiness verdict/logic above — a static commercial
   // handoff, not a Travel Ready signal. Fail-closed: renders nothing at all
@@ -471,7 +489,7 @@ export function TravelReadyCheck({
                     onClick={() => track('ready_check_book_cta_click', { destination: destinationSlug })}
                     className="inline-flex h-12 items-center justify-center gap-1.5 rounded-sm bg-brass px-6 text-sm font-semibold text-ink-900 transition-all hover:bg-brass-400 hover:shadow-brass-glow active:scale-[0.985]"
                   >
-                    Compare flights on Trip.com
+                    {bookingCtaLabel}
                     <ArrowUpRight className="h-4 w-4" strokeWidth={2.25} />
                   </a>
                   <AffiliateLinkDisclosure providerName="Trip.com" className="text-ink-400" />

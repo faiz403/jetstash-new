@@ -90,7 +90,16 @@ export const travellerTips: TravellerTip[] = [
     scope: { routeSlug: 'manchester-mumbai' },
     category: 'baggage',
     title: "Confirm the current baggage allowance directly before booking",
-    body: "Manchester's direct Mumbai service has ended (check the route guide for its current status). Whatever itinerary you book instead, confirm the baggage allowance directly with the operating airline rather than assuming it matches a full-service carrier's standard.",
+    // Redundant-withdrawal-copy fix (Commercial Funnel Fix, 12 Sept 2026):
+    // dropped the opening "Manchester's direct Mumbai service has ended"
+    // clause. The route guide now carries ONE current-status flag, ONE
+    // detailed Route Status explanation and ONE Route History entry for
+    // this fact — this tip's own withdrawal mention added a fourth, purely
+    // repetitive occurrence with no new information. The substantive
+    // baggage-allowance advice (the tip's actual reason to exist) is
+    // unchanged and still applies to whatever itinerary is booked today,
+    // connecting or otherwise.
+    body: "Whatever itinerary you book for this route, confirm the baggage allowance directly with the operating airline rather than assuming it matches a full-service carrier's standard.",
   },
   {
     id: 'ahmedabad-evisa-timing',
