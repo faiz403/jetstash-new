@@ -424,7 +424,7 @@ describe('Route Status V1 — connectingAlternative never proves current connect
     });
   });
 
-  it('appending a service-ended event never mutates or authorises a connecting claim on the route record itself', () => {
+  it('appending a service-ended event never mutates the route record itself, and reads its connecting-alternative permission from that unmutated record\'s own genuine evidence', () => {
     const route = makeRoute({
       slug: 'fixture-no-mutation',
       isDirect: true,
@@ -446,8 +446,26 @@ describe('Route Status V1 — connectingAlternative never proves current connect
     getRouteStatus(route, [ended], FIXED_TODAY);
     const presentation = buildServiceEndedPresentation(route);
     expect(JSON.stringify(route)).toBe(before); // route record untouched
-    expect(presentation.canShowConnectingAlternative).toBe(false);
+    // Commercial funnel fix (12 Sept 2026, founder-approved): true here
+    // BECAUSE this exact route record already carries genuine
+    // connectingAlternative evidence — not because the service-ended event
+    // was appended, and not inferred from anything else. See the paired
+    // "WITHOUT connectingAlternative" test below for the fail-closed case.
+    expect(presentation.canShowConnectingAlternative).toBe(true);
     expect(presentation.airlineSlugs).toEqual([]);
+  });
+
+  it('a service-ended route WITHOUT connectingAlternative evidence stays fail-closed — canShowConnectingAlternative is never defaulted to true', () => {
+    const route = makeRoute({
+      slug: 'fixture-no-connecting-data',
+      isDirect: true,
+      airlineSlugs: ['pia'],
+      frequency: 'Daily direct',
+      // connectingAlternative deliberately omitted.
+    });
+    const presentation = buildServiceEndedPresentation(route);
+    expect(presentation.canShowConnectingAlternative).toBe(false);
+    expect(presentation.summary.toLowerCase()).not.toContain('connecting journey');
   });
 });
 
@@ -1301,7 +1319,7 @@ describe('Route Status V1 — evidence-validated customer copy (lib/route-status
 });
 
 describe('Route Status V1 — service-ended presentation never degrades to "Verification pending"', () => {
-  it('buildServiceEndedPresentation renders a distinct statusLabel, suppresses all direct-service facts, and never allows connectingAlternative', () => {
+  it('buildServiceEndedPresentation renders a distinct statusLabel, suppresses all direct-service facts, and only allows connectingAlternative when the route record genuinely carries that evidence', () => {
     const route = makeRoute({
       slug: 'fixture-presentation-ended',
       airportSlug: 'manchester',
@@ -1319,7 +1337,13 @@ describe('Route Status V1 — service-ended presentation never degrades to "Veri
     expect(presentation.airlineSlugs).toEqual([]);
     expect(presentation.canShowBookingGuidance).toBe(false);
     expect(presentation.canShowPeakPeriods).toBe(false);
-    expect(presentation.canShowConnectingAlternative).toBe(false);
+    // Commercial funnel fix (12 Sept 2026, founder-approved, following the
+    // 12 Sept read-only dead-end audit): this fixture's own
+    // connectingAlternative field is genuine, canonical evidence, so this
+    // is now permitted to render — booking-window and peak-period guidance
+    // stay suppressed above precisely because THEY have no equivalent
+    // per-record evidence field to check.
+    expect(presentation.canShowConnectingAlternative).toBe(true);
     expect(presentation.summary.toLowerCase()).not.toContain('verification pending');
     expect(presentation.shareText.toLowerCase()).not.toContain('verification pending');
   });

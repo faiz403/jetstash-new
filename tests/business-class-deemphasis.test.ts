@@ -44,10 +44,9 @@ describe('Route-page priority remains answer-first', () => {
     expect(html.indexOf('Journey Choice')).toBeLessThan(html.indexOf('id="route-watch"'));
   });
 
-  it('preserves Manchester→Mumbai fail-closed route status', async () => {
+  it('preserves Manchester→Mumbai service-ended route status (Commercial Funnel Fix, 12 Sept 2026, allows a current-connecting Trip.com CTA — see tests/service-ended-commercial-funnel.test.ts)', async () => {
     const page = await RoutePage({ params: Promise.resolve({ slug: 'manchester-mumbai' }) });
     const html = renderToStaticMarkup(page);
     expect(html).toContain('Direct service ended');
-    expect(html).not.toContain('check the live price below');
   });
 });

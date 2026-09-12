@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync, readdirSync } from 'fs';
 import { join } from 'path';
 import { routes } from '@/data/routes';
-import { getTripComRouteUrl, getTripComFlightHandoffUrl, getSafeTripComFlightHandoffUrl, hasTripComRoute, NO_VERIFIED_PARTNER_LINK_NOTE, PROVIDER_NAME, PROVIDER_REL } from '@/lib/booking-providers';
+import { getTripComRouteUrl, getTripComFlightHandoffUrl, getSafeTripComFlightHandoffUrl, getTripComFlightHandoff, hasTripComRoute, NO_VERIFIED_PARTNER_LINK_NOTE, PROVIDER_NAME, PROVIDER_REL } from '@/lib/booking-providers';
 
 /**
  * Trip.com sole-provider migration — TravelUp removed entirely. Covers the
@@ -124,9 +124,15 @@ const UNSUPPORTED_ROUTES = [
 ];
 
 // These retain their dashboard-generated URLs as historical affiliate
-// records, but their current effective Route Status is service-ended. A
-// public CTA must fail closed rather than letting a stored link override
-// present route truth.
+// records, and their current effective Route Status is service-ended.
+// Commercial funnel fix (12 Sept 2026, founder-approved): the safe handoff
+// is no longer unconditionally suppressed for these two — both carry
+// canonical connectingAlternative evidence (a real connecting journey is
+// independently confirmed to exist), so the existing verified exact link is
+// now allowed through as a 'service-ended-connecting' handoff. See
+// lib/booking-providers.ts's getTripComFlightHandoff() doc comment for the
+// exact two-condition gate this required (route.connectingAlternative
+// present AND an exact — never destination-fallback — URL).
 const SERVICE_ENDED_EXACT_ROUTES = ['manchester-delhi', 'manchester-mumbai'];
 
 describe('every current route slug is classified exactly once', () => {
@@ -254,9 +260,28 @@ describe('public flight handoffs request the UK GBP presentation without changin
     expect(getTripComFlightHandoffUrl(slug)).toBeNull();
   });
 
-  it.each(SERVICE_ENDED_EXACT_ROUTES)('%s remains fail-closed despite retaining a historical exact URL', (slug) => {
-    expect(getTripComRouteUrl(slug)).not.toBeNull();
-    expect(getSafeTripComFlightHandoffUrl(slug, undefined, undefined, '2026-09-08')).toBeNull();
+  it.each(SERVICE_ENDED_EXACT_ROUTES)('%s now resolves its retained exact URL as a service-ended-connecting handoff (commercial funnel fix, 12 Sept 2026) — never destination-fallback, never invented', (slug) => {
+    const exactUrl = getTripComRouteUrl(slug)!;
+    expect(exactUrl).not.toBeNull();
+    const handoff = getTripComFlightHandoff(slug, undefined, undefined, '2026-09-08');
+    expect(handoff).not.toBeNull();
+    expect(handoff!.kind).toBe('service-ended-connecting');
+    // Same underlying URL as the retained dashboard record, only with the
+    // locale/currency fields applied — never a different or invented link.
+    expect(handoff!.url.replace('&locale=en-XX&curr=GBP', '')).toBe(exactUrl);
+    expect(getSafeTripComFlightHandoffUrl(slug, undefined, undefined, '2026-09-08')).toBe(handoff!.url);
+  });
+
+  it('the service-ended-connecting gate requires BOTH conditions in source — never one alone', () => {
+    const src = readFileSync(join(process.cwd(), 'lib/booking-providers.ts'), 'utf8');
+    const blockStart = src.indexOf('if (isServiceEnded) {');
+    const blockEnd = src.indexOf("kind: 'service-ended-connecting'", blockStart);
+    const isServiceEndedBlock = src.slice(blockStart, blockEnd);
+    // Condition 1: route.connectingAlternative must be checked and fail closed when absent.
+    expect(isServiceEndedBlock).toContain('if (!route?.connectingAlternative) return null;');
+    // Condition 2: only the EXACT route URL is used inside this branch — never TRIPCOM_DESTINATION_URLS.
+    expect(isServiceEndedBlock).toContain('getTripComRouteUrl(routeSlug)');
+    expect(isServiceEndedBlock).not.toContain('TRIPCOM_DESTINATION_URLS');
   });
 
   it('does not introduce currency conversion or request USD', () => {

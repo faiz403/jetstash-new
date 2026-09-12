@@ -92,11 +92,17 @@ describe('3. Live rendered output — MAN-ISB, MAN-DXB, MAN-Mumbai, and a no-han
     expect(html).toContain('Compare flights on Trip.com');
   });
 
-  it('manchester-mumbai: remains fail-closed — service-ended status intact, no live-price promise, no Trip.com CTA, unaffected by the rename', async () => {
+  it('manchester-mumbai: service-ended status intact, current-connecting Trip.com CTA renders with non-nonstop-implying wording, unaffected by the rename', async () => {
+    // Commercial Funnel Fix (12 Sept 2026, founder-approved): manchester-mumbai
+    // now has a working Trip.com handoff (connectingAlternative + exact
+    // verified link both exist) — see
+    // tests/service-ended-commercial-funnel.test.ts for the full behaviour
+    // this policy change introduced. This test's own purpose (the "Fare
+    // Signal" -> "Fare check" rename doesn't affect this route) still holds.
     const element = await RoutePage({ params: Promise.resolve({ slug: 'manchester-mumbai' }) });
     const html = renderToStaticMarkup(element);
     expect(html).toContain('Direct service ended');
-    expect(html).not.toContain('check the live price below');
+    expect(html).toContain('Compare current connecting flights on Trip.com');
     expect(html).not.toContain('Compare flights on Trip.com');
   });
 

@@ -4,7 +4,7 @@ import { getRouteByAirportAndDestination } from '@/data/routes';
 import { routeStatusEvents } from '@/data/route-status-events';
 import { getEffectiveRoutePresentation } from '@/lib/route-status-copy';
 import { getFareRangeSummary } from '@/data/fare-observations';
-import { getSafeTripComFlightHandoffUrl, PROVIDER_REL } from '@/lib/booking-providers';
+import { getSafeTripComFlightHandoffUrl, SERVICE_ENDED_CTA_LABEL, PROVIDER_REL } from '@/lib/booking-providers';
 import { getFareFreshnessState, daysBetweenIso, OBSERVATION_STALE_DAYS } from '@/lib/freshness-thresholds';
 import { Plane, ArrowUpRight, AlertTriangle } from 'lucide-react';
 import { Badge } from './badge';
@@ -192,7 +192,20 @@ export function DealCard({ deal, nowIso, headingLevel = 'h3' }: { deal: Deal; no
           </>
         ) : (
           <>
-            {(presentation?.status === 'unverified' || presentation?.status === 'service-ended' || flightTime) && (
+            {/* Redundancy fix (Commercial Funnel Fix, 12 Sept 2026): once a
+                service-ended route has a working current-search CTA below
+                (tripComUrl non-null — only Manchester-Delhi/Mumbai today),
+                a bare repeat of "Direct service ended" here would be this
+                card's fourth mention of the same withdrawal alongside the
+                route page's own status flag, Route Status explanation and
+                Route History entry, with nothing new to say. The CTA and
+                its SERVICE_ENDED_CTA_LABEL wording already carry the
+                current-state signal for this card. The other 26
+                partner-data-blocked service-ended routes have no
+                tripComUrl, so their bare status label is unchanged — this
+                only collapses the redundancy where a real alternative now
+                exists to show instead. */}
+            {(presentation?.status === 'unverified' || (presentation?.status === 'service-ended' && !tripComUrl) || flightTime) && (
               <p className="font-display text-xl leading-snug text-ink-900">
                 {presentation?.status === 'unverified' || presentation?.status === 'service-ended' ? presentation.statusLabel : flightTime}
               </p>
@@ -317,7 +330,7 @@ export function DealCard({ deal, nowIso, headingLevel = 'h3' }: { deal: Deal; no
               rel={PROVIDER_REL}
               className="mt-5 inline-flex items-center justify-center gap-1.5 rounded-sm bg-ink-900 px-4 py-3 text-sm font-semibold text-sand-50 transition-all duration-200 hover:bg-brass-600 active:scale-[0.985]"
             >
-              Compare flights on Trip.com
+              {presentation?.status === 'service-ended' ? SERVICE_ENDED_CTA_LABEL : 'Compare flights on Trip.com'}
               <ArrowUpRight className="h-4 w-4" strokeWidth={2.25} />
             </TrackedOutboundLink>
             <AffiliateLinkDisclosure providerName="Trip.com" className="mt-2 text-center text-ink-400">

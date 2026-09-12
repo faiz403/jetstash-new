@@ -2,7 +2,7 @@ import { AlertTriangle, ArrowUpRight, CalendarDays, Info, Plane, Search, Sparkle
 import type { FareSignal as FareSignalData, FareSignalObservation } from '@/lib/fare-signal';
 import type { StandoutFarePresentation } from '@/lib/standout-fare';
 import { formatChecked } from '@/data/deals';
-import { NO_VERIFIED_PARTNER_LINK_NOTE, PROVIDER_REL, TRIPCOM_FRESH_SEARCH_NOTE } from '@/lib/booking-providers';
+import { NO_VERIFIED_PARTNER_LINK_NOTE, PROVIDER_REL, SERVICE_ENDED_CTA_LABEL, TRIPCOM_FRESH_SEARCH_NOTE } from '@/lib/booking-providers';
 import { SELF_TRANSFER_LABEL } from '@/lib/fare-self-transfer';
 import { TrackedOutboundLink } from '@/components/ui/tracked-outbound-link';
 import { AffiliateLinkDisclosure } from '@/components/ui/affiliate-link-disclosure';
@@ -134,7 +134,7 @@ export function formatRouting(observation: FareSignalObservation): string | null
  * enough to tell whether the pilot's CTA specifically is generating
  * engagement, with zero new analytics surface added.
  */
-function SignalCta({ href, routeSlug, standout = false }: { href: string; routeSlug: string; standout?: boolean }) {
+function SignalCta({ href, routeSlug, standout = false, label = 'Check current price on Trip.com' }: { href: string; routeSlug: string; standout?: boolean; label?: string }) {
   return (
     <div className="mt-5">
       <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:gap-4">
@@ -146,7 +146,7 @@ function SignalCta({ href, routeSlug, standout = false }: { href: string; routeS
           rel={PROVIDER_REL}
           className="inline-flex items-center gap-1.5 rounded-sm bg-ink-900 px-4 py-2.5 text-sm font-semibold text-sand-50 transition-all hover:bg-brass-600 active:scale-[0.985]"
         >
-          Check current price on Trip.com
+          {label}
           <ArrowUpRight className="h-4 w-4" strokeWidth={2.25} />
         </TrackedOutboundLink>
         {/* Route Page Scanability fix (21 Aug 2026): this is now the one
@@ -441,10 +441,21 @@ export function FareSignal({
   routeAirlineLabel = null,
   routeServiceConnections = null,
   standoutFare = null,
+  isServiceEnded = false,
 }: {
   signal: FareSignalData;
   tripComUrl: string | null;
   routeSlug: string;
+  /**
+   * True when the route's presentation status is `service-ended` (Route
+   * Status V1). The only effect is CTA wording in the `signal.state ===
+   * 'none'` branch below -- a service-ended route with a `tripComUrl` is
+   * showing a verified CURRENT CONNECTING search, never evidence the old
+   * nonstop still operates, so the label must say so explicitly rather than
+   * reuse the ordinary "Check current price" wording. See
+   * SERVICE_ENDED_CTA_LABEL in lib/booking-providers.ts.
+   */
+  isServiceEnded?: boolean;
   routeDirectness?: 'direct' | 'connecting' | null;
   /** presentation.statusLabel ('Direct' / 'Connecting') -- pass the canonical label, never a locally re-derived one. */
   routeStatusLabel?: string | null;
@@ -499,7 +510,15 @@ export function FareSignal({
                 birmingham-lahore) -- that CTA must still render here now
                 that the hero no longer carries one, or the route loses its
                 only working booking link entirely. */}
-            {tripComUrl ? <SignalCta href={tripComUrl} routeSlug={routeSlug} /> : <NoCtaFallback />}
+            {tripComUrl ? (
+              <SignalCta
+                href={tripComUrl}
+                routeSlug={routeSlug}
+                label={isServiceEnded ? SERVICE_ENDED_CTA_LABEL : undefined}
+              />
+            ) : (
+              <NoCtaFallback />
+            )}
           </>
         ) : null}
       </div>

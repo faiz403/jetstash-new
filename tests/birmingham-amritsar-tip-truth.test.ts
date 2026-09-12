@@ -121,11 +121,15 @@ describe('3. No unrelated traveller tip changed', () => {
     );
   });
 
-  it('the Manchester-Mumbai and Manchester-Dubai route-scoped tips are untouched', () => {
-    const mumbaiTip = getTipsForScope({ routeSlug: 'manchester-mumbai' })[0];
+  it('the Manchester-Dubai route-scoped tip is untouched', () => {
     const dubaiTip = getTipsForScope({ routeSlug: 'manchester-dubai' })[0];
-    expect(mumbaiTip.body).toContain("Manchester's direct Mumbai service has ended");
     expect(dubaiTip.body).toContain('the right rule for this direct Manchester service');
+  });
+
+  it('the Manchester-Mumbai tip keeps its substantive baggage advice, with the redundant withdrawal clause trimmed (Commercial Funnel Fix, 12 Sept 2026 — see tests/service-ended-commercial-funnel.test.ts)', () => {
+    const mumbaiTip = getTipsForScope({ routeSlug: 'manchester-mumbai' })[0];
+    expect(mumbaiTip.body).toContain('confirm the baggage allowance directly with the operating airline');
+    expect(mumbaiTip.body).not.toContain("Manchester's direct Mumbai service has ended");
   });
 
   it('total tip count is unchanged — this fix edited one existing entry, added none, removed none', () => {

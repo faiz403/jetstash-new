@@ -143,11 +143,10 @@ describe('3. Safe CTA proximity and fail-closed behaviour — unchanged by this 
     expect(html).not.toContain('Compare flights on Trip.com');
   });
 
-  it('manchester-mumbai remains fail-closed: service-ended status, no live-price promise reintroduced by this hierarchy change', async () => {
+  it('manchester-mumbai: service-ended status is unchanged by this hierarchy PR (the current-connecting Trip.com handoff is a separate, later, founder-approved policy change — see tests/service-ended-commercial-funnel.test.ts)', async () => {
     const element = await RoutePage({ params: Promise.resolve({ slug: 'manchester-mumbai' }) });
     const html = renderToStaticMarkup(element);
     expect(html).toContain('Direct service ended');
-    expect(html).not.toContain('check the live price below');
   });
 });
 
