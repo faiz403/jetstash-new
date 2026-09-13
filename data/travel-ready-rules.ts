@@ -32,7 +32,19 @@
  * source first.
  */
 
-export type TravelReadyRuleType = 'passport-validity' | 'visa-requirement' | 'document-exemption';
+/**
+ * `'expired-document-guidance'` (13 Sept 2026, founder-approved, Pakistan
+ * NICOP/POC validity fix): a genuinely different kind of entry than
+ * `document-exemption` — it never says "no visa needed", only cites the
+ * official renewal-slip/landing-permit procedure for a document the
+ * traveller has told us is expired, lost or being renewed. Never treated as
+ * a readiness pass by the engine. See the `pk-nicop-poc-expired-guidance`
+ * rule below and its own doc comment for why this needed a distinct
+ * `ruleType` rather than a second `document-exemption` row for the same
+ * (country, nationalityScope) pair — `getRule()` finds the first match for
+ * a given triple, so two rows sharing one would be ambiguous.
+ */
+export type TravelReadyRuleType = 'passport-validity' | 'visa-requirement' | 'document-exemption' | 'expired-document-guidance';
 export type TravelReadyNationalityScope = 'british-passport' | 'nicop-poc-holder' | 'oci-holder' | 'nvr-holder';
 
 export interface TravelReadyOfficialSource {
@@ -142,6 +154,15 @@ const VERIFIED = '2026-07-12';
 const REVIEW_DUE = '2027-01-12';
 const SAUDI_VERIFIED = '2026-09-06';
 const SAUDI_REVIEW_DUE = '2027-03-06';
+// Pakistan NICOP/POC validity fix (13 Sept 2026): both the updated
+// pk-nicop-poc-exemption wording (now explicitly covering POC) and the new
+// pk-nicop-poc-expired-guidance rule were checked against live official
+// sources on this date — GOV.UK Pakistan entry requirements (NICOP/POC
+// visa-free entry), Pakistan MOFA's POC Rules 2002 page (POC's own
+// visa-free entry right, confirmed "during the validity of his/her card"),
+// and FIA's own expired/lost NICOP/POC procedure page.
+const PK_NICOP_POC_VERIFIED = '2026-09-13';
+const PK_NICOP_POC_REVIEW_DUE = '2027-03-13';
 
 const GOVUK = (country: string, slug: string): TravelReadyOfficialSource => ({
   title: `GOV.UK foreign travel advice — ${country} entry requirements`,
@@ -193,12 +214,52 @@ export const travelReadyRules: TravelReadyRule[] = [
     country: 'Pakistan',
     nationalityScope: 'nicop-poc-holder',
     ruleType: 'document-exemption',
-    requirement: 'NICOP (National Identity Card for Overseas Pakistanis) and SNICOP holders are recognised as Pakistani citizens and can enter without a visa, for an unlimited stay.',
+    // Pakistan NICOP/POC validity fix (13 Sept 2026, founder-approved,
+    // following a real MAN-ISB micro-seed reproduction audit and a
+    // dedicated official-source reconciliation). The requirement text now
+    // names POC explicitly, not just NICOP/SNICOP — the UI dropdown always
+    // offered "NICOP or Pakistan Origin Card (POC)" as one combined choice,
+    // but the result text previously never said "POC". Pakistan's own
+    // Ministry of Foreign Affairs (POC Rules 2002, cited below) confirms a
+    // valid POC carries an equivalent visa-free entry right, so the
+    // wording gap is now closed. This rule remains scoped to a VALID
+    // document only — see pk-nicop-poc-expired-guidance below for the
+    // separate, deliberately non-pass guidance an expired/lost/renewing
+    // card gets instead.
+    requirement: 'A valid NICOP (National Identity Card for Overseas Pakistanis), SNICOP, or Pakistan Origin Card (POC) is recognised for visa-free entry into Pakistan, for an unlimited stay.',
     visaRequired: false,
-    caveat: 'This exemption applies to NICOP/SNICOP holders specifically, travelling alongside their British passport. Bring both documents.',
+    caveat: 'This exemption applies specifically to a currently valid NICOP/SNICOP or POC, travelling alongside a British passport — bring both documents. An expired, lost or renewing NICOP/POC is treated differently; see the separate guidance JetStash shows for that case rather than assuming this same exemption applies.',
     officialSource: GOVUK('Pakistan', 'pakistan'),
-    lastVerifiedDate: VERIFIED,
-    reviewDueDate: REVIEW_DUE,
+    lastVerifiedDate: PK_NICOP_POC_VERIFIED,
+    reviewDueDate: PK_NICOP_POC_REVIEW_DUE,
+  },
+  {
+    id: 'pk-nicop-poc-expired-guidance',
+    country: 'Pakistan',
+    nationalityScope: 'nicop-poc-holder',
+    ruleType: 'expired-document-guidance',
+    // Pakistan NICOP/POC validity fix (13 Sept 2026, founder-approved). This
+    // is deliberately NOT a document-exemption rule — it must never let the
+    // engine reach a "pass"/"ready" outcome. Sourced directly from FIA's own
+    // published procedure for overseas Pakistanis with an expired or lost
+    // NICOP/POC (fia.gov.pk/immigration_w, "Procedure to be adopted by
+    // Pakistani nationals in abroad in case of loss of NICOP/POC"), fetched
+    // and quoted verbatim on 13 September 2026: a NADRA-issued renewal slip
+    // lets the holder travel; failing that, showing the expired NICOP/POC
+    // (or a "B" form) to FIA Immigration on arrival gets a free landing
+    // permit valid for 72 hours only. Deliberately does NOT restate the
+    // sensational "NICOP now mandatory" 2026 news headline as fact — that
+    // claim could not be reconciled to a dated official directive during
+    // reconciliation, so this rule sticks to what FIA's own page actually
+    // says, not what a news article summarised it as.
+    requirement: 'An expired, lost or currently-renewing NICOP or Pakistan Origin Card (POC) is not treated the same as a valid one. A NADRA-issued renewal slip lets you travel; without one, FIA Immigration may issue a free landing permit on arrival — valid for 72 hours only — on presentation of the expired card (or a "B" form).',
+    caveat: 'This is informational, not a JetStash readiness pass — a 72-hour landing permit is a materially different, time-limited position from unrestricted visa-free entry. Confirm your exact position directly with FIA/NADRA and your airline before booking a non-refundable fare.',
+    officialSource: {
+      title: 'FIA Immigration — procedure for expired/lost NICOP/POC',
+      url: 'https://www.fia.gov.pk/immigration_w',
+    },
+    lastVerifiedDate: PK_NICOP_POC_VERIFIED,
+    reviewDueDate: PK_NICOP_POC_REVIEW_DUE,
   },
 
   // ── India ───────────────────────────────────────────────────────────────

@@ -409,7 +409,7 @@ describe('BD-001 — Travel Ready Check: Bangladesh rules, NVR exemption, no dup
 
   it('existing Pakistan and India destinations are completely unaffected — Lahore (NICOP) and Delhi (OCI) still resolve exactly as before', () => {
     const lahore = evaluateTravelReadiness(
-      { destinationSlug: 'lahore', isBritishPassport: true, exemptionDocument: 'nicop-poc', departureDate: '2027-03-01', arrivalDate: '2027-03-01', returnDate: '2027-03-20', passportExpiryDate: '2029-01-01' },
+      { destinationSlug: 'lahore', isBritishPassport: true, exemptionDocument: 'nicop-poc', documentValidity: 'valid', departureDate: '2027-03-01', arrivalDate: '2027-03-01', returnDate: '2027-03-20', passportExpiryDate: '2029-01-01' },
       NOW
     );
     const delhi = evaluateTravelReadiness(

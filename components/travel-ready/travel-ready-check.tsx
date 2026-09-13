@@ -8,6 +8,7 @@ import {
   evaluateTravelReadiness,
   TRAVEL_READY_SUPPORTED_COUNTRIES,
   type ExemptionDocument,
+  type NicopPocValidity,
   type TravelReadyResult,
   type TravelReadyVerdict,
 } from '@/lib/travel-ready-check';
@@ -48,6 +49,7 @@ const VERDICT_TONE: Record<TravelReadyVerdict, 'critical' | 'caution' | 'ready' 
   'invalid-departure-date': 'neutral',
   'invalid-arrival-date': 'neutral',
   'stay-length-unconfirmed': 'caution',
+  'document-validity-not-confirmed': 'caution',
 };
 
 const CHECK_ICON: Record<'pass' | 'fail' | 'caution' | 'unknown', string> = {
@@ -86,6 +88,12 @@ export function TravelReadyCheck({
   const [destinationSlug, setDestinationSlug] = useState(defaultDestinationSlug ?? '');
   const [isBritishPassport, setIsBritishPassport] = useState<'yes' | 'no' | ''>('');
   const [exemptionDocument, setExemptionDocument] = useState<ExemptionDocument>('none');
+  // Pakistan NICOP/POC validity fix (13 Sept 2026, founder-approved):
+  // '' (unanswered) is deliberately its own state, distinct from either
+  // option — the required-field guard below must catch it, and
+  // evaluateTravelReadiness() must never treat an unanswered validity
+  // question as 'valid' if this were ever somehow bypassed.
+  const [documentValidity, setDocumentValidity] = useState<NicopPocValidity | ''>('');
   const [departureDate, setDepartureDate] = useState('');
   // PR #230 final reference-event correction (5 September 2026): a real,
   // separately-collected arrival date — every arrival-anchored rule
@@ -109,6 +117,7 @@ export function TravelReadyCheck({
   const startedRef = useRef(false);
   const destinationRef = useRef<HTMLSelectElement | null>(null);
   const passportYesRadioRef = useRef<HTMLInputElement | null>(null);
+  const documentValidityYesRadioRef = useRef<HTMLInputElement | null>(null);
   const departureRef = useRef<HTMLInputElement | null>(null);
   const arrivalRef = useRef<HTMLInputElement | null>(null);
   const returnRef = useRef<HTMLInputElement | null>(null);
@@ -137,6 +146,11 @@ export function TravelReadyCheck({
     const requiredFields: { ok: boolean; ref: RefObject<HTMLElement | null> }[] = [
       { ok: Boolean(destinationSlug), ref: destinationRef },
       { ok: Boolean(isBritishPassport), ref: passportYesRadioRef },
+      // Pakistan NICOP/POC validity fix (13 Sept 2026): only required once
+      // NICOP/POC is actually selected — every other exemption choice (or
+      // 'none') skips this question entirely, matching how the exemption
+      // dropdown itself only appears for Pakistan/India/Bangladesh.
+      { ok: exemptionDocument !== 'nicop-poc' || Boolean(documentValidity), ref: documentValidityYesRadioRef },
       { ok: Boolean(departureDate), ref: departureRef },
       { ok: Boolean(arrivalDate), ref: arrivalRef },
       { ok: Boolean(returnDate), ref: returnRef },
@@ -158,6 +172,7 @@ export function TravelReadyCheck({
         destinationSlug,
         isBritishPassport: isBritishPassport === 'yes',
         exemptionDocument,
+        documentValidity: exemptionDocument === 'nicop-poc' && documentValidity ? documentValidity : undefined,
         departureDate,
         arrivalDate,
         returnDate,
@@ -252,6 +267,11 @@ export function TravelReadyCheck({
                 // country it was selected for — never carry it over silently
                 // when the destination changes.
                 setExemptionDocument('none');
+                // Pakistan NICOP/POC validity fix (13 Sept 2026): the
+                // validity answer is meaningless once the exemption itself
+                // is cleared — never carry a stale "expired" or "valid"
+                // answer over to a different destination/document.
+                setDocumentValidity('');
               }}
               className="mt-1.5 h-11 w-full rounded-sm border border-ink-200 bg-white px-3 text-sm text-ink-900 focus-visible:border-brass sm:max-w-sm"
             >
@@ -304,7 +324,14 @@ export function TravelReadyCheck({
               <select
                 id="ready-exemption"
                 value={exemptionDocument}
-                onChange={(e) => setExemptionDocument(e.target.value as ExemptionDocument)}
+                onChange={(e) => {
+                  setExemptionDocument(e.target.value as ExemptionDocument);
+                  // Pakistan NICOP/POC validity fix (13 Sept 2026): a
+                  // validity answer from a previous NICOP/POC selection must
+                  // never silently carry over to a different document
+                  // choice (e.g. switching to "visa or permit" and back).
+                  setDocumentValidity('');
+                }}
                 className="mt-1.5 h-11 w-full rounded-sm border border-ink-200 bg-white px-3 text-sm text-ink-900 focus-visible:border-brass sm:max-w-sm"
               >
                 <option value="none">None of these</option>
@@ -314,6 +341,45 @@ export function TravelReadyCheck({
                 <option value="visa-or-permit">I already hold a visa or entry permit for this trip</option>
               </select>
             </div>
+          )}
+
+          {/* Pakistan NICOP/POC validity fix (13 Sept 2026, founder-approved,
+              following a real MAN-ISB micro-seed reproduction audit and a
+              dedicated official-source reconciliation). Only appears once
+              NICOP/POC is actually selected — an expired, lost or
+              currently-renewing document is NOT treated the same as a
+              valid one (see evaluateTravelReadiness()'s own doc comment),
+              so this can't be silently skipped or defaulted. */}
+          {exemptionDocument === 'nicop-poc' && (
+            <fieldset>
+              <legend className="text-xs text-ink-400">Is your NICOP or POC currently valid?</legend>
+              <div className="mt-1.5 flex flex-col gap-1 sm:flex-row sm:gap-2">
+                {(
+                  [
+                    { value: 'valid', label: 'Yes, it is valid' },
+                    { value: 'expired-lost-renewing', label: 'No, it is expired, lost or being renewed' },
+                  ] as const
+                ).map((option) => (
+                  <label
+                    key={option.value}
+                    className="flex min-h-11 cursor-pointer items-center gap-2 rounded-sm px-2 -mx-2 text-sm text-ink-700"
+                  >
+                    <input
+                      type="radio"
+                      name="document-validity"
+                      ref={option.value === 'valid' ? documentValidityYesRadioRef : undefined}
+                      required
+                      checked={documentValidity === option.value}
+                      onChange={() => {
+                        clearSubmissionError();
+                        setDocumentValidity(option.value);
+                      }}
+                    />
+                    {option.label}
+                  </label>
+                ))}
+              </div>
+            </fieldset>
           )}
           {country && country !== 'Pakistan' && country !== 'India' && country !== 'Bangladesh' && (
             <div>
@@ -437,7 +503,8 @@ export function TravelReadyCheck({
                 result.verdict === 'invalid-date-range' ||
                 result.verdict === 'invalid-departure-date' ||
                 result.verdict === 'invalid-arrival-date' ||
-                result.verdict === 'stay-length-unconfirmed') && <HelpCircle className="mr-1 h-3.5 w-3.5" />}
+                result.verdict === 'stay-length-unconfirmed' ||
+                result.verdict === 'document-validity-not-confirmed') && <HelpCircle className="mr-1 h-3.5 w-3.5" />}
               {result.verdict.replace(/-/g, ' ')}
             </span>
           </div>
