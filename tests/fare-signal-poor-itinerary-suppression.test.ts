@@ -38,15 +38,19 @@ const NOW_ISO = new Date().toISOString().slice(0, 10);
 // london-heathrow-jeddah each got a newer, currently-current observation
 // with fewer than 2 stops per leg, which the isPoorItinerarySuitability
 // rule does not match, so both un-suppressed. manchester-islamabad's own
-// newest evidence (self-transfer, 4/3 stops) newly matches the rule and
-// joined the suppressed set — see describe block 12 below for the fuller,
-// real-consequence account on the one live Journey Choice pilot route.
+// newest evidence (self-transfer, 4/3 stops) newly matched the rule and
+// joined the suppressed set at that point.
+//
+// 13 September 2026: manchester-islamabad moved back OUT of this set —
+// a fresh, genuinely non-suppressed direct PIA observation (nonstop, no
+// self-transfer) became its newest evidence, honestly restoring its Fare
+// Signal — see describe block 12 below for the fuller, real-consequence
+// account on the one live Journey Choice pilot route.
 const KNOWN_SUPPRESSED_ROUTES = [
   'manchester-lahore',
   'birmingham-amritsar',
   'london-gatwick-amritsar',
   'birmingham-delhi',
-  'manchester-islamabad',
 ];
 
 function fixtureObservation(overrides: Partial<FareObservation> = {}): FareObservation {
@@ -262,73 +266,76 @@ describe('11. route-vs-fare mismatch behaviour', () => {
   });
 });
 
-describe('12. MAN-ISB Journey Choice pilot: Journey Choice itself stays unaffected; its Fare Signal display genuinely joined the suppressed set on 1 September 2026', () => {
+describe('12. MAN-ISB Journey Choice pilot: Journey Choice itself stays frozen throughout, independent of whatever its Fare Signal display is doing', () => {
   it('manchester-islamabad is still the one live Journey Choice pilot route', () => {
     expect(JOURNEY_CHOICE_PILOT_ROUTE_SLUGS).toEqual(['manchester-islamabad']);
   });
 
-  // Real-evidence update (1 September 2026 Tuesday weekly batch): this
-  // block's title used to read "Frozen MAN-ISB Journey Choice pilot is
-  // completely unaffected" -- true as of 31 August, when manchester-
-  // islamabad's own current evidence was the 25 August Riyadh Air fare (1
-  // stop each way, no self-transfer notice). The 1 September batch's own
-  // newest evidence for this route (obs-man-isb-economy-20260901-8w-v1 and
-  // its emergency-recheck, both self-transfer, 4/3 stops) now matches the
-  // poor-itinerary suppression rule, exactly the "strong price movement,
-  // poor itinerary" case the founder flagged when approving this batch.
-  // This is a genuine, honest product consequence, not a regression: the
-  // rule is applying correctly to the pilot route for the first time.
-  it('A. manchester-islamabad no longer has a current Fare Signal -- its own newest evidence now matches the suppression signature', () => {
+  // Real-evidence arc: manchester-islamabad's Fare Signal was genuinely
+  // current on 31 August (25 August Riyadh Air fare), genuinely suppressed
+  // from 1 September (that batch's newest evidence was self-transfer,
+  // 4/3 stops -- the exact "strong price movement, poor itinerary" case
+  // the founder flagged when approving that batch), and genuinely current
+  // again from 13 September (a fresh, non-suppressed direct PIA
+  // observation -- see tests/journey-choice-freeze-and-pia-fare.test.ts
+  // for that append's own dedicated coverage). None of these are
+  // regressions; each is the suppression rule and the ordinary fare
+  // archive correctly reflecting real, changing evidence.
+  it('A. manchester-islamabad\'s Fare Signal has recovered from suppression -- its 13 September direct-PIA evidence no longer matches the suppression signature', () => {
     const signal = getFareSignalForRoute('manchester-islamabad', NOW_ISO);
-    expect(signal.state).toBe('none');
-    expect(signal.observation).toBeNull();
+    expect(signal.state).toBe('current');
+    expect(signal.observation).not.toBeNull();
+    expect(signal.observation?.price).toBe(870);
+    expect(signal.noneReason).toBeNull();
   });
 
-  it('A. Journey Choice data for manchester-islamabad is unaffected -- it is derived entirely independently of Fare Signal (getPublishableObservationsByRoute -> Smart Fare Comparison -> deriveJourneyChoice, never lib/fare-signal.ts)', () => {
+  it('A. Journey Choice data for manchester-islamabad is unaffected -- it is derived entirely independently of Fare Signal (the ID-pinned frozen selection in lib/journey-choice-route-adapter.ts, never lib/fare-signal.ts)', () => {
     const journeyChoice = getJourneyChoiceForRoute('manchester-islamabad', NOW_ISO);
     expect(journeyChoice).not.toBeNull();
     expect(journeyChoice!.lowerFare).toBeDefined();
     expect(journeyChoice!.fasterJourney).toBeDefined();
   });
 
-  // Founder-requested explicit before/after proof (hold on PR #204): the
-  // whole journeyChoice object -- lowerFare, fasterJourney, decision
-  // sentence, otherOptions, baggageCostConfirmedForAllOptions -- is
-  // byte-for-byte identical at 31 August (before the Fare Signal
-  // suppression this batch triggers) and at NOW_ISO (after). Its own
-  // frozen 20 Oct-3 Nov travel-date profile can never match the weekly
-  // batch's 27 Oct-10 Nov observations, so no new evidence can ever enter
-  // it -- proven directly here, not just asserted in prose.
-  it('A. Journey Choice data for manchester-islamabad is byte-for-byte identical before and after its Fare Signal became suppressed -- lowerFare, fasterJourney, decision sentence, otherOptions, all unchanged', () => {
-    const before = getJourneyChoiceForRoute('manchester-islamabad', '2026-08-31');
-    const after = getJourneyChoiceForRoute('manchester-islamabad', NOW_ISO);
-    expect(before).not.toBeNull();
-    expect(after).not.toBeNull();
-    expect(JSON.stringify(after)).toBe(JSON.stringify(before));
-    expect(after!.decision.sentence).toBe('£25 more saves 14h 15m of journey time.');
+  // Founder-requested explicit before/after proof (originally PR #204,
+  // extended 13 Sept 2026 with a third checkpoint): the whole journeyChoice
+  // object -- lowerFare, fasterJourney, decision sentence, otherOptions,
+  // baggageCostConfirmedForAllOptions -- is byte-for-byte identical at 31
+  // August (before the 1 September suppression), at 8 September (while
+  // still suppressed), and at NOW_ISO (after the 13 September recovery).
+  // Its own frozen ID-pinned selection can never be affected by ANY of
+  // this Fare Signal history -- proven directly here across all three
+  // real, distinct evidence states, not just asserted in prose.
+  it('A. Journey Choice data for manchester-islamabad is byte-for-byte identical across its Fare Signal\'s full suppressed-then-recovered arc -- lowerFare, fasterJourney, decision sentence, otherOptions, all unchanged', () => {
+    const beforeSuppression = getJourneyChoiceForRoute('manchester-islamabad', '2026-08-31');
+    const whileSuppressed = getJourneyChoiceForRoute('manchester-islamabad', '2026-09-08');
+    const afterRecovery = getJourneyChoiceForRoute('manchester-islamabad', NOW_ISO);
+    expect(beforeSuppression).not.toBeNull();
+    expect(whileSuppressed).not.toBeNull();
+    expect(afterRecovery).not.toBeNull();
+    expect(JSON.stringify(whileSuppressed)).toBe(JSON.stringify(beforeSuppression));
+    expect(JSON.stringify(afterRecovery)).toBe(JSON.stringify(beforeSuppression));
+    expect(afterRecovery!.decision.sentence).toBe('£25 more saves 14h 15m of journey time.');
   });
 
-  it('A. Fare Window Reconciliation fails closed for manchester-islamabad now, exactly like any other suppressed route -- a null Fare Signal observation produces no reconciliation sentence', () => {
-    const signal = getFareSignalForRoute('manchester-islamabad', NOW_ISO);
-    const journeyChoice = getJourneyChoiceForRoute('manchester-islamabad', NOW_ISO);
-    expect(signal.observation).toBeNull();
-    expect(journeyChoice).not.toBeNull();
-    const reconciliation = deriveFareWindowReconciliation(signal.observation, journeyChoice!.lowerFare);
-    expect(reconciliation).toBeNull();
-  });
+  // Fare Window Reconciliation against a genuinely suppressed Fare Signal
+  // is already covered generically in describe block B below (and against
+  // manchester-lahore specifically) -- manchester-islamabad's own Fare
+  // Signal is no longer suppressed, so it is no longer a fixture for that
+  // specific null-observation case.
 
   // Proves the route page's own fare-section heading/caption (lib/fare-
-  // section-copy.ts, called with fareSignal.state !== 'none' as its third
-  // argument) fails closed to the SAME "Fare history" framing already used
-  // for every other route with observations but no current representative
-  // fare -- not new copy invented for this route, not a contradiction next
-  // to Journey Choice's own independent comparison below it on the page.
-  it('A. the route page\'s fare-section copy correctly falls back to the pre-existing "Fare history" framing, not new or contradictory copy', () => {
+  // section-copy.ts) now correctly takes its ordinary "has a current
+  // representative fare" branch for manchester-islamabad, not the
+  // suppressed-fare fallback it took between 1 and 13 September -- not new
+  // copy invented for this route, not a contradiction next to Journey
+  // Choice's own independent comparison below it on the page.
+  it('A. the route page\'s fare-section copy now reflects the current £870 direct PIA fare, not the suppressed-fare fallback', () => {
     const fareObservations = getPublishableObservationsByRoute('manchester-islamabad', NOW_ISO);
     const signal = getFareSignalForRoute('manchester-islamabad', NOW_ISO);
     expect(fareObservations.length).toBeGreaterThan(0);
+    expect(signal.state).not.toBe('none');
     const copy = getFareSectionCopy(fareObservations.length > 0, false, signal.state !== 'none');
-    expect(copy).toEqual({
+    expect(copy).not.toEqual({
       heading: 'Fare history',
       caption: 'Previous tracked checks are shown for context. JetStash does not currently have a representative fare for this route.',
     });

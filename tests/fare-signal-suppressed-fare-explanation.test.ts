@@ -91,19 +91,26 @@ describe('lib/fare-signal.ts — FareSignalNoneReason is tagged only when isPoor
 });
 
 describe('Live control cases against the real archive (2 Sep 2026)', () => {
-  it('MAN→ISB: real archive is poor-itinerary-suppressed today, and the rendered Fare Signal explains why instead of claiming no data exists', () => {
+  // MAN-ISB fare-evidence check (13 Sept 2026, founder-approved): a fresh,
+  // genuine, non-suppressed direct PIA observation was appended, so this
+  // route is no longer part of the suppressed-fare-explanation control set
+  // it belonged to on 2 Sept. Its own dedicated regression coverage now
+  // lives in tests/journey-choice-freeze-and-pia-fare.test.ts; this file
+  // keeps a control here proving the OPPOSITE, equally important fact —
+  // once suppressed evidence is replaced by a genuinely suitable one, the
+  // ordinary "Fare spotted" template returns, exactly like manchester-dubai
+  // below, never the suppressed-fare explanatory copy.
+  it('MAN→ISB: no longer poor-itinerary-suppressed since the 13 September direct-PIA append; renders the ordinary Fare Signal, not the suppressed-fare explanation', () => {
     const signal = getFareSignalForRoute('manchester-islamabad', NOW_ISO);
-    expect(signal.state).toBe('none');
-    expect(signal.noneReason).toBe('poor-itinerary-suppressed');
+    expect(signal.state).toBe('current');
+    expect(signal.noneReason).toBeNull();
+    expect(signal.observation?.price).toBe(870);
+    expect(signal.observation?.airline).toBe('Pakistan International Airlines');
 
     const html = renderFareSignalForRoute('manchester-islamabad');
-    expect(html).toContain('Recent fares checked');
-    expect(html).toContain('extra stops or self-transfers');
-    expect(html).toContain('href="#fare-history"');
-    expect(html).toContain('See recent fare checks');
-    expect(html).not.toContain('No current fare tracked.');
-    // Never exposes internal terminology.
-    expect(html.toLowerCase()).not.toMatch(/poor.itinerary|selector|fare watcher|representativeobservation|lifecycle/);
+    expect(html).toContain('870');
+    expect(html).not.toContain('Recent fares checked');
+    expect(html).not.toContain('No current fare tracked');
   });
 
   it('MAN→LHE: identical treatment -- architectural, not route-specific', () => {
@@ -151,13 +158,19 @@ describe('Live control cases against the real archive (2 Sep 2026)', () => {
 });
 
 describe('lib/booking-intelligence.ts — Book-By carries the identical reason for the same shared selection', () => {
-  it('MAN→ISB (a Book-By priority route): latestObservationNoneReason is poor-itinerary-suppressed, matching the generic Fare Signal exactly', () => {
+  // MAN-ISB fare-evidence check (13 Sept 2026): now un-suppressed, so
+  // Book-By's own selection agrees with the generic Fare Signal on the
+  // OPPOSITE fact from before — both now show a real observation, not a
+  // suppression reason. Still the exact same "Book-By matches Fare Signal
+  // exactly" invariant this describe block exists to prove.
+  it('MAN→ISB (a Book-By priority route): latestObservation matches the generic Fare Signal\'s new £870 direct PIA fare exactly, no suppression reason', () => {
     const snapshot = computeBookBySnapshot('manchester-islamabad', new Date(`${NOW_ISO}T12:00:00Z`));
     expect(snapshot).not.toBeNull();
-    expect(snapshot!.latestObservation).toBeNull();
-    expect(snapshot!.latestObservationNoneReason).toBe('poor-itinerary-suppressed');
+    expect(snapshot!.latestObservationNoneReason).toBeNull();
+    expect(snapshot!.latestObservation?.price).toBe(870);
 
     const genericSignal = getFareSignalForRoute('manchester-islamabad', NOW_ISO);
+    expect(snapshot!.latestObservation?.price).toBe(genericSignal.observation?.price);
     expect(snapshot!.latestObservationNoneReason).toBe(genericSignal.noneReason);
   });
 

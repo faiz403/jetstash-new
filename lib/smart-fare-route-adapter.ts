@@ -8,6 +8,7 @@ import {
   type SmartFareBaggage,
   type SmartFareComparison,
   type SmartFareOption,
+  type SmartFareOptionSummary,
 } from '@/lib/smart-fare-comparison';
 
 function mapBaggage(observation: FareObservation): SmartFareBaggage {
@@ -23,7 +24,14 @@ function mapBaggage(observation: FareObservation): SmartFareBaggage {
   return { kind: 'not-stated', detail };
 }
 
-function toSmartFareOption(observation: FareObservation): SmartFareOption | null {
+/**
+ * Exported for lib/journey-choice-route-adapter.ts's frozen-experiment path
+ * (13 Sept 2026 freeze-integrity fix) — the one mapping from a raw
+ * FareObservation to a SmartFareOption, reused rather than duplicated, so an
+ * ID-pinned selection stays byte-identical in shape to the normal live-group
+ * selection below.
+ */
+export function toSmartFareOption(observation: FareObservation): SmartFareOption | null {
   if (!observation.departureDate || !observation.returnDate || !observation.currency) return null;
   if (!observation.fareDirectness || observation.fareDirectness === 'unknown') return null;
 
@@ -214,4 +222,46 @@ export function selectComparableSmartFareOptions(observations: FareObservation[]
 export function getSmartFareComparisonForRoute(routeSlug: string, nowIso: string): SmartFareComparison | null {
   const options = selectComparableSmartFareOptions(getPublishableObservationsByRoute(routeSlug, nowIso));
   return options.length >= 2 ? deriveSmartFareComparison(options) : null;
+}
+
+/**
+ * Journey Choice freeze-integrity fix (13 Sept 2026, founder-approved).
+ *
+ * Root cause: getSmartFareComparisonForRoute() (above) is a genuinely live
+ * derivation — it re-groups the ENTIRE current archive by exact-match key on
+ * every call, and picks whichever qualifying group was most recently
+ * observed. That is correct behaviour for every ordinary route, but Journey
+ * Choice's manchester-islamabad pilot is a controlled, founder-approved
+ * frozen experiment (£601 lower fare, £626 faster journey, "£25 more saves
+ * 14h15m") — and because it was still being fed by this same live grouping,
+ * a wholly legitimate, unrelated future fare append sharing the exact same
+ * cabin/dates/profileId/currency could silently join the group and change
+ * which two observations win, mutating the protected result as a side
+ * effect of routine evidence collection (confirmed: a same-window, same-
+ * profile PIA direct observation would have replaced £626 as the faster
+ * option purely by being faster, with no code change at all).
+ *
+ * This function is the fix: given an explicit, hand-picked set of
+ * observation IDs, it still enforces the exact same comparability rule
+ * (isComparable — current, dated, priced, profiled, directness known),
+ * still maps through the identical toSmartFareOption(), and still derives
+ * totalJourneyMinutes/statements through the identical
+ * deriveSmartFareComparison() every live-grouped option goes through — it
+ * only changes WHICH observations are allowed to feed the comparison, never
+ * HOW one is judged comparable, mapped or summarised. Nothing about the
+ * archive, profileId semantics, or the live grouping path used by every
+ * other route is touched — see lib/journey-choice-route-adapter.ts for the
+ * one caller.
+ */
+export function getComparableOptionsByObservationIds(
+  routeSlug: string,
+  observationIds: readonly string[],
+  nowIso: string
+): SmartFareOptionSummary[] {
+  const byId = new Set(observationIds);
+  const options = getPublishableObservationsByRoute(routeSlug, nowIso)
+    .filter((observation): observation is ComparableObservation => byId.has(observation.id) && isComparable(observation))
+    .map(toSmartFareOption)
+    .filter((option): option is SmartFareOption => option !== null);
+  return options.length > 0 ? deriveSmartFareComparison(options).options : [];
 }

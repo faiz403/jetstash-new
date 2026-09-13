@@ -143,10 +143,15 @@ describe('FareRangeSummary.observedDirectness aggregates per-observation fareDir
     expect(range!.observedDirectness).toBe('connecting');
   });
 
-  it('Manchester-Islamabad\'s range reports connecting after the 10 August options had both legs reviewed', () => {
+  it('Manchester-Islamabad\'s range now reports mixed evidence (undefined), honestly, since the 13 September direct-PIA observation joined the connecting archive already covering this route/cabin', () => {
+    // Before 13 Sept 2026 this range was purely connecting (the 10 August
+    // options). The new direct PIA observation is genuinely publishable
+    // alongside them, so aggregateFareDirectness() correctly refuses to
+    // claim either "direct" or "connecting" once the stated values disagree
+    // -- never averaging or picking a majority, exactly as designed.
     const range = getFareRangeSummary('manchester-islamabad', 'Economy', NOW_ISO);
     expect(range).not.toBeNull();
-    expect(range!.observedDirectness).toBe('connecting');
+    expect(range!.observedDirectness).toBeUndefined();
   });
 
   it('manchester-mumbai now resolves to a real, evidenced "connecting" once the 18 August Weekly Full Fare Refresh #1 observation supplied its first ever stated fareDirectness value (previously undefined: its only observation was explicitly \'unknown\', which never counts toward an aggregate)', () => {
