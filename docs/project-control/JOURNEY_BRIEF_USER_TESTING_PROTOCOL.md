@@ -108,10 +108,18 @@ seeing the numbers.
   questions for a later, separately-authorised pilot phase, not this comprehension test.
 - It does not test the entry form itself (dates, passport fields) — only the result view's
   comprehensibility, which is the part Astra's "30-second brief" target is actually about.
-- It creates no new analytics/tracking infrastructure. If a session is observed live (recommended
-  for the first round), take notes manually; the existing `journey_brief_started` /
-  `journey_brief_completed` events already fire and can be checked afterward if useful, but no new
-  telemetry is built for this protocol.
+- It creates no new analytics/tracking infrastructure. The readiness gate is a human comprehension
+  test — recorded participant responses (the table above) are the primary and only record this
+  protocol relies on, not analytics. If a session is observed live (recommended for the first
+  round), take notes manually. Astra Big Job #9's closure audit (13 Sept 2026) found the actually
+  existing events are `journey_brief_started` (fires on form submission) and
+  `journey_brief_live_price_click` (fires on the Trip.com CTA click) — a corrected reference from
+  an earlier draft of this document, which named a `journey_brief_completed` event that was never
+  built. Neither existing event nor the corrected reference above changes this protocol in any
+  way: check `journey_brief_started` afterward as supplementary context if useful (e.g. to confirm
+  a session's submission actually fired), but no new telemetry is built for this protocol, and the
+  absence of a dedicated "completed" event does not invalidate it or excuse skipping manual
+  participant recording.
 - It does not fabricate or assume results. This document is the template only — a completed run's
   actual filled-in table, participant count, and pass/fail verdict must be recorded as its own
   dated follow-up, never invented to satisfy this readiness gate.
