@@ -34,8 +34,19 @@ export default function UmrahHubPage() {
           <div className="stagger-in stagger-1 animate-fade-up">
             <Badge variant="dark">Umrah & Saudi Arabia</Badge>
           </div>
+          {/*
+            Astra Big Job #4 closure (13 Sept 2026, founder-approved): the
+            prior heading promised a package-price-comparison capability
+            this page doesn't actually deliver — the section below it says
+            plainly "JetStash has not tracked package prices for these
+            cards." The new heading names only what's genuinely true today:
+            flight/routing intelligence (real — see the Jeddah-vs-Madinah
+            route guidance) and package-comparison guidance/a checklist
+            (real — see "Before you book" below), never live package
+            inventory or a comparison engine.
+          */}
           <h1 className="stagger-in stagger-2 mt-4 max-w-2xl animate-fade-up font-display text-4xl leading-[1.08] tracking-tight text-sand-50 sm:text-5xl">
-            Umrah packages, compared properly
+            Plan your Umrah journey with clearer flight and package choices
           </h1>
           <p className="stagger-in stagger-3 mt-4 max-w-xl animate-fade-up text-lg leading-relaxed text-ink-300">
             Most Umrah packages bundle flights, hotels in Makkah and Madinah, and ground transport into a single

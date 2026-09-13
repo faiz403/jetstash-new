@@ -63,6 +63,13 @@ export type AnalyticsEvent =
   | 'tripcom_hotel_click'
   // Lead-capture conversions (Contact, Quote Request, Newsletter)
   | 'contact_submit_success'
+  // Astra Big Job #4 closure (13 Sept 2026): fires once per form session,
+  // on the visitor's first genuine change to any field — never on page
+  // load — so the founder can distinguish real quote-request interest
+  // (including Umrah-specific interest, via the same tripType/region pair
+  // 'quote_request_submit_success' already carries) from raw pageviews,
+  // and see where the funnel drops off between starting and submitting.
+  | 'quote_request_started'
   | 'quote_request_submit_success'
   | 'newsletter_subscribe_success'
   // Route Atlas engagement

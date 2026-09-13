@@ -139,14 +139,20 @@ describe('AnalyticsEvent vocabulary — every event this repo actually fires is 
   // so it needs no entry of its own here.
   const ROUTE_VERDICT_EVENTS = ['route_verdict_watch_click'];
 
-  it.each([...EXISTING_EVENTS, ...NEW_EVENTS, ...BAGGAGE_CTA_EVENTS, ...GOOGLE_ADS_TRACKING_EVENTS, ...JOURNEY_DECISION_BRIEF_EVENTS, ...JOURNEY_CHOICE_EVENTS, ...JOURNEY_CHOICE_MEASUREMENT_EVENTS, ...ROUTE_VERDICT_EVENTS])('%s is part of the typed AnalyticsEvent union', (eventName) => {
+  // Added later still, by the Astra Big Job #4 Umrah closure PR (13 Sept
+  // 2026): a quote-request funnel start signal, distinguishing genuine
+  // form interaction (including Umrah-specific interest) from a bare
+  // pageview. See components/sections/quote-request-form.tsx.
+  const QUOTE_REQUEST_MEASUREMENT_EVENTS = ['quote_request_started'];
+
+  it.each([...EXISTING_EVENTS, ...NEW_EVENTS, ...BAGGAGE_CTA_EVENTS, ...GOOGLE_ADS_TRACKING_EVENTS, ...JOURNEY_DECISION_BRIEF_EVENTS, ...JOURNEY_CHOICE_EVENTS, ...JOURNEY_CHOICE_MEASUREMENT_EVENTS, ...ROUTE_VERDICT_EVENTS, ...QUOTE_REQUEST_MEASUREMENT_EVENTS])('%s is part of the typed AnalyticsEvent union', (eventName) => {
     expect(analyticsSrc).toMatch(new RegExp(`\\| '${eventName}'`));
   });
 
   it('has exactly one union member per real event — no stragglers, nothing forgotten', () => {
     const matches = analyticsSrc.match(/\n\s*\| '[a-z_]+'/g) ?? [];
     expect(matches).toHaveLength(
-      EXISTING_EVENTS.length + NEW_EVENTS.length + BAGGAGE_CTA_EVENTS.length + GOOGLE_ADS_TRACKING_EVENTS.length + JOURNEY_DECISION_BRIEF_EVENTS.length + JOURNEY_CHOICE_EVENTS.length + JOURNEY_CHOICE_MEASUREMENT_EVENTS.length + ROUTE_VERDICT_EVENTS.length,
+      EXISTING_EVENTS.length + NEW_EVENTS.length + BAGGAGE_CTA_EVENTS.length + GOOGLE_ADS_TRACKING_EVENTS.length + JOURNEY_DECISION_BRIEF_EVENTS.length + JOURNEY_CHOICE_EVENTS.length + JOURNEY_CHOICE_MEASUREMENT_EVENTS.length + ROUTE_VERDICT_EVENTS.length + QUOTE_REQUEST_MEASUREMENT_EVENTS.length,
     );
   });
 
