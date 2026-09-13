@@ -92,7 +92,7 @@ describe('Trust Integrity fix — passport contradiction (non-British passport +
 
   it('legitimate British-passport exemption flows are preserved: Pakistan NICOP/POC still reaches ready-to-continue', () => {
     const result = evaluateTravelReadiness(
-      { destinationSlug: 'lahore', isBritishPassport: true, exemptionDocument: 'nicop-poc', ...SHORT_TRIP },
+      { destinationSlug: 'lahore', isBritishPassport: true, exemptionDocument: 'nicop-poc', documentValidity: 'valid', ...SHORT_TRIP },
       NOW
     );
     expect(result.verdict).toBe('ready-to-continue');

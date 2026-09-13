@@ -36,6 +36,7 @@ describe('Travel Ready Check — the 11 required journeys', () => {
         destinationSlug: 'lahore',
         isBritishPassport: true,
         exemptionDocument: 'nicop-poc',
+        documentValidity: 'valid',
         departureDate: '2027-03-01',
         arrivalDate: '2027-03-01',
         returnDate: '2027-03-20',

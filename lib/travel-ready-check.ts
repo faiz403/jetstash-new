@@ -60,10 +60,38 @@ export type TravelReadyVerdict =
    * alone — a distinct state from `ready-to-continue`, never collapsed into
    * it (Trust Integrity fix, 5 September 2026). See `evaluateStayLimit()`.
    */
-  | 'stay-length-unconfirmed';
+  | 'stay-length-unconfirmed'
+  /**
+   * Pakistan NICOP/POC validity fix (13 Sept 2026, founder-approved,
+   * following a real MAN-ISB micro-seed reproduction audit and a dedicated
+   * official-source reconciliation): the traveller told us they hold NICOP
+   * or POC but that it is expired, lost or being renewed. Deliberately
+   * never collapsed into `ready-to-continue` — an expired document's real
+   * position (a NADRA renewal slip, or a 72-hour-only landing permit per
+   * FIA's own published procedure) is materially different from a valid
+   * document's unrestricted visa-free entry, and must never be presented as
+   * a JetStash readiness pass. Distinct from `official-confirmation-required`
+   * too: that verdict means one of JetStash's OWN rules has aged past its
+   * review date; this one means the TRAVELLER told us their own document's
+   * status is itself unconfirmed — a different reason for the same
+   * "check before booking" caution, so it gets its own honest copy rather
+   * than reusing mismatched text.
+   */
+  | 'document-validity-not-confirmed';
 
 /** What the traveller told us they already hold, if anything. */
 export type ExemptionDocument = 'nicop-poc' | 'oci' | 'nvr' | 'visa-or-permit' | 'none';
+
+/**
+ * Pakistan NICOP/POC validity fix (13 Sept 2026, founder-approved): only
+ * meaningful when `exemptionDocument === 'nicop-poc'` — every other document
+ * type leaves this `undefined`. Deliberately has no third "not sure" option:
+ * the traveller either confirms the document is currently valid, or tells us
+ * it isn't (expired, lost, or a renewal is already in progress) — either way
+ * unanswered must never be silently treated as 'valid', see
+ * evaluateTravelReadiness()'s own handling below.
+ */
+export type NicopPocValidity = 'valid' | 'expired-lost-renewing';
 
 /**
  * Every field here is either a plain enum/boolean or a date — deliberately
@@ -75,6 +103,14 @@ export interface TravelReadyCheckInput {
   destinationSlug: string;
   isBritishPassport: boolean;
   exemptionDocument: ExemptionDocument;
+  /**
+   * Pakistan NICOP/POC validity fix (13 Sept 2026): required and meaningful
+   * only when `exemptionDocument === 'nicop-poc'`. `undefined` is treated
+   * exactly like 'expired-lost-renewing' by the engine (fail-closed — never
+   * assumed valid) — this only matters if evaluateTravelReadiness() is ever
+   * called without going through the form's own required-field guard.
+   */
+  documentValidity?: NicopPocValidity;
   /** ISO date. UK departure. */
   departureDate: string;
   /**
@@ -444,9 +480,49 @@ export function evaluateTravelReadiness(input: TravelReadyCheckInput, now: Date)
   // within a rolling window's headline number on its own, but JetStash can't
   // confirm the window without your other visits," a different reason that
   // needs its own honest verdict/copy rather than reusing mismatched text.
-  let visaOutcome: 'pass' | 'fail' | 'caution' | 'stale' | 'unknown' | 'stay-limit-caution' = 'unknown';
+  let visaOutcome: 'pass' | 'fail' | 'caution' | 'stale' | 'unknown' | 'stay-limit-caution' | 'validity-not-confirmed' = 'unknown';
 
-  if (exemptionRule) {
+  // Pakistan NICOP/POC validity fix (13 Sept 2026, founder-approved): must
+  // run BEFORE the ordinary exemptionRule pass/stale branch below, and must
+  // completely pre-empt it — an expired/lost/renewing (or unanswered)
+  // document never reaches the normal "pass" path, regardless of how
+  // current the underlying document-exemption rule itself is. Scoped
+  // deliberately narrow to Pakistan's nicop-poc-holder exemption only; OCI
+  // and NVR are untouched (no equivalent question exists for them).
+  if (exemptionScope === 'nicop-poc-holder' && input.documentValidity !== 'valid') {
+    const expiredGuidanceRule = getRule(country, 'nicop-poc-holder', 'expired-document-guidance');
+    if (!expiredGuidanceRule) {
+      checks.push({
+        id: 'visa-requirement',
+        label: 'Document exemption',
+        status: 'unknown',
+        detail: 'No guidance is recorded for an expired or lost NICOP/POC on this destination — official confirmation required.',
+      });
+    } else if (isRuleStale(expiredGuidanceRule, nowIso)) {
+      visaOutcome = 'stale';
+      checks.push({
+        id: 'visa-requirement',
+        label: 'Document exemption',
+        status: 'unknown',
+        detail: 'This guidance is due for re-verification — official confirmation required.',
+        officialSource: expiredGuidanceRule.officialSource,
+        lastVerifiedDate: expiredGuidanceRule.lastVerifiedDate,
+        reviewDueDate: expiredGuidanceRule.reviewDueDate,
+        stale: true,
+      });
+    } else {
+      visaOutcome = 'validity-not-confirmed';
+      checks.push({
+        id: 'visa-requirement',
+        label: 'Document exemption',
+        status: 'caution',
+        detail: `${expiredGuidanceRule.requirement} ${expiredGuidanceRule.caveat ?? ''}`.trim(),
+        officialSource: expiredGuidanceRule.officialSource,
+        lastVerifiedDate: expiredGuidanceRule.lastVerifiedDate,
+        reviewDueDate: expiredGuidanceRule.reviewDueDate,
+      });
+    }
+  } else if (exemptionRule) {
     if (isRuleStale(exemptionRule, nowIso)) {
       visaOutcome = 'stale';
       checks.push({
@@ -622,6 +698,8 @@ export function evaluateTravelReadiness(input: TravelReadyCheckInput, now: Date)
     verdict = 'visa-or-entry-permission-needed';
   } else if (visaOutcome === 'stay-limit-caution') {
     verdict = 'stay-length-unconfirmed';
+  } else if (visaOutcome === 'validity-not-confirmed') {
+    verdict = 'document-validity-not-confirmed';
   } else if (visaOutcome === 'caution') {
     verdict = 'document-timing-may-affect-booking';
   } else if (passportOutcome === 'stale' || visaOutcome === 'stale' || passportOutcome === 'unknown' || visaOutcome === 'unknown') {
@@ -641,6 +719,7 @@ export function evaluateTravelReadiness(input: TravelReadyCheckInput, now: Date)
     'invalid-departure-date': 'Your departure date is in the past — check your dates before continuing.',
     'invalid-arrival-date': 'Your arrival date doesn’t fit within your departure and return dates — check your dates before continuing.',
     'stay-length-unconfirmed': 'Your trip length works on its own, but JetStash can’t confirm you’re within a rolling visa-free allowance without your other visits — check before booking.',
+    'document-validity-not-confirmed': 'Check your NICOP/POC position before booking — an expired, lost or renewing document isn’t treated the same as a valid one.',
   };
 
   const NEXT_ACTIONS: Record<TravelReadyVerdict, string> = {
@@ -654,12 +733,13 @@ export function evaluateTravelReadiness(input: TravelReadyCheckInput, now: Date)
     'invalid-departure-date': 'Re-enter a departure date that hasn’t already passed, then check again.',
     'invalid-arrival-date': 'Re-enter your arrival date so it falls between your departure and return dates, then check again.',
     'stay-length-unconfirmed': 'Check the official source below for exactly how the rolling window is calculated, and count any other visits within that window before booking a non-refundable fare.',
+    'document-validity-not-confirmed': 'Get a NADRA renewal slip if you can, or confirm the current landing-permit position with FIA/NADRA and your airline before booking a non-refundable fare.',
   };
 
   const engineSignal: TravelReadySignal | null =
     verdict === 'check-passport-validity' || verdict === 'visa-or-entry-permission-needed'
       ? { severity: 'critical', label: HEADLINES[verdict], detail: NEXT_ACTIONS[verdict] }
-      : verdict === 'document-timing-may-affect-booking' || verdict === 'official-confirmation-required' || verdict === 'stay-length-unconfirmed'
+      : verdict === 'document-timing-may-affect-booking' || verdict === 'official-confirmation-required' || verdict === 'stay-length-unconfirmed' || verdict === 'document-validity-not-confirmed'
         ? { severity: 'caution', label: HEADLINES[verdict], detail: NEXT_ACTIONS[verdict] }
         : null;
 
