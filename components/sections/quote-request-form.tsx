@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, FormEvent } from 'react';
+import { useState, useRef, FormEvent } from 'react';
 import Link from 'next/link';
 import {
   CheckCircle2,
@@ -69,6 +69,22 @@ export function QuoteRequestForm({ initialTripType, initialRegion }: QuoteReques
   const [honeypot, setHoneypot] = useState('');
   const [status, setStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
   const [errorMsg, setErrorMsg] = useState('');
+  // Astra Big Job #4 closure (13 Sept 2026): fires once, on the visitor's
+  // first genuine change to any field — never merely because the page
+  // loaded — so the founder can see real quote-request interest
+  // (including Umrah-specific interest pre-filled via ?tripType=umrah)
+  // separately from a bare pageview. Same tripType/region pair
+  // 'quote_request_submit_success' already sends below — both
+  // already-validated enum values, never free text.
+  const startedRef = useRef(false);
+  function markStarted() {
+    if (startedRef.current) return;
+    startedRef.current = true;
+    track('quote_request_started', {
+      tripType: form.tripType || 'unspecified',
+      region: form.region || 'unspecified',
+    });
+  }
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -110,7 +126,7 @@ export function QuoteRequestForm({ initialTripType, initialRegion }: QuoteReques
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+    <form onSubmit={handleSubmit} onChange={markStarted} className="flex flex-col gap-5">
       {status === 'error' && (
         <div role="alert" aria-live="assertive" className="flex items-center gap-3 rounded-md border border-terracotta-200 bg-terracotta-50 p-4">
           <AlertCircle className="h-5 w-5 flex-shrink-0 text-terracotta-600" />
