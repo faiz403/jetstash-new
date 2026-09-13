@@ -18,6 +18,8 @@ Every new development or strategy session must read these files before proposing
 4. [`DECISIONS.md`](./DECISIONS.md) — approved, evolved, deferred and rejected ideas.
 5. [`ROUTE_COVERAGE.md`](./ROUTE_COVERAGE.md) — the evidence-led queue and operating rules for
    expanding route intelligence.
+6. [`ENGINEERING_OPERATIONS_RUNBOOK.md`](./ENGINEERING_OPERATIONS_RUNBOOK.md) — production recovery,
+   bounded security decisions and founder-access recovery.
 
 Historical phase reports elsewhere in `/docs` remain valuable evidence, but they do not override
 this folder when their task status is stale. `JETSTASH_PRINCIPLES.md` remains the authority for
