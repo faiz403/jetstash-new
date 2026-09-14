@@ -23,7 +23,7 @@ VISITORS → USEFUL INTERACTION → PARTNER CTA CLICK → VALIDATED BOOKING → 
 | Stage | Definition | Where the number comes from |
 |---|---|---|
 | **Visitors** | Route-page visitors where available (per-route pageviews), else account-wide site visitors | Vercel Web Analytics dashboard (manual read — see "Evidence sources" below; no API access exists on the current plan) |
-| **Useful interactions** | A genuinely high-intent, observable interaction distinct from a bare pageview — currently only `journey_choice_impression` / `journey_choice_evidence_opened` (Manchester-Islamabad's Journey Choice pilot only, see `lib/analytics.ts`). **Every other route has no defined "useful interaction" event and must be recorded `NOT OBSERVABLE`, not estimated.** Do not invent a proxy (e.g. scroll depth, time-on-page) just to fill this column — see the funnel brief's own instruction. |
+| **Useful interactions** | A genuinely high-intent, observable interaction distinct from a bare pageview. **As of 14 September 2026, `journey_choice_impression`/`journey_choice_evidence_opened` no longer fire on any live route** — Journey Choice Round 1 (Manchester-Islamabad, the only route it ever ran on) is closed/historical and the public pilot is off (see `STATUS.md`'s Astra-closure section); the events themselves remain defined in `lib/analytics.ts` but have no live call site. This stage has **no currently-firing event on any route** and must be recorded `NOT OBSERVABLE` everywhere, not just on non-pilot routes. Do not invent a proxy (e.g. scroll depth, time-on-page) just to fill this column, and do not substitute `acquisition_landing` (PR #272) here either — that event marks session-start channel classification, not a high-intent interaction; see "Attribution gaps" below for what PR #272 actually adds. |
 | **Partner CTA clicks** | `tripcom_click` events (`lib/analytics.ts`) — fired from `deal-card`, `fare-signal`, `no-fare-fallback`, `tracked-fares-card`, `journey-brief` and `journey-choice-verdict` call sites, each carrying `route`, `origin`, `destination`, `source`. Route-attributable **at the event level** (the `route` property exists), but only actually route-scoped in a weekly report if the dashboard used to read it can filter/group by that custom property — confirm this each time rather than assuming; if it can't, record the total as `UNALLOCATED` (account-wide), never split arbitrarily across routes. |
 | **Validated bookings** | Confirmed Trip.com partner bookings/orders only — never a click count, never an inferred booking. Source: Trip.com's own affiliate dashboard reporting. |
 | **Commission** | Settled and pending, currency preserved (GBP). Source: Trip.com's own affiliate dashboard reporting. Never estimate from a typical commission rate — see "Attribution gaps" below on why even a real commission figure can't currently be joined to a route. |
@@ -92,8 +92,16 @@ a specific route's rate.
 Every one of these is `N/A` rather than a number whenever its inputs don't clear the fail-closed
 rules above.
 
-## Attribution gaps (as of 10 September 2026)
+## Attribution gaps (as of 10 September 2026; acquisition-channel update 14 September 2026)
 
+- **PR #272 (14 September 2026) added same-session acquisition-channel attribution** —
+  `classifyAcquisitionSource()` classifies each session as `organic_search`/`google_ads`/`facebook`/
+  `reddit`/`other_referral`/`direct`/`unknown` (sessionStorage only, no cookie, no persistent ID) and
+  pairs it with a genuine `tripcom_click`/`tripcom_hotel_click` via a new `acquisition_handoff` event.
+  This lets a weekly report attribute **channel → route visit → CTA click** with real evidence for
+  the first time. It does **not** create a new "useful interaction" event (see the stage-definition
+  row above) and does **not** close the booking/commission gap below — Trip.com's own reporting still
+  has no route or channel breakdown until `trip_sub1` attribution (parked, see below) is approved.
 - **CTA clicks carry a `route` property, but bookings/commission currently don't.** Trip.com's own
   affiliate reporting has no route-level breakdown today — JetStash's `route` tag never reaches
   Trip.com's system. The parked branch `revenue/tripcom-route-attribution-2026-09-08` (commit
@@ -107,12 +115,15 @@ rules above.
   figure in a weekly report is a manual read of the Vercel dashboard by whoever populates that
   week — there is no automated pull. If a given week's report has no dashboard access, the honest
   entry is `NOT OBSERVABLE`, not a number carried over from a previous week.
-- **`journey_choice_impression`/`journey_choice_evidence_opened`** are the only "useful
-  interaction" events that exist anywhere on the site today, and only for the
-  Manchester-Islamabad Journey Choice pilot. Every other route's "useful interaction" cell is
-  structurally `NOT OBSERVABLE` — this is not a data-collection failure to fix, it's an accurate
+- **`journey_choice_impression`/`journey_choice_evidence_opened`** remain the only "useful
+  interaction" events ever defined on this site, but as of 14 September 2026 they have **no live
+  call site anywhere** — Journey Choice Round 1 is closed/historical (see the stage-definition row
+  above). Every route's "useful interaction" cell is therefore structurally `NOT OBSERVABLE` today,
+  not just non-pilot routes. This is not a data-collection failure to fix, it's an accurate
   description of what currently exists. Do not add a new interaction event to fill this column;
-  that would be new analytics instrumentation, exactly what this task was scoped not to add.
+  that would be new analytics instrumentation, exactly what this task was scoped not to add, and
+  would also conflict with the current build freeze (see `STATUS.md`) absent one of its five
+  triggers.
 
 ## What this deliberately is not
 

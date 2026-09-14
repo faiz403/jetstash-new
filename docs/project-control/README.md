@@ -64,7 +64,16 @@ not silently erase the historical record.
 
 ## Current baseline
 
-This tracker was reconciled on **25 July 2026** against:
+**Latest reconciliation: 14 September 2026**, against GitHub `main` at
+`2f1ede5136c3d4d63d947df6da07607130f840a6`. This closed the full Astra founder-review programme
+(#1–#20) and recorded the resulting operating state — see `STATUS.md`'s "Astra programme closure and
+current operating state" section and `DECISIONS.md`'s matching entry, both dated 14 September 2026,
+for the authoritative current-state layer: **build freeze active, company in validation mode, 90-day
+goal is one genuine non-seeded booking reconciled to commission.** Read those sections, not this
+file's original July baseline below, for what is true today.
+
+The **25 July 2026** baseline below is preserved as the historical starting point this tracker was
+first reconciled against, not the current state:
 
 - GitHub `main` at `50e6c6d40b92d8c3f201814a12340160351d70bd`;
 - the live JetStash homepage after Route Status V1 and the Manchester-to-Mumbai visual shipped;

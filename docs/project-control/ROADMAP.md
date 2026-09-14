@@ -2,13 +2,21 @@
 
 This roadmap contains unfinished work only. Completed work belongs in `COMPLETED.md`.
 
+**BUILD FREEZE ACTIVE (14 September 2026).** The Astra founder-review programme (#1–#20) closed with
+a CONTINUE/VALIDATION MODE verdict — see `STATUS.md`'s "Astra programme closure and current
+operating state" section. Nothing in this roadmap, including rows marked `ACTIVE` below, authorises
+a new PR unless it also satisfies one of the freeze's five triggers (P0/P1 safety or truth issue;
+a real measurable funnel blocker; the same specific need independently requested by multiple
+relevant travellers; a confirmed booking's reconciliation/follow-up work; an approved partner
+integration). `ACTIVE` here means "continuing evidence/observation," not "open for a build PR."
+
 ## Delivery queue
 
-**Current baseline:** `f44e0b8`, reconciled 6 September 2026 — see `COMPLETED.md`'s September 2026
-table for everything merged since the 27 August baseline. `ACTIVE` means continuing
-evidence/operations work; `WAITING` means no repository change is authorised until an external
-fact, founder decision or meaningful traffic exists; `FROZEN` means a live pilot must collect
-evidence before expansion.
+**Current baseline:** `2f1ede5`, reconciled 14 September 2026 — see `COMPLETED.md`'s September 2026
+table for everything merged since the 6 September baseline, including the Astra programme's closure.
+`ACTIVE` means continuing evidence/operations work (still subject to the build freeze above);
+`WAITING` means no repository change is authorised until an external fact, founder decision or
+meaningful traffic exists; `FROZEN` means a live pilot must collect evidence before expansion.
 
 | Order | ID | Status | Work | Definition of done |
 |---:|---|---|---|---|
@@ -17,7 +25,7 @@ evidence before expansion.
 | 3 | `COV-001` | ACTIVE — evidence/date driven | Maintain verified route coverage deliberately. Five routes remain unresolved and fail closed. Manchester–Mumbai/Manchester–Delhi have a completed pre-map audit and a scheduled 31 August / 1 September truth check that must not be pre-empted. | Every status change is primary-sourced and review-dated; unresolved facts stay unresolved. |
 | 4 | `AFF-001` | ACTIVE / WAITING ON PROVIDER | Improve evidence-safe affiliate coverage. | Current state is 45 route-level + 18 exact-pair fallback handoffs = 63 of 88; 25 fail closed. Trip.com is the only active flight partner. A second provider or London fallback is not enabled without approval and direct journey validation. |
 | 5 | `CONV-001` | WAITING FOR MEANINGFUL EVIDENCE | Validate homepage/campaign conversion and commercial value. | Google Ads Basic Consent Mode and conversion tracking are live (PR #135). The remaining work is reading a meaningful settled sample — not adding more instrumentation or acting on same-day counts. |
-| 6 | `PILOT-001` | FROZEN | Evaluate Journey Choice and Fare Watcher / Standout Fare. | MAN→ISB remains the sole Journey Choice route and sole public Standout Fare pilot. Do not expand, add UI or change thresholds until real traffic evidence supports a founder decision. |
+| 6 | `PILOT-001` | PARKED | Evaluate Journey Choice and Fare Watcher / Standout Fare. | Journey Choice Round 1 is closed/historical on MAN→ISB (`JOURNEY-CHOICE-ROUND1-001`) — the public pilot is off, infrastructure preserved. Fare Watcher/Standout Fare remains live on MAN→ISB. Do not reopen, expand, add UI or change thresholds without a build-freeze-breaking trigger. |
 | 7 | `HOTEL-001` | COMPLETE, FROZEN | Hotel Intelligence expansion. | Shipped across 10 destinations with 29 exact-property Trip.com handoffs (PR #136, 15 August 2026). Do not add an 11th destination without customer-usage evidence and a new founder decision. |
 
 `RIS-001` (Route Intelligence Scoring v2) shipped 6 August 2026 — see `COMPLETED.md`. **Fare Coverage
@@ -103,6 +111,11 @@ action) assembled entirely from existing canonical sources. A founder-run 5-pers
 test found one launch-blocking usability defect, which was fixed and merged (PR #235). This phase
 is now frozen: no second route, no public exposure and no further Journey Brief work is scheduled
 until the founder decides whether and how to expand or expose it.
+
+**PARKED (14 September 2026):** the pilot is technically ready for a controlled first-10 user gate,
+but the Astra #20 CEO review parked it deliberately — first-booking validation on MAN→ISB outranks
+running this gate right now. Do not start the user gate under the current build freeze; it is not
+one of the freeze's five triggers.
 
 ### Travel Confidence
 

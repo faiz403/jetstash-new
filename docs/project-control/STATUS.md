@@ -1,19 +1,18 @@
 # JetStash Current Status
 
-**Last reconciled:** 6 September 2026 (project-control truth through PR #235)
+**Last reconciled:** 14 September 2026 (project-control truth through PR #272)
 
 **Production branch:** `main`
 
-**Application release baseline:** `f44e0b8` (PR #235 merge — Journey Brief result-viewport fix).
-This reconciliation closes the previously recorded PR #215–#234 gap (20 merges: route-verification
-freshness and Batches 1–6, three Astra trust-integrity fixes, journey-consequence prominence, and
-Journey Brief Phase 1 with its usability fix) and brings the operating record through PR #235
-without turning this file into a commit-by-commit changelog — see `COMPLETED.md`'s September 2026
-table for the itemised record. Older dated counts and delivery notes below remain historical
-evidence of what was true at the time; the current operating snapshot immediately below overrides
-them for present decisions. None of this reconciliation window's work changed a route, fare or
-visa/passport fact beyond what `COMPLETED.md` records as corrected — no route-coverage count below
-needed recomputation.
+**Application release baseline:** `2f1ede5` (PR #272 merge — session-only acquisition-source
+attribution). This reconciliation closes the full Astra founder-review programme (#1–#20, PRs
+through #272) and records the resulting operating-state change — **build freeze, validation mode,
+90-day first-booking goal** — immediately below. See "Astra programme closure and current operating
+state — 14 September 2026" for what actually changed. The route/fare/product counts in the
+27 August snapshot further below were not affected by this reconciliation and remain the latest
+available derivation; they are not superseded by this entry, only the *programme-state* narrative
+around them is. Older dated counts and delivery notes remain historical evidence of what was true at
+the time.
 
 **Launch readiness:** ready for controlled public organic use. Google Ads Basic Consent Mode and
 conversion tracking are live; missing instrumentation is no longer the paid-growth blocker.
@@ -22,6 +21,95 @@ founder/professional legal decisions in `LAUNCH_CHECKLIST.md` B2, and distribute
 rate limiting rather than the current process-local limiter.
 
 **Production site:** `https://jetstash.co.uk`
+
+## Astra programme closure and current operating state — 14 September 2026
+
+**The full Astra founder-review programme (#1–#20) is CLOSED.** Every workstream from
+Consequential Information/Truth Reset through the final CEO/Business Model/Moat/Future/Kill List
+review has been audited and classified. **Do not describe any Astra workstream as still open, and do
+not reopen one merely because execution of its own recommendations continues** — founder actions
+like distribution outreach and Trip.com dashboard reconciliation are execution of an already-closed
+review, not evidence of unfinished audit work. No further Astra-numbered review is scheduled.
+
+**Company mode: CONTINUE / VALIDATION MODE.** JetStash is not in investment mode, feature-expansion
+mode, or broad product-building mode. The final CEO review found the product technically and
+editorially sound but commercially unproven — £0 confirmed revenue, 0 confirmed bookings, 0
+confirmed commission — and concluded the correct next step is testing distribution, not building
+further product.
+
+**BUILD FREEZE ACTIVE.** Product/engineering work resumes only for one of these five triggers:
+
+1. A P0/P1 safety or truth issue.
+2. A real, measurable funnel blocker (not a hypothetical or aesthetic one).
+3. The same specific need independently requested by multiple relevant travellers (not one person's
+   opinion).
+4. A confirmed booking that creates reconciliation/follow-up work.
+5. An approved partner integration worth implementing (e.g. KAYAK, if and when its pending
+   application is confirmed).
+
+There is no "good idea" exemption. Everything not covered by one of the five triggers goes on the
+parked list below, not into a new PR.
+
+**The 90-day company goal is exactly one thing:** a genuine, non-seeded booking, reconciled to
+commission. It is not pageviews, impressions, more routes, more features, first £100, or more
+testers — see `DECISIONS.md` if a future session is tempted to substitute an easier-to-move metric
+for this one.
+
+**Active commercial focus: MAN→ISB only**, JetStash's core vertical entry point — the one route with
+a fully evidenced, live funnel (direct PIA service, £870 Fare Signal, Book-By, Travel Ready,
+Trip.com CTA, acquisition attribution, no live Journey Choice). Active commercial investment
+(fresh fare checks, feature tuning) concentrates here; the wider ~88-route public portfolio stays
+live for discovery/SEO but is **not** free to maintain — verifying and refreshing it still carries a
+real founder-time cost, so effort beyond routine `COV-001`/`FARE-001` cadence goes to MAN→ISB first
+unless new evidence justifies another route specifically.
+
+**Parked / no active investment** (component/infrastructure preserved, not deleted, no PR against
+these without a freeze-breaking trigger):
+- Journey Choice — Round 1 closed/historical (`JOURNEY-CHOICE-ROUND1-001`); public pilot is OFF;
+  infrastructure (frozen-observation-ID derivation) preserved. Person B's single Level-3 handoff is
+  real and occurred through that live comparison, but is one non-generalisable data point — do not
+  reopen automatically because the component still exists.
+- Journey Brief — founder-only MAN→BOM pilot, technically ready for a controlled first-10 user gate,
+  but parked: first-booking validation outranks running that gate right now.
+- Umrah — stays publicly live; no active expansion investment.
+- Business Class — stays publicly live/passive; no active investment; retains option value.
+- Route Atlas expansion, broad fare-history expansion beyond MAN→ISB, route expansion, a
+  newsletter/content programme, and new features generally.
+
+**Micro-seed personal testing: CLOSED/EXHAUSTED.** Round 2 closed after Person E (Level 4) and
+Person F (Level 4) — no additional Level-3 handoff, no safety defect, and the founder has no further
+genuinely relevant personal contacts. Do not recruit random/irrelevant testers to continue this
+channel.
+
+**Distribution state (Astra #16, corrected):** qualified traffic is the primary bottleneck. Google
+Ads stays HOLD (0.5% flight commission makes paid economics unproven and likely unattractive without
+higher conversion or a higher-margin line). Generic Reddit promotion in its previous form is not to
+be repeated. SEO stays in maintenance mode, not active investment. The most promising untested
+channel is the "Pakistani Community Manchester" Facebook group — gated on the founder personally
+verifying its rules/culture first, with a reactive, genuinely-useful answer to an existing
+traveller's question preferred over a standalone promotional post; a standalone post only if the
+group's own norms clearly support it. No mass posting, no random outreach.
+
+**Measurement state:** PR #272 (acquisition attribution) is live — same-session channel
+classification (`organic_search`/`google_ads`/`facebook`/`reddit`/`other_referral`/`direct`/
+`unknown`) paired with the existing Trip.com handoff events. This measures channel → route visit →
+high-intent action → partner handoff. It does **not** measure booking or commission — Trip.com
+partner-dashboard reconciliation remains an external dependency; the last session found the
+authenticated dashboard unavailable, which must not be read as zero clicks or new negative evidence.
+
+**Parked commit `723216f46b508b00b41d11ef272d5a6a1892a54d`** (per-route `trip_sub1` attribution) stays
+parked until actual Trip.com partner-reporting evidence changes — do not merge or modify it on
+audit/documentation grounds alone.
+
+**Do not touch — good enough, protect founder time:** MAN→ISB's live product state, the design
+system, the mobile/accessibility work closed in Astra #17, the SEO architecture, the consent/privacy
+architecture, the analytics/event system, the route-truth model, the fare-observation model, the
+Journey Choice infrastructure, and the parked `723216f` commit.
+
+**Next founder actions (execution, not further audit):** (1) obtain Trip.com partner-dashboard
+access and check whether reporting has advanced past 12 September 2026; (2) when ready, verify the
+Facebook group's rules and make one bounded, reactive-preferred contribution. Neither of these is a
+Claude/Codex engineering task.
 
 ## Current operating snapshot — 27 August 2026
 
@@ -139,6 +227,12 @@ Cooperation Agreement: review around 22 October 2026, ahead of its 5 November 20
 
 No new major Claude/Codex workstream is currently justified. The correct current job is observing
 these gates, not building — see `LAUNCH_CHECKLIST.md`'s current-state note for the same conclusion.
+
+**Note (14 September 2026):** the three dated gates above (6/9/10 September) have passed and fed
+into the Astra programme's conclusions, superseded by "Astra programme closure and current operating
+state — 14 September 2026" above — the build freeze and its five triggers are now the standing rule,
+not these specific dates. This paragraph's underlying conclusion (observe, don't build) still holds
+and is now the permanent state, not a temporary one awaiting the next gate.
 
 ### How to read the historical record below
 
