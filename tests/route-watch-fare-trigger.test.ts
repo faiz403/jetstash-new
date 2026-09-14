@@ -236,12 +236,20 @@ describe('Real archive expectation (19 August 2026, post-supersession-fix) — o
   // to handle, and exactly why the recheck step exists: an unverified
   // routine tile price would have silently published a candidate that was
   // never actually available.
-  it('the real fareObservations archive produces six current Route Watch candidates after the Tuesday full weekly refresh and its emergency rechecks', () => {
+  // MAN-ISB fare-evidence check (13 Sept 2026, founder-approved): a fresh
+  // £870 direct PIA observation is now the most recent evidence for this
+  // route -- a much HIGHER price than the historical median, not a low-fare
+  // drop, so manchester-islamabad honestly stops qualifying as a Route
+  // Watch candidate (this evaluates the raw archive directly, independent
+  // of Fare Signal's own poor-itinerary suppression). This is the correct,
+  // expected consequence of genuinely new evidence, not a loosened
+  // threshold or a regression -- Fare Watcher was never supposed to flag a
+  // £870 fare as a notable drop.
+  it('the real fareObservations archive produces five current Route Watch candidates after the Tuesday full weekly refresh and its emergency rechecks', () => {
     const nowIso = new Date().toISOString().slice(0, 10);
     const candidates = generateRouteWatchFareCandidates(fareObservations, nowIso);
-    expect(candidates).toHaveLength(6);
+    expect(candidates).toHaveLength(5);
     expect(candidates.map((c) => c.routeSlug)).toEqual([
-      'manchester-islamabad',
       'manchester-lahore',
       'birmingham-amritsar',
       'london-heathrow-doha',
@@ -249,6 +257,7 @@ describe('Real archive expectation (19 August 2026, post-supersession-fix) — o
       'manchester-madinah',
     ]);
     expect(candidates.map((c) => c.routeSlug)).not.toContain('london-heathrow-delhi');
+    expect(candidates.map((c) => c.routeSlug)).not.toContain('manchester-islamabad');
     expect(candidates.every((c) => c.qualification === 'standout-candidate')).toBe(true);
     expect(candidates.every((c) => c.lifecycle === 'detected' && c.founderVerificationRequired)).toBe(true);
   });
@@ -304,15 +313,17 @@ describe('I. Trust wording — no overclaim in rendered founder copy or customer
   });
 
   it('the non-empty state clearly states how many candidates cleared the threshold, never overclaiming urgency', () => {
-    // 4 -> 7 -> 6 (Tuesday full weekly refresh, 1 September 2026, and its
-    // same-day emergency rechecks) — see the dedicated regression above:
-    // two of the three newly-qualifying routes survived verification,
-    // one (london-heathrow-delhi) did not. Exercise the actual
-    // non-empty-state copy against that final, verified count.
+    // 4 -> 7 -> 6 -> 5 (Tuesday full weekly refresh, 1 September 2026, its
+    // same-day emergency rechecks, then the 13 September MAN-ISB
+    // direct-PIA fare-evidence append) — see the dedicated regression
+    // above: manchester-islamabad's own fresh evidence is now a much
+    // higher, non-standout direct fare, so it honestly drops out of this
+    // count. Exercise the actual non-empty-state copy against that final,
+    // verified count.
     const snapshot = getFounderSnapshot(new Date());
     const section = snapshot.grouped['nice-to-have'].find((s) => s.id === 'route-watch-fare-candidates')!;
-    expect(section.items).toHaveLength(6);
-    expect(section.headline).toMatch(/6 fare observations clear Fare Watcher's strong evidence threshold/i);
+    expect(section.items).toHaveLength(5);
+    expect(section.headline).toMatch(/5 fare observations clear Fare Watcher's strong evidence threshold/i);
     expect(section.headline).toMatch(/Nothing sends itself/i);
     for (const pattern of forbidden) expect(section.headline).not.toMatch(pattern);
   });

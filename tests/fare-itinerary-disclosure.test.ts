@@ -186,9 +186,26 @@ describe('9. Routes without a known connection location fail gracefully to stop 
 });
 
 describe('10. No CTA/handoff behaviour changes; 12. no fare observation data changes', () => {
-  it('this fix touches only presentation helpers, never data/fare-observations.ts', async () => {
+  // This assertion originally diffed 9460b7b (the last commit of the 8
+  // September representative-fare-itinerary-disclosure fix's own small
+  // stack) against the live working tree, to prove that fix's own follow-up
+  // commits (9a9f165, 9460b7b) touched only presentation helpers, not the
+  // archive itself -- the data change those follow-ups were reconciling
+  // against (a1e1eeb) landed one commit earlier, deliberately outside this
+  // check's range. Comparing against an ever-moving "now" instead of a
+  // fixed end point meant this would spuriously fail the moment ANY later,
+  // unrelated, legitimate commit touched the archive -- exactly what
+  // happened on 13 September 2026 (the MAN-ISB direct-PIA fare-evidence
+  // append, an intentional, founder-approved data change, not a defect in
+  // this fix). Pinned to the fix's own three-commit range so it can never
+  // drift like that again, while still proving the exact historical fact
+  // it was written to prove.
+  it('the 8 September fix\'s own follow-up commits touched only presentation helpers, never data/fare-observations.ts', async () => {
     const { execSync } = await import('child_process');
-    const diff = execSync('git diff --name-only 9460b7b318d2f468b74127515baa694fe25ddd26', { cwd: process.cwd() }).toString();
+    const diff = execSync(
+      'git diff --name-only a1e1eeb74bfe747eb39ac8563cd1b75273513e2d..9460b7b318d2f468b74127515baa694fe25ddd26',
+      { cwd: process.cwd() }
+    ).toString();
     expect(diff).not.toMatch(/data\/fare-observations\.ts/);
   });
 });
