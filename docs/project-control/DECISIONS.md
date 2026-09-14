@@ -5,6 +5,46 @@ evidence and an explicit founder decision.
 
 ## Approved
 
+### Astra programme closure — build freeze, validation mode, 90-day first-booking goal — 14 September 2026
+
+Reconciled `main` at `2f1ede5136c3d4d63d947df6da07607130f840a6` (PR #272) after the full Astra
+founder-review programme (#1–#20) closed. This entry is the current decision layer and overrides all
+earlier programme-state notes below, including the 27 August entry immediately following.
+
+- **Company mode: CONTINUE / VALIDATION MODE**, not investment or feature-expansion mode. The
+  product is judged technically and editorially sound; the business model is unproven — £0 revenue,
+  0 bookings, 0 commission confirmed.
+- **BUILD FREEZE ACTIVE.** Product/engineering work resumes only for: (1) a P0/P1 safety or truth
+  issue; (2) a real measurable funnel blocker; (3) the same specific need independently requested by
+  multiple relevant travellers; (4) a confirmed booking's reconciliation/follow-up work; (5) an
+  approved partner integration worth implementing. No "good idea" exemption exists.
+- **The 90-day company goal is a genuine, non-seeded booking, reconciled to commission** — not
+  pageviews, impressions, more routes, more features, first £100, or more testers. Do not substitute
+  an easier-to-move metric for this one without an explicit founder decision to change the goal.
+- **MAN→ISB is the sole active commercial focus** (core vertical entry point). The wider ~88-route
+  public portfolio stays live for discovery/SEO but is not free to maintain — verification/refresh
+  still carries real founder time; that time goes to MAN→ISB first absent new route-specific
+  evidence.
+- **Parked, not killed:** Journey Choice (Round 1 closed/historical, infrastructure preserved),
+  Journey Brief's first-10 user gate, Umrah expansion, Business Class investment, Route Atlas
+  expansion, fare-history expansion beyond MAN→ISB, route expansion, a newsletter/content programme,
+  and new features generally.
+- **Closed/exhausted:** personal micro-seed testing (Round 2 ended at Persons E/F, both Level 4, no
+  further Level-3 handoff, no more genuinely relevant founder contacts — do not recruit random
+  testers to continue it).
+- **Distribution:** qualified traffic is the primary bottleneck. Google Ads stays HOLD (unproven
+  0.5%-commission economics). Generic Reddit promotion in its prior form is not to be repeated. SEO
+  stays in maintenance mode. The Facebook diaspora channel ("Pakistani Community Manchester") is
+  gated on the founder verifying group rules/culture first, with a reactive, genuinely-useful
+  contribution preferred over a standalone post.
+- **Trip.com partner-dashboard/commission reconciliation remains external and unresolved** — this is
+  a dependency, not a code gap. Parked commit `723216f46b508b00b41d11ef272d5a6a1892a54d` stays
+  parked until actual partner-reporting evidence changes.
+
+**Operating consequence:** no further Astra-numbered review is scheduled. The correct next work is
+founder execution (Trip.com dashboard access; the gated Facebook test) and observation, not another
+audit or another feature.
+
 ### Current operating truth and pilot freezes — 27 August 2026
 
 Reconciled `main` at `4494fd3561ac533a9ba787c04ef77b6ae44626ad` (PR #187) after the
