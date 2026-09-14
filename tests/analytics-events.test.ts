@@ -145,14 +145,20 @@ describe('AnalyticsEvent vocabulary — every event this repo actually fires is 
   // pageview. See components/sections/quote-request-form.tsx.
   const QUOTE_REQUEST_MEASUREMENT_EVENTS = ['quote_request_started'];
 
-  it.each([...EXISTING_EVENTS, ...NEW_EVENTS, ...BAGGAGE_CTA_EVENTS, ...GOOGLE_ADS_TRACKING_EVENTS, ...JOURNEY_DECISION_BRIEF_EVENTS, ...JOURNEY_CHOICE_EVENTS, ...JOURNEY_CHOICE_MEASUREMENT_EVENTS, ...ROUTE_VERDICT_EVENTS, ...QUOTE_REQUEST_MEASUREMENT_EVENTS])('%s is part of the typed AnalyticsEvent union', (eventName) => {
+  // Added later still, Astra Big Job #19 small closure set (14 Sept 2026,
+  // founder-approved): coarse, privacy-safe acquisition-source attribution.
+  // See lib/acquisition.ts for the full design. Two events: one per-session
+  // landing signal, one paired with a genuine Trip.com handoff.
+  const ACQUISITION_ATTRIBUTION_EVENTS = ['acquisition_landing', 'acquisition_handoff'];
+
+  it.each([...EXISTING_EVENTS, ...NEW_EVENTS, ...BAGGAGE_CTA_EVENTS, ...GOOGLE_ADS_TRACKING_EVENTS, ...JOURNEY_DECISION_BRIEF_EVENTS, ...JOURNEY_CHOICE_EVENTS, ...JOURNEY_CHOICE_MEASUREMENT_EVENTS, ...ROUTE_VERDICT_EVENTS, ...QUOTE_REQUEST_MEASUREMENT_EVENTS, ...ACQUISITION_ATTRIBUTION_EVENTS])('%s is part of the typed AnalyticsEvent union', (eventName) => {
     expect(analyticsSrc).toMatch(new RegExp(`\\| '${eventName}'`));
   });
 
   it('has exactly one union member per real event — no stragglers, nothing forgotten', () => {
     const matches = analyticsSrc.match(/\n\s*\| '[a-z_]+'/g) ?? [];
     expect(matches).toHaveLength(
-      EXISTING_EVENTS.length + NEW_EVENTS.length + BAGGAGE_CTA_EVENTS.length + GOOGLE_ADS_TRACKING_EVENTS.length + JOURNEY_DECISION_BRIEF_EVENTS.length + JOURNEY_CHOICE_EVENTS.length + JOURNEY_CHOICE_MEASUREMENT_EVENTS.length + ROUTE_VERDICT_EVENTS.length + QUOTE_REQUEST_MEASUREMENT_EVENTS.length,
+      EXISTING_EVENTS.length + NEW_EVENTS.length + BAGGAGE_CTA_EVENTS.length + GOOGLE_ADS_TRACKING_EVENTS.length + JOURNEY_DECISION_BRIEF_EVENTS.length + JOURNEY_CHOICE_EVENTS.length + JOURNEY_CHOICE_MEASUREMENT_EVENTS.length + ROUTE_VERDICT_EVENTS.length + QUOTE_REQUEST_MEASUREMENT_EVENTS.length + ACQUISITION_ATTRIBUTION_EVENTS.length,
     );
   });
 

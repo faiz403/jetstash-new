@@ -138,15 +138,37 @@ describe('lib/analytics.ts track() — Google Ads dispatch is additive, isolated
     mocks.fireGoogleAdsConversion.mockReset();
   });
 
-  it('calls both Vercel Analytics and the Google Ads dispatch exactly once for the same event', async () => {
+  it('calls both Vercel Analytics and the Google Ads dispatch exactly once for a non-handoff event', async () => {
+    vi.resetModules();
+    vi.doMock('@vercel/analytics', () => ({ track: mocks.vercelTrack }));
+    vi.doMock('@/lib/google-ads-conversions', () => ({ fireGoogleAdsConversion: mocks.fireGoogleAdsConversion }));
+    const { track } = await import('@/lib/analytics');
+    track('bookby_cta_click', { route: 'manchester-lahore', source: 'route-hero' });
+    expect(mocks.vercelTrack).toHaveBeenCalledOnce();
+    expect(mocks.fireGoogleAdsConversion).toHaveBeenCalledOnce();
+    expect(mocks.fireGoogleAdsConversion).toHaveBeenCalledWith('bookby_cta_click');
+    vi.doUnmock('@vercel/analytics');
+    vi.doUnmock('@/lib/google-ads-conversions');
+  });
+
+  // Astra #19 small closure set (14 Sept 2026): tripcom_click is one of the
+  // two events that also pairs a same-session 'acquisition_handoff' event
+  // (see lib/acquisition.ts) -- so calling track() with it now genuinely,
+  // correctly fires both dispatches twice: once for tripcom_click itself,
+  // once for the paired acquisition_handoff. This is the new intended
+  // behaviour, not a regression -- proven explicitly here rather than
+  // silently loosening the "exactly once" assertion above to cover it.
+  it('a handoff event (tripcom_click) also fires the paired acquisition_handoff event, through the same two dispatches', async () => {
     vi.resetModules();
     vi.doMock('@vercel/analytics', () => ({ track: mocks.vercelTrack }));
     vi.doMock('@/lib/google-ads-conversions', () => ({ fireGoogleAdsConversion: mocks.fireGoogleAdsConversion }));
     const { track } = await import('@/lib/analytics');
     track('tripcom_click', { route: 'manchester-lahore', source: 'route-hero' });
-    expect(mocks.vercelTrack).toHaveBeenCalledOnce();
-    expect(mocks.fireGoogleAdsConversion).toHaveBeenCalledOnce();
-    expect(mocks.fireGoogleAdsConversion).toHaveBeenCalledWith('tripcom_click');
+    expect(mocks.vercelTrack).toHaveBeenCalledTimes(2);
+    expect(mocks.fireGoogleAdsConversion).toHaveBeenCalledTimes(2);
+    expect(mocks.fireGoogleAdsConversion).toHaveBeenNthCalledWith(1, 'tripcom_click');
+    expect(mocks.fireGoogleAdsConversion).toHaveBeenNthCalledWith(2, 'acquisition_handoff');
+    expect(mocks.vercelTrack).toHaveBeenNthCalledWith(2, 'acquisition_handoff', { route: 'manchester-lahore', channel: 'unknown' });
     vi.doUnmock('@vercel/analytics');
     vi.doUnmock('@/lib/google-ads-conversions');
   });
@@ -160,7 +182,7 @@ describe('lib/analytics.ts track() — Google Ads dispatch is additive, isolated
       },
     }));
     const { track } = await import('@/lib/analytics');
-    expect(() => track('tripcom_click')).not.toThrow();
+    expect(() => track('bookby_cta_click')).not.toThrow();
     expect(mocks.vercelTrack).toHaveBeenCalledOnce();
     vi.doUnmock('@vercel/analytics');
     vi.doUnmock('@/lib/google-ads-conversions');
@@ -175,7 +197,7 @@ describe('lib/analytics.ts track() — Google Ads dispatch is additive, isolated
     }));
     vi.doMock('@/lib/google-ads-conversions', () => ({ fireGoogleAdsConversion: mocks.fireGoogleAdsConversion }));
     const { track } = await import('@/lib/analytics');
-    expect(() => track('tripcom_click')).not.toThrow();
+    expect(() => track('bookby_cta_click')).not.toThrow();
     expect(mocks.fireGoogleAdsConversion).toHaveBeenCalledOnce();
     vi.doUnmock('@vercel/analytics');
     vi.doUnmock('@/lib/google-ads-conversions');
