@@ -151,13 +151,13 @@ describe('getRoutePresentation — verified direct routes (real dataset) keep wo
     expect(p.canShowPeakPeriods).toBe(true);
   });
 
-  it('london-heathrow-jeddah: its own frequency field is honest that frequency is unconfirmed — proves a route\'s directness being evidenced does not mean every field is', () => {
-    // Previously used manchester-lahore as this example; the 14 September
-    // 2026 Route Verification Maintenance batch found genuine current
-    // frequency evidence for that route (PK709/PK710, weekly), so it no
-    // longer demonstrates an unconfirmed field. london-heathrow-jeddah's
-    // frequency remains genuinely unconfirmed and makes the same point.
-    const route = getRouteBySlug('london-heathrow-jeddah')!;
+  it('manchester-lahore: its own frequency field is honest that frequency is unconfirmed — proves a route\'s directness being evidenced does not mean every field is', () => {
+    // A same-day (14 September 2026) evidence-compliance review found the
+    // route's brief PK709/PK710 frequency claim rested only on secondary
+    // aviation-press coverage, not a qualifying primary source under this
+    // file's cadence policy — corrected back to the honest unconfirmed
+    // wording, so this remains a genuine example of the point being made.
+    const route = getRouteBySlug('manchester-lahore')!;
     expect(route.frequency).toMatch(/not confirmed/i);
     const p = getRoutePresentation(route, FIXED_TODAY);
     // The presentation surfaces the honest, unconfirmed-frequency string as-is

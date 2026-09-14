@@ -155,9 +155,9 @@ describe('Evidenced, legitimate uses elsewhere are untouched — this is not a g
 });
 
 describe('No route/fare/verification data changed — this PR is editorial wording only', () => {
-  it('manchester-lahore: isDirect and verification status are unchanged; frequency/reviewDueDate reflect the 14 September 2026 Route Verification Maintenance refresh, not this earlier editorial-wording PR', () => {
+  it('manchester-lahore: isDirect and verification status are unchanged; frequency stays honestly unconfirmed (a secondary-press-only frequency claim was corrected out of this record on evidence-compliance review); reviewDueDate reflects only the genuine primary-sourced direct-status re-check', () => {
     expect(lahore.isDirect).toBe(true);
-    expect(lahore.frequency).toContain('Weekly direct');
+    expect(lahore.frequency).toBe('Direct — current frequency not confirmed by an official schedule, see note');
     expect(lahore.verification?.status).toBe('verified');
     expect(lahore.verification?.reviewDueDate).toBe('2026-10-14');
   });
