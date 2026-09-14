@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import { isValidElement } from 'react';
 import { deriveJourneyChoice } from '@/lib/journey-choice';
 import { getJourneyChoiceForRoute, JOURNEY_CHOICE_PILOT_ROUTE_SLUGS } from '@/lib/journey-choice-route-adapter';
-import { getSmartFareComparisonForRoute } from '@/lib/smart-fare-route-adapter';
+import { getSmartFareComparisonForRoute, getComparableOptionsByObservationIds } from '@/lib/smart-fare-route-adapter';
 import type { SmartFareOptionSummary } from '@/lib/smart-fare-comparison';
 import { getFareSignalForRoute } from '@/lib/fare-signal';
 import { computeBookBySnapshot } from '@/lib/booking-intelligence';
@@ -29,6 +29,24 @@ import { JourneyChoiceImpressionSection } from '@/components/route/journey-choic
 
 const NOW_ISO = '2026-08-24';
 const NOW_DATE = new Date('2026-08-24T12:00:00Z');
+
+// Round 1 closure (14 Sept 2026, founder-approved): the manchester-islamabad
+// pilot itself was retired — see lib/journey-choice-route-adapter.ts's own
+// doc comment — so getJourneyChoiceForRoute('manchester-islamabad', ...)
+// now correctly returns null (see the dedicated closure coverage below).
+// The rest of this file's coverage (derivation math, component rendering,
+// profileId leakage guards) tests genuinely untouched infrastructure that
+// remains available for a future, deliberately-evidenced refresh, so it's
+// exercised here via the same frozen-ID mechanism the route adapter used
+// before closure, rather than deleted.
+const FROZEN_MAN_ISB_IDS = [
+  'obs-man-isb-economy-20260811-8w-v1',
+  'obs-man-isb-economy-20260810-tk-626-v1',
+  'obs-man-isb-economy-20260810-tk-621-v1',
+];
+function getFrozenManIsbJourneyChoice(nowIso: string) {
+  return deriveJourneyChoice(getComparableOptionsByObservationIds('manchester-islamabad', FROZEN_MAN_ISB_IDS, nowIso))!;
+}
 
 function collectStrings(node: unknown, out: string[] = []): string[] {
   if (typeof node === 'number') {
@@ -77,8 +95,8 @@ function collectStrings(node: unknown, out: string[] = []): string[] {
   return out;
 }
 
-describe('Journey Choice derivation — Manchester-Islamabad real data', () => {
-  const journeyChoice = getJourneyChoiceForRoute('manchester-islamabad', NOW_ISO)!;
+describe('Journey Choice derivation — Manchester-Islamabad real data (frozen Round 1 result)', () => {
+  const journeyChoice = getFrozenManIsbJourneyChoice(NOW_ISO);
 
   it('renders on Manchester-Islamabad', () => {
     expect(journeyChoice).toBeTruthy();
@@ -169,9 +187,16 @@ describe('Journey Choice fails closed rather than fabricating a trade-off', () =
   });
 });
 
-describe('Pilot allowlist — one route only, not a pre-decided second route', () => {
-  it('JOURNEY_CHOICE_PILOT_ROUTE_SLUGS is exactly manchester-islamabad today', () => {
-    expect(JOURNEY_CHOICE_PILOT_ROUTE_SLUGS).toEqual(['manchester-islamabad']);
+describe('Pilot allowlist — Round 1 closed (14 Sept 2026), no route currently live', () => {
+  it('JOURNEY_CHOICE_PILOT_ROUTE_SLUGS is empty today — manchester-islamabad\'s Round 1 pilot is closed, not deleted', () => {
+    expect(JOURNEY_CHOICE_PILOT_ROUTE_SLUGS).toEqual([]);
+  });
+
+  it('manchester-islamabad itself now correctly returns null — Round 1 closure, not a data or comparability regression', () => {
+    expect(getJourneyChoiceForRoute('manchester-islamabad', NOW_ISO)).toBeNull();
+    // The underlying evidence still fully qualifies — closure is a
+    // deliberate allowlist decision, not a comparability failure.
+    expect(getSmartFareComparisonForRoute('manchester-islamabad', NOW_ISO)).not.toBeNull();
   });
 
   it('birmingham-amritsar does not become Journey Choice yet, because its verification recheck is not a second comparison option', () => {
@@ -190,7 +215,7 @@ describe('Pilot allowlist — one route only, not a pre-decided second route', (
 });
 
 describe('No profileId or invented-baggage leakage into the customer-facing component', () => {
-  const journeyChoice = getJourneyChoiceForRoute('manchester-islamabad', NOW_ISO)!;
+  const journeyChoice = getFrozenManIsbJourneyChoice(NOW_ISO);
   const tripComHandoff = getJourneyChoiceTripComHandoff(
     'manchester-islamabad',
     journeyChoice,

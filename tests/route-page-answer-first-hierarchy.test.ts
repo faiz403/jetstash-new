@@ -3,7 +3,8 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import RoutePage from '@/app/routes/[slug]/page';
-import { getJourneyChoiceForRoute } from '@/lib/journey-choice-route-adapter';
+import { getComparableOptionsByObservationIds } from '@/lib/smart-fare-route-adapter';
+import { deriveJourneyChoice } from '@/lib/journey-choice';
 import { getSafeTripComFlightHandoffUrl } from '@/lib/booking-providers';
 import { getRouteBySlug } from '@/data/routes';
 
@@ -151,8 +152,13 @@ describe('3. Safe CTA proximity and fail-closed behaviour — unchanged by this 
 });
 
 describe('4. MAN-ISB Journey Choice controlled facts — unchanged, only repositioned by earlier work, untouched by this PR', () => {
-  it('journeyChoice data for manchester-islamabad is unaffected by this PR (this PR touches no Journey Choice logic or data)', () => {
-    const journeyChoice = getJourneyChoiceForRoute('manchester-islamabad', NOW_ISO);
+  // Round 1 closure (14 Sept 2026, founder-approved, after this test's own
+  // 10 Sept fixture date): manchester-islamabad's pilot was retired from
+  // the live page, but the underlying frozen data this test protects is
+  // untouched, still provable directly via the same frozen IDs.
+  it('the frozen Journey Choice data for manchester-islamabad is unaffected by this PR (this PR touches no Journey Choice logic or data)', () => {
+    const frozenIds = ['obs-man-isb-economy-20260811-8w-v1', 'obs-man-isb-economy-20260810-tk-626-v1', 'obs-man-isb-economy-20260810-tk-621-v1'];
+    const journeyChoice = deriveJourneyChoice(getComparableOptionsByObservationIds('manchester-islamabad', frozenIds, NOW_ISO));
     expect(journeyChoice).not.toBeNull();
   });
 

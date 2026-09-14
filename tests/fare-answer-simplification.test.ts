@@ -73,15 +73,21 @@ describe('2. Standout Fare remains an interpretation/status within the one fare 
 describe('3. Live rendered output — MAN-ISB, MAN-DXB, MAN-Mumbai, and a no-handoff route', () => {
   const NOW_ISO = '2026-09-11';
 
-  it('manchester-islamabad: "Fare check" renders, "Fare Signal" does not, and Journey Choice\'s controlled £601/£626 facts are unchanged', async () => {
+  // Journey Choice Round 1 closure (14 Sept 2026, founder-approved): the
+  // manchester-islamabad pilot (and its £601/£626 figures) no longer
+  // renders on the live page — see lib/journey-choice-route-adapter.ts's
+  // own doc comment. The live route now shows its own £870 direct PIA Fare
+  // Check instead; the "Fare check"/"Fare Signal" naming convention this
+  // test protects is otherwise unaffected.
+  it('manchester-islamabad: "Fare check" renders, "Fare Signal" does not, Journey Choice is closed and its £870 direct fare shows instead', async () => {
     const element = await RoutePage({ params: Promise.resolve({ slug: 'manchester-islamabad' }) });
     const html = renderToStaticMarkup(element);
     expect(html).toContain('Fare check');
     expect(html).not.toContain('Fare Signal');
-    expect(html).toContain('601');
-    expect(html).toContain('626');
+    expect(html).not.toContain('Journey Choice');
+    expect(html).toContain('870');
     const journeyChoice = getJourneyChoiceForRoute('manchester-islamabad', NOW_ISO);
-    expect(journeyChoice).not.toBeNull();
+    expect(journeyChoice).toBeNull();
   });
 
   it('manchester-dubai: a normal publishable-fare route renders "Fare check" and its existing Trip.com CTA, unaffected by the rename', async () => {

@@ -8,7 +8,8 @@ import type { StandoutFareApproval } from '@/data/standout-fare-approvals';
 import { standoutFareApprovals } from '@/data/standout-fare-approvals';
 import { deriveApprovedStandoutFare, getApprovedStandoutFare } from '@/lib/standout-fare';
 import { getFareSignalForRoute } from '@/lib/fare-signal';
-import { getJourneyChoiceForRoute } from '@/lib/journey-choice-route-adapter';
+import { getComparableOptionsByObservationIds } from '@/lib/smart-fare-route-adapter';
+import { deriveJourneyChoice } from '@/lib/journey-choice';
 import { deriveFareWindowReconciliation } from '@/lib/fare-window-reconciliation';
 import { getTripComRouteUrl } from '@/lib/booking-providers';
 import { FareSignal } from '@/components/route/fare-signal';
@@ -210,7 +211,11 @@ describe('Standout Fare — First Public Standout Fare Pilot', () => {
   });
 
   it('14 & 15. Journey Choice for manchester-islamabad remains exactly the frozen pilot, and the reconciliation sentence still fires', () => {
-    const journeyChoice = getJourneyChoiceForRoute('manchester-islamabad', NOW);
+    // Round 1 closure (14 Sept 2026, founder-approved): the pilot was
+    // retired from the live page — see lib/journey-choice-route-adapter.ts's
+    // own doc comment — so this exercises the frozen Round 1 IDs directly.
+    const frozenIds = ['obs-man-isb-economy-20260811-8w-v1', 'obs-man-isb-economy-20260810-tk-626-v1', 'obs-man-isb-economy-20260810-tk-621-v1'];
+    const journeyChoice = deriveJourneyChoice(getComparableOptionsByObservationIds('manchester-islamabad', frozenIds, NOW));
     expect(journeyChoice).not.toBeNull();
     expect(journeyChoice!.lowerFare).toMatchObject({ price: 601, airline: 'Etihad', departureDate: '2026-10-06', returnDate: '2026-10-20' });
     expect(journeyChoice!.fasterJourney).toMatchObject({ price: 626, airline: 'Turkish Airlines' });

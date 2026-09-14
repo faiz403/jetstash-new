@@ -11,6 +11,8 @@ import { getRouteBySlug } from '@/data/routes';
 import { getFareSignalForRoute, deriveFareSignal, isPoorItinerarySuitability } from '@/lib/fare-signal';
 import { generateFareWatcherCandidates } from '@/lib/fare-watcher';
 import { getJourneyChoiceForRoute, JOURNEY_CHOICE_PILOT_ROUTE_SLUGS } from '@/lib/journey-choice-route-adapter';
+import { getComparableOptionsByObservationIds } from '@/lib/smart-fare-route-adapter';
+import { deriveJourneyChoice } from '@/lib/journey-choice';
 import { getApprovedStandoutFare } from '@/lib/standout-fare';
 import { standoutFareApprovals } from '@/data/standout-fare-approvals';
 import { FareHistoryPanel } from '@/components/route/fare-history-panel';
@@ -279,13 +281,19 @@ describe('11. Fare Watcher historical derivations already do not consume future 
 });
 
 describe('12. Frozen manchester-islamabad Journey Choice remains unchanged for its own controlled travel-date evidence', () => {
-  it('manchester-islamabad is still the one live Journey Choice pilot route', () => {
-    expect(JOURNEY_CHOICE_PILOT_ROUTE_SLUGS).toEqual(['manchester-islamabad']);
+  // Round 1 closure (14 Sept 2026, founder-approved): the pilot allowlist
+  // is now empty — see lib/journey-choice-route-adapter.ts's own doc
+  // comment — so getJourneyChoiceForRoute() correctly returns null today.
+  // The underlying frozen comparison this block protects is untouched,
+  // still provable directly via the frozen Round 1 IDs.
+  it('the pilot allowlist is empty today — Round 1 closed, not deleted', () => {
+    expect(JOURNEY_CHOICE_PILOT_ROUTE_SLUGS).toEqual([]);
   });
 
   it('Journey Choice for manchester-islamabad resolves identically at 31 August and 1 September -- the hypothetical’s different travel dates (27 Oct–10 Nov) can never enter the frozen comparison group’s exact-match contract (20 Oct–3 Nov), regardless of this fix', () => {
-    const beforeSep1 = getJourneyChoiceForRoute('manchester-islamabad', AUG_31);
-    const atSep1 = getJourneyChoiceForRoute('manchester-islamabad', SEP_1);
+    const frozenIds = ['obs-man-isb-economy-20260811-8w-v1', 'obs-man-isb-economy-20260810-tk-626-v1', 'obs-man-isb-economy-20260810-tk-621-v1'];
+    const beforeSep1 = deriveJourneyChoice(getComparableOptionsByObservationIds('manchester-islamabad', frozenIds, AUG_31));
+    const atSep1 = deriveJourneyChoice(getComparableOptionsByObservationIds('manchester-islamabad', frozenIds, SEP_1));
     expect(beforeSep1).not.toBeNull();
     expect(atSep1).not.toBeNull();
     expect(atSep1).toEqual(beforeSep1);

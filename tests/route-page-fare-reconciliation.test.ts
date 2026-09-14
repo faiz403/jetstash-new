@@ -5,6 +5,8 @@ import { join } from 'node:path';
 import { routes, getRouteAirport, getRouteDestination } from '@/data/routes';
 import { getFareSignalForRoute } from '@/lib/fare-signal';
 import { getJourneyChoiceForRoute, JOURNEY_CHOICE_PILOT_ROUTE_SLUGS } from '@/lib/journey-choice-route-adapter';
+import { getComparableOptionsByObservationIds } from '@/lib/smart-fare-route-adapter';
+import { deriveJourneyChoice } from '@/lib/journey-choice';
 import { deriveFareWindowReconciliation } from '@/lib/fare-window-reconciliation';
 import { FareWindowReconciliationNote } from '@/components/route/fare-window-reconciliation-note';
 import { getTripComFlightHandoffUrl, NO_VERIFIED_PARTNER_LINK_NOTE } from '@/lib/booking-providers';
@@ -45,6 +47,30 @@ const journeyChoiceComponentSrc = readFileSync(join(process.cwd(), 'components/r
 function reconciliationFor(routeSlug: string) {
   const fareSignal = getFareSignalForRoute(routeSlug, NOW_ISO);
   const journeyChoice = getJourneyChoiceForRoute(routeSlug, NOW_ISO);
+  return {
+    fareSignal,
+    journeyChoice,
+    reconciliation: deriveFareWindowReconciliation(
+      fareSignal.observation,
+      journeyChoice ? journeyChoice.lowerFare : null
+    ),
+  };
+}
+
+// Round 1 closure (14 Sept 2026, founder-approved): manchester-islamabad's
+// pilot was retired from the live page — see lib/journey-choice-route-
+// adapter.ts's own doc comment — so getJourneyChoiceForRoute() now always
+// returns null for it, regardless of nowIso. The reconciliation behaviour
+// this file protects (the audit's own P0) is a real, historical fact as of
+// 25 Aug 2026, still fully provable via the frozen Round 1 IDs directly.
+const FROZEN_MAN_ISB_IDS = [
+  'obs-man-isb-economy-20260811-8w-v1',
+  'obs-man-isb-economy-20260810-tk-626-v1',
+  'obs-man-isb-economy-20260810-tk-621-v1',
+];
+function reconciliationForFrozenManIsb(nowIso: string) {
+  const fareSignal = getFareSignalForRoute('manchester-islamabad', nowIso);
+  const journeyChoice = deriveJourneyChoice(getComparableOptionsByObservationIds('manchester-islamabad', FROZEN_MAN_ISB_IDS, nowIso));
   return {
     fareSignal,
     journeyChoice,
@@ -102,8 +128,8 @@ describe('reconciliation derivation fails closed', () => {
 });
 
 describe('across the full route catalogue, the sentence renders only where two fare blocks disagree on dates', () => {
-  it('renders on manchester-islamabad — the audit P0 — and correctly names both real windows', () => {
-    const { fareSignal, journeyChoice, reconciliation } = reconciliationFor('manchester-islamabad');
+  it('renders on manchester-islamabad — the audit P0 — and correctly names both real windows (historical, via the frozen Round 1 evidence; the pilot itself closed 14 Sept 2026)', () => {
+    const { fareSignal, journeyChoice, reconciliation } = reconciliationForFrozenManIsb(NOW_ISO);
     expect(fareSignal.observation).not.toBeNull();
     expect(journeyChoice).not.toBeNull();
     expect(reconciliation).not.toBeNull();
@@ -232,12 +258,16 @@ describe('the two divergent fail-closed sentences are now one shared constant', 
 // ─────────────────────────────────────────────────────────────────────────
 
 describe('Journey Choice remains functionally frozen', () => {
-  it('the pilot allowlist is still manchester-islamabad only', () => {
-    expect([...JOURNEY_CHOICE_PILOT_ROUTE_SLUGS]).toEqual(['manchester-islamabad']);
+  // Round 1 closure (14 Sept 2026, founder-approved): the pilot allowlist
+  // is now empty — see lib/journey-choice-route-adapter.ts's own doc
+  // comment — but the underlying derivation this block protects is
+  // untouched, still provable directly via the frozen Round 1 IDs.
+  it('the pilot allowlist is empty today — Round 1 closed, not deleted', () => {
+    expect([...JOURNEY_CHOICE_PILOT_ROUTE_SLUGS]).toEqual([]);
   });
 
   it('the decision sentence is still derived, and its shape unchanged', () => {
-    const journeyChoice = getJourneyChoiceForRoute('manchester-islamabad', NOW_ISO)!;
+    const journeyChoice = deriveJourneyChoice(getComparableOptionsByObservationIds('manchester-islamabad', FROZEN_MAN_ISB_IDS, NOW_ISO))!;
     expect(journeyChoice.decision.sentence).toMatch(/^£[\d,]+ more saves .+ of journey time\.$/);
     expect(journeyChoice.decision.priceDifference).toBeGreaterThan(0);
     expect(journeyChoice.decision.timeDifferenceMinutes).toBeGreaterThan(0);

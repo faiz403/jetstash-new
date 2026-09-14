@@ -36,12 +36,18 @@ describe('Business Class presentation guard', () => {
 });
 
 describe('Route-page priority remains answer-first', () => {
-  it('keeps MAN→ISB Journey Choice available and renders it ahead of lower fare-card content', async () => {
-    expect(getJourneyChoiceForRoute('manchester-islamabad', NOW_ISO)).not.toBeNull();
+  // Journey Choice Round 1 closure (14 Sept 2026, founder-approved): the
+  // manchester-islamabad pilot was retired from the live page — see
+  // lib/journey-choice-route-adapter.ts's own doc comment — so the
+  // answer-first position this test protects is now the route's own
+  // Fare Check (£870 direct PIA), not Journey Choice.
+  it('no longer renders Journey Choice for MAN→ISB, and the Fare Check content takes the answer-first position instead', async () => {
+    expect(getJourneyChoiceForRoute('manchester-islamabad', NOW_ISO)).toBeNull();
     const page = await RoutePage({ params: Promise.resolve({ slug: 'manchester-islamabad' }) });
     const html = renderToStaticMarkup(page);
-    expect(html.indexOf('Journey Choice')).toBeGreaterThan(-1);
-    expect(html.indexOf('Journey Choice')).toBeLessThan(html.indexOf('id="route-watch"'));
+    expect(html).not.toContain('Journey Choice');
+    expect(html.indexOf('Fare spotted')).toBeGreaterThan(-1);
+    expect(html.indexOf('Fare spotted')).toBeLessThan(html.indexOf('id="route-watch"'));
   });
 
   it('preserves Manchester→Mumbai service-ended route status (Commercial Funnel Fix, 12 Sept 2026, allows a current-connecting Trip.com CTA — see tests/service-ended-commercial-funnel.test.ts)', async () => {

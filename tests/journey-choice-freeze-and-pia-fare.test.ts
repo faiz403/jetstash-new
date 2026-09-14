@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { getJourneyChoiceForRoute } from '@/lib/journey-choice-route-adapter';
 import { getComparableOptionsByObservationIds } from '@/lib/smart-fare-route-adapter';
+import { deriveJourneyChoice } from '@/lib/journey-choice';
 import { getObservationsByRoute } from '@/data/fare-observations';
 import { getFareSignalForRoute } from '@/lib/fare-signal';
 import { computeBookBySnapshot } from '@/lib/booking-intelligence';
@@ -16,15 +17,41 @@ import { computeBookBySnapshot } from '@/lib/booking-intelligence';
  *   2. The new PIA observation itself is recorded correctly and is NOT one
  *      of the frozen IDs (truthful profileId, no isolation trick).
  *   3. Nothing existing was modified or deleted — this is a pure append.
+ *
+ * Round 1 closure (14 Sept 2026, founder-approved): the manchester-islamabad
+ * pilot itself was retired the day after this freeze fix shipped — see
+ * lib/journey-choice-route-adapter.ts's own updated doc comment. The freeze
+ * mechanism this file was written to prove is unaffected by that closure
+ * (it's a selection-time guarantee, not tied to whether the pilot is
+ * currently on), so the describe block below now exercises
+ * getComparableOptionsByObservationIds() directly — the same underlying
+ * function getJourneyChoiceForRoute() would call if the pilot were
+ * reactivated — rather than through the now-closed route adapter, which
+ * correctly returns null today.
  */
 
 const NOW_ISO = '2026-09-13';
 
-describe('Journey Choice freeze holds after the PIA archive append', () => {
-  const journeyChoice = getJourneyChoiceForRoute('manchester-islamabad', NOW_ISO)!;
+const FROZEN_MAN_ISB_IDS = [
+  'obs-man-isb-economy-20260811-8w-v1', // £601 Etihad
+  'obs-man-isb-economy-20260810-tk-626-v1', // £626 Turkish
+  'obs-man-isb-economy-20260810-tk-621-v1', // £621 Turkish
+];
 
-  it('still renders (freeze did not silently null out the pilot)', () => {
-    expect(journeyChoice).toBeTruthy();
+describe('Journey Choice Round 1 is closed', () => {
+  it('getJourneyChoiceForRoute returns null for manchester-islamabad now that the pilot allowlist is empty', () => {
+    expect(getJourneyChoiceForRoute('manchester-islamabad', NOW_ISO)).toBeNull();
+  });
+});
+
+describe('The underlying freeze mechanism still holds after the PIA archive append (proven directly, independent of whether the pilot is currently active)', () => {
+  const options = getComparableOptionsByObservationIds('manchester-islamabad', FROZEN_MAN_ISB_IDS, NOW_ISO);
+  const journeyChoice = deriveJourneyChoice(options)!;
+
+  it('resolves to exactly the three frozen observations, still excluding the £870 PIA one', () => {
+    expect(options.map((o) => o.id).sort()).toEqual([...FROZEN_MAN_ISB_IDS].sort());
+    expect(options.some((o) => o.id === 'obs-man-isb-economy-20260913-pia-direct-v1')).toBe(false);
+    expect(options.some((o) => o.price === 870)).toBe(false);
   });
 
   it('lowerFare is still £601 Etihad', () => {
@@ -32,7 +59,7 @@ describe('Journey Choice freeze holds after the PIA archive append', () => {
     expect(journeyChoice.lowerFare.price).toBe(601);
   });
 
-  it('fasterJourney is still £626 Turkish Airlines, NOT the new £870 PIA direct fare', () => {
+  it('fasterJourney is still £626 Turkish Airlines, NOT the £870 PIA direct fare', () => {
     expect(journeyChoice.fasterJourney.airline).toBe('Turkish Airlines');
     expect(journeyChoice.fasterJourney.price).toBe(626);
   });
@@ -48,21 +75,11 @@ describe('Journey Choice freeze holds after the PIA archive append', () => {
     expect(journeyChoice.otherOptions[0].price).toBe(621);
   });
 
-  it('the new PIA observation never appears anywhere in the Journey Choice result', () => {
-    const all = [journeyChoice.lowerFare, journeyChoice.fasterJourney, ...journeyChoice.otherOptions];
-    expect(all.some((o) => o.id === 'obs-man-isb-economy-20260913-pia-direct-v1')).toBe(false);
-    expect(all.some((o) => o.price === 870)).toBe(false);
-  });
-
-  it('a same-profile, same-date, same-cabin archive append genuinely cannot mutate the frozen pilot (structural proof, not just today\'s numbers)', () => {
+  it('a same-profile, same-date, same-cabin archive append genuinely cannot mutate the frozen result (structural proof, not just today\'s numbers)', () => {
     // Simulates what would have happened under the OLD live-grouping
     // mechanism: ask getComparableOptionsByObservationIds for the frozen IDs
-    // plus the new PIA id, and confirm the frozen adapter (which only ever
-    // requests the three approved IDs) never receives it as an input,
+    // and confirm it never receives the new PIA observation as an input,
     // regardless of what else exists in the archive with a matching group.
-    const frozenIds = ['obs-man-isb-economy-20260811-8w-v1', 'obs-man-isb-economy-20260810-tk-626-v1', 'obs-man-isb-economy-20260810-tk-621-v1'];
-    const options = getComparableOptionsByObservationIds('manchester-islamabad', frozenIds, NOW_ISO);
-    expect(options.map((o) => o.id).sort()).toEqual([...frozenIds].sort());
     expect(options.some((o) => o.id === 'obs-man-isb-economy-20260913-pia-direct-v1')).toBe(false);
   });
 });

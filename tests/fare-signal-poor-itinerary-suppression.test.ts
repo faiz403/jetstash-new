@@ -17,6 +17,8 @@ import { routeStatusEvents } from '@/data/route-status-events';
 import { getEffectiveRoutePresentation } from '@/lib/route-status-copy';
 import { getAirlinesBySlugs } from '@/data/airlines';
 import { getJourneyChoiceForRoute, JOURNEY_CHOICE_PILOT_ROUTE_SLUGS } from '@/lib/journey-choice-route-adapter';
+import { getComparableOptionsByObservationIds } from '@/lib/smart-fare-route-adapter';
+import { deriveJourneyChoice } from '@/lib/journey-choice';
 import { deriveFareWindowReconciliation } from '@/lib/fare-window-reconciliation';
 import { getApprovedStandoutFare } from '@/lib/standout-fare';
 import { standoutFareApprovals } from '@/data/standout-fare-approvals';
@@ -266,9 +268,23 @@ describe('11. route-vs-fare mismatch behaviour', () => {
   });
 });
 
+// Round 1 closure (14 Sept 2026, founder-approved): manchester-islamabad's
+// pilot was retired from the live page — see lib/journey-choice-route-
+// adapter.ts's own doc comment. The frozen derivation this block protects
+// remains fully testable via the same frozen IDs directly.
+const FROZEN_MAN_ISB_IDS = [
+  'obs-man-isb-economy-20260811-8w-v1',
+  'obs-man-isb-economy-20260810-tk-626-v1',
+  'obs-man-isb-economy-20260810-tk-621-v1',
+];
+function frozenManIsbJourneyChoice(nowIso: string) {
+  return deriveJourneyChoice(getComparableOptionsByObservationIds('manchester-islamabad', FROZEN_MAN_ISB_IDS, nowIso));
+}
+
 describe('12. MAN-ISB Journey Choice pilot: Journey Choice itself stays frozen throughout, independent of whatever its Fare Signal display is doing', () => {
-  it('manchester-islamabad is still the one live Journey Choice pilot route', () => {
-    expect(JOURNEY_CHOICE_PILOT_ROUTE_SLUGS).toEqual(['manchester-islamabad']);
+  it('the pilot allowlist is empty today — Round 1 closed 14 Sept 2026, not deleted', () => {
+    expect(JOURNEY_CHOICE_PILOT_ROUTE_SLUGS).toEqual([]);
+    expect(getJourneyChoiceForRoute('manchester-islamabad', NOW_ISO)).toBeNull();
   });
 
   // Real-evidence arc: manchester-islamabad's Fare Signal was genuinely
@@ -290,7 +306,7 @@ describe('12. MAN-ISB Journey Choice pilot: Journey Choice itself stays frozen t
   });
 
   it('A. Journey Choice data for manchester-islamabad is unaffected -- it is derived entirely independently of Fare Signal (the ID-pinned frozen selection in lib/journey-choice-route-adapter.ts, never lib/fare-signal.ts)', () => {
-    const journeyChoice = getJourneyChoiceForRoute('manchester-islamabad', NOW_ISO);
+    const journeyChoice = frozenManIsbJourneyChoice(NOW_ISO);
     expect(journeyChoice).not.toBeNull();
     expect(journeyChoice!.lowerFare).toBeDefined();
     expect(journeyChoice!.fasterJourney).toBeDefined();
@@ -306,9 +322,9 @@ describe('12. MAN-ISB Journey Choice pilot: Journey Choice itself stays frozen t
   // this Fare Signal history -- proven directly here across all three
   // real, distinct evidence states, not just asserted in prose.
   it('A. Journey Choice data for manchester-islamabad is byte-for-byte identical across its Fare Signal\'s full suppressed-then-recovered arc -- lowerFare, fasterJourney, decision sentence, otherOptions, all unchanged', () => {
-    const beforeSuppression = getJourneyChoiceForRoute('manchester-islamabad', '2026-08-31');
-    const whileSuppressed = getJourneyChoiceForRoute('manchester-islamabad', '2026-09-08');
-    const afterRecovery = getJourneyChoiceForRoute('manchester-islamabad', NOW_ISO);
+    const beforeSuppression = frozenManIsbJourneyChoice('2026-08-31');
+    const whileSuppressed = frozenManIsbJourneyChoice('2026-09-08');
+    const afterRecovery = frozenManIsbJourneyChoice(NOW_ISO);
     expect(beforeSuppression).not.toBeNull();
     expect(whileSuppressed).not.toBeNull();
     expect(afterRecovery).not.toBeNull();

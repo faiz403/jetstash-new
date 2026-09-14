@@ -2,7 +2,22 @@ import { describe, it, expect } from 'vitest';
 import { fareObservations, isIndependentComparisonObservation, type FareObservation } from '@/data/fare-observations';
 import { deriveFareSignal, getFareSignalForRoute } from '@/lib/fare-signal';
 import { generateFareWatcherCandidates } from '@/lib/fare-watcher';
-import { getJourneyChoiceForRoute } from '@/lib/journey-choice-route-adapter';
+import { getComparableOptionsByObservationIds } from '@/lib/smart-fare-route-adapter';
+import { deriveJourneyChoice } from '@/lib/journey-choice';
+
+// Journey Choice Round 1 closure (14 Sept 2026, founder-approved): the
+// manchester-islamabad pilot was retired from the live page — see
+// lib/journey-choice-route-adapter.ts's own doc comment. The frozen
+// comparison this file's coverage protects is untouched, still provable
+// directly via the same frozen IDs.
+const FROZEN_MAN_ISB_IDS = [
+  'obs-man-isb-economy-20260811-8w-v1',
+  'obs-man-isb-economy-20260810-tk-626-v1',
+  'obs-man-isb-economy-20260810-tk-621-v1',
+];
+function frozenManIsbJourneyChoice(nowIso: string) {
+  return deriveJourneyChoice(getComparableOptionsByObservationIds('manchester-islamabad', FROZEN_MAN_ISB_IDS, nowIso))!;
+}
 
 /**
  * Same-day verification-recheck representative priority (25 Aug 2026,
@@ -105,7 +120,7 @@ describe('comparison-integrity protection unweakened by this change', () => {
   });
 
   it('manchester-islamabad Journey Choice is unaffected by this logic change -- still the real, frozen £601/£621/£626 comparison', () => {
-    const journeyChoice = getJourneyChoiceForRoute('manchester-islamabad', NOW_ISO)!;
+    const journeyChoice = frozenManIsbJourneyChoice(NOW_ISO);
     expect(journeyChoice.lowerFare.price).toBe(601);
     expect(journeyChoice.fasterJourney.price).toBe(626);
     expect(journeyChoice.otherOptions[0].price).toBe(621);
@@ -165,7 +180,7 @@ describe('four-fare simulation -- proves the deferred append would now resolve c
   });
 
   it('meanwhile, Journey Choice (real archive, real manchester-islamabad pilot) remains completely unaffected by the simulated data above', () => {
-    const journeyChoice = getJourneyChoiceForRoute('manchester-islamabad', NOW_ISO)!;
+    const journeyChoice = frozenManIsbJourneyChoice(NOW_ISO);
     expect(journeyChoice.lowerFare.price).toBe(601);
     expect(journeyChoice.fasterJourney.price).toBe(626);
     expect(journeyChoice.otherOptions[0].price).toBe(621);
