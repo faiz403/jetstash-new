@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import type { JourneyChoice, JourneyChoiceOption } from '@/lib/journey-choice';
-import { getJourneyChoiceForRoute } from '@/lib/journey-choice-route-adapter';
+import { deriveJourneyChoice, type JourneyChoice, type JourneyChoiceOption } from '@/lib/journey-choice';
+import { getComparableOptionsByObservationIds } from '@/lib/smart-fare-route-adapter';
 import { getTripComFlightHandoffUrl, TRIPCOM_FRESH_SEARCH_NOTE } from '@/lib/booking-providers';
 import {
   getJourneyChoiceTripComHandoff,
@@ -54,8 +54,21 @@ function fixtureJourneyChoice(overrides: Partial<{ lowerFare: Partial<JourneyCho
   };
 }
 
+// Journey Choice Round 1 closure (14 Sept 2026, founder-approved): the
+// manchester-islamabad Journey Choice pilot was retired from the live page
+// — see lib/journey-choice-route-adapter.ts's own doc comment — but this
+// file tests the SEPARATE, unaffected TRIPCOM_DATED_HANDOFF_PILOT_ROUTE_SLUGS
+// gate and its underlying URL-construction engineering, so the frozen
+// Round 1 data still exercises it directly via the same mechanism the
+// route adapter used before closure.
+const FROZEN_MAN_ISB_IDS = [
+  'obs-man-isb-economy-20260811-8w-v1',
+  'obs-man-isb-economy-20260810-tk-626-v1',
+  'obs-man-isb-economy-20260810-tk-621-v1',
+];
+
 describe('Real manchester-islamabad Journey Choice — the pilot route', () => {
-  const journeyChoice = getJourneyChoiceForRoute('manchester-islamabad', NOW_ISO)!;
+  const journeyChoice = deriveJourneyChoice(getComparableOptionsByObservationIds('manchester-islamabad', FROZEN_MAN_ISB_IDS, NOW_ISO))!;
   const genericUrl = getTripComFlightHandoffUrl('manchester-islamabad', 'manchester', 'islamabad');
   const handoff = getJourneyChoiceTripComHandoff('manchester-islamabad', journeyChoice, genericUrl)!;
 

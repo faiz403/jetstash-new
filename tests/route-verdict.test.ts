@@ -8,6 +8,8 @@ import { routeStatusEvents } from '@/data/route-status-events';
 import { getEffectiveRoutePresentation } from '@/lib/route-status-copy';
 import { getAirlinesBySlugs } from '@/data/airlines';
 import { getJourneyChoiceForRoute, JOURNEY_CHOICE_PILOT_ROUTE_SLUGS } from '@/lib/journey-choice-route-adapter';
+import { getComparableOptionsByObservationIds } from '@/lib/smart-fare-route-adapter';
+import { deriveJourneyChoice } from '@/lib/journey-choice';
 import { getFareSignalForRoute } from '@/lib/fare-signal';
 import { getTripComFlightHandoffUrl } from '@/lib/booking-providers';
 import { getJourneyChoiceTripComHandoff } from '@/lib/tripcom-dated-handoff';
@@ -39,6 +41,18 @@ function collectStrings(node: unknown, out: string[] = []): string[] {
   return out;
 }
 
+// Round 1 closure (14 Sept 2026, founder-approved): manchester-islamabad's
+// pilot was retired — see lib/journey-choice-route-adapter.ts's own doc
+// comment — so getJourneyChoiceForRoute() now correctly returns null for
+// it. RouteVerdict's own evidence-separation behaviour is genuinely
+// untouched infrastructure, so it's exercised below via the frozen Round 1
+// IDs directly, the same mechanism the route adapter used before closure.
+const FROZEN_MAN_ISB_IDS = [
+  'obs-man-isb-economy-20260811-8w-v1',
+  'obs-man-isb-economy-20260810-tk-626-v1',
+  'obs-man-isb-economy-20260810-tk-621-v1',
+];
+
 /** Exactly what app/routes/[slug]/page.tsx computes for RouteVerdict's props. */
 function buildVerdictProps(routeSlug: string) {
   const route = getRouteBySlug(routeSlug)!;
@@ -67,9 +81,38 @@ function buildVerdictProps(routeSlug: string) {
   };
 }
 
+/** Same as buildVerdictProps, but sources journeyChoice from the frozen Round 1 IDs directly, independent of the (now empty) live pilot allowlist. */
+function buildFrozenManIsbVerdictProps() {
+  const routeSlug = 'manchester-islamabad';
+  const route = getRouteBySlug(routeSlug)!;
+  const airport = getRouteAirport(route)!;
+  const dest = getRouteDestination(route)!;
+  const presentation = getEffectiveRoutePresentation(route, routeStatusEvents, NOW_ISO);
+  const presentationAirlines = getAirlinesBySlugs(presentation.airlineSlugs);
+  const journeyChoice = deriveJourneyChoice(getComparableOptionsByObservationIds(routeSlug, FROZEN_MAN_ISB_IDS, NOW_ISO))!;
+  const fareSignal = getFareSignalForRoute(routeSlug, NOW_ISO);
+  const tripComUrl = getTripComFlightHandoffUrl(routeSlug, airport.slug, dest.slug);
+  const tripComHandoff = getJourneyChoiceTripComHandoff(routeSlug, journeyChoice, tripComUrl);
+  return {
+    journeyChoice,
+    props: {
+      routeLabel: `${airport.city} to ${dest.city}`,
+      routeSlug,
+      routeStatus: presentation.status,
+      flightTime: presentation.status === 'direct' || presentation.status === 'connecting' ? presentation.flightTime : null,
+      routeDirectness: (presentation.status === 'direct' || presentation.status === 'connecting' ? presentation.status : null) as 'direct' | 'connecting' | null,
+      routeStatusLabel: presentation.status === 'direct' || presentation.status === 'connecting' ? presentation.statusLabel : null,
+      routeAirlineLabel: presentationAirlines.length > 0 ? presentationAirlines.map((a) => a.name).join(', ') : null,
+      journeyChoice,
+      tripComHandoff,
+      fareSignal,
+    },
+  };
+}
+
 describe('RouteVerdict renders only for evidenced routes', () => {
-  it('the pilot allowlist is still manchester-islamabad only — Phase 1 must not have generalised Journey Choice', () => {
-    expect([...JOURNEY_CHOICE_PILOT_ROUTE_SLUGS]).toEqual(['manchester-islamabad']);
+  it('the pilot allowlist is empty today — Round 1 closed (14 Sept 2026), no route currently live', () => {
+    expect([...JOURNEY_CHOICE_PILOT_ROUTE_SLUGS]).toEqual([]);
   });
 
   it('every non-pilot route has no journeyChoice, so RouteVerdict never renders for it', () => {
@@ -87,8 +130,8 @@ describe('RouteVerdict renders only for evidenced routes', () => {
 });
 
 describe('CRITICAL EVIDENCE RULE: Journey Choice and Fare Signal never blend into one implied current comparison', () => {
-  const { props } = buildVerdictProps('manchester-islamabad');
-  const html = renderToStaticMarkup(RouteVerdict(props!)).replace(/\s+/g, ' ').replace(/&#x27;/g, "'");
+  const { props } = buildFrozenManIsbVerdictProps();
+  const html = renderToStaticMarkup(RouteVerdict(props)).replace(/\s+/g, ' ').replace(/&#x27;/g, "'");
 
   it('renders three separately labelled blocks — Route reality, Journey Choice, Recent fare checks', () => {
     expect(html).toContain('Route reality');
@@ -231,8 +274,8 @@ describe('page structure: Journey Choice moved dramatically higher, Fare Signal 
   });
 
   it('the collected rendered text of the Verdict is a strict superset check: it does not duplicate Journey Choice\'s own two full option cards', () => {
-    const { props } = buildVerdictProps('manchester-islamabad');
-    const text = collectStrings(RouteVerdict(props!)).join(' ');
+    const { props } = buildFrozenManIsbVerdictProps();
+    const text = collectStrings(RouteVerdict(props)).join(' ');
     // The Verdict names the airline/fare pair only inside its one decision
     // sentence and route-service note — it must not render a second
     // "Lower fare" / "Faster journey" labelled card pair (that's Journey

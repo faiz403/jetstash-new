@@ -1,7 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { getRouteBySlug, routes } from '@/data/routes';
-import { getJourneyChoiceForRoute } from '@/lib/journey-choice-route-adapter';
+import { getComparableOptionsByObservationIds } from '@/lib/smart-fare-route-adapter';
+import { deriveJourneyChoice } from '@/lib/journey-choice';
 import { getSafeTripComFlightHandoffUrl } from '@/lib/booking-providers';
 import RoutePage from '@/app/routes/[slug]/page';
 
@@ -116,8 +117,14 @@ describe('10. Trip.com handoff remains unchanged', () => {
 });
 
 describe('11. Journey Choice facts remain unchanged', () => {
+  // Round 1 closure (14 Sept 2026, founder-approved, after this test's own
+  // 12 Sept fixture date): manchester-islamabad's pilot was retired from
+  // the live page — see lib/journey-choice-route-adapter.ts's own doc
+  // comment — but the underlying frozen £601/£626/£25/14h15m result is
+  // untouched, still provable directly via the same frozen IDs.
   it('the £601/£626 comparison and its £25/14h15m framing are untouched', () => {
-    const journeyChoice = getJourneyChoiceForRoute('manchester-islamabad', NOW_ISO);
+    const frozenIds = ['obs-man-isb-economy-20260811-8w-v1', 'obs-man-isb-economy-20260810-tk-626-v1', 'obs-man-isb-economy-20260810-tk-621-v1'];
+    const journeyChoice = deriveJourneyChoice(getComparableOptionsByObservationIds('manchester-islamabad', frozenIds, NOW_ISO));
     expect(journeyChoice).not.toBeNull();
     const html = JSON.stringify(journeyChoice);
     expect(html).toContain('601');

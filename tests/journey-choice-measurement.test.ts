@@ -2,7 +2,8 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { isValidElement, type ReactElement } from 'react';
-import { getJourneyChoiceForRoute } from '@/lib/journey-choice-route-adapter';
+import { getComparableOptionsByObservationIds } from '@/lib/smart-fare-route-adapter';
+import { deriveJourneyChoice } from '@/lib/journey-choice';
 import type { JourneyChoiceTripComHandoff } from '@/lib/tripcom-dated-handoff';
 import { JourneyChoice } from '@/components/route/journey-choice';
 import { JourneyChoiceImpressionSection } from '@/components/route/journey-choice-impression-section';
@@ -29,6 +30,23 @@ import { TrackedOutboundLink } from '@/components/ui/tracked-outbound-link';
  */
 
 const NOW_ISO = '2026-08-24';
+
+// Round 1 closure (14 Sept 2026): the manchester-islamabad pilot itself was
+// retired (see lib/journey-choice-route-adapter.ts's own doc comment), so
+// getJourneyChoiceForRoute() now correctly returns null for it. The
+// measurement instrumentation and component this file tests are untouched
+// infrastructure, not deleted, so this fixture reproduces the closed
+// pilot's own frozen result directly via the same underlying mechanism
+// getJourneyChoiceForRoute() used before closure, letting this coverage
+// keep proving the instrumentation works correctly if reactivated.
+const FROZEN_MAN_ISB_IDS = [
+  'obs-man-isb-economy-20260811-8w-v1',
+  'obs-man-isb-economy-20260810-tk-626-v1',
+  'obs-man-isb-economy-20260810-tk-621-v1',
+];
+function getFrozenManIsbJourneyChoice(nowIso: string) {
+  return deriveJourneyChoice(getComparableOptionsByObservationIds('manchester-islamabad', FROZEN_MAN_ISB_IDS, nowIso))!;
+}
 
 describe('journey_choice_impression — structural guarantees', () => {
   const src = readFileSync(join(process.cwd(), 'components/route/journey-choice-impression-section.tsx'), 'utf8');
@@ -114,7 +132,7 @@ describe('journey_choice_cta_click — dated vs fallback source distinction', ()
     return null;
   }
 
-  const journeyChoice = getJourneyChoiceForRoute('manchester-islamabad', NOW_ISO)!;
+  const journeyChoice = getFrozenManIsbJourneyChoice(NOW_ISO);
 
   it('a dated handoff produces source: "journey-choice-dated"', () => {
     const datedHandoff: JourneyChoiceTripComHandoff = { url: 'https://www.trip.com/flights/showfarefirst?dcity=man', datesPreserved: true };
@@ -180,7 +198,7 @@ describe('Zero customer-facing change — analytics-only diff', () => {
   });
 
   it('the £25/14h15m decision sentence, the £601/£621/£626 figures, and the comparison logic are all untouched', () => {
-    const journeyChoice = getJourneyChoiceForRoute('manchester-islamabad', NOW_ISO)!;
+    const journeyChoice = getFrozenManIsbJourneyChoice(NOW_ISO);
     expect(journeyChoice.decision.sentence).toBe('£25 more saves 14h 15m of journey time.');
     expect(journeyChoice.lowerFare.price).toBe(601);
     expect(journeyChoice.fasterJourney.price).toBe(626);

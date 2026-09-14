@@ -19,8 +19,25 @@ import { deriveJourneyChoice, type JourneyChoice } from '@/lib/journey-choice';
  * tickets). Add a route here only when a future evidence review earns it —
  * never automatically just because the lower-level comparison contract
  * happens to pass.
+ *
+ * Round 1 closure (14 Sept 2026, founder-approved): manchester-islamabad
+ * removed. Its frozen result (£601 Etihad / £626 Turkish / "£25 more saves
+ * 14h15m", checked 10–11 Aug 2026) was never wrong — it's preserved as
+ * closed historical evidence (see docs/project-control/COMPLETED.md) — but
+ * a live, genuinely different direct-vs-connecting question now exists on
+ * this route (the 13 Sept £870 direct PIA Fare Signal, from PR #270) that
+ * the frozen connecting-vs-connecting pilot was never built to answer, and
+ * a same-day 14 Sept recheck showed the underlying connecting fares had
+ * moved materially (Etihad £601→£636, Turkish £626→£721, gap £25→£85).
+ * Rather than silently refresh the pilot to newer connecting fares (which
+ * would still miss the direct question) or let it keep presenting a
+ * six-week-old comparison as the live decision surface, it is retired here
+ * by the same allowlist gate that turned it on — no infrastructure
+ * deleted, so a future, deliberately evidenced refresh (see the frozen ID
+ * map below) remains a one-line change, not a rebuild. This list is
+ * intentionally empty until that happens.
  */
-export const JOURNEY_CHOICE_PILOT_ROUTE_SLUGS: readonly string[] = ['manchester-islamabad'];
+export const JOURNEY_CHOICE_PILOT_ROUTE_SLUGS: readonly string[] = [];
 
 export function isJourneyChoicePilotRoute(routeSlug: string): boolean {
   return JOURNEY_CHOICE_PILOT_ROUTE_SLUGS.includes(routeSlug);
@@ -56,6 +73,13 @@ export function isJourneyChoicePilotRoute(routeSlug: string): boolean {
  * changes Journey Choice's own input selection. A future, deliberate
  * change to the experiment is still possible by editing this list — it can
  * no longer happen silently as a side effect of an unrelated append.
+ *
+ * Round 1 closure (14 Sept 2026): manchester-islamabad's entry below is now
+ * dormant, not deleted — JOURNEY_CHOICE_PILOT_ROUTE_SLUGS above is empty,
+ * so getJourneyChoiceForRoute() returns null for this route before this map
+ * is ever consulted. Left in place as a record of exactly which three
+ * observations the closed Round 1 result used, and as the starting point
+ * for a future, deliberately-evidenced refresh.
  */
 const JOURNEY_CHOICE_FROZEN_OBSERVATION_IDS: Readonly<Record<string, readonly string[]>> = {
   'manchester-islamabad': [
