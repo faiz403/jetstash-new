@@ -6,6 +6,7 @@ import './globals.css';
 import { Header } from '@/components/layout/header';
 import { Footer } from '@/components/layout/footer';
 import { CookieConsentBanner } from '@/components/ui/cookie-consent-banner';
+import { AcquisitionLandingTracker } from '@/components/analytics/acquisition-landing-tracker';
 import { JsonLd, organizationSchema, webSiteSchema } from '@/components/seo/json-ld';
 import { siteConfig } from '@/lib/site-config';
 
@@ -75,6 +76,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <main id="main-content">{children}</main>
         <Footer />
         <CookieConsentBanner />
+        <AcquisitionLandingTracker />
         <Analytics />
         <SpeedInsights />
       </body>

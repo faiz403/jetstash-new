@@ -1,5 +1,6 @@
 import { track as vercelTrack } from '@vercel/analytics';
 import { fireGoogleAdsConversion } from './google-ads-conversions';
+import { getStoredAcquisitionSource } from './acquisition';
 
 /**
  * The one place JetStash sends an analytics event from — a thin wrapper
@@ -96,7 +97,27 @@ export type AnalyticsEvent =
   // The Verdict's primary CTA click reuses the existing
   // 'journey_choice_cta_click' event with a new source value
   // ('journey-choice-verdict') instead of a second new event.
-  | 'route_verdict_watch_click';
+  | 'route_verdict_watch_click'
+  // Acquisition attribution (14 Sept 2026, Astra #19 small closure set) —
+  // see lib/acquisition.ts for the full privacy design. Two new events,
+  // both carrying only a route/page identifier plus one value from the
+  // fixed AcquisitionSource enum — never a raw referrer, UTM string or
+  // search term. Neither event changes the meaning or payload of any
+  // existing event; 'source' on tripcom_click and elsewhere still means
+  // "which product/component surface", untouched.
+  | 'acquisition_landing'
+  | 'acquisition_handoff';
+
+/**
+ * Events that represent a genuine partner handoff — the same two events
+ * lib/google-ads-conversions.ts already treats as commercially meaningful.
+ * When one of these fires, track() also emits a paired 'acquisition_handoff'
+ * event carrying this session's acquisition channel, so a future genuinely
+ * different-channel distribution test (Facebook, Reddit, etc.) can be
+ * checked for same-session partner handoffs without touching the
+ * tripcom_click/tripcom_hotel_click payload itself.
+ */
+const ACQUISITION_HANDOFF_EVENTS: ReadonlySet<AnalyticsEvent> = new Set(['tripcom_click', 'tripcom_hotel_click']);
 
 export function track(event: AnalyticsEvent, properties?: Record<string, string | number | boolean>): void {
   try {
@@ -115,5 +136,19 @@ export function track(event: AnalyticsEvent, properties?: Record<string, string 
     fireGoogleAdsConversion(event);
   } catch {
     // Google Ads measurement must never break the page it's measuring.
+  }
+  // Deliberately its own try/catch, and deliberately a single recursive
+  // call back through this same function (not a direct vercelTrack call)
+  // so the paired event gets the identical error-isolation and Google Ads
+  // no-op handling as every other event — 'acquisition_handoff' is not
+  // itself in ACQUISITION_HANDOFF_EVENTS, so this cannot recurse further.
+  if (ACQUISITION_HANDOFF_EVENTS.has(event)) {
+    try {
+      const route = typeof properties?.route === 'string' ? properties.route : 'unknown';
+      const channel = getStoredAcquisitionSource() ?? 'unknown';
+      track('acquisition_handoff', { route, channel });
+    } catch {
+      // Acquisition pairing must never break the handoff click it describes.
+    }
   }
 }
