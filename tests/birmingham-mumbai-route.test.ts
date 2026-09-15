@@ -648,13 +648,12 @@ describe('Cross-surface leakage fix — fare section heading is content-aware, n
     expect(text).not.toMatch(/Fare history & current example/);
   });
 
-  it('birmingham-mumbai has a dated Batch B observation, but renders the coherent "Fare history" heading (not "current example") end-to-end — Fare History coherence, 1 Sep 2026: the Tuesday full weekly refresh\'s new observation is a confirmed self-transfer, 2-stop-per-leg itinerary, so the route has no current representative Fare Signal and the section correctly no longer claims a "current example"', async () => {
+  it('birmingham-mumbai\'s 15 September 2026 observation is a clean 1-stop-per-leg itinerary, so the route now has a current representative Fare Signal and correctly renders the "current example" heading — this route\'s 1 September coverage (a self-transfer, 2-stop-per-leg itinerary with no current representative Fare Signal) was superseded by the 15 September editorial batch (docs/project-control/fare-evidence/weekly-controlled-batch-2026-09-15.md), whose fresh £602 Qatar Airways/KLM observation has only 1 stop on each leg and so does not match isPoorItinerarySuitability()\'s self-transfer-AND-2+-stops signature', async () => {
     expect(fareObservations.some((o) => o.routeSlug === 'birmingham-mumbai')).toBe(true);
     expect(deals.some((d) => d.fromAirportSlug === 'birmingham' && d.toDestinationSlug === 'mumbai')).toBe(true);
     const element = await RoutePage({ params: Promise.resolve({ slug: 'birmingham-mumbai' }) });
     const text = collectStrings(element).join(' ');
-    expect(text).toMatch(/Fare history/);
-    expect(text).not.toMatch(/Fare history & current example/);
+    expect(text).toMatch(/Fare history & current example/);
   });
 
   it('manchester-lahore has dated editorial observations, but renders the coherent "Fare history" heading (not "current example") end-to-end — Fare History coherence fix, 1 Sep 2026: its only current-cabin observation is a confirmed self-transfer, 2/3-stop-per-leg itinerary and has no current representative Fare Signal, so the section correctly no longer claims a "current example"', async () => {
