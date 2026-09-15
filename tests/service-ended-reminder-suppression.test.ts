@@ -110,7 +110,12 @@ describe('1 & 2. Confirmed service-ended routes no longer generate any route-ver
   it('neither route appears anywhere in the section items list at all', () => {
     const section = findSection(now);
     const labels = section.items.map((i) => i.label);
-    expect(labels.some((l) => l.includes('Mumbai'))).toBe(false);
+    // Matches on 'Manchester' + 'Mumbai' together, not 'Mumbai' alone —
+    // birmingham-mumbai is a genuine, unrelated, non-service-ended
+    // connecting route that legitimately appears in this section's due-soon
+    // window (its visibility here shifts over time as other routes'
+    // reviewDueDate values are refreshed elsewhere; that is not a defect).
+    expect(labels.some((l) => l.includes('Manchester') && l.includes('Mumbai'))).toBe(false);
     expect(labels.some((l) => l.includes('Delhi') && l.includes('Manchester'))).toBe(false);
   });
 });
@@ -241,7 +246,12 @@ describe('8. The founder snapshot (and therefore the weekly reminder email, whic
     // implementation is needed for the email.
     expect(section.id).toBe(SECTION_ID);
     const labels = section.items.map((i) => i.label);
-    expect(labels.some((l) => l.includes('Mumbai'))).toBe(false);
+    // Matches on 'Manchester' + 'Mumbai' together, not 'Mumbai' alone —
+    // birmingham-mumbai is a genuine, unrelated, non-service-ended
+    // connecting route that legitimately appears in this section's due-soon
+    // window (its visibility here shifts over time as other routes'
+    // reviewDueDate values are refreshed elsewhere; that is not a defect).
+    expect(labels.some((l) => l.includes('Manchester') && l.includes('Mumbai'))).toBe(false);
     expect(labels.some((l) => l.includes('Delhi') && l.includes('Manchester'))).toBe(false);
   });
 });

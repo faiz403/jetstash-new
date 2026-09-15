@@ -229,10 +229,11 @@ describe('req 18: Verification Pending route returns a limited result', () => {
     // recorded shape decision, not a staleness-gated claim — see
     // getDisplayDirectness's own doc comment in data/routes.ts), so it can
     // never itself degrade to pending this way. Manchester-Lahore
-    // (isDirect: true, reviewDueDate 2026-09-14) is the real case this
+    // (isDirect: true, reviewDueDate 2026-10-14 as of the 14 September 2026
+    // Route Verification Maintenance refresh) is the real case this
     // mechanism protects.
-    const laterNow = '2026-09-15T00:00:00.000Z'; // after Lahore's 2026-09-14 reviewDueDate
-    const result = planArriveBy(baseInput({ requiredArrivalDateLocal: '2026-10-01' }), laterNow);
+    const laterNow = '2026-10-15T00:00:00.000Z'; // after Lahore's 2026-10-14 reviewDueDate
+    const result = planArriveBy(baseInput({ requiredArrivalDateLocal: '2026-11-01' }), laterNow);
     expect(result.state).toBe('route_verification_required');
     if (result.state === 'route_verification_required') {
       expect(result.journeyType).toBe('verification-pending');

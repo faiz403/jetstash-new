@@ -152,6 +152,11 @@ describe('getRoutePresentation — verified direct routes (real dataset) keep wo
   });
 
   it('manchester-lahore: its own frequency field is honest that frequency is unconfirmed — proves a route\'s directness being evidenced does not mean every field is', () => {
+    // A same-day (14 September 2026) evidence-compliance review found the
+    // route's brief PK709/PK710 frequency claim rested only on secondary
+    // aviation-press coverage, not a qualifying primary source under this
+    // file's cadence policy — corrected back to the honest unconfirmed
+    // wording, so this remains a genuine example of the point being made.
     const route = getRouteBySlug('manchester-lahore')!;
     expect(route.frequency).toMatch(/not confirmed/i);
     const p = getRoutePresentation(route, FIXED_TODAY);
@@ -293,8 +298,12 @@ describe('Metadata output — generateMetadata() never builds a pending route\'s
   });
 
   it('regression: the SAME route produces the restrained pending metadata once the clock passes its reviewDueDate — proves generateMetadata does not depend on today\'s real date, only on the (mocked) clock at test time', async () => {
+    // manchester-lahore's reviewDueDate moved from 2026-09-14 to 2026-10-14
+    // in the 14 September 2026 Route Verification Maintenance refresh (a
+    // genuine frequency-evidence update, not a date-laundering extension —
+    // see data/routes.ts), so the mocked "day after" clock moves with it.
     vi.useFakeTimers();
-    vi.setSystemTime(new Date('2026-09-15T12:00:00Z')); // the day after reviewDueDate
+    vi.setSystemTime(new Date('2026-10-15T12:00:00Z')); // the day after reviewDueDate
     const meta = await generateMetadata({ params: Promise.resolve({ slug: 'manchester-lahore' }) });
     expect(meta.title).toMatch(/Verification in Progress/i);
     assertNoForbiddenClaims(String(meta.description));
