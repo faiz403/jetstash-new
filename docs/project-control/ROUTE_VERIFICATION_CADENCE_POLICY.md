@@ -296,3 +296,22 @@ unmatched single day on a leisure route that may not fly daily is not proof of n
 it also does not positively reconfirm it. Per this policy's own rule, a route that cannot be
 reconfirmed is never administratively extended: the record is left to fail closed on its existing
 2026-09-12 date.
+
+### Batch 6 -- 17 September 2026 (single-route due-date execution)
+
+A one-route due-date check, not a sweep: `london-gatwick-amritsar`'s `reviewDueDate` fell due today.
+A same-day-but-premature write of this exact check (16 September, one day early) was made, caught,
+and closed without merging the prior day -- this batch is the genuine, freshly-independent recheck
+on the actual due date, not a reuse of that closed work.
+
+| Route | Outcome | New window |
+|---|---|---:|
+| London Gatwick-Amritsar | **Reconfirmed -- route exists and Air India operates it, per Air India's own 16 February 2026 Northern Summer Schedule 2026 press release (still live, reread in full today); stale "Boeing 787-8" evidence note corrected to B777-300ER per the same source** | RECENT/CHANGING, 30d |
+
+Air India's own booking-route page (the 18 August check's cited source) was reopened today and still
+shows the same self-contradicting "0 direct flights" structured field alongside "fly directly"
+marketing copy, with no clear Gatwick-vs-Heathrow distinction -- not treated as sufficient evidence
+on its own, consistent with this route's sibling disputed pairs. The 27 March 2023 launch release
+remains historical-only and was not relied on to renew the frequency/operating-days specificity --
+that detail stays unasserted internally, matching the route's own already-hedged public frequency
+field. No public-facing wording changed; only the internal verification note was corrected.
