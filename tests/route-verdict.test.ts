@@ -200,12 +200,19 @@ describe('CRITICAL EVIDENCE RULE: Journey Choice and Fare Signal never blend int
     expect(anchorBlock).not.toContain('lucide-arrow-up-right');
   });
 
-  it('the Recent Fare Checks block states its own state honestly and is never phrased as continuing the Journey Choice figures', () => {
-    // manchester-islamabad's Fare Signal is currently suppressed
-    // (poor-itinerary) — verified against the live derivation, not assumed.
-    expect(props!.fareSignal.state).toBe('none');
-    expect(props!.fareSignal.noneReason).toBe('poor-itinerary-suppressed');
-    expect(html).toContain("The latest options involved extra stops or self-transfers, so JetStash isn't showing them as a representative fare.");
+  it('the Recent Fare Checks block states its own honestly-resolved fare, never phrased as continuing the Journey Choice figures', () => {
+    // manchester-islamabad's newest observation at this date is still
+    // poor-itinerary and still correctly skipped for representative
+    // selection, but the suitability walk (16 Sept 2026 — see
+    // docs/project-control/fare-evidence/full-portfolio-controlled-batch-2026-09-15.md)
+    // resolves the route to its older, suitable, still-fresh 25 August £480
+    // observation instead of failing closed — verified against the live
+    // derivation, not assumed.
+    expect(props!.fareSignal.state).toBe('current');
+    expect(props!.fareSignal.observation?.id).toBe('obs-man-isb-economy-20260825-recheck-v1');
+    expect(props!.fareSignal.observation?.price).toBe(480);
+    expect(props!.fareSignal.noneReason).toBeNull();
+    expect(html).not.toContain("The latest options involved extra stops or self-transfers, so JetStash isn't showing them as a representative fare.");
   });
 });
 

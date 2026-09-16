@@ -30,25 +30,14 @@ import { FareHistoryPanel } from '@/components/route/fare-history-panel';
 // failing because of that drift.
 const FIXED_TODAY = '2026-08-31';
 
-const KNOWN_NO_REPRESENTATIVE_FARE_ROUTES = [
-  'manchester-lahore',
-  'birmingham-amritsar',
-  'manchester-dubai',
-  'london-heathrow-doha',
-  'london-heathrow-jeddah',
-  'london-gatwick-amritsar',
-  'birmingham-delhi',
-];
-
-describe('1. Manchester-Dubai: the exact reproduced case', () => {
-  it('current Fare Signal is none, observations remain present, heading no longer claims "current example"', () => {
+describe('1. Manchester-Dubai: the exact reproduced case (16 Sept 2026 UPDATE: the suitability walk now resolves this route to a current representative fare — see docs/project-control/fare-evidence/full-portfolio-controlled-batch-2026-09-15.md — so this specific route no longer demonstrates the "no representative fare" heading; the mechanism itself is still tested in block 2 via a still-genuinely-suppressed example)', () => {
+  it('Fare Signal correctly resolves to its older suitable observation at this frozen date, heading correctly reads "current example"', () => {
     const signal = getFareSignalForRoute('manchester-dubai', FIXED_TODAY);
-    expect(signal.state).toBe('none');
+    expect(signal.state).toBe('current');
     const observations = getPublishableObservationsByRoute('manchester-dubai', FIXED_TODAY);
     expect(observations.length).toBeGreaterThan(0);
     const copy = getFareSectionCopy(observations.length > 0, true, signal.state !== 'none');
-    expect(copy.heading).toBe('Fare history');
-    expect(copy.heading).not.toMatch(/current example/i);
+    expect(copy.heading).toBe('Fare history & current example');
   });
 
   it('the contextual explanation renders, without claiming the observations are invalid, wrong, or that no fares/flights exist', () => {
@@ -75,15 +64,29 @@ describe('1. Manchester-Dubai: the exact reproduced case', () => {
   });
 });
 
-describe('2. All seven currently no-representative-fare routes receive the coherent history presentation', () => {
-  it.each(KNOWN_NO_REPRESENTATIVE_FARE_ROUTES)('%s: Fare Signal is none, observations exist, heading is "Fare history" (no "current example")', (slug) => {
-    const signal = getFareSignalForRoute(slug, FIXED_TODAY);
-    expect(signal.state, slug).toBe('none');
-    const observations = getPublishableObservationsByRoute(slug, FIXED_TODAY);
-    expect(observations.length, slug).toBeGreaterThan(0);
+describe('2. A genuinely no-representative-fare route still receives the coherent history presentation', () => {
+  // 16 Sept 2026 UPDATE (suitability walk — see
+  // docs/project-control/fare-evidence/full-portfolio-controlled-batch-2026-09-15.md):
+  // every one of the 7 routes originally named here now has an older
+  // suitable observation, so none of them demonstrate this heading at the
+  // FIXED_TODAY date any more (see block 1's own update). The mechanism
+  // this block exists to prove is still real: london-gatwick-doha has
+  // exactly one observation, ever (15 Sept 2026, self-transfer, 2/3 stops),
+  // with no suitable fallback anywhere in its history, so it genuinely
+  // still has observations but no representative fare — evaluated at its
+  // own evidence date, not the file's earlier FIXED_TODAY (which predates
+  // that route's only observation).
+  const GENUINELY_SUPPRESSED_WITH_HISTORY_DATE = '2026-09-16';
+  it('london-gatwick-doha: Fare Signal is none, observations exist, heading is "Fare history" (no "current example")', () => {
+    const slug = 'london-gatwick-doha';
+    const signal = getFareSignalForRoute(slug, GENUINELY_SUPPRESSED_WITH_HISTORY_DATE);
+    expect(signal.state).toBe('none');
+    expect(signal.noneReason).toBe('poor-itinerary-suppressed');
+    const observations = getPublishableObservationsByRoute(slug, GENUINELY_SUPPRESSED_WITH_HISTORY_DATE);
+    expect(observations.length).toBeGreaterThan(0);
     const copy = getFareSectionCopy(observations.length > 0, true, signal.state !== 'none');
-    expect(copy.heading, slug).toBe('Fare history');
-    expect(copy.caption, slug).toMatch(/does not currently have a representative fare/i);
+    expect(copy.heading).toBe('Fare history');
+    expect(copy.caption).toMatch(/does not currently have a representative fare/i);
   });
 });
 

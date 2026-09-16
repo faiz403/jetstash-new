@@ -181,23 +181,40 @@ describe('4-8. Future observations cannot alter a historical Fare Signal, and be
   });
 
   it('6. 1 Sep MAN→DXB (£336, Pegasus, connecting) cannot alter the 31 Aug Fare Signal', () => {
+    // 16 Sept 2026 UPDATE (suitability walk — see
+    // docs/project-control/fare-evidence/full-portfolio-controlled-batch-2026-09-15.md):
+    // the pre-existing 25 Aug £314 poor-itinerary observation no longer
+    // fails the whole route closed -- the selector correctly walks to the
+    // route's own older, still-fresh, suitable 18 August £350 observation
+    // instead. The core point this test exists to prove is unaffected: the
+    // hypothetical 1 Sept observation is still correctly excluded by
+    // causal availability and cannot alter the 31 Aug result either way.
     const beforeReal = getFareSignalForRoute('manchester-dubai', AUG_31);
-    expect(beforeReal.state).toBe('none'); // suppressed by the pre-existing 25 Aug £314 poor-itinerary observation
+    expect(beforeReal.state).toBe('current');
+    expect(beforeReal.observation?.price).toBe(350);
 
     const withHypothetical = publishableWithHypothetical('manchester-dubai', MAN_DXB_HYPOTHETICAL, AUG_31);
     expect(withHypothetical.some((o) => o.id === MAN_DXB_HYPOTHETICAL.id)).toBe(false);
     const afterHypothetical = deriveFareSignal(withHypothetical, AUG_31);
-    expect(afterHypothetical.state).toBe('none');
+    expect(afterHypothetical.state).toBe('current');
+    expect(afterHypothetical.observation?.price).toBe(350);
   });
 
   it('7. 1 Sep LHR→JED (£464, separate tickets, 1/1 stop) cannot alter the 31 Aug Fare Signal', () => {
+    // 16 Sept 2026 UPDATE: same reasoning as test 6 above -- the pre-
+    // existing 25 Aug £361 poor-itinerary observation is skipped in favour
+    // of the route's own older, still-fresh, suitable 19 August £535
+    // observation, instead of failing closed. The hypothetical remains
+    // correctly excluded by causal availability either way.
     const beforeReal = getFareSignalForRoute('london-heathrow-jeddah', AUG_31);
-    expect(beforeReal.state).toBe('none'); // suppressed by the pre-existing 25 Aug £361 poor-itinerary observation
+    expect(beforeReal.state).toBe('current');
+    expect(beforeReal.observation?.price).toBe(535);
 
     const withHypothetical = publishableWithHypothetical('london-heathrow-jeddah', LHR_JED_HYPOTHETICAL, AUG_31);
     expect(withHypothetical.some((o) => o.id === LHR_JED_HYPOTHETICAL.id)).toBe(false);
     const afterHypothetical = deriveFareSignal(withHypothetical, AUG_31);
-    expect(afterHypothetical.state).toBe('none');
+    expect(afterHypothetical.state).toBe('current');
+    expect(afterHypothetical.observation?.price).toBe(535);
   });
 
   it('8. the same three observations ARE available, and correctly drive Fare Signal, at 1 September 2026 -- proving this is availability, not deletion', () => {
@@ -205,10 +222,17 @@ describe('4-8. Future observations cannot alter a historical Fare Signal, and be
     const isb = publishableWithHypothetical('manchester-islamabad', MAN_ISB_HYPOTHETICAL, SEP_1);
     expect(isb.some((o) => o.id === MAN_ISB_HYPOTHETICAL.id)).toBe(true);
     const isbSignal = deriveFareSignal(isb, SEP_1);
-    // Newest observation, but poor-itinerary suppressed -- correct: this is
-    // Fare Signal poor-itinerary suppression applying NORMALLY once the
-    // observation is causally available, not a second rule.
-    expect(isbSignal.state).toBe('none');
+    // 16 Sept 2026 UPDATE: the hypothetical IS now available and IS the
+    // newest observation, but it is still poor -- the suitability walk
+    // correctly skips it in favour of the route's own older, still-fresh,
+    // suitable 25 August £480 observation, rather than failing the whole
+    // route closed. The hypothetical itself is still genuinely poor
+    // (confirmed below); this is the same "available, not deleted"
+    // principle this test exists to prove, just resolved one level higher
+    // now that the selector looks past a single poor candidate.
+    expect(isbSignal.state).toBe('current');
+    expect(isbSignal.observation?.id).toBe('obs-man-isb-economy-20260825-recheck-v1');
+    expect(isbSignal.observation?.price).toBe(480);
     expect(isPoorItinerarySuitability(MAN_ISB_HYPOTHETICAL)).toBe(true);
 
     const dxb = publishableWithHypothetical('manchester-dubai', MAN_DXB_HYPOTHETICAL, SEP_1);
@@ -307,9 +331,9 @@ describe('13. Fare Signal poor-itinerary suppression policy is completely unchan
     expect(isPoorItinerarySuitability({ priceNote: 'no self-transfer notice', outboundStops: 4, returnStops: 4 })).toBe(false);
   });
 
-  it('the six pre-existing, already-suppressed routes remain suppressed at their own frozen evaluation date, exactly as before this fix', () => {
+  it('the six previously-suppressed routes now correctly resolve to an older suitable observation at their own frozen evaluation date, since each already had one (16 Sept 2026 suitability walk — see docs/project-control/fare-evidence/full-portfolio-controlled-batch-2026-09-15.md); the policy itself (isPoorItinerarySuitability, checked above) is genuinely unchanged, it is now just applied per-candidate within a pool instead of only to the pool\'s newest member', () => {
     for (const slug of ['manchester-lahore', 'birmingham-amritsar', 'london-heathrow-doha', 'london-heathrow-jeddah', 'london-gatwick-amritsar', 'birmingham-delhi']) {
-      expect(getFareSignalForRoute(slug, AUG_31).state, slug).toBe('none');
+      expect(getFareSignalForRoute(slug, AUG_31).state, slug).toBe('current');
     }
   });
 });

@@ -116,13 +116,25 @@ describe('5. No unsupported saving/Standout/deal wording is introduced', () => {
   });
 });
 
-describe('6. Self-transfer suppression remains unchanged', () => {
-  it('manchester-lahore and manchester-islamabad remain correctly suppressed (self-transfer + 3 stops), unaffected by this fix', () => {
+describe('6. Self-transfer suppression correctly walks to an older suitable observation instead of failing closed', () => {
+  // 16 Sept 2026 UPDATE (suitability walk — see
+  // docs/project-control/fare-evidence/full-portfolio-controlled-batch-2026-09-15.md):
+  // both routes' newest-at-this-date observation is still poor and still
+  // correctly skipped for representative selection, but each has an older,
+  // still-fresh, suitable Economy observation the selector now finds
+  // instead of failing the whole route closed.
+  it('manchester-lahore and manchester-islamabad both resolve to an older, suitable, connecting Economy observation, not a suppressed none', () => {
+    const expected: Record<string, { id: string; price: number }> = {
+      'manchester-lahore': { id: 'obs-man-lhe-economy-20260818-8w-v1', price: 628 },
+      'manchester-islamabad': { id: 'obs-man-isb-economy-20260825-recheck-v1', price: 480 },
+    };
     for (const slug of ['manchester-lahore', 'manchester-islamabad']) {
       const route = getRouteBySlug(slug)!;
       const signal = deriveFareSignal(getPublishableObservationsByRoute(route.slug, NOW), NOW);
-      expect(signal.state, slug).toBe('none');
-      expect(signal.noneReason, slug).toBe('poor-itinerary-suppressed');
+      expect(signal.state, slug).toBe('current');
+      expect(signal.observation?.id, slug).toBe(expected[slug].id);
+      expect(signal.observation?.price, slug).toBe(expected[slug].price);
+      expect(signal.noneReason, slug).toBeNull();
     }
   });
 });

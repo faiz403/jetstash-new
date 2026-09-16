@@ -656,12 +656,11 @@ describe('Cross-surface leakage fix — fare section heading is content-aware, n
     expect(text).toMatch(/Fare history & current example/);
   });
 
-  it('manchester-lahore has dated editorial observations, but renders the coherent "Fare history" heading (not "current example") end-to-end — Fare History coherence fix, 1 Sep 2026: its only current-cabin observation is a confirmed self-transfer, 2/3-stop-per-leg itinerary and has no current representative Fare Signal, so the section correctly no longer claims a "current example"', async () => {
+  it('manchester-lahore has dated editorial observations and renders the coherent "Fare history & current example" heading -- Fare History coherence fix, 1 Sep 2026, meant the newest self-transfer 2/3-stop observation had no representative Fare Signal at all; the 16 Sept 2026 suitability walk (see docs/project-control/fare-evidence/full-portfolio-controlled-batch-2026-09-15.md) correctly resolves it to an older, still-eligible, suitable observation instead, so this route has a genuine current example again', async () => {
     expect(deals.some((d) => d.fromAirportSlug === 'manchester' && d.toDestinationSlug === 'lahore')).toBe(true);
     const element = await RoutePage({ params: Promise.resolve({ slug: 'manchester-lahore' }) });
     const text = collectStrings(element).join(' ');
-    expect(text).toMatch(/Fare history/);
-    expect(text).not.toMatch(/Fare history & current example/);
+    expect(text).toMatch(/Fare history & current example/);
   });
 
   it('birmingham-mumbai\'s fare section itself contributes no explanatory no-fare prose now that its caption is null — NoFareFallback (rendered separately below it, see the next assertion) is the only place that message lives', async () => {

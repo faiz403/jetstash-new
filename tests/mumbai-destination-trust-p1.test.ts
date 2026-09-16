@@ -127,6 +127,17 @@ describe('Mumbai destination P1 trust fix', () => {
         observedDate: '2026-09-01',
         fareDirectness: 'connecting',
       },
+      // 16 September 2026: the full-portfolio controlled sweep's Batch 6
+      // (TRACK - ARCHIVE ONLY routes) appended a further genuine,
+      // append-only connecting-evidence observation for this
+      // service-ended-direct route — see docs/project-control/fare-evidence/
+      // full-portfolio-controlled-batch-2026-09-15.md.
+      {
+        id: 'obs-man-bom-economy-20260916-8w-v1',
+        price: 436,
+        observedDate: '2026-09-16',
+        fareDirectness: 'connecting',
+      },
     ]);
   });
 

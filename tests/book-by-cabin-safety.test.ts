@@ -66,15 +66,16 @@ describe('A. Real Manchester-Lahore data — the exact confirmed live defect', (
   const LAHORE_SUPPRESSION_ISO = '2026-08-25';
   const LAHORE_SUPPRESSION_DATE = new Date('2026-08-25T12:00:00Z');
 
-  it('Fare Signal shows no current signal at all for Manchester-Lahore (Fare Signal poor-itinerary suppression, 31 Aug 2026) — its £547 Economy observation (the 25 Aug same-day emergency-recheck) is a confirmed self-transfer, 2+-stop itinerary and its £3,051 Business observation is the same class of confirmed-poor evidence, so neither cabin has a representative fare to show; this is NOT a regression of the cabin-safety fix below — Economy is still correctly preferred over Business whenever both are shown, it is simply that neither currently qualifies', () => {
+  it('Fare Signal resolves Manchester-Lahore to its older, suitable 18 August £628 Economy observation, not a suppressed none -- the 25 Aug same-day emergency-recheck (£547, confirmed self-transfer, 2+-stop) and the £3,051 Business observation are both still confirmed-poor evidence and neither becomes the representative, but the suitability walk (16 Sept 2026 — see docs/project-control/fare-evidence/full-portfolio-controlled-batch-2026-09-15.md) correctly finds the older suitable Economy one instead of failing the route closed; this is NOT a regression of the cabin-safety fix below — Economy is still correctly preferred over Business whenever both are shown', () => {
     const signal = getFareSignalForRoute('manchester-lahore', LAHORE_SUPPRESSION_ISO);
-    expect(signal.state).toBe('none');
-    expect(signal.observation).toBeNull();
+    expect(signal.state).toBe('current');
+    expect(signal.observation?.id).toBe('obs-man-lhe-economy-20260818-8w-v1');
+    expect(signal.observation?.price).toBe(628);
   });
 
-  it('Book-By agrees with Fare Signal — both correctly show no representative fare, never disagreeing (the shared selectRepresentativeObservation() choke point this whole file exists to guard)', () => {
+  it('Book-By agrees with Fare Signal — both resolve to the same £628 observation, never disagreeing (the shared selectRepresentativeObservation() choke point this whole file exists to guard)', () => {
     const snapshot = computeBookBySnapshot('manchester-lahore', LAHORE_SUPPRESSION_DATE);
-    expect(snapshot?.latestObservation).toBeNull();
+    expect(snapshot?.latestObservation?.price).toBe(628);
   });
 
   it('the £3,051 Business observation remains completely untouched in the append-only archive', () => {
@@ -148,17 +149,22 @@ describe('D. Every current Book-By priority route — Book-By matches Fare Signa
     for (const slug of BOOK_BY_PRIORITY_ROUTE_SLUGS) {
       result[slug] = computeBookBySnapshot(slug, SNAPSHOT_ISO_DATE)?.latestObservation?.cabin ?? null;
     }
-    // Fare Signal poor-itinerary suppression (31 Aug 2026): 3 of the 5
-    // priority routes now correctly have no representative fare of any
-    // cabin — their only current observations are confirmed self-transfer,
-    // 2+-stop-per-leg itineraries. manchester-islamabad and
-    // london-heathrow-delhi are unaffected.
+    // Fare Signal poor-itinerary suppression (31 Aug 2026) originally meant
+    // 3 of the 5 priority routes had no representative fare of any cabin —
+    // their only current observations were confirmed self-transfer,
+    // 2+-stop-per-leg itineraries.
+    //
+    // 16 Sept 2026 UPDATE (suitability walk — see
+    // docs/project-control/fare-evidence/full-portfolio-controlled-batch-2026-09-15.md):
+    // all three had an older, still-fresh-as-of-25-August, suitable Economy
+    // observation, so none of the 5 priority routes are without a
+    // representative any more.
     expect(result).toEqual({
-      'manchester-lahore': null,
+      'manchester-lahore': 'Economy',
       'manchester-islamabad': 'Economy',
       'london-heathrow-delhi': 'Economy',
-      'london-heathrow-jeddah': null,
-      'birmingham-amritsar': null,
+      'london-heathrow-jeddah': 'Economy',
+      'birmingham-amritsar': 'Economy',
     });
   });
 });

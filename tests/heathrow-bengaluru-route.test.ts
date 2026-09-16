@@ -182,12 +182,15 @@ describe('DEST-001 — no fare invented, no route other than this one added', ()
     // vs this one's both-legs-direct evidence — aggregate now undefined).
     // 1 September 2026: the Tuesday full weekly refresh appended a third,
     // again append-only — same single-carrier Gulf Air evidence pattern.
+    // 15 September 2026: the full-portfolio controlled sweep appended a
+    // fourth, again append-only.
     const observations = fareObservations.filter((o) => o.routeSlug === 'london-heathrow-bengaluru');
-    expect(observations).toHaveLength(3);
+    expect(observations).toHaveLength(4);
     expect(observations[0].id).toBe('obs-lhr-blr-economy-20260806-8w-v1');
     expect(observations[0].source).toBe('Gulf Air');
     expect(observations[1].id).toBe('obs-lhr-blr-economy-20260818-8w-v1');
     expect(observations[2].id).toBe('obs-lhr-blr-economy-20260901-8w-v1');
+    expect(observations[3].id).toBe('obs-lhr-blr-economy-20260915-8w-v1');
   });
 
   it('exactly one deal card exists for this route, added by Fare Coverage Expansion Batch B', () => {

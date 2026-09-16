@@ -154,26 +154,23 @@ describe('Lahore/Doha route-vs-fare mismatch behaviour is correct against their 
   // below), which is the intended split: a normal visitor still sees the
   // route's real Economy price up top, and Business shoppers still see the
   // new evidence exactly where they'd look for it.
-  it('Manchester-Lahore: Fare Signal poor-itinerary suppression (31 Aug 2026) now correctly shows no current signal at all — its Economy fare is a confirmed self-transfer, 2+-stop itinerary, so there is no mismatch callout to fire (nothing to mismatch against); the new Business fare remains separately confirmed visible via its own Deal, since Deal/fare-history surfaces are independent of Fare Signal selection', () => {
+  it('Manchester-Lahore: the suitability walk (16 Sept 2026 — see docs/project-control/fare-evidence/full-portfolio-controlled-batch-2026-09-15.md) resolves Fare Signal to its older, suitable 18 August £628 connecting Economy observation, not a suppressed none -- its 25 August confirmed self-transfer, 2+-stop recheck stays in history but is skipped for representative selection; the older observation is genuinely connecting against a verified-direct route, so the mismatch callout correctly fires; the Business fare remains separately confirmed visible via its own Deal, since Deal/fare-history surfaces are independent of Fare Signal selection', () => {
     // Classification B: this test's own title names the 25 Aug self-transfer
-    // Economy evidence and the 31 Aug suppression fix that acts on it, both
-    // after this file's 22 Aug NOW_ISO. The Business-cabin check below stays
-    // at NOW_ISO deliberately -- that evidence genuinely is from 22 August.
+    // Economy evidence, both after this file's 22 Aug NOW_ISO. The
+    // Business-cabin check below stays at NOW_ISO deliberately -- that
+    // evidence genuinely is from 22 August.
     const SUPPRESSION_EVIDENCE_ISO = '2026-08-25';
     const { presentation } = presentationFor('manchester-lahore');
     expect(presentation.status).toBe('direct');
     const signal = getFareSignalForRoute('manchester-lahore', SUPPRESSION_EVIDENCE_ISO);
-    expect(signal.state).toBe('none');
-    expect(signal.observation).toBeNull();
+    expect(signal.state).toBe('current');
+    expect(signal.observation?.id).toBe('obs-man-lhe-economy-20260818-8w-v1');
+    expect(signal.observation?.directness).toBe('connecting');
 
     const html = renderFareSignalForRoute('manchester-lahore', SUPPRESSION_EVIDENCE_ISO);
-    // Suppressed-fare explanation (2 Sep 2026, traveller-POV live product
-    // review): both routes' Economy fare failed isPoorItinerarySuitability(),
-    // so this now renders the explanatory "Recent fares checked" copy
-    // instead of the plain "No current fare tracked" it used to -- see
-    // components/route/fare-signal.tsx's SuppressedFareExplanation.
-    expect(html).toContain('Recent fares checked');
-    expect(html).not.toContain('Route service');
+    expect(html).toContain('Fare spotted');
+    expect(html).toContain('Route service');
+    expect(html).toContain('This tracked fare is a different, connecting journey.');
 
     const businessDeal = deals.find((d) => d.id === 'man-lhe-business')!;
     expect(hasTrackedFare(businessDeal, NOW_ISO)).toBe(true);
@@ -194,24 +191,21 @@ describe('Lahore/Doha route-vs-fare mismatch behaviour is correct against their 
     expect(hasTrackedFare(businessDeal, NOW_ISO)).toBe(true);
   });
 
-  it('Heathrow-Doha: Fare Signal poor-itinerary suppression (31 Aug 2026) now correctly shows no current signal at all — its Economy fare is a confirmed self-transfer, 2+-stop itinerary, so there is no mismatch callout to fire (nothing to mismatch against); the new Business fare remains separately confirmed visible via its own Deal', () => {
+  it('Heathrow-Doha: the suitability walk resolves Fare Signal to its older, suitable 18 August £471 connecting Economy observation, and the mismatch callout correctly fires against its verified-direct status; the Business fare remains separately confirmed visible via its own Deal', () => {
     // Classification B: see the identical Manchester-Lahore test above --
     // same reasoning, same 25 Aug earliest-evidence date.
     const SUPPRESSION_EVIDENCE_ISO = '2026-08-25';
     const { presentation } = presentationFor('london-heathrow-doha');
     expect(presentation.status).toBe('direct');
     const signal = getFareSignalForRoute('london-heathrow-doha', SUPPRESSION_EVIDENCE_ISO);
-    expect(signal.state).toBe('none');
-    expect(signal.observation).toBeNull();
+    expect(signal.state).toBe('current');
+    expect(signal.observation?.id).toBe('obs-lhr-doh-economy-20260818-8w-v1');
+    expect(signal.observation?.directness).toBe('connecting');
 
     const html = renderFareSignalForRoute('london-heathrow-doha', SUPPRESSION_EVIDENCE_ISO);
-    // Suppressed-fare explanation (2 Sep 2026, traveller-POV live product
-    // review): both routes' Economy fare failed isPoorItinerarySuitability(),
-    // so this now renders the explanatory "Recent fares checked" copy
-    // instead of the plain "No current fare tracked" it used to -- see
-    // components/route/fare-signal.tsx's SuppressedFareExplanation.
-    expect(html).toContain('Recent fares checked');
-    expect(html).not.toContain('Route service');
+    expect(html).toContain('Fare spotted');
+    expect(html).toContain('Route service');
+    expect(html).toContain('This tracked fare is a different, connecting journey.');
 
     const businessDeal = deals.find((d) => d.id === 'lhr-doh-business')!;
     expect(hasTrackedFare(businessDeal, NOW_ISO)).toBe(true);

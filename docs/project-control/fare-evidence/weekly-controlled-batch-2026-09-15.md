@@ -12,13 +12,27 @@ this session.
 not include overhead bin access") on that exact itinerary — never inferred from carrier or fare
 class. Where no such caveat appeared, the archive records `not stated`, not `included`.
 
-All nine currently-tracked routes were genuinely checked today. **Seven were appended to
-`data/fare-observations.ts` in this batch; two were deliberately held out — founder decision, 15
-September 2026 — because the current representative-fare selector has no recency ceiling, so
-appending either would have immediately become that route's live public Fare Signal and tripped
-`isPoorItinerarySuitability()` (self-transfer AND 2+ stops on a leg), silently reverting a
-deliberate recent state. Both held observations are genuine, complete evidence, not rejected and
-not replaced with an older fare — see "OBSERVED TODAY BUT NOT APPENDED" below.**
+All nine currently-tracked routes were genuinely checked today. Seven were appended to
+`data/fare-observations.ts` in this batch; two (MAN→ISB and MAN→DXB) were initially held out —
+founder decision, 15 September 2026 — because the then-current representative-fare selector had no
+recency ceiling, so appending either would have immediately become that route's live public Fare
+Signal and tripped `isPoorItinerarySuitability()` (self-transfer AND 2+ stops on a leg), silently
+reverting a deliberate recent state. Both held observations were genuine, complete evidence the
+whole time, never rejected and never replaced with an older fare.
+
+**UPDATE, 16 September 2026 (founder decision, following the full-portfolio controlled sweep — see
+`docs/project-control/fare-evidence/full-portfolio-controlled-batch-2026-09-15.md`): every genuinely
+observed fare must be tracked in canonical history. Both MAN→ISB (£475) and MAN→DXB (£267) have now
+been appended to `data/fare-observations.ts`, transcribed exactly from the evidence already captured
+below — not re-searched. The narrow selector concern that motivated the original hold has also been
+resolved directly: `selectRepresentativeObservation()` (`lib/fare-signal.ts`) now walks its
+candidate pool for the first genuinely suitable observation instead of only ever testing the single
+newest one, so a poor observation like these two stays in history and is correctly skipped for
+public representative selection, rather than either being omitted from the archive or silently
+overriding a better existing fare. As a direct result, both routes' live Fare Signal is unaffected
+by this addition: `manchester-islamabad` still correctly shows its 13 September £870 direct-PIA
+fare, and `manchester-dubai` still correctly shows its 8 September £420 fare — see the full-portfolio
+evidence document for the complete selector-fix account and dataset-wide verification.**
 
 ## APPENDED TO FARE ARCHIVE
 
@@ -32,19 +46,25 @@ not replaced with an older fare — see "OBSERVED TODAY BUT NOT APPENDED" below.
 | LHR→DOH / `london-heathrow-doha-economy-1adult-23kg-v1` | £354, self-transfer | LHR–ARN–SAW–DOH, Scandinavian Airlines/Pegasus (operated by SAS Connect), 2 stops, 17h30m | DOH–SAW–ARN–LHR, Pegasus/Scandinavian Airlines, 2 stops, 17h55m | Self-transfer; overhead-bin access not included |
 | BHX→BOM / `birmingham-mumbai-economy-1adult-23kg-v1` | £602, "Separate tickets booked together" | BHX–DOH–BOM, Qatar Airways, 1 stop, 13h5m | BOM–AMS–BHX, KLM (operated by KLM Cityhopper), 1 stop, 15h50m | Separate-tickets label (same practical caveat as self-transfer: no protected connection); overhead-bin access not included |
 
-## OBSERVED TODAY BUT NOT APPENDED
+## Observed 15 September, initially held, now archived (16 September update)
 
-**MAN→ISB — £475**
-- Genuinely observed today (15 Sept 2026), Google Flights Cheapest tab, exact 8-week profile.
+Both routes below were genuinely observed on 15 September 2026, deliberately held out of the archive
+that same day pending founder/selector review (see the original reasoning preserved under each
+entry), and have now been appended to `data/fare-observations.ts` on 16 September 2026 following the
+founder's decision and the corresponding selector fix — see the "UPDATE, 16 September 2026" note
+above for the full account.
+
+**MAN→ISB — £475 (now archived as `obs-man-isb-economy-20260915-8w-v1`)**
+- Genuinely observed 15 Sept 2026, Google Flights Cheapest tab, exact 8-week profile.
 - Routing: outbound MAN–CGN–SAW–KHI–ISB, Ryanair/Pegasus/Fly Jinnah, self-transfer, 3 stops, 21h50m; return ISB–KHI–SAW–MAN, Fly Jinnah/Pegasus, 2 stops, 18h10m. Price does not include overhead-bin access.
-- Held because: `manchester-islamabad`'s current representative Fare Signal is the 13 September £870 direct-PIA observation (`obs-man-isb-economy-20260913-pia-direct-v1`). The selector (`selectRepresentativeObservation()`, `lib/fare-signal.ts`) always prefers the most recently logged Economy observation with no recency ceiling — appending this would have made today's self-transfer, 3-stop £475 fare the new representative, which `isPoorItinerarySuitability()` (`lib/itinerary-suitability.ts`) would then suppress outright, reverting the route's live Fare Signal from a genuine £870 direct fare to "no current fare." That is a substantive public-facing product decision, not something this routine data-collection PR should make silently.
-- Not rejected as false evidence. Not replaced with an older fare. Founder review required before this observation (or the underlying selector behaviour) is addressed.
+- *Original 15 September reasoning, preserved for the record:* held because `manchester-islamabad`'s current representative Fare Signal was the 13 September £870 direct-PIA observation (`obs-man-isb-economy-20260913-pia-direct-v1`). The selector (`selectRepresentativeObservation()`, `lib/fare-signal.ts`) at the time always preferred the most recently logged Economy observation with no recency ceiling — appending this would have made this self-transfer, 3-stop £475 fare the new representative, which `isPoorItinerarySuitability()` (`lib/itinerary-suitability.ts`) would then have suppressed outright, reverting the route's live Fare Signal from a genuine £870 direct fare to "no current fare." That was judged a substantive public-facing product decision, not something a routine data-collection PR should make silently.
+- Never rejected as false evidence, never replaced with an older fare. Now archived exactly as originally captured, with the selector itself corrected (16 Sept 2026) so the route's live Fare Signal remains the genuine £870 direct PIA fare — confirmed directly, not assumed, in the full-portfolio evidence document's dataset-wide simulation.
 
-**MAN→DXB (lands Sharjah) — £267**
-- Genuinely observed today (15 Sept 2026), Google Flights Cheapest tab, exact 8-week profile.
+**MAN→DXB (lands Sharjah) — £267 (now archived as `obs-man-dxb-economy-20260915-8w-v1`)**
+- Genuinely observed 15 Sept 2026, Google Flights Cheapest tab, exact 8-week profile.
 - Routing: outbound MAN–CGN–SAW–SHJ, Ryanair/Pegasus, self-transfer, 2 stops, 18h; return SHJ–SAW–MAN, Pegasus, 1 stop, 11h50m. Price does not include overhead-bin access. As in prior weekly checks, this route's cheapest itinerary lands at Sharjah, not Dubai airport itself.
-- Held because: `manchester-dubai`'s Fare Signal was deliberately un-suppressed on 1 September 2026 after its newest evidence dropped to fewer than 2 stops per leg. Appending today's £267 self-transfer, 2-stop itinerary would make it the new representative observation and immediately re-trigger `isPoorItinerarySuitability()`, undoing that specific, named 1 September fix inside a routine data PR.
-- Not rejected as false evidence. Not replaced with an older fare. Founder review required.
+- *Original 15 September reasoning, preserved for the record:* held because `manchester-dubai`'s Fare Signal had been deliberately un-suppressed on 1 September 2026 after its newest evidence dropped to fewer than 2 stops per leg. Appending this £267 self-transfer, 2-stop itinerary would have made it the new representative observation and immediately re-triggered `isPoorItinerarySuitability()`, undoing that specific, named 1 September fix inside a routine data PR.
+- Never rejected as false evidence, never replaced with an older fare. Now archived exactly as originally captured, with the selector itself corrected so the route's live Fare Signal remains the genuine 8 September £420 fare — confirmed directly, not assumed.
 
 ## Method and safety checks
 
@@ -62,10 +82,15 @@ not replaced with an older fare — see "OBSERVED TODAY BUT NOT APPENDED" below.
 - No manual Fare Watcher run was performed as part of this task; the founder's brief scoped this
   strictly to append-only observation collection, quality gate, and a single PR.
 
-## Follow-up (explicitly not addressed in this PR)
+## Follow-up — resolved 16 September 2026
 
-The founder has flagged a genuine, separate product-maintenance question raised by this week's
+The founder flagged a genuine, separate product-maintenance question raised by this week's
 collection: whether the archive needs a narrow mechanism to let an observation be "observed and
 archived" without automatically becoming "eligible to become the public representative Fare
 Signal" — so a genuinely poor itinerary can be recorded honestly without a recency-only selector
-ever surfacing it live. That is deliberately out of scope here and will be examined separately.
+ever surfacing it live. That question has since been resolved: `selectRepresentativeObservation()`
+(`lib/fare-signal.ts`) now walks its existing candidate pool for the first suitable observation
+instead of only ever testing the newest one, reusing `isPoorItinerarySuitability()` unchanged, with
+no schema change and no route-specific exception. See
+`docs/project-control/fare-evidence/full-portfolio-controlled-batch-2026-09-15.md` for the full
+design, dataset-wide simulation, and test coverage.

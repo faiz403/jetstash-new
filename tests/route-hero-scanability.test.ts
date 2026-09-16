@@ -321,11 +321,17 @@ describe('no evidence or trust wording was accidentally lost — full 88-route s
     // london-gatwick-doha route is genuinely 'direct' but has no fare
     // observation, so it falls into noFare — see the identical update in
     // tests/fare-signal-route-vs-fare-clarity.test.ts.
-    expect(directConnectingFare).toBe(49);
+    //
+    // noFare 10 -> 3, directConnectingFare 49 -> 54, connectingConnectingFare
+    // 12 -> 14 (16 Sept 2026, suitability walk) — see the identical update
+    // in tests/fare-signal-route-vs-fare-clarity.test.ts for the full
+    // account: all 7 routes this test's history moved into noFare on 31 Aug
+    // now correctly resolve to an older suitable observation instead.
+    expect(directConnectingFare).toBe(54);
     expect(directDirectFare).toBe(13);
-    expect(connectingConnectingFare).toBe(12);
+    expect(connectingConnectingFare).toBe(14);
     expect(connectingDirectFare).toBe(0);
-    expect(noFare).toBe(10);
+    expect(noFare).toBe(3);
     expect(unverified).toBe(5);
   });
 });
