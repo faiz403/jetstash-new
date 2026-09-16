@@ -113,28 +113,44 @@ describe('Live control cases against the real archive (2 Sep 2026)', () => {
     expect(html).not.toContain('No current fare tracked');
   });
 
-  it('MAN→LHE: identical treatment -- architectural, not route-specific', () => {
+  // 16 Sept 2026 UPDATE (suitability walk — see
+  // docs/project-control/fare-evidence/full-portfolio-controlled-batch-2026-09-15.md):
+  // MAN→LHE's newest observation (25 Aug, £547, self-transfer) is STILL
+  // poor and still archived exactly as before, but it is no longer the
+  // whole story -- the selector now walks past it to an older, equally
+  // current, suitable 18 August observation instead of failing the whole
+  // route closed. See tests/fare-signal-poor-itinerary-suppression.test.ts
+  // block 6/7 for the dedicated regression coverage of this exact route.
+  it('MAN→LHE: resolves to its older suitable 18 August observation, not the suppressed-fare explanation -- the poor 25 August recheck stays in history but is skipped for representative selection', () => {
     const signal = getFareSignalForRoute('manchester-lahore', NOW_ISO);
-    expect(signal.state).toBe('none');
-    expect(signal.noneReason).toBe('poor-itinerary-suppressed');
+    expect(signal.state).toBe('current');
+    expect(signal.noneReason).toBeNull();
+    expect(signal.observation?.price).toBe(628);
 
     const html = renderFareSignalForRoute('manchester-lahore');
-    expect(html).toContain('Recent fares checked');
-    expect(html).toContain('href="#fare-history"');
+    expect(html).toContain('628');
+    expect(html).not.toContain('Recent fares checked');
     expect(html).not.toContain('No current fare tracked.');
   });
 
-  it('BHX→ATQ: same explanation applies -- its current state is caused by the identical poor-itinerary rule', () => {
+  it('BHX→ATQ: same resolution -- its 19 August £603 observation is suitable and still current, so the selector walks to it instead of failing closed on the poor newest one', () => {
     const signal = getFareSignalForRoute('birmingham-amritsar', NOW_ISO);
-    expect(signal.state).toBe('none');
-    expect(signal.noneReason).toBe('poor-itinerary-suppressed');
+    expect(signal.state).toBe('current');
+    expect(signal.noneReason).toBeNull();
+    expect(signal.observation?.price).toBe(603);
 
     const html = renderFareSignalForRoute('birmingham-amritsar');
-    expect(html).toContain('Recent fares checked');
+    expect(html).toContain('603');
+    expect(html).not.toContain('Recent fares checked');
     expect(html).not.toContain('No current fare tracked.');
   });
 
-  it('MAN→DXB control: the real £336 current Fare Signal is completely untouched -- no suppressed-fare copy, no methodology change', () => {
+  // MAN→DXB now also has a genuine, more-recent 16 Sept poor observation
+  // (£267, founder decision, tracked in canonical history) -- the selector
+  // correctly walks past it to the same suitable 8 September observation
+  // this control has always checked, never surfacing the poor one and
+  // never falling back further than the current-Economy pool allows.
+  it('MAN→DXB control: still resolves to the real £420 current Fare Signal -- untouched by the newly-archived £267 poor observation, no suppressed-fare copy', () => {
     const signal = getFareSignalForRoute('manchester-dubai', NOW_ISO);
     expect(signal.state).toBe('current');
     expect(signal.noneReason).toBeNull();
@@ -174,16 +190,18 @@ describe('lib/booking-intelligence.ts — Book-By carries the identical reason f
     expect(snapshot!.latestObservationNoneReason).toBe(genericSignal.noneReason);
   });
 
-  it('MAN→LHE (a Book-By priority route): same agreement', () => {
+  it('MAN→LHE (a Book-By priority route): same agreement -- both Book-By and Fare Signal now resolve to the same older suitable £628 observation, no suppression reason', () => {
     const snapshot = computeBookBySnapshot('manchester-lahore', new Date(`${NOW_ISO}T12:00:00Z`));
     expect(snapshot).not.toBeNull();
-    expect(snapshot!.latestObservationNoneReason).toBe('poor-itinerary-suppressed');
+    expect(snapshot!.latestObservationNoneReason).toBeNull();
+    expect(snapshot!.latestObservation?.price).toBe(628);
   });
 
-  it('BHX→ATQ (a Book-By priority route): same agreement', () => {
+  it('BHX→ATQ (a Book-By priority route): same agreement -- both resolve to the same £603 observation', () => {
     const snapshot = computeBookBySnapshot('birmingham-amritsar', new Date(`${NOW_ISO}T12:00:00Z`));
     expect(snapshot).not.toBeNull();
-    expect(snapshot!.latestObservationNoneReason).toBe('poor-itinerary-suppressed');
+    expect(snapshot!.latestObservationNoneReason).toBeNull();
+    expect(snapshot!.latestObservation?.price).toBe(603);
   });
 
   it('a synthetic snapshot with a genuine (non-suppressed) verified observation carries a null reason', () => {

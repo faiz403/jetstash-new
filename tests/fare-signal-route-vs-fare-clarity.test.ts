@@ -94,19 +94,22 @@ describe('direct-route + direct-fare: matching state renders no callout (no unne
 });
 
 describe('connecting-only route: never falsely mentions a direct service', () => {
-  it('a connecting route whose matching connecting fare is now suppressed (Fare Signal poor-itinerary suppression, 31 Aug 2026) shows no callout, and the word "Direct" never appears', () => {
-    // Classification B: the poor-itinerary suppression evidence this test
-    // names (the 25 Aug £591 self-transfer recheck) is dated after this
-    // file's 20 Aug NOW_ISO.
+  it('a connecting route whose newest fare is poor resolves to its older, suitable, still-connecting observation (16 Sept 2026 suitability walk — see docs/project-control/fare-evidence/full-portfolio-controlled-batch-2026-09-15.md) -- connecting route + connecting fare is a match, so still no mismatch callout, and the word "Direct" never appears', () => {
+    // Classification B: the poor-itinerary evidence this test names (the
+    // 25 Aug £591 self-transfer recheck) is dated after this file's 20 Aug
+    // NOW_ISO.
     const SUPPRESSION_EVIDENCE_ISO = '2026-08-25';
     const { presentation } = presentationFor('birmingham-amritsar', SUPPRESSION_EVIDENCE_ISO);
     expect(presentation.status).toBe('connecting');
-    // birmingham-amritsar's only current observation (£591, 3/3 stops,
-    // self-transfer) is now correctly suppressed entirely — there is no
-    // observation left to check directness on, and a fortiori no callout
-    // or "Direct" wording, which remains this test's real point.
+    // birmingham-amritsar's newest observation at this date (£591, 3/3
+    // stops, self-transfer) is still correctly skipped for representative
+    // selection, but its older, still-fresh, suitable 19 August £603
+    // observation (also connecting, not self-transfer) is now the
+    // representative -- connecting route, connecting fare, a genuine
+    // match, so still no mismatch callout and no "Direct" wording either.
     const signal = getFareSignalForRoute('birmingham-amritsar', SUPPRESSION_EVIDENCE_ISO);
-    expect(signal.observation).toBeNull();
+    expect(signal.observation?.id).toBe('obs-bhx-atq-economy-20260819-8w-v1');
+    expect(signal.observation?.directness).toBe('connecting');
 
     const html = renderFareSignalForRoute('birmingham-amritsar', SUPPRESSION_EVIDENCE_ISO);
     expect(html).not.toContain('Route service');
@@ -448,11 +451,26 @@ describe('full 88-route dataset safety check (Phase 8)', () => {
     // fare observation of its own, so fareDirectness is null and it falls
     // into noFare — the same bucket every other fare-less route already
     // uses. Total 88 -> 89.
-    expect(directConnectingFare).toBe(49);
+    //
+    // noFare 10 -> 3, directConnectingFare 49 -> 54, connectingConnectingFare
+    // 12 -> 14 (16 Sept 2026, suitability walk — see docs/project-control/
+    // fare-evidence/full-portfolio-controlled-batch-2026-09-15.md):
+    // selectRepresentativeObservation() now walks its candidate pool for an
+    // older suitable observation instead of failing the whole pool closed
+    // the instant the newest one is poor. Of the 7 routes this test's own
+    // history names as moving into noFare on 31 Aug, 5 were direct routes
+    // (directConnectingFare) and 2 were connecting routes
+    // (connectingConnectingFare) — all 7 now correctly resolve to an older
+    // suitable observation at this date, moving back into their original
+    // buckets. The remaining 3 noFare routes (london-gatwick-doha, plus
+    // manchester-delhi and manchester-mumbai's IndiGo-withdrawal
+    // service-ended routes) have no suitable fallback of any kind and
+    // correctly stay in noFare.
+    expect(directConnectingFare).toBe(54);
     expect(directDirectFare).toBe(13);
-    expect(connectingConnectingFare).toBe(12);
+    expect(connectingConnectingFare).toBe(14);
     expect(connectingDirectFare).toBe(0);
-    expect(noFare).toBe(10);
+    expect(noFare).toBe(3);
     expect(unverified).toBe(5);
     expect(directConnectingFare + directDirectFare + connectingConnectingFare + connectingDirectFare + noFare + unverified).toBe(89);
   });

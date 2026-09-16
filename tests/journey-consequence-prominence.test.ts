@@ -116,22 +116,23 @@ describe('Manchester-Dubai (£336, arrives at Sharjah not Dubai) — Fare Signal
   });
 });
 
-describe('Manchester-Lahore — Fare Signal (pre-existing suppression, untouched by this fix)', () => {
-  // Both of manchester-lahore's current-cabin candidates (the £453 Economy
-  // and the £3,051 Business observation) are self-transfer with 3+ stops on
-  // at least one leg -- isPoorItinerarySuitability() (lib/fare-signal.ts,
-  // 31 Aug 2026) already suppresses BOTH, so the route page's own generic
-  // Fare Signal shows no price at all here, in either cabin, and never did.
-  // This is the exact suppression this fix must never weaken -- see this
-  // file's DealCard describe block below for where the £3,051 Business
-  // example genuinely IS newly made prominent (DealCard's own
-  // getFareRangeSummary bypasses this suppression entirely, which is
-  // exactly the display-prominence gap this fix targets).
+describe('Manchester-Lahore — Fare Signal (16 Sept 2026 suitability walk — see docs/project-control/fare-evidence/full-portfolio-controlled-batch-2026-09-15.md)', () => {
+  // manchester-lahore's newer self-transfer, 3+-stop-per-leg candidates
+  // (Economy £453 and the £3,051 Business observation) are still correctly
+  // skipped for representative selection by isPoorItinerarySuitability()
+  // (lib/fare-signal.ts, 31 Aug 2026, now applied as a per-candidate walk
+  // rather than only to the newest member of a pool) -- but the route now
+  // has an older, still-fresh, suitable 18 August £628 Economy observation
+  // the selector correctly resolves to instead of failing the whole route
+  // closed. See this file's DealCard describe block below for where the
+  // £3,051 Business example is separately made prominent (DealCard's own
+  // getFareRangeSummary is independent of Fare Signal selection either
+  // way).
   const html = renderFareSignalForRoute('manchester-lahore');
 
-  it('shows no price and no fabricated consequence claim — the existing "Recent fares checked" suppression explanation renders instead', () => {
-    expect(html).toContain('Recent fares checked');
-    expect(html).not.toContain('£453');
+  it('shows the real £628 price and no fabricated consequence claim', () => {
+    expect(html).toContain('£628');
+    expect(html).not.toContain('Recent fares checked');
     expect(html).not.toContain('£3,051');
     expect(html).not.toContain('Self-transfer ·');
   });

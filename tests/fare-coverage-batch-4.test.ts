@@ -59,21 +59,23 @@ describe('Fare Coverage Programme Batch 4', () => {
     // BHX-DEL unlock) — see tests/fare-coverage-batch-3.test.ts's
     // identical update for the full explanation.
     expect(current).toHaveLength(83);
-    // Fare Signal poor-itinerary suppression (31 Aug 2026): 7 of these 83
-    // tracked routes now correctly DO show the no-fare fallback — their
-    // only publishable observation is a confirmed self-transfer,
-    // 2+-stop-per-leg itinerary. See tests/fare-coverage-batch-3.test.ts's
-    // identical update for the full account.
+    // Fare Signal poor-itinerary suppression (31 Aug 2026) originally meant
+    // 7 of these 83 tracked routes showed the no-fare fallback — their only
+    // publishable observation at the time was a confirmed self-transfer,
+    // 2+-stop-per-leg itinerary.
+    //
+    // 16 Sept 2026 UPDATE (suitability walk — see
+    // docs/project-control/fare-evidence/full-portfolio-controlled-batch-2026-09-15.md):
+    // every one of those 7 routes already had an older, still-fresh-as-of-
+    // 31-August suitable observation, so none of them show the fallback any
+    // more — see tests/fare-coverage-batch-3.test.ts's identical update for
+    // the full account.
     const SUPPRESSION_ISO = '2026-08-31';
-    const knownSuppressed = new Set([
-      'manchester-lahore', 'birmingham-amritsar', 'manchester-dubai', 'london-heathrow-doha',
-      'london-heathrow-jeddah', 'london-gatwick-amritsar', 'birmingham-delhi',
-    ]);
     const routeStatusWithdrawnBy31Aug = new Set(['manchester-delhi', 'manchester-mumbai']);
     for (const route of current) {
       if (routeStatusWithdrawnBy31Aug.has(route.slug)) continue;
       const shouldFallback = shouldShowNoFareFallback(getFareSignalForRoute(route.slug, SUPPRESSION_ISO));
-      expect(shouldFallback, route.slug).toBe(knownSuppressed.has(route.slug));
+      expect(shouldFallback, route.slug).toBe(false);
     }
   });
 

@@ -75,15 +75,16 @@ describe('Birmingham → Amritsar and Heathrow → Jeddah customer-facing fare c
     assertClean('london-heathrow-jeddah Fare History panel', jedHtml);
   });
 
-  it('the Book-By Countdown\'s Verified Check citation is now correctly absent for both routes (Fare Signal poor-itinerary suppression, 31 Aug 2026) — neither route\'s only current-cabin observation qualifies (both are confirmed self-transfer, 2+-stop-per-leg itineraries — birmingham-amritsar and london-heathrow-jeddah are two of the seven), so computeBookBySnapshot() correctly renders no citation to check for hygiene at all; the underlying archive text (proven clean above) and the Fare History panel (proven clean below, which is unaffected by this suppression) already cover the same raw priceNote text this test used to check via a different render path', () => {
-    // Classification B: this test's own title names the 31 Aug 2026
-    // suppression fix and its 25 Aug self-transfer evidence, both after
-    // this block's own 19 Aug nowIso.
+  it('the Book-By Countdown\'s Verified Check citation is clean for both routes -- their 25 August self-transfer, 2+-stop-per-leg observations are still correctly skipped for representative selection (the 16 Sept 2026 suitability walk — see docs/project-control/fare-evidence/full-portfolio-controlled-batch-2026-09-15.md — finds each route an older, suitable, still-fresh 19 August observation instead of failing closed), so a real citation exists again, and it is clean, same as the archive text and Fare History panel proven clean elsewhere in this file', () => {
     const suppressionEvidenceIso = '2026-08-25';
     const bhxSnapshot = computeBookBySnapshot('birmingham-amritsar', new Date(`${suppressionEvidenceIso}T12:00:00Z`));
     const jedSnapshot = computeBookBySnapshot('london-heathrow-jeddah', new Date(`${suppressionEvidenceIso}T12:00:00Z`));
-    expect(bhxSnapshot?.latestObservation).toBeNull();
-    expect(jedSnapshot?.latestObservation).toBeNull();
+    expect(bhxSnapshot?.latestObservation).toBeTruthy();
+    expect(jedSnapshot?.latestObservation).toBeTruthy();
+    expect(bhxSnapshot!.latestObservation!.price).toBe(603);
+    expect(jedSnapshot!.latestObservation!.price).toBe(535);
+    assertClean('birmingham-amritsar Book-By citation', bhxSnapshot!.latestObservation!.priceNote);
+    assertClean('london-heathrow-jeddah Book-By citation', jedSnapshot!.latestObservation!.priceNote);
   });
 
   it('the Deal Card fare-range priceNote is clean for both routes (data/fare-observations.ts getFareRangeSummary -> deal-card.tsx)', () => {

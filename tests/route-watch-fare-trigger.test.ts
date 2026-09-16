@@ -245,21 +245,64 @@ describe('Real archive expectation (19 August 2026, post-supersession-fix) — o
   // expected consequence of genuinely new evidence, not a loosened
   // threshold or a regression -- Fare Watcher was never supposed to flag a
   // £870 fare as a notable drop.
-  it('the real fareObservations archive produces five current Route Watch candidates after the Tuesday full weekly refresh and its emergency rechecks', () => {
+  // 15 September 2026 editorial batch (docs/project-control/fare-evidence/
+  // weekly-controlled-batch-2026-09-15.md): a routine, append-only
+  // observation run with no same-day emergency recheck step (out of scope
+  // for that task), unlike the 25 Aug/1 Sep precedent above. Four of its
+  // seven appended routes independently cleared the meaningful-drop
+  // threshold — manchester-lahore, birmingham-amritsar, london-heathrow-jeddah
+  // and london-heathrow-doha — but because none went through a verifying
+  // recheck, Fare Watcher correctly leaves each at 'notable-drop', not
+  // 'standout-candidate': that upgrade has only ever come from a same-day
+  // recheck confirming the same or a lower price, which did not happen this
+  // week. manchester-islamabad and manchester-dubai's fresh observations were
+  // deliberately held out of the archive entirely (founder decision, same
+  // date — see the evidence doc) because either one would have flipped its
+  // route's live public Fare Signal to suppressed; holding them out means
+  // they cannot affect this candidate list either. london-heathrow-delhi's
+  // fresh £454 observation does not clear the meaningful-drop threshold
+  // against its own baseline, so it honestly stays out of the queue, exactly
+  // as it did after the 1 September batch. manchester-doha and
+  // manchester-madinah remain the two pre-existing standout-candidates from
+  // that earlier evaluation, untouched by this week's batch.
+  // 16 September 2026 UPDATE (full-portfolio controlled sweep — see
+  // docs/project-control/fare-evidence/full-portfolio-controlled-batch-2026-09-15.md):
+  // the full-portfolio sweep appended 72 further genuine, comparable,
+  // 'current' Economy observations across the whole 89-route portfolio (not
+  // just the 15 September 9-route panel this test previously described),
+  // so the notable-drop/standout-candidate pool is now drawn from a much
+  // larger comparable-observation set — this is the direct, expected
+  // consequence of Route Watch correctly evaluating a bigger archive, not a
+  // threshold change (generateRouteWatchFareCandidates/
+  // generateFareWatcherCandidates are completely untouched by this sweep).
+  // Separately, the founder's later decision that every genuinely observed
+  // fare must be tracked in canonical history means manchester-islamabad's
+  // and manchester-dubai's previously-held 15 September observations are
+  // now archived too — Route Watch (which evaluates comparisonEligibility,
+  // never isPoorItinerarySuitability) correctly picks them up as candidates
+  // in their own right, independent of what either route's public Fare
+  // Signal does.
+  it('the real fareObservations archive produces 34 current Route Watch candidates after the full-portfolio controlled sweep', () => {
     const nowIso = new Date().toISOString().slice(0, 10);
     const candidates = generateRouteWatchFareCandidates(fareObservations, nowIso);
-    expect(candidates).toHaveLength(5);
-    expect(candidates.map((c) => c.routeSlug)).toEqual([
-      'manchester-lahore',
-      'birmingham-amritsar',
-      'london-heathrow-doha',
-      'manchester-doha',
-      'manchester-madinah',
-    ]);
-    expect(candidates.map((c) => c.routeSlug)).not.toContain('london-heathrow-delhi');
-    expect(candidates.map((c) => c.routeSlug)).not.toContain('manchester-islamabad');
-    expect(candidates.every((c) => c.qualification === 'standout-candidate')).toBe(true);
+    expect(candidates).toHaveLength(34);
     expect(candidates.every((c) => c.lifecycle === 'detected' && c.founderVerificationRequired)).toBe(true);
+    const bySlug = new Map(candidates.map((c) => [c.routeSlug, c.qualification]));
+    // The four original notable-drops, plus manchester-islamabad and
+    // manchester-dubai (now genuinely archived, evaluated on their own
+    // merits) and london-heathrow-casablanca (Batch 3, a genuine drop), are
+    // representative spot-checks, not an exhaustive re-listing of all 34 —
+    // the full list is captured in the evidence doc referenced above.
+    expect(bySlug.get('manchester-lahore')).toBe('notable-drop');
+    expect(bySlug.get('birmingham-amritsar')).toBe('notable-drop');
+    expect(bySlug.get('london-heathrow-jeddah')).toBe('notable-drop');
+    expect(bySlug.get('london-heathrow-doha')).toBe('notable-drop');
+    expect(bySlug.get('manchester-doha')).toBe('notable-drop');
+    expect(bySlug.get('manchester-madinah')).toBe('notable-drop');
+    expect(bySlug.get('manchester-islamabad')).toBe('notable-drop');
+    expect(bySlug.get('manchester-dubai')).toBe('standout-candidate');
+    expect(bySlug.get('london-heathrow-casablanca')).toBe('notable-drop');
+    expect(candidates.map((c) => c.routeSlug)).not.toContain('london-heathrow-delhi');
   });
 });
 
@@ -313,17 +356,16 @@ describe('I. Trust wording — no overclaim in rendered founder copy or customer
   });
 
   it('the non-empty state clearly states how many candidates cleared the threshold, never overclaiming urgency', () => {
-    // 4 -> 7 -> 6 -> 5 (Tuesday full weekly refresh, 1 September 2026, its
-    // same-day emergency rechecks, then the 13 September MAN-ISB
-    // direct-PIA fare-evidence append) — see the dedicated regression
-    // above: manchester-islamabad's own fresh evidence is now a much
-    // higher, non-standout direct fare, so it honestly drops out of this
-    // count. Exercise the actual non-empty-state copy against that final,
-    // verified count.
+    // 4 -> 7 -> 6 -> 5 -> 6 -> 34 (Tuesday full weekly refresh, its same-day
+    // emergency rechecks, the 13 September MAN-ISB direct-PIA append, the
+    // 15 September editorial batch, then the 16 September full-portfolio
+    // controlled sweep — see the dedicated regression above for the full
+    // account of why 34 is now correct). Exercise the actual non-empty-state
+    // copy against that final, verified count.
     const snapshot = getFounderSnapshot(new Date());
     const section = snapshot.grouped['nice-to-have'].find((s) => s.id === 'route-watch-fare-candidates')!;
-    expect(section.items).toHaveLength(5);
-    expect(section.headline).toMatch(/5 fare observations clear Fare Watcher's strong evidence threshold/i);
+    expect(section.items).toHaveLength(34);
+    expect(section.headline).toMatch(/34 fare observations clear Fare Watcher's strong evidence threshold/i);
     expect(section.headline).toMatch(/Nothing sends itself/i);
     for (const pattern of forbidden) expect(section.headline).not.toMatch(pattern);
   });

@@ -147,7 +147,7 @@ function getDestinationIataCode(routeSlug: string): string | null {
  * Deliberately generic: no route slug, price or date is hardcoded here.
  * This only reorders observations already eligible under every existing
  * rule (cabin, currentness, freshness, publishability) — those filters run
- * BEFORE this comparator is ever applied (see selectCurrentEconomyObservation
+ * BEFORE this comparator is ever applied (see selectCurrentEconomyPool
  * and selectLatestObservation's own filter chains), so recheck priority can
  * never let an otherwise-ineligible observation win, and it never expands
  * or bypasses the existing profile/date-window-blind nature of the prior
@@ -163,11 +163,42 @@ function compareByRepresentativePriority(a: FareObservation, b: FareObservation)
   return a.price - b.price || a.id.localeCompare(b.id);
 }
 
+/**
+ * Suitability walk (16 Sept 2026, full-portfolio selector-impact review —
+ * see docs/project-control/fare-evidence/full-portfolio-controlled-batch-2026-09-15.md).
+ * Both selectLatestObservation() and selectCurrentEconomyPool() build
+ * an already-eligible candidate array (their own pre-existing filters are
+ * completely unchanged by this helper) and sort it by
+ * compareByRepresentativePriority. Previously only that array's very first
+ * (newest-by-priority) member was ever tested against
+ * isPoorItinerarySuitability() — a poor newest observation failed the whole
+ * pool closed immediately, even when an older, equally-eligible, equally-
+ * current member of the SAME pool was perfectly suitable. This walks the
+ * SAME sorted array, in the SAME order, for the first suitable member —
+ * it never adds a candidate that would not already have been in the pool,
+ * never relaxes freshness/cabin/eligibility, and returns undefined (not a
+ * fallback guess) when every member of the pool is poor, so the caller can
+ * still fail closed exactly as before.
+ */
+function firstSuitableByPriority(sortedCandidates: FareObservation[]): FareObservation | undefined {
+  return sortedCandidates.find((observation) => !isPoorItinerarySuitability(observation));
+}
+
 function selectLatestObservation(observations: FareObservation[]): { observation?: FareObservation; historicalOnly: boolean } {
   const nonHistorical = observations.filter((observation) => observation.comparisonEligibility !== 'historical');
   const candidates = nonHistorical.length > 0 ? nonHistorical : observations;
+  const sorted = [...candidates].sort(compareByRepresentativePriority);
+  const publishableSorted = sorted.filter(isPubliclyPublishable);
   return {
-    observation: [...candidates].sort(compareByRepresentativePriority)[0],
+    // firstSuitableByPriority() only ever walks the SAME already-eligible,
+    // already-publishable, already-sorted array -- falls back to the plain
+    // newest publishable candidate when every one of them is poor, so the
+    // caller's existing isPoorItinerarySuitability(latest) check still
+    // fires and fails closed exactly as before. Falls back further to
+    // sorted[0] (possibly unpublishable) only to preserve the pre-existing
+    // "no publishable evidence at all" bail-out in the caller, which must
+    // see the same non-publishable candidate it always did.
+    observation: firstSuitableByPriority(publishableSorted) ?? publishableSorted[0] ?? sorted[0],
     historicalOnly: nonHistorical.length === 0 && candidates.length > 0,
   };
 }
@@ -206,7 +237,19 @@ function selectLatestObservation(observations: FareObservation[]): { observation
  * structurally a no-op, so /business-class and every other cabin-specific
  * surface are unaffected by construction, not by a special case).
  */
-function selectCurrentEconomyObservation(observations: FareObservation[], nowIso: string): FareObservation | undefined {
+/**
+ * Returns the current-Economy candidate pool itself (already filtered and
+ * sorted, exactly as before this function ever returned only its first
+ * member) so the caller can tell "no current Economy evidence exists at
+ * all" (empty array — falls through to selectLatestObservation()'s
+ * separate, any-cabin pool) apart from "current Economy evidence exists but
+ * every member of it is poor" (non-empty array, firstSuitableByPriority()
+ * finds nothing) — the two must never collapse into the same branch, or a
+ * route with only poor current-Economy evidence could wrongly fall through
+ * to the any-cabin/historical fallback pool and surface stale or wrong-
+ * cabin evidence it was never eligible for.
+ */
+function selectCurrentEconomyPool(observations: FareObservation[], nowIso: string): FareObservation[] {
   // Deliberately NOT selectLatestObservation()'s "fall back to historical
   // entries when nothing else exists" behaviour -- that fallback exists so
   // the overall signal still shows *something* rather than nothing, marked
@@ -221,7 +264,7 @@ function selectCurrentEconomyObservation(observations: FareObservation[], nowIso
       && isPubliclyPublishable(observation)
       && getFareFreshnessState(daysBetweenIso(observation.observedDate, nowIso)) === 'fresh'
     )
-    .sort(compareByRepresentativePriority)[0];
+    .sort(compareByRepresentativePriority);
 }
 
 /**
@@ -266,28 +309,45 @@ export { isPoorItinerarySuitability };
  * The ONE representative-fare selection policy — see this function's own
  * pre-existing doc comment above (Book-By cabin safety, 23 August 2026) for
  * why Fare Signal and Book-By Countdown must never derive this
- * independently. The poor-itinerary suppression check below is applied
- * HERE, at the single shared choke point, precisely so it can never again
- * let the two surfaces drift apart the way they did before that fix — a
- * route whose only current observation is a suppressed Frankenstein
- * itinerary must show "no current fare" identically on both the generic
- * Fare Signal and the Book-By "Verified check" callout.
+ * independently. The poor-itinerary suitability check is applied HERE, at
+ * the single shared choke point, precisely so it can never again let the
+ * two surfaces drift apart the way they did before the 31 Aug 2026 fix — a
+ * route whose ONLY eligible evidence is a poor Frankenstein itinerary must
+ * still show "no current fare" identically on both the generic Fare Signal
+ * and the Book-By "Verified check" callout.
+ *
+ * Suitability walk (16 Sept 2026 — see firstSuitableByPriority()'s doc
+ * comment above): a poor observation no longer fails its WHOLE pool closed
+ * merely for being newest. It is skipped, in favour of the next
+ * already-eligible, already-current member of the SAME pool, if one is
+ * suitable. The archive itself is untouched either way — this only changes
+ * which already-genuine observation gets to represent the route publicly;
+ * see data/fare-observations.ts and lib/itinerary-suitability.ts for what
+ * "genuine" and "suitable" mean, neither of which this function redefines.
  */
 export function selectRepresentativeObservation(
   observations: FareObservation[],
   nowIso: string
 ): { observation: FareObservation | null; state: FareSignalState; freshness: FareFreshnessState | null; noneReason: FareSignalNoneReason | null } {
-  const currentEconomy = selectCurrentEconomyObservation(observations, nowIso);
-  if (currentEconomy) {
-    if (isPoorItinerarySuitability(currentEconomy)) {
-      return { observation: null, state: 'none', freshness: null, noneReason: 'poor-itinerary-suppressed' };
+  const currentEconomyPool = selectCurrentEconomyPool(observations, nowIso);
+  if (currentEconomyPool.length > 0) {
+    const suitable = firstSuitableByPriority(currentEconomyPool);
+    if (suitable) {
+      return {
+        observation: suitable,
+        state: 'current',
+        freshness: getFareFreshnessState(daysBetweenIso(suitable.observedDate, nowIso)),
+        noneReason: null,
+      };
     }
-    return {
-      observation: currentEconomy,
-      state: 'current',
-      freshness: getFareFreshnessState(daysBetweenIso(currentEconomy.observedDate, nowIso)),
-      noneReason: null,
-    };
+    // Every member of the current-Economy pool is poor. Fail closed here —
+    // do NOT fall through to selectLatestObservation()'s any-cabin/
+    // historical pool merely to dodge suppression; that pool exists for a
+    // genuinely different case (no current Economy evidence at all), and
+    // surfacing it here would let a stale or wrong-cabin observation stand
+    // in for a route that does have current Economy evidence, just none of
+    // it suitable.
+    return { observation: null, state: 'none', freshness: null, noneReason: 'poor-itinerary-suppressed' };
   }
 
   const { observation: latest, historicalOnly } = selectLatestObservation(observations);
@@ -298,6 +358,9 @@ export function selectRepresentativeObservation(
   // than the preferred-Economy path above — kept as its own check so the
   // OR-condition this replaced can no longer blur "genuinely no evidence"
   // and "evidence exists but is unsuitable" into the same untagged 'none'.
+  // selectLatestObservation() has already walked its own pool for a
+  // suitable candidate before returning `latest`, so this only fires when
+  // every publishable member of THAT pool is also poor.
   if (isPoorItinerarySuitability(latest)) {
     return { observation: null, state: 'none', freshness: null, noneReason: 'poor-itinerary-suppressed' };
   }

@@ -218,20 +218,27 @@ describe('Fare Signal production coverage counts', () => {
     // branch existed.
     //
     // Fare Signal poor-itinerary suppression (31 Aug 2026, Users 3 & 4
-    // real-user validation): of the 7 routes this fix suppresses
-    // (manchester-lahore, birmingham-amritsar, manchester-dubai,
-    // london-heathrow-doha, london-heathrow-jeddah, london-gatwick-amritsar,
-    // birmingham-delhi), all 7 were already 'current' at this fixed
-    // reference date too, so the same delta applies here: 83 - 7 = 76; the
-    // "none" bucket grows from 5 to 12.
+    // real-user validation) originally suppressed 7 routes (manchester-
+    // lahore, birmingham-amritsar, manchester-dubai, london-heathrow-doha,
+    // london-heathrow-jeddah, london-gatwick-amritsar, birmingham-delhi) at
+    // this fixed reference date too, taking "current" from 83 to 76 and
+    // "none" from 5 to 12.
     //
     // 7 September 2026: london-gatwick-doha added as a new canonical route
     // with no fare observation of its own — it falls into "none", taking
-    // that bucket from 12 to 13. "current" (76) is unaffected.
+    // that bucket to 13.
+    //
+    // 16 Sept 2026 UPDATE (suitability walk — see
+    // docs/project-control/fare-evidence/full-portfolio-controlled-batch-2026-09-15.md):
+    // every one of the 7 originally-suppressed routes already had an older,
+    // still-fresh-as-of-25-August suitable observation, so none of them are
+    // suppressed at this date any more — "current" returns to 83,
+    // "none" drops to 6 (london-gatwick-doha, plus the 5 routes that
+    // genuinely have no publishable evidence at all as of this date).
     const signals = routes.map((route) => getFareSignalForRoute(route.slug, '2026-08-25'));
-    expect(signals.filter((signal) => signal.state === 'current')).toHaveLength(76);
+    expect(signals.filter((signal) => signal.state === 'current')).toHaveLength(83);
     expect(signals.filter((signal) => signal.state === 'recent')).toHaveLength(0);
-    expect(signals.filter((signal) => signal.state === 'none')).toHaveLength(13);
+    expect(signals.filter((signal) => signal.state === 'none')).toHaveLength(6);
     expect(routes.filter((route) => getTripComRouteUrl(route.slug)).length).toBe(45);
   });
 
@@ -253,21 +260,28 @@ describe('Fare Signal production coverage counts', () => {
 
   it('every route with a non-empty Fare Signal genuinely has tracked observations backing it — a signal can never appear from nowhere', () => {
     // Fare Signal poor-itinerary suppression (31 Aug 2026) deliberately
-    // breaks the previous exact-equality invariant here: "tracked" (has
-    // ANY publishable observation) and "signalled" (has a DISPLAYABLE
-    // current Fare Signal) are no longer the same question by design — a
-    // route can be tracked (real archive evidence exists) while correctly
-    // showing no current signal, because its only current-Economy
-    // candidate is a confirmed self-transfer, 2+-stop Frankenstein
-    // itinerary (manchester-lahore, birmingham-amritsar, manchester-dubai,
-    // london-heathrow-doha, london-heathrow-jeddah, london-gatwick-amritsar,
-    // birmingham-delhi). What must still hold — and does — is the weaker,
-    // still-real invariant: signalledRoutes is always a SUBSET of
-    // trackedRoutes, never the reverse. shouldShowNoFareFallback() is the
-    // dedicated helper for exactly this "tracked but not signalled" case.
-    // Classification B: the 7-route poor-itinerary suppression list this
-    // test names is only reachable once each route's own 25 August
-    // evidence exists — after the file's usual 13 Aug date.
+    // broke the previous exact-equality invariant here: "tracked" (has ANY
+    // publishable observation) and "signalled" (has a DISPLAYABLE current
+    // Fare Signal) are no longer necessarily the same question by design —
+    // a route CAN be tracked while correctly showing no current signal,
+    // when its ENTIRE current-Economy pool is a confirmed self-transfer,
+    // 2+-stop Frankenstein itinerary with no older suitable fallback. What
+    // must still hold — and does — is the weaker, still-real invariant:
+    // signalledRoutes is always a SUBSET of trackedRoutes, never the
+    // reverse. shouldShowNoFareFallback() is the dedicated helper for
+    // exactly this "tracked but not signalled" case.
+    //
+    // 16 Sept 2026 UPDATE (suitability walk — see
+    // docs/project-control/fare-evidence/full-portfolio-controlled-batch-2026-09-15.md):
+    // the 7 routes originally named here each had an older, still-fresh-
+    // as-of-25-August suitable observation, so none of them are suppressed
+    // at this date any more — the suppressedButTracked set is correctly
+    // empty at this fixed reference date. The mechanism itself (a route can
+    // be tracked-but-not-signalled) is unaffected and still real: see
+    // tests/fare-signal-poor-itinerary-suppression.test.ts's own
+    // GENUINELY_SUPPRESSED_ROUTE (london-gatwick-doha) for a live,
+    // still-true example — omitted from this SUPPRESSION_EVIDENCE_ISO
+    // check only because that route's own evidence postdates 25 August.
     const SUPPRESSION_EVIDENCE_ISO = '2026-08-25';
     const trackedRoutes = routes
       .filter((route) => getPublishableObservationsByRoute(route.slug, SUPPRESSION_EVIDENCE_ISO).length > 0)
@@ -279,9 +293,7 @@ describe('Fare Signal production coverage counts', () => {
       expect(trackedRoutes, slug).toContain(slug);
     }
     const suppressedButTracked = trackedRoutes.filter((slug) => !signalledRoutes.includes(slug));
-    expect(suppressedButTracked.sort()).toEqual(
-      ['birmingham-amritsar', 'birmingham-delhi', 'london-gatwick-amritsar', 'london-heathrow-doha', 'london-heathrow-jeddah', 'manchester-dubai', 'manchester-lahore'].sort()
-    );
+    expect(suppressedButTracked).toEqual([]);
   });
 });
 

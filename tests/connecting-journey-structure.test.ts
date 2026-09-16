@@ -63,42 +63,39 @@ describe('1. existing PR #155 direct-vs-connecting wording is completely unchang
   });
 });
 
-describe('2. Birmingham-Delhi\'s connecting-vs-connecting mismatch is no longer live (Fare Signal poor-itinerary suppression, 31 Aug 2026)', () => {
-  // Birmingham-Delhi's only current observation (obs-bhx-del-economy-
+describe('2. Birmingham-Delhi\'s connecting-vs-connecting mismatch is live again (16 Sept 2026 suitability walk — see docs/project-control/fare-evidence/full-portfolio-controlled-batch-2026-09-15.md)', () => {
+  // Birmingham-Delhi's newest observation (obs-bhx-del-economy-
   // 20260822-8w-v1, £563) is a confirmed self-transfer, 3-stop-each-way
-  // itinerary across 5 airlines -- it now fails Fare Signal's
-  // poor-itinerary suppression gate (lib/fare-signal.ts) and is correctly
-  // suppressed entirely. routeServiceFareMismatch() itself is untouched
-  // and still correct code -- it simply has no displayed fare left to
-  // compare against for this route, since suppression takes priority over
-  // showing a mismatch-labelled bad itinerary (per the founder's own
-  // standing principle: JetStash should prefer showing no current fare
-  // over confidently highlighting a journey a normal traveller wouldn't
-  // consider, even with a caveat attached). The route's own structured
-  // routeServiceConnections evidence is completely unaffected -- only the
-  // fare side of the comparison disappeared.
-  it('route still carries routeServiceConnections for the outbound direction only (ATQ); return is deliberately absent -- unaffected by Fare Signal suppression', () => {
+  // itinerary across 5 airlines and fails Fare Signal's poor-itinerary
+  // suitability check -- it stays in the archive, skipped for
+  // representative selection, exactly as designed. The suitability walk
+  // (16 Sept 2026) correctly finds the route's older, still-eligible,
+  // suitable 13 August £658 observation (Lufthansa and Air India,
+  // connecting) instead of failing the whole route closed the way the 31
+  // Aug 2026 suppression fix originally did — which restores the exact
+  // connecting-vs-connecting mismatch scenario this file's block 2 exists
+  // to test. routeServiceFareMismatch() itself was never touched by either
+  // fix; this block is proving it fires correctly again now that a real
+  // fare exists to compare against.
+  it('route still carries routeServiceConnections for the outbound direction only (ATQ); return is deliberately absent', () => {
     const route = getRouteBySlug('birmingham-delhi')!;
     expect(route.routeServiceConnections).toEqual({ outbound: ['ATQ'] });
     expect(route.routeServiceConnections?.return).toBeUndefined();
   });
 
-  it('Fare Signal now shows no current fare for this route at all', () => {
+  it('Fare Signal resolves to the older, suitable 13 August £658 connecting observation', () => {
     const signal = getFareSignalForRoute('birmingham-delhi', NOW_ISO);
-    expect(signal.state).toBe('none');
-    expect(signal.observation).toBeNull();
+    expect(signal.state).toBe('current');
+    expect(signal.observation?.id).toBe('obs-bhx-del-economy-20260813-8w-v1');
+    expect(signal.observation?.directness).toBe('connecting');
   });
 
-  it('renders the suppressed-fare explanation, not the "different connecting journey" callout -- there is nothing left to mismatch against', () => {
-    // Suppressed-fare explanation (2 Sep 2026, traveller-POV live product
-    // review): birmingham-delhi's Economy fare fails
-    // isPoorItinerarySuitability(), so this now renders the explanatory
-    // "Recent fares checked" copy instead of the plain "No current fare
-    // tracked" it used to.
+  it('renders the "different connecting journey" mismatch callout (no comma -- the connecting-vs-connecting wording, distinct from the direct-vs-connecting one in block 1) against the route\'s own routeServiceConnections evidence', () => {
     const html = renderFareSignalForRoute('birmingham-delhi');
-    expect(html).toContain('Recent fares checked');
-    expect(html).not.toContain('Route service');
-    expect(html).not.toContain('This tracked fare is a different connecting journey.');
+    expect(html).toContain('Fare spotted');
+    expect(html).toContain('Route service');
+    expect(html).toContain('This tracked fare is a different connecting journey.');
+    expect(html).not.toContain('Recent fares checked');
   });
 
   it('the underlying suppressed observation itself still carries the same connection-airport evidence in the archive -- suppression hides it from Fare Signal, it does not delete or alter it', () => {
@@ -168,7 +165,7 @@ describe('5. missing route or fare evidence resolves silently, never a guess', (
     expect(html).not.toContain('Route service');
   });
 
-  it('across the full 88-route dataset, the new callout currently fires for zero routes (Fare Signal poor-itinerary suppression, 31 Aug 2026) -- its one proven example, birmingham-delhi, is now suppressed at the Fare Signal level before this callout is ever reached, since a poor-itinerary fare is not shown at all, mismatch-labelled or otherwise', () => {
+  it('across the full 88-route dataset, the new callout fires for exactly one route -- birmingham-delhi, its one proven example, whose 16 Sept 2026 suitability-walk resolution (see docs/project-control/fare-evidence/full-portfolio-controlled-batch-2026-09-15.md) restored a real connecting fare to compare against', () => {
     let newCalloutCount = 0;
     const firedFor: string[] = [];
     for (const route of routes) {
@@ -181,8 +178,8 @@ describe('5. missing route or fare evidence resolves silently, never a guess', (
         firedFor.push(route.slug);
       }
     }
-    expect(firedFor).toEqual([]);
-    expect(newCalloutCount).toBe(0);
+    expect(firedFor).toEqual(['birmingham-delhi']);
+    expect(newCalloutCount).toBe(1);
   });
 });
 
@@ -223,7 +220,7 @@ describe('8, 9 & 10. Birmingham-Delhi observation lifecycle', () => {
     expect(obs.price).toBe(527);
   });
 
-  it('the 22 August observation is the founder-corrected £563 self-transfer itinerary (not the original £776) — but is now correctly suppressed from public display, not shown as the current fare (Fare Signal poor-itinerary suppression, 31 Aug 2026)', () => {
+  it('the 22 August observation is the founder-corrected £563 self-transfer itinerary (not the original £776) — its poor-itinerary signature is still confirmed and it still never becomes the public representative, but the 16 Sept 2026 suitability walk correctly resolves the route to its older, suitable 13 August £658 observation instead of failing closed', () => {
     // Founder remediation (22 August 2026): the original 22 August record
     // used a £776 Lufthansa "Best"-tab result; Google's own Cheapest tab
     // showed £563 for the exact same locked profile, independently
@@ -232,14 +229,15 @@ describe('8, 9 & 10. Birmingham-Delhi observation lifecycle', () => {
     // labelled "Lowest total price" by Google itself). Corrected in place
     // since PR #164 had not yet merged.
     //
-    // Fare Signal poor-itinerary suppression (31 Aug 2026): that same
-    // self-transfer, 3-stop-each-way itinerary is exactly the confirmed-bad
-    // signature this later fix targets — the observation itself is
-    // unchanged in the archive, but getFareSignalForRoute() no longer
-    // selects it as the current public fare.
+    // The self-transfer, 3-stop-each-way signature this observation carries
+    // is exactly the confirmed-bad signature isPoorItinerarySuitability()
+    // targets — it is correctly skipped for representative selection, in
+    // favour of the older, still-eligible, suitable 13 August observation
+    // (see block 2 above). The observation itself is unchanged in the
+    // archive either way.
     const signal = getFareSignalForRoute('birmingham-delhi', NOW_ISO);
-    expect(signal.state).toBe('none');
-    expect(signal.observation).toBeNull();
+    expect(signal.state).toBe('current');
+    expect(signal.observation?.id).toBe('obs-bhx-del-economy-20260813-8w-v1');
     const obs = fareObservations.find((o) => o.id === 'obs-bhx-del-economy-20260822-8w-v1')!;
     expect(obs.price).toBe(563);
     expect(obs.priceNote.toLowerCase()).toContain('self-transfer');

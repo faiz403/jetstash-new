@@ -174,23 +174,20 @@ describe('Business-specific surfaces are unaffected by construction', () => {
   });
 });
 
-describe('real-network sanity: manchester-lahore now correctly shows no current Fare Signal of either cabin (Fare Signal poor-itinerary suppression, 31 Aug 2026)', () => {
-  it('manchester-lahore\'s generic Fare Signal is neither its Economy nor its Business observation — both are confirmed self-transfer, 2+/3-stop-per-leg itineraries, so neither cabin has a representative fare to show; this is not a regression of the cabin-safety fix above — Economy would still correctly be preferred over Business whenever both are shown, it is simply that neither currently qualifies', () => {
+describe('real-network sanity: manchester-lahore\'s generic Fare Signal resolves to its older, suitable Economy observation (16 Sept 2026 suitability walk — see docs/project-control/fare-evidence/full-portfolio-controlled-batch-2026-09-15.md)', () => {
+  it('manchester-lahore\'s generic Fare Signal correctly prefers its older, suitable 18 August £628 Economy observation over the confirmed-poor 25 August £547 Economy recheck and the confirmed-poor £3,051 Business observation — this is not a regression of the cabin-safety fix above; Economy is still correctly preferred over Business whenever both are shown, and within Economy, a suitable older observation is now correctly preferred over a poor newer one, instead of the whole route failing closed', () => {
     // This fix was originally authored and verified on clean main, before
     // PR #166's Business observations existed, via a read-only cross-branch
     // check (no route anywhere changed on main itself — confirmed at the
     // time). PR #166 has since been merged onto this branch's own history.
-    // Fare Signal poor-itinerary suppression (31 Aug 2026) then found the
-    // Economy observation this test used to check (£547, 2/3 stops,
-    // self-transfer) and the £3,051 Business one (3/3 stops, self-transfer)
-    // are both confirmed-poor itineraries, so the generic signal correctly
-    // resolves to nothing rather than either.
-    // Classification B: the poor-itinerary suppression fix's own evidence
-    // (the 25 Aug £547 self-transfer recheck) is dated after this file's
+    // Classification B: the poor-itinerary evidence this test names (the
+    // 25 Aug £547 self-transfer recheck) is dated after this file's
     // 23 Aug NOW_ISO.
     const SUPPRESSION_EVIDENCE_ISO = '2026-08-25';
     const signal = getFareSignalForRoute('manchester-lahore', SUPPRESSION_EVIDENCE_ISO);
-    expect(signal.state).toBe('none');
-    expect(signal.observation).toBeNull();
+    expect(signal.state).toBe('current');
+    expect(signal.observation?.id).toBe('obs-man-lhe-economy-20260818-8w-v1');
+    expect(signal.observation?.cabin).toBe('Economy');
+    expect(signal.observation?.price).toBe(628);
   });
 });

@@ -183,7 +183,7 @@ describe('Manchester-Dubai\'s new fare observation matches the approved specific
     expect(obs!.observationReason).toBe('routine-weekly');
   });
 
-  it('Manchester-Dubai\'s historic entries remain untouched — further genuine observations were appended on 6, 18, 25 August and 1 September 2026', () => {
+  it('Manchester-Dubai\'s historic entries remain untouched — further genuine observations were appended on 6, 18, 25 August, 1 September and (twice, per the founder-directed 16 September full-portfolio reconciliation — a routine sweep observation plus the restored 15 September £267 held panel observation) September 2026', () => {
     const dubaiObs = fareObservations.filter((o) => o.routeSlug === 'manchester-dubai');
     expect(dubaiObs.length).toBeGreaterThanOrEqual(6);
     expect(new Set(dubaiObs.map((o) => o.id)).size).toBe(dubaiObs.length);
@@ -193,6 +193,7 @@ describe('Manchester-Dubai\'s new fare observation matches the approved specific
       'obs-man-dxb-economy-20260818-8w-v1',
       'obs-man-dxb-economy-20260825-8w-v1',
       'obs-man-dxb-economy-20260901-8w-v1',
+      'obs-man-dxb-economy-20260915-8w-v1',
     ].includes(o.id));
     expect(historic.length).toBeGreaterThanOrEqual(2);
     for (const o of historic) {
@@ -232,8 +233,11 @@ describe('Manchester-Doha\'s original fare observation is untouched by this roun
     // produced (obs-man-doh-economy-20260901-recheck-v1, £257, reproducing
     // the routine check exactly) - this test's own scope is only that THIS
     // specific historic record (20260805) was never edited, not that no
-    // further observation could ever legitimately be added.
-    expect(getPublishableObservationsByRoute('manchester-doha', NOW_ISO).length).toBe(5);
+    // further observation could ever legitimately be added. A sixth was
+    // added 15 September 2026 by the full-portfolio controlled sweep
+    // (obs-man-doh-economy-20260915-8w-v1) — see docs/project-control/
+    // fare-evidence/full-portfolio-controlled-batch-2026-09-15.md.
+    expect(getPublishableObservationsByRoute('manchester-doha', NOW_ISO).length).toBe(6);
   });
 
   it('an incomplete fare record (missing dates) can never become publishable, regardless of route status', () => {

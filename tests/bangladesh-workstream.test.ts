@@ -281,14 +281,16 @@ describe('BD-001 — no fare invented, no unrelated destination or route added',
     // its untouched 6 August Batch B entry (append-only).
     const expected: Record<string, { count: number; latestId: string }> = {
       // Counts and latest ids updated for the Tuesday full weekly refresh (1
-      // September 2026), which appended one further genuine, dated
-      // observation per route (see the '8w-v1' 20260901 entries) — this
-      // stays a routine append-only growth, not a change in verification
-      // status, which is asserted separately below.
-      'london-heathrow-dhaka': { count: 2, latestId: 'obs-lhr-dac-economy-20260901-8w-v1' },
-      'london-heathrow-sylhet': { count: 2, latestId: 'obs-lhr-zyl-economy-20260901-8w-v1' },
-      'manchester-dhaka': { count: 3, latestId: 'obs-man-dac-economy-20260901-8w-v1' },
-      'manchester-sylhet': { count: 2, latestId: 'obs-man-zyl-economy-20260901-8w-v1' },
+      // September 2026), and again for the full-portfolio controlled sweep
+      // (16 September 2026 — see docs/project-control/fare-evidence/
+      // full-portfolio-controlled-batch-2026-09-15.md), which appended one
+      // further genuine, dated observation per route — this stays a
+      // routine append-only growth, not a change in verification status,
+      // which is asserted separately below.
+      'london-heathrow-dhaka': { count: 3, latestId: 'obs-lhr-dac-economy-20260916-8w-v1' },
+      'london-heathrow-sylhet': { count: 3, latestId: 'obs-lhr-zyl-economy-20260916-8w-v1' },
+      'manchester-dhaka': { count: 4, latestId: 'obs-man-dac-economy-20260915-8w-v1' },
+      'manchester-sylhet': { count: 3, latestId: 'obs-man-zyl-economy-20260916-8w-v1' },
     };
     for (const slug of ALL_BANGLADESH_ROUTE_SLUGS) {
       const observations = fareObservations.filter((o) => o.routeSlug === slug);

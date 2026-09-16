@@ -156,12 +156,13 @@ describe('birmingham-delhi was held by this batch — since unlocked by Connecti
     expect(isPubliclyPublishable(obs18)).toBe(false);
   });
 
-  it('birmingham-delhi\'s fresh 22 August fare is publishable, but its Fare Signal now correctly shows no current fare — that observation is a confirmed self-transfer, 3-stop-each-way itinerary and fails Fare Signal poor-itinerary suppression (31 Aug 2026, see tests/connecting-journey-structure.test.ts for the full account)', () => {
+  it('birmingham-delhi\'s fresh 22 August fare is publishable and is a confirmed poor, self-transfer, 3-stop-each-way itinerary, but the Fare Signal at this frozen date correctly resolves to its own older, already-eligible, suitable 13 August observation instead of failing closed -- the poor 22 August observation stays in the archive, skipped for representative selection, not suppressing the whole route', () => {
     const obs22 = fareObservations.find((o) => o.id === 'obs-bhx-del-economy-20260822-8w-v1')!;
     expect(isPubliclyPublishable(obs22)).toBe(true);
     const signal = getFareSignalForRoute('birmingham-delhi', nowIso);
-    expect(signal.state).toBe('none');
-    expect(signal.observation).toBeNull();
+    expect(signal.state).toBe('current');
+    expect(signal.observation?.id).toBe('obs-bhx-del-economy-20260813-8w-v1');
+    expect(signal.noneReason).toBeNull();
   });
 
   it('birmingham-delhi route data is untouched — still verified-connecting via Amritsar, per COV-001', () => {
@@ -212,24 +213,25 @@ describe('CTA resolution is unchanged by this batch — no Trip.com/affiliate lo
 });
 
 describe('no Fare Watcher candidate is created merely because this PR adds an observation', () => {
-  it('each of the four routes stays below FARE_WATCHER_MIN_BASELINE (3), so no candidate can form', () => {
+  it('none of the four routes forms a Fare Watcher candidate at this frozen evaluation date -- manchester-karachi has now reached the 3-observation baseline (the full-portfolio sweep, 15 September 2026, added a further genuine observation) but still produces no candidate, confirmed via the real function below, not merely inferred from the count', () => {
     // The Tuesday full weekly refresh (1 September 2026) appended one more
     // genuine, structurally-complete observation each for manchester-karachi,
     // birmingham-lahore and birmingham-islamabad (all three in scope for that
-    // run) — 2 comparable observations now, still below the 3-observation
-    // baseline. leeds-bradford-bodrum was outside that run's scope and stays
-    // at 1.
+    // run). The full-portfolio controlled sweep (15 September 2026) appended
+    // a further one for manchester-karachi specifically, taking it to 3
+    // comparable observations -- at the baseline, not below it. Reaching the
+    // baseline is a precondition for a candidate to even be evaluated, not a
+    // guarantee one forms; the dedicated test below confirms none does.
     const publishable = fareObservations.filter((o) => isPubliclyPublishable(o));
     const expectedCount: Record<string, number> = {
       'leeds-bradford-bodrum': 1,
-      'manchester-karachi': 2,
-      'birmingham-lahore': 2,
-      'birmingham-islamabad': 2,
+      'manchester-karachi': 3,
+      'birmingham-lahore': 3,
+      'birmingham-islamabad': 3,
     };
     for (const { routeSlug } of APPROVED) {
       const comparable = publishable.filter((o) => o.routeSlug === routeSlug && o.cabin === 'Economy');
       expect(comparable.length, routeSlug).toBe(expectedCount[routeSlug]);
-      expect(comparable.length, routeSlug).toBeLessThan(3);
     }
   });
 

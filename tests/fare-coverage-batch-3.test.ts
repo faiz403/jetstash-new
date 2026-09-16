@@ -91,34 +91,30 @@ describe('Fare Coverage Programme Batch 3', () => {
     // 13 August observation was unsuppressed and a fresh 22 August one
     // appended.
     expect(current).toHaveLength(83);
-    // Fare Signal poor-itinerary suppression (31 Aug 2026): "tracked" (has
-    // any publishable observation, checked above) and "signalled" (has a
-    // displayable current Fare Signal) are no longer the same question by
-    // design — 7 of these 83 tracked routes correctly show no current fare
-    // because their only publishable observation is a confirmed
-    // self-transfer, 2+-stop-per-leg itinerary. See
-    // tests/fare-signal.test.ts's "every route with a non-empty Fare Signal
-    // genuinely has tracked observations" test for the full account.
-    // Checked at 31 Aug (later than the 22 Aug coverage snapshot) so this
-    // suppression fix's own evidence is visible.
+    // Fare Signal poor-itinerary suppression (31 Aug 2026) originally meant
+    // "tracked" (has any publishable observation, checked above) and
+    // "signalled" (has a displayable current Fare Signal) were no longer
+    // the same question for 7 of these 83 tracked routes, whose only
+    // publishable observation at the time was a confirmed self-transfer,
+    // 2+-stop-per-leg itinerary.
+    //
+    // 16 Sept 2026 UPDATE (suitability walk — see
+    // docs/project-control/fare-evidence/full-portfolio-controlled-batch-2026-09-15.md):
+    // selectRepresentativeObservation() now walks its candidate pool for an
+    // older suitable observation instead of failing the whole pool closed.
+    // Every one of those 7 routes already had an older, still-fresh-as-of-
+    // 31-August observation that qualifies, so all 7 correctly show a
+    // current Fare Signal at this date too — checked directly below.
     const SUPPRESSION_ISO = '2026-08-31';
-    const knownSuppressed = new Set([
-      'manchester-lahore', 'birmingham-amritsar', 'manchester-dubai', 'london-heathrow-doha',
-      'london-heathrow-jeddah', 'london-gatwick-amritsar', 'birmingham-delhi',
-    ]);
     // manchester-delhi and manchester-mumbai are excluded from this loop:
-    // by 31 Aug they correctly lose their Fare Signal too, but for the
-    // unrelated IndiGo-withdrawal reason above, not poor-itinerary
-    // suppression — asserting either branch for them here would conflate
-    // two different product facts.
+    // by 31 Aug they correctly lose their Fare Signal, for the unrelated
+    // IndiGo-withdrawal reason above (route-status verification, not
+    // poor-itinerary suitability) — asserting 'current' for them here would
+    // conflate two different product facts.
     const routeStatusWithdrawnBy31Aug = new Set(['manchester-delhi', 'manchester-mumbai']);
     for (const route of current) {
       if (routeStatusWithdrawnBy31Aug.has(route.slug)) continue;
       const signal = getFareSignalForRoute(route.slug, SUPPRESSION_ISO);
-      if (knownSuppressed.has(route.slug)) {
-        expect(signal.state, route.slug).toBe('none');
-        continue;
-      }
       expect(signal.state, route.slug).toBe('current');
       expect(shouldShowNoFareFallback(signal), route.slug).toBe(false);
     }

@@ -75,33 +75,32 @@ describe('isSelfTransferItinerary() -- the one evidence predicate', () => {
 });
 
 describe('the 25 August 2026 batch -- real observations, real founder-specified expectations', () => {
-  // Fare Signal poor-itinerary suppression (31 Aug 2026): all six of these
-  // routes' current-cabin observations are confirmed self-transfer AND
-  // 2+-stop-per-leg itineraries -- exactly the signature that gate now
-  // suppresses outright, superseding the self-transfer LABEL as the
-  // mitigation (no fare shown at all, rather than a bad fare shown with a
-  // caveat). The self-transfer evidence predicate (isSelfTransferItinerary)
-  // and its label are unchanged and still correctly evaluated -- it is
-  // simply that none of these six now has a current Fare Signal for it to
-  // attach to. See tests/fare-signal.test.ts and
-  // tests/fare-coverage-batch-3.test.ts for the full account. The label
-  // mechanism's continued correctness for a route that IS self-transfer but
-  // does NOT meet the suppression bar is proven separately below
-  // (manchester-barcelona: self-transfer via separate tickets, but both
-  // legs nonstop with no structured stop count recorded).
-  const nowSuppressed = [
-    'manchester-lahore',
-    'manchester-dubai',
-    'london-heathrow-jeddah',
-    'london-heathrow-doha',
-    'birmingham-amritsar',
-    'london-gatwick-amritsar',
-  ];
+  // Fare Signal poor-itinerary suppression (31 Aug 2026) originally meant
+  // all six of these routes' current-cabin observations were confirmed
+  // self-transfer AND 2+-stop-per-leg itineraries, suppressed outright.
+  //
+  // 16 Sept 2026 UPDATE (suitability walk — see
+  // docs/project-control/fare-evidence/full-portfolio-controlled-batch-2026-09-15.md):
+  // every one of the six already had an older, still-fresh-as-of-25-August,
+  // suitable Economy observation, so the selector now correctly resolves
+  // to it instead of failing the whole route closed. The self-transfer
+  // evidence on each route's own poor observation remains true in the
+  // archive either way — it simply no longer forces the whole route to
+  // "no current fare"; it is skipped for representative selection instead.
+  const nowResolvesToOlderSuitable: Record<string, { id: string; price: number }> = {
+    'manchester-lahore': { id: 'obs-man-lhe-economy-20260818-8w-v1', price: 628 },
+    'manchester-dubai': { id: 'obs-man-dxb-economy-20260818-8w-v1', price: 350 },
+    'london-heathrow-jeddah': { id: 'obs-lhr-jed-economy-20260819-8w-v1', price: 535 },
+    'london-heathrow-doha': { id: 'obs-lhr-doh-economy-20260818-8w-v1', price: 471 },
+    'birmingham-amritsar': { id: 'obs-bhx-atq-economy-20260819-8w-v1', price: 603 },
+    'london-gatwick-amritsar': { id: 'obs-lgw-atq-economy-20260818-8w-v1', price: 650 },
+  };
 
-  it.each(nowSuppressed)('%s has no current Fare Signal at all (poor-itinerary suppression) -- its self-transfer evidence remains true in the archive, but there is no longer a displayed observation to flag', (slug) => {
+  it.each(Object.keys(nowResolvesToOlderSuitable))('%s resolves to its older, suitable, still-fresh Economy observation -- its own newer self-transfer evidence remains true in the archive, but is skipped for representative selection', (slug) => {
     const signal = getFareSignalForRoute(slug, NOW_ISO);
-    expect(signal.state).toBe('none');
-    expect(signal.observation).toBeNull();
+    expect(signal.state, slug).toBe('current');
+    expect(signal.observation?.id, slug).toBe(nowResolvesToOlderSuitable[slug].id);
+    expect(signal.observation?.price, slug).toBe(nowResolvesToOlderSuitable[slug].price);
   });
 
   it('manchester-barcelona\'s current Fare Signal is genuinely self-transfer (separate tickets, both legs nonstop) and correctly NOT suppressed -- its evidence has no structured stop count at all, so it cannot meet the 2+-stop suppression bar, and remains exactly the case the self-transfer label exists for', () => {
@@ -138,16 +137,24 @@ describe('rendered Fare Signal -- label appears in the primary/prominent area, n
     expect(html).toContain(SELF_TRANSFER_LABEL);
   });
 
-  it('renders no current signal at all -- and so no label -- on every one of the six now-suppressed routes (Fare Signal poor-itinerary suppression, 31 Aug 2026)', () => {
-    // Suppressed-fare explanation (2 Sep 2026, traveller-POV live product
-    // review): the suppressed state now explains itself ("Recent fares
-    // checked") rather than the plain "No current fare tracked" it used to
-    // -- see components/route/fare-signal.tsx's SuppressedFareExplanation.
-    // The self-transfer label's own absence is unaffected either way.
-    for (const slug of ['manchester-lahore', 'manchester-dubai', 'london-heathrow-jeddah', 'london-heathrow-doha', 'birmingham-amritsar', 'london-gatwick-amritsar']) {
+  it('renders an ordinary current Fare Signal -- with the self-transfer label only where the resolved older observation genuinely is one -- on every one of the six routes previously suppressed at this date (16 Sept 2026 suitability walk — see docs/project-control/fare-evidence/full-portfolio-controlled-batch-2026-09-15.md)', () => {
+    const expectLabel: Record<string, boolean> = {
+      'manchester-lahore': false,
+      'manchester-dubai': false,
+      'london-heathrow-jeddah': true,
+      'london-heathrow-doha': false,
+      'birmingham-amritsar': false,
+      'london-gatwick-amritsar': false,
+    };
+    for (const [slug, hasLabel] of Object.entries(expectLabel)) {
       const html = renderFareSignalForRoute(slug);
-      expect(html, slug).toContain('Recent fares checked');
-      expect(html, slug).not.toContain(SELF_TRANSFER_LABEL);
+      expect(html, slug).toContain('Fare spotted');
+      expect(html, slug).not.toContain('Recent fares checked');
+      if (hasLabel) {
+        expect(html, slug).toContain(SELF_TRANSFER_LABEL);
+      } else {
+        expect(html, slug).not.toContain(SELF_TRANSFER_LABEL);
+      }
     }
   });
 

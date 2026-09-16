@@ -103,45 +103,36 @@ describe('Standout Fare — First Public Standout Fare Pilot', () => {
     expect(standout).toBeNull();
   });
 
-  it('7. MAN-LHE was never a Standout Fare, and now shows no current Fare Signal at all (Fare Signal poor-itinerary suppression, 31 Aug 2026) — Standout Fare\'s own qualification logic is untouched and independent, confirmed by standout staying null exactly as before', () => {
+  it('7. MAN-LHE was never a Standout Fare -- Standout Fare\'s own qualification logic is untouched and independent, confirmed by standout staying null; the generic Fare Signal now correctly resolves to an older suitable observation (16 Sept 2026 suitability walk — see docs/project-control/fare-evidence/full-portfolio-controlled-batch-2026-09-15.md) rather than showing no current fare', () => {
     const standout = getApprovedStandoutFare('manchester-lahore', 'Economy', fareObservations, NOW);
     expect(standout).toBeNull();
     const signal = getFareSignalForRoute('manchester-lahore', NOW);
     const html = renderToStaticMarkup(FareSignal({ signal, tripComUrl: getTripComRouteUrl('manchester-lahore'), routeSlug: 'manchester-lahore', standoutFare: standout }));
-    // Suppressed-fare explanation (2 Sep 2026, traveller-POV live product
-    // review): renders the explanatory "Recent fares checked" copy instead
-    // of the plain "No current fare tracked" it used to; Standout Fare's
-    // own absence is unaffected either way.
-    expect(html).toContain('Recent fares checked');
-    expect(html).not.toContain('Fare spotted');
+    expect(signal.observation?.price).toBe(628);
+    expect(html).toContain('Fare spotted');
+    expect(html).not.toContain('Recent fares checked');
     expect(html).not.toContain('Standout Fare');
   });
 
-  it('8. LHR-JED was never a Standout Fare, and now shows no current Fare Signal at all (Fare Signal poor-itinerary suppression, 31 Aug 2026)', () => {
+  it('8. LHR-JED was never a Standout Fare -- the generic Fare Signal now correctly resolves to an older suitable observation', () => {
     const standout = getApprovedStandoutFare('london-heathrow-jeddah', 'Economy', fareObservations, NOW);
     expect(standout).toBeNull();
     const signal = getFareSignalForRoute('london-heathrow-jeddah', NOW);
     const html = renderToStaticMarkup(FareSignal({ signal, tripComUrl: getTripComRouteUrl('london-heathrow-jeddah'), routeSlug: 'london-heathrow-jeddah', standoutFare: standout }));
-    // Suppressed-fare explanation (2 Sep 2026, traveller-POV live product
-    // review): renders the explanatory "Recent fares checked" copy instead
-    // of the plain "No current fare tracked" it used to; Standout Fare's
-    // own absence is unaffected either way.
-    expect(html).toContain('Recent fares checked');
-    expect(html).not.toContain('Fare spotted');
+    expect(signal.observation?.price).toBe(535);
+    expect(html).toContain('Fare spotted');
+    expect(html).not.toContain('Recent fares checked');
     expect(html).not.toContain('Standout Fare');
   });
 
-  it('9. BHX-ATQ was never a Standout Fare, and now shows no current Fare Signal at all (Fare Signal poor-itinerary suppression, 31 Aug 2026)', () => {
+  it('9. BHX-ATQ was never a Standout Fare -- the generic Fare Signal now correctly resolves to an older suitable observation', () => {
     const standout = getApprovedStandoutFare('birmingham-amritsar', 'Economy', fareObservations, NOW);
     expect(standout).toBeNull();
     const signal = getFareSignalForRoute('birmingham-amritsar', NOW);
     const html = renderToStaticMarkup(FareSignal({ signal, tripComUrl: getTripComRouteUrl('birmingham-amritsar'), routeSlug: 'birmingham-amritsar', standoutFare: standout }));
-    // Suppressed-fare explanation (2 Sep 2026, traveller-POV live product
-    // review): renders the explanatory "Recent fares checked" copy instead
-    // of the plain "No current fare tracked" it used to; Standout Fare's
-    // own absence is unaffected either way.
-    expect(html).toContain('Recent fares checked');
-    expect(html).not.toContain('Fare spotted');
+    expect(signal.observation?.price).toBe(603);
+    expect(html).toContain('Fare spotted');
+    expect(html).not.toContain('Recent fares checked');
     expect(html).not.toContain('Standout Fare');
   });
 
