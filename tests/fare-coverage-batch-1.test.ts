@@ -222,9 +222,14 @@ describe('no Fare Watcher candidate is created merely because this PR adds an ob
     // comparable observations -- at the baseline, not below it. Reaching the
     // baseline is a precondition for a candidate to even be evaluated, not a
     // guarantee one forms; the dedicated test below confirms none does.
+    // The 16 September 2026 fallback-fare-recovery task appended one more
+    // genuine Trip.com observation for leeds-bradford-bodrum (this route had
+    // zero Google Flights results in the full-portfolio sweep), taking it
+    // from 1 to 2 comparable observations -- still below the 3-observation
+    // baseline, so it remains unaffected by Fare Watcher candidacy.
     const publishable = fareObservations.filter((o) => isPubliclyPublishable(o));
     const expectedCount: Record<string, number> = {
-      'leeds-bradford-bodrum': 1,
+      'leeds-bradford-bodrum': 2,
       'manchester-karachi': 3,
       'birmingham-lahore': 3,
       'birmingham-islamabad': 3,

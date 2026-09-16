@@ -438,3 +438,83 @@ The dataset is fully collected, the selector fix is implemented and verified, an
 quality gate passes. This worktree is on the existing PR #276 branch
 (`data/editorial-fare-observations-2026-09-15`) — the reconciliation is additive commits to that
 same branch, not a new PR. **PR #276 remains open and unmerged.**
+
+**Status update, 16 September 2026 (after this document's own text above was written): PR #276 was
+merged and is live on production** (confirmed via direct production route-page checks: MAN→ISB shows
+£870 with £475 still present in fare history, MAN→DXB shows £420 with £267 still present in fare
+history, LGW→DOH is genuinely suppressed, MAN→Antalya is unaffected). The "PR #276 remains open and
+unmerged" line immediately above is left as-written, as the accurate record of this document's state
+at the time it was authored — see the separate fallback-fare-recovery section below for the task that
+followed the merge.
+
+## Fallback fare recovery for the 8 NOT OBSERVED routes — 16 September 2026 (separate founder brief)
+
+**This is a separate, explicitly scoped task from the sweep above, run after PR #276 was merged and
+verified live.** The 8 routes listed in the "Exact NOT OBSERVED list" above returned zero Google
+Flights results for the exact controlled profile during the sweep. The founder's brief for this task:
+attempt credible fallback sources (KAYAK, Skyscanner, Trip.com, airline-direct, in that priority
+order) for the same exact profile — same dates (10 Nov 2026 out / 24 Nov 2026 back), same named
+airport pairs, 1 adult, Economy, GBP — no widening, no date changes, no cached/generic fares; record
+any genuine recovery with its true source (never mislabelled as `google-flights`); do not introduce
+route-specific Fare Signal logic; append only, never edit historical observations.
+
+**Google Flights was re-checked for all 8 routes before any fallback source was attempted — still
+zero results for the exact search, consistent with the original sweep finding.**
+
+**Schema check (performed before writing anything):** `FareObservation.observedVia` (`data/fare-observations.ts`)
+is a closed union: `'airline' | 'trip.com' | 'google-flights'` — no KAYAK or Skyscanner value exists.
+Per the founder's explicit instruction, this was checked *before* any recovered fare was written, so
+that a genuine KAYAK-only or Skyscanner-only find would never be mislabelled. As it happened, all 8
+routes were successfully recovered via **Trip.com**, whose live search the schema already supports
+honestly (`observedVia: 'trip.com'`) — so **no schema extension was needed or made** for this batch.
+
+**Result: 8 of 8 routes recovered, 0 still NOT OBSERVED.** All 8 appended to `data/fare-observations.ts`
+using each route's existing `profileId` token, `observedDate: '2026-09-16'`, same controlled dates
+(`departureDate: '2026-11-10'`, `returnDate: '2026-11-24'`).
+
+| Route | Google Flights | Fallback | Fare | Observed | Outbound routing | Stops | Duration | Caveat |
+|---|---|---|---:|---|---|---|---|---|
+| `bristol-antalya` | NO RESULT | Trip.com | £465 | 16 September 2026 | BRS–DUB–IST–AYT, Aer Lingus (op. Emerald Airlines)/Turkish Airlines | 2 | 12h20m | Not self-transfer/exclusive-fare labelled; checked baggage not included at this tier |
+| `bristol-dalaman` | NO RESULT | Trip.com | £268 | 16 September 2026 | BRS–AMS–IST–DLM, easyJet/AJet | 2 | 34h5m | Trip.com "Exclusive fare" label (cross-carrier constructed itinerary) |
+| `glasgow-dalaman` | NO RESULT | Trip.com | £207 | 16 September 2026 | GLA–LGW–IST–DLM, easyJet/AJet | 2 | 35h | Trip.com "Exclusive fare" label |
+| `leeds-bradford-antalya` | NO RESULT | Trip.com | £501 | 16 September 2026 | LBA–AMS–IST–AYT, KLM (op. KLM Cityhopper)/AJet | 2 | 12h30m | Not exclusive-fare labelled |
+| `leeds-bradford-bodrum` | NO RESULT | Trip.com | £437 | 16 September 2026 | LBA–AMS–IST–BJV, KLM (op. KLM Cityhopper)/AJet | 2 | 18h | Trip.com "Exclusive fare" label |
+| `leeds-bradford-dalaman` | NO RESULT | Trip.com | £437 | 16 September 2026 | LBA–AMS–IST–DLM, KLM (op. KLM Cityhopper)/AJet | 2 | 31h45m | Trip.com "Exclusive fare" label |
+| `leeds-bradford-islamabad` | NO RESULT | Trip.com | £670 | 16 September 2026 | LBA–DUB–AUH–ISB, Aer Lingus (op. Emerald Airlines)/Etihad Airways | 2 | 30h30m | Not exclusive-fare labelled; genuine connecting itinerary |
+| `newcastle-dalaman` | NO RESULT | Trip.com | £699 | 16 September 2026 | NCL–AMS–IST–DLM, KLM (op. KLM Cityhopper)/Pegasus Airlines | 2 | 13h55m | Not exclusive-fare labelled; carry-on bag included at this tier |
+
+**Return-leg confirmation:** for all 8 routes, Trip.com's "Select" flow did not present a separate
+return-leg selection screen for this fare type (no booking flow was entered at any point, consistent
+with the standing rule never to complete a booking). This was directly tested for `bristol-antalya`
+(identical page state before/after clicking Select) and is recorded as the same honest limitation for
+the other 7 rather than assumed without checking — return routing for all 8 is **not independently
+confirmed** this session; only the outbound leg above is.
+
+**Second-source sanity check:** `bristol-antalya` was cross-checked against KAYAK, which independently
+returned genuine, live, exact-date availability for the same route/date pair — a different, cheaper
+self-transfer combination at £211. This confirms the route/date genuinely has availability (the point
+of the check), not that the fare matches; KAYAK's cheapest option there is a self-transfer itinerary
+Trip.com does not offer at that price. A second-source check for `leeds-bradford-islamabad` via
+Skyscanner was attempted and abandoned when it presented a CAPTCHA — per the standing safety rule
+never to bypass or complete CAPTCHAs, no further attempt was made; the already-completed KAYAK
+cross-check plus each Trip.com listing's own internal consistency were treated as sufficient
+corroboration for the remaining routes, consistent with the brief's "do not spend excessive time
+price-shopping" allowance.
+
+**Fare Signal impact:** no route-specific Fare Signal logic was added. All 8 new observations flow
+through the existing, already-merged narrow selector fix (`selectRepresentativeObservation()` in
+`lib/fare-signal.ts`) exactly like any other observation — none of these 8 fares is self-transfer or
+2+ stops on a leg in a way `isPoorItinerarySuitability()` would flag differently from the rest of the
+archive; each route's public representative fare is whatever that existing, unmodified selector logic
+produces.
+
+**Not recorded, informational only:** KAYAK's genuinely cheaper `bristol-antalya` self-transfer
+combination (£211) was observed but is **not** written to the archive, because `observedVia` has no
+`'kayak'` value and the founder's instruction was to flag a schema gap for review rather than
+implement an extension unilaterally. This is not required to close this task — Trip.com's £465 result
+is already a genuine, schema-safe recovery for this route — but is noted here in case the founder
+wants a narrow `observedVia` extension (adding `'kayak'` and/or `'skyscanner'`) considered separately.
+
+**Branch and PR:** changes committed to `data/fallback-fare-recovery-2026-09-16` (branched from
+merged `main` at the post-PR-276 tip). PR to be opened titled "data: recover fares for Google Flights
+no-result routes" — **explicitly not to be merged**, per the founder's instruction, pending review.
