@@ -145,8 +145,12 @@ A human editor may manually check a return fare on:
 - Google Flights (`observedVia: 'google-flights'`)
 - Trip.com (`observedVia: 'trip.com'`)
 - the airline's own booking page (`observedVia: 'airline'`)
+- KAYAK (`observedVia: 'kayak'`) — added 16 September 2026 as a narrow fallback source for routes
+  where the primary sources above return no result for the controlled search; a genuinely cheaper,
+  fully-evidenced KAYAK result must never be recorded as a different source merely because the
+  archive's own type happened to support that other source first.
 
-Google Flights, Trip.com and other booking surfaces are fare-observation sources only. They do not
+Google Flights, Trip.com, KAYAK and other booking surfaces are fare-observation sources only. They do not
 prove that an airline operates a route, flies a given frequency or will honour a connection. Those
 service claims still require primary airline, airport or official sources and belong in the Route
 Status evidence ledger.
@@ -225,7 +229,7 @@ Every new `FareObservation` must include:
 - `observedDate` — the date the result was actually checked;
 - `departureDate` and `returnDate` — the dates the fare was quoted for;
 - `source` — the airline or provider named by the result;
-- `observedVia` — Google Flights, Trip.com or airline page;
+- `observedVia` — Google Flights, Trip.com, KAYAK or airline page;
 - `currency` — currently GBP for the archive;
 - `price` and a plain `priceNote` such as `return, per person`;
 - `baggage` — what the result states, or `not stated`;
