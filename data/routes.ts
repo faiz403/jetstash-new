@@ -1531,12 +1531,21 @@ export const routes: Route[] = [
     slug: 'leeds-bradford-amritsar',
     airportSlug: 'leeds-bradford',
     destinationSlug: 'amritsar',
-    flightTime: '9h 30m, one stop',
-    frequency: 'Daily, connecting via Delhi or the Gulf',
-    airlineSlugs: ['air-india', 'etihad-airways'],
+    // P1 route-truth correction (20 Sept 2026, Astra): the previous "9h 30m,
+    // one stop" / "Daily, connecting via Delhi or the Gulf" /
+    // ['air-india','etihad-airways'] claims were not supported by any
+    // verification source and were directly contradicted by JetStash's own
+    // recorded fare observations for this route — every genuine check found
+    // a 2-stop itinerary (e.g. via Amsterdam/Bangalore on KLM/IndiGo, or via
+    // Amsterdam/Mumbai on KLM/IndiGo/Air India), never the claimed one-stop
+    // Delhi or Abu Dhabi routing. Restated as evidence-limited rather than
+    // replaced with a different unverified specific claim.
+    flightTime: 'Unverified — actual stop count and journey time vary by date, see note',
+    frequency: 'Unverified — no confirmed daily schedule; check the live search for your dates',
+    airlineSlugs: [],
     isDirect: false,
     intro:
-      'There is no current direct service from Leeds Bradford to Amritsar. The most practical options connect via Delhi with Air India or via Abu Dhabi with Etihad, and Birmingham\'s seasonal direct service is worth weighing against the cost and time of a Leeds Bradford connection.',
+      "There is no current direct service from Leeds Bradford to Amritsar. This is a connecting route, and JetStash's own recorded fare checks have found two-stop itineraries via different hubs on different dates — not a single stable one-stop routing. Check the live itinerary for your own dates, including the actual airlines, hub and stop count, before booking.",
     bookingWindowNote:
       'Because this route always involves a connection, total journey time and layover length matter as much as the headline price. A cheaper fare with a long overnight layover isn\'t always the better choice for family travel with children or elderly relatives.',
     peakPeriodIds: ['baisakhi', 'diwali', 'uk-summer-holidays'],
@@ -1545,14 +1554,23 @@ export const routes: Route[] = [
     slug: 'leeds-bradford-islamabad',
     airportSlug: 'leeds-bradford',
     destinationSlug: 'islamabad',
-    flightTime: '9h 45m, one stop',
-    frequency: 'Daily, connecting via the Gulf',
-    airlineSlugs: ['emirates', 'qatar-airways'],
+    // P1 route-truth correction (20 Sept 2026, Astra): the previous "9h 45m,
+    // one stop" / "Daily, connecting via the Gulf" /
+    // ['emirates','qatar-airways'] claims were not supported by any
+    // verification source and were directly contradicted by JetStash's own
+    // recorded fare observations for this route — the genuine checks found a
+    // 2-stop itinerary via Dublin and Abu Dhabi on Aer Lingus/Etihad Airways,
+    // never the claimed one-stop Dubai/Doha routing on Emirates/Qatar
+    // Airways. Restated as evidence-limited rather than replaced with a
+    // different unverified specific claim.
+    flightTime: 'Unverified — actual stop count and journey time vary by date, see note',
+    frequency: 'Unverified — no confirmed daily schedule; check the live search for your dates',
+    airlineSlugs: [],
     isDirect: false,
     intro:
-      'Leeds Bradford has no current confirmed direct service to Islamabad. Claims of a direct route have circulated periodically, but none have turned into a stable, ongoing schedule. The realistic options are a Gulf-connecting itinerary via Dubai or Doha, or driving to Manchester for PIA\'s direct service.',
+      "Leeds Bradford has no current confirmed direct service to Islamabad. Claims of a direct route have circulated periodically, but none have turned into a stable, ongoing schedule. This is a connecting route, and JetStash's own recorded fare checks have found the actual hub and airlines vary by date — not a single stable Gulf routing. Check the live search for your own dates, or compare against Manchester's direct PIA service, before booking.",
     bookingWindowNote:
-      'Always compare the total cost and time of a Leeds Bradford Gulf connection against driving to Manchester. For many Bradford-based travellers, Manchester\'s direct PIA service ends up both cheaper and faster once the whole journey is accounted for.',
+      'Always compare the total cost and time of a Leeds Bradford connection against driving to Manchester. For many Bradford-based travellers, Manchester\'s direct PIA service ends up both cheaper and faster once the whole journey is accounted for.',
     peakPeriodIds: ['eid-al-fitr', 'eid-al-adha', 'uk-summer-holidays'],
   },
   {
