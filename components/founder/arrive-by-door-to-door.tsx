@@ -2,7 +2,8 @@
 
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
 import { planDoorJourney, type DoorJourney, type DoorComparison, type FlexibleTransport, type ScheduledTransport, type Place, type DoorOptionResult } from '@/lib/arrive-by/door-to-door';
-import { blankDoorJourney, blankScheduled, exampleDoorJourney } from '@/lib/arrive-by/door-example';
+import { blankDoorJourney, blankScheduled, blankTurnUpAndGo, exampleDoorJourney } from '@/lib/arrive-by/door-example';
+import type { OperatingWindow, TurnUpAndGoTransport, Weekday } from '@/lib/arrive-by/turn-up-and-go';
 import type { LocalMoment } from '@/lib/arrive-by/deadline-comparison';
 import type { ZonedDateTime } from '@/lib/arrive-by/types';
 
@@ -52,6 +53,50 @@ function Timetable({ label, value, change }: { label: string; value: ScheduledTr
   </div>;
 }
 
+const weekdays: Weekday[] = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
+
+/**
+ * Turn-up-and-go editor. Deliberately offers no place to type a departure
+ * time: the whole point of this transport type is that individual departures
+ * are not published, so the form must not invite one to be invented.
+ */
+function TurnUpAndGoFields({ label, value, change }: { label: string; value: TurnUpAndGoTransport; change: (value: TurnUpAndGoTransport) => void }) {
+  const setWindow = (index: number, next: OperatingWindow) => change({ ...value, operatingWindows: value.operatingWindows.map((w, i) => i === index ? next : w) });
+  return <div className="space-y-4">
+    <label className="block text-sm">{label} mode<select aria-label={`${label} mode`} className={field} value={value.mode} onChange={(e) => change({ ...value, mode: e.target.value as TurnUpAndGoTransport['mode'] })}>{['metro', 'urban rail', 'frequent bus'].map((mode) => <option key={mode}>{mode}</option>)}</select></label>
+    <Location label={`${label} from stop`} value={value.from} change={(from) => change({ ...value, from })} />
+    <Location label={`${label} to stop`} value={value.to} change={(to) => change({ ...value, to })} />
+    <NumberField label={`${label} station access allowance (min)`} value={value.minimumBeforeDeparture} change={(minimumBeforeDeparture) => change({ ...value, minimumBeforeDeparture })} />
+    {!value.operatingWindows.length && <p className="text-sm text-terracotta-700">NO OPERATING WINDOW PROVIDED</p>}
+    {value.operatingWindows.map((window, index) => <fieldset key={index} className="space-y-3 rounded-sm border border-ink-100 bg-sand-50 p-3">
+      <legend className="px-1 text-sm font-semibold">Operating window {index + 1}</legend>
+      <div className="flex flex-wrap gap-2">{weekdays.map((day) => <label key={day} className="flex items-center gap-1 text-xs"><input type="checkbox" aria-label={`Window ${index + 1} ${day}`} checked={window.days.includes(day)} onChange={(e) => setWindow(index, { ...window, days: e.target.checked ? [...window.days, day] : window.days.filter((d) => d !== day) })} />{day}</label>)}</div>
+      <div className="grid gap-3 sm:grid-cols-2">
+        <label className="min-w-0 text-sm">Opens<input aria-label={`Window ${index + 1} opens`} className={field} type="time" value={window.opens} onChange={(e) => setWindow(index, { ...window, opens: e.target.value })} /></label>
+        <label className="min-w-0 text-sm">Closes<input aria-label={`Window ${index + 1} closes`} className={field} type="time" value={window.closes} onChange={(e) => setWindow(index, { ...window, closes: e.target.value })} /></label>
+      </div>
+      <label className="flex items-center gap-2 text-sm"><input type="checkbox" aria-label={`Window ${index + 1} closes next day`} checked={window.closesNextDay} onChange={(e) => setWindow(index, { ...window, closesNextDay: e.target.checked })} />Closes after midnight, on the following day</label>
+      <button className={button} type="button" onClick={() => change({ ...value, operatingWindows: value.operatingWindows.filter((_, i) => i !== index) })}>Remove window {index + 1}</button>
+    </fieldset>)}
+    <button className={button} type="button" disabled={value.operatingWindows.length >= 8} onClick={() => change({ ...value, operatingWindows: [...value.operatingWindows, { days: [], opens: '', closes: '', closesNextDay: false }] })}>Add operating window</button>
+    <div className="grid gap-3 sm:grid-cols-2">
+      <NumberField label={`${label} journey duration (min)`} value={value.journeyMinutes} change={(journeyMinutes) => change({ ...value, journeyMinutes })} />
+      <label className="block min-w-0 text-sm">Journey duration basis<select aria-label="Journey duration basis" className={field} value={value.journeyMinutesBasis} onChange={(e) => change({ ...value, journeyMinutesBasis: e.target.value as TurnUpAndGoTransport['journeyMinutesBasis'] })}><option value="OFFICIAL">OFFICIAL</option><option value="ASSUMPTION">ASSUMPTION</option></select></label>
+    </div>
+    <fieldset className="space-y-3 rounded-sm border border-ink-100 p-3">
+      <legend className="px-1 text-sm font-semibold">How long you might wait</legend>
+      <label className="flex items-center gap-2 text-sm"><input type="checkbox" aria-label="Official service frequency published" checked={value.headwayMinutes !== null} onChange={(e) => change({ ...value, headwayMinutes: e.target.checked ? { min: 0, max: 0 } : null })} />An official service frequency is published for this line</label>
+      {value.headwayMinutes && <div className="grid gap-3 sm:grid-cols-2">
+        <NumberField label="Frequency: shortest gap (min)" value={value.headwayMinutes.min} change={(min) => change({ ...value, headwayMinutes: { min: min ?? 0, max: value.headwayMinutes!.max } })} />
+        <NumberField label="Frequency: longest gap (min)" value={value.headwayMinutes.max} change={(max) => change({ ...value, headwayMinutes: { min: value.headwayMinutes!.min, max: max ?? 0 } })} />
+      </div>}
+      {!value.headwayMinutes && <NumberField label="Planning wait allowance (min) — ASSUMPTION" value={value.plannedWaitMinutes} change={(plannedWaitMinutes) => change({ ...value, plannedWaitMinutes })} />}
+      <p className="text-xs text-ink-500">An official frequency plans on its longest published gap. With no official frequency, an entered allowance may be used but is reported as an assumption. With neither, availability is still reported but the arrival time is not.</p>
+    </fieldset>
+    <p className="text-xs text-ink-500">Turn-up-and-go transport has no individual departures to enter. Operating hours are treated as evidence; everything else is labelled by its basis.</p>
+  </div>;
+}
+
 export function ArriveByDoorToDoor() {
   const [journey, setJourney] = useState<DoorJourney>(blankDoorJourney);
   const [example, setExample] = useState(false);
@@ -78,8 +123,14 @@ export function ArriveByDoorToDoor() {
       </Panel>
       <Panel title="2. Final mile to the house, hotel or event"><FlexibleFields title="Final mile" value={journey.finalMile} change={(value) => update('finalMile', value)} /><p className="text-xs text-ink-500">From the onward service’s destination stop, or directly from the arrival airport if no scheduled service is selected. Include the full remaining journey.</p></Panel>
       <Panel title="3. Scheduled transport after the airport">
-        <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={journey.onward !== null} onChange={(e) => update('onward', e.target.checked ? blankScheduled(journey.arrivalAirport.timeZone, journey.destination.timeZone) : null)} />Use a train, bus, coach or ferry after arrival</label>
-        {journey.onward ? <Timetable label="Onward" value={journey.onward} change={(value) => update('onward', value)} /> : <p className="text-sm text-ink-500">No scheduled leg: the final-mile estimate covers transport from the airport to your destination.</p>}
+        <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={journey.onward !== null} onChange={(e) => update('onward', e.target.checked ? blankScheduled(journey.arrivalAirport.timeZone, journey.destination.timeZone) : null)} />Use public transport after arrival</label>
+        {journey.onward && <label className="block text-sm">Onward transport type<select aria-label="Onward transport type" className={field} value={journey.onward.kind} onChange={(e) => update('onward', e.target.value === 'scheduled' ? blankScheduled(journey.arrivalAirport.timeZone, journey.destination.timeZone) : blankTurnUpAndGo(journey.arrivalAirport.timeZone, journey.destination.timeZone))}>
+          <option value="scheduled">Fixed timetable — train, coach, bus, ferry with published departures</option>
+          <option value="turn-up-and-go">Turn-up-and-go — metro or high-frequency transit with no published departures</option>
+        </select></label>}
+        {journey.onward?.kind === 'scheduled' && <Timetable label="Onward" value={journey.onward} change={(value) => update('onward', value)} />}
+        {journey.onward?.kind === 'turn-up-and-go' && <TurnUpAndGoFields label="Onward" value={journey.onward} change={(value) => update('onward', value)} />}
+        {!journey.onward && <p className="text-sm text-ink-500">No public transport leg: the final-mile estimate covers transport from the airport to your destination.</p>}
       </Panel>
       <Panel title="4. Arrival airport and processing allowances">
         <Location label="Arrival airport" value={journey.arrivalAirport} change={(arrivalAirport) => { setResult(null); setJourney((current) => ({ ...current, arrivalAirport, flights: current.flights.map((f) => ({ ...f, landing: { ...f.landing, timeZone: arrivalAirport.timeZone } })) })); }} />
@@ -143,14 +194,29 @@ function OptionResult({ value }: { value: DoorOptionResult }) {
       ['Effective latest arrival', fmt(value.effectiveLatestArrival)],
       ['Clock-deadline margin', value.deadlineMargin === undefined ? 'Not established' : `${value.deadlineMargin} min`],
       ['Ready for onward transport', fmt(value.readyForOnward)],
-      ['Earliest qualifying onward service', showService(selected)],
-      ['Latest deadline-compatible service — planning boundary', showService(value.latestDeadlineService)],
+      ['Earliest qualifying onward service', value.turnUpAndGo ? 'Not applicable — turn-up-and-go transport has no individual departures' : showService(selected)],
+      ['Latest deadline-compatible service — planning boundary', value.turnUpAndGo
+        ? (value.latestSafeReadyTime ? `Latest safe ready time: ${fmt(value.latestSafeReadyTime)} (not a departure)` : value.latestBoundaryUnavailable ?? 'Not established')
+        : showService(value.latestDeadlineService)],
       [value.diagnosticOnwardService ? 'Wait for non-qualifying alternative at onward stop' : 'Wait at onward stop, including boarding allowance', value.waitMinutes === undefined ? 'Not established' : duration(value.waitMinutes)],
       ['Selected pre-flight service', value.originService ?? 'No scheduled service selected'],
       ['Latest home departure under this plan', fmt(value.homeDeparture)],
       ['Flight must land by for the onward chain', fmt(value.flightArrivalBy)],
       ['Tightest scheduled connection', value.tightest ? `${value.tightest.label}: ${value.tightest.spare} min beyond required allowance — ${value.tightest.state}` : 'Not established'],
     ].map(([label, text]) => <div key={label}><dt className="text-ink-500">{label}</dt><dd className="mt-0.5 font-medium">{text}</dd></div>)}</dl>
+    {value.turnUpAndGo && <div className="mt-4 rounded-sm border border-ink-200 bg-sand-50 p-3 text-sm">
+      <p className="font-semibold">{value.turnUpAndGo.state} — {value.turnUpAndGo.mode} at your ready time</p>
+      <dl className="mt-2 space-y-1">
+        <div><dt className="inline text-ink-500">Ready at: </dt><dd className="inline">{fmt(value.turnUpAndGo.readyAt)}</dd></div>
+        {value.turnUpAndGo.windowClosesAt && <div><dt className="inline text-ink-500">Service closes: </dt><dd className="inline">{fmt(value.turnUpAndGo.windowClosesAt)}</dd></div>}
+        {value.turnUpAndGo.nextOpening && <div><dt className="inline text-ink-500">NEXT OPERATING WINDOW: </dt><dd className="inline">{fmt(value.turnUpAndGo.nextOpening)}{value.turnUpAndGo.waitUntilOpeningMinutes !== undefined ? ` · ${duration(value.turnUpAndGo.waitUntilOpeningMinutes)} away` : ''} — a reopening time, not a departure</dd></div>}
+        <div><dt className="inline text-ink-500">Wait basis: </dt><dd className="inline">{value.turnUpAndGo.waitLabel}</dd></div>
+        <div><dt className="inline text-ink-500">Journey duration basis: </dt><dd className="inline">{value.turnUpAndGo.journeyMinutesBasis}</dd></div>
+        {!value.turnUpAndGo.timingConfirmed && value.turnUpAndGo.missing.length > 0 && <div><dt className="inline text-ink-500">CANNOT CONFIRM FULL JOURNEY TIMING — missing: </dt><dd className="inline">{value.turnUpAndGo.missing.join('; ')}</dd></div>}
+      </dl>
+      {value.turnUpAndGo.notes.map((note, index) => <p key={index} className="mt-2 text-xs text-ink-500">{note}</p>)}
+      <p className="mt-2 text-xs text-ink-500">EXACT DEPARTURE NOT PROVIDED. This transport type publishes operating hours rather than individual departures, so no specific boarding time is shown. Operating hours are evidence you entered; anything marked ASSUMPTION is not.</p>
+    </div>}
     {value.onwardServices.length > 0 && <p className="mt-3 text-xs text-ink-500">The earliest qualifying service drives the timeline; it meets the entered boarding allowance, extra cushion and final requirement. The latest service is only a backwards-planning limit and may not be catchable for this flight. Neither is a booking recommendation or safety guarantee. Earliest departure does not always mean fastest arrival.</p>}
     <details className="mt-5 border-t border-ink-100 pt-3"><summary className="cursor-pointer font-semibold">Why — work backwards</summary><ol className="mt-3 space-y-3 text-sm">{value.backwards.map((step, index) => <li key={index}><strong>{step.label}</strong><p>{fmt(step.by)}</p></li>)}</ol></details>
     <details className="mt-4 border-t border-ink-100 pt-3"><summary className="cursor-pointer font-semibold">Timeline and connection checks</summary><div className="mt-3 space-y-3 text-sm">

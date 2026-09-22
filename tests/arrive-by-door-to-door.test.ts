@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { exampleDoorJourney, blankDoorJourney } from '@/lib/arrive-by/door-example';
-import { planDoorJourney, type DoorJourney, type ScheduledTransport } from '@/lib/arrive-by/door-to-door';
+import { planDoorJourney, type DoorJourney, type ScheduledOnwardJourney, type ScheduledTransport } from '@/lib/arrive-by/door-to-door';
 
 const NOW = '2026-09-20T12:00:00Z';
-function run(change?: (input: DoorJourney) => void) {
+function run(change?: (input: ScheduledOnwardJourney) => void) {
   const input = exampleDoorJourney(); change?.(input); return planDoorJourney(input, NOW);
 }
 describe('Arrive By complete door-to-door chain', () => {
@@ -178,7 +178,7 @@ describe('door-to-door founder boundary', () => {
 });
 
 describe('earliest onward selection versus backwards boundary', () => {
-  function scenario(change?: (input: DoorJourney) => void) {
+  function scenario(change?: (input: ScheduledOnwardJourney) => void) {
     return run((i) => {
       i.flights[1].landing.time = '11:35'; // 105 minutes processing: ready 13:20 IST.
       i.onward!.minimumBeforeDeparture = 0; i.connectionCushion = 15;

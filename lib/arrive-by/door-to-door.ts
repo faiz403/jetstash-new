@@ -1,6 +1,10 @@
 import { parseLocalMoment, type LocalMoment } from './deadline-comparison';
 import { toZonedDateTime } from './timezones';
 import type { ZonedDateTime } from './types';
+import {
+  latestSafeReadyTime, planTurnUpAndGo, validateTurnUpAndGo,
+  type EvidenceClass, type TurnUpAndGoTransport,
+} from './turn-up-and-go';
 
 export type FlexibleMode = 'car' | 'taxi' | 'rickshaw' | 'walk' | 'family pickup';
 export type ScheduledMode = 'train' | 'bus' | 'coach' | 'ferry';
@@ -23,10 +27,17 @@ export interface DoorJourney {
   toAirport: Transport;
   departureProcess: { terminalTransfer: number | null; checkIn: number | null; security: number | null; boarding: number | null };
   arrivalProcess: { disembark: number | null; immigration: number | null; baggage: number | null; customs: number | null; walkToTransport: number | null };
-  onward: ScheduledTransport | null;
+  /** Timetabled onward leg, turn-up-and-go onward leg, or none. */
+  onward: ScheduledTransport | TurnUpAndGoTransport | null;
   finalMile: FlexibleTransport;
   flights: FlightOption[];
 }
+/**
+ * A journey whose onward leg is known to be timetabled. Fixtures and tests
+ * that mutate `onward.services` use this so widening `DoorJourney.onward` to
+ * include turn-up-and-go transport does not force casts at every call site.
+ */
+export type ScheduledOnwardJourney = Omit<DoorJourney, 'onward'> & { onward: ScheduledTransport | null };
 export interface TimelineItem { label: string; start: ZonedDateTime; end: ZonedDateTime; minutes: number; buffer?: number }
 export interface Connection {
   label: string; ready: ZonedDateTime; departure: ZonedDateTime; margin: number;
@@ -46,6 +57,25 @@ export interface DoorOptionResult {
   effectiveLatestArrival: ZonedDateTime; requiredFinalBuffer: number; deadlineStatus: DeadlineStatus;
   readyForOnward?: ZonedDateTime; waitMinutes?: number;
   latestDeadlineService?: { id: string; departure: ZonedDateTime; arrival: ZonedDateTime };
+  /** Turn-up-and-go onward leg: availability and planning wait, never a named departure. */
+  turnUpAndGo?: {
+    state: 'SERVICE AVAILABLE' | 'SERVICE CLOSED AT READY TIME';
+    mode: string;
+    readyAt: ZonedDateTime;
+    windowClosesAt?: ZonedDateTime;
+    nextOpening?: ZonedDateTime;
+    waitUntilOpeningMinutes?: number;
+    waitLabel: string;
+    waitBasis: EvidenceClass | 'NONE';
+    journeyMinutesBasis: EvidenceClass;
+    timingConfirmed: boolean;
+    missing: string[];
+    notes: string[];
+  };
+  /** Turn-up-and-go backwards boundary: the latest moment to be ready, not a service. */
+  latestSafeReadyTime?: ZonedDateTime;
+  /** Why no turn-up-and-go boundary could be derived. */
+  latestBoundaryUnavailable?: string;
   /** A catchable service shown only to explain failure, never a qualifying selection. */
   diagnosticOnwardService?: string;
   onwardService?: string; originService?: string;
@@ -97,7 +127,10 @@ export function planDoorJourney(input: DoorJourney, nowIso: string): DoorCompari
   for (const [label, value] of Object.entries(input.departureProcess)) if (!validMinutes(value)) errors.push(`Departure ${label}: allowance missing or invalid.`);
   for (const [label, value] of Object.entries(input.arrivalProcess)) if (!validMinutes(value)) errors.push(`Arrival ${label}: allowance missing or invalid.`);
   const originServices = input.toAirport.kind === 'scheduled' ? checkServices(input.toAirport, 'Before flight', errors) : [];
-  const onwardServices = input.onward ? checkServices(input.onward, 'After flight', errors) : [];
+  const scheduledOnward = input.onward?.kind === 'scheduled' ? input.onward : null;
+  const turnUpOnward = input.onward?.kind === 'turn-up-and-go' ? input.onward : null;
+  const onwardServices = scheduledOnward ? checkServices(scheduledOnward, 'After flight', errors) : [];
+  if (turnUpOnward) validateTurnUpAndGo(turnUpOnward, 'After flight', errors);
   if (input.flights.length < 1 || input.flights.length > 2) errors.push('Enter one or two flights.');
   if (errors.length) return { errors, options: [] };
 
@@ -109,9 +142,12 @@ export function planDoorJourney(input: DoorJourney, nowIso: string): DoorCompari
   const latestFinalMileStart = finalTarget - finalDuration * MINUTE;
   const onwardFits = onwardServices.filter((s) => s.arrival <= latestFinalMileStart).sort((a, b) => b.departure - a.departure || a.arrival - b.arrival);
   const latestOnward = onwardFits[0];
-  const flightArrivalBy = input.onward
-    ? latestOnward ? latestOnward.departure - (input.onward.minimumBeforeDeparture! + cushion + arrivalAllowance) * MINUTE : undefined
-    : latestFinalMileStart - arrivalAllowance * MINUTE;
+  const latestSafeReady = turnUpOnward ? latestSafeReadyTime(turnUpOnward, latestFinalMileStart) : null;
+  const flightArrivalBy = scheduledOnward
+    ? latestOnward ? latestOnward.departure - (scheduledOnward.minimumBeforeDeparture! + cushion + arrivalAllowance) * MINUTE : undefined
+    : turnUpOnward
+      ? latestSafeReady?.ms != null ? latestSafeReady.ms - arrivalAllowance * MINUTE : undefined
+      : latestFinalMileStart - arrivalAllowance * MINUTE;
 
   const options = input.flights.map((flight): DoorOptionResult => {
     const result: DoorOptionResult = {
@@ -139,10 +175,20 @@ export function planDoorJourney(input: DoorJourney, nowIso: string): DoorCompari
     result.backwards.push({ label: `At ${input.destination.name} by`, by: stamp(deadline, input.destination.timeZone) });
     result.backwards.push({ label: 'Effective latest arrival (clock deadline minus required final buffer)', by: result.effectiveLatestArrival });
     result.backwards.push({ label: `Start ${input.finalMile.mode} final mile by (includes final buffer)`, by: stamp(latestFinalMileStart, input.onward?.to.timeZone ?? input.arrivalAirport.timeZone) });
-    if (input.onward && latestOnward) {
-      result.latestDeadlineService = { id: latestOnward.service.id, departure: stamp(latestOnward.departure, input.onward.from.timeZone), arrival: stamp(latestOnward.arrival, input.onward.to.timeZone) };
-      result.backwards.push({ label: `Latest downstream-compatible ${input.onward.mode}: ${latestOnward.service.id}`, by: stamp(latestOnward.departure, input.onward.from.timeZone) });
-      result.backwards.push({ label: `Ready at ${input.onward.from.name} by (boarding allowance + extra cushion)`, by: stamp(latestOnward.departure - (input.onward.minimumBeforeDeparture! + cushion) * MINUTE, input.onward.from.timeZone) });
+    if (scheduledOnward && latestOnward) {
+      result.latestDeadlineService = { id: latestOnward.service.id, departure: stamp(latestOnward.departure, scheduledOnward.from.timeZone), arrival: stamp(latestOnward.arrival, scheduledOnward.to.timeZone) };
+      result.backwards.push({ label: `Latest downstream-compatible ${scheduledOnward.mode}: ${latestOnward.service.id}`, by: stamp(latestOnward.departure, scheduledOnward.from.timeZone) });
+      result.backwards.push({ label: `Ready at ${scheduledOnward.from.name} by (boarding allowance + extra cushion)`, by: stamp(latestOnward.departure - (scheduledOnward.minimumBeforeDeparture! + cushion) * MINUTE, scheduledOnward.from.timeZone) });
+    }
+    if (turnUpOnward) {
+      // No individual departure is published for this mode, so the boundary is
+      // the latest moment to be READY — deliberately not phrased as a service.
+      if (latestSafeReady?.ms != null) {
+        result.latestSafeReadyTime = stamp(latestSafeReady.ms, turnUpOnward.from.timeZone);
+        result.backwards.push({ label: `Latest safe ready time at ${turnUpOnward.from.name} (${turnUpOnward.mode}: no individual departures published; EXACT DEPARTURE NOT PROVIDED)`, by: result.latestSafeReadyTime });
+      } else if (latestSafeReady?.reason) {
+        result.latestBoundaryUnavailable = latestSafeReady.reason;
+      }
     }
     if (flightArrivalBy !== undefined) result.backwards.push({ label: 'Flight must land by, under entered allowances', by: stamp(flightArrivalBy, input.arrivalAirport.timeZone) });
     result.backwards.push({ label: `Reach ${input.departureAirport.name} transport drop-off by`, by: result.airportArrivalBy });
@@ -189,8 +235,37 @@ export function planDoorJourney(input: DoorJourney, nowIso: string): DoorCompari
       segment(label, ready, end, input.arrivalAirport.timeZone); ready = end;
     }
     let finalStart: number | undefined = ready;
-    if (input.onward) {
-      const transport = input.onward;
+    if (turnUpOnward) {
+      const transport = turnUpOnward;
+      result.readyForOnward = stamp(ready, transport.from.timeZone);
+      const outcome = planTurnUpAndGo(transport, ready);
+      const { availability, wait } = outcome;
+      result.turnUpAndGo = {
+        state: availability.state, mode: transport.mode, readyAt: availability.readyAt,
+        windowClosesAt: availability.windowClosesAt, nextOpening: availability.nextOpening,
+        waitUntilOpeningMinutes: availability.waitUntilOpeningMinutes,
+        waitLabel: wait.label, waitBasis: wait.basis, journeyMinutesBasis: transport.journeyMinutesBasis,
+        timingConfirmed: outcome.timingConfirmed, missing: outcome.missing, notes: availability.notes,
+      };
+      if (availability.dstAmbiguous) result.reasons.push(`${transport.mode} operating hours fall on a clock change; the boundary is ambiguous by up to an hour and needs confirmation.`);
+      if (availability.state === 'SERVICE CLOSED AT READY TIME') {
+        result.state = 'NO'; finalStart = undefined;
+        const reopening = availability.nextOpening
+          ? ` NEXT OPERATING WINDOW: ${availability.nextOpening.dateIso} ${availability.nextOpening.timeHHmm} ${availability.nextOpening.timeZone} (${availability.waitUntilOpeningMinutes} min away). That is a reopening time, not a departure.`
+          : '';
+        result.reasons.push(`SERVICE CLOSED AT YOUR READY TIME: the ${transport.mode} at ${transport.from.name} is outside its published operating hours when you are ready.${reopening}`);
+      } else if (!outcome.timingConfirmed) {
+        // Availability is known; timing is not. Say exactly that, and name the gap.
+        result.state = 'CANNOT CONFIRM'; finalStart = undefined;
+        result.reasons.push(`SERVICE AVAILABLE at your ready time, but CANNOT CONFIRM EXACT ARRIVAL: ${outcome.missing.join('; ')}. ${wait.label}`);
+      } else {
+        result.waitMinutes = (outcome.boardingMs! - ready) / MINUTE;
+        segment(`${transport.mode} at ${transport.from.name}: station access + planning wait (EXACT DEPARTURE NOT PROVIDED)`, ready, outcome.boardingMs!, transport.from.timeZone, transport.from.timeZone, transport.minimumBeforeDeparture!);
+        segment(`${transport.mode}: ${transport.from.name} → ${transport.to.name}`, outcome.boardingMs!, outcome.arrivalMs!, transport.from.timeZone, transport.to.timeZone);
+        finalStart = outcome.arrivalMs!;
+      }
+    } else if (scheduledOnward) {
+      const transport = scheduledOnward;
       result.readyForOnward = stamp(ready, transport.from.timeZone);
       const catchableServices = onwardServices.filter((s) => s.departure >= ready + (transport.minimumBeforeDeparture! + cushion) * MINUTE)
         .sort((a, b) => a.departure - b.departure || a.arrival - b.arrival);

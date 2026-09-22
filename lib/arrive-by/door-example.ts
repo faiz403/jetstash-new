@@ -1,4 +1,5 @@
-import type { DoorJourney, ScheduledTransport } from './door-to-door';
+import type { DoorJourney, ScheduledOnwardJourney, ScheduledTransport } from './door-to-door';
+import type { TurnUpAndGoTransport } from './turn-up-and-go';
 
 export function blankDoorJourney(): DoorJourney {
   return {
@@ -18,9 +19,23 @@ export function blankScheduled(fromZone: string, toZone: string): ScheduledTrans
   return { kind: 'scheduled', mode: 'train', from: { name: '', timeZone: fromZone }, to: { name: '', timeZone: toZone }, minimumBeforeDeparture: null, services: [] };
 }
 
+/**
+ * A turn-up-and-go leg starts with no operating window and no duration on
+ * purpose: those are evidence a tester must supply, not defaults to inherit.
+ */
+export function blankTurnUpAndGo(fromZone: string, toZone: string): TurnUpAndGoTransport {
+  return {
+    kind: 'turn-up-and-go', mode: 'metro',
+    from: { name: '', timeZone: fromZone }, to: { name: '', timeZone: toZone },
+    minimumBeforeDeparture: null, operatingWindows: [],
+    journeyMinutes: null, journeyMinutesBasis: 'ASSUMPTION',
+    headwayMinutes: null, plannedWaitMinutes: null,
+  };
+}
+
 /** Fictional worked example only. These services, fares and flight times are NOT real evidence. */
-export function exampleDoorJourney(): DoorJourney {
-  const input = blankDoorJourney();
+export function exampleDoorJourney(): ScheduledOnwardJourney {
+  const input = blankDoorJourney() as ScheduledOnwardJourney;
   input.home.name = 'Home in Preston'; input.departureAirport.name = 'Manchester Airport';
   input.arrivalAirport.name = 'Ahmedabad Airport'; input.destination.name = 'Family house in Ahmedabad';
   input.deadline = { date: '2026-11-03', time: '19:00', timeZone: 'Asia/Kolkata' };
