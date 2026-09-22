@@ -72,9 +72,13 @@ describe('DealCard route-guide link — full blast-radius breakdown, scoped fix'
   });
 
   it('bucket A (count === 1, genuinely fixed) is exactly today\'s 6 single-observation cards, including the three new Business Fare Evidence Batch 1 cards and the later Manchester-Karachi Business Deal (23 Aug product-completion PR) — the flagship case this fix exists for', () => {
+    // 22 September 2026: man-fco-economy joins this bucket. Manchester-Rome's
+    // earlier tracked fares were Ciampino (CIA) itineraries recorded against a
+    // Fiumicino (FCO) route and are now methodology-excluded, so the card is
+    // left resting on a single publishable observation rather than several.
     const { one } = dealsByObservationCount();
     expect(one.sort()).toEqual(
-      ['lba-isb-economy', 'lhr-business-lhe', 'lhr-doh-business', 'man-khi-business', 'man-khi-economy', 'man-lhe-business'].sort()
+      ['lba-isb-economy', 'lhr-business-lhe', 'lhr-doh-business', 'man-fco-economy', 'man-khi-business', 'man-khi-economy', 'man-lhe-business'].sort()
     );
   });
 

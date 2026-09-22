@@ -227,12 +227,17 @@ describe('no Fare Watcher candidate is created merely because this PR adds an ob
     // zero Google Flights results in the full-portfolio sweep), taking it
     // from 1 to 2 comparable observations -- still below the 3-observation
     // baseline, so it remains unaffected by Fare Watcher candidacy.
+    // The 22 September 2026 weekly sweep appended one further genuine
+    // observation to each of the four, taking leeds-bradford-bodrum to the
+    // 3-observation baseline and the other three past it. Reaching or
+    // passing the baseline still only makes a route eligible for
+    // evaluation; the dedicated test below confirms none forms a candidate.
     const publishable = fareObservations.filter((o) => isPubliclyPublishable(o));
     const expectedCount: Record<string, number> = {
-      'leeds-bradford-bodrum': 2,
-      'manchester-karachi': 3,
-      'birmingham-lahore': 3,
-      'birmingham-islamabad': 3,
+      'leeds-bradford-bodrum': 3,
+      'manchester-karachi': 4,
+      'birmingham-lahore': 4,
+      'birmingham-islamabad': 4,
     };
     for (const { routeSlug } of APPROVED) {
       const comparable = publishable.filter((o) => o.routeSlug === routeSlug && o.cabin === 'Economy');

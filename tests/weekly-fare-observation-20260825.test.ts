@@ -28,7 +28,13 @@ describe('controlled weekly fare observation batch — 25 August 2026', () => {
         comparisonEligibility: 'current',
         fareDirectness: 'connecting',
       });
-      expect(isPubliclyPublishable(observation!)).toBe(true);
+      // 22 September 2026: obs-man-dxb-economy-20260825-8w-v1 is the one
+      // member of this batch that is now methodology-excluded — its
+      // itinerary lands at Sharjah, not Dubai. It remains a complete,
+      // correctly-structured record (everything asserted above still holds);
+      // it simply may no longer reach a public surface.
+      const expectPublishable = observation!.id !== 'obs-man-dxb-economy-20260825-8w-v1';
+      expect(isPubliclyPublishable(observation!), observation!.id).toBe(expectPublishable);
       expect(observation?.baggage).toMatch(/not stated/i);
       expect(observation?.sourceUrl).toContain('curr=GBP');
     }

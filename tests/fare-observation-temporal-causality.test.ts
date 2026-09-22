@@ -71,9 +71,13 @@ const MAN_ISB_HYPOTHETICAL = hypotheticalObservation({
   returnStops: 3,
 });
 
-// Mirrors the real, currently-stashed obs-man-dxb-economy-20260901-8w-v1 exactly.
+// Mirrors the real, currently-stashed obs-man-dxb-economy-20260901-8w-v1,
+// but under a distinct synthetic id. 22 September 2026: that real record was
+// methodology-excluded (it lands at Sharjah, not Dubai), and this file is
+// about TEMPORAL availability, not airport methodology — reusing the real id
+// would make an exclusion look like a causality failure.
 const MAN_DXB_HYPOTHETICAL = hypotheticalObservation({
-  id: 'obs-man-dxb-economy-20260901-8w-v1',
+  id: 'hypothetical-man-dxb-economy-20260901',
   routeSlug: 'manchester-dubai',
   price: 336,
   priceNote: 'return, per person, one adult; no self-transfer notice, single carrier Pegasus both ways',

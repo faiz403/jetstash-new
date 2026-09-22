@@ -104,11 +104,15 @@ describe('Live control cases against the real archive (2 Sep 2026)', () => {
     const signal = getFareSignalForRoute('manchester-islamabad', NOW_ISO);
     expect(signal.state).toBe('current');
     expect(signal.noneReason).toBeNull();
-    expect(signal.observation?.price).toBe(870);
-    expect(signal.observation?.airline).toBe('Pakistan International Airlines');
+    // 22 September 2026: the weekly sweep appended a newer suitable
+    // observation (£533, Etihad, 1 stop), which the selector now prefers
+    // over the 13 September direct-PIA fare. The point of this control is
+    // unchanged — a suitable observation yields the ordinary template.
+    expect(signal.observation?.price).toBe(533);
+    expect(signal.observation?.airline).toBe('Etihad');
 
     const html = renderFareSignalForRoute('manchester-islamabad');
-    expect(html).toContain('870');
+    expect(html).toContain('533');
     expect(html).not.toContain('Recent fares checked');
     expect(html).not.toContain('No current fare tracked');
   });
@@ -125,10 +129,13 @@ describe('Live control cases against the real archive (2 Sep 2026)', () => {
     const signal = getFareSignalForRoute('manchester-lahore', NOW_ISO);
     expect(signal.state).toBe('current');
     expect(signal.noneReason).toBeNull();
-    expect(signal.observation?.price).toBe(628);
+    // 22 September 2026: superseded by a newer suitable observation
+    // (£650, Etihad). The 18 August fare stays in history; only the
+    // selector's current choice moved forward.
+    expect(signal.observation?.price).toBe(650);
 
     const html = renderFareSignalForRoute('manchester-lahore');
-    expect(html).toContain('628');
+    expect(html).toContain('650');
     expect(html).not.toContain('Recent fares checked');
     expect(html).not.toContain('No current fare tracked.');
   });
@@ -137,10 +144,13 @@ describe('Live control cases against the real archive (2 Sep 2026)', () => {
     const signal = getFareSignalForRoute('birmingham-amritsar', NOW_ISO);
     expect(signal.state).toBe('current');
     expect(signal.noneReason).toBeNull();
-    expect(signal.observation?.price).toBe(603);
+    // 22 September 2026: superseded by a newer suitable observation
+    // (£1114, KLM/IndiGo). The 19 August fare stays in history.
+    expect(signal.observation?.price).toBe(1114);
 
     const html = renderFareSignalForRoute('birmingham-amritsar');
-    expect(html).toContain('603');
+    // Rendered with a thousands separator once the fare passes £999.
+    expect(html).toContain('1,114');
     expect(html).not.toContain('Recent fares checked');
     expect(html).not.toContain('No current fare tracked.');
   });
@@ -154,10 +164,14 @@ describe('Live control cases against the real archive (2 Sep 2026)', () => {
     const signal = getFareSignalForRoute('manchester-dubai', NOW_ISO);
     expect(signal.state).toBe('current');
     expect(signal.noneReason).toBeNull();
-    expect(signal.observation?.price).toBe(420);
+    // 22 September 2026: now resolves to the first strict exact-airport
+    // Manchester-Dubai fare (£379, genuinely landing at DXB). The £267
+    // Sharjah record it used to walk past is methodology-excluded outright
+    // as of that date, so it can no longer reach any public surface.
+    expect(signal.observation?.price).toBe(379);
 
     const html = renderFareSignalForRoute('manchester-dubai');
-    expect(html).toContain('420');
+    expect(html).toContain('379');
     expect(html).not.toContain('Recent fares checked');
     expect(html).not.toContain('No current fare tracked');
   });
@@ -179,29 +193,29 @@ describe('lib/booking-intelligence.ts — Book-By carries the identical reason f
   // OPPOSITE fact from before — both now show a real observation, not a
   // suppression reason. Still the exact same "Book-By matches Fare Signal
   // exactly" invariant this describe block exists to prove.
-  it('MAN→ISB (a Book-By priority route): latestObservation matches the generic Fare Signal\'s new £870 direct PIA fare exactly, no suppression reason', () => {
+  it('MAN→ISB (a Book-By priority route): latestObservation matches the generic Fare Signal\'s newly-swept £533 Etihad fare exactly, no suppression reason', () => {
     const snapshot = computeBookBySnapshot('manchester-islamabad', new Date(`${NOW_ISO}T12:00:00Z`));
     expect(snapshot).not.toBeNull();
     expect(snapshot!.latestObservationNoneReason).toBeNull();
-    expect(snapshot!.latestObservation?.price).toBe(870);
+    expect(snapshot!.latestObservation?.price).toBe(533);
 
     const genericSignal = getFareSignalForRoute('manchester-islamabad', NOW_ISO);
     expect(snapshot!.latestObservation?.price).toBe(genericSignal.observation?.price);
     expect(snapshot!.latestObservationNoneReason).toBe(genericSignal.noneReason);
   });
 
-  it('MAN→LHE (a Book-By priority route): same agreement -- both Book-By and Fare Signal now resolve to the same older suitable £628 observation, no suppression reason', () => {
+  it('MAN→LHE (a Book-By priority route): same agreement -- both Book-By and Fare Signal now resolve to the same newly-swept £650 observation, no suppression reason', () => {
     const snapshot = computeBookBySnapshot('manchester-lahore', new Date(`${NOW_ISO}T12:00:00Z`));
     expect(snapshot).not.toBeNull();
     expect(snapshot!.latestObservationNoneReason).toBeNull();
-    expect(snapshot!.latestObservation?.price).toBe(628);
+    expect(snapshot!.latestObservation?.price).toBe(650);
   });
 
-  it('BHX→ATQ (a Book-By priority route): same agreement -- both resolve to the same £603 observation', () => {
+  it('BHX→ATQ (a Book-By priority route): same agreement -- both resolve to the same newly-swept £1114 observation', () => {
     const snapshot = computeBookBySnapshot('birmingham-amritsar', new Date(`${NOW_ISO}T12:00:00Z`));
     expect(snapshot).not.toBeNull();
     expect(snapshot!.latestObservationNoneReason).toBeNull();
-    expect(snapshot!.latestObservation?.price).toBe(603);
+    expect(snapshot!.latestObservation?.price).toBe(1114);
   });
 
   it('a synthetic snapshot with a genuine (non-suppressed) verified observation carries a null reason', () => {

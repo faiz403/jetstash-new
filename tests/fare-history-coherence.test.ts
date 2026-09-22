@@ -57,10 +57,14 @@ describe('1. Manchester-Dubai: the exact reproduced case (16 Sept 2026 UPDATE: t
     expect(obs!.price).toBe(314);
     expect(obs!.outboundStops).toBe(2);
     expect(obs!.returnStops).toBe(2);
-    // Still rendered in Fare History, unaffected by this copy-only fix.
+    // 22 September 2026: this record is now methodology-excluded — it lands
+    // at Sharjah, not Dubai — so it is deliberately no longer rendered in
+    // Fare History. The assertion this test exists for is that the record
+    // itself survives untouched in the archive (checked above); what changed
+    // is only whether it reaches a public surface.
     const observations = getPublishableObservationsByRoute('manchester-dubai', FIXED_TODAY);
     const html = renderToStaticMarkup(FareHistoryPanel({ observations }));
-    expect(html).toContain('£314');
+    expect(html).not.toContain('£314');
   });
 });
 

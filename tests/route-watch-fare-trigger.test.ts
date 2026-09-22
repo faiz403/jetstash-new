@@ -282,26 +282,35 @@ describe('Real archive expectation (19 August 2026, post-supersession-fix) — o
   // never isPoorItinerarySuitability) correctly picks them up as candidates
   // in their own right, independent of what either route's public Fare
   // Signal does.
-  it('the real fareObservations archive produces 34 current Route Watch candidates after the full-portfolio controlled sweep', () => {
+  // 22 September 2026: 34 -> 11, and the membership turns over almost
+  // completely. Two independent causes, both intended. First, that week's
+  // sweep found most routes UP, and Route Watch only ever surfaces drops —
+  // so routes like manchester-lahore and birmingham-amritsar, which rose,
+  // correctly stop being candidates. Second, the alternate-airport
+  // methodology correction removed 16 records from every baseline, so a
+  // route's comparable history is now built only from fares that genuinely
+  // land at its own airport.
+  it('the real fareObservations archive produces 11 current Route Watch candidates after the 22 September sweep and the alternate-airport correction', () => {
     const nowIso = new Date().toISOString().slice(0, 10);
     const candidates = generateRouteWatchFareCandidates(fareObservations, nowIso);
-    expect(candidates).toHaveLength(34);
+    expect(candidates).toHaveLength(11);
     expect(candidates.every((c) => c.lifecycle === 'detected' && c.founderVerificationRequired)).toBe(true);
     const bySlug = new Map(candidates.map((c) => [c.routeSlug, c.qualification]));
-    // The four original notable-drops, plus manchester-islamabad and
-    // manchester-dubai (now genuinely archived, evaluated on their own
-    // merits) and london-heathrow-casablanca (Batch 3, a genuine drop), are
-    // representative spot-checks, not an exhaustive re-listing of all 34 —
-    // the full list is captured in the evidence doc referenced above.
-    expect(bySlug.get('manchester-lahore')).toBe('notable-drop');
-    expect(bySlug.get('birmingham-amritsar')).toBe('notable-drop');
-    expect(bySlug.get('london-heathrow-jeddah')).toBe('notable-drop');
+    // Representative spot-checks across both qualifications, not an
+    // exhaustive re-listing of all 11.
+    expect(bySlug.get('manchester-dalaman')).toBe('standout-candidate');
+    expect(bySlug.get('london-gatwick-dalaman')).toBe('standout-candidate');
+    expect(bySlug.get('bristol-marrakech')).toBe('standout-candidate');
+    expect(bySlug.get('manchester-antalya')).toBe('notable-drop');
     expect(bySlug.get('london-heathrow-doha')).toBe('notable-drop');
-    expect(bySlug.get('manchester-doha')).toBe('notable-drop');
-    expect(bySlug.get('manchester-madinah')).toBe('notable-drop');
-    expect(bySlug.get('manchester-islamabad')).toBe('notable-drop');
-    expect(bySlug.get('manchester-dubai')).toBe('standout-candidate');
-    expect(bySlug.get('london-heathrow-casablanca')).toBe('notable-drop');
+    // birmingham-dubai and edinburgh-dubai qualify on a baseline built
+    // purely from fares that genuinely land at DXB — their Sharjah records
+    // are excluded, so neither drop is measured against a different airport.
+    expect(bySlug.get('birmingham-dubai')).toBe('notable-drop');
+    expect(bySlug.get('edinburgh-dubai')).toBe('notable-drop');
+    // Routes whose 22 September fare ROSE must not appear at all.
+    expect(candidates.map((c) => c.routeSlug)).not.toContain('manchester-lahore');
+    expect(candidates.map((c) => c.routeSlug)).not.toContain('birmingham-amritsar');
     expect(candidates.map((c) => c.routeSlug)).not.toContain('london-heathrow-delhi');
   });
 });
@@ -364,8 +373,8 @@ describe('I. Trust wording — no overclaim in rendered founder copy or customer
     // copy against that final, verified count.
     const snapshot = getFounderSnapshot(new Date());
     const section = snapshot.grouped['nice-to-have'].find((s) => s.id === 'route-watch-fare-candidates')!;
-    expect(section.items).toHaveLength(34);
-    expect(section.headline).toMatch(/34 fare observations clear Fare Watcher's strong evidence threshold/i);
+    expect(section.items).toHaveLength(11);
+    expect(section.headline).toMatch(/11 fare observations clear Fare Watcher's strong evidence threshold/i);
     expect(section.headline).toMatch(/Nothing sends itself/i);
     for (const pattern of forbidden) expect(section.headline).not.toMatch(pattern);
   });

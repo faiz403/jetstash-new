@@ -459,14 +459,26 @@ describe('FARE-001 pilot — historic examples stay private; only fully dated, e
     // obs-bhx-del-economy-20260818-8w-v1 remains excluded (no sourceUrl,
     // no stop/connection-airport fields — genuinely unprovable itinerary
     // structure, unchanged).
+    // 24 -> 40 (alternate-airport methodology correction, 22 September
+    // 2026): 16 further date-complete observations were added to
+    // methodologyExcludedObservationIds. Each lands at a different airport
+    // from the one its route describes (SAW for IST, SHJ for DXB, CIA for
+    // FCO), so it cannot share a comparable series with that route's
+    // canonical-airport fares. As with COV-001 above, they are excluded,
+    // not deleted, and not date-incomplete.
     const incomplete = fareObservations.filter((o) => !isPubliclyPublishable(o));
-    expect(incomplete).toHaveLength(24);
+    expect(incomplete).toHaveLength(40);
     for (const o of incomplete) {
       expect(isPubliclyPublishable(o), `observation ${o.id}`).toBe(false);
     }
   });
 
   it('publishes the exact dated observations from every completed priority-route batch', () => {
+    // 22 September 2026: eight ids were removed from the list below by the
+    // alternate-airport methodology correction (three Istanbul/SAW, three
+    // Dubai/SHJ, two Rome/CIA). They are still in the archive and still
+    // date-complete; they are simply no longer published. See
+    // methodologyExcludedObservationIds in data/fare-observations.ts.
     const published = fareObservations.filter(isPubliclyPublishable);
     expect(published.map((o) => o.id)).toEqual(expect.arrayContaining([
       'obs-man-lhe-economy-20260728-8w-v1',
@@ -518,7 +530,6 @@ describe('FARE-001 pilot — historic examples stay private; only fully dated, e
       'obs-man-izm-economy-20260813-8w-v1',
       'obs-man-rak-economy-20260813-8w-v1',
       'obs-man-aga-economy-20260813-8w-v1',
-      'obs-bhx-ist-economy-20260813-8w-v1',
       'obs-bhx-ayt-economy-20260813-8w-v1',
       'obs-bhx-dlm-economy-20260813-8w-v1',
       'obs-bhx-bod-economy-20260813-8w-v1',
@@ -553,7 +564,6 @@ describe('FARE-001 pilot — historic examples stay private; only fully dated, e
       'obs-brs-rak-economy-20260813-8w-v1',
       'obs-bhx-aga-economy-20260813-8w-v1',
       'obs-man-bcn-economy-20260813-8w-v1',
-      'obs-man-rom-economy-20260813-8w-v1',
       'obs-bhx-ath-economy-20260813-8w-v1',
       'obs-lgw-bod-economy-20260814-8w-v1',
       'obs-lgw-fao-economy-20260814-8w-v1',
@@ -574,7 +584,6 @@ describe('FARE-001 pilot — historic examples stay private; only fully dated, e
       'obs-lgw-adb-economy-20260814-8w-v1',
       'obs-lgw-aga-economy-20260814-8w-v1',
       'obs-lgw-tng-economy-20260814-8w-v1',
-      'obs-lgw-saw-economy-20260814-8w-v1',
       'obs-bhx-aga-economy-20260818-8w-v1',
       'obs-bhx-amd-economy-20260818-8w-v1',
       'obs-bhx-atq-economy-20260818-8w-v1',
@@ -676,7 +685,6 @@ describe('FARE-001 pilot — historic examples stay private; only fully dated, e
       'obs-man-khi-business-20260822-8w-v1',
       'obs-man-isb-economy-20260825-8w-v1',
       'obs-man-lhe-economy-20260825-8w-v1',
-      'obs-man-dxb-economy-20260825-8w-v1',
       'obs-lhr-jed-economy-20260825-8w-v1',
       'obs-lhr-doh-economy-20260825-8w-v1',
       'obs-bhx-atq-economy-20260825-8w-v1',
@@ -694,7 +702,6 @@ describe('FARE-001 pilot — historic examples stay private; only fully dated, e
       // threshold.
       'obs-man-isb-economy-20260901-8w-v1',
       'obs-man-lhe-economy-20260901-8w-v1',
-      'obs-man-dxb-economy-20260901-8w-v1',
       'obs-lhr-jed-economy-20260901-8w-v1',
       'obs-lhr-doh-economy-20260901-8w-v1',
       'obs-bhx-atq-economy-20260901-8w-v1',
@@ -720,7 +727,6 @@ describe('FARE-001 pilot — historic examples stay private; only fully dated, e
       'obs-bhx-dxb-economy-20260901-8w-v1',
       'obs-bhx-fao-economy-20260901-8w-v1',
       'obs-bhx-isb-economy-20260901-8w-v1',
-      'obs-bhx-ist-economy-20260901-8w-v1',
       'obs-bhx-jed-economy-20260901-8w-v1',
       'obs-bhx-lhe-economy-20260901-8w-v1',
       'obs-bhx-med-economy-20260901-8w-v1',
@@ -745,7 +751,6 @@ describe('FARE-001 pilot — historic examples stay private; only fully dated, e
       'obs-lgw-dlm-economy-20260901-8w-v1',
       'obs-lgw-dxb-economy-20260901-8w-v1',
       'obs-lgw-fao-economy-20260901-8w-v1',
-      'obs-lgw-ist-economy-20260901-8w-v1',
       'obs-lgw-adb-economy-20260901-8w-v1',
       'obs-lgw-rak-economy-20260901-8w-v1',
       'obs-lgw-fco-economy-20260901-8w-v1',
@@ -777,7 +782,6 @@ describe('FARE-001 pilot — historic examples stay private; only fully dated, e
       'obs-man-med-economy-20260901-8w-v1',
       'obs-man-rak-economy-20260901-8w-v1',
       'obs-man-bom-economy-20260901-8w-v1',
-      'obs-man-fco-economy-20260901-8w-v1',
       'obs-man-zyl-economy-20260901-8w-v1',
       'obs-ncl-dlm-economy-20260901-8w-v1',
       'obs-ncl-dxb-economy-20260901-8w-v1',
