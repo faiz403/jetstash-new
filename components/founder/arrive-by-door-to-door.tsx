@@ -1,0 +1,162 @@
+'use client';
+
+import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
+import { planDoorJourney, type DoorJourney, type DoorComparison, type FlexibleTransport, type ScheduledTransport, type Place, type DoorOptionResult } from '@/lib/arrive-by/door-to-door';
+import { blankDoorJourney, blankScheduled, exampleDoorJourney } from '@/lib/arrive-by/door-example';
+import type { LocalMoment } from '@/lib/arrive-by/deadline-comparison';
+import type { ZonedDateTime } from '@/lib/arrive-by/types';
+
+const field = 'mt-1 w-full min-w-0 rounded-sm border border-ink-200 bg-white px-3 py-2 text-base text-ink-900';
+const button = 'rounded-sm border border-ink-200 px-4 py-2 text-sm font-semibold';
+const zoneChoices = ['Europe/London', 'Asia/Kolkata', 'Asia/Karachi', 'Asia/Dubai', 'Asia/Qatar', 'Asia/Riyadh', 'Asia/Dhaka'];
+const flexibleModes = ['car', 'taxi', 'rickshaw', 'walk', 'family pickup'] as const;
+const fmt = (value?: ZonedDateTime) => value ? `${value.dateIso} ${value.timeHHmm} · ${value.timeZone}` : 'Not established';
+const duration = (minutes: number) => `${Math.floor(minutes / 60)}h ${minutes % 60}m`;
+function NumberField({ label, value, change, max = 10080 }: { label: string; value: number | null; change: (value: number | null) => void; max?: number }) {
+  return <label className="block min-w-0 text-sm">{label}<input aria-label={label} className={field} type="number" min="0" max={max} step="1" value={value ?? ''} onChange={(e) => change(e.target.value === '' ? null : Number(e.target.value))} /></label>;
+}
+function Zone({ label, value, change }: { label: string; value: string; change: (value: string) => void }) {
+  return <label className="block min-w-0 text-sm">{label}<select aria-label={label} className={field} value={value} onChange={(e) => change(e.target.value)}>{zoneChoices.map((zone) => <option key={zone}>{zone}</option>)}</select></label>;
+}
+function Location({ label, value, change }: { label: string; value: Place; change: (value: Place) => void }) {
+  return <div className="grid gap-3 sm:grid-cols-2"><label className="min-w-0 text-sm">{label}<input aria-label={label} maxLength={120} className={field} value={value.name} onChange={(e) => change({ ...value, name: e.target.value })} /></label><Zone label={`${label} time zone`} value={value.timeZone} change={(timeZone) => change({ ...value, timeZone })} /></div>;
+}
+function Moment({ label, value, change, showZone = true }: { label: string; value: LocalMoment; change: (value: LocalMoment) => void; showZone?: boolean }) {
+  return <div className="grid gap-3 sm:grid-cols-3"><label className="min-w-0 text-sm">{label} date<input aria-label={`${label} date`} className={field} type="date" value={value.date} onChange={(e) => change({ ...value, date: e.target.value })} /></label><label className="min-w-0 text-sm">{label} time<input aria-label={`${label} time`} className={field} type="time" value={value.time} onChange={(e) => change({ ...value, time: e.target.value })} /></label>{showZone && <Zone label={`${label} time zone`} value={value.timeZone} change={(timeZone) => change({ ...value, timeZone })} />}</div>;
+}
+function Panel({ title, children, open = false }: { title: string; children: ReactNode; open?: boolean }) {
+  return <details open={open} className="rounded-md border border-ink-200 bg-white p-4 sm:p-5"><summary className="cursor-pointer font-semibold">{title}</summary><div className="mt-4 space-y-4">{children}</div></details>;
+}
+function FlexibleFields({ title, value, change }: { title: string; value: FlexibleTransport; change: (value: FlexibleTransport) => void }) {
+  return <div className="grid gap-3 sm:grid-cols-3"><label className="min-w-0 text-sm">{title} mode<select aria-label={`${title} mode`} className={field} value={value.mode} onChange={(e) => change({ ...value, mode: e.target.value as FlexibleTransport['mode'] })}>{flexibleModes.map((mode) => <option key={mode}>{mode}</option>)}</select></label><NumberField label={`${title} duration (min)`} value={value.minutes} change={(minutes) => change({ ...value, minutes })} /><NumberField label={`${title} buffer (min)`} value={value.buffer} change={(buffer) => change({ ...value, buffer })} /></div>;
+}
+function Timetable({ label, value, change }: { label: string; value: ScheduledTransport; change: (value: ScheduledTransport) => void }) {
+  return <div className="space-y-4">
+    <label className="block text-sm">{label} mode<select aria-label={`${label} mode`} className={field} value={value.mode} onChange={(e) => change({ ...value, mode: e.target.value as ScheduledTransport['mode'] })}>{['train', 'bus', 'coach', 'ferry'].map((mode) => <option key={mode}>{mode}</option>)}</select></label>
+    <Location label={`${label} from stop`} value={value.from} change={(from) => change({ ...value, from, services: value.services.map((s) => ({ ...s, departure: { ...s.departure, timeZone: from.timeZone } })) })} />
+    <Location label={`${label} to stop`} value={value.to} change={(to) => change({ ...value, to, services: value.services.map((s) => ({ ...s, arrival: { ...s.arrival, timeZone: to.timeZone } })) })} />
+    <NumberField label={`${label} required time before departure (min)`} value={value.minimumBeforeDeparture} change={(minimumBeforeDeparture) => change({ ...value, minimumBeforeDeparture })} />
+    {!value.services.length && <p className="text-sm text-terracotta-700">NO SCHEDULED SERVICE PROVIDED</p>}
+    {value.services.map((service, index) => {
+      const update = (next: typeof service) => change({ ...value, services: value.services.map((s, i) => i === index ? next : s) });
+      return <fieldset key={index} className="space-y-3 rounded-sm border border-ink-100 bg-sand-50 p-3"><legend className="px-1 text-sm font-semibold">{label} service {index + 1}</legend>
+        <label className="block text-sm">Service name<input aria-label={`${label} service ${index + 1} name`} className={field} value={service.id} maxLength={100} onChange={(e) => update({ ...service, id: e.target.value })} /></label>
+        <Moment label={`${label} ${index + 1} departure`} value={service.departure} showZone={false} change={(departure) => update({ ...service, departure })} />
+        <Moment label={`${label} ${index + 1} arrival`} value={service.arrival} showZone={false} change={(arrival) => update({ ...service, arrival })} />
+        <p className="text-xs text-ink-500">Departure: {value.from.timeZone}. Arrival: {value.to.timeZone}. Enter the actual arrival date, including overnight services.</p>
+        <button className={button} type="button" onClick={() => change({ ...value, services: value.services.filter((_, i) => i !== index) })}>Remove {label.toLowerCase()} service {index + 1}</button>
+      </fieldset>;
+    })}
+    <button className={button} type="button" disabled={value.services.length >= 8} onClick={() => change({ ...value, services: [...value.services, { id: '', departure: { date: '', time: '', timeZone: value.from.timeZone }, arrival: { date: '', time: '', timeZone: value.to.timeZone } }] })}>Add {label.toLowerCase()} service</button>
+    <p className="text-xs text-ink-500">Up to eight manually entered services. Nothing here verifies a timetable, operating day or seat availability.</p>
+  </div>;
+}
+
+export function ArriveByDoorToDoor() {
+  const [journey, setJourney] = useState<DoorJourney>(blankDoorJourney);
+  const [example, setExample] = useState(false);
+  const [result, setResult] = useState<DoorComparison | null>(null);
+  const resultRef = useRef<HTMLDivElement>(null);
+  useEffect(() => { if (result) resultRef.current?.focus(); }, [result]);
+  function update<K extends keyof DoorJourney>(key: K, value: DoorJourney[K]) { setResult(null); setJourney((current) => ({ ...current, [key]: value })); }
+  function submit(event: FormEvent) { event.preventDefault(); setResult(planDoorJourney(journey, new Date().toISOString())); }
+  return <div className="mx-auto max-w-6xl bg-white px-4 py-8 text-ink-900 sm:px-8">
+    <p className="text-xs font-semibold uppercase tracking-wide text-brass-600">Founder prototype · local · unvalidated</p>
+    <h1 className="mt-3 font-display text-3xl sm:text-4xl">Arrive By — the whole journey, worked backwards.</h1>
+    <p className="mt-3 max-w-3xl text-ink-600">Start with the place and deadline. Compare the earliest onward service that fits each flight with the latest service that still preserves your arrival requirement.</p>
+    <p className="mt-2 max-w-3xl text-sm text-ink-500">Planning allowances are not guarantees. All times, fares and services are entered manually; connections within a flight itinerary need separate confirmation. Nothing is searched, saved or sent.</p>
+    <div className="mt-5 flex flex-wrap gap-3"><button type="button" className={button} onClick={() => { setJourney(exampleDoorJourney()); setExample(true); setResult(null); }}>Load fictional Preston → Ahmedabad example</button><button type="button" className={button} onClick={() => { setJourney(blankDoorJourney()); setExample(false); setResult(null); }}>Start blank</button></div>
+    {example && <p className="mt-3 rounded-sm border border-brass/40 bg-brass-50 p-3 text-sm">FICTIONAL TEST DATA — these flights, fares, stations and services are not real travel evidence. Replace every relevant entry before using this with a traveller.</p>}
+    <form noValidate onSubmit={submit} onChange={() => setResult(null)} className="mt-6 space-y-4">
+      <Panel title="1. Final destination and deadline" open>
+        <Location label="Final destination" value={journey.destination} change={(destination) => { setResult(null); setJourney((current) => ({ ...current, destination, deadline: { ...current.deadline, timeZone: destination.timeZone } })); }} />
+        <Moment label="Final deadline" value={journey.deadline} showZone={false} change={(deadline) => update('deadline', deadline)} />
+        <p className="text-xs text-ink-500">Deadline is local to {journey.destination.timeZone}. Place names are labels, not map lookups.</p>
+        <div className="grid gap-4 sm:grid-cols-2"><NumberField label="Required final arrival buffer (min)" value={journey.finalBuffer} change={(value) => update('finalBuffer', value)} /><NumberField label="Extra connection cushion (min)" value={journey.connectionCushion} change={(value) => update('connectionCushion', value)} /></div>
+        <p className="text-xs text-ink-500">The final buffer is a required part of this plan. A journey can reach the deadline yet return NO because it does not leave that buffer; the reason is shown. Set it to 0 explicitly if the deadline alone is your constraint.</p>
+        <p className="text-xs text-ink-500">Onward selection requires the boarding allowance PLUS your extra cushion before departure. Home departure also includes the cushion. Onward checks include the cushion in the required allowance. Pre-flight checks also flag spare airport time below your chosen cushion as TIGHT. These are planning assumptions, not a safety guarantee or a universal minimum.</p>
+      </Panel>
+      <Panel title="2. Final mile to the house, hotel or event"><FlexibleFields title="Final mile" value={journey.finalMile} change={(value) => update('finalMile', value)} /><p className="text-xs text-ink-500">From the onward service’s destination stop, or directly from the arrival airport if no scheduled service is selected. Include the full remaining journey.</p></Panel>
+      <Panel title="3. Scheduled transport after the airport">
+        <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={journey.onward !== null} onChange={(e) => update('onward', e.target.checked ? blankScheduled(journey.arrivalAirport.timeZone, journey.destination.timeZone) : null)} />Use a train, bus, coach or ferry after arrival</label>
+        {journey.onward ? <Timetable label="Onward" value={journey.onward} change={(value) => update('onward', value)} /> : <p className="text-sm text-ink-500">No scheduled leg: the final-mile estimate covers transport from the airport to your destination.</p>}
+      </Panel>
+      <Panel title="4. Arrival airport and processing allowances">
+        <Location label="Arrival airport" value={journey.arrivalAirport} change={(arrivalAirport) => { setResult(null); setJourney((current) => ({ ...current, arrivalAirport, flights: current.flights.map((f) => ({ ...f, landing: { ...f.landing, timeZone: arrivalAirport.timeZone } })) })); }} />
+        <div className="grid gap-3 sm:grid-cols-2">{([['disembark', 'Taxiing / disembarkation'], ['immigration', 'Immigration'], ['baggage', 'Baggage collection'], ['customs', 'Customs / exit'], ['walkToTransport', 'Walk / transfer to onward transport']] as const).map(([key, label]) => <NumberField key={key} label={`${label} allowance (min)`} value={journey.arrivalProcess[key]} change={(value) => update('arrivalProcess', { ...journey.arrivalProcess, [key]: value })} />)}</div>
+        <p className="text-xs text-ink-500">Do not double-count taxiing if already included in the entered arrival time. Enter 0 explicitly for stages that do not apply; blank means unknown.</p>
+      </Panel>
+      <Panel title="5. Flight options" open>
+        <p className="text-sm text-ink-500">Both options use the airports entered in sections 4 and 6. Enter the full itinerary’s departure and arrival, including any next-day date. Internal flight connections are not evaluated.</p>
+        {journey.flights.map((flight, index) => {
+          const change = (next: typeof flight) => update('flights', journey.flights.map((f, i) => i === index ? next : f));
+          return <fieldset key={index} className="space-y-3 rounded-sm border border-ink-200 p-3"><legend className="px-2 font-semibold">Option {index === 0 ? 'A' : 'B'}</legend>
+            <label className="block text-sm">Flight label<input aria-label={`Flight ${index + 1} label`} className={field} maxLength={100} value={flight.label} onChange={(e) => change({ ...flight, label: e.target.value })} /></label>
+            <Moment label={`Flight ${index + 1} departure`} value={flight.departure} showZone={false} change={(departure) => change({ ...flight, departure })} />
+            <Moment label={`Flight ${index + 1} landing`} value={flight.landing} showZone={false} change={(landing) => change({ ...flight, landing })} />
+            <p className="text-xs text-ink-500">Departure: {flight.departure.timeZone}. Landing: {flight.landing.timeZone}.</p>
+            <NumberField label={`Flight ${index + 1} entered fare GBP (optional)`} value={flight.priceGBP} max={1000000} change={(priceGBP) => change({ ...flight, priceGBP })} />
+          </fieldset>;
+        })}
+        <button className={button} type="button" onClick={() => update('flights', journey.flights.length === 2 ? journey.flights.slice(0, 1) : [...journey.flights, { label: 'Option B', priceGBP: null, departure: { date: '', time: '', timeZone: journey.departureAirport.timeZone }, landing: { date: '', time: '', timeZone: journey.arrivalAirport.timeZone } }])}>{journey.flights.length === 2 ? 'Remove flight B' : 'Add flight B'}</button>
+      </Panel>
+      <Panel title="6. Departure airport and check-in / security">
+        <Location label="Departure airport" value={journey.departureAirport} change={(departureAirport) => { setResult(null); setJourney((current) => ({ ...current, departureAirport, flights: current.flights.map((f) => ({ ...f, departure: { ...f.departure, timeZone: departureAirport.timeZone } })) })); }} />
+        <div className="grid gap-3 sm:grid-cols-2">{([['terminalTransfer', 'Station / drop-off to terminal'], ['checkIn', 'Check-in / bag drop'], ['security', 'Security'], ['boarding', 'Gate / boarding']] as const).map(([key, label]) => <NumberField key={key} label={`${label} allowance (min)`} value={journey.departureProcess[key]} change={(value) => update('departureProcess', { ...journey.departureProcess, [key]: value })} />)}</div>
+        <p className="text-xs text-ink-500">These stages sum to the required lead time before departure. Use airline/airport guidance; this tool does not verify check-in or gate deadlines.</p>
+      </Panel>
+      <Panel title="7. Home to departure airport">
+        <Location label="Home / start" value={journey.home} change={(value) => update('home', value)} />
+        <label className="block text-sm">Travel type<select aria-label="Travel type to departure airport" className={field} value={journey.toAirport.kind} onChange={(e) => update('toAirport', e.target.value === 'scheduled' ? blankScheduled(journey.home.timeZone, journey.departureAirport.timeZone) : { kind: 'flexible', mode: 'car', minutes: null, buffer: null })}><option value="flexible">Car / taxi / walking / pickup</option><option value="scheduled">Scheduled train / bus / coach / ferry</option></select></label>
+        {journey.toAirport.kind === 'flexible' ? <FlexibleFields title="To airport" value={journey.toAirport} change={(value) => update('toAirport', value)} /> : <>
+          <div className="grid gap-3 sm:grid-cols-2"><NumberField label="Home to first stop duration (min)" value={journey.homeAccess.minutes} change={(minutes) => update('homeAccess', { ...journey.homeAccess, minutes })} /><NumberField label="Home to first stop buffer (min)" value={journey.homeAccess.buffer} change={(buffer) => update('homeAccess', { ...journey.homeAccess, buffer })} /></div>
+          <Timetable label="Before flight" value={journey.toAirport} change={(value) => update('toAirport', value)} />
+        </>}
+      </Panel>
+      <button className="w-full rounded-sm bg-ink-900 px-6 py-3 font-semibold text-white sm:w-auto" type="submit">Work backwards through my journey</button>
+    </form>
+    {result && <div ref={resultRef} tabIndex={-1} role="status" aria-live="polite" className="mt-8 scroll-mt-24 rounded-md border border-brass/40 bg-sand-50 p-4 outline-brass sm:p-6">
+      <h2 className="font-display text-2xl">Does the whole journey fit?</h2>
+      <p className="mt-2 text-sm">Based only on the entered services and allowances. YES is conditional planning arithmetic, not verified feasibility or an arrival promise.</p>
+      {result.errors.length > 0 ? <><h3 className="mt-4 font-semibold">CANNOT CONFIRM YET</h3><ul className="mt-2 list-inside list-disc space-y-1 text-sm">{result.errors.map((error, index) => <li key={index}>{error}</li>)}</ul></> : <>
+        {result.tradeOff && <p className="mt-4 rounded-sm border border-brass/30 bg-white p-4 text-sm">{result.tradeOff}</p>}
+        <div className="mt-5 grid gap-5 lg:grid-cols-2">{result.options.map((option, index) => <OptionResult key={index} value={option} />)}</div>
+      </>}
+      <p className="mt-5 text-sm font-medium">Confirm every service, date, connection, document requirement and allowance before booking. Delays can exceed the entered buffers; no claim is made about options not entered.</p>
+    </div>}
+  </div>;
+}
+
+function OptionResult({ value }: { value: DoorOptionResult }) {
+  const selected = value.onwardServices.find((service) => service.selected);
+  const showService = (service?: { id: string; departure: ZonedDateTime; arrival: ZonedDateTime }) => service ? `${service.id} · ${fmt(service.departure)} → ${fmt(service.arrival)}` : 'None established';
+  const serviceTable = (label: string, services: DoorOptionResult['originServices']) => services.length > 0 && <div><h4 className="mt-4 font-semibold">{label}</h4><ul className="mt-2 space-y-3">{services.map((service, index) => <li key={index} className="rounded-sm border border-ink-100 p-2"><strong>{service.id}{service.selected ? ' — SELECTED' : ''}</strong><p>{fmt(service.departure)} → {fmt(service.arrival)}</p><p>{service.status}</p>{service.catchable === false && !service.fitsDownstream && <p>Also too late for the downstream deadline / buffer.</p>}</li>)}</ul></div>;
+  return <article className="min-w-0 break-words rounded-md border border-ink-200 bg-white p-4">
+    <h3 className="font-semibold">{value.label}</h3><p className="mt-2 font-display text-2xl">{value.state} <span className="font-sans text-xs text-ink-500">— under entered assumptions</span></p>
+    <p className="mt-2 text-sm font-semibold">{value.deadlineStatus}{value.deadlineStatus === 'MEETS REQUIREMENT' && value.deadlineMargin === 0 ? ' — exactly at the clock deadline, zero final buffer' : ''}</p>
+    {value.diagnosticOnwardService && <p className="mt-3 rounded-sm bg-sand-50 p-3 text-sm">No qualifying onward service. The arrival below assesses {value.diagnosticOnwardService} only to explain the failure; it is not a selected journey meeting your requirement.</p>}
+    {value.reasons.length > 0 && <ul className="mt-3 list-inside list-disc text-sm">{value.reasons.map((reason) => <li key={reason}>{reason}</li>)}</ul>}
+    <dl className="mt-4 space-y-3 text-sm">{[
+      [value.diagnosticOnwardService ? 'Arrival using non-qualifying alternative' : 'Planned final arrival', fmt(value.finalArrival)],
+      ['Clock deadline', fmt(value.deadline)],
+      ['Required final buffer', `${value.requiredFinalBuffer} min`],
+      ['Effective latest arrival', fmt(value.effectiveLatestArrival)],
+      ['Clock-deadline margin', value.deadlineMargin === undefined ? 'Not established' : `${value.deadlineMargin} min`],
+      ['Ready for onward transport', fmt(value.readyForOnward)],
+      ['Earliest qualifying onward service', showService(selected)],
+      ['Latest deadline-compatible service — planning boundary', showService(value.latestDeadlineService)],
+      [value.diagnosticOnwardService ? 'Wait for non-qualifying alternative at onward stop' : 'Wait at onward stop, including boarding allowance', value.waitMinutes === undefined ? 'Not established' : duration(value.waitMinutes)],
+      ['Selected pre-flight service', value.originService ?? 'No scheduled service selected'],
+      ['Latest home departure under this plan', fmt(value.homeDeparture)],
+      ['Flight must land by for the onward chain', fmt(value.flightArrivalBy)],
+      ['Tightest scheduled connection', value.tightest ? `${value.tightest.label}: ${value.tightest.spare} min beyond required allowance — ${value.tightest.state}` : 'Not established'],
+    ].map(([label, text]) => <div key={label}><dt className="text-ink-500">{label}</dt><dd className="mt-0.5 font-medium">{text}</dd></div>)}</dl>
+    {value.onwardServices.length > 0 && <p className="mt-3 text-xs text-ink-500">The earliest qualifying service drives the timeline; it meets the entered boarding allowance, extra cushion and final requirement. The latest service is only a backwards-planning limit and may not be catchable for this flight. Neither is a booking recommendation or safety guarantee. Earliest departure does not always mean fastest arrival.</p>}
+    <details className="mt-5 border-t border-ink-100 pt-3"><summary className="cursor-pointer font-semibold">Why — work backwards</summary><ol className="mt-3 space-y-3 text-sm">{value.backwards.map((step, index) => <li key={index}><strong>{step.label}</strong><p>{fmt(step.by)}</p></li>)}</ol></details>
+    <details className="mt-4 border-t border-ink-100 pt-3"><summary className="cursor-pointer font-semibold">Timeline and connection checks</summary><div className="mt-3 space-y-3 text-sm">
+      <ol className="space-y-3">{value.timeline.map((leg, index) => <li key={index} className="border-l-2 border-brass/40 pl-3"><strong>{leg.label}</strong><p>{fmt(leg.start)} → {fmt(leg.end)}</p><p>{leg.minutes} min{leg.buffer !== undefined ? ` · includes ${leg.buffer} min entered buffer` : ''}</p></li>)}</ol>
+      {value.connections.map((connection, index) => <div key={index} className="rounded-sm bg-sand-50 p-3"><strong>{connection.label} — {connection.state}</strong><p>Ready: {fmt(connection.ready)}</p><p>Departs: {fmt(connection.departure)}</p><p>Margin: {connection.margin} min. Required allowance: {connection.minimum} min{connection.extraCushion > 0 ? ` (includes ${connection.extraCushion} min extra cushion)` : ''}. Spare beyond that allowance: {connection.spare} min.</p></div>)}
+      {serviceTable('Pre-flight candidate services', value.originServices)}{serviceTable('Onward candidate services', value.onwardServices)}
+    </div></details>
+  </article>;
+}

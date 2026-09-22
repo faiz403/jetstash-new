@@ -43,7 +43,7 @@ describe('no PUBLIC interface exists (Stage 2 scope: founder-only preview, never
   // references lib/arrive-by — Stage 3's eventual public integration is a
   // deliberate, separate, founder-approved step, not something that can
   // happen by accident.
-  const SANCTIONED_STAGE_2_FILES = [join('app', 'founder', 'arrive-by', 'page.tsx'), join('components', 'founder', 'arrive-by-preview.tsx')];
+  const SANCTIONED_STAGE_2_FILES = [join('app', 'founder', 'arrive-by', 'page.tsx'), join('components', 'founder', 'arrive-by-preview.tsx'), join('components', 'founder', 'arrive-by-door-to-door.tsx')];
 
   it('no route, page, or component outside the sanctioned Stage 2 founder preview imports lib/arrive-by', () => {
     const appDir = join(process.cwd(), 'app');
