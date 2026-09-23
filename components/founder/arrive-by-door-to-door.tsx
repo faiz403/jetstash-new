@@ -101,6 +101,12 @@ export function ArriveByDoorToDoor() {
   const [journey, setJourney] = useState<DoorJourney>(blankDoorJourney);
   const [example, setExample] = useState(false);
   const [result, setResult] = useState<DoorComparison | null>(null);
+  // Optional, display-only — never sent into planDoorJourney or used in any
+  // arithmetic (see door-to-door.ts's PLAN FRAGILITY CORRECTION notes).
+  // Names WHY the deadline exists ("race start", "check-in closes") so the
+  // headline reads as a real reason a traveller supplied, not a bare clock
+  // time — Tester 2's own scenario (Abu Dhabi Grand Prix start time).
+  const [deadlineReason, setDeadlineReason] = useState('');
   const resultRef = useRef<HTMLDivElement>(null);
   useEffect(() => { if (result) resultRef.current?.focus(); }, [result]);
   function update<K extends keyof DoorJourney>(key: K, value: DoorJourney[K]) { setResult(null); setJourney((current) => ({ ...current, [key]: value })); }
@@ -116,7 +122,8 @@ export function ArriveByDoorToDoor() {
       <Panel title="1. Final destination and deadline" open>
         <Location label="Final destination" value={journey.destination} change={(destination) => { setResult(null); setJourney((current) => ({ ...current, destination, deadline: { ...current.deadline, timeZone: destination.timeZone } })); }} />
         <Moment label="Final deadline" value={journey.deadline} showZone={false} change={(deadline) => update('deadline', deadline)} />
-        <p className="text-xs text-ink-500">Deadline is local to {journey.destination.timeZone}. Place names are labels, not map lookups.</p>
+        <label className="block text-sm">Reason for this deadline (optional)<input aria-label="Reason for this deadline" maxLength={140} className={field} placeholder="e.g. race start, check-in closes, ceremony begins" value={deadlineReason} onChange={(e) => setDeadlineReason(e.target.value)} /></label>
+        <p className="text-xs text-ink-500">Deadline is local to {journey.destination.timeZone}. Place names are labels, not map lookups. The reason is shown alongside the result — it is never used in any calculation.</p>
         <div className="grid gap-4 sm:grid-cols-2"><NumberField label="Required final arrival buffer (min)" value={journey.finalBuffer} change={(value) => update('finalBuffer', value)} /><NumberField label="Extra connection cushion (min)" value={journey.connectionCushion} change={(value) => update('connectionCushion', value)} /></div>
         <p className="text-xs text-ink-500">The final buffer is a required part of this plan. A journey can reach the deadline yet return NO because it does not leave that buffer; the reason is shown. Set it to 0 explicitly if the deadline alone is your constraint.</p>
         <p className="text-xs text-ink-500">Onward selection requires the boarding allowance PLUS your extra cushion before departure. Home departure also includes the cushion. Onward checks include the cushion in the required allowance. Pre-flight checks also flag spare airport time below your chosen cushion as TIGHT. These are planning assumptions, not a safety guarantee or a universal minimum.</p>
@@ -169,6 +176,7 @@ export function ArriveByDoorToDoor() {
     {result && <div ref={resultRef} tabIndex={-1} role="status" aria-live="polite" className="mt-8 scroll-mt-24 rounded-md border border-brass/40 bg-sand-50 p-4 outline-brass sm:p-6">
       <h2 className="font-display text-2xl">Does the whole journey fit?</h2>
       <p className="mt-2 text-sm">Based only on the entered services and allowances. YES is conditional planning arithmetic, not verified feasibility or an arrival promise.</p>
+      {deadlineReason.trim() && <p className="mt-2 text-sm text-ink-600">You need to reach {journey.destination.name || 'your destination'} by {journey.deadline.time || 'the entered time'} for {deadlineReason.trim()}.</p>}
       {result.errors.length > 0 ? <><h3 className="mt-4 font-semibold">CANNOT CONFIRM YET</h3><ul className="mt-2 list-inside list-disc space-y-1 text-sm">{result.errors.map((error, index) => <li key={index}>{error}</li>)}</ul></> : <>
         {result.tradeOff && <p className="mt-4 rounded-sm border border-brass/30 bg-white p-4 text-sm">{result.tradeOff}</p>}
         <div className="mt-5 grid gap-5 lg:grid-cols-2">{result.options.map((option, index) => <OptionResult key={index} value={option} />)}</div>
@@ -178,13 +186,56 @@ export function ArriveByDoorToDoor() {
   </div>;
 }
 
+/**
+ * "YES" is not a single answer — a plan that meets its deadline comfortably
+ * and one that meets it by ten minutes on its worst connection are both
+ * "YES" under the raw arithmetic, but a traveller needs to know which one
+ * they have before they decide. See door-to-door.ts's PLAN FRAGILITY
+ * CORRECTION notes for why this exists and what it is derived from.
+ */
+function headline(value: DoorOptionResult): string {
+  if (value.state === 'NO') return 'NO';
+  if (value.state === 'CANNOT CONFIRM') return 'CANNOT CONFIRM';
+  return value.confidence === 'FRAGILE' ? 'YES — BUT THIS PLAN IS FRAGILE' : 'YES — ROBUST';
+}
+
+function keyOnwardServiceText(value: DoorOptionResult): string {
+  if (value.onwardService) return value.onwardService;
+  if (value.turnUpAndGo) return `${value.turnUpAndGo.mode} (turn-up-and-go — no individual departure)`;
+  if (value.diagnosticOnwardService) return `${value.diagnosticOnwardService} (does not qualify — shown only to explain the failure)`;
+  return 'None entered or not applicable';
+}
+
 function OptionResult({ value }: { value: DoorOptionResult }) {
   const selected = value.onwardServices.find((service) => service.selected);
   const showService = (service?: { id: string; departure: ZonedDateTime; arrival: ZonedDateTime }) => service ? `${service.id} · ${fmt(service.departure)} → ${fmt(service.arrival)}` : 'None established';
   const serviceTable = (label: string, services: DoorOptionResult['originServices']) => services.length > 0 && <div><h4 className="mt-4 font-semibold">{label}</h4><ul className="mt-2 space-y-3">{services.map((service, index) => <li key={index} className="rounded-sm border border-ink-100 p-2"><strong>{service.id}{service.selected ? ' — SELECTED' : ''}</strong><p>{fmt(service.departure)} → {fmt(service.arrival)}</p><p>{service.status}</p>{service.catchable === false && !service.fitsDownstream && <p>Also too late for the downstream deadline / buffer.</p>}</li>)}</ul></div>;
   return <article className="min-w-0 break-words rounded-md border border-ink-200 bg-white p-4">
-    <h3 className="font-semibold">{value.label}</h3><p className="mt-2 font-display text-2xl">{value.state} <span className="font-sans text-xs text-ink-500">— under entered assumptions</span></p>
-    <p className="mt-2 text-sm font-semibold">{value.deadlineStatus}{value.deadlineStatus === 'MEETS REQUIREMENT' && value.deadlineMargin === 0 ? ' — exactly at the clock deadline, zero final buffer' : ''}</p>
+    <h3 className="font-semibold">{value.label}</h3>
+    <p className="mt-2 font-display text-2xl">{headline(value)} <span className="font-sans text-xs text-ink-500">— under entered assumptions</span></p>
+    {value.confidence === 'FRAGILE' && value.tightest && <div className="mt-3 rounded-sm border border-terracotta-400 bg-terracotta-50 p-3 text-sm">
+      <p className="font-semibold text-terracotta-700">This plan works, but has very little room for delay.</p>
+      <p className="mt-1">You are expected to arrive at {fmt(value.finalArrival)}{value.deadlineMargin !== undefined ? `, ${value.deadlineMargin} min before the ${fmt(value.deadline)} deadline` : ''}. However, the plan depends on {value.tightest.label}. About {value.tightest.spare} min of additional delay to this connection would break this plan.</p>
+    </div>}
+    <dl className="mt-4 grid gap-x-6 gap-y-2 text-sm sm:grid-cols-2">{[
+      ['Which option fits', `${value.label} — ${headline(value)}`],
+      ['Leave home by', fmt(value.homeDeparture)],
+      ['Key pre-flight service', value.originService ?? 'None entered or not applicable'],
+      ['Key onward service', keyOnwardServiceText(value)],
+      ['Planned final arrival', fmt(value.finalArrival)],
+      ['Deadline', fmt(value.deadline)],
+      ['Critical connection', value.tightest ? `${value.tightest.label} — ${value.tightest.state}` : 'Not established'],
+      ['Additional delay that breaks the plan', value.tightest ? `${value.tightest.spare} min` : 'Not established'],
+    ].map(([label, text]) => <div key={label}><dt className="text-ink-500">{label}</dt><dd className="mt-0.5 font-medium">{text}</dd></div>)}</dl>
+    {value.fallbackOnward && <div className="mt-4 rounded-sm border border-ink-200 bg-sand-50 p-3 text-sm">
+      <p className="font-semibold">If you miss {value.onwardService ?? value.diagnosticOnwardService ?? 'this connection'}</p>
+      {value.fallbackOnward.hasNextEntered ? <dl className="mt-2 space-y-1">
+        <div><dt className="inline text-ink-500">Next entered service: </dt><dd className="inline">{value.fallbackOnward.nextService?.id} · {fmt(value.fallbackOnward.nextService?.departure)} → {fmt(value.fallbackOnward.nextService?.arrival)}</dd></div>
+        <div><dt className="inline text-ink-500">Final arrival if used: </dt><dd className="inline">{fmt(value.fallbackOnward.finalArrivalIfUsed)}</dd></div>
+        <div><dt className="inline text-ink-500">Meets deadline: </dt><dd className="inline">{value.fallbackOnward.meetsDeadline ? 'YES' : 'NO'}{value.fallbackOnward.meetsDeadline && !value.fallbackOnward.meetsDeadlineWithBuffer ? ' (without the required final buffer)' : ''}</dd></div>
+      </dl> : <p className="mt-1">NO FALLBACK HAS BEEN ENTERED. This does not mean no real-world alternative exists — only that none was entered into this plan.</p>}
+    </div>}
+    <p className="mt-3 text-sm font-semibold">{value.deadlineStatus}{value.deadlineStatus === 'MEETS REQUIREMENT' && value.deadlineMargin === 0 ? ' — exactly at the clock deadline, zero final buffer' : ''}</p>
     {value.diagnosticOnwardService && <p className="mt-3 rounded-sm bg-sand-50 p-3 text-sm">No qualifying onward service. The arrival below assesses {value.diagnosticOnwardService} only to explain the failure; it is not a selected journey meeting your requirement.</p>}
     {value.reasons.length > 0 && <ul className="mt-3 list-inside list-disc text-sm">{value.reasons.map((reason) => <li key={reason}>{reason}</li>)}</ul>}
     <dl className="mt-4 space-y-3 text-sm">{[

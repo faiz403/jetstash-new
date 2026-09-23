@@ -240,7 +240,13 @@ describe('earliest onward selection versus backwards boundary', () => {
   it('adds the boarding allowance and extra cushion exactly once', () => {
     const b = scenario(i => { i.onward!.minimumBeforeDeparture = 10; }).options[1];
     expect(b.onwardService).toBe('Test 13:45');
-    expect(b.connections.find(c => c.label === 'Test 13:45')).toMatchObject({ margin: 25, minimum: 25, extraCushion: 15, spare: 0, state: 'COMFORTABLE' });
+    // PLAN FRAGILITY CORRECTION (Tester 2, 23 Sep 2026): zero minutes of
+    // spare beyond the required minimum-plus-cushion allowance is exactly
+    // what "TIGHT" exists to flag — the connection clears its required bar
+    // with nothing left over, not comfortably. It was wrongly reported
+    // COMFORTABLE before this fix purely because this connection happens to
+    // pass a nonzero extraCushion; see door-to-door.ts's Connection doc.
+    expect(b.connections.find(c => c.label === 'Test 13:45')).toMatchObject({ margin: 25, minimum: 25, extraCushion: 15, spare: 0, state: 'TIGHT' });
     expect(b.flightArrivalBy?.timeHHmm).toBe('15:25');
   });
   it('skips an earlier catchable service that fails the downstream requirement', () => {
@@ -275,4 +281,86 @@ describe('earliest onward selection versus backwards boundary', () => {
     expect(b.latestDeadlineService?.id).toBe('Test 17:35');
     expect(b.connections.at(-1)?.state).toBe('NOT CATCHABLE');
   });
+
+/**
+ * PLAN FRAGILITY CORRECTION (Tester 2, 23 Sep 2026): Manchester -> Dubai ->
+ * Abu Dhabi -> Yas Marina Circuit. A 4-hour final-deadline margin (13:00
+ * arrival, 17:00 event) hid a coach connection with only ~10 minutes of
+ * genuine delay tolerance, because COMFORTABLE was computed purely from
+ * whether the connection cleared its required minimum-plus-cushion
+ * allowance at all, not by how much. See door-to-door.ts's `Connection` and
+ * `connection()` doc comments for the exact bug and fix.
+ */
+describe('plan fragility correction — large final margin must not mask a thin connection', () => {
+  it('a large final-deadline margin does not mask a fragile intermediate connection (base scenario reproduces Tester 2 exactly)', () => {
+    const b = scenario().options[1];
+    expect(b.state).toBe('YES');
+    expect(b.deadlineStatus).toBe('MEETS REQUIREMENT');
+    expect(b.deadlineMargin).toBe(250); // a comfortable-looking 4h10m final margin
+    expect(b.tightest).toMatchObject({ label: 'Test 13:45', spare: 10, state: 'TIGHT' });
+    expect(b.confidence).toBe('FRAGILE');
+  });
+  it('identifies the critical connection as the tightest one, not merely the last one computed', () => {
+    const b = scenario(i => { i.onward!.minimumBeforeDeparture = 10; }).options[1];
+    expect(b.tightest?.label).toBe('Test 13:45');
+    expect(b.connections.length).toBeGreaterThan(1); // the tightest is picked among several real connections, not the only one
+  });
+  it('reports the exact additional delay tolerance the critical connection has, never a rounded or invented figure', () => {
+    const b = scenario().options[1];
+    // ready 13:20, selected departs 13:45, required 0 + 15 cushion = 15 -> spare exactly 10.
+    expect(b.tightest?.spare).toBe(10);
+    expect(b.tightest?.margin).toBe(25);
+    expect(b.tightest?.minimum).toBe(15);
+  });
+  it('never re-labels a genuinely comfortable connection as FRAGILE just because a cushion was entered', () => {
+    const b = scenario(i => { i.flights[1].landing.time = '09:35'; }).options[1]; // ready 11:20 IST
+    expect(b.state).toBe('YES');
+    expect(b.onwardService).toBe('Test 13:25');
+    const onwardConnection = b.connections.find((c) => c.label === 'Test 13:25');
+    expect(onwardConnection).toMatchObject({ spare: 110, state: 'COMFORTABLE' });
+  });
+  it('a failed journey (state NO) carries no fragility grade — confidence is only meaningful for a working plan', () => {
+    const b = scenario(i => { i.flights[1].landing.time = '18:00'; }).options[1];
+    expect(b.state).toBe('NO');
+    expect(b.confidence).toBeNull();
+  });
+  it('a plan with no scheduled connection at all (flexible-only chain) has nothing to be fragile against', () => {
+    const b = run((i) => { i.onward = null; i.finalMile = { kind: 'flexible', mode: 'taxi', minutes: 45, buffer: 15 }; }).options[1];
+    expect(b.state).toBe('YES');
+    expect(b.connections.length).toBeGreaterThan(0); // pre-flight and gate connections still exist
+    expect(b.confidence).toBe('ROBUST'); // none of them are TIGHT under the example's generous allowances
+  });
+});
+
+describe('plan fragility correction — fallback onward service ("what if I miss it?")', () => {
+  it('shows the next entered onward service and whether it still meets the deadline, when one exists', () => {
+    const b = scenario().options[1]; // relies on Test 13:45; Test 15:10 departs next
+    expect(b.fallbackOnward).toMatchObject({
+      hasNextEntered: true,
+      nextService: { id: 'Test 15:10' },
+      meetsDeadline: true,
+      meetsDeadlineWithBuffer: true,
+    });
+  });
+  it('honestly reports when the next entered service would miss the deadline', () => {
+    const b = scenario(i => { i.deadline = { ...i.deadline, time: '14:40' }; }).options[1]; // Test 13:45 -> 14:50 rickshaw still fits; Test 15:10 -> 16:12 would miss
+    expect(b.fallbackOnward?.hasNextEntered).toBe(true);
+    expect(b.fallbackOnward?.nextService?.id).toBe('Test 15:10');
+    expect(b.fallbackOnward?.meetsDeadline).toBe(false);
+  });
+  it('says plainly that no fallback was entered, rather than implying none exists in reality', () => {
+    const b = scenario(i => { i.onward!.services = i.onward!.services.slice(0, 2); }).options[1]; // only 13:25 and 13:45 entered
+    expect(b.onwardService).toBe('Test 13:45');
+    expect(b.fallbackOnward).toEqual({ hasNextEntered: false });
+  });
+  it('is not computed for a turn-up-and-go onward leg — that mode has no discrete "next service" to name', () => {
+    const input: DoorJourney = exampleDoorJourney();
+    input.onward = { kind: 'turn-up-and-go', mode: 'metro', from: { name: 'Airport metro', timeZone: 'Asia/Kolkata' }, to: { name: 'City metro', timeZone: 'Asia/Kolkata' },
+      minimumBeforeDeparture: 5, operatingWindows: [{ days: ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'], opens: '05:00', closes: '23:00', closesNextDay: false }],
+      journeyMinutes: 20, journeyMinutesBasis: 'OFFICIAL', headwayMinutes: { min: 4, max: 6 }, plannedWaitMinutes: null };
+    const b = planDoorJourney(input, NOW).options[1];
+    expect(b.turnUpAndGo).toBeDefined();
+    expect(b.fallbackOnward).toBeUndefined();
+  });
+});
 });

@@ -39,6 +39,26 @@ export interface DoorJourney {
  */
 export type ScheduledOnwardJourney = Omit<DoorJourney, 'onward'> & { onward: ScheduledTransport | null };
 export interface TimelineItem { label: string; start: ZonedDateTime; end: ZonedDateTime; minutes: number; buffer?: number }
+/**
+ * PLAN FRAGILITY CORRECTION (Tester 2, 23 Sep 2026): `state` here used to
+ * collapse to `spare < 0 ? 'NOT CATCHABLE' : spare < (extraCushion > 0 ? 0 :
+ * cushion) ? 'TIGHT' : 'COMFORTABLE'` — whenever a connection was built with
+ * a nonzero `extraCushion` (every onward-service connection: the ONE most
+ * safety-critical link in the whole chain, since it is what a flight delay
+ * actually threatens), the TIGHT band collapsed to zero width. A connection
+ * could clear its required minimum-plus-cushion allowance by a single
+ * minute and still be reported COMFORTABLE, identically to one that cleared
+ * it by three hours — exactly the failure a real traveller (Tester 2:
+ * Manchester -> Dubai -> Abu Dhabi -> Yas Marina Circuit, a 10:00 coach with
+ * ~10 minutes of genuine delay tolerance) found actively misleading,
+ * because the large final-deadline margin made the headline look safe.
+ * `spare` itself was always correct arithmetic; only the classification
+ * boundary was wrong. Fixed to a single, consistent rule: TIGHT is
+ * `0 <= spare < cushion` for every connection, using the founder's own
+ * entered `connectionCushion` as the fragility band width in every case,
+ * never widened or narrowed by whether this particular call already folded
+ * that same cushion into its required allowance.
+ */
 export interface Connection {
   label: string; ready: ZonedDateTime; departure: ZonedDateTime; margin: number;
   minimum: number; extraCushion: number; spare: number; state: 'COMFORTABLE' | 'TIGHT' | 'NOT CATCHABLE';
@@ -49,8 +69,20 @@ export interface ServiceAssessment {
 }
 export interface BackwardStep { label: string; by: ZonedDateTime }
 export type DeadlineStatus = 'MEETS REQUIREMENT' | 'BEFORE DEADLINE, BUT BUFFER NOT MET' | 'AT DEADLINE, BUT BUFFER NOT MET' | 'MISSES DEADLINE' | 'NOT ESTABLISHED';
+/**
+ * Plan fragility, separate from whether the plan works at all (`state`).
+ * Derived purely from `tightest` — the same cushion-based COMFORTABLE/TIGHT
+ * threshold `connection()` already computes, never a second, independently
+ * invented number. `null` whenever `state !== 'YES'` (fragility is only
+ * meaningful for a plan that currently works) or there is no scheduled
+ * connection to assess (a flexible-transport-only chain has nothing to be
+ * fragile against). See PLAN-FRAGILITY-CORRECTION doc comment on `connection()`.
+ */
+export type PlanConfidence = 'ROBUST' | 'FRAGILE';
 export interface DoorOptionResult {
-  label: string; priceGBP: number | null; state: 'YES' | 'TIGHT' | 'NO' | 'CANNOT CONFIRM';
+  label: string; priceGBP: number | null; state: 'YES' | 'NO' | 'CANNOT CONFIRM';
+  /** Set only when `state === 'YES'`. See `PlanConfidence`. */
+  confidence: PlanConfidence | null;
   reasons: string[]; deadline: ZonedDateTime; homeDeparture?: ZonedDateTime;
   airportArrivalBy?: ZonedDateTime; flightArrivalBy?: ZonedDateTime;
   finalArrival?: ZonedDateTime; deadlineMargin?: number;
@@ -81,6 +113,25 @@ export interface DoorOptionResult {
   onwardService?: string; originService?: string;
   connections: Connection[]; tightest?: Connection; timeline: TimelineItem[];
   backwards: BackwardStep[]; originServices: ServiceAssessment[]; onwardServices: ServiceAssessment[];
+  /**
+   * "What happens if I miss the onward service I'm relying on?" (Testers 1
+   * and 2 both asked this independently). Answered only from services
+   * genuinely entered for a fixed-timetable onward leg — the next one to
+   * depart after the one this plan relies on, whether or not that plan
+   * relies on a real selection or only a non-qualifying diagnostic one.
+   * `undefined` when there is no onward-service chain to fall back within
+   * (no scheduled onward leg entered, or no service was assessed at all).
+   * Never a live search and never a fabricated alternative: a scheduled
+   * onward leg with nothing entered after the relied-on service reports
+   * `hasNextEntered: false`, not silence.
+   */
+  fallbackOnward?: {
+    hasNextEntered: boolean;
+    nextService?: { id: string; departure: ZonedDateTime; arrival: ZonedDateTime };
+    finalArrivalIfUsed?: ZonedDateTime;
+    meetsDeadline?: boolean;
+    meetsDeadlineWithBuffer?: boolean;
+  };
 }
 export interface DoorComparison { errors: string[]; options: DoorOptionResult[]; tradeOff?: string }
 type ParsedService = { service: Service; departure: number; arrival: number };
@@ -151,7 +202,7 @@ export function planDoorJourney(input: DoorJourney, nowIso: string): DoorCompari
 
   const options = input.flights.map((flight): DoorOptionResult => {
     const result: DoorOptionResult = {
-      label: flight.label.trim() || 'Flight', priceGBP: flight.priceGBP, state: 'YES', reasons: [],
+      label: flight.label.trim() || 'Flight', priceGBP: flight.priceGBP, state: 'YES', confidence: null, reasons: [],
       deadline: stamp(deadline, input.destination.timeZone), connections: [], timeline: [], backwards: [], originServices: [], onwardServices: [],
       effectiveLatestArrival: stamp(finalTarget, input.destination.timeZone), requiredFinalBuffer: input.finalBuffer!, deadlineStatus: 'NOT ESTABLISHED',
     };
@@ -166,7 +217,10 @@ export function planDoorJourney(input: DoorJourney, nowIso: string): DoorCompari
     }
     function connection(label: string, ready: number, leaves: number, minimum: number, zone: string, extraCushion = 0): Connection {
       const margin = (leaves - ready) / MINUTE; const required = minimum + extraCushion; const spare = margin - required;
-      const item: Connection = { label, ready: stamp(ready, zone), departure: stamp(leaves, zone), margin, minimum: required, extraCushion, spare, state: spare < 0 ? 'NOT CATCHABLE' : spare < (extraCushion > 0 ? 0 : cushion) ? 'TIGHT' : 'COMFORTABLE' };
+      // See the PLAN FRAGILITY CORRECTION doc comment on `Connection`: the
+      // TIGHT band is always `spare < cushion`, regardless of whether this
+      // call already folded `cushion` into `required` via `extraCushion`.
+      const item: Connection = { label, ready: stamp(ready, zone), departure: stamp(leaves, zone), margin, minimum: required, extraCushion, spare, state: spare < 0 ? 'NOT CATCHABLE' : spare < cushion ? 'TIGHT' : 'COMFORTABLE' };
       result.connections.push(item); return item;
     }
     const airportBy = departure - departureAllowance * MINUTE;
@@ -292,6 +346,25 @@ export function planDoorJourney(input: DoorJourney, nowIso: string): DoorCompari
         segment(`${selected ? 'Wait / boarding' : 'Non-qualifying alternative: wait / boarding'} at ${transport.from.name}`, ready, assessed.departure, transport.from.timeZone);
         segment(`${selected ? '' : 'Non-qualifying alternative: '}${transport.mode}: ${assessed.service.id} · ${transport.from.name} → ${transport.to.name}`, assessed.departure, assessed.arrival, transport.from.timeZone, transport.to.timeZone);
         finalStart = assessed.arrival;
+        // "What if I miss it?" (Testers 1 and 2 both asked this) — the next
+        // entered service that departs after the one this plan relies on,
+        // whichever service that is. Never filtered by the boarding/cushion
+        // requirement that produced `assessed`: once missed, that
+        // requirement no longer applies — only whether a later entered
+        // departure exists and, if so, whether it still meets the deadline.
+        const nextService = onwardServices.filter((s) => s.departure > assessed.departure).sort((a, b) => a.departure - b.departure)[0];
+        if (nextService) {
+          const nextFinalArrival = nextService.arrival + finalDuration * MINUTE;
+          result.fallbackOnward = {
+            hasNextEntered: true,
+            nextService: { id: nextService.service.id, departure: stamp(nextService.departure, transport.from.timeZone), arrival: stamp(nextService.arrival, transport.to.timeZone) },
+            finalArrivalIfUsed: stamp(nextFinalArrival, input.destination.timeZone),
+            meetsDeadline: nextFinalArrival <= deadline,
+            meetsDeadlineWithBuffer: nextFinalArrival <= finalTarget,
+          };
+        } else {
+          result.fallbackOnward = { hasNextEntered: false };
+        }
       }
     }
     if (finalStart !== undefined) {
@@ -308,12 +381,16 @@ export function planDoorJourney(input: DoorJourney, nowIso: string): DoorCompari
       } else { result.deadlineStatus = 'MEETS REQUIREMENT'; }
     }
     result.tightest = [...result.connections].sort((a, b) => a.spare - b.spare)[0];
-    if (result.state === 'YES' && result.connections.some((c) => c.state === 'TIGHT')) result.state = 'TIGHT';
+    // Whether the plan works (`state`) and how much slack it has
+    // (`confidence`) are two different questions — see the PLAN FRAGILITY
+    // CORRECTION doc comment above. A large final-deadline margin must
+    // never stand in for, or hide, a thin intermediate connection.
+    if (result.state === 'YES') result.confidence = result.tightest && result.tightest.state !== 'COMFORTABLE' ? 'FRAGILE' : 'ROBUST';
     return result;
   });
   let tradeOff: string | undefined;
   if (options.length === 2) {
-    const workable = options.filter((o) => o.state === 'YES' || o.state === 'TIGHT');
+    const workable = options.filter((o) => o.state === 'YES');
     const missed = options.find((o) => o.state === 'NO');
     if (workable.length === 1 && missed && workable[0].priceGBP !== null && missed.priceGBP !== null) {
       const delta = workable[0].priceGBP! - missed.priceGBP;
