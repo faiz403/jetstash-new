@@ -138,6 +138,15 @@ describe('Mumbai destination P1 trust fix', () => {
         observedDate: '2026-09-16',
         fareDirectness: 'connecting',
       },
+      // 22 September 2026 weekly sweep — again append-only connecting
+      // evidence on a service-ended-direct route; nothing about the route
+      // record, its verification or its status events changed.
+      {
+        id: 'obs-man-bom-economy-20260922-v1',
+        price: 473,
+        observedDate: '2026-09-22',
+        fareDirectness: 'connecting',
+      },
     ]);
   });
 

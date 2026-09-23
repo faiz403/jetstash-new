@@ -4,7 +4,9 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { getRouteBySlug, routes } from '@/data/routes';
 import { airports } from '@/data/airports';
 import { deals } from '@/data/deals';
-import { getFareSignalForRoute } from '@/lib/fare-signal';
+import { getDestinationBySlug } from '@/data/destinations';
+import { fareObservations, isPubliclyPublishable } from '@/data/fare-observations';
+import { deriveFareSignal, getFareSignalForRoute } from '@/lib/fare-signal';
 import { getTripComRouteUrl } from '@/lib/booking-providers';
 import { FareSignal } from '@/components/route/fare-signal';
 import { DealCard } from '@/components/ui/deal-card';
@@ -99,8 +101,54 @@ describe('Manchester-Agadir (£72, Milan airport change on the RETURN) — Fare 
   });
 });
 
-describe('Manchester-Dubai (£336, arrives at Sharjah not Dubai) — Fare Signal', () => {
-  const html = renderFareSignalForRoute('manchester-dubai');
+/**
+ * 22 September 2026 — the arrival-airport mismatch disclosure no longer has
+ * a live example, by design.
+ *
+ * This block used to render manchester-dubai's real £336 Sharjah-arriving
+ * observation. That record (and every other alternate-airport record) is now
+ * methodology-excluded, and the weekly sweep enforces strict exact-airport
+ * pairing, so no NEW published observation should ever arrive at a different
+ * airport from the one its route names.
+ *
+ * The disclosure is therefore kept as defence-in-depth and tested two ways:
+ * synthetically, so the rendering guarantee survives with no live instance;
+ * and by a standing invariant that no publishable observation exhibits the
+ * mismatch at all. If that invariant ever fails, the methodology has slipped
+ * and the disclosure is the thing standing between a traveller and a fare
+ * that lands in the wrong city.
+ */
+describe('arrival-airport mismatch disclosure — no live example remains, so it is held synthetically', () => {
+  const mismatching = deriveFareSignal(
+    [
+      {
+        id: 'synthetic-arrival-mismatch',
+        routeSlug: 'manchester-dubai',
+        cabin: 'Economy' as const,
+        observedDate: EVAL_ISO,
+        price: 336,
+        priceNote:
+          'return, per person, one adult; single carrier Pegasus both ways; outbound MAN-SAW-SHJ, 2 stops',
+        source: 'Pegasus',
+        currency: 'GBP' as const,
+        departureDate: '2026-11-10',
+        returnDate: '2026-11-24',
+        comparisonEligibility: 'current' as const,
+        fareDirectness: 'connecting' as const,
+        outboundStops: 2,
+        returnStops: 1,
+      },
+    ],
+    EVAL_ISO
+  );
+
+  const html = renderToStaticMarkup(
+    FareSignal({
+      signal: mismatching,
+      tripComUrl: getTripComRouteUrl('manchester-dubai'),
+      routeSlug: 'manchester-dubai',
+    })
+  ).replace(/\s+/g, ' ');
 
   it('leads the consequence line with the arrival-airport mismatch, before the CTA', () => {
     const priceIdx = html.indexOf('£336');
@@ -113,6 +161,30 @@ describe('Manchester-Dubai (£336, arrives at Sharjah not Dubai) — Fare Signal
 
   it('never mislabels the mismatch as DXB in the itinerary evidence itself (the Trip.com CTA link legitimately targets the DXB airport-search code — that is a search parameter, not an itinerary claim, and is untouched by this fix)', () => {
     expect(withoutHrefValues(html)).not.toMatch(/\bDXB\b/);
+  });
+
+  it('no publishable observation anywhere in the archive arrives at a different airport from its own route — the standing methodology invariant', () => {
+    const offenders: string[] = [];
+    for (const observation of fareObservations) {
+      if (!isPubliclyPublishable(observation)) continue;
+      const route = getRouteBySlug(observation.routeSlug);
+      const canonical = route ? getDestinationBySlug(route.destinationSlug)?.iataCode : undefined;
+      if (!canonical) continue;
+      // The routing region runs from "outbound " to the first ", " or the
+      // first space-then-digit (a duration). Slashed airport pairs
+      // (LCY/LGW), parenthesised flight numbers and ground transfers all
+      // stay inside it, so the LAST airport code in the region is the true
+      // terminus — a mid-chain connection is not a mismatch.
+      const clause = observation.priceNote.replace(/[–—]/g, '-').match(/outbound\s+([^;]*)/);
+      if (!clause) continue;
+      let region = clause[1];
+      const cut = region.search(/,\s|\s\d/);
+      if (cut > 0) region = region.slice(0, cut);
+      const codes = region.match(/\b[A-Z]{3}\b/g);
+      if (!codes || codes.length < 2) continue;
+      if (codes[codes.length - 1] !== canonical) offenders.push(observation.id);
+    }
+    expect(offenders).toEqual([]);
   });
 });
 
@@ -159,8 +231,11 @@ describe('Tracked Fares Explorer — the same four examples, the same shared sum
     expect(trackedFaresHtml).toContain('0 stops outbound, 1 stop return');
   });
 
-  it('Manchester-Dubai card leads with the arrival-airport mismatch and never mislabels it DXB', () => {
-    expect(trackedFaresHtml).toContain('Arrives at SHJ');
+  it('no card claims an arrival airport the traveller would not actually land at — the Sharjah example it used to show is methodology-excluded as of 22 September 2026', () => {
+    // Manchester-Dubai's representative fare is now the strict exact-airport
+    // £379 DXB observation, so there is no mismatch left to lead with here.
+    // The disclosure's own rendering is covered synthetically above.
+    expect(trackedFaresHtml).not.toContain('Arrives at SHJ');
     expect(trackedFaresHtml).not.toContain('Arrives at DXB');
   });
 
@@ -181,21 +256,15 @@ describe('DealCard — the specific "lower card" Astra\'s own review quoted dire
     expect(consequenceIdx).toBeLessThan(ctaIdx);
   });
 
-  it('man-dxb-economy (whose most recent Economy check is the £336 Sharjah-mismatch example) leads with the arrival-airport mismatch, before the CTA, and never mislabels it DXB in the itinerary evidence itself (the Trip.com CTA link legitimately targets the DXB airport-search code, untouched by this fix)', () => {
+  it('man-dxb-economy no longer carries an arrival-airport mismatch at all — its Sharjah-arriving checks are methodology-excluded as of 22 September 2026, so the card shows only fares that genuinely land at Dubai', () => {
     const html = renderDealCardById('man-dxb-economy');
-    // This route/cabin has 4 publishable Economy checks in range, so the
-    // card's own headline price is the honest range across all of them
-    // (£314-£480, per getFareRangeSummary) -- but journeyConsequences is
-    // always computed from the SAME most-recent observation range.priceNote
-    // itself is taken from (the £336 Sept 1 check, whose real routing
-    // arrives at SHJ), so the mismatch still correctly appears.
-    const priceIdx = html.indexOf('£314');
-    const mismatchIdx = html.indexOf('Arrives at SHJ');
-    const ctaIdx = html.indexOf('Compare flights on Trip.com');
-    expect(priceIdx).toBeGreaterThan(-1);
-    expect(mismatchIdx).toBeGreaterThan(priceIdx);
-    expect(mismatchIdx).toBeLessThan(ctaIdx);
-    expect(withoutHrefValues(html)).not.toMatch(/\bDXB\b/);
+    // Both the headline range and journeyConsequences derive from the same
+    // publishable pool, which no longer contains any SHJ-arriving record.
+    // The card must therefore claim no mismatch — and, just as importantly,
+    // must not start asserting "DXB" as itinerary evidence either.
+    expect(html).not.toContain('Arrives at SHJ');
+    expect(html).not.toContain('Arrives at DXB');
+    expect(html).toContain('Compare flights on Trip.com');
   });
 
   it('control: a genuinely clean direct fare (Glasgow-Bodrum, nonstop both ways) shows no journey-consequence line at all — the new line adds zero density to an ordinary card', () => {

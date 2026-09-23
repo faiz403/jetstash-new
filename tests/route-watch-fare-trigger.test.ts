@@ -282,27 +282,47 @@ describe('Real archive expectation (19 August 2026, post-supersession-fix) — o
   // never isPoorItinerarySuitability) correctly picks them up as candidates
   // in their own right, independent of what either route's public Fare
   // Signal does.
-  it('the real fareObservations archive produces 34 current Route Watch candidates after the full-portfolio controlled sweep', () => {
+  // 22 September 2026 CORRECTED (Cheapest-tab methodology fix): the
+  // originally-drafted 22 September batch used Google Flights' default
+  // view; the founder identified that as a second methodology break (the
+  // established weekly method is Cheapest tab) and every one of the 89
+  // observations was re-collected under Cheapest tab and replaced in
+  // place (same IDs, corrected price/itinerary evidence). Route Watch only
+  // ever surfaces drops, so which routes qualify depends on the actual
+  // corrected fare movement, not the discarded default-view draft — the
+  // membership below is the real, freshly computed result against the
+  // corrected archive, not carried over from the earlier draft.
+  it('the real fareObservations archive produces 11 current Route Watch candidates after the 22 September Cheapest-tab-corrected sweep and the alternate-airport correction', () => {
     const nowIso = new Date().toISOString().slice(0, 10);
     const candidates = generateRouteWatchFareCandidates(fareObservations, nowIso);
-    expect(candidates).toHaveLength(34);
+    expect(candidates).toHaveLength(11);
     expect(candidates.every((c) => c.lifecycle === 'detected' && c.founderVerificationRequired)).toBe(true);
     const bySlug = new Map(candidates.map((c) => [c.routeSlug, c.qualification]));
-    // The four original notable-drops, plus manchester-islamabad and
-    // manchester-dubai (now genuinely archived, evaluated on their own
-    // merits) and london-heathrow-casablanca (Batch 3, a genuine drop), are
-    // representative spot-checks, not an exhaustive re-listing of all 34 —
-    // the full list is captured in the evidence doc referenced above.
-    expect(bySlug.get('manchester-lahore')).toBe('notable-drop');
-    expect(bySlug.get('birmingham-amritsar')).toBe('notable-drop');
-    expect(bySlug.get('london-heathrow-jeddah')).toBe('notable-drop');
-    expect(bySlug.get('london-heathrow-doha')).toBe('notable-drop');
-    expect(bySlug.get('manchester-doha')).toBe('notable-drop');
-    expect(bySlug.get('manchester-madinah')).toBe('notable-drop');
-    expect(bySlug.get('manchester-islamabad')).toBe('notable-drop');
-    expect(bySlug.get('manchester-dubai')).toBe('standout-candidate');
-    expect(bySlug.get('london-heathrow-casablanca')).toBe('notable-drop');
+    // Representative spot-checks across both qualifications, not an
+    // exhaustive re-listing of all 11.
+    expect(bySlug.get('manchester-dalaman')).toBe('standout-candidate');
+    expect(bySlug.get('london-gatwick-dalaman')).toBe('standout-candidate');
+    expect(bySlug.get('london-gatwick-marrakech')).toBe('standout-candidate');
+    expect(bySlug.get('birmingham-agadir')).toBe('standout-candidate');
+    expect(bySlug.get('leeds-bradford-antalya')).toBe('standout-candidate');
+    expect(bySlug.get('bristol-marrakech')).toBe('standout-candidate');
+    expect(bySlug.get('manchester-antalya')).toBe('notable-drop');
+    expect(bySlug.get('glasgow-antalya')).toBe('notable-drop');
+    expect(bySlug.get('london-gatwick-athens')).toBe('notable-drop');
+    // birmingham-dubai and edinburgh-dubai qualify on a baseline built
+    // purely from fares that genuinely land at DXB — their Sharjah records
+    // are excluded, so neither drop is measured against a different airport.
+    expect(bySlug.get('birmingham-dubai')).toBe('notable-drop');
+    expect(bySlug.get('edinburgh-dubai')).toBe('notable-drop');
+    // Routes whose corrected 22 September Cheapest-tab fare ROSE must not
+    // appear at all.
+    expect(candidates.map((c) => c.routeSlug)).not.toContain('manchester-lahore');
+    expect(candidates.map((c) => c.routeSlug)).not.toContain('birmingham-amritsar');
     expect(candidates.map((c) => c.routeSlug)).not.toContain('london-heathrow-delhi');
+    // london-heathrow-doha was a notable-drop under the discarded
+    // default-view draft; under the corrected Cheapest-tab fare it no
+    // longer clears the threshold and correctly drops out of the queue.
+    expect(candidates.map((c) => c.routeSlug)).not.toContain('london-heathrow-doha');
   });
 });
 
@@ -364,8 +384,8 @@ describe('I. Trust wording — no overclaim in rendered founder copy or customer
     // copy against that final, verified count.
     const snapshot = getFounderSnapshot(new Date());
     const section = snapshot.grouped['nice-to-have'].find((s) => s.id === 'route-watch-fare-candidates')!;
-    expect(section.items).toHaveLength(34);
-    expect(section.headline).toMatch(/34 fare observations clear Fare Watcher's strong evidence threshold/i);
+    expect(section.items).toHaveLength(11);
+    expect(section.headline).toMatch(/11 fare observations clear Fare Watcher's strong evidence threshold/i);
     expect(section.headline).toMatch(/Nothing sends itself/i);
     for (const pattern of forbidden) expect(section.headline).not.toMatch(pattern);
   });

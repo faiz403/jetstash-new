@@ -63,18 +63,45 @@ const NOW_ISO = new Date().toISOString().slice(0, 10);
 // resolve to that older suitable observation, never fail closed, and
 // never silently reach for a DIFFERENT cabin or a stale/out-of-window one
 // to do it (see lib/fare-signal.ts's own regression tests for that
-// specific safety property). `london-gatwick-doha` (used from block 6
-// onward) is the current, genuine example of a route whose ENTIRE
-// current-Economy pool is poor with no suitable fallback anywhere in it —
-// it has exactly one observation, ever, and that observation is
-// self-transfer with 2/3 stops.
+// specific safety property). `london-gatwick-doha` used to be the live
+// example of a route whose ENTIRE current-Economy pool was poor; see the
+// note on SYNTHETIC_FULLY_POOR_POOL below for why it no longer is.
 const FORMERLY_SUPPRESSED_NOW_RESOLVE_TO_OLDER_SUITABLE_ROUTES = [
   'manchester-lahore',
   'birmingham-amritsar',
   'london-gatwick-amritsar',
   'birmingham-delhi',
 ];
-const GENUINELY_SUPPRESSED_ROUTE = 'london-gatwick-doha';
+// 22 September 2026: london-gatwick-doha is NO LONGER that example. The
+// weekly sweep appended a genuine single-carrier 1-stop Pegasus fare
+// (£424, landing at DOH), which is suitable, so the route now resolves to
+// an ordinary current Fare Signal. Re-checked across the whole route table
+// on that date: ZERO routes are currently poor-itinerary-suppressed, so
+// there is no live archive example left to point this constant at.
+//
+// The suppression guarantee itself is unchanged and still covered — blocks
+// 1-5 above exercise it directly with synthetic observations, and
+// SYNTHETIC_FULLY_POOR_POOL below stands in for the live route wherever a
+// fully-poor pool is needed. Restore a live slug here if a future sweep
+// produces one again.
+const SYNTHETIC_FULLY_POOR_POOL = [
+  {
+    id: 'synthetic-fully-poor',
+    routeSlug: 'synthetic-fully-poor-route',
+    cabin: 'Economy' as const,
+    observedDate: new Date().toISOString().slice(0, 10),
+    price: 512,
+    priceNote: 'return, per person, one adult; self-transfer',
+    source: 'Example Airline',
+    currency: 'GBP' as const,
+    departureDate: '2026-10-01',
+    returnDate: '2026-10-15',
+    comparisonEligibility: 'current' as const,
+    fareDirectness: 'connecting' as const,
+    outboundStops: 2,
+    returnStops: 3,
+  },
+];
 
 function fixtureObservation(overrides: Partial<FareObservation> = {}): FareObservation {
   return {
@@ -182,16 +209,21 @@ describe('6. exact regression cases: MAN-LHE and BHX-ATQ correctly resolve to th
   it('manchester-lahore resolves to its 18 August £628 observation -- the poor 25 August recheck stays in history but is skipped for representative selection', () => {
     const signal = getFareSignalForRoute('manchester-lahore', NOW_ISO);
     expect(signal.state).toBe('current');
-    expect(signal.observation?.id).toBe('obs-man-lhe-economy-20260818-8w-v1');
-    expect(signal.observation?.price).toBe(628);
+    // 22 September 2026: the weekly sweep appended a newer suitable
+    // observation, so the selector no longer needs to walk back to 18
+    // August. The mechanism under test is unchanged — the poor 25 August
+    // recheck is still never promoted.
+    expect(signal.observation?.id).toBe('obs-man-lhe-economy-20260922-v1');
+    expect(signal.observation?.price).toBe(651);
     expect(signal.noneReason).toBeNull();
   });
 
   it('birmingham-amritsar resolves to its 19 August £603 observation for the same reason', () => {
     const signal = getFareSignalForRoute('birmingham-amritsar', NOW_ISO);
     expect(signal.state).toBe('current');
-    expect(signal.observation?.id).toBe('obs-bhx-atq-economy-20260819-8w-v1');
-    expect(signal.observation?.price).toBe(603);
+    // 22 September 2026: same reasoning as manchester-lahore above.
+    expect(signal.observation?.id).toBe('obs-bhx-atq-economy-20260922-v1');
+    expect(signal.observation?.price).toBe(1051);
     expect(signal.noneReason).toBeNull();
   });
 });
@@ -204,11 +236,19 @@ describe('7. the four originally-flagged routes now correctly resolve to an olde
     expect(signal.noneReason, slug).toBeNull();
   });
 
-  it(`${GENUINELY_SUPPRESSED_ROUTE} has no current Fare Signal -- its only observation, ever, is self-transfer with 2+ stops per leg, so there is no suitable fallback anywhere in its own current-Economy pool`, () => {
-    const signal = getFareSignalForRoute(GENUINELY_SUPPRESSED_ROUTE, NOW_ISO);
+  it('a pool whose every observation is self-transfer with 2+ stops per leg still fails closed -- no suitable fallback anywhere means no Fare Signal at all', () => {
+    const signal = deriveFareSignal(SYNTHETIC_FULLY_POOR_POOL, NOW_ISO);
     expect(signal.state).toBe('none');
     expect(signal.observation).toBeNull();
     expect(signal.noneReason).toBe('poor-itinerary-suppressed');
+  });
+
+  it('no live route is currently poor-itinerary-suppressed -- recorded so the day this stops being true is visible', () => {
+    const live = routes.filter((route) => {
+      const signal = getFareSignalForRoute(route.slug, NOW_ISO);
+      return signal.state === 'none' && signal.noneReason === 'poor-itinerary-suppressed';
+    });
+    expect(live.map((route) => route.slug)).toEqual([]);
   });
 });
 
@@ -242,7 +282,7 @@ describe('8. a representative unaffected route continues to show its existing Fa
 });
 
 describe('9 & 10. fare history and underlying observations remain fully intact regardless of representative selection -- a poor observation is archived history, visible in Fare History, whether or not it happens to be the representative', () => {
-  it.each([...FORMERLY_SUPPRESSED_NOW_RESOLVE_TO_OLDER_SUITABLE_ROUTES, GENUINELY_SUPPRESSED_ROUTE])('%s: publishable observations still exist and render in Fare History, regardless of what Fare Signal shows', (slug) => {
+  it.each([...FORMERLY_SUPPRESSED_NOW_RESOLVE_TO_OLDER_SUITABLE_ROUTES, 'london-gatwick-doha'])('%s: publishable observations still exist and render in Fare History, regardless of what Fare Signal shows', (slug) => {
     const observations = getPublishableObservationsByRoute(slug, NOW_ISO);
     expect(observations.length, slug).toBeGreaterThan(0);
     const html = renderToStaticMarkup(FareHistoryPanel({ observations }));
@@ -297,14 +337,14 @@ describe('11. route-vs-fare mismatch behaviour', () => {
     return html.replace(/\s+/g, ' ');
   }
 
-  it(`${GENUINELY_SUPPRESSED_ROUTE} no longer renders a Fare Signal or a mismatch callout -- there is nothing left to mismatch against`, () => {
-    // Suppressed-fare explanation (2 Sep 2026, traveller-POV live product
-    // review): a genuinely-suppressed route renders the explanatory
-    // "Recent fares checked" copy instead of the plain "No current fare
-    // tracked" it used to.
-    const html = renderFareSignalForRoute(GENUINELY_SUPPRESSED_ROUTE);
-    expect(html).toMatch(/Recent fares checked|Fare spotted/);
-    expect(html).not.toContain('Route service');
+  it('london-gatwick-doha now renders an ordinary Fare Signal -- the 22 September sweep gave it a suitable single-carrier 1-stop fare, so there is no longer a suppressed state to explain', () => {
+    // Was: "no longer renders a Fare Signal or a mismatch callout". The
+    // route gained genuine suitable evidence on 22 September 2026, so the
+    // explanatory "Recent fares checked" copy is correctly replaced by the
+    // ordinary "Fare spotted" template.
+    const html = renderFareSignalForRoute('london-gatwick-doha');
+    expect(html).toMatch(/Fare spotted/);
+    expect(html).not.toContain('Recent fares checked');
   });
 
   it.each(FORMERLY_SUPPRESSED_NOW_RESOLVE_TO_OLDER_SUITABLE_ROUTES)('%s now renders its ordinary current Fare Signal (the suitability walk found it an older suitable observation) -- no longer the suppressed-fare explanation copy', (slug) => {
@@ -313,10 +353,21 @@ describe('11. route-vs-fare mismatch behaviour', () => {
     expect(html, slug).not.toContain('Recent fares checked');
   });
 
-  it('an unaffected route (glasgow-bodrum, verified direct, matching direct fare) still renders its ordinary Fare Signal with no mismatch callout, exactly as before this fix', () => {
-    const html = renderFareSignalForRoute('glasgow-bodrum');
+  // 22 September 2026: glasgow-bodrum is no longer a valid control for this.
+  // Its newest fare is a 2-stop KAYAK itinerary while the route's own
+  // service is verified direct, so the mismatch callout now correctly fires
+  // on it — the feature working, not a regression. manchester-dalaman
+  // replaces it: verified direct, and its representative fare (£66 easyJet,
+  // 22 September) is genuinely non-stop, so no mismatch should be claimed.
+  it('an unaffected route (manchester-dalaman, verified direct, matching direct fare) still renders its ordinary Fare Signal with no mismatch callout, exactly as before this fix', () => {
+    const html = renderFareSignalForRoute('manchester-dalaman');
     expect(html).toContain('Fare spotted');
     expect(html).not.toContain('Route service');
+  });
+
+  it('glasgow-bodrum, verified direct but whose newest tracked fare is a 2-stop itinerary, DOES render the mismatch callout -- the disclosure working as intended', () => {
+    const html = renderFareSignalForRoute('glasgow-bodrum');
+    expect(html).toContain('Route service');
   });
 
   it('D. an unaffected route WITH a genuine, currently-live route-vs-fare mismatch (manchester-lahore: route verified direct, current suitable fare a connecting itinerary) still renders the full mismatch disclosure, unchanged by this fix', () => {
@@ -381,7 +432,11 @@ describe('12. MAN-ISB Journey Choice pilot: Journey Choice itself stays frozen t
     const signal = getFareSignalForRoute('manchester-islamabad', NOW_ISO);
     expect(signal.state).toBe('current');
     expect(signal.observation).not.toBeNull();
-    expect(signal.observation?.price).toBe(870);
+    // 22 September 2026: the weekly sweep's £534 Etihad fare is newer and
+    // also suitable, so it supersedes the 13 September direct-PIA fare as
+    // the representative one. The recovery-from-suppression fact this test
+    // exists to prove is unchanged.
+    expect(signal.observation?.price).toBe(534);
     expect(signal.noneReason).toBeNull();
   });
 
@@ -444,8 +499,10 @@ describe('B. Fare Window Reconciliation fails closed when a Fare Signal is absen
     expect(result).toBeNull();
   });
 
-  it('a suppressed real route\'s own (null) Fare Signal observation, fed directly into the reconciliation function, produces no reconciliation', () => {
-    const signal = getFareSignalForRoute(GENUINELY_SUPPRESSED_ROUTE, NOW_ISO);
+  it('a suppressed pool\'s own (null) Fare Signal observation, fed directly into the reconciliation function, produces no reconciliation', () => {
+    // No live route is suppressed as of 22 September 2026, so this uses the
+    // synthetic fully-poor pool; the guarantee under test is unchanged.
+    const signal = deriveFareSignal(SYNTHETIC_FULLY_POOR_POOL, NOW_ISO);
     expect(signal.observation).toBeNull();
     const result = deriveFareWindowReconciliation(signal.observation, { departureDate: '2026-10-01', returnDate: '2026-10-15' });
     expect(result).toBeNull();
@@ -458,8 +515,11 @@ describe('B. Fare Window Reconciliation fails closed when a Fare Signal is absen
 });
 
 describe('C. customer-facing aggregate consequences honestly stop counting suppressed Fare Signals', () => {
-  it('hasCurrentFareSignalAmongRoutes is false across a scope containing only genuinely-suppressed routes', () => {
-    expect(hasCurrentFareSignalAmongRoutes([GENUINELY_SUPPRESSED_ROUTE], NOW_ISO)).toBe(false);
+  it('hasCurrentFareSignalAmongRoutes is false across a scope with no current Fare Signal in it', () => {
+    // No live route is poor-itinerary-suppressed as of 22 September 2026, so
+    // the scope used here is a route slug carrying no observations at all —
+    // the aggregate must still report false rather than defaulting to true.
+    expect(hasCurrentFareSignalAmongRoutes(['synthetic-route-with-no-observations'], NOW_ISO)).toBe(false);
   });
 
   it('hasCurrentFareSignalAmongRoutes is true for an airport scope that includes at least one current route (Birmingham: every one of its routes now correctly resolves to a current Fare Signal after the suitability walk, birmingham-amritsar and birmingham-delhi included)', () => {
@@ -486,7 +546,7 @@ describe('13. Standout Fare is unaffected -- its own qualification path never ca
   // checks, for the one route (manchester-islamabad) and the one
   // genuinely-suppressed route this file otherwise exercises.
   it('no Standout Fare approval among these routes resolves to a live candidate -- confirmed via the real function, not inferred from raw revokedDate', () => {
-    const checkRouteSlugs = new Set([...FORMERLY_SUPPRESSED_NOW_RESOLVE_TO_OLDER_SUITABLE_ROUTES, GENUINELY_SUPPRESSED_ROUTE, 'manchester-islamabad']);
+    const checkRouteSlugs = new Set([...FORMERLY_SUPPRESSED_NOW_RESOLVE_TO_OLDER_SUITABLE_ROUTES, 'london-gatwick-doha', 'manchester-islamabad']);
     for (const approval of standoutFareApprovals) {
       if (!checkRouteSlugs.has(approval.routeSlug) || approval.revokedDate) continue;
       const live = getApprovedStandoutFare(approval.routeSlug, approval.cabin, fareObservations, NOW_ISO);

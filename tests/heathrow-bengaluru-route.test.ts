@@ -184,8 +184,11 @@ describe('DEST-001 — no fare invented, no route other than this one added', ()
     // again append-only — same single-carrier Gulf Air evidence pattern.
     // 15 September 2026: the full-portfolio controlled sweep appended a
     // fourth, again append-only.
+    // 22 September 2026: the weekly sweep appended a fifth, again
+    // append-only — this route's history carries no alternate-airport
+    // record, so nothing here was excluded by that day's correction.
     const observations = fareObservations.filter((o) => o.routeSlug === 'london-heathrow-bengaluru');
-    expect(observations).toHaveLength(4);
+    expect(observations).toHaveLength(5);
     expect(observations[0].id).toBe('obs-lhr-blr-economy-20260806-8w-v1');
     expect(observations[0].source).toBe('Gulf Air');
     expect(observations[1].id).toBe('obs-lhr-blr-economy-20260818-8w-v1');

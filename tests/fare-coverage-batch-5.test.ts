@@ -49,8 +49,12 @@ describe('Fare Coverage Programme Batch 5', () => {
     // Classification B: the 18 August 2026 Weekly Full Fare Refresh #1
     // observation this test names is after the file's 14 Aug NOW_ISO.
     const WEEKLY_FULL_FARE_REFRESH_1_ISO = '2026-08-18';
+    // 22 September 2026: obs-lgw-saw-economy-20260814-8w-v1 is now excluded
+    // too. It is an exact-destination LGW-SAW search recorded against a
+    // route whose destination is Istanbul (IST) — the same alternate-airport
+    // problem this test already describes for its sibling record, now
+    // applied consistently rather than to one of the pair.
     expect(getPublishableObservationsByRoute('london-gatwick-istanbul', WEEKLY_FULL_FARE_REFRESH_1_ISO).map((entry) => entry.id)).toEqual([
-      'obs-lgw-saw-economy-20260814-8w-v1',
       'obs-lgw-ist-economy-20260818-8w-v1',
     ]);
     expect(getFareSignalForRoute('london-gatwick-istanbul', WEEKLY_FULL_FARE_REFRESH_1_ISO).observation?.id).toBe('obs-lgw-ist-economy-20260818-8w-v1');
