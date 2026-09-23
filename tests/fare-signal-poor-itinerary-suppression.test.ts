@@ -214,7 +214,7 @@ describe('6. exact regression cases: MAN-LHE and BHX-ATQ correctly resolve to th
     // August. The mechanism under test is unchanged — the poor 25 August
     // recheck is still never promoted.
     expect(signal.observation?.id).toBe('obs-man-lhe-economy-20260922-v1');
-    expect(signal.observation?.price).toBe(650);
+    expect(signal.observation?.price).toBe(651);
     expect(signal.noneReason).toBeNull();
   });
 
@@ -223,7 +223,7 @@ describe('6. exact regression cases: MAN-LHE and BHX-ATQ correctly resolve to th
     expect(signal.state).toBe('current');
     // 22 September 2026: same reasoning as manchester-lahore above.
     expect(signal.observation?.id).toBe('obs-bhx-atq-economy-20260922-v1');
-    expect(signal.observation?.price).toBe(1114);
+    expect(signal.observation?.price).toBe(1051);
     expect(signal.noneReason).toBeNull();
   });
 });
@@ -432,11 +432,11 @@ describe('12. MAN-ISB Journey Choice pilot: Journey Choice itself stays frozen t
     const signal = getFareSignalForRoute('manchester-islamabad', NOW_ISO);
     expect(signal.state).toBe('current');
     expect(signal.observation).not.toBeNull();
-    // 22 September 2026: the weekly sweep's £533 Etihad fare is newer and
+    // 22 September 2026: the weekly sweep's £534 Etihad fare is newer and
     // also suitable, so it supersedes the 13 September direct-PIA fare as
     // the representative one. The recovery-from-suppression fact this test
     // exists to prove is unchanged.
-    expect(signal.observation?.price).toBe(533);
+    expect(signal.observation?.price).toBe(534);
     expect(signal.noneReason).toBeNull();
   });
 

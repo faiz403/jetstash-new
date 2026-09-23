@@ -282,15 +282,17 @@ describe('Real archive expectation (19 August 2026, post-supersession-fix) — o
   // never isPoorItinerarySuitability) correctly picks them up as candidates
   // in their own right, independent of what either route's public Fare
   // Signal does.
-  // 22 September 2026: 34 -> 11, and the membership turns over almost
-  // completely. Two independent causes, both intended. First, that week's
-  // sweep found most routes UP, and Route Watch only ever surfaces drops —
-  // so routes like manchester-lahore and birmingham-amritsar, which rose,
-  // correctly stop being candidates. Second, the alternate-airport
-  // methodology correction removed 16 records from every baseline, so a
-  // route's comparable history is now built only from fares that genuinely
-  // land at its own airport.
-  it('the real fareObservations archive produces 11 current Route Watch candidates after the 22 September sweep and the alternate-airport correction', () => {
+  // 22 September 2026 CORRECTED (Cheapest-tab methodology fix): the
+  // originally-drafted 22 September batch used Google Flights' default
+  // view; the founder identified that as a second methodology break (the
+  // established weekly method is Cheapest tab) and every one of the 89
+  // observations was re-collected under Cheapest tab and replaced in
+  // place (same IDs, corrected price/itinerary evidence). Route Watch only
+  // ever surfaces drops, so which routes qualify depends on the actual
+  // corrected fare movement, not the discarded default-view draft — the
+  // membership below is the real, freshly computed result against the
+  // corrected archive, not carried over from the earlier draft.
+  it('the real fareObservations archive produces 11 current Route Watch candidates after the 22 September Cheapest-tab-corrected sweep and the alternate-airport correction', () => {
     const nowIso = new Date().toISOString().slice(0, 10);
     const candidates = generateRouteWatchFareCandidates(fareObservations, nowIso);
     expect(candidates).toHaveLength(11);
@@ -300,18 +302,27 @@ describe('Real archive expectation (19 August 2026, post-supersession-fix) — o
     // exhaustive re-listing of all 11.
     expect(bySlug.get('manchester-dalaman')).toBe('standout-candidate');
     expect(bySlug.get('london-gatwick-dalaman')).toBe('standout-candidate');
+    expect(bySlug.get('london-gatwick-marrakech')).toBe('standout-candidate');
+    expect(bySlug.get('birmingham-agadir')).toBe('standout-candidate');
+    expect(bySlug.get('leeds-bradford-antalya')).toBe('standout-candidate');
     expect(bySlug.get('bristol-marrakech')).toBe('standout-candidate');
     expect(bySlug.get('manchester-antalya')).toBe('notable-drop');
-    expect(bySlug.get('london-heathrow-doha')).toBe('notable-drop');
+    expect(bySlug.get('glasgow-antalya')).toBe('notable-drop');
+    expect(bySlug.get('london-gatwick-athens')).toBe('notable-drop');
     // birmingham-dubai and edinburgh-dubai qualify on a baseline built
     // purely from fares that genuinely land at DXB — their Sharjah records
     // are excluded, so neither drop is measured against a different airport.
     expect(bySlug.get('birmingham-dubai')).toBe('notable-drop');
     expect(bySlug.get('edinburgh-dubai')).toBe('notable-drop');
-    // Routes whose 22 September fare ROSE must not appear at all.
+    // Routes whose corrected 22 September Cheapest-tab fare ROSE must not
+    // appear at all.
     expect(candidates.map((c) => c.routeSlug)).not.toContain('manchester-lahore');
     expect(candidates.map((c) => c.routeSlug)).not.toContain('birmingham-amritsar');
     expect(candidates.map((c) => c.routeSlug)).not.toContain('london-heathrow-delhi');
+    // london-heathrow-doha was a notable-drop under the discarded
+    // default-view draft; under the corrected Cheapest-tab fare it no
+    // longer clears the threshold and correctly drops out of the queue.
+    expect(candidates.map((c) => c.routeSlug)).not.toContain('london-heathrow-doha');
   });
 });
 

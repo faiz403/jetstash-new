@@ -143,7 +143,7 @@ describe('Mumbai destination P1 trust fix', () => {
       // record, its verification or its status events changed.
       {
         id: 'obs-man-bom-economy-20260922-v1',
-        price: 472,
+        price: 473,
         observedDate: '2026-09-22',
         fareDirectness: 'connecting',
       },
