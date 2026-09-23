@@ -242,11 +242,11 @@ function OptionResult({ value }: { value: DoorOptionResult }) {
       [value.diagnosticOnwardService ? 'Arrival using non-qualifying alternative' : 'Planned final arrival', fmt(value.finalArrival)],
       ['Clock deadline', fmt(value.deadline)],
       ['Required final buffer', `${value.requiredFinalBuffer} min`],
-      ['Effective latest arrival', fmt(value.effectiveLatestArrival)],
-      ['Clock-deadline margin', value.deadlineMargin === undefined ? 'Not established' : `${value.deadlineMargin} min`],
+      ['Latest arrival that still works', fmt(value.effectiveLatestArrival)],
+      ['Time before your deadline', value.deadlineMargin === undefined ? 'Not established' : `${value.deadlineMargin} min`],
       ['Ready for onward transport', fmt(value.readyForOnward)],
-      ['Earliest qualifying onward service', value.turnUpAndGo ? 'Not applicable — turn-up-and-go transport has no individual departures' : showService(selected)],
-      ['Latest deadline-compatible service — planning boundary', value.turnUpAndGo
+      ['First service you can realistically catch', value.turnUpAndGo ? 'Not applicable — turn-up-and-go transport has no individual departures' : showService(selected)],
+      ['Latest entered service that still gets you there in time', value.turnUpAndGo
         ? (value.latestSafeReadyTime ? `Latest safe ready time: ${fmt(value.latestSafeReadyTime)} (not a departure)` : value.latestBoundaryUnavailable ?? 'Not established')
         : showService(value.latestDeadlineService)],
       [value.diagnosticOnwardService ? 'Wait for non-qualifying alternative at onward stop' : 'Wait at onward stop, including boarding allowance', value.waitMinutes === undefined ? 'Not established' : duration(value.waitMinutes)],
@@ -268,7 +268,17 @@ function OptionResult({ value }: { value: DoorOptionResult }) {
       {value.turnUpAndGo.notes.map((note, index) => <p key={index} className="mt-2 text-xs text-ink-500">{note}</p>)}
       <p className="mt-2 text-xs text-ink-500">EXACT DEPARTURE NOT PROVIDED. This transport type publishes operating hours rather than individual departures, so no specific boarding time is shown. Operating hours are evidence you entered; anything marked ASSUMPTION is not.</p>
     </div>}
-    {value.onwardServices.length > 0 && <p className="mt-3 text-xs text-ink-500">The earliest qualifying service drives the timeline; it meets the entered boarding allowance, extra cushion and final requirement. The latest service is only a backwards-planning limit and may not be catchable for this flight. Neither is a booking recommendation or safety guarantee. Earliest departure does not always mean fastest arrival.</p>}
+    {/*
+      SAFETY/COMPREHENSION FIX (Tester 3, 23 Sep 2026): this paragraph used to
+      render whenever ANY onward services were entered (`onwardServices.length
+      > 0`), including a failed option with no qualifying service at all —
+      directly contradicting "Earliest qualifying onward service: None
+      established" a few lines above it. It must only describe a real
+      selection (`value.onwardService`); a diagnostic-only alternative gets
+      its own, explicitly non-qualifying sentence instead.
+    */}
+    {value.onwardService && <p className="mt-3 text-xs text-ink-500">The first service you can realistically catch drives the timeline; it meets the entered boarding allowance, extra cushion and final requirement. The latest entered service that still gets you there in time is only a backwards-planning limit and may not be catchable for this flight. Neither is a booking recommendation or safety guarantee. Earliest departure does not always mean fastest arrival.</p>}
+    {!value.onwardService && value.diagnosticOnwardService && <p className="mt-3 text-xs text-ink-500">This service is shown only to explain the failure. It does not meet your requirement — no entered onward service that you can realistically catch gets this option to the destination within your requirement.</p>}
     <details className="mt-5 border-t border-ink-100 pt-3"><summary className="cursor-pointer font-semibold">Why — work backwards</summary><ol className="mt-3 space-y-3 text-sm">{value.backwards.map((step, index) => <li key={index}><strong>{step.label}</strong><p>{fmt(step.by)}</p></li>)}</ol></details>
     <details className="mt-4 border-t border-ink-100 pt-3"><summary className="cursor-pointer font-semibold">Timeline and connection checks</summary><div className="mt-3 space-y-3 text-sm">
       <ol className="space-y-3">{value.timeline.map((leg, index) => <li key={index} className="border-l-2 border-brass/40 pl-3"><strong>{leg.label}</strong><p>{fmt(leg.start)} → {fmt(leg.end)}</p><p>{leg.minutes} min{leg.buffer !== undefined ? ` · includes ${leg.buffer} min entered buffer` : ''}</p></li>)}</ol>

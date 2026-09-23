@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
-import { exampleDoorJourney, blankDoorJourney } from '@/lib/arrive-by/door-example';
+import { exampleDoorJourney, blankDoorJourney, blankScheduled } from '@/lib/arrive-by/door-example';
 import { planDoorJourney, type DoorJourney, type ScheduledOnwardJourney, type ScheduledTransport } from '@/lib/arrive-by/door-to-door';
 
 const NOW = '2026-09-20T12:00:00Z';
@@ -174,6 +174,75 @@ describe('door-to-door founder boundary', () => {
   });
   it('labels synthetic example data and the limitations next to the output', () => {
     expect(component).toContain('FICTIONAL TEST DATA'); expect(component).toContain('not verified feasibility or an arrival promise');
+  });
+});
+
+/**
+ * SAFETY/COMPREHENSION FIX (Tester 3, 23 Sep 2026, EK22 scenario). A failed
+ * option (no qualifying onward service — `onwardService` undefined,
+ * `diagnosticOnwardService` set) used to render a generic paragraph
+ * unconditionally alongside "First service you can realistically catch:
+ * None established" claiming that service "meets... final requirement" —
+ * gated only on `onwardServices.length > 0`, not on a real selection
+ * existing. Fixed to gate on `value.onwardService` and give the
+ * diagnostic-only case its own, explicitly non-qualifying sentence. See
+ * lib/arrive-by/door-to-door.ts's DoorOptionResult for the underlying
+ * onwardService/diagnosticOnwardService contract this render logic depends
+ * on (already covered at the data layer by "explains a non-qualifying
+ * catchable alternative without selecting it as viable" above); these
+ * checks are the render-layer half of that same guarantee.
+ */
+describe('door-to-door founder render — no success-specific copy on a failed option', () => {
+  const component = readFileSync('components/founder/arrive-by-door-to-door.tsx', 'utf8');
+  it('the qualifying-service explainer is gated on a real selection, never on services merely being entered', () => {
+    expect(component).toMatch(/\{value\.onwardService && <p[^>]*>The first service you can realistically catch drives the timeline/);
+    expect(component).not.toMatch(/\{value\.onwardServices\.length > 0 && <p[^>]*>The (earliest|first) qualifying service drives the timeline/);
+  });
+  it('a diagnostic-only (non-qualifying) alternative gets its own, explicitly failure-specific sentence', () => {
+    expect(component).toMatch(/\{!value\.onwardService && value\.diagnosticOnwardService && <p/);
+    expect(component).toContain('This service is shown only to explain the failure. It does not meet your requirement');
+  });
+  it('EK22-style failure (Manchester -> Dubai, Emirates coach, Yas Marina Circuit deadline): no onwardService, so the success-specific paragraph cannot render', () => {
+    const b = run((i) => {
+      i.destination = { name: 'Yas Marina Circuit', timeZone: 'Asia/Dubai' };
+      i.deadline = { date: '2026-12-06', time: '17:00', timeZone: 'Asia/Dubai' };
+      i.arrivalAirport = { name: 'Dubai Terminal 3', timeZone: 'Asia/Dubai' };
+      i.onward = { ...blankScheduled('Asia/Dubai', 'Asia/Dubai'), mode: 'coach', from: { name: 'Dubai Terminal 3 coach stand', timeZone: 'Asia/Dubai' }, to: { name: 'Abu Dhabi', timeZone: 'Asia/Dubai' }, minimumBeforeDeparture: 15,
+        services: [{ id: 'EK22 coach', departure: { date: '2026-12-06', time: '10:00', timeZone: 'Asia/Dubai' }, arrival: { date: '2026-12-06', time: '11:30', timeZone: 'Asia/Dubai' } }] };
+      // A very long final-mile allowance means the coach is genuinely
+      // catchable (ready well before its required boarding cushion) but its
+      // arrival still cannot reach the destination in time for the
+      // deadline -- exactly "EK22 says no qualifying service exists"
+      // (catchable, but does not fit the downstream deadline).
+      i.finalMile = { kind: 'flexible', mode: 'taxi', minutes: 500, buffer: 10 };
+      i.flights[1] = { ...i.flights[1], label: 'EK22', departure: { date: '2026-12-05', time: '22:00', timeZone: 'Europe/London' }, landing: { date: '2026-12-06', time: '08:00', timeZone: 'Asia/Dubai' } };
+      i.arrivalProcess = { disembark: 10, immigration: 30, baggage: 20, customs: 5, walkToTransport: 10 };
+    }).options[1];
+    expect(b.state).toBe('NO');
+    expect(b.onwardService).toBeUndefined();
+    expect(b.diagnosticOnwardService).toBe('EK22 coach');
+    // The data contract the render fix depends on: no real selection exists
+    // for this option, so `{value.onwardService && ...}` cannot render the
+    // success-specific paragraph for it.
+  });
+  it('replaces the three traveller-facing technical labels with plain language, without touching calculation semantics', () => {
+    expect(component).toContain("['Latest arrival that still works', fmt(value.effectiveLatestArrival)]");
+    expect(component).toContain("['Time before your deadline', value.deadlineMargin === undefined");
+    expect(component).toContain("['First service you can realistically catch',");
+    expect(component).toContain("['Latest entered service that still gets you there in time',");
+    expect(component).not.toContain("['Effective latest arrival',");
+    expect(component).not.toContain("['Clock-deadline margin',");
+    expect(component).not.toContain("['Earliest qualifying onward service',");
+    expect(component).not.toContain("['Latest deadline-compatible service — planning boundary',");
+  });
+  it('keeps the fragility and fallback features (Tester 2) unchanged by this fix — same source, same conditions', () => {
+    expect(component).toContain('YES — BUT THIS PLAN IS FRAGILE');
+    expect(component).toContain('NO FALLBACK HAS BEEN ENTERED');
+    expect(component).toContain("value.confidence === 'FRAGILE'");
+  });
+  it('the option card layout still resists horizontal overflow at narrow widths (320px)', () => {
+    expect(component).toContain('min-w-0 break-words');
+    expect(component).not.toMatch(/\bw-\[\d{3,}px\]/); // no hardcoded wide pixel width that would force horizontal scroll
   });
 });
 
