@@ -243,6 +243,19 @@ describe('door-to-door founder render — no success-specific copy on a failed o
   it('the option card layout still resists horizontal overflow at narrow widths (320px)', () => {
     expect(component).toContain('min-w-0 break-words');
     expect(component).not.toMatch(/\bw-\[\d{3,}px\]/); // no hardcoded wide pixel width that would force horizontal scroll
+    // The failed-option detail compression is a plain <details>, not a fixed-width element.
+    expect(component).toContain("Why this doesn't work — full detail");
+  });
+  it('separates connection slack from final-arrival slack and shows the weakest point, never a single conflated "delay that breaks the plan" figure', () => {
+    expect(component).toContain("['Connection slack',");
+    expect(component).toContain("['Final-arrival slack',");
+    expect(component).toContain('Weakest point');
+    expect(component).not.toContain("['Additional delay that breaks the plan',");
+  });
+  it('a failed option shows plain already-misses wording, never the fragility warning box', () => {
+    expect(component).toContain('alreadyMissesText');
+    expect(component).toContain('This plan already misses your clock deadline by');
+    expect(component).toContain('This plan already misses your required final buffer by');
   });
 });
 
@@ -430,6 +443,87 @@ describe('plan fragility correction — fallback onward service ("what if I miss
     const b = planDoorJourney(input, NOW).options[1];
     expect(b.turnUpAndGo).toBeDefined();
     expect(b.fallbackOnward).toBeUndefined();
+  });
+});
+
+/**
+ * WHOLE-JOURNEY CONFIDENCE CORRECTION (24 Sep 2026, live test after Tester
+ * 3). Reproduced exactly: Option A of the Preston -> Ahmedabad example with
+ * flight A landing 15:05 instead of 15:55 selects "Example onward 17:35"
+ * (17:10 becomes uncatchable, 17:35 is the first catchable+fitting
+ * service) -- final arrival 18:47, clock deadline 19:00, required buffer
+ * 10 min, so final-arrival slack is exactly 3 min, while the tightest
+ * scheduled connection (the Preston pre-flight train) has 15 min of spare.
+ * The old model called this ROBUST and reported "15 min" as the delay
+ * that breaks the plan; both were wrong -- 3 min at the final arrival is
+ * the real limit.
+ */
+describe('whole-journey confidence correction — final-arrival slack is as real a constraint as any connection', () => {
+  it('reproduces the exact live-tested case: 15 min connection slack, 3 min final-arrival slack -> weakest point is the final arrival, not ROBUST', () => {
+    const b = run((i) => { i.flights[0].landing.time = '15:05'; }).options[0];
+    expect(b.state).toBe('YES');
+    expect(b.finalArrival?.timeHHmm).toBe('18:47');
+    expect(b.deadline.timeHHmm).toBe('19:00');
+    expect(b.requiredFinalBuffer).toBe(10);
+    expect(b.finalArrivalSlack).toBe(3);
+    expect(b.tightest).toMatchObject({ spare: 15, state: 'COMFORTABLE' });
+    expect(b.weakestConstraint).toMatchObject({ kind: 'final-arrival', spare: 3 });
+    expect(b.confidence).toBe('FRAGILE'); // 3 min < the entered 15 min cushion
+  });
+  it('+4 minutes on the final leg correctly fails the required buffer, not just a smaller "delay tolerance"', () => {
+    const b = run((i) => {
+      i.flights[0].landing.time = '15:05';
+      i.finalMile = { ...i.finalMile, minutes: (i.finalMile.minutes ?? 0) + 4 };
+    }).options[0];
+    expect(b.state).toBe('NO');
+    expect(b.deadlineStatus).toBe('BEFORE DEADLINE, BUT BUFFER NOT MET');
+    expect(b.alreadyMisses).toMatchObject({ kind: 'buffer' });
+    expect(b.alreadyMisses!.minutes).toBeGreaterThan(0); // a plain positive shortfall, never a negative "delay that breaks the plan"
+    expect(b.confidence).toBeNull(); // fragility is only meaningful for a plan that currently works
+  });
+  it('a comfortable final-arrival slack with a genuinely tight connection: the weakest point stays the connection, not the final arrival', () => {
+    const b = run((i) => {
+      i.flights[1].landing.time = '11:35'; i.onward!.minimumBeforeDeparture = 0; i.connectionCushion = 15;
+      i.onward!.services = [['13:25', '14:00'], ['13:45', '14:30'], ['15:10', '16:02'], ['17:35', '18:27']].map(([departure, arrival]) => ({
+        id: `Test ${departure}`, departure: { date: '2026-11-03', time: departure, timeZone: 'Asia/Kolkata' }, arrival: { date: '2026-11-03', time: arrival, timeZone: 'Asia/Kolkata' },
+      }));
+    }).options[1];
+    // Base fixture: deadline 19:00, buffer 10 -> huge final-arrival slack; onward connection spare 10 < cushion 15.
+    expect(b.state).toBe('YES');
+    expect(b.finalArrivalSlack).toBeGreaterThan(100);
+    expect(b.tightest).toMatchObject({ spare: 10, state: 'TIGHT' });
+    expect(b.weakestConstraint).toMatchObject({ kind: 'connection', spare: 10 });
+    expect(b.confidence).toBe('FRAGILE');
+  });
+  it('both margins comfortably large: ROBUST remains possible, unchanged from the original example', () => {
+    const b = run().options[1];
+    expect(b.state).toBe('YES');
+    expect(b.finalArrivalSlack).toBe(28);
+    expect(b.tightest).toMatchObject({ spare: 15, state: 'COMFORTABLE' });
+    expect(b.weakestConstraint).toMatchObject({ spare: 15 });
+    expect(b.confidence).toBe('ROBUST');
+  });
+  it('a genuine clock-deadline miss (not just a buffer miss) is reported with plain already-misses wording, never a negative delay-tolerance figure', () => {
+    const b = run((i) => {
+      i.flights[1].landing.time = '11:35'; i.onward!.minimumBeforeDeparture = 0; i.connectionCushion = 15;
+      i.onward!.services = [{ id: 'Test 13:45', departure: { date: '2026-11-03', time: '13:45', timeZone: 'Asia/Kolkata' }, arrival: { date: '2026-11-03', time: '18:41', timeZone: 'Asia/Kolkata' } }];
+    }).options[1];
+    // Base fixture: deadline 19:00 (from exampleDoorJourney), finalMile 20 min -> finish 19:01, 1 min past the clock deadline.
+    expect(b.state).toBe('NO');
+    expect(b.deadlineStatus).toBe('MISSES DEADLINE');
+    expect(b.deadlineMargin).toBe(-1);
+    expect(b.alreadyMisses).toMatchObject({ kind: 'deadline', minutes: 1 });
+    expect(b.confidence).toBeNull();
+  });
+  it('fallback behaviour is unaffected by the confidence-model correction', () => {
+    const b = run().options[1];
+    expect(b.fallbackOnward).toMatchObject({ hasNextEntered: true, meetsDeadline: true });
+  });
+  it('the EK22 no-qualifying-service fix from the previous correction is unaffected', () => {
+    const b = run((i) => { i.flights[1].landing.time = '18:00'; }).options[1];
+    expect(b.state).toBe('NO');
+    expect(b.onwardService).toBeUndefined();
+    expect(b.confidence).toBeNull();
   });
 });
 });

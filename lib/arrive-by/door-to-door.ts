@@ -70,22 +70,68 @@ export interface ServiceAssessment {
 export interface BackwardStep { label: string; by: ZonedDateTime }
 export type DeadlineStatus = 'MEETS REQUIREMENT' | 'BEFORE DEADLINE, BUT BUFFER NOT MET' | 'AT DEADLINE, BUT BUFFER NOT MET' | 'MISSES DEADLINE' | 'NOT ESTABLISHED';
 /**
- * Plan fragility, separate from whether the plan works at all (`state`).
- * Derived purely from `tightest` — the same cushion-based COMFORTABLE/TIGHT
- * threshold `connection()` already computes, never a second, independently
- * invented number. `null` whenever `state !== 'YES'` (fragility is only
- * meaningful for a plan that currently works) or there is no scheduled
- * connection to assess (a flexible-transport-only chain has nothing to be
- * fragile against). See PLAN-FRAGILITY-CORRECTION doc comment on `connection()`.
+ * WHOLE-JOURNEY CONFIDENCE CORRECTION (24 Sep 2026, live test after Tester
+ * 3). The Tester 2 fix (above) made each scheduled connection's own
+ * TIGHT/COMFORTABLE classification honest, but `confidence` still derived
+ * the WHOLE-PLAN fragility purely from `tightest` — the weakest SCHEDULED
+ * CONNECTION only. It never considered the final-arrival margin itself,
+ * which is exactly as real a delay-tolerance constraint as any connection:
+ * a plan can have a spacious 15-minute-spare pre-flight connection and
+ * still only be 3 minutes from missing its required final buffer. That
+ * plan was reported ROBUST, and "how much delay breaks the plan" cited the
+ * connection's 15 minutes — both wrong; the true weakest margin was the
+ * final arrival's 3 minutes.
+ *
+ * Fixed by computing one whole-journey `weakestConstraint`: the minimum of
+ * every scheduled connection's `spare` AND the final-arrival slack
+ * (`deadlineMargin - requiredFinalBuffer` — how much more delay the final
+ * leg alone can absorb before the required buffer fails), never just the
+ * connection side. `confidence` and every "how much delay breaks this
+ * plan" figure are derived from THIS value, reusing the exact same
+ * `spare < cushion` threshold `connection()` already uses — no second,
+ * independently invented number.
  */
 export type PlanConfidence = 'ROBUST' | 'FRAGILE';
+/**
+ * The single tightest timing margin anywhere in a working plan — a
+ * scheduled connection or the final-arrival requirement itself, whichever
+ * has less spare. `spare` is always the same "additional minutes of delay
+ * before this specific constraint fails" quantity connections already use;
+ * `kind`/`label` say which constraint that is, so the connection's own
+ * value is never silently discarded even when the final arrival is
+ * weaker (or vice versa).
+ */
+export interface WeakestConstraint {
+  kind: 'final-arrival' | 'connection';
+  label: string;
+  spare: number;
+}
 export interface DoorOptionResult {
   label: string; priceGBP: number | null; state: 'YES' | 'NO' | 'CANNOT CONFIRM';
-  /** Set only when `state === 'YES'`. See `PlanConfidence`. */
+  /** Set only when `state === 'YES'`. Derived from `weakestConstraint`, not `tightest` alone. See `PlanConfidence`. */
   confidence: PlanConfidence | null;
+  /** Set only when `state === 'YES'`. See `WeakestConstraint`. */
+  weakestConstraint?: WeakestConstraint;
   reasons: string[]; deadline: ZonedDateTime; homeDeparture?: ZonedDateTime;
   airportArrivalBy?: ZonedDateTime; flightArrivalBy?: ZonedDateTime;
   finalArrival?: ZonedDateTime; deadlineMargin?: number;
+  /**
+   * How much more delay the final leg alone can absorb before the required
+   * final buffer fails: `deadlineMargin - requiredFinalBuffer`. Set
+   * whenever a final arrival was computed, pass or fail — negative on a
+   * buffer/deadline miss, which `alreadyMisses` (not this field) is the
+   * honest way to describe; never rendered as a "delay tolerance" itself
+   * when negative.
+   */
+  finalArrivalSlack?: number;
+  /**
+   * Set only when `state === 'NO'` and a final arrival was actually
+   * computed but failed the deadline or the required buffer. A plain,
+   * already-happened shortfall — never a negative "additional delay that
+   * breaks the plan" figure, which only makes sense for a plan that
+   * currently still works.
+   */
+  alreadyMisses?: { minutes: number; kind: 'deadline' | 'buffer' };
   effectiveLatestArrival: ZonedDateTime; requiredFinalBuffer: number; deadlineStatus: DeadlineStatus;
   readyForOnward?: ZonedDateTime; waitMinutes?: number;
   latestDeadlineService?: { id: string; departure: ZonedDateTime; arrival: ZonedDateTime };
@@ -372,20 +418,33 @@ export function planDoorJourney(input: DoorJourney, nowIso: string): DoorCompari
       segment(`${input.finalMile.mode}: final mile to ${input.destination.name}`, finalStart, finish, input.onward?.to.timeZone ?? input.arrivalAirport.timeZone, input.destination.timeZone, input.finalMile.buffer!);
       result.finalArrival = stamp(finish, input.destination.timeZone);
       result.deadlineMargin = (deadline - finish) / MINUTE;
+      result.finalArrivalSlack = result.deadlineMargin - input.finalBuffer!;
       if (finish > deadline) {
         result.state = 'NO'; result.deadlineStatus = 'MISSES DEADLINE';
         result.reasons.push(`Arrives ${-result.deadlineMargin} min after the clock deadline.`);
+        result.alreadyMisses = { minutes: -result.deadlineMargin, kind: 'deadline' };
       } else if (finish > finalTarget) {
         result.state = 'NO'; result.deadlineStatus = finish === deadline ? 'AT DEADLINE, BUT BUFFER NOT MET' : 'BEFORE DEADLINE, BUT BUFFER NOT MET';
         result.reasons.push(`Arrives ${result.deadlineMargin === 0 ? 'exactly at' : `${result.deadlineMargin} min before`} the clock deadline, but the required ${input.finalBuffer} min final buffer is not met. Effective latest arrival: ${result.effectiveLatestArrival.dateIso} ${result.effectiveLatestArrival.timeHHmm} ${result.effectiveLatestArrival.timeZone}.`);
+        result.alreadyMisses = { minutes: -result.finalArrivalSlack, kind: 'buffer' };
       } else { result.deadlineStatus = 'MEETS REQUIREMENT'; }
     }
     result.tightest = [...result.connections].sort((a, b) => a.spare - b.spare)[0];
-    // Whether the plan works (`state`) and how much slack it has
-    // (`confidence`) are two different questions — see the PLAN FRAGILITY
-    // CORRECTION doc comment above. A large final-deadline margin must
-    // never stand in for, or hide, a thin intermediate connection.
-    if (result.state === 'YES') result.confidence = result.tightest && result.tightest.state !== 'COMFORTABLE' ? 'FRAGILE' : 'ROBUST';
+    // WHOLE-JOURNEY CONFIDENCE CORRECTION: `confidence` and "how much delay
+    // breaks this plan" must reflect the single weakest margin anywhere in
+    // the journey -- the final-arrival requirement is exactly as real a
+    // constraint as any scheduled connection, never a separate question a
+    // comfortable connection can stand in for. See `WeakestConstraint`'s
+    // doc comment above.
+    if (result.state === 'YES') {
+      const candidates: WeakestConstraint[] = [];
+      if (result.finalArrivalSlack !== undefined) candidates.push({ kind: 'final-arrival', label: 'Final arrival requirement', spare: result.finalArrivalSlack });
+      if (result.tightest) candidates.push({ kind: 'connection', label: result.tightest.label, spare: result.tightest.spare });
+      if (candidates.length) {
+        result.weakestConstraint = candidates.reduce((weakest, candidate) => candidate.spare < weakest.spare ? candidate : weakest);
+        result.confidence = result.weakestConstraint.spare < cushion ? 'FRAGILE' : 'ROBUST';
+      }
+    }
     return result;
   });
   let tradeOff: string | undefined;

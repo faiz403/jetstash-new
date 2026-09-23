@@ -199,6 +199,25 @@ function headline(value: DoorOptionResult): string {
   return value.confidence === 'FRAGILE' ? 'YES — BUT THIS PLAN IS FRAGILE' : 'YES — ROBUST';
 }
 
+/** "Final arrival requirement" or the connection's own label, for the weakest-point sentence. */
+function weakestPointLabel(value: DoorOptionResult): string {
+  if (!value.weakestConstraint) return 'Not established';
+  return value.weakestConstraint.kind === 'final-arrival' ? 'Final arrival' : value.weakestConstraint.label;
+}
+
+/**
+ * WHOLE-JOURNEY CONFIDENCE CORRECTION (24 Sep 2026): a plain-language
+ * already-happened shortfall, never a negative "delay that breaks the
+ * plan" figure -- that framing only makes sense for a plan that still
+ * currently works. See door-to-door.ts's `alreadyMisses` doc comment.
+ */
+function alreadyMissesText(value: DoorOptionResult): string | null {
+  if (!value.alreadyMisses) return null;
+  return value.alreadyMisses.kind === 'deadline'
+    ? `This plan already misses your clock deadline by ${value.alreadyMisses.minutes} min.`
+    : `This plan already misses your required final buffer by ${value.alreadyMisses.minutes} min.`;
+}
+
 function keyOnwardServiceText(value: DoorOptionResult): string {
   if (value.onwardService) return value.onwardService;
   if (value.turnUpAndGo) return `${value.turnUpAndGo.mode} (turn-up-and-go — no individual departure)`;
@@ -213,9 +232,10 @@ function OptionResult({ value }: { value: DoorOptionResult }) {
   return <article className="min-w-0 break-words rounded-md border border-ink-200 bg-white p-4">
     <h3 className="font-semibold">{value.label}</h3>
     <p className="mt-2 font-display text-2xl">{headline(value)} <span className="font-sans text-xs text-ink-500">— under entered assumptions</span></p>
-    {value.confidence === 'FRAGILE' && value.tightest && <div className="mt-3 rounded-sm border border-terracotta-400 bg-terracotta-50 p-3 text-sm">
+    {alreadyMissesText(value) && <p className="mt-3 rounded-sm border border-terracotta-400 bg-terracotta-50 p-3 text-sm font-medium text-terracotta-700">{alreadyMissesText(value)}</p>}
+    {value.confidence === 'FRAGILE' && value.weakestConstraint && <div className="mt-3 rounded-sm border border-terracotta-400 bg-terracotta-50 p-3 text-sm">
       <p className="font-semibold text-terracotta-700">This plan works, but has very little room for delay.</p>
-      <p className="mt-1">You are expected to arrive at {fmt(value.finalArrival)}{value.deadlineMargin !== undefined ? `, ${value.deadlineMargin} min before the ${fmt(value.deadline)} deadline` : ''}. However, the plan depends on {value.tightest.label}. About {value.tightest.spare} min of additional delay to this connection would break this plan.</p>
+      <p className="mt-1">You are expected to arrive at {fmt(value.finalArrival)}{value.deadlineMargin !== undefined ? `, ${value.deadlineMargin} min before the ${fmt(value.deadline)} deadline` : ''}. However, the weakest point in this plan is {weakestPointLabel(value).toLowerCase()}. About {value.weakestConstraint.spare} min of additional delay there would break this plan.</p>
     </div>}
     <dl className="mt-4 grid gap-x-6 gap-y-2 text-sm sm:grid-cols-2">{[
       ['Which option fits', `${value.label} — ${headline(value)}`],
@@ -224,8 +244,9 @@ function OptionResult({ value }: { value: DoorOptionResult }) {
       ['Key onward service', keyOnwardServiceText(value)],
       ['Planned final arrival', fmt(value.finalArrival)],
       ['Deadline', fmt(value.deadline)],
-      ['Critical connection', value.tightest ? `${value.tightest.label} — ${value.tightest.state}` : 'Not established'],
-      ['Additional delay that breaks the plan', value.tightest ? `${value.tightest.spare} min` : 'Not established'],
+      ['Connection slack', value.tightest ? `${value.tightest.label}: ${value.tightest.spare} min` : 'Not established'],
+      ['Final-arrival slack', value.alreadyMisses ? `Already missed (see above)` : value.finalArrivalSlack !== undefined ? `${value.finalArrivalSlack} min` : 'Not established'],
+      ...(value.weakestConstraint ? [['Weakest point', `${weakestPointLabel(value)} — ${value.weakestConstraint.spare} min spare`]] : []),
     ].map(([label, text]) => <div key={label}><dt className="text-ink-500">{label}</dt><dd className="mt-0.5 font-medium">{text}</dd></div>)}</dl>
     {value.fallbackOnward && <div className="mt-4 rounded-sm border border-ink-200 bg-sand-50 p-3 text-sm">
       <p className="font-semibold">If you miss {value.onwardService ?? value.diagnosticOnwardService ?? 'this connection'}</p>
@@ -235,6 +256,30 @@ function OptionResult({ value }: { value: DoorOptionResult }) {
         <div><dt className="inline text-ink-500">Meets deadline: </dt><dd className="inline">{value.fallbackOnward.meetsDeadline ? 'YES' : 'NO'}{value.fallbackOnward.meetsDeadline && !value.fallbackOnward.meetsDeadlineWithBuffer ? ' (without the required final buffer)' : ''}</dd></div>
       </dl> : <p className="mt-1">NO FALLBACK HAS BEEN ENTERED. This does not mean no real-world alternative exists — only that none was entered into this plan.</p>}
     </div>}
+    {value.state === 'YES' ? <FullDetail value={value} selected={selected} showService={showService} serviceTable={serviceTable} /> : (
+      // MOBILE HIERARCHY (24 Sep 2026): a failed option's full technical
+      // detail is compressed behind an expandable summary so it does not
+      // push a successful sibling option below the fold on a phone — the
+      // failure headline, action summary and already-misses wording above
+      // stay visible either way. Never applied to a YES option; that
+      // detail is deliberately still visible by default.
+      <details className="mt-3">
+        <summary className="cursor-pointer text-sm font-semibold">Why this doesn't work — full detail</summary>
+        <div className="mt-3">
+          <FullDetail value={value} selected={selected} showService={showService} serviceTable={serviceTable} />
+        </div>
+      </details>
+    )}
+  </article>;
+}
+
+function FullDetail({ value, selected, showService, serviceTable }: {
+  value: DoorOptionResult;
+  selected?: DoorOptionResult['originServices'][number];
+  showService: (service?: { id: string; departure: ZonedDateTime; arrival: ZonedDateTime }) => string;
+  serviceTable: (label: string, services: DoorOptionResult['originServices']) => ReactNode;
+}) {
+  return <>
     <p className="mt-3 text-sm font-semibold">{value.deadlineStatus}{value.deadlineStatus === 'MEETS REQUIREMENT' && value.deadlineMargin === 0 ? ' — exactly at the clock deadline, zero final buffer' : ''}</p>
     {value.diagnosticOnwardService && <p className="mt-3 rounded-sm bg-sand-50 p-3 text-sm">No qualifying onward service. The arrival below assesses {value.diagnosticOnwardService} only to explain the failure; it is not a selected journey meeting your requirement.</p>}
     {value.reasons.length > 0 && <ul className="mt-3 list-inside list-disc text-sm">{value.reasons.map((reason) => <li key={reason}>{reason}</li>)}</ul>}
@@ -285,5 +330,5 @@ function OptionResult({ value }: { value: DoorOptionResult }) {
       {value.connections.map((connection, index) => <div key={index} className="rounded-sm bg-sand-50 p-3"><strong>{connection.label} — {connection.state}</strong><p>Ready: {fmt(connection.ready)}</p><p>Departs: {fmt(connection.departure)}</p><p>Margin: {connection.margin} min. Required allowance: {connection.minimum} min{connection.extraCushion > 0 ? ` (includes ${connection.extraCushion} min extra cushion)` : ''}. Spare beyond that allowance: {connection.spare} min.</p></div>)}
       {serviceTable('Pre-flight candidate services', value.originServices)}{serviceTable('Onward candidate services', value.onwardServices)}
     </div></details>
-  </article>;
+  </>;
 }
