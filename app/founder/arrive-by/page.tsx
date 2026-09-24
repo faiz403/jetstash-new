@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { ArriveByDoorToDoor } from '@/components/founder/arrive-by-door-to-door';
+import { ArriveByGoogle } from '@/components/founder/arrive-by-google';
 
 /**
  * Arrive By — Stage 2 founder preview (private, product-evaluation only).
@@ -32,5 +33,13 @@ export default function ArriveByFounderPage() {
   if (!dashboardEnabled()) {
     notFound();
   }
-  return <ArriveByDoorToDoor />;
+  return <>
+    <ArriveByGoogle />
+    <div className="mx-auto max-w-5xl px-4 pb-12 sm:px-8">
+      <details className="rounded-md border border-ink-200 bg-white">
+        <summary className="cursor-pointer p-4 font-semibold">Open the manual Arrive By calculator</summary>
+        <ArriveByDoorToDoor />
+      </details>
+    </div>
+  </>;
 }
