@@ -610,8 +610,8 @@ describe('fixed-timetable validation — SIM-4 (ordinary UK coach services)', ()
 describe('start-blank state isolation — deadline reason and all journey-specific state', () => {
   const component = readFileSync('components/founder/arrive-by-door-to-door.tsx', 'utf8');
   it('both "Start blank" and "Load fictional example" reset the deadline reason, not just the journey', () => {
-    const startBlank = component.match(/onClick=\{\(\) => \{ setJourney\(blankDoorJourney\(\)\); setExample\(false\); setResult\(null\); setDeadlineReason\(''\); \}\}/);
-    const loadExample = component.match(/onClick=\{\(\) => \{ setJourney\(exampleDoorJourney\(\)\); setExample\(true\); setResult\(null\); setDeadlineReason\(''\); \}\}/);
+    const startBlank = component.match(/onClick=\{\(\) => \{ setJourney\(blankDoorJourney\(\)\); setExample\(false\); setResult\(null\); setDeadlineReason\(''\); setOnwardFromExplicit\(false\); setOnwardToExplicit\(false\); \}\}/);
+    const loadExample = component.match(/onClick=\{\(\) => \{ setJourney\(exampleDoorJourney\(\)\); setExample\(true\); setResult\(null\); setDeadlineReason\(''\); setOnwardFromExplicit\(false\); setOnwardToExplicit\(false\); \}\}/);
     expect(startBlank).not.toBeNull();
     expect(loadExample).not.toBeNull();
   });
@@ -689,5 +689,56 @@ describe('primary plan fragility vs fallback resilience — SIM-1', () => {
     expect(component).toContain('Fallback available:');
     expect(component).toContain('Fallback final arrival:');
     expect(component).toContain('Fallback meets required arrival:');
+  });
+});
+
+/**
+ * ONWARD TIMEZONE STATE-INTEGRITY FIX (24 Sep 2026, SIM-4 forensic
+ * follow-up). Live-reproduced through the real form: enabling onward
+ * transport before setting the Arrival Airport's time zone seeded
+ * `journey.onward.from.timeZone` from the blank default (Asia/Kolkata) and
+ * left it stale even after the airport was corrected to Europe/London
+ * afterwards -- form completion order silently changed journey data. No
+ * component-level test harness exists in this repo (no jsdom/testing-
+ * library -- see vitest.config.ts's own "pure data/logic functions" scope
+ * note), so these are static source-pattern checks over the same
+ * convention "door-to-door founder boundary" above already uses, proving
+ * the corrected logic exists and is wired to the right call sites; the
+ * live end-to-end behaviour (cases A-D) was additionally verified by hand
+ * through the real dev server before this commit.
+ */
+describe('onward timezone state-integrity fix — inherited vs explicit', () => {
+  const component = readFileSync('components/founder/arrive-by-door-to-door.tsx', 'utf8');
+  it('A/B: an inherited onward "from" zone re-syncs to the arrival airport whenever it changes, gated on not being explicit', () => {
+    expect(component).toMatch(/if \(!journey\.onward \|\| onwardFromExplicit \|\| journey\.onward\.from\.timeZone === journey\.arrivalAirport\.timeZone\) return;/);
+    expect(component).toMatch(/\[journey\.arrivalAirport\.timeZone, onwardFromExplicit\]/);
+  });
+  it('A/B: an inherited onward "to" zone re-syncs to the destination whenever it changes, gated on not being explicit', () => {
+    expect(component).toMatch(/if \(!journey\.onward \|\| onwardToExplicit \|\| journey\.onward\.to\.timeZone === journey\.destination\.timeZone\) return;/);
+    expect(component).toMatch(/\[journey\.destination\.timeZone, onwardToExplicit\]/);
+  });
+  it('the re-sync cascades to already-entered scheduled services\' own departure/arrival zones, not just the stop-level zone', () => {
+    expect(component).toMatch(/services: current\.onward\.services\.map\(\(s\) => \(\{ \.\.\.s, departure: \{ \.\.\.s\.departure, timeZone: airportZone \} \}\)\)/);
+    expect(component).toMatch(/services: current\.onward\.services\.map\(\(s\) => \(\{ \.\.\.s, arrival: \{ \.\.\.s\.arrival, timeZone: destZone \} \}\)\)/);
+  });
+  it('C: an explicit onward zone edit is marked by comparing the actual value change, never by the stop-name edit that reuses the same callback', () => {
+    expect(component).toMatch(/if \(next\.from\.timeZone !== journey\.onward\.from\.timeZone\) setOnwardFromExplicit\(true\);/);
+    expect(component).toMatch(/if \(next\.to\.timeZone !== journey\.onward\.to\.timeZone\) setOnwardToExplicit\(true\);/);
+  });
+  it('C: both Timetable (scheduled) and TurnUpAndGoFields onward editors go through the same explicit-marking wrapper', () => {
+    expect(component).toContain('<Timetable label="Onward" value={journey.onward} change={updateOnward} />');
+    expect(component).toContain('<TurnUpAndGoFields label="Onward" value={journey.onward} change={updateOnward} />');
+  });
+  it('creating/replacing the whole onward leg (checkbox, transport-type switch) always resets inheritance from scratch via setOnward, not the raw update', () => {
+    expect(component).toContain("onChange={(e) => setOnward(e.target.checked ? blankScheduled(journey.arrivalAirport.timeZone, journey.destination.timeZone) : null)}");
+    expect(component).toContain("onChange={(e) => setOnward(e.target.value === 'scheduled' ? blankScheduled(journey.arrivalAirport.timeZone, journey.destination.timeZone) : blankTurnUpAndGo(journey.arrivalAirport.timeZone, journey.destination.timeZone))}");
+  });
+  it('D: "Start blank" and "Load example" both clear the explicit/inherited flags, alongside the already-fixed deadline reason', () => {
+    expect(component).toMatch(/setDeadlineReason\(''\); setOnwardFromExplicit\(false\); setOnwardToExplicit\(false\); \}\}>Load fictional Preston/);
+    expect(component).toMatch(/setDeadlineReason\(''\); setOnwardFromExplicit\(false\); setOnwardToExplicit\(false\); \}\}>Start blank/);
+  });
+  it('an explicit override is surfaced to the traveller, not just silently preserved', () => {
+    expect(component).toContain('will not change if the arrival airport');
+    expect(component).toContain('will not change if the destination changes');
   });
 });

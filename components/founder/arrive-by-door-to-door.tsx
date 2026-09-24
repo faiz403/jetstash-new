@@ -107,10 +107,74 @@ export function ArriveByDoorToDoor() {
   // headline reads as a real reason a traveller supplied, not a bare clock
   // time — Tester 2's own scenario (Abu Dhabi Grand Prix start time).
   const [deadlineReason, setDeadlineReason] = useState('');
+  /**
+   * ONWARD TIMEZONE STATE-INTEGRITY FIX (24 Sep 2026, SIM-4 forensic
+   * follow-up). `journey.onward.from.timeZone`/`.to.timeZone` used to be
+   * seeded from `journey.arrivalAirport.timeZone`/`journey.destination.timeZone`
+   * ONLY at the instant the onward leg was created (ticking "Use public
+   * transport", or switching its transport type) -- after that it was a
+   * fully independent piece of state with no further link back. A
+   * traveller who enabled onward transport before reaching Panel 4 (Arrival
+   * airport) got a silently stale zone (e.g. the blank default
+   * Asia/Kolkata) that never corrected itself even after they entered the
+   * real airport -- form completion order could silently change journey
+   * data. These two flags distinguish an AUTO-INHERITED onward zone (still
+   * free to follow the airport/destination as they're entered) from an
+   * EXPLICIT one (the traveller directly touched the "Onward from/to stop
+   * time zone" dropdown, which must never be silently overwritten again).
+   * Reset to false whenever the onward leg is freshly created/switched, or
+   * the whole journey is reset -- see setOnward, "Start blank" and "Load
+   * example" below.
+   */
+  const [onwardFromExplicit, setOnwardFromExplicit] = useState(false);
+  const [onwardToExplicit, setOnwardToExplicit] = useState(false);
   const resultRef = useRef<HTMLDivElement>(null);
   useEffect(() => { if (result) resultRef.current?.focus(); }, [result]);
   function update<K extends keyof DoorJourney>(key: K, value: DoorJourney[K]) { setResult(null); setJourney((current) => ({ ...current, [key]: value })); }
   function submit(event: FormEvent) { event.preventDefault(); setResult(planDoorJourney(journey, new Date().toISOString())); }
+  /** Use for creating/replacing the whole onward leg (checkbox toggle, transport-type switch) -- never for editing an existing one field at a time. Always re-seeds inheritance from scratch. */
+  function setOnward(next: DoorJourney['onward']) { setOnwardFromExplicit(false); setOnwardToExplicit(false); update('onward', next); }
+  /** Use for editing fields on an existing onward leg (Timetable/TurnUpAndGoFields). Marks a zone explicit the moment the traveller actually changes it -- comparing against the current value, so editing the stop NAME (which reuses the same Place-shaped callback) never falsely marks the zone explicit. */
+  function updateOnward(next: NonNullable<DoorJourney['onward']>) {
+    if (journey.onward) {
+      if (next.from.timeZone !== journey.onward.from.timeZone) setOnwardFromExplicit(true);
+      if (next.to.timeZone !== journey.onward.to.timeZone) setOnwardToExplicit(true);
+    }
+    update('onward', next);
+  }
+  // Keep an AUTO-INHERITED onward "from" zone following the arrival airport
+  // as it's entered -- an EXPLICIT one (the traveller's own dropdown edit)
+  // is never touched here. Cascades to already-entered scheduled services'
+  // departure zone too, exactly as the manual "Onward from stop" edit
+  // already does, so no service is left with a zone that no longer matches
+  // its own stop.
+  useEffect(() => {
+    if (!journey.onward || onwardFromExplicit || journey.onward.from.timeZone === journey.arrivalAirport.timeZone) return;
+    const airportZone = journey.arrivalAirport.timeZone;
+    setJourney((current) => {
+      if (!current.onward || current.onward.from.timeZone === airportZone) return current;
+      const from = { ...current.onward.from, timeZone: airportZone };
+      const onward = current.onward.kind === 'scheduled'
+        ? { ...current.onward, from, services: current.onward.services.map((s) => ({ ...s, departure: { ...s.departure, timeZone: airportZone } })) }
+        : { ...current.onward, from };
+      return { ...current, onward };
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- deliberately excludes journey.onward: this effect is what changes it, and re-running on every onward edit would fight `updateOnward`'s own explicit-marking.
+  }, [journey.arrivalAirport.timeZone, onwardFromExplicit]);
+  // Same pattern for the onward "to" zone, following the final destination.
+  useEffect(() => {
+    if (!journey.onward || onwardToExplicit || journey.onward.to.timeZone === journey.destination.timeZone) return;
+    const destZone = journey.destination.timeZone;
+    setJourney((current) => {
+      if (!current.onward || current.onward.to.timeZone === destZone) return current;
+      const to = { ...current.onward.to, timeZone: destZone };
+      const onward = current.onward.kind === 'scheduled'
+        ? { ...current.onward, to, services: current.onward.services.map((s) => ({ ...s, arrival: { ...s.arrival, timeZone: destZone } })) }
+        : { ...current.onward, to };
+      return { ...current, onward };
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [journey.destination.timeZone, onwardToExplicit]);
   return <div className="mx-auto max-w-6xl bg-white px-4 py-8 text-ink-900 sm:px-8">
     <p className="text-xs font-semibold uppercase tracking-wide text-brass-600">Founder prototype · local · unvalidated</p>
     <h1 className="mt-3 font-display text-3xl sm:text-4xl">Arrive By — the whole journey, worked backwards.</h1>
@@ -125,7 +189,7 @@ export function ArriveByDoorToDoor() {
       every field on it already starts clean; `deadlineReason` needed its
       own explicit reset alongside it.
     */}
-    <div className="mt-5 flex flex-wrap gap-3"><button type="button" className={button} onClick={() => { setJourney(exampleDoorJourney()); setExample(true); setResult(null); setDeadlineReason(''); }}>Load fictional Preston → Ahmedabad example</button><button type="button" className={button} onClick={() => { setJourney(blankDoorJourney()); setExample(false); setResult(null); setDeadlineReason(''); }}>Start blank</button></div>
+    <div className="mt-5 flex flex-wrap gap-3"><button type="button" className={button} onClick={() => { setJourney(exampleDoorJourney()); setExample(true); setResult(null); setDeadlineReason(''); setOnwardFromExplicit(false); setOnwardToExplicit(false); }}>Load fictional Preston → Ahmedabad example</button><button type="button" className={button} onClick={() => { setJourney(blankDoorJourney()); setExample(false); setResult(null); setDeadlineReason(''); setOnwardFromExplicit(false); setOnwardToExplicit(false); }}>Start blank</button></div>
     {example && <p className="mt-3 rounded-sm border border-brass/40 bg-brass-50 p-3 text-sm">FICTIONAL TEST DATA — these flights, fares, stations and services are not real travel evidence. Replace every relevant entry before using this with a traveller.</p>}
     <form noValidate onSubmit={submit} onChange={() => setResult(null)} className="mt-6 space-y-4">
       <Panel title="1. Final destination and deadline" open>
@@ -139,14 +203,15 @@ export function ArriveByDoorToDoor() {
       </Panel>
       <Panel title="2. Final mile to the house, hotel or event"><FlexibleFields title="Final mile" value={journey.finalMile} change={(value) => update('finalMile', value)} /><p className="text-xs text-ink-500">From the onward service’s destination stop, or directly from the arrival airport if no scheduled service is selected. Include the full remaining journey.</p></Panel>
       <Panel title="3. Scheduled transport after the airport">
-        <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={journey.onward !== null} onChange={(e) => update('onward', e.target.checked ? blankScheduled(journey.arrivalAirport.timeZone, journey.destination.timeZone) : null)} />Use public transport after arrival</label>
-        {journey.onward && <label className="block text-sm">Onward transport type<select aria-label="Onward transport type" className={field} value={journey.onward.kind} onChange={(e) => update('onward', e.target.value === 'scheduled' ? blankScheduled(journey.arrivalAirport.timeZone, journey.destination.timeZone) : blankTurnUpAndGo(journey.arrivalAirport.timeZone, journey.destination.timeZone))}>
+        <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={journey.onward !== null} onChange={(e) => setOnward(e.target.checked ? blankScheduled(journey.arrivalAirport.timeZone, journey.destination.timeZone) : null)} />Use public transport after arrival</label>
+        {journey.onward && <label className="block text-sm">Onward transport type<select aria-label="Onward transport type" className={field} value={journey.onward.kind} onChange={(e) => setOnward(e.target.value === 'scheduled' ? blankScheduled(journey.arrivalAirport.timeZone, journey.destination.timeZone) : blankTurnUpAndGo(journey.arrivalAirport.timeZone, journey.destination.timeZone))}>
           <option value="scheduled">Fixed timetable — train, coach, bus, ferry with published departures</option>
           <option value="turn-up-and-go">Turn-up-and-go — metro or high-frequency transit with no published departures</option>
         </select></label>}
-        {journey.onward?.kind === 'scheduled' && <Timetable label="Onward" value={journey.onward} change={(value) => update('onward', value)} />}
-        {journey.onward?.kind === 'turn-up-and-go' && <TurnUpAndGoFields label="Onward" value={journey.onward} change={(value) => update('onward', value)} />}
+        {journey.onward?.kind === 'scheduled' && <Timetable label="Onward" value={journey.onward} change={updateOnward} />}
+        {journey.onward?.kind === 'turn-up-and-go' && <TurnUpAndGoFields label="Onward" value={journey.onward} change={updateOnward} />}
         {!journey.onward && <p className="text-sm text-ink-500">No public transport leg: the final-mile estimate covers transport from the airport to your destination.</p>}
+        {journey.onward && (onwardFromExplicit || onwardToExplicit) && <p className="text-xs text-ink-500">{onwardFromExplicit && onwardToExplicit ? 'Onward from/to time zones were set explicitly and will not change if the arrival airport or destination change.' : onwardFromExplicit ? 'Onward from-stop time zone was set explicitly and will not change if the arrival airport changes.' : 'Onward to-stop time zone was set explicitly and will not change if the destination changes.'}</p>}
       </Panel>
       <Panel title="4. Arrival airport and processing allowances">
         <Location label="Arrival airport" value={journey.arrivalAirport} change={(arrivalAirport) => { setResult(null); setJourney((current) => ({ ...current, arrivalAirport, flights: current.flights.map((f) => ({ ...f, landing: { ...f.landing, timeZone: arrivalAirport.timeZone } })) })); }} />
