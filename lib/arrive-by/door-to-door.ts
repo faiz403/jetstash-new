@@ -17,7 +17,23 @@ export interface ScheduledTransport {
   minimumBeforeDeparture: number | null; services: Service[];
 }
 export type Transport = FlexibleTransport | ScheduledTransport;
-export interface FlightOption { label: string; departure: LocalMoment; landing: LocalMoment; priceGBP: number | null }
+/**
+ * CONNECTING-FLIGHT SAFETY (24 Sep 2026, simulation SIM-2: Belfast -> Manchester
+ * -> Newquay -> taxi -> family near Truro). A single `FlightOption` is one
+ * departure/landing pair -- it has never modelled an internal connection
+ * (the arrival of one flight against the departure of the next, minimum
+ * connection time, terminal transfer, baggage re-check, same-ticket vs
+ * separate-ticket protection). Entering a genuinely two-hop itinerary's
+ * outer departure/landing here made Arrive By silently treat it as a
+ * single nonstop flight and return a whole-journey ROBUST/FRAGILE verdict
+ * that was never justified by anything actually evaluated. `hasUnmodelledConnection`
+ * is the traveller's own declaration that this flight entry hides an
+ * internal connection Arrive By has not checked -- it fails the option
+ * closed (CANNOT CONFIRM) rather than pretending to have assessed it. This
+ * is deliberately NOT full connecting-flight modelling; it is the
+ * narrowest possible honest gate until that is built.
+ */
+export interface FlightOption { label: string; departure: LocalMoment; landing: LocalMoment; priceGBP: number | null; hasUnmodelledConnection: boolean }
 export interface DoorJourney {
   home: Place; departureAirport: Place; arrivalAirport: Place; destination: Place;
   deadline: LocalMoment;
@@ -94,20 +110,29 @@ export type DeadlineStatus = 'MEETS REQUIREMENT' | 'BEFORE DEADLINE, BUT BUFFER 
 export type PlanConfidence = 'ROBUST' | 'FRAGILE';
 /**
  * The single tightest timing margin anywhere in a working plan — a
- * scheduled connection or the final-arrival requirement itself, whichever
- * has less spare. `spare` is always the same "additional minutes of delay
- * before this specific constraint fails" quantity connections already use;
- * `kind`/`label` say which constraint that is, so the connection's own
- * value is never silently discarded even when the final arrival is
- * weaker (or vice versa).
+ * scheduled connection, an operating-window closure (turn-up-and-go
+ * transport), or the final-arrival requirement itself, whichever has less
+ * spare. `spare` is always the same "additional minutes of delay before
+ * this specific constraint fails" quantity connections already use;
+ * `kind`/`label` say which constraint that is, so no candidate's own value
+ * is ever silently discarded even when a different one is weaker.
+ *
+ * SIM-3 CORRECTION (24 Sep 2026): a tram/metro's operating-window closure
+ * was the constraint that actually decided a journey's outcome, but it was
+ * never a candidate here at all — only scheduled connections and the
+ * final arrival were considered, so the UI fell back to labelling an
+ * unrelated, smaller-but-irrelevant gate/boarding margin "the critical
+ * connection". `kind: 'operating-window'` closes that gap.
  */
 export interface WeakestConstraint {
-  kind: 'final-arrival' | 'connection';
+  kind: 'final-arrival' | 'connection' | 'operating-window';
   label: string;
   spare: number;
 }
 export interface DoorOptionResult {
   label: string; priceGBP: number | null; state: 'YES' | 'NO' | 'CANNOT CONFIRM';
+  /** Set only when this option was failed closed because its entered flight declares an internal connection Arrive By does not model. See `FlightOption.hasUnmodelledConnection`. */
+  unmodelledFlightConnection?: boolean;
   /** Set only when `state === 'YES'`. Derived from `weakestConstraint`, not `tightest` alone. See `PlanConfidence`. */
   confidence: PlanConfidence | null;
   /** Set only when `state === 'YES'`. See `WeakestConstraint`. */
@@ -149,6 +174,8 @@ export interface DoorOptionResult {
     timingConfirmed: boolean;
     missing: string[];
     notes: string[];
+    /** Minutes of delay the traveller could absorb before the operating window closes on them, i.e. `windowClosesAt - readyAt`. Only set when timing was fully confirmed. A candidate in `weakestConstraint`'s comparison, same as any scheduled connection's spare. */
+    windowSpareMinutes?: number;
   };
   /** Turn-up-and-go backwards boundary: the latest moment to be ready, not a service. */
   latestSafeReadyTime?: ZonedDateTime;
@@ -198,7 +225,18 @@ function checkServices(transport: ScheduledTransport, prefix: string, errors: st
     const departure = instant(service.departure); const arrival = instant(service.arrival);
     if (!service.id.trim() || ids.has(service.id)) errors.push(`${prefix}: each service needs a distinct name.`);
     ids.add(service.id);
-    if (!Number.isFinite(departure) || !Number.isFinite(arrival) || arrival <= departure) errors.push(`${prefix} ${service.id}: confirm valid departure/arrival dates and time zones; arrival must follow departure. Clock-change ambiguities cannot be guessed.`);
+    // FIXED-TIMETABLE VALIDATION (24 Sep 2026, SIM-4): a single combined
+    // message for three distinct failure causes made an ordinary, correctly
+    // entered same-day service ("09:25 -> 10:10, Europe/London") impossible
+    // to distinguish from a genuine DST-ambiguous time or an accidental
+    // arrival-before-departure date typo -- extensive reproduction (a full
+    // 2026 date sweep of `parseLocalMoment`, and re-entering the exact
+    // reported data through the live form) found the underlying conversion
+    // arithmetic sound for that class of input; what was genuinely missing
+    // was a message that named WHICH of the three had actually happened.
+    if (!Number.isFinite(departure)) errors.push(`${prefix} ${service.id}: confirm a valid, unambiguous departure date, time and time zone. A clock-change time cannot be guessed.`);
+    else if (!Number.isFinite(arrival)) errors.push(`${prefix} ${service.id}: confirm a valid, unambiguous arrival date, time and time zone. A clock-change time cannot be guessed.`);
+    else if (arrival <= departure) errors.push(`${prefix} ${service.id}: the arrival must be after the departure — if this looks wrong, check the arrival date has not been entered a day earlier than intended.`);
     if (service.departure.timeZone !== transport.from.timeZone || service.arrival.timeZone !== transport.to.timeZone) errors.push(`${prefix} ${service.id}: service time zones must match its stops.`);
     return { service, departure, arrival };
   });
@@ -257,6 +295,16 @@ export function planDoorJourney(input: DoorJourney, nowIso: string): DoorCompari
       || flight.departure.timeZone !== input.departureAirport.timeZone || flight.landing.timeZone !== input.arrivalAirport.timeZone
       || (flight.priceGBP !== null && (!Number.isFinite(flight.priceGBP) || flight.priceGBP < 0))) {
       result.state = 'CANNOT CONFIRM'; result.reasons.push('Confirm this flight’s future departure and landing instants, airport time zones and optional GBP price.'); return result;
+    }
+    // CONNECTING-FLIGHT SAFETY (24 Sep 2026, SIM-2): fail closed rather than
+    // ever return a whole-journey ROBUST/FRAGILE verdict for a flight the
+    // traveller has declared hides an internal connection this engine does
+    // not model. See `FlightOption.hasUnmodelledConnection`.
+    if (flight.hasUnmodelledConnection) {
+      result.state = 'CANNOT CONFIRM';
+      result.unmodelledFlightConnection = true;
+      result.reasons.push('This journey includes a flight connection that Arrive By has not checked. Connection time, terminal transfer, baggage/re-check requirements and ticket protection may affect whether it works.');
+      return result;
     }
     function segment(label: string, start: number, end: number, fromZone: string, toZone = fromZone, buffer?: number) {
       result.timeline.push({ label, start: stamp(start, fromZone), end: stamp(end, toZone), minutes: (end - start) / MINUTE, buffer });
@@ -346,6 +394,12 @@ export function planDoorJourney(input: DoorJourney, nowIso: string): DoorCompari
         waitUntilOpeningMinutes: availability.waitUntilOpeningMinutes,
         waitLabel: wait.label, waitBasis: wait.basis, journeyMinutesBasis: transport.journeyMinutesBasis,
         timingConfirmed: outcome.timingConfirmed, missing: outcome.missing, notes: availability.notes,
+        // SIM-3 CORRECTION: this is exactly as real a delay-tolerance
+        // candidate as any scheduled connection's spare -- see
+        // `WeakestConstraint`'s doc comment.
+        windowSpareMinutes: outcome.timingConfirmed && availability.windowClosesAt
+          ? (Date.parse(availability.windowClosesAt.utcIso) - ready) / MINUTE
+          : undefined,
       };
       if (availability.dstAmbiguous) result.reasons.push(`${transport.mode} operating hours fall on a clock change; the boundary is ambiguous by up to an hour and needs confirmation.`);
       if (availability.state === 'SERVICE CLOSED AT READY TIME') {
@@ -440,6 +494,7 @@ export function planDoorJourney(input: DoorJourney, nowIso: string): DoorCompari
       const candidates: WeakestConstraint[] = [];
       if (result.finalArrivalSlack !== undefined) candidates.push({ kind: 'final-arrival', label: 'Final arrival requirement', spare: result.finalArrivalSlack });
       if (result.tightest) candidates.push({ kind: 'connection', label: result.tightest.label, spare: result.tightest.spare });
+      if (result.turnUpAndGo?.windowSpareMinutes !== undefined) candidates.push({ kind: 'operating-window', label: `${result.turnUpAndGo.mode} operating window`, spare: result.turnUpAndGo.windowSpareMinutes });
       if (candidates.length) {
         result.weakestConstraint = candidates.reduce((weakest, candidate) => candidate.spare < weakest.spare ? candidate : weakest);
         result.confidence = result.weakestConstraint.spare < cushion ? 'FRAGILE' : 'ROBUST';

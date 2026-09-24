@@ -11,7 +11,7 @@ export function blankDoorJourney(): DoorJourney {
     departureProcess: { terminalTransfer: null, checkIn: null, security: null, boarding: null },
     arrivalProcess: { disembark: null, immigration: null, baggage: null, customs: null, walkToTransport: null },
     onward: null, finalMile: { kind: 'flexible', mode: 'taxi', minutes: null, buffer: null },
-    flights: [{ label: 'Option A', priceGBP: null, departure: { date: '', time: '', timeZone: 'Europe/London' }, landing: { date: '', time: '', timeZone: 'Asia/Kolkata' } }],
+    flights: [{ label: 'Option A', priceGBP: null, hasUnmodelledConnection: false, departure: { date: '', time: '', timeZone: 'Europe/London' }, landing: { date: '', time: '', timeZone: 'Asia/Kolkata' } }],
   };
 }
 
@@ -49,8 +49,8 @@ export function exampleDoorJourney(): ScheduledOnwardJourney {
     services: [['17:10', '18:02'], ['17:35', '18:27'], ['17:50', '18:36'], ['18:20', '19:05']].map(([departure, arrival]) => ({ id: `Example onward ${departure}`, departure: { date: '2026-11-03', time: departure, timeZone: 'Asia/Kolkata' }, arrival: { date: '2026-11-03', time: arrival, timeZone: 'Asia/Kolkata' } })) };
   input.finalMile = { kind: 'flexible', mode: 'rickshaw', minutes: 12, buffer: 8 };
   input.flights = [
-    { label: 'Option A — example itinerary', priceGBP: 480, departure: { date: '2026-11-02', time: '11:15', timeZone: 'Europe/London' }, landing: { date: '2026-11-03', time: '15:55', timeZone: 'Asia/Kolkata' } },
-    { label: 'Option B — example itinerary', priceGBP: 520, departure: { date: '2026-11-02', time: '10:15', timeZone: 'Europe/London' }, landing: { date: '2026-11-03', time: '14:40', timeZone: 'Asia/Kolkata' } },
+    { label: 'Option A — example itinerary', priceGBP: 480, hasUnmodelledConnection: false, departure: { date: '2026-11-02', time: '11:15', timeZone: 'Europe/London' }, landing: { date: '2026-11-03', time: '15:55', timeZone: 'Asia/Kolkata' } },
+    { label: 'Option B — example itinerary', priceGBP: 520, hasUnmodelledConnection: false, departure: { date: '2026-11-02', time: '10:15', timeZone: 'Europe/London' }, landing: { date: '2026-11-03', time: '14:40', timeZone: 'Asia/Kolkata' } },
   ];
   return input;
 }

@@ -135,7 +135,7 @@ describe('Arrive By complete door-to-door chain', () => {
     const result = run((i) => {
       i.deadline.date = '2026-10-20'; i.deadline.time = '23:00'; i.onward = null;
       i.toAirport = { kind: 'flexible', mode: 'taxi', minutes: 30, buffer: 15 };
-      i.flights = [{ label: 'Summer offset', priceGBP: null, departure: { date: '2026-10-20', time: '10:15', timeZone: 'Europe/London' }, landing: { date: '2026-10-20', time: '20:45', timeZone: 'Asia/Kolkata' } }];
+      i.flights = [{ label: 'Summer offset', priceGBP: null, hasUnmodelledConnection: false, departure: { date: '2026-10-20', time: '10:15', timeZone: 'Europe/London' }, landing: { date: '2026-10-20', time: '20:45', timeZone: 'Asia/Kolkata' } }];
     }).options[0];
     expect(result.timeline.find((s) => s.label.startsWith('Flight:'))?.minutes).toBe(360);
   });
@@ -526,4 +526,168 @@ describe('whole-journey confidence correction — final-arrival slack is as real
     expect(b.confidence).toBeNull();
   });
 });
+});
+
+/**
+ * POST-SIMULATION SAFETY CORRECTION (24 Sep 2026). Four controlled
+ * simulations (not human-validation evidence) were run against the live
+ * prototype to close truth/safety defects before further real-traveller
+ * piloting.
+ */
+describe('connecting-flight safety — SIM-2 (Belfast -> Manchester -> Newquay -> taxi -> family near Truro)', () => {
+  it('fails an option closed (CANNOT CONFIRM) when its flight declares an unmodelled internal connection, never a whole-journey verdict', () => {
+    const input = exampleDoorJourney();
+    input.flights[0].hasUnmodelledConnection = true;
+    const b = planDoorJourney(input, NOW).options[0];
+    expect(b.state).toBe('CANNOT CONFIRM');
+    expect(b.unmodelledFlightConnection).toBe(true);
+    expect(b.confidence).toBeNull();
+    expect(b.reasons).toContain('This journey includes a flight connection that Arrive By has not checked. Connection time, terminal transfer, baggage/re-check requirements and ticket protection may affect whether it works.');
+  });
+  it('a flight NOT declaring an unmodelled connection is completely unaffected by the new field', () => {
+    const b = run().options[1];
+    expect(b.unmodelledFlightConnection).toBeUndefined();
+    expect(b.state).toBe('YES');
+  });
+});
+
+describe('fixed-timetable validation — SIM-4 (ordinary UK coach services)', () => {
+  const NOW_UK = '2026-09-20T12:00:00Z';
+  /** required arrival 17:00, no buffer -- an ordinary same-day UK coach + walk final leg. */
+  function ukCoachJourney(change?: (input: DoorJourney) => void): DoorJourney {
+    const input = blankDoorJourney();
+    input.home = { name: 'Home', timeZone: 'Europe/London' };
+    input.departureAirport = { name: 'Departure airport', timeZone: 'Europe/London' };
+    input.arrivalAirport = { name: 'Newquay Airport', timeZone: 'Europe/London' };
+    input.destination = { name: 'Venue near Truro', timeZone: 'Europe/London' };
+    input.deadline = { date: '2026-11-17', time: '17:00', timeZone: 'Europe/London' };
+    input.finalBuffer = 0; input.connectionCushion = 15;
+    input.toAirport = { kind: 'flexible', mode: 'car', minutes: 20, buffer: 10 };
+    input.departureProcess = { terminalTransfer: 5, checkIn: 20, security: 20, boarding: 15 };
+    input.arrivalProcess = { disembark: 0, immigration: 0, baggage: 0, customs: 0, walkToTransport: 0 };
+    input.onward = { kind: 'scheduled', mode: 'coach', from: { name: 'Newquay Airport coach stand', timeZone: 'Europe/London' }, to: { name: 'Parkside', timeZone: 'Europe/London' }, minimumBeforeDeparture: 10,
+      services: [['09:25', '10:10'], ['16:25', '17:10'], ['20:25', '21:10']].map(([departure, arrival]) => ({
+        id: `Coach ${departure}`, departure: { date: '2026-11-17', time: departure, timeZone: 'Europe/London' }, arrival: { date: '2026-11-17', time: arrival, timeZone: 'Europe/London' },
+      })) };
+    input.finalMile = { kind: 'flexible', mode: 'walk', minutes: 20, buffer: 5 };
+    input.flights = [
+      { label: 'Early flight', priceGBP: null, hasUnmodelledConnection: false, departure: { date: '2026-11-17', time: '07:30', timeZone: 'Europe/London' }, landing: { date: '2026-11-17', time: '08:15', timeZone: 'Europe/London' } },
+      { label: 'Later flight', priceGBP: null, hasUnmodelledConnection: false, departure: { date: '2026-11-17', time: '14:20', timeZone: 'Europe/London' }, landing: { date: '2026-11-17', time: '15:05', timeZone: 'Europe/London' } },
+    ];
+    change?.(input);
+    return input;
+  }
+  it('validates ordinary same-day, same-time-zone coach services without the previously reported validation error', () => {
+    const result = planDoorJourney(ukCoachJourney(), NOW_UK);
+    expect(result.errors).toEqual([]);
+  });
+  it('the early flight catches the 09:25 coach and arrives at the venue well before the required 17:00 arrival', () => {
+    const b = planDoorJourney(ukCoachJourney(), NOW_UK).options[0];
+    expect(b.state).toBe('YES');
+    expect(b.onwardService).toBe('Coach 09:25');
+    expect(b.finalArrival?.timeHHmm).toBe('10:35');
+  });
+  it('the later flight can only reach the 16:25 coach, which arrives after the required 17:00 buffer -- a genuine, honestly-reported failure', () => {
+    const b = planDoorJourney(ukCoachJourney(), NOW_UK).options[1];
+    expect(b.state).toBe('NO');
+    expect(b.onwardService).toBeUndefined();
+    expect(b.diagnosticOnwardService).toBe('Coach 16:25');
+    expect(b.finalArrival?.timeHHmm).toBe('17:35');
+    // finalBuffer is 0, so a miss past the clock deadline is a genuine deadline
+    // miss, not a separate buffer shortfall -- there is no buffer window to fall short of.
+    expect(b.alreadyMisses).toMatchObject({ kind: 'deadline' });
+    // The fallback (20:25 coach) is even later, so it does not rescue this option either.
+    expect(b.fallbackOnward).toMatchObject({ hasNextEntered: true, meetsDeadline: false });
+  });
+  it('a service departing before or exactly at its stated arrival is still correctly rejected -- the diagnostics are more specific, not weaker', () => {
+    const result = planDoorJourney(ukCoachJourney((i) => {
+      (i.onward as ScheduledTransport).services[0].arrival.time = '09:00'; // before its own 09:25 departure
+    }), NOW_UK);
+    expect(result.errors.join(' ')).toContain('the arrival must be after the departure');
+  });
+});
+
+describe('start-blank state isolation — deadline reason and all journey-specific state', () => {
+  const component = readFileSync('components/founder/arrive-by-door-to-door.tsx', 'utf8');
+  it('both "Start blank" and "Load fictional example" reset the deadline reason, not just the journey', () => {
+    const startBlank = component.match(/onClick=\{\(\) => \{ setJourney\(blankDoorJourney\(\)\); setExample\(false\); setResult\(null\); setDeadlineReason\(''\); \}\}/);
+    const loadExample = component.match(/onClick=\{\(\) => \{ setJourney\(exampleDoorJourney\(\)\); setExample\(true\); setResult\(null\); setDeadlineReason\(''\); \}\}/);
+    expect(startBlank).not.toBeNull();
+    expect(loadExample).not.toBeNull();
+  });
+  it('"Start blank" fully replaces the journey object (never merges), so every journey-specific field -- deadline, buffer, flights, onward, turn-up-and-go entries, labels -- starts genuinely empty', () => {
+    const blank = blankDoorJourney();
+    expect(blank.deadline).toEqual({ date: '', time: '', timeZone: 'Asia/Kolkata' });
+    expect(blank.finalBuffer).toBeNull();
+    expect(blank.connectionCushion).toBeNull();
+    expect(blank.onward).toBeNull();
+    expect(blank.flights).toHaveLength(1);
+    expect(blank.flights[0]).toMatchObject({ label: 'Option A', priceGBP: null, hasUnmodelledConnection: false });
+    expect(blank.flights[0].departure).toEqual({ date: '', time: '', timeZone: 'Europe/London' });
+  });
+});
+
+describe('stage-specific slack wording and operating-window as a weakest-constraint candidate — SIM-3', () => {
+  const DUBAI = 'Asia/Dubai';
+  function tramJourney(change?: (input: DoorJourney) => void): DoorJourney {
+    const input = exampleDoorJourney() as DoorJourney;
+    input.arrivalAirport = { name: 'Arrival airport', timeZone: DUBAI };
+    input.destination = { name: 'City flat', timeZone: DUBAI };
+    input.deadline = { date: '2026-11-11', time: '23:00', timeZone: DUBAI };
+    input.onward = {
+      kind: 'turn-up-and-go', mode: 'metro', from: { name: 'Airport metro', timeZone: DUBAI }, to: { name: 'City metro', timeZone: DUBAI },
+      minimumBeforeDeparture: 5,
+      // Ready ~22:25 (20:40 landing + the example's 105 min processing);
+      // closing at 22:37 leaves 12 min of window spare (still enough for the
+      // 5 min access + up to 6 min headway wait to complete before closing)
+      // -- deliberately tighter than the pre-flight train connection's own
+      // 15 min, so this is genuinely the weaker of the two candidates.
+      operatingWindows: [{ days: ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'], opens: '06:00', closes: '22:37', closesNextDay: false }],
+      journeyMinutes: 20, journeyMinutesBasis: 'OFFICIAL', headwayMinutes: { min: 4, max: 6 }, plannedWaitMinutes: null,
+    };
+    input.finalMile = { kind: 'flexible', mode: 'walk', minutes: 10, buffer: 5 };
+    input.flights = [{ label: 'Comfortable arrival', priceGBP: null, hasUnmodelledConnection: false, departure: { date: '2026-11-10', time: '09:50', timeZone: 'Europe/London' }, landing: { date: '2026-11-10', time: '20:40', timeZone: DUBAI } }];
+    change?.(input);
+    return input;
+  }
+  it('the operating-window closure becomes a weakest-constraint candidate, correctly identified over an unrelated, smaller-but-irrelevant pre-flight number', () => {
+    const b = planDoorJourney(tramJourney(), NOW).options[0];
+    expect(b.state).toBe('YES');
+    expect(b.turnUpAndGo?.windowSpareMinutes).toBeDefined();
+    expect(b.turnUpAndGo!.windowSpareMinutes!).toBeGreaterThan(0);
+    // With the operating window closing at 23:00 and this traveller ready mid-evening,
+    // the window spare is the smallest margin in this journey -- it, not gate/boarding, is the weakest point.
+    expect(b.weakestConstraint?.kind).toBe('operating-window');
+  });
+  it('the connection slack, final-arrival slack and (when applicable) operating-window slack are always separately visible, never conflated into one unqualified number', () => {
+    const component = readFileSync('components/founder/arrive-by-door-to-door.tsx', 'utf8');
+    expect(component).toMatch(/\['Connection slack',/);
+    expect(component).toMatch(/\['Final-arrival slack',/);
+    expect(component).toMatch(/\['Operating-window slack',/);
+  });
+});
+
+describe('primary plan fragility vs fallback resilience — SIM-1', () => {
+  it('a tight primary connection with a fallback that comfortably meets the deadline stays FRAGILE, not silently promoted to ROBUST', () => {
+    // Reproduces the proven Tester-2 fragility fixture (onward connection
+    // spare 10 < cushion 15 -> TIGHT), which already has a later entered
+    // service (15:10) that comfortably meets the deadline on its own.
+    const b = run((i) => {
+      i.flights[1].landing.time = '11:35'; i.onward!.minimumBeforeDeparture = 0; i.connectionCushion = 15;
+      i.onward!.services = [['13:25', '14:00'], ['13:45', '14:30'], ['15:10', '16:02'], ['17:35', '18:27']].map(([departure, arrival]) => ({
+        id: `Test ${departure}`, departure: { date: '2026-11-03', time: departure, timeZone: 'Asia/Kolkata' }, arrival: { date: '2026-11-03', time: arrival, timeZone: 'Asia/Kolkata' },
+      }));
+    }).options[1];
+    expect(b.state).toBe('YES');
+    expect(b.onwardService).toBe('Test 13:45');
+    expect(b.confidence).toBe('FRAGILE'); // primary plan's own tightness is unchanged
+    expect(b.fallbackOnward).toMatchObject({ hasNextEntered: true, nextService: { id: 'Test 15:10' }, meetsDeadline: true, meetsDeadlineWithBuffer: true });
+  });
+  it('the reassuring fallback sentence and the labelled fallback rows exist in the fragility warning, without altering confidence itself', () => {
+    const component = readFileSync('components/founder/arrive-by-door-to-door.tsx', 'utf8');
+    expect(component).toContain('Your planned connection is tight, but the next entered service still gets you there in time');
+    expect(component).toContain('Fallback available:');
+    expect(component).toContain('Fallback final arrival:');
+    expect(component).toContain('Fallback meets required arrival:');
+  });
 });

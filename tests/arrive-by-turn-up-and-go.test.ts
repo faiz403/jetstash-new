@@ -207,8 +207,8 @@ function dubaiJourney(change?: (input: DoorJourney) => void): DoorJourney {
   input.onward = metro();
   input.finalMile = { kind: 'flexible', mode: 'walk', minutes: 10, buffer: 5 };
   input.flights = [
-    { label: 'Earlier arrival', priceGBP: 500, departure: { date: '2026-11-10', time: '09:50', timeZone: 'Europe/London' }, landing: { date: '2026-11-10', time: '20:40', timeZone: DUBAI } },
-    { label: 'Later arrival', priceGBP: 420, departure: { date: '2026-11-10', time: '13:30', timeZone: 'Europe/London' }, landing: { date: '2026-11-11', time: '00:25', timeZone: DUBAI } },
+    { label: 'Earlier arrival', priceGBP: 500, hasUnmodelledConnection: false, departure: { date: '2026-11-10', time: '09:50', timeZone: 'Europe/London' }, landing: { date: '2026-11-10', time: '20:40', timeZone: DUBAI } },
+    { label: 'Later arrival', priceGBP: 420, hasUnmodelledConnection: false, departure: { date: '2026-11-10', time: '13:30', timeZone: 'Europe/London' }, landing: { date: '2026-11-11', time: '00:25', timeZone: DUBAI } },
   ];
   change?.(input);
   return input;

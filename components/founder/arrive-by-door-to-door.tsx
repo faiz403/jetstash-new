@@ -116,7 +116,16 @@ export function ArriveByDoorToDoor() {
     <h1 className="mt-3 font-display text-3xl sm:text-4xl">Arrive By — the whole journey, worked backwards.</h1>
     <p className="mt-3 max-w-3xl text-ink-600">Start with the place and deadline. Compare the earliest onward service that fits each flight with the latest service that still preserves your arrival requirement.</p>
     <p className="mt-2 max-w-3xl text-sm text-ink-500">Planning allowances are not guarantees. All times, fares and services are entered manually; connections within a flight itinerary need separate confirmation. Nothing is searched, saved or sent.</p>
-    <div className="mt-5 flex flex-wrap gap-3"><button type="button" className={button} onClick={() => { setJourney(exampleDoorJourney()); setExample(true); setResult(null); }}>Load fictional Preston → Ahmedabad example</button><button type="button" className={button} onClick={() => { setJourney(blankDoorJourney()); setExample(false); setResult(null); }}>Start blank</button></div>
+    {/*
+      START-BLANK STATE ISOLATION (24 Sep 2026): `deadlineReason` lives in
+      its own React state, deliberately outside `journey` (it is display-only,
+      never calculation input -- see its declaration above). That also meant
+      it was the one piece of journey-specific state neither button reset:
+      `journey` itself is always fully REPLACED by a fresh object here, so
+      every field on it already starts clean; `deadlineReason` needed its
+      own explicit reset alongside it.
+    */}
+    <div className="mt-5 flex flex-wrap gap-3"><button type="button" className={button} onClick={() => { setJourney(exampleDoorJourney()); setExample(true); setResult(null); setDeadlineReason(''); }}>Load fictional Preston → Ahmedabad example</button><button type="button" className={button} onClick={() => { setJourney(blankDoorJourney()); setExample(false); setResult(null); setDeadlineReason(''); }}>Start blank</button></div>
     {example && <p className="mt-3 rounded-sm border border-brass/40 bg-brass-50 p-3 text-sm">FICTIONAL TEST DATA — these flights, fares, stations and services are not real travel evidence. Replace every relevant entry before using this with a traveller.</p>}
     <form noValidate onSubmit={submit} onChange={() => setResult(null)} className="mt-6 space-y-4">
       <Panel title="1. Final destination and deadline" open>
@@ -154,9 +163,10 @@ export function ArriveByDoorToDoor() {
             <Moment label={`Flight ${index + 1} landing`} value={flight.landing} showZone={false} change={(landing) => change({ ...flight, landing })} />
             <p className="text-xs text-ink-500">Departure: {flight.departure.timeZone}. Landing: {flight.landing.timeZone}.</p>
             <NumberField label={`Flight ${index + 1} entered fare GBP (optional)`} value={flight.priceGBP} max={1000000} change={(priceGBP) => change({ ...flight, priceGBP })} />
+            <label className="flex items-start gap-2 text-sm"><input type="checkbox" className="mt-1" aria-label={`Flight ${index + 1} has an unmodelled internal connection`} checked={flight.hasUnmodelledConnection} onChange={(e) => change({ ...flight, hasUnmodelledConnection: e.target.checked })} /><span>This itinerary includes a flight connection (changing planes) — Arrive By does not check connection time, terminal transfer, baggage/re-check or ticket protection</span></label>
           </fieldset>;
         })}
-        <button className={button} type="button" onClick={() => update('flights', journey.flights.length === 2 ? journey.flights.slice(0, 1) : [...journey.flights, { label: 'Option B', priceGBP: null, departure: { date: '', time: '', timeZone: journey.departureAirport.timeZone }, landing: { date: '', time: '', timeZone: journey.arrivalAirport.timeZone } }])}>{journey.flights.length === 2 ? 'Remove flight B' : 'Add flight B'}</button>
+        <button className={button} type="button" onClick={() => update('flights', journey.flights.length === 2 ? journey.flights.slice(0, 1) : [...journey.flights, { label: 'Option B', priceGBP: null, hasUnmodelledConnection: false, departure: { date: '', time: '', timeZone: journey.departureAirport.timeZone }, landing: { date: '', time: '', timeZone: journey.arrivalAirport.timeZone } }])}>{journey.flights.length === 2 ? 'Remove flight B' : 'Add flight B'}</button>
       </Panel>
       <Panel title="6. Departure airport and check-in / security">
         <Location label="Departure airport" value={journey.departureAirport} change={(departureAirport) => { setResult(null); setJourney((current) => ({ ...current, departureAirport, flights: current.flights.map((f) => ({ ...f, departure: { ...f.departure, timeZone: departureAirport.timeZone } })) })); }} />
@@ -232,10 +242,17 @@ function OptionResult({ value }: { value: DoorOptionResult }) {
   return <article className="min-w-0 break-words rounded-md border border-ink-200 bg-white p-4">
     <h3 className="font-semibold">{value.label}</h3>
     <p className="mt-2 font-display text-2xl">{headline(value)} <span className="font-sans text-xs text-ink-500">— under entered assumptions</span></p>
+    {value.unmodelledFlightConnection && <p className="mt-3 rounded-sm border border-terracotta-400 bg-terracotta-50 p-3 text-sm font-medium text-terracotta-700">This journey includes a flight connection that Arrive By has not checked. Connection time, terminal transfer, baggage/re-check requirements and ticket protection may affect whether it works.</p>}
     {alreadyMissesText(value) && <p className="mt-3 rounded-sm border border-terracotta-400 bg-terracotta-50 p-3 text-sm font-medium text-terracotta-700">{alreadyMissesText(value)}</p>}
     {value.confidence === 'FRAGILE' && value.weakestConstraint && <div className="mt-3 rounded-sm border border-terracotta-400 bg-terracotta-50 p-3 text-sm">
       <p className="font-semibold text-terracotta-700">This plan works, but has very little room for delay.</p>
       <p className="mt-1">You are expected to arrive at {fmt(value.finalArrival)}{value.deadlineMargin !== undefined ? `, ${value.deadlineMargin} min before the ${fmt(value.deadline)} deadline` : ''}. However, the weakest point in this plan is {weakestPointLabel(value).toLowerCase()}. About {value.weakestConstraint.spare} min of additional delay there would break this plan.</p>
+      {/* PRIMARY PLAN VS FALLBACK RESILIENCE (24 Sep 2026, SIM-1): a tight
+          primary connection and a comfortable fallback are two different
+          facts -- neither should be allowed to hide the other. This never
+          changes `confidence` itself; it only tells the traveller a real
+          recovery option exists for the tight primary plan they are seeing. */}
+      {value.fallbackOnward?.hasNextEntered && value.fallbackOnward.meetsDeadline && <p className="mt-1">Your planned connection is tight, but the next entered service still gets you there in time{value.fallbackOnward.meetsDeadlineWithBuffer ? '' : ' (though without your full required buffer)'}.</p>}
     </div>}
     <dl className="mt-4 grid gap-x-6 gap-y-2 text-sm sm:grid-cols-2">{[
       ['Which option fits', `${value.label} — ${headline(value)}`],
@@ -245,15 +262,17 @@ function OptionResult({ value }: { value: DoorOptionResult }) {
       ['Planned final arrival', fmt(value.finalArrival)],
       ['Deadline', fmt(value.deadline)],
       ['Connection slack', value.tightest ? `${value.tightest.label}: ${value.tightest.spare} min` : 'Not established'],
+      ...(value.turnUpAndGo?.windowSpareMinutes !== undefined ? [['Operating-window slack', `${value.turnUpAndGo.mode}: ${value.turnUpAndGo.windowSpareMinutes} min`]] : []),
       ['Final-arrival slack', value.alreadyMisses ? `Already missed (see above)` : value.finalArrivalSlack !== undefined ? `${value.finalArrivalSlack} min` : 'Not established'],
       ...(value.weakestConstraint ? [['Weakest point', `${weakestPointLabel(value)} — ${value.weakestConstraint.spare} min spare`]] : []),
     ].map(([label, text]) => <div key={label}><dt className="text-ink-500">{label}</dt><dd className="mt-0.5 font-medium">{text}</dd></div>)}</dl>
     {value.fallbackOnward && <div className="mt-4 rounded-sm border border-ink-200 bg-sand-50 p-3 text-sm">
       <p className="font-semibold">If you miss {value.onwardService ?? value.diagnosticOnwardService ?? 'this connection'}</p>
+      <p className="mt-1">Fallback available: {value.fallbackOnward.hasNextEntered ? 'YES' : 'NO'}</p>
       {value.fallbackOnward.hasNextEntered ? <dl className="mt-2 space-y-1">
         <div><dt className="inline text-ink-500">Next entered service: </dt><dd className="inline">{value.fallbackOnward.nextService?.id} · {fmt(value.fallbackOnward.nextService?.departure)} → {fmt(value.fallbackOnward.nextService?.arrival)}</dd></div>
-        <div><dt className="inline text-ink-500">Final arrival if used: </dt><dd className="inline">{fmt(value.fallbackOnward.finalArrivalIfUsed)}</dd></div>
-        <div><dt className="inline text-ink-500">Meets deadline: </dt><dd className="inline">{value.fallbackOnward.meetsDeadline ? 'YES' : 'NO'}{value.fallbackOnward.meetsDeadline && !value.fallbackOnward.meetsDeadlineWithBuffer ? ' (without the required final buffer)' : ''}</dd></div>
+        <div><dt className="inline text-ink-500">Fallback final arrival: </dt><dd className="inline">{fmt(value.fallbackOnward.finalArrivalIfUsed)}</dd></div>
+        <div><dt className="inline text-ink-500">Fallback meets required arrival: </dt><dd className="inline">{value.fallbackOnward.meetsDeadline ? 'YES' : 'NO'}{value.fallbackOnward.meetsDeadline && !value.fallbackOnward.meetsDeadlineWithBuffer ? ' (without the required final buffer)' : ''}</dd></div>
       </dl> : <p className="mt-1">NO FALLBACK HAS BEEN ENTERED. This does not mean no real-world alternative exists — only that none was entered into this plan.</p>}
     </div>}
     {value.state === 'YES' ? <FullDetail value={value} selected={selected} showService={showService} serviceTable={serviceTable} /> : (
