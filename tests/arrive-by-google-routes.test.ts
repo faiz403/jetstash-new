@@ -1,10 +1,11 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { NextRequest } from 'next/server';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { POST } from '@/app/api/founder/arrive-by/google/route';
 import { topLevelOutcome, topLevelVerdict } from '@/components/founder/arrive-by-google';
 import {
+  buildGoogleNoTransitPrototypeResult,
   buildGooglePrototypeResult,
   effectiveLatestArrival,
   googleDriveRequest,
@@ -138,36 +139,54 @@ describe('Google itinerary to unchanged Arrive By engine', () => {
   it('does not request or show a car rescue when the missed-service transit fallback still works', () => {
     const result = buildGooglePrototypeResult({ ...input, deadline: '2026-09-25T15:00' }, primaryResponse, fallbackResponse, '2026-09-24T12:00:00Z');
     expect(result.fallbackJudgement.meetsDeadline).toBe(true);
-    expect(result.carRescue).toBeUndefined();
+    expect(result.immediateCar).toBeUndefined();
+    expect(result.missedServiceCarRescue).toBeUndefined();
   });
 
-  it('compares a traffic-aware direct DRIVE rescue with the effective ready-by time', () => {
+  it('keeps a missed-service DRIVE rescue distinct when primary transit works but fallback fails', () => {
     const drive: GoogleRoutesResponse = { routes: [{ duration: '3600s', staticDuration: '3300s', distanceMeters: 60500 }] };
-    const result = buildGooglePrototypeResult(input, primaryResponse, fallbackResponse, '2026-09-24T12:00:00Z', drive);
+    const result = buildGooglePrototypeResult(input, primaryResponse, fallbackResponse, '2026-09-24T12:00:00Z', { missedServiceCarRescue: drive });
+    expect(result.judgement.meetsDeadline).toBe(true);
     expect(result.fallbackJudgement.meetsDeadline).toBe(false);
-    expect(result.carRescue).toMatchObject({
+    expect(result.immediateCar).toBeUndefined();
+    expect(result.missedServiceCarRescue).toMatchObject({
       status: 'AVAILABLE', trafficAware: true, meetsReadyBy: true,
       departureTime: '2026-09-25T11:17:00Z', arrivalTime: '2026-09-25T12:17:00.000Z', durationSeconds: 3600,
     });
   });
 
-  it('still requests the car rescue when the physical primary arrival itself misses an entered ready-by allowance', () => {
+  it('compares immediate DRIVE from the entered ready time when primary transit misses ready-by', () => {
     const drive: GoogleRoutesResponse = { routes: [{ duration: '3600s', distanceMeters: 60500 }] };
-    const result = buildGooglePrototypeResult({ ...input, readinessMinutes: 15 }, primaryResponse, fallbackResponse, '2026-09-24T12:00:00Z', drive);
+    const result = buildGooglePrototypeResult({ ...input, readinessMinutes: 15 }, primaryResponse, fallbackResponse, '2026-09-24T12:00:00Z', { immediateCar: drive });
     expect(result.judgement.meetsDeadline).toBe(false);
     expect(result.fallbackJudgement.meetsDeadline).toBe(false);
-    expect(result.carRescue).toMatchObject({ status: 'AVAILABLE', trafficAware: true });
+    expect(result.immediateCar).toMatchObject({
+      status: 'AVAILABLE', trafficAware: true,
+      departureTime: '2026-09-25T11:00:00.000Z', arrivalTime: '2026-09-25T12:00:00.000Z',
+    });
+    expect(result.missedServiceCarRescue).toBeUndefined();
   });
 
-  it('reports honestly when the direct DRIVE rescue also misses ready-by', () => {
+  it('reports honestly when the checked immediate DRIVE also misses ready-by', () => {
     const drive: GoogleRoutesResponse = { routes: [{ duration: '12000s', distanceMeters: 60500 }] };
-    const result = buildGooglePrototypeResult(input, primaryResponse, fallbackResponse, '2026-09-24T12:00:00Z', drive);
-    expect(result.carRescue).toMatchObject({ status: 'AVAILABLE', meetsReadyBy: false, minutesFromReadyBy: 67 });
+    const result = buildGooglePrototypeResult({ ...input, readinessMinutes: 15 }, primaryResponse, fallbackResponse, '2026-09-24T12:00:00Z', { immediateCar: drive });
+    expect(result.immediateCar).toMatchObject({ status: 'AVAILABLE', meetsReadyBy: false, minutesFromReadyBy: 65 });
   });
 
-  it('fails closed when Google has no usable DRIVE route', () => {
-    const result = buildGooglePrototypeResult(input, primaryResponse, fallbackResponse, '2026-09-24T12:00:00Z', { routes: [] });
-    expect(result.carRescue).toEqual({ status: 'UNAVAILABLE', trafficAware: true });
+  it('fails closed when an immediate DRIVE route is unavailable', () => {
+    const result = buildGooglePrototypeResult({ ...input, readinessMinutes: 15 }, primaryResponse, fallbackResponse, '2026-09-24T12:00:00Z', { immediateCar: { routes: [] } });
+    expect(result.immediateCar).toEqual({ status: 'UNAVAILABLE', trafficAware: true });
+  });
+
+  it('checks immediate DRIVE even when no usable transit journey exists', () => {
+    const drive: GoogleRoutesResponse = { routes: [{ duration: '3600s', distanceMeters: 60500 }] };
+    const result = buildGoogleNoTransitPrototypeResult(input, drive);
+    expect(result.transitStatus).toBe('UNAVAILABLE');
+    expect(result.immediateCar).toMatchObject({
+      status: 'AVAILABLE', departureTime: '2026-09-25T11:00:00.000Z', arrivalTime: '2026-09-25T12:00:00.000Z', meetsReadyBy: true,
+    });
+    expect(result).not.toHaveProperty('missedServiceCarRescue');
+    expect(result).not.toHaveProperty('primary');
   });
 
   it('asks Google for one traffic-aware direct drive only from the missed-service moment', () => {
@@ -204,13 +223,93 @@ describe('server-only API key and clear API failure', () => {
   });
 });
 
+describe('Google API decision request flow', () => {
+  const previousKey = process.env.GOOGLE_ROUTES_API_KEY;
+  const originalFetch = globalThis.fetch;
+  const response = (body: GoogleRoutesResponse) => new Response(JSON.stringify(body), {
+    status: 200,
+    headers: { 'Content-Type': 'application/json' },
+  });
+
+  afterEach(() => {
+    globalThis.fetch = originalFetch;
+    if (previousKey === undefined) delete process.env.GOOGLE_ROUTES_API_KEY;
+    else process.env.GOOGLE_ROUTES_API_KEY = previousKey;
+    vi.restoreAllMocks();
+  });
+
+  it('uses entered ready time for immediate DRIVE when primary transit fails', async () => {
+    process.env.GOOGLE_ROUTES_API_KEY = 'server-test-key';
+    const drive: GoogleRoutesResponse = { routes: [{ duration: '1800s', distanceMeters: 10000 }] };
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce(response(primaryResponse))
+      .mockResolvedValueOnce(response(fallbackResponse))
+      .mockResolvedValueOnce(response(drive));
+    globalThis.fetch = fetchMock as typeof fetch;
+
+    const apiResponse = await POST(new NextRequest('http://localhost/api/founder/arrive-by/google', {
+      method: 'POST',
+      body: JSON.stringify({ ...input, readinessMinutes: 15 }),
+      headers: { 'Content-Type': 'application/json' },
+    }));
+    const body = await apiResponse.json();
+    const driveRequest = JSON.parse(String(fetchMock.mock.calls[2][1]?.body));
+
+    expect(apiResponse.status).toBe(200);
+    expect(driveRequest).toMatchObject({ travelMode: 'DRIVE', departureTime: '2026-09-25T11:00:00.000Z' });
+    expect(body.immediateCar).toMatchObject({ departureTime: '2026-09-25T11:00:00.000Z' });
+    expect(body).not.toHaveProperty('missedServiceCarRescue');
+  });
+
+  it('still requests immediate DRIVE when no usable transit journey is returned', async () => {
+    process.env.GOOGLE_ROUTES_API_KEY = 'server-test-key';
+    const drive: GoogleRoutesResponse = { routes: [{ duration: '2400s', distanceMeters: 20000 }] };
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce(response({ routes: [] }))
+      .mockResolvedValueOnce(response(drive));
+    globalThis.fetch = fetchMock as typeof fetch;
+
+    const apiResponse = await POST(new NextRequest('http://localhost/api/founder/arrive-by/google', {
+      method: 'POST', body: JSON.stringify(input), headers: { 'Content-Type': 'application/json' },
+    }));
+    const body = await apiResponse.json();
+    const driveRequest = JSON.parse(String(fetchMock.mock.calls[1][1]?.body));
+
+    expect(apiResponse.status).toBe(200);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(driveRequest).toMatchObject({ travelMode: 'DRIVE', departureTime: '2026-09-25T11:00:00.000Z' });
+    expect(body).toMatchObject({ transitStatus: 'UNAVAILABLE', immediateCar: { status: 'AVAILABLE' } });
+  });
+
+  it('preserves missed-service DRIVE timing when primary transit works', async () => {
+    process.env.GOOGLE_ROUTES_API_KEY = 'server-test-key';
+    const drive: GoogleRoutesResponse = { routes: [{ duration: '3600s', distanceMeters: 60500 }] };
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce(response(primaryResponse))
+      .mockResolvedValueOnce(response(fallbackResponse))
+      .mockResolvedValueOnce(response(drive));
+    globalThis.fetch = fetchMock as typeof fetch;
+
+    const apiResponse = await POST(new NextRequest('http://localhost/api/founder/arrive-by/google', {
+      method: 'POST', body: JSON.stringify(input), headers: { 'Content-Type': 'application/json' },
+    }));
+    const body = await apiResponse.json();
+    const driveRequest = JSON.parse(String(fetchMock.mock.calls[2][1]?.body));
+
+    expect(apiResponse.status).toBe(200);
+    expect(driveRequest).toMatchObject({ travelMode: 'DRIVE', departureTime: '2026-09-25T11:17:00Z' });
+    expect(body.missedServiceCarRescue).toMatchObject({ departureTime: '2026-09-25T11:17:00Z' });
+    expect(body).not.toHaveProperty('immediateCar');
+  });
+});
+
 describe('ready-by and rescue presentation boundaries', () => {
   const client = readFileSync(join(process.cwd(), 'components/founder/arrive-by-google.tsx'), 'utf8');
   const api = readFileSync(join(process.cwd(), 'app/api/founder/arrive-by/google/route.ts'), 'utf8');
 
   it('keeps blank readiness wording location-based and names both physical-arrival facts when entered', () => {
     expect(client).toContain('you can reach ${result.destination} by ${deadlineClock}');
-    expect(client).toContain('Expected physical arrival');
+    expect(client).toContain('Expected public-transport arrival');
     expect(client).toContain('need to physically arrive by');
     expect(client).not.toContain('you’ll make the event');
   });
@@ -219,14 +318,17 @@ describe('ready-by and rescue presentation boundaries', () => {
     expect(client).toContain('A car/taxi/pick-up could get you there in time based on the driving estimate.');
     expect(client).toContain('Estimated margin: about');
     expect(client).toContain('Estimated shortfall: about');
-    expect(client).toContain('It assumes you could leave by car as soon as the missed service departs.');
+    expect(client).toContain("immediate ? 'at your entered ready-to-leave time' : 'as soon as the missed service departs'");
     expect(client).toContain('It does not include time to find or wait for a taxi, car or pick-up');
     expect(client).toContain('availability is not guaranteed');
     expect(client).toContain('border-ink-200 bg-sand-50');
   });
 
-  it('calls DRIVE only after the returned transit fallback has failed', () => {
-    expect(api).toContain('if (preliminary.carRescue)');
+  it('requests immediate DRIVE for failed or unavailable transit and preserves missed-service timing for working transit', () => {
+    expect(api).toContain('if (!primary)');
+    expect(api).toContain('if (!preliminary.judgement.meetsDeadline)');
+    expect(api).toContain('googleDriveRequest(input, immediateDeparture)');
+    expect(api).toContain('else if (!preliminary.fallbackJudgement.meetsDeadline)');
     expect(api).toContain('googleDriveRequest(input, primary.firstImportantService.departureTime)');
   });
 
@@ -236,23 +338,39 @@ describe('ready-by and rescue presentation boundaries', () => {
     expect(topLevelVerdict(result, '14:30')).toBe(`Yes — you can reach ${input.destination} by 14:30`);
   });
 
-  it('uses a qualified car-rescue verdict when transit fails but the existing driving estimate succeeds', () => {
+  it('uses a qualified immediate-car verdict when transit fails but immediate driving succeeds', () => {
     const drive: GoogleRoutesResponse = { routes: [{ duration: '3600s', distanceMeters: 60500 }] };
-    const result = buildGooglePrototypeResult({ ...input, readinessMinutes: 15 }, primaryResponse, fallbackResponse, '2026-09-24T12:00:00Z', drive);
+    const result = buildGooglePrototypeResult({ ...input, readinessMinutes: 15 }, primaryResponse, fallbackResponse, '2026-09-24T12:00:00Z', { immediateCar: drive });
     expect(result.judgement.meetsDeadline).toBe(false);
-    expect(result.carRescue).toMatchObject({ status: 'AVAILABLE', meetsReadyBy: true });
-    expect(topLevelOutcome(result)).toBe('CAR_MAY_WORK');
+    expect(result.immediateCar).toMatchObject({ status: 'AVAILABLE', meetsReadyBy: true });
+    expect(topLevelOutcome(result)).toBe('IMMEDIATE_CAR_MAY_WORK');
     expect(topLevelVerdict(result, '14:30')).toBe('Public transport is too late, but a car may still get you there in time.');
     expect(topLevelVerdict(result, '14:30')).not.toMatch(/^No\b/);
   });
 
-  it.each([
-    ['an unavailable car rescue', { routes: [] } satisfies GoogleRoutesResponse],
-    ['a car rescue that also misses ready-by', { routes: [{ duration: '12000s', distanceMeters: 60500 }] } satisfies GoogleRoutesResponse],
-  ])('uses the true negative verdict for %s', (_label, drive) => {
-    const result = buildGooglePrototypeResult({ ...input, readinessMinutes: 15 }, primaryResponse, fallbackResponse, '2026-09-24T12:00:00Z', drive);
+  it('uses the true negative verdict only when immediate car was checked and also misses ready-by', () => {
+    const drive = { routes: [{ duration: '12000s', distanceMeters: 60500 }] } satisfies GoogleRoutesResponse;
+    const result = buildGooglePrototypeResult({ ...input, readinessMinutes: 15 }, primaryResponse, fallbackResponse, '2026-09-24T12:00:00Z', { immediateCar: drive });
     expect(result.judgement.meetsDeadline).toBe(false);
     expect(topLevelOutcome(result)).toBe('NO_CHECKED_OPTION_WORKS');
     expect(topLevelVerdict(result, '14:30')).toBe('No — none of the checked options get you there in time.');
+  });
+
+  it('states the known transit failure when the immediate DRIVE estimate is unavailable', () => {
+    const result = buildGooglePrototypeResult({ ...input, readinessMinutes: 15 }, primaryResponse, fallbackResponse, '2026-09-24T12:00:00Z', { immediateCar: { routes: [] } });
+    expect(result.judgement.meetsDeadline).toBe(false);
+    expect(topLevelOutcome(result)).toBe('TRANSIT_LATE_CAR_UNAVAILABLE');
+    expect(topLevelVerdict(result, '14:30')).toBe('Public transport is too late, and a car estimate could not be confirmed.');
+  });
+
+  it('distinguishes no-transit car success, car failure and car unavailability', () => {
+    const succeeds = buildGoogleNoTransitPrototypeResult(input, { routes: [{ duration: '3600s' }] });
+    const fails = buildGoogleNoTransitPrototypeResult(input, { routes: [{ duration: '12000s' }] });
+    const unavailable = buildGoogleNoTransitPrototypeResult(input, { routes: [] });
+    expect(topLevelOutcome(succeeds)).toBe('NO_TRANSIT_CAR_MAY_WORK');
+    expect(topLevelVerdict(succeeds, '14:30')).toBe('No public-transport journey was found, but a car may still get you there in time.');
+    expect(topLevelOutcome(fails)).toBe('NO_CHECKED_OPTION_WORKS');
+    expect(topLevelOutcome(unavailable)).toBe('JOURNEY_NOT_CONFIRMED');
+    expect(topLevelVerdict(unavailable, '14:30')).toBe('Journey not confirmed.');
   });
 });

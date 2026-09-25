@@ -114,7 +114,7 @@ export interface GoogleCarRescue {
   minutesFromReadyBy?: number;
 }
 
-export interface GooglePrototypeResult {
+interface GooglePrototypeResultBase {
   origin: { id: GoogleOriginId; label: string; timeZone: string };
   destination: string;
   /** The traveller's stated commitment time. */
@@ -123,11 +123,16 @@ export interface GooglePrototypeResult {
   effectiveLatestArrival: string;
   readinessMinutes: number;
   deadlineReason?: string;
+  immediateCar?: GoogleCarRescue;
+  missedServiceCarRescue?: GoogleCarRescue;
+}
+
+export interface GoogleTransitPrototypeResult extends GooglePrototypeResultBase {
+  transitStatus: 'AVAILABLE';
   primary: GoogleItinerary;
   fallback: GoogleItinerary;
   judgement: GooglePrototypeJudgement;
   fallbackJudgement: GooglePrototypeJudgement;
-  carRescue?: GoogleCarRescue;
   engine: {
     state: DoorOptionResult['state'];
     selectedService?: string;
@@ -138,6 +143,18 @@ export interface GooglePrototypeResult {
     fallbackArrival?: string;
     fallbackMeetsDeadline?: boolean;
   };
+}
+
+export interface GoogleNoTransitPrototypeResult extends GooglePrototypeResultBase {
+  transitStatus: 'UNAVAILABLE';
+  immediateCar: GoogleCarRescue;
+}
+
+export type GooglePrototypeResult = GoogleTransitPrototypeResult | GoogleNoTransitPrototypeResult;
+
+export interface GoogleDriveResponses {
+  immediateCar?: GoogleRoutesResponse | null;
+  missedServiceCarRescue?: GoogleRoutesResponse | null;
 }
 
 const durationSeconds = (value?: string): number => {
@@ -353,8 +370,8 @@ export function buildGooglePrototypeResult(
   primaryResponse: GoogleRoutesResponse,
   fallbackResponse: GoogleRoutesResponse,
   nowIso: string,
-  driveResponse?: GoogleRoutesResponse | null,
-): GooglePrototypeResult {
+  driveResponses?: GoogleDriveResponses,
+): GoogleTransitPrototypeResult {
   const origin = GOOGLE_ARRIVE_BY_ORIGINS[input.originId];
   if (!origin) throw new Error('Choose a supported terminal.');
   const primary = normaliseGoogleItinerary(primaryResponse);
@@ -372,13 +389,10 @@ export function buildGooglePrototypeResult(
   const assessedItinerary = assessedService === 'Google missed-service journey' ? fallback : primary;
   const primaryJudgement = judgement(assessedItinerary.arrivalTime, readyBy.iso);
   const fallbackJudgement = judgement(fallback.arrivalTime, readyBy.iso);
-  // A primary itinerary can physically reach the location but fail an
-  // explicitly entered ready-by allowance. It is still the first journey the
-  // traveller could take, so its missed-service fallback deserves the same
-  // direct-drive rescue check. `assessedService` preserves that distinction
-  // when the unchanged engine marks the primary route diagnostic-only.
-  const shouldAssessCar = assessedService === 'Google primary journey' && !fallbackJudgement.meetsDeadline;
+  const hasImmediateCar = Boolean(driveResponses && Object.prototype.hasOwnProperty.call(driveResponses, 'immediateCar'));
+  const hasMissedServiceCar = Boolean(driveResponses && Object.prototype.hasOwnProperty.call(driveResponses, 'missedServiceCarRescue'));
   return {
+    transitStatus: 'AVAILABLE',
     origin: { id: origin.id, label: origin.label, timeZone: origin.timeZone },
     destination: input.destination,
     deadline: readyBy.commitmentIso,
@@ -389,7 +403,12 @@ export function buildGooglePrototypeResult(
     fallback,
     judgement: primaryJudgement,
     fallbackJudgement,
-    carRescue: shouldAssessCar ? normaliseGoogleDriveRescue(driveResponse, primary.firstImportantService.departureTime, readyBy.iso) : undefined,
+    immediateCar: hasImmediateCar
+      ? normaliseGoogleDriveRescue(driveResponses?.immediateCar, localDateTimeToIso(input.availableAt, origin.timeZone), readyBy.iso)
+      : undefined,
+    missedServiceCarRescue: hasMissedServiceCar
+      ? normaliseGoogleDriveRescue(driveResponses?.missedServiceCarRescue, primary.firstImportantService.departureTime, readyBy.iso)
+      : undefined,
     engine: {
       state: option.state,
       selectedService: option.onwardService,
@@ -400,6 +419,26 @@ export function buildGooglePrototypeResult(
       fallbackArrival: option.fallbackOnward?.finalArrivalIfUsed ? `${option.fallbackOnward.finalArrivalIfUsed.dateIso}T${option.fallbackOnward.finalArrivalIfUsed.timeHHmm}` : undefined,
       fallbackMeetsDeadline: option.fallbackOnward?.meetsDeadline,
     },
+  };
+}
+
+export function buildGoogleNoTransitPrototypeResult(
+  input: GooglePrototypeInput,
+  driveResponse: GoogleRoutesResponse | null | undefined,
+): GoogleNoTransitPrototypeResult {
+  const origin = GOOGLE_ARRIVE_BY_ORIGINS[input.originId];
+  if (!origin) throw new Error('Choose a supported terminal.');
+  const readyBy = effectiveLatestArrival(input);
+  const departureTime = localDateTimeToIso(input.availableAt, origin.timeZone);
+  return {
+    transitStatus: 'UNAVAILABLE',
+    origin: { id: origin.id, label: origin.label, timeZone: origin.timeZone },
+    destination: input.destination,
+    deadline: readyBy.commitmentIso,
+    effectiveLatestArrival: readyBy.iso,
+    readinessMinutes: readyBy.readinessMinutes,
+    deadlineReason: input.deadlineReason?.trim() || undefined,
+    immediateCar: normaliseGoogleDriveRescue(driveResponse, departureTime, readyBy.iso),
   };
 }
 
@@ -421,7 +460,7 @@ export function googleRoutesRequest(
   };
 }
 
-/** A single direct road estimate, requested only after a missed transit service fails. */
+/** A single direct traffic-aware road estimate at the caller's explicit decision time. */
 export function googleDriveRequest(input: GooglePrototypeInput, departureTime: string) {
   const origin = GOOGLE_ARRIVE_BY_ORIGINS[input.originId];
   if (!origin) throw new Error('Choose a supported terminal.');

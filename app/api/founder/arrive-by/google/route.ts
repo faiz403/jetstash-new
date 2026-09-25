@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import {
+  buildGoogleNoTransitPrototypeResult,
   buildGooglePrototypeResult,
   GOOGLE_ARRIVE_BY_ORIGINS,
   GOOGLE_ROUTE_FIELD_MASK,
@@ -75,22 +76,45 @@ export async function POST(request: NextRequest) {
     // past that itinerary's first important service.
     const deadlineIso = localDateTimeToIso(input.deadline, timeZone);
     const primaryResponse = await callGoogle(apiKey, googleRoutesRequest(input, { arrivalTime: deadlineIso }));
-    const primary = normaliseGoogleItinerary(primaryResponse);
+    let primary: ReturnType<typeof normaliseGoogleItinerary> | null = null;
+    try {
+      primary = normaliseGoogleItinerary(primaryResponse);
+    } catch {
+      // A response with no usable transit itinerary does not answer whether
+      // choosing a direct car from the entered ready time can still work.
+    }
+    if (!primary) {
+      const immediateDeparture = localDateTimeToIso(input.availableAt, timeZone);
+      let immediateDriveResponse: GoogleRoutesResponse | null;
+      try {
+        immediateDriveResponse = await callGoogle(apiKey, googleDriveRequest(input, immediateDeparture));
+      } catch {
+        immediateDriveResponse = null;
+      }
+      return NextResponse.json(buildGoogleNoTransitPrototypeResult(input, immediateDriveResponse));
+    }
     const missedServiceDeparture = new Date(Date.parse(primary.firstImportantService.departureTime) + 60000).toISOString();
     const fallbackResponse = await callGoogle(apiKey, googleRoutesRequest(input, { departureTime: missedServiceDeparture }));
     const preliminary = buildGooglePrototypeResult(input, primaryResponse, fallbackResponse, new Date().toISOString());
-    // A road estimate is deliberately a rescue, not a competing default. It
-    // begins at the moment the first important public-transport service is
-    // missed, and is requested only when the returned transit fallback fails.
-    let driveResponse: GoogleRoutesResponse | null | undefined;
-    if (preliminary.carRescue) {
+    const driveResponses: {
+      immediateCar?: GoogleRoutesResponse | null;
+      missedServiceCarRescue?: GoogleRoutesResponse | null;
+    } = {};
+    if (!preliminary.judgement.meetsDeadline) {
+      const immediateDeparture = localDateTimeToIso(input.availableAt, timeZone);
       try {
-        driveResponse = await callGoogle(apiKey, googleDriveRequest(input, primary.firstImportantService.departureTime));
+        driveResponses.immediateCar = await callGoogle(apiKey, googleDriveRequest(input, immediateDeparture));
       } catch {
-        driveResponse = null;
+        driveResponses.immediateCar = null;
+      }
+    } else if (!preliminary.fallbackJudgement.meetsDeadline) {
+      try {
+        driveResponses.missedServiceCarRescue = await callGoogle(apiKey, googleDriveRequest(input, primary.firstImportantService.departureTime));
+      } catch {
+        driveResponses.missedServiceCarRescue = null;
       }
     }
-    return NextResponse.json(buildGooglePrototypeResult(input, primaryResponse, fallbackResponse, new Date().toISOString(), driveResponse));
+    return NextResponse.json(buildGooglePrototypeResult(input, primaryResponse, fallbackResponse, new Date().toISOString(), driveResponses));
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Arrive By could not check this journey.';
     return NextResponse.json({ error: message }, { status: 422 });

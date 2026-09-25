@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useRef, useState, type FormEvent } from 'react';
-import type { GoogleItinerary, GoogleJourneyLeg, GooglePrototypeResult } from '@/lib/arrive-by/google-routes';
+import type { GoogleCarRescue, GoogleItinerary, GoogleJourneyLeg, GooglePrototypeResult } from '@/lib/arrive-by/google-routes';
 
 const field = 'mt-1 w-full rounded-sm border border-ink-200 bg-white px-3 py-2 text-base text-ink-900';
 
@@ -36,18 +36,25 @@ function minutes(value?: number): string {
   return hours ? `${hours}h${remainder ? ` ${remainder}m` : ''}` : `${remainder} min`;
 }
 
-export type TopLevelOutcome = 'TRANSIT_WORKS' | 'CAR_MAY_WORK' | 'NO_CHECKED_OPTION_WORKS';
+export type TopLevelOutcome = 'TRANSIT_WORKS' | 'IMMEDIATE_CAR_MAY_WORK' | 'NO_TRANSIT_CAR_MAY_WORK' | 'NO_CHECKED_OPTION_WORKS' | 'TRANSIT_LATE_CAR_UNAVAILABLE' | 'JOURNEY_NOT_CONFIRMED';
 
 export function topLevelOutcome(result: GooglePrototypeResult): TopLevelOutcome {
+  if (result.transitStatus === 'UNAVAILABLE') {
+    if (result.immediateCar.status !== 'AVAILABLE') return 'JOURNEY_NOT_CONFIRMED';
+    return result.immediateCar.meetsReadyBy ? 'NO_TRANSIT_CAR_MAY_WORK' : 'NO_CHECKED_OPTION_WORKS';
+  }
   if (result.judgement.meetsDeadline) return 'TRANSIT_WORKS';
-  if (result.carRescue?.status === 'AVAILABLE' && result.carRescue.meetsReadyBy === true) return 'CAR_MAY_WORK';
-  return 'NO_CHECKED_OPTION_WORKS';
+  if (result.immediateCar?.status !== 'AVAILABLE') return 'TRANSIT_LATE_CAR_UNAVAILABLE';
+  return result.immediateCar.meetsReadyBy ? 'IMMEDIATE_CAR_MAY_WORK' : 'NO_CHECKED_OPTION_WORKS';
 }
 
 export function topLevelVerdict(result: GooglePrototypeResult, deadlineClock: string): string {
   const outcome = topLevelOutcome(result);
-  if (outcome === 'CAR_MAY_WORK') return 'Public transport is too late, but a car may still get you there in time.';
+  if (outcome === 'IMMEDIATE_CAR_MAY_WORK') return 'Public transport is too late, but a car may still get you there in time.';
+  if (outcome === 'NO_TRANSIT_CAR_MAY_WORK') return 'No public-transport journey was found, but a car may still get you there in time.';
   if (outcome === 'NO_CHECKED_OPTION_WORKS') return 'No — none of the checked options get you there in time.';
+  if (outcome === 'TRANSIT_LATE_CAR_UNAVAILABLE') return 'Public transport is too late, and a car estimate could not be confirmed.';
+  if (outcome === 'JOURNEY_NOT_CONFIRMED') return 'Journey not confirmed.';
   return result.readinessMinutes > 0
     ? `Yes — you can be ready by ${deadlineClock}`
     : `Yes — you can reach ${result.destination} by ${deadlineClock}`;
@@ -77,6 +84,27 @@ function JourneyChain({ title, itinerary, timeZone }: { title: string; itinerary
         : <Transit key={index} leg={leg} timeZone={timeZone} />)}
     </ol>
   </details>;
+}
+
+function CarEstimate({ estimate, result, scenario }: { estimate: GoogleCarRescue; result: GooglePrototypeResult; scenario: 'immediate' | 'missed-service' }) {
+  const immediate = scenario === 'immediate';
+  return <section className="mt-4 rounded-md border border-ink-200 bg-sand-50 p-4 sm:p-5">
+    <p className="text-xs font-semibold uppercase tracking-wide">{immediate ? 'Car / taxi / pick-up from your ready time' : 'Car / taxi / pick-up after the missed service'}</p>
+    {estimate.status === 'AVAILABLE' ? <>
+      <h3 className="mt-2 font-display text-xl">Estimated drive from Manchester Airport Terminal 2: {minutes(Math.ceil((estimate.durationSeconds ?? 0) / 60))}.</h3>
+      <p className="mt-2 text-sm">Estimated departure: <strong>{clock(estimate.departureTime!, result.origin.timeZone)}</strong>. Estimated physical arrival: <strong>{clock(estimate.arrivalTime!, result.origin.timeZone)}</strong>.</p>
+      <p className="mt-1 text-sm font-semibold">{estimate.meetsReadyBy
+        ? 'A car/taxi/pick-up could get you there in time based on the driving estimate.'
+        : (result.readinessMinutes > 0 ? 'The driving estimate still misses the time you need to physically arrive by.' : 'The driving estimate still misses your stated arrival time.')}</p>
+      <p className="mt-1 text-sm">{estimate.meetsReadyBy
+        ? (result.readinessMinutes > 0 ? `Estimated margin: about ${estimate.minutesFromReadyBy} minutes before the time you need to physically arrive.` : `Estimated margin: about ${estimate.minutesFromReadyBy} minutes before your stated arrival time.`)
+        : `Estimated shortfall: about ${estimate.minutesFromReadyBy} minutes.`}</p>
+      <p className="mt-3 text-xs text-ink-500">This is a traffic-aware driving estimate only. It assumes you could leave by car {immediate ? 'at your entered ready-to-leave time' : 'as soon as the missed service departs'}. It does not include time to find or wait for a taxi, car or pick-up, and availability is not guaranteed.</p>
+    </> : <>
+      <h3 className="mt-2 font-display text-xl">Car/taxi driving estimate unavailable.</h3>
+      <p className="mt-2 text-sm text-ink-600">Arrive By could not get a usable direct DRIVE route. It has not substituted another route or invented a duration.</p>
+    </>}
+  </section>;
 }
 
 export function ArriveByGoogle() {
@@ -116,9 +144,10 @@ export function ArriveByGoogle() {
 
   const deadlineClock = result ? clock(result.deadline, result.origin.timeZone) : '';
   const readyByClock = result ? clock(result.effectiveLatestArrival, result.origin.timeZone) : '';
-  const primaryClock = result ? clock(result.judgement.arrivalTime, result.origin.timeZone) : '';
-  const fallbackClock = result ? clock(result.fallbackJudgement.arrivalTime, result.origin.timeZone) : '';
-  const primaryWasAssessed = result?.engine.assessedService !== 'Google missed-service journey';
+  const transitResult = result?.transitStatus === 'AVAILABLE' ? result : null;
+  const primaryClock = transitResult ? clock(transitResult.judgement.arrivalTime, transitResult.origin.timeZone) : '';
+  const fallbackClock = transitResult ? clock(transitResult.fallbackJudgement.arrivalTime, transitResult.origin.timeZone) : '';
+  const primaryWasAssessed = transitResult?.engine.assessedService !== 'Google missed-service journey';
   const outcome = result ? topLevelOutcome(result) : null;
 
   return <div className="mx-auto max-w-5xl bg-white px-4 py-8 text-ink-900 sm:px-8">
@@ -154,54 +183,43 @@ export function ArriveByGoogle() {
     {error && <div role="alert" className="mt-6 rounded-md border border-terracotta-400 bg-terracotta-50 p-4 text-sm font-medium text-terracotta-700"><strong>Journey not confirmed.</strong><p className="mt-1">{error}</p></div>}
 
     {result && <div ref={resultRef} tabIndex={-1} aria-live="polite" className="mt-8 scroll-mt-20 outline-none">
-      <section className={`rounded-md border p-5 sm:p-7 ${outcome === 'TRANSIT_WORKS' ? 'border-brass bg-brass-50' : outcome === 'CAR_MAY_WORK' ? 'border-ink-200 bg-sand-50' : 'border-terracotta-400 bg-terracotta-50'}`}>
+      <section className={`rounded-md border p-5 sm:p-7 ${outcome === 'TRANSIT_WORKS' ? 'border-brass bg-brass-50' : outcome === 'IMMEDIATE_CAR_MAY_WORK' || outcome === 'NO_TRANSIT_CAR_MAY_WORK' ? 'border-ink-200 bg-sand-50' : 'border-terracotta-400 bg-terracotta-50'}`}>
         <p className="text-xs font-semibold uppercase tracking-wide">Your answer</p>
         <h2 className="mt-2 font-display text-3xl">{topLevelVerdict(result, deadlineClock)}</h2>
-        <p className="mt-3 text-lg">Expected physical arrival: <strong>{primaryClock}</strong>.</p>
+        {transitResult
+          ? <p className="mt-3 text-lg">Expected public-transport arrival: <strong>{primaryClock}</strong>.</p>
+          : <p className="mt-3 text-lg">No usable public-transport journey was returned for these details.</p>}
         {result.readinessMinutes > 0
           ? <p className="mt-1 text-lg">You entered <strong>{minutes(result.readinessMinutes)}</strong> after arrival to be ready, so you need to physically arrive by <strong>{readyByClock}</strong>.</p>
-          : <p className="mt-1 text-lg">{result.judgement.meetsDeadline
-            ? `You have about ${result.judgement.minutesFromDeadline} minutes spare before your stated arrival time.`
-            : `You arrive about ${result.judgement.minutesFromDeadline} minutes after your stated arrival time.`}</p>}
-        {result.readinessMinutes > 0 && <p className="mt-1 text-lg">{result.judgement.meetsDeadline
-          ? `You have about ${result.judgement.minutesFromDeadline} minutes spare before the time you need to physically arrive.`
-          : `You miss the time you need to physically arrive by about ${result.judgement.minutesFromDeadline} minutes.`}</p>}
+          : transitResult
+            ? <p className="mt-1 text-lg">{transitResult.judgement.meetsDeadline
+              ? `You have about ${transitResult.judgement.minutesFromDeadline} minutes spare before your stated arrival time.`
+              : `You arrive about ${transitResult.judgement.minutesFromDeadline} minutes after your stated arrival time.`}</p>
+            : <p className="mt-1 text-lg">You need to reach the destination by <strong>{deadlineClock}</strong>.</p>}
+        {result.readinessMinutes > 0 && transitResult && <p className="mt-1 text-lg">{transitResult.judgement.meetsDeadline
+          ? `You have about ${transitResult.judgement.minutesFromDeadline} minutes spare before the time you need to physically arrive.`
+          : `Public transport misses the time you need to physically arrive by about ${transitResult.judgement.minutesFromDeadline} minutes.`}</p>}
         {result.deadlineReason && <p className="mt-3 text-sm text-ink-600">You said this matters because: {result.deadlineReason}</p>}
       </section>
 
-      {primaryWasAssessed ? <section className={`mt-4 rounded-md border p-5 sm:p-6 ${result.fallbackJudgement.meetsDeadline ? 'border-brass/60 bg-white' : 'border-terracotta-400 bg-terracotta-50'}`}>
+      {transitResult?.judgement.meetsDeadline && (primaryWasAssessed ? <section className={`mt-4 rounded-md border p-5 sm:p-6 ${transitResult.fallbackJudgement.meetsDeadline ? 'border-brass/60 bg-white' : 'border-terracotta-400 bg-terracotta-50'}`}>
         <p className="text-xs font-semibold uppercase tracking-wide">If you miss the first important service</p>
-        <h3 className="mt-2 font-display text-2xl">Miss the {clock(result.primary.firstImportantService.departureTime, result.origin.timeZone)} {serviceLabel(result.primary.firstImportantService.lineShortName || result.primary.firstImportantService.agency || 'service')}, and the next public-transport journey reaches {result.destination} at about {fallbackClock}.</h3>
-        <p className="mt-2 font-semibold">{result.fallbackJudgement.meetsDeadline
-          ? (result.readinessMinutes > 0 ? `It still gets you there with about ${result.fallbackJudgement.minutesFromDeadline} minutes spare before your ready-by time.` : `It still reaches the location, with about ${result.fallbackJudgement.minutesFromDeadline} minutes spare.`)
-          : (result.readinessMinutes > 0 ? `That misses the time you need to physically arrive by about ${result.fallbackJudgement.minutesFromDeadline} minutes.` : `That is about ${result.fallbackJudgement.minutesFromDeadline} minutes late.`)}</p>
+        <h3 className="mt-2 font-display text-2xl">Miss the {clock(transitResult.primary.firstImportantService.departureTime, transitResult.origin.timeZone)} {serviceLabel(transitResult.primary.firstImportantService.lineShortName || transitResult.primary.firstImportantService.agency || 'service')}, and the next public-transport journey reaches {transitResult.destination} at about {fallbackClock}.</h3>
+        <p className="mt-2 font-semibold">{transitResult.fallbackJudgement.meetsDeadline
+          ? (transitResult.readinessMinutes > 0 ? `It still gets you there with about ${transitResult.fallbackJudgement.minutesFromDeadline} minutes spare before your ready-by time.` : `It still reaches the location, with about ${transitResult.fallbackJudgement.minutesFromDeadline} minutes spare.`)
+          : (transitResult.readinessMinutes > 0 ? `That misses the time you need to physically arrive by about ${transitResult.fallbackJudgement.minutesFromDeadline} minutes.` : `That is about ${transitResult.fallbackJudgement.minutesFromDeadline} minutes late.`)}</p>
       </section> : <section className="mt-4 rounded-md border border-terracotta-400 bg-terracotta-50 p-5 sm:p-6">
         <p className="text-xs font-semibold uppercase tracking-wide">The deadline-fitting journey starts too early</p>
         <p className="mt-2 font-semibold">The first Google journey had already started by your ready time, so Arrive By assessed the next returned journey. A further missed-service fallback has not been established.</p>
-      </section>}
+      </section>)}
 
-      {primaryWasAssessed && !result.fallbackJudgement.meetsDeadline && result.carRescue && <section className="mt-4 rounded-md border border-ink-200 bg-sand-50 p-4 sm:p-5">
-        <p className="text-xs font-semibold uppercase tracking-wide">Possible car / taxi / pick-up estimate</p>
-        {result.carRescue.status === 'AVAILABLE' ? <>
-          <h3 className="mt-2 font-display text-xl">Estimated drive from Manchester Airport Terminal 2: {minutes(Math.ceil((result.carRescue.durationSeconds ?? 0) / 60))}.</h3>
-          <p className="mt-2 text-sm">Estimated physical arrival: <strong>{clock(result.carRescue.arrivalTime!, result.origin.timeZone)}</strong>.</p>
-          <p className="mt-1 text-sm font-semibold">{result.carRescue.meetsReadyBy
-            ? `A car/taxi/pick-up could get you there in time based on the driving estimate.`
-            : (result.readinessMinutes > 0 ? `The driving estimate still misses the time you need to physically arrive by.` : `The driving estimate still misses your stated arrival time.`)}</p>
-          <p className="mt-1 text-sm">{result.carRescue.meetsReadyBy
-            ? (result.readinessMinutes > 0 ? `Estimated margin: about ${result.carRescue.minutesFromReadyBy} minutes before the time you need to physically arrive.` : `Estimated margin: about ${result.carRescue.minutesFromReadyBy} minutes before your stated arrival time.`)
-            : `Estimated shortfall: about ${result.carRescue.minutesFromReadyBy} minutes.`}</p>
-          <p className="mt-3 text-xs text-ink-500">This is a traffic-aware driving estimate only. It assumes you could leave by car as soon as the missed service departs. It does not include time to find or wait for a taxi, car or pick-up, and availability is not guaranteed.</p>
-        </> : <>
-          <h3 className="mt-2 font-display text-xl">Car/taxi driving estimate unavailable.</h3>
-          <p className="mt-2 text-sm text-ink-600">The public-transport fallback misses the requirement, but Arrive By could not get a usable direct DRIVE route. It has not substituted another route or invented a duration.</p>
-        </>}
-      </section>}
+      {result.immediateCar && <CarEstimate estimate={result.immediateCar} result={result} scenario="immediate" />}
+      {transitResult?.missedServiceCarRescue && <CarEstimate estimate={transitResult.missedServiceCarRescue} result={transitResult} scenario="missed-service" />}
 
-      <div className="mt-5 grid gap-4 lg:grid-cols-2">
-        <JourneyChain title="Journey this answer is based on" itinerary={primaryWasAssessed ? result.primary : result.fallback} timeZone={result.origin.timeZone} />
-        {primaryWasAssessed && <JourneyChain title="Journey after missing the first service" itinerary={result.fallback} timeZone={result.origin.timeZone} />}
-      </div>
+      {transitResult && <div className="mt-5 grid gap-4 lg:grid-cols-2">
+        <JourneyChain title="Journey this answer is based on" itinerary={primaryWasAssessed ? transitResult.primary : transitResult.fallback} timeZone={transitResult.origin.timeZone} />
+        {transitResult.judgement.meetsDeadline && primaryWasAssessed && <JourneyChain title="Journey after missing the first service" itinerary={transitResult.fallback} timeZone={transitResult.origin.timeZone} />}
+      </div>}
       <p className="mt-4 text-xs text-ink-500">Live route and timetable data came from Google Routes. Times can change and delays can exceed this margin. Confirm services before travelling.</p>
     </div>}
   </div>;
