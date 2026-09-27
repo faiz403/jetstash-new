@@ -59,7 +59,12 @@ describe('no PUBLIC interface exists (Stage 2 scope: founder-only preview, never
           const relative = full.replace(process.cwd() + sep, '');
           if (SANCTIONED_STAGE_2_FILES.includes(relative)) continue;
           const content = readFileSync(full, 'utf8');
-          if (content.includes('arrive-by')) offenders.push(full);
+          // Match references to the lib/arrive-by module itself, not any
+          // identifier that merely contains "arrive-by" as a substring —
+          // e.g. the separate, sanctioned lib/arrive-by-pakistan module
+          // (a different country's founder-only prototype, never importing
+          // this one) must not trip this check.
+          if (/lib\/arrive-by(['"/]|$)/.test(content)) offenders.push(full);
         }
       }
     }
