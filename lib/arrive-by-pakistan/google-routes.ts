@@ -5,13 +5,18 @@ import type { DestinationConfidence } from './types';
  * Google APIs are used deliberately, not one:
  *
  *  - The Geocoding API resolves and classifies the destination BEFORE any
- *    routing is attempted. This is the API that actually returns
- *    per-result confidence signals (partial_match, geometry
- *    location_type, result types, multiple candidates) — the newer
- *    Routes API v2 used for the drive request itself does not expose the
- *    same per-waypoint confidence data, so pretending it does would be
- *    dishonest. Getting this classification right is what stops Arrive By
- *    confidently routing someone to the wrong village.
+ *    routing is attempted. Routes API v2's own computeRoutes response can
+ *    return per-waypoint confidence too (geocodingResults: geocoderStatus,
+ *    type, partialMatch, placeId) when addresses are used, so this isn't
+ *    about Routes lacking confidence data in general — it's that Routes
+ *    only ever resolves one best-guess waypoint per address, never a list
+ *    of candidates. The Geocoding API's results[] array is what actually
+ *    lets us detect "more than one plausible match" (results.length > 1),
+ *    which is the strongest signal for Pakistan's duplicate/ambiguous
+ *    village names (e.g. more than one place called Mirpur) and the one
+ *    thing the single-call approach can't replicate. Getting this
+ *    classification right is what stops Arrive By confidently routing
+ *    someone to the wrong village.
  *  - The Routes API (v2, computeRoutes) then does the actual DRIVE
  *    request, using the same traffic-aware pattern already validated in
  *    Manchester's own implementation (TRAFFIC_AWARE_OPTIMAL, trafficModel
