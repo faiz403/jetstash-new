@@ -56,6 +56,28 @@ describe('classifyAcquisitionSource() — referrer/UTM classification', () => {
     expect(classifyAcquisitionSource(new URL('https://jetstash.co.uk/routes/manchester-islamabad?utm_source=reddit'), '')).toBe('reddit');
   });
 
+  it.each([
+    ['forums4airports', 'forum', 'forums4airports'],
+    ['whatsapp', 'share', 'whatsapp'],
+    ['chatgpt', 'paid', 'chatgpt'],
+  ] as const)('a recognised utm_source=%s classifies separately', (utmSource, medium, expected) => {
+    const url = new URL(
+      `https://jetstash.co.uk/routes/manchester-islamabad?utm_source=${utmSource}&utm_medium=${medium}&utm_campaign=man_isb_launch`,
+    );
+
+    expect(classifyAcquisitionSource(url, '')).toBe(expected);
+  });
+
+  it.each([
+    ['google', 'organic_search'],
+    ['google_ads', 'google_ads'],
+    ['googleads', 'google_ads'],
+  ] as const)('preserves the utm_source=%s classification', (utmSource, expected) => {
+    const url = new URL(`https://jetstash.co.uk/routes/manchester-islamabad?utm_source=${utmSource}`);
+
+    expect(classifyAcquisitionSource(url, '')).toBe(expected);
+  });
+
   it('an unrecognised utm_source collapses to other_referral, never leaking the raw value', () => {
     const result = classifyAcquisitionSource(new URL('https://jetstash.co.uk/routes/manchester-islamabad?utm_source=some-random-newsletter-value'), '');
     expect(result).toBe('other_referral');
@@ -70,8 +92,19 @@ describe('classifyAcquisitionSource() — referrer/UTM classification', () => {
     expect(classifyAcquisitionSource(new URL('https://jetstash.co.uk/'), 'not a valid url')).toBe('unknown');
   });
 
-  it('the return value is always one of the fixed seven enum members, never arbitrary text', () => {
-    const valid = ['organic_search', 'google_ads', 'facebook', 'reddit', 'other_referral', 'direct', 'unknown'];
+  it('the return value is always one of the fixed ten enum members, never arbitrary text', () => {
+    const valid = [
+      'organic_search',
+      'google_ads',
+      'facebook',
+      'reddit',
+      'forums4airports',
+      'whatsapp',
+      'chatgpt',
+      'other_referral',
+      'direct',
+      'unknown',
+    ];
     const cases: [string, string][] = [
       ['https://jetstash.co.uk/?utm_source=weird', ''],
       ['https://jetstash.co.uk/', 'https://news.ycombinator.com/'],
@@ -99,6 +132,15 @@ describe('privacy design — structural guarantees (no browser environment avail
     // `gclid`, or `utmSourceRaw`/`utmSource` themselves.
     expect(acquisitionSrc).toMatch(/sessionStorage\.setItem\(STORAGE_KEY, classified\)/);
     expect(acquisitionSrc).not.toMatch(/sessionStorage\.setItem\(STORAGE_KEY, (referrer|gclid|utmSource)/);
+  });
+
+  it('analytics payloads receive only the classified channel, never raw UTM fields', () => {
+    expect(trackerSrc).toContain("track('acquisition_landing', { route: pathname, channel })");
+    expect(analyticsSrc).toContain("track('acquisition_handoff', { route, channel })");
+
+    for (const source of [trackerSrc, analyticsSrc]) {
+      expect(source).not.toMatch(/utm_source|utmSourceRaw/);
+    }
   });
 
   it('no persistent visitor ID is generated anywhere in the acquisition module', () => {

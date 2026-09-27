@@ -24,6 +24,9 @@ export type AcquisitionSource =
   | 'google_ads'
   | 'facebook'
   | 'reddit'
+  | 'forums4airports'
+  | 'whatsapp'
+  | 'chatgpt'
   | 'other_referral'
   | 'direct'
   | 'unknown';
@@ -35,6 +38,9 @@ const KNOWN_UTM_SOURCES: Record<string, AcquisitionSource> = {
   facebook: 'facebook',
   fb: 'facebook',
   reddit: 'reddit',
+  forums4airports: 'forums4airports',
+  whatsapp: 'whatsapp',
+  chatgpt: 'chatgpt',
   google_ads: 'google_ads',
   googleads: 'google_ads',
   google: 'organic_search',
@@ -81,7 +87,18 @@ export function classifyAcquisitionSource(url: URL, referrer: string): Acquisiti
 export function getStoredAcquisitionSource(): AcquisitionSource | null {
   if (typeof window === 'undefined') return null;
   const value = window.sessionStorage.getItem(STORAGE_KEY);
-  const valid: readonly string[] = ['organic_search', 'google_ads', 'facebook', 'reddit', 'other_referral', 'direct', 'unknown'];
+  const valid: readonly string[] = [
+    'organic_search',
+    'google_ads',
+    'facebook',
+    'reddit',
+    'forums4airports',
+    'whatsapp',
+    'chatgpt',
+    'other_referral',
+    'direct',
+    'unknown',
+  ];
   return value && valid.includes(value) ? (value as AcquisitionSource) : null;
 }
 
