@@ -49,6 +49,15 @@ export interface PakistanJourneyInput {
  */
 export type DestinationConfidence = 'CONFIRMED' | 'NEEDS_CLARIFICATION' | 'UNRESOLVED';
 
+/** Why a destination didn't reach CONFIRMED — lets the UI explain the specific problem rather than a single generic message. */
+export type DestinationClarificationReason =
+  | 'MULTIPLE_CANDIDATES'
+  | 'PARTIAL_MATCH'
+  | 'TOO_BROAD_TYPE'
+  | 'NO_LOCATION_TYPE'
+  | 'PRIMARY_PLACE_MISMATCH'
+  | 'GEOCODE_FAILED';
+
 export type PakistanOutcome =
   | 'ETA_ONLY'
   | 'BEFORE_DEADLINE'
@@ -63,6 +72,10 @@ export interface PakistanJourneyResult {
   airport: { code: PakistanAirportCode; displayName: string; timeZone: string };
   destination: string;
   destinationConfidence: DestinationConfidence;
+  /** Google's own resolved place name for the destination, shown so a traveller/founder can spot a wrong-place match themselves — never stored, never analytics-tracked. */
+  resolvedDestination?: string;
+  /** Present only when destinationConfidence isn't CONFIRMED, so the UI can explain the specific reason rather than one generic message. */
+  clarificationReason?: DestinationClarificationReason;
   /** Echoed back verbatim from the input for display only — never stored, never analytics-tracked. */
   deadlineReason?: string;
   /** ISO instants — all internally consistent in the airport's own timeZone regardless of the visitor's own browser zone. */

@@ -34,6 +34,8 @@ export async function computePakistanJourney(apiKey: string, input: PakistanJour
     airport: { code: airport.code, displayName: airport.displayName, timeZone: airport.timeZone },
     destination: input.destination,
     destinationConfidence: geocode.confidence,
+    resolvedDestination: geocode.formattedAddress,
+    clarificationReason: geocode.clarificationReason,
     deadlineReason: input.deadlineReason,
     readyOutsideAirport: new Date(readyOutsideMs).toISOString(),
     roadDeparture: roadDepartureIso,

@@ -1,4 +1,5 @@
-import type { DestinationConfidence } from './types';
+import type { DestinationClarificationReason, DestinationConfidence } from './types';
+import { type AddressComponent, deriveResolvedPrimaryPlace, extractPrimaryInputPlace, placesMatch } from './destination-identity';
 
 /**
  * Server-side Google API adapter for Arrive By Pakistan. Two separate
@@ -16,7 +17,16 @@ import type { DestinationConfidence } from './types';
  *    village names (e.g. more than one place called Mirpur) and the one
  *    thing the single-call approach can't replicate. Getting this
  *    classification right is what stops Arrive By confidently routing
- *    someone to the wrong village.
+ *    someone to the wrong village. A live ISB test found that candidate
+ *    count, partial-match and type-broadness aren't enough on their own:
+ *    "Chakswari, Mirpur, Azad Kashmir, Pakistan" resolved to a single,
+ *    non-partial, correctly-typed "New Mirpur City" — a real, different
+ *    town ~42km away — and every one of those signals looked clean. The
+ *    primary-place check below (see destination-identity.ts) is what
+ *    actually catches that: it compares only the place the traveller
+ *    named first ("Chakswari") against Google's own most specific
+ *    resolved place component, not the whole input string (which still
+ *    shares "Mirpur" with the wrong result).
  *  - The Routes API (v2, computeRoutes) then does the actual DRIVE
  *    request, using the same traffic-aware pattern already validated in
  *    Manchester's own implementation (TRAFFIC_AWARE_OPTIMAL, trafficModel
@@ -30,15 +40,26 @@ import type { DestinationConfidence } from './types';
 const GEOCODE_ENDPOINT = 'https://maps.googleapis.com/maps/api/geocode/json';
 const ROUTES_ENDPOINT = 'https://routes.googleapis.com/directions/v2:computeRoutes';
 
-/** Place types too broad to trust for a single-point road journey — a bare country/province match means Google didn't find the actual locality. */
-const TOO_BROAD_TYPES = new Set(['country', 'administrative_area_level_1']);
+/**
+ * Place types too broad to trust for a single-point road journey — country,
+ * province (administrative_area_level_1) and district
+ * (administrative_area_level_2) matches all mean Google resolved to an area,
+ * not the specific locality the traveller named, even when that's the only
+ * candidate and the match wasn't partial.
+ */
+const TOO_BROAD_TYPES = new Set(['country', 'administrative_area_level_1', 'administrative_area_level_2']);
 
 export interface GeocodeResult {
   confidence: DestinationConfidence;
+  clarificationReason?: DestinationClarificationReason;
   formattedAddress?: string;
+  resolvedPrimaryPlace?: string;
   placeId?: string;
   locationTypes?: string[];
+  /** geometry.location_type — diagnostic only. Live evidence (Islamabad, Saddar, Mirpur, Dadyal all APPROXIMATE and correct) shows this is not a failure signal by itself. */
+  locationType?: string;
   partialMatch: boolean;
+  candidateCount: number;
   status: string;
 }
 
@@ -48,6 +69,7 @@ interface GeocodeApiResult {
   partial_match?: boolean;
   types?: string[];
   geometry?: { location_type?: string };
+  address_components?: AddressComponent[];
 }
 
 export async function geocodeDestination(apiKey: string, destination: string): Promise<GeocodeResult> {
@@ -60,15 +82,15 @@ export async function geocodeDestination(apiKey: string, destination: string): P
   try {
     response = await fetch(url.toString(), { cache: 'no-store' });
   } catch {
-    return { confidence: 'UNRESOLVED', partialMatch: false, status: 'REQUEST_FAILED' };
+    return { confidence: 'UNRESOLVED', clarificationReason: 'GEOCODE_FAILED', partialMatch: false, candidateCount: 0, status: 'REQUEST_FAILED' };
   }
   if (!response.ok) {
-    return { confidence: 'UNRESOLVED', partialMatch: false, status: 'REQUEST_FAILED' };
+    return { confidence: 'UNRESOLVED', clarificationReason: 'GEOCODE_FAILED', partialMatch: false, candidateCount: 0, status: 'REQUEST_FAILED' };
   }
 
   const body = (await response.json()) as { status: string; results?: GeocodeApiResult[] };
   if (body.status !== 'OK' || !body.results?.length) {
-    return { confidence: 'UNRESOLVED', partialMatch: false, status: body.status };
+    return { confidence: 'UNRESOLVED', clarificationReason: 'GEOCODE_FAILED', partialMatch: false, candidateCount: 0, status: body.status };
   }
 
   // More than one candidate is itself a sign the destination wasn't
@@ -77,10 +99,14 @@ export async function geocodeDestination(apiKey: string, destination: string): P
     const [top] = body.results;
     return {
       confidence: 'NEEDS_CLARIFICATION',
+      clarificationReason: 'MULTIPLE_CANDIDATES',
       formattedAddress: top.formatted_address,
+      resolvedPrimaryPlace: deriveResolvedPrimaryPlace(top.address_components),
       placeId: top.place_id,
       locationTypes: top.types,
+      locationType: top.geometry?.location_type,
       partialMatch: Boolean(top.partial_match),
+      candidateCount: body.results.length,
       status: body.status,
     };
   }
@@ -90,15 +116,36 @@ export async function geocodeDestination(apiKey: string, destination: string): P
   const types = result.types ?? [];
   const tooBroad = types.some((type) => TOO_BROAD_TYPES.has(type));
   const locationType = result.geometry?.location_type;
+  const resolvedPrimaryPlace = deriveResolvedPrimaryPlace(result.address_components);
+  const primaryInputPlace = extractPrimaryInputPlace(destination);
+  const primaryPlaceMismatch = !placesMatch(primaryInputPlace, resolvedPrimaryPlace ?? result.formatted_address);
 
-  const confidence: DestinationConfidence = partialMatch || tooBroad || !locationType ? 'NEEDS_CLARIFICATION' : 'CONFIRMED';
+  let confidence: DestinationConfidence = 'CONFIRMED';
+  let clarificationReason: DestinationClarificationReason | undefined;
+  if (partialMatch) {
+    confidence = 'NEEDS_CLARIFICATION';
+    clarificationReason = 'PARTIAL_MATCH';
+  } else if (tooBroad) {
+    confidence = 'NEEDS_CLARIFICATION';
+    clarificationReason = 'TOO_BROAD_TYPE';
+  } else if (!locationType) {
+    confidence = 'NEEDS_CLARIFICATION';
+    clarificationReason = 'NO_LOCATION_TYPE';
+  } else if (primaryPlaceMismatch) {
+    confidence = 'NEEDS_CLARIFICATION';
+    clarificationReason = 'PRIMARY_PLACE_MISMATCH';
+  }
 
   return {
     confidence,
+    clarificationReason,
     formattedAddress: result.formatted_address,
+    resolvedPrimaryPlace,
     placeId: result.place_id,
     locationTypes: types,
+    locationType,
     partialMatch,
+    candidateCount: 1,
     status: body.status,
   };
 }

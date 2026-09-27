@@ -161,6 +161,14 @@ export function ArriveByPakistan() {
       <section className={`rounded-md border p-5 sm:p-7 ${outcomeStyle[result.outcome] ?? 'border-terracotta-400 bg-terracotta-50'}`}>
         <p className="text-xs font-semibold uppercase tracking-wide">Your answer</p>
         <h2 className="mt-2 font-display text-2xl sm:text-3xl">{headline(result, arrivalClock, deadlineClock)}</h2>
+        {result.outcome === 'DESTINATION_NEEDS_CLARIFICATION' && result.clarificationReason === 'PRIMARY_PLACE_MISMATCH' && result.resolvedDestination && (
+          <p className="mt-3 text-sm text-ink-600">
+            We found: <strong>{result.resolvedDestination}</strong> — but you entered: <strong>{result.destination}</strong>. Please make the destination more specific before we calculate the journey.
+          </p>
+        )}
+        {result.destinationConfidence === 'CONFIRMED' && result.resolvedDestination && (
+          <p className="mt-3 text-sm text-ink-600">Google understood your destination as: <strong>{result.resolvedDestination}</strong></p>
+        )}
         {result.deadlineReason && <p className="mt-3 text-sm text-ink-600">You said this matters because: {result.deadlineReason}</p>}
         {result.driveDurationSeconds !== undefined && (
           <p className="mt-3 text-sm text-ink-600">{PICKUP_MODE_CAVEATS[pickupMode]}</p>

@@ -4,6 +4,7 @@ import { localDateTimeToIso, isoToClock } from '@/lib/arrive-by-pakistan/timezon
 import { classifyOutcome, outcomeVerdict, TIGHT_MARGIN_THRESHOLD_MINUTES } from '@/lib/arrive-by-pakistan/outcomes';
 import { geocodeDestination, computeDriveRoute } from '@/lib/arrive-by-pakistan/google-routes';
 import { computePakistanJourney } from '@/lib/arrive-by-pakistan/journey';
+import { deriveResolvedPrimaryPlace, extractPrimaryInputPlace, placesMatch } from '@/lib/arrive-by-pakistan/destination-identity';
 
 describe('airport configuration', () => {
   it('configures exactly ISB, LHE and KHI', () => {
@@ -168,6 +169,121 @@ describe('destination geocoding confidence', () => {
     const result = await geocodeDestination('test-key', 'Mirpur');
     expect(result.confidence).toBe('UNRESOLVED');
   });
+
+  it('classifies a district-level match (administrative_area_level_2) alone as NEEDS_CLARIFICATION', async () => {
+    mockGeocode({
+      status: 'OK',
+      results: [{ formatted_address: 'Mirpur District, AJK, Pakistan', types: ['administrative_area_level_2', 'political'], geometry: { location_type: 'APPROXIMATE' } }],
+    });
+    const result = await geocodeDestination('test-key', 'Mirpur District');
+    expect(result.confidence).toBe('NEEDS_CLARIFICATION');
+    expect(result.clarificationReason).toBe('TOO_BROAD_TYPE');
+  });
+
+  it('an APPROXIMATE location_type with a correctly-matching locality is still CONFIRMED — APPROXIMATE alone is not a failure signal', async () => {
+    mockGeocode({
+      status: 'OK',
+      results: [{
+        formatted_address: 'New Mirpur City',
+        types: ['locality', 'political'],
+        geometry: { location_type: 'APPROXIMATE' },
+        address_components: [{ long_name: 'New Mirpur City', short_name: 'New Mirpur City', types: ['locality', 'political'] }],
+      }],
+    });
+    const result = await geocodeDestination('test-key', 'Mirpur, Azad Jammu and Kashmir, Pakistan');
+    expect(result.confidence).toBe('CONFIRMED');
+    expect(result.locationType).toBe('APPROXIMATE');
+  });
+});
+
+describe('primary-place identity guard — live ISB evidence: Chakswari resolved to New Mirpur City', () => {
+  it('extractPrimaryInputPlace takes only the first comma-separated segment, normalized', () => {
+    expect(extractPrimaryInputPlace('Chakswari, Mirpur, Azad Kashmir, Pakistan')).toBe('chakswari');
+    expect(extractPrimaryInputPlace('Mirpur, Azad Jammu and Kashmir, Pakistan')).toBe('mirpur');
+    expect(extractPrimaryInputPlace('Dadyal')).toBe('dadyal');
+  });
+
+  it('deriveResolvedPrimaryPlace prefers sublocality over locality — real Saddar/Rawalpindi data has both', () => {
+    const components = [
+      { long_name: 'Saddar', short_name: 'Saddar', types: ['political', 'sublocality', 'sublocality_level_1'] },
+      { long_name: 'Rawalpindi', short_name: 'Rawalpindi', types: ['locality', 'political'] },
+      { long_name: 'Punjab', short_name: 'Punjab', types: ['administrative_area_level_1', 'political'] },
+    ];
+    // Locality alone would wrongly pick "Rawalpindi" (the parent city) over
+    // "Saddar" (the specific neighbourhood the traveller actually named).
+    expect(deriveResolvedPrimaryPlace(components)).toBe('Saddar');
+  });
+
+  it('placesMatch is normalized substring containment, not a whole-string token-overlap check', () => {
+    expect(placesMatch('mirpur', 'New Mirpur City')).toBe(true);
+    expect(placesMatch('dadyal', 'Dadyal')).toBe(true);
+    expect(placesMatch('saddar', 'Saddar')).toBe(true);
+    // The exact live failure: "Chakswari" must NOT match "New Mirpur City"
+    // even though the whole input string shares the word "Mirpur".
+    expect(placesMatch('chakswari', 'New Mirpur City')).toBe(false);
+  });
+
+  it('Mirpur resolving to New Mirpur City is CONFIRMED — the requested identity is retained', async () => {
+    mockGeocode({
+      status: 'OK',
+      results: [{
+        formatted_address: 'New Mirpur City',
+        types: ['locality', 'political'],
+        geometry: { location_type: 'APPROXIMATE' },
+        address_components: [{ long_name: 'New Mirpur City', short_name: 'New Mirpur City', types: ['locality', 'political'] }],
+      }],
+    });
+    const result = await geocodeDestination('test-key', 'Mirpur, Azad Jammu and Kashmir, Pakistan');
+    expect(result.confidence).toBe('CONFIRMED');
+    expect(result.resolvedPrimaryPlace).toBe('New Mirpur City');
+  });
+
+  it('Dadyal resolving to bare Dadyal is CONFIRMED', async () => {
+    mockGeocode({
+      status: 'OK',
+      results: [{
+        formatted_address: 'Dadyal',
+        types: ['locality', 'political'],
+        geometry: { location_type: 'APPROXIMATE' },
+        address_components: [{ long_name: 'Dadyal', short_name: 'Dadyal', types: ['locality', 'political'] }],
+      }],
+    });
+    const result = await geocodeDestination('test-key', 'Dadyal, Azad Jammu and Kashmir, Pakistan');
+    expect(result.confidence).toBe('CONFIRMED');
+  });
+
+  it('Saddar resolving to Saddar, Rawalpindi is CONFIRMED — the sublocality match, not the parent locality', async () => {
+    mockGeocode({
+      status: 'OK',
+      results: [{
+        formatted_address: 'Saddar, Rawalpindi, 46000, Pakistan',
+        types: ['political', 'sublocality', 'sublocality_level_1'],
+        geometry: { location_type: 'APPROXIMATE' },
+        address_components: [
+          { long_name: 'Saddar', short_name: 'Saddar', types: ['political', 'sublocality', 'sublocality_level_1'] },
+          { long_name: 'Rawalpindi', short_name: 'Rawalpindi', types: ['locality', 'political'] },
+        ],
+      }],
+    });
+    const result = await geocodeDestination('test-key', 'Saddar, Rawalpindi, Pakistan');
+    expect(result.confidence).toBe('CONFIRMED');
+  });
+
+  it('Chakswari resolving to New Mirpur City is NEEDS_CLARIFICATION — the exact live failure this guard exists for', async () => {
+    mockGeocode({
+      status: 'OK',
+      results: [{
+        formatted_address: 'New Mirpur City',
+        types: ['locality', 'political'],
+        geometry: { location_type: 'APPROXIMATE' },
+        address_components: [{ long_name: 'New Mirpur City', short_name: 'New Mirpur City', types: ['locality', 'political'] }],
+      }],
+    });
+    const result = await geocodeDestination('test-key', 'Chakswari, Mirpur, Azad Kashmir, Pakistan');
+    expect(result.confidence).toBe('NEEDS_CLARIFICATION');
+    expect(result.clarificationReason).toBe('PRIMARY_PLACE_MISMATCH');
+    expect(result.formattedAddress).toBe('New Mirpur City');
+  });
 });
 
 describe('drive route computation', () => {
@@ -275,6 +391,57 @@ describe('full journey calculation', () => {
     expect(result.outcome).toBe('ROUTE_UNAVAILABLE');
   });
 
+  it('carries Google\'s resolved destination through to the result for CONFIRMED cases', async () => {
+    const result = await computePakistanJourney('test-key', {
+      airportCode: 'ISB',
+      landingAt: '2026-11-17T12:00',
+      airportExitBufferMinutes: 60,
+      destination: 'Mirpur',
+      pickupMode: 'family',
+      pickupWaitMinutes: 0,
+    });
+    expect(result.resolvedDestination).toBe('Mirpur, AJK, Pakistan');
+  });
+
+  it('a primary-place mismatch (Chakswari -> New Mirpur City) fails closed: NEEDS_CLARIFICATION, no Routes call, no deadline verdict', async () => {
+    let routesCalls = 0;
+    global.fetch = vi.fn(async (url: string | URL) => {
+      if (String(url).includes('maps.googleapis.com/maps/api/geocode')) {
+        return new Response(JSON.stringify({
+          status: 'OK',
+          results: [{
+            formatted_address: 'New Mirpur City',
+            types: ['locality', 'political'],
+            geometry: { location_type: 'APPROXIMATE' },
+            address_components: [{ long_name: 'New Mirpur City', short_name: 'New Mirpur City', types: ['locality', 'political'] }],
+          }],
+        }), { status: 200 });
+      }
+      routesCalls += 1;
+      return new Response(JSON.stringify({ routes: [{ duration: '3600s', distanceMeters: 90000 }] }), { status: 200 });
+    }) as unknown as typeof fetch;
+
+    const result = await computePakistanJourney('test-key', {
+      airportCode: 'ISB',
+      landingAt: '2026-11-17T12:00',
+      airportExitBufferMinutes: 60,
+      destination: 'Chakswari, Mirpur, Azad Kashmir, Pakistan',
+      pickupMode: 'family',
+      pickupWaitMinutes: 0,
+      deadline: '2026-11-17T17:00',
+      destinationReadinessBufferMinutes: 30,
+    });
+
+    expect(result.outcome).toBe('DESTINATION_NEEDS_CLARIFICATION');
+    expect(result.destinationConfidence).toBe('NEEDS_CLARIFICATION');
+    expect(result.clarificationReason).toBe('PRIMARY_PLACE_MISMATCH');
+    expect(result.resolvedDestination).toBe('New Mirpur City');
+    expect(routesCalls).toBe(0); // computeDriveRoute must never be reached
+    expect(result.expectedArrival).toBeUndefined();
+    expect(result.deadline).toBeUndefined();
+    expect(result.marginMinutes).toBeUndefined();
+  });
+
   it('echoes the deadline reason back for display but never derives calculations from it', async () => {
     const result = await computePakistanJourney('test-key', {
       airportCode: 'ISB',
@@ -297,6 +464,7 @@ describe('privacy — no destination or free-text reason is logged anywhere in t
       'app/api/founder/arrive-by-pakistan/google/route.ts',
       'lib/arrive-by-pakistan/journey.ts',
       'lib/arrive-by-pakistan/google-routes.ts',
+      'lib/arrive-by-pakistan/destination-identity.ts',
     ];
     for (const file of files) {
       const src = readFileSync(join(process.cwd(), file), 'utf8');
