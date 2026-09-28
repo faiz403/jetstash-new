@@ -1,3 +1,4 @@
+import { formatMinutesHuman } from './format';
 import type { DestinationConfidence, PakistanOutcome, PakistanPickupMode } from './types';
 
 /**
@@ -42,9 +43,9 @@ export function outcomeVerdict(params: {
     case 'ETA_ONLY':
       return `Based on the traffic-aware driving estimate, you should reach ${destination} at around ${arrivalClock}.`;
     case 'BEFORE_DEADLINE':
-      return `Based on the current estimate, you should reach ${destination} before ${deadlineClock}, with around ${marginMinutes} minutes spare.`;
+      return `Based on the current estimate, you should reach ${destination} before ${deadlineClock}, with about ${formatMinutesHuman(marginMinutes ?? 0)} spare.`;
     case 'TIGHT_MARGIN':
-      return `You may reach ${destination} in time, but there is only around ${marginMinutes} minutes spare.`;
+      return `You may reach ${destination} in time, but there is only about ${formatMinutesHuman(marginMinutes ?? 0)} spare.`;
     case 'AFTER_DEADLINE':
       return `The current estimate gets you to ${destination} after the time you need to be there.`;
     case 'DESTINATION_NEEDS_CONFIRMATION':

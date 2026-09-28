@@ -5,6 +5,7 @@ import { classifyOutcome, outcomeVerdict, PROVISIONAL_TIGHT_MARGIN_THRESHOLD_MIN
 import { geocodeDestination, computeDriveRoute } from '@/lib/arrive-by-pakistan/google-routes';
 import { computePakistanJourney } from '@/lib/arrive-by-pakistan/journey';
 import { deriveResolvedPrimaryPlace, extractPrimaryInputPlace, placesMatch } from '@/lib/arrive-by-pakistan/destination-identity';
+import { formatMinutesHuman, formatSecondsHuman, roundClockToNearestFive, trafficContextSentence } from '@/lib/arrive-by-pakistan/format';
 
 describe('airport configuration', () => {
   it('configures exactly ISB, LHE and KHI', () => {
@@ -834,6 +835,7 @@ describe('privacy — no destination or free-text reason is logged anywhere in t
       'lib/arrive-by-pakistan/journey.ts',
       'lib/arrive-by-pakistan/google-routes.ts',
       'lib/arrive-by-pakistan/destination-identity.ts',
+      'lib/arrive-by-pakistan/format.ts',
     ];
     for (const file of files) {
       const src = readFileSync(join(process.cwd(), file), 'utf8');
@@ -897,5 +899,90 @@ describe('founder-beta finishing pass', () => {
     expect(src).toMatch(/Airport-exit buffer/);
     expect(src).toMatch(/Ready outside airport/);
     expect(src).toMatch(/Road departure/);
+  });
+});
+
+describe('ETA presentation / traffic context — founder feedback: "15:04" reads as falsely precise for a traffic-dependent estimate', () => {
+  it('roundClockToNearestFive rounds to the nearest 5-minute mark', () => {
+    expect(roundClockToNearestFive('2026-11-17T10:04:00.000Z', 'UTC')).toBe('10:05');
+    expect(roundClockToNearestFive('2026-11-17T10:02:00.000Z', 'UTC')).toBe('10:00');
+    expect(roundClockToNearestFive('2026-11-17T10:00:00.000Z', 'UTC')).toBe('10:00');
+    expect(roundClockToNearestFive('2026-11-17T10:07:00.000Z', 'UTC')).toBe('10:05'); // minute 7 is closer to 5 than to 10
+  });
+
+  it('rounding wraps correctly across the hour and across midnight', () => {
+    expect(roundClockToNearestFive('2026-11-17T10:58:00.000Z', 'UTC')).toBe('11:00');
+    expect(roundClockToNearestFive('2026-11-17T23:58:00.000Z', 'UTC')).toBe('00:00');
+  });
+
+  it('formatMinutesHuman produces compact human duration text', () => {
+    expect(formatMinutesHuman(0)).toBe('0 min');
+    expect(formatMinutesHuman(35)).toBe('35 min');
+    expect(formatMinutesHuman(60)).toBe('1 hr');
+    expect(formatMinutesHuman(109)).toBe('1 hr 49 min');
+    expect(formatMinutesHuman(198)).toBe('3 hr 18 min');
+  });
+
+  it('formatMinutesHuman treats negative minutes (a shortfall) the same as their positive magnitude — sign is the caller\'s job to label', () => {
+    expect(formatMinutesHuman(-15)).toBe('15 min');
+  });
+
+  it('formatSecondsHuman converts whole seconds to the same human duration text', () => {
+    expect(formatSecondsHuman(6540)).toBe('1 hr 49 min');
+  });
+
+  it('trafficContextSentence is omitted entirely when Google did not return staticDuration — never invents a comparison it cannot support', () => {
+    expect(trafficContextSentence(6599, undefined)).toBeUndefined();
+  });
+
+  it('trafficContextSentence states a factual minute figure only when the gap is meaningful (>= 2 min)', () => {
+    expect(trafficContextSentence(7740, 6540)).toBe('Current traffic is adding about 20 minutes.'); // (7740-6540)/60 = 20
+  });
+
+  it('trafficContextSentence uses the honest "little extra time" phrasing for a small or zero gap — the real ISB->Abbottabad case (6599s vs 6568s, ~31s difference)', () => {
+    expect(trafficContextSentence(6599, 6568)).toBe('Traffic is currently adding little extra time.');
+  });
+
+  it('never invents a light/normal/heavy traffic label anywhere in the traffic-context or outcome copy', async () => {
+    const { readFileSync } = await import('fs');
+    const { join } = await import('path');
+    const formatSrc = readFileSync(join(process.cwd(), 'lib', 'arrive-by-pakistan', 'format.ts'), 'utf8');
+    const outcomesSrc = readFileSync(join(process.cwd(), 'lib', 'arrive-by-pakistan', 'outcomes.ts'), 'utf8');
+    for (const src of [formatSrc, outcomesSrc]) {
+      expect(src).not.toMatch(/'light'|'heavy'|'normal traffic'/i);
+    }
+  });
+
+  it('a CONFIRMED journey carries Google\'s staticDurationSeconds through to the result when Google returned it', async () => {
+    mockGeocode({
+      status: 'OK',
+      results: [{
+        formatted_address: 'Mirpur, AJK, Pakistan', place_id: 'abc', types: ['locality'], geometry: { location_type: 'APPROXIMATE' },
+        address_components: [{ long_name: 'Mirpur', short_name: 'Mirpur', types: ['locality', 'political'] }, { long_name: 'Pakistan', short_name: 'PK', types: ['country', 'political'] }],
+      }],
+    });
+    global.fetch = vi.fn(async (url: string | URL) => {
+      if (String(url).includes('maps.googleapis.com/maps/api/geocode')) {
+        return new Response(JSON.stringify({
+          status: 'OK',
+          results: [{
+            formatted_address: 'Mirpur, AJK, Pakistan', place_id: 'abc', types: ['locality'], geometry: { location_type: 'APPROXIMATE' },
+            address_components: [{ long_name: 'Mirpur', short_name: 'Mirpur', types: ['locality', 'political'] }, { long_name: 'Pakistan', short_name: 'PK', types: ['country', 'political'] }],
+          }],
+        }), { status: 200 });
+      }
+      return new Response(JSON.stringify({ routes: [{ duration: '6599s', staticDuration: '6568s', distanceMeters: 121206 }] }), { status: 200 });
+    }) as unknown as typeof fetch;
+
+    const result = await computePakistanJourney('test-key', {
+      airportCode: 'ISB',
+      landingAt: '2026-11-17T12:00',
+      airportExitBufferMinutes: 60,
+      destination: 'Mirpur',
+      pickupMode: 'family',
+      pickupWaitMinutes: 0,
+    });
+    expect(result.driveDurationSeconds).toBe(6599);
+    expect(result.staticDurationSeconds).toBe(6568);
   });
 });

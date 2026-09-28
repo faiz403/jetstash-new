@@ -109,6 +109,8 @@ export interface PakistanJourneyResult {
   roadDeparture: string;
   expectedArrival?: string;
   driveDurationSeconds?: number;
+  /** Traffic-free duration for the same route — present only when Google itself returned it. Used only to build a factual traffic-impact sentence, never to change the calculation. */
+  staticDurationSeconds?: number;
   distanceMeters?: number;
   deadline?: string;
   latestAcceptableArrival?: string;

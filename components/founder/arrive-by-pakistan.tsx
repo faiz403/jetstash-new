@@ -3,6 +3,7 @@
 import { useMemo, useRef, useState, type FormEvent } from 'react';
 import { PAKISTAN_AIRPORTS } from '@/lib/arrive-by-pakistan/airports';
 import { ESTIMATE_DISCLAIMER, PICKUP_MODE_CAVEATS } from '@/lib/arrive-by-pakistan/outcomes';
+import { formatMinutesHuman, formatSecondsHuman, roundClockToNearestFive, trafficContextSentence } from '@/lib/arrive-by-pakistan/format';
 import type { PakistanAirportCode, PakistanJourneyResult, PakistanPickupMode } from '@/lib/arrive-by-pakistan/types';
 
 const field = 'mt-1 w-full rounded-sm border border-ink-200 bg-white px-3 py-2 text-base text-ink-900';
@@ -53,9 +54,9 @@ function headline(result: PakistanJourneyResult, arrivalClock: string, deadlineC
     case 'ETA_ONLY':
       return `Based on the traffic-aware driving estimate, you should reach ${result.destination} at around ${arrivalClock}.`;
     case 'BEFORE_DEADLINE':
-      return `Based on the current estimate, you should reach ${result.destination} before ${deadlineClock}, with around ${result.marginMinutes} minutes spare.`;
+      return `Based on the current estimate, you should reach ${result.destination} before ${deadlineClock}, with about ${formatMinutesHuman(result.marginMinutes ?? 0)} spare.`;
     case 'TIGHT_MARGIN':
-      return `You may reach ${result.destination} in time, but there is only around ${result.marginMinutes} minutes spare.`;
+      return `You may reach ${result.destination} in time, but there is only about ${formatMinutesHuman(result.marginMinutes ?? 0)} spare.`;
     case 'AFTER_DEADLINE':
       return `The current estimate gets you to ${result.destination} after the time you need to be there.`;
     case 'DESTINATION_NEEDS_CONFIRMATION':
@@ -128,8 +129,16 @@ export function ArriveByPakistan() {
     setResult(null);
   }
 
-  const arrivalClock = result?.expectedArrival ? clock(result.expectedArrival, result.airport.timeZone) : '';
+  // expectedArrival comes from Google's variable traffic-aware estimate, so
+  // its display is rounded to the nearest 5 minutes — an exact minute like
+  // "15:04" reads as false confidence for a road journey. deadline/
+  // latestAcceptableArrival are exact arithmetic on times the traveller
+  // themselves typed in, not a Google estimate, so those stay exact.
+  const arrivalClock = result?.expectedArrival ? roundClockToNearestFive(result.expectedArrival, result.airport.timeZone) : '';
   const deadlineClock = result?.deadline ? clock(result.deadline, result.airport.timeZone) : '';
+  const latestAcceptableClock = result?.latestAcceptableArrival ? clock(result.latestAcceptableArrival, result.airport.timeZone) : '';
+  const hasRoute = result?.driveDurationSeconds !== undefined;
+  const trafficSentence = result?.driveDurationSeconds !== undefined ? trafficContextSentence(result.driveDurationSeconds, result.staticDurationSeconds) : undefined;
 
   return <div className="mx-auto max-w-5xl bg-white px-4 py-8 text-ink-900 sm:px-8">
     <p className="text-xs font-semibold uppercase tracking-wide text-brass-600">Pakistan Arrive By — Founder Beta</p>
@@ -193,7 +202,26 @@ export function ArriveByPakistan() {
     {result && <div ref={resultRef} tabIndex={-1} aria-live="polite" className="mt-8 scroll-mt-20 outline-none">
       <section className={`rounded-md border p-5 sm:p-7 ${outcomeStyle[result.outcome] ?? 'border-terracotta-400 bg-terracotta-50'}`}>
         <p className="text-xs font-semibold uppercase tracking-wide">Your answer</p>
-        <h2 className="mt-2 font-display text-2xl sm:text-3xl">{headline(result, arrivalClock, deadlineClock)}</h2>
+        {hasRoute ? (
+          <>
+            <h2 className="mt-2 font-display text-2xl sm:text-3xl">Expected arrival: around {arrivalClock}</h2>
+            <p className="mt-2 text-sm text-ink-700">Traffic-aware drive: about {formatSecondsHuman(result.driveDurationSeconds ?? 0)}</p>
+            {trafficSentence && <p className="mt-1 text-sm text-ink-600">{trafficSentence}</p>}
+            {result.outcome === 'AFTER_DEADLINE' && (
+              <p className="mt-2 text-sm font-medium text-terracotta-700">This estimate arrives after the time you need to be there.</p>
+            )}
+            {result.deadline && result.latestAcceptableArrival && (
+              <div className="mt-2 text-sm text-ink-700">
+                <p>Latest useful arrival: {latestAcceptableClock}</p>
+                <p>{(result.marginMinutes ?? 0) < 0
+                  ? `Estimated shortfall: about ${formatMinutesHuman(result.marginMinutes ?? 0)}`
+                  : `Estimated margin: about ${formatMinutesHuman(result.marginMinutes ?? 0)}`}</p>
+              </div>
+            )}
+          </>
+        ) : (
+          <h2 className="mt-2 font-display text-2xl sm:text-3xl">{headline(result, arrivalClock, deadlineClock)}</h2>
+        )}
         {result.resolvedDestination && (
           <div className="mt-3 text-sm text-ink-600">
             <p>Entered destination: <strong>{result.destination}</strong></p>

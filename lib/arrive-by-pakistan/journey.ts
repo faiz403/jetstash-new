@@ -95,6 +95,7 @@ export async function computePakistanJourney(apiKey: string, input: PakistanJour
     outcome,
     expectedArrival,
     driveDurationSeconds: drive.durationSeconds,
+    staticDurationSeconds: drive.staticDurationSeconds,
     distanceMeters: drive.distanceMeters,
     deadline: deadlineIso,
     latestAcceptableArrival,
