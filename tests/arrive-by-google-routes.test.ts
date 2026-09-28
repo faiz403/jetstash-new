@@ -236,9 +236,19 @@ describe('Google API decision request flow', () => {
     if (previousKey === undefined) delete process.env.GOOGLE_ROUTES_API_KEY;
     else process.env.GOOGLE_ROUTES_API_KEY = previousKey;
     vi.restoreAllMocks();
+    vi.useRealTimers();
   });
 
   it('uses entered ready time for immediate DRIVE when primary transit fails', async () => {
+    // The route handler derives `nowIso` from the real clock (`new Date()`),
+    // and the door-to-door engine correctly rejects any deadline that isn't
+    // strictly in the future relative to it (door-to-door.ts's `deadline <=
+    // now` check) -- so these fixed-calendar-date fixtures (2026-09-25) need
+    // the clock pinned to just before them, exactly like the unit-level
+    // buildGooglePrototypeResult tests above already do via their explicit
+    // nowIso argument, or this test starts failing again the day real time
+    // passes the fixture date.
+    vi.useFakeTimers({ now: new Date('2026-09-24T12:00:00Z') });
     process.env.GOOGLE_ROUTES_API_KEY = 'server-test-key';
     const drive: GoogleRoutesResponse = { routes: [{ duration: '1800s', distanceMeters: 10000 }] };
     const fetchMock = vi.fn()
@@ -282,6 +292,9 @@ describe('Google API decision request flow', () => {
   });
 
   it('preserves missed-service DRIVE timing when primary transit works', async () => {
+    // See the fake-timers comment on the previous test -- same fixed-date
+    // fixtures, same need to pin `nowIso` before them.
+    vi.useFakeTimers({ now: new Date('2026-09-24T12:00:00Z') });
     process.env.GOOGLE_ROUTES_API_KEY = 'server-test-key';
     const drive: GoogleRoutesResponse = { routes: [{ duration: '3600s', distanceMeters: 60500 }] };
     const fetchMock = vi.fn()
