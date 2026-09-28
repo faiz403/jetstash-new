@@ -100,7 +100,8 @@ describe('Privacy Policy covers Arrive By', () => {
   it('has one section covering both Manchester and Pakistan, describing the real data flow', () => {
     expect(privacyPolicySrc).toMatch(/Arrive By \(Manchester and Pakistan journey estimates\)/);
     expect(privacyPolicySrc).toMatch(/Geocoding and Routes services/);
-    expect(privacyPolicySrc).toMatch(/place identifier may be used transiently/);
+    expect(privacyPolicySrc).toMatch(/place\s+identifier may be held temporarily in your browser/);
+    expect(privacyPolicySrc).toMatch(/does not store your destination, place\s+identifier, deadline reason/);
     expect(privacyPolicySrc).toMatch(/never send your stated\s+reason for a deadline to Google/i);
     expect(privacyPolicySrc).toMatch(/nearest\s+venue or locality instead of an exact address/i);
   });
