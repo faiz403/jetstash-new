@@ -31,6 +31,21 @@ export interface GooglePrototypeInput {
   deadlineReason?: string;
   /** Optional, user-entered minutes needed after location arrival to be ready. */
   readinessMinutes?: number;
+  /**
+   * Set only on a second request, after a NEEDS_CONFIRMATION destination
+   * result was shown and explicitly accepted. Never trusted blindly — the
+   * API route re-resolves the same destination text and only proceeds if
+   * Google, right now, still independently resolves to this exact placeId.
+   * See lib/arrive-by-shared/destination-resolution.ts.
+   */
+  confirmedPlaceId?: string;
+  /**
+   * Set only on a second request, after a NEEDS_SELECTION result was shown
+   * and a candidate picked. Never trusted blindly — the API route
+   * re-resolves and only proceeds if this placeId is still one of the
+   * candidates Google independently returns right now.
+   */
+  selectedPlaceId?: string;
 }
 
 interface GoogleStep {
@@ -150,7 +165,22 @@ export interface GoogleNoTransitPrototypeResult extends GooglePrototypeResultBas
   immediateCar: GoogleCarRescue;
 }
 
-export type GooglePrototypeResult = GoogleTransitPrototypeResult | GoogleNoTransitPrototypeResult;
+/**
+ * Returned when the shared destination-resolution layer hasn't reached
+ * CONFIRMED yet — the transit engine is never invoked in this state (see
+ * app/api/founder/arrive-by/google/route.ts). Deliberately outside
+ * GooglePrototypeResultBase: it carries none of a real journey's fields,
+ * only what's needed to ask a human to confirm or choose a destination.
+ */
+export interface GoogleDestinationPendingResult {
+  transitStatus: 'DESTINATION_PENDING';
+  destinationConfidence: Exclude<import('@/lib/arrive-by-shared/destination-resolution').DestinationConfidence, 'CONFIRMED'>;
+  clarificationReason?: import('@/lib/arrive-by-shared/destination-resolution').DestinationClarificationReason;
+  pendingConfirmation?: { placeId: string; formattedAddress: string };
+  pendingSelection?: { candidates: Array<{ placeId: string; formattedAddress: string }> };
+}
+
+export type GooglePrototypeResult = GoogleTransitPrototypeResult | GoogleNoTransitPrototypeResult | GoogleDestinationPendingResult;
 
 export interface GoogleDriveResponses {
   immediateCar?: GoogleRoutesResponse | null;

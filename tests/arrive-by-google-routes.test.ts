@@ -230,6 +230,23 @@ describe('Google API decision request flow', () => {
     status: 200,
     headers: { 'Content-Type': 'application/json' },
   });
+  // Since the shared destination-resolution layer was wired into this route
+  // (Phase 2), every POST() call now makes one geocode request before any
+  // transit/drive request. This is a CONFIRMED-classifying geocode fixture
+  // for these pre-existing transit-flow tests, which care about the
+  // downstream transit/drive behaviour, not destination resolution itself
+  // -- see tests/arrive-by-manchester-destination-resolution.test.ts for
+  // tests of the resolution step itself.
+  const geocodeConfirmed = (destination: string) => new Response(JSON.stringify({
+    status: 'OK',
+    results: [{
+      formatted_address: destination,
+      place_id: 'geo-confirmed',
+      types: ['locality', 'political'],
+      geometry: { location_type: 'APPROXIMATE' },
+      address_components: [{ long_name: destination.split(',')[0], short_name: destination.split(',')[0], types: ['locality'] }],
+    }],
+  }), { status: 200, headers: { 'Content-Type': 'application/json' } });
 
   afterEach(() => {
     globalThis.fetch = originalFetch;
@@ -252,6 +269,7 @@ describe('Google API decision request flow', () => {
     process.env.GOOGLE_ROUTES_API_KEY = 'server-test-key';
     const drive: GoogleRoutesResponse = { routes: [{ duration: '1800s', distanceMeters: 10000 }] };
     const fetchMock = vi.fn()
+      .mockResolvedValueOnce(geocodeConfirmed(input.destination))
       .mockResolvedValueOnce(response(primaryResponse))
       .mockResolvedValueOnce(response(fallbackResponse))
       .mockResolvedValueOnce(response(drive));
@@ -263,7 +281,7 @@ describe('Google API decision request flow', () => {
       headers: { 'Content-Type': 'application/json' },
     }));
     const body = await apiResponse.json();
-    const driveRequest = JSON.parse(String(fetchMock.mock.calls[2][1]?.body));
+    const driveRequest = JSON.parse(String(fetchMock.mock.calls[3][1]?.body));
 
     expect(apiResponse.status).toBe(200);
     expect(driveRequest).toMatchObject({ travelMode: 'DRIVE', departureTime: '2026-09-25T11:00:00.000Z' });
@@ -275,6 +293,7 @@ describe('Google API decision request flow', () => {
     process.env.GOOGLE_ROUTES_API_KEY = 'server-test-key';
     const drive: GoogleRoutesResponse = { routes: [{ duration: '2400s', distanceMeters: 20000 }] };
     const fetchMock = vi.fn()
+      .mockResolvedValueOnce(geocodeConfirmed(input.destination))
       .mockResolvedValueOnce(response({ routes: [] }))
       .mockResolvedValueOnce(response(drive));
     globalThis.fetch = fetchMock as typeof fetch;
@@ -283,10 +302,10 @@ describe('Google API decision request flow', () => {
       method: 'POST', body: JSON.stringify(input), headers: { 'Content-Type': 'application/json' },
     }));
     const body = await apiResponse.json();
-    const driveRequest = JSON.parse(String(fetchMock.mock.calls[1][1]?.body));
+    const driveRequest = JSON.parse(String(fetchMock.mock.calls[2][1]?.body));
 
     expect(apiResponse.status).toBe(200);
-    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(fetchMock).toHaveBeenCalledTimes(3);
     expect(driveRequest).toMatchObject({ travelMode: 'DRIVE', departureTime: '2026-09-25T11:00:00.000Z' });
     expect(body).toMatchObject({ transitStatus: 'UNAVAILABLE', immediateCar: { status: 'AVAILABLE' } });
   });
@@ -298,6 +317,7 @@ describe('Google API decision request flow', () => {
     process.env.GOOGLE_ROUTES_API_KEY = 'server-test-key';
     const drive: GoogleRoutesResponse = { routes: [{ duration: '3600s', distanceMeters: 60500 }] };
     const fetchMock = vi.fn()
+      .mockResolvedValueOnce(geocodeConfirmed(input.destination))
       .mockResolvedValueOnce(response(primaryResponse))
       .mockResolvedValueOnce(response(fallbackResponse))
       .mockResolvedValueOnce(response(drive));
@@ -307,7 +327,7 @@ describe('Google API decision request flow', () => {
       method: 'POST', body: JSON.stringify(input), headers: { 'Content-Type': 'application/json' },
     }));
     const body = await apiResponse.json();
-    const driveRequest = JSON.parse(String(fetchMock.mock.calls[2][1]?.body));
+    const driveRequest = JSON.parse(String(fetchMock.mock.calls[3][1]?.body));
 
     expect(apiResponse.status).toBe(200);
     expect(driveRequest).toMatchObject({ travelMode: 'DRIVE', departureTime: '2026-09-25T11:17:00Z' });
@@ -340,9 +360,14 @@ describe('ready-by and rescue presentation boundaries', () => {
   it('requests immediate DRIVE for failed or unavailable transit and preserves missed-service timing for working transit', () => {
     expect(api).toContain('if (!primary)');
     expect(api).toContain('if (!preliminary.judgement.meetsDeadline)');
-    expect(api).toContain('googleDriveRequest(input, immediateDeparture)');
+    // resolvedInput (not the raw `input`) is what's handed to Google's own
+    // APIs since the Phase 2 destination-resolution integration -- it
+    // carries the safety-checked resolved destination text, while `input`
+    // (unchanged) still drives every displayed field. See the route's own
+    // comment on resolvedInput.
+    expect(api).toContain('googleDriveRequest(resolvedInput, immediateDeparture)');
     expect(api).toContain('else if (!preliminary.fallbackJudgement.meetsDeadline)');
-    expect(api).toContain('googleDriveRequest(input, primary.firstImportantService.departureTime)');
+    expect(api).toContain('googleDriveRequest(resolvedInput, primary.firstImportantService.departureTime)');
   });
 
   it('keeps the positive transit verdict when the primary transit plan succeeds', () => {

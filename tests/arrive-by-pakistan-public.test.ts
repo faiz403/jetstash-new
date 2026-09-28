@@ -53,10 +53,9 @@ describe('public page indexing controls', () => {
 });
 
 describe('public API rate limiting', () => {
-  it('uses the existing shared best-effort limiter (lib/form-security.ts), not a new implementation', () => {
-    expect(publicApiRouteSrc).toMatch(/from ['"]@\/lib\/form-security['"]/);
-    expect(publicApiRouteSrc).toContain('checkRateLimit');
-    expect(publicApiRouteSrc).toContain('getClientIdentifier');
+  it('uses the shared Arrive By-wide limiter (lib/arrive-by-shared/rate-limit.ts, itself built on lib/form-security.ts), not a Pakistan-only implementation', () => {
+    expect(publicApiRouteSrc).toMatch(/from ['"]@\/lib\/arrive-by-shared\/rate-limit['"]/);
+    expect(publicApiRouteSrc).toContain('checkArriveByRateLimit');
   });
 
   it('returns 429 with the specified recovery copy when limited', () => {

@@ -1,0 +1,45 @@
+import { describe, it, expect, vi } from 'vitest';
+import { NextRequest } from 'next/server';
+import { checkArriveByRateLimit, ARRIVE_BY_RATE_LIMIT_MAX } from '@/lib/arrive-by-shared/rate-limit';
+
+/**
+ * Proves the shared-budget design from the Phase 2 brief: a visitor cannot
+ * get a fresh rate-limit allowance by switching which Arrive By airport/
+ * engine they call. Changing Pakistan's public API from its own
+ * `arrive-by-pakistan:${clientId}` key to this shared `arrive-by:${clientId}`
+ * key is a real behaviour change, so this test proves the intended new
+ * behaviour directly rather than only asserting the old one still passes.
+ */
+
+function requestFrom(ip: string): NextRequest {
+  return new NextRequest('http://localhost/api/arrive-by-pakistan/google', {
+    method: 'POST',
+    headers: { 'x-forwarded-for': ip },
+  });
+}
+
+describe('checkArriveByRateLimit — one shared budget across the whole Arrive By product', () => {
+  it('exhausts after ARRIVE_BY_RATE_LIMIT_MAX requests from the same client, regardless of which "call site" makes them', () => {
+    const ip = `203.0.113.${Math.floor(Math.random() * 250) + 1}`; // unique per test run to avoid cross-test bucket collisions
+    for (let i = 0; i < ARRIVE_BY_RATE_LIMIT_MAX; i += 1) {
+      // Simulates alternating calls as if Pakistan and a future Manchester
+      // public endpoint both used this same helper — the identifier is what
+      // determines the bucket, not which route object calls it.
+      expect(checkArriveByRateLimit(requestFrom(ip)).limited).toBe(false);
+    }
+    expect(checkArriveByRateLimit(requestFrom(ip)).limited).toBe(true);
+  });
+
+  it('a different client identifier gets its own independent budget', () => {
+    const ipA = `198.51.100.${Math.floor(Math.random() * 250) + 1}`;
+    const ipB = `198.51.100.${Math.floor(Math.random() * 250) + 1}`;
+    if (ipA === ipB) return; // astronomically unlikely, but skip rather than flake
+    for (let i = 0; i < ARRIVE_BY_RATE_LIMIT_MAX; i += 1) checkArriveByRateLimit(requestFrom(ipA));
+    expect(checkArriveByRateLimit(requestFrom(ipA)).limited).toBe(true);
+    expect(checkArriveByRateLimit(requestFrom(ipB)).limited).toBe(false);
+  });
+
+  it('the budget constant matches the product requirement: 5 requests / 60 seconds', () => {
+    expect(ARRIVE_BY_RATE_LIMIT_MAX).toBe(5);
+  });
+});

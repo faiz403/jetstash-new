@@ -1,7 +1,25 @@
 'use client';
 
 import { useMemo, useRef, useState, type FormEvent } from 'react';
-import type { GoogleCarRescue, GoogleItinerary, GoogleJourneyLeg, GooglePrototypeResult } from '@/lib/arrive-by/google-routes';
+import type { GoogleCarRescue, GoogleItinerary, GoogleJourneyLeg, GoogleDestinationPendingResult, GoogleNoTransitPrototypeResult, GoogleTransitPrototypeResult } from '@/lib/arrive-by/google-routes';
+
+/**
+ * This founder prototype doesn't yet have a confirm/select recovery UI for
+ * the shared destination-resolution layer (Phase 2 of the global Arrive By
+ * foundation) -- that's later public-UX work, not this phase's scope. A
+ * DESTINATION_PENDING response is surfaced through the existing error state
+ * instead, with a reason-specific message, so the founder can retry with a
+ * more specific destination exactly as they already can for any other
+ * failure -- never silently dropped or crashed on.
+ */
+type GooglePrototypeResult = GoogleTransitPrototypeResult | GoogleNoTransitPrototypeResult;
+
+function destinationPendingMessage(pending: GoogleDestinationPendingResult): string {
+  if (pending.destinationConfidence === 'NEEDS_CONFIRMATION') return 'This destination needs human confirmation before Arrive By will calculate a journey (no confirm UI in this founder prototype yet) — try a more specific destination.';
+  if (pending.destinationConfidence === 'NEEDS_SELECTION') return 'Google found more than one real venue matching this destination (no selection UI in this founder prototype yet) — try a more specific destination.';
+  if (pending.destinationConfidence === 'UNRESOLVED') return 'Arrive By could not resolve this destination at all.';
+  return 'Arrive By could not confidently match this destination to a single specific place — try a more specific destination.';
+}
 
 const field = 'mt-1 w-full rounded-sm border border-ink-200 bg-white px-3 py-2 text-base text-ink-900';
 
@@ -131,8 +149,9 @@ export function ArriveByGoogle() {
           readinessMinutes: readinessMinutes === '' ? undefined : Number(readinessMinutes),
         }),
       });
-      const body = await response.json() as GooglePrototypeResult | { error?: string };
+      const body = await response.json() as GooglePrototypeResult | GoogleDestinationPendingResult | { error?: string };
       if (!response.ok || 'error' in body) throw new Error('error' in body && body.error ? body.error : 'Arrive By could not check this journey.');
+      if ('transitStatus' in body && body.transitStatus === 'DESTINATION_PENDING') throw new Error(destinationPendingMessage(body));
       setResult(body as GooglePrototypeResult);
       requestAnimationFrame(() => resultRef.current?.focus());
     } catch (reason) {

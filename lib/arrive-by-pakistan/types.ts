@@ -1,10 +1,16 @@
 /**
  * Type vocabulary for Arrive By Pakistan — deliberately separate from
- * lib/arrive-by (Manchester's validated Google-powered engine), which
- * lives only on its own still-unmerged branch and is never imported here.
- * Pakistan's road-first model is a different shape entirely: one drive
- * estimate instead of a transit/car branch, and no missed-service concept.
+ * lib/arrive-by (Manchester's transit-first engine). Pakistan's road-first
+ * model is a different shape entirely: one drive estimate instead of a
+ * transit/car branch, and no missed-service concept. DestinationConfidence
+ * and DestinationClarificationReason are the one part of this vocabulary
+ * that isn't Pakistan-specific — they're re-exported from the shared
+ * lib/arrive-by-shared/destination-resolution.ts module rather than defined
+ * here, since Manchester now uses the same destination-safety states.
  */
+
+import type { DestinationConfidence, DestinationClarificationReason } from '@/lib/arrive-by-shared/destination-resolution';
+export type { DestinationConfidence, DestinationClarificationReason };
 
 export type PakistanAirportCode = 'ISB' | 'LHE' | 'KHI';
 
@@ -56,32 +62,6 @@ export interface PakistanJourneyInput {
    */
   selectedPlaceId?: string;
 }
-
-/**
- * CONFIRMED: safe to issue a deadline pass/fail verdict.
- * NEEDS_CONFIRMATION: Google resolved a specific named venue/POI (a
- * hotel, wedding hall, mosque, hospital...) plausibly and unambiguously,
- * but the primary-place guard doesn't apply to venues the way it does to
- * localities — a human must explicitly confirm it's the right place
- * before any route or deadline verdict is produced.
- * NEEDS_CLARIFICATION: Google resolved *something*, but not confidently
- * enough to trust for a single-point road journey (a partial match, an
- * overly broad place type such as a whole country/province, more than
- * one plausible candidate, or a locality-style result whose primary
- * identity doesn't survive resolution).
- * UNRESOLVED: Google could not geocode the destination at all.
- */
-export type DestinationConfidence = 'CONFIRMED' | 'NEEDS_CONFIRMATION' | 'NEEDS_SELECTION' | 'NEEDS_CLARIFICATION' | 'UNRESOLVED';
-
-/** Why a destination didn't reach CONFIRMED — lets the UI explain the specific problem rather than a single generic message. */
-export type DestinationClarificationReason =
-  | 'MULTIPLE_CANDIDATES'
-  | 'PARTIAL_MATCH'
-  | 'TOO_BROAD_TYPE'
-  | 'NO_LOCATION_TYPE'
-  | 'PRIMARY_PLACE_MISMATCH'
-  | 'WRONG_COUNTRY'
-  | 'GEOCODE_FAILED';
 
 /**
  * Every outcome the current implementation can actually produce.
