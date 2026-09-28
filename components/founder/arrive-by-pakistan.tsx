@@ -31,6 +31,7 @@ const outcomeStyle: Record<string, string> = {
   BEFORE_DEADLINE: 'border-brass bg-brass-50',
   TIGHT_MARGIN: 'border-ink-200 bg-sand-50',
   AFTER_DEADLINE: 'border-terracotta-400 bg-terracotta-50',
+  DESTINATION_NEEDS_CONFIRMATION: 'border-brass bg-brass-50',
   DESTINATION_NEEDS_CLARIFICATION: 'border-terracotta-400 bg-terracotta-50',
   ROUTE_UNAVAILABLE: 'border-terracotta-400 bg-terracotta-50',
 };
@@ -57,8 +58,10 @@ function headline(result: PakistanJourneyResult, arrivalClock: string, deadlineC
       return `You may reach ${result.destination} in time, but there is only around ${result.marginMinutes} minutes spare.`;
     case 'AFTER_DEADLINE':
       return `The current estimate gets you to ${result.destination} after the time you need to be there.`;
+    case 'DESTINATION_NEEDS_CONFIRMATION':
+      return `We found a place that might match ${result.destination}. Please confirm it's the right one before we calculate the journey.`;
     case 'DESTINATION_NEEDS_CLARIFICATION':
-      return "We couldn't identify the destination confidently enough to give you an arrival verdict. Please make the location more specific.";
+      return `We couldn't confidently match ${result.destination} to a single specific place. Try adding the nearest larger town or city name.`;
     case 'ROUTE_UNAVAILABLE':
       return "Journey not confirmed. We couldn't get a reliable driving route for this destination.";
     default:
@@ -82,8 +85,7 @@ export function ArriveByPakistan() {
   const [loading, setLoading] = useState(false);
   const resultRef = useRef<HTMLDivElement>(null);
 
-  async function submit(event: FormEvent) {
-    event.preventDefault();
+  async function runJourney(confirmedPlaceId?: string) {
     setLoading(true); setError(''); setResult(null);
     try {
       const response = await fetch('/api/founder/arrive-by-pakistan/google', {
@@ -99,6 +101,7 @@ export function ArriveByPakistan() {
           deadline: deadline || undefined,
           deadlineReason: deadlineReason || undefined,
           destinationReadinessBufferMinutes: destinationReadinessBufferMinutes === '' ? undefined : Number(destinationReadinessBufferMinutes),
+          confirmedPlaceId,
         }),
       });
       const body = (await response.json()) as PakistanJourneyResult | { error?: string };
@@ -110,6 +113,19 @@ export function ArriveByPakistan() {
     } finally {
       setLoading(false);
     }
+  }
+
+  async function submit(event: FormEvent) {
+    event.preventDefault();
+    await runJourney(undefined);
+  }
+
+  function confirmPendingPlace() {
+    if (result?.pendingConfirmation) void runJourney(result.pendingConfirmation.placeId);
+  }
+
+  function rejectPendingPlace() {
+    setResult(null);
   }
 
   const arrivalClock = result?.expectedArrival ? clock(result.expectedArrival, result.airport.timeZone) : '';
@@ -143,7 +159,7 @@ export function ArriveByPakistan() {
         <span className="mt-1 block text-xs text-ink-500">Your own estimate for immigration, baggage and walking out — Arrive By does not assume this for you.</span>
       </label>
       <label className="text-sm">Final destination
-        <input className={field} required maxLength={180} placeholder="e.g. Mirpur, Azad Kashmir" value={destination} onChange={(event) => setDestination(event.target.value)} />
+        <input className={field} required maxLength={180} placeholder="e.g. Mirpur, Azad Kashmir" value={destination} onChange={(event) => { setDestination(event.target.value); setResult(null); }} />
         <span className="mt-1 block text-xs text-ink-500">A town, locality or venue is enough — you don't need to enter an exact home address.</span>
       </label>
       <label className="text-sm">How are you leaving the airport?
@@ -184,11 +200,25 @@ export function ArriveByPakistan() {
             <p>Google understood this as: <strong>{result.resolvedDestination}</strong></p>
           </div>
         )}
+        {result.outcome === 'DESTINATION_NEEDS_CONFIRMATION' && result.pendingConfirmation && (
+          <div className="mt-4 rounded-md border border-brass bg-white p-4">
+            <p className="text-sm text-ink-700">You entered: <strong>{result.destination}</strong></p>
+            <p className="mt-1 text-sm text-ink-700">Google found: <strong>{result.pendingConfirmation.formattedAddress}</strong></p>
+            <p className="mt-2 text-sm font-semibold text-ink-900">Is this the place you mean?</p>
+            <div className="mt-3 flex flex-wrap gap-3">
+              <button type="button" onClick={confirmPendingPlace} disabled={loading} className="rounded-sm bg-ink-900 px-5 py-2 text-sm font-semibold text-white disabled:cursor-wait disabled:opacity-60">Yes — use this place</button>
+              <button type="button" onClick={rejectPendingPlace} className="rounded-sm border border-ink-300 px-5 py-2 text-sm font-semibold text-ink-900">No — change destination</button>
+            </div>
+          </div>
+        )}
         {result.outcome === 'DESTINATION_NEEDS_CLARIFICATION' && result.clarificationReason === 'PRIMARY_PLACE_MISMATCH' && (
           <p className="mt-3 text-sm text-ink-600">Please make the destination more specific before we calculate the journey.</p>
         )}
         {result.outcome === 'DESTINATION_NEEDS_CLARIFICATION' && result.clarificationReason === 'MULTIPLE_CANDIDATES' && (
           <p className="mt-3 text-sm text-ink-600">Google returned more than one possible match for this destination. Please make it more specific.</p>
+        )}
+        {result.outcome === 'DESTINATION_NEEDS_CLARIFICATION' && result.clarificationReason === 'WRONG_COUNTRY' && (
+          <p className="mt-3 text-sm text-ink-600">This doesn't look like a Pakistan location. Please check the destination.</p>
         )}
         {result.deadlineReason && <p className="mt-3 text-sm text-ink-600">You said this matters because: {result.deadlineReason}</p>}
         {result.driveDurationSeconds !== undefined && (

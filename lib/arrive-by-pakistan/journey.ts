@@ -30,12 +30,25 @@ export async function computePakistanJourney(apiKey: string, input: PakistanJour
 
   const geocode = await geocodeDestination(apiKey, input.destination);
 
+  // A prior NEEDS_CONFIRMATION result is only ever honoured if Google,
+  // asked again right now, independently resolves to that exact placeId
+  // as a single, non-ambiguous, non-partial match. The client's claim
+  // that a human said "yes" is never trusted by itself — this re-check is
+  // what stops confirmation from ever overriding an unresolved, ambiguous,
+  // or now-different result.
+  const confirmed = Boolean(input.confirmedPlaceId) && geocode.placeId === input.confirmedPlaceId && geocode.confidence === 'NEEDS_CONFIRMATION';
+  const destinationConfidence = confirmed ? 'CONFIRMED' : geocode.confidence;
+
   const base = {
     airport: { code: airport.code, displayName: airport.displayName, timeZone: airport.timeZone },
     destination: input.destination,
-    destinationConfidence: geocode.confidence,
+    destinationConfidence,
     resolvedDestination: geocode.formattedAddress,
-    clarificationReason: geocode.clarificationReason,
+    clarificationReason: confirmed ? undefined : geocode.clarificationReason,
+    pendingConfirmation:
+      destinationConfidence === 'NEEDS_CONFIRMATION' && geocode.placeId && geocode.formattedAddress
+        ? { placeId: geocode.placeId, formattedAddress: geocode.formattedAddress }
+        : undefined,
     deadlineReason: input.deadlineReason,
     readyOutsideAirport: new Date(readyOutsideMs).toISOString(),
     roadDeparture: roadDepartureIso,
@@ -43,10 +56,10 @@ export async function computePakistanJourney(apiKey: string, input: PakistanJour
 
   // STRICT RULE: never issue a deadline pass/fail verdict, or even attempt
   // the drive request, unless the destination resolved with confidence.
-  if (geocode.confidence !== 'CONFIRMED') {
+  if (destinationConfidence !== 'CONFIRMED') {
     return {
       ...base,
-      outcome: geocode.confidence === 'NEEDS_CLARIFICATION' ? 'DESTINATION_NEEDS_CLARIFICATION' : 'ROUTE_UNAVAILABLE',
+      outcome: destinationConfidence === 'NEEDS_CONFIRMATION' ? 'DESTINATION_NEEDS_CONFIRMATION' : destinationConfidence === 'NEEDS_CLARIFICATION' ? 'DESTINATION_NEEDS_CLARIFICATION' : 'ROUTE_UNAVAILABLE',
     };
   }
 

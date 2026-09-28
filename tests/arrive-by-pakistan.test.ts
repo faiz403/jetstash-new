@@ -123,10 +123,35 @@ describe('destination geocoding confidence', () => {
   it('classifies a clean, single, precisely-typed result as CONFIRMED', async () => {
     mockGeocode({
       status: 'OK',
-      results: [{ formatted_address: 'Mirpur, AJK, Pakistan', place_id: 'abc', types: ['locality'], geometry: { location_type: 'APPROXIMATE' } }],
+      results: [{
+        formatted_address: 'Mirpur, AJK, Pakistan', place_id: 'abc', types: ['locality'], geometry: { location_type: 'APPROXIMATE' },
+        address_components: [{ long_name: 'Mirpur', short_name: 'Mirpur', types: ['locality', 'political'] }, { long_name: 'Pakistan', short_name: 'PK', types: ['country', 'political'] }],
+      }],
     });
     const result = await geocodeDestination('test-key', 'Mirpur');
     expect(result.confidence).toBe('CONFIRMED');
+  });
+
+  it('a MISSING country address component is never treated as wrong-country — live evidence shows real Pakistan results ("New Mirpur City", "Dadyal") can return with no country/admin hierarchy at all', async () => {
+    mockGeocode({
+      status: 'OK',
+      results: [{ formatted_address: 'Mirpur', types: ['locality', 'political'], geometry: { location_type: 'APPROXIMATE' }, address_components: [{ long_name: 'Mirpur', short_name: 'Mirpur', types: ['locality', 'political'] }] }],
+    });
+    const result = await geocodeDestination('test-key', 'Mirpur');
+    expect(result.confidence).toBe('CONFIRMED');
+  });
+
+  it('classifies a result with an EXPLICIT non-Pakistan country component as NEEDS_CLARIFICATION (WRONG_COUNTRY)', async () => {
+    mockGeocode({
+      status: 'OK',
+      results: [{
+        formatted_address: 'Mirpur, Some Other Country', types: ['locality'], geometry: { location_type: 'APPROXIMATE' },
+        address_components: [{ long_name: 'Mirpur', short_name: 'Mirpur', types: ['locality', 'political'] }, { long_name: 'Some Other Country', short_name: 'XX', types: ['country', 'political'] }],
+      }],
+    });
+    const result = await geocodeDestination('test-key', 'Mirpur');
+    expect(result.confidence).toBe('NEEDS_CLARIFICATION');
+    expect(result.clarificationReason).toBe('WRONG_COUNTRY');
   });
 
   it('classifies a partial match as NEEDS_CLARIFICATION', async () => {
@@ -173,7 +198,10 @@ describe('destination geocoding confidence', () => {
   it('classifies a district-level match (administrative_area_level_2) alone as NEEDS_CLARIFICATION', async () => {
     mockGeocode({
       status: 'OK',
-      results: [{ formatted_address: 'Mirpur District, AJK, Pakistan', types: ['administrative_area_level_2', 'political'], geometry: { location_type: 'APPROXIMATE' } }],
+      results: [{
+        formatted_address: 'Mirpur District, AJK, Pakistan', types: ['administrative_area_level_2', 'political'], geometry: { location_type: 'APPROXIMATE' },
+        address_components: [{ long_name: 'Mirpur District', short_name: 'Mirpur District', types: ['administrative_area_level_2', 'political'] }, { long_name: 'Pakistan', short_name: 'PK', types: ['country', 'political'] }],
+      }],
     });
     const result = await geocodeDestination('test-key', 'Mirpur District');
     expect(result.confidence).toBe('NEEDS_CLARIFICATION');
@@ -187,7 +215,10 @@ describe('destination geocoding confidence', () => {
         formatted_address: 'New Mirpur City',
         types: ['locality', 'political'],
         geometry: { location_type: 'APPROXIMATE' },
-        address_components: [{ long_name: 'New Mirpur City', short_name: 'New Mirpur City', types: ['locality', 'political'] }],
+        address_components: [
+          { long_name: 'New Mirpur City', short_name: 'New Mirpur City', types: ['locality', 'political'] },
+          { long_name: 'Pakistan', short_name: 'PK', types: ['country', 'political'] },
+        ],
       }],
     });
     const result = await geocodeDestination('test-key', 'Mirpur, Azad Jammu and Kashmir, Pakistan');
@@ -230,7 +261,10 @@ describe('primary-place identity guard — live ISB evidence: Chakswari resolved
         formatted_address: 'New Mirpur City',
         types: ['locality', 'political'],
         geometry: { location_type: 'APPROXIMATE' },
-        address_components: [{ long_name: 'New Mirpur City', short_name: 'New Mirpur City', types: ['locality', 'political'] }],
+        address_components: [
+          { long_name: 'New Mirpur City', short_name: 'New Mirpur City', types: ['locality', 'political'] },
+          { long_name: 'Pakistan', short_name: 'PK', types: ['country', 'political'] },
+        ],
       }],
     });
     const result = await geocodeDestination('test-key', 'Mirpur, Azad Jammu and Kashmir, Pakistan');
@@ -245,7 +279,10 @@ describe('primary-place identity guard — live ISB evidence: Chakswari resolved
         formatted_address: 'Dadyal',
         types: ['locality', 'political'],
         geometry: { location_type: 'APPROXIMATE' },
-        address_components: [{ long_name: 'Dadyal', short_name: 'Dadyal', types: ['locality', 'political'] }],
+        address_components: [
+          { long_name: 'Dadyal', short_name: 'Dadyal', types: ['locality', 'political'] },
+          { long_name: 'Pakistan', short_name: 'PK', types: ['country', 'political'] },
+        ],
       }],
     });
     const result = await geocodeDestination('test-key', 'Dadyal, Azad Jammu and Kashmir, Pakistan');
@@ -262,6 +299,7 @@ describe('primary-place identity guard — live ISB evidence: Chakswari resolved
         address_components: [
           { long_name: 'Saddar', short_name: 'Saddar', types: ['political', 'sublocality', 'sublocality_level_1'] },
           { long_name: 'Rawalpindi', short_name: 'Rawalpindi', types: ['locality', 'political'] },
+          { long_name: 'Pakistan', short_name: 'PK', types: ['country', 'political'] },
         ],
       }],
     });
@@ -276,7 +314,10 @@ describe('primary-place identity guard — live ISB evidence: Chakswari resolved
         formatted_address: 'New Mirpur City',
         types: ['locality', 'political'],
         geometry: { location_type: 'APPROXIMATE' },
-        address_components: [{ long_name: 'New Mirpur City', short_name: 'New Mirpur City', types: ['locality', 'political'] }],
+        address_components: [
+          { long_name: 'New Mirpur City', short_name: 'New Mirpur City', types: ['locality', 'political'] },
+          { long_name: 'Pakistan', short_name: 'PK', types: ['country', 'political'] },
+        ],
       }],
     });
     const result = await geocodeDestination('test-key', 'Chakswari, Mirpur, Azad Kashmir, Pakistan');
@@ -292,10 +333,153 @@ describe('primary-place identity guard — live ISB evidence: Chakswari resolved
         formatted_address: 'Mirpur',
         types: ['locality', 'political'],
         geometry: { location_type: 'APPROXIMATE' },
-        address_components: [{ long_name: 'Mirpur', short_name: 'Mirpur', types: ['locality', 'political'] }],
+        address_components: [
+          { long_name: 'Mirpur', short_name: 'Mirpur', types: ['locality', 'political'] },
+          { long_name: 'Pakistan', short_name: 'PK', types: ['country', 'political'] },
+        ],
       }],
     });
     const result = await geocodeDestination('test-key', 'Mirpore, Azad Kashmir, Pakistan');
+    expect(result.confidence).toBe('NEEDS_CLARIFICATION');
+    expect(result.clarificationReason).toBe('PRIMARY_PLACE_MISMATCH');
+  });
+});
+
+describe('venue/POI destination confirmation — live evidence: real hotels/venues (Pearl Continental, Royal Palm, Badshahi Mosque) were all wrongly rejected by the locality guard', () => {
+  const venueResult = (overrides: Record<string, unknown> = {}) => ({
+    status: 'OK',
+    results: [{
+      formatted_address: '52 Canal Rd, Mughalpura, Lahore, 54840, Pakistan',
+      place_id: 'venue-place-id-123',
+      types: ['establishment', 'food', 'point_of_interest'],
+      geometry: { location_type: 'ROOFTOP' },
+      address_components: [
+        { long_name: 'Mughalpura', short_name: 'Mughalpura', types: ['political', 'sublocality', 'sublocality_level_1'] },
+        { long_name: 'Lahore', short_name: 'Lahore', types: ['locality', 'political'] },
+        { long_name: 'Pakistan', short_name: 'PK', types: ['country', 'political'] },
+      ],
+      ...overrides,
+    }],
+  });
+
+  it('a real venue (establishment/point_of_interest type) reaches NEEDS_CONFIRMATION, not an automatic CONFIRMED or a locality-style rejection', async () => {
+    mockGeocode(venueResult());
+    const result = await geocodeDestination('test-key', 'Royal Palm Golf and Country Club');
+    expect(result.confidence).toBe('NEEDS_CONFIRMATION');
+    expect(result.formattedAddress).toBe('52 Canal Rd, Mughalpura, Lahore, 54840, Pakistan');
+    expect(result.placeId).toBe('venue-place-id-123');
+  });
+
+  it('confirmation does not happen automatically — the first computePakistanJourney call for a venue stops at DESTINATION_NEEDS_CONFIRMATION with no route/deadline', async () => {
+    mockGeocode(venueResult());
+    const result = await computePakistanJourney('test-key', {
+      airportCode: 'LHE',
+      landingAt: '2026-11-17T12:00',
+      airportExitBufferMinutes: 60,
+      destination: 'Royal Palm Golf and Country Club',
+      pickupMode: 'family',
+      deadline: '2026-11-17T17:00',
+    });
+    expect(result.outcome).toBe('DESTINATION_NEEDS_CONFIRMATION');
+    expect(result.destinationConfidence).toBe('NEEDS_CONFIRMATION');
+    expect(result.pendingConfirmation).toEqual({ placeId: 'venue-place-id-123', formattedAddress: '52 Canal Rd, Mughalpura, Lahore, 54840, Pakistan' });
+    expect(result.expectedArrival).toBeUndefined();
+    expect(result.deadline).toBeUndefined();
+    expect(result.marginMinutes).toBeUndefined();
+  });
+
+  it('a matching confirmedPlaceId, re-verified live against Google, permits the route to be calculated', async () => {
+    let routesCalls = 0;
+    global.fetch = vi.fn(async (url: string | URL) => {
+      if (String(url).includes('maps.googleapis.com/maps/api/geocode')) {
+        return new Response(JSON.stringify(venueResult()), { status: 200 });
+      }
+      routesCalls += 1;
+      return new Response(JSON.stringify({ routes: [{ duration: '1800s', distanceMeters: 20000 }] }), { status: 200 });
+    }) as unknown as typeof fetch;
+
+    const result = await computePakistanJourney('test-key', {
+      airportCode: 'LHE',
+      landingAt: '2026-11-17T12:00',
+      airportExitBufferMinutes: 60,
+      destination: 'Royal Palm Golf and Country Club',
+      pickupMode: 'family',
+      pickupWaitMinutes: 0,
+      confirmedPlaceId: 'venue-place-id-123',
+    });
+    expect(result.outcome).toBe('ETA_ONLY');
+    expect(result.destinationConfidence).toBe('CONFIRMED');
+    expect(routesCalls).toBe(1);
+  });
+
+  it('a confirmedPlaceId that no longer matches what Google resolves is NOT trusted blindly — confirmation cannot override a changed/different result', async () => {
+    mockGeocode(venueResult({ place_id: 'a-completely-different-place-id' }));
+    const result = await computePakistanJourney('test-key', {
+      airportCode: 'LHE',
+      landingAt: '2026-11-17T12:00',
+      airportExitBufferMinutes: 60,
+      destination: 'Royal Palm Golf and Country Club',
+      pickupMode: 'family',
+      confirmedPlaceId: 'venue-place-id-123',
+    });
+    expect(result.outcome).toBe('DESTINATION_NEEDS_CONFIRMATION');
+    expect(result.destinationConfidence).toBe('NEEDS_CONFIRMATION');
+  });
+
+  it('an unresolved venue still fails closed — no placeId exists to confirm', async () => {
+    mockGeocode({ status: 'ZERO_RESULTS', results: [] });
+    const result = await computePakistanJourney('test-key', {
+      airportCode: 'LHE',
+      landingAt: '2026-11-17T12:00',
+      airportExitBufferMinutes: 60,
+      destination: 'Some Hotel That Does Not Exist',
+      pickupMode: 'family',
+    });
+    expect(result.outcome).toBe('ROUTE_UNAVAILABLE');
+    expect(result.pendingConfirmation).toBeUndefined();
+  });
+
+  it('a venue result outside Pakistan cannot be confirmed even with a claimed matching placeId — wrong country blocks it before confirmation is ever offered', async () => {
+    mockGeocode({
+      status: 'OK',
+      results: [{
+        formatted_address: 'Some Hotel, London, United Kingdom',
+        place_id: 'uk-place-id',
+        types: ['establishment', 'lodging', 'point_of_interest'],
+        geometry: { location_type: 'ROOFTOP' },
+        address_components: [
+          { long_name: 'London', short_name: 'London', types: ['locality', 'political'] },
+          { long_name: 'United Kingdom', short_name: 'GB', types: ['country', 'political'] },
+        ],
+      }],
+    });
+    const result = await computePakistanJourney('test-key', {
+      airportCode: 'LHE',
+      landingAt: '2026-11-17T12:00',
+      airportExitBufferMinutes: 60,
+      destination: 'Some Hotel',
+      pickupMode: 'family',
+      confirmedPlaceId: 'uk-place-id',
+    });
+    expect(result.outcome).toBe('DESTINATION_NEEDS_CLARIFICATION');
+    expect(result.clarificationReason).toBe('WRONG_COUNTRY');
+    expect(result.destinationConfidence).not.toBe('CONFIRMED');
+  });
+
+  it('locality/village behaviour is unchanged: Chakswari -> New Mirpur City still blocks (not a venue type)', async () => {
+    mockGeocode({
+      status: 'OK',
+      results: [{
+        formatted_address: 'New Mirpur City',
+        types: ['locality', 'political'],
+        geometry: { location_type: 'APPROXIMATE' },
+        address_components: [
+          { long_name: 'New Mirpur City', short_name: 'New Mirpur City', types: ['locality', 'political'] },
+          { long_name: 'Pakistan', short_name: 'PK', types: ['country', 'political'] },
+        ],
+      }],
+    });
+    const result = await geocodeDestination('test-key', 'Chakswari, Mirpur, Azad Kashmir, Pakistan');
     expect(result.confidence).toBe('NEEDS_CLARIFICATION');
     expect(result.clarificationReason).toBe('PRIMARY_PLACE_MISMATCH');
   });
@@ -330,7 +514,10 @@ describe('full journey calculation', () => {
   beforeEach(() => {
     mockGeocode({
       status: 'OK',
-      results: [{ formatted_address: 'Mirpur, AJK, Pakistan', place_id: 'abc', types: ['locality'], geometry: { location_type: 'APPROXIMATE' } }],
+      results: [{
+        formatted_address: 'Mirpur, AJK, Pakistan', place_id: 'abc', types: ['locality'], geometry: { location_type: 'APPROXIMATE' },
+        address_components: [{ long_name: 'Mirpur', short_name: 'Mirpur', types: ['locality', 'political'] }, { long_name: 'Pakistan', short_name: 'PK', types: ['country', 'political'] }],
+      }],
     });
   });
 
@@ -428,7 +615,10 @@ describe('full journey calculation', () => {
             formatted_address: 'New Mirpur City',
             types: ['locality', 'political'],
             geometry: { location_type: 'APPROXIMATE' },
-            address_components: [{ long_name: 'New Mirpur City', short_name: 'New Mirpur City', types: ['locality', 'political'] }],
+            address_components: [
+          { long_name: 'New Mirpur City', short_name: 'New Mirpur City', types: ['locality', 'political'] },
+          { long_name: 'Pakistan', short_name: 'PK', types: ['country', 'political'] },
+        ],
           }],
         }), { status: 200 });
       }

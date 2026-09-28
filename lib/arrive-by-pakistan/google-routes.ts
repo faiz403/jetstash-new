@@ -1,5 +1,5 @@
 import type { DestinationClarificationReason, DestinationConfidence } from './types';
-import { type AddressComponent, deriveResolvedPrimaryPlace, extractPrimaryInputPlace, placesMatch } from './destination-identity';
+import { type AddressComponent, deriveResolvedPrimaryPlace, extractPrimaryInputPlace, isDefinitelyNotPakistan, isNamedVenueResult, placesMatch } from './destination-identity';
 
 /**
  * Server-side Google API adapter for Arrive By Pakistan. Two separate
@@ -119,18 +119,35 @@ export async function geocodeDestination(apiKey: string, destination: string): P
   const resolvedPrimaryPlace = deriveResolvedPrimaryPlace(result.address_components);
   const primaryInputPlace = extractPrimaryInputPlace(destination);
   const primaryPlaceMismatch = !placesMatch(primaryInputPlace, resolvedPrimaryPlace ?? result.formatted_address);
+  // A named venue (hotel, wedding hall, mosque, hospital...) never has its
+  // own name as a locality/sublocality address component — that slot
+  // names the surrounding neighbourhood instead, so the primary-place
+  // guard would always and incorrectly reject it. Real-world evidence
+  // (Pearl Continental Hotel, Royal Palm Golf & Country Club, Badshahi
+  // Mosque) confirmed this rejects genuinely correct matches on every
+  // natural way of typing them. Venues get a human confirmation step
+  // instead of the locality guard — see NEEDS_CONFIRMATION below.
+  const isVenue = isNamedVenueResult(types);
 
   let confidence: DestinationConfidence = 'CONFIRMED';
   let clarificationReason: DestinationClarificationReason | undefined;
   if (partialMatch) {
     confidence = 'NEEDS_CLARIFICATION';
     clarificationReason = 'PARTIAL_MATCH';
-  } else if (tooBroad) {
+  } else if (isDefinitelyNotPakistan(result.address_components)) {
+    confidence = 'NEEDS_CLARIFICATION';
+    clarificationReason = 'WRONG_COUNTRY';
+  } else if (!isVenue && tooBroad) {
     confidence = 'NEEDS_CLARIFICATION';
     clarificationReason = 'TOO_BROAD_TYPE';
   } else if (!locationType) {
     confidence = 'NEEDS_CLARIFICATION';
     clarificationReason = 'NO_LOCATION_TYPE';
+  } else if (isVenue) {
+    // Plausible, unambiguous, non-partial, in Pakistan — but a venue's
+    // identity was never checked against its name, so a human must say
+    // "yes, that's the place" before any route or deadline verdict.
+    confidence = 'NEEDS_CONFIRMATION';
   } else if (primaryPlaceMismatch) {
     confidence = 'NEEDS_CLARIFICATION';
     clarificationReason = 'PRIMARY_PLACE_MISMATCH';

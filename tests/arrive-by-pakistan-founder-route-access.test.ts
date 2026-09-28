@@ -147,3 +147,22 @@ describe('accessible result region', () => {
     expect(componentSrc).toMatch(/aria-live="polite"/);
   });
 });
+
+describe('venue confirmation UX', () => {
+  it('offers an explicit yes/no confirmation for a NEEDS_CONFIRMATION result, not an automatic accept', () => {
+    expect(componentSrc).toMatch(/Yes — use this place/);
+    expect(componentSrc).toMatch(/No — change destination/);
+    expect(componentSrc).toMatch(/Is this the place you mean/);
+  });
+
+  it('rejecting the pending place clears the result so the user can edit the destination, rather than silently retrying', () => {
+    expect(componentSrc).toMatch(/rejectPendingPlace/);
+    const rejectFn = componentSrc.split('function rejectPendingPlace')[1]?.split('}')[0] ?? '';
+    expect(rejectFn).toMatch(/setResult\(null\)/);
+  });
+
+  it('confirming only sends the placeId Google itself returned, never a client-invented value', () => {
+    expect(componentSrc).toMatch(/confirmPendingPlace/);
+    expect(componentSrc).toMatch(/result\.pendingConfirmation\.placeId/);
+  });
+});

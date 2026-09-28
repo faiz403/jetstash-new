@@ -76,3 +76,36 @@ export function placesMatch(primaryInputPlace: string, resolvedPrimaryPlace: str
   if (input.length < 3 || !resolved) return false;
   return input === resolved || resolved.includes(input) || input.includes(resolved);
 }
+
+/**
+ * True when Google's top-level result types mark this as a named venue —
+ * a hotel, wedding hall, mosque, hospital, station, etc. — rather than a
+ * locality/town/village. Google tags virtually every named business,
+ * landmark or building with 'establishment' and/or 'point_of_interest',
+ * confirmed against three real, currently-existing Lahore venues (a
+ * major hotel, a wedding/event venue, and a historic landmark): all
+ * three carried one or both types, none carried a locality-style type
+ * as their SOLE identity. The primary-place guard is right for a place
+ * like Chakswari, but wrong for a venue — its own name is never going
+ * to appear as the address_components' locality/sublocality entry,
+ * which instead names the surrounding neighbourhood.
+ */
+export function isNamedVenueResult(types: string[]): boolean {
+  return types.includes('establishment') || types.includes('point_of_interest');
+}
+
+/**
+ * True only when a `country` address_component is present AND explicitly
+ * names somewhere other than Pakistan — never when country data is simply
+ * absent. Live evidence corrected this: real Google responses for
+ * legitimate Pakistan results ("New Mirpur City", "Dadyal") sometimes
+ * return only a bare locality component with no country/admin hierarchy
+ * at all. Treating that absence as "not Pakistan" broke genuinely correct
+ * matches; region=pk on the geocoding request is already a strong bias,
+ * so the absence of contrary evidence is not itself suspicious.
+ */
+export function isDefinitelyNotPakistan(addressComponents: AddressComponent[] | undefined): boolean {
+  const country = addressComponents?.find((component) => component.types.includes('country'));
+  if (!country) return false;
+  return country.short_name !== 'PK' && country.long_name !== 'Pakistan';
+}
