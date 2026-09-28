@@ -47,6 +47,14 @@ export interface PakistanJourneyInput {
    * ambiguous result routable.
    */
   confirmedPlaceId?: string;
+  /**
+   * Set only on a second request, after the founder/user was shown several
+   * genuinely different named-venue candidates and picked one. Never
+   * trusted blindly — journey.ts re-geocodes the same destination text and
+   * only proceeds if this placeId is still one of the candidates Google
+   * independently returns right now.
+   */
+  selectedPlaceId?: string;
 }
 
 /**
@@ -63,7 +71,7 @@ export interface PakistanJourneyInput {
  * identity doesn't survive resolution).
  * UNRESOLVED: Google could not geocode the destination at all.
  */
-export type DestinationConfidence = 'CONFIRMED' | 'NEEDS_CONFIRMATION' | 'NEEDS_CLARIFICATION' | 'UNRESOLVED';
+export type DestinationConfidence = 'CONFIRMED' | 'NEEDS_CONFIRMATION' | 'NEEDS_SELECTION' | 'NEEDS_CLARIFICATION' | 'UNRESOLVED';
 
 /** Why a destination didn't reach CONFIRMED — lets the UI explain the specific problem rather than a single generic message. */
 export type DestinationClarificationReason =
@@ -88,6 +96,7 @@ export type PakistanOutcome =
   | 'TIGHT_MARGIN'
   | 'AFTER_DEADLINE'
   | 'DESTINATION_NEEDS_CONFIRMATION'
+  | 'DESTINATION_NEEDS_SELECTION'
   | 'DESTINATION_NEEDS_CLARIFICATION'
   | 'ROUTE_UNAVAILABLE';
 
@@ -102,6 +111,8 @@ export interface PakistanJourneyResult {
   clarificationReason?: DestinationClarificationReason;
   /** Present only when destinationConfidence is NEEDS_CONFIRMATION — what the founder/user must explicitly say "yes" to before any route or deadline verdict is produced. */
   pendingConfirmation?: { placeId: string; formattedAddress: string };
+  /** Present only when destinationConfidence is NEEDS_SELECTION — multiple genuinely different named venues, not a duplicate representation of the same place. Only safe display fields, never a raw Google payload. */
+  pendingSelection?: { candidates: Array<{ placeId: string; formattedAddress: string }> };
   /** Echoed back verbatim from the input for display only — never stored, never analytics-tracked. */
   deadlineReason?: string;
   /** ISO instants — all internally consistent in the airport's own timeZone regardless of the visitor's own browser zone. */

@@ -63,6 +63,8 @@ function cleanInput(value: unknown): PakistanJourneyInput {
 
   const confirmedPlaceIdRaw = body.confirmedPlaceId;
   const confirmedPlaceId = typeof confirmedPlaceIdRaw === 'string' && confirmedPlaceIdRaw ? confirmedPlaceIdRaw : undefined;
+  const selectedPlaceIdRaw = body.selectedPlaceId;
+  const selectedPlaceId = typeof selectedPlaceIdRaw === 'string' && selectedPlaceIdRaw ? selectedPlaceIdRaw : undefined;
 
   return {
     airportCode,
@@ -75,6 +77,7 @@ function cleanInput(value: unknown): PakistanJourneyInput {
     deadlineReason,
     destinationReadinessBufferMinutes,
     confirmedPlaceId,
+    selectedPlaceId,
   };
 }
 

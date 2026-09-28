@@ -61,6 +61,8 @@ export interface GeocodeResult {
   partialMatch: boolean;
   candidateCount: number;
   status: string;
+  /** Present only when confidence is NEEDS_SELECTION — the genuinely different named-venue candidates to choose between. */
+  candidates?: Array<{ placeId: string; formattedAddress: string }>;
 }
 
 interface GeocodeApiResult {
@@ -72,46 +74,16 @@ interface GeocodeApiResult {
   address_components?: AddressComponent[];
 }
 
-export async function geocodeDestination(apiKey: string, destination: string): Promise<GeocodeResult> {
-  const url = new URL(GEOCODE_ENDPOINT);
-  url.searchParams.set('address', destination);
-  url.searchParams.set('region', 'pk');
-  url.searchParams.set('key', apiKey);
+const MAX_SELECTION_CANDIDATES = 5;
 
-  let response: Response;
-  try {
-    response = await fetch(url.toString(), { cache: 'no-store' });
-  } catch {
-    return { confidence: 'UNRESOLVED', clarificationReason: 'GEOCODE_FAILED', partialMatch: false, candidateCount: 0, status: 'REQUEST_FAILED' };
-  }
-  if (!response.ok) {
-    return { confidence: 'UNRESOLVED', clarificationReason: 'GEOCODE_FAILED', partialMatch: false, candidateCount: 0, status: 'REQUEST_FAILED' };
-  }
-
-  const body = (await response.json()) as { status: string; results?: GeocodeApiResult[] };
-  if (body.status !== 'OK' || !body.results?.length) {
-    return { confidence: 'UNRESOLVED', clarificationReason: 'GEOCODE_FAILED', partialMatch: false, candidateCount: 0, status: body.status };
-  }
-
-  // More than one candidate is itself a sign the destination wasn't
-  // specific enough, regardless of how plausible the top result looks.
-  if (body.results.length > 1) {
-    const [top] = body.results;
-    return {
-      confidence: 'NEEDS_CLARIFICATION',
-      clarificationReason: 'MULTIPLE_CANDIDATES',
-      formattedAddress: top.formatted_address,
-      resolvedPrimaryPlace: deriveResolvedPrimaryPlace(top.address_components),
-      placeId: top.place_id,
-      locationTypes: top.types,
-      locationType: top.geometry?.location_type,
-      partialMatch: Boolean(top.partial_match),
-      candidateCount: body.results.length,
-      status: body.status,
-    };
-  }
-
-  const [result] = body.results;
+/**
+ * Classifies a single already-chosen Google result. Shared by the normal
+ * single-result path and by the multi-result path once it has been
+ * narrowed to exactly one genuine venue candidate (see geocodeDestination's
+ * comment on why "more than one result" and "more than one real venue" are
+ * not the same thing).
+ */
+function classifySingleResult(result: GeocodeApiResult, destination: string, status: string, candidateCount: number): GeocodeResult {
   const partialMatch = Boolean(result.partial_match);
   const types = result.types ?? [];
   const tooBroad = types.some((type) => TOO_BROAD_TYPES.has(type));
@@ -172,9 +144,82 @@ export async function geocodeDestination(apiKey: string, destination: string): P
     locationTypes: types,
     locationType,
     partialMatch,
-    candidateCount: 1,
-    status: body.status,
+    candidateCount,
+    status,
   };
+}
+
+export async function geocodeDestination(apiKey: string, destination: string): Promise<GeocodeResult> {
+  const url = new URL(GEOCODE_ENDPOINT);
+  url.searchParams.set('address', destination);
+  url.searchParams.set('region', 'pk');
+  url.searchParams.set('key', apiKey);
+
+  let response: Response;
+  try {
+    response = await fetch(url.toString(), { cache: 'no-store' });
+  } catch {
+    return { confidence: 'UNRESOLVED', clarificationReason: 'GEOCODE_FAILED', partialMatch: false, candidateCount: 0, status: 'REQUEST_FAILED' };
+  }
+  if (!response.ok) {
+    return { confidence: 'UNRESOLVED', clarificationReason: 'GEOCODE_FAILED', partialMatch: false, candidateCount: 0, status: 'REQUEST_FAILED' };
+  }
+
+  const body = (await response.json()) as { status: string; results?: GeocodeApiResult[] };
+  if (body.status !== 'OK' || !body.results?.length) {
+    return { confidence: 'UNRESOLVED', clarificationReason: 'GEOCODE_FAILED', partialMatch: false, candidateCount: 0, status: body.status };
+  }
+
+  if (body.results.length > 1) {
+    // "More than one result" is not the same thing as "more than one real
+    // place to choose between". Live evidence (Aga Khan University
+    // Hospital, Karachi): Google returned the actual hospital POI AND a
+    // same-named sublocality/area polygon Google has for the surrounding
+    // neighbourhood — not a second competing hospital. Filtering to only
+    // the genuinely venue-typed candidates first is what tells the two
+    // situations apart:
+    //  - zero venue-typed candidates -> this is a locality/village
+    //    ambiguity (e.g. Sujawal's two representations of the same town)
+    //    and the original, unchanged MULTIPLE_CANDIDATES rejection applies.
+    //  - exactly one venue-typed candidate -> not actually ambiguous once
+    //    the non-venue noise (the area polygon) is removed; classify it
+    //    exactly like a normal single-result venue.
+    //  - two or more venue-typed candidates -> a genuine choice between
+    //    real places (e.g. two different real hotels both called "Nishat
+    //    Hotel" in different parts of Lahore) — this is the only case that
+    //    gets the candidate-selection UI.
+    const venueCandidates = body.results.filter((r) => isNamedVenueResult(r.types ?? []));
+    if (venueCandidates.length === 1) {
+      return classifySingleResult(venueCandidates[0], destination, body.status, 1);
+    }
+    if (venueCandidates.length > 1) {
+      const usable = venueCandidates.filter((r) => r.place_id && r.formatted_address).slice(0, MAX_SELECTION_CANDIDATES);
+      if (usable.length > 1) {
+        return {
+          confidence: 'NEEDS_SELECTION',
+          candidateCount: body.results.length,
+          partialMatch: false,
+          status: body.status,
+          candidates: usable.map((r) => ({ placeId: r.place_id!, formattedAddress: r.formatted_address! })),
+        };
+      }
+    }
+    const [top] = body.results;
+    return {
+      confidence: 'NEEDS_CLARIFICATION',
+      clarificationReason: 'MULTIPLE_CANDIDATES',
+      formattedAddress: top.formatted_address,
+      resolvedPrimaryPlace: deriveResolvedPrimaryPlace(top.address_components),
+      placeId: top.place_id,
+      locationTypes: top.types,
+      locationType: top.geometry?.location_type,
+      partialMatch: Boolean(top.partial_match),
+      candidateCount: body.results.length,
+      status: body.status,
+    };
+  }
+
+  return classifySingleResult(body.results[0], destination, body.status, 1);
 }
 
 export interface DriveResult {

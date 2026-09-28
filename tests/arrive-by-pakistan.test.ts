@@ -584,7 +584,7 @@ describe('venue/POI destination confirmation — live evidence: real hotels/venu
     expect(result.clarificationReason).toBe('WRONG_COUNTRY');
   });
 
-  it('two genuinely different real venues sharing a similar name ("Nishat Hotel" — Johar Town vs a separate hotel in Gulberg III) still classify as MULTIPLE_CANDIDATES — this is correct, not a bug, and must not be loosened', async () => {
+  it('two genuinely different real venues sharing a similar name ("Nishat Hotel" — Johar Town vs a separate hotel in Gulberg III) now return NEEDS_SELECTION with both real candidates — superseded by the multi-POI selection fix (was MULTIPLE_CANDIDATES, a dead end; a genuine choice is now offered instead of automatically picking one)', async () => {
     mockGeocode({
       status: 'OK',
       results: [
@@ -605,8 +605,8 @@ describe('venue/POI destination confirmation — live evidence: real hotels/venu
       ],
     });
     const result = await geocodeDestination('test-key', 'Nishat Hotel Lahore');
-    expect(result.confidence).toBe('NEEDS_CLARIFICATION');
-    expect(result.clarificationReason).toBe('MULTIPLE_CANDIDATES');
+    expect(result.confidence).toBe('NEEDS_SELECTION');
+    expect(result.candidates?.length).toBe(2);
   });
 
   it('a confirm-time re-check that now returns PARTIAL_MATCH (locality, not venue) is not overridden by a stale confirmedPlaceId', async () => {
@@ -644,6 +644,249 @@ describe('venue/POI destination confirmation — live evidence: real hotels/venu
     });
     expect(result.destinationConfidence).toBe('NEEDS_CLARIFICATION');
     expect(result.clarificationReason).toBe('MULTIPLE_CANDIDATES');
+  });
+});
+
+describe('multiple-POI selection — live evidence: "Aga Khan University Hospital Karachi" returns the real hospital POI plus a same-named sublocality polygon, not two competing hospitals', () => {
+  it('a real POI plus a same-named non-venue polygon (Aga Khan Hospital + its own sublocality) is NOT ambiguous once filtered to genuine venues — classifies as the single venue, not NEEDS_SELECTION', async () => {
+    mockGeocode({
+      status: 'OK',
+      results: [
+        {
+          formatted_address: 'National Stadium Rd, Dawood Society Dawood CHS, Karachi, 74800, Pakistan',
+          place_id: 'agakhan-hospital-poi',
+          types: ['establishment', 'health', 'hospital', 'point_of_interest'],
+          geometry: { location_type: 'GEOMETRIC_CENTER' },
+          address_components: [{ long_name: 'Pakistan', short_name: 'PK', types: ['country', 'political'] }],
+        },
+        {
+          formatted_address: 'Aga Khan University Hospital, Karachi, Pakistan',
+          place_id: 'agakhan-sublocality-area',
+          types: ['political', 'sublocality', 'sublocality_level_1'],
+          geometry: { location_type: 'APPROXIMATE' },
+          address_components: [{ long_name: 'Pakistan', short_name: 'PK', types: ['country', 'political'] }],
+        },
+      ],
+    });
+    const result = await geocodeDestination('test-key', 'Aga Khan University Hospital Karachi');
+    expect(result.confidence).toBe('NEEDS_CONFIRMATION');
+    expect(result.placeId).toBe('agakhan-hospital-poi');
+    expect(result.candidates).toBeUndefined();
+  });
+
+  it('two genuinely different real venue POIs return NEEDS_SELECTION with only safe display fields', async () => {
+    mockGeocode({
+      status: 'OK',
+      results: [
+        {
+          formatted_address: 'Venue A, Karachi, Pakistan',
+          place_id: 'venue-a-id',
+          types: ['establishment', 'point_of_interest', 'hospital'],
+          geometry: { location_type: 'ROOFTOP' },
+        },
+        {
+          formatted_address: 'Venue B, Karachi, Pakistan',
+          place_id: 'venue-b-id',
+          types: ['establishment', 'point_of_interest', 'hospital'],
+          geometry: { location_type: 'ROOFTOP' },
+        },
+      ],
+    });
+    const result = await geocodeDestination('test-key', 'Ambiguous Hospital Name Karachi');
+    expect(result.confidence).toBe('NEEDS_SELECTION');
+    expect(result.candidates).toEqual([
+      { placeId: 'venue-a-id', formattedAddress: 'Venue A, Karachi, Pakistan' },
+      { placeId: 'venue-b-id', formattedAddress: 'Venue B, Karachi, Pakistan' },
+    ]);
+    // Only safe display fields are exposed — no raw Google payload (no types/geometry/etc. on the candidate objects).
+    expect(Object.keys(result.candidates![0])).toEqual(['placeId', 'formattedAddress']);
+  });
+
+  it('no venue-typed candidates at all (locality/village duplicate representations, e.g. Sujawal) falls back to the original MULTIPLE_CANDIDATES behaviour — the POI selector must not apply here', async () => {
+    mockGeocode({
+      status: 'OK',
+      results: [
+        { formatted_address: 'Sujawal, Pakistan', place_id: 'sujawal-locality', types: ['locality', 'political'], geometry: { location_type: 'APPROXIMATE' } },
+        { formatted_address: 'Sujawal, Pakistan', place_id: 'sujawal-admin3', types: ['administrative_area_level_3', 'political'], geometry: { location_type: 'APPROXIMATE' } },
+      ],
+    });
+    const result = await geocodeDestination('test-key', 'Sujawal, Sindh, Pakistan');
+    expect(result.confidence).toBe('NEEDS_CLARIFICATION');
+    expect(result.clarificationReason).toBe('MULTIPLE_CANDIDATES');
+    expect(result.candidates).toBeUndefined();
+  });
+
+  it('no Routes call is made while a NEEDS_SELECTION result is pending', async () => {
+    let routesCalls = 0;
+    global.fetch = vi.fn(async (url: string | URL) => {
+      if (String(url).includes('maps.googleapis.com/maps/api/geocode')) {
+        return new Response(JSON.stringify({
+          status: 'OK',
+          results: [
+            { formatted_address: 'Venue A, Karachi, Pakistan', place_id: 'venue-a-id', types: ['establishment', 'point_of_interest'], geometry: { location_type: 'ROOFTOP' } },
+            { formatted_address: 'Venue B, Karachi, Pakistan', place_id: 'venue-b-id', types: ['establishment', 'point_of_interest'], geometry: { location_type: 'ROOFTOP' } },
+          ],
+        }), { status: 200 });
+      }
+      routesCalls += 1;
+      return new Response(JSON.stringify({ routes: [{ duration: '3600s', distanceMeters: 90000 }] }), { status: 200 });
+    }) as unknown as typeof fetch;
+
+    const result = await computePakistanJourney('test-key', {
+      airportCode: 'KHI', landingAt: '2026-11-17T12:00', airportExitBufferMinutes: 60,
+      destination: 'Ambiguous Hospital Name Karachi', pickupMode: 'family', deadline: '2026-11-17T17:00',
+    });
+    expect(result.outcome).toBe('DESTINATION_NEEDS_SELECTION');
+    expect(result.pendingSelection?.candidates.length).toBe(2);
+    expect(routesCalls).toBe(0);
+    expect(result.expectedArrival).toBeUndefined();
+    expect(result.marginMinutes).toBeUndefined();
+  });
+
+  it('selecting a valid candidate (re-verified server-side) permits the route to be calculated', async () => {
+    let routesCalls = 0;
+    global.fetch = vi.fn(async (url: string | URL) => {
+      if (String(url).includes('maps.googleapis.com/maps/api/geocode')) {
+        return new Response(JSON.stringify({
+          status: 'OK',
+          results: [
+            { formatted_address: 'Venue A, Karachi, Pakistan', place_id: 'venue-a-id', types: ['establishment', 'point_of_interest'], geometry: { location_type: 'ROOFTOP' } },
+            { formatted_address: 'Venue B, Karachi, Pakistan', place_id: 'venue-b-id', types: ['establishment', 'point_of_interest'], geometry: { location_type: 'ROOFTOP' } },
+          ],
+        }), { status: 200 });
+      }
+      routesCalls += 1;
+      return new Response(JSON.stringify({ routes: [{ duration: '3600s', distanceMeters: 90000 }] }), { status: 200 });
+    }) as unknown as typeof fetch;
+
+    const result = await computePakistanJourney('test-key', {
+      airportCode: 'KHI', landingAt: '2026-11-17T12:00', airportExitBufferMinutes: 60,
+      destination: 'Ambiguous Hospital Name Karachi', pickupMode: 'family', pickupWaitMinutes: 0,
+      selectedPlaceId: 'venue-b-id',
+    });
+    expect(result.destinationConfidence).toBe('CONFIRMED');
+    expect(result.resolvedDestination).toBe('Venue B, Karachi, Pakistan');
+    expect(routesCalls).toBe(1);
+    expect(result.expectedArrival).toBeDefined();
+  });
+
+  it('a forged/stale/no-longer-offered selectedPlaceId is NOT trusted — falls back to the real NEEDS_SELECTION state instead of routing', async () => {
+    mockGeocode({
+      status: 'OK',
+      results: [
+        { formatted_address: 'Venue A, Karachi, Pakistan', place_id: 'venue-a-id', types: ['establishment', 'point_of_interest'], geometry: { location_type: 'ROOFTOP' } },
+        { formatted_address: 'Venue B, Karachi, Pakistan', place_id: 'venue-b-id', types: ['establishment', 'point_of_interest'], geometry: { location_type: 'ROOFTOP' } },
+      ],
+    });
+    const result = await computePakistanJourney('test-key', {
+      airportCode: 'KHI', landingAt: '2026-11-17T12:00', airportExitBufferMinutes: 60,
+      destination: 'Ambiguous Hospital Name Karachi', pickupMode: 'family',
+      selectedPlaceId: 'forged-place-id-not-in-candidate-list',
+    });
+    expect(result.destinationConfidence).toBe('NEEDS_SELECTION');
+    expect(result.outcome).toBe('DESTINATION_NEEDS_SELECTION');
+  });
+
+  it('an explicit wrong-country single venue candidate is rejected, not offered for selection or confirmation', async () => {
+    mockGeocode({
+      status: 'OK',
+      results: [{
+        formatted_address: 'Some Hospital, London, United Kingdom',
+        place_id: 'uk-hospital-id',
+        types: ['establishment', 'health', 'hospital', 'point_of_interest'],
+        geometry: { location_type: 'ROOFTOP' },
+        address_components: [
+          { long_name: 'London', short_name: 'London', types: ['locality', 'political'] },
+          { long_name: 'United Kingdom', short_name: 'GB', types: ['country', 'political'] },
+        ],
+      }],
+    });
+    const result = await geocodeDestination('test-key', 'Some Hospital London');
+    expect(result.confidence).toBe('NEEDS_CLARIFICATION');
+    expect(result.clarificationReason).toBe('WRONG_COUNTRY');
+  });
+
+  it('a partial-match venue candidate found among multiple raw results can still be confirmed safely (same rule as the single-result case)', async () => {
+    mockGeocode({
+      status: 'OK',
+      results: [
+        {
+          formatted_address: 'The Real Venue, Karachi, Pakistan',
+          place_id: 'real-venue-id',
+          partial_match: true,
+          types: ['establishment', 'point_of_interest'],
+          geometry: { location_type: 'ROOFTOP' },
+          address_components: [{ long_name: 'Pakistan', short_name: 'PK', types: ['country', 'political'] }],
+        },
+        {
+          formatted_address: 'Somewhere Unrelated, Karachi, Pakistan',
+          place_id: 'unrelated-locality-id',
+          types: ['locality', 'political'],
+          geometry: { location_type: 'APPROXIMATE' },
+        },
+      ],
+    });
+    const result = await geocodeDestination('test-key', 'The Real Venue Karachi');
+    expect(result.confidence).toBe('NEEDS_CONFIRMATION');
+    expect(result.placeId).toBe('real-venue-id');
+  });
+
+  it('locality multiple-candidate ambiguity remains unchanged for genuinely different villages/towns', async () => {
+    mockGeocode({
+      status: 'OK',
+      results: [
+        { formatted_address: 'Candidate Town A, Pakistan', place_id: 'town-a', types: ['locality', 'political'], geometry: { location_type: 'APPROXIMATE' } },
+        { formatted_address: 'Candidate Town B, Pakistan', place_id: 'town-b', types: ['locality', 'political'], geometry: { location_type: 'APPROXIMATE' } },
+      ],
+    });
+    const result = await geocodeDestination('test-key', 'ambiguous town name');
+    expect(result.confidence).toBe('NEEDS_CLARIFICATION');
+    expect(result.clarificationReason).toBe('MULTIPLE_CANDIDATES');
+  });
+
+  it('Chakswari remains blocked — unaffected by the POI-selection change (not a multi-candidate case at all)', async () => {
+    mockGeocode({
+      status: 'OK',
+      results: [{
+        formatted_address: 'New Mirpur City',
+        types: ['locality', 'political'],
+        geometry: { location_type: 'APPROXIMATE' },
+        address_components: [
+          { long_name: 'New Mirpur City', short_name: 'New Mirpur City', types: ['locality', 'political'] },
+          { long_name: 'Pakistan', short_name: 'PK', types: ['country', 'political'] },
+        ],
+      }],
+    });
+    const result = await geocodeDestination('test-key', 'Chakswari, Mirpur, Azad Kashmir, Pakistan');
+    expect(result.confidence).toBe('NEEDS_CLARIFICATION');
+    expect(result.clarificationReason).toBe('PRIMARY_PLACE_MISMATCH');
+  });
+
+  it('the single-venue confirmation flow (Nishat Hotel Johar Town) remains unaffected by the multi-candidate refactor', async () => {
+    mockGeocode({
+      status: 'OK',
+      results: [{
+        formatted_address: 'Main Abdul Haque Rd, adjacent to Emporium Mall, Johar Town, Lahore, Pakistan',
+        place_id: 'nishat-johar-town',
+        partial_match: true,
+        types: ['establishment', 'food', 'lodging', 'point_of_interest', 'restaurant'],
+        geometry: { location_type: 'ROOFTOP' },
+        address_components: [{ long_name: 'Pakistan', short_name: 'PK', types: ['country', 'political'] }],
+      }],
+    });
+    const result = await geocodeDestination('test-key', 'Nishat Hotel Johar Town Lahore');
+    expect(result.confidence).toBe('NEEDS_CONFIRMATION');
+    expect(result.placeId).toBe('nishat-johar-town');
+  });
+
+  it('no destination, candidate, or place_id is logged or persisted anywhere', async () => {
+    const { readFileSync } = await import('fs');
+    const { join } = await import('path');
+    for (const file of ['lib/arrive-by-pakistan/google-routes.ts', 'lib/arrive-by-pakistan/journey.ts', 'app/api/founder/arrive-by-pakistan/google/route.ts']) {
+      const src = readFileSync(join(process.cwd(), file), 'utf8');
+      expect(src, file).not.toMatch(/console\.(log|error|warn|info)\(/);
+      expect(src, file).not.toMatch(/brevo|prisma|supabase|\.insert\(|\.save\(/i);
+    }
   });
 });
 

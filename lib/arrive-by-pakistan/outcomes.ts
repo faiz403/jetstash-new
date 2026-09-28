@@ -20,6 +20,7 @@ export function classifyOutcome(params: {
   marginMinutes?: number;
 }): PakistanOutcome {
   if (params.destinationConfidence === 'NEEDS_CONFIRMATION') return 'DESTINATION_NEEDS_CONFIRMATION';
+  if (params.destinationConfidence === 'NEEDS_SELECTION') return 'DESTINATION_NEEDS_SELECTION';
   if (params.destinationConfidence === 'NEEDS_CLARIFICATION') return 'DESTINATION_NEEDS_CLARIFICATION';
   if (params.destinationConfidence === 'UNRESOLVED') return 'ROUTE_UNAVAILABLE';
   if (!params.routeAvailable) return 'ROUTE_UNAVAILABLE';
@@ -50,6 +51,8 @@ export function outcomeVerdict(params: {
       return `The current estimate gets you to ${destination} after the time you need to be there.`;
     case 'DESTINATION_NEEDS_CONFIRMATION':
       return `We found a place that might match ${destination}. Please confirm it's the right one before we calculate the journey.`;
+    case 'DESTINATION_NEEDS_SELECTION':
+      return `We found a few possible places for ${destination}. Please choose the one you mean.`;
     case 'DESTINATION_NEEDS_CLARIFICATION':
       return `We couldn't confidently match ${destination} to a single specific place. Try adding the nearest larger town or city name.`;
     case 'ROUTE_UNAVAILABLE':

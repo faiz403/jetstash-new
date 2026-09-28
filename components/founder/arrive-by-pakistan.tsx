@@ -33,6 +33,7 @@ const outcomeStyle: Record<string, string> = {
   TIGHT_MARGIN: 'border-ink-200 bg-sand-50',
   AFTER_DEADLINE: 'border-terracotta-400 bg-terracotta-50',
   DESTINATION_NEEDS_CONFIRMATION: 'border-brass bg-brass-50',
+  DESTINATION_NEEDS_SELECTION: 'border-brass bg-brass-50',
   DESTINATION_NEEDS_CLARIFICATION: 'border-terracotta-400 bg-terracotta-50',
   ROUTE_UNAVAILABLE: 'border-terracotta-400 bg-terracotta-50',
 };
@@ -61,6 +62,8 @@ function headline(result: PakistanJourneyResult, arrivalClock: string, deadlineC
       return `The current estimate gets you to ${result.destination} after the time you need to be there.`;
     case 'DESTINATION_NEEDS_CONFIRMATION':
       return `We found a place that might match ${result.destination}. Please confirm it's the right one before we calculate the journey.`;
+    case 'DESTINATION_NEEDS_SELECTION':
+      return `We found a few possible places for ${result.destination}. Please choose the one you mean.`;
     case 'DESTINATION_NEEDS_CLARIFICATION':
       return `We couldn't confidently match ${result.destination} to a single specific place. Try adding the nearest larger town or city name.`;
     case 'ROUTE_UNAVAILABLE':
@@ -86,7 +89,7 @@ export function ArriveByPakistan() {
   const [loading, setLoading] = useState(false);
   const resultRef = useRef<HTMLDivElement>(null);
 
-  async function runJourney(confirmedPlaceId?: string) {
+  async function runJourney(overrides?: { confirmedPlaceId?: string; selectedPlaceId?: string }) {
     setLoading(true); setError(''); setResult(null);
     try {
       const response = await fetch('/api/founder/arrive-by-pakistan/google', {
@@ -102,7 +105,8 @@ export function ArriveByPakistan() {
           deadline: deadline || undefined,
           deadlineReason: deadlineReason || undefined,
           destinationReadinessBufferMinutes: destinationReadinessBufferMinutes === '' ? undefined : Number(destinationReadinessBufferMinutes),
-          confirmedPlaceId,
+          confirmedPlaceId: overrides?.confirmedPlaceId,
+          selectedPlaceId: overrides?.selectedPlaceId,
         }),
       });
       const body = (await response.json()) as PakistanJourneyResult | { error?: string };
@@ -118,11 +122,15 @@ export function ArriveByPakistan() {
 
   async function submit(event: FormEvent) {
     event.preventDefault();
-    await runJourney(undefined);
+    await runJourney();
   }
 
   function confirmPendingPlace() {
-    if (result?.pendingConfirmation) void runJourney(result.pendingConfirmation.placeId);
+    if (result?.pendingConfirmation) void runJourney({ confirmedPlaceId: result.pendingConfirmation.placeId });
+  }
+
+  function selectCandidate(placeId: string) {
+    void runJourney({ selectedPlaceId: placeId });
   }
 
   function rejectPendingPlace() {
@@ -236,6 +244,24 @@ export function ArriveByPakistan() {
             <div className="mt-3 flex flex-wrap gap-3">
               <button type="button" onClick={confirmPendingPlace} disabled={loading} className="rounded-sm bg-ink-900 px-5 py-2 text-sm font-semibold text-white disabled:cursor-wait disabled:opacity-60">Yes — use this place</button>
               <button type="button" onClick={rejectPendingPlace} className="rounded-sm border border-ink-300 px-5 py-2 text-sm font-semibold text-ink-900">No — change destination</button>
+            </div>
+          </div>
+        )}
+        {result.outcome === 'DESTINATION_NEEDS_SELECTION' && result.pendingSelection && (
+          <div className="mt-4 rounded-md border border-brass bg-white p-4">
+            <p className="text-sm font-semibold text-ink-900">We found a few possible places. Choose the one you mean:</p>
+            <div className="mt-3 grid gap-2">
+              {result.pendingSelection.candidates.map((candidate) => (
+                <button
+                  key={candidate.placeId}
+                  type="button"
+                  onClick={() => selectCandidate(candidate.placeId)}
+                  disabled={loading}
+                  className="rounded-sm border border-ink-300 bg-sand-50 px-4 py-2 text-left text-sm text-ink-900 hover:bg-sand-100 disabled:cursor-wait disabled:opacity-60"
+                >
+                  {candidate.formattedAddress}
+                </button>
+              ))}
             </div>
           </div>
         )}

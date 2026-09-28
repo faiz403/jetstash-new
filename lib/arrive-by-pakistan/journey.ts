@@ -37,18 +37,30 @@ export async function computePakistanJourney(apiKey: string, input: PakistanJour
   // what stops confirmation from ever overriding an unresolved, ambiguous,
   // or now-different result.
   const confirmed = Boolean(input.confirmedPlaceId) && geocode.placeId === input.confirmedPlaceId && geocode.confidence === 'NEEDS_CONFIRMATION';
-  const destinationConfidence = confirmed ? 'CONFIRMED' : geocode.confidence;
+  // Same discipline for a candidate picked from a NEEDS_SELECTION list: the
+  // selected placeId must still be one of the candidates Google
+  // independently returns right now, for this same destination text — a
+  // forged, stale, or no-longer-offered placeId is simply not found here
+  // and falls through to the real (safe) classification instead.
+  const selectedCandidate =
+    geocode.confidence === 'NEEDS_SELECTION' && input.selectedPlaceId
+      ? geocode.candidates?.find((candidate) => candidate.placeId === input.selectedPlaceId)
+      : undefined;
+  const destinationConfidence = confirmed || selectedCandidate ? 'CONFIRMED' : geocode.confidence;
+  const resolvedDestination = selectedCandidate?.formattedAddress ?? geocode.formattedAddress;
 
   const base = {
     airport: { code: airport.code, displayName: airport.displayName, timeZone: airport.timeZone },
     destination: input.destination,
     destinationConfidence,
-    resolvedDestination: geocode.formattedAddress,
-    clarificationReason: confirmed ? undefined : geocode.clarificationReason,
+    resolvedDestination,
+    clarificationReason: confirmed || selectedCandidate ? undefined : geocode.clarificationReason,
     pendingConfirmation:
       destinationConfidence === 'NEEDS_CONFIRMATION' && geocode.placeId && geocode.formattedAddress
         ? { placeId: geocode.placeId, formattedAddress: geocode.formattedAddress }
         : undefined,
+    pendingSelection:
+      destinationConfidence === 'NEEDS_SELECTION' && geocode.candidates ? { candidates: geocode.candidates } : undefined,
     deadlineReason: input.deadlineReason,
     readyOutsideAirport: new Date(readyOutsideMs).toISOString(),
     roadDeparture: roadDepartureIso,
@@ -57,13 +69,18 @@ export async function computePakistanJourney(apiKey: string, input: PakistanJour
   // STRICT RULE: never issue a deadline pass/fail verdict, or even attempt
   // the drive request, unless the destination resolved with confidence.
   if (destinationConfidence !== 'CONFIRMED') {
-    return {
-      ...base,
-      outcome: destinationConfidence === 'NEEDS_CONFIRMATION' ? 'DESTINATION_NEEDS_CONFIRMATION' : destinationConfidence === 'NEEDS_CLARIFICATION' ? 'DESTINATION_NEEDS_CLARIFICATION' : 'ROUTE_UNAVAILABLE',
-    };
+    const outcome =
+      destinationConfidence === 'NEEDS_CONFIRMATION'
+        ? 'DESTINATION_NEEDS_CONFIRMATION'
+        : destinationConfidence === 'NEEDS_SELECTION'
+          ? 'DESTINATION_NEEDS_SELECTION'
+          : destinationConfidence === 'NEEDS_CLARIFICATION'
+            ? 'DESTINATION_NEEDS_CLARIFICATION'
+            : 'ROUTE_UNAVAILABLE';
+    return { ...base, outcome };
   }
 
-  const drive = await computeDriveRoute(apiKey, airport.routingAddress, geocode.formattedAddress ?? input.destination, roadDepartureIso);
+  const drive = await computeDriveRoute(apiKey, airport.routingAddress, resolvedDestination ?? input.destination, roadDepartureIso);
   if (drive.status !== 'AVAILABLE' || drive.durationSeconds === undefined) {
     return { ...base, outcome: 'ROUTE_UNAVAILABLE' };
   }
