@@ -1,0 +1,159 @@
+import { describe, it, expect } from 'vitest';
+import { readFileSync, readdirSync } from 'fs';
+import { join } from 'path';
+import { NextRequest } from 'next/server';
+import { POST } from '@/app/api/arrive-by-manchester/google/route';
+
+/**
+ * Public Manchester Arrive By beta — structural/source-scan checks, the
+ * same convention as tests/arrive-by-pakistan-public.test.ts, adapted for
+ * Manchester's transit-first result shape and its shared registry-driven
+ * public-enablement gate.
+ *
+ * MAN's destination-country policy is still POLICY_PENDING as of Phase 3
+ * (see lib/arrive-by-shared/airport-registry.ts) -- the public page/API
+ * code exists and is reachable for local testing, but the registry gate
+ * below must keep it genuinely non-functional for a real visitor until
+ * that policy is resolved with real evidence.
+ */
+
+const publicPagePath = join(process.cwd(), 'app', 'arrive-by', 'manchester', 'page.tsx');
+const publicComponentPath = join(process.cwd(), 'components', 'arrive-by-manchester-public.tsx');
+const publicApiRoutePath = join(process.cwd(), 'app', 'api', 'arrive-by-manchester', 'google', 'route.ts');
+const founderApiRoutePath = join(process.cwd(), 'app', 'api', 'founder', 'arrive-by', 'google', 'route.ts');
+const founderPagePath = join(process.cwd(), 'app', 'founder', 'arrive-by', 'page.tsx');
+const sitemapPath = join(process.cwd(), 'app', 'sitemap.ts');
+const privacyPolicyPath = join(process.cwd(), 'app', 'privacy-policy', 'page.tsx');
+
+const publicPageSrc = readFileSync(publicPagePath, 'utf8');
+const publicComponentSrc = readFileSync(publicComponentPath, 'utf8');
+const publicApiRouteSrc = readFileSync(publicApiRoutePath, 'utf8');
+const founderApiRouteSrc = readFileSync(founderApiRoutePath, 'utf8');
+const founderPageSrc = readFileSync(founderPagePath, 'utf8');
+const sitemapSrc = readFileSync(sitemapPath, 'utf8');
+const privacyPolicySrc = readFileSync(privacyPolicyPath, 'utf8');
+
+describe('public Manchester page is reachable without the founder gate', () => {
+  it('the public page never checks FOUNDER_DASHBOARD_ENABLED or calls notFound()', () => {
+    expect(publicPageSrc).not.toMatch(/FOUNDER_DASHBOARD_ENABLED/);
+    expect(publicPageSrc).not.toMatch(/notFound\(\)/);
+  });
+
+  it('the public API route never checks FOUNDER_DASHBOARD_ENABLED or a founder-gate 404', () => {
+    expect(publicApiRouteSrc).not.toMatch(/FOUNDER_DASHBOARD_ENABLED/);
+  });
+
+  it('the founder route/page are unaffected and remain founder-only', () => {
+    expect(founderApiRouteSrc).toContain('founderEnabled()');
+    expect(founderPageSrc).toContain("process.env.NODE_ENV !== 'production' || process.env.FOUNDER_DASHBOARD_ENABLED === 'true'");
+  });
+});
+
+describe('public Manchester page indexing controls', () => {
+  it('the public page sets robots index:false, follow:true', () => {
+    expect(publicPageSrc).toMatch(/robots:\s*{\s*index:\s*false,\s*follow:\s*true\s*}/);
+  });
+
+  it('the public page is absent from app/sitemap.ts', () => {
+    expect(sitemapSrc).not.toMatch(/arrive-by\/manchester/);
+  });
+
+  it('is not linked from main navigation (no reference outside app/arrive-by/manchester or the component itself)', () => {
+    // Same fs-scan convention as tests/arrive-by-integrity.test.ts and
+    // tests/arrive-by-pakistan-founder-route-access.test.ts — no shelling
+    // out, so it can't fail on environment differences.
+    const offenders: string[] = [];
+    function scan(dir: string) {
+      for (const entry of readdirSync(dir, { withFileTypes: true })) {
+        const full = join(dir, entry.name);
+        if (entry.isDirectory()) {
+          scan(full);
+        } else if (entry.isFile() && (entry.name.endsWith('.ts') || entry.name.endsWith('.tsx'))) {
+          if (full === publicPagePath || full === publicComponentPath) continue;
+          const content = readFileSync(full, 'utf8');
+          if (content.includes('arrive-by/manchester')) offenders.push(full);
+        }
+      }
+    }
+    scan(join(process.cwd(), 'app'));
+    scan(join(process.cwd(), 'components'));
+    expect(offenders).toEqual([]);
+  });
+});
+
+describe('public Manchester API uses the shared, registry-gated engine', () => {
+  it('imports the shared journey engine and clean-input validation, not a duplicate implementation', () => {
+    expect(publicApiRouteSrc).toMatch(/from ['"]@\/lib\/arrive-by-shared\/manchester-journey['"]/);
+    expect(publicApiRouteSrc).toContain('computeManchesterJourney');
+    expect(publicApiRouteSrc).toMatch(/from ['"]@\/lib\/arrive-by-shared\/manchester-clean-input['"]/);
+    expect(founderApiRouteSrc).toContain('computeManchesterJourney');
+  });
+
+  it('checks the airport registry public-enablement gate before serving a journey', () => {
+    expect(publicApiRouteSrc).toContain('getAirportProfile');
+    expect(publicApiRouteSrc).toContain('canEnablePublicly');
+    expect(publicApiRouteSrc).toContain('publiclyEnabled');
+  });
+
+  it('uses the shared Arrive By-wide rate limiter', () => {
+    expect(publicApiRouteSrc).toMatch(/from ['"]@\/lib\/arrive-by-shared\/rate-limit['"]/);
+    expect(publicApiRouteSrc).toContain('checkArriveByRateLimit');
+  });
+
+  it('returns 429 with the specified recovery copy when limited', () => {
+    expect(publicApiRouteSrc).toMatch(/status:\s*429/);
+    expect(publicApiRouteSrc).toContain("You've checked several journeys in a short time. Please wait a moment and try again.");
+  });
+});
+
+describe('MAN public-enablement gate — genuinely blocked while POLICY_PENDING', () => {
+  it('the public API returns 404 for a real request, not a working journey, while MAN is not publicly enabled', async () => {
+    const response = await POST(new NextRequest('http://localhost/api/arrive-by-manchester/google', {
+      method: 'POST',
+      body: JSON.stringify({ originId: 'man-terminal-2', destination: 'Sheffield', availableAt: '2026-09-29T12:00', deadline: '2026-09-29T14:30' }),
+      headers: { 'Content-Type': 'application/json', 'x-forwarded-for': '192.0.2.201' },
+    }));
+    expect(response.status).toBe(404);
+    const body = await response.json();
+    expect(body).toEqual({ error: 'Manchester Arrive By is not available.' });
+  });
+});
+
+describe('Privacy Policy already covers the Manchester Arrive By data flow accurately', () => {
+  it('the single Arrive By section names both Manchester and Pakistan, with no separate Manchester-only section added', () => {
+    expect(privacyPolicySrc).toMatch(/Arrive By \(Manchester and Pakistan journey estimates\)/);
+    const matches = privacyPolicySrc.match(/Arrive By \(/g) ?? [];
+    expect(matches).toHaveLength(1);
+  });
+});
+
+describe('public Manchester component — analytics stay coarse', () => {
+  it('sends only airport and outcome (or type and outcome), never destination/venue/placeId/time', () => {
+    expect(publicComponentSrc).toContain("track('arrive_by_journey_checked'");
+    expect(publicComponentSrc).toContain("track('arrive_by_recovery_used'");
+    const trackedProps = [...publicComponentSrc.matchAll(/track\('arrive_by_[a-z_]+',\s*{([^}]*)}\)/g)].map((match) => match[1]);
+    for (const props of trackedProps) {
+      const keys = [...props.matchAll(/(\w+):/g)].map((m) => m[1]);
+      for (const key of keys) expect(['airport', 'outcome', 'type']).toContain(key);
+    }
+  });
+});
+
+describe('public Manchester component — recovery UX', () => {
+  it('offers confirm/select controls for NEEDS_CONFIRMATION and NEEDS_SELECTION, not just an error message', () => {
+    expect(publicComponentSrc).toContain('confirmPendingPlace');
+    expect(publicComponentSrc).toContain('selectCandidate');
+    expect(publicComponentSrc).toMatch(/Yes — use this place/);
+    expect(publicComponentSrc).toContain('pendingSelection.candidates.map');
+  });
+
+  it('the result and pending regions are keyboard/screen-reader focusable and announced', () => {
+    expect(publicComponentSrc).toMatch(/aria-live="polite"/);
+    expect(publicComponentSrc).toContain('tabIndex={-1}');
+    expect(publicComponentSrc).toContain('resultRef.current?.focus()');
+  });
+
+  it('states the result is an estimate, not a guarantee', () => {
+    expect(publicComponentSrc).toMatch(/estimate, not a guarantee/i);
+  });
+});

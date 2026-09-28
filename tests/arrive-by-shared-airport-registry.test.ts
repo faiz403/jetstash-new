@@ -30,7 +30,7 @@ describe('airport registry — Phase 2 foundation', () => {
     expect(profile).toMatchObject({ journeyEngine: 'ROAD_PICKUP_FIRST', validationStatus: 'public_beta', publiclyEnabled: true });
   });
 
-  it('MAN is a valid but non-public transit-first profile with a pending destination policy', () => {
+  it('MAN is a valid but non-public transit-first profile with a pending destination policy (still unresolved as of Phase 3)', () => {
     const profile = getAirportProfile('MAN');
     expect(profile).toMatchObject({
       countryCode: 'GB', timeZone: 'Europe/London', journeyEngine: 'TRANSIT_FIRST',
@@ -46,7 +46,7 @@ describe('airport registry — Phase 2 foundation', () => {
     expect(getAirportProfile('')).toBeUndefined();
   });
 
-  it('getPublicAirportProfiles returns only ISB/LHE/KHI — MAN is excluded despite being a valid profile', () => {
+  it('getPublicAirportProfiles returns only ISB/LHE/KHI — MAN is excluded pending its destination-country policy', () => {
     const codes = getPublicAirportProfiles().map((profile) => profile.code).sort();
     expect(codes).toEqual(['ISB', 'KHI', 'LHE']);
   });

@@ -185,13 +185,18 @@ const AIRPORT_PROFILES: readonly AirportProfile[] = [
     // journey, only an honest description of today's actual scope.
     routing: { defaultOrigin: { kind: 'coordinate', lat: 53.367664, lng: -2.280683 }, terminalRequired: false },
     journeyEngine: 'TRANSIT_FIRST',
-    // Deliberately POLICY_PENDING, not an invented UK-only restriction:
-    // Manchester's founder scenarios so far don't establish whether the
-    // product means UK-only destinations, GB + nearby territories, or
-    // unrestricted onward travel. assertValidAirportProfile (above) makes
-    // it structurally impossible for this airport to reach public_beta/
-    // public — and therefore impossible to become publiclyEnabled — until
-    // that policy is explicitly decided during a real validation pass.
+    // STILL POLICY_PENDING (Phase 3 re-review): an earlier pass of this
+    // file briefly set this to ['GB'], reasoning from the founder UI's own
+    // copy ("This first proof supports Manchester Airport Terminal 2 and
+    // UK local time") and the single validated Sheffield scenario. On
+    // reconsideration, that copy is a statement about the airport's
+    // TIMEZONE, not a decided destination-country restriction, and one
+    // validated scenario doesn't establish exclusivity — genuine evidence
+    // (a founder decision, or a documented product-scope statement that
+    // destinations are UK-only) does not yet exist. Left POLICY_PENDING on
+    // purpose: assertValidAirportProfile (below) makes it structurally
+    // impossible for MAN to reach public_beta/public, and therefore
+    // publiclyEnabled, until someone makes that decision explicitly.
     destinationRules: { expectedCountryCodes: POLICY_PENDING },
     validationStatus: 'internally_testable',
     publiclyEnabled: false,

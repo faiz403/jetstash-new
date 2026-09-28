@@ -114,7 +114,15 @@ export type AnalyticsEvent =
   // server, which never logs or persists them either (see
   // lib/arrive-by-pakistan/journey.ts and its privacy tests).
   | 'arrive_by_pk_journey_checked'
-  | 'arrive_by_pk_recovery_used';
+  | 'arrive_by_pk_recovery_used'
+  // Generic Arrive By events (Phase 3, Manchester public beta). Pakistan's
+  // arrive_by_pk_* events above are kept exactly as-is for measurement
+  // continuity rather than migrated to these -- these generic names are
+  // what any NEW Arrive By airport (starting with Manchester) uses, with
+  // 'airport' distinguishing which one. Same coarse-only discipline: never
+  // the destination, venue name, place_id, exact time, or deadline reason.
+  | 'arrive_by_journey_checked'
+  | 'arrive_by_recovery_used';
 
 /**
  * Events that represent a genuine partner handoff — the same two events

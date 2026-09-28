@@ -214,10 +214,14 @@ describe('server-only API key and clear API failure', () => {
 
   it('keeps the key in the server route and out of the client and tracked environment files', () => {
     const route = readFileSync(join(process.cwd(), 'app/api/founder/arrive-by/google/route.ts'), 'utf8');
+    // The actual 'X-Goog-Api-Key' header is set in the shared, network-
+    // calling layer (Phase 3) that both the founder and public Manchester
+    // routes call into, not duplicated in either route file.
+    const sharedJourney = readFileSync(join(process.cwd(), 'lib/arrive-by-shared/manchester-journey.ts'), 'utf8');
     const client = readFileSync(join(process.cwd(), 'components/founder/arrive-by-google.tsx'), 'utf8');
     const gitignore = readFileSync(join(process.cwd(), '.gitignore'), 'utf8');
     expect(route).toContain('process.env.GOOGLE_ROUTES_API_KEY');
-    expect(route).toContain("'X-Goog-Api-Key': apiKey");
+    expect(sharedJourney).toContain("'X-Goog-Api-Key': apiKey");
     expect(client).not.toMatch(/GOOGLE_ROUTES_API_KEY|X-Goog-Api-Key|AIza/);
     expect(gitignore).toMatch(/^\.env\*/m);
   });
@@ -338,10 +342,20 @@ describe('Google API decision request flow', () => {
 
 describe('ready-by and rescue presentation boundaries', () => {
   const client = readFileSync(join(process.cwd(), 'components/founder/arrive-by-google.tsx'), 'utf8');
-  const api = readFileSync(join(process.cwd(), 'app/api/founder/arrive-by/google/route.ts'), 'utf8');
+  // The journey orchestration (destination gate + Google request building)
+  // moved from the founder route to the shared, network-calling layer
+  // (lib/arrive-by-shared/manchester-journey.ts) in Phase 3, so both the
+  // founder and public Manchester routes can reuse it without duplicating
+  // the engine -- see tests/arrive-by-integrity.test.ts for why lib/arrive-by
+  // itself stays network-free and founder-only-importable.
+  const api = readFileSync(join(process.cwd(), 'lib/arrive-by-shared/manchester-journey.ts'), 'utf8');
+  // topLevelOutcome/topLevelVerdict also moved to that same shared module
+  // (Phase 3) so the public Manchester component can reuse the identical
+  // classifier the founder component uses, rather than a copy.
+  const sharedJourney = readFileSync(join(process.cwd(), 'lib/arrive-by-shared/manchester-journey.ts'), 'utf8');
 
   it('keeps blank readiness wording location-based and names both physical-arrival facts when entered', () => {
-    expect(client).toContain('you can reach ${result.destination} by ${deadlineClock}');
+    expect(sharedJourney).toContain('you can reach ${result.destination} by ${deadlineClock}');
     expect(client).toContain('Expected public-transport arrival');
     expect(client).toContain('need to physically arrive by');
     expect(client).not.toContain('you’ll make the event');
