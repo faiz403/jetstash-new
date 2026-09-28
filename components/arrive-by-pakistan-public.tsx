@@ -4,7 +4,19 @@ import { useMemo, useRef, useState, type FormEvent } from 'react';
 import { PAKISTAN_AIRPORTS } from '@/lib/arrive-by-pakistan/airports';
 import { ESTIMATE_DISCLAIMER, PICKUP_MODE_CAVEATS } from '@/lib/arrive-by-pakistan/outcomes';
 import { formatMinutesHuman, formatSecondsHuman, roundClockToNearestFive, trafficContextSentence } from '@/lib/arrive-by-pakistan/format';
+import { track } from '@/lib/analytics';
 import type { PakistanAirportCode, PakistanJourneyResult, PakistanPickupMode } from '@/lib/arrive-by-pakistan/types';
+
+/**
+ * Public beta version of the existing founder-only Pakistan Arrive By
+ * prototype component. Deliberately a separate file rather than a shared,
+ * prop-branching component: the founder component's exact source is
+ * scanned by several existing structural/privacy tests, and keeping it
+ * untouched avoids threading public-only concerns (its own API path,
+ * analytics) through a file those tests assert specific literal content
+ * against. The underlying engine (lib/arrive-by-pakistan/*) is identical —
+ * only this UI layer and its API route are separate.
+ */
 
 const field = 'mt-1 w-full rounded-sm border border-ink-200 bg-white px-3 py-2 text-base text-ink-900';
 
@@ -73,7 +85,7 @@ function headline(result: PakistanJourneyResult, arrivalClock: string, deadlineC
   }
 }
 
-export function ArriveByPakistan() {
+export function ArriveByPakistanPublic() {
   const defaultDate = useMemo(tomorrowInKarachi, []);
   const [airportCode, setAirportCode] = useState<PakistanAirportCode>('ISB');
   const [landingAt, setLandingAt] = useState(`${defaultDate}T12:00`);
@@ -92,7 +104,7 @@ export function ArriveByPakistan() {
   async function runJourney(overrides?: { confirmedPlaceId?: string; selectedPlaceId?: string }) {
     setLoading(true); setError(''); setResult(null);
     try {
-      const response = await fetch('/api/founder/arrive-by-pakistan/google', {
+      const response = await fetch('/api/arrive-by-pakistan/google', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -111,7 +123,14 @@ export function ArriveByPakistan() {
       });
       const body = (await response.json()) as PakistanJourneyResult | { error?: string };
       if (!response.ok || 'error' in body) throw new Error('error' in body && body.error ? body.error : 'Arrive By could not check this journey.');
-      setResult(body as PakistanJourneyResult);
+      const journeyResult = body as PakistanJourneyResult;
+      setResult(journeyResult);
+      // Coarse-only: airport code and the outcome class, nothing that
+      // identifies the destination, venue, place, or any time entered.
+      track('arrive_by_pk_journey_checked', { airport: airportCode, outcome: journeyResult.outcome });
+      if (overrides?.confirmedPlaceId || overrides?.selectedPlaceId) {
+        track('arrive_by_pk_recovery_used', { type: overrides.confirmedPlaceId ? 'confirmation' : 'selection', outcome: journeyResult.outcome });
+      }
       requestAnimationFrame(() => resultRef.current?.focus());
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : 'Arrive By could not check this journey.');
@@ -149,7 +168,7 @@ export function ArriveByPakistan() {
   const trafficSentence = result?.driveDurationSeconds !== undefined ? trafficContextSentence(result.driveDurationSeconds, result.staticDurationSeconds) : undefined;
 
   return <div className="mx-auto max-w-5xl bg-white px-4 py-8 text-ink-900 sm:px-8">
-    <p className="text-xs font-semibold uppercase tracking-wide text-brass-600">Pakistan Arrive By — Founder Beta</p>
+    <p className="text-xs font-semibold uppercase tracking-wide text-brass-600">Pakistan Arrive By — Beta</p>
     <h1 className="mt-3 font-display text-3xl sm:text-4xl">After you land in Pakistan, when will you actually reach where you're going?</h1>
     <p className="mt-3 max-w-3xl text-ink-600">Enter your flight landing time, how you're leaving the airport, and your final destination. Arrive By checks a real, traffic-aware road journey — with a deadline judgement if you have one.</p>
     <ul className="mt-3 max-w-3xl list-disc space-y-1 pl-5 text-sm text-ink-500">
@@ -304,7 +323,7 @@ export function ArriveByPakistan() {
     </div>}
 
     <details className="mt-8 max-w-3xl rounded-md border border-ink-200 bg-sand-50 p-4 text-sm text-ink-600">
-      <summary className="cursor-pointer font-semibold text-ink-900">Known limitations (founder beta)</summary>
+      <summary className="cursor-pointer font-semibold text-ink-900">Known limitations (beta)</summary>
       <ul className="mt-2 list-disc space-y-1 pl-5">
         {KNOWN_LIMITATIONS.map((item) => <li key={item}>{item}</li>)}
       </ul>

@@ -56,7 +56,7 @@ export function outcomeVerdict(params: {
     case 'DESTINATION_NEEDS_CLARIFICATION':
       return `We couldn't confidently match ${destination} to a single specific place. Try adding the nearest larger town or city name.`;
     case 'ROUTE_UNAVAILABLE':
-      return "Journey not confirmed. We couldn't get a reliable driving route for this destination.";
+      return "Journey not confirmed. We couldn't get a reliable driving route for this destination. Try a nearby town, venue or landmark instead.";
     default:
       return 'Journey not confirmed.';
   }
