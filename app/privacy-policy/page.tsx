@@ -110,6 +110,22 @@ const sections: { title: string; body: React.ReactNode }[] = [
     ),
   },
   {
+    title: 'Arrive By (Manchester and Pakistan journey estimates)',
+    body: (
+      <p>
+        The destination, landing time and journey assumptions you enter into Arrive By are sent to JetStash&apos;s
+        server to calculate a road-journey estimate. The destination text and airport location are then sent to
+        Google&apos;s Geocoding and Routes services to resolve the place and calculate a traffic-aware driving
+        estimate. Where you need to confirm or choose between possible matches for a named venue, a Google-assigned
+        place identifier may be held temporarily in your browser between that step and the one after it, then sent
+        back to JetStash for server-side re-verification. JetStash does not store your destination, place
+        identifier, deadline reason or resulting journey details in its database, and none of this is sent to our
+        analytics provider. We never send your stated reason for a deadline to Google. If your destination is a
+        private home, we recommend entering the nearest venue or locality instead of an exact address.
+      </p>
+    ),
+  },
+  {
     title: 'Cookies and analytics',
     body: (
       <>

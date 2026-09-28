@@ -56,7 +56,11 @@ describe('page is absent from sitemap/public navigation', () => {
         } else if (entry.isFile() && (entry.name.endsWith('.ts') || entry.name.endsWith('.tsx'))) {
           if (full === pagePath || full === componentPath) continue;
           const content = readFileSync(full, 'utf8');
-          if (content.includes('/founder/arrive-by')) offenders.push(full);
+          // Match this exact route, not a path that merely starts with it —
+          // e.g. the separate, sanctioned /founder/arrive-by-pakistan route
+          // (a different country's founder-only prototype) must not trip
+          // this check.
+          if (/\/founder\/arrive-by(['"/]|$)/.test(content)) offenders.push(full);
         }
       }
     }

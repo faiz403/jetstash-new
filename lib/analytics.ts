@@ -106,7 +106,15 @@ export type AnalyticsEvent =
   // existing event; 'source' on tripcom_click and elsewhere still means
   // "which product/component surface", untouched.
   | 'acquisition_landing'
-  | 'acquisition_handoff';
+  | 'acquisition_handoff'
+  // Pakistan Arrive By public beta (28 Sept 2026). Coarse only — airport
+  // code and outcome class, or recovery type and outcome class. Never the
+  // destination, venue name, place_id, exact time, or deadline reason:
+  // those never leave the browser except in the request to JetStash's own
+  // server, which never logs or persists them either (see
+  // lib/arrive-by-pakistan/journey.ts and its privacy tests).
+  | 'arrive_by_pk_journey_checked'
+  | 'arrive_by_pk_recovery_used';
 
 /**
  * Events that represent a genuine partner handoff — the same two events
