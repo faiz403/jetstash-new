@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { PAKISTAN_AIRPORTS, PAKISTAN_AIRPORT_CODES, getPakistanAirport } from '@/lib/arrive-by-pakistan/airports';
 import { localDateTimeToIso, isoToClock } from '@/lib/arrive-by-pakistan/timezone';
-import { classifyOutcome, outcomeVerdict, TIGHT_MARGIN_THRESHOLD_MINUTES } from '@/lib/arrive-by-pakistan/outcomes';
+import { classifyOutcome, outcomeVerdict, PROVISIONAL_TIGHT_MARGIN_THRESHOLD_MINUTES } from '@/lib/arrive-by-pakistan/outcomes';
 import { geocodeDestination, computeDriveRoute } from '@/lib/arrive-by-pakistan/google-routes';
 import { computePakistanJourney } from '@/lib/arrive-by-pakistan/journey';
 import { deriveResolvedPrimaryPlace, extractPrimaryInputPlace, placesMatch } from '@/lib/arrive-by-pakistan/destination-identity';
@@ -66,7 +66,7 @@ describe('outcome classification', () => {
 
   it('classifies a margin at the tight threshold as TIGHT_MARGIN, not BEFORE_DEADLINE', () => {
     expect(
-      classifyOutcome({ destinationConfidence: 'CONFIRMED', routeAvailable: true, hasDeadline: true, marginMinutes: TIGHT_MARGIN_THRESHOLD_MINUTES }),
+      classifyOutcome({ destinationConfidence: 'CONFIRMED', routeAvailable: true, hasDeadline: true, marginMinutes: PROVISIONAL_TIGHT_MARGIN_THRESHOLD_MINUTES }),
     ).toBe('TIGHT_MARGIN');
   });
 
@@ -92,7 +92,7 @@ describe('outcome classification', () => {
 
   it('never uses forbidden overstated wording', () => {
     for (const outcome of [
-      'ETA_ONLY', 'BEFORE_DEADLINE', 'TIGHT_MARGIN', 'AFTER_DEADLINE', 'DESTINATION_NEEDS_CLARIFICATION', 'ROUTE_UNAVAILABLE', 'GOOGLE_UNAVAILABLE',
+      'ETA_ONLY', 'BEFORE_DEADLINE', 'TIGHT_MARGIN', 'AFTER_DEADLINE', 'DESTINATION_NEEDS_CLARIFICATION', 'ROUTE_UNAVAILABLE',
     ] as const) {
       const verdict = outcomeVerdict({ outcome, destination: 'Mirpur', arrivalClock: '16:40', deadlineClock: '17:00', marginMinutes: 20 });
       const lower = verdict.toLowerCase();
@@ -284,6 +284,21 @@ describe('primary-place identity guard — live ISB evidence: Chakswari resolved
     expect(result.clarificationReason).toBe('PRIMARY_PLACE_MISMATCH');
     expect(result.formattedAddress).toBe('New Mirpur City');
   });
+
+  it('a misspelling Google itself auto-corrects ("Mirpore" -> "Mirpur") still returns NEEDS_CLARIFICATION — known, deliberate, safe-direction founder-beta limitation, not a bug to silently fix', async () => {
+    mockGeocode({
+      status: 'OK',
+      results: [{
+        formatted_address: 'Mirpur',
+        types: ['locality', 'political'],
+        geometry: { location_type: 'APPROXIMATE' },
+        address_components: [{ long_name: 'Mirpur', short_name: 'Mirpur', types: ['locality', 'political'] }],
+      }],
+    });
+    const result = await geocodeDestination('test-key', 'Mirpore, Azad Kashmir, Pakistan');
+    expect(result.confidence).toBe('NEEDS_CLARIFICATION');
+    expect(result.clarificationReason).toBe('PRIMARY_PLACE_MISMATCH');
+  });
 });
 
 describe('drive route computation', () => {
@@ -436,6 +451,9 @@ describe('full journey calculation', () => {
     expect(result.destinationConfidence).toBe('NEEDS_CLARIFICATION');
     expect(result.clarificationReason).toBe('PRIMARY_PLACE_MISMATCH');
     expect(result.resolvedDestination).toBe('New Mirpur City');
+    // Both halves of the transparency requirement: what the traveller typed
+    // is preserved verbatim, alongside what Google actually resolved.
+    expect(result.destination).toBe('Chakswari, Mirpur, Azad Kashmir, Pakistan');
     expect(routesCalls).toBe(0); // computeDriveRoute must never be reached
     expect(result.expectedArrival).toBeUndefined();
     expect(result.deadline).toBeUndefined();
@@ -479,5 +497,53 @@ describe('privacy — no destination or free-text reason is logged anywhere in t
       const src = readFileSync(join(process.cwd(), file), 'utf8');
       expect(src, file).not.toMatch(/brevo|prisma|supabase|\.insert\(|\.save\(/i);
     }
+  });
+});
+
+describe('founder-beta finishing pass', () => {
+  it('the outcome vocabulary has exactly six reachable members — no dead GOOGLE_UNAVAILABLE state', () => {
+    const reachable = new Set<string>();
+    reachable.add(classifyOutcome({ destinationConfidence: 'CONFIRMED', routeAvailable: true, hasDeadline: false }));
+    reachable.add(classifyOutcome({ destinationConfidence: 'CONFIRMED', routeAvailable: true, hasDeadline: true, marginMinutes: 45 }));
+    reachable.add(classifyOutcome({ destinationConfidence: 'CONFIRMED', routeAvailable: true, hasDeadline: true, marginMinutes: 10 }));
+    reachable.add(classifyOutcome({ destinationConfidence: 'CONFIRMED', routeAvailable: true, hasDeadline: true, marginMinutes: -5 }));
+    reachable.add(classifyOutcome({ destinationConfidence: 'NEEDS_CLARIFICATION', routeAvailable: true, hasDeadline: false }));
+    reachable.add(classifyOutcome({ destinationConfidence: 'UNRESOLVED', routeAvailable: false, hasDeadline: false }));
+    expect(reachable).toEqual(new Set(['ETA_ONLY', 'BEFORE_DEADLINE', 'TIGHT_MARGIN', 'AFTER_DEADLINE', 'DESTINATION_NEEDS_CLARIFICATION', 'ROUTE_UNAVAILABLE']));
+    expect(reachable.has('GOOGLE_UNAVAILABLE' as never)).toBe(false);
+  });
+
+  it('the constant name makes the tight-margin threshold\'s provisional status explicit', () => {
+    expect(PROVISIONAL_TIGHT_MARGIN_THRESHOLD_MINUTES).toBe(20);
+  });
+
+  it('the founder page clearly labels itself as a founder beta with a scope note', async () => {
+    const { readFileSync } = await import('fs');
+    const { join } = await import('path');
+    const src = readFileSync(join(process.cwd(), 'components', 'founder', 'arrive-by-pakistan.tsx'), 'utf8');
+    expect(src).toMatch(/Founder Beta/);
+    expect(src).toMatch(/ISB/);
+    expect(src).toMatch(/LHE/);
+    expect(src).toMatch(/KHI/);
+    expect(src).toMatch(/estimate, not a guarantee/i);
+  });
+
+  it('the founder page shows a known-limitations note', async () => {
+    const { readFileSync } = await import('fs');
+    const { join } = await import('path');
+    const src = readFileSync(join(process.cwd(), 'components', 'founder', 'arrive-by-pakistan.tsx'), 'utf8');
+    expect(src).toMatch(/Known limitations/i);
+    expect(src).toMatch(/taxi/i);
+    expect(src).toMatch(/flight tracking/i);
+  });
+
+  it('the founder page shows the assumptions used (landing time, exit buffer, pickup, road departure)', async () => {
+    const { readFileSync } = await import('fs');
+    const { join } = await import('path');
+    const src = readFileSync(join(process.cwd(), 'components', 'founder', 'arrive-by-pakistan.tsx'), 'utf8');
+    expect(src).toMatch(/Landing time/);
+    expect(src).toMatch(/Airport-exit buffer/);
+    expect(src).toMatch(/Ready outside airport/);
+    expect(src).toMatch(/Road departure/);
   });
 });

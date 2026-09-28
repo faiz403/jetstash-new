@@ -2,11 +2,15 @@ import type { DestinationConfidence, PakistanOutcome, PakistanPickupMode } from 
 
 /**
  * Below this many minutes of spare time, a positive result is framed as
- * tight rather than comfortable. A product judgement call, not a figure
- * Google supplies — kept as one named constant so it's a single place to
- * revisit, not a magic number scattered through the calculation.
+ * tight rather than comfortable.
+ *
+ * PROVISIONAL — a founder-beta product assumption, not a figure Google
+ * supplies and not yet validated against real traveller behaviour. It was
+ * picked as a reasonable-sounding number during implementation, nothing
+ * more. Do not treat 20 as settled, and do not let it reach a public
+ * surface without a deliberate review once real founder usage exists.
  */
-export const TIGHT_MARGIN_THRESHOLD_MINUTES = 20;
+export const PROVISIONAL_TIGHT_MARGIN_THRESHOLD_MINUTES = 20;
 
 export function classifyOutcome(params: {
   destinationConfidence: DestinationConfidence;
@@ -21,7 +25,7 @@ export function classifyOutcome(params: {
 
   const margin = params.marginMinutes ?? 0;
   if (margin < 0) return 'AFTER_DEADLINE';
-  if (margin <= TIGHT_MARGIN_THRESHOLD_MINUTES) return 'TIGHT_MARGIN';
+  if (margin <= PROVISIONAL_TIGHT_MARGIN_THRESHOLD_MINUTES) return 'TIGHT_MARGIN';
   return 'BEFORE_DEADLINE';
 }
 
@@ -46,8 +50,6 @@ export function outcomeVerdict(params: {
       return "We couldn't identify the destination confidently enough to give you an arrival verdict. Please make the location more specific.";
     case 'ROUTE_UNAVAILABLE':
       return "Journey not confirmed. We couldn't get a reliable driving route for this destination.";
-    case 'GOOGLE_UNAVAILABLE':
-      return 'Arrive By could not check this journey right now. Please try again shortly.';
     default:
       return 'Journey not confirmed.';
   }

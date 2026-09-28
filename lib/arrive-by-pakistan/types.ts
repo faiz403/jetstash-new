@@ -58,14 +58,20 @@ export type DestinationClarificationReason =
   | 'PRIMARY_PLACE_MISMATCH'
   | 'GEOCODE_FAILED';
 
+/**
+ * Every outcome the current implementation can actually produce.
+ * GOOGLE_UNAVAILABLE was removed: every Google failure path (geocoding
+ * request failure, routes request failure, no usable route) already
+ * resolves to ROUTE_UNAVAILABLE — a second, unreachable "service down"
+ * state added nothing but a state that could never fire.
+ */
 export type PakistanOutcome =
   | 'ETA_ONLY'
   | 'BEFORE_DEADLINE'
   | 'TIGHT_MARGIN'
   | 'AFTER_DEADLINE'
   | 'DESTINATION_NEEDS_CLARIFICATION'
-  | 'ROUTE_UNAVAILABLE'
-  | 'GOOGLE_UNAVAILABLE';
+  | 'ROUTE_UNAVAILABLE';
 
 export interface PakistanJourneyResult {
   outcome: PakistanOutcome;

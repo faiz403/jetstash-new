@@ -33,8 +33,19 @@ const outcomeStyle: Record<string, string> = {
   AFTER_DEADLINE: 'border-terracotta-400 bg-terracotta-50',
   DESTINATION_NEEDS_CLARIFICATION: 'border-terracotta-400 bg-terracotta-50',
   ROUTE_UNAVAILABLE: 'border-terracotta-400 bg-terracotta-50',
-  GOOGLE_UNAVAILABLE: 'border-terracotta-400 bg-terracotta-50',
 };
+
+const KNOWN_LIMITATIONS = [
+  'City/town/locality resolution depends on Google — it is not always right.',
+  'Some alternate spellings may need you to be more specific.',
+  'Duplicate Google results for the same place may need you to be more specific.',
+  'Airport-exit time is your own estimate, not something Arrive By checks.',
+  'Pickup availability is not checked — only the road journey is.',
+  'No taxi/ride-hailing availability or price.',
+  'No flight tracking.',
+  'No immigration or baggage-hall time prediction.',
+  'Road conditions can change after the estimate is given.',
+];
 
 function headline(result: PakistanJourneyResult, arrivalClock: string, deadlineClock: string): string {
   switch (result.outcome) {
@@ -105,10 +116,16 @@ export function ArriveByPakistan() {
   const deadlineClock = result?.deadline ? clock(result.deadline, result.airport.timeZone) : '';
 
   return <div className="mx-auto max-w-5xl bg-white px-4 py-8 text-ink-900 sm:px-8">
-    <p className="text-xs font-semibold uppercase tracking-wide text-brass-600">Founder prototype · live Google journey data · Pakistan</p>
+    <p className="text-xs font-semibold uppercase tracking-wide text-brass-600">Pakistan Arrive By — Founder Beta</p>
     <h1 className="mt-3 font-display text-3xl sm:text-4xl">After you land in Pakistan, when will you actually reach where you're going?</h1>
     <p className="mt-3 max-w-3xl text-ink-600">Enter your flight landing time, how you're leaving the airport, and your final destination. Arrive By checks a real, traffic-aware road journey — with a deadline judgement if you have one.</p>
-    <p className="mt-2 max-w-3xl text-sm text-ink-500">This first proof is road-only and supports Islamabad, Lahore and Karachi arrivals in Pakistan local time. A deadline is optional — leave it blank to see an arrival estimate only.</p>
+    <ul className="mt-3 max-w-3xl list-disc space-y-1 pl-5 text-sm text-ink-500">
+      <li>Currently supports Islamabad (ISB), Lahore (LHE) and Karachi (KHI) arrivals.</li>
+      <li>Road journeys only, in Pakistan local time.</li>
+      <li>A traffic-aware Google driving estimate — nothing else.</li>
+      <li>You supply the airport-exit and pickup assumptions; Arrive By does not guess them.</li>
+      <li>The journey result is an estimate, not a guarantee.</li>
+    </ul>
 
     <form onSubmit={submit} className="mt-6 grid gap-4 rounded-md border border-ink-200 bg-sand-50 p-4 sm:p-6">
       <label className="text-sm">Arrival airport
@@ -161,20 +178,52 @@ export function ArriveByPakistan() {
       <section className={`rounded-md border p-5 sm:p-7 ${outcomeStyle[result.outcome] ?? 'border-terracotta-400 bg-terracotta-50'}`}>
         <p className="text-xs font-semibold uppercase tracking-wide">Your answer</p>
         <h2 className="mt-2 font-display text-2xl sm:text-3xl">{headline(result, arrivalClock, deadlineClock)}</h2>
-        {result.outcome === 'DESTINATION_NEEDS_CLARIFICATION' && result.clarificationReason === 'PRIMARY_PLACE_MISMATCH' && result.resolvedDestination && (
-          <p className="mt-3 text-sm text-ink-600">
-            We found: <strong>{result.resolvedDestination}</strong> — but you entered: <strong>{result.destination}</strong>. Please make the destination more specific before we calculate the journey.
-          </p>
+        {result.resolvedDestination && (
+          <div className="mt-3 text-sm text-ink-600">
+            <p>Entered destination: <strong>{result.destination}</strong></p>
+            <p>Google understood this as: <strong>{result.resolvedDestination}</strong></p>
+          </div>
         )}
-        {result.destinationConfidence === 'CONFIRMED' && result.resolvedDestination && (
-          <p className="mt-3 text-sm text-ink-600">Google understood your destination as: <strong>{result.resolvedDestination}</strong></p>
+        {result.outcome === 'DESTINATION_NEEDS_CLARIFICATION' && result.clarificationReason === 'PRIMARY_PLACE_MISMATCH' && (
+          <p className="mt-3 text-sm text-ink-600">Please make the destination more specific before we calculate the journey.</p>
+        )}
+        {result.outcome === 'DESTINATION_NEEDS_CLARIFICATION' && result.clarificationReason === 'MULTIPLE_CANDIDATES' && (
+          <p className="mt-3 text-sm text-ink-600">Google returned more than one possible match for this destination. Please make it more specific.</p>
         )}
         {result.deadlineReason && <p className="mt-3 text-sm text-ink-600">You said this matters because: {result.deadlineReason}</p>}
         {result.driveDurationSeconds !== undefined && (
           <p className="mt-3 text-sm text-ink-600">{PICKUP_MODE_CAVEATS[pickupMode]}</p>
         )}
         <p className="mt-3 text-xs text-ink-500">{ESTIMATE_DISCLAIMER}</p>
+
+        <dl className="mt-5 grid grid-cols-1 gap-x-6 gap-y-1 border-t border-ink-200 pt-4 text-sm text-ink-600 sm:grid-cols-2">
+          <dt className="font-semibold">Landing time</dt>
+          <dd>{landingAt.replace('T', ' ')} ({result.airport.displayName})</dd>
+          <dt className="font-semibold">Airport-exit buffer</dt>
+          <dd>{airportExitBufferMinutes} minutes</dd>
+          <dt className="font-semibold">Ready outside airport</dt>
+          <dd>{clock(result.readyOutsideAirport, result.airport.timeZone)}</dd>
+          <dt className="font-semibold">Pickup</dt>
+          <dd>{PICKUP_LABELS[pickupMode]}</dd>
+          <dt className="font-semibold">Pickup wait</dt>
+          <dd>{pickupWaitMinutes || '0'} minutes</dd>
+          <dt className="font-semibold">Road departure</dt>
+          <dd>{clock(result.roadDeparture, result.airport.timeZone)}</dd>
+          {result.deadline && <>
+            <dt className="font-semibold">Deadline</dt>
+            <dd>{deadlineClock}</dd>
+            <dt className="font-semibold">Destination readiness buffer</dt>
+            <dd>{destinationReadinessBufferMinutes || '0'} minutes</dd>
+          </>}
+        </dl>
       </section>
     </div>}
+
+    <details className="mt-8 max-w-3xl rounded-md border border-ink-200 bg-sand-50 p-4 text-sm text-ink-600">
+      <summary className="cursor-pointer font-semibold text-ink-900">Known limitations (founder beta)</summary>
+      <ul className="mt-2 list-disc space-y-1 pl-5">
+        {KNOWN_LIMITATIONS.map((item) => <li key={item}>{item}</li>)}
+      </ul>
+    </details>
   </div>;
 }
