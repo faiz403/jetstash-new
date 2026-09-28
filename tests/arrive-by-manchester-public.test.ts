@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { afterEach, describe, it, expect, vi } from 'vitest';
 import { readFileSync, readdirSync } from 'fs';
 import { join } from 'path';
 import { NextRequest } from 'next/server';
@@ -10,11 +10,11 @@ import { POST } from '@/app/api/arrive-by-manchester/google/route';
  * Manchester's transit-first result shape and its shared registry-driven
  * public-enablement gate.
  *
- * MAN's destination-country policy is still POLICY_PENDING as of Phase 3
- * (see lib/arrive-by-shared/airport-registry.ts) -- the public page/API
- * code exists and is reachable for local testing, but the registry gate
- * below must keep it genuinely non-functional for a real visitor until
- * that policy is resolved with real evidence.
+ * MAN's destination-country policy was resolved as an explicit founder
+ * decision in Phase 3.1 (expectedCountryCodes: ['GB'] -- see
+ * lib/arrive-by-shared/airport-registry.ts): MAN is now public_beta and
+ * publiclyEnabled, so the registry gate below proves the public API is
+ * genuinely usable rather than self-gating to 404.
  */
 
 const publicPagePath = join(process.cwd(), 'app', 'arrive-by', 'manchester', 'page.tsx');
@@ -106,16 +106,30 @@ describe('public Manchester API uses the shared, registry-gated engine', () => {
   });
 });
 
-describe('MAN public-enablement gate — genuinely blocked while POLICY_PENDING', () => {
-  it('the public API returns 404 for a real request, not a working journey, while MAN is not publicly enabled', async () => {
+describe('MAN public-enablement gate — genuinely usable now that the country policy is resolved', () => {
+  const previousKey = process.env.GOOGLE_ROUTES_API_KEY;
+  const originalFetch = globalThis.fetch;
+  afterEach(() => {
+    globalThis.fetch = originalFetch;
+    if (previousKey === undefined) delete process.env.GOOGLE_ROUTES_API_KEY;
+    else process.env.GOOGLE_ROUTES_API_KEY = previousKey;
+    vi.restoreAllMocks();
+  });
+
+  it('the public API no longer self-gates to 404 for a valid MAN request -- it reaches the real engine', async () => {
+    process.env.GOOGLE_ROUTES_API_KEY = 'server-test-key';
+    const fetchMock = vi.fn().mockResolvedValueOnce(new Response(JSON.stringify({ status: 'ZERO_RESULTS' }), { status: 200, headers: { 'Content-Type': 'application/json' } }));
+    globalThis.fetch = fetchMock as typeof fetch;
+
     const response = await POST(new NextRequest('http://localhost/api/arrive-by-manchester/google', {
       method: 'POST',
       body: JSON.stringify({ originId: 'man-terminal-2', destination: 'Sheffield', availableAt: '2026-09-29T12:00', deadline: '2026-09-29T14:30' }),
       headers: { 'Content-Type': 'application/json', 'x-forwarded-for': '192.0.2.201' },
     }));
-    expect(response.status).toBe(404);
+    expect(response.status).not.toBe(404);
+    expect(fetchMock).toHaveBeenCalledTimes(1); // the geocode call was genuinely attempted, not skipped
     const body = await response.json();
-    expect(body).toEqual({ error: 'Manchester Arrive By is not available.' });
+    expect(body).toMatchObject({ transitStatus: 'DESTINATION_PENDING', destinationConfidence: 'UNRESOLVED' });
   });
 });
 

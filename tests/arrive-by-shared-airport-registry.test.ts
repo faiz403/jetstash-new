@@ -30,14 +30,15 @@ describe('airport registry — Phase 2 foundation', () => {
     expect(profile).toMatchObject({ journeyEngine: 'ROAD_PICKUP_FIRST', validationStatus: 'public_beta', publiclyEnabled: true });
   });
 
-  it('MAN is a valid but non-public transit-first profile with a pending destination policy (still unresolved as of Phase 3)', () => {
+  it('MAN is a valid, publicly enabled, transit-first profile with a resolved GB-only destination policy (Phase 3.1 explicit founder decision)', () => {
     const profile = getAirportProfile('MAN');
     expect(profile).toMatchObject({
       countryCode: 'GB', timeZone: 'Europe/London', journeyEngine: 'TRANSIT_FIRST',
-      validationStatus: 'internally_testable', publiclyEnabled: false,
+      validationStatus: 'public_beta', publiclyEnabled: true,
     });
-    expect(profile?.destinationRules.expectedCountryCodes).toBe(POLICY_PENDING);
+    expect(profile?.destinationRules.expectedCountryCodes).toEqual(['GB']);
     expect(profile?.routing.defaultOrigin).toMatchObject({ kind: 'coordinate', lat: 53.367664, lng: -2.280683 });
+    expect(profile?.routing.terminalRequired).toBe(false);
   });
 
   it('an unsupported airport code resolves safely to undefined, never a fabricated profile', () => {
@@ -46,9 +47,21 @@ describe('airport registry — Phase 2 foundation', () => {
     expect(getAirportProfile('')).toBeUndefined();
   });
 
-  it('getPublicAirportProfiles returns only ISB/LHE/KHI — MAN is excluded pending its destination-country policy', () => {
+  it('getPublicAirportProfiles returns ISB/LHE/KHI/MAN — all four are now publicly enabled', () => {
     const codes = getPublicAirportProfiles().map((profile) => profile.code).sort();
-    expect(codes).toEqual(['ISB', 'KHI', 'LHE']);
+    expect(codes).toEqual(['ISB', 'KHI', 'LHE', 'MAN']);
+  });
+
+  it('POLICY_PENDING remains illegal for a public_beta/public profile — the registry invariant was not weakened to allow MAN through', () => {
+    const bad: AirportProfile = {
+      code: 'XX', displayName: 'Test', city: 'X', countryCode: 'GB', timeZone: 'Europe/London',
+      routing: { defaultOrigin: { kind: 'coordinate', lat: 51.5, lng: -0.1 }, terminalRequired: false },
+      journeyEngine: 'TRANSIT_FIRST',
+      destinationRules: { expectedCountryCodes: POLICY_PENDING },
+      validationStatus: 'public_beta',
+      publiclyEnabled: true,
+    };
+    expect(() => assertValidAirportProfile(bad)).toThrow(/pending destination-country policy/);
   });
 
   it('canEnablePublicly is true only for public_beta and public', () => {

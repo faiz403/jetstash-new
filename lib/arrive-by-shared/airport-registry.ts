@@ -185,21 +185,23 @@ const AIRPORT_PROFILES: readonly AirportProfile[] = [
     // journey, only an honest description of today's actual scope.
     routing: { defaultOrigin: { kind: 'coordinate', lat: 53.367664, lng: -2.280683 }, terminalRequired: false },
     journeyEngine: 'TRANSIT_FIRST',
-    // STILL POLICY_PENDING (Phase 3 re-review): an earlier pass of this
-    // file briefly set this to ['GB'], reasoning from the founder UI's own
-    // copy ("This first proof supports Manchester Airport Terminal 2 and
-    // UK local time") and the single validated Sheffield scenario. On
-    // reconsideration, that copy is a statement about the airport's
-    // TIMEZONE, not a decided destination-country restriction, and one
-    // validated scenario doesn't establish exclusivity — genuine evidence
-    // (a founder decision, or a documented product-scope statement that
-    // destinations are UK-only) does not yet exist. Left POLICY_PENDING on
-    // purpose: assertValidAirportProfile (below) makes it structurally
-    // impossible for MAN to reach public_beta/public, and therefore
-    // publiclyEnabled, until someone makes that decision explicitly.
-    destinationRules: { expectedCountryCodes: POLICY_PENDING },
-    validationStatus: 'internally_testable',
-    publiclyEnabled: false,
+    // RESOLVED (Phase 3.1, 29 Sep 2026) — an explicit founder product
+    // decision, not an inference: the initial MAN Arrive By public beta
+    // supports UK onward destinations only. Two earlier passes of this
+    // file both considered and rejected inferring this from indirect
+    // evidence (the founder UI's "UK local time" copy, the single
+    // validated Sheffield scenario) as insufficient — this entry only
+    // changed once the founder stated the scope directly: this beta IS
+    // the UK Arrive By rollout, the transit/car engine is built and
+    // tested around UK onward journeys, and cross-border destination
+    // behaviour is explicitly unvalidated and out of scope until a
+    // separate decision widens it. A real decision, however narrow,
+    // satisfies the registry's invariant differently than an inference
+    // would have — it's recorded here specifically so a future reader
+    // can tell the two apart.
+    destinationRules: { expectedCountryCodes: ['GB'] },
+    validationStatus: 'public_beta',
+    publiclyEnabled: true,
   },
 ];
 

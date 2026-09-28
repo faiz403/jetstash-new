@@ -7,9 +7,10 @@ import { POST } from '@/app/api/founder/arrive-by/google/route';
  * founder route: an unresolved/unsafe destination never reaches the
  * transit/car engine, a venue needs explicit confirmation, and multiple
  * venues need an explicit selection -- exactly the same guarantees Pakistan
- * already has, now shared. Manchester currently runs no country gate (its
- * destination policy is POLICY_PENDING in the airport registry), so these
- * tests focus on venue/ambiguity handling, not country rejection.
+ * already has, now shared. As of Phase 3.1, MAN's destination-country
+ * policy is the explicit founder decision expectedCountryCodes: ['GB']
+ * (see lib/arrive-by-shared/airport-registry.ts), so a non-GB result is
+ * now also rejected the same way Pakistan rejects a non-PK one.
  */
 
 const baseInput = {
@@ -65,6 +66,53 @@ describe('Manchester founder route — shared destination resolution gate', () =
 
     expect(apiResponse.status).toBe(200);
     expect(body).toMatchObject({ transitStatus: 'DESTINATION_PENDING', destinationConfidence: 'NEEDS_CLARIFICATION', clarificationReason: 'MULTIPLE_CANDIDATES' });
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('a GB destination proceeds to normal destination resolution (the country gate does not block legitimate UK results)', async () => {
+    process.env.GOOGLE_ROUTES_API_KEY = 'server-test-key';
+    const fetchMock = vi.fn().mockResolvedValueOnce(geocodeResponse({
+      status: 'OK',
+      results: [{
+        formatted_address: 'Sheffield, UK', place_id: 'sheffield-1', types: ['locality', 'political'],
+        geometry: { location_type: 'APPROXIMATE' },
+        address_components: [
+          { long_name: 'Sheffield', short_name: 'Sheffield', types: ['locality'] },
+          { long_name: 'United Kingdom', short_name: 'GB', types: ['country'] },
+        ],
+      }],
+    }));
+    globalThis.fetch = fetchMock as typeof fetch;
+
+    const apiResponse = await post({ ...baseInput, destination: 'Sheffield' });
+    const body = await apiResponse.json();
+
+    expect(apiResponse.status).toBe(422); // no transit mock configured -- proves the country gate passed and the engine was actually reached
+    expect(body).not.toMatchObject({ transitStatus: 'DESTINATION_PENDING' });
+    expect(fetchMock).toHaveBeenCalledTimes(2); // geocode + attempted transit call
+  });
+
+  it('an explicit non-GB destination is rejected before transit routing -- MAN\'s UK-only beta scope', async () => {
+    process.env.GOOGLE_ROUTES_API_KEY = 'server-test-key';
+    const fetchMock = vi.fn().mockResolvedValueOnce(geocodeResponse({
+      status: 'OK',
+      results: [{
+        formatted_address: 'Dublin, Ireland', place_id: 'dublin-1', types: ['locality', 'political'],
+        geometry: { location_type: 'APPROXIMATE' },
+        address_components: [
+          { long_name: 'Dublin', short_name: 'Dublin', types: ['locality'] },
+          { long_name: 'Ireland', short_name: 'IE', types: ['country'] },
+        ],
+      }],
+    }));
+    globalThis.fetch = fetchMock as typeof fetch;
+
+    const apiResponse = await post({ ...baseInput, destination: 'Dublin' });
+    const body = await apiResponse.json();
+
+    expect(apiResponse.status).toBe(200);
+    expect(body).toMatchObject({ transitStatus: 'DESTINATION_PENDING', destinationConfidence: 'NEEDS_CLARIFICATION', clarificationReason: 'WRONG_COUNTRY' });
+    // Wrong-country result never reaches transit routing -- only the one geocode call was made.
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
