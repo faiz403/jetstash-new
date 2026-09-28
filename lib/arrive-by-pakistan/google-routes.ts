@@ -131,15 +131,25 @@ export async function geocodeDestination(apiKey: string, destination: string): P
 
   let confidence: DestinationConfidence = 'CONFIRMED';
   let clarificationReason: DestinationClarificationReason | undefined;
-  if (partialMatch) {
-    confidence = 'NEEDS_CLARIFICATION';
-    clarificationReason = 'PARTIAL_MATCH';
-  } else if (isDefinitelyNotPakistan(result.address_components)) {
+  if (isDefinitelyNotPakistan(result.address_components)) {
     confidence = 'NEEDS_CLARIFICATION';
     clarificationReason = 'WRONG_COUNTRY';
   } else if (!isVenue && tooBroad) {
     confidence = 'NEEDS_CLARIFICATION';
     clarificationReason = 'TOO_BROAD_TYPE';
+  } else if (!isVenue && partialMatch) {
+    // Live evidence (Nishat Hotel, Johar Town, beside Emporium Mall): a
+    // single, correctly-resolved venue can still come back partial_match
+    // when the free-text query didn't spell out the address exactly as
+    // Google's database has it — the venue was right, only the wording
+    // wasn't a perfect string match. For a village/locality, partial_match
+    // still means "trust nothing" (no human ever sees or confirms a raw
+    // ETA). For a venue, the human confirmation step below is the safety
+    // net that a village doesn't get, so a partial match on the free text
+    // is not the same risk here — it's exactly what NEEDS_CONFIRMATION
+    // exists to ask about.
+    confidence = 'NEEDS_CLARIFICATION';
+    clarificationReason = 'PARTIAL_MATCH';
   } else if (!locationType) {
     confidence = 'NEEDS_CLARIFICATION';
     clarificationReason = 'NO_LOCATION_TYPE';

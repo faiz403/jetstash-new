@@ -483,6 +483,167 @@ describe('venue/POI destination confirmation — live evidence: real hotels/venu
     expect(result.confidence).toBe('NEEDS_CLARIFICATION');
     expect(result.clarificationReason).toBe('PRIMARY_PLACE_MISMATCH');
   });
+
+  it('locality/village behaviour is unchanged: Islamgarh -> New Mirpur City still blocks (second independent live wrong-place case)', async () => {
+    mockGeocode({
+      status: 'OK',
+      results: [{
+        formatted_address: 'New Mirpur City',
+        types: ['locality', 'political'],
+        geometry: { location_type: 'APPROXIMATE' },
+        address_components: [
+          { long_name: 'New Mirpur City', short_name: 'New Mirpur City', types: ['locality', 'political'] },
+          { long_name: 'Pakistan', short_name: 'PK', types: ['country', 'political'] },
+        ],
+      }],
+    });
+    const result = await geocodeDestination('test-key', 'Islamgarh, Mirpur, Azad Kashmir, Pakistan');
+    expect(result.confidence).toBe('NEEDS_CLARIFICATION');
+    expect(result.clarificationReason).toBe('PRIMARY_PLACE_MISMATCH');
+  });
+
+  it('a real founder failure: a single, correctly-resolved venue with partial_match=true (Nishat Hotel, Johar Town, beside Emporium Mall) still reaches NEEDS_CONFIRMATION, not a "be more specific" dead end', async () => {
+    mockGeocode({
+      status: 'OK',
+      results: [{
+        formatted_address: 'Main Abdul Haque Rd, adjacent to Emporium Mall, Trade Centre Commercial Area Phase 2 Johar Town, Lahore, 54600, Pakistan',
+        place_id: 'ChIJ4_tdLSsCGTkRl6Zkdabbv4c',
+        types: ['establishment', 'food', 'lodging', 'point_of_interest', 'restaurant'],
+        partial_match: true,
+        geometry: { location_type: 'ROOFTOP' },
+        address_components: [
+          { long_name: 'Johar Town', short_name: 'Johar Town', types: ['political', 'sublocality', 'sublocality_level_1'] },
+          { long_name: 'Lahore', short_name: 'Lahore', types: ['locality', 'political'] },
+          { long_name: 'Pakistan', short_name: 'PK', types: ['country', 'political'] },
+        ],
+      }],
+    });
+    const result = await geocodeDestination('test-key', 'Nishat Hotel Johar Town Lahore');
+    expect(result.confidence).toBe('NEEDS_CONFIRMATION');
+    expect(result.clarificationReason).toBeUndefined();
+    expect(result.placeId).toBe('ChIJ4_tdLSsCGTkRl6Zkdabbv4c');
+  });
+
+  it('confirming that same partial_match venue result permits the route to be calculated (end-to-end, mirrors the real founder journey)', async () => {
+    const nishatResult = {
+      status: 'OK',
+      results: [{
+        formatted_address: 'Main Abdul Haque Rd, adjacent to Emporium Mall, Trade Centre Commercial Area Phase 2 Johar Town, Lahore, 54600, Pakistan',
+        place_id: 'ChIJ4_tdLSsCGTkRl6Zkdabbv4c',
+        types: ['establishment', 'food', 'lodging', 'point_of_interest', 'restaurant'],
+        partial_match: true,
+        geometry: { location_type: 'ROOFTOP' },
+        address_components: [
+          { long_name: 'Johar Town', short_name: 'Johar Town', types: ['political', 'sublocality', 'sublocality_level_1'] },
+          { long_name: 'Lahore', short_name: 'Lahore', types: ['locality', 'political'] },
+          { long_name: 'Pakistan', short_name: 'PK', types: ['country', 'political'] },
+        ],
+      }],
+    };
+    let routesCalls = 0;
+    global.fetch = vi.fn(async (url: string | URL) => {
+      if (String(url).includes('maps.googleapis.com/maps/api/geocode')) return new Response(JSON.stringify(nishatResult), { status: 200 });
+      routesCalls += 1;
+      return new Response(JSON.stringify({ routes: [{ duration: '6540s', distanceMeters: 12000 }] }), { status: 200 });
+    }) as unknown as typeof fetch;
+
+    const result = await computePakistanJourney('test-key', {
+      airportCode: 'LHE',
+      landingAt: '2026-11-17T12:00',
+      airportExitBufferMinutes: 60,
+      destination: 'Nishat Hotel Johar Town Lahore',
+      pickupMode: 'family',
+      pickupWaitMinutes: 0,
+      deadline: '2026-11-17T17:00',
+      confirmedPlaceId: 'ChIJ4_tdLSsCGTkRl6Zkdabbv4c',
+    });
+    expect(result.outcome).not.toBe('DESTINATION_NEEDS_CONFIRMATION');
+    expect(result.destinationConfidence).toBe('CONFIRMED');
+    expect(result.expectedArrival).toBeDefined();
+    expect(routesCalls).toBe(1);
+  });
+
+  it('a real, correctly-resolved venue with partial_match=true does NOT bypass the wrong-country guard', async () => {
+    mockGeocode({
+      status: 'OK',
+      results: [{
+        formatted_address: 'Some Hotel, London, United Kingdom',
+        place_id: 'uk-partial-place-id',
+        types: ['establishment', 'lodging', 'point_of_interest'],
+        partial_match: true,
+        geometry: { location_type: 'ROOFTOP' },
+        address_components: [
+          { long_name: 'London', short_name: 'London', types: ['locality', 'political'] },
+          { long_name: 'United Kingdom', short_name: 'GB', types: ['country', 'political'] },
+        ],
+      }],
+    });
+    const result = await geocodeDestination('test-key', 'Some Hotel London');
+    expect(result.confidence).toBe('NEEDS_CLARIFICATION');
+    expect(result.clarificationReason).toBe('WRONG_COUNTRY');
+  });
+
+  it('two genuinely different real venues sharing a similar name ("Nishat Hotel" — Johar Town vs a separate hotel in Gulberg III) still classify as MULTIPLE_CANDIDATES — this is correct, not a bug, and must not be loosened', async () => {
+    mockGeocode({
+      status: 'OK',
+      results: [
+        {
+          formatted_address: 'Main Abdul Haque Rd, adjacent to Emporium Mall, Trade Centre Commercial Area Phase 2 Johar Town, Lahore, 54600, Pakistan',
+          place_id: 'ChIJ4_tdLSsCGTkRl6Zkdabbv4c',
+          types: ['establishment', 'food', 'lodging', 'point_of_interest', 'restaurant'],
+          partial_match: true,
+          geometry: { location_type: 'ROOFTOP' },
+        },
+        {
+          formatted_address: '9-A Mian Mehmood Ali Kasoori Rd, Block A3 Block A 3 Gulberg III, Lahore, 54660, Pakistan',
+          place_id: 'ChIJ-aN4wE0EGTkRX5t87J08fgo',
+          types: ['establishment', 'food', 'lodging', 'point_of_interest', 'restaurant'],
+          partial_match: true,
+          geometry: { location_type: 'ROOFTOP' },
+        },
+      ],
+    });
+    const result = await geocodeDestination('test-key', 'Nishat Hotel Lahore');
+    expect(result.confidence).toBe('NEEDS_CLARIFICATION');
+    expect(result.clarificationReason).toBe('MULTIPLE_CANDIDATES');
+  });
+
+  it('a confirm-time re-check that now returns PARTIAL_MATCH (locality, not venue) is not overridden by a stale confirmedPlaceId', async () => {
+    mockGeocode({
+      status: 'OK',
+      results: [{ formatted_address: 'Somewhere else entirely', partial_match: true, types: ['locality'], geometry: { location_type: 'APPROXIMATE' } }],
+    });
+    const result = await computePakistanJourney('test-key', {
+      airportCode: 'ISB',
+      landingAt: '2026-11-17T12:00',
+      airportExitBufferMinutes: 60,
+      destination: 'a vague place',
+      pickupMode: 'family',
+      confirmedPlaceId: 'some-place-id',
+    });
+    expect(result.destinationConfidence).toBe('NEEDS_CLARIFICATION');
+    expect(result.clarificationReason).toBe('PARTIAL_MATCH');
+  });
+
+  it('a confirm-time re-check that now returns MULTIPLE_CANDIDATES is not overridden by a stale confirmedPlaceId, even if it matches the top candidate', async () => {
+    mockGeocode({
+      status: 'OK',
+      results: [
+        { formatted_address: 'Candidate A', place_id: 'candidate-a-id', types: ['locality'], geometry: { location_type: 'APPROXIMATE' } },
+        { formatted_address: 'Candidate B', place_id: 'candidate-b-id', types: ['locality'], geometry: { location_type: 'APPROXIMATE' } },
+      ],
+    });
+    const result = await computePakistanJourney('test-key', {
+      airportCode: 'ISB',
+      landingAt: '2026-11-17T12:00',
+      airportExitBufferMinutes: 60,
+      destination: 'ambiguous name',
+      pickupMode: 'family',
+      confirmedPlaceId: 'candidate-a-id',
+    });
+    expect(result.destinationConfidence).toBe('NEEDS_CLARIFICATION');
+    expect(result.clarificationReason).toBe('MULTIPLE_CANDIDATES');
+  });
 });
 
 describe('drive route computation', () => {
@@ -691,15 +852,16 @@ describe('privacy — no destination or free-text reason is logged anywhere in t
 });
 
 describe('founder-beta finishing pass', () => {
-  it('the outcome vocabulary has exactly six reachable members — no dead GOOGLE_UNAVAILABLE state', () => {
+  it('the outcome vocabulary has exactly seven reachable members — no dead GOOGLE_UNAVAILABLE state', () => {
     const reachable = new Set<string>();
     reachable.add(classifyOutcome({ destinationConfidence: 'CONFIRMED', routeAvailable: true, hasDeadline: false }));
     reachable.add(classifyOutcome({ destinationConfidence: 'CONFIRMED', routeAvailable: true, hasDeadline: true, marginMinutes: 45 }));
     reachable.add(classifyOutcome({ destinationConfidence: 'CONFIRMED', routeAvailable: true, hasDeadline: true, marginMinutes: 10 }));
     reachable.add(classifyOutcome({ destinationConfidence: 'CONFIRMED', routeAvailable: true, hasDeadline: true, marginMinutes: -5 }));
+    reachable.add(classifyOutcome({ destinationConfidence: 'NEEDS_CONFIRMATION', routeAvailable: false, hasDeadline: false }));
     reachable.add(classifyOutcome({ destinationConfidence: 'NEEDS_CLARIFICATION', routeAvailable: true, hasDeadline: false }));
     reachable.add(classifyOutcome({ destinationConfidence: 'UNRESOLVED', routeAvailable: false, hasDeadline: false }));
-    expect(reachable).toEqual(new Set(['ETA_ONLY', 'BEFORE_DEADLINE', 'TIGHT_MARGIN', 'AFTER_DEADLINE', 'DESTINATION_NEEDS_CLARIFICATION', 'ROUTE_UNAVAILABLE']));
+    expect(reachable).toEqual(new Set(['ETA_ONLY', 'BEFORE_DEADLINE', 'TIGHT_MARGIN', 'AFTER_DEADLINE', 'DESTINATION_NEEDS_CONFIRMATION', 'DESTINATION_NEEDS_CLARIFICATION', 'ROUTE_UNAVAILABLE']));
     expect(reachable.has('GOOGLE_UNAVAILABLE' as never)).toBe(false);
   });
 
