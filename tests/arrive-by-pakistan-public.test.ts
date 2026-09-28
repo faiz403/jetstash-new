@@ -8,6 +8,12 @@ import { cleanInput } from '@/lib/arrive-by-pakistan/clean-input';
  * readFileSync + regex convention as tests/arrive-by-pakistan-founder-route-
  * access.test.ts, adapted for a route that is meant to be publicly
  * reachable rather than founder-gated.
+ *
+ * app/arrive-by/pakistan/page.tsx is now a legacy redirect to the unified
+ * /arrive-by shell (Phase 4) rather than the page rendering
+ * ArriveByPakistanPublic directly -- see tests/arrive-by-shell.test.ts for
+ * the shell's own indexing-control and reachability tests, which now carry
+ * the assertions that used to live here against this file.
  */
 
 const publicPagePath = join(process.cwd(), 'app', 'arrive-by', 'pakistan', 'page.tsx');
@@ -42,12 +48,12 @@ describe('public page is reachable without the founder gate', () => {
   });
 });
 
-describe('public page indexing controls', () => {
-  it('the public page sets robots index:false, follow:true — visible to a visitor with the link, not promoted for search discovery yet', () => {
-    expect(publicPageSrc).toMatch(/robots:\s*{\s*index:\s*false,\s*follow:\s*true\s*}/);
+describe('legacy Pakistan page redirects to the unified shell (Phase 4)', () => {
+  it('redirects to /arrive-by (never guesses a single Pakistan airport — ISB/LHE/KHI were all supported)', () => {
+    expect(publicPageSrc).toMatch(/redirect\(['"]\/arrive-by['"]\)/);
   });
 
-  it('the public page is absent from app/sitemap.ts', () => {
+  it('the legacy route is absent from app/sitemap.ts', () => {
     expect(sitemapSrc).not.toMatch(/arrive-by\/pakistan/);
   });
 });

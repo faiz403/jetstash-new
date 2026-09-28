@@ -1,23 +1,14 @@
-import type { Metadata } from 'next';
-import { ArriveByManchesterPublic } from '@/components/arrive-by-manchester-public';
+import { redirect } from 'next/navigation';
 
 /**
- * Public Manchester Arrive By beta — a temporary route until the canonical
- * /arrive-by shell exists (see docs/product/ARRIVE_BY_MVP.md), mirroring
- * /arrive-by/pakistan's own beta pattern. Deliberately noindex, follow and
- * absent from app/sitemap.ts for this beta stage, and not linked from main
- * navigation — a real, working page for anyone with the link, not a hidden
- * one.
+ * Legacy Manchester Arrive By beta route — superseded by the canonical
+ * /arrive-by shell (Phase 4). Redirects rather than 404s so any link
+ * already shared during the earlier beta keeps working, landing the
+ * visitor on the same MAN journey flow via the unified shell.
  */
 
 export const dynamic = 'force-dynamic';
 
-export const metadata: Metadata = {
-  title: 'Manchester Arrive By (Beta)',
-  description: 'A live public-transport and traffic-aware road-journey estimate for Manchester Airport arrivals.',
-  robots: { index: false, follow: true },
-};
-
-export default function ArriveByManchesterPublicPage() {
-  return <ArriveByManchesterPublic />;
+export default function ArriveByManchesterLegacyRedirect() {
+  redirect('/arrive-by?airport=MAN');
 }

@@ -15,6 +15,11 @@ import { POST } from '@/app/api/arrive-by-manchester/google/route';
  * lib/arrive-by-shared/airport-registry.ts): MAN is now public_beta and
  * publiclyEnabled, so the registry gate below proves the public API is
  * genuinely usable rather than self-gating to 404.
+ *
+ * app/arrive-by/manchester/page.tsx is now a legacy redirect to the
+ * unified /arrive-by shell (Phase 4) rather than the page rendering
+ * ArriveByManchesterPublic directly -- see tests/arrive-by-shell.test.ts
+ * for the shell's own indexing-control and reachability tests.
  */
 
 const publicPagePath = join(process.cwd(), 'app', 'arrive-by', 'manchester', 'page.tsx');
@@ -49,12 +54,12 @@ describe('public Manchester page is reachable without the founder gate', () => {
   });
 });
 
-describe('public Manchester page indexing controls', () => {
-  it('the public page sets robots index:false, follow:true', () => {
-    expect(publicPageSrc).toMatch(/robots:\s*{\s*index:\s*false,\s*follow:\s*true\s*}/);
+describe('legacy Manchester page redirects to the unified shell (Phase 4)', () => {
+  it('redirects to /arrive-by?airport=MAN', () => {
+    expect(publicPageSrc).toMatch(/redirect\(['"]\/arrive-by\?airport=MAN['"]\)/);
   });
 
-  it('the public page is absent from app/sitemap.ts', () => {
+  it('the legacy route is absent from app/sitemap.ts', () => {
     expect(sitemapSrc).not.toMatch(/arrive-by\/manchester/);
   });
 

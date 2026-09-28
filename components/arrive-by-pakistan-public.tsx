@@ -85,9 +85,9 @@ function headline(result: PakistanJourneyResult, arrivalClock: string, deadlineC
   }
 }
 
-export function ArriveByPakistanPublic() {
+export function ArriveByPakistanPublic({ initialAirportCode = 'ISB' }: { initialAirportCode?: PakistanAirportCode } = {}) {
   const defaultDate = useMemo(tomorrowInKarachi, []);
-  const [airportCode, setAirportCode] = useState<PakistanAirportCode>('ISB');
+  const [airportCode, setAirportCode] = useState<PakistanAirportCode>(initialAirportCode);
   const [landingAt, setLandingAt] = useState(`${defaultDate}T12:00`);
   const [airportExitBufferMinutes, setAirportExitBufferMinutes] = useState('60');
   const [destination, setDestination] = useState('');
