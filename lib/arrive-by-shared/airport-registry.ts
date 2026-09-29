@@ -13,6 +13,8 @@
  * until an airport's validation genuinely earns it.
  */
 
+import { resolveExpectedCountryCodes, assertValidDestinationPolicy, type DestinationPolicy } from './destination-policy';
+
 export type JourneyEngine = 'TRANSIT_FIRST' | 'ROAD_PICKUP_FIRST';
 // HYBRID is deliberately NOT part of this type. No engine implementation
 // exists for it yet — adding it to AirportProfile.journeyEngine before a
@@ -39,6 +41,13 @@ export interface AirportRouting {
    * terminal.
    */
   terminalRequired: boolean;
+  /**
+   * How precise the routing origin is. 'airport' (the default when omitted)
+   * means a generic airport-level point -- the UI must label the result
+   * "Airport-level estimate". 'terminal' only where a specific terminal's
+   * origin has genuinely been validated (today: Manchester Terminal 2).
+   */
+  originPrecision?: 'airport' | 'terminal';
 }
 
 /**
@@ -55,6 +64,13 @@ export interface AirportDestinationRules {
   expectedCountryCodes: string[] | typeof POLICY_PENDING;
   /** Google Geocoding API's own `region` bias parameter, e.g. 'pk', 'in'. Optional even once a country policy is decided. */
   regionBias?: string;
+  /**
+   * The named policy behind `expectedCountryCodes` (see destination-policy.ts).
+   * Optional so existing hand-written profiles keep working unchanged; when
+   * present it MUST resolve to exactly `expectedCountryCodes` -- checked in
+   * assertValidAirportProfile so the two can never drift apart.
+   */
+  policy?: DestinationPolicy;
 }
 
 export interface AirportProfile {
@@ -121,6 +137,13 @@ export function assertValidAirportProfile(profile: AirportProfile): void {
   if (canEnablePublicly(profile.validationStatus) && profile.destinationRules.expectedCountryCodes === POLICY_PENDING) {
     throw new Error(`${prefix}: cannot reach ${profile.validationStatus} with a pending destination-country policy.`);
   }
+  if (profile.destinationRules.policy) {
+    assertValidDestinationPolicy(profile.destinationRules.policy);
+    const resolved = resolveExpectedCountryCodes(profile.destinationRules.policy, profile.countryCode);
+    if (JSON.stringify(resolved) !== JSON.stringify(profile.destinationRules.expectedCountryCodes)) {
+      throw new Error(`${prefix}: destinationRules.policy does not resolve to expectedCountryCodes.`);
+    }
+  }
   if (profile.publiclyEnabled && !canEnablePublicly(profile.validationStatus)) {
     throw new Error(`${prefix}: publiclyEnabled is true but validationStatus (${profile.validationStatus}) does not allow public enablement.`);
   }
@@ -134,6 +157,15 @@ export function assertValidAirportProfile(profile: AirportProfile): void {
  * docs, not this array. See JETSTASH_PRINCIPLES.md and
  * docs/product/ARRIVE_BY_MVP.md for the wider roadmap (UK expansion, India,
  * Bangladesh, Qatar/UAE) — none of those are runtime entries yet.
+ */
+/**
+ * These entries are the explicit OVERRIDE layer. The worldwide airport
+ * catalogue (airport-catalogue.ts) supplies every airport's identity; a
+ * profile here is only for an airport that needs behaviour the generic
+ * road-first baseline can't give it (a validated terminal origin, the
+ * transit-first engine, a decided destination policy). An override always
+ * wins over the catalogue-derived generic profile -- see
+ * airport-capability.ts's resolveAirportProfile.
  */
 const AIRPORT_PROFILES: readonly AirportProfile[] = [
   {
@@ -183,7 +215,7 @@ const AIRPORT_PROFILES: readonly AirportProfile[] = [
     // single-terminal prototype is all that's implemented — this is not a
     // claim that Manchester's other terminals produce an identical onward
     // journey, only an honest description of today's actual scope.
-    routing: { defaultOrigin: { kind: 'coordinate', lat: 53.367664, lng: -2.280683 }, terminalRequired: false },
+    routing: { defaultOrigin: { kind: 'coordinate', lat: 53.367664, lng: -2.280683 }, terminalRequired: false, originPrecision: 'terminal' },
     journeyEngine: 'TRANSIT_FIRST',
     // RESOLVED (Phase 3.1, 29 Sep 2026) — an explicit founder product
     // decision, not an inference: the initial MAN Arrive By public beta
