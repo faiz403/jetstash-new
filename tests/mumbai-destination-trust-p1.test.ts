@@ -147,6 +147,12 @@ describe('Mumbai destination P1 trust fix', () => {
         observedDate: '2026-09-22',
         fareDirectness: 'connecting',
       },
+      {
+        id: 'obs-man-bom-economy-20260929-v1',
+        price: 422,
+        observedDate: '2026-09-29',
+        fareDirectness: 'connecting',
+      },
     ]);
   });
 

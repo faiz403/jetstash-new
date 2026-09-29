@@ -292,37 +292,32 @@ describe('Real archive expectation (19 August 2026, post-supersession-fix) — o
   // corrected fare movement, not the discarded default-view draft — the
   // membership below is the real, freshly computed result against the
   // corrected archive, not carried over from the earlier draft.
-  it('the real fareObservations archive produces 11 current Route Watch candidates after the 22 September Cheapest-tab-corrected sweep and the alternate-airport correction', () => {
+  it('the real fareObservations archive produces 26 current Route Watch candidates after the 29 September full weekly sweep', () => {
     const nowIso = new Date().toISOString().slice(0, 10);
     const candidates = generateRouteWatchFareCandidates(fareObservations, nowIso);
-    expect(candidates).toHaveLength(11);
+    expect(candidates).toHaveLength(26);
     expect(candidates.every((c) => c.lifecycle === 'detected' && c.founderVerificationRequired)).toBe(true);
     const bySlug = new Map(candidates.map((c) => [c.routeSlug, c.qualification]));
     // Representative spot-checks across both qualifications, not an
-    // exhaustive re-listing of all 11.
+    // exhaustive re-listing of all 26.
     expect(bySlug.get('manchester-dalaman')).toBe('standout-candidate');
     expect(bySlug.get('london-gatwick-dalaman')).toBe('standout-candidate');
-    expect(bySlug.get('london-gatwick-marrakech')).toBe('standout-candidate');
     expect(bySlug.get('birmingham-agadir')).toBe('standout-candidate');
-    expect(bySlug.get('leeds-bradford-antalya')).toBe('standout-candidate');
-    expect(bySlug.get('bristol-marrakech')).toBe('standout-candidate');
-    expect(bySlug.get('manchester-antalya')).toBe('notable-drop');
+    expect(bySlug.get('london-heathrow-doha')).toBe('standout-candidate');
+    expect(bySlug.get('london-heathrow-jeddah')).toBe('standout-candidate');
+    expect(bySlug.get('manchester-jeddah')).toBe('standout-candidate');
     expect(bySlug.get('glasgow-antalya')).toBe('notable-drop');
-    expect(bySlug.get('london-gatwick-athens')).toBe('notable-drop');
+    expect(bySlug.get('london-gatwick-athens')).toBe('standout-candidate');
     // birmingham-dubai and edinburgh-dubai qualify on a baseline built
     // purely from fares that genuinely land at DXB — their Sharjah records
     // are excluded, so neither drop is measured against a different airport.
     expect(bySlug.get('birmingham-dubai')).toBe('notable-drop');
-    expect(bySlug.get('edinburgh-dubai')).toBe('notable-drop');
-    // Routes whose corrected 22 September Cheapest-tab fare ROSE must not
-    // appear at all.
-    expect(candidates.map((c) => c.routeSlug)).not.toContain('manchester-lahore');
+    expect(bySlug.get('edinburgh-dubai')).toBe('standout-candidate');
+    // Routes whose 29 September controlled fare does not clear the current
+    // threshold must not appear at all.
     expect(candidates.map((c) => c.routeSlug)).not.toContain('birmingham-amritsar');
     expect(candidates.map((c) => c.routeSlug)).not.toContain('london-heathrow-delhi');
-    // london-heathrow-doha was a notable-drop under the discarded
-    // default-view draft; under the corrected Cheapest-tab fare it no
-    // longer clears the threshold and correctly drops out of the queue.
-    expect(candidates.map((c) => c.routeSlug)).not.toContain('london-heathrow-doha');
+    expect(candidates.map((c) => c.routeSlug)).not.toContain('manchester-islamabad');
   });
 });
 
@@ -384,8 +379,8 @@ describe('I. Trust wording — no overclaim in rendered founder copy or customer
     // copy against that final, verified count.
     const snapshot = getFounderSnapshot(new Date());
     const section = snapshot.grouped['nice-to-have'].find((s) => s.id === 'route-watch-fare-candidates')!;
-    expect(section.items).toHaveLength(11);
-    expect(section.headline).toMatch(/11 fare observations clear Fare Watcher's strong evidence threshold/i);
+    expect(section.items).toHaveLength(26);
+    expect(section.headline).toMatch(/26 fare observations clear Fare Watcher's strong evidence threshold/i);
     expect(section.headline).toMatch(/Nothing sends itself/i);
     for (const pattern of forbidden) expect(section.headline).not.toMatch(pattern);
   });
