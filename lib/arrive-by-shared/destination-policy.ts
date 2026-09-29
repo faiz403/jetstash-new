@@ -83,3 +83,15 @@ export const CROSS_BORDER_DESTINATION_POLICIES: Readonly<Record<string, Destinat
 export function getGenericDestinationPolicy(iata: string): DestinationPolicy {
   return CROSS_BORDER_DESTINATION_POLICIES[iata] ?? { mode: 'SAME_COUNTRY' };
 }
+
+/**
+ * Google's Geocoding `region` bias is ccTLD-style, which is NOT ISO alpha-2
+ * for the United Kingdom ('uk', not 'gb'). Only a single-country policy gets a
+ * bias -- a multi-country or unrestricted policy gets none. This is a ranking
+ * hint only; the country gate on the resolved address is what enforces the
+ * policy.
+ */
+export function getRegionBias(policy: DestinationPolicy, airportCountryCode: string): string | undefined {
+  if (policy.mode !== 'SAME_COUNTRY') return undefined;
+  return airportCountryCode === 'GB' ? 'uk' : airportCountryCode.toLowerCase();
+}

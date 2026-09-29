@@ -8,6 +8,7 @@ import { resolveShellDispatch, type AirportLookup } from '@/lib/arrive-by-shared
 import { searchAirports, type SearchableAirport } from '@/lib/arrive-by-shared/airport-search';
 import { ArriveByPakistanPublic } from '@/components/arrive-by-pakistan-public';
 import { ArriveByManchesterPublic } from '@/components/arrive-by-manchester-public';
+import { ArriveByRoadPublic } from '@/components/arrive-by-road-public';
 import type { PakistanAirportCode } from '@/lib/arrive-by-pakistan/types';
 
 /**
@@ -107,6 +108,13 @@ export function ArriveByShell({ lookup }: { lookup?: AirportLookup }) {
   if (dispatch.kind === 'selector') return <AirportSelector />;
   if (dispatch.kind === 'unsupported') return <UnsupportedAirport code={dispatch.code} />;
   if (dispatch.kind === 'not_yet_supported') return <NotYetSupportedAirport code={dispatch.code} name={dispatch.name} />;
+
+  if (dispatch.kind === 'road_journey') {
+    return <div>
+      <ChangeAirportLink />
+      <ArriveByRoadPublic airport={dispatch.airport} />
+    </div>;
+  }
 
   const { profile } = dispatch;
   return <div>

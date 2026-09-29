@@ -1,4 +1,5 @@
 import { resolveDestination, type GeocodeResult } from '@/lib/arrive-by-shared/destination-resolution';
+import { computeDriveRouteFrom, type DriveResult } from '@/lib/arrive-by-shared/road-routes';
 
 /**
  * Server-side Google API adapter for Arrive By Pakistan. Two separate
@@ -21,7 +22,6 @@ import { resolveDestination, type GeocodeResult } from '@/lib/arrive-by-shared/d
  * from the API route, server-side.
  */
 
-const ROUTES_ENDPOINT = 'https://routes.googleapis.com/directions/v2:computeRoutes';
 
 export type { GeocodeResult };
 
@@ -30,64 +30,14 @@ export async function geocodeDestination(apiKey: string, destination: string): P
   return resolveDestination(apiKey, destination, { expectedCountryCodes: ['PK'], regionBias: 'pk' });
 }
 
-export interface DriveResult {
-  status: 'AVAILABLE' | 'UNAVAILABLE';
-  durationSeconds?: number;
-  staticDurationSeconds?: number;
-  distanceMeters?: number;
-}
+export type { DriveResult };
 
-const parseDurationSeconds = (value?: string): number | undefined => {
-  const matched = value?.match(/^([0-9]+(?:\.[0-9]+)?)s$/);
-  return matched ? Math.round(Number(matched[1])) : undefined;
-};
-
+/** Pakistan's DRIVE request -- an address-origin call into the shared road-first Routes adapter (lib/arrive-by-shared/road-routes.ts). */
 export async function computeDriveRoute(
   apiKey: string,
   originAddress: string,
   destinationAddress: string,
   departureTime: string,
 ): Promise<DriveResult> {
-  const requestBody = {
-    origin: { address: originAddress },
-    destination: { address: destinationAddress },
-    travelMode: 'DRIVE',
-    departureTime,
-    routingPreference: 'TRAFFIC_AWARE_OPTIMAL',
-    trafficModel: 'BEST_GUESS',
-    computeAlternativeRoutes: false,
-    languageCode: 'en-GB',
-    units: 'METRIC',
-  };
-
-  let response: Response;
-  try {
-    response = await fetch(ROUTES_ENDPOINT, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Goog-Api-Key': apiKey,
-        'X-Goog-FieldMask': 'routes.duration,routes.staticDuration,routes.distanceMeters',
-      },
-      body: JSON.stringify(requestBody),
-      cache: 'no-store',
-    });
-  } catch {
-    return { status: 'UNAVAILABLE' };
-  }
-  if (!response.ok) return { status: 'UNAVAILABLE' };
-
-  const json = (await response.json()) as {
-    routes?: Array<{ duration?: string; staticDuration?: string; distanceMeters?: number }>;
-  };
-  const route = json.routes?.[0];
-  const duration = parseDurationSeconds(route?.duration);
-  if (!route || duration === undefined) return { status: 'UNAVAILABLE' };
-
-  return {
-    status: 'AVAILABLE',
-    durationSeconds: duration,
-    staticDurationSeconds: parseDurationSeconds(route.staticDuration),
-    distanceMeters: route.distanceMeters !== undefined ? Math.max(0, Math.round(route.distanceMeters)) : undefined,
-  };
+  return computeDriveRouteFrom(apiKey, { kind: 'address', value: originAddress }, destinationAddress, departureTime);
 }

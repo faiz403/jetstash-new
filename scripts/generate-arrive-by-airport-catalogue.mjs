@@ -64,16 +64,13 @@ for (const required of ['type', 'name', 'latitude_deg', 'longitude_deg', 'iso_co
 }
 
 const SIZE_CODE = { large_airport: 'L', medium_airport: 'M', small_airport: 'S' };
-// Airport-shaped names that are military installations. A name that ALSO reads
-// as a civil airport ("... Airport / ... Air Base", "... International ...") is a
-// joint-use field and is kept; a bare military name is excluded.
-const MILITARY_NAME = /\b(air ?base|afb|air force|naval|army|military|air station)\b/i;
-const CIVIL_NAME = /\b(airport|international|aeropuerto|a[eé]roport|flughafen|aeroporto|civil)\b/i;
-// Reviewed by hand against the source: a "Military City" airport that is not open to scheduled passengers.
-const EXPLICIT_EXCLUDE = new Set(['KMC']);
+// No name-based military exclusion: names like "Air Station" / "Air Force Station" are
+// unreliable (Nikolski, Alaska and Bareilly, India both carry scheduled passenger
+// service). Every scheduled-service, IATA-coded airport stays catalogued; whether
+// Arrive By can actually serve one is the capability gate's decision, not this filter's.
 
 const included = [];
-const excluded = { notCommercialType: 0, notScheduled: 0, noIata: 0, military: [] };
+const excluded = { notCommercialType: 0, notScheduled: 0, noIata: 0 };
 for (const r of rows) {
   const type = r[col.type];
   const iata = r[col.iata_code];
@@ -81,10 +78,6 @@ for (const r of rows) {
   if (!iata) { excluded.noIata++; continue; }
   if (r[col.scheduled_service] !== 'yes') { excluded.notScheduled++; continue; }
   const name = r[col.name];
-  if (EXPLICIT_EXCLUDE.has(iata) || (MILITARY_NAME.test(name) && !CIVIL_NAME.test(name))) {
-    excluded.military.push(`${iata} ${name}`);
-    continue;
-  }
   if (!/^[A-Z]{3}$/.test(iata)) throw new Error(`Malformed IATA code ${iata}`);
   const lat = Number(r[col.latitude_deg]);
   const lng = Number(r[col.longitude_deg]);
@@ -130,8 +123,8 @@ const provenance = {
   included: included.length,
   includedBySize: bySize,
   timeZoneCount: tzs.length,
-  excluded: { ...excluded, militaryCount: excluded.military.length }, // full list of military exclusions is kept here for review
+  excluded,
   timeZoneDerivation: 'tz-lookup (CC0) over timezone-boundary-builder (ODbL) boundaries, offline, per airport coordinate',
 };
 fs.writeFileSync(path.join(dir, 'airports.provenance.json'), JSON.stringify(provenance, null, 2) + '\n');
-console.log(JSON.stringify({ ...provenance, excluded: { ...excluded, military: excluded.military.length } }, null, 2));
+console.log(JSON.stringify(provenance, null, 2));

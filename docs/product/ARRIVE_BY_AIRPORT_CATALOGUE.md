@@ -1,6 +1,6 @@
 # Arrive By — worldwide airport catalogue (Phase A)
 
-Status: **architecture only.** No airport beyond MAN, ISB, LHE and KHI is publicly enabled. Worldwide
+Status: **Phase B built (generic road engine, gated); nothing beyond the four special profiles is publicly enabled.** Originally: architecture only. No airport beyond MAN, ISB, LHE and KHI is publicly enabled. Worldwide
 enablement is Phases B–D and needs a generic road-first engine, live QA and a founder decision.
 
 ## Layers
@@ -30,13 +30,13 @@ The script is deterministic and fails loudly on a duplicate IATA code, invalid c
 
 Included: `large_airport`, `medium_airport`, `small_airport` **with an IATA code and `scheduled_service = yes`**.
 Excluded: heliports, seaplane bases, balloonports, closed fields, anything without IATA, anything without scheduled service.
-Military: a name that reads as a military installation and not also as a civil airport is excluded. Five airports are excluded this way (full list in the provenance file): KMC, IKO, KWA, BEK, OKY (KMC by explicit review). **IKO (Nikolski, Alaska) and BEK (Bareilly) are flagged in the source as scheduled-service and may be false exclusions — review before Phase D.** Joint-use fields whose name is also a civil airport (e.g. BGW, NKM) are kept.
+No name-based military exclusion. Names such as "Air Station" are unreliable (Nikolski, Alaska and Bareilly, India both carry scheduled passenger service), so every scheduled-service, IATA-coded airport stays catalogued. A joint-use or restricted field being *in the catalogue* never makes it usable: only the capability gate does.
 
-Size: **4,003 airports** across 200+ countries (1,150 large / 2,090 medium / 763 small), 368 distinct timezones.
+Size: **4,008 airports** across 200+ countries (1,150 large / 2,094 medium / 764 small).
 
 Known limitations, stated rather than hidden:
 - `scheduled_service` is OurAirports' community-maintained flag; an airport with seasonal or newly resumed service may be missing or stale.
-- OurAirports has no military-only flag, so the filter above is name-based plus scheduled-service. A few joint-use airports may be present that are not open to ordinary passengers; the capability gate (not this list) decides usability.
+- OurAirports has no military flag, so a few restricted or joint-use airports may be present that are not open to ordinary passengers; the capability gate (not this list) decides usability.
 - City strings are OurAirports' municipality (first comma-separated part), so a display city can differ from a traveller's word for it (e.g. DEL is "New Delhi", SYD is "Sydney (Mascot)", ISB is "Attock"). Overrides keep their own display names.
 - The catalogue country is where the airport physically is: BSL (EuroAirport) is `FR`.
 
@@ -55,3 +55,13 @@ Generic airports use catalogue coordinates as the routing origin and must show *
 The catalogue JSON is 351 KB raw / ~143 KB gzip. It is imported **only by server code**: `app/arrive-by/page.tsx` resolves a tiny `AirportLookup` for the requested `?airport=` code and passes it to the client shell. `shell-dispatch.ts`, `airport-search.ts`, `destination-policy.ts` and the shell itself import no catalogue data (enforced by `tests/arrive-by-airport-capability.test.ts`). Verified in the production build: catalogue-only strings appear in server chunks and in zero client chunks; `First Load JS shared by all` is unchanged at 103 kB.
 
 For Phase D, when the selector must search all airports, use a server search endpoint or a lazily fetched compact index — not a static import.
+
+## Phase B: generic road engine (gated)
+
+- One engine: `lib/arrive-by-shared/road-journey.ts` (`computeRoadJourney`) runs every ROAD_PICKUP_FIRST airport from a server-resolved profile. Pakistan's `computePakistanJourney` is now a thin caller with its validated address origin, `Asia/Karachi` and the PK gate, so ISB/LHE/KHI behaviour is unchanged. Timezone, outcome and Routes code moved to `lib/arrive-by-shared/` (the Pakistan paths re-export them).
+- One API: `POST /api/arrive-by/road` takes an airport **code** only. It resolves profile, capability, origin (catalogue coordinates or override) and destination policy server-side, ignores any client-supplied coordinates/timezone/country, and returns 404 for a catalogued-only, route_testable, blocked or unknown airport before any Google call. Shares the `arrive-by:<client>` 5/60 s budget. Airport search is local and consumes none of it.
+- Identity: `airport-identity.ts` checks a catalogue airport against one Google Geocoding request (typed airport, same country, within 5 km of the catalogue point, name words or IATA in the address). It runs offline as a capability check, never per keystroke or per user request.
+- Evidence: a `road_supported` entry must record `checks.identityVerified` and `checks.routeProbed`, enforced when the table loads. The shipped table is still empty.
+- UI: `components/arrive-by-road-public.tsx`, reached only for a server-verified `road_supported` airport; labelled "Airport-level estimate".
+
+Before worldwide **public** rollout: add a user-accessible third-party data notice (OurAirports, tz-lookup, timezone-boundary-builder / ODbL) and revisit the in-memory rate limiter (distributed store / hard spend protection) before any indexing or promotion.

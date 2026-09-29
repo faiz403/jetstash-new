@@ -1,7 +1,7 @@
 import { getCatalogueAirport, type CatalogueAirport } from './airport-catalogue';
-import { getGenericDestinationPolicy, resolveExpectedCountryCodes } from './destination-policy';
+import { getGenericDestinationPolicy, getRegionBias, resolveExpectedCountryCodes } from './destination-policy';
 import { canEnablePublicly, getAirportProfile, type AirportProfile } from './airport-registry';
-import type { AirportLookup } from './shell-dispatch';
+import type { AirportLookup, RoadAirportInfo } from './shell-dispatch';
 
 /**
  * The capability gate: a catalogue airport is NOT usable just because it
@@ -38,6 +38,13 @@ export interface CapabilityEvidence {
   verifiedDate: string;
   /** What was checked / why it is blocked. Required so a status is never an unexplained flag. */
   note: string;
+  /**
+   * The checks behind a positive status. `route_testable` needs the Google
+   * identity check (airport-identity.ts) to have passed; `road_supported`
+   * needs that AND a successful probe DRIVE route. Enforced in
+   * assertValidCapabilityEvidence so a status can't be recorded without them.
+   */
+  checks?: { identityVerified: boolean; routeProbed: boolean };
 }
 
 /** Keyed by IATA code. Add an entry only with real evidence; remove or downgrade it when that evidence stops holding. */
@@ -62,6 +69,12 @@ export function assertValidCapabilityEvidence(code: string, evidence: Capability
   if (!getCatalogueAirport(code) && !getAirportProfile(code)) throw new Error(`Capability evidence for ${code}: not a known airport.`);
   if (!/^\d{4}-\d{2}-\d{2}$/.test(evidence.verifiedDate)) throw new Error(`Capability evidence for ${code}: verifiedDate must be YYYY-MM-DD.`);
   if (!evidence.note.trim()) throw new Error(`Capability evidence for ${code}: a note is required.`);
+  if (evidence.status !== 'temporarily_unsupported' && !evidence.checks?.identityVerified) {
+    throw new Error(`Capability evidence for ${code}: ${evidence.status} requires a passed airport identity check.`);
+  }
+  if (evidence.status === 'road_supported' && !evidence.checks?.routeProbed) {
+    throw new Error(`Capability evidence for ${code}: road_supported requires a successful probe DRIVE route.`);
+  }
 }
 
 for (const [code, evidence] of Object.entries(ROAD_CAPABILITY_EVIDENCE)) assertValidCapabilityEvidence(code, evidence);
@@ -121,7 +134,7 @@ export function buildGenericAirportProfile(airport: CatalogueAirport): AirportPr
       originPrecision: 'airport',
     },
     journeyEngine: 'ROAD_PICKUP_FIRST',
-    destinationRules: { expectedCountryCodes: resolveExpectedCountryCodes(policy, airport.countryCode), policy },
+    destinationRules: { expectedCountryCodes: resolveExpectedCountryCodes(policy, airport.countryCode), regionBias: getRegionBias(policy, airport.countryCode), policy },
     validationStatus: 'configured',
     publiclyEnabled: false,
   };
@@ -162,5 +175,15 @@ export function getShellAirportLookup(rawCode: string | null | undefined): Airpo
   const capability = getAirportCapability(code);
   if (!capability) return { code, known: false };
   const name = getCatalogueAirport(code)?.name ?? getAirportProfile(code)?.displayName;
-  return { code, known: true, name, blocked: capability.status === 'temporarily_unsupported' };
+  return { code, known: true, name, blocked: capability.status === 'temporarily_unsupported', road: getRoadAirportInfo(code) };
+}
+
+/** The trusted, serialisable facts the client's generic road UI needs -- only for a `road_supported` airport, only ever built server-side. */
+export function getRoadAirportInfo(rawCode: string | null | undefined): RoadAirportInfo | undefined {
+  const code = rawCode?.trim().toUpperCase();
+  const capability = getAirportCapability(code);
+  if (!code || capability?.status !== 'road_supported') return undefined;
+  const profile = resolveAirportProfile(code);
+  if (!profile || profile.journeyEngine !== 'ROAD_PICKUP_FIRST') return undefined;
+  return { code: profile.code, displayName: profile.displayName, city: profile.city, countryCode: profile.countryCode, timeZone: profile.timeZone, estimateLabel: getEstimateLabel(profile) };
 }

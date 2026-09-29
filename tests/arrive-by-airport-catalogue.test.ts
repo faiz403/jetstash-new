@@ -67,7 +67,7 @@ describe('catalogue integrity', () => {
   });
 });
 
-describe('public-airport filter (scheduled service, IATA-coded, no military-only, no heliports)', () => {
+describe('public-airport filter (scheduled service and IATA-coded; no heliports, seaplane bases or closed fields)', () => {
   it('contains the representative airports with correct identity', () => {
     const expected: Record<string, [string, string]> = {
       LHR: ['GB', 'Europe/London'], MAN: ['GB', 'Europe/London'], ISB: ['PK', 'Asia/Karachi'], LHE: ['PK', 'Asia/Karachi'], KHI: ['PK', 'Asia/Karachi'],
@@ -83,11 +83,10 @@ describe('public-airport filter (scheduled service, IATA-coded, no military-only
     }
   });
 
-  it('excludes military-only installations but keeps joint-use commercial fields', () => {
-    for (const code of ['BEK', 'KWA', 'OKY', 'KMC', 'IKO']) expect(getCatalogueAirport(code), code).toBeUndefined();
-    // Joint-use: a military base name that is also a real civil airport stays.
-    expect(getCatalogueAirport('BGW')).toBeDefined();
-    expect(getCatalogueAirport('NKM')).toBeDefined();
+  it('does not drop airports on a name-based military guess: scheduled-service "Air Station" airports stay catalogued', () => {
+    // Bareilly (civil enclave) and Nikolski have scheduled passenger service despite their names; the capability gate, not the filter, decides usability.
+    for (const code of ['BEK', 'IKO', 'BGW', 'NKM', 'KWA']) expect(getCatalogueAirport(code), code).toBeDefined();
+    expect(provenance.excluded.military).toBeUndefined();
   });
 
   it('never carries private-strip style codes (a 3-letter IATA is required)', () => {

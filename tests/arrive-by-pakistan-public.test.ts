@@ -146,7 +146,7 @@ describe('analytics — coarse public events only', () => {
 describe('ROUTE_UNAVAILABLE recovery copy', () => {
   it('tells the user a concrete next step, not just that it failed', async () => {
     const { readFileSync: read } = await import('fs');
-    const outcomesSrc = read(join(process.cwd(), 'lib', 'arrive-by-pakistan', 'outcomes.ts'), 'utf8');
+    const outcomesSrc = read(join(process.cwd(), 'lib', 'arrive-by-shared', 'road-outcomes.ts'), 'utf8');
     expect(outcomesSrc).toMatch(/Try a nearby town, venue or landmark instead/);
     expect(publicComponentSrc).toMatch(/Try a nearby town, venue or landmark instead/);
   });

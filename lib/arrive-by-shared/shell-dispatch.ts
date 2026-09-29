@@ -28,6 +28,17 @@ const MAX_DISPLAY_CODE_LENGTH = 8;
  * catalogue and the capability gate. Absent (or `known: false`) means the
  * code is not a catalogued airport at all.
  */
+/** Server-resolved facts for a `road_supported` catalogue airport (never client-supplied). */
+export interface RoadAirportInfo {
+  code: string;
+  displayName: string;
+  city: string;
+  countryCode: string;
+  timeZone: string;
+  /** 'Airport-level estimate' unless a validated terminal origin backs it. */
+  estimateLabel: string | null;
+}
+
 export interface AirportLookup {
   code: string;
   /** True when the code is in the worldwide catalogue or the override registry. */
@@ -36,6 +47,8 @@ export interface AirportLookup {
   name?: string;
   /** True when the capability gate has explicitly blocked this airport (`temporarily_unsupported`) -- beats a public profile. */
   blocked?: boolean;
+  /** Present only for a `road_supported` airport: the generic road-first journey may run. */
+  road?: RoadAirportInfo;
 }
 
 export type ShellDispatch =
@@ -44,17 +57,18 @@ export type ShellDispatch =
   | { kind: 'unsupported'; code: string }
   /** A real airport Arrive By cannot safely calculate a journey for (yet, or currently blocked). */
   | { kind: 'not_yet_supported'; code: string; name?: string }
-  | { kind: 'journey'; profile: AirportProfile };
+  | { kind: 'journey'; profile: AirportProfile }
+  /** A `road_supported` catalogue airport: the generic road-first journey. Never produced for catalogued / route_testable / blocked airports. */
+  | { kind: 'road_journey'; airport: RoadAirportInfo };
 
 /**
  * Decides what the shell should render for a given raw `?airport=` value.
  * Never guesses: a missing code shows the selector, an unknown code shows
  * the unsupported state, a catalogued-but-not-eligible (or blocked) code
  * shows "can't calculate yet", and only a genuinely public_beta/public +
- * publiclyEnabled override profile reaches a journey flow — configured
- * and catalogue-only airports can never leak through here. (Generic
- * road_supported airports get their journey UI in a later phase; until
- * then they resolve to not_yet_supported.)
+ * publiclyEnabled override profile, or a server-verified `road_supported`
+ * catalogue airport, reaches a journey flow — configured and catalogue-only
+ * airports can never leak through here.
  */
 export function resolveShellDispatch(rawCode: string | null | undefined, lookup?: AirportLookup): ShellDispatch {
   const code = normalizeAirportCode(rawCode);
@@ -66,6 +80,7 @@ export function resolveShellDispatch(rawCode: string | null | undefined, lookup?
   const blocked = lookup?.code === code && lookup.blocked === true;
   if (profile && isPubliclyUsable && !blocked) return { kind: 'journey', profile };
 
+  if (lookup?.code === code && lookup.known && !blocked && lookup.road && lookup.road.code === code) return { kind: 'road_journey', airport: lookup.road };
   if (lookup?.code === code && lookup.known) return { kind: 'not_yet_supported', code: displayCode, name: lookup.name };
   return { kind: 'unsupported', code: displayCode };
 }
