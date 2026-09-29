@@ -136,9 +136,29 @@ describe('Standout Fare — First Public Standout Fare Pilot', () => {
     expect(html).not.toContain('Standout Fare');
   });
 
-  it('confirms only one approval exists in the real ledger, and it is MAN-ISB', () => {
-    expect(standoutFareApprovals.filter((a) => !a.revokedDate)).toHaveLength(1);
-    expect(standoutFareApprovals[0].routeSlug).toBe('manchester-islamabad');
+  it('confirms the two active founder approvals are the deliberately controlled MAN-ISB and LGW-DLM entries', () => {
+    const active = standoutFareApprovals.filter((a) => !a.revokedDate);
+    expect(active).toHaveLength(2);
+    expect(active.map((a) => a.routeSlug).sort()).toEqual(['london-gatwick-dalaman', 'manchester-islamabad']);
+  });
+
+  it('the founder-approved Gatwick–Dalaman fare renders only from the exact £58 final recheck', () => {
+    const standout = getApprovedStandoutFare('london-gatwick-dalaman', 'Economy', fareObservations, '2026-09-29');
+    expect(standout).not.toBeNull();
+    expect(standout!.observation.id).toBe('obs-lgw-dlm-economy-20260929-final-recheck-v1');
+    expect(standout!.observation.price).toBe(58);
+    expect(standout!.observation.airline).toBe('easyJet');
+    expect(standout!.observation.isSelfTransfer).toBe(false);
+    expect(standout!.baselineMedian).toBe(137);
+    expect(standout!.differencePounds).toBe(79);
+    expect(standout!.differencePercent).toBeCloseTo(57.66, 2);
+    expect(standout!.baggageDetail).toContain('overhead-bin access excluded');
+    const signal = getFareSignalForRoute('london-gatwick-dalaman', '2026-09-29');
+    const html = renderToStaticMarkup(FareSignal({ signal, tripComUrl: getTripComRouteUrl('london-gatwick-dalaman'), routeSlug: 'london-gatwick-dalaman', standoutFare: standout }));
+    expect(html).toContain('Standout Fare');
+    expect(html).toContain('£79 below JetStash&#x27;s comparable tracked median of £137.');
+    expect(html).toContain('overhead-bin access excluded');
+    expect(html).not.toMatch(/checked baggage included|baggage included/i);
   });
 
   it('10. a candidate that loses qualification (recheck raises price past the standing thresholds) fails closed', () => {
