@@ -234,10 +234,10 @@ describe('no Fare Watcher candidate is created merely because this PR adds an ob
     // evaluation; the dedicated test below confirms none forms a candidate.
     const publishable = fareObservations.filter((o) => isPubliclyPublishable(o));
     const expectedCount: Record<string, number> = {
-      'leeds-bradford-bodrum': 3,
-      'manchester-karachi': 4,
-      'birmingham-lahore': 4,
-      'birmingham-islamabad': 4,
+      'leeds-bradford-bodrum': 4,
+      'manchester-karachi': 5,
+      'birmingham-lahore': 5,
+      'birmingham-islamabad': 5,
     };
     for (const { routeSlug } of APPROVED) {
       const comparable = publishable.filter((o) => o.routeSlug === routeSlug && o.cabin === 'Economy');

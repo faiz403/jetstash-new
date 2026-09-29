@@ -291,10 +291,10 @@ describe('BD-001 — no fare invented, no unrelated destination or route added',
       // weekly sweep, which appended one further genuine, dated observation
       // per route. Append-only growth; verification status is unchanged and
       // is asserted separately below.
-      'london-heathrow-dhaka': { count: 4, latestId: 'obs-lhr-dac-economy-20260922-v1' },
-      'london-heathrow-sylhet': { count: 4, latestId: 'obs-lhr-zyl-economy-20260922-v1' },
-      'manchester-dhaka': { count: 5, latestId: 'obs-man-dac-economy-20260922-v1' },
-      'manchester-sylhet': { count: 4, latestId: 'obs-man-zyl-economy-20260922-v1' },
+      'london-heathrow-dhaka': { count: 5, latestId: 'obs-lhr-dac-economy-20260929-v1' },
+      'london-heathrow-sylhet': { count: 5, latestId: 'obs-lhr-zyl-economy-20260929-v1' },
+      'manchester-dhaka': { count: 6, latestId: 'obs-man-dac-economy-20260929-v1' },
+      'manchester-sylhet': { count: 5, latestId: 'obs-man-zyl-economy-20260929-v1' },
     };
     for (const slug of ALL_BANGLADESH_ROUTE_SLUGS) {
       const observations = fareObservations.filter((o) => o.routeSlug === slug);

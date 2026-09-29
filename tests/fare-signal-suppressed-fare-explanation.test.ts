@@ -108,11 +108,11 @@ describe('Live control cases against the real archive (2 Sep 2026)', () => {
     // observation (£534, Etihad, 1 stop), which the selector now prefers
     // over the 13 September direct-PIA fare. The point of this control is
     // unchanged — a suitable observation yields the ordinary template.
-    expect(signal.observation?.price).toBe(534);
+    expect(signal.observation?.price).toBe(566);
     expect(signal.observation?.airline).toBe('Etihad');
 
     const html = renderFareSignalForRoute('manchester-islamabad');
-    expect(html).toContain('534');
+    expect(html).toContain('566');
     expect(html).not.toContain('Recent fares checked');
     expect(html).not.toContain('No current fare tracked');
   });
@@ -146,11 +146,11 @@ describe('Live control cases against the real archive (2 Sep 2026)', () => {
     expect(signal.noneReason).toBeNull();
     // 22 September 2026: superseded by a newer suitable observation
     // (£1,051, Turkish Airlines/IndiGo). The 19 August fare stays in history.
-    expect(signal.observation?.price).toBe(1051);
+    expect(signal.observation?.price).toBe(1121);
 
     const html = renderFareSignalForRoute('birmingham-amritsar');
     // Rendered with a thousands separator once the fare passes £999.
-    expect(html).toContain('1,051');
+    expect(html).toContain('1,121');
     expect(html).not.toContain('Recent fares checked');
     expect(html).not.toContain('No current fare tracked.');
   });
@@ -197,7 +197,7 @@ describe('lib/booking-intelligence.ts — Book-By carries the identical reason f
     const snapshot = computeBookBySnapshot('manchester-islamabad', new Date(`${NOW_ISO}T12:00:00Z`));
     expect(snapshot).not.toBeNull();
     expect(snapshot!.latestObservationNoneReason).toBeNull();
-    expect(snapshot!.latestObservation?.price).toBe(534);
+    expect(snapshot!.latestObservation?.price).toBe(566);
 
     const genericSignal = getFareSignalForRoute('manchester-islamabad', NOW_ISO);
     expect(snapshot!.latestObservation?.price).toBe(genericSignal.observation?.price);
@@ -215,7 +215,7 @@ describe('lib/booking-intelligence.ts — Book-By carries the identical reason f
     const snapshot = computeBookBySnapshot('birmingham-amritsar', new Date(`${NOW_ISO}T12:00:00Z`));
     expect(snapshot).not.toBeNull();
     expect(snapshot!.latestObservationNoneReason).toBeNull();
-    expect(snapshot!.latestObservation?.price).toBe(1051);
+    expect(snapshot!.latestObservation?.price).toBe(1121);
   });
 
   it('a synthetic snapshot with a genuine (non-suppressed) verified observation carries a null reason', () => {

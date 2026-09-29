@@ -221,9 +221,9 @@ describe('6. exact regression cases: MAN-LHE and BHX-ATQ correctly resolve to th
   it('birmingham-amritsar resolves to its 19 August £603 observation for the same reason', () => {
     const signal = getFareSignalForRoute('birmingham-amritsar', NOW_ISO);
     expect(signal.state).toBe('current');
-    // 22 September 2026: same reasoning as manchester-lahore above.
-    expect(signal.observation?.id).toBe('obs-bhx-atq-economy-20260922-v1');
-    expect(signal.observation?.price).toBe(1051);
+    // 29 September 2026: same reasoning as manchester-lahore above.
+    expect(signal.observation?.id).toBe('obs-bhx-atq-economy-20260929-v1');
+    expect(signal.observation?.price).toBe(1121);
     expect(signal.noneReason).toBeNull();
   });
 });
@@ -436,7 +436,7 @@ describe('12. MAN-ISB Journey Choice pilot: Journey Choice itself stays frozen t
     // also suitable, so it supersedes the 13 September direct-PIA fare as
     // the representative one. The recovery-from-suppression fact this test
     // exists to prove is unchanged.
-    expect(signal.observation?.price).toBe(534);
+    expect(signal.observation?.price).toBe(566);
     expect(signal.noneReason).toBeNull();
   });
 
