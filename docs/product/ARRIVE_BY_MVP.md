@@ -1,5 +1,98 @@
 # Arrive By — Stage 1 MVP (engine) + Stage 2 (private founder preview)
 
+## 21 September 2026 — scheduled-service selection correction
+
+The onward timeline now uses the earliest departing catchable service that preserves the final
+requirement. Catchability includes the entered boarding allowance PLUS extra connection cushion.
+The latest downstream-compatible departure remains a separate backwards-planning boundary; its
+landing cutoff subtracts the same combined allowance. Neither label means a verified safe or
+recommended journey. Earliest departure is not a fastest-arrival optimisation. Pre-flight origin
+selection still works backwards to derive the latest home departure.
+
+Results expose readiness, selected service, latest boundary, waiting time, clock deadline, required
+final buffer and effective latest arrival. Deadline outcomes distinguish meeting the requirement,
+arriving before the clock deadline but inside the buffer, arriving exactly at the clock deadline
+with an unmet buffer, and arriving late. When nothing qualifies but a service remains catchable,
+the earliest such service is shown ONLY as a non-qualifying diagnostic alternative, with its
+conditional arrival/margin and no qualifying selected flag. No catchable service means no invented
+final arrival. Origin failures remain NO even if the conditional downstream arrival fits.
+
+Local source only; no commit, push, deployment, API integration or user testing. Mumbai real-journey
+validation remains INCOMPLETE because onward schedule evidence is not sufficiently current.
+
+## 21 September 2026 — local door-to-door backwards prototype (initial model, superseded above)
+
+The founder's follow-up brief replaces the landing-only comparison as the active local preview.
+`ArriveByDoorToDoor` now mounts at the existing founder-gated URL; the two earlier calculation
+modules remain preserved. This is explicitly local, unvalidated exploratory work: no commit, push,
+merge, deployment or public launch is authorised. The feature freeze otherwise remains active.
+
+`lib/arrive-by/door-to-door.ts` models a closed chain: home access, flexible or scheduled transport
+to the departure airport, terminal/check-in/security/boarding allowances, an entered flight
+itinerary, disembarkation/immigration/baggage/customs/walk allowances, optional scheduled onward
+transport, then a flexible final mile. Scheduled legs accept up to eight actual entered candidates,
+with named stops, departure/arrival dates, each stop's zone and a required pre-departure allowance.
+Flexible modes are car, taxi, rickshaw, walking and family pickup; scheduled modes are train, bus,
+coach and ferry. Flights within an entered multi-flight itinerary are NOT individually validated.
+
+Backwards planning subtracts the required final buffer and final-mile duration/buffer, then selects
+the latest scheduled departure whose arrival meets that cutoff. Subtracting its boarding allowance
+and arrival processing yields a latest landing requirement. Each flight is tested against actual
+scheduled departures, not average transport durations. Before the flight, the engine finds a
+service meeting the airport-arrival requirement and derives a home departure through the entered
+access leg. Car travel uses its entered duration/buffer directly.
+
+Required stage allowances and the final buffer are hard constraints for both scheduled and road
+legs. The separate, founder-configurable extra connection cushion classifies spare time after the
+required allowance: negative = NOT CATCHABLE, non-negative but below cushion = TIGHT, at least
+cushion = COMFORTABLE. These labels describe assumptions, not empirical safety. Origin departure
+planning includes the extra cushion; the output exposes every added minute. A NO result can mean
+the deadline itself fits but the required final buffer does not, with that reason explicit.
+
+Output leads with YES/TIGHT/NO/CANNOT CONFIRM under entered assumptions, planned final arrival,
+deadline margin, selected services, home departure and weakest connection. Expandable backwards
+steps and a chronological timeline expose all stages, time zones and margins. Unknown timetable,
+duration or processing fields stop calculation; zero must be entered explicitly. Invalid dates,
+reversed schedules and ambiguous/nonexistent clock-change times are rejected. Every service's
+zone must match its associated stop. The example button loads conspicuously fictional data;
+none of its services, fares or transport links are evidence of actual availability.
+
+The form supports one shared airport pair, up to two flight options, and one scheduled ground leg
+on each side of the flight. It is not an arbitrary multi-leg builder or a live schedule/road API.
+No persistence, tracking or external request was added. Existing production gating, noindex and
+sitemap exclusion remain. Relevant tests are `arrive-by-door-to-door.test.ts` and the earlier
+Arrive By suites. The completed local gate and browser checks are reported in the founder handoff.
+
+## 20 September 2026 — entered-option deadline comparison
+
+The founder requested completion of Arrive By. The private preview now leads with a separate,
+traveller-entered option comparison (`lib/arrive-by/deadline-comparison.ts`); the original broad
+departure-window planner remains below a disclosure. This does not implement the live, evidenced
+feasibility product in ARRIVE_BY_SPEC.md and does not authorise a public release.
+
+The traveller enters a final-destination label, local deadline/time zone, chosen buffer and one or
+two scheduled landing times with their airport time zones. Each option has separate airport-exit
+and onward-travel ranges in minutes. Blank, invalid or reversed ranges produce an incomplete
+result, never a zero allowance. Explicit zero is supported. Results show the arrival timeline,
+range, deadline margin and buffer remaining. They distinguish before-with-buffer, before-without-
+buffer, deadline-overlap and after-deadline; none is a service, connection or on-time guarantee.
+
+The calculation reuses existing timezone conversion, rejects ambiguous/nonexistent clock-change
+times rather than guessing, and handles date rollover. No default duration, schedule, transport
+estimate, live availability or delay probability is invented. The place label is not geocoded.
+The selectable zones currently cover Pakistan, India, UAE, Qatar, Saudi Arabia, Bangladesh and UK.
+Flight operation, ticket protection, connection feasibility and entry eligibility require separate
+checks. No fastest/cheapest recommendation is made from incomplete flight data.
+
+Results clear on input changes and receive keyboard focus after submission. All input stays in
+component state; no storage, network request, analytics or signup was added. The production founder
+gate and noindex/sitemap exclusion remain unchanged. Local completion is not a deployment.
+
+Regression coverage: `tests/arrive-by-deadline-comparison.test.ts`, alongside the existing Arrive By
+timezone, engine, route-support, integrity and founder-access suites.
+
+The dated original Stage 1/2 specification below describes the preserved earlier planner.
+
 **Status:** Stage 1 complete — pure calculation/recommendation engine, comprehensive deterministic
 tests. Stage 2 complete — a private, founder-only preview interface at `/founder/arrive-by`
 (`app/founder/arrive-by/page.tsx`, `components/founder/arrive-by-preview.tsx`), gated exactly like

@@ -13,6 +13,8 @@ import { join } from 'path';
 
 const pagePath = join(process.cwd(), 'app', 'founder', 'arrive-by', 'page.tsx');
 const componentPath = join(process.cwd(), 'components', 'founder', 'arrive-by-preview.tsx');
+const googleComponentPath = join(process.cwd(), 'components', 'founder', 'arrive-by-google.tsx');
+const googleApiPath = join(process.cwd(), 'app', 'api', 'founder', 'arrive-by', 'google', 'route.ts');
 const pageSrc = readFileSync(pagePath, 'utf8');
 const componentSrc = readFileSync(componentPath, 'utf8');
 
@@ -54,7 +56,7 @@ describe('page is absent from sitemap/public navigation', () => {
         if (entry.isDirectory()) {
           scan(full);
         } else if (entry.isFile() && (entry.name.endsWith('.ts') || entry.name.endsWith('.tsx'))) {
-          if (full === pagePath || full === componentPath) continue;
+          if (full === pagePath || full === componentPath || full === googleComponentPath || full === googleApiPath) continue;
           const content = readFileSync(full, 'utf8');
           // Match this exact route, not a path that merely starts with it —
           // e.g. the separate, sanctioned /founder/arrive-by-pakistan route

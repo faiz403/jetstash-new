@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, type FormEvent } from 'react';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
+import { compareArrivalDeadline, type DeadlineComparison, type DeadlineState } from '@/lib/arrive-by/deadline-comparison';
 import { AlertTriangle, CheckCircle2, Compass, Eye, HelpCircle, Plane } from 'lucide-react';
 import {
   CONFIDENCE_COPY,
@@ -43,7 +44,7 @@ const DEFAULT_ROUTE_SLUG = 'manchester-lahore';
 const DEFAULT_DATE = '2026-09-14';
 const DEFAULT_TIME = '14:00';
 
-export function ArriveByFounderPreview() {
+function LegacyPlanningWindow() {
   const [routeSlug, setRouteSlug] = useState(DEFAULT_ROUTE_SLUG);
   const [dateLocal, setDateLocal] = useState(DEFAULT_DATE);
   const [timeLocal, setTimeLocal] = useState(DEFAULT_TIME);
@@ -218,6 +219,131 @@ export function ArriveByFounderPreview() {
 
         <div>{outcome ? <ArriveByOutcomeCard outcome={outcome} /> : <IncompleteState />}</div>
       </div>
+    </div>
+  );
+}
+
+const ARRIVAL_ZONES = [
+  ['Asia/Karachi', 'Pakistan'], ['Asia/Kolkata', 'India'], ['Asia/Dubai', 'UAE'],
+  ['Asia/Qatar', 'Qatar'], ['Asia/Riyadh', 'Saudi Arabia'], ['Asia/Dhaka', 'Bangladesh'],
+  ['Europe/London', 'United Kingdom'],
+] as const;
+const DEADLINE_COPY: Record<DeadlineState, string> = {
+  before_with_buffer: 'Entered range leaves your chosen buffer',
+  before_without_buffer: 'Before the deadline, but below your chosen buffer',
+  overlaps_deadline: 'Entered arrival range crosses the deadline',
+  after_deadline: 'Entered arrival range is after the deadline',
+  incomplete: 'More information needed',
+};
+const INPUT_STYLE = 'mt-1 w-full min-w-0 rounded-sm border border-ink-200 bg-white px-3 py-2 text-base text-ink-900';
+type OptionFields = { label: string; date: string; time: string; zone: string; exitMin: string; exitMax: string; groundMin: string; groundMax: string };
+const blankOption = (label: string): OptionFields => ({ label, date: '', time: '', zone: 'Asia/Karachi', exitMin: '', exitMax: '', groundMin: '', groundMax: '' });
+const minutes = (text: string) => text.trim() === '' ? NaN : Number(text);
+
+export function ArriveByFounderPreview() {
+  const [place, setPlace] = useState('');
+  const [date, setDate] = useState('');
+  const [time, setTime] = useState('');
+  const [zone, setZone] = useState('Asia/Karachi');
+  const [buffer, setBuffer] = useState('');
+  const [options, setOptions] = useState<OptionFields[]>([blankOption('Option A')]);
+  const [result, setResult] = useState<DeadlineComparison | null>(null);
+  const resultRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (result) resultRef.current?.focus();
+  }, [result]);
+  function updateOption(index: number, field: keyof OptionFields, value: string) {
+    setResult(null);
+    setOptions((current) => current.map((option, i) => i === index ? { ...option, [field]: value } : option));
+  }
+  function compare(event: FormEvent) {
+    event.preventDefault();
+    setResult(compareArrivalDeadline({
+      deadline: { date, time, timeZone: zone }, bufferMinutes: minutes(buffer),
+      options: options.map((option) => ({
+        label: option.label, landing: { date: option.date, time: option.time, timeZone: option.zone },
+        airportExit: { min: minutes(option.exitMin), max: minutes(option.exitMax) },
+        onwardTravel: { min: minutes(option.groundMin), max: minutes(option.groundMax) },
+      })),
+    }, new Date().toISOString()));
+  }
+  return (
+    <div className="mx-auto max-w-5xl bg-white px-5 py-10 text-ink-900 sm:px-8">
+      <p className="text-xs font-semibold uppercase tracking-wide text-brass-600">Private founder preview</p>
+      <h1 className="mt-3 font-display text-4xl text-ink-900">Where do you need to be, and by when?</h1>
+      <p className="mt-3 max-w-2xl text-ink-600">Compare flight options against your arrival deadline — including getting out of the airport and reaching your final destination.</p>
+      <p className="mt-3 max-w-2xl text-sm text-ink-500">Use flight details you have checked. This compares your entries; it does not search flights, verify connections or predict delays. Nothing entered is saved.</p>
+      <form onSubmit={compare} onChange={() => setResult(null)} className="mt-8 space-y-6">
+        <fieldset className="rounded-md border border-ink-200 bg-sand-50 p-5">
+          <legend className="px-2 font-semibold text-ink-900">1. Your destination deadline</legend>
+          <label className="block text-sm" htmlFor="deadline-place">Final destination, such as a town or venue</label>
+          <input id="deadline-place" required maxLength={120} className={INPUT_STYLE} value={place} onChange={(e) => setPlace(e.target.value)} placeholder="Family home in Lahore" />
+          <p className="mt-1 text-xs text-ink-500">A label for your plan, not a map lookup. You enter the onward-travel estimate below.</p>
+          <div className="mt-4 grid gap-4 sm:grid-cols-3">
+            <label className="text-sm">Arrive by date<input aria-label="Arrive by date" required type="date" className={INPUT_STYLE} value={date} onChange={(e) => setDate(e.target.value)} /></label>
+            <label className="text-sm">Arrive by time<input aria-label="Arrive by time" required type="time" className={INPUT_STYLE} value={time} onChange={(e) => setTime(e.target.value)} /></label>
+            <label className="text-sm">Destination time zone<select aria-label="Destination time zone" className={INPUT_STYLE} value={zone} onChange={(e) => setZone(e.target.value)}>{ARRIVAL_ZONES.map(([value, label]) => <option key={value} value={value}>{label} — {value}</option>)}</select></label>
+          </div>
+          <label className="mt-4 block max-w-sm text-sm">How many minutes early do you want to arrive?<input aria-label="Chosen arrival buffer in minutes" required type="number" min="0" max="10080" step="1" className={INPUT_STYLE} value={buffer} onChange={(e) => setBuffer(e.target.value)} placeholder="Your chosen buffer" /></label>
+          <p className="mt-1 text-xs text-ink-500">Your preference, not a delay forecast or a recommended safety margin. Enter 0 explicitly if you want no additional buffer.</p>
+        </fieldset>
+        <div className="grid gap-5 lg:grid-cols-2">
+          {options.map((option, index) => (
+            <fieldset key={index} className="min-w-0 rounded-md border border-ink-200 p-5">
+              <legend className="px-2 font-semibold">{index === 0 ? '2. Flight option A' : 'Flight option B'}</legend>
+              <label className="text-sm">Option name<input aria-label={`Option ${index + 1} name`} maxLength={100} className={INPUT_STYLE} value={option.label} onChange={(e) => updateOption(index, 'label', e.target.value)} placeholder="Airline / arrival airport" /></label>
+              <div className="mt-4 grid grid-cols-2 gap-3">
+                <label className="text-sm">Landing date<input aria-label={`Option ${index + 1} landing date`} type="date" className={INPUT_STYLE} value={option.date} onChange={(e) => updateOption(index, 'date', e.target.value)} /></label>
+                <label className="text-sm">Landing time<input aria-label={`Option ${index + 1} landing time`} type="time" className={INPUT_STYLE} value={option.time} onChange={(e) => updateOption(index, 'time', e.target.value)} /></label>
+              </div>
+              <label className="mt-4 block text-sm">Arrival airport time zone<select aria-label={`Option ${index + 1} airport time zone`} className={INPUT_STYLE} value={option.zone} onChange={(e) => updateOption(index, 'zone', e.target.value)}>{ARRIVAL_ZONES.map(([value, label]) => <option key={value} value={value}>{label} — {value}</option>)}</select></label>
+              <p className="mt-2 text-xs text-ink-500">Use the scheduled landing date, including any next-day arrival. Confirm the full itinerary and connections separately.</p>
+              {([
+                ['Airport exit', 'Include disembarkation, immigration and baggage collection.', 'exitMin', 'exitMax'],
+                ['Onward travel', 'Include waiting for transport and travel to your final destination. Use a current transport estimate; leave unknown values blank.', 'groundMin', 'groundMax'],
+              ] as const).map(([title, hint, minKey, maxKey]) => (
+                <fieldset key={title} className="mt-5">
+                  <legend className="text-sm font-semibold">{title} — your estimated range</legend>
+                  <p className="mt-1 text-xs text-ink-500">{hint}</p>
+                  <div className="mt-2 grid grid-cols-2 gap-3">
+                    <label className="text-sm">From (minutes)<input aria-label={`Option ${index + 1} ${title} minimum minutes`} type="number" min="0" max="10080" step="1" className={INPUT_STYLE} value={option[minKey]} onChange={(e) => updateOption(index, minKey, e.target.value)} /></label>
+                    <label className="text-sm">To (minutes)<input aria-label={`Option ${index + 1} ${title} maximum minutes`} type="number" min="0" max="10080" step="1" className={INPUT_STYLE} value={option[maxKey]} onChange={(e) => updateOption(index, maxKey, e.target.value)} /></label>
+                  </div>
+                </fieldset>
+              ))}
+            </fieldset>
+          ))}
+        </div>
+        <div className="flex flex-wrap gap-3">
+          <button type="submit" className="rounded-sm bg-ink-900 px-6 py-3 font-semibold text-white">Check against my deadline</button>
+          <button type="button" className="rounded-sm border border-ink-200 px-5 py-3 text-sm" onClick={() => { setResult(null); setOptions((current) => current.length === 1 ? [...current, blankOption('Option B')] : current.slice(0, 1)); }}>{options.length === 1 ? 'Compare a second option' : 'Remove second option'}</button>
+        </div>
+      </form>
+      {result && (
+        <div ref={resultRef} tabIndex={-1} role="status" aria-live="polite" className="mt-8 rounded-md border border-ink-200 bg-sand-50 p-5 focus:outline focus:outline-2 focus:outline-brass">
+          <h2 className="font-display text-2xl">Your arrival at {place.trim() || 'your destination'}</h2>
+          {result.state === 'invalid' ? <ul className="mt-3 list-inside list-disc">{result.errors.map((error) => <li key={error}>{error}</li>)}</ul> : <>
+            <p className="mt-2 text-sm">Deadline: {formatZonedDateTime(result.deadline)} · {result.deadline.timeZone}. Chosen buffer: {result.bufferMinutes} minutes.</p>
+            <div className="mt-5 grid gap-4 lg:grid-cols-2">{result.options.map((option, index) => <article key={index} className="min-w-0 rounded-md border border-ink-200 bg-white p-5">
+              <h3 className="break-words font-semibold">{option.label}</h3>
+              <p className="mt-2 font-semibold text-ink-800">{DEADLINE_COPY[option.state]}</p>
+              {option.state === 'incomplete' ? <ul className="mt-3 list-inside list-disc text-sm">{option.missing.map((item) => <li key={item}>{item}</li>)}</ul> : <>
+                <ol className="mt-4 space-y-2 text-sm">
+                  <li>Scheduled landing entered: {formatZonedDateTime(option.landing!)}</li>
+                  <li>Airport exit: +{option.airportExit!.min}–{option.airportExit!.max} min</li>
+                  <li>Onward travel: +{option.onwardTravel!.min}–{option.onwardTravel!.max} min</li>
+                  <li className="font-semibold">Arrival range: {formatZonedDateTime(option.arrival!.earliest)} – {formatZonedDateTime(option.arrival!.latest)}</li>
+                </ol>
+                <p className="mt-3 text-sm">All displayed times use {result.deadline.timeZone}.</p>
+                <p className="mt-3 text-sm">At the later end of your range: {option.marginMinutes!.min >= 0 ? `${option.marginMinutes!.min} minutes before` : `${Math.abs(option.marginMinutes!.min)} minutes after`} the deadline.</p>
+                <p className="mt-2 text-sm">{option.bufferRemainingMinutes! >= 0 ? `${option.bufferRemainingMinutes} minutes remain beyond your chosen buffer.` : `${Math.abs(option.bufferRemainingMinutes!)} minutes short of your chosen buffer.`}</p>
+              </>}
+            </article>)}</div>
+          </>}
+          <p className="mt-5 text-sm font-medium">Before booking: confirm the flights and connections with the airline, check entry requirements, and recheck airport-exit and onward-travel estimates. Delays can exceed every allowance entered here. This is not a guarantee of arrival.</p>
+        </div>
+      )}
+      <details className="mt-10 border-t border-ink-200 pt-5"><summary className="cursor-pointer text-sm text-ink-500">Earlier prototype: broad departure-window planner</summary><LegacyPlanningWindow /></details>
     </div>
   );
 }

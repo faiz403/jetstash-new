@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { ArriveByFounderPreview } from '@/components/founder/arrive-by-preview';
+import { ArriveByDoorToDoor } from '@/components/founder/arrive-by-door-to-door';
+import { ArriveByGoogle } from '@/components/founder/arrive-by-google';
 
 /**
  * Arrive By — Stage 2 founder preview (private, product-evaluation only).
@@ -23,7 +24,7 @@ function dashboardEnabled(): boolean {
 export async function generateMetadata(): Promise<Metadata> {
   if (!dashboardEnabled()) return { robots: { index: false, follow: false } };
   return {
-    title: 'Arrive By — Planning Window (Founder Preview)',
+    title: 'Arrive By — Door-to-Door (Founder Preview)',
     robots: { index: false, follow: false },
   };
 }
@@ -32,5 +33,13 @@ export default function ArriveByFounderPage() {
   if (!dashboardEnabled()) {
     notFound();
   }
-  return <ArriveByFounderPreview />;
+  return <>
+    <ArriveByGoogle />
+    <div className="mx-auto max-w-5xl px-4 pb-12 sm:px-8">
+      <details className="rounded-md border border-ink-200 bg-white">
+        <summary className="cursor-pointer p-4 font-semibold">Open the manual Arrive By calculator</summary>
+        <ArriveByDoorToDoor />
+      </details>
+    </div>
+  </>;
 }

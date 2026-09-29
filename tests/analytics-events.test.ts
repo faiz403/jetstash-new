@@ -159,14 +159,22 @@ describe('AnalyticsEvent vocabulary — every event this repo actually fires is 
   // prototype deliberately fires no analytics at all.
   const ARRIVE_BY_PAKISTAN_EVENTS = ['arrive_by_pk_journey_checked', 'arrive_by_pk_recovery_used'];
 
-  it.each([...EXISTING_EVENTS, ...NEW_EVENTS, ...BAGGAGE_CTA_EVENTS, ...GOOGLE_ADS_TRACKING_EVENTS, ...JOURNEY_DECISION_BRIEF_EVENTS, ...JOURNEY_CHOICE_EVENTS, ...JOURNEY_CHOICE_MEASUREMENT_EVENTS, ...ROUTE_VERDICT_EVENTS, ...QUOTE_REQUEST_MEASUREMENT_EVENTS, ...ACQUISITION_ATTRIBUTION_EVENTS, ...ARRIVE_BY_PAKISTAN_EVENTS])('%s is part of the typed AnalyticsEvent union', (eventName) => {
+  // Added later still, by the Manchester Arrive By public beta (Phase 3,
+  // global Arrive By foundation): the same journey-checked/recovery-used
+  // shape as Pakistan's own events, but generic (airport-parameterised)
+  // since Manchester is the first of what's meant to be many airports on
+  // this shared vocabulary. Pakistan's own events above stay unrenamed for
+  // measurement continuity — these are additive, not a migration.
+  const ARRIVE_BY_GENERIC_EVENTS = ['arrive_by_journey_checked', 'arrive_by_recovery_used'];
+
+  it.each([...EXISTING_EVENTS, ...NEW_EVENTS, ...BAGGAGE_CTA_EVENTS, ...GOOGLE_ADS_TRACKING_EVENTS, ...JOURNEY_DECISION_BRIEF_EVENTS, ...JOURNEY_CHOICE_EVENTS, ...JOURNEY_CHOICE_MEASUREMENT_EVENTS, ...ROUTE_VERDICT_EVENTS, ...QUOTE_REQUEST_MEASUREMENT_EVENTS, ...ACQUISITION_ATTRIBUTION_EVENTS, ...ARRIVE_BY_PAKISTAN_EVENTS, ...ARRIVE_BY_GENERIC_EVENTS])('%s is part of the typed AnalyticsEvent union', (eventName) => {
     expect(analyticsSrc).toMatch(new RegExp(`\\| '${eventName}'`));
   });
 
   it('has exactly one union member per real event — no stragglers, nothing forgotten', () => {
     const matches = analyticsSrc.match(/\n\s*\| '[a-z_]+'/g) ?? [];
     expect(matches).toHaveLength(
-      EXISTING_EVENTS.length + NEW_EVENTS.length + BAGGAGE_CTA_EVENTS.length + GOOGLE_ADS_TRACKING_EVENTS.length + JOURNEY_DECISION_BRIEF_EVENTS.length + JOURNEY_CHOICE_EVENTS.length + JOURNEY_CHOICE_MEASUREMENT_EVENTS.length + ROUTE_VERDICT_EVENTS.length + QUOTE_REQUEST_MEASUREMENT_EVENTS.length + ACQUISITION_ATTRIBUTION_EVENTS.length + ARRIVE_BY_PAKISTAN_EVENTS.length,
+      EXISTING_EVENTS.length + NEW_EVENTS.length + BAGGAGE_CTA_EVENTS.length + GOOGLE_ADS_TRACKING_EVENTS.length + JOURNEY_DECISION_BRIEF_EVENTS.length + JOURNEY_CHOICE_EVENTS.length + JOURNEY_CHOICE_MEASUREMENT_EVENTS.length + ROUTE_VERDICT_EVENTS.length + QUOTE_REQUEST_MEASUREMENT_EVENTS.length + ACQUISITION_ATTRIBUTION_EVENTS.length + ARRIVE_BY_PAKISTAN_EVENTS.length + ARRIVE_BY_GENERIC_EVENTS.length,
     );
   });
 
