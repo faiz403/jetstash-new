@@ -23,7 +23,7 @@ import {
 import { assertValidAirportProfile, getAirportProfile, getPublicAirportProfiles, type AirportProfile } from '@/lib/arrive-by-shared/airport-registry';
 import { resolveShellDispatch } from '@/lib/arrive-by-shared/shell-dispatch';
 
-const evidence = (status: CapabilityEvidence['status']): CapabilityEvidence => ({ status, verifiedDate: '2026-09-30', note: 'test evidence' });
+const evidence = (status: CapabilityEvidence['status']): CapabilityEvidence => ({ status, verifiedDate: '2026-09-30', note: 'test evidence', checks: { identityVerified: true, routeProbed: true } });
 const read = (...parts: string[]) => readFileSync(join(process.cwd(), ...parts), 'utf8');
 
 describe('capability gate — Phase A ships no worldwide enablement', () => {
