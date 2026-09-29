@@ -17,7 +17,7 @@ const KAYAK_FALLBACK_ROUTES = [
 ];
 
 describe('weekly fare observation batch — 29 September 2026', () => {
-  const batch = fareObservations.filter((observation) => observation.observedDate === BATCH_DATE);
+  const batch = fareObservations.filter((observation) => observation.observedDate === BATCH_DATE && observation.observationReason === 'routine-weekly');
 
   it('accounts for all 89 public fare-tracked routes exactly once', () => {
     expect(batch).toHaveLength(89);

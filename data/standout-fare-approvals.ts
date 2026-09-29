@@ -70,4 +70,15 @@ export const standoutFareApprovals: StandoutFareApproval[] = [
     note:
       'First public Standout Fare pilot. Detected £460 (25 Aug routine check), independently rechecked £480 (25 Aug emergency-recheck, Riyadh Air, MAN-RUH-ISB/ISB-RUH-MAN, 1 stop each way, no self-transfer notice, baggage cost/inclusion uncertain). £141 below the £621 comparable tracked median (~22.7%), Fare Watcher qualification standout-candidate. Approved as a tightly controlled single-route pilot — MAN-LHE £547, LHR-JED £361 and BHX-ATQ £591 remain deliberately unapproved.',
   },
+  {
+    id: 'standout-london-gatwick-dalaman-2026-09-29',
+    routeSlug: 'london-gatwick-dalaman',
+    cabin: 'Economy',
+    detectionObservationId: 'obs-lgw-dlm-economy-20260929-v1',
+    approvedVerifiedObservationId: 'obs-lgw-dlm-economy-20260929-final-recheck-v1',
+    approvedDate: '2026-09-29',
+    approvedBy: 'founder',
+    note:
+      'Founder-approved single-fare publication. Final live recheck £58 return for 17 November–1 December 2026, easyJet nonstop LGW-DLM and DLM-LGW, with overhead-bin access excluded and checked baggage unconfirmed. £79 below JetStash comparable median £137 (57.66% below); evidence trail £55 batch → £56 first recheck → £58 final recheck.',
+  },
 ];
