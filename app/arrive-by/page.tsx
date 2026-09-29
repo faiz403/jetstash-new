@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import { ArriveByShell } from '@/components/arrive-by-shell';
+import { getShellAirportLookup } from '@/lib/arrive-by-shared/airport-capability';
 
 /**
  * The canonical Arrive By public beta — one product, airport-driven
@@ -18,8 +19,15 @@ export const metadata: Metadata = {
   robots: { index: false, follow: true },
 };
 
-export default function ArriveByPage() {
+/**
+ * Server component: resolves the worldwide-catalogue / capability facts for
+ * the requested `?airport=` code here, so the ~350 KB catalogue never ships
+ * to the browser -- the client shell receives only a tiny AirportLookup.
+ */
+export default async function ArriveByPage({ searchParams }: { searchParams: Promise<{ airport?: string | string[] }> }) {
+  const { airport } = await searchParams;
+  const lookup = getShellAirportLookup(Array.isArray(airport) ? airport[0] : airport);
   return <Suspense fallback={null}>
-    <ArriveByShell />
+    <ArriveByShell lookup={lookup} />
   </Suspense>;
 }

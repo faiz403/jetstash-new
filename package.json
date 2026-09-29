@@ -33,6 +33,7 @@
     "postcss": "^8.5.8",
     "tailwindcss": "^3.4.19",
     "typescript": "^5.7.2",
+    "tz-lookup": "^6.1.25",
     "vitest": "^4.1.10"
   }
 }
