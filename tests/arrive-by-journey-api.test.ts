@@ -293,7 +293,7 @@ describe('confirmation and selection: the START and the final DESTINATION, indep
     const hall = venue('GB', 'start-venue', 'Preston Guild Hall, Preston PR1 3NA, UK');
     const env = world({ 'guild hall': [hall], mirpur: [MIRPUR] }, drive(55, 170));
     const first = await json(await post({ ...PRESTON_TO_MIRPUR, start: 'Guild Hall' }));
-    expect(first.startDetail?.pendingConfirmation).toEqual({ placeId: 'start-venue', formattedAddress: 'Preston Guild Hall, Preston PR1 3NA, UK' });
+    expect(first.startDetail?.pendingConfirmation).toMatchObject({ placeId: 'start-venue', formattedAddress: 'Preston Guild Hall, Preston PR1 3NA, UK' });
     expect(first.leaveBy).toBeUndefined();
     expect(first.finalArrival).toBeDefined(); // the arrival side is independent and still evidenced
     expect((await json(await post({ ...PRESTON_TO_MIRPUR, start: 'Guild Hall', startConfirmedPlaceId: 'forged' }))).notEvidenced?.reason).toBe('START_LOCATION_UNCONFIRMED');

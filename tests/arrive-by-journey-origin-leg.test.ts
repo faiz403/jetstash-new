@@ -184,7 +184,7 @@ describe('start location safety (shared resolver, UK gate)', () => {
   it('an ambiguous start (a venue) stops at confirmation and offers the resolver\'s own payload; a forged id does not unlock it', async () => {
     const g = google({ 'test street': [venue], mirpur: [MIRPUR] }, 55);
     const first = await planFullJourney({ ...PRESTON_TO_MIRPUR, start: '1 Test Street' }, { apiKey: KEY, guard: guard(), nowIso: NOW, baseFetch: g.fetch });
-    expect(first.startDetail?.pendingConfirmation).toEqual({ placeId: 'venue-1', formattedAddress: '1 Test Street, Preston' });
+    expect(first.startDetail?.pendingConfirmation).toMatchObject({ placeId: 'venue-1', formattedAddress: '1 Test Street, Preston' });
     const forged = await planFullJourney({ ...PRESTON_TO_MIRPUR, start: '1 Test Street', startConfirmedPlaceId: 'forged' }, { apiKey: KEY, guard: guard(), nowIso: NOW, baseFetch: g.fetch });
     expect(forged.notEvidenced?.reason).toBe('START_LOCATION_UNCONFIRMED');
     const genuine = await planFullJourney({ ...PRESTON_TO_MIRPUR, start: '1 Test Street', startConfirmedPlaceId: 'venue-1' }, { apiKey: KEY, guard: guard(), nowIso: NOW, baseFetch: g.fetch });

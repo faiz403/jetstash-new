@@ -26,11 +26,13 @@ export interface ResolvedPlace {
   confidence: DestinationConfidence;
   /** Google's own resolved address -- what a traveller sees to spot a wrong-place match. */
   resolvedAddress?: string;
+  /** Human-readable label for the resolved place (venue name only when Google supplied one). */
+  display?: string;
   /** Google's point for the resolved place when it came from the top result (not available for a candidate picked from a list). Server-side only. */
   location?: { lat: number; lng: number };
   clarificationReason?: DestinationClarificationReason;
-  pendingConfirmation?: { placeId: string; formattedAddress: string };
-  pendingSelection?: { candidates: Array<{ placeId: string; formattedAddress: string }> };
+  pendingConfirmation?: { placeId: string; formattedAddress: string; display?: string };
+  pendingSelection?: { candidates: Array<{ placeId: string; formattedAddress: string; display?: string }> };
 }
 
 export async function resolvePlaceWithChoice(
@@ -50,11 +52,12 @@ export async function resolvePlaceWithChoice(
   return {
     confidence,
     resolvedAddress: selectedCandidate?.formattedAddress ?? geocode.formattedAddress,
+    display: selectedCandidate ? selectedCandidate.display : geocode.display,
     location: selectedCandidate ? undefined : geocode.location,
     clarificationReason: confirmed || selectedCandidate ? undefined : geocode.clarificationReason,
     pendingConfirmation:
       confidence === 'NEEDS_CONFIRMATION' && geocode.placeId && geocode.formattedAddress
-        ? { placeId: geocode.placeId, formattedAddress: geocode.formattedAddress }
+        ? { placeId: geocode.placeId, formattedAddress: geocode.formattedAddress, display: geocode.display }
         : undefined,
     pendingSelection: confidence === 'NEEDS_SELECTION' && geocode.candidates ? { candidates: geocode.candidates } : undefined,
   };
