@@ -1,5 +1,6 @@
 import type { Origin } from './airport-registry';
-import { resolveDestination, type DestinationResolutionConfig } from './destination-resolution';
+import type { DestinationResolutionConfig } from './destination-resolution';
+import { resolvePlaceWithChoice } from './place-choice';
 import { computeDriveRouteFrom } from './road-routes';
 import { localDateTimeToIso } from './timezone';
 import { classifyOutcome } from './road-outcomes';
@@ -50,39 +51,20 @@ export async function computeRoadJourney(
   const roadDepartureMs = readyOutsideMs + pickupWaitMs;
   const roadDepartureIso = new Date(roadDepartureMs).toISOString();
 
-  const geocode = await resolveDestination(apiKey, input.destination, rules, fetchImpl);
-
-  // A prior NEEDS_CONFIRMATION result is only ever honoured if Google,
-  // asked again right now, independently resolves to that exact placeId
-  // as a single, non-ambiguous, non-partial match. The client's claim
-  // that a human said "yes" is never trusted by itself — this re-check is
-  // what stops confirmation from ever overriding an unresolved, ambiguous,
-  // or now-different result.
-  const confirmed = Boolean(input.confirmedPlaceId) && geocode.placeId === input.confirmedPlaceId && geocode.confidence === 'NEEDS_CONFIRMATION';
-  // Same discipline for a candidate picked from a NEEDS_SELECTION list: the
-  // selected placeId must still be one of the candidates Google
-  // independently returns right now, for this same destination text — a
-  // forged, stale, or no-longer-offered placeId is simply not found here
-  // and falls through to the real (safe) classification instead.
-  const selectedCandidate =
-    geocode.confidence === 'NEEDS_SELECTION' && input.selectedPlaceId
-      ? geocode.candidates?.find((candidate) => candidate.placeId === input.selectedPlaceId)
-      : undefined;
-  const destinationConfidence = confirmed || selectedCandidate ? 'CONFIRMED' : geocode.confidence;
-  const resolvedDestination = selectedCandidate?.formattedAddress ?? geocode.formattedAddress;
+  // Resolution AND the confirm/select re-verification live in place-choice.ts, shared with the
+  // full-journey start location so both go through one implementation of the safety rules.
+  const place = await resolvePlaceWithChoice(apiKey, input.destination, rules, { confirmedPlaceId: input.confirmedPlaceId, selectedPlaceId: input.selectedPlaceId }, fetchImpl);
+  const destinationConfidence = place.confidence;
+  const resolvedDestination = place.resolvedAddress;
 
   const base = {
     airport: { code: airport.code, displayName: airport.displayName, timeZone: airport.timeZone },
     destination: input.destination,
     destinationConfidence,
     resolvedDestination,
-    clarificationReason: confirmed || selectedCandidate ? undefined : geocode.clarificationReason,
-    pendingConfirmation:
-      destinationConfidence === 'NEEDS_CONFIRMATION' && geocode.placeId && geocode.formattedAddress
-        ? { placeId: geocode.placeId, formattedAddress: geocode.formattedAddress }
-        : undefined,
-    pendingSelection:
-      destinationConfidence === 'NEEDS_SELECTION' && geocode.candidates ? { candidates: geocode.candidates } : undefined,
+    clarificationReason: place.clarificationReason,
+    pendingConfirmation: place.pendingConfirmation,
+    pendingSelection: place.pendingSelection,
     deadlineReason: input.deadlineReason,
     readyOutsideAirport: new Date(readyOutsideMs).toISOString(),
     roadDeparture: roadDepartureIso,

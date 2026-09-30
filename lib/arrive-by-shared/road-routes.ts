@@ -34,13 +34,14 @@ function routesOrigin(origin: Origin) {
 export async function computeDriveRouteFrom(
   apiKey: string,
   origin: Origin,
-  destinationAddress: string,
+  destinationAddress: string | Origin,
   departureTime: string,
   fetchImpl: typeof fetch = fetch,
 ): Promise<DriveResult> {
   const requestBody = {
     origin: routesOrigin(origin),
-    destination: { address: destinationAddress },
+    // A string is a free-text address (the arrival side); an Origin lets a trusted server-side coordinate be the destination (the departure airport).
+    destination: typeof destinationAddress === 'string' ? { address: destinationAddress } : routesOrigin(destinationAddress),
     travelMode: 'DRIVE',
     departureTime,
     routingPreference: 'TRAFFIC_AWARE_OPTIMAL',

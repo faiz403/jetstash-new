@@ -114,7 +114,9 @@ export function solveJourney(input: SolverInput): JourneyPlan {
   const airportArriveByMs = departs.ms - prefs.departureAirportBufferMinutes * 60000;
   let leaveByMs: number | undefined;
   if (input.originLeg.status === 'OK') {
-    const exactLeaveMs = airportArriveByMs - input.originLeg.expectedSeconds * 1000;
+    // A live-searched leg carries a departure that was verified against traffic at that time; otherwise fall back to
+    // subtracting the entered duration from the airport deadline.
+    const exactLeaveMs = input.originLeg.latestFeasibleDepartureMs ?? airportArriveByMs - input.originLeg.expectedSeconds * 1000;
     leaveByMs = floorToMinutes(exactLeaveMs, 5);
     const reachAirportMs = leaveByMs + input.originLeg.expectedSeconds * 1000;
     plan.leaveBy = { iso: new Date(leaveByMs).toISOString(), zone: dep.timeZone, clock: clockOf(leaveByMs, dep.timeZone), roundedDownToFive: true };

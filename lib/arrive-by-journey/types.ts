@@ -87,6 +87,9 @@ export interface JourneyInput {
    * as entered wherever it appears.
    */
   originLegMinutes?: number;
+  /** Set only on a second request, exactly as for the destination: the START location's confirm / select choice, re-verified server-side, never trusted. */
+  startConfirmedPlaceId?: string;
+  startSelectedPlaceId?: string;
   /** Set only on a second request, exactly as in the arrival-only product; re-verified server-side, never trusted. */
   confirmedPlaceId?: string;
   selectedPlaceId?: string;
@@ -94,11 +97,27 @@ export interface JourneyInput {
 
 /** A leg whose duration a provider resolved (or could not). */
 export type ResolvedLeg =
-  | { status: 'OK'; expectedSeconds: number; staticSeconds?: number; evidence: LegEvidence }
+  | {
+      status: 'OK';
+      expectedSeconds: number;
+      staticSeconds?: number;
+      /**
+       * Set by the live origin search: the latest departure instant (epoch ms) that was VERIFIED, by a real traffic-aware
+       * query at that time, to reach the airport by its deadline. When present the solver uses it directly (rounded down)
+       * instead of subtracting an average duration from the deadline.
+       */
+      latestFeasibleDepartureMs?: number;
+      evidence: LegEvidence;
+    }
   | { status: 'NOT_EVIDENCED'; reason: NotEvidencedReason; detail?: string };
 
 export type NotEvidencedReason =
   | 'ORIGIN_LEG_MISSING'
+  | 'START_LOCATION_UNCONFIRMED'
+  | 'START_LOCATION_UNSUITABLE'
+  | 'ORIGIN_ROUTE_UNAVAILABLE'
+  | 'ORIGIN_SEARCH_NO_FEASIBLE'
+  | 'DEPARTURE_AIRPORT_NOT_EVIDENCED'
   | 'ARRIVAL_DESTINATION_UNCONFIRMED'
   | 'ARRIVAL_ROUTE_UNAVAILABLE'
   | 'CALL_CEILING_REACHED'
@@ -142,6 +161,10 @@ export interface JourneyPlan {
   timeline: TimelineLeg[];
   /** Copy the founder specified: leave-by first, then the buffer, then the expected final arrival. */
   headline?: { leave: string; airport: string; arrival: string };
+  /** Present when the START location needs confirming / choosing / clarifying, exactly as arrivalDetail is for the destination. */
+  startDetail?: { confidence: string; pendingConfirmation?: { placeId: string; formattedAddress: string }; pendingSelection?: { candidates: Array<{ placeId: string; formattedAddress: string }> }; clarificationReason?: string; resolvedAddress?: string };
+  /** How the live origin leg was found: the measurable cost and convergence of the backward search. */
+  originSearch?: { queries: number; converged: boolean; slackMinutes: number; departureAirport: string };
   arrivalDetail?: { outcome: RoadOutcome; pendingConfirmation?: { placeId: string; formattedAddress: string }; pendingSelection?: { candidates: Array<{ placeId: string; formattedAddress: string }> }; clarificationReason?: string };
   calls?: { used: number; ceiling: number; breakdown: Record<string, number> };
 }

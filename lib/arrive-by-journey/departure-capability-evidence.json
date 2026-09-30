@@ -1,0 +1,155 @@
+{
+  "generatedBy": "scripts/arrive-by-departure-probe.ts",
+  "records": [
+    {
+      "iata": "ABZ",
+      "status": "departure_supported",
+      "verifiedDate": "2026-09-30",
+      "note": "F2 live probe PASS: identity (Google airport-typed result agrees, 0.25 km); the production origin search from \"Stonehaven\" found a verified latest departure in 3/3 time-of-day scenarios (max 2 route queries). Directional (start to airport) evidence only; NOT release and NOT arrival evidence.",
+      "checks": {
+        "identityVerified": true,
+        "routeProbed": true
+      }
+    },
+    {
+      "iata": "BFS",
+      "status": "departure_supported",
+      "verifiedDate": "2026-09-30",
+      "note": "F2 live probe PASS: identity (Google airport-typed result agrees, 0.21 km); the production origin search from \"Lisburn\" found a verified latest departure in 3/3 time-of-day scenarios (max 2 route queries). Directional (start to airport) evidence only; NOT release and NOT arrival evidence.",
+      "checks": {
+        "identityVerified": true,
+        "routeProbed": true
+      }
+    },
+    {
+      "iata": "BHX",
+      "status": "departure_supported",
+      "verifiedDate": "2026-09-30",
+      "note": "F2 live probe PASS: identity (Google airport-typed result agrees, 0.35 km); the production origin search from \"Coventry\" found a verified latest departure in 3/3 time-of-day scenarios (max 2 route queries). Directional (start to airport) evidence only; NOT release and NOT arrival evidence.",
+      "checks": {
+        "identityVerified": true,
+        "routeProbed": true
+      }
+    },
+    {
+      "iata": "CWL",
+      "status": "departure_supported",
+      "verifiedDate": "2026-09-30",
+      "note": "F2 live probe PASS: identity (Google airport-typed result agrees, 0.06 km); the production origin search from \"Newport, Wales\" found a verified latest departure in 3/3 time-of-day scenarios (max 2 route queries). Directional (start to airport) evidence only; NOT release and NOT arrival evidence.",
+      "checks": {
+        "identityVerified": true,
+        "routeProbed": true
+      }
+    },
+    {
+      "iata": "EDI",
+      "status": "departure_supported",
+      "verifiedDate": "2026-09-30",
+      "note": "F2 live probe PASS: identity (Google airport-typed result agrees, 0.79 km); the production origin search from \"Falkirk\" found a verified latest departure in 3/3 time-of-day scenarios (max 2 route queries). Directional (start to airport) evidence only; NOT release and NOT arrival evidence.",
+      "checks": {
+        "identityVerified": true,
+        "routeProbed": true
+      }
+    },
+    {
+      "iata": "EMA",
+      "status": "departure_supported",
+      "verifiedDate": "2026-09-30",
+      "note": "F2 live probe PASS: identity (Google airport-typed result agrees, 0.33 km); the production origin search from \"Nottingham\" found a verified latest departure in 3/3 time-of-day scenarios (max 2 route queries). Directional (start to airport) evidence only; NOT release and NOT arrival evidence.",
+      "checks": {
+        "identityVerified": true,
+        "routeProbed": true
+      }
+    },
+    {
+      "iata": "GLA",
+      "status": "departure_supported",
+      "verifiedDate": "2026-09-30",
+      "note": "F2 live probe PASS: identity (Google airport-typed result agrees, 0.23 km); the production origin search from \"Paisley\" found a verified latest departure in 3/3 time-of-day scenarios (max 2 route queries). Directional (start to airport) evidence only; NOT release and NOT arrival evidence.",
+      "checks": {
+        "identityVerified": true,
+        "routeProbed": true
+      }
+    },
+    {
+      "iata": "LBA",
+      "status": "departure_supported",
+      "verifiedDate": "2026-09-30",
+      "note": "F2 live probe PASS: identity (Google airport-typed result agrees, 0.16 km); the production origin search from \"York\" found a verified latest departure in 3/3 time-of-day scenarios (max 2 route queries). Directional (start to airport) evidence only; NOT release and NOT arrival evidence.",
+      "checks": {
+        "identityVerified": true,
+        "routeProbed": true
+      }
+    },
+    {
+      "iata": "LGW",
+      "status": "departure_supported",
+      "verifiedDate": "2026-09-30",
+      "note": "F2 live probe PASS: identity (Google airport-typed result agrees, 0.6 km); the production origin search from \"Brighton\" found a verified latest departure in 3/3 time-of-day scenarios (max 2 route queries). Directional (start to airport) evidence only; NOT release and NOT arrival evidence.",
+      "checks": {
+        "identityVerified": true,
+        "routeProbed": true
+      }
+    },
+    {
+      "iata": "LHR",
+      "status": "departure_supported",
+      "verifiedDate": "2026-09-30",
+      "note": "F2 live probe PASS: identity (Google airport-typed result agrees, 0.46 km); the production origin search from \"Camden Town, London\" found a verified latest departure in 3/3 time-of-day scenarios (max 2 route queries). Directional (start to airport) evidence only; NOT release and NOT arrival evidence.",
+      "checks": {
+        "identityVerified": true,
+        "routeProbed": true
+      }
+    },
+    {
+      "iata": "LPL",
+      "status": "departure_supported",
+      "verifiedDate": "2026-09-30",
+      "note": "F2 live probe PASS: identity (Google airport-typed result agrees, 0.18 km); the production origin search from \"Chester\" found a verified latest departure in 3/3 time-of-day scenarios (max 2 route queries). Directional (start to airport) evidence only; NOT release and NOT arrival evidence.",
+      "checks": {
+        "identityVerified": true,
+        "routeProbed": true
+      }
+    },
+    {
+      "iata": "LTN",
+      "status": "departure_supported",
+      "verifiedDate": "2026-09-30",
+      "note": "F2 live probe PASS: identity (Google airport-typed result agrees, 0.32 km); the production origin search from \"Milton Keynes\" found a verified latest departure in 3/3 time-of-day scenarios (max 2 route queries). Directional (start to airport) evidence only; NOT release and NOT arrival evidence.",
+      "checks": {
+        "identityVerified": true,
+        "routeProbed": true
+      }
+    },
+    {
+      "iata": "MAN",
+      "status": "departure_supported",
+      "verifiedDate": "2026-09-30",
+      "note": "F2 live probe PASS: identity (Explicit profile coordinate; Google name match within range (Google types it as a transit station, not an airport), 1.87 km); the production origin search from \"Preston, Lancashire\" found a verified latest departure in 3/3 time-of-day scenarios (max 2 route queries). Directional (start to airport) evidence only; NOT release and NOT arrival evidence.",
+      "checks": {
+        "identityVerified": true,
+        "routeProbed": true
+      }
+    },
+    {
+      "iata": "NCL",
+      "status": "departure_supported",
+      "verifiedDate": "2026-09-30",
+      "note": "F2 live probe PASS: identity (Google airport-typed result agrees, 0.27 km); the production origin search from \"Durham\" found a verified latest departure in 3/3 time-of-day scenarios (max 2 route queries). Directional (start to airport) evidence only; NOT release and NOT arrival evidence.",
+      "checks": {
+        "identityVerified": true,
+        "routeProbed": true
+      }
+    },
+    {
+      "iata": "STN",
+      "status": "departure_supported",
+      "verifiedDate": "2026-09-30",
+      "note": "F2 live probe PASS: identity (Google airport-typed result agrees, 0.46 km); the production origin search from \"Cambridge\" found a verified latest departure in 3/3 time-of-day scenarios (max 2 route queries). Directional (start to airport) evidence only; NOT release and NOT arrival evidence.",
+      "checks": {
+        "identityVerified": true,
+        "routeProbed": true
+      }
+    }
+  ]
+}
