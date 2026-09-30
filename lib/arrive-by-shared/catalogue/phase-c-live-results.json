@@ -1,0 +1,2768 @@
+[
+  {
+    "iata": "LHR",
+    "icao": "EGLL",
+    "airportName": "London Heathrow Airport",
+    "city": "London",
+    "countryCode": "GB",
+    "catalogueLat": 51.47075,
+    "catalogueLng": -0.45991,
+    "catalogueTimeZone": "Europe/London",
+    "region": "UK/Europe",
+    "control": false,
+    "identity": {
+      "ok": true,
+      "matchedAddress": "Heathrow Airport (LHR), Hounslow, UK",
+      "distanceKm": 0.46,
+      "candidates": [
+        {
+          "address": "Heathrow Airport (LHR), Hounslow, UK",
+          "distanceKm": 0.46,
+          "types": [
+            "airport",
+            "establishment",
+            "point_of_interest"
+          ],
+          "country": "GB",
+          "iataInAddress": true,
+          "nameHitRatio": 0.5
+        }
+      ],
+      "googleStatus": "OK"
+    },
+    "drive": {
+      "destination": "Reading, UK",
+      "outcome": "ETA_ONLY",
+      "destinationConfidence": "CONFIRMED",
+      "resolvedDestination": "Reading, UK",
+      "durationSeconds": 2651,
+      "distanceMeters": 50764
+    },
+    "driveAttempts": [
+      {
+        "destination": "Reading, UK",
+        "outcome": "ETA_ONLY"
+      }
+    ],
+    "policyChecks": [
+      {
+        "destination": "Paris, France",
+        "expected": "REFUSE_WRONG_COUNTRY",
+        "outcome": "DESTINATION_NEEDS_CLARIFICATION",
+        "clarificationReason": "WRONG_COUNTRY",
+        "matchedExpectation": true
+      }
+    ],
+    "timezone": {
+      "catalogue": "Europe/London",
+      "status": "NOT_CHECKED"
+    },
+    "verdict": "PASS",
+    "notes": [
+      "Timezone not cross-checked (Time Zone API unavailable); catalogue zone derived offline."
+    ],
+    "recommendation": "road_supported",
+    "probedAt": "2026-09-30T00:12:35.347Z",
+    "evidenceSource": "scripts/arrive-by-capability-probe.ts (Google Geocoding, Routes computeRoutes DRIVE, Time Zone)",
+    "thresholds": {
+      "maxIdentityDistanceKm": 5,
+      "nameHitThreshold": 0.5
+    }
+  },
+  {
+    "iata": "CDG",
+    "icao": "LFPG",
+    "airportName": "Charles de Gaulle International Airport",
+    "city": "Paris (Roissy-en-France",
+    "countryCode": "FR",
+    "catalogueLat": 49.00896,
+    "catalogueLng": 2.55412,
+    "catalogueTimeZone": "Europe/Paris",
+    "region": "UK/Europe",
+    "control": false,
+    "identity": {
+      "ok": true,
+      "matchedAddress": "Aéroport de Paris-Charles de Gaulle (CDG), 95700 Roissy-en-France, France",
+      "distanceKm": 0.27,
+      "candidates": [
+        {
+          "address": "Aéroport de Paris-Charles de Gaulle (CDG), 95700 Roissy-en-France, France",
+          "distanceKm": 0.27,
+          "types": [
+            "airport",
+            "establishment",
+            "point_of_interest"
+          ],
+          "country": "FR",
+          "iataInAddress": true,
+          "nameHitRatio": 1
+        }
+      ],
+      "googleStatus": "OK"
+    },
+    "drive": {
+      "destination": "Versailles, France",
+      "outcome": "ETA_ONLY",
+      "destinationConfidence": "CONFIRMED",
+      "resolvedDestination": "78000 Versailles, France",
+      "durationSeconds": 3473,
+      "distanceMeters": 44714
+    },
+    "driveAttempts": [
+      {
+        "destination": "Versailles, France",
+        "outcome": "ETA_ONLY"
+      }
+    ],
+    "policyChecks": [],
+    "timezone": {
+      "catalogue": "Europe/Paris",
+      "status": "NOT_CHECKED"
+    },
+    "verdict": "PASS",
+    "notes": [
+      "Timezone not cross-checked (Time Zone API unavailable); catalogue zone derived offline."
+    ],
+    "recommendation": "road_supported",
+    "probedAt": "2026-09-30T00:12:35.883Z",
+    "evidenceSource": "scripts/arrive-by-capability-probe.ts (Google Geocoding, Routes computeRoutes DRIVE, Time Zone)",
+    "thresholds": {
+      "maxIdentityDistanceKm": 5,
+      "nameHitThreshold": 0.5
+    }
+  },
+  {
+    "iata": "AMS",
+    "icao": "EHAM",
+    "airportName": "Amsterdam Airport Schiphol",
+    "city": "Amsterdam",
+    "countryCode": "NL",
+    "catalogueLat": 52.3086,
+    "catalogueLng": 4.76389,
+    "catalogueTimeZone": "Europe/Amsterdam",
+    "region": "UK/Europe",
+    "control": false,
+    "identity": {
+      "ok": true,
+      "matchedAddress": "Amsterdam Airport Schiphol (AMS), Evert van de Beekstraat 202, 1118 CP Schiphol, Netherlands",
+      "distanceKm": 1.68,
+      "candidates": [
+        {
+          "address": "Amsterdam Airport Schiphol (AMS), Evert van de Beekstraat 202, 1118 CP Schiphol, Netherlands",
+          "distanceKm": 1.68,
+          "types": [
+            "airport",
+            "establishment",
+            "point_of_interest"
+          ],
+          "country": "NL",
+          "iataInAddress": true,
+          "nameHitRatio": 1
+        }
+      ],
+      "googleStatus": "OK"
+    },
+    "drive": {
+      "destination": "Utrecht, Netherlands",
+      "outcome": "ETA_ONLY",
+      "destinationConfidence": "CONFIRMED",
+      "resolvedDestination": "Utrecht, Netherlands",
+      "durationSeconds": 2947,
+      "distanceMeters": 54562
+    },
+    "driveAttempts": [
+      {
+        "destination": "Utrecht, Netherlands",
+        "outcome": "ETA_ONLY"
+      }
+    ],
+    "policyChecks": [],
+    "timezone": {
+      "catalogue": "Europe/Amsterdam",
+      "status": "NOT_CHECKED"
+    },
+    "verdict": "PASS",
+    "notes": [
+      "Timezone not cross-checked (Time Zone API unavailable); catalogue zone derived offline."
+    ],
+    "recommendation": "road_supported",
+    "probedAt": "2026-09-30T00:12:36.119Z",
+    "evidenceSource": "scripts/arrive-by-capability-probe.ts (Google Geocoding, Routes computeRoutes DRIVE, Time Zone)",
+    "thresholds": {
+      "maxIdentityDistanceKm": 5,
+      "nameHitThreshold": 0.5
+    }
+  },
+  {
+    "iata": "FRA",
+    "icao": "EDDF",
+    "airportName": "Frankfurt Main Airport",
+    "city": "Frankfurt am Main",
+    "countryCode": "DE",
+    "catalogueLat": 50.02671,
+    "catalogueLng": 8.55835,
+    "catalogueTimeZone": "Europe/Berlin",
+    "region": "UK/Europe",
+    "control": false,
+    "identity": {
+      "ok": true,
+      "matchedAddress": "Frankfurt Arpt (FRA), 60547 Frankfurt am Main, Germany",
+      "distanceKm": 1.23,
+      "candidates": [
+        {
+          "address": "Frankfurt Arpt (FRA), 60547 Frankfurt am Main, Germany",
+          "distanceKm": 1.23,
+          "types": [
+            "airport",
+            "establishment",
+            "point_of_interest"
+          ],
+          "country": "DE",
+          "iataInAddress": true,
+          "nameHitRatio": 1
+        }
+      ],
+      "googleStatus": "OK"
+    },
+    "drive": {
+      "destination": "Mainz, Germany",
+      "outcome": "ETA_ONLY",
+      "destinationConfidence": "CONFIRMED",
+      "resolvedDestination": "Mainz, Germany",
+      "durationSeconds": 2437,
+      "distanceMeters": 40588
+    },
+    "driveAttempts": [
+      {
+        "destination": "Mainz, Germany",
+        "outcome": "ETA_ONLY"
+      }
+    ],
+    "policyChecks": [],
+    "timezone": {
+      "catalogue": "Europe/Berlin",
+      "status": "NOT_CHECKED"
+    },
+    "verdict": "PASS",
+    "notes": [
+      "Timezone not cross-checked (Time Zone API unavailable); catalogue zone derived offline."
+    ],
+    "recommendation": "road_supported",
+    "probedAt": "2026-09-30T00:12:36.391Z",
+    "evidenceSource": "scripts/arrive-by-capability-probe.ts (Google Geocoding, Routes computeRoutes DRIVE, Time Zone)",
+    "thresholds": {
+      "maxIdentityDistanceKm": 5,
+      "nameHitThreshold": 0.5
+    }
+  },
+  {
+    "iata": "MAD",
+    "icao": "LEMD",
+    "airportName": "Adolfo Suárez Madrid–Barajas Airport",
+    "city": "Madrid",
+    "countryCode": "ES",
+    "catalogueLat": 40.49341,
+    "catalogueLng": -3.57225,
+    "catalogueTimeZone": "Europe/Madrid",
+    "region": "UK/Europe",
+    "control": false,
+    "identity": {
+      "ok": true,
+      "matchedAddress": "Adolfo Suárez Madrid-Barajas Airport (MAD), Av de la Hispanidad, s/n, 28042 Madrid, Spain",
+      "distanceKm": 0.8,
+      "candidates": [
+        {
+          "address": "Adolfo Suárez Madrid-Barajas Airport (MAD), Av de la Hispanidad, s/n, 28042 Madrid, Spain",
+          "distanceKm": 0.8,
+          "types": [
+            "airport",
+            "establishment",
+            "point_of_interest"
+          ],
+          "country": "ES",
+          "iataInAddress": true,
+          "nameHitRatio": 1
+        }
+      ],
+      "googleStatus": "OK"
+    },
+    "drive": {
+      "destination": "Toledo, Spain",
+      "outcome": "ETA_ONLY",
+      "destinationConfidence": "CONFIRMED",
+      "resolvedDestination": "Toledo, Spain",
+      "durationSeconds": 3837,
+      "distanceMeters": 89054
+    },
+    "driveAttempts": [
+      {
+        "destination": "Toledo, Spain",
+        "outcome": "ETA_ONLY"
+      }
+    ],
+    "policyChecks": [],
+    "timezone": {
+      "catalogue": "Europe/Madrid",
+      "status": "NOT_CHECKED"
+    },
+    "verdict": "PASS",
+    "notes": [
+      "Timezone not cross-checked (Time Zone API unavailable); catalogue zone derived offline."
+    ],
+    "recommendation": "road_supported",
+    "probedAt": "2026-09-30T00:12:36.646Z",
+    "evidenceSource": "scripts/arrive-by-capability-probe.ts (Google Geocoding, Routes computeRoutes DRIVE, Time Zone)",
+    "thresholds": {
+      "maxIdentityDistanceKm": 5,
+      "nameHitThreshold": 0.5
+    }
+  },
+  {
+    "iata": "GVA",
+    "icao": "LSGG",
+    "airportName": "Geneva International Airport",
+    "city": "Geneva",
+    "countryCode": "CH",
+    "catalogueLat": 46.2381,
+    "catalogueLng": 6.10895,
+    "catalogueTimeZone": "Europe/Zurich",
+    "region": "UK/Europe",
+    "control": false,
+    "identity": {
+      "ok": true,
+      "matchedAddress": "Geneva Airport (GVA), Rte de l'Aéroport 21, 1215 Genève 15 Aéroport, Switzerland",
+      "distanceKm": 1.31,
+      "candidates": [
+        {
+          "address": "Geneva Airport (GVA), Rte de l'Aéroport 21, 1215 Genève 15 Aéroport, Switzerland",
+          "distanceKm": 1.31,
+          "types": [
+            "airport",
+            "establishment",
+            "point_of_interest"
+          ],
+          "country": "CH",
+          "iataInAddress": true,
+          "nameHitRatio": 1
+        }
+      ],
+      "googleStatus": "OK"
+    },
+    "drive": {
+      "destination": "Lausanne, Switzerland",
+      "outcome": "ETA_ONLY",
+      "destinationConfidence": "CONFIRMED",
+      "resolvedDestination": "Lausanne, Switzerland",
+      "durationSeconds": 3276,
+      "distanceMeters": 62974
+    },
+    "driveAttempts": [
+      {
+        "destination": "Lausanne, Switzerland",
+        "outcome": "ETA_ONLY"
+      }
+    ],
+    "policyChecks": [
+      {
+        "destination": "Annecy, France",
+        "expected": "ROUTE",
+        "outcome": "ETA_ONLY",
+        "driveDurationSeconds": 3106,
+        "distanceMeters": 49426,
+        "matchedExpectation": true
+      },
+      {
+        "destination": "Milan, Italy",
+        "expected": "REFUSE_WRONG_COUNTRY",
+        "outcome": "DESTINATION_NEEDS_CLARIFICATION",
+        "clarificationReason": "WRONG_COUNTRY",
+        "matchedExpectation": true
+      }
+    ],
+    "timezone": {
+      "catalogue": "Europe/Zurich",
+      "status": "NOT_CHECKED"
+    },
+    "verdict": "PASS",
+    "notes": [
+      "Study purpose: cross-border",
+      "Timezone not cross-checked (Time Zone API unavailable); catalogue zone derived offline."
+    ],
+    "recommendation": "road_supported",
+    "probedAt": "2026-09-30T00:12:36.929Z",
+    "evidenceSource": "scripts/arrive-by-capability-probe.ts (Google Geocoding, Routes computeRoutes DRIVE, Time Zone)",
+    "thresholds": {
+      "maxIdentityDistanceKm": 5,
+      "nameHitThreshold": 0.5
+    }
+  },
+  {
+    "iata": "BSL",
+    "icao": "LFSB",
+    "airportName": "EuroAirport Basel–Mulhouse–Freiburg",
+    "city": "Bâle / Mulhouse",
+    "countryCode": "FR",
+    "catalogueLat": 47.60068,
+    "catalogueLng": 7.52112,
+    "catalogueTimeZone": "Europe/Paris",
+    "region": "UK/Europe",
+    "control": false,
+    "identity": {
+      "ok": true,
+      "matchedAddress": "EuroAirport Basel-Mulhouse-Freiburg (EAP), Rte Douanière, 68300 Saint-Louis, France",
+      "distanceKm": 0.52,
+      "candidates": [
+        {
+          "address": "EuroAirport Basel-Mulhouse-Freiburg (EAP), Rte Douanière, 68300 Saint-Louis, France",
+          "distanceKm": 0.52,
+          "types": [
+            "airport",
+            "establishment",
+            "point_of_interest"
+          ],
+          "country": "FR",
+          "iataInAddress": false,
+          "nameHitRatio": 1
+        }
+      ],
+      "googleStatus": "OK"
+    },
+    "drive": {
+      "destination": "Basel, Switzerland",
+      "outcome": "ETA_ONLY",
+      "destinationConfidence": "CONFIRMED",
+      "resolvedDestination": "Basel, Switzerland",
+      "durationSeconds": 1326,
+      "distanceMeters": 10982
+    },
+    "driveAttempts": [
+      {
+        "destination": "Basel, Switzerland",
+        "outcome": "ETA_ONLY"
+      }
+    ],
+    "policyChecks": [
+      {
+        "destination": "Mulhouse, France",
+        "expected": "ROUTE",
+        "outcome": "ETA_ONLY",
+        "driveDurationSeconds": 2047,
+        "distanceMeters": 32156,
+        "matchedExpectation": true
+      },
+      {
+        "destination": "Freiburg im Breisgau, Germany",
+        "expected": "ROUTE",
+        "outcome": "ETA_ONLY",
+        "driveDurationSeconds": 3837,
+        "distanceMeters": 76800,
+        "matchedExpectation": true
+      },
+      {
+        "destination": "Milan, Italy",
+        "expected": "REFUSE_WRONG_COUNTRY",
+        "outcome": "DESTINATION_NEEDS_CLARIFICATION",
+        "clarificationReason": "WRONG_COUNTRY",
+        "matchedExpectation": true
+      }
+    ],
+    "timezone": {
+      "catalogue": "Europe/Paris",
+      "status": "NOT_CHECKED"
+    },
+    "verdict": "PASS",
+    "notes": [
+      "Study purpose: cross-border (airport is in France)",
+      "Timezone not cross-checked (Time Zone API unavailable); catalogue zone derived offline."
+    ],
+    "recommendation": "road_supported",
+    "probedAt": "2026-09-30T00:12:37.366Z",
+    "evidenceSource": "scripts/arrive-by-capability-probe.ts (Google Geocoding, Routes computeRoutes DRIVE, Time Zone)",
+    "thresholds": {
+      "maxIdentityDistanceKm": 5,
+      "nameHitThreshold": 0.5
+    }
+  },
+  {
+    "iata": "LUX",
+    "icao": "ELLX",
+    "airportName": "Luxembourg-Findel International Airport",
+    "city": "Luxembourg",
+    "countryCode": "LU",
+    "catalogueLat": 49.62685,
+    "catalogueLng": 6.21213,
+    "catalogueTimeZone": "Europe/Luxembourg",
+    "region": "UK/Europe",
+    "control": false,
+    "identity": {
+      "ok": true,
+      "matchedAddress": "Luxembourg Airport (LUX), 04 Rue de Trèves, 1110 Luxembourg",
+      "distanceKm": 0.15,
+      "candidates": [
+        {
+          "address": "Luxembourg Airport (LUX), 04 Rue de Trèves, 1110 Luxembourg",
+          "distanceKm": 0.15,
+          "types": [
+            "airport",
+            "establishment",
+            "point_of_interest"
+          ],
+          "country": "LU",
+          "iataInAddress": true,
+          "nameHitRatio": 0.5
+        }
+      ],
+      "googleStatus": "OK"
+    },
+    "drive": {
+      "destination": "Luxembourg City, Luxembourg",
+      "outcome": "ETA_ONLY",
+      "destinationConfidence": "CONFIRMED",
+      "resolvedDestination": "Luxembourg",
+      "durationSeconds": 2593,
+      "distanceMeters": 36674
+    },
+    "driveAttempts": [
+      {
+        "destination": "Luxembourg City, Luxembourg",
+        "outcome": "ETA_ONLY"
+      }
+    ],
+    "policyChecks": [
+      {
+        "destination": "Thionville, France",
+        "expected": "ROUTE",
+        "outcome": "ETA_ONLY",
+        "driveDurationSeconds": 2256,
+        "distanceMeters": 43426,
+        "matchedExpectation": true
+      },
+      {
+        "destination": "Trier, Germany",
+        "expected": "ROUTE",
+        "outcome": "ETA_ONLY",
+        "driveDurationSeconds": 2465,
+        "distanceMeters": 43724,
+        "matchedExpectation": true
+      },
+      {
+        "destination": "Arlon, Belgium",
+        "expected": "ROUTE",
+        "outcome": "ETA_ONLY",
+        "driveDurationSeconds": 2266,
+        "distanceMeters": 44094,
+        "matchedExpectation": true
+      },
+      {
+        "destination": "Amsterdam, Netherlands",
+        "expected": "REFUSE_WRONG_COUNTRY",
+        "outcome": "DESTINATION_NEEDS_CLARIFICATION",
+        "clarificationReason": "WRONG_COUNTRY",
+        "matchedExpectation": true
+      }
+    ],
+    "timezone": {
+      "catalogue": "Europe/Luxembourg",
+      "status": "NOT_CHECKED"
+    },
+    "verdict": "PASS",
+    "notes": [
+      "Study purpose: cross-border",
+      "Timezone not cross-checked (Time Zone API unavailable); catalogue zone derived offline."
+    ],
+    "recommendation": "road_supported",
+    "probedAt": "2026-09-30T00:12:38.005Z",
+    "evidenceSource": "scripts/arrive-by-capability-probe.ts (Google Geocoding, Routes computeRoutes DRIVE, Time Zone)",
+    "thresholds": {
+      "maxIdentityDistanceKm": 5,
+      "nameHitThreshold": 0.5
+    }
+  },
+  {
+    "iata": "JFK",
+    "icao": "KJFK",
+    "airportName": "John F. Kennedy International Airport",
+    "city": "New York",
+    "countryCode": "US",
+    "catalogueLat": 40.63945,
+    "catalogueLng": -73.77932,
+    "catalogueTimeZone": "America/New_York",
+    "region": "North America",
+    "control": false,
+    "identity": {
+      "ok": true,
+      "matchedAddress": "John F. Kennedy International Airport (JFK), JFK International Airport, NY 11430, USA",
+      "distanceKm": 0.58,
+      "candidates": [
+        {
+          "address": "John F. Kennedy International Airport (JFK), JFK International Airport, NY 11430, USA",
+          "distanceKm": 0.58,
+          "types": [
+            "airport",
+            "establishment",
+            "point_of_interest"
+          ],
+          "country": "US",
+          "iataInAddress": true,
+          "nameHitRatio": 1
+        }
+      ],
+      "googleStatus": "OK"
+    },
+    "drive": {
+      "destination": "Stamford, Connecticut, USA",
+      "outcome": "ETA_ONLY",
+      "destinationConfidence": "CONFIRMED",
+      "resolvedDestination": "Stamford, CT, USA",
+      "durationSeconds": 4258,
+      "distanceMeters": 64655
+    },
+    "driveAttempts": [
+      {
+        "destination": "Stamford, Connecticut, USA",
+        "outcome": "ETA_ONLY"
+      }
+    ],
+    "policyChecks": [],
+    "timezone": {
+      "catalogue": "America/New_York",
+      "status": "NOT_CHECKED"
+    },
+    "verdict": "PASS",
+    "notes": [
+      "Timezone not cross-checked (Time Zone API unavailable); catalogue zone derived offline."
+    ],
+    "recommendation": "road_supported",
+    "probedAt": "2026-09-30T00:12:38.814Z",
+    "evidenceSource": "scripts/arrive-by-capability-probe.ts (Google Geocoding, Routes computeRoutes DRIVE, Time Zone)",
+    "thresholds": {
+      "maxIdentityDistanceKm": 5,
+      "nameHitThreshold": 0.5
+    }
+  },
+  {
+    "iata": "LAX",
+    "icao": "KLAX",
+    "airportName": "Los Angeles International Airport",
+    "city": "Los Angeles",
+    "countryCode": "US",
+    "catalogueLat": 33.9425,
+    "catalogueLng": -118.408,
+    "catalogueTimeZone": "America/Los_Angeles",
+    "region": "North America",
+    "control": false,
+    "identity": {
+      "ok": true,
+      "matchedAddress": "Los Angeles International Airport (LAX), 1 World Wy, Los Angeles, CA 90045, USA",
+      "distanceKm": 0.41,
+      "candidates": [
+        {
+          "address": "Los Angeles International Airport (LAX), 1 World Wy, Los Angeles, CA 90045, USA",
+          "distanceKm": 0.41,
+          "types": [
+            "airport",
+            "establishment",
+            "point_of_interest"
+          ],
+          "country": "US",
+          "iataInAddress": true,
+          "nameHitRatio": 1
+        }
+      ],
+      "googleStatus": "OK"
+    },
+    "drive": {
+      "destination": "Santa Monica, California, USA",
+      "outcome": "ETA_ONLY",
+      "destinationConfidence": "CONFIRMED",
+      "resolvedDestination": "Santa Monica, CA, USA",
+      "durationSeconds": 1995,
+      "distanceMeters": 25152
+    },
+    "driveAttempts": [
+      {
+        "destination": "Santa Monica, California, USA",
+        "outcome": "ETA_ONLY"
+      }
+    ],
+    "policyChecks": [],
+    "timezone": {
+      "catalogue": "America/Los_Angeles",
+      "status": "NOT_CHECKED"
+    },
+    "verdict": "PASS",
+    "notes": [
+      "Timezone not cross-checked (Time Zone API unavailable); catalogue zone derived offline."
+    ],
+    "recommendation": "road_supported",
+    "probedAt": "2026-09-30T00:12:39.100Z",
+    "evidenceSource": "scripts/arrive-by-capability-probe.ts (Google Geocoding, Routes computeRoutes DRIVE, Time Zone)",
+    "thresholds": {
+      "maxIdentityDistanceKm": 5,
+      "nameHitThreshold": 0.5
+    }
+  },
+  {
+    "iata": "YYZ",
+    "icao": "CYYZ",
+    "airportName": "Toronto Pearson International Airport",
+    "city": "Toronto",
+    "countryCode": "CA",
+    "catalogueLat": 43.67594,
+    "catalogueLng": -79.62942,
+    "catalogueTimeZone": "America/Toronto",
+    "region": "North America",
+    "control": false,
+    "identity": {
+      "ok": true,
+      "matchedAddress": "Toronto Pearson Int'l Airport (YYZ), 6301 Silver Dart Dr, Mississauga, ON L5P 1B2, Canada",
+      "distanceKm": 0.44,
+      "candidates": [
+        {
+          "address": "Toronto Pearson Int'l Airport (YYZ), 6301 Silver Dart Dr, Mississauga, ON L5P 1B2, Canada",
+          "distanceKm": 0.44,
+          "types": [
+            "airport",
+            "establishment",
+            "point_of_interest"
+          ],
+          "country": "CA",
+          "iataInAddress": true,
+          "nameHitRatio": 1
+        }
+      ],
+      "googleStatus": "OK"
+    },
+    "drive": {
+      "destination": "Hamilton, Ontario, Canada",
+      "outcome": "ETA_ONLY",
+      "destinationConfidence": "CONFIRMED",
+      "resolvedDestination": "Hamilton, ON, Canada",
+      "durationSeconds": 2844,
+      "distanceMeters": 65380
+    },
+    "driveAttempts": [
+      {
+        "destination": "Hamilton, Ontario, Canada",
+        "outcome": "ETA_ONLY"
+      }
+    ],
+    "policyChecks": [],
+    "timezone": {
+      "catalogue": "America/Toronto",
+      "status": "NOT_CHECKED"
+    },
+    "verdict": "PASS",
+    "notes": [
+      "Timezone not cross-checked (Time Zone API unavailable); catalogue zone derived offline."
+    ],
+    "recommendation": "road_supported",
+    "probedAt": "2026-09-30T00:12:39.356Z",
+    "evidenceSource": "scripts/arrive-by-capability-probe.ts (Google Geocoding, Routes computeRoutes DRIVE, Time Zone)",
+    "thresholds": {
+      "maxIdentityDistanceKm": 5,
+      "nameHitThreshold": 0.5
+    }
+  },
+  {
+    "iata": "MEX",
+    "icao": "MMMX",
+    "airportName": "Mexico City Benito Juárez International Airport",
+    "city": "Mexico City",
+    "countryCode": "MX",
+    "catalogueLat": 19.43582,
+    "catalogueLng": -99.07033,
+    "catalogueTimeZone": "America/Mexico_City",
+    "region": "North America",
+    "control": false,
+    "identity": {
+      "ok": true,
+      "matchedAddress": "Mexico City International Airport Benito Juárez (MEX), Av. Capitán Carlos León S/N, Peñón de los Baños, Venustiano Carranza, 15620 Ciudad de México, CDMX, Mexico",
+      "distanceKm": 0.17,
+      "candidates": [
+        {
+          "address": "Mexico City International Airport Benito Juárez (MEX), Av. Capitán Carlos León S/N, Peñón de los Baños, Venustiano Carranza, 15620 Ciudad de México, CDMX, Mexico",
+          "distanceKm": 0.17,
+          "types": [
+            "airport",
+            "establishment",
+            "point_of_interest"
+          ],
+          "country": "MX",
+          "iataInAddress": true,
+          "nameHitRatio": 1
+        }
+      ],
+      "googleStatus": "OK"
+    },
+    "drive": {
+      "destination": "Puebla, Mexico",
+      "outcome": "ETA_ONLY",
+      "destinationConfidence": "CONFIRMED",
+      "resolvedDestination": "Puebla, Mexico",
+      "durationSeconds": 8137,
+      "distanceMeters": 129092
+    },
+    "driveAttempts": [
+      {
+        "destination": "Puebla, Mexico",
+        "outcome": "ETA_ONLY"
+      }
+    ],
+    "policyChecks": [],
+    "timezone": {
+      "catalogue": "America/Mexico_City",
+      "status": "NOT_CHECKED"
+    },
+    "verdict": "PASS",
+    "notes": [
+      "Timezone not cross-checked (Time Zone API unavailable); catalogue zone derived offline."
+    ],
+    "recommendation": "road_supported",
+    "probedAt": "2026-09-30T00:12:39.626Z",
+    "evidenceSource": "scripts/arrive-by-capability-probe.ts (Google Geocoding, Routes computeRoutes DRIVE, Time Zone)",
+    "thresholds": {
+      "maxIdentityDistanceKm": 5,
+      "nameHitThreshold": 0.5
+    }
+  },
+  {
+    "iata": "GRU",
+    "icao": "SBGR",
+    "airportName": "São Paulo/Guarulhos–Governor André Franco Montoro International Airport",
+    "city": "São Paulo",
+    "countryCode": "BR",
+    "catalogueLat": -23.43127,
+    "catalogueLng": -46.46995,
+    "catalogueTimeZone": "America/Sao_Paulo",
+    "region": "South America",
+    "control": false,
+    "identity": {
+      "ok": true,
+      "matchedAddress": "São Paulo/Guarulhos–Governor André Franco Montoro Int'l Airport (GRU) - Rod. Hélio Smidt, s/nº - Aeroporto, Guarulhos - SP, 07190-100, Brazil",
+      "distanceKm": 0.21,
+      "candidates": [
+        {
+          "address": "São Paulo/Guarulhos–Governor André Franco Montoro Int'l Airport (GRU) - Rod. Hélio Smidt, s/nº - Aeroporto, Guarulhos - SP, 07190-100, Brazil",
+          "distanceKm": 0.21,
+          "types": [
+            "airport",
+            "establishment",
+            "point_of_interest"
+          ],
+          "country": "BR",
+          "iataInAddress": true,
+          "nameHitRatio": 1
+        }
+      ],
+      "googleStatus": "OK"
+    },
+    "drive": {
+      "destination": "Campinas, Brazil",
+      "outcome": "DESTINATION_NEEDS_CLARIFICATION",
+      "destinationConfidence": "NEEDS_CLARIFICATION",
+      "resolvedDestination": "Campinas - São Paulo, Brazil",
+      "clarificationReason": "TOO_BROAD_TYPE"
+    },
+    "driveAttempts": [
+      {
+        "destination": "Campinas, Brazil",
+        "outcome": "DESTINATION_NEEDS_CLARIFICATION",
+        "clarificationReason": "TOO_BROAD_TYPE"
+      },
+      {
+        "destination": "Sao Jose dos Campos, Brazil",
+        "outcome": "DESTINATION_NEEDS_CLARIFICATION",
+        "clarificationReason": "PRIMARY_PLACE_MISMATCH"
+      },
+      {
+        "destination": "Santos, Brazil",
+        "outcome": "DESTINATION_NEEDS_CLARIFICATION",
+        "clarificationReason": "TOO_BROAD_TYPE"
+      }
+    ],
+    "policyChecks": [],
+    "timezone": {
+      "catalogue": "America/Sao_Paulo",
+      "status": "NOT_CHECKED"
+    },
+    "verdict": "NEEDS_REVIEW",
+    "failureClass": "destination_resolution",
+    "notes": [
+      "Primary drive probe did not produce a route (DESTINATION_NEEDS_CLARIFICATION)."
+    ],
+    "recommendation": "route_testable",
+    "probedAt": "2026-09-30T00:12:39.850Z",
+    "evidenceSource": "scripts/arrive-by-capability-probe.ts (Google Geocoding, Routes computeRoutes DRIVE, Time Zone)",
+    "thresholds": {
+      "maxIdentityDistanceKm": 5,
+      "nameHitThreshold": 0.5
+    }
+  },
+  {
+    "iata": "DXB",
+    "icao": "OMDB",
+    "airportName": "Dubai International Airport",
+    "city": "Dubai",
+    "countryCode": "AE",
+    "catalogueLat": 25.24979,
+    "catalogueLng": 55.37099,
+    "catalogueTimeZone": "Asia/Dubai",
+    "region": "Middle East",
+    "control": false,
+    "identity": {
+      "ok": true,
+      "matchedAddress": "Dubai International Airport (DXB) - Airport Rd - Al Garhoud - Dubai - United Arab Emirates",
+      "distanceKm": 0.33,
+      "candidates": [
+        {
+          "address": "Dubai International Airport (DXB) - Airport Rd - Al Garhoud - Dubai - United Arab Emirates",
+          "distanceKm": 0.33,
+          "types": [
+            "airport",
+            "establishment",
+            "point_of_interest"
+          ],
+          "country": "AE",
+          "iataInAddress": true,
+          "nameHitRatio": 1
+        }
+      ],
+      "googleStatus": "OK"
+    },
+    "drive": {
+      "destination": "Sharjah, United Arab Emirates",
+      "outcome": "ETA_ONLY",
+      "destinationConfidence": "CONFIRMED",
+      "resolvedDestination": "Sharjah - United Arab Emirates",
+      "durationSeconds": 1670,
+      "distanceMeters": 21258
+    },
+    "driveAttempts": [
+      {
+        "destination": "Sharjah, United Arab Emirates",
+        "outcome": "ETA_ONLY"
+      }
+    ],
+    "policyChecks": [],
+    "timezone": {
+      "catalogue": "Asia/Dubai",
+      "status": "NOT_CHECKED"
+    },
+    "verdict": "PASS",
+    "notes": [
+      "Timezone not cross-checked (Time Zone API unavailable); catalogue zone derived offline."
+    ],
+    "recommendation": "road_supported",
+    "probedAt": "2026-09-30T00:12:40.176Z",
+    "evidenceSource": "scripts/arrive-by-capability-probe.ts (Google Geocoding, Routes computeRoutes DRIVE, Time Zone)",
+    "thresholds": {
+      "maxIdentityDistanceKm": 5,
+      "nameHitThreshold": 0.5
+    }
+  },
+  {
+    "iata": "DOH",
+    "icao": "OTHH",
+    "airportName": "Hamad International Airport",
+    "city": "Doha",
+    "countryCode": "QA",
+    "catalogueLat": 25.27306,
+    "catalogueLng": 51.60806,
+    "catalogueTimeZone": "Asia/Qatar",
+    "region": "Middle East",
+    "control": false,
+    "identity": {
+      "ok": true,
+      "matchedAddress": "Zone 49, Street 400, Building, Hamad International Airport (DOH), 2 Departure Terminal, Doha, Qatar",
+      "distanceKm": 0.72,
+      "candidates": [
+        {
+          "address": "Zone 49, Street 400, Building, Hamad International Airport (DOH), 2 Departure Terminal, Doha, Qatar",
+          "distanceKm": 0.72,
+          "types": [
+            "airport",
+            "establishment",
+            "point_of_interest"
+          ],
+          "country": "QA",
+          "iataInAddress": true,
+          "nameHitRatio": 1
+        }
+      ],
+      "googleStatus": "OK"
+    },
+    "drive": {
+      "destination": "Al Khor, Qatar",
+      "outcome": "ETA_ONLY",
+      "destinationConfidence": "CONFIRMED",
+      "resolvedDestination": "Al Khor, Qatar",
+      "durationSeconds": 3421,
+      "distanceMeters": 58701
+    },
+    "driveAttempts": [
+      {
+        "destination": "Al Khor, Qatar",
+        "outcome": "ETA_ONLY"
+      }
+    ],
+    "policyChecks": [],
+    "timezone": {
+      "catalogue": "Asia/Qatar",
+      "status": "NOT_CHECKED"
+    },
+    "verdict": "PASS",
+    "notes": [
+      "Timezone not cross-checked (Time Zone API unavailable); catalogue zone derived offline."
+    ],
+    "recommendation": "road_supported",
+    "probedAt": "2026-09-30T00:12:40.430Z",
+    "evidenceSource": "scripts/arrive-by-capability-probe.ts (Google Geocoding, Routes computeRoutes DRIVE, Time Zone)",
+    "thresholds": {
+      "maxIdentityDistanceKm": 5,
+      "nameHitThreshold": 0.5
+    }
+  },
+  {
+    "iata": "DEL",
+    "icao": "VIDP",
+    "airportName": "Indira Gandhi International Airport",
+    "city": "New Delhi",
+    "countryCode": "IN",
+    "catalogueLat": 28.55563,
+    "catalogueLng": 77.09519,
+    "catalogueTimeZone": "Asia/Kolkata",
+    "region": "South Asia",
+    "control": false,
+    "identity": {
+      "ok": true,
+      "matchedAddress": "Indira Gandhi Int'l Airport (DEL), New Delhi, Delhi 110037, India",
+      "distanceKm": 0.47,
+      "candidates": [
+        {
+          "address": "Indira Gandhi Int'l Airport (DEL), New Delhi, Delhi 110037, India",
+          "distanceKm": 0.47,
+          "types": [
+            "airport",
+            "establishment",
+            "point_of_interest"
+          ],
+          "country": "IN",
+          "iataInAddress": true,
+          "nameHitRatio": 1
+        }
+      ],
+      "googleStatus": "OK"
+    },
+    "drive": {
+      "destination": "Gurugram, India",
+      "outcome": "ETA_ONLY",
+      "destinationConfidence": "CONFIRMED",
+      "resolvedDestination": "Gurugram, Haryana, India",
+      "durationSeconds": 2759,
+      "distanceMeters": 20667
+    },
+    "driveAttempts": [
+      {
+        "destination": "Gurugram, India",
+        "outcome": "ETA_ONLY"
+      }
+    ],
+    "policyChecks": [],
+    "timezone": {
+      "catalogue": "Asia/Kolkata",
+      "status": "NOT_CHECKED"
+    },
+    "verdict": "PASS",
+    "notes": [
+      "Timezone not cross-checked (Time Zone API unavailable); catalogue zone derived offline."
+    ],
+    "recommendation": "road_supported",
+    "probedAt": "2026-09-30T00:12:40.643Z",
+    "evidenceSource": "scripts/arrive-by-capability-probe.ts (Google Geocoding, Routes computeRoutes DRIVE, Time Zone)",
+    "thresholds": {
+      "maxIdentityDistanceKm": 5,
+      "nameHitThreshold": 0.5
+    }
+  },
+  {
+    "iata": "BOM",
+    "icao": "VABB",
+    "airportName": "Chhatrapati Shivaji Maharaj International Airport",
+    "city": "Mumbai",
+    "countryCode": "IN",
+    "catalogueLat": 19.0887,
+    "catalogueLng": 72.8679,
+    "catalogueTimeZone": "Asia/Kolkata",
+    "region": "South Asia",
+    "control": false,
+    "identity": {
+      "ok": true,
+      "matchedAddress": "Chhatrapati Shivaji Maharaj International Airport Mumbai (BOM), Mumbai, Maharashtra 400099, India",
+      "distanceKm": 0.56,
+      "candidates": [
+        {
+          "address": "Chhatrapati Shivaji Maharaj International Airport Mumbai (BOM), Mumbai, Maharashtra 400099, India",
+          "distanceKm": 0.56,
+          "types": [
+            "airport",
+            "establishment",
+            "point_of_interest"
+          ],
+          "country": "IN",
+          "iataInAddress": true,
+          "nameHitRatio": 1
+        }
+      ],
+      "googleStatus": "OK"
+    },
+    "drive": {
+      "destination": "Pune, India",
+      "outcome": "ETA_ONLY",
+      "destinationConfidence": "CONFIRMED",
+      "resolvedDestination": "Pune, Maharashtra, India",
+      "durationSeconds": 11000,
+      "distanceMeters": 146116
+    },
+    "driveAttempts": [
+      {
+        "destination": "Pune, India",
+        "outcome": "ETA_ONLY"
+      }
+    ],
+    "policyChecks": [],
+    "timezone": {
+      "catalogue": "Asia/Kolkata",
+      "status": "NOT_CHECKED"
+    },
+    "verdict": "PASS",
+    "notes": [
+      "Timezone not cross-checked (Time Zone API unavailable); catalogue zone derived offline."
+    ],
+    "recommendation": "road_supported",
+    "probedAt": "2026-09-30T00:12:40.901Z",
+    "evidenceSource": "scripts/arrive-by-capability-probe.ts (Google Geocoding, Routes computeRoutes DRIVE, Time Zone)",
+    "thresholds": {
+      "maxIdentityDistanceKm": 5,
+      "nameHitThreshold": 0.5
+    }
+  },
+  {
+    "iata": "AMD",
+    "icao": "VAAH",
+    "airportName": "Sardar Vallabh Patel International Airport",
+    "city": "Ahmedabad",
+    "countryCode": "IN",
+    "catalogueLat": 23.0772,
+    "catalogueLng": 72.6347,
+    "catalogueTimeZone": "Asia/Kolkata",
+    "region": "South Asia",
+    "control": false,
+    "identity": {
+      "ok": true,
+      "matchedAddress": "Sardar Vallabhbhai Patel International Airport (AMD), Hansol, Ahmedabad, Gujarat 380003, India",
+      "distanceKm": 0.39,
+      "candidates": [
+        {
+          "address": "Sardar Vallabhbhai Patel International Airport (AMD), Hansol, Ahmedabad, Gujarat 380003, India",
+          "distanceKm": 0.39,
+          "types": [
+            "airport",
+            "establishment",
+            "point_of_interest"
+          ],
+          "country": "IN",
+          "iataInAddress": true,
+          "nameHitRatio": 1
+        }
+      ],
+      "googleStatus": "OK"
+    },
+    "drive": {
+      "destination": "Gandhinagar, India",
+      "outcome": "ETA_ONLY",
+      "destinationConfidence": "CONFIRMED",
+      "resolvedDestination": "Gandhinagar, Gujarat, India",
+      "durationSeconds": 1987,
+      "distanceMeters": 20609
+    },
+    "driveAttempts": [
+      {
+        "destination": "Gandhinagar, India",
+        "outcome": "ETA_ONLY"
+      }
+    ],
+    "policyChecks": [],
+    "timezone": {
+      "catalogue": "Asia/Kolkata",
+      "status": "NOT_CHECKED"
+    },
+    "verdict": "PASS",
+    "notes": [
+      "Timezone not cross-checked (Time Zone API unavailable); catalogue zone derived offline."
+    ],
+    "recommendation": "road_supported",
+    "probedAt": "2026-09-30T00:12:41.259Z",
+    "evidenceSource": "scripts/arrive-by-capability-probe.ts (Google Geocoding, Routes computeRoutes DRIVE, Time Zone)",
+    "thresholds": {
+      "maxIdentityDistanceKm": 5,
+      "nameHitThreshold": 0.5
+    }
+  },
+  {
+    "iata": "DAC",
+    "icao": "VGHS",
+    "airportName": "Hazrat Shahjalal International Airport",
+    "city": "Dhaka",
+    "countryCode": "BD",
+    "catalogueLat": 23.84335,
+    "catalogueLng": 90.39778,
+    "catalogueTimeZone": "Asia/Dhaka",
+    "region": "South Asia",
+    "control": false,
+    "identity": {
+      "ok": true,
+      "matchedAddress": "Hazrat Shahjalal International Airport (DAC), Airport - Dakshinkhan Rd, Dhaka 1229, Bangladesh",
+      "distanceKm": 0.52,
+      "candidates": [
+        {
+          "address": "Hazrat Shahjalal International Airport (DAC), Airport - Dakshinkhan Rd, Dhaka 1229, Bangladesh",
+          "distanceKm": 0.52,
+          "types": [
+            "airport",
+            "establishment",
+            "point_of_interest"
+          ],
+          "country": "BD",
+          "iataInAddress": true,
+          "nameHitRatio": 1
+        }
+      ],
+      "googleStatus": "OK"
+    },
+    "drive": {
+      "destination": "Narayanganj, Bangladesh",
+      "outcome": "ETA_ONLY",
+      "destinationConfidence": "CONFIRMED",
+      "resolvedDestination": "Narayanganj, Bangladesh",
+      "durationSeconds": 4676,
+      "distanceMeters": 37747
+    },
+    "driveAttempts": [
+      {
+        "destination": "Narayanganj, Bangladesh",
+        "outcome": "ETA_ONLY"
+      }
+    ],
+    "policyChecks": [],
+    "timezone": {
+      "catalogue": "Asia/Dhaka",
+      "status": "NOT_CHECKED"
+    },
+    "verdict": "PASS",
+    "notes": [
+      "Timezone not cross-checked (Time Zone API unavailable); catalogue zone derived offline."
+    ],
+    "recommendation": "road_supported",
+    "probedAt": "2026-09-30T00:12:41.481Z",
+    "evidenceSource": "scripts/arrive-by-capability-probe.ts (Google Geocoding, Routes computeRoutes DRIVE, Time Zone)",
+    "thresholds": {
+      "maxIdentityDistanceKm": 5,
+      "nameHitThreshold": 0.5
+    }
+  },
+  {
+    "iata": "SIN",
+    "icao": "WSSS",
+    "airportName": "Singapore Changi Airport",
+    "city": "Singapore",
+    "countryCode": "SG",
+    "catalogueLat": 1.35019,
+    "catalogueLng": 103.994,
+    "catalogueTimeZone": "Asia/Singapore",
+    "region": "East/SE Asia",
+    "control": false,
+    "identity": {
+      "ok": true,
+      "matchedAddress": "60 Airport Blvd., Singapore Changi Airport (SIN), Singapore 819643",
+      "distanceKm": 1.04,
+      "candidates": [
+        {
+          "address": "60 Airport Blvd., Singapore Changi Airport (SIN), Singapore 819643",
+          "distanceKm": 1.04,
+          "types": [
+            "airport",
+            "establishment",
+            "point_of_interest",
+            "shopping_mall",
+            "tourist_attraction"
+          ],
+          "country": "SG",
+          "iataInAddress": true,
+          "nameHitRatio": 1
+        }
+      ],
+      "googleStatus": "OK"
+    },
+    "drive": {
+      "destination": "Jurong East, Singapore",
+      "outcome": "DESTINATION_NEEDS_CLARIFICATION",
+      "destinationConfidence": "NEEDS_CLARIFICATION",
+      "resolvedDestination": "Jurong East, Singapore",
+      "clarificationReason": "PRIMARY_PLACE_MISMATCH"
+    },
+    "driveAttempts": [
+      {
+        "destination": "Jurong East, Singapore",
+        "outcome": "DESTINATION_NEEDS_CLARIFICATION",
+        "clarificationReason": "PRIMARY_PLACE_MISMATCH"
+      },
+      {
+        "destination": "Orchard Road, Singapore",
+        "outcome": "DESTINATION_NEEDS_CLARIFICATION",
+        "clarificationReason": "PRIMARY_PLACE_MISMATCH"
+      },
+      {
+        "destination": "Sentosa, Singapore",
+        "outcome": "DESTINATION_NEEDS_CONFIRMATION"
+      }
+    ],
+    "policyChecks": [
+      {
+        "destination": "Johor Bahru, Malaysia",
+        "expected": "REFUSE_WRONG_COUNTRY",
+        "outcome": "DESTINATION_NEEDS_CLARIFICATION",
+        "clarificationReason": "WRONG_COUNTRY",
+        "matchedExpectation": true
+      }
+    ],
+    "timezone": {
+      "catalogue": "Asia/Singapore",
+      "status": "NOT_CHECKED"
+    },
+    "verdict": "NEEDS_REVIEW",
+    "failureClass": "destination_resolution",
+    "notes": [
+      "Study purpose: city-state next to a border",
+      "Primary drive probe did not produce a route (DESTINATION_NEEDS_CLARIFICATION)."
+    ],
+    "recommendation": "route_testable",
+    "probedAt": "2026-09-30T00:12:41.709Z",
+    "evidenceSource": "scripts/arrive-by-capability-probe.ts (Google Geocoding, Routes computeRoutes DRIVE, Time Zone)",
+    "thresholds": {
+      "maxIdentityDistanceKm": 5,
+      "nameHitThreshold": 0.5
+    }
+  },
+  {
+    "iata": "BKK",
+    "icao": "VTBS",
+    "airportName": "Suvarnabhumi Airport",
+    "city": "Bangkok",
+    "countryCode": "TH",
+    "catalogueLat": 13.6811,
+    "catalogueLng": 100.747,
+    "catalogueTimeZone": "Asia/Bangkok",
+    "region": "East/SE Asia",
+    "control": false,
+    "identity": {
+      "ok": true,
+      "matchedAddress": "999, Suvarnabhumi Airport (BKK), หมู่ที่ 1, Tambon Nong Prue, Amphoe Bang Phli, Chang Wat Samut Prakan 10540, Thailand",
+      "distanceKm": 0.09,
+      "candidates": [
+        {
+          "address": "999, Suvarnabhumi Airport (BKK), หมู่ที่ 1, Tambon Nong Prue, Amphoe Bang Phli, Chang Wat Samut Prakan 10540, Thailand",
+          "distanceKm": 0.09,
+          "types": [
+            "airport",
+            "establishment",
+            "point_of_interest"
+          ],
+          "country": "TH",
+          "iataInAddress": true,
+          "nameHitRatio": 1
+        }
+      ],
+      "googleStatus": "OK"
+    },
+    "drive": {
+      "destination": "Ayutthaya, Thailand",
+      "outcome": "ETA_ONLY",
+      "destinationConfidence": "CONFIRMED",
+      "resolvedDestination": "Phra Nakhon Si Ayutthaya, Phra Nakhon Si Ayutthaya District, Phra Nakhon Si Ayutthaya, Thailand",
+      "durationSeconds": 5396,
+      "distanceMeters": 103269
+    },
+    "driveAttempts": [
+      {
+        "destination": "Ayutthaya, Thailand",
+        "outcome": "ETA_ONLY"
+      }
+    ],
+    "policyChecks": [],
+    "timezone": {
+      "catalogue": "Asia/Bangkok",
+      "status": "NOT_CHECKED"
+    },
+    "verdict": "PASS",
+    "notes": [
+      "Timezone not cross-checked (Time Zone API unavailable); catalogue zone derived offline."
+    ],
+    "recommendation": "road_supported",
+    "probedAt": "2026-09-30T00:12:42.131Z",
+    "evidenceSource": "scripts/arrive-by-capability-probe.ts (Google Geocoding, Routes computeRoutes DRIVE, Time Zone)",
+    "thresholds": {
+      "maxIdentityDistanceKm": 5,
+      "nameHitThreshold": 0.5
+    }
+  },
+  {
+    "iata": "HKG",
+    "icao": "VHHH",
+    "airportName": "Hong Kong International Airport",
+    "city": "Hong Kong",
+    "countryCode": "HK",
+    "catalogueLat": 22.31184,
+    "catalogueLng": 113.91486,
+    "catalogueTimeZone": "Asia/Hong_Kong",
+    "region": "East/SE Asia",
+    "control": false,
+    "identity": {
+      "ok": true,
+      "matchedAddress": "Hong Kong International Airport, 1 Sky Plaza Rd, Chek Lap Kok, New Territories, Hong Kong",
+      "distanceKm": 0.22,
+      "candidates": [
+        {
+          "address": "Hong Kong International Airport, 1 Sky Plaza Rd, Chek Lap Kok, New Territories, Hong Kong",
+          "distanceKm": 0.22,
+          "types": [
+            "airport",
+            "establishment",
+            "point_of_interest"
+          ],
+          "country": "HK",
+          "iataInAddress": false,
+          "nameHitRatio": 1
+        }
+      ],
+      "googleStatus": "OK"
+    },
+    "drive": {
+      "destination": "Tuen Mun, Hong Kong",
+      "outcome": "ETA_ONLY",
+      "destinationConfidence": "CONFIRMED",
+      "resolvedDestination": "Tuen Mun, New Territories, Hong Kong",
+      "durationSeconds": 1463,
+      "distanceMeters": 19093
+    },
+    "driveAttempts": [
+      {
+        "destination": "Tuen Mun, Hong Kong",
+        "outcome": "ETA_ONLY"
+      }
+    ],
+    "policyChecks": [
+      {
+        "destination": "Shenzhen, China",
+        "expected": "REFUSE_WRONG_COUNTRY",
+        "outcome": "DESTINATION_NEEDS_CLARIFICATION",
+        "clarificationReason": "WRONG_COUNTRY",
+        "matchedExpectation": true
+      }
+    ],
+    "timezone": {
+      "catalogue": "Asia/Hong_Kong",
+      "status": "NOT_CHECKED"
+    },
+    "verdict": "PASS",
+    "notes": [
+      "Study purpose: island airport, special region",
+      "Timezone not cross-checked (Time Zone API unavailable); catalogue zone derived offline."
+    ],
+    "recommendation": "road_supported",
+    "probedAt": "2026-09-30T00:12:42.381Z",
+    "evidenceSource": "scripts/arrive-by-capability-probe.ts (Google Geocoding, Routes computeRoutes DRIVE, Time Zone)",
+    "thresholds": {
+      "maxIdentityDistanceKm": 5,
+      "nameHitThreshold": 0.5
+    }
+  },
+  {
+    "iata": "HND",
+    "icao": "RJTT",
+    "airportName": "Tokyo Haneda International Airport",
+    "city": "Tokyo",
+    "countryCode": "JP",
+    "catalogueLat": 35.54968,
+    "catalogueLng": 139.78696,
+    "catalogueTimeZone": "Asia/Tokyo",
+    "region": "East/SE Asia",
+    "control": false,
+    "identity": {
+      "ok": true,
+      "matchedAddress": "Haneda Airport (HND), Hanedakūkō, Ota City, Tokyo 144-0041, Japan",
+      "distanceKm": 0.83,
+      "candidates": [
+        {
+          "address": "Haneda Airport (HND), Hanedakūkō, Ota City, Tokyo 144-0041, Japan",
+          "distanceKm": 0.83,
+          "types": [
+            "airport",
+            "establishment",
+            "point_of_interest"
+          ],
+          "country": "JP",
+          "iataInAddress": true,
+          "nameHitRatio": 1
+        }
+      ],
+      "googleStatus": "OK"
+    },
+    "drive": {
+      "destination": "Yokohama, Japan",
+      "outcome": "ETA_ONLY",
+      "destinationConfidence": "CONFIRMED",
+      "resolvedDestination": "Yokohama, Kanagawa, Japan",
+      "durationSeconds": 1209,
+      "distanceMeters": 21939
+    },
+    "driveAttempts": [
+      {
+        "destination": "Yokohama, Japan",
+        "outcome": "ETA_ONLY"
+      }
+    ],
+    "policyChecks": [],
+    "timezone": {
+      "catalogue": "Asia/Tokyo",
+      "status": "NOT_CHECKED"
+    },
+    "verdict": "PASS",
+    "notes": [
+      "Timezone not cross-checked (Time Zone API unavailable); catalogue zone derived offline."
+    ],
+    "recommendation": "road_supported",
+    "probedAt": "2026-09-30T00:12:42.646Z",
+    "evidenceSource": "scripts/arrive-by-capability-probe.ts (Google Geocoding, Routes computeRoutes DRIVE, Time Zone)",
+    "thresholds": {
+      "maxIdentityDistanceKm": 5,
+      "nameHitThreshold": 0.5
+    }
+  },
+  {
+    "iata": "SYD",
+    "icao": "YSSY",
+    "airportName": "Sydney Kingsford Smith International Airport",
+    "city": "Sydney (Mascot)",
+    "countryCode": "AU",
+    "catalogueLat": -33.9461,
+    "catalogueLng": 151.177,
+    "catalogueTimeZone": "Australia/Sydney",
+    "region": "Oceania",
+    "control": false,
+    "identity": {
+      "ok": true,
+      "matchedAddress": "Sydney Airport (SYD), Mascot NSW 2020, Australia",
+      "distanceKm": 0.62,
+      "candidates": [
+        {
+          "address": "Sydney Airport (SYD), Mascot NSW 2020, Australia",
+          "distanceKm": 0.62,
+          "types": [
+            "airport",
+            "establishment",
+            "point_of_interest"
+          ],
+          "country": "AU",
+          "iataInAddress": true,
+          "nameHitRatio": 0.33
+        }
+      ],
+      "googleStatus": "OK"
+    },
+    "drive": {
+      "destination": "Parramatta, Australia",
+      "outcome": "ETA_ONLY",
+      "destinationConfidence": "CONFIRMED",
+      "resolvedDestination": "Parramatta NSW 2150, Australia",
+      "durationSeconds": 1720,
+      "distanceMeters": 28517
+    },
+    "driveAttempts": [
+      {
+        "destination": "Parramatta, Australia",
+        "outcome": "ETA_ONLY"
+      }
+    ],
+    "policyChecks": [],
+    "timezone": {
+      "catalogue": "Australia/Sydney",
+      "status": "NOT_CHECKED"
+    },
+    "verdict": "PASS",
+    "notes": [
+      "Timezone not cross-checked (Time Zone API unavailable); catalogue zone derived offline."
+    ],
+    "recommendation": "road_supported",
+    "probedAt": "2026-09-30T00:12:42.931Z",
+    "evidenceSource": "scripts/arrive-by-capability-probe.ts (Google Geocoding, Routes computeRoutes DRIVE, Time Zone)",
+    "thresholds": {
+      "maxIdentityDistanceKm": 5,
+      "nameHitThreshold": 0.5
+    }
+  },
+  {
+    "iata": "AKL",
+    "icao": "NZAA",
+    "airportName": "Auckland International Airport",
+    "city": "Auckland",
+    "countryCode": "NZ",
+    "catalogueLat": -37.01199,
+    "catalogueLng": 174.78633,
+    "catalogueTimeZone": "Pacific/Auckland",
+    "region": "Oceania",
+    "control": false,
+    "identity": {
+      "ok": true,
+      "matchedAddress": "Auckland Airport (AKL) Ray Emery Drive, Māngere, Auckland 2022, New Zealand",
+      "distanceKm": 0.34,
+      "candidates": [
+        {
+          "address": "Auckland Airport (AKL) Ray Emery Drive, Māngere, Auckland 2022, New Zealand",
+          "distanceKm": 0.34,
+          "types": [
+            "airport",
+            "establishment",
+            "point_of_interest"
+          ],
+          "country": "NZ",
+          "iataInAddress": true,
+          "nameHitRatio": 1
+        }
+      ],
+      "googleStatus": "OK"
+    },
+    "drive": {
+      "destination": "Hamilton, New Zealand",
+      "outcome": "ETA_ONLY",
+      "destinationConfidence": "CONFIRMED",
+      "resolvedDestination": "Hamilton, New Zealand",
+      "durationSeconds": 4909,
+      "distanceMeters": 111231
+    },
+    "driveAttempts": [
+      {
+        "destination": "Hamilton, New Zealand",
+        "outcome": "ETA_ONLY"
+      }
+    ],
+    "policyChecks": [],
+    "timezone": {
+      "catalogue": "Pacific/Auckland",
+      "status": "NOT_CHECKED"
+    },
+    "verdict": "PASS",
+    "notes": [
+      "Timezone not cross-checked (Time Zone API unavailable); catalogue zone derived offline."
+    ],
+    "recommendation": "road_supported",
+    "probedAt": "2026-09-30T00:12:43.144Z",
+    "evidenceSource": "scripts/arrive-by-capability-probe.ts (Google Geocoding, Routes computeRoutes DRIVE, Time Zone)",
+    "thresholds": {
+      "maxIdentityDistanceKm": 5,
+      "nameHitThreshold": 0.5
+    }
+  },
+  {
+    "iata": "JNB",
+    "icao": "FAOR",
+    "airportName": "O.R. Tambo International Airport",
+    "city": "Johannesburg",
+    "countryCode": "ZA",
+    "catalogueLat": -26.14008,
+    "catalogueLng": 28.2468,
+    "catalogueTimeZone": "Africa/Johannesburg",
+    "region": "Africa",
+    "control": false,
+    "identity": {
+      "ok": true,
+      "matchedAddress": "O.R. Tambo International Airport (JNB), 1 Jones Rd, Kempton Park, Johannesburg, 1632, South Africa",
+      "distanceKm": 0.08,
+      "candidates": [
+        {
+          "address": "O.R. Tambo International Airport (JNB), 1 Jones Rd, Kempton Park, Johannesburg, 1632, South Africa",
+          "distanceKm": 0.08,
+          "types": [
+            "airport",
+            "establishment",
+            "point_of_interest"
+          ],
+          "country": "ZA",
+          "iataInAddress": true,
+          "nameHitRatio": 1
+        }
+      ],
+      "googleStatus": "OK"
+    },
+    "drive": {
+      "destination": "Pretoria, South Africa",
+      "outcome": "ETA_ONLY",
+      "destinationConfidence": "CONFIRMED",
+      "resolvedDestination": "Pretoria, South Africa",
+      "durationSeconds": 2267,
+      "distanceMeters": 47839
+    },
+    "driveAttempts": [
+      {
+        "destination": "Pretoria, South Africa",
+        "outcome": "ETA_ONLY"
+      }
+    ],
+    "policyChecks": [],
+    "timezone": {
+      "catalogue": "Africa/Johannesburg",
+      "status": "NOT_CHECKED"
+    },
+    "verdict": "PASS",
+    "notes": [
+      "Timezone not cross-checked (Time Zone API unavailable); catalogue zone derived offline."
+    ],
+    "recommendation": "road_supported",
+    "probedAt": "2026-09-30T00:12:43.375Z",
+    "evidenceSource": "scripts/arrive-by-capability-probe.ts (Google Geocoding, Routes computeRoutes DRIVE, Time Zone)",
+    "thresholds": {
+      "maxIdentityDistanceKm": 5,
+      "nameHitThreshold": 0.5
+    }
+  },
+  {
+    "iata": "MAN",
+    "icao": "EGCC",
+    "airportName": "Manchester Airport",
+    "city": "Manchester",
+    "countryCode": "GB",
+    "catalogueLat": 53.34938,
+    "catalogueLng": -2.27952,
+    "catalogueTimeZone": "Europe/London",
+    "region": "Control",
+    "control": true,
+    "identity": {
+      "ok": false,
+      "failure": "NOT_AN_AIRPORT",
+      "candidates": [
+        {
+          "address": "Manchester Airport, Manchester M90 3RR, UK",
+          "distanceKm": 1.87,
+          "types": [
+            "bus_station",
+            "establishment",
+            "point_of_interest",
+            "transit_station"
+          ],
+          "country": "GB",
+          "iataInAddress": false,
+          "nameHitRatio": 1,
+          "failure": "NOT_AN_AIRPORT"
+        }
+      ],
+      "googleStatus": "OK"
+    },
+    "drive": {
+      "destination": "Sheffield, UK",
+      "outcome": "ETA_ONLY",
+      "destinationConfidence": "CONFIRMED",
+      "resolvedDestination": "Sheffield, UK",
+      "durationSeconds": 5876,
+      "distanceMeters": 73122
+    },
+    "driveAttempts": [
+      {
+        "destination": "Sheffield, UK",
+        "outcome": "ETA_ONLY"
+      }
+    ],
+    "policyChecks": [],
+    "timezone": {
+      "catalogue": "Europe/London",
+      "status": "NOT_CHECKED"
+    },
+    "verdict": "NEEDS_REVIEW",
+    "failureClass": "airport_identity",
+    "notes": [
+      "Study purpose: control (special profile, transit-first; road probe only)",
+      "Identity: NOT_AN_AIRPORT."
+    ],
+    "recommendation": "none",
+    "probedAt": "2026-09-30T00:12:43.637Z",
+    "evidenceSource": "scripts/arrive-by-capability-probe.ts (Google Geocoding, Routes computeRoutes DRIVE, Time Zone)",
+    "thresholds": {
+      "maxIdentityDistanceKm": 5,
+      "nameHitThreshold": 0.5
+    }
+  },
+  {
+    "iata": "ISB",
+    "icao": "OPIS",
+    "airportName": "Islamabad International Airport",
+    "city": "Attock",
+    "countryCode": "PK",
+    "catalogueLat": 33.549,
+    "catalogueLng": 72.82566,
+    "catalogueTimeZone": "Asia/Karachi",
+    "region": "Control",
+    "control": true,
+    "identity": {
+      "ok": true,
+      "matchedAddress": "Islamabad International Airport, New Islamabad Airport Rd, Islamabad, Pakistan",
+      "distanceKm": 1.14,
+      "candidates": [
+        {
+          "address": "Islamabad International Airport, New Islamabad Airport Rd, Islamabad, Pakistan",
+          "distanceKm": 1.14,
+          "types": [
+            "airport",
+            "establishment",
+            "point_of_interest"
+          ],
+          "country": "PK",
+          "iataInAddress": false,
+          "nameHitRatio": 1
+        }
+      ],
+      "googleStatus": "OK"
+    },
+    "drive": {
+      "destination": "Rawalpindi, Pakistan",
+      "outcome": "ETA_ONLY",
+      "destinationConfidence": "CONFIRMED",
+      "resolvedDestination": "Rawalpindi, Pakistan",
+      "durationSeconds": 2869,
+      "distanceMeters": 31587
+    },
+    "driveAttempts": [
+      {
+        "destination": "Rawalpindi, Pakistan",
+        "outcome": "ETA_ONLY"
+      }
+    ],
+    "policyChecks": [],
+    "timezone": {
+      "catalogue": "Asia/Karachi",
+      "status": "NOT_CHECKED"
+    },
+    "verdict": "PASS",
+    "notes": [
+      "Study purpose: control (special profile)",
+      "Timezone not cross-checked (Time Zone API unavailable); catalogue zone derived offline."
+    ],
+    "recommendation": "none",
+    "probedAt": "2026-09-30T00:12:43.890Z",
+    "evidenceSource": "scripts/arrive-by-capability-probe.ts (Google Geocoding, Routes computeRoutes DRIVE, Time Zone)",
+    "thresholds": {
+      "maxIdentityDistanceKm": 5,
+      "nameHitThreshold": 0.5
+    }
+  },
+  {
+    "iata": "LHE",
+    "icao": "OPLA",
+    "airportName": "Allama Iqbal International Airport",
+    "city": "Lahore",
+    "countryCode": "PK",
+    "catalogueLat": 31.5216,
+    "catalogueLng": 74.4036,
+    "catalogueTimeZone": "Asia/Karachi",
+    "region": "Control",
+    "control": true,
+    "identity": {
+      "ok": true,
+      "matchedAddress": "Allama Iqbal International Airport, Airport Rd, Punjab, Lahore, 54000, Pakistan",
+      "distanceKm": 0.26,
+      "candidates": [
+        {
+          "address": "Allama Iqbal International Airport, Airport Rd, Punjab, Lahore, 54000, Pakistan",
+          "distanceKm": 0.26,
+          "types": [
+            "airport",
+            "establishment",
+            "point_of_interest"
+          ],
+          "country": "PK",
+          "iataInAddress": false,
+          "nameHitRatio": 1
+        }
+      ],
+      "googleStatus": "OK"
+    },
+    "drive": {
+      "destination": "Sheikhupura, Pakistan",
+      "outcome": "ETA_ONLY",
+      "destinationConfidence": "CONFIRMED",
+      "resolvedDestination": "Sheikhupura, Pakistan",
+      "durationSeconds": 3647,
+      "distanceMeters": 66014
+    },
+    "driveAttempts": [
+      {
+        "destination": "Sheikhupura, Pakistan",
+        "outcome": "ETA_ONLY"
+      }
+    ],
+    "policyChecks": [],
+    "timezone": {
+      "catalogue": "Asia/Karachi",
+      "status": "NOT_CHECKED"
+    },
+    "verdict": "PASS",
+    "notes": [
+      "Study purpose: control (special profile)",
+      "Timezone not cross-checked (Time Zone API unavailable); catalogue zone derived offline."
+    ],
+    "recommendation": "none",
+    "probedAt": "2026-09-30T00:12:44.101Z",
+    "evidenceSource": "scripts/arrive-by-capability-probe.ts (Google Geocoding, Routes computeRoutes DRIVE, Time Zone)",
+    "thresholds": {
+      "maxIdentityDistanceKm": 5,
+      "nameHitThreshold": 0.5
+    }
+  },
+  {
+    "iata": "KHI",
+    "icao": "OPKC",
+    "airportName": "Jinnah International Airport",
+    "city": "Karachi",
+    "countryCode": "PK",
+    "catalogueLat": 24.9065,
+    "catalogueLng": 67.1608,
+    "catalogueTimeZone": "Asia/Karachi",
+    "region": "Control",
+    "control": true,
+    "identity": {
+      "ok": true,
+      "matchedAddress": "Jinnah International Airport, Airport Road, Faisal Cantonment, Karachi, Pakistan",
+      "distanceKm": 0.97,
+      "candidates": [
+        {
+          "address": "Jinnah International Airport, Airport Road, Faisal Cantonment, Karachi, Pakistan",
+          "distanceKm": 0.97,
+          "types": [
+            "airport",
+            "establishment",
+            "point_of_interest"
+          ],
+          "country": "PK",
+          "iataInAddress": false,
+          "nameHitRatio": 1
+        }
+      ],
+      "googleStatus": "OK"
+    },
+    "drive": {
+      "destination": "Thatta, Pakistan",
+      "outcome": "ETA_ONLY",
+      "destinationConfidence": "CONFIRMED",
+      "resolvedDestination": "Thatta, Pakistan",
+      "durationSeconds": 6056,
+      "distanceMeters": 86504
+    },
+    "driveAttempts": [
+      {
+        "destination": "Thatta, Pakistan",
+        "outcome": "ETA_ONLY"
+      }
+    ],
+    "policyChecks": [],
+    "timezone": {
+      "catalogue": "Asia/Karachi",
+      "status": "NOT_CHECKED"
+    },
+    "verdict": "PASS",
+    "notes": [
+      "Study purpose: control (special profile)",
+      "Timezone not cross-checked (Time Zone API unavailable); catalogue zone derived offline."
+    ],
+    "recommendation": "none",
+    "probedAt": "2026-09-30T00:12:44.347Z",
+    "evidenceSource": "scripts/arrive-by-capability-probe.ts (Google Geocoding, Routes computeRoutes DRIVE, Time Zone)",
+    "thresholds": {
+      "maxIdentityDistanceKm": 5,
+      "nameHitThreshold": 0.5
+    }
+  },
+  {
+    "iata": "MLE",
+    "icao": "VRMM",
+    "airportName": "Velana International Airport",
+    "city": "Malé",
+    "countryCode": "MV",
+    "catalogueLat": 4.19183,
+    "catalogueLng": 73.5291,
+    "catalogueTimeZone": "Indian/Maldives",
+    "region": "Special",
+    "control": false,
+    "identity": {
+      "ok": true,
+      "matchedAddress": "Velana International Airport (MLE), Airport Main Rd, 22000, Maldives",
+      "distanceKm": 0.39,
+      "candidates": [
+        {
+          "address": "Velana International Airport (MLE), Airport Main Rd, 22000, Maldives",
+          "distanceKm": 0.39,
+          "types": [
+            "airport",
+            "establishment",
+            "point_of_interest"
+          ],
+          "country": "MV",
+          "iataInAddress": true,
+          "nameHitRatio": 1
+        }
+      ],
+      "googleStatus": "OK"
+    },
+    "drive": {
+      "destination": "Male, Maldives",
+      "outcome": "ETA_ONLY",
+      "destinationConfidence": "CONFIRMED",
+      "resolvedDestination": "Malé, Maldives",
+      "durationSeconds": 1007,
+      "distanceMeters": 4977
+    },
+    "driveAttempts": [
+      {
+        "destination": "Male, Maldives",
+        "outcome": "ETA_ONLY"
+      }
+    ],
+    "policyChecks": [],
+    "timezone": {
+      "catalogue": "Indian/Maldives",
+      "status": "NOT_CHECKED"
+    },
+    "verdict": "PASS",
+    "notes": [
+      "Study purpose: island airport",
+      "Timezone not cross-checked (Time Zone API unavailable); catalogue zone derived offline."
+    ],
+    "recommendation": "road_supported",
+    "probedAt": "2026-09-30T00:12:44.629Z",
+    "evidenceSource": "scripts/arrive-by-capability-probe.ts (Google Geocoding, Routes computeRoutes DRIVE, Time Zone)",
+    "thresholds": {
+      "maxIdentityDistanceKm": 5,
+      "nameHitThreshold": 0.5
+    }
+  },
+  {
+    "iata": "HNL",
+    "icao": "PHNL",
+    "airportName": "Daniel K. Inouye International Airport",
+    "city": "Honolulu",
+    "countryCode": "US",
+    "catalogueLat": 21.31839,
+    "catalogueLng": -157.92567,
+    "catalogueTimeZone": "Pacific/Honolulu",
+    "region": "Special",
+    "control": false,
+    "identity": {
+      "ok": true,
+      "matchedAddress": "Daniel K. Inouye International Airport (HNL), 300 Rodgers Blvd, Honolulu, HI 96819, USA",
+      "distanceKm": 0.04,
+      "candidates": [
+        {
+          "address": "Daniel K. Inouye International Airport (HNL), 300 Rodgers Blvd, Honolulu, HI 96819, USA",
+          "distanceKm": 0.04,
+          "types": [
+            "airport",
+            "establishment",
+            "point_of_interest"
+          ],
+          "country": "US",
+          "iataInAddress": true,
+          "nameHitRatio": 1
+        }
+      ],
+      "googleStatus": "OK"
+    },
+    "drive": {
+      "destination": "Kailua, Hawaii, USA",
+      "outcome": "ETA_ONLY",
+      "destinationConfidence": "CONFIRMED",
+      "resolvedDestination": "Kailua, HI, USA",
+      "durationSeconds": 2299,
+      "distanceMeters": 38973
+    },
+    "driveAttempts": [
+      {
+        "destination": "Kailua, Hawaii, USA",
+        "outcome": "ETA_ONLY"
+      }
+    ],
+    "policyChecks": [],
+    "timezone": {
+      "catalogue": "Pacific/Honolulu",
+      "status": "NOT_CHECKED"
+    },
+    "verdict": "PASS",
+    "notes": [
+      "Study purpose: island airport",
+      "Timezone not cross-checked (Time Zone API unavailable); catalogue zone derived offline."
+    ],
+    "recommendation": "road_supported",
+    "probedAt": "2026-09-30T00:12:44.857Z",
+    "evidenceSource": "scripts/arrive-by-capability-probe.ts (Google Geocoding, Routes computeRoutes DRIVE, Time Zone)",
+    "thresholds": {
+      "maxIdentityDistanceKm": 5,
+      "nameHitThreshold": 0.5
+    }
+  },
+  {
+    "iata": "KEF",
+    "icao": "BIKF",
+    "airportName": "Keflavik International Airport",
+    "city": "Reykjavík",
+    "countryCode": "IS",
+    "catalogueLat": 63.985,
+    "catalogueLng": -22.6056,
+    "catalogueTimeZone": "Atlantic/Reykjavik",
+    "region": "Special",
+    "control": false,
+    "identity": {
+      "ok": true,
+      "matchedAddress": "Keflavík International Airport (KEF), 235 Keflavík, Iceland",
+      "distanceKm": 1.17,
+      "candidates": [
+        {
+          "address": "Keflavík International Airport (KEF), 235 Keflavík, Iceland",
+          "distanceKm": 1.17,
+          "types": [
+            "airport",
+            "establishment",
+            "point_of_interest"
+          ],
+          "country": "IS",
+          "iataInAddress": true,
+          "nameHitRatio": 1
+        }
+      ],
+      "googleStatus": "OK"
+    },
+    "drive": {
+      "destination": "Grindavik, Iceland",
+      "outcome": "ETA_ONLY",
+      "destinationConfidence": "CONFIRMED",
+      "resolvedDestination": "240 Grindavik, Iceland",
+      "durationSeconds": 1544,
+      "distanceMeters": 27057
+    },
+    "driveAttempts": [
+      {
+        "destination": "Reykjavik, Iceland",
+        "outcome": "DESTINATION_NEEDS_CLARIFICATION",
+        "clarificationReason": "PRIMARY_PLACE_MISMATCH"
+      },
+      {
+        "destination": "Grindavik, Iceland",
+        "outcome": "ETA_ONLY"
+      }
+    ],
+    "policyChecks": [],
+    "timezone": {
+      "catalogue": "Atlantic/Reykjavik",
+      "status": "NOT_CHECKED"
+    },
+    "verdict": "PASS",
+    "notes": [
+      "Study purpose: remote / island, long transfer",
+      "Primary destination \"Reykjavik, Iceland\" did not resolve confidently (DESTINATION_NEEDS_CLARIFICATION / PRIMARY_PLACE_MISMATCH); airport judged on \"Grindavik, Iceland\". That is a destination-resolution finding, not an airport failure.",
+      "Timezone not cross-checked (Time Zone API unavailable); catalogue zone derived offline."
+    ],
+    "recommendation": "road_supported",
+    "probedAt": "2026-09-30T00:12:45.066Z",
+    "evidenceSource": "scripts/arrive-by-capability-probe.ts (Google Geocoding, Routes computeRoutes DRIVE, Time Zone)",
+    "thresholds": {
+      "maxIdentityDistanceKm": 5,
+      "nameHitThreshold": 0.5
+    }
+  },
+  {
+    "iata": "LYR",
+    "icao": "ENSB",
+    "airportName": "Svalbard Airport, Longyear",
+    "city": "Longyearbyen",
+    "countryCode": "NO",
+    "catalogueLat": 78.2461,
+    "catalogueLng": 15.4656,
+    "catalogueTimeZone": "Arctic/Longyearbyen",
+    "region": "Special",
+    "control": false,
+    "identity": {
+      "ok": false,
+      "failure": "NOT_AN_AIRPORT",
+      "candidates": [
+        {
+          "address": "Norway",
+          "distanceKm": 1991.93,
+          "types": [
+            "country",
+            "political"
+          ],
+          "country": "NO",
+          "iataInAddress": false,
+          "nameHitRatio": 0,
+          "failure": "NOT_AN_AIRPORT"
+        }
+      ],
+      "googleStatus": "OK",
+      "unrestrictedCountryMismatch": {
+        "googleCountry": "SJ",
+        "address": "Svalbard Airport, SJ, Longyearbyen 9170, Svalbard and Jan Mayen",
+        "distanceKm": 0.63
+      }
+    },
+    "drive": {
+      "destination": "Longyearbyen, Svalbard",
+      "outcome": "DESTINATION_NEEDS_CLARIFICATION",
+      "destinationConfidence": "NEEDS_CLARIFICATION",
+      "resolvedDestination": "Longyearbyen 9170, Svalbard and Jan Mayen",
+      "clarificationReason": "WRONG_COUNTRY"
+    },
+    "driveAttempts": [
+      {
+        "destination": "Longyearbyen, Svalbard",
+        "outcome": "DESTINATION_NEEDS_CLARIFICATION",
+        "clarificationReason": "WRONG_COUNTRY"
+      }
+    ],
+    "policyChecks": [],
+    "timezone": {
+      "catalogue": "Arctic/Longyearbyen",
+      "status": "NOT_CHECKED"
+    },
+    "verdict": "NEEDS_REVIEW",
+    "failureClass": "catalogue_data",
+    "notes": [
+      "Study purpose: remote airport",
+      "Primary drive probe did not produce a route (DESTINATION_NEEDS_CLARIFICATION).",
+      "Google places this airport in a different country than the catalogue does."
+    ],
+    "recommendation": "none",
+    "probedAt": "2026-09-30T00:12:45.433Z",
+    "evidenceSource": "scripts/arrive-by-capability-probe.ts (Google Geocoding, Routes computeRoutes DRIVE, Time Zone)",
+    "thresholds": {
+      "maxIdentityDistanceKm": 5,
+      "nameHitThreshold": 0.5
+    }
+  },
+  {
+    "iata": "ASP",
+    "icao": "YBAS",
+    "airportName": "Alice Springs Airport",
+    "city": "Alice Springs",
+    "countryCode": "AU",
+    "catalogueLat": -23.80659,
+    "catalogueLng": 133.90343,
+    "catalogueTimeZone": "Australia/Darwin",
+    "region": "Special",
+    "control": false,
+    "identity": {
+      "ok": true,
+      "matchedAddress": "Alice Springs Airport, Santa Teresa, Road, Alice Springs NT 0871, Australia",
+      "distanceKm": 0.53,
+      "candidates": [
+        {
+          "address": "Alice Springs Airport, Santa Teresa, Road, Alice Springs NT 0871, Australia",
+          "distanceKm": 0.53,
+          "types": [
+            "airport",
+            "establishment",
+            "point_of_interest"
+          ],
+          "country": "AU",
+          "iataInAddress": false,
+          "nameHitRatio": 1
+        }
+      ],
+      "googleStatus": "OK"
+    },
+    "drive": {
+      "destination": "Alice Springs, Australia",
+      "outcome": "ETA_ONLY",
+      "destinationConfidence": "CONFIRMED",
+      "resolvedDestination": "Alice Springs NT 0870, Australia",
+      "durationSeconds": 1342,
+      "distanceMeters": 16831
+    },
+    "driveAttempts": [
+      {
+        "destination": "Alice Springs, Australia",
+        "outcome": "ETA_ONLY"
+      }
+    ],
+    "policyChecks": [],
+    "timezone": {
+      "catalogue": "Australia/Darwin",
+      "status": "NOT_CHECKED"
+    },
+    "verdict": "PASS",
+    "notes": [
+      "Study purpose: remote airport",
+      "Timezone not cross-checked (Time Zone API unavailable); catalogue zone derived offline."
+    ],
+    "recommendation": "road_supported",
+    "probedAt": "2026-09-30T00:12:45.648Z",
+    "evidenceSource": "scripts/arrive-by-capability-probe.ts (Google Geocoding, Routes computeRoutes DRIVE, Time Zone)",
+    "thresholds": {
+      "maxIdentityDistanceKm": 5,
+      "nameHitThreshold": 0.5
+    }
+  },
+  {
+    "iata": "IAD",
+    "icao": "KIAD",
+    "airportName": "Washington Dulles International Airport",
+    "city": "Dulles",
+    "countryCode": "US",
+    "catalogueLat": 38.9445,
+    "catalogueLng": -77.4558,
+    "catalogueTimeZone": "America/New_York",
+    "region": "Special",
+    "control": false,
+    "identity": {
+      "ok": true,
+      "matchedAddress": "Dulles International Airport (IAD), 1 Saarinen Cir, Dulles, VA 20166, USA",
+      "distanceKm": 0.88,
+      "candidates": [
+        {
+          "address": "Dulles International Airport (IAD), 1 Saarinen Cir, Dulles, VA 20166, USA",
+          "distanceKm": 0.88,
+          "types": [
+            "airport",
+            "establishment",
+            "point_of_interest"
+          ],
+          "country": "US",
+          "iataInAddress": true,
+          "nameHitRatio": 0.5
+        }
+      ],
+      "googleStatus": "OK"
+    },
+    "drive": {
+      "destination": "Reston, Virginia, USA",
+      "outcome": "ETA_ONLY",
+      "destinationConfidence": "CONFIRMED",
+      "resolvedDestination": "Reston, VA, USA",
+      "durationSeconds": 1775,
+      "distanceMeters": 22217
+    },
+    "driveAttempts": [
+      {
+        "destination": "Reston, Virginia, USA",
+        "outcome": "ETA_ONLY"
+      }
+    ],
+    "policyChecks": [],
+    "timezone": {
+      "catalogue": "America/New_York",
+      "status": "NOT_CHECKED"
+    },
+    "verdict": "PASS",
+    "notes": [
+      "Study purpose: similarly named airport pair (Washington Dulles vs Reagan)",
+      "Timezone not cross-checked (Time Zone API unavailable); catalogue zone derived offline."
+    ],
+    "recommendation": "road_supported",
+    "probedAt": "2026-09-30T00:12:45.875Z",
+    "evidenceSource": "scripts/arrive-by-capability-probe.ts (Google Geocoding, Routes computeRoutes DRIVE, Time Zone)",
+    "thresholds": {
+      "maxIdentityDistanceKm": 5,
+      "nameHitThreshold": 0.5
+    }
+  },
+  {
+    "iata": "DCA",
+    "icao": "KDCA",
+    "airportName": "Ronald Reagan Washington National Airport",
+    "city": "Washington",
+    "countryCode": "US",
+    "catalogueLat": 38.8521,
+    "catalogueLng": -77.0377,
+    "catalogueTimeZone": "America/New_York",
+    "region": "Special",
+    "control": false,
+    "identity": {
+      "ok": true,
+      "matchedAddress": "Ronald Reagan Washington National Airport (DCA), 2401 Smith Blvd, Arlington, VA 22202, USA",
+      "distanceKm": 0.26,
+      "candidates": [
+        {
+          "address": "Ronald Reagan Washington National Airport (DCA), 2401 Smith Blvd, Arlington, VA 22202, USA",
+          "distanceKm": 0.26,
+          "types": [
+            "airport",
+            "establishment",
+            "point_of_interest"
+          ],
+          "country": "US",
+          "iataInAddress": true,
+          "nameHitRatio": 1
+        }
+      ],
+      "googleStatus": "OK"
+    },
+    "drive": {
+      "destination": "Alexandria, Virginia, USA",
+      "outcome": "ETA_ONLY",
+      "destinationConfidence": "CONFIRMED",
+      "resolvedDestination": "Alexandria, VA, USA",
+      "durationSeconds": 863,
+      "distanceMeters": 7509
+    },
+    "driveAttempts": [
+      {
+        "destination": "Alexandria, Virginia, USA",
+        "outcome": "ETA_ONLY"
+      }
+    ],
+    "policyChecks": [],
+    "timezone": {
+      "catalogue": "America/New_York",
+      "status": "NOT_CHECKED"
+    },
+    "verdict": "PASS",
+    "notes": [
+      "Study purpose: similarly named airport pair (Washington Dulles vs Reagan)",
+      "Timezone not cross-checked (Time Zone API unavailable); catalogue zone derived offline."
+    ],
+    "recommendation": "road_supported",
+    "probedAt": "2026-09-30T00:12:46.128Z",
+    "evidenceSource": "scripts/arrive-by-capability-probe.ts (Google Geocoding, Routes computeRoutes DRIVE, Time Zone)",
+    "thresholds": {
+      "maxIdentityDistanceKm": 5,
+      "nameHitThreshold": 0.5
+    }
+  },
+  {
+    "iata": "ORY",
+    "icao": "LFPO",
+    "airportName": "Paris-Orly Airport",
+    "city": "Paris (Orly",
+    "countryCode": "FR",
+    "catalogueLat": 48.7295,
+    "catalogueLng": 2.35896,
+    "catalogueTimeZone": "Europe/Paris",
+    "region": "Special",
+    "control": false,
+    "identity": {
+      "ok": true,
+      "matchedAddress": "Paris Orly Airport (ORY), 94390 Orly, France",
+      "distanceKm": 1.05,
+      "candidates": [
+        {
+          "address": "Paris Orly Airport (ORY), 94390 Orly, France",
+          "distanceKm": 1.05,
+          "types": [
+            "airport",
+            "establishment",
+            "point_of_interest"
+          ],
+          "country": "FR",
+          "iataInAddress": true,
+          "nameHitRatio": 1
+        }
+      ],
+      "googleStatus": "OK"
+    },
+    "drive": {
+      "destination": "Versailles, France",
+      "outcome": "ETA_ONLY",
+      "destinationConfidence": "CONFIRMED",
+      "resolvedDestination": "78000 Versailles, France",
+      "durationSeconds": 2170,
+      "distanceMeters": 25264
+    },
+    "driveAttempts": [
+      {
+        "destination": "Versailles, France",
+        "outcome": "ETA_ONLY"
+      }
+    ],
+    "policyChecks": [],
+    "timezone": {
+      "catalogue": "Europe/Paris",
+      "status": "NOT_CHECKED"
+    },
+    "verdict": "PASS",
+    "notes": [
+      "Study purpose: second airport serving one city (Paris)",
+      "Timezone not cross-checked (Time Zone API unavailable); catalogue zone derived offline."
+    ],
+    "recommendation": "road_supported",
+    "probedAt": "2026-09-30T00:12:46.357Z",
+    "evidenceSource": "scripts/arrive-by-capability-probe.ts (Google Geocoding, Routes computeRoutes DRIVE, Time Zone)",
+    "thresholds": {
+      "maxIdentityDistanceKm": 5,
+      "nameHitThreshold": 0.5
+    }
+  },
+  {
+    "iata": "TIJ",
+    "icao": "MMTJ",
+    "airportName": "General Abelardo L. Rodriguez International Airport",
+    "city": "Tijuana",
+    "countryCode": "MX",
+    "catalogueLat": 32.54104,
+    "catalogueLng": -116.96998,
+    "catalogueTimeZone": "America/Tijuana",
+    "region": "Special",
+    "control": false,
+    "identity": {
+      "ok": true,
+      "matchedAddress": "Tijuana International Airport (TIJ), Aeropuerto S/N, Nueva Tijuana, 22435 Tijuana, B.C., Mexico",
+      "distanceKm": 0.09,
+      "candidates": [
+        {
+          "address": "Tijuana International Airport (TIJ), Aeropuerto S/N, Nueva Tijuana, 22435 Tijuana, B.C., Mexico",
+          "distanceKm": 0.09,
+          "types": [
+            "airport",
+            "establishment",
+            "point_of_interest"
+          ],
+          "country": "MX",
+          "iataInAddress": true,
+          "nameHitRatio": 0
+        }
+      ],
+      "googleStatus": "OK"
+    },
+    "drive": {
+      "destination": "Tijuana, Mexico",
+      "outcome": "ETA_ONLY",
+      "destinationConfidence": "CONFIRMED",
+      "resolvedDestination": "Tijuana, Baja California, Mexico",
+      "durationSeconds": 1129,
+      "distanceMeters": 6712
+    },
+    "driveAttempts": [
+      {
+        "destination": "Tijuana, Mexico",
+        "outcome": "ETA_ONLY"
+      }
+    ],
+    "policyChecks": [
+      {
+        "destination": "San Diego, California, USA",
+        "expected": "REFUSE_WRONG_COUNTRY",
+        "outcome": "DESTINATION_NEEDS_CLARIFICATION",
+        "clarificationReason": "WRONG_COUNTRY",
+        "matchedExpectation": true
+      }
+    ],
+    "timezone": {
+      "catalogue": "America/Tijuana",
+      "status": "NOT_CHECKED"
+    },
+    "verdict": "PASS",
+    "notes": [
+      "Study purpose: cross-border (US terminal)",
+      "Timezone not cross-checked (Time Zone API unavailable); catalogue zone derived offline."
+    ],
+    "recommendation": "road_supported",
+    "probedAt": "2026-09-30T00:12:46.581Z",
+    "evidenceSource": "scripts/arrive-by-capability-probe.ts (Google Geocoding, Routes computeRoutes DRIVE, Time Zone)",
+    "thresholds": {
+      "maxIdentityDistanceKm": 5,
+      "nameHitThreshold": 0.5
+    }
+  },
+  {
+    "iata": "YLL",
+    "icao": "CYLL",
+    "airportName": "Lloydminster Airport",
+    "city": "Lloydminster",
+    "countryCode": "CA",
+    "catalogueLat": 53.3092,
+    "catalogueLng": -110.073,
+    "catalogueTimeZone": "America/Edmonton",
+    "region": "Special",
+    "control": false,
+    "identity": {
+      "ok": true,
+      "matchedAddress": "Lloydminster Municipal Airport, 8301 75 Street NW, Lloydminster, AB T9V 0W2, Canada",
+      "distanceKm": 0.34,
+      "candidates": [
+        {
+          "address": "Lloydminster Municipal Airport, 8301 75 Street NW, Lloydminster, AB T9V 0W2, Canada",
+          "distanceKm": 0.34,
+          "types": [
+            "airport",
+            "establishment",
+            "point_of_interest"
+          ],
+          "country": "CA",
+          "iataInAddress": false,
+          "nameHitRatio": 1
+        }
+      ],
+      "googleStatus": "OK"
+    },
+    "drive": {
+      "destination": "Lloydminster, Alberta, Canada",
+      "outcome": "ETA_ONLY",
+      "destinationConfidence": "CONFIRMED",
+      "resolvedDestination": "Lloydminster, AB, Canada",
+      "durationSeconds": 584,
+      "distanceMeters": 7682
+    },
+    "driveAttempts": [
+      {
+        "destination": "Lloydminster, Alberta, Canada",
+        "outcome": "ETA_ONLY"
+      }
+    ],
+    "policyChecks": [],
+    "timezone": {
+      "catalogue": "America/Edmonton",
+      "status": "NOT_CHECKED"
+    },
+    "verdict": "PASS",
+    "notes": [
+      "Study purpose: timezone-boundary town (Alberta / Saskatchewan)",
+      "Timezone not cross-checked (Time Zone API unavailable); catalogue zone derived offline."
+    ],
+    "recommendation": "road_supported",
+    "probedAt": "2026-09-30T00:12:46.850Z",
+    "evidenceSource": "scripts/arrive-by-capability-probe.ts (Google Geocoding, Routes computeRoutes DRIVE, Time Zone)",
+    "thresholds": {
+      "maxIdentityDistanceKm": 5,
+      "nameHitThreshold": 0.5
+    }
+  },
+  {
+    "iata": "IKO",
+    "icao": "PAKO",
+    "airportName": "Nikolski Air Station",
+    "city": "Nikolski",
+    "countryCode": "US",
+    "catalogueLat": 52.94155,
+    "catalogueLng": -168.84948,
+    "catalogueTimeZone": "America/Adak",
+    "region": "Special",
+    "control": false,
+    "identity": {
+      "ok": true,
+      "matchedAddress": "Nikolski Air Station, Nikolski, AK 99638, USA",
+      "distanceKm": 0.1,
+      "candidates": [
+        {
+          "address": "Nikolski Air Station, Nikolski, AK 99638, USA",
+          "distanceKm": 0.1,
+          "types": [
+            "airport",
+            "establishment",
+            "point_of_interest"
+          ],
+          "country": "US",
+          "iataInAddress": false,
+          "nameHitRatio": 1
+        }
+      ],
+      "googleStatus": "OK"
+    },
+    "drive": {
+      "destination": "Nikolski, Alaska, USA",
+      "outcome": "ETA_ONLY",
+      "destinationConfidence": "CONFIRMED",
+      "resolvedDestination": "Nikolski, AK, USA",
+      "durationSeconds": 70,
+      "distanceMeters": 436
+    },
+    "driveAttempts": [
+      {
+        "destination": "Nikolski, Alaska, USA",
+        "outcome": "ETA_ONLY"
+      }
+    ],
+    "policyChecks": [],
+    "timezone": {
+      "catalogue": "America/Adak",
+      "status": "NOT_CHECKED"
+    },
+    "verdict": "PASS",
+    "notes": [
+      "Study purpose: catalogue decision: name reads military, has scheduled service",
+      "Timezone not cross-checked (Time Zone API unavailable); catalogue zone derived offline."
+    ],
+    "recommendation": "road_supported",
+    "probedAt": "2026-09-30T00:12:47.098Z",
+    "evidenceSource": "scripts/arrive-by-capability-probe.ts (Google Geocoding, Routes computeRoutes DRIVE, Time Zone)",
+    "thresholds": {
+      "maxIdentityDistanceKm": 5,
+      "nameHitThreshold": 0.5
+    }
+  },
+  {
+    "iata": "BEK",
+    "icao": "VIBY",
+    "airportName": "Bareilly Air Force Station",
+    "city": "Bareilly",
+    "countryCode": "IN",
+    "catalogueLat": 28.4221,
+    "catalogueLng": 79.4508,
+    "catalogueTimeZone": "Asia/Kolkata",
+    "region": "Special",
+    "control": false,
+    "identity": {
+      "ok": false,
+      "failure": "NOT_AN_AIRPORT",
+      "candidates": [
+        {
+          "address": "Bareilly, Uttar Pradesh, India",
+          "distanceKm": 6.44,
+          "types": [
+            "locality",
+            "political"
+          ],
+          "country": "IN",
+          "iataInAddress": false,
+          "nameHitRatio": 0.33,
+          "failure": "NOT_AN_AIRPORT"
+        }
+      ],
+      "googleStatus": "OK"
+    },
+    "drive": {
+      "destination": "Bareilly, India",
+      "outcome": "ETA_ONLY",
+      "destinationConfidence": "CONFIRMED",
+      "resolvedDestination": "Bareilly, Uttar Pradesh, India",
+      "durationSeconds": 1883,
+      "distanceMeters": 14699
+    },
+    "driveAttempts": [
+      {
+        "destination": "Bareilly, India",
+        "outcome": "ETA_ONLY"
+      }
+    ],
+    "policyChecks": [],
+    "timezone": {
+      "catalogue": "Asia/Kolkata",
+      "status": "NOT_CHECKED"
+    },
+    "verdict": "FAIL",
+    "failureClass": "airport_identity",
+    "notes": [
+      "Study purpose: catalogue decision: name reads military, civil enclave",
+      "Identity: NOT_AN_AIRPORT."
+    ],
+    "recommendation": "none",
+    "probedAt": "2026-09-30T00:12:47.341Z",
+    "evidenceSource": "scripts/arrive-by-capability-probe.ts (Google Geocoding, Routes computeRoutes DRIVE, Time Zone)",
+    "thresholds": {
+      "maxIdentityDistanceKm": 5,
+      "nameHitThreshold": 0.5
+    }
+  }
+]

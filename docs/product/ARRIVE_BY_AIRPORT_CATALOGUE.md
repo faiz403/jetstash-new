@@ -65,3 +65,7 @@ For Phase D, when the selector must search all airports, use a server search end
 - UI: `components/arrive-by-road-public.tsx`, reached only for a server-verified `road_supported` airport; labelled "Airport-level estimate".
 
 Before worldwide **public** rollout: add a user-accessible third-party data notice (OurAirports, tz-lookup, timezone-boundary-builder / ODbL) and revisit the in-memory rate limiter (distributed store / hard spend protection) before any indexing or promotion.
+
+## Phase C: capability is not release
+
+Two separate gates. **Capability** (`airport-capability.ts`, evidence in `catalogue/capability-evidence.json`, written only by the operator probe) says whether Arrive By can safely calculate an airport. **Release** (`airport-release.ts`, `ARRIVE_BY_RELEASED_AIRPORTS`, empty) says whether users may use it. A generic airport is publicly journey-eligible only when both hold; `temporarily_unsupported` beats any release; the four explicit profiles are unaffected. The dev-only `ARRIVE_BY_INTERNAL_QA=1` switch is honoured only under `next dev`. Results and the recommended Phase D rule: `ARRIVE_BY_PHASE_C_CAPABILITY_REPORT.md`.
