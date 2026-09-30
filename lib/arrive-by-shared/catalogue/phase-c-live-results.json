@@ -858,27 +858,17 @@
       "googleStatus": "OK"
     },
     "drive": {
-      "destination": "Campinas, Brazil",
-      "outcome": "DESTINATION_NEEDS_CLARIFICATION",
-      "destinationConfidence": "NEEDS_CLARIFICATION",
-      "resolvedDestination": "Campinas - São Paulo, Brazil",
-      "clarificationReason": "TOO_BROAD_TYPE"
+      "destination": "Sao Paulo, Brazil",
+      "outcome": "ETA_ONLY",
+      "destinationConfidence": "CONFIRMED",
+      "resolvedDestination": "São Paulo, Brazil",
+      "durationSeconds": 3135,
+      "distanceMeters": 26055
     },
     "driveAttempts": [
       {
-        "destination": "Campinas, Brazil",
-        "outcome": "DESTINATION_NEEDS_CLARIFICATION",
-        "clarificationReason": "TOO_BROAD_TYPE"
-      },
-      {
-        "destination": "Sao Jose dos Campos, Brazil",
-        "outcome": "DESTINATION_NEEDS_CLARIFICATION",
-        "clarificationReason": "PRIMARY_PLACE_MISMATCH"
-      },
-      {
-        "destination": "Santos, Brazil",
-        "outcome": "DESTINATION_NEEDS_CLARIFICATION",
-        "clarificationReason": "TOO_BROAD_TYPE"
+        "destination": "Sao Paulo, Brazil",
+        "outcome": "ETA_ONLY"
       }
     ],
     "policyChecks": [],
@@ -886,13 +876,12 @@
       "catalogue": "America/Sao_Paulo",
       "status": "NOT_CHECKED"
     },
-    "verdict": "NEEDS_REVIEW",
-    "failureClass": "destination_resolution",
+    "verdict": "PASS",
     "notes": [
-      "Primary drive probe did not produce a route (DESTINATION_NEEDS_CLARIFICATION)."
+      "Timezone not cross-checked (Time Zone API unavailable); catalogue zone derived offline."
     ],
-    "recommendation": "route_testable",
-    "probedAt": "2026-09-30T00:12:39.850Z",
+    "recommendation": "road_supported",
+    "probedAt": "2026-09-30T01:44:07.481Z",
     "evidenceSource": "scripts/arrive-by-capability-probe.ts (Google Geocoding, Routes computeRoutes DRIVE, Time Zone)",
     "thresholds": {
       "maxIdentityDistanceKm": 5,
@@ -1306,25 +1295,16 @@
     },
     "drive": {
       "destination": "Jurong East, Singapore",
-      "outcome": "DESTINATION_NEEDS_CLARIFICATION",
-      "destinationConfidence": "NEEDS_CLARIFICATION",
+      "outcome": "ETA_ONLY",
+      "destinationConfidence": "CONFIRMED",
       "resolvedDestination": "Jurong East, Singapore",
-      "clarificationReason": "PRIMARY_PLACE_MISMATCH"
+      "durationSeconds": 2889,
+      "distanceMeters": 41276
     },
     "driveAttempts": [
       {
         "destination": "Jurong East, Singapore",
-        "outcome": "DESTINATION_NEEDS_CLARIFICATION",
-        "clarificationReason": "PRIMARY_PLACE_MISMATCH"
-      },
-      {
-        "destination": "Orchard Road, Singapore",
-        "outcome": "DESTINATION_NEEDS_CLARIFICATION",
-        "clarificationReason": "PRIMARY_PLACE_MISMATCH"
-      },
-      {
-        "destination": "Sentosa, Singapore",
-        "outcome": "DESTINATION_NEEDS_CONFIRMATION"
+        "outcome": "ETA_ONLY"
       }
     ],
     "policyChecks": [
@@ -1340,14 +1320,13 @@
       "catalogue": "Asia/Singapore",
       "status": "NOT_CHECKED"
     },
-    "verdict": "NEEDS_REVIEW",
-    "failureClass": "destination_resolution",
+    "verdict": "PASS",
     "notes": [
       "Study purpose: city-state next to a border",
-      "Primary drive probe did not produce a route (DESTINATION_NEEDS_CLARIFICATION)."
+      "Timezone not cross-checked (Time Zone API unavailable); catalogue zone derived offline."
     ],
-    "recommendation": "route_testable",
-    "probedAt": "2026-09-30T00:12:41.709Z",
+    "recommendation": "road_supported",
+    "probedAt": "2026-09-30T01:44:08.104Z",
     "evidenceSource": "scripts/arrive-by-capability-probe.ts (Google Geocoding, Routes computeRoutes DRIVE, Time Zone)",
     "thresholds": {
       "maxIdentityDistanceKm": 5,
@@ -2147,21 +2126,16 @@
       "googleStatus": "OK"
     },
     "drive": {
-      "destination": "Grindavik, Iceland",
+      "destination": "Reykjavik, Iceland",
       "outcome": "ETA_ONLY",
       "destinationConfidence": "CONFIRMED",
-      "resolvedDestination": "240 Grindavik, Iceland",
-      "durationSeconds": 1544,
-      "distanceMeters": 27057
+      "resolvedDestination": "Reykjavík, Iceland",
+      "durationSeconds": 3010,
+      "distanceMeters": 51713
     },
     "driveAttempts": [
       {
         "destination": "Reykjavik, Iceland",
-        "outcome": "DESTINATION_NEEDS_CLARIFICATION",
-        "clarificationReason": "PRIMARY_PLACE_MISMATCH"
-      },
-      {
-        "destination": "Grindavik, Iceland",
         "outcome": "ETA_ONLY"
       }
     ],
@@ -2173,11 +2147,10 @@
     "verdict": "PASS",
     "notes": [
       "Study purpose: remote / island, long transfer",
-      "Primary destination \"Reykjavik, Iceland\" did not resolve confidently (DESTINATION_NEEDS_CLARIFICATION / PRIMARY_PLACE_MISMATCH); airport judged on \"Grindavik, Iceland\". That is a destination-resolution finding, not an airport failure.",
       "Timezone not cross-checked (Time Zone API unavailable); catalogue zone derived offline."
     ],
     "recommendation": "road_supported",
-    "probedAt": "2026-09-30T00:12:45.066Z",
+    "probedAt": "2026-09-30T01:44:08.401Z",
     "evidenceSource": "scripts/arrive-by-capability-probe.ts (Google Geocoding, Routes computeRoutes DRIVE, Time Zone)",
     "thresholds": {
       "maxIdentityDistanceKm": 5,
@@ -2246,7 +2219,7 @@
       "Google places this airport in a different country than the catalogue does."
     ],
     "recommendation": "none",
-    "probedAt": "2026-09-30T00:12:45.433Z",
+    "probedAt": "2026-09-30T01:44:08.628Z",
     "evidenceSource": "scripts/arrive-by-capability-probe.ts (Google Geocoding, Routes computeRoutes DRIVE, Time Zone)",
     "thresholds": {
       "maxIdentityDistanceKm": 5,

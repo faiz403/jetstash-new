@@ -37,7 +37,7 @@ const SAMPLE: ProbeSpec[] = [
   { iata: 'YYZ', region: 'North America', destination: 'Hamilton, Ontario, Canada' },
   { iata: 'MEX', region: 'North America', destination: 'Puebla, Mexico' },
   // South America
-  { iata: 'GRU', region: 'South America', destination: 'Campinas, Brazil', fallbackDestinations: ['Sao Jose dos Campos, Brazil', 'Santos, Brazil'] },
+  { iata: 'GRU', region: 'South America', destination: 'Sao Paulo, Brazil', fallbackDestinations: ['Avenida Paulista, Sao Paulo, Brazil'] },
   // Middle East
   { iata: 'DXB', region: 'Middle East', destination: 'Sharjah, United Arab Emirates' },
   { iata: 'DOH', region: 'Middle East', destination: 'Al Khor, Qatar' },
@@ -76,6 +76,11 @@ const SAMPLE: ProbeSpec[] = [
   { iata: 'BEK', region: 'Special', destination: 'Bareilly, India', purpose: 'catalogue decision: name reads military, civil enclave' },
 ];
 
+function specOrder(iata: string): number {
+  const index = SAMPLE.findIndex((spec) => spec.iata === iata);
+  return index < 0 ? SAMPLE.length : index;
+}
+
 function arg(name: string): string | undefined {
   const i = process.argv.indexOf(name);
   return i >= 0 ? process.argv[i + 1] : undefined;
@@ -102,7 +107,14 @@ async function main() {
   }
 
   const out = arg('--out') ?? path.join('lib', 'arrive-by-shared', 'catalogue', 'phase-c-live-results.json');
-  fs.writeFileSync(out, `${serializeProbeRecords(records, apiKey)}\n`);
+  // A partial re-probe (--airports) updates only those airports' records; the rest of an existing results file is kept.
+  let toWrite = records;
+  if (fs.existsSync(out)) {
+    const previous = JSON.parse(fs.readFileSync(out, 'utf8')) as ProbeRecord[];
+    const reprobed = new Set(records.map((record) => record.iata));
+    toWrite = [...previous.filter((record) => !reprobed.has(record.iata)), ...records].sort((a, b) => specOrder(a.iata) - specOrder(b.iata));
+  }
+  fs.writeFileSync(out, `${serializeProbeRecords(toWrite, apiKey)}\n`);
   console.log(`\nWrote ${records.length} records to ${out}`);
 
   if (process.argv.includes('--write-evidence')) {

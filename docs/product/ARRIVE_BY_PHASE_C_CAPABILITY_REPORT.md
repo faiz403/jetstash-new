@@ -84,3 +84,24 @@ These fail closed (no wrong journey was ever shown), but a traveller landing at 
 ## Recommended Phase D public-rollout rule
 
 Release airports one at a time, as a small named cohort that grows — never "everything with evidence". An airport gets an entry in `ARRIVE_BY_RELEASED_AIRPORTS` (dated, with an approval note) only when: (1) `road_supported` evidence exists and has been re-probed recently; (2) the shared destination-resolution fixes above are in and regression-tested for that airport's country; (3) its destination policy has been explicitly decided against how travellers really use it; (4) the user-facing data-attribution notice is live; (5) the rate-limiter decision has been made for the expected traffic.
+
+## Addendum (30 Sep 2026): resolver hardening integrated, GRU / SIN / KEF re-probed
+
+Codex commit `11a8dea` ("harden global destination resolution": diacritic-insensitive place matching; a street-level component prevents a broad admin type from vetoing a real address; `route`/`neighborhood` count as primary-place components) was cherry-picked cleanly onto the worldwide branch as `668dc16`.
+
+Live re-probe (same operator tool, same secure local key):
+
+| Airport | Before | After | Notes |
+| --- | --- | --- | --- |
+| GRU | NEEDS_REVIEW (every destination refused) | **PASS** → `road_supported` | "Sao Paulo", "Avenida Paulista", "Rua Augusta 1500" resolve; the Museu de Arte venue now asks for confirmation (correct) |
+| SIN | NEEDS_REVIEW | **PASS** → `road_supported` | "Jurong East", "1 Orchard Road", "Orchard Road" resolve; "Marina Bay Sands" asks for confirmation; bare "Singapore" stays refused (country-level) |
+| KEF | PASS on fallback only | **PASS on the primary destination** | "Reykjavik" and "Reykjavík" both resolve |
+| LYR | NEEDS_REVIEW (`catalogue_data`) | unchanged | see below |
+
+Residual: a city that Google types only as `administrative_area_level_2` with no street component (e.g. "Campinas, Brazil") is still refused as too broad. That is the fail-closed rule working as designed, but it means some Brazilian *city-name* destinations still ask the traveller to be more specific.
+
+Fail-closed behaviour confirmed live: wrong country (Paris from a GB gate, Amritsar from a PK gate), country-only ("Brazil", "Pakistan", "England"), administrative-only ("Sao Paulo State", "Punjab, Pakistan", "Lahore District", "South Yorkshire"), a forged `confirmedPlaceId` (stays at confirmation), a forged `selectedPlaceId` (stays at selection), ambiguous venues ("Nishat Hotel Lahore" → 2 candidates) and multiple POIs ("Premier Inn Slough" → 3 candidates). Controls: Mirpur, Dadyal, Chakswari confirmed; Aga Khan University Hospital asks for confirmation; Sujawal still needs clarification (unchanged); Sheffield Botanical Gardens asks for confirmation.
+
+**LYR — exact chain.** Catalogue: `countryCode = NO`. Google: Svalbard Airport is in country `SJ` (Svalbard and Jan Mayen). (1) Identity: the country-restricted lookup (`components=country:NO`) returns only the country-level "Norway" result → `NOT_AN_AIRPORT`; the unrestricted lookup finds the airport at 0.63 km with country `SJ` → probe classes it `catalogue_data`. (2) Destination resolver: the airport's generic policy is `SAME_COUNTRY = ['NO']`, and "Longyearbyen" resolves with country `SJ` → `WRONG_COUNTRY`. Two independent mismatches, one root: NO vs SJ. **No global territory equivalence was added.** Smallest specific fix, if LYR is ever wanted: two explicit airport-level entries — an identity-country override `LYR → SJ` for the Google identity check, and `CROSS_BORDER_DESTINATION_POLICIES.LYR = ALLOWED_COUNTRIES ['NO', 'SJ']`. Recommendation: do nothing now (a remote, low-demand airport); LYR stays `catalogued` with no capability.
+
+Totals after the re-probe: 42 tested — **39 PASS** (3 controls), **1 FAIL** (BEK), **2 NEEDS_REVIEW** (MAN control, LYR). Capability evidence: **36 `road_supported`**, 0 `route_testable`. Release table still empty: nothing new is public.

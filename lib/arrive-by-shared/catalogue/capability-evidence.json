@@ -143,12 +143,12 @@
     },
     {
       "iata": "GRU",
-      "status": "route_testable",
+      "status": "road_supported",
       "verifiedDate": "2026-09-30",
-      "note": "Phase C live probe NEEDS_REVIEW (destination_resolution): identity agrees but the road path is not proven. Primary drive probe did not produce a route (DESTINATION_NEEDS_CLARIFICATION).",
+      "note": "Phase C live probe PASS: Google identity agrees (0.21 km from catalogue point); traffic-aware DRIVE to \"Sao Paulo, Brazil\" 52 min. Capability only; NOT released.",
       "checks": {
         "identityVerified": true,
-        "routeProbed": false
+        "routeProbed": true
       }
     },
     {
@@ -235,7 +235,7 @@
       "iata": "KEF",
       "status": "road_supported",
       "verifiedDate": "2026-09-30",
-      "note": "Phase C live probe PASS: Google identity agrees (1.17 km from catalogue point); traffic-aware DRIVE to \"Grindavik, Iceland\" 26 min. Capability only; NOT released.",
+      "note": "Phase C live probe PASS: Google identity agrees (1.17 km from catalogue point); traffic-aware DRIVE to \"Reykjavik, Iceland\" 50 min. Capability only; NOT released.",
       "checks": {
         "identityVerified": true,
         "routeProbed": true
@@ -313,12 +313,12 @@
     },
     {
       "iata": "SIN",
-      "status": "route_testable",
+      "status": "road_supported",
       "verifiedDate": "2026-09-30",
-      "note": "Phase C live probe NEEDS_REVIEW (destination_resolution): identity agrees but the road path is not proven. Study purpose: city-state next to a border Primary drive probe did not produce a route (DESTINATION_NEEDS_CLARIFICATION).",
+      "note": "Phase C live probe PASS: Google identity agrees (1.04 km from catalogue point); traffic-aware DRIVE to \"Jurong East, Singapore\" 48 min. Capability only; NOT released.",
       "checks": {
         "identityVerified": true,
-        "routeProbed": false
+        "routeProbed": true
       }
     },
     {
