@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useRef, useState, type FormEvent } from 'react';
+import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import { ESTIMATE_DISCLAIMER, PICKUP_MODE_CAVEATS } from '@/lib/arrive-by-shared/road-outcomes';
 import { formatMinutesHuman, formatSecondsHuman, roundClockToNearestFive, trafficContextSentence } from '@/lib/arrive-by-shared/format';
 import { isoToClock } from '@/lib/arrive-by-shared/timezone';
@@ -59,7 +59,10 @@ const KNOWN_LIMITATIONS = [
   'Road conditions can change after the estimate is given.',
 ];
 
-function headline(result: RoadJourneyResult, arrivalClock: string, deadlineClock: string): string {
+function headline(result: RoadJourneyResult, arrivalClock: string, deadlineClock: string, airportName: string): string {
+  if (result.outcome === 'DESTINATION_NEEDS_CLARIFICATION' && result.clarificationReason === 'WRONG_COUNTRY') {
+    return `${result.destination} looks outside the area Arrive By supports from ${airportName}, so we haven't calculated a journey.`;
+  }
   switch (result.outcome) {
     case 'ETA_ONLY':
       return `Based on the traffic-aware driving estimate, you should reach ${result.destination} at around ${arrivalClock}.`;
@@ -126,13 +129,18 @@ export function ArriveByRoadPublic({ airport }: { airport: RoadAirportInfo }) {
       if (overrides?.confirmedPlaceId || overrides?.selectedPlaceId) {
         track('arrive_by_recovery_used', { type: overrides.confirmedPlaceId ? 'confirmation' : 'selection', outcome: journeyResult.outcome });
       }
-      requestAnimationFrame(() => resultRef.current?.focus());
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : 'Arrive By could not check this journey.');
     } finally {
       setLoading(false);
     }
   }
+
+  // Move focus to the answer once it has actually rendered (an effect runs after commit; a rAF fired
+  // from the async handler can beat React's commit and focus a node that is about to be replaced).
+  useEffect(() => {
+    if (result) resultRef.current?.focus();
+  }, [result]);
 
   async function submit(event: FormEvent) {
     event.preventDefault();
@@ -218,7 +226,7 @@ export function ArriveByRoadPublic({ airport }: { airport: RoadAirportInfo }) {
             )}
           </>
         ) : (
-          <h2 className="mt-2 font-display text-2xl sm:text-3xl">{headline(result, arrivalClock, deadlineClock)}</h2>
+          <h2 className="mt-2 font-display text-2xl sm:text-3xl">{headline(result, arrivalClock, deadlineClock, airport.displayName)}</h2>
         )}
         {airport.estimateLabel && <p className="mt-2 text-sm font-semibold text-ink-700">{airport.estimateLabel}</p>}
         {result.resolvedDestination && (
@@ -251,7 +259,7 @@ export function ArriveByRoadPublic({ airport }: { airport: RoadAirportInfo }) {
           </div>
         )}
         {result.outcome === 'DESTINATION_NEEDS_CLARIFICATION' && result.clarificationReason === 'WRONG_COUNTRY' && (
-          <p className="mt-3 text-sm text-ink-600">This destination looks outside the area Arrive By supports from {airport.displayName}. Please check it.</p>
+          <p className="mt-3 text-sm text-ink-600">Please check the destination, or choose one within the area this airport supports.</p>
         )}
         {result.outcome === 'DESTINATION_NEEDS_CLARIFICATION' && result.clarificationReason !== 'WRONG_COUNTRY' && (
           <p className="mt-3 text-sm text-ink-600">Please make the destination more specific before we calculate the journey.</p>

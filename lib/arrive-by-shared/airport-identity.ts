@@ -24,6 +24,8 @@ import { foldSearchText } from './airport-search';
  */
 
 export const MAX_IDENTITY_DISTANCE_KM = 5;
+/** Share of the airport's distinctive name words that must appear in Google's address text (unless the IATA code is there). */
+export const NAME_HIT_THRESHOLD = 0.5;
 
 export type AirportIdentityFailure = 'NO_RESULT' | 'NOT_AN_AIRPORT' | 'WRONG_COUNTRY' | 'TOO_FAR' | 'NAME_MISMATCH' | 'REQUEST_FAILED';
 
@@ -53,13 +55,17 @@ function distinctiveWords(name: string): string[] {
   return foldSearchText(name).split(' ').filter((word) => word.length > 2 && !GENERIC_NAME_WORDS.has(word));
 }
 
-function addressNamesAirport(airport: CatalogueAirport, formattedAddress: string): boolean {
+function nameEvidence(airport: CatalogueAirport, formattedAddress: string): { iataInAddress: boolean; nameHitRatio: number } {
   const address = foldSearchText(formattedAddress);
-  if (new RegExp(`\\b${airport.iata.toLowerCase()}\\b`).test(address)) return true;
+  const iataInAddress = new RegExp(`\\b${airport.iata.toLowerCase()}\\b`).test(address);
   const words = distinctiveWords(airport.name);
-  if (words.length === 0) return false;
-  const hits = words.filter((word) => address.includes(word)).length;
-  return hits / words.length >= 0.5;
+  const nameHitRatio = words.length === 0 ? 0 : words.filter((word) => address.includes(word)).length / words.length;
+  return { iataInAddress, nameHitRatio };
+}
+
+function addressNamesAirport(airport: CatalogueAirport, formattedAddress: string): boolean {
+  const { iataInAddress, nameHitRatio } = nameEvidence(airport, formattedAddress);
+  return iataInAddress || nameHitRatio >= NAME_HIT_THRESHOLD;
 }
 
 /**
@@ -97,6 +103,41 @@ export function evaluateAirportIdentity(airport: CatalogueAirport, results: Iden
   return { ok: true, distanceKm: Math.round(best.distanceKm * 100) / 100, matchedAddress: best.address };
 }
 
+export interface IdentityCandidateDiagnostic {
+  address: string;
+  distanceKm: number;
+  types: string[];
+  country?: string;
+  iataInAddress: boolean;
+  nameHitRatio: number;
+  /** Why this candidate fails, or undefined when it agrees. */
+  failure?: AirportIdentityFailure;
+}
+
+/**
+ * Per-candidate breakdown of the same checks evaluateAirportIdentity makes,
+ * for the offline threshold study (which candidate, how far, how much name
+ * evidence). Never used to decide anything on a request path.
+ */
+export function diagnoseAirportIdentity(airport: CatalogueAirport, results: IdentityGeocodeResult[]): IdentityCandidateDiagnostic[] {
+  const rows: IdentityCandidateDiagnostic[] = [];
+  for (const result of results) {
+    const location = result.geometry?.location;
+    if (!location || !Number.isFinite(location.lat) || !Number.isFinite(location.lng)) continue;
+    const distanceKm = haversineKm(airport.lat, airport.lng, location.lat, location.lng);
+    const country = result.address_components?.find((component) => component.types.includes('country'))?.short_name;
+    const address = result.formatted_address ?? '';
+    const evidence = nameEvidence(airport, address);
+    let failure: AirportIdentityFailure | undefined;
+    if (!result.types?.includes('airport')) failure = 'NOT_AN_AIRPORT';
+    else if (country !== airport.countryCode) failure = 'WRONG_COUNTRY';
+    else if (distanceKm > MAX_IDENTITY_DISTANCE_KM) failure = 'TOO_FAR';
+    else if (!(evidence.iataInAddress || evidence.nameHitRatio >= NAME_HIT_THRESHOLD)) failure = 'NAME_MISMATCH';
+    rows.push({ address, distanceKm: Math.round(distanceKm * 100) / 100, types: result.types ?? [], country, iataInAddress: evidence.iataInAddress, nameHitRatio: Math.round(evidence.nameHitRatio * 100) / 100, failure });
+  }
+  return rows;
+}
+
 const GEOCODE_ENDPOINT = 'https://maps.googleapis.com/maps/api/geocode/json';
 
 /**
@@ -105,20 +146,30 @@ const GEOCODE_ENDPOINT = 'https://maps.googleapis.com/maps/api/geocode/json';
  * Server-side only (uses the server API key); call from an offline
  * capability-check script, never from a request path.
  */
-export async function verifyAirportIdentity(apiKey: string, airport: CatalogueAirport): Promise<AirportIdentityResult> {
+/** The one country-restricted Geocoding request; null means the request itself failed (fails closed upstream). */
+export async function fetchIdentityResults(apiKey: string, airport: CatalogueAirport, options: { restrictCountry?: boolean } = {}): Promise<{ status: 'OK' | 'ZERO_RESULTS' | 'REQUEST_FAILED'; results: IdentityGeocodeResult[]; googleStatus?: string }> {
   const url = new URL(GEOCODE_ENDPOINT);
   url.searchParams.set('address', `${airport.name} (${airport.iata})`);
-  url.searchParams.set('components', `country:${airport.countryCode}`);
+  // Restricting to the catalogue country is the default (fewer false positives). The offline
+  // study can lift it once, to tell "no such airport" from "catalogue country code disagrees with Google".
+  if (options.restrictCountry !== false) url.searchParams.set('components', `country:${airport.countryCode}`);
   url.searchParams.set('key', apiKey);
   let response: Response;
   try {
     response = await fetch(url, { cache: 'no-store' });
   } catch {
-    return { ok: false, reason: 'REQUEST_FAILED' };
+    return { status: 'REQUEST_FAILED', results: [] };
   }
-  if (!response.ok) return { ok: false, reason: 'REQUEST_FAILED' };
+  if (!response.ok) return { status: 'REQUEST_FAILED', results: [] };
   const json = (await response.json()) as { status?: string; results?: IdentityGeocodeResult[] };
-  if (json.status === 'ZERO_RESULTS') return { ok: false, reason: 'NO_RESULT' };
-  if (json.status !== 'OK') return { ok: false, reason: 'REQUEST_FAILED' };
-  return evaluateAirportIdentity(airport, json.results ?? []);
+  if (json.status === 'ZERO_RESULTS') return { status: 'ZERO_RESULTS', results: [], googleStatus: json.status };
+  if (json.status !== 'OK') return { status: 'REQUEST_FAILED', results: [], googleStatus: json.status };
+  return { status: 'OK', results: json.results ?? [], googleStatus: json.status };
+}
+
+export async function verifyAirportIdentity(apiKey: string, airport: CatalogueAirport): Promise<AirportIdentityResult> {
+  const fetched = await fetchIdentityResults(apiKey, airport);
+  if (fetched.status === 'REQUEST_FAILED') return { ok: false, reason: 'REQUEST_FAILED' };
+  if (fetched.status === 'ZERO_RESULTS') return { ok: false, reason: 'NO_RESULT' };
+  return evaluateAirportIdentity(airport, fetched.results);
 }

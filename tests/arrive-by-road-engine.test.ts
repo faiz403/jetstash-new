@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import { NextRequest } from 'next/server';
@@ -8,6 +8,7 @@ import { computeRoadJourney } from '@/lib/arrive-by-shared/road-journey';
 import { cleanRoadInput } from '@/lib/arrive-by-shared/clean-road-input';
 import { computePakistanJourney } from '@/lib/arrive-by-pakistan/journey';
 import { ROAD_CAPABILITY_EVIDENCE, assertValidCapabilityEvidence, getAirportCapability, getRoadAirportInfo, getShellAirportLookup, type CapabilityEvidence } from '@/lib/arrive-by-shared/airport-capability';
+import { ARRIVE_BY_RELEASED_AIRPORTS, type ReleaseEntry } from '@/lib/arrive-by-shared/airport-release';
 import { getCatalogueAirport } from '@/lib/arrive-by-shared/airport-catalogue';
 import { searchCatalogue } from '@/lib/arrive-by-shared/catalogue-search';
 import { resolveShellDispatch } from '@/lib/arrive-by-shared/shell-dispatch';
@@ -22,6 +23,19 @@ import { MAX_IDENTITY_DISTANCE_KM, evaluateAirportIdentity, verifyAirportIdentit
  */
 
 const evidenceTable = ROAD_CAPABILITY_EVIDENCE as Record<string, CapabilityEvidence>;
+const releaseTable = ARRIVE_BY_RELEASED_AIRPORTS as Record<string, ReleaseEntry>;
+// Real (committed) evidence and release state are snapshotted so each test starts from a clean, empty baseline and the real state is restored afterwards.
+const shippedEvidence = { ...evidenceTable };
+const shippedRelease = { ...releaseTable };
+const clearGateTables = () => {
+  for (const code of Object.keys(evidenceTable)) delete evidenceTable[code];
+  for (const code of Object.keys(releaseTable)) delete releaseTable[code];
+};
+/** Capability evidence AND a public release: both gates open (test-only). */
+const enableGeneric = (code: string) => {
+  evidenceTable[code] = supported();
+  releaseTable[code] = { status: 'public_beta', decidedDate: '2026-09-30', approvedNote: 'test-only release' };
+};
 const passedChecks = { identityVerified: true, routeProbed: true };
 const supported = (): CapabilityEvidence => ({ status: 'road_supported', verifiedDate: '2026-09-30', note: 'test-only evidence', checks: passedChecks });
 
@@ -86,14 +100,21 @@ const journey = (airportCode: string, extra: Record<string, unknown> = {}) => ({
 });
 
 beforeEach(() => {
+  clearGateTables();
   process.env.GOOGLE_ROUTES_API_KEY = 'test-key';
+});
+
+afterAll(() => {
+  clearGateTables();
+  Object.assign(evidenceTable, shippedEvidence);
+  Object.assign(releaseTable, shippedRelease);
 });
 
 afterEach(() => {
   global.fetch = originalFetch;
   if (originalKey === undefined) delete process.env.GOOGLE_ROUTES_API_KEY;
   else process.env.GOOGLE_ROUTES_API_KEY = originalKey;
-  for (const code of Object.keys(evidenceTable)) delete evidenceTable[code];
+  clearGateTables();
   vi.restoreAllMocks();
 });
 
@@ -120,7 +141,7 @@ describe('generic road API — the capability gate fails closed before any Googl
   it('IKO and BEK are catalogued (not name-filtered out) but not journey-eligible', async () => {
     for (const code of ['IKO', 'BEK']) {
       expect(getCatalogueAirport(code), code).toBeDefined();
-      expect(getAirportCapability(code)).toEqual({ code, status: 'catalogued', journeyEligible: false });
+      expect(getAirportCapability(code)).toEqual({ code, status: 'catalogued', journeyEligible: false, capabilityApproved: false, releaseStatus: 'internal_only' });
       expect((await post(journey(code))).status).toBe(404);
     }
   });
@@ -137,7 +158,7 @@ describe('generic road API — the capability gate fails closed before any Googl
   });
 
   it('a road_supported airport can journey', async () => {
-    evidenceTable.LHR = supported();
+    enableGeneric('LHR');
     mockGoogle([localityResult('GB', 'United Kingdom', 'Reading')]);
     const response = await post(journey('LHR', { destination: 'Reading' }));
     expect(response.status).toBe(200);
@@ -162,7 +183,7 @@ describe('generic road API — the capability gate fails closed before any Googl
 
 describe('generic road API — the server, not the client, decides the origin', () => {
   it('routes from the catalogue coordinates and labels the result airport-level, ignoring client-supplied coordinates/timezone/country', async () => {
-    evidenceTable.LHR = supported();
+    enableGeneric('LHR');
     const captured = mockGoogle([localityResult('GB', 'United Kingdom', 'Reading')]);
     const lhr = getCatalogueAirport('LHR')!;
     const response = await post(journey('LHR', {
@@ -197,7 +218,7 @@ describe('generic road API — the server, not the client, decides the origin', 
 
   it('a missing API key is a 503, after the rate limit and before any Google call', async () => {
     delete process.env.GOOGLE_ROUTES_API_KEY;
-    evidenceTable.LHR = supported();
+    enableGeneric('LHR');
     const captured = mockGoogle([]);
     expect((await post(journey('LHR'))).status).toBe(503);
     expect(captured.geocodeUrls).toHaveLength(0);
@@ -206,7 +227,7 @@ describe('generic road API — the server, not the client, decides the origin', 
 
 describe('destination policy on the generic road API', () => {
   it('SAME_COUNTRY gate: a Delhi airport journey to a US destination is refused before any drive request', async () => {
-    evidenceTable.DEL = supported();
+    enableGeneric('DEL');
     const captured = mockGoogle([localityResult('US', 'United States', 'Springfield')]);
     const body = await (await post(journey('DEL', { destination: 'Springfield' }))).json();
     expect(body.outcome).toBe('DESTINATION_NEEDS_CLARIFICATION');
@@ -215,13 +236,13 @@ describe('destination policy on the generic road API', () => {
   });
 
   it('SAME_COUNTRY gate accepts an in-country destination', async () => {
-    evidenceTable.DEL = supported();
+    enableGeneric('DEL');
     mockGoogle([localityResult('IN', 'India', 'Gurugram')]);
     expect((await (await post(journey('DEL', { destination: 'Gurugram' }))).json()).outcome).toBe('ETA_ONLY');
   });
 
   it('cross-border override: Geneva accepts a French destination, but Delhi-style same-country airports do not', async () => {
-    evidenceTable.GVA = supported();
+    enableGeneric('GVA');
     mockGoogle([localityResult('FR', 'France', 'Annecy')]);
     expect((await (await post(journey('GVA', { destination: 'Annecy' }))).json()).outcome).toBe('ETA_ONLY');
     // ...but not an unlisted country.
@@ -230,7 +251,7 @@ describe('destination policy on the generic road API', () => {
   });
 
   it('a multi-country policy sends no region bias (the country gate alone enforces it)', async () => {
-    evidenceTable.BSL = supported();
+    enableGeneric('BSL');
     const captured = mockGoogle([localityResult('CH', 'Switzerland', 'Basel')]);
     await post(journey('BSL', { destination: 'Basel' }));
     expect(captured.geocodeUrls[0]).not.toMatch(/region=/);
@@ -356,7 +377,7 @@ describe('Pakistan and Manchester regression', () => {
 
 describe('rate limiting — one product-wide budget; search costs nothing', () => {
   it('the generic road API shares the arrive-by:<client> budget (5 / 60 s) and returns 429 after it', async () => {
-    evidenceTable.LHR = supported();
+    enableGeneric('LHR');
     mockGoogle([localityResult('GB', 'United Kingdom', 'Reading')]);
     const ip = uniqueIp();
     for (let i = 0; i < ARRIVE_BY_RATE_LIMIT_MAX; i += 1) expect((await post(journey('LHR', { destination: 'Reading' }), ip)).status).toBe(200);
@@ -368,7 +389,7 @@ describe('rate limiting — one product-wide budget; search costs nothing', () =
   });
 
   it('local airport search never consumes the journey budget', async () => {
-    evidenceTable.LHR = supported();
+    enableGeneric('LHR');
     mockGoogle([localityResult('GB', 'United Kingdom', 'Reading')]);
     const ip = uniqueIp();
     for (let i = 0; i < 50; i += 1) searchCatalogue('heathrow');
@@ -475,7 +496,7 @@ describe('capability evidence must carry the checks behind a positive status', (
 describe('gated generic UI path', () => {
   it('dispatches to the generic road journey only for a server-verified road_supported airport', () => {
     expect(resolveShellDispatch('LHR', getShellAirportLookup('LHR')).kind).toBe('not_yet_supported');
-    evidenceTable.LHR = supported();
+    enableGeneric('LHR');
     const lookup = getShellAirportLookup('LHR');
     expect(lookup?.road).toMatchObject({ code: 'LHR', timeZone: 'Europe/London', estimateLabel: 'Airport-level estimate' });
     const dispatch = resolveShellDispatch('lhr', lookup);
@@ -483,7 +504,7 @@ describe('gated generic UI path', () => {
   });
 
   it('a blocked or mismatched lookup never reaches the road journey', () => {
-    evidenceTable.LHR = supported();
+    enableGeneric('LHR');
     const lookup = getShellAirportLookup('LHR')!;
     expect(resolveShellDispatch('LHR', { ...lookup, blocked: true }).kind).toBe('not_yet_supported');
     expect(resolveShellDispatch('DEL', lookup).kind).toBe('unsupported');
@@ -494,9 +515,10 @@ describe('gated generic UI path', () => {
     for (const code of ['ISB', 'MAN']) expect(getRoadAirportInfo(code)).toBeUndefined();
   });
 
-  it('no airport is road_supported in the shipped evidence table (Phase B enables nothing publicly)', () => {
-    expect(Object.keys(ROAD_CAPABILITY_EVIDENCE)).toEqual([]);
-    expect(getRoadAirportInfo('LHR')).toBeUndefined();
+  it('no generic airport is released, so none reaches the generic UI in production (whatever evidence exists)', () => {
+    Object.assign(evidenceTable, shippedEvidence);
+    expect(Object.keys(shippedRelease)).toEqual([]);
+    for (const code of Object.keys(shippedEvidence)) expect(getRoadAirportInfo(code), code).toBeUndefined();
   });
 
   it('the generic UI never posts anything but the airport code, and tracks only coarse events', () => {

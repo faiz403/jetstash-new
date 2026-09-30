@@ -2,6 +2,8 @@ import { getCatalogueAirport, type CatalogueAirport } from './airport-catalogue'
 import { getGenericDestinationPolicy, getRegionBias, resolveExpectedCountryCodes } from './destination-policy';
 import { canEnablePublicly, getAirportProfile, type AirportProfile } from './airport-registry';
 import type { AirportLookup, RoadAirportInfo } from './shell-dispatch';
+import { getGenericAirportRelease, isInternalQaReleaseEnabled, isPubliclyReleased, type GenericAirportReleaseStatus, type ReleaseEntry } from './airport-release';
+import capabilityEvidenceFile from './catalogue/capability-evidence.json';
 
 /**
  * The capability gate: a catalogue airport is NOT usable just because it
@@ -20,9 +22,14 @@ import type { AirportLookup, RoadAirportInfo } from './shell-dispatch';
  *                            match was ambiguous, ...). Beats every other state,
  *                            including a special profile -- it is the kill switch.
  *
- * Phase A ships this architecture only. ROAD_CAPABILITY_EVIDENCE is empty on
- * purpose: nothing beyond the four special profiles is enabled until the
- * Phase B engine exists and Phase C has produced real evidence.
+ * CAPABILITY IS NOT RELEASE. `road_supported` means "safe to calculate";
+ * whether the public may use it is the separate release gate
+ * (airport-release.ts). A generic airport is journey-eligible only when it is
+ * road_supported AND released, so Phase C evidence can be stored for LHR, DXB,
+ * DEL ... without exposing any of them. The evidence table is loaded from
+ * catalogue/capability-evidence.json, written by the operator probe
+ * (scripts/arrive-by-capability-probe.ts); the release table stays empty until
+ * an explicit rollout decision.
  */
 
 export type AirportCapabilityStatus =
@@ -47,22 +54,29 @@ export interface CapabilityEvidence {
   checks?: { identityVerified: boolean; routeProbed: boolean };
 }
 
-/** Keyed by IATA code. Add an entry only with real evidence; remove or downgrade it when that evidence stops holding. */
-export const ROAD_CAPABILITY_EVIDENCE: Readonly<Record<string, CapabilityEvidence>> = {};
+/** Keyed by IATA code, loaded from catalogue/capability-evidence.json. Real evidence only; remove or downgrade an entry when it stops holding. */
+export const ROAD_CAPABILITY_EVIDENCE: Readonly<Record<string, CapabilityEvidence>> = Object.fromEntries(
+  (capabilityEvidenceFile as { records: Array<CapabilityEvidence & { iata: string }> }).records.map(({ iata, ...evidence }) => [iata, evidence]),
+);
 
 export interface AirportCapability {
   code: string;
   status: AirportCapabilityStatus;
-  /** True only when a public journey may be calculated for this airport. */
+  /** True only when a PUBLIC journey may be calculated for this airport: capability approved AND (for a generic airport) released. */
   journeyEligible: boolean;
+  /** Capability alone: road_supported or special_profile. Says nothing about release. */
+  capabilityApproved: boolean;
+  /** Release state of a generic airport. Explicit profiles report their own public state as 'public'. */
+  releaseStatus: GenericAirportReleaseStatus;
   /** Present for temporarily_unsupported and evidence-backed states. */
   note?: string;
 }
 
-const ELIGIBLE_STATUSES: ReadonlySet<AirportCapabilityStatus> = new Set(['road_supported', 'special_profile']);
+const CAPABILITY_APPROVED_STATUSES: ReadonlySet<AirportCapabilityStatus> = new Set(['road_supported', 'special_profile']);
 
+/** Capability only -- NOT release. A road_supported airport is capability-approved but still internal until released. */
 export function isJourneyEligibleStatus(status: AirportCapabilityStatus): boolean {
-  return ELIGIBLE_STATUSES.has(status);
+  return CAPABILITY_APPROVED_STATUSES.has(status);
 }
 
 export function assertValidCapabilityEvidence(code: string, evidence: CapabilityEvidence): void {
@@ -88,6 +102,7 @@ for (const [code, evidence] of Object.entries(ROAD_CAPABILITY_EVIDENCE)) assertV
 export function getAirportCapability(
   rawCode: string | null | undefined,
   evidenceTable: Readonly<Record<string, CapabilityEvidence>> = ROAD_CAPABILITY_EVIDENCE,
+  releaseTable?: Readonly<Record<string, ReleaseEntry>>,
 ): AirportCapability | undefined {
   const code = rawCode?.trim().toUpperCase();
   if (!code) return undefined;
@@ -96,20 +111,24 @@ export function getAirportCapability(
   if (!catalogued && !override) return undefined;
 
   const evidence = evidenceTable[code];
+  const release = getGenericAirportRelease(code, releaseTable);
+  // The kill switch beats every other state, including a special profile and any release.
   if (evidence?.status === 'temporarily_unsupported') {
-    return { code, status: 'temporarily_unsupported', journeyEligible: false, note: evidence.note };
+    return { code, status: 'temporarily_unsupported', journeyEligible: false, capabilityApproved: false, releaseStatus: release, note: evidence.note };
   }
   if (override && override.publiclyEnabled && canEnablePublicly(override.validationStatus)) {
-    return { code, status: 'special_profile', journeyEligible: true };
+    return { code, status: 'special_profile', journeyEligible: true, capabilityApproved: true, releaseStatus: 'public' };
   }
   // Generic road-first eligibility needs catalogue identity -- evidence alone is never enough.
   if (catalogued && evidence?.status === 'road_supported') {
-    return { code, status: 'road_supported', journeyEligible: true, note: evidence.note };
+    // Capability approved is necessary, not sufficient: the airport must also be released.
+    const released = isPubliclyReleased(release) || (releaseTable === undefined && isInternalQaReleaseEnabled());
+    return { code, status: 'road_supported', journeyEligible: released, capabilityApproved: true, releaseStatus: release, note: evidence.note };
   }
   if (catalogued && evidence?.status === 'route_testable') {
-    return { code, status: 'route_testable', journeyEligible: false, note: evidence.note };
+    return { code, status: 'route_testable', journeyEligible: false, capabilityApproved: false, releaseStatus: release, note: evidence.note };
   }
-  return { code, status: 'catalogued', journeyEligible: false };
+  return { code, status: 'catalogued', journeyEligible: false, capabilityApproved: false, releaseStatus: release };
 }
 
 /**
@@ -182,7 +201,8 @@ export function getShellAirportLookup(rawCode: string | null | undefined): Airpo
 export function getRoadAirportInfo(rawCode: string | null | undefined): RoadAirportInfo | undefined {
   const code = rawCode?.trim().toUpperCase();
   const capability = getAirportCapability(code);
-  if (!code || capability?.status !== 'road_supported') return undefined;
+  // Both gates: capability approved AND released (or the dev-only internal QA switch).
+  if (!code || capability?.status !== 'road_supported' || !capability.journeyEligible) return undefined;
   const profile = resolveAirportProfile(code);
   if (!profile || profile.journeyEngine !== 'ROAD_PICKUP_FIRST') return undefined;
   return { code: profile.code, displayName: profile.displayName, city: profile.city, countryCode: profile.countryCode, timeZone: profile.timeZone, estimateLabel: getEstimateLabel(profile) };
