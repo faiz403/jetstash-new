@@ -66,7 +66,7 @@ describe('GOLDEN end to end (Google stubbed): Preston → MAN → ISB → Mirpur
   it('reuses the shared resolver and road engine, meters exactly the calls it makes, and settles the monthly reservation', async () => {
     const g = google([locality('PK', 'Pakistan', 'Mirpur')]);
     const store = new InMemoryCallBudgetStore();
-    const plan = await planFullJourney(PRESTON_TO_MIRPUR, { apiKey: KEY, guard: guardWith(store), nowIso: NOW, baseFetch: g.fetch });
+    const plan = await planFullJourney(PRESTON_TO_MIRPUR, { apiKey: KEY, guard: guardWith(store), originMode: 'ENTERED', nowIso: NOW, baseFetch: g.fetch });
 
     expect(plan.headline).toEqual({
       leave: 'Leave Preston by around 08:05',
@@ -83,7 +83,7 @@ describe('GOLDEN end to end (Google stubbed): Preston → MAN → ISB → Mirpur
 
   it('the Pakistan destination gate is the existing one: an Indian destination is refused before any drive request', async () => {
     const g = google([locality('IN', 'India', 'Amritsar')]);
-    const plan = await planFullJourney({ ...PRESTON_TO_MIRPUR, destination: 'Amritsar' }, { apiKey: KEY, guard: guardWith(), nowIso: NOW, baseFetch: g.fetch });
+    const plan = await planFullJourney({ ...PRESTON_TO_MIRPUR, destination: 'Amritsar' }, { apiKey: KEY, guard: guardWith(), originMode: 'ENTERED', nowIso: NOW, baseFetch: g.fetch });
     expect(plan.state).toBe('CANNOT_CONFIRM');
     expect(plan.notEvidenced?.reason).toBe('ARRIVAL_DESTINATION_UNCONFIRMED');
     expect(plan.arrivalDetail?.clarificationReason).toBe('WRONG_COUNTRY');
@@ -93,12 +93,12 @@ describe('GOLDEN end to end (Google stubbed): Preston → MAN → ISB → Mirpur
 
   it('a venue destination stops at confirmation and hands back the engine\'s own confirmation payload; a forged id does not unlock it', async () => {
     const g = google([venue('PK', 'venue-1')]);
-    const first = await planFullJourney({ ...PRESTON_TO_MIRPUR, destination: 'Some Hospital' }, { apiKey: KEY, guard: guardWith(), nowIso: NOW, baseFetch: g.fetch });
+    const first = await planFullJourney({ ...PRESTON_TO_MIRPUR, destination: 'Some Hospital' }, { apiKey: KEY, guard: guardWith(), originMode: 'ENTERED', nowIso: NOW, baseFetch: g.fetch });
     expect(first.arrivalDetail?.pendingConfirmation?.placeId).toBe('venue-1');
-    const forged = await planFullJourney({ ...PRESTON_TO_MIRPUR, destination: 'Some Hospital', confirmedPlaceId: 'forged' }, { apiKey: KEY, guard: guardWith(), nowIso: NOW, baseFetch: g.fetch });
+    const forged = await planFullJourney({ ...PRESTON_TO_MIRPUR, destination: 'Some Hospital', confirmedPlaceId: 'forged' }, { apiKey: KEY, guard: guardWith(), originMode: 'ENTERED', nowIso: NOW, baseFetch: g.fetch });
     expect(forged.state).toBe('CANNOT_CONFIRM');
     expect(forged.arrivalDetail?.outcome).toBe('DESTINATION_NEEDS_CONFIRMATION');
-    const genuine = await planFullJourney({ ...PRESTON_TO_MIRPUR, destination: 'Some Hospital', confirmedPlaceId: 'venue-1' }, { apiKey: KEY, guard: guardWith(), nowIso: NOW, baseFetch: g.fetch });
+    const genuine = await planFullJourney({ ...PRESTON_TO_MIRPUR, destination: 'Some Hospital', confirmedPlaceId: 'venue-1' }, { apiKey: KEY, guard: guardWith(), originMode: 'ENTERED', nowIso: NOW, baseFetch: g.fetch });
     expect(genuine.headline?.arrival).toMatch(/around 03:35/);
   });
 });
@@ -111,7 +111,7 @@ describe('GOLDEN end to end (Google stubbed): UK start → flight → MAN → Sh
       flight: { departsLocal: '2027-02-10T09:00', arrivesLocal: '2027-02-10T10:10' },
       arrivalAirport: 'MAN', destination: 'Sheffield',
       preferences: { departureAirportBufferMinutes: 90, arrivalExitMinutes: 20 },
-    }, { apiKey: KEY, guard: guardWith(), nowIso: '2027-02-09T09:00:00.000Z', baseFetch: g.fetch });
+    }, { apiKey: KEY, guard: guardWith(), originMode: 'ENTERED', nowIso: '2027-02-09T09:00:00.000Z', baseFetch: g.fetch });
     expect(plan.leaveBy?.iso).toBe('2027-02-10T06:50:00.000Z');
     expect(plan.finalArrival?.iso).toBe('2027-02-10T11:40:00.000Z');
     expect(plan.calls?.used).toBe(2);
@@ -123,7 +123,7 @@ describe('GOLDEN end to end (Google stubbed): UK start → flight → MAN → Sh
       start: 'Edinburgh', departureAirport: 'EDI', originLegMinutes: 40,
       flight: { departsLocal: '2027-02-10T09:00', arrivesLocal: '2027-02-10T10:10' },
       arrivalAirport: 'MAN', destination: 'Lille', preferences: { departureAirportBufferMinutes: 90, arrivalExitMinutes: 20 },
-    }, { apiKey: KEY, guard: guardWith(), nowIso: '2027-02-09T09:00:00.000Z', baseFetch: g.fetch });
+    }, { apiKey: KEY, guard: guardWith(), originMode: 'ENTERED', nowIso: '2027-02-09T09:00:00.000Z', baseFetch: g.fetch });
     expect(plan.arrivalDetail?.clarificationReason).toBe('WRONG_COUNTRY');
   });
 });
@@ -160,7 +160,7 @@ describe('the 10-call hard stop', () => {
       }
       return { leg: { status: 'OK', expectedSeconds: 600, evidence: { kind: 'GOOGLE_ROUTES', source: 'greedy test provider' } } };
     };
-    const plan = await planFullJourney(PRESTON_TO_MIRPUR, { apiKey: KEY, guard: guardWith(store), nowIso: NOW, baseFetch: underlying, arrivalLegProvider: greedy as never });
+    const plan = await planFullJourney(PRESTON_TO_MIRPUR, { apiKey: KEY, guard: guardWith(store), originMode: 'ENTERED', nowIso: NOW, baseFetch: underlying, arrivalLegProvider: greedy as never });
     expect(underlying).toHaveBeenCalledTimes(10);
     expect(plan.state).toBe('CANNOT_CONFIRM');
     expect(plan.stateLabel).toBe('CANNOT CONFIRM');
@@ -172,7 +172,7 @@ describe('the 10-call hard stop', () => {
 
   it('the real engine hitting a smaller ceiling stops the same way (ceiling 1: the geocode is sent, the drive request is not)', async () => {
     const g = google([locality('PK', 'Pakistan', 'Mirpur')]);
-    const plan = await planFullJourney(PRESTON_TO_MIRPUR, { apiKey: KEY, guard: guardWith(), nowIso: NOW, baseFetch: g.fetch, ceiling: 1 });
+    const plan = await planFullJourney(PRESTON_TO_MIRPUR, { apiKey: KEY, guard: guardWith(), originMode: 'ENTERED', nowIso: NOW, baseFetch: g.fetch, ceiling: 1 });
     expect(g.calls).toEqual(['geocode']);
     expect(plan.state).toBe('CANNOT_CONFIRM');
     expect(plan.notEvidenced?.reason).toBe('CALL_CEILING_REACHED');
@@ -180,7 +180,7 @@ describe('the 10-call hard stop', () => {
 
   it('a normal journey uses far fewer than 10 calls (the current profile is 2)', async () => {
     const g = google([locality('PK', 'Pakistan', 'Mirpur')]);
-    const plan = await planFullJourney(PRESTON_TO_MIRPUR, { apiKey: KEY, guard: guardWith(), nowIso: NOW, baseFetch: g.fetch });
+    const plan = await planFullJourney(PRESTON_TO_MIRPUR, { apiKey: KEY, guard: guardWith(), originMode: 'ENTERED', nowIso: NOW, baseFetch: g.fetch });
     expect(plan.calls?.used).toBeLessThan(10);
   });
 });
@@ -194,7 +194,7 @@ describe('the monthly guard', () => {
     const store = new InMemoryCallBudgetStore();
     await store.incrementBy(MONTH_KEY, 1995, 1);
     const g = google([locality('PK', 'Pakistan', 'Mirpur')]);
-    const plan = await planFullJourney(PRESTON_TO_MIRPUR, { apiKey: KEY, guard: guardWith(store), nowIso: NOW, baseFetch: g.fetch });
+    const plan = await planFullJourney(PRESTON_TO_MIRPUR, { apiKey: KEY, guard: guardWith(store), originMode: 'ENTERED', nowIso: NOW, baseFetch: g.fetch });
     expect(plan.state).toBe('CANNOT_CONFIRM');
     expect(plan.notEvidenced?.reason).toBe('MONTHLY_BUDGET_UNAVAILABLE');
     expect(g.calls).toEqual([]);
@@ -250,7 +250,7 @@ describe('the monthly guard', () => {
 
   it('a journey with no guard store never reaches Google', async () => {
     const g = google([locality('PK', 'Pakistan', 'Mirpur')]);
-    const plan = await planFullJourney(PRESTON_TO_MIRPUR, { apiKey: KEY, guard: new MonthlyCallGuard({ requireDurable: false }), nowIso: NOW, baseFetch: g.fetch });
+    const plan = await planFullJourney(PRESTON_TO_MIRPUR, { apiKey: KEY, guard: new MonthlyCallGuard({ requireDurable: false }), originMode: 'ENTERED', nowIso: NOW, baseFetch: g.fetch });
     expect(plan.notEvidenced?.reason).toBe('MONTHLY_BUDGET_UNAVAILABLE');
     expect(g.calls).toEqual([]);
   });
@@ -323,10 +323,10 @@ describe('airport rules (UK departures only; capability-gated arrivals)', () => 
     const g = google([locality('PK', 'Pakistan', 'Mirpur')]);
     const store = new InMemoryCallBudgetStore();
     for (const arrivalAirport of ['BEK', 'LYR']) {
-      const plan = await planFullJourney({ ...PRESTON_TO_MIRPUR, arrivalAirport }, { apiKey: KEY, guard: guardWith(store), nowIso: NOW, baseFetch: g.fetch });
+      const plan = await planFullJourney({ ...PRESTON_TO_MIRPUR, arrivalAirport }, { apiKey: KEY, guard: guardWith(store), originMode: 'ENTERED', nowIso: NOW, baseFetch: g.fetch });
       expect(plan.notEvidenced?.reason).toBe('AIRPORT_NOT_SUPPORTED');
     }
-    const foreign = await planFullJourney({ ...PRESTON_TO_MIRPUR, departureAirport: 'DXB' }, { apiKey: KEY, guard: guardWith(store), nowIso: NOW, baseFetch: g.fetch });
+    const foreign = await planFullJourney({ ...PRESTON_TO_MIRPUR, departureAirport: 'DXB' }, { apiKey: KEY, guard: guardWith(store), originMode: 'ENTERED', nowIso: NOW, baseFetch: g.fetch });
     expect(foreign.notEvidenced?.reason).toBe('AIRPORT_NOT_SUPPORTED');
     expect(g.calls).toEqual([]);
     expect(await store.incrementBy(MONTH_KEY, 0, 1)).toBe(0);
@@ -345,7 +345,7 @@ describe('cheap failures cost nothing', () => {
       { ...PRESTON_TO_MIRPUR, destination: 'x'.repeat(181) },
     ];
     for (const journey of cases) {
-      const plan = await planFullJourney(journey, { apiKey: KEY, guard: guardWith(store), nowIso: NOW, baseFetch: g.fetch });
+      const plan = await planFullJourney(journey, { apiKey: KEY, guard: guardWith(store), originMode: 'ENTERED', nowIso: NOW, baseFetch: g.fetch });
       expect(plan.state).toBe('CANNOT_CONFIRM');
     }
     expect(g.calls).toEqual([]);
@@ -354,7 +354,7 @@ describe('cheap failures cost nothing', () => {
 
   it('a missing start-to-airport estimate still runs the arrival side and asks for the origin leg (F2 will provide it)', async () => {
     const g = google([locality('PK', 'Pakistan', 'Mirpur')]);
-    const plan = await planFullJourney({ ...PRESTON_TO_MIRPUR, originLegMinutes: undefined }, { apiKey: KEY, guard: guardWith(), nowIso: NOW, baseFetch: g.fetch });
+    const plan = await planFullJourney({ ...PRESTON_TO_MIRPUR, originLegMinutes: undefined }, { apiKey: KEY, guard: guardWith(), originMode: 'ENTERED', nowIso: NOW, baseFetch: g.fetch });
     expect(plan.state).toBe('CANNOT_CONFIRM');
     expect(plan.notEvidenced?.reason).toBe('ORIGIN_LEG_MISSING');
     expect(plan.leaveBy).toBeUndefined();

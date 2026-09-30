@@ -69,6 +69,12 @@ export interface GeocodeResult {
   status: string;
   /** Present only when confidence is NEEDS_SELECTION — the genuinely different named-venue candidates to choose between. */
   candidates?: Array<{ placeId: string; formattedAddress: string }>;
+  /**
+   * Google's own point for the resolved place, server-side only (never accepted from a client and never sent to one).
+   * Used to route FROM a start location: Google Routes cannot route from some locality names/place IDs as text (it
+   * returns an empty route for "Durham" but routes fine from that place's coordinate), so the origin side prefers this.
+   */
+  location?: { lat: number; lng: number };
 }
 
 /** Per-airport destination-resolution policy. Both fields are optional: omitting `expectedCountryCodes` runs no hard country gate (used while an airport's destination policy is still pending explicit validation — see lib/arrive-by-shared/airport-registry.ts). */
@@ -213,7 +219,7 @@ interface GeocodeApiResult {
   place_id?: string;
   partial_match?: boolean;
   types?: string[];
-  geometry?: { location_type?: string };
+  geometry?: { location_type?: string; location?: { lat?: number; lng?: number } };
   address_components?: AddressComponent[];
 }
 
@@ -265,6 +271,7 @@ function classifyGeocodeResult(
     confidence,
     clarificationReason,
     formattedAddress: result.formatted_address,
+    location: Number.isFinite(result.geometry?.location?.lat) && Number.isFinite(result.geometry?.location?.lng) ? { lat: result.geometry!.location!.lat as number, lng: result.geometry!.location!.lng as number } : undefined,
     resolvedPrimaryPlace,
     placeId: result.place_id,
     locationTypes: types,
