@@ -93,14 +93,14 @@ describe('direct-route + direct-fare: matching state renders no callout (no unne
   });
 });
 
-describe('connecting-only route: never falsely mentions a direct service', () => {
-  it('a connecting route whose newest fare is poor resolves to its older, suitable, still-connecting observation (16 Sept 2026 suitability walk — see docs/project-control/fare-evidence/full-portfolio-controlled-batch-2026-09-15.md) -- connecting route + connecting fare is a match, so still no mismatch callout, and the word "Direct" never appears', () => {
+describe('direct route: connecting fare remains clearly distinguished from route service', () => {
+  it('a direct route whose newest fare is poor resolves to its older, suitable connecting observation and displays the route-service distinction', () => {
     // Classification B: the poor-itinerary evidence this test names (the
     // 25 Aug £591 self-transfer recheck) is dated after this file's 20 Aug
     // NOW_ISO.
     const SUPPRESSION_EVIDENCE_ISO = '2026-08-25';
     const { presentation } = presentationFor('birmingham-amritsar', SUPPRESSION_EVIDENCE_ISO);
-    expect(presentation.status).toBe('connecting');
+    expect(presentation.status).toBe('direct');
     // birmingham-amritsar's newest observation at this date (£591, 3/3
     // stops, self-transfer) is still correctly skipped for representative
     // selection, but its older, still-fresh, suitable 19 August £603
@@ -112,8 +112,8 @@ describe('connecting-only route: never falsely mentions a direct service', () =>
     expect(signal.observation?.directness).toBe('connecting');
 
     const html = renderFareSignalForRoute('birmingham-amritsar', SUPPRESSION_EVIDENCE_ISO);
-    expect(html).not.toContain('Route service');
-    expect(html).not.toMatch(/\bDirect\b/);
+    expect(html).toContain('Route service');
+    expect(html).toMatch(/\bDirect\b/);
   });
 
   it('logic-level: a synthetic connecting-route + direct-fare mismatch (0 real routes today, but must still resolve correctly) correctly labels the route side "Connecting", never "Direct"', () => {
@@ -466,9 +466,9 @@ describe('full 88-route dataset safety check (Phase 8)', () => {
     // manchester-delhi and manchester-mumbai's IndiGo-withdrawal
     // service-ended routes) have no suitable fallback of any kind and
     // correctly stay in noFare.
-    expect(directConnectingFare).toBe(54);
+    expect(directConnectingFare).toBe(55);
     expect(directDirectFare).toBe(13);
-    expect(connectingConnectingFare).toBe(14);
+    expect(connectingConnectingFare).toBe(13);
     expect(connectingDirectFare).toBe(0);
     expect(noFare).toBe(3);
     expect(unverified).toBe(5);

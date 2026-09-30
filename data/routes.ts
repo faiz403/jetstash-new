@@ -1289,14 +1289,22 @@ export const routes: Route[] = [
     slug: 'birmingham-amritsar',
     airportSlug: 'birmingham',
     destinationSlug: 'amritsar',
-    flightTime: '14h 45m via connection (Air India booking page)',
-    frequency: 'Connection options available; exact schedule varies',
+    flightTime: 'Approximately 10h 10m nonstop (Air India schedule)',
+    frequency: 'Air India nonstop service shown several times weekly; confirm your date',
     airlineSlugs: ['air-india'],
-    isDirect: false,
+    isDirect: true,
+    verification: {
+      status: 'verified',
+      sourceName: 'Air India current BHX–ATQ schedule and Birmingham Airport Amritsar destination page',
+      sourceUrl: 'https://www.airindia.com/en-in/book-flights/birmingham-to-amritsar-flights',
+      verifiedDate: '2026-09-30',
+      reviewDueDate: '2026-10-30',
+      note: 'Route refresh (30 September 2026): Air India\'s current route schedule for 22–28 September lists AI118 from Birmingham (BHX) to Amritsar (ATQ) as Non Stop, 10h 10m. Birmingham Airport\'s current Amritsar destination page independently names Air India as the direct carrier. Flight-tracking records corroborate recent AI118 operations. Air India\'s generic en-GB marketing page is internally contradictory: one structured field says no direct flights and 14h45m via Delhi, while other text on the same page says direct services exist. The concrete route schedule, rather than that generic template, is the evidence used here. Exact weekly operating days are not published because the current first-party sources do not present a stable unambiguous day pattern; the public frequency is therefore deliberately hedged. Recheck within 30 days because the generic page conflict remains.',
+    },
     intro:
-      'Air India\'s current Birmingham to Amritsar booking page does not list a direct flight and shows connection-based options. Check the live itinerary for the actual hub, duration and baggage conditions before booking.',
+      'Air India currently operates a nonstop Birmingham to Amritsar service. The current schedule shows AI118 at approximately 10h 10m; confirm the exact operating date, timing and baggage terms with Air India before booking.',
     bookingWindowNote:
-      'Because this is a connection route, compare the full itinerary rather than relying on a headline duration. The airline\'s booking result and your exact dates should decide the viable option.',
+      'The nonstop service is shown several times weekly rather than every day. Confirm your specific flight date and the exact fare conditions with Air India before booking.',
     peakPeriodIds: ['baisakhi', 'diwali', 'uk-summer-holidays'],
   },
   {

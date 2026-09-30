@@ -160,7 +160,7 @@ Machine-checkable manifest — every one of the 32 routes, exactly once, with it
 
 | Slug | Grade |
 |---|---|
-| `birmingham-amritsar` | Useful |
+| `birmingham-amritsar` | Strong |
 | `birmingham-islamabad` | Useful |
 | `birmingham-lahore` | Useful |
 | `birmingham-madinah` | Useful |

@@ -18,18 +18,10 @@ export const airportNotes: AirportPracticalNote[] = [
   { id: 'man-terminal-2', airportSlug: 'manchester', title: 'Terminal 2 handles most long-haul South Asia and Gulf routes', body: 'PIA, Emirates and Qatar Airways operate primarily from Terminal 2. Confirm your terminal at booking, since Terminal 1 and 3 serve different carriers and a wrong assumption costs real time on departure day.' },
   { id: 'man-pia-checkin', airportSlug: 'manchester', title: 'Allow 3 hours for PIA departures specifically', body: 'PIA check-in for Lahore and Islamabad routes is consistently busier than scheduled-carrier norms, particularly around Eid and wedding season. Arriving at the standard 2.5-hour mark has caused missed flights during peak weeks.' },
   { id: 'man-metrolink', airportSlug: 'manchester', title: 'The Metrolink tram link removes the parking cost entirely', body: 'For Manchester, Salford, Bury, Rochdale and Altrincham-based travellers, the direct tram connection to the airport is often cheaper and less stressful than even pre-booked parking, particularly for trips longer than a week.' },
-  // Freshness verification batch (28 Aug 2026): was "Birmingham has direct
-  // Air India service to Amritsar" — contradicted by data/routes.ts's own
-  // verified evidence (birmingham-amritsar is isDirect: false, a
-  // connection-based route). None of Birmingham's India/Pakistan routes are
-  // currently confirmed direct: Lahore, Islamabad, Mumbai, Delhi and
-  // Amritsar are all isDirect: false, and Ahmedabad — the one isDirect:
-  // true record — is itself verification.status: 'unverified' with a
-  // genuine, unresolved contradiction in Air India's own source (see
-  // birmingham-ahmedabad's own note). Reworded to state only what's
-  // supported and point to each route guide rather than name a specific
-  // "direct" exception the evidence doesn't currently back.
-  { id: 'bhx-gulf-connections', airportSlug: 'birmingham', title: 'Birmingham South Asia routes are generally connection-based', body: "Most of Birmingham's current India and Pakistan routes are one-stop via Dubai, Doha or Sharjah rather than direct. Check the specific route guide for your destination before assuming either a direct or connecting service, and factor the connection time into family travel plans if a connection is confirmed." },
+  // Route refresh (30 Sept 2026): Birmingham–Amritsar is now a verified
+  // Air India nonstop exception. Other Birmingham South Asia routes still
+  // need checking route by route; never infer their status from this one.
+  { id: 'bhx-gulf-connections', airportSlug: 'birmingham', title: 'Check the route — Birmingham has both direct and connecting South Asia options', body: "Air India currently operates a direct Birmingham–Amritsar service, while many other Birmingham India and Pakistan routes require a connection. Check the specific route guide and your date before assuming either a direct or connecting service." },
   { id: 'bhx-train-station', airportSlug: 'birmingham', title: "The airport's own train station cuts journey time from central Birmingham to under 15 minutes", body: 'Birmingham International station sits directly at the terminal. For travellers coming from the city centre this is consistently faster and cheaper than driving and parking.' },
   { id: 'lhr-terminal-confirm', airportSlug: 'london-heathrow', title: 'Terminal assignment varies by airline, so always confirm', body: 'British Airways, Virgin Atlantic and Air India each operate from different terminals at Heathrow. A terminal mix-up here costs considerably more time than at a smaller regional airport, given Heathrow\'s scale.' },
   { id: 'lhr-terminal-4', airportSlug: 'london-heathrow', title: 'Allow extra time for Terminal 4, where most Gulf and Indian carriers operate', body: 'Terminal 4 has historically had longer security queues during peak summer and Diwali-season travel than Heathrow\'s other terminals.' },

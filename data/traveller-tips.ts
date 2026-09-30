@@ -109,33 +109,14 @@ export const travellerTips: TravellerTip[] = [
     body: 'Other UK passport holders need the standard e-Visa, applied for at least 4 days ahead. Book it alongside flights rather than leaving it until closer to departure, especially around Navratri and Diwali.',
   },
   {
-    // Trust fix (6 Sept 2026, independent audit): this tip previously
-    // assumed Birmingham had a direct Amritsar service alongside Gatwick's
-    // genuinely-confirmed one (isDirect: true, verified 18 Aug 2026, PR
-    // #145's own doc comment above shows that was the belief when this
-    // file was first split per-route). Rolling Reverification later
-    // established birmingham-amritsar is connecting-only (isDirect: false,
-    // no verification block — see data/routes.ts) and the Gatwick airport
-    // page's own "direct Amritsar service shared with Birmingham" claim was
-    // already corrected for this during PR #231 (5 Sept) — this tip was the
-    // one surface that fix missed, since it lives in a different file.
-    //
-    // Amendment (same day, founder review): the first fix still made its
-    // own separate, time-sensitive claim about what Air India's booking
-    // page currently shows — exactly the "second source of truth for
-    // current service state" pattern this fix exists to stop. This tip
-    // must stay strictly subordinate to JetStash's own canonical route
-    // presentation (getEffectiveRoutePresentation(), reused verbatim by
-    // the route-presentation test below) rather than asserting anything
-    // about the airline's own booking page independently. It recommends
-    // only what the route's own intro/bookingWindowNote already establish
-    // as unresolved (connection point, journey time, baggage) — no
-    // airline, schedule, hub, or baggage guarantee invented.
-    id: 'birmingham-amritsar-connecting-itinerary',
+    // Route refresh (30 Sept 2026): keep this travel tip subordinate to the
+    // verified canonical route record. It makes no independent frequency or
+    // baggage claim beyond the route's deliberately hedged public guidance.
+    id: 'birmingham-amritsar-direct-service',
     scope: { routeSlug: 'birmingham-amritsar' },
     category: 'logistics',
-    title: 'Compare the full connecting itinerary, not just a headline duration',
-    body: 'Birmingham to Amritsar is currently shown by JetStash as a connecting journey. Check the connection point, total journey time and baggage conditions for your exact itinerary before booking, rather than assuming a single fixed routing.',
+    title: 'Confirm the specific flight day before assuming a non-stop exists',
+    body: 'Birmingham to Amritsar is currently shown by JetStash as a direct service. Confirm your exact flight day, timing and baggage terms before booking, rather than assuming the service runs every day.',
   },
   {
     id: 'gatwick-amritsar-reduced-frequency',

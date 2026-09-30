@@ -112,12 +112,10 @@ export const airports: Airport[] = [
     // itself is verification.status: 'unverified', a genuine, currently
     // unresolved conflict across Air India's own current pages over
     // whether this service flies from Gatwick or Heathrow at all (see
-    // data/routes.ts's own note). Both fields also claimed Birmingham
-    // shares "a direct Amritsar service" — birmingham-amritsar is
-    // isDirect: false, connecting only, per that route's own record. This
-    // specific pair of claims was already reproduced and fixed on the
-    // India hub (app/india/page.tsx) and Ahmedabad's own destination card
-    // (this file's ahmedabad entry, flightTimeFromUK) as part of the same
+    // data/routes.ts's own note). The Birmingham–Amritsar route refresh
+    // (30 Sept 2026) independently verified that both airports have an
+    // Air India direct service; the copy below deliberately makes no
+    // unsupported claim about either route's daily operation.
     // fix — this was a third, independent duplicate of the identical
     // underlying facts.
     //
@@ -137,7 +135,7 @@ export const airports: Airport[] = [
     longHaulRoutes: ['Dubai', 'Doha', 'Amritsar'],
     shortHaulHighlights: ['Barcelona', 'Rome', 'Malaga', 'Antalya', 'Agadir', 'Tangier'],
     whyThisAirport:
-      'Gatwick works well as a Gulf gateway and Mediterranean leisure airport, with a confirmed direct Amritsar service, though not daily — check operating days before booking. Its Ahmedabad service currently has a genuine, unresolved conflict over which London airport Air India actually uses, so confirm the exact departure airport before assuming Gatwick. Birmingham\'s Amritsar route is a connection, not a direct flight. For Pakistan and Delhi/Mumbai-bound India travel specifically, Heathrow still has the wider network.',
+      'Gatwick works well as a Gulf gateway and Mediterranean leisure airport, with a confirmed direct Amritsar service, though not daily — check operating days before booking. Birmingham also has a current direct Amritsar service, so compare your specific dates and total airport journey. Its Ahmedabad service currently has a genuine, unresolved conflict over which London airport Air India actually uses, so confirm the exact departure airport before assuming Gatwick. For Pakistan and Delhi/Mumbai-bound India travel specifically, Heathrow still has the wider network.',
     servesCommunities: ['South London', 'Croydon', 'Surrey', 'Sussex'],
     hasDirectLongHaul: true,
   },
