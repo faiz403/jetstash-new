@@ -29,8 +29,8 @@ export interface OriginLegOutcome {
     resolvedAddress?: string;
     display?: string;
     clarificationReason?: string;
-    pendingConfirmation?: { placeId: string; formattedAddress: string; display?: string };
-    pendingSelection?: { candidates: Array<{ placeId: string; formattedAddress: string; display?: string }> };
+    pendingConfirmation?: { placeId: string; formattedAddress: string; display?: string; unnamed?: boolean; name?: string };
+    pendingSelection?: { candidates: Array<{ placeId: string; formattedAddress: string; display?: string; unnamed?: boolean; name?: string }> };
   };
   search?: SearchResult;
 }

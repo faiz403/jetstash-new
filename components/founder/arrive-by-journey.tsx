@@ -57,8 +57,10 @@ function legTime(leg: TimelineLeg, first: TimelineLeg | undefined): string {
 }
 
 /** Human label first; the raw address is kept as secondary so the traveller can still cross-check it. */
-const placeText = (p: { display?: string; formattedAddress?: string; address?: string } | undefined) => p?.display ?? p?.formattedAddress ?? p?.address ?? '';
-const addressNote = (p: { display?: string; formattedAddress?: string; address?: string } | undefined) => {
+const placeText = (p: { name?: string; display?: string; formattedAddress?: string; address?: string } | undefined) => p?.name ?? p?.display ?? p?.formattedAddress ?? p?.address ?? '';
+/** Secondary line: the venue name (when we fetched one) keeps Google's area/address context beneath it. */
+const addressNote = (p: { name?: string; display?: string; formattedAddress?: string; address?: string } | undefined) => {
+  if (p?.name) return p.display ?? p.formattedAddress ?? p.address;
   const address = p?.formattedAddress ?? p?.address;
   return address && p?.display && address !== p.display ? address : undefined;
 };
@@ -88,6 +90,8 @@ export function ArriveByJourney({ departureAirports, arrivalAirports }: { depart
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const resultRef = useRef<HTMLDivElement>(null);
+  /** Venue names the traveller was shown (and accepted) in a recovery prompt, so the final result keeps the recognisable name. Display only. */
+  const chosenNames = useRef<{ start?: string; destination?: string }>({});
 
   /** `next` is passed explicitly because React state updates are asynchronous: the request must carry the choices just made. */
   async function run(next: RecoveryState = recovery) {
@@ -144,9 +148,9 @@ export function ArriveByJourney({ departureAirports, arrivalAirports }: { depart
       <p className="text-sm font-semibold text-ink-900">{heading} needs a check</p>
       {detail.pendingConfirmation && <>
         <p className="mt-1 text-sm text-ink-700">You typed <strong>{typed}</strong>. Google found <strong>{placeText(detail.pendingConfirmation)}</strong>. Is this the place you mean?</p>
-        {addressNote(detail.pendingConfirmation) && <p className="mt-1 text-xs text-ink-500">Full address: {addressNote(detail.pendingConfirmation)}</p>}
+        {addressNote(detail.pendingConfirmation) && <p className="mt-1 text-xs text-ink-500">Location: {addressNote(detail.pendingConfirmation)}</p>}
         <div className="mt-3 flex flex-wrap gap-3">
-          <button type="button" disabled={loading} onClick={() => { const next = chooseConfirmed(recovery, side, detail.pendingConfirmation?.placeId ?? ''); setRecovery(next); void run(next); }} className="rounded-sm bg-ink-900 px-5 py-2 text-sm font-semibold text-white disabled:opacity-60">Yes — use this place</button>
+          <button type="button" disabled={loading} onClick={() => { chosenNames.current[side] = detail.pendingConfirmation?.name; const next = chooseConfirmed(recovery, side, detail.pendingConfirmation?.placeId ?? ''); setRecovery(next); void run(next); }} className="rounded-sm bg-ink-900 px-5 py-2 text-sm font-semibold text-white disabled:opacity-60">Yes — use this place</button>
           <button type="button" onClick={() => setPlan(null)} className="rounded-sm border border-ink-300 px-5 py-2 text-sm font-semibold text-ink-900">No — change it</button>
         </div>
       </>}
@@ -154,7 +158,7 @@ export function ArriveByJourney({ departureAirports, arrivalAirports }: { depart
         <p className="mt-1 text-sm text-ink-700">We found a few possible places. Choose the one you mean:</p>
         <div className="mt-3 grid gap-2">
           {detail.pendingSelection.candidates.map((candidate) => (
-            <button key={candidate.placeId} type="button" disabled={loading} onClick={() => { const next = chooseSelected(recovery, side, candidate.placeId); setRecovery(next); void run(next); }} className="rounded-sm border border-ink-300 bg-sand-50 px-4 py-2 text-left text-sm text-ink-900 hover:bg-sand-100 disabled:opacity-60">{placeText(candidate)}{addressNote(candidate) && <span className="block text-xs text-ink-500">{addressNote(candidate)}</span>}</button>
+            <button key={candidate.placeId} type="button" disabled={loading} onClick={() => { chosenNames.current[side] = candidate.name; const next = chooseSelected(recovery, side, candidate.placeId); setRecovery(next); void run(next); }} className="rounded-sm border border-ink-300 bg-sand-50 px-4 py-2 text-left text-sm text-ink-900 hover:bg-sand-100 disabled:opacity-60">{placeText(candidate)}{addressNote(candidate) && <span className="block text-xs text-ink-500">{addressNote(candidate)}</span>}</button>
           ))}
         </div>
       </>}
@@ -180,7 +184,7 @@ export function ArriveByJourney({ departureAirports, arrivalAirports }: { depart
     <form onSubmit={submit} className="mt-6 grid gap-4 rounded-md border border-ink-200 bg-sand-50 p-4 sm:p-6">
       <label className="text-sm">Where are you starting from? <span className="text-ink-500">(UK town, postcode or place)</span>
         <span className="mt-1 block text-xs text-ink-500">Leave time assumes you drive there, using live traffic.</span>
-        <input className={field} required maxLength={180} value={start} placeholder="e.g. Preston" onChange={(e) => { setStart(e.target.value); setRecovery((r) => invalidateSide(r, 'start')); setPlan(null); }} />
+        <input className={field} required maxLength={180} value={start} placeholder="e.g. Preston" onChange={(e) => { chosenNames.current.start = undefined; setStart(e.target.value); setRecovery((r) => invalidateSide(r, 'start')); setPlan(null); }} />
       </label>
       <label className="text-sm">Which airport are you flying from?
         <select className={field} value={departureAirport} onChange={(e) => setDepartureAirport(e.target.value)}>
@@ -204,7 +208,7 @@ export function ArriveByJourney({ departureAirports, arrivalAirports }: { depart
       </label>
       <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={hasConnection} onChange={(e) => setHasConnection(e.target.checked)} /> This flight has a connection or stop (Arrive By can't check those yet)</label>
       <label className="text-sm">Where are you going after that?
-        <input className={field} required maxLength={180} value={destination} placeholder="e.g. Mirpur, Azad Kashmir" onChange={(e) => { setDestination(e.target.value); setRecovery((r) => invalidateSide(r, 'destination')); setPlan(null); }} />
+        <input className={field} required maxLength={180} value={destination} placeholder="e.g. Mirpur, Azad Kashmir" onChange={(e) => { chosenNames.current.destination = undefined; setDestination(e.target.value); setRecovery((r) => invalidateSide(r, 'destination')); setPlan(null); }} />
       </label>
 
       <label className="text-sm">How many minutes before the flight do you want to be at the departure airport?
@@ -252,8 +256,8 @@ export function ArriveByJourney({ departureAirports, arrivalAirports }: { depart
           {!plan.leaveBy && !plan.finalArrival && <h2 className="mt-2 font-display text-2xl sm:text-3xl">We couldn't confirm this journey.</h2>}
         </>}
         {plan.places && (plan.places.start || plan.places.destination) && <div className="mt-3 grid gap-1 text-sm text-ink-700" data-testid="resolved-places">
-          {plan.places.start && <p>Start: <strong>{placeText(plan.places.start)}</strong>{addressNote(plan.places.start) ? <span className="text-ink-500"> · {addressNote(plan.places.start)}</span> : null}</p>}
-          {plan.places.destination && <p>Destination: <strong>{placeText(plan.places.destination)}</strong>{addressNote(plan.places.destination) ? <span className="text-ink-500"> · {addressNote(plan.places.destination)}</span> : null}</p>}
+          {plan.places.start && <p>Start: <strong>{placeText({ ...plan.places.start, name: chosenNames.current.start })}</strong>{addressNote({ ...plan.places.start, name: chosenNames.current.start }) ? <span className="text-ink-500"> · {addressNote({ ...plan.places.start, name: chosenNames.current.start })}</span> : null}</p>}
+          {plan.places.destination && <p>Destination: <strong>{placeText({ ...plan.places.destination, name: chosenNames.current.destination })}</strong>{addressNote({ ...plan.places.destination, name: chosenNames.current.destination }) ? <span className="text-ink-500"> · {addressNote({ ...plan.places.destination, name: chosenNames.current.destination })}</span> : null}</p>}
         </div>}
         <ul className="mt-3 list-disc space-y-1 pl-5 text-sm text-ink-700">
           {plan.reasons.map((reason) => <li key={reason}>{reason}</li>)}

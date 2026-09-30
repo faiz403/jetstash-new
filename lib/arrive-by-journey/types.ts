@@ -162,10 +162,10 @@ export interface JourneyPlan {
   /** Copy the founder specified: leave-by first, then the buffer, then the expected final arrival. */
   headline?: { leave: string; airport: string; arrival: string };
   /** Present when the START location needs confirming / choosing / clarifying, exactly as arrivalDetail is for the destination. */
-  startDetail?: { confidence: string; pendingConfirmation?: { placeId: string; formattedAddress: string; display?: string }; pendingSelection?: { candidates: Array<{ placeId: string; formattedAddress: string; display?: string }> }; clarificationReason?: string; resolvedAddress?: string; display?: string };
+  startDetail?: { confidence: string; pendingConfirmation?: { placeId: string; formattedAddress: string; display?: string; unnamed?: boolean; name?: string }; pendingSelection?: { candidates: Array<{ placeId: string; formattedAddress: string; display?: string; unnamed?: boolean; name?: string }> }; clarificationReason?: string; resolvedAddress?: string; display?: string };
   /** How the live origin leg was found: the measurable cost and convergence of the backward search. */
   originSearch?: { queries: number; converged: boolean; slackMinutes: number; departureAirport: string };
-  arrivalDetail?: { outcome: RoadOutcome; pendingConfirmation?: { placeId: string; formattedAddress: string; display?: string }; pendingSelection?: { candidates: Array<{ placeId: string; formattedAddress: string; display?: string }> }; clarificationReason?: string };
+  arrivalDetail?: { outcome: RoadOutcome; pendingConfirmation?: { placeId: string; formattedAddress: string; display?: string; unnamed?: boolean; name?: string }; pendingSelection?: { candidates: Array<{ placeId: string; formattedAddress: string; display?: string; unnamed?: boolean; name?: string }> }; clarificationReason?: string };
   /** Google's resolved places, for the traveller to check. Never sent to analytics or logs. */
   places?: { start?: { typed: string; display?: string; address?: string }; destination?: { typed: string; display?: string; address?: string } };
   calls?: { used: number; ceiling: number; breakdown: Record<string, number> };
