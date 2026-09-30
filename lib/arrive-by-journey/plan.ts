@@ -1,4 +1,5 @@
 import { CallCeilingExceeded, GoogleCallLedger, JOURNEY_CALL_CEILING, type MonthlyCallGuard } from './call-budget';
+import { enrichPendingNames, fetchPlaceDisplayName, type PlaceNameLookup } from './place-name';
 import { resolveJourneyAirports, type AirportMode, type OriginMode } from './airports';
 import { enteredOriginLeg, roadArrivalLeg } from './providers';
 import { googleOriginLeg, type OriginLegOutcome } from './origin-leg';
@@ -36,6 +37,10 @@ export interface PlanDeps {
   /** Test seams: replace the engines so a scenario can make an exact number of Google calls. */
   arrivalLegProvider?: typeof roadArrivalLeg;
   originLegProvider?: typeof googleOriginLeg;
+  /** LIVE: fetch venue names (Places, presentation only) for places awaiting confirmation. Default OFF so nothing spends unless a caller opts in. */
+  placeNames?: 'LIVE' | 'OFF';
+  /** Test seam replacing the Places lookup. */
+  placeNameLookup?: PlaceNameLookup;
 }
 
 function refusal(reason: NotEvidencedReason, detail: string): JourneyPlan {
@@ -121,19 +126,26 @@ export async function planFullJourney(input: JourneyInput, deps: PlanDeps): Prom
 
     const search = originOutcome?.search;
     const startPlace = originOutcome?.start;
+    let startDetail = startPlace && startPlace.confidence !== 'CONFIRMED' ? startPlace : undefined;
+    let arrivalDetail = road && road.outcome !== 'ETA_ONLY'
+      ? { outcome: road.outcome, pendingConfirmation: road.pendingConfirmation, pendingSelection: road.pendingSelection, clarificationReason: road.clarificationReason }
+      : undefined;
+    if (!ledger.exhausted && (deps.placeNames === 'LIVE' || deps.placeNameLookup)) {
+      const lookup: PlaceNameLookup = deps.placeNameLookup ?? ((placeId) => fetchPlaceDisplayName(deps.apiKey, placeId, ledger.fetch));
+      startDetail = await enrichPendingNames(startDetail, lookup, ledger);
+      arrivalDetail = await enrichPendingNames(arrivalDetail, lookup, ledger);
+    }
     return {
       ...finished,
       places: {
         start: startPlace && (startPlace.display || startPlace.resolvedAddress) ? { typed: input.start, display: startPlace.display, address: startPlace.resolvedAddress } : undefined,
         destination: road && (road.resolvedDisplay || road.resolvedDestination) ? { typed: input.destination, display: road.resolvedDisplay, address: road.resolvedDestination } : undefined,
       },
-      startDetail: originOutcome?.start && originOutcome.start.confidence !== 'CONFIRMED' ? originOutcome.start : undefined,
+      startDetail,
       originSearch: search
         ? { queries: search.queries, converged: search.status === 'OK' && search.converged, slackMinutes: search.status === 'OK' ? search.slackMinutes : 0, departureAirport: departure.code }
         : undefined,
-      arrivalDetail: road && road.outcome !== 'ETA_ONLY'
-        ? { outcome: road.outcome, pendingConfirmation: road.pendingConfirmation, pendingSelection: road.pendingSelection, clarificationReason: road.clarificationReason }
-        : undefined,
+      arrivalDetail,
       calls: { used: ledger.used, ceiling, breakdown: { ...ledger.breakdown() } },
     };
   } finally {

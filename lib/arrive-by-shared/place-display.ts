@@ -35,6 +35,11 @@ function kindOf(types: string[]): string | undefined {
   return undefined;
 }
 
+/** True when Google itself supplied a usable venue name for this result (not a plus code). */
+export function hasVenueName(result: DescribableResult): boolean {
+  return (result.address_components ?? []).some((c) => NAME_TYPES.some((t) => c.types?.includes(t)) && c.long_name && !PLUS_CODE.test(c.long_name.trim()));
+}
+
 export function describePlace(result: DescribableResult): string | undefined {
   const components = result.address_components ?? [];
   const types = result.types ?? [];

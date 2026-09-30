@@ -699,7 +699,7 @@ describe('multiple-POI selection — live evidence: "Aga Khan University Hospita
       { placeId: 'venue-b-id', formattedAddress: 'Venue B, Karachi, Pakistan' },
     ]);
     // Only safe display fields are exposed: no raw Google payload; display is our own derived label.
-    expect(Object.keys(result.candidates![0]).sort()).toEqual(['display', 'formattedAddress', 'placeId']);
+    expect(Object.keys(result.candidates![0]).sort()).toEqual(['display', 'formattedAddress', 'placeId', 'unnamed']);
   });
 
   it('no venue-typed candidates at all (locality/village duplicate representations, e.g. Sujawal) falls back to the original MULTIPLE_CANDIDATES behaviour — the POI selector must not apply here', async () => {

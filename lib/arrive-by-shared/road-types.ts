@@ -66,9 +66,9 @@ export interface RoadJourneyResult {
   /** Present only when destinationConfidence isn't CONFIRMED. */
   clarificationReason?: DestinationClarificationReason;
   /** Present only when destinationConfidence is NEEDS_CONFIRMATION. */
-  pendingConfirmation?: { placeId: string; formattedAddress: string; display?: string };
+  pendingConfirmation?: { placeId: string; formattedAddress: string; display?: string; unnamed?: boolean; name?: string };
   /** Present only when destinationConfidence is NEEDS_SELECTION. Only safe display fields, never a raw Google payload. */
-  pendingSelection?: { candidates: Array<{ placeId: string; formattedAddress: string; display?: string }> };
+  pendingSelection?: { candidates: Array<{ placeId: string; formattedAddress: string; display?: string; unnamed?: boolean; name?: string }> };
   /** Echoed back verbatim from the input for display only — never stored, never analytics-tracked. */
   deadlineReason?: string;
   /** ISO instants — all internally consistent in the airport's own timeZone regardless of the visitor's browser zone. */

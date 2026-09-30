@@ -31,8 +31,8 @@ export interface ResolvedPlace {
   /** Google's point for the resolved place when it came from the top result (not available for a candidate picked from a list). Server-side only. */
   location?: { lat: number; lng: number };
   clarificationReason?: DestinationClarificationReason;
-  pendingConfirmation?: { placeId: string; formattedAddress: string; display?: string };
-  pendingSelection?: { candidates: Array<{ placeId: string; formattedAddress: string; display?: string }> };
+  pendingConfirmation?: { placeId: string; formattedAddress: string; display?: string; unnamed?: boolean; name?: string };
+  pendingSelection?: { candidates: Array<{ placeId: string; formattedAddress: string; display?: string; unnamed?: boolean; name?: string }> };
 }
 
 export async function resolvePlaceWithChoice(
@@ -57,7 +57,7 @@ export async function resolvePlaceWithChoice(
     clarificationReason: confirmed || selectedCandidate ? undefined : geocode.clarificationReason,
     pendingConfirmation:
       confidence === 'NEEDS_CONFIRMATION' && geocode.placeId && geocode.formattedAddress
-        ? { placeId: geocode.placeId, formattedAddress: geocode.formattedAddress, display: geocode.display }
+        ? { placeId: geocode.placeId, formattedAddress: geocode.formattedAddress, display: geocode.display, unnamed: geocode.unnamed }
         : undefined,
     pendingSelection: confidence === 'NEEDS_SELECTION' && geocode.candidates ? { candidates: geocode.candidates } : undefined,
   };

@@ -62,7 +62,7 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const plan = await planFullJourney(input, { apiKey, guard, nowIso: new Date().toISOString(), airportMode: 'internal', originMode: 'LIVE' });
+    const plan = await planFullJourney(input, { apiKey, guard, nowIso: new Date().toISOString(), airportMode: 'internal', originMode: 'LIVE', placeNames: 'LIVE' });
     return NextResponse.json(plan);
   } catch {
     return NextResponse.json({ error: 'Arrive By could not check this journey.' }, { status: 500 });

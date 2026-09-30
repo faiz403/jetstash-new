@@ -231,8 +231,8 @@ describe('RECOVERY COMBINATIONS (fixed client, real route, stubbed Google): ever
       const firstResolved: PlaceSide = order === 'start-first' ? 'start' : 'destination';
       const second = session.sentBodies[1];
       expect(Object.keys(second).some((k) => (firstResolved === 'start' ? /^start/.test(k) : /^(confirmed|selected)PlaceId$/.test(k)))).toBe(true);
-      // Each request costs at most the 5-call journey (2 places + up to 3 route queries): recovery never blows the ceiling.
-      for (const calls of session.googleCallsPerRequest) expect(calls).toBeLessThanOrEqual(5);
+      // A recovery request never blows the 10-call journey ceiling (2 geocodes + up to 3 route queries + one Places name lookup per unnamed candidate shown).
+      for (const calls of session.googleCallsPerRequest) expect(calls).toBeLessThanOrEqual(10);
     },
   );
 

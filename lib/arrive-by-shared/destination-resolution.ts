@@ -55,12 +55,14 @@ export type DestinationClarificationReason =
   | 'WRONG_COUNTRY'
   | 'GEOCODE_FAILED';
 
-import { describePlace } from './place-display';
+import { describePlace, hasVenueName } from './place-display';
 
 export interface GeocodeResult {
   confidence: DestinationConfidence;
   /** Human-readable label built only from Google's own components (see place-display.ts). */
   display?: string;
+  /** True when Google gave this result no venue name (only an address / area). Presentation hint only; never affects safety. */
+  unnamed?: boolean;
   clarificationReason?: DestinationClarificationReason;
   formattedAddress?: string;
   resolvedPrimaryPlace?: string;
@@ -72,7 +74,7 @@ export interface GeocodeResult {
   candidateCount: number;
   status: string;
   /** Present only when confidence is NEEDS_SELECTION — the genuinely different named-venue candidates to choose between. */
-  candidates?: Array<{ placeId: string; formattedAddress: string; display?: string }>;
+  candidates?: Array<{ placeId: string; formattedAddress: string; display?: string; unnamed?: boolean; name?: string }>;
   /**
    * Google's own point for the resolved place, server-side only (never accepted from a client and never sent to one).
    * Used to route FROM a start location: Google Routes cannot route from some locality names/place IDs as text (it
@@ -276,6 +278,7 @@ function classifyGeocodeResult(
     clarificationReason,
     formattedAddress: result.formatted_address,
     display: describePlace(result),
+    unnamed: hasVenueName(result) ? undefined : true,
     location: Number.isFinite(result.geometry?.location?.lat) && Number.isFinite(result.geometry?.location?.lng) ? { lat: result.geometry!.location!.lat as number, lng: result.geometry!.location!.lng as number } : undefined,
     resolvedPrimaryPlace,
     placeId: result.place_id,
@@ -335,7 +338,7 @@ export async function resolveDestination(apiKey: string, destination: string, co
           candidateCount: body.results.length,
           partialMatch: false,
           status: body.status,
-          candidates: usable.map((r) => ({ placeId: r.place_id!, formattedAddress: r.formatted_address!, display: describePlace(r) })),
+          candidates: usable.map((r) => ({ placeId: r.place_id!, formattedAddress: r.formatted_address!, display: describePlace(r), unnamed: hasVenueName(r) ? undefined : true })),
         };
       }
     }

@@ -102,3 +102,20 @@ Driven by the F4-S synthetic run (`ARRIVE_BY_F4S_SYNTHETIC_VALIDATION.md`). No e
   parking, drop-off, shuttle and rental-car return.
 - **Unchanged:** server re-verification of every place id, forged/stale protection, the 10-call ceiling, the monthly guard. Place
   labels are not sent to analytics and not logged (asserted in `tests/arrive-by-journey-trust.test.ts`).
+
+### F3.2 addendum: Places name fallback (presentation only)
+
+`lib/arrive-by-journey/place-name.ts`. Geocoding stays the resolver and the source of truth; Places (New) Place Details with
+`displayName` only is used purely to show a recognisable name in a confirm/select prompt.
+
+- Called only for a place already in NEEDS_CONFIRMATION / NEEDS_SELECTION whose geocode had no venue name (`unnamed`), and only
+  for the candidates actually shown. Never for a normal resolved place ("Newport, Wales, United Kingdom").
+- Every call goes through the same `GoogleCallLedger` (10-call ceiling) and so the monthly guard. Affordability is checked before
+  each call, so a refusal never trips the journey's exhaustion flag. Insufficient budget, a non-2xx, a network error or a malformed
+  or plus-code name all fall back to the safe geocode label. A name is never invented.
+- The name never affects safety: confirm/select re-verification still runs against a fresh geocode on the next request.
+- UI: name on the first line, Google's area/address context beneath; the accepted name is kept for the final "Destination:" line.
+- Opt-in per caller (`placeNames: 'LIVE'`, set only by the internal journey route); the public road engines are untouched.
+- **Blocked in this environment:** the local/Preview Google key has API restrictions that exclude Places API (New)
+  (`API_KEY_SERVICE_BLOCKED`, HTTP 403), so live enrichment has NOT been observed working. It falls back as designed. The founder
+  must enable "Places API (New)" on the project and add it to the key's API restrictions. Cost per call is unverified.
