@@ -70,3 +70,14 @@ describe('privacy: place labels are not sent to analytics or logs', () => {
     for (const line of route.split('\n').filter((l) => /console\./.test(l))) expect(line).not.toMatch(/start|destination|place|address/i);
   });
 });
+
+describe('venueNameMatchesTyped: an area name is not a recognisable venue name', () => {
+  const palm = { types: ['lodging'], address_components: [c('Palm Jumeirah', 'point_of_interest', 'establishment'), c('Dubai', 'locality')] };
+  it('flags "Palm Jumeirah" when the traveller typed Atlantis The Royal', async () => {
+    const { venueNameMatchesTyped } = await import('../lib/arrive-by-shared/place-display');
+    expect(venueNameMatchesTyped(palm, 'Atlantis The Royal, Dubai')).toBe(false);
+    expect(venueNameMatchesTyped(palm, 'Palm Jumeirah hotel')).toBe(true);
+    expect(venueNameMatchesTyped({ types: ['train_station'], address_components: [c('Preston Railway Station', 'establishment')] }, 'Preston railway station')).toBe(true);
+    expect(venueNameMatchesTyped({ types: ['lodging'], address_components: [c('VQ8F+2X', 'point_of_interest')] }, 'Atlantis')).toBe(false);
+  });
+});

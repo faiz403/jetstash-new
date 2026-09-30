@@ -40,6 +40,21 @@ export function hasVenueName(result: DescribableResult): boolean {
   return (result.address_components ?? []).some((c) => NAME_TYPES.some((t) => c.types?.includes(t)) && c.long_name && !PLUS_CODE.test(c.long_name.trim()));
 }
 
+const fold = (text: string) => text.normalize('NFKD').replace(/[̀-ͯ]/g, '').toLowerCase();
+const words = (text: string) => fold(text).split(/[^a-z0-9]+/).filter((w) => w.length >= 4);
+
+/**
+ * True when Google's venue name is one the traveller would recognise from what they typed (they share a meaningful word).
+ * "Palm Jumeirah" for a typed "Atlantis The Royal, Dubai" is a name Google gave the AREA, not what they asked for, so it is
+ * treated as unrecognisable and a proper name is looked up. Presentation hint only; it never affects safety.
+ */
+export function venueNameMatchesTyped(result: DescribableResult, typed: string): boolean {
+  const typedWords = new Set(words(typed));
+  return (result.address_components ?? []).some(
+    (c) => NAME_TYPES.some((t) => c.types?.includes(t)) && c.long_name && !PLUS_CODE.test(c.long_name.trim()) && words(c.long_name).some((w) => typedWords.has(w)),
+  );
+}
+
 export function describePlace(result: DescribableResult): string | undefined {
   const components = result.address_components ?? [];
   const types = result.types ?? [];
