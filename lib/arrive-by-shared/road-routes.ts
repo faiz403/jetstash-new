@@ -36,6 +36,7 @@ export async function computeDriveRouteFrom(
   origin: Origin,
   destinationAddress: string,
   departureTime: string,
+  fetchImpl: typeof fetch = fetch,
 ): Promise<DriveResult> {
   const requestBody = {
     origin: routesOrigin(origin),
@@ -51,7 +52,7 @@ export async function computeDriveRouteFrom(
 
   let response: Response;
   try {
-    response = await fetch(ROUTES_ENDPOINT, {
+    response = await fetchImpl(ROUTES_ENDPOINT, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
