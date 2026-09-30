@@ -55,3 +55,26 @@ refused as non-UK. Focus moved to the answer; no horizontal overflow.
 ## Not in F3
 
 Any public exposure, a public URL or navigation, the flight lookup, transit legs, non-UK departures, Phase D.
+
+## F3.1 — place-recovery blocker (fixed)
+
+**Bug:** with a start needing selection and a destination needing confirmation ("Preston railway station" → "Atlantis The
+Royal"), confirming one side brought the other side's prompt back, forever.
+
+**Root cause:** the API is stateless and re-resolves BOTH places from text on every request, honouring only the place IDs sent
+with that request. The first UI sent only the choice just made, so request 2 (start chosen) dropped the destination's pending
+choice and request 3 (destination chosen) dropped the start's. The server was correct: the same two choices sent together
+complete in one request. (`tests/arrive-by-journey-place-recovery.test.ts` reproduces the oscillation with an "old client" and
+proves it.)
+
+**Fix (client only; no server verification changed):** `lib/arrive-by-journey/place-recovery.ts` models `start` and
+`destination` as independent choices (`confirmedPlaceId` | `selectedPlaceId`); every submission resends both; editing one side's
+text invalidates only that side; changing the arrival airport to a different country invalidates only the destination; a side
+the server sends back for recovery despite a supplied choice (stale/forged) is forgotten alone. The server still re-verifies
+every ID against a fresh geocode each request and applies each side's country gate independently.
+
+**Verified:** all combinations (start/destination × NEEDS_SELECTION / NEEDS_CONFIRMATION / RESOLVED, both resolve orders) complete
+in 3 requests; live in dev with real Google, desktop and 390 px mobile: Preston railway station → MAN → DXB → Atlantis The Royal
+(both orders), Royal Preston Hospital → Burj Al Arab (hospital + hotel), Preston railway station → KHI → Aga Khan University
+Hospital (station + hospital). Worth knowing: each recovery step is a submission, so a two-prompt journey uses 3 of the 5-per-60-s
+budget.

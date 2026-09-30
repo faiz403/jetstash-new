@@ -509,7 +509,10 @@ describe('the internal UI and its non-public status', () => {
   });
 
   it('confirmation and selection controls exist for BOTH the start and the destination', () => {
-    for (const key of ['startConfirmedPlaceId', 'startSelectedPlaceId', 'confirmedPlaceId', 'selectedPlaceId']) expect(component).toContain(key);
+    // The four request fields are produced by the independent-state reducer (see arrive-by-journey-place-recovery.test.ts).
+    expect(component).toContain('toRequestFields(next)');
+    expect(component).toMatch(/<PendingChoice which="start" \/>/);
+    expect(component).toMatch(/<PendingChoice which="destination" \/>/);
     expect(component).toMatch(/Yes — use this place/);
     expect(component).toMatch(/aria-live="polite"/);
     expect(component).toMatch(/resultRef\.current\?\.focus\(\)/);

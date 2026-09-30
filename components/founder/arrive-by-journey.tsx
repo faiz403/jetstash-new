@@ -4,12 +4,20 @@ import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import { clockOf } from '@/lib/arrive-by-journey/local-time';
 import type { AirportOption } from '@/lib/arrive-by-journey/airport-options';
 import type { JourneyPlan, TimelineLeg } from '@/lib/arrive-by-journey/types';
+import {
+  EMPTY_RECOVERY, chooseConfirmed, chooseSelected, invalidateForArrivalAirportChange, invalidateSide, pendingSides, reconcileWithPlan, toRequestFields,
+  type RecoveryState,
+} from '@/lib/arrive-by-journey/place-recovery';
 
 /**
  * INTERNAL full-journey preview. One question order, start to finish:
  *
  *   Where are you starting from? -> Which airport are you flying from? -> When does the flight leave?
  *   -> Where are you landing? -> When does it land? -> Where are you going after that?
+ *
+ * Start and destination recovery are INDEPENDENT pieces of state (lib/arrive-by-journey/place-recovery.ts): every
+ * submission resends the choice already made for BOTH sides, so resolving one never resets the other. The server
+ * re-verifies every ID on every request; the state held here is convenience, never trust.
  *
  * and one answer order: WHEN SHOULD I LEAVE first, then the departure-airport result, then the final arrival.
  * It posts only what the traveller typed to the internal API; airports, coordinates, time zones and country rules
@@ -62,12 +70,14 @@ export function ArriveByJourney({ departureAirports, arrivalAirports }: { depart
   const [deadline, setDeadline] = useState('');
   const [readiness, setReadiness] = useState('');
   const [token, setToken] = useState('');
+  const [recovery, setRecovery] = useState<RecoveryState>(EMPTY_RECOVERY);
   const [plan, setPlan] = useState<JourneyPlan | null>(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const resultRef = useRef<HTMLDivElement>(null);
 
-  async function run(choices: { startConfirmedPlaceId?: string; startSelectedPlaceId?: string; confirmedPlaceId?: string; selectedPlaceId?: string } = {}) {
+  /** `next` is passed explicitly because React state updates are asynchronous: the request must carry the choices just made. */
+  async function run(next: RecoveryState = recovery) {
     setLoading(true); setError(''); setPlan(null);
     try {
       const response = await fetch('/api/founder/arrive-by-journey', {
@@ -84,12 +94,14 @@ export function ArriveByJourney({ departureAirports, arrivalAirports }: { depart
             finalDeadlineLocal: deadline || undefined,
             destinationReadinessMinutes: readiness === '' ? undefined : Number(readiness),
           },
-          ...choices,
+          ...toRequestFields(next),
         }),
       });
       const body = (await response.json()) as JourneyPlan | { error?: string };
       if (!response.ok || 'error' in body) throw new Error('error' in body && body.error ? body.error : 'Arrive By could not check this journey.');
       setPlan(body as JourneyPlan);
+      // A side sent back for recovery even though we supplied a choice for it means that ID was stale/forged: forget it (that side only).
+      setRecovery(reconcileWithPlan(next, body as JourneyPlan));
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : 'Arrive By could not check this journey.');
     } finally {
@@ -113,15 +125,14 @@ export function ArriveByJourney({ departureAirports, arrivalAirports }: { depart
     const detail = pendingFor(which);
     if (!detail) return null;
     const heading = which === 'start' ? 'Your start location' : 'Your final destination';
-    const confirmKey = which === 'start' ? 'startConfirmedPlaceId' : 'confirmedPlaceId';
-    const selectKey = which === 'start' ? 'startSelectedPlaceId' : 'selectedPlaceId';
+    const side = which;
     const typed = which === 'start' ? start : destination;
     return <div className="mt-4 rounded-md border border-brass bg-white p-4">
       <p className="text-sm font-semibold text-ink-900">{heading} needs a check</p>
       {detail.pendingConfirmation && <>
         <p className="mt-1 text-sm text-ink-700">You entered <strong>{typed}</strong>. Google found <strong>{detail.pendingConfirmation.formattedAddress}</strong>. Is this the place you mean?</p>
         <div className="mt-3 flex flex-wrap gap-3">
-          <button type="button" disabled={loading} onClick={() => void run({ [confirmKey]: detail.pendingConfirmation?.placeId })} className="rounded-sm bg-ink-900 px-5 py-2 text-sm font-semibold text-white disabled:opacity-60">Yes — use this place</button>
+          <button type="button" disabled={loading} onClick={() => { const next = chooseConfirmed(recovery, side, detail.pendingConfirmation?.placeId ?? ''); setRecovery(next); void run(next); }} className="rounded-sm bg-ink-900 px-5 py-2 text-sm font-semibold text-white disabled:opacity-60">Yes — use this place</button>
           <button type="button" onClick={() => setPlan(null)} className="rounded-sm border border-ink-300 px-5 py-2 text-sm font-semibold text-ink-900">No — change it</button>
         </div>
       </>}
@@ -129,7 +140,7 @@ export function ArriveByJourney({ departureAirports, arrivalAirports }: { depart
         <p className="mt-1 text-sm text-ink-700">We found a few possible places. Choose the one you mean:</p>
         <div className="mt-3 grid gap-2">
           {detail.pendingSelection.candidates.map((candidate) => (
-            <button key={candidate.placeId} type="button" disabled={loading} onClick={() => void run({ [selectKey]: candidate.placeId })} className="rounded-sm border border-ink-300 bg-sand-50 px-4 py-2 text-left text-sm text-ink-900 hover:bg-sand-100 disabled:opacity-60">{candidate.formattedAddress}</button>
+            <button key={candidate.placeId} type="button" disabled={loading} onClick={() => { const next = chooseSelected(recovery, side, candidate.placeId); setRecovery(next); void run(next); }} className="rounded-sm border border-ink-300 bg-sand-50 px-4 py-2 text-left text-sm text-ink-900 hover:bg-sand-100 disabled:opacity-60">{candidate.formattedAddress}</button>
           ))}
         </div>
       </>}
@@ -154,7 +165,7 @@ export function ArriveByJourney({ departureAirports, arrivalAirports }: { depart
 
     <form onSubmit={submit} className="mt-6 grid gap-4 rounded-md border border-ink-200 bg-sand-50 p-4 sm:p-6">
       <label className="text-sm">Where are you starting from? <span className="text-ink-500">(UK town, postcode or place)</span>
-        <input className={field} required maxLength={180} value={start} placeholder="e.g. Preston" onChange={(e) => { setStart(e.target.value); setPlan(null); }} />
+        <input className={field} required maxLength={180} value={start} placeholder="e.g. Preston" onChange={(e) => { setStart(e.target.value); setRecovery((r) => invalidateSide(r, 'start')); setPlan(null); }} />
       </label>
       <label className="text-sm">Which airport are you flying from?
         <select className={field} value={departureAirport} onChange={(e) => setDepartureAirport(e.target.value)}>
@@ -165,7 +176,11 @@ export function ArriveByJourney({ departureAirports, arrivalAirports }: { depart
         <input className={field} type="datetime-local" required value={departsLocal} onChange={(e) => setDepartsLocal(e.target.value)} />
       </label>
       <label className="text-sm">Where are you landing?
-        <select className={field} value={arrivalAirport} onChange={(e) => setArrivalAirport(e.target.value)}>
+        <select className={field} value={arrivalAirport} onChange={(e) => {
+          const country = (code: string) => arrivalAirports.find((a) => a.code === code)?.country;
+          setRecovery((r) => invalidateForArrivalAirportChange(r, country(arrivalAirport), country(e.target.value)));
+          setArrivalAirport(e.target.value);
+        }}>
           {arrivalAirports.map((option) => <option key={option.code} value={option.code}>{label(option)}</option>)}
         </select>
       </label>
@@ -174,7 +189,7 @@ export function ArriveByJourney({ departureAirports, arrivalAirports }: { depart
       </label>
       <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={hasConnection} onChange={(e) => setHasConnection(e.target.checked)} /> This flight has a connection or stop (Arrive By can't check those yet)</label>
       <label className="text-sm">Where are you going after that?
-        <input className={field} required maxLength={180} value={destination} placeholder="e.g. Mirpur, Azad Kashmir" onChange={(e) => { setDestination(e.target.value); setPlan(null); }} />
+        <input className={field} required maxLength={180} value={destination} placeholder="e.g. Mirpur, Azad Kashmir" onChange={(e) => { setDestination(e.target.value); setRecovery((r) => invalidateSide(r, 'destination')); setPlan(null); }} />
       </label>
 
       <label className="text-sm">How many minutes before the flight do you want to be at the departure airport?
@@ -222,6 +237,9 @@ export function ArriveByJourney({ departureAirports, arrivalAirports }: { depart
           {plan.reasons.map((reason) => <li key={reason}>{reason}</li>)}
         </ul>
         {plan.deadline && <p className="mt-2 text-sm text-ink-700">Margin against your deadline: about {plan.deadline.marginMinutes} minutes.</p>}
+        {(plan.startDetail || plan.arrivalDetail) && <p className="mt-3 text-xs text-ink-500" data-testid="place-status">
+          Start: {pendingSides(plan).start === 'NONE' ? 'confirmed' : 'needs a check'} · Destination: {pendingSides(plan).destination === 'NONE' ? 'confirmed' : 'needs a check'}
+        </p>}
         <PendingChoice which="start" />
         <PendingChoice which="destination" />
 
