@@ -282,7 +282,7 @@ function classifyGeocodeResult(
  * there) for why the Geocoding API's candidate list is what actually
  * enables ambiguity detection that Routes API v2 alone cannot replicate.
  */
-export async function resolveDestination(apiKey: string, destination: string, config: DestinationResolutionConfig): Promise<GeocodeResult> {
+export async function resolveDestination(apiKey: string, destination: string, config: DestinationResolutionConfig, fetchImpl: typeof fetch = fetch): Promise<GeocodeResult> {
   const url = new URL(GEOCODE_ENDPOINT);
   url.searchParams.set('address', destination);
   if (config.regionBias) url.searchParams.set('region', config.regionBias);
@@ -290,7 +290,7 @@ export async function resolveDestination(apiKey: string, destination: string, co
 
   let response: Response;
   try {
-    response = await fetch(url.toString(), { cache: 'no-store' });
+    response = await fetchImpl(url.toString(), { cache: 'no-store' });
   } catch {
     return { confidence: 'UNRESOLVED', clarificationReason: 'GEOCODE_FAILED', partialMatch: false, candidateCount: 0, status: 'REQUEST_FAILED' };
   }

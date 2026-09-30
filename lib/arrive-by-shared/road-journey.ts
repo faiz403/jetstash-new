@@ -42,6 +42,7 @@ export async function computeRoadJourney(
   airport: RoadJourneyAirport,
   input: RoadJourneyInput,
   rules: DestinationResolutionConfig,
+  fetchImpl: typeof fetch = fetch,
 ): Promise<RoadJourneyResult> {
   const landingMs = Date.parse(localDateTimeToIso(input.landingAt, airport.timeZone));
   const readyOutsideMs = landingMs + input.airportExitBufferMinutes * 60000;
@@ -49,7 +50,7 @@ export async function computeRoadJourney(
   const roadDepartureMs = readyOutsideMs + pickupWaitMs;
   const roadDepartureIso = new Date(roadDepartureMs).toISOString();
 
-  const geocode = await resolveDestination(apiKey, input.destination, rules);
+  const geocode = await resolveDestination(apiKey, input.destination, rules, fetchImpl);
 
   // A prior NEEDS_CONFIRMATION result is only ever honoured if Google,
   // asked again right now, independently resolves to that exact placeId
@@ -101,7 +102,7 @@ export async function computeRoadJourney(
     return { ...base, outcome };
   }
 
-  const drive = await computeDriveRouteFrom(apiKey, airport.origin, resolvedDestination ?? input.destination, roadDepartureIso);
+  const drive = await computeDriveRouteFrom(apiKey, airport.origin, resolvedDestination ?? input.destination, roadDepartureIso, fetchImpl);
   if (drive.status !== 'AVAILABLE' || drive.durationSeconds === undefined) {
     return { ...base, outcome: 'ROUTE_UNAVAILABLE' };
   }
