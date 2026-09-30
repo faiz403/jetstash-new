@@ -191,6 +191,20 @@ describe('start location safety (shared resolver, UK gate)', () => {
     expect(genuine.leaveBy).toBeDefined();
   });
 
+  it('SAFETY: a nice Places name changes only the label: the place still needs the traveller, a forged id still fails, and the ceiling holds', async () => {
+    const g = google({ 'test street': [venue], mirpur: [MIRPUR] }, 55);
+    const lookups: string[] = [];
+    const nice = async (id: string) => { lookups.push(id); return 'The Lovely Grand Hotel'; };
+    const first = await planFullJourney({ ...PRESTON_TO_MIRPUR, start: '1 Test Street' }, { apiKey: KEY, guard: guard(), nowIso: NOW, baseFetch: g.fetch, placeNameLookup: nice });
+    expect(first.startDetail?.pendingConfirmation).toMatchObject({ placeId: 'venue-1', name: 'The Lovely Grand Hotel' });
+    expect(first.startDetail?.confidence).toBe('NEEDS_CONFIRMATION'); // a nicer name did not upgrade the confidence
+    expect(first.leaveBy).toBeUndefined();
+    expect(lookups).toEqual(['venue-1']);
+    const forged = await planFullJourney({ ...PRESTON_TO_MIRPUR, start: '1 Test Street', startConfirmedPlaceId: 'forged' }, { apiKey: KEY, guard: guard(), nowIso: NOW, baseFetch: g.fetch, placeNameLookup: nice });
+    expect(forged.notEvidenced?.reason).toBe('START_LOCATION_UNCONFIRMED');
+    expect(first.calls!.used).toBeLessThanOrEqual(first.calls!.ceiling);
+  });
+
   it('a start outside the UK is unsuitable and is never routed', async () => {
     const PARIS = at('FR', 'France', 'Paris', 48.8566, 2.3522);
     const g = google({ paris: [PARIS], mirpur: [MIRPUR] }, 55);

@@ -55,7 +55,7 @@ export type DestinationClarificationReason =
   | 'WRONG_COUNTRY'
   | 'GEOCODE_FAILED';
 
-import { describePlace, hasVenueName } from './place-display';
+import { describePlace, venueNameMatchesTyped } from './place-display';
 
 export interface GeocodeResult {
   confidence: DestinationConfidence;
@@ -278,7 +278,7 @@ function classifyGeocodeResult(
     clarificationReason,
     formattedAddress: result.formatted_address,
     display: describePlace(result),
-    unnamed: hasVenueName(result) ? undefined : true,
+    unnamed: venueNameMatchesTyped(result, destination) ? undefined : true,
     location: Number.isFinite(result.geometry?.location?.lat) && Number.isFinite(result.geometry?.location?.lng) ? { lat: result.geometry!.location!.lat as number, lng: result.geometry!.location!.lng as number } : undefined,
     resolvedPrimaryPlace,
     placeId: result.place_id,
@@ -338,7 +338,7 @@ export async function resolveDestination(apiKey: string, destination: string, co
           candidateCount: body.results.length,
           partialMatch: false,
           status: body.status,
-          candidates: usable.map((r) => ({ placeId: r.place_id!, formattedAddress: r.formatted_address!, display: describePlace(r), unnamed: hasVenueName(r) ? undefined : true })),
+          candidates: usable.map((r) => ({ placeId: r.place_id!, formattedAddress: r.formatted_address!, display: describePlace(r), unnamed: venueNameMatchesTyped(r, destination) ? undefined : true })),
         };
       }
     }

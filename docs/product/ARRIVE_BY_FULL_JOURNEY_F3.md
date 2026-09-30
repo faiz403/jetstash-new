@@ -116,6 +116,4 @@ Driven by the F4-S synthetic run (`ARRIVE_BY_F4S_SYNTHETIC_VALIDATION.md`). No e
 - The name never affects safety: confirm/select re-verification still runs against a fresh geocode on the next request.
 - UI: name on the first line, Google's area/address context beneath; the accepted name is kept for the final "Destination:" line.
 - Opt-in per caller (`placeNames: 'LIVE'`, set only by the internal journey route); the public road engines are untouched.
-- **Blocked in this environment:** the local/Preview Google key has API restrictions that exclude Places API (New)
-  (`API_KEY_SERVICE_BLOCKED`, HTTP 403), so live enrichment has NOT been observed working. It falls back as designed. The founder
-  must enable "Places API (New)" on the project and add it to the key's API restrictions. Cost per call is unverified.
+- **Live-verified (local key, Places API (New) enabled and added to the key's API restrictions):** real names returned for Royal Preston Hospital, Serena Hotel, Hilton London Paddington, Radisson Blu Hotel Manchester Airport and Atlantis The Royal; a plain locality (Newport) made zero Places calls. A venue name that shares no meaningful word with what the traveller typed (Google's Palm Jumeirah for `Atlantis The Royal`) counts as unrecognisable and also triggers the lookup. Cost per call is unverified.
