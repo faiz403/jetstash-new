@@ -1,0 +1,57 @@
+# Arrive By full journey — F3 (composed internal API + internal UI)
+
+Status: implemented on `feat/arrive-by-full-journey-f3` (from `300cae5`). **Internal only.** No public route, no
+navigation, no sitemap entry, no release-table change, no worldwide rollout; the arrival-only `/arrive-by` product is
+untouched (tests assert none of its files import the journey code). Earlier phases: `..._F0_F1.md`, `..._F2.md`.
+
+## What F3 adds
+
+- **`POST /api/founder/arrive-by-journey`** — the composed journey: start → departure airport → flight → arrival airport →
+  final destination, through `planFullJourney` with ONE ledger (10 calls for the whole journey) and the monthly guard.
+  Always LIVE (never accepts an entered origin duration); allow-listed body fields only; nothing stored, logged or sent
+  to analytics.
+- **`/founder/arrive-by-journey`** — the internal form. Question order: *Where are you starting from? → Which airport
+  are you flying from? → When does the flight leave? → Where are you landing? → When does it land? → Where are you going
+  after that?* Answer order: **"When should I leave?"** first, then the departure-airport line, then the final arrival,
+  then the per-leg timeline with each leg's evidence and the internal call count. Confirmation / selection controls exist
+  for **both** the start and the destination. The airport lists are computed on the server from the same evidence tables the
+  API enforces (15 departure airports, 40 arrival airports) and passed as props, so the catalogue never reaches the client.
+
+## Access model (a decision worth knowing about)
+
+The founder flag alone is not enough for a deployed internal beta: the endpoint spends real Google money (~5 calls a
+journey), so anyone who found the URL could run up the bill. In production it also needs a **server-side shared secret**:
+
+1. `FOUNDER_DASHBOARD_ENABLED=true` (the existing founder gate; 404 otherwise)
+2. `ARRIVE_BY_INTERNAL_TOKEN` set to a random string of at least 16 characters, sent as `x-arrive-by-internal-token`,
+   compared in constant time (a missing, short or wrong token is the same byte-identical 404)
+3. the product-wide rate limit (5 submissions / 60 s; counts submissions, not Google calls)
+4. **durable shared call-budget storage configured**, else `503` and **not one Google call** is made
+5. the monthly guard: reserve 10, settle to actual; alerts at 50% / 80% (a server log line with counts only, no journey
+   detail); hard stop at 2,000
+
+In `next dev` neither the flag nor a token is required (an `ARRIVE_BY_INTERNAL_TOKEN` that is set is still enforced) and the
+in-process store is used. The UI keeps the token in component state only.
+
+## Shared store (Upstash)
+
+The real path is wired and tested end to end with a stubbed Upstash REST endpoint (reserve `+10`, settle `-6` for a 4-call
+journey; outage refuses; 1,995 used refuses and refunds). It activates when `UPSTASH_REDIS_REST_URL` /
+`UPSTASH_REDIS_REST_TOKEN` (or the Vercel KV names `KV_REST_API_URL` / `KV_REST_API_TOKEN`) exist.
+
+**Not provisioned by me.** `vercel integration add upstash/upstash-kv` requires accepting the marketplace legal terms and
+choosing a plan, which the CLI itself restricts to an interactive terminal with human confirmation. That is the one
+unavoidable action: run it once (free plan is enough), link it to the `jetstash-new` project; it adds the env vars.
+For a deployed internal beta also set `ARRIVE_BY_INTERNAL_TOKEN` and `FOUNDER_DASHBOARD_ENABLED=true` on a **Preview**
+environment only, never Production.
+
+## Verified live (dev, real Google, headless Edge, desktop and 390 px mobile)
+
+Preston → MAN → ISB → Mirpur: "Leave Preston by around 07:50 / You should reach Manchester Airport with your chosen
+2-hour buffer. / Expected final arrival: Mirpur around 02:40"; 5 of 10 calls (geocode 2, routes 3), search 2 queries,
+converged. A venue start ("Preston Guild Hall") stopped at confirmation and completed after "Yes"; a Paris start was
+refused as non-UK. Focus moved to the answer; no horizontal overflow.
+
+## Not in F3
+
+Any public exposure, a public URL or navigation, the flight lookup, transit legs, non-UK departures, Phase D.
