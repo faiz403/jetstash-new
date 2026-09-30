@@ -152,19 +152,21 @@ export interface JourneyPlan {
   reasons: string[];
   notEvidenced?: { reason: NotEvidencedReason; detail?: string };
   /** The headline answer: when to leave the start location. */
-  leaveBy?: { iso: string; zone: string; clock: string; roundedDownToFive: true };
+  leaveBy?: { iso: string; zone: string; clock: string; dateLabel: string; roundedDownToFive: true };
   /** The traveller's chosen buffer, echoed so the copy can state it. */
-  airportArriveBy?: { iso: string; zone: string; clock: string; bufferMinutes: number };
+  airportArriveBy?: { iso: string; zone: string; clock: string; dateLabel: string; dayOffset: number; bufferMinutes: number };
   flight?: { departsIso: string; arrivesIso: string; elapsedMinutes: number; departZone: string; arriveZone: string };
-  finalArrival?: { iso: string; zone: string; clock: string };
+  finalArrival?: { iso: string; zone: string; clock: string; dateLabel: string; dayOffset: number };
   deadline?: { iso: string; latestAcceptableIso: string; marginMinutes: number };
   timeline: TimelineLeg[];
   /** Copy the founder specified: leave-by first, then the buffer, then the expected final arrival. */
   headline?: { leave: string; airport: string; arrival: string };
   /** Present when the START location needs confirming / choosing / clarifying, exactly as arrivalDetail is for the destination. */
-  startDetail?: { confidence: string; pendingConfirmation?: { placeId: string; formattedAddress: string }; pendingSelection?: { candidates: Array<{ placeId: string; formattedAddress: string }> }; clarificationReason?: string; resolvedAddress?: string };
+  startDetail?: { confidence: string; pendingConfirmation?: { placeId: string; formattedAddress: string; display?: string }; pendingSelection?: { candidates: Array<{ placeId: string; formattedAddress: string; display?: string }> }; clarificationReason?: string; resolvedAddress?: string; display?: string };
   /** How the live origin leg was found: the measurable cost and convergence of the backward search. */
   originSearch?: { queries: number; converged: boolean; slackMinutes: number; departureAirport: string };
-  arrivalDetail?: { outcome: RoadOutcome; pendingConfirmation?: { placeId: string; formattedAddress: string }; pendingSelection?: { candidates: Array<{ placeId: string; formattedAddress: string }> }; clarificationReason?: string };
+  arrivalDetail?: { outcome: RoadOutcome; pendingConfirmation?: { placeId: string; formattedAddress: string; display?: string }; pendingSelection?: { candidates: Array<{ placeId: string; formattedAddress: string; display?: string }> }; clarificationReason?: string };
+  /** Google's resolved places, for the traveller to check. Never sent to analytics or logs. */
+  places?: { start?: { typed: string; display?: string; address?: string }; destination?: { typed: string; display?: string; address?: string } };
   calls?: { used: number; ceiling: number; breakdown: Record<string, number> };
 }

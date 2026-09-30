@@ -27,9 +27,10 @@ export interface OriginLegOutcome {
   start?: {
     confidence: string;
     resolvedAddress?: string;
+    display?: string;
     clarificationReason?: string;
-    pendingConfirmation?: { placeId: string; formattedAddress: string };
-    pendingSelection?: { candidates: Array<{ placeId: string; formattedAddress: string }> };
+    pendingConfirmation?: { placeId: string; formattedAddress: string; display?: string };
+    pendingSelection?: { candidates: Array<{ placeId: string; formattedAddress: string; display?: string }> };
   };
   search?: SearchResult;
 }
@@ -60,7 +61,7 @@ export async function googleOriginLeg(
     { confirmedPlaceId: input.startConfirmedPlaceId, selectedPlaceId: input.startSelectedPlaceId },
     ledger.fetch,
   );
-  const start = { confidence: place.confidence, resolvedAddress: place.resolvedAddress, clarificationReason: place.clarificationReason, pendingConfirmation: place.pendingConfirmation, pendingSelection: place.pendingSelection };
+  const start = { confidence: place.confidence, resolvedAddress: place.resolvedAddress, display: place.display, clarificationReason: place.clarificationReason, pendingConfirmation: place.pendingConfirmation, pendingSelection: place.pendingSelection };
   if (ledger.exhausted) return { start, leg: notEvidenced('ORIGIN_ROUTE_UNAVAILABLE', 'The call limit for one journey was reached.') };
   if (place.confidence !== 'CONFIRMED' || !place.resolvedAddress) {
     const unsuitable = place.clarificationReason === 'WRONG_COUNTRY';

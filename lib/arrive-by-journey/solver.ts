@@ -1,6 +1,6 @@
 import { roundClockToNearestFive } from '../arrive-by-shared/format';
 import { PROVISIONAL_TIGHT_MARGIN_THRESHOLD_MINUTES } from '../arrive-by-shared/road-outcomes';
-import { clockOf, floorToMinutes, parseLocalDateTime } from './local-time';
+import { calendarDayOffset, clockOf, dateLabelOf, floorToMinutes, parseLocalDateTime } from './local-time';
 import { STATE_LABEL } from './types';
 import type { FlightInput, JourneyPlan, JourneyPreferences, JourneyState, LegEvidence, NotEvidencedReason, ResolvedLeg, TimelineLeg } from './types';
 
@@ -69,6 +69,12 @@ export function describeBuffer(minutes: number): string {
   return `${Math.floor(minutes / 60)} hour ${minutes % 60} minute`;
 }
 
+/** Date of the final arrival, read from the same 5-minute-rounded instant as its clock so 23:58 -> "00:00" carries the right day. Offset is vs the leave day (leave day = arrival day when leave time is unknown). */
+function finalArrivalDate(finalMs: number, leaveMs: number | undefined, depZone: string, arrZone: string): { dateLabel: string; dayOffset: number } {
+  const rounded = Math.round(finalMs / 300000) * 300000;
+  return { dateLabel: dateLabelOf(rounded, arrZone), dayOffset: leaveMs === undefined ? 0 : calendarDayOffset(leaveMs, depZone, rounded, arrZone) };
+}
+
 /** First comma-separated part of free text, for headline copy ("Preston, Lancashire" -> "Preston"). */
 export function shortPlaceName(text: string): string {
   return text.split(',')[0].trim() || text.trim();
@@ -119,8 +125,8 @@ export function solveJourney(input: SolverInput): JourneyPlan {
     const exactLeaveMs = input.originLeg.latestFeasibleDepartureMs ?? airportArriveByMs - input.originLeg.expectedSeconds * 1000;
     leaveByMs = floorToMinutes(exactLeaveMs, 5);
     const reachAirportMs = leaveByMs + input.originLeg.expectedSeconds * 1000;
-    plan.leaveBy = { iso: new Date(leaveByMs).toISOString(), zone: dep.timeZone, clock: clockOf(leaveByMs, dep.timeZone), roundedDownToFive: true };
-    plan.airportArriveBy = { iso: new Date(airportArriveByMs).toISOString(), zone: dep.timeZone, clock: clockOf(airportArriveByMs, dep.timeZone), bufferMinutes: prefs.departureAirportBufferMinutes };
+    plan.leaveBy = { iso: new Date(leaveByMs).toISOString(), zone: dep.timeZone, clock: clockOf(leaveByMs, dep.timeZone), dateLabel: dateLabelOf(leaveByMs, dep.timeZone), roundedDownToFive: true };
+    plan.airportArriveBy = { iso: new Date(airportArriveByMs).toISOString(), zone: dep.timeZone, clock: clockOf(airportArriveByMs, dep.timeZone), dateLabel: dateLabelOf(airportArriveByMs, dep.timeZone), dayOffset: calendarDayOffset(leaveByMs, dep.timeZone, airportArriveByMs, dep.timeZone), bufferMinutes: prefs.departureAirportBufferMinutes };
     timeline.push({
       kind: 'ORIGIN_ACCESS', label: `${shortPlaceName(input.startLabel)} to ${dep.name}`,
       startIso: new Date(leaveByMs).toISOString(), endIso: new Date(reachAirportMs).toISOString(),
@@ -158,7 +164,7 @@ export function solveJourney(input: SolverInput): JourneyPlan {
   }
   if (input.arrivalLeg.status === 'OK') {
     finalArrivalMs = roadDepartureMs + input.arrivalLeg.expectedSeconds * 1000;
-    plan.finalArrival = { iso: new Date(finalArrivalMs).toISOString(), zone: arr.timeZone, clock: roundClockToNearestFive(new Date(finalArrivalMs).toISOString(), arr.timeZone) };
+    plan.finalArrival = { iso: new Date(finalArrivalMs).toISOString(), zone: arr.timeZone, clock: roundClockToNearestFive(new Date(finalArrivalMs).toISOString(), arr.timeZone), ...finalArrivalDate(finalArrivalMs, leaveByMs, dep.timeZone, arr.timeZone) };
     timeline.push({
       kind: 'ONWARD', label: `${arr.name} to ${shortPlaceName(input.destinationLabel)}`, startIso: new Date(roadDepartureMs).toISOString(), endIso: new Date(finalArrivalMs).toISOString(),
       minutes: Math.round(input.arrivalLeg.expectedSeconds / 60), startZone: arr.timeZone, endZone: arr.timeZone, evidence: input.arrivalLeg.evidence,
@@ -194,7 +200,9 @@ export function solveJourney(input: SolverInput): JourneyPlan {
   // ---- state ----
   if (problems.length > 0) {
     const first = problems[0];
-    return { ...plan, state: 'CANNOT_CONFIRM', stateLabel: STATE_LABEL.CANNOT_CONFIRM, reasons: problems.map((p) => p.detail), notEvidenced: first };
+    // Never keep a leave-time headline on a journey we couldn't confirm.
+    const { headline: _dropped, ...rest } = plan;
+    return { ...rest, state: 'CANNOT_CONFIRM', stateLabel: STATE_LABEL.CANNOT_CONFIRM, reasons: problems.map((p) => p.detail), notEvidenced: first };
   }
   if (input.nowIso && leaveByMs !== undefined && leaveByMs < Date.parse(input.nowIso)) {
     return { ...plan, state: 'NOT_FEASIBLE', stateLabel: STATE_LABEL.NOT_FEASIBLE, reasons: ['The time you would need to leave has already passed.'] };

@@ -116,12 +116,17 @@ export async function planFullJourney(input: JourneyInput, deps: PlanDeps): Prom
     // 5. Solve
     const plan = solveJourney({ ...solverBase, originLeg, arrivalLeg });
     const finished: JourneyPlan = ledger.exhausted
-      ? { ...plan, state: 'CANNOT_CONFIRM', stateLabel: STATE_LABEL.CANNOT_CONFIRM, reasons: [`Checking this journey needed more than ${ceiling} live lookups, so it was stopped rather than guessed.`], notEvidenced: { reason: 'CALL_CEILING_REACHED', detail: `Reached the ${ceiling}-call limit for one journey.` } }
+      ? { ...plan, headline: undefined, state: 'CANNOT_CONFIRM', stateLabel: STATE_LABEL.CANNOT_CONFIRM, reasons: [`Checking this journey needed more than ${ceiling} live lookups, so it was stopped rather than guessed.`], notEvidenced: { reason: 'CALL_CEILING_REACHED', detail: `Reached the ${ceiling}-call limit for one journey.` } }
       : plan;
 
     const search = originOutcome?.search;
+    const startPlace = originOutcome?.start;
     return {
       ...finished,
+      places: {
+        start: startPlace && (startPlace.display || startPlace.resolvedAddress) ? { typed: input.start, display: startPlace.display, address: startPlace.resolvedAddress } : undefined,
+        destination: road && (road.resolvedDisplay || road.resolvedDestination) ? { typed: input.destination, display: road.resolvedDisplay, address: road.resolvedDestination } : undefined,
+      },
       startDetail: originOutcome?.start && originOutcome.start.confidence !== 'CONFIRMED' ? originOutcome.start : undefined,
       originSearch: search
         ? { queries: search.queries, converged: search.status === 'OK' && search.converged, slackMinutes: search.status === 'OK' ? search.slackMinutes : 0, departureAirport: departure.code }

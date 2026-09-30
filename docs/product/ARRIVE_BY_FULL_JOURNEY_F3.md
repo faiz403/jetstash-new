@@ -78,3 +78,27 @@ in 3 requests; live in dev with real Google, desktop and 390 px mobile: Preston 
 (both orders), Royal Preston Hospital → Burj Al Arab (hospital + hotel), Preston railway station → KHI → Aga Khan University
 Hospital (station + hospital). Worth knowing: each recovery step is a submission, so a two-prompt journey uses 3 of the 5-per-60-s
 budget.
+
+## F3.2 — trust and result clarity
+
+Driven by the F4-S synthetic run (`ARRIVE_BY_F4S_SYNTHETIC_VALIDATION.md`). No external-user validation yet.
+
+- **Resolved place shown for both ends (B1).** `plan.places.{start,destination}` carries what the traveller typed, a
+  human label and Google's address. The result always shows "Start: … / Destination: …", so a silently accepted match is
+  visible ("Newport, Wales, United Kingdom").
+- **Recognisable recovery labels (B2).** `lib/arrive-by-shared/place-display.ts` (`describePlace`) builds the label from the
+  Geocoding result we already pay for: a venue name only when Google supplied an establishment / point_of_interest / premise
+  component (never a plus code, never invented), otherwise "kind at street, postcode, country" from Google's own types.
+  Prompts read "You typed X. Google found <label>" with the full address as secondary text. **Limit:** Geocoding often has no
+  venue name (Hilton Paddington, Royal Preston Hospital, Atlantis The Royal resolves to "Palm Jumeirah"). Fixing that fully
+  needs the Places API (New) `displayName`, one extra billable call per place that needs recovery. Cost impact is not verified
+  and it was NOT added; it needs an explicit decision and would touch the 10-call ceiling and the monthly guard.
+- **Dates (S1).** `dateLabel` on leave / airport / final arrival plus `dayOffset` from the leave day; the UI writes "Wed 21 Oct
+  (next day)" and dates any timeline leg that falls on another day. Arithmetic is unchanged; the date is read from the same
+  5-minute-rounded instant as the clock.
+- **CANNOT CONFIRM (S3).** No `headline`; the UI shows "We couldn't confirm this journey", says no leave time is shown, and lists
+  only durations as "partial, not a confirmed plan".
+- **Driving assumption (S2).** A one-line note under the start field and under the result: leave time assumes driving and excludes
+  parking, drop-off, shuttle and rental-car return.
+- **Unchanged:** server re-verification of every place id, forged/stale protection, the 10-call ceiling, the monthly guard. Place
+  labels are not sent to analytics and not logged (asserted in `tests/arrive-by-journey-trust.test.ts`).

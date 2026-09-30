@@ -61,12 +61,14 @@ export interface RoadJourneyResult {
   destinationConfidence: DestinationConfidence;
   /** Google's own resolved place name, shown so a traveller can spot a wrong-place match themselves — never stored, never analytics-tracked. */
   resolvedDestination?: string;
+  /** Human-readable label for the resolved destination (venue name only when Google supplied one). */
+  resolvedDisplay?: string;
   /** Present only when destinationConfidence isn't CONFIRMED. */
   clarificationReason?: DestinationClarificationReason;
   /** Present only when destinationConfidence is NEEDS_CONFIRMATION. */
-  pendingConfirmation?: { placeId: string; formattedAddress: string };
+  pendingConfirmation?: { placeId: string; formattedAddress: string; display?: string };
   /** Present only when destinationConfidence is NEEDS_SELECTION. Only safe display fields, never a raw Google payload. */
-  pendingSelection?: { candidates: Array<{ placeId: string; formattedAddress: string }> };
+  pendingSelection?: { candidates: Array<{ placeId: string; formattedAddress: string; display?: string }> };
   /** Echoed back verbatim from the input for display only — never stored, never analytics-tracked. */
   deadlineReason?: string;
   /** ISO instants — all internally consistent in the airport's own timeZone regardless of the visitor's browser zone. */

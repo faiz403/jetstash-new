@@ -73,3 +73,21 @@ export function floorToMinutes(ms: number, multiple = 5): number {
   const size = multiple * 60000;
   return Math.floor(ms / size) * size;
 }
+
+/** "Fri 9 Oct" for an instant in a zone. */
+export function dateLabelOf(ms: number, timeZone: string): string {
+  return new Intl.DateTimeFormat('en-GB', { timeZone, weekday: 'short', day: 'numeric', month: 'short' }).format(new Date(ms));
+}
+
+/** Whole calendar days between the local dates of two instants, each read in its own zone (0 = same day, 1 = next day). */
+export function calendarDayOffset(fromMs: number, fromZone: string, toMs: number, toZone: string): number {
+  const day = (ms: number, zone: string) => Date.parse(`${formatLocalDateTime(ms, zone).slice(0, 10)}T00:00:00Z`);
+  return Math.round((day(toMs, toZone) - day(fromMs, fromZone)) / 86400000);
+}
+
+/** "Fri 9 Oct" plus, when it isn't the leave day, a plain marker: "Sat 10 Oct (next day)" / "(2 days later)" / "(previous day)". */
+export function describeDay(dateLabel: string, dayOffset: number): string {
+  if (dayOffset === 0) return dateLabel;
+  const marker = dayOffset === 1 ? 'next day' : dayOffset > 1 ? `${dayOffset} days later` : dayOffset === -1 ? 'previous day' : `${-dayOffset} days earlier`;
+  return `${dateLabel} (${marker})`;
+}

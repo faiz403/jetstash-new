@@ -62,6 +62,7 @@ export async function computeRoadJourney(
     destination: input.destination,
     destinationConfidence,
     resolvedDestination,
+    resolvedDisplay: place.display,
     clarificationReason: place.clarificationReason,
     pendingConfirmation: place.pendingConfirmation,
     pendingSelection: place.pendingSelection,

@@ -109,7 +109,7 @@ describe('resolveDestination — Pakistan regression preservation (via expectedC
     });
     const result = await resolveDestination('key', 'Nishat Hotel Lahore', pakistanConfig);
     expect(result.confidence).toBe('NEEDS_SELECTION');
-    expect(result.candidates).toEqual([
+    expect(result.candidates).toMatchObject([
       { placeId: 'venue-a', formattedAddress: 'Nishat Hotel, Johar Town, Lahore, Pakistan' },
       { placeId: 'venue-b', formattedAddress: 'Nishat Hotel, Gulberg, Lahore, Pakistan' },
     ]);
