@@ -37,24 +37,25 @@ import { travellerTips, getTipsForScope } from '@/data/traveller-tips';
  * the original version of this tip go stale.
  */
 
-const NOW_ISO = '2026-09-06';
+const NOW_ISO = '2026-09-30';
 const route = getRouteBySlug('birmingham-amritsar')!;
 const presentation = getEffectiveRoutePresentation(route, routeStatusEvents, NOW_ISO);
 const tip = getTipsForScope({ routeSlug: 'birmingham-amritsar' })[0];
 
-describe('1. Canonical route state is unchanged and still connecting', () => {
-  it('birmingham-amritsar remains isDirect: false in the route record', () => {
-    expect(route.isDirect).toBe(false);
+describe('1. Canonical route state is verified direct', () => {
+  it('birmingham-amritsar isDirect is true with current verification', () => {
+    expect(route.isDirect).toBe(true);
+    expect(route.verification?.status).toBe('verified');
   });
 
-  it('the effective public presentation status is "connecting", not "direct" or "unverified"', () => {
-    expect(presentation.status).toBe('connecting');
-    expect(presentation.statusLabel).toBe('Connecting');
+  it('the effective public presentation status is direct', () => {
+    expect(presentation.status).toBe('direct');
+    expect(presentation.statusLabel).toBe('Direct');
   });
 
-  it('route flightTime, frequency, airlineSlugs and peakPeriodIds are unchanged', () => {
-    expect(route.flightTime).toBe('14h 45m via connection (Air India booking page)');
-    expect(route.frequency).toBe('Connection options available; exact schedule varies');
+  it('route facts are the deliberately hedged verified direct facts', () => {
+    expect(route.flightTime).toBe('Approximately 10h 10m nonstop (Air India schedule)');
+    expect(route.frequency).toBe('Air India nonstop service shown several times weekly; confirm your date');
     expect(route.airlineSlugs).toEqual(['air-india']);
     expect(route.peakPeriodIds).toEqual(['baisakhi', 'diwali', 'uk-summer-holidays']);
   });
@@ -67,15 +68,9 @@ describe('2. The traveller tip no longer contradicts the route\'s effective pres
     expect(tip.category).toBe('logistics');
   });
 
-  it('never claims a direct or non-stop service when the route\'s own presentation says connecting', () => {
-    // Structural check, not a one-off string ban: if this route's directness
-    // is ever corrected back to direct, this same assertion would need the
-    // tip to say so — it fails on the actual current mismatch, not a fixed
-    // sentence.
-    if (presentation.status !== 'direct') {
-      expect(tip.title).not.toMatch(/non-stop|direct\b/i);
-      expect(tip.body).not.toMatch(/non-stop|direct Amritsar service|direct flight/i);
-    }
+  it('matches the direct service state without inventing a precise schedule', () => {
+    expect(tip.title).toMatch(/non-stop/i);
+    expect(tip.body).toMatch(/direct service/i);
   });
 
   it('agrees with the route\'s own effective presentation label rather than asserting its own status', () => {
@@ -87,8 +82,8 @@ describe('2. The traveller tip no longer contradicts the route\'s effective pres
     expect(tip.body.toLowerCase()).toContain(presentation.statusLabel.toLowerCase());
   });
 
-  it('does not publish an unsupported frequency claim ("reduced midweek", "daily", or any specific day-of-week pattern)', () => {
-    expect(tip.body).not.toMatch(/midweek|daily|weekly/i);
+  it('does not publish an unsupported frequency or day-of-week claim', () => {
+    expect(tip.body).not.toMatch(/midweek|daily|weekly|monday|tuesday|wednesday|thursday|friday|saturday|sunday/i);
   });
 
   it('does not make an independent claim about what a specific airline\'s booking page currently shows', () => {
@@ -101,13 +96,10 @@ describe('2. The traveller tip no longer contradicts the route\'s effective pres
     expect(tip.body).not.toMatch(/\bwebsite\b/i);
   });
 
-  it('only recommends checking things the route\'s own intro/bookingWindowNote already establish as unresolved (connection point, journey time, baggage) — invents no airline, schedule, hub name, or baggage guarantee', () => {
-    expect(tip.body).toMatch(/connection point/i);
-    expect(tip.body).toMatch(/journey time/i);
-    expect(tip.body).toMatch(/baggage conditions/i);
-    // No specific connection airport is named anywhere in this route's data
-    // (route.intro explicitly says "check the live itinerary for the actual
-    // hub"), so the tip must not invent one either.
+  it('only recommends checking the route data\'s still-variable details', () => {
+    expect(tip.body).toMatch(/flight day/i);
+    expect(tip.body).toMatch(/timing/i);
+    expect(tip.body).toMatch(/baggage terms/i);
     expect(tip.body).not.toMatch(/via (delhi|mumbai|dubai|abu dhabi|doha|istanbul)/i);
   });
 });

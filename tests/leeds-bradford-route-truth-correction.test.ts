@@ -83,11 +83,12 @@ describe('leeds-bradford-islamabad no longer asserts unsupported specificity', (
   });
 });
 
-describe('birmingham-amritsar is not misrepresented as a current seasonal direct alternative', () => {
-  it('birmingham-amritsar itself remains isDirect: false, matching what the correction now assumes', () => {
+describe('birmingham-amritsar is independently verified separately from the Leeds route', () => {
+  it('birmingham-amritsar isDirect is true with current verification', () => {
     const birminghamAmritsar = getRouteBySlug('birmingham-amritsar')!;
     expect(birminghamAmritsar).toBeDefined();
-    expect(birminghamAmritsar.isDirect).toBe(false);
+    expect(birminghamAmritsar.isDirect).toBe(true);
+    expect(birminghamAmritsar.verification?.status).toBe('verified');
   });
 });
 

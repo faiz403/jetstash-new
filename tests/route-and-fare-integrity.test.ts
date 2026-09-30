@@ -1055,11 +1055,12 @@ describe('Resolved route evidence sweep (July 2026)', () => {
     }
   });
 
-  it('corrects Birmingham-Amritsar to a sourced connecting shape instead of showing pending direct service', () => {
+  it('refreshes Birmingham-Amritsar to a currently sourced direct service', () => {
     const route = getRouteBySlug('birmingham-amritsar')!;
-    expect(route.isDirect).toBe(false);
-    expect(getDisplayDirectness(route, RESOLUTION_TODAY)).toBe('connecting');
-    expect(getRoutePresentation(route, RESOLUTION_TODAY).status).toBe('connecting');
+    expect(route.isDirect).toBe(true);
+    expect(route.verification?.status).toBe('verified');
+    expect(getDisplayDirectness(route, RESOLUTION_TODAY)).toBe('direct');
+    expect(getRoutePresentation(route, RESOLUTION_TODAY).status).toBe('direct');
   });
 
   it('the three PIA disputes resolved by COV-001 (21 August 2026) are evidenced resolutions, not invented ones — a live PIA booking-engine search decided each, not a guess', () => {

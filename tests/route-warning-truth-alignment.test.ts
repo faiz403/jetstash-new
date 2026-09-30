@@ -48,11 +48,11 @@ describe('Route-warning truth alignment: the three unsourced "3 times a week" wa
     expect(resolved!.status).toBe('resolved');
   });
 
-  it('4a. Birmingham–Amritsar\'s supported route presentation (hedged frequency, connecting status) is completely unchanged', () => {
+  it('4a. Birmingham–Amritsar\'s refreshed route presentation remains hedged and direct', () => {
     const route = getRouteBySlug('birmingham-amritsar')!;
-    expect(route.frequency).toBe('Connection options available; exact schedule varies');
+    expect(route.frequency).toBe('Air India nonstop service shown several times weekly; confirm your date');
     const presentation = getEffectiveRoutePresentation(route, routeStatusEvents, NOW_ISO);
-    expect(presentation.status).toBe('connecting');
+    expect(presentation.status).toBe('direct');
   });
 
   it('4b. London Gatwick–Amritsar\'s supported route presentation (hedged frequency, direct status) is completely unchanged', () => {

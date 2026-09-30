@@ -687,9 +687,8 @@ describe('Cross-surface leakage fix — airport-scoped notes no longer render as
     // India service to Amritsar" claim was contradicted by
     // birmingham-amritsar's own isDirect: false) — this leakage test now
     // anchors on the corrected phrase, same leakage intent unchanged.
-    expect(text).not.toMatch(/South Asia routes are generally connection-based/i);
-    expect(text).not.toMatch(/direct Air India service to Amritsar/i);
-    expect(text).not.toMatch(/Dubai, Doha or Sharjah/i);
+    expect(text).not.toMatch(/Check the route — Birmingham has both direct and connecting South Asia options/i);
+    expect(text).not.toMatch(/direct Birmingham–Amritsar service/i);
     expect(text).not.toMatch(/under 15 minutes/i);
     expect(text).not.toMatch(/faster and cheaper than driving/i);
   });
@@ -704,7 +703,7 @@ describe('Cross-surface leakage fix — airport-scoped notes no longer render as
   it('the same Birmingham notes still render in full on the Birmingham airport page itself', async () => {
     const element = await AirportPage({ params: Promise.resolve({ slug: 'birmingham' }) });
     const text = collectStrings(element).join(' ');
-    expect(text).toMatch(/South Asia routes are generally connection-based/i);
+    expect(text).toMatch(/Check the route — Birmingham has both direct and connecting South Asia options/i);
     expect(text).toMatch(/under 15 minutes/i);
   });
 

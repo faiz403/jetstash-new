@@ -33,15 +33,16 @@ import { routes } from '@/data/routes';
  * verification — no note in this batch referenced those routes.
  */
 
-describe('Birmingham–Amritsar is no longer claimed direct in airport-notes.ts', () => {
-  it('bhx-gulf-connections no longer asserts a direct Amritsar service', () => {
+describe('Birmingham–Amritsar is accurately represented in airport-notes.ts', () => {
+  it('bhx-gulf-connections names the verified direct Amritsar service as a specific exception', () => {
     const note = airportNotes.find((n) => n.id === 'bhx-gulf-connections');
-    expect(note?.body).not.toContain('direct Air India service to Amritsar');
+    expect(note?.body).toContain('direct Birmingham–Amritsar service');
   });
 
-  it('the claim matches the underlying route evidence: birmingham-amritsar is not direct', () => {
+  it('the claim matches the underlying verified route evidence', () => {
     const route = routes.find((r) => r.slug === 'birmingham-amritsar');
-    expect(route?.isDirect).toBe(false);
+    expect(route?.isDirect).toBe(true);
+    expect(route?.verification?.status).toBe('verified');
   });
 });
 
@@ -51,15 +52,18 @@ describe('Amritsar destination flightTimeFromUK matches the actually-verified di
     expect(amritsar?.flightTimeFromUK).not.toContain('Birmingham');
   });
 
-  it('names London Gatwick — the one Amritsar route that is genuinely isDirect: true', () => {
+  it('names London Gatwick as a verified direct Amritsar route', () => {
     const amritsar = getDestinationBySlug('amritsar');
     expect(amritsar?.flightTimeFromUK).toContain('London Gatwick');
     const gatwickRoute = routes.find((r) => r.slug === 'london-gatwick-amritsar');
     expect(gatwickRoute?.isDirect).toBe(true);
   });
 
-  it('every other UK route to Amritsar is confirmed not direct, matching the corrected claim', () => {
-    const otherSlugs = ['birmingham-amritsar', 'leeds-bradford-amritsar', 'manchester-amritsar'];
+  it('only Birmingham and Gatwick are currently verified direct Amritsar routes', () => {
+    const birmingham = routes.find((r) => r.slug === 'birmingham-amritsar');
+    expect(birmingham?.isDirect).toBe(true);
+    expect(birmingham?.verification?.status).toBe('verified');
+    const otherSlugs = ['leeds-bradford-amritsar', 'manchester-amritsar'];
     for (const slug of otherSlugs) {
       const route = routes.find((r) => r.slug === slug);
       expect(route?.isDirect, `${slug} should be isDirect: false`).toBe(false);

@@ -176,14 +176,14 @@ describe('G. No network/provider/Brevo dependency exists in the new section', ()
 });
 
 describe('H. Real current archive reconciliation matches the independently computed counts', () => {
-  it('exactly 78 routes carry a verification record', () => {
+  it('exactly 79 routes carry a verification record', () => {
     // 76 -> 77 (3 September 2026): london-heathrow-jeddah gained a
     // route-level verification for the first time (TR-010, Round 4) --
     // previously it had only per-airline airlineVerifications entries and no
     // route-level record at all. 77 -> 78 (7 September 2026): the new
     // london-gatwick-doha canonical route addition carries its own
     // route-level verification record from the start.
-    expect(routes.filter((r) => r.verification)).toHaveLength(78);
+    expect(routes.filter((r) => r.verification)).toHaveLength(79);
   });
 
   it('the dashboard\'s overdue/due-soon/healthy counts match an independent recomputation from live route data as of today', () => {
@@ -257,9 +257,9 @@ describe('H. Real current archive reconciliation matches the independently compu
     const verified = withVerification.filter((r) => r.verification!.status === 'verified');
     const unverified = withVerification.filter((r) => r.verification!.status !== 'verified');
 
-    expect(withVerification).toHaveLength(78);
-    expect(verified.length + unverified.length).toBe(78);
-    expect(verified.length).toBe(73);
+    expect(withVerification).toHaveLength(79);
+    expect(verified.length + unverified.length).toBe(79);
+    expect(verified.length).toBe(74);
     expect(unverified.length).toBe(5);
   });
 });

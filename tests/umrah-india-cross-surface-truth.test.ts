@@ -119,11 +119,11 @@ describe('India hub — practicalNotes no longer contradict route-level truth', 
     expect(gatewayNote).toBeDefined();
   });
 
-  it('no longer claims Birmingham has a direct Amritsar service — birmingham-amritsar is connecting-only in data/routes.ts', () => {
+  it('accurately states the now-verified Birmingham direct Amritsar service', () => {
     const route = getRouteBySlug('birmingham-amritsar');
-    expect(route?.isDirect).toBe(false);
-    expect(gatewayNote?.body).not.toMatch(/birmingham'?s?\s+direct\s+amritsar/i);
-    expect(gatewayNote?.body).toMatch(/birmingham.{0,40}connection, not a direct flight/i);
+    expect(route?.isDirect).toBe(true);
+    expect(route?.verification?.status).toBe('verified');
+    expect(gatewayNote?.body).toMatch(/direct services from birmingham and gatwick to amritsar/i);
   });
 
   it('no longer claims a confident non-stop Ahmedabad service — london-gatwick-ahmedabad is unverified in data/routes.ts', () => {
@@ -137,7 +137,7 @@ describe('India hub — practicalNotes no longer contradict route-level truth', 
     const route = getRouteBySlug('london-gatwick-amritsar');
     expect(route?.isDirect).toBe(true);
     expect(route?.verification?.status).toBe('verified');
-    expect(gatewayNote?.body).toMatch(/non-stop gatwick.{0,10}amritsar service/i);
+    expect(gatewayNote?.body).toMatch(/direct services from birmingham and gatwick to amritsar/i);
   });
 
   it('narrow same-class scan: no other practicalNote on this hub pairs "Birmingham" with a live "direct" claim, and the one Manchester+"direct" pairing is explicitly past-tense (ended), not a live claim', () => {

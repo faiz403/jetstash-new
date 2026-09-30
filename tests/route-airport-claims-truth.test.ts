@@ -78,9 +78,8 @@ describe('Gatwick: the conditional Ahmedabad claim is corrected to match the rou
     expect(gatwickAirport.description).toMatch(/disputed ahmedabad service/i);
   });
 
-  it('no longer claims Birmingham shares a direct Amritsar service — birmingham-amritsar is connecting-only', () => {
-    expect(gatwickAirport.whyThisAirport).not.toMatch(/direct amritsar service shared with birmingham/i);
-    expect(gatwickAirport.whyThisAirport).toMatch(/birmingham.{0,20}amritsar route is a connection, not a direct flight/i);
+  it('accurately states Birmingham also has a direct Amritsar service', () => {
+    expect(gatwickAirport.whyThisAirport).toMatch(/birmingham.{0,30}direct amritsar service/i);
   });
 
   it('still correctly states Gatwick\'s own genuinely-confirmed direct Amritsar service', () => {
