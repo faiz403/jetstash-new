@@ -366,8 +366,8 @@ describe('scope: the arrival-only product and public surface are untouched', () 
   const read = (...parts: string[]) => readFileSync(join(process.cwd(), ...parts), 'utf8');
   const walk = (dir: string): string[] => readdirSync(join(process.cwd(), dir), { withFileTypes: true }).flatMap((entry) => (entry.isDirectory() ? walk(join(dir, entry.name)) : [join(dir, entry.name)]));
 
-  it('nothing under app/ or components/ imports the journey module: no new public UI or route', () => {
-    for (const file of [...walk('app'), ...walk('components')].filter((f) => /\.(ts|tsx)$/.test(f))) {
+  it('no PUBLIC file under app/ or components/ imports (only the internal founder surfaces may) the journey module: no new public UI or route', () => {
+    for (const file of [...walk('app'), ...walk('components')].filter((f) => /\.(ts|tsx)$/.test(f) && !f.includes('founder'))) {
       expect(read(file), file).not.toMatch(/arrive-by-journey/);
     }
   });
