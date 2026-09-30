@@ -161,12 +161,145 @@ describe('resolveDestination — no country gate when config is empty (Mancheste
   });
 });
 
+describe('resolveDestination — global address hierarchy hardening', () => {
+  const brazilConfig = { expectedCountryCodes: ['BR'], regionBias: 'br' };
+  const singaporeConfig = { expectedCountryCodes: ['SG'], regionBias: 'sg' };
+
+  it('normalizes diacritics for a São Paulo locality without changing its displayed name', async () => {
+    mockGeocodeResponse({
+      status: 'OK',
+      results: [{
+        formatted_address: 'São Paulo, State of São Paulo, Brazil', place_id: 'sao-paulo', types: ['locality', 'political'],
+        geometry: { location_type: 'APPROXIMATE' },
+        address_components: [
+          { long_name: 'São Paulo', short_name: 'São Paulo', types: ['locality', 'political'] },
+          { long_name: 'Brazil', short_name: 'BR', types: ['country', 'political'] },
+        ],
+      }],
+    });
+    const result = await resolveDestination('key', 'Sao Paulo', brazilConfig);
+    expect(result).toMatchObject({ confidence: 'CONFIRMED', resolvedPrimaryPlace: 'São Paulo', formattedAddress: 'São Paulo, State of São Paulo, Brazil' });
+  });
+
+  it('normalizes diacritics for Reykjavík without changing its displayed name', async () => {
+    mockGeocodeResponse({
+      status: 'OK',
+      results: [{
+        formatted_address: 'Reykjavík, Iceland', place_id: 'reykjavik', types: ['locality', 'political'],
+        geometry: { location_type: 'APPROXIMATE' },
+        address_components: [
+          { long_name: 'Reykjavík', short_name: 'Reykjavík', types: ['locality', 'political'] },
+          { long_name: 'Iceland', short_name: 'IS', types: ['country', 'political'] },
+        ],
+      }],
+    });
+    const result = await resolveDestination('key', 'Reykjavik', { expectedCountryCodes: ['IS'], regionBias: 'is' });
+    expect(result).toMatchObject({ confidence: 'CONFIRMED', resolvedPrimaryPlace: 'Reykjavík' });
+  });
+
+  it('accepts a Brazilian street result even when Google also marks its top-level type administrative-area-2', async () => {
+    mockGeocodeResponse({
+      status: 'OK',
+      results: [{
+        formatted_address: 'Avenida Paulista, São Paulo, Brazil', place_id: 'paulista', types: ['route', 'administrative_area_level_2', 'political'],
+        geometry: { location_type: 'GEOMETRIC_CENTER' },
+        address_components: [
+          { long_name: 'Avenida Paulista', short_name: 'Av. Paulista', types: ['route'] },
+          { long_name: 'São Paulo', short_name: 'São Paulo', types: ['administrative_area_level_2', 'political'] },
+          { long_name: 'Brazil', short_name: 'BR', types: ['country', 'political'] },
+        ],
+      }],
+    });
+    const result = await resolveDestination('key', 'Avenida Paulista, Sao Paulo', brazilConfig);
+    expect(result).toMatchObject({ confidence: 'CONFIRMED', placeId: 'paulista', resolvedPrimaryPlace: 'Avenida Paulista' });
+  });
+
+  it('keeps a Brazilian administrative-area-only result blocked', async () => {
+    mockGeocodeResponse({
+      status: 'OK',
+      results: [{
+        formatted_address: 'São Paulo, Brazil', place_id: 'sao-paulo-area', types: ['administrative_area_level_2', 'political'],
+        geometry: { location_type: 'APPROXIMATE' },
+        address_components: [
+          { long_name: 'São Paulo', short_name: 'São Paulo', types: ['administrative_area_level_2', 'political'] },
+          { long_name: 'Brazil', short_name: 'BR', types: ['country', 'political'] },
+        ],
+      }],
+    });
+    const result = await resolveDestination('key', 'Sao Paulo', brazilConfig);
+    expect(result).toMatchObject({ confidence: 'NEEDS_CLARIFICATION', clarificationReason: 'TOO_BROAD_TYPE' });
+  });
+
+  it('accepts an addressable Singapore street without requiring a locality component', async () => {
+    mockGeocodeResponse({
+      status: 'OK',
+      results: [{
+        formatted_address: 'Orchard Road, Singapore', place_id: 'orchard-road', types: ['route'],
+        geometry: { location_type: 'GEOMETRIC_CENTER' },
+        address_components: [
+          { long_name: 'Orchard Road', short_name: 'Orchard Rd', types: ['route'] },
+          { long_name: 'Singapore', short_name: 'SG', types: ['country', 'political'] },
+        ],
+      }],
+    });
+    const result = await resolveDestination('key', 'Orchard Road', singaporeConfig);
+    expect(result).toMatchObject({ confidence: 'CONFIRMED', placeId: 'orchard-road', resolvedPrimaryPlace: 'Orchard Road' });
+  });
+
+  it('keeps a Singapore venue in the existing confirmation flow without a locality component', async () => {
+    mockGeocodeResponse({
+      status: 'OK',
+      results: [{
+        formatted_address: 'Gardens by the Bay, Singapore', place_id: 'gardens-by-the-bay', types: ['establishment', 'point_of_interest'],
+        geometry: { location_type: 'ROOFTOP' },
+        address_components: [
+          { long_name: 'Gardens by the Bay', short_name: 'Gardens by the Bay', types: ['establishment', 'point_of_interest'] },
+          { long_name: 'Singapore', short_name: 'SG', types: ['country', 'political'] },
+        ],
+      }],
+    });
+    const result = await resolveDestination('key', 'Gardens by the Bay', singaporeConfig);
+    expect(result).toMatchObject({ confidence: 'NEEDS_CONFIRMATION', placeId: 'gardens-by-the-bay' });
+  });
+
+  it('keeps a country-only Singapore result blocked', async () => {
+    mockGeocodeResponse({
+      status: 'OK',
+      results: [{
+        formatted_address: 'Singapore', place_id: 'singapore-country', types: ['country', 'political'],
+        geometry: { location_type: 'APPROXIMATE' },
+        address_components: [{ long_name: 'Singapore', short_name: 'SG', types: ['country', 'political'] }],
+      }],
+    });
+    const result = await resolveDestination('key', 'Singapore', singaporeConfig);
+    expect(result).toMatchObject({ confidence: 'NEEDS_CLARIFICATION', clarificationReason: 'TOO_BROAD_TYPE' });
+  });
+
+  it('rejects a wrong-country Singapore street before it could resolve', async () => {
+    mockGeocodeResponse({
+      status: 'OK',
+      results: [{
+        formatted_address: 'Orchard Road, Malaysia', place_id: 'wrong-orchard', types: ['route'],
+        geometry: { location_type: 'GEOMETRIC_CENTER' },
+        address_components: [
+          { long_name: 'Orchard Road', short_name: 'Orchard Rd', types: ['route'] },
+          { long_name: 'Malaysia', short_name: 'MY', types: ['country', 'political'] },
+        ],
+      }],
+    });
+    const result = await resolveDestination('key', 'Orchard Road', singaporeConfig);
+    expect(result).toMatchObject({ confidence: 'NEEDS_CLARIFICATION', clarificationReason: 'WRONG_COUNTRY' });
+  });
+});
+
 describe('shared pure helpers — unchanged from the original Pakistan-only versions', () => {
   it('extractPrimaryInputPlace / deriveResolvedPrimaryPlace / placesMatch / isNamedVenueResult behave exactly as before', () => {
     expect(extractPrimaryInputPlace('Chakswari, Mirpur, Azad Kashmir')).toBe('chakswari');
     expect(deriveResolvedPrimaryPlace([{ long_name: 'Saddar', short_name: 'Saddar', types: ['sublocality_level_1'] }, { long_name: 'Rawalpindi', short_name: 'Rawalpindi', types: ['locality'] }])).toBe('Saddar');
     expect(placesMatch('chakswari', 'New Mirpur City')).toBe(false);
     expect(placesMatch('saddar', 'Saddar')).toBe(true);
+    expect(placesMatch('Sao Paulo', 'São Paulo')).toBe(true);
+    expect(placesMatch('Reykjavik', 'Reykjavík')).toBe(true);
     expect(isNamedVenueResult(['lodging', 'establishment', 'point_of_interest'])).toBe(true);
     expect(isNamedVenueResult(['locality', 'political'])).toBe(false);
   });

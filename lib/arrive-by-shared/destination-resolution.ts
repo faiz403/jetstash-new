@@ -91,6 +91,16 @@ const GEOCODE_ENDPOINT = 'https://maps.googleapis.com/maps/api/geocode/json';
 const TOO_BROAD_TYPES = new Set(['country', 'administrative_area_level_1', 'administrative_area_level_2']);
 
 /**
+ * A broad top-level type is still not safe on its own, but Google can attach
+ * one to a genuine street-level result in some country-specific address
+ * hierarchies. These components prove the result identifies an addressable
+ * point or street rather than only an administrative area. They never make a
+ * result pass by themselves: the ordinary primary-place and country guards
+ * below still apply.
+ */
+const ADDRESSABLE_COMPONENT_TYPES = new Set(['route', 'street_number', 'premise', 'subpremise', 'intersection']);
+
+/**
  * Preference order for "the most specific named place Google actually
  * resolved" — deliberately excludes admin_area levels and country, which
  * are qualifying context, not a place identity a road journey can target.
@@ -101,15 +111,17 @@ const TOO_BROAD_TYPES = new Set(['country', 'administrative_area_level_1', 'admi
  * neighbourhood actually requested) — checking locality first would have
  * silently picked the wrong, less specific one.
  */
-const PRIMARY_PLACE_COMPONENT_PRIORITY = ['sublocality_level_1', 'sublocality', 'locality', 'administrative_area_level_3', 'postal_town'];
+const PRIMARY_PLACE_COMPONENT_PRIORITY = ['route', 'sublocality_level_1', 'sublocality', 'neighborhood', 'locality', 'administrative_area_level_3', 'postal_town'];
 
 const MAX_SELECTION_CANDIDATES = 5;
 
 function normalizePlaceName(value: string): string {
   return value
+    .normalize('NFKD')
+    .replace(/\p{M}/gu, '')
     .toLowerCase()
     .trim()
-    .replace(/[^a-z0-9\s]/g, ' ')
+    .replace(/[^\p{L}\p{N}\s]/gu, ' ')
     .replace(/\s+/g, ' ')
     .trim();
 }
@@ -185,6 +197,17 @@ export function isDefinitelyNotExpectedCountry(addressComponents: AddressCompone
   return !expectedCountryCodes.includes(country.short_name);
 }
 
+/**
+ * Google occasionally labels a street-level result with an administrative
+ * top-level type (notably in some Brazilian responses). The result remains
+ * safe only if its components also identify a real addressable street/point;
+ * a country, state or district alone still has no such component and remains
+ * too broad for a road journey.
+ */
+function hasAddressableComponent(addressComponents: AddressComponent[] | undefined): boolean {
+  return Boolean(addressComponents?.some((component) => component.types.some((type) => ADDRESSABLE_COMPONENT_TYPES.has(type))));
+}
+
 interface GeocodeApiResult {
   formatted_address?: string;
   place_id?: string;
@@ -210,7 +233,7 @@ function classifyGeocodeResult(
 ): GeocodeResult {
   const partialMatch = Boolean(result.partial_match);
   const types = result.types ?? [];
-  const tooBroad = types.some((type) => TOO_BROAD_TYPES.has(type));
+  const tooBroad = types.some((type) => TOO_BROAD_TYPES.has(type)) && !hasAddressableComponent(result.address_components);
   const locationType = result.geometry?.location_type;
   const resolvedPrimaryPlace = deriveResolvedPrimaryPlace(result.address_components);
   const primaryInputPlace = extractPrimaryInputPlace(destination);
