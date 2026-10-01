@@ -125,15 +125,26 @@ export type AnalyticsEvent =
   | 'arrive_by_recovery_used';
 
 /**
- * Events that represent a genuine partner handoff — the same two events
- * lib/google-ads-conversions.ts already treats as commercially meaningful.
+ * Events that represent a genuine partner handoff — the same approved flight
+ * and hotel handoffs lib/google-ads-conversions.ts treats as commercially
+ * meaningful.
  * When one of these fires, track() also emits a paired 'acquisition_handoff'
  * event carrying this session's acquisition channel, so a future genuinely
  * different-channel distribution test (Facebook, Reddit, etc.) can be
  * checked for same-session partner handoffs without touching the
  * tripcom_click/tripcom_hotel_click payload itself.
  */
-const ACQUISITION_HANDOFF_EVENTS: ReadonlySet<AnalyticsEvent> = new Set(['tripcom_click', 'tripcom_hotel_click']);
+// These specialist events are each emitted only by a verified Trip.com
+// handoff. Keep their product-level measurement intact while pairing them
+// with the same coarse acquisition attribution as the standard CTA.
+const ACQUISITION_HANDOFF_EVENTS: ReadonlySet<AnalyticsEvent> = new Set([
+  'tripcom_click',
+  'tripcom_hotel_click',
+  'journey_choice_cta_click',
+  'journey_brief_live_price_click',
+  'ready_check_book_cta_click',
+  'bookby_cta_click',
+]);
 
 export function track(event: AnalyticsEvent, properties?: Record<string, string | number | boolean>): void {
   try {

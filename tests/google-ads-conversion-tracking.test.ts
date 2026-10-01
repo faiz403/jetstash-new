@@ -36,7 +36,7 @@ describe('lib/google-ads-conversions.ts — fireGoogleAdsConversion()', () => {
     vi.resetModules();
   });
 
-  it('maps exactly the three approved events to their real Google Ads conversion labels', async () => {
+  it('maps exactly the approved affiliate events to their real Google Ads conversion labels', async () => {
     const { fireGoogleAdsConversion, GOOGLE_ADS_TAG_ID } = await import('@/lib/google-ads-conversions');
     expect(GOOGLE_ADS_TAG_ID).toBe('AW-18378433991');
 
@@ -49,12 +49,22 @@ describe('lib/google-ads-conversions.ts — fireGoogleAdsConversion()', () => {
     fireGoogleAdsConversion('ready_check_baggage_cta_click');
     expect(gtagMock).toHaveBeenLastCalledWith('event', 'conversion', { send_to: 'AW-18378433991/J9oQCNnM_-EcEMfLwrtE' });
 
-    expect(gtagMock).toHaveBeenCalledTimes(3);
+    for (const event of [
+      'journey_choice_cta_click',
+      'journey_brief_live_price_click',
+      'ready_check_book_cta_click',
+      'bookby_cta_click',
+    ] as const) {
+      fireGoogleAdsConversion(event);
+      expect(gtagMock).toHaveBeenLastCalledWith('event', 'conversion', { send_to: 'AW-18378433991/P1GBCNPM_-EcEMfLwrtE' });
+    }
+
+    expect(gtagMock).toHaveBeenCalledTimes(7);
   });
 
-  it('is a no-op for every event outside the approved three', async () => {
+  it('is a no-op for events outside the approved affiliate conversion set', async () => {
     const { fireGoogleAdsConversion } = await import('@/lib/google-ads-conversions');
-    for (const event of ['contact_submit_success', 'bookby_cta_click', 'route_watch_signup'] as const) {
+    for (const event of ['contact_submit_success', 'acquisition_handoff', 'route_watch_signup'] as const) {
       fireGoogleAdsConversion(event);
     }
     expect(gtagMock).not.toHaveBeenCalled();
@@ -143,10 +153,10 @@ describe('lib/analytics.ts track() — Google Ads dispatch is additive, isolated
     vi.doMock('@vercel/analytics', () => ({ track: mocks.vercelTrack }));
     vi.doMock('@/lib/google-ads-conversions', () => ({ fireGoogleAdsConversion: mocks.fireGoogleAdsConversion }));
     const { track } = await import('@/lib/analytics');
-    track('bookby_cta_click', { route: 'manchester-lahore', source: 'route-hero' });
+    track('route_watch_signup', { route: 'manchester-lahore', source: 'route-hero' });
     expect(mocks.vercelTrack).toHaveBeenCalledOnce();
     expect(mocks.fireGoogleAdsConversion).toHaveBeenCalledOnce();
-    expect(mocks.fireGoogleAdsConversion).toHaveBeenCalledWith('bookby_cta_click');
+    expect(mocks.fireGoogleAdsConversion).toHaveBeenCalledWith('route_watch_signup');
     vi.doUnmock('@vercel/analytics');
     vi.doUnmock('@/lib/google-ads-conversions');
   });
@@ -182,7 +192,7 @@ describe('lib/analytics.ts track() — Google Ads dispatch is additive, isolated
       },
     }));
     const { track } = await import('@/lib/analytics');
-    expect(() => track('bookby_cta_click')).not.toThrow();
+    expect(() => track('route_watch_signup')).not.toThrow();
     expect(mocks.vercelTrack).toHaveBeenCalledOnce();
     vi.doUnmock('@vercel/analytics');
     vi.doUnmock('@/lib/google-ads-conversions');
@@ -197,7 +207,7 @@ describe('lib/analytics.ts track() — Google Ads dispatch is additive, isolated
     }));
     vi.doMock('@/lib/google-ads-conversions', () => ({ fireGoogleAdsConversion: mocks.fireGoogleAdsConversion }));
     const { track } = await import('@/lib/analytics');
-    expect(() => track('bookby_cta_click')).not.toThrow();
+    expect(() => track('route_watch_signup')).not.toThrow();
     expect(mocks.fireGoogleAdsConversion).toHaveBeenCalledOnce();
     vi.doUnmock('@vercel/analytics');
     vi.doUnmock('@/lib/google-ads-conversions');

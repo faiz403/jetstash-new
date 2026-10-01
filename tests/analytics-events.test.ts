@@ -34,6 +34,25 @@ describe('track()', () => {
     expect(mocks.vercelTrack).toHaveBeenCalledWith('atlas_origin_selected', { airport: 'manchester' });
   });
 
+  it.each([
+    'journey_choice_cta_click',
+    'journey_brief_live_price_click',
+    'ready_check_book_cta_click',
+    'bookby_cta_click',
+  ] as const)('keeps %s and emits one paired acquisition_handoff for its verified Trip.com handoff', (event) => {
+    track(event, { route: 'manchester-islamabad', source: 'test' });
+    expect(mocks.vercelTrack).toHaveBeenCalledTimes(2);
+    expect(mocks.vercelTrack).toHaveBeenNthCalledWith(1, event, { route: 'manchester-islamabad', source: 'test' });
+    expect(mocks.vercelTrack).toHaveBeenNthCalledWith(2, 'acquisition_handoff', { route: 'manchester-islamabad', channel: 'unknown' });
+  });
+
+  it('keeps the standard Trip.com CTA at exactly one paired acquisition_handoff event', () => {
+    track('tripcom_click', { route: 'manchester-dubai', source: 'fare-signal' });
+    expect(mocks.vercelTrack).toHaveBeenCalledTimes(2);
+    expect(mocks.vercelTrack).toHaveBeenNthCalledWith(1, 'tripcom_click', { route: 'manchester-dubai', source: 'fare-signal' });
+    expect(mocks.vercelTrack).toHaveBeenNthCalledWith(2, 'acquisition_handoff', { route: 'manchester-dubai', channel: 'unknown' });
+  });
+
   it('never throws, even when the vendor call itself throws (must never break the page it measures)', () => {
     mocks.vercelTrack.mockImplementationOnce(() => {
       throw new Error('vendor blew up');
