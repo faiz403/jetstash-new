@@ -1,7 +1,9 @@
 import { getCatalogueAirport, getCatalogueAirports } from '../arrive-by-shared/airport-catalogue';
-import { getAirportCapability } from '../arrive-by-shared/airport-capability';
+import { getAirportCapability, resolveAirportProfile } from '../arrive-by-shared/airport-capability';
+import type { JourneyEngine } from '../arrive-by-shared/airport-registry';
 import { getCountryName } from '../arrive-by-shared/airport-search';
 import { DEPARTURE_CAPABILITY_EVIDENCE } from './departure-capability';
+import type { AirportMode } from './airports';
 
 /**
  * The airport choices the internal form offers, computed on the SERVER from
@@ -21,11 +23,13 @@ export interface AirportOption {
   name: string;
   city: string;
   country: string;
+  journeyEngine?: JourneyEngine;
 }
 
 const toOption = (code: string): AirportOption | undefined => {
   const airport = getCatalogueAirport(code);
-  return airport ? { code: airport.iata, name: airport.name, city: airport.city, country: getCountryName(airport.countryCode) } : undefined;
+  const profile = airport ? resolveAirportProfile(airport.iata) : undefined;
+  return airport ? { code: airport.iata, name: airport.name, city: airport.city, country: getCountryName(airport.countryCode), journeyEngine: profile?.journeyEngine } : undefined;
 };
 
 const byLabel = (a: AirportOption, b: AirportOption) => a.country.localeCompare(b.country) || a.city.localeCompare(b.city) || a.code.localeCompare(b.code);
@@ -34,9 +38,17 @@ export function getDepartureAirportOptions(): AirportOption[] {
   return Object.keys(DEPARTURE_CAPABILITY_EVIDENCE).map(toOption).filter((o): o is AirportOption => Boolean(o)).sort(byLabel);
 }
 
-export function getArrivalAirportOptions(): AirportOption[] {
+/**
+ * The public form must never advertise an airport which its API will reject.
+ * Internal previews may inspect capability-approved but unreleased road
+ * profiles; public V1 receives only journey-eligible profiles.
+ */
+export function getArrivalAirportOptions(mode: AirportMode = 'internal'): AirportOption[] {
   return getCatalogueAirports()
-    .filter((airport) => getAirportCapability(airport.iata)?.capabilityApproved)
+    .filter((airport) => {
+      const capability = getAirportCapability(airport.iata);
+      return mode === 'public' ? capability?.journeyEligible : capability?.capabilityApproved;
+    })
     .map((airport) => toOption(airport.iata))
     .filter((o): o is AirportOption => Boolean(o))
     .sort(byLabel);

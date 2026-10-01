@@ -402,11 +402,9 @@ describe('departure capability is directional and separate from arrival capabili
 describe('scope', () => {
   const walk = (dir: string): string[] => readdirSync(join(process.cwd(), dir), { withFileTypes: true }).flatMap((entry) => (entry.isDirectory() ? walk(join(dir, entry.name)) : [join(dir, entry.name)]));
 
-  it('still no public UI or route: no PUBLIC file under app/ or components/ imports (only the internal founder surfaces may) the journey or probe code', () => {
+  it('keeps operator probe code out of every UI and API surface', () => {
     for (const file of [...walk('app'), ...walk('components')].filter((f) => /\.(ts|tsx)$/.test(f))) {
-      // Internal founder surfaces may use the journey engine; nothing at all may import the operator probe.
-      const pattern = file.includes('founder') ? /departure-probe/ : /arrive-by-journey|departure-probe/;
-      expect(readFileSync(join(process.cwd(), file), 'utf8'), file).not.toMatch(pattern);
+      expect(readFileSync(join(process.cwd(), file), 'utf8'), file).not.toMatch(/departure-probe/);
     }
   });
 

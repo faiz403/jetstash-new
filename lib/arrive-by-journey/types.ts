@@ -165,7 +165,20 @@ export interface JourneyPlan {
   startDetail?: { confidence: string; pendingConfirmation?: { placeId: string; formattedAddress: string; display?: string; unnamed?: boolean; name?: string }; pendingSelection?: { candidates: Array<{ placeId: string; formattedAddress: string; display?: string; unnamed?: boolean; name?: string }> }; clarificationReason?: string; resolvedAddress?: string; display?: string };
   /** How the live origin leg was found: the measurable cost and convergence of the backward search. */
   originSearch?: { queries: number; converged: boolean; slackMinutes: number; departureAirport: string };
-  arrivalDetail?: { outcome: RoadOutcome; pendingConfirmation?: { placeId: string; formattedAddress: string; display?: string; unnamed?: boolean; name?: string }; pendingSelection?: { candidates: Array<{ placeId: string; formattedAddress: string; display?: string; unnamed?: boolean; name?: string }> }; clarificationReason?: string };
+  arrivalDetail?: {
+    outcome: RoadOutcome;
+    pendingConfirmation?: { placeId: string; formattedAddress: string; display?: string; unnamed?: boolean; name?: string };
+    pendingSelection?: { candidates: Array<{ placeId: string; formattedAddress: string; display?: string; unnamed?: boolean; name?: string }> };
+    clarificationReason?: string;
+    /** Present only for an airport with a separately validated transit-first capability. */
+    transit?: {
+      firstService: string;
+      expectedArrivalIso: string;
+      missedServiceArrivalIso?: string;
+      missedServiceMeetsReadyBy?: boolean;
+      rescue?: { attempted: boolean; available: boolean; arrivalIso?: string; meetsReadyBy?: boolean };
+    };
+  };
   /** Google's resolved places, for the traveller to check. Never sent to analytics or logs. */
   places?: { start?: { typed: string; display?: string; address?: string }; destination?: { typed: string; display?: string; address?: string } };
   calls?: { used: number; ceiling: number; breakdown: Record<string, number> };

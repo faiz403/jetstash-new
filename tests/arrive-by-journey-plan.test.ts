@@ -128,6 +128,27 @@ describe('GOLDEN end to end (Google stubbed): UK start → flight → MAN → Sh
   });
 });
 
+describe('validated global road capability remains separate from transit-first', () => {
+  it('uses the existing drive model for DXB → Atlantis The Royal only in its unreleased internal capability mode', async () => {
+    const atlantis = {
+      formatted_address: 'Atlantis The Royal, Dubai, United Arab Emirates', place_id: 'place-atlantis', types: ['establishment', 'point_of_interest'],
+      geometry: { location_type: 'ROOFTOP' }, address_components: [{ long_name: 'United Arab Emirates', short_name: 'AE', types: ['country', 'political'] }],
+    };
+    const g = google([atlantis], 1800);
+    const plan = await planFullJourney({
+      start: 'London', departureAirport: 'LHR', originLegMinutes: 70,
+      flight: { departsLocal: '2027-02-10T09:00', arrivesLocal: '2027-02-10T20:00' },
+      arrivalAirport: 'DXB', destination: 'Atlantis The Royal', confirmedPlaceId: 'place-atlantis',
+      preferences: { departureAirportBufferMinutes: 120, arrivalExitMinutes: 60, pickupWaitMinutes: 10, pickupMode: 'pre-booked' },
+    }, { apiKey: KEY, guard: guardWith(), airportMode: 'internal', originMode: 'ENTERED', transitFirst: 'LIVE', nowIso: '2027-02-09T09:00:00.000Z', baseFetch: g.fetch });
+
+    expect(plan.state).toBe('ESTIMATE_ONLY');
+    expect(plan.timeline.find((leg) => leg.kind === 'ONWARD')?.evidence.source).toBe('Google traffic-aware driving estimate');
+    expect(plan.arrivalDetail?.transit).toBeUndefined();
+    expect(g.calls).toEqual(['geocode', 'routes']);
+  });
+});
+
 describe('the 10-call hard stop', () => {
   it('the ledger allows exactly 10 Google calls, refuses the 11th, and never sends it', async () => {
     const base = vi.fn(async () => new Response('{}', { status: 200 })) as unknown as typeof fetch;
@@ -362,13 +383,14 @@ describe('cheap failures cost nothing', () => {
   });
 });
 
-describe('scope: the arrival-only product and public surface are untouched', () => {
+describe('scope: public full journey and arrival-only compatibility', () => {
   const read = (...parts: string[]) => readFileSync(join(process.cwd(), ...parts), 'utf8');
   const walk = (dir: string): string[] => readdirSync(join(process.cwd(), dir), { withFileTypes: true }).flatMap((entry) => (entry.isDirectory() ? walk(join(dir, entry.name)) : [join(dir, entry.name)]));
 
-  it('no PUBLIC file under app/ or components/ imports (only the internal founder surfaces may) the journey module: no new public UI or route', () => {
-    for (const file of [...walk('app'), ...walk('components')].filter((f) => /\.(ts|tsx)$/.test(f) && !f.includes('founder'))) {
-      expect(read(file), file).not.toMatch(/arrive-by-journey/);
+  it('the public route is explicit, and the arrival-only engines remain separate compatibility paths', () => {
+    expect(read('app', 'api', 'arrive-by', 'journey', 'route.ts')).toContain('planFullJourney');
+    for (const file of ['components/arrive-by-road-public.tsx', 'components/arrive-by-pakistan-public.tsx', 'components/arrive-by-manchester-public.tsx']) {
+      expect(read(...file.split('/')), file).not.toMatch(/planFullJourney/);
     }
   });
 

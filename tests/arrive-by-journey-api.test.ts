@@ -6,6 +6,7 @@ import { POST } from '@/app/api/founder/arrive-by-journey/route';
 import { cleanJourneyInput } from '@/lib/arrive-by-journey/clean-journey-input';
 import { checkInternalAccess, createJourneyCallGuard, founderEnabled, INTERNAL_TOKEN_HEADER } from '@/lib/arrive-by-journey/internal-access';
 import { getArrivalAirportOptions, getDepartureAirportOptions } from '@/lib/arrive-by-journey/airport-options';
+import { resolveJourneyAirports } from '@/lib/arrive-by-journey/airports';
 import { DEPARTURE_CAPABILITY_EVIDENCE, type DepartureEvidence } from '@/lib/arrive-by-journey/departure-capability';
 import { getAirportCapability } from '@/lib/arrive-by-shared/airport-capability';
 import type { JourneyPlan } from '@/lib/arrive-by-journey/types';
@@ -415,6 +416,13 @@ describe('capability gates through the API', () => {
     for (const code of ['BEK', 'LYR', 'BRS']) expect(arrivals).not.toContain(code);
     for (const code of arrivals) expect(getAirportCapability(code)?.capabilityApproved, code).toBe(true);
   });
+
+  it('the public full-journey form advertises only airports its public API can calculate', () => {
+    const publicArrivals = getArrivalAirportOptions('public').map((option) => option.code);
+    expect(publicArrivals).toEqual(['ISB', 'KHI', 'LHE', 'MAN']);
+    expect(publicArrivals).not.toContain('DXB');
+    for (const code of publicArrivals) expect(resolveJourneyAirports('MAN', code, 'public').ok, code).toBe(true);
+  });
 });
 
 describe('request handling', () => {
@@ -489,13 +497,13 @@ describe('the internal UI and its non-public status', () => {
     }
   });
 
-  it('the existing arrival-only /arrive-by product is untouched: it imports none of the journey code', () => {
-    for (const file of ['app/arrive-by/page.tsx', 'components/arrive-by-shell.tsx', 'components/arrive-by-road-public.tsx', 'components/arrive-by-pakistan-public.tsx', 'components/arrive-by-manchester-public.tsx']) {
-      expect(read(...file.split('/')), file).not.toMatch(/arrive-by-journey/);
-    }
-    for (const file of walk('app/api').map((f) => f.replace(/\\/g, '/')).filter((f) => /arrive-by/.test(f) && !/arrive-by-journey/.test(f))) {
-      expect(read(file), file).not.toMatch(/arrive-by-journey/);
-    }
+  it('keeps the existing arrival-only ?airport= dispatch alongside the full-journey start flow', () => {
+    expect(read('app', 'arrive-by', 'page.tsx')).toContain('getShellAirportLookup');
+    const shell = read('components', 'arrive-by-shell.tsx');
+    expect(shell).toContain("resolveShellDispatch(searchParams.get('airport'), lookup)");
+    expect(shell).toContain('ArriveByPakistanPublic');
+    expect(shell).toContain('ArriveByManchesterPublic');
+    expect(shell).toContain('ArriveByRoadPublic');
   });
 
   it('the form asks its questions in the founder\'s order and answers "When should I leave?" first', () => {

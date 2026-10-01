@@ -3,6 +3,7 @@ import { enrichPendingNames, fetchPlaceDisplayName, type PlaceNameLookup } from 
 import { resolveJourneyAirports, type AirportMode, type OriginMode } from './airports';
 import { enteredOriginLeg, roadArrivalLeg } from './providers';
 import { googleOriginLeg, type OriginLegOutcome } from './origin-leg';
+import { transitArrivalLeg } from './transit-arrival-leg';
 import { solveJourney, shortPlaceName } from './solver';
 import { STATE_LABEL, type JourneyInput, type JourneyPlan, type NotEvidencedReason, type ResolvedLeg } from './types';
 
@@ -31,6 +32,8 @@ export interface PlanDeps {
   airportMode?: AirportMode;
   /** LIVE (default): Google-backed origin leg. ENTERED: explicit internal fallback that uses `input.originLegMinutes`. Never chosen automatically. */
   originMode?: OriginMode;
+  /** Explicit public V1 opt-in for a profile's validated transit-first arrival model. */
+  transitFirst?: 'LIVE';
   /** Injectable for tests and for a metered base fetch; defaults to global fetch. */
   baseFetch?: typeof fetch;
   ceiling?: number;
@@ -93,7 +96,8 @@ export async function planFullJourney(input: JourneyInput, deps: PlanDeps): Prom
       originLeg = enteredLeg;
     } else {
       try {
-        originOutcome = await (deps.originLegProvider ?? googleOriginLeg)(deps.apiKey, check.airports, input, ledger, deps.nowIso);
+        const reserve = deps.transitFirst === 'LIVE' && check.airports.arrival.profile.journeyEngine === 'TRANSIT_FIRST' ? 4 : 2;
+        originOutcome = await (deps.originLegProvider ?? googleOriginLeg)(deps.apiKey, check.airports, input, ledger, deps.nowIso, reserve);
         originLeg = originOutcome.leg;
       } catch (error) {
         originLeg = error instanceof CallCeilingExceeded
@@ -107,10 +111,17 @@ export async function planFullJourney(input: JourneyInput, deps: PlanDeps): Prom
     // 4b. Arrival leg
     let arrivalLeg: ResolvedLeg;
     let road;
+    let transitDetail;
     try {
-      const outcome = await (deps.arrivalLegProvider ?? roadArrivalLeg)(deps.apiKey, check.airports, input, ledger, deps.nowIso);
-      arrivalLeg = outcome.leg;
-      road = outcome.road;
+      if (deps.transitFirst === 'LIVE' && check.airports.arrival.profile.journeyEngine === 'TRANSIT_FIRST') {
+        const outcome = await transitArrivalLeg(deps.apiKey, check.airports, input, ledger, deps.nowIso);
+        arrivalLeg = outcome.leg;
+        transitDetail = outcome.detail;
+      } else {
+        const outcome = await (deps.arrivalLegProvider ?? roadArrivalLeg)(deps.apiKey, check.airports, input, ledger, deps.nowIso);
+        arrivalLeg = outcome.leg;
+        road = outcome.road;
+      }
     } catch (error) {
       arrivalLeg = error instanceof CallCeilingExceeded
         ? { status: 'NOT_EVIDENCED', reason: 'CALL_CEILING_REACHED' }
@@ -129,7 +140,9 @@ export async function planFullJourney(input: JourneyInput, deps: PlanDeps): Prom
     let startDetail = startPlace && startPlace.confidence !== 'CONFIRMED' ? startPlace : undefined;
     let arrivalDetail = road && road.outcome !== 'ETA_ONLY'
       ? { outcome: road.outcome, pendingConfirmation: road.pendingConfirmation, pendingSelection: road.pendingSelection, clarificationReason: road.clarificationReason }
-      : undefined;
+      : transitDetail && transitDetail.outcome !== 'ETA_ONLY'
+        ? transitDetail
+        : transitDetail;
     if (!ledger.exhausted && (deps.placeNames === 'LIVE' || deps.placeNameLookup)) {
       const lookup: PlaceNameLookup = deps.placeNameLookup ?? ((placeId) => fetchPlaceDisplayName(deps.apiKey, placeId, ledger.fetch));
       startDetail = await enrichPendingNames(startDetail, lookup, ledger);

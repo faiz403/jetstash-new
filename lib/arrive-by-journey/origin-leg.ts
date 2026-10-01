@@ -19,7 +19,7 @@ import type { JourneyInput, NotEvidencedReason, ResolvedLeg } from './types';
  * ceiling. A failure is NOT_EVIDENCED, never a silent fall-back to an entered duration.
  */
 
-/** Calls the arrival side may still need (start geocode is spent before this; destination geocode + drive = 2). Origin search leaves them alone. */
+/** Calls the arrival side may still need for the normal road-first profile (destination geocode + drive = 2). */
 export const ARRIVAL_RESERVE_CALLS = 2;
 
 export interface OriginLegOutcome {
@@ -47,6 +47,7 @@ export async function googleOriginLeg(
   input: JourneyInput,
   ledger: GoogleCallLedger,
   checkedAtIso: string,
+  arrivalReserveCalls: number = ARRIVAL_RESERVE_CALLS,
 ): Promise<OriginLegOutcome> {
   const { departure } = airports;
 
@@ -77,7 +78,7 @@ export async function googleOriginLeg(
   }
 
   // 2. Backward search (bounded by both its own cap and what the ledger can still afford, leaving the arrival side's reserve)
-  const affordable = ledger.remaining - ARRIVAL_RESERVE_CALLS;
+  const affordable = ledger.remaining - arrivalReserveCalls;
   if (affordable < 1) return { start, leg: notEvidenced('ORIGIN_ROUTE_UNAVAILABLE', 'The call limit for one journey leaves no room for the drive to the airport.') };
   // Prefer Google's own coordinate for the start: routing from a locality's name/placeId can return no route at all
   // ("Durham"), while its coordinate routes normally. The coordinate came from Google, server-side, never from the client.

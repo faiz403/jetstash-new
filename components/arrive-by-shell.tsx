@@ -9,6 +9,8 @@ import { searchAirports, type SearchableAirport } from '@/lib/arrive-by-shared/a
 import { ArriveByPakistanPublic } from '@/components/arrive-by-pakistan-public';
 import { ArriveByManchesterPublic } from '@/components/arrive-by-manchester-public';
 import { ArriveByRoadPublic } from '@/components/arrive-by-road-public';
+import { ArriveByFullJourney } from '@/components/arrive-by-full-journey';
+import type { AirportOption } from '@/lib/arrive-by-journey/airport-options';
 import type { PakistanAirportCode } from '@/lib/arrive-by-pakistan/types';
 
 /**
@@ -101,11 +103,14 @@ function ChangeAirportLink() {
   </div>;
 }
 
-export function ArriveByShell({ lookup }: { lookup?: AirportLookup }) {
+export function ArriveByShell({ lookup, departureAirports = [], arrivalAirports = [] }: { lookup?: AirportLookup; departureAirports?: AirportOption[]; arrivalAirports?: AirportOption[] }) {
   const searchParams = useSearchParams();
   const dispatch = resolveShellDispatch(searchParams.get('airport'), lookup);
 
-  if (dispatch.kind === 'selector') return <AirportSelector />;
+  // The ordinary public entry point is one complete journey. Arrival-only
+  // estimates remain available through their established ?airport= links,
+  // but are intentionally not presented as a competing product here.
+  if (dispatch.kind === 'selector') return <ArriveByFullJourney departureAirports={departureAirports} arrivalAirports={arrivalAirports} />;
   if (dispatch.kind === 'unsupported') return <UnsupportedAirport code={dispatch.code} />;
   if (dispatch.kind === 'not_yet_supported') return <NotYetSupportedAirport code={dispatch.code} name={dispatch.name} />;
 

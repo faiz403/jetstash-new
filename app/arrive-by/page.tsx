@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import { ArriveByShell } from '@/components/arrive-by-shell';
 import { getShellAirportLookup } from '@/lib/arrive-by-shared/airport-capability';
+import { getArrivalAirportOptions, getDepartureAirportOptions } from '@/lib/arrive-by-journey/airport-options';
 
 /**
  * The canonical Arrive By public beta — one product, airport-driven
@@ -28,6 +29,6 @@ export default async function ArriveByPage({ searchParams }: { searchParams: Pro
   const { airport } = await searchParams;
   const lookup = getShellAirportLookup(Array.isArray(airport) ? airport[0] : airport);
   return <Suspense fallback={null}>
-    <ArriveByShell lookup={lookup} />
+    <ArriveByShell lookup={lookup} departureAirports={getDepartureAirportOptions()} arrivalAirports={getArrivalAirportOptions('public')} />
   </Suspense>;
 }
