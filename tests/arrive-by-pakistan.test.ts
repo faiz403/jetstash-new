@@ -383,7 +383,7 @@ describe('venue/POI destination confirmation — live evidence: real hotels/venu
     });
     expect(result.outcome).toBe('DESTINATION_NEEDS_CONFIRMATION');
     expect(result.destinationConfidence).toBe('NEEDS_CONFIRMATION');
-    expect(result.pendingConfirmation).toEqual({ placeId: 'venue-place-id-123', formattedAddress: '52 Canal Rd, Mughalpura, Lahore, 54840, Pakistan' });
+    expect(result.pendingConfirmation).toMatchObject({ placeId: 'venue-place-id-123', formattedAddress: '52 Canal Rd, Mughalpura, Lahore, 54840, Pakistan' });
     expect(result.expectedArrival).toBeUndefined();
     expect(result.deadline).toBeUndefined();
     expect(result.marginMinutes).toBeUndefined();
@@ -694,12 +694,12 @@ describe('multiple-POI selection — live evidence: "Aga Khan University Hospita
     });
     const result = await geocodeDestination('test-key', 'Ambiguous Hospital Name Karachi');
     expect(result.confidence).toBe('NEEDS_SELECTION');
-    expect(result.candidates).toEqual([
+    expect(result.candidates).toMatchObject([
       { placeId: 'venue-a-id', formattedAddress: 'Venue A, Karachi, Pakistan' },
       { placeId: 'venue-b-id', formattedAddress: 'Venue B, Karachi, Pakistan' },
     ]);
-    // Only safe display fields are exposed — no raw Google payload (no types/geometry/etc. on the candidate objects).
-    expect(Object.keys(result.candidates![0])).toEqual(['placeId', 'formattedAddress']);
+    // Only safe display fields are exposed: no raw Google payload; display is our own derived label.
+    expect(Object.keys(result.candidates![0]).sort()).toEqual(['display', 'formattedAddress', 'placeId', 'unnamed']);
   });
 
   it('no venue-typed candidates at all (locality/village duplicate representations, e.g. Sujawal) falls back to the original MULTIPLE_CANDIDATES behaviour — the POI selector must not apply here', async () => {

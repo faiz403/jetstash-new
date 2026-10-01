@@ -55,8 +55,14 @@ export type DestinationClarificationReason =
   | 'WRONG_COUNTRY'
   | 'GEOCODE_FAILED';
 
+import { describePlace, venueNameMatchesTyped } from './place-display';
+
 export interface GeocodeResult {
   confidence: DestinationConfidence;
+  /** Human-readable label built only from Google's own components (see place-display.ts). */
+  display?: string;
+  /** True when Google gave this result no venue name (only an address / area). Presentation hint only; never affects safety. */
+  unnamed?: boolean;
   clarificationReason?: DestinationClarificationReason;
   formattedAddress?: string;
   resolvedPrimaryPlace?: string;
@@ -68,7 +74,13 @@ export interface GeocodeResult {
   candidateCount: number;
   status: string;
   /** Present only when confidence is NEEDS_SELECTION — the genuinely different named-venue candidates to choose between. */
-  candidates?: Array<{ placeId: string; formattedAddress: string }>;
+  candidates?: Array<{ placeId: string; formattedAddress: string; display?: string; unnamed?: boolean; name?: string }>;
+  /**
+   * Google's own point for the resolved place, server-side only (never accepted from a client and never sent to one).
+   * Used to route FROM a start location: Google Routes cannot route from some locality names/place IDs as text (it
+   * returns an empty route for "Durham" but routes fine from that place's coordinate), so the origin side prefers this.
+   */
+  location?: { lat: number; lng: number };
 }
 
 /** Per-airport destination-resolution policy. Both fields are optional: omitting `expectedCountryCodes` runs no hard country gate (used while an airport's destination policy is still pending explicit validation — see lib/arrive-by-shared/airport-registry.ts). */
@@ -91,6 +103,16 @@ const GEOCODE_ENDPOINT = 'https://maps.googleapis.com/maps/api/geocode/json';
 const TOO_BROAD_TYPES = new Set(['country', 'administrative_area_level_1', 'administrative_area_level_2']);
 
 /**
+ * A broad top-level type is still not safe on its own, but Google can attach
+ * one to a genuine street-level result in some country-specific address
+ * hierarchies. These components prove the result identifies an addressable
+ * point or street rather than only an administrative area. They never make a
+ * result pass by themselves: the ordinary primary-place and country guards
+ * below still apply.
+ */
+const ADDRESSABLE_COMPONENT_TYPES = new Set(['route', 'street_number', 'premise', 'subpremise', 'intersection']);
+
+/**
  * Preference order for "the most specific named place Google actually
  * resolved" — deliberately excludes admin_area levels and country, which
  * are qualifying context, not a place identity a road journey can target.
@@ -101,15 +123,17 @@ const TOO_BROAD_TYPES = new Set(['country', 'administrative_area_level_1', 'admi
  * neighbourhood actually requested) — checking locality first would have
  * silently picked the wrong, less specific one.
  */
-const PRIMARY_PLACE_COMPONENT_PRIORITY = ['sublocality_level_1', 'sublocality', 'locality', 'administrative_area_level_3', 'postal_town'];
+const PRIMARY_PLACE_COMPONENT_PRIORITY = ['route', 'sublocality_level_1', 'sublocality', 'neighborhood', 'locality', 'administrative_area_level_3', 'postal_town'];
 
 const MAX_SELECTION_CANDIDATES = 5;
 
 function normalizePlaceName(value: string): string {
   return value
+    .normalize('NFKD')
+    .replace(/\p{M}/gu, '')
     .toLowerCase()
     .trim()
-    .replace(/[^a-z0-9\s]/g, ' ')
+    .replace(/[^\p{L}\p{N}\s]/gu, ' ')
     .replace(/\s+/g, ' ')
     .trim();
 }
@@ -185,12 +209,23 @@ export function isDefinitelyNotExpectedCountry(addressComponents: AddressCompone
   return !expectedCountryCodes.includes(country.short_name);
 }
 
+/**
+ * Google occasionally labels a street-level result with an administrative
+ * top-level type (notably in some Brazilian responses). The result remains
+ * safe only if its components also identify a real addressable street/point;
+ * a country, state or district alone still has no such component and remains
+ * too broad for a road journey.
+ */
+function hasAddressableComponent(addressComponents: AddressComponent[] | undefined): boolean {
+  return Boolean(addressComponents?.some((component) => component.types.some((type) => ADDRESSABLE_COMPONENT_TYPES.has(type))));
+}
+
 interface GeocodeApiResult {
   formatted_address?: string;
   place_id?: string;
   partial_match?: boolean;
   types?: string[];
-  geometry?: { location_type?: string };
+  geometry?: { location_type?: string; location?: { lat?: number; lng?: number } };
   address_components?: AddressComponent[];
 }
 
@@ -210,7 +245,7 @@ function classifyGeocodeResult(
 ): GeocodeResult {
   const partialMatch = Boolean(result.partial_match);
   const types = result.types ?? [];
-  const tooBroad = types.some((type) => TOO_BROAD_TYPES.has(type));
+  const tooBroad = types.some((type) => TOO_BROAD_TYPES.has(type)) && !hasAddressableComponent(result.address_components);
   const locationType = result.geometry?.location_type;
   const resolvedPrimaryPlace = deriveResolvedPrimaryPlace(result.address_components);
   const primaryInputPlace = extractPrimaryInputPlace(destination);
@@ -242,6 +277,9 @@ function classifyGeocodeResult(
     confidence,
     clarificationReason,
     formattedAddress: result.formatted_address,
+    display: describePlace(result),
+    unnamed: venueNameMatchesTyped(result, destination) ? undefined : true,
+    location: Number.isFinite(result.geometry?.location?.lat) && Number.isFinite(result.geometry?.location?.lng) ? { lat: result.geometry!.location!.lat as number, lng: result.geometry!.location!.lng as number } : undefined,
     resolvedPrimaryPlace,
     placeId: result.place_id,
     locationTypes: types,
@@ -259,7 +297,7 @@ function classifyGeocodeResult(
  * there) for why the Geocoding API's candidate list is what actually
  * enables ambiguity detection that Routes API v2 alone cannot replicate.
  */
-export async function resolveDestination(apiKey: string, destination: string, config: DestinationResolutionConfig): Promise<GeocodeResult> {
+export async function resolveDestination(apiKey: string, destination: string, config: DestinationResolutionConfig, fetchImpl: typeof fetch = fetch): Promise<GeocodeResult> {
   const url = new URL(GEOCODE_ENDPOINT);
   url.searchParams.set('address', destination);
   if (config.regionBias) url.searchParams.set('region', config.regionBias);
@@ -267,7 +305,7 @@ export async function resolveDestination(apiKey: string, destination: string, co
 
   let response: Response;
   try {
-    response = await fetch(url.toString(), { cache: 'no-store' });
+    response = await fetchImpl(url.toString(), { cache: 'no-store' });
   } catch {
     return { confidence: 'UNRESOLVED', clarificationReason: 'GEOCODE_FAILED', partialMatch: false, candidateCount: 0, status: 'REQUEST_FAILED' };
   }
@@ -300,7 +338,7 @@ export async function resolveDestination(apiKey: string, destination: string, co
           candidateCount: body.results.length,
           partialMatch: false,
           status: body.status,
-          candidates: usable.map((r) => ({ placeId: r.place_id!, formattedAddress: r.formatted_address! })),
+          candidates: usable.map((r) => ({ placeId: r.place_id!, formattedAddress: r.formatted_address!, display: describePlace(r), unnamed: venueNameMatchesTyped(r, destination) ? undefined : true })),
         };
       }
     }
@@ -309,6 +347,7 @@ export async function resolveDestination(apiKey: string, destination: string, co
       confidence: 'NEEDS_CLARIFICATION',
       clarificationReason: 'MULTIPLE_CANDIDATES',
       formattedAddress: top.formatted_address,
+      display: describePlace(top),
       resolvedPrimaryPlace: deriveResolvedPrimaryPlace(top.address_components),
       placeId: top.place_id,
       locationTypes: top.types,

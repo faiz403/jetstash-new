@@ -1,11 +1,17 @@
 'use client';
 
 import Link from 'next/link';
+import { useMemo, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { getPublicAirportProfiles, type AirportProfile } from '@/lib/arrive-by-shared/airport-registry';
-import { resolveShellDispatch } from '@/lib/arrive-by-shared/shell-dispatch';
+import { resolveShellDispatch, type AirportLookup } from '@/lib/arrive-by-shared/shell-dispatch';
+import { searchAirports, type SearchableAirport } from '@/lib/arrive-by-shared/airport-search';
 import { ArriveByPakistanPublic } from '@/components/arrive-by-pakistan-public';
 import { ArriveByManchesterPublic } from '@/components/arrive-by-manchester-public';
+import { ArriveByRoadPublic } from '@/components/arrive-by-road-public';
+import { ArriveByFullJourney } from '@/components/arrive-by-full-journey';
+import type { PublicJourneyRoutePair } from '@/lib/arrive-by-journey/public-route-pairs';
+import type { AirportOption } from '@/lib/arrive-by-journey/airport-options';
 import type { PakistanAirportCode } from '@/lib/arrive-by-pakistan/types';
 
 /**
@@ -28,14 +34,35 @@ function scopeCaption(profile: AirportProfile): string {
   return `${profile.displayName} beta — currently supported Pakistan airports: ${getPublicAirportProfiles().filter((p) => p.journeyEngine === 'ROAD_PICKUP_FIRST').map((p) => p.code).join(', ')}.`;
 }
 
+/** A public registry profile in the shape the local search expects. Size is a ranking hint only; every public airport ranks equally. */
+function toSearchable(profile: AirportProfile): SearchableAirport & { profile: AirportProfile } {
+  return { iata: profile.code, icao: '', name: profile.displayName, city: profile.city, countryCode: profile.countryCode, size: 'L', profile };
+}
+
 function AirportSelector() {
-  const profiles = getPublicAirportProfiles();
+  const profiles = useMemo(() => getPublicAirportProfiles(), []);
+  const searchable = useMemo(() => profiles.map(toSearchable), [profiles]);
+  const [query, setQuery] = useState('');
+  const results = query.trim() ? searchAirports(query, searchable) : [];
+  const visible = query.trim() && results.length > 0 ? results.map((result) => result.profile) : profiles;
   return <div className="mx-auto max-w-5xl bg-white px-4 py-8 text-ink-900 sm:px-8">
     <p className="text-xs font-semibold uppercase tracking-wide text-brass-600">Arrive By — Beta</p>
     <h1 className="mt-3 font-display text-3xl sm:text-4xl">Find out when you'll actually reach where you're going after you land.</h1>
-    <p className="mt-3 max-w-2xl text-ink-600">Where are you landing?</p>
+    <label htmlFor="arrive-by-airport-search" className="mt-3 block max-w-2xl text-ink-600">Where are you landing?</label>
+    <input
+      id="arrive-by-airport-search"
+      type="search"
+      value={query}
+      onChange={(event) => setQuery(event.target.value.slice(0, 64))}
+      placeholder="Airport code, name or city"
+      autoComplete="off"
+      className="mt-2 w-full max-w-md rounded-md border border-ink-200 bg-white px-3 py-2 text-ink-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brass"
+    />
+    {query.trim() && results.length === 0 && (
+      <p className="mt-3 max-w-2xl text-sm text-ink-500" role="status">Arrive By can't calculate that airport journey yet. Choose one of the airports below.</p>
+    )}
     <div className="mt-6 grid gap-3 sm:grid-cols-2">
-      {profiles.map((profile) => (
+      {visible.map((profile) => (
         <Link
           key={profile.code}
           href={`/arrive-by?airport=${profile.code}`}
@@ -62,18 +89,38 @@ function UnsupportedAirport({ code }: { code: string }) {
   </div>;
 }
 
+function NotYetSupportedAirport({ code, name }: { code: string; name?: string }) {
+  return <div className="mx-auto max-w-3xl bg-white px-4 py-16 text-center text-ink-900 sm:px-8">
+    <p className="text-xs font-semibold uppercase tracking-wide text-brass-600">Arrive By — Beta</p>
+    <h1 className="mt-3 font-display text-2xl">Arrive By can't calculate this airport journey yet.</h1>
+    <p className="mt-3 text-ink-600">{name ? `${name} (${code})` : code} isn't available in this beta, so we won't guess an estimate.</p>
+    <Link href="/arrive-by" className="mt-6 inline-block rounded-sm bg-ink-900 px-6 py-3 font-semibold text-white">Choose a supported airport</Link>
+  </div>;
+}
+
 function ChangeAirportLink() {
   return <div className="mx-auto max-w-5xl px-4 pt-6 sm:px-8">
     <Link href="/arrive-by" className="text-sm font-semibold text-brass-600 hover:text-brass-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brass">← Change airport</Link>
   </div>;
 }
 
-export function ArriveByShell() {
+export function ArriveByShell({ lookup, departureAirports = [], arrivalAirports = [], initialAirportPair, prefillNotice, routePairs = [] }: { lookup?: AirportLookup; departureAirports?: AirportOption[]; arrivalAirports?: AirportOption[]; initialAirportPair?: { departureAirport: string; arrivalAirport: string }; prefillNotice?: string; routePairs?: PublicJourneyRoutePair[] }) {
   const searchParams = useSearchParams();
-  const dispatch = resolveShellDispatch(searchParams.get('airport'));
+  const dispatch = resolveShellDispatch(searchParams.get('airport'), lookup);
 
-  if (dispatch.kind === 'selector') return <AirportSelector />;
+  // The ordinary public entry point is one complete journey. Arrival-only
+  // estimates remain available through their established ?airport= links,
+  // but are intentionally not presented as a competing product here.
+  if (dispatch.kind === 'selector') return <ArriveByFullJourney departureAirports={departureAirports} arrivalAirports={arrivalAirports} initialAirportPair={initialAirportPair} prefillNotice={prefillNotice} routePairs={routePairs} />;
   if (dispatch.kind === 'unsupported') return <UnsupportedAirport code={dispatch.code} />;
+  if (dispatch.kind === 'not_yet_supported') return <NotYetSupportedAirport code={dispatch.code} name={dispatch.name} />;
+
+  if (dispatch.kind === 'road_journey') {
+    return <div>
+      <ChangeAirportLink />
+      <ArriveByRoadPublic airport={dispatch.airport} />
+    </div>;
+  }
 
   const { profile } = dispatch;
   return <div>

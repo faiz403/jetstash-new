@@ -1,0 +1,365 @@
+{
+  "generatedBy": "scripts/arrive-by-capability-probe.ts",
+  "records": [
+    {
+      "iata": "AKL",
+      "status": "road_supported",
+      "verifiedDate": "2026-09-30",
+      "note": "Phase C live probe PASS: Google identity agrees (0.34 km from catalogue point); traffic-aware DRIVE to \"Hamilton, New Zealand\" 82 min. Capability only; NOT released.",
+      "checks": {
+        "identityVerified": true,
+        "routeProbed": true
+      }
+    },
+    {
+      "iata": "AMD",
+      "status": "road_supported",
+      "verifiedDate": "2026-09-30",
+      "note": "Phase C live probe PASS: Google identity agrees (0.39 km from catalogue point); traffic-aware DRIVE to \"Gandhinagar, India\" 33 min. Capability only; NOT released.",
+      "checks": {
+        "identityVerified": true,
+        "routeProbed": true
+      }
+    },
+    {
+      "iata": "AMS",
+      "status": "road_supported",
+      "verifiedDate": "2026-09-30",
+      "note": "Phase C live probe PASS: Google identity agrees (1.68 km from catalogue point); traffic-aware DRIVE to \"Utrecht, Netherlands\" 49 min. Capability only; NOT released.",
+      "checks": {
+        "identityVerified": true,
+        "routeProbed": true
+      }
+    },
+    {
+      "iata": "ASP",
+      "status": "road_supported",
+      "verifiedDate": "2026-09-30",
+      "note": "Phase C live probe PASS: Google identity agrees (0.53 km from catalogue point); traffic-aware DRIVE to \"Alice Springs, Australia\" 22 min. Capability only; NOT released.",
+      "checks": {
+        "identityVerified": true,
+        "routeProbed": true
+      }
+    },
+    {
+      "iata": "BKK",
+      "status": "road_supported",
+      "verifiedDate": "2026-09-30",
+      "note": "Phase C live probe PASS: Google identity agrees (0.09 km from catalogue point); traffic-aware DRIVE to \"Ayutthaya, Thailand\" 90 min. Capability only; NOT released.",
+      "checks": {
+        "identityVerified": true,
+        "routeProbed": true
+      }
+    },
+    {
+      "iata": "BOM",
+      "status": "road_supported",
+      "verifiedDate": "2026-09-30",
+      "note": "Phase C live probe PASS: Google identity agrees (0.56 km from catalogue point); traffic-aware DRIVE to \"Pune, India\" 183 min. Capability only; NOT released.",
+      "checks": {
+        "identityVerified": true,
+        "routeProbed": true
+      }
+    },
+    {
+      "iata": "BSL",
+      "status": "road_supported",
+      "verifiedDate": "2026-09-30",
+      "note": "Phase C live probe PASS: Google identity agrees (0.52 km from catalogue point); traffic-aware DRIVE to \"Basel, Switzerland\" 22 min. Capability only; NOT released.",
+      "checks": {
+        "identityVerified": true,
+        "routeProbed": true
+      }
+    },
+    {
+      "iata": "CDG",
+      "status": "road_supported",
+      "verifiedDate": "2026-09-30",
+      "note": "Phase C live probe PASS: Google identity agrees (0.27 km from catalogue point); traffic-aware DRIVE to \"Versailles, France\" 58 min. Capability only; NOT released.",
+      "checks": {
+        "identityVerified": true,
+        "routeProbed": true
+      }
+    },
+    {
+      "iata": "DAC",
+      "status": "road_supported",
+      "verifiedDate": "2026-09-30",
+      "note": "Phase C live probe PASS: Google identity agrees (0.52 km from catalogue point); traffic-aware DRIVE to \"Narayanganj, Bangladesh\" 78 min. Capability only; NOT released.",
+      "checks": {
+        "identityVerified": true,
+        "routeProbed": true
+      }
+    },
+    {
+      "iata": "DCA",
+      "status": "road_supported",
+      "verifiedDate": "2026-09-30",
+      "note": "Phase C live probe PASS: Google identity agrees (0.26 km from catalogue point); traffic-aware DRIVE to \"Alexandria, Virginia, USA\" 14 min. Capability only; NOT released.",
+      "checks": {
+        "identityVerified": true,
+        "routeProbed": true
+      }
+    },
+    {
+      "iata": "DEL",
+      "status": "road_supported",
+      "verifiedDate": "2026-09-30",
+      "note": "Phase C live probe PASS: Google identity agrees (0.47 km from catalogue point); traffic-aware DRIVE to \"Gurugram, India\" 46 min. Capability only; NOT released.",
+      "checks": {
+        "identityVerified": true,
+        "routeProbed": true
+      }
+    },
+    {
+      "iata": "DOH",
+      "status": "road_supported",
+      "verifiedDate": "2026-09-30",
+      "note": "Phase C live probe PASS: Google identity agrees (0.72 km from catalogue point); traffic-aware DRIVE to \"Al Khor, Qatar\" 57 min. Capability only; NOT released.",
+      "checks": {
+        "identityVerified": true,
+        "routeProbed": true
+      }
+    },
+    {
+      "iata": "DXB",
+      "status": "road_supported",
+      "verifiedDate": "2026-09-30",
+      "note": "Phase C live probe PASS: Google identity agrees (0.33 km from catalogue point); traffic-aware DRIVE to \"Sharjah, United Arab Emirates\" 28 min. Capability only; NOT released.",
+      "checks": {
+        "identityVerified": true,
+        "routeProbed": true
+      }
+    },
+    {
+      "iata": "FRA",
+      "status": "road_supported",
+      "verifiedDate": "2026-09-30",
+      "note": "Phase C live probe PASS: Google identity agrees (1.23 km from catalogue point); traffic-aware DRIVE to \"Mainz, Germany\" 41 min. Capability only; NOT released.",
+      "checks": {
+        "identityVerified": true,
+        "routeProbed": true
+      }
+    },
+    {
+      "iata": "GRU",
+      "status": "road_supported",
+      "verifiedDate": "2026-09-30",
+      "note": "Phase C live probe PASS: Google identity agrees (0.21 km from catalogue point); traffic-aware DRIVE to \"Sao Paulo, Brazil\" 52 min. Capability only; NOT released.",
+      "checks": {
+        "identityVerified": true,
+        "routeProbed": true
+      }
+    },
+    {
+      "iata": "GVA",
+      "status": "road_supported",
+      "verifiedDate": "2026-09-30",
+      "note": "Phase C live probe PASS: Google identity agrees (1.31 km from catalogue point); traffic-aware DRIVE to \"Lausanne, Switzerland\" 55 min. Capability only; NOT released.",
+      "checks": {
+        "identityVerified": true,
+        "routeProbed": true
+      }
+    },
+    {
+      "iata": "HKG",
+      "status": "road_supported",
+      "verifiedDate": "2026-09-30",
+      "note": "Phase C live probe PASS: Google identity agrees (0.22 km from catalogue point); traffic-aware DRIVE to \"Tuen Mun, Hong Kong\" 24 min. Capability only; NOT released.",
+      "checks": {
+        "identityVerified": true,
+        "routeProbed": true
+      }
+    },
+    {
+      "iata": "HND",
+      "status": "road_supported",
+      "verifiedDate": "2026-09-30",
+      "note": "Phase C live probe PASS: Google identity agrees (0.83 km from catalogue point); traffic-aware DRIVE to \"Yokohama, Japan\" 20 min. Capability only; NOT released.",
+      "checks": {
+        "identityVerified": true,
+        "routeProbed": true
+      }
+    },
+    {
+      "iata": "HNL",
+      "status": "road_supported",
+      "verifiedDate": "2026-09-30",
+      "note": "Phase C live probe PASS: Google identity agrees (0.04 km from catalogue point); traffic-aware DRIVE to \"Kailua, Hawaii, USA\" 38 min. Capability only; NOT released.",
+      "checks": {
+        "identityVerified": true,
+        "routeProbed": true
+      }
+    },
+    {
+      "iata": "IAD",
+      "status": "road_supported",
+      "verifiedDate": "2026-09-30",
+      "note": "Phase C live probe PASS: Google identity agrees (0.88 km from catalogue point); traffic-aware DRIVE to \"Reston, Virginia, USA\" 30 min. Capability only; NOT released.",
+      "checks": {
+        "identityVerified": true,
+        "routeProbed": true
+      }
+    },
+    {
+      "iata": "IKO",
+      "status": "road_supported",
+      "verifiedDate": "2026-09-30",
+      "note": "Phase C live probe PASS: Google identity agrees (0.1 km from catalogue point); traffic-aware DRIVE to \"Nikolski, Alaska, USA\" 1 min. Capability only; NOT released.",
+      "checks": {
+        "identityVerified": true,
+        "routeProbed": true
+      }
+    },
+    {
+      "iata": "JFK",
+      "status": "road_supported",
+      "verifiedDate": "2026-09-30",
+      "note": "Phase C live probe PASS: Google identity agrees (0.58 km from catalogue point); traffic-aware DRIVE to \"Stamford, Connecticut, USA\" 71 min. Capability only; NOT released.",
+      "checks": {
+        "identityVerified": true,
+        "routeProbed": true
+      }
+    },
+    {
+      "iata": "JNB",
+      "status": "road_supported",
+      "verifiedDate": "2026-09-30",
+      "note": "Phase C live probe PASS: Google identity agrees (0.08 km from catalogue point); traffic-aware DRIVE to \"Pretoria, South Africa\" 38 min. Capability only; NOT released.",
+      "checks": {
+        "identityVerified": true,
+        "routeProbed": true
+      }
+    },
+    {
+      "iata": "KEF",
+      "status": "road_supported",
+      "verifiedDate": "2026-09-30",
+      "note": "Phase C live probe PASS: Google identity agrees (1.17 km from catalogue point); traffic-aware DRIVE to \"Reykjavik, Iceland\" 50 min. Capability only; NOT released.",
+      "checks": {
+        "identityVerified": true,
+        "routeProbed": true
+      }
+    },
+    {
+      "iata": "LAX",
+      "status": "road_supported",
+      "verifiedDate": "2026-09-30",
+      "note": "Phase C live probe PASS: Google identity agrees (0.41 km from catalogue point); traffic-aware DRIVE to \"Santa Monica, California, USA\" 33 min. Capability only; NOT released.",
+      "checks": {
+        "identityVerified": true,
+        "routeProbed": true
+      }
+    },
+    {
+      "iata": "LHR",
+      "status": "road_supported",
+      "verifiedDate": "2026-09-30",
+      "note": "Phase C live probe PASS: Google identity agrees (0.46 km from catalogue point); traffic-aware DRIVE to \"Reading, UK\" 44 min. Capability only; NOT released.",
+      "checks": {
+        "identityVerified": true,
+        "routeProbed": true
+      }
+    },
+    {
+      "iata": "LUX",
+      "status": "road_supported",
+      "verifiedDate": "2026-09-30",
+      "note": "Phase C live probe PASS: Google identity agrees (0.15 km from catalogue point); traffic-aware DRIVE to \"Luxembourg City, Luxembourg\" 43 min. Capability only; NOT released.",
+      "checks": {
+        "identityVerified": true,
+        "routeProbed": true
+      }
+    },
+    {
+      "iata": "MAD",
+      "status": "road_supported",
+      "verifiedDate": "2026-09-30",
+      "note": "Phase C live probe PASS: Google identity agrees (0.8 km from catalogue point); traffic-aware DRIVE to \"Toledo, Spain\" 64 min. Capability only; NOT released.",
+      "checks": {
+        "identityVerified": true,
+        "routeProbed": true
+      }
+    },
+    {
+      "iata": "MEX",
+      "status": "road_supported",
+      "verifiedDate": "2026-09-30",
+      "note": "Phase C live probe PASS: Google identity agrees (0.17 km from catalogue point); traffic-aware DRIVE to \"Puebla, Mexico\" 136 min. Capability only; NOT released.",
+      "checks": {
+        "identityVerified": true,
+        "routeProbed": true
+      }
+    },
+    {
+      "iata": "MLE",
+      "status": "road_supported",
+      "verifiedDate": "2026-09-30",
+      "note": "Phase C live probe PASS: Google identity agrees (0.39 km from catalogue point); traffic-aware DRIVE to \"Male, Maldives\" 17 min. Capability only; NOT released.",
+      "checks": {
+        "identityVerified": true,
+        "routeProbed": true
+      }
+    },
+    {
+      "iata": "ORY",
+      "status": "road_supported",
+      "verifiedDate": "2026-09-30",
+      "note": "Phase C live probe PASS: Google identity agrees (1.05 km from catalogue point); traffic-aware DRIVE to \"Versailles, France\" 36 min. Capability only; NOT released.",
+      "checks": {
+        "identityVerified": true,
+        "routeProbed": true
+      }
+    },
+    {
+      "iata": "SIN",
+      "status": "road_supported",
+      "verifiedDate": "2026-09-30",
+      "note": "Phase C live probe PASS: Google identity agrees (1.04 km from catalogue point); traffic-aware DRIVE to \"Jurong East, Singapore\" 48 min. Capability only; NOT released.",
+      "checks": {
+        "identityVerified": true,
+        "routeProbed": true
+      }
+    },
+    {
+      "iata": "SYD",
+      "status": "road_supported",
+      "verifiedDate": "2026-09-30",
+      "note": "Phase C live probe PASS: Google identity agrees (0.62 km from catalogue point); traffic-aware DRIVE to \"Parramatta, Australia\" 29 min. Capability only; NOT released.",
+      "checks": {
+        "identityVerified": true,
+        "routeProbed": true
+      }
+    },
+    {
+      "iata": "TIJ",
+      "status": "road_supported",
+      "verifiedDate": "2026-09-30",
+      "note": "Phase C live probe PASS: Google identity agrees (0.09 km from catalogue point); traffic-aware DRIVE to \"Tijuana, Mexico\" 19 min. Capability only; NOT released.",
+      "checks": {
+        "identityVerified": true,
+        "routeProbed": true
+      }
+    },
+    {
+      "iata": "YLL",
+      "status": "road_supported",
+      "verifiedDate": "2026-09-30",
+      "note": "Phase C live probe PASS: Google identity agrees (0.34 km from catalogue point); traffic-aware DRIVE to \"Lloydminster, Alberta, Canada\" 10 min. Capability only; NOT released.",
+      "checks": {
+        "identityVerified": true,
+        "routeProbed": true
+      }
+    },
+    {
+      "iata": "YYZ",
+      "status": "road_supported",
+      "verifiedDate": "2026-09-30",
+      "note": "Phase C live probe PASS: Google identity agrees (0.44 km from catalogue point); traffic-aware DRIVE to \"Hamilton, Ontario, Canada\" 47 min. Capability only; NOT released.",
+      "checks": {
+        "identityVerified": true,
+        "routeProbed": true
+      }
+    }
+  ]
+}

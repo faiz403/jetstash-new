@@ -1,0 +1,21 @@
+{
+  "source": "OurAirports airports.csv",
+  "url": "https://davidmegginson.github.io/ourairports-data/airports.csv",
+  "licence": "Public Domain (OurAirports: \"All data is released to the Public Domain, and comes with no guarantee of accuracy or fitness for use.\")",
+  "retrievedDate": "2026-09-30",
+  "sourceSha256": "e5b485bd1453002071231563dcc54fbf1efacb7c3cbaa486c73247b3aa1b2398",
+  "sourceRows": 86151,
+  "included": 4008,
+  "includedBySize": {
+    "M": 2094,
+    "L": 1150,
+    "S": 764
+  },
+  "timeZoneCount": 368,
+  "excluded": {
+    "notCommercialType": 38108,
+    "notScheduled": 4793,
+    "noIata": 39242
+  },
+  "timeZoneDerivation": "tz-lookup (CC0) over timezone-boundary-builder (ODbL) boundaries, offline, per airport coordinate"
+}

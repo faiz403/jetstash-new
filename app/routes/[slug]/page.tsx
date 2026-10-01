@@ -48,6 +48,8 @@ import { deriveFareWindowReconciliation } from '@/lib/fare-window-reconciliation
 import { getRouteIntelligenceDisplayForRoute } from '@/lib/route-intelligence-display';
 import { BusinessClarityPanel } from '@/components/route/business-clarity-panel';
 import { RouteVerdict } from '@/components/route/route-verdict';
+import { ArriveByRoutePanel } from '@/components/route/arrive-by-route-panel';
+import { getPublicJourneyRoutePair } from '@/lib/arrive-by-journey/public-route-pairs';
 
 /**
  * Route-hero focal-position overrides, keyed by destination slug. HeroBackdrop's default
@@ -140,6 +142,7 @@ export default async function RoutePage({ params }: { params: Promise<{ slug: st
     notFound();
     return null;
   }
+  const arriveByPair = getPublicJourneyRoutePair(airport.code, dest.iataCode);
 
   const dealsHere = getDealsByDestination(dest.slug)
     .filter((d) => d.fromAirportSlug === airport.slug)
@@ -570,6 +573,8 @@ export default async function RoutePage({ params }: { params: Promise<{ slug: st
           </section>
         )
       )}
+
+      {arriveByPair && <ArriveByRoutePanel departureAirport={arriveByPair.departureAirport} arrivalAirport={arriveByPair.arrivalAirport} />}
 
       <section className="bg-white py-14 sm:py-16">
         <div className="mx-auto max-w-content px-5 sm:px-8">

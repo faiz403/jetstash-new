@@ -99,11 +99,11 @@ describe('Homepage "why JetStash" (merged with the former WhatWeCheck, August 20
     expect(text).toMatch(/check your travel readiness/i);
   });
 
-  it('only one check-item card links out (the others stay plain text) — the section as a whole also keeps its one closing "/routes" continuation link', () => {
+  it('keeps Travel Ready and the secondary Arrive By entry as the two tool cards, plus its one closing "/routes" continuation link', () => {
     const element = WhyJetStash();
     const hrefs = collectHrefs(element);
-    expect(hrefs).toEqual(expect.arrayContaining(['/travel-ready-check', '/routes']));
-    expect(hrefs).toHaveLength(2);
+    expect(hrefs).toEqual(expect.arrayContaining(['/travel-ready-check', '/arrive-by', '/routes']));
+    expect(hrefs).toHaveLength(3);
   });
 });
 

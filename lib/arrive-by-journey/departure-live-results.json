@@ -1,0 +1,1939 @@
+[
+  {
+    "iata": "MAN",
+    "airportName": "Manchester Airport",
+    "hasExplicitProfile": true,
+    "routeTarget": {
+      "kind": "coordinate",
+      "lat": 53.367664,
+      "lng": -2.280683
+    },
+    "start": "Preston, Lancashire",
+    "identity": {
+      "ok": true,
+      "basis": "Explicit profile coordinate; Google name match within range (Google types it as a transit station, not an airport)",
+      "distanceKm": 1.87,
+      "candidates": [
+        {
+          "address": "Manchester Airport, Manchester M90 3RR, UK",
+          "distanceKm": 1.87,
+          "types": [
+            "bus_station",
+            "establishment",
+            "point_of_interest",
+            "transit_station"
+          ],
+          "country": "GB",
+          "iataInAddress": false,
+          "nameHitRatio": 1,
+          "failure": "NOT_AN_AIRPORT"
+        }
+      ]
+    },
+    "scenarios": [
+      {
+        "label": "early 06:00",
+        "departureLocal": "2026-10-08T06:00",
+        "status": "OK",
+        "calls": 3,
+        "routeQueries": 2,
+        "converged": true,
+        "slackMinutes": 1.78,
+        "driveMinutes": 51,
+        "leaveLocal": "2026-10-08T03:07",
+        "trace": [
+          {
+            "departureLocal": "2026-10-08T03:00",
+            "driveMinutes": 50,
+            "slackMinutes": 10.13
+          },
+          {
+            "departureLocal": "2026-10-08T03:07",
+            "driveMinutes": 51,
+            "slackMinutes": 1.78
+          }
+        ]
+      },
+      {
+        "label": "mid-morning 09:30",
+        "departureLocal": "2026-10-08T09:30",
+        "status": "OK",
+        "calls": 2,
+        "routeQueries": 1,
+        "converged": true,
+        "slackMinutes": 1.82,
+        "driveMinutes": 58,
+        "leaveLocal": "2026-10-08T06:30",
+        "trace": [
+          {
+            "departureLocal": "2026-10-08T06:30",
+            "driveMinutes": 58,
+            "slackMinutes": 1.82
+          }
+        ]
+      },
+      {
+        "label": "evening rush 18:00",
+        "departureLocal": "2026-10-08T18:00",
+        "status": "OK",
+        "calls": 2,
+        "routeQueries": 1,
+        "converged": true,
+        "slackMinutes": 1.87,
+        "driveMinutes": 58,
+        "leaveLocal": "2026-10-08T15:00",
+        "trace": [
+          {
+            "departureLocal": "2026-10-08T15:00",
+            "driveMinutes": 58,
+            "slackMinutes": 1.87
+          }
+        ]
+      }
+    ],
+    "verdict": "PASS",
+    "notes": [],
+    "probedAt": "2026-09-30T02:28:50.050Z",
+    "purpose": "founder control: Preston to MAN (explicit profile; arrival profile proves nothing here)",
+    "writesEvidence": true
+  },
+  {
+    "iata": "LHR",
+    "airportName": "London Heathrow Airport",
+    "hasExplicitProfile": false,
+    "routeTarget": {
+      "kind": "coordinate",
+      "lat": 51.47075,
+      "lng": -0.45991
+    },
+    "start": "Camden Town, London",
+    "identity": {
+      "ok": true,
+      "basis": "Google airport-typed result agrees",
+      "distanceKm": 0.46,
+      "candidates": [
+        {
+          "address": "Heathrow Airport (LHR), Hounslow, UK",
+          "distanceKm": 0.46,
+          "types": [
+            "airport",
+            "establishment",
+            "point_of_interest"
+          ],
+          "country": "GB",
+          "iataInAddress": true,
+          "nameHitRatio": 0.5
+        }
+      ]
+    },
+    "scenarios": [
+      {
+        "label": "early 06:00",
+        "departureLocal": "2026-10-08T06:00",
+        "status": "OK",
+        "calls": 3,
+        "routeQueries": 2,
+        "converged": true,
+        "slackMinutes": 2.7,
+        "driveMinutes": 44,
+        "leaveLocal": "2026-10-08T03:13",
+        "trace": [
+          {
+            "departureLocal": "2026-10-08T03:00",
+            "driveMinutes": 44,
+            "slackMinutes": 16.12
+          },
+          {
+            "departureLocal": "2026-10-08T03:13",
+            "driveMinutes": 44,
+            "slackMinutes": 2.7
+          }
+        ]
+      },
+      {
+        "label": "mid-morning 09:30",
+        "departureLocal": "2026-10-08T09:30",
+        "status": "OK",
+        "calls": 3,
+        "routeQueries": 2,
+        "converged": true,
+        "slackMinutes": 2.18,
+        "driveMinutes": 50,
+        "leaveLocal": "2026-10-08T06:37",
+        "trace": [
+          {
+            "departureLocal": "2026-10-08T06:30",
+            "driveMinutes": 50,
+            "slackMinutes": 10.28
+          },
+          {
+            "departureLocal": "2026-10-08T06:37",
+            "driveMinutes": 50,
+            "slackMinutes": 2.18
+          }
+        ]
+      },
+      {
+        "label": "evening rush 18:00",
+        "departureLocal": "2026-10-08T18:00",
+        "status": "OK",
+        "calls": 3,
+        "routeQueries": 2,
+        "converged": true,
+        "slackMinutes": 3.03,
+        "driveMinutes": 63,
+        "leaveLocal": "2026-10-08T14:53",
+        "trace": [
+          {
+            "departureLocal": "2026-10-08T15:00",
+            "driveMinutes": 64,
+            "slackMinutes": -3.72
+          },
+          {
+            "departureLocal": "2026-10-08T14:53",
+            "driveMinutes": 63,
+            "slackMinutes": 3.03
+          }
+        ]
+      }
+    ],
+    "verdict": "PASS",
+    "notes": [],
+    "probedAt": "2026-09-30T02:28:50.975Z",
+    "purpose": "London start to LHR",
+    "writesEvidence": true
+  },
+  {
+    "iata": "LGW",
+    "airportName": "London Gatwick Airport",
+    "hasExplicitProfile": false,
+    "routeTarget": {
+      "kind": "coordinate",
+      "lat": 51.14874,
+      "lng": -0.18574
+    },
+    "start": "Brighton",
+    "identity": {
+      "ok": true,
+      "basis": "Google airport-typed result agrees",
+      "distanceKm": 0.6,
+      "candidates": [
+        {
+          "address": "London Gatwick Airport (LGW), Horley, Gatwick RH6 0NP, UK",
+          "distanceKm": 0.6,
+          "types": [
+            "airport",
+            "establishment",
+            "point_of_interest"
+          ],
+          "country": "GB",
+          "iataInAddress": true,
+          "nameHitRatio": 1
+        }
+      ]
+    },
+    "scenarios": [
+      {
+        "label": "early 06:00",
+        "departureLocal": "2026-10-08T06:00",
+        "status": "OK",
+        "calls": 3,
+        "routeQueries": 2,
+        "converged": true,
+        "slackMinutes": 3.07,
+        "driveMinutes": 36,
+        "leaveLocal": "2026-10-08T03:21",
+        "trace": [
+          {
+            "departureLocal": "2026-10-08T03:00",
+            "driveMinutes": 36,
+            "slackMinutes": 23.85
+          },
+          {
+            "departureLocal": "2026-10-08T03:21",
+            "driveMinutes": 36,
+            "slackMinutes": 3.07
+          }
+        ]
+      },
+      {
+        "label": "mid-morning 09:30",
+        "departureLocal": "2026-10-08T09:30",
+        "status": "OK",
+        "calls": 3,
+        "routeQueries": 2,
+        "converged": true,
+        "slackMinutes": 1.4,
+        "driveMinutes": 38,
+        "leaveLocal": "2026-10-08T06:50",
+        "trace": [
+          {
+            "departureLocal": "2026-10-08T06:30",
+            "driveMinutes": 37,
+            "slackMinutes": 23.07
+          },
+          {
+            "departureLocal": "2026-10-08T06:50",
+            "driveMinutes": 38,
+            "slackMinutes": 1.4
+          }
+        ]
+      },
+      {
+        "label": "evening rush 18:00",
+        "departureLocal": "2026-10-08T18:00",
+        "status": "OK",
+        "calls": 3,
+        "routeQueries": 2,
+        "converged": true,
+        "slackMinutes": 2.15,
+        "driveMinutes": 45,
+        "leaveLocal": "2026-10-08T15:13",
+        "trace": [
+          {
+            "departureLocal": "2026-10-08T15:00",
+            "driveMinutes": 44,
+            "slackMinutes": 15.72
+          },
+          {
+            "departureLocal": "2026-10-08T15:13",
+            "driveMinutes": 45,
+            "slackMinutes": 2.15
+          }
+        ]
+      }
+    ],
+    "verdict": "PASS",
+    "notes": [],
+    "probedAt": "2026-09-30T02:28:51.854Z",
+    "writesEvidence": true
+  },
+  {
+    "iata": "STN",
+    "airportName": "London Stansted Airport",
+    "hasExplicitProfile": false,
+    "routeTarget": {
+      "kind": "coordinate",
+      "lat": 51.885,
+      "lng": 0.235
+    },
+    "start": "Cambridge",
+    "identity": {
+      "ok": true,
+      "basis": "Google airport-typed result agrees",
+      "distanceKm": 0.46,
+      "candidates": [
+        {
+          "address": "London Stansted Airport (STN), Bassingbourn Rd, Stansted CM24 1QW, UK",
+          "distanceKm": 0.46,
+          "types": [
+            "airport",
+            "establishment",
+            "point_of_interest"
+          ],
+          "country": "GB",
+          "iataInAddress": true,
+          "nameHitRatio": 1
+        },
+        {
+          "address": "Stansted Airport London, Stansted CM22 6PL, UK",
+          "distanceKm": 2.01,
+          "types": [
+            "establishment",
+            "point_of_interest",
+            "transit_station"
+          ],
+          "country": "GB",
+          "iataInAddress": false,
+          "nameHitRatio": 1,
+          "failure": "NOT_AN_AIRPORT"
+        }
+      ]
+    },
+    "scenarios": [
+      {
+        "label": "early 06:00",
+        "departureLocal": "2026-10-08T06:00",
+        "status": "OK",
+        "calls": 3,
+        "routeQueries": 2,
+        "converged": true,
+        "slackMinutes": 2.7,
+        "driveMinutes": 36,
+        "leaveLocal": "2026-10-08T03:21",
+        "trace": [
+          {
+            "departureLocal": "2026-10-08T03:00",
+            "driveMinutes": 36,
+            "slackMinutes": 23.73
+          },
+          {
+            "departureLocal": "2026-10-08T03:21",
+            "driveMinutes": 36,
+            "slackMinutes": 2.7
+          }
+        ]
+      },
+      {
+        "label": "mid-morning 09:30",
+        "departureLocal": "2026-10-08T09:30",
+        "status": "OK",
+        "calls": 3,
+        "routeQueries": 2,
+        "converged": true,
+        "slackMinutes": 2.07,
+        "driveMinutes": 38,
+        "leaveLocal": "2026-10-08T06:49",
+        "trace": [
+          {
+            "departureLocal": "2026-10-08T06:30",
+            "driveMinutes": 38,
+            "slackMinutes": 22.42
+          },
+          {
+            "departureLocal": "2026-10-08T06:49",
+            "driveMinutes": 38,
+            "slackMinutes": 2.07
+          }
+        ]
+      },
+      {
+        "label": "evening rush 18:00",
+        "departureLocal": "2026-10-08T18:00",
+        "status": "OK",
+        "calls": 3,
+        "routeQueries": 2,
+        "converged": true,
+        "slackMinutes": 1.6,
+        "driveMinutes": 42,
+        "leaveLocal": "2026-10-08T15:16",
+        "trace": [
+          {
+            "departureLocal": "2026-10-08T15:00",
+            "driveMinutes": 41,
+            "slackMinutes": 18.63
+          },
+          {
+            "departureLocal": "2026-10-08T15:16",
+            "driveMinutes": 42,
+            "slackMinutes": 1.6
+          }
+        ]
+      }
+    ],
+    "verdict": "PASS",
+    "notes": [],
+    "probedAt": "2026-09-30T02:28:52.567Z",
+    "writesEvidence": true
+  },
+  {
+    "iata": "LTN",
+    "airportName": "London Luton Airport",
+    "hasExplicitProfile": false,
+    "routeTarget": {
+      "kind": "coordinate",
+      "lat": 51.8747,
+      "lng": -0.36833
+    },
+    "start": "Milton Keynes",
+    "identity": {
+      "ok": true,
+      "basis": "Google airport-typed result agrees",
+      "distanceKm": 0.32,
+      "candidates": [
+        {
+          "address": "London Luton Airport (LTN), Airport Way, Luton LU2 9LY, UK",
+          "distanceKm": 0.32,
+          "types": [
+            "airport",
+            "establishment",
+            "point_of_interest"
+          ],
+          "country": "GB",
+          "iataInAddress": true,
+          "nameHitRatio": 1
+        },
+        {
+          "address": "Luton Airport bus station, Luton LU2 9NE, UK",
+          "distanceKm": 0.69,
+          "types": [
+            "establishment",
+            "point_of_interest",
+            "transit_station"
+          ],
+          "country": "GB",
+          "iataInAddress": false,
+          "nameHitRatio": 0.5,
+          "failure": "NOT_AN_AIRPORT"
+        }
+      ]
+    },
+    "scenarios": [
+      {
+        "label": "early 06:00",
+        "departureLocal": "2026-10-08T06:00",
+        "status": "OK",
+        "calls": 3,
+        "routeQueries": 2,
+        "converged": true,
+        "slackMinutes": 2.37,
+        "driveMinutes": 34,
+        "leaveLocal": "2026-10-08T03:24",
+        "trace": [
+          {
+            "departureLocal": "2026-10-08T03:00",
+            "driveMinutes": 33,
+            "slackMinutes": 26.58
+          },
+          {
+            "departureLocal": "2026-10-08T03:24",
+            "driveMinutes": 34,
+            "slackMinutes": 2.37
+          }
+        ]
+      },
+      {
+        "label": "mid-morning 09:30",
+        "departureLocal": "2026-10-08T09:30",
+        "status": "OK",
+        "calls": 3,
+        "routeQueries": 2,
+        "converged": true,
+        "slackMinutes": 1.25,
+        "driveMinutes": 37,
+        "leaveLocal": "2026-10-08T06:51",
+        "trace": [
+          {
+            "departureLocal": "2026-10-08T06:30",
+            "driveMinutes": 36,
+            "slackMinutes": 24.05
+          },
+          {
+            "departureLocal": "2026-10-08T06:51",
+            "driveMinutes": 37,
+            "slackMinutes": 1.25
+          }
+        ]
+      },
+      {
+        "label": "evening rush 18:00",
+        "departureLocal": "2026-10-08T18:00",
+        "status": "OK",
+        "calls": 3,
+        "routeQueries": 2,
+        "converged": true,
+        "slackMinutes": 1.6,
+        "driveMinutes": 36,
+        "leaveLocal": "2026-10-08T15:22",
+        "trace": [
+          {
+            "departureLocal": "2026-10-08T15:00",
+            "driveMinutes": 35,
+            "slackMinutes": 24.58
+          },
+          {
+            "departureLocal": "2026-10-08T15:22",
+            "driveMinutes": 36,
+            "slackMinutes": 1.6
+          }
+        ]
+      }
+    ],
+    "verdict": "PASS",
+    "notes": [],
+    "probedAt": "2026-09-30T02:28:53.285Z",
+    "writesEvidence": true
+  },
+  {
+    "iata": "BHX",
+    "airportName": "Birmingham Airport",
+    "hasExplicitProfile": false,
+    "routeTarget": {
+      "kind": "coordinate",
+      "lat": 52.4539,
+      "lng": -1.74803
+    },
+    "start": "Coventry",
+    "identity": {
+      "ok": true,
+      "basis": "Google airport-typed result agrees",
+      "distanceKm": 0.35,
+      "candidates": [
+        {
+          "address": "Birmingham Airport (BHX), Birmingham B26 3QJ, UK",
+          "distanceKm": 0.35,
+          "types": [
+            "airport",
+            "establishment",
+            "point_of_interest"
+          ],
+          "country": "GB",
+          "iataInAddress": true,
+          "nameHitRatio": 1
+        }
+      ]
+    },
+    "scenarios": [
+      {
+        "label": "early 06:00",
+        "departureLocal": "2026-10-08T06:00",
+        "status": "OK",
+        "calls": 3,
+        "routeQueries": 2,
+        "converged": true,
+        "slackMinutes": 2.05,
+        "driveMinutes": 22,
+        "leaveLocal": "2026-10-08T03:36",
+        "trace": [
+          {
+            "departureLocal": "2026-10-08T03:00",
+            "driveMinutes": 21,
+            "slackMinutes": 38.82
+          },
+          {
+            "departureLocal": "2026-10-08T03:36",
+            "driveMinutes": 22,
+            "slackMinutes": 2.05
+          }
+        ]
+      },
+      {
+        "label": "mid-morning 09:30",
+        "departureLocal": "2026-10-08T09:30",
+        "status": "OK",
+        "calls": 3,
+        "routeQueries": 2,
+        "converged": true,
+        "slackMinutes": 2.58,
+        "driveMinutes": 23,
+        "leaveLocal": "2026-10-08T07:04",
+        "trace": [
+          {
+            "departureLocal": "2026-10-08T06:30",
+            "driveMinutes": 23,
+            "slackMinutes": 37.4
+          },
+          {
+            "departureLocal": "2026-10-08T07:04",
+            "driveMinutes": 23,
+            "slackMinutes": 2.58
+          }
+        ]
+      },
+      {
+        "label": "evening rush 18:00",
+        "departureLocal": "2026-10-08T18:00",
+        "status": "OK",
+        "calls": 3,
+        "routeQueries": 2,
+        "converged": true,
+        "slackMinutes": 0.13,
+        "driveMinutes": 27,
+        "leaveLocal": "2026-10-08T15:33",
+        "trace": [
+          {
+            "departureLocal": "2026-10-08T15:00",
+            "driveMinutes": 24,
+            "slackMinutes": 35.6
+          },
+          {
+            "departureLocal": "2026-10-08T15:33",
+            "driveMinutes": 27,
+            "slackMinutes": 0.13
+          }
+        ]
+      }
+    ],
+    "verdict": "PASS",
+    "notes": [],
+    "probedAt": "2026-09-30T02:28:54.000Z",
+    "writesEvidence": true
+  },
+  {
+    "iata": "EDI",
+    "airportName": "Edinburgh Airport",
+    "hasExplicitProfile": false,
+    "routeTarget": {
+      "kind": "coordinate",
+      "lat": 55.95015,
+      "lng": -3.37229
+    },
+    "start": "Falkirk",
+    "identity": {
+      "ok": true,
+      "basis": "Google airport-typed result agrees",
+      "distanceKm": 0.79,
+      "candidates": [
+        {
+          "address": "Edinburgh Airport (EDI), Edinburgh EH12 9DN, UK",
+          "distanceKm": 0.79,
+          "types": [
+            "airport",
+            "establishment",
+            "point_of_interest"
+          ],
+          "country": "GB",
+          "iataInAddress": true,
+          "nameHitRatio": 1
+        }
+      ]
+    },
+    "scenarios": [
+      {
+        "label": "early 06:00",
+        "departureLocal": "2026-10-08T06:00",
+        "status": "OK",
+        "calls": 3,
+        "routeQueries": 2,
+        "converged": true,
+        "slackMinutes": 2.53,
+        "driveMinutes": 26,
+        "leaveLocal": "2026-10-08T03:31",
+        "trace": [
+          {
+            "departureLocal": "2026-10-08T03:00",
+            "driveMinutes": 26,
+            "slackMinutes": 34.13
+          },
+          {
+            "departureLocal": "2026-10-08T03:31",
+            "driveMinutes": 26,
+            "slackMinutes": 2.53
+          }
+        ]
+      },
+      {
+        "label": "mid-morning 09:30",
+        "departureLocal": "2026-10-08T09:30",
+        "status": "OK",
+        "calls": 3,
+        "routeQueries": 2,
+        "converged": true,
+        "slackMinutes": 1.77,
+        "driveMinutes": 28,
+        "leaveLocal": "2026-10-08T06:59",
+        "trace": [
+          {
+            "departureLocal": "2026-10-08T06:30",
+            "driveMinutes": 28,
+            "slackMinutes": 32.43
+          },
+          {
+            "departureLocal": "2026-10-08T06:59",
+            "driveMinutes": 28,
+            "slackMinutes": 1.77
+          }
+        ]
+      },
+      {
+        "label": "evening rush 18:00",
+        "departureLocal": "2026-10-08T18:00",
+        "status": "OK",
+        "calls": 3,
+        "routeQueries": 2,
+        "converged": true,
+        "slackMinutes": 2.53,
+        "driveMinutes": 30,
+        "leaveLocal": "2026-10-08T15:27",
+        "trace": [
+          {
+            "departureLocal": "2026-10-08T15:00",
+            "driveMinutes": 30,
+            "slackMinutes": 29.65
+          },
+          {
+            "departureLocal": "2026-10-08T15:27",
+            "driveMinutes": 30,
+            "slackMinutes": 2.53
+          }
+        ]
+      }
+    ],
+    "verdict": "PASS",
+    "notes": [],
+    "probedAt": "2026-09-30T02:28:54.686Z",
+    "writesEvidence": true
+  },
+  {
+    "iata": "GLA",
+    "airportName": "Glasgow Airport",
+    "hasExplicitProfile": false,
+    "routeTarget": {
+      "kind": "coordinate",
+      "lat": 55.8719,
+      "lng": -4.43306
+    },
+    "start": "Paisley",
+    "identity": {
+      "ok": true,
+      "basis": "Google airport-typed result agrees",
+      "distanceKm": 0.23,
+      "candidates": [
+        {
+          "address": "Glasgow Arpt (GLA), Glasgow, Paisley PA3 2ST, UK",
+          "distanceKm": 0.23,
+          "types": [
+            "airport",
+            "establishment",
+            "point_of_interest"
+          ],
+          "country": "GB",
+          "iataInAddress": true,
+          "nameHitRatio": 1
+        }
+      ]
+    },
+    "scenarios": [
+      {
+        "label": "early 06:00",
+        "departureLocal": "2026-10-08T06:00",
+        "status": "OK",
+        "calls": 3,
+        "routeQueries": 2,
+        "converged": true,
+        "slackMinutes": 2.37,
+        "driveMinutes": 8,
+        "leaveLocal": "2026-10-08T03:49",
+        "trace": [
+          {
+            "departureLocal": "2026-10-08T03:00",
+            "driveMinutes": 8,
+            "slackMinutes": 52.03
+          },
+          {
+            "departureLocal": "2026-10-08T03:49",
+            "driveMinutes": 8,
+            "slackMinutes": 2.37
+          }
+        ]
+      },
+      {
+        "label": "mid-morning 09:30",
+        "departureLocal": "2026-10-08T09:30",
+        "status": "OK",
+        "calls": 3,
+        "routeQueries": 2,
+        "converged": true,
+        "slackMinutes": 1.9,
+        "driveMinutes": 9,
+        "leaveLocal": "2026-10-08T07:19",
+        "trace": [
+          {
+            "departureLocal": "2026-10-08T06:30",
+            "driveMinutes": 8,
+            "slackMinutes": 51.97
+          },
+          {
+            "departureLocal": "2026-10-08T07:19",
+            "driveMinutes": 9,
+            "slackMinutes": 1.9
+          }
+        ]
+      },
+      {
+        "label": "evening rush 18:00",
+        "departureLocal": "2026-10-08T18:00",
+        "status": "OK",
+        "calls": 3,
+        "routeQueries": 2,
+        "converged": true,
+        "slackMinutes": 2.32,
+        "driveMinutes": 10,
+        "leaveLocal": "2026-10-08T15:47",
+        "trace": [
+          {
+            "departureLocal": "2026-10-08T15:00",
+            "driveMinutes": 10,
+            "slackMinutes": 50.02
+          },
+          {
+            "departureLocal": "2026-10-08T15:47",
+            "driveMinutes": 10,
+            "slackMinutes": 2.32
+          }
+        ]
+      }
+    ],
+    "verdict": "PASS",
+    "notes": [],
+    "probedAt": "2026-09-30T02:28:55.582Z",
+    "writesEvidence": true
+  },
+  {
+    "iata": "BRS",
+    "airportName": "Bristol Airport",
+    "hasExplicitProfile": false,
+    "routeTarget": {
+      "kind": "coordinate",
+      "lat": 51.38233,
+      "lng": -2.71645
+    },
+    "start": "Bath",
+    "identity": {
+      "ok": false,
+      "failure": "NOT_AN_AIRPORT",
+      "candidates": [
+        {
+          "address": "Bristol Airport (BRS), Bristol BS48 3DW, UK",
+          "distanceKm": 0.74,
+          "types": [
+            "establishment",
+            "point_of_interest",
+            "transit_station"
+          ],
+          "country": "GB",
+          "iataInAddress": true,
+          "nameHitRatio": 1,
+          "failure": "NOT_AN_AIRPORT"
+        }
+      ]
+    },
+    "scenarios": [
+      {
+        "label": "early 06:00",
+        "departureLocal": "2026-10-08T06:00",
+        "status": "OK",
+        "calls": 3,
+        "routeQueries": 2,
+        "converged": true,
+        "slackMinutes": 2.45,
+        "driveMinutes": 44,
+        "leaveLocal": "2026-10-08T03:13",
+        "trace": [
+          {
+            "departureLocal": "2026-10-08T03:00",
+            "driveMinutes": 44,
+            "slackMinutes": 15.63
+          },
+          {
+            "departureLocal": "2026-10-08T03:13",
+            "driveMinutes": 44,
+            "slackMinutes": 2.45
+          }
+        ]
+      },
+      {
+        "label": "mid-morning 09:30",
+        "departureLocal": "2026-10-08T09:30",
+        "status": "OK",
+        "calls": 3,
+        "routeQueries": 2,
+        "converged": true,
+        "slackMinutes": 2.35,
+        "driveMinutes": 47,
+        "leaveLocal": "2026-10-08T06:40",
+        "trace": [
+          {
+            "departureLocal": "2026-10-08T06:30",
+            "driveMinutes": 47,
+            "slackMinutes": 13.38
+          },
+          {
+            "departureLocal": "2026-10-08T06:40",
+            "driveMinutes": 47,
+            "slackMinutes": 2.35
+          }
+        ]
+      },
+      {
+        "label": "evening rush 18:00",
+        "departureLocal": "2026-10-08T18:00",
+        "status": "OK",
+        "calls": 2,
+        "routeQueries": 1,
+        "converged": true,
+        "slackMinutes": 4.1,
+        "driveMinutes": 56,
+        "leaveLocal": "2026-10-08T15:00",
+        "trace": [
+          {
+            "departureLocal": "2026-10-08T15:00",
+            "driveMinutes": 56,
+            "slackMinutes": 4.1
+          }
+        ]
+      }
+    ],
+    "verdict": "NEEDS_REVIEW",
+    "notes": [
+      "Identity: NOT_AN_AIRPORT."
+    ],
+    "probedAt": "2026-09-30T02:28:56.203Z",
+    "writesEvidence": true
+  },
+  {
+    "iata": "NCL",
+    "airportName": "Newcastle International Airport",
+    "hasExplicitProfile": false,
+    "routeTarget": {
+      "kind": "coordinate",
+      "lat": 55.03796,
+      "lng": -1.68958
+    },
+    "start": "Durham",
+    "identity": {
+      "ok": true,
+      "basis": "Google airport-typed result agrees",
+      "distanceKm": 0.27,
+      "candidates": [
+        {
+          "address": "Newcastle International Airport (NCL), Woolsington, Newcastle upon Tyne NE13 8BZ, UK",
+          "distanceKm": 0.27,
+          "types": [
+            "airport",
+            "establishment",
+            "point_of_interest"
+          ],
+          "country": "GB",
+          "iataInAddress": true,
+          "nameHitRatio": 1
+        }
+      ]
+    },
+    "scenarios": [
+      {
+        "label": "early 06:00",
+        "departureLocal": "2026-10-08T06:00",
+        "status": "OK",
+        "calls": 3,
+        "routeQueries": 2,
+        "converged": true,
+        "slackMinutes": 2.55,
+        "driveMinutes": 33,
+        "leaveLocal": "2026-10-08T03:24",
+        "trace": [
+          {
+            "departureLocal": "2026-10-08T03:00",
+            "driveMinutes": 33,
+            "slackMinutes": 26.58
+          },
+          {
+            "departureLocal": "2026-10-08T03:24",
+            "driveMinutes": 33,
+            "slackMinutes": 2.55
+          }
+        ]
+      },
+      {
+        "label": "mid-morning 09:30",
+        "departureLocal": "2026-10-08T09:30",
+        "status": "OK",
+        "calls": 3,
+        "routeQueries": 2,
+        "converged": true,
+        "slackMinutes": 1.18,
+        "driveMinutes": 35,
+        "leaveLocal": "2026-10-08T06:53",
+        "trace": [
+          {
+            "departureLocal": "2026-10-08T06:30",
+            "driveMinutes": 34,
+            "slackMinutes": 26.3
+          },
+          {
+            "departureLocal": "2026-10-08T06:53",
+            "driveMinutes": 35,
+            "slackMinutes": 1.18
+          }
+        ]
+      },
+      {
+        "label": "evening rush 18:00",
+        "departureLocal": "2026-10-08T18:00",
+        "status": "OK",
+        "calls": 3,
+        "routeQueries": 2,
+        "converged": true,
+        "slackMinutes": 1.28,
+        "driveMinutes": 39,
+        "leaveLocal": "2026-10-08T15:19",
+        "trace": [
+          {
+            "departureLocal": "2026-10-08T15:00",
+            "driveMinutes": 38,
+            "slackMinutes": 22.45
+          },
+          {
+            "departureLocal": "2026-10-08T15:19",
+            "driveMinutes": 39,
+            "slackMinutes": 1.28
+          }
+        ]
+      }
+    ],
+    "verdict": "PASS",
+    "notes": [],
+    "probedAt": "2026-09-30T02:28:56.844Z",
+    "writesEvidence": true
+  },
+  {
+    "iata": "LBA",
+    "airportName": "Leeds Bradford Airport",
+    "hasExplicitProfile": false,
+    "routeTarget": {
+      "kind": "coordinate",
+      "lat": 53.8659,
+      "lng": -1.66057
+    },
+    "start": "York",
+    "identity": {
+      "ok": true,
+      "basis": "Google airport-typed result agrees",
+      "distanceKm": 0.16,
+      "candidates": [
+        {
+          "address": "Leeds Bradford Airport (LBA), Whitehouse Ln, Yeadon, Leeds LS19 7TU, UK",
+          "distanceKm": 0.16,
+          "types": [
+            "airport",
+            "establishment",
+            "point_of_interest"
+          ],
+          "country": "GB",
+          "iataInAddress": true,
+          "nameHitRatio": 1
+        }
+      ]
+    },
+    "scenarios": [
+      {
+        "label": "early 06:00",
+        "departureLocal": "2026-10-08T06:00",
+        "status": "OK",
+        "calls": 3,
+        "routeQueries": 2,
+        "converged": true,
+        "slackMinutes": 2.55,
+        "driveMinutes": 53,
+        "leaveLocal": "2026-10-08T03:04",
+        "trace": [
+          {
+            "departureLocal": "2026-10-08T03:00",
+            "driveMinutes": 53,
+            "slackMinutes": 6.82
+          },
+          {
+            "departureLocal": "2026-10-08T03:04",
+            "driveMinutes": 53,
+            "slackMinutes": 2.55
+          }
+        ]
+      },
+      {
+        "label": "mid-morning 09:30",
+        "departureLocal": "2026-10-08T09:30",
+        "status": "OK",
+        "calls": 3,
+        "routeQueries": 2,
+        "converged": true,
+        "slackMinutes": 2.23,
+        "driveMinutes": 55,
+        "leaveLocal": "2026-10-08T06:33",
+        "trace": [
+          {
+            "departureLocal": "2026-10-08T06:30",
+            "driveMinutes": 54,
+            "slackMinutes": 5.73
+          },
+          {
+            "departureLocal": "2026-10-08T06:33",
+            "driveMinutes": 55,
+            "slackMinutes": 2.23
+          }
+        ]
+      },
+      {
+        "label": "evening rush 18:00",
+        "departureLocal": "2026-10-08T18:00",
+        "status": "OK",
+        "calls": 3,
+        "routeQueries": 2,
+        "converged": true,
+        "slackMinutes": 3.35,
+        "driveMinutes": 65,
+        "leaveLocal": "2026-10-08T14:51",
+        "trace": [
+          {
+            "departureLocal": "2026-10-08T15:00",
+            "driveMinutes": 66,
+            "slackMinutes": -5.65
+          },
+          {
+            "departureLocal": "2026-10-08T14:51",
+            "driveMinutes": 65,
+            "slackMinutes": 3.35
+          }
+        ]
+      }
+    ],
+    "verdict": "PASS",
+    "notes": [],
+    "probedAt": "2026-09-30T02:28:57.581Z",
+    "writesEvidence": true
+  },
+  {
+    "iata": "LPL",
+    "airportName": "Liverpool John Lennon Airport",
+    "hasExplicitProfile": false,
+    "routeTarget": {
+      "kind": "coordinate",
+      "lat": 53.33486,
+      "lng": -2.84964
+    },
+    "start": "Chester",
+    "identity": {
+      "ok": true,
+      "basis": "Google airport-typed result agrees",
+      "distanceKm": 0.18,
+      "candidates": [
+        {
+          "address": "Liverpool John Lennon Airport (LPL), Speke Hall Ave, Speke, Liverpool L24 1YD, UK",
+          "distanceKm": 0.18,
+          "types": [
+            "airport",
+            "establishment",
+            "point_of_interest"
+          ],
+          "country": "GB",
+          "iataInAddress": true,
+          "nameHitRatio": 1
+        }
+      ]
+    },
+    "scenarios": [
+      {
+        "label": "early 06:00",
+        "departureLocal": "2026-10-08T06:00",
+        "status": "OK",
+        "calls": 3,
+        "routeQueries": 2,
+        "converged": true,
+        "slackMinutes": 2.68,
+        "driveMinutes": 37,
+        "leaveLocal": "2026-10-08T03:19",
+        "trace": [
+          {
+            "departureLocal": "2026-10-08T03:00",
+            "driveMinutes": 38,
+            "slackMinutes": 22.33
+          },
+          {
+            "departureLocal": "2026-10-08T03:19",
+            "driveMinutes": 37,
+            "slackMinutes": 2.68
+          }
+        ]
+      },
+      {
+        "label": "mid-morning 09:30",
+        "departureLocal": "2026-10-08T09:30",
+        "status": "OK",
+        "calls": 3,
+        "routeQueries": 2,
+        "converged": true,
+        "slackMinutes": 1.7,
+        "driveMinutes": 38,
+        "leaveLocal": "2026-10-08T06:50",
+        "trace": [
+          {
+            "departureLocal": "2026-10-08T06:30",
+            "driveMinutes": 37,
+            "slackMinutes": 22.7
+          },
+          {
+            "departureLocal": "2026-10-08T06:50",
+            "driveMinutes": 38,
+            "slackMinutes": 1.7
+          }
+        ]
+      },
+      {
+        "label": "evening rush 18:00",
+        "departureLocal": "2026-10-08T18:00",
+        "status": "OK",
+        "calls": 3,
+        "routeQueries": 2,
+        "converged": true,
+        "slackMinutes": 1.97,
+        "driveMinutes": 45,
+        "leaveLocal": "2026-10-08T15:13",
+        "trace": [
+          {
+            "departureLocal": "2026-10-08T15:00",
+            "driveMinutes": 44,
+            "slackMinutes": 15.95
+          },
+          {
+            "departureLocal": "2026-10-08T15:13",
+            "driveMinutes": 45,
+            "slackMinutes": 1.97
+          }
+        ]
+      }
+    ],
+    "verdict": "PASS",
+    "notes": [],
+    "probedAt": "2026-09-30T02:28:58.398Z",
+    "writesEvidence": true
+  },
+  {
+    "iata": "EMA",
+    "airportName": "East Midlands Airport",
+    "hasExplicitProfile": false,
+    "routeTarget": {
+      "kind": "coordinate",
+      "lat": 52.8311,
+      "lng": -1.32806
+    },
+    "start": "Nottingham",
+    "identity": {
+      "ok": true,
+      "basis": "Google airport-typed result agrees",
+      "distanceKm": 0.33,
+      "candidates": [
+        {
+          "address": "East Midlands Airport (EMA), Castle Donington, Derby DE74 2SA, UK",
+          "distanceKm": 0.33,
+          "types": [
+            "airport",
+            "establishment",
+            "point_of_interest"
+          ],
+          "country": "GB",
+          "iataInAddress": true,
+          "nameHitRatio": 1
+        }
+      ]
+    },
+    "scenarios": [
+      {
+        "label": "early 06:00",
+        "departureLocal": "2026-10-08T06:00",
+        "status": "OK",
+        "calls": 3,
+        "routeQueries": 2,
+        "converged": true,
+        "slackMinutes": 2.7,
+        "driveMinutes": 28,
+        "leaveLocal": "2026-10-08T03:29",
+        "trace": [
+          {
+            "departureLocal": "2026-10-08T03:00",
+            "driveMinutes": 28,
+            "slackMinutes": 32.13
+          },
+          {
+            "departureLocal": "2026-10-08T03:29",
+            "driveMinutes": 28,
+            "slackMinutes": 2.7
+          }
+        ]
+      },
+      {
+        "label": "mid-morning 09:30",
+        "departureLocal": "2026-10-08T09:30",
+        "status": "OK",
+        "calls": 3,
+        "routeQueries": 2,
+        "converged": true,
+        "slackMinutes": 2.08,
+        "driveMinutes": 31,
+        "leaveLocal": "2026-10-08T06:56",
+        "trace": [
+          {
+            "departureLocal": "2026-10-08T06:30",
+            "driveMinutes": 31,
+            "slackMinutes": 29.42
+          },
+          {
+            "departureLocal": "2026-10-08T06:56",
+            "driveMinutes": 31,
+            "slackMinutes": 2.08
+          }
+        ]
+      },
+      {
+        "label": "evening rush 18:00",
+        "departureLocal": "2026-10-08T18:00",
+        "status": "OK",
+        "calls": 3,
+        "routeQueries": 2,
+        "converged": true,
+        "slackMinutes": 2.4,
+        "driveMinutes": 33,
+        "leaveLocal": "2026-10-08T15:24",
+        "trace": [
+          {
+            "departureLocal": "2026-10-08T15:00",
+            "driveMinutes": 33,
+            "slackMinutes": 27.4
+          },
+          {
+            "departureLocal": "2026-10-08T15:24",
+            "driveMinutes": 33,
+            "slackMinutes": 2.4
+          }
+        ]
+      }
+    ],
+    "verdict": "PASS",
+    "notes": [],
+    "probedAt": "2026-09-30T02:28:59.117Z",
+    "writesEvidence": true
+  },
+  {
+    "iata": "ABZ",
+    "airportName": "Aberdeen International Airport",
+    "hasExplicitProfile": false,
+    "routeTarget": {
+      "kind": "coordinate",
+      "lat": 57.2019,
+      "lng": -2.19778
+    },
+    "start": "Stonehaven",
+    "identity": {
+      "ok": true,
+      "basis": "Google airport-typed result agrees",
+      "distanceKm": 0.25,
+      "candidates": [
+        {
+          "address": "Aberdeen International Airport (ABZ), Dyce, Aberdeen AB21 7DU, UK",
+          "distanceKm": 0.25,
+          "types": [
+            "airport",
+            "establishment",
+            "point_of_interest"
+          ],
+          "country": "GB",
+          "iataInAddress": true,
+          "nameHitRatio": 1
+        }
+      ]
+    },
+    "scenarios": [
+      {
+        "label": "early 06:00",
+        "departureLocal": "2026-10-08T06:00",
+        "status": "OK",
+        "calls": 3,
+        "routeQueries": 2,
+        "converged": true,
+        "slackMinutes": 1.67,
+        "driveMinutes": 30,
+        "leaveLocal": "2026-10-08T03:28",
+        "trace": [
+          {
+            "departureLocal": "2026-10-08T03:00",
+            "driveMinutes": 29,
+            "slackMinutes": 30.8
+          },
+          {
+            "departureLocal": "2026-10-08T03:28",
+            "driveMinutes": 30,
+            "slackMinutes": 1.67
+          }
+        ]
+      },
+      {
+        "label": "mid-morning 09:30",
+        "departureLocal": "2026-10-08T09:30",
+        "status": "OK",
+        "calls": 3,
+        "routeQueries": 2,
+        "converged": true,
+        "slackMinutes": 1.98,
+        "driveMinutes": 28,
+        "leaveLocal": "2026-10-08T07:00",
+        "trace": [
+          {
+            "departureLocal": "2026-10-08T06:30",
+            "driveMinutes": 28,
+            "slackMinutes": 32.5
+          },
+          {
+            "departureLocal": "2026-10-08T07:00",
+            "driveMinutes": 28,
+            "slackMinutes": 1.98
+          }
+        ]
+      },
+      {
+        "label": "evening rush 18:00",
+        "departureLocal": "2026-10-08T18:00",
+        "status": "OK",
+        "calls": 3,
+        "routeQueries": 2,
+        "converged": true,
+        "slackMinutes": 2.57,
+        "driveMinutes": 29,
+        "leaveLocal": "2026-10-08T15:28",
+        "trace": [
+          {
+            "departureLocal": "2026-10-08T15:00",
+            "driveMinutes": 29,
+            "slackMinutes": 30.68
+          },
+          {
+            "departureLocal": "2026-10-08T15:28",
+            "driveMinutes": 29,
+            "slackMinutes": 2.57
+          }
+        ]
+      }
+    ],
+    "verdict": "PASS",
+    "notes": [],
+    "probedAt": "2026-09-30T02:28:59.819Z",
+    "writesEvidence": true
+  },
+  {
+    "iata": "BFS",
+    "airportName": "Belfast International Airport",
+    "hasExplicitProfile": false,
+    "routeTarget": {
+      "kind": "coordinate",
+      "lat": 54.6575,
+      "lng": -6.21583
+    },
+    "start": "Lisburn",
+    "identity": {
+      "ok": true,
+      "basis": "Google airport-typed result agrees",
+      "distanceKm": 0.21,
+      "candidates": [
+        {
+          "address": "Belfast Int'l Airport (BFS), Airport Rd, Crumlin BT29 4AB, UK",
+          "distanceKm": 0.21,
+          "types": [
+            "airport",
+            "establishment",
+            "point_of_interest"
+          ],
+          "country": "GB",
+          "iataInAddress": true,
+          "nameHitRatio": 1
+        }
+      ]
+    },
+    "scenarios": [
+      {
+        "label": "early 06:00",
+        "departureLocal": "2026-10-08T06:00",
+        "status": "OK",
+        "calls": 3,
+        "routeQueries": 2,
+        "converged": true,
+        "slackMinutes": 3.03,
+        "driveMinutes": 24,
+        "leaveLocal": "2026-10-08T03:33",
+        "trace": [
+          {
+            "departureLocal": "2026-10-08T03:00",
+            "driveMinutes": 24,
+            "slackMinutes": 35.63
+          },
+          {
+            "departureLocal": "2026-10-08T03:33",
+            "driveMinutes": 24,
+            "slackMinutes": 3.03
+          }
+        ]
+      },
+      {
+        "label": "mid-morning 09:30",
+        "departureLocal": "2026-10-08T09:30",
+        "status": "OK",
+        "calls": 3,
+        "routeQueries": 2,
+        "converged": true,
+        "slackMinutes": 1.75,
+        "driveMinutes": 25,
+        "leaveLocal": "2026-10-08T07:03",
+        "trace": [
+          {
+            "departureLocal": "2026-10-08T06:30",
+            "driveMinutes": 24,
+            "slackMinutes": 36.07
+          },
+          {
+            "departureLocal": "2026-10-08T07:03",
+            "driveMinutes": 25,
+            "slackMinutes": 1.75
+          }
+        ]
+      },
+      {
+        "label": "evening rush 18:00",
+        "departureLocal": "2026-10-08T18:00",
+        "status": "OK",
+        "calls": 3,
+        "routeQueries": 2,
+        "converged": true,
+        "slackMinutes": 2.43,
+        "driveMinutes": 27,
+        "leaveLocal": "2026-10-08T15:30",
+        "trace": [
+          {
+            "departureLocal": "2026-10-08T15:00",
+            "driveMinutes": 27,
+            "slackMinutes": 33.07
+          },
+          {
+            "departureLocal": "2026-10-08T15:30",
+            "driveMinutes": 27,
+            "slackMinutes": 2.43
+          }
+        ]
+      }
+    ],
+    "verdict": "PASS",
+    "notes": [],
+    "probedAt": "2026-09-30T02:29:00.487Z",
+    "writesEvidence": true
+  },
+  {
+    "iata": "CWL",
+    "airportName": "Cardiff International Airport",
+    "hasExplicitProfile": false,
+    "routeTarget": {
+      "kind": "coordinate",
+      "lat": 51.3967,
+      "lng": -3.34333
+    },
+    "start": "Newport, Wales",
+    "identity": {
+      "ok": true,
+      "basis": "Google airport-typed result agrees",
+      "distanceKm": 0.06,
+      "candidates": [
+        {
+          "address": "Cardiff Airport (CWL), Rhoose, Barry CF62 3BD, UK",
+          "distanceKm": 0.06,
+          "types": [
+            "airport",
+            "establishment",
+            "point_of_interest"
+          ],
+          "country": "GB",
+          "iataInAddress": true,
+          "nameHitRatio": 1
+        }
+      ]
+    },
+    "scenarios": [
+      {
+        "label": "early 06:00",
+        "departureLocal": "2026-10-08T06:00",
+        "status": "OK",
+        "calls": 3,
+        "routeQueries": 2,
+        "converged": true,
+        "slackMinutes": 1.93,
+        "driveMinutes": 42,
+        "leaveLocal": "2026-10-08T03:15",
+        "trace": [
+          {
+            "departureLocal": "2026-10-08T03:00",
+            "driveMinutes": 42,
+            "slackMinutes": 18.13
+          },
+          {
+            "departureLocal": "2026-10-08T03:15",
+            "driveMinutes": 42,
+            "slackMinutes": 1.93
+          }
+        ]
+      },
+      {
+        "label": "mid-morning 09:30",
+        "departureLocal": "2026-10-08T09:30",
+        "status": "OK",
+        "calls": 3,
+        "routeQueries": 2,
+        "converged": true,
+        "slackMinutes": 2.03,
+        "driveMinutes": 44,
+        "leaveLocal": "2026-10-08T06:44",
+        "trace": [
+          {
+            "departureLocal": "2026-10-08T06:30",
+            "driveMinutes": 43,
+            "slackMinutes": 16.6
+          },
+          {
+            "departureLocal": "2026-10-08T06:44",
+            "driveMinutes": 44,
+            "slackMinutes": 2.03
+          }
+        ]
+      },
+      {
+        "label": "evening rush 18:00",
+        "departureLocal": "2026-10-08T18:00",
+        "status": "OK",
+        "calls": 3,
+        "routeQueries": 2,
+        "converged": true,
+        "slackMinutes": 2.3,
+        "driveMinutes": 49,
+        "leaveLocal": "2026-10-08T15:08",
+        "trace": [
+          {
+            "departureLocal": "2026-10-08T15:00",
+            "driveMinutes": 49,
+            "slackMinutes": 10.82
+          },
+          {
+            "departureLocal": "2026-10-08T15:08",
+            "driveMinutes": 49,
+            "slackMinutes": 2.3
+          }
+        ]
+      }
+    ],
+    "verdict": "PASS",
+    "notes": [],
+    "probedAt": "2026-09-30T02:29:01.153Z",
+    "writesEvidence": true
+  },
+  {
+    "iata": "MAN",
+    "airportName": "Manchester Airport",
+    "hasExplicitProfile": true,
+    "routeTarget": {
+      "kind": "coordinate",
+      "lat": 53.367664,
+      "lng": -2.280683
+    },
+    "start": "Wilmslow",
+    "identity": {
+      "ok": true,
+      "basis": "Explicit profile coordinate; Google name match within range (Google types it as a transit station, not an airport)",
+      "distanceKm": 1.87,
+      "candidates": [
+        {
+          "address": "Manchester Airport, Manchester M90 3RR, UK",
+          "distanceKm": 1.87,
+          "types": [
+            "bus_station",
+            "establishment",
+            "point_of_interest",
+            "transit_station"
+          ],
+          "country": "GB",
+          "iataInAddress": false,
+          "nameHitRatio": 1,
+          "failure": "NOT_AN_AIRPORT"
+        }
+      ]
+    },
+    "scenarios": [
+      {
+        "label": "early 06:00",
+        "departureLocal": "2026-10-08T06:00",
+        "status": "OK",
+        "calls": 3,
+        "routeQueries": 2,
+        "converged": true,
+        "slackMinutes": 1.7,
+        "driveMinutes": 15,
+        "leaveLocal": "2026-10-08T03:43",
+        "trace": [
+          {
+            "departureLocal": "2026-10-08T03:00",
+            "driveMinutes": 14,
+            "slackMinutes": 45.82
+          },
+          {
+            "departureLocal": "2026-10-08T03:43",
+            "driveMinutes": 15,
+            "slackMinutes": 1.7
+          }
+        ]
+      },
+      {
+        "label": "mid-morning 09:30",
+        "departureLocal": "2026-10-08T09:30",
+        "status": "OK",
+        "calls": 3,
+        "routeQueries": 2,
+        "converged": true,
+        "slackMinutes": 2.07,
+        "driveMinutes": 14,
+        "leaveLocal": "2026-10-08T07:13",
+        "trace": [
+          {
+            "departureLocal": "2026-10-08T06:30",
+            "driveMinutes": 14,
+            "slackMinutes": 46.1
+          },
+          {
+            "departureLocal": "2026-10-08T07:13",
+            "driveMinutes": 14,
+            "slackMinutes": 2.07
+          }
+        ]
+      },
+      {
+        "label": "evening rush 18:00",
+        "departureLocal": "2026-10-08T18:00",
+        "status": "OK",
+        "calls": 3,
+        "routeQueries": 2,
+        "converged": true,
+        "slackMinutes": 2.63,
+        "driveMinutes": 17,
+        "leaveLocal": "2026-10-08T15:39",
+        "trace": [
+          {
+            "departureLocal": "2026-10-08T15:00",
+            "driveMinutes": 18,
+            "slackMinutes": 42.45
+          },
+          {
+            "departureLocal": "2026-10-08T15:39",
+            "driveMinutes": 17,
+            "slackMinutes": 2.63
+          }
+        ]
+      }
+    ],
+    "verdict": "PASS",
+    "notes": [],
+    "probedAt": "2026-09-30T02:29:01.896Z",
+    "purpose": "STUDY very close start (about 10 minutes from the airport)",
+    "writesEvidence": false
+  },
+  {
+    "iata": "MAN",
+    "airportName": "Manchester Airport",
+    "hasExplicitProfile": true,
+    "routeTarget": {
+      "kind": "coordinate",
+      "lat": 53.367664,
+      "lng": -2.280683
+    },
+    "start": "Edinburgh",
+    "identity": {
+      "ok": true,
+      "basis": "Explicit profile coordinate; Google name match within range (Google types it as a transit station, not an airport)",
+      "distanceKm": 1.87,
+      "candidates": [
+        {
+          "address": "Manchester Airport, Manchester M90 3RR, UK",
+          "distanceKm": 1.87,
+          "types": [
+            "bus_station",
+            "establishment",
+            "point_of_interest",
+            "transit_station"
+          ],
+          "country": "GB",
+          "iataInAddress": false,
+          "nameHitRatio": 1,
+          "failure": "NOT_AN_AIRPORT"
+        }
+      ]
+    },
+    "scenarios": [
+      {
+        "label": "early 06:00",
+        "departureLocal": "2026-10-08T06:00",
+        "status": "OK",
+        "calls": 4,
+        "routeQueries": 3,
+        "converged": true,
+        "slackMinutes": 3.07,
+        "driveMinutes": 258,
+        "leaveLocal": "2026-10-07T23:38",
+        "trace": [
+          {
+            "departureLocal": "2026-10-08T03:00",
+            "driveMinutes": 254,
+            "slackMinutes": -194.17
+          },
+          {
+            "departureLocal": "2026-10-07T23:43",
+            "driveMinutes": 259,
+            "slackMinutes": -2.33
+          },
+          {
+            "departureLocal": "2026-10-07T23:38",
+            "driveMinutes": 258,
+            "slackMinutes": 3.07
+          }
+        ]
+      }
+    ],
+    "verdict": "PASS",
+    "notes": [],
+    "probedAt": "2026-09-30T02:29:02.567Z",
+    "purpose": "STUDY long drive (about 3.5 hours)",
+    "writesEvidence": false
+  },
+  {
+    "iata": "EDI",
+    "airportName": "Edinburgh Airport",
+    "hasExplicitProfile": false,
+    "routeTarget": {
+      "kind": "coordinate",
+      "lat": 55.95015,
+      "lng": -3.37229
+    },
+    "start": "London",
+    "identity": {
+      "ok": true,
+      "basis": "Google airport-typed result agrees",
+      "distanceKm": 0.79,
+      "candidates": [
+        {
+          "address": "Edinburgh Airport (EDI), Edinburgh EH12 9DN, UK",
+          "distanceKm": 0.79,
+          "types": [
+            "airport",
+            "establishment",
+            "point_of_interest"
+          ],
+          "country": "GB",
+          "iataInAddress": true,
+          "nameHitRatio": 1
+        }
+      ]
+    },
+    "scenarios": [
+      {
+        "label": "early 06:00",
+        "departureLocal": "2026-10-08T06:00",
+        "status": "OK",
+        "calls": 4,
+        "routeQueries": 3,
+        "converged": true,
+        "slackMinutes": 1.78,
+        "driveMinutes": 466,
+        "leaveLocal": "2026-10-07T20:12",
+        "trace": [
+          {
+            "departureLocal": "2026-10-08T03:00",
+            "driveMinutes": 453,
+            "slackMinutes": -392.78
+          },
+          {
+            "departureLocal": "2026-10-07T20:24",
+            "driveMinutes": 465,
+            "slackMinutes": -10.15
+          },
+          {
+            "departureLocal": "2026-10-07T20:12",
+            "driveMinutes": 466,
+            "slackMinutes": 1.78
+          }
+        ]
+      }
+    ],
+    "verdict": "PASS",
+    "notes": [],
+    "probedAt": "2026-09-30T02:29:03.271Z",
+    "purpose": "STUDY very long drive: the leave time falls on the previous day",
+    "writesEvidence": false
+  }
+]
