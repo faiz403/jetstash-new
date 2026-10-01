@@ -190,11 +190,27 @@ describe('existing events are genuinely untouched', () => {
 });
 
 describe('acquisition_handoff pairing — structural proof', () => {
-  it('only tripcom_click and tripcom_hotel_click trigger the paired acquisition_handoff event', () => {
+  it('every verified Trip.com handoff event triggers the paired acquisition_handoff event', () => {
     const match = analyticsSrc.match(/ACQUISITION_HANDOFF_EVENTS[^=]*=\s*new Set\(\[([^\]]*)\]\)/);
     expect(match).toBeTruthy();
     const members = match![1].split(',').map((s) => s.trim().replace(/'/g, '')).filter(Boolean);
-    expect(members.sort()).toEqual(['tripcom_click', 'tripcom_hotel_click']);
+    expect(members.sort()).toEqual([
+      'bookby_cta_click',
+      'journey_brief_live_price_click',
+      'journey_choice_cta_click',
+      'ready_check_book_cta_click',
+      'tripcom_click',
+      'tripcom_hotel_click',
+    ]);
+  });
+
+  it('does not treat non-affiliate or fallback CTA events as partner handoffs', () => {
+    const match = analyticsSrc.match(/ACQUISITION_HANDOFF_EVENTS[^=]*=\s*new Set\(\[([^\]]*)\]\)/);
+    expect(match).toBeTruthy();
+    const members = match![1];
+    for (const nonAffiliateEvent of ['ready_check_baggage_cta_click', 'bookby_watch_click', 'ready_check_source_click']) {
+      expect(members).not.toContain(nonAffiliateEvent);
+    }
   });
 
   it('acquisition_handoff is fired exactly once per matching event (single recursive track() call, not a loop)', () => {

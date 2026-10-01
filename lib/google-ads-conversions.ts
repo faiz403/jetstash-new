@@ -33,6 +33,13 @@ export const GOOGLE_ADS_TAG_ID = 'AW-18378433991';
 
 const GOOGLE_ADS_CONVERSION_LABELS: Partial<Record<AnalyticsEvent, string>> = {
   tripcom_click: 'P1GBCNPM_-EcEMfLwrtE',
+  // Specialist CTA events remain distinct in Vercel Analytics, but each is
+  // still a verified Trip.com flight handoff and therefore represents the
+  // same approved Flight Partner Click conversion as tripcom_click.
+  journey_choice_cta_click: 'P1GBCNPM_-EcEMfLwrtE',
+  journey_brief_live_price_click: 'P1GBCNPM_-EcEMfLwrtE',
+  ready_check_book_cta_click: 'P1GBCNPM_-EcEMfLwrtE',
+  bookby_cta_click: 'P1GBCNPM_-EcEMfLwrtE',
   tripcom_hotel_click: '9ja5CNbM_-EcEMfLwrtE',
   ready_check_baggage_cta_click: 'J9oQCNnM_-EcEMfLwrtE',
 };
