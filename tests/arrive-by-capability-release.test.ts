@@ -217,7 +217,8 @@ describe('operator probe: classification', () => {
     expect(sameTimeZone('Asia/Kolkata', 'Asia/Calcutta')).toBe(true);
     expect(sameTimeZone('Europe/London', 'Europe/London')).toBe(true);
     expect(sameTimeZone('Europe/London', 'Europe/Paris')).toBe(false);
-    expect(sameTimeZone('America/Edmonton', 'America/Regina')).toBe(false);
+    // Use a clearly distinct pair across Node's bundled ICU data on all runners.
+    expect(sameTimeZone('Europe/London', 'America/New_York')).toBe(false);
   });
 });
 
