@@ -198,9 +198,12 @@ export function ClosingBand() {
     <section className="border-t border-white/5 bg-ink-950 py-12">
       <div className="mx-auto flex max-w-content flex-col items-start justify-between gap-6 px-5 sm:flex-row sm:items-center sm:px-8">
         <div>
-          <span className="font-display text-xl tracking-tight text-sand-50">
-            Jet<span className="relative text-brass-300">Stash<span aria-hidden="true" className="absolute -bottom-1 left-0 h-px w-full bg-brass-400/70" /></span>
-          </span>
+          {/**
+           * Keep the public brand name as one text node. The previous visual
+           * treatment split the word across nested spans, which caused text
+           * extractors to expose it as "Jet Stash" rather than "JetStash".
+           */}
+          <span className="font-display text-xl tracking-tight text-sand-50">JetStash</span>
           <p className="mt-2 max-w-md text-sm text-ink-300">
             The first place to check before you book. One clear Journey Brief, checked and dated.
           </p>
