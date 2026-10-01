@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { ArrowUpRight, ArrowRight, Plane, BellRing, ShieldCheck, FileCheck2, Receipt } from 'lucide-react';
+import { ArrowUpRight, ArrowRight, Plane, BellRing, ShieldCheck, FileCheck2, Receipt, Clock } from 'lucide-react';
 import { ROUTE_WATCH_INITIAL_COPY } from '@/lib/route-watch-config';
 import { routes } from '@/data/routes';
 import { getPublishableObservationsByRoute } from '@/data/fare-observations';
@@ -92,6 +92,13 @@ const JOURNEY_CHECKS: { icon: typeof Plane; title: string; body: string; href?: 
     body: 'Passport validity and visa guidance for your trip, sourced from official government pages.',
     href: '/travel-ready-check',
     linkLabel: 'Check your travel readiness',
+  },
+  {
+    icon: Clock,
+    title: 'Door-to-destination timing',
+    body: 'Plan when to leave home for a supported international journey, using your own flight times.',
+    href: '/arrive-by',
+    linkLabel: 'Try Arrive By',
   },
   {
     icon: Receipt,
