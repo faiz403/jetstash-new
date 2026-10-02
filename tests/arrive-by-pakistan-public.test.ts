@@ -108,8 +108,8 @@ describe('Privacy Policy covers Arrive By', () => {
     expect(privacyPolicySrc).toMatch(/Routes\s+service/);
     expect(privacyPolicySrc).toMatch(/Places\s+service/);
     expect(privacyPolicySrc).toMatch(/place\s+identifier you are asked to confirm\s+may be held briefly in your browser/);
-    expect(privacyPolicySrc).toMatch(/JetStash does not store what you enter/);
-    expect(privacyPolicySrc).toMatch(/none of it is sent to our\s+analytics provider/);
+    expect(privacyPolicySrc).toMatch(/JetStash does not retain the journey details you enter after\s+the\s+check\s+is\s+completed/);
+    expect(privacyPolicySrc).toMatch(/none of it is sent to our\s+analytics\s+provider/);
     expect(privacyPolicySrc).toMatch(/nearest\s+venue or locality instead of an exact\s+address/i);
   });
 });

@@ -124,11 +124,12 @@ const sections: { title: string; body: React.ReactNode }[] = [
           display. Google processes what it receives under its own terms and privacy policy.
         </p>
         <p>
-          JetStash does not store what you enter: not your start or destination, place identifiers, flight times or
-          the results, and none of it is sent to our analytics provider. A place identifier you are asked to confirm
+          JetStash does not retain the journey details you enter after the check is completed: not your start or
+          destination, place identifiers, flight times or the results, and none of it is sent to our analytics
+          provider. A place identifier you are asked to confirm
           may be held briefly in your browser between steps, then sent back to JetStash for re-verification. Three
-          small things are kept, none of them a journey: a hashed form of your IP address for about a minute, in a
-          short-lived database entry, to limit how often one person can run checks; a running monthly count of the
+          small things are kept, none of them a journey: a one-way hashed identifier derived from your IP address for about a
+          minute, in a short-lived database entry, to limit how often one person can run checks; a running monthly count of the
           Google lookups the service has made; and anonymous daily counts of how many checks were submitted and what
           kind of outcome each had (for example a usable result, or that a start location could not be confirmed).
           Those counts hold no journey details or identifiers and are kept for about three months. If your start or
