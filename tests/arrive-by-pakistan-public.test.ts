@@ -102,13 +102,15 @@ describe('input hardening — confirmedPlaceId/selectedPlaceId length bound', ()
 });
 
 describe('Privacy Policy covers Arrive By', () => {
-  it('has one section covering both Manchester and Pakistan, describing the real data flow', () => {
-    expect(privacyPolicySrc).toMatch(/Arrive By \(Manchester and Pakistan journey estimates\)/);
-    expect(privacyPolicySrc).toMatch(/Geocoding and Routes services/);
-    expect(privacyPolicySrc).toMatch(/place\s+identifier may be held temporarily in your browser/);
-    expect(privacyPolicySrc).toMatch(/does not store your destination, place\s+identifier, deadline reason/);
-    expect(privacyPolicySrc).toMatch(/never send your stated\s+reason for a deadline to Google/i);
-    expect(privacyPolicySrc).toMatch(/nearest\s+venue or locality instead of an exact address/i);
+  it('has one section covering the live journey, describing the real data flow', () => {
+    expect(privacyPolicySrc).toMatch(/Arrive By \(journey estimates\)/);
+    expect(privacyPolicySrc).toMatch(/Geocoding\s+service/);
+    expect(privacyPolicySrc).toMatch(/Routes\s+service/);
+    expect(privacyPolicySrc).toMatch(/Places\s+service/);
+    expect(privacyPolicySrc).toMatch(/place\s+identifier you are asked to confirm\s+may be held briefly in your browser/);
+    expect(privacyPolicySrc).toMatch(/JetStash does not store what you enter/);
+    expect(privacyPolicySrc).toMatch(/none of it is sent to our\s+analytics provider/);
+    expect(privacyPolicySrc).toMatch(/nearest\s+venue or locality instead of an exact\s+address/i);
   });
 });
 
