@@ -138,9 +138,9 @@ describe('MAN public-enablement gate — genuinely usable now that the country p
   });
 });
 
-describe('Privacy Policy already covers the Manchester Arrive By data flow accurately', () => {
-  it('the single Arrive By section names both Manchester and Pakistan, with no separate Manchester-only section added', () => {
-    expect(privacyPolicySrc).toMatch(/Arrive By \(Manchester and Pakistan journey estimates\)/);
+describe('Privacy Policy covers the Arrive By data flow in a single section', () => {
+  it('has exactly one Arrive By section (no per-airport sections), titled for journey estimates', () => {
+    expect(privacyPolicySrc).toMatch(/Arrive By \(journey estimates\)/);
     const matches = privacyPolicySrc.match(/Arrive By \(/g) ?? [];
     expect(matches).toHaveLength(1);
   });

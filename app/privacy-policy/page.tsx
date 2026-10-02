@@ -110,19 +110,33 @@ const sections: { title: string; body: React.ReactNode }[] = [
     ),
   },
   {
-    title: 'Arrive By (Manchester and Pakistan journey estimates)',
+    title: 'Arrive By (journey estimates)',
     body: (
-      <p>
-        The destination, landing time and journey assumptions you enter into Arrive By are sent to JetStash&apos;s
-        server to calculate a road-journey estimate. The destination text and airport location are then sent to
-        Google&apos;s Geocoding and Routes services to resolve the place and calculate a traffic-aware driving
-        estimate. Where you need to confirm or choose between possible matches for a named venue, a Google-assigned
-        place identifier may be held temporarily in your browser between that step and the one after it, then sent
-        back to JetStash for server-side re-verification. JetStash does not store your destination, place
-        identifier, deadline reason or resulting journey details in its database, and none of this is sent to our
-        analytics provider. We never send your stated reason for a deadline to Google. If your destination is a
-        private home, we recommend entering the nearest venue or locality instead of an exact address.
-      </p>
+      <>
+        <p>
+          When you run an Arrive By check, the start location, destination, airports, flight times and buffers you
+          enter (and an optional deadline, if you add one) are sent to JetStash&apos;s server to work out when to leave.
+          To do that, the server sends parts of them to Google: the start and destination text go to Google&apos;s
+          Geocoding service to resolve the places; the resolved places and a departure time worked out from your
+          flight times go to Google&apos;s Routes service to calculate traffic-aware driving (and, for some airports,
+          public-transport) estimates; and when you are asked to confirm or choose between possible matches for a
+          venue, a Google place identifier may be sent to Google&apos;s Places service to fetch the venue&apos;s name for
+          display. Google processes what it receives under its own terms and privacy policy.
+        </p>
+        <p>
+          JetStash does not retain the journey details you enter after the check is completed: not your start or
+          destination, place identifiers, flight times or the results, and none of it is sent to our analytics
+          provider. A place identifier you are asked to confirm
+          may be held briefly in your browser between steps, then sent back to JetStash for re-verification. Three
+          small things are kept, none of them a journey: a one-way hashed identifier derived from your IP address for about a
+          minute, in a short-lived database entry, to limit how often one person can run checks; a running monthly count of the
+          Google lookups the service has made; and anonymous daily counts of how many checks were submitted and what
+          kind of outcome each had (for example a usable result, or that a start location could not be confirmed).
+          Those counts hold no journey details or identifiers and are kept for about three months. If your start or
+          destination is a private home, we recommend entering the nearest venue or locality instead of an exact
+          address.
+        </p>
+      </>
     ),
   },
   {
@@ -212,6 +226,14 @@ const sections: { title: string; body: React.ReactNode }[] = [
         <p>We don&apos;t sell your personal data. We use:</p>
         <ul className="flex list-disc flex-col gap-1.5 pl-5">
           <li>Vercel, to host this website and its server logs.</li>
+          <li>
+            Google, only when you run an Arrive By check: its Maps Platform services (Geocoding, Routes and Places)
+            resolve places and calculate journey times, as described under Arrive By.
+          </li>
+          <li>
+            Upstash, a database service that holds Arrive By&apos;s short-lived rate-limit entries and its anonymous
+            usage counts.
+          </li>
           <li>Resend, to deliver contact form and quote request emails to us.</li>
           <li>Brevo, to store the Travel Club and Route Watch subscriber list and send those emails.</li>
           <li>
@@ -236,7 +258,7 @@ const sections: { title: string; body: React.ReactNode }[] = [
     title: 'Where your information is processed',
     body: (
       <p>
-        Some of the service providers we use, including Vercel, Resend, Brevo and Microsoft 365, may process
+        Some of the service providers we use, including Vercel, Resend, Brevo, Microsoft 365, Google and Upstash, may process
         personal information outside the UK. Where this happens, JetStash takes reasonable and proportionate steps
         to use providers that apply appropriate protections and relies on the contractual and legal safeguards
         available for the relevant processing. The arrangements may vary depending on the provider and the country
@@ -365,7 +387,7 @@ export default function PrivacyPolicyPage() {
 
       <section className="bg-white py-16 sm:py-24">
         <div className="mx-auto max-w-2xl px-5 sm:px-8">
-          <p className="text-sm text-ink-400">Last updated: 15 August 2026</p>
+          <p className="text-sm text-ink-400">Last updated: 3 October 2026</p>
           <div className="mt-8 flex flex-col gap-10">
             {sections.map((section, i) => (
               <div key={section.title} className="grid gap-3 border-l-2 border-brass-200 pl-6 sm:grid-cols-[2.5rem_1fr] sm:gap-5">

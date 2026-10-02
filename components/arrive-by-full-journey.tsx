@@ -184,7 +184,7 @@ export function ArriveByFullJourney({ departureAirports, arrivalAirports, initia
     <ul className="mt-3 max-w-3xl list-disc space-y-1 pl-5 text-sm text-ink-500">
       <li>Flight times are entered by you — Arrive By does not track a live flight.</li>
       <li>Onward planning currently supports Manchester, Islamabad, Lahore and Karachi. Estimates are airport-level, not terminal-level.</li>
-      <li>Transport conditions and schedules can change. Nothing you enter is stored.</li>
+      <li>Transport conditions and schedules can change.</li>
     </ul>
 
     {prefillNotice && <p role="status" className="mt-4 max-w-3xl rounded-sm border border-brass bg-brass-50 p-3 text-sm text-ink-700">{prefillNotice}</p>}
@@ -222,6 +222,9 @@ export function ArriveByFullJourney({ departureAirports, arrivalAirports, initia
         <label className="text-sm">Need to arrive by <span className="text-ink-500">(local time at the arrival airport)</span><input className={field} type="datetime-local" value={deadline} onChange={(e) => setDeadline(e.target.value)} /></label>
         {deadline && <label className="text-sm">Minutes you need at the destination before that time <span className="text-ink-500">(optional)</span><input className={field} type="number" min="0" max="480" step="5" value={readiness} onChange={(e) => setReadiness(e.target.value)} /></label>}
       </fieldset>
+      <p className="text-xs leading-relaxed text-ink-500" data-testid="google-notice">
+        Journey locations are sent to Google Maps Platform to calculate your estimate. JetStash does not retain your journey details after the check is completed. See our <Link href="/privacy-policy" className="underline">privacy policy</Link> and <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" className="underline">Google&apos;s Privacy Policy</a>.
+      </p>
       <button type="submit" disabled={loading || !departureAirport || !arrivalAirport} className="mt-1 rounded-sm bg-ink-900 px-6 py-3 font-semibold text-white disabled:cursor-wait disabled:opacity-60">{loading ? 'Checking the live journey…' : 'When should I leave?'}</button>
     </form>
 
