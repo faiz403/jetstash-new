@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { classifyPlan, isGenuineSubmission, recordBetaOutcome, scheduleBetaMetric, type BetaOutcome } from '@/lib/arrive-by-journey/beta-metrics';
 import { cleanJourneyInput } from '@/lib/arrive-by-journey/clean-journey-input';
 import { createJourneyCallGuard } from '@/lib/arrive-by-journey/internal-access';
 import { planFullJourney } from '@/lib/arrive-by-journey/plan';
@@ -20,18 +21,26 @@ export const dynamic = 'force-dynamic';
  *
  * The API is always LIVE: it never accepts an entered origin duration, and only allow-listed
  * fields are read from the body, so client coordinates, time zones or countries are ignored.
- * Nothing is stored, logged or sent to analytics; the only server log is a monthly-budget
- * alert carrying counts, never any journey detail.
+ * No journey detail is stored, logged or sent to analytics. Two things leave a trace, both counts only:
+ * the monthly-budget alert, and anonymous daily outcome counters (lib/arrive-by-journey/beta-metrics.ts):
+ * one submission plus exactly one terminal outcome, never any start, destination, airport, time or identity.
  */
 
 const MAX_BODY_BYTES = 8 * 1024;
 
+/** A refusal that happened before the body was read still counts, but only if the request was a genuine submission. */
+async function countRefusal(request: NextRequest, outcome: BetaOutcome): Promise<void> {
+  if (await isGenuineSubmission(request, MAX_BODY_BYTES)) scheduleBetaMetric(() => recordBetaOutcome(outcome));
+}
+
 export async function POST(request: NextRequest) {
   const rate = await checkPublicJourneyRateLimit(request);
   if (rate.unavailable) {
+    await countRefusal(request, { kind: 'error' });
     return NextResponse.json({ error: "Arrive By can't run live checks right now. Please try again later." }, { status: 503 });
   }
   if (rate.limited) {
+    await countRefusal(request, { kind: 'refused_rate_limit' });
     return NextResponse.json({ error: "You've checked several journeys in a short time. Please wait a moment and try again." }, { status: 429 });
   }
 
@@ -39,12 +48,16 @@ export async function POST(request: NextRequest) {
   if (Number.isFinite(declared) && declared > MAX_BODY_BYTES) return NextResponse.json({ error: 'That request is too large.' }, { status: 413 });
 
   const apiKey = process.env.GOOGLE_ROUTES_API_KEY;
-  if (!apiKey) return NextResponse.json({ error: 'Live journey lookup is not configured.' }, { status: 503 });
+  if (!apiKey) {
+    await countRefusal(request, { kind: 'error' });
+    return NextResponse.json({ error: 'Live journey lookup is not configured.' }, { status: 503 });
+  }
 
   const { guard, durableConfigured } = createJourneyCallGuard(process.env, {
     onAlert: (alert) => console.warn(`[arrive-by] monthly Google call allowance at ${alert.level}%: ${alert.used}/${alert.limit} (${alert.month})`),
   });
   if (process.env.NODE_ENV === 'production' && !durableConfigured) {
+    await countRefusal(request, { kind: 'refused_budget' });
     return NextResponse.json({ error: 'Durable call-budget storage is not configured, so live journey checks are switched off.' }, { status: 503 });
   }
 
@@ -59,8 +72,12 @@ export async function POST(request: NextRequest) {
 
   try {
     const plan = await planFullJourney(input, { apiKey, guard, nowIso: new Date().toISOString(), airportMode: 'public', originMode: 'LIVE', transitFirst: 'LIVE', placeNames: 'LIVE' });
-    return NextResponse.json(plan);
+    const response = NextResponse.json(plan);
+    // Scheduled only after the response exists, so one submission can never be counted as both a result and an error.
+    scheduleBetaMetric(() => recordBetaOutcome(classifyPlan(plan)));
+    return response;
   } catch {
+    scheduleBetaMetric(() => recordBetaOutcome({ kind: 'error' }));
     return NextResponse.json({ error: 'Arrive By could not check this journey.' }, { status: 500 });
   }
 }
