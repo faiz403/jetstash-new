@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import Link from 'next/link';
+import { ArriveByIntroduction } from '@/components/arrive-by-introduction';
 import { calendarDayOffset, clockOf, dateLabelOf, describeDay } from '@/lib/arrive-by-journey/local-time';
 import type { AirportOption } from '@/lib/arrive-by-journey/airport-options';
 import type { PublicJourneyRoutePair } from '@/lib/arrive-by-journey/public-route-pairs';
@@ -177,8 +178,8 @@ export function ArriveByFullJourney({ departureAirports, arrivalAirports, initia
   }
 
   return <div className="mx-auto max-w-5xl bg-white px-4 py-8 text-ink-900 sm:px-8">
-    <p className="text-xs font-semibold uppercase tracking-wide text-brass-600">Arrive By</p>
-    <h1 className="mt-3 font-display text-3xl sm:text-4xl">When should I leave?</h1>
+    <ArriveByIntroduction />
+    <h2 id="arrive-by-planner" tabIndex={-1} className="scroll-mt-24 font-display text-3xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brass sm:text-4xl">When should I leave?</h2>
     <p className="mt-3 max-w-3xl text-ink-600">Start → departure airport → flight → arrival airport → final destination. Enter your own flight times and buffers; Arrive By checks the supported live onward journeys and works out when to leave.</p>
     <ul className="mt-3 max-w-3xl list-disc space-y-1 pl-5 text-sm text-ink-500">
       <li>Flight times are entered by you — Arrive By does not track a live flight.</li>

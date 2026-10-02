@@ -95,8 +95,8 @@ const JOURNEY_CHECKS: { icon: typeof Plane; title: string; body: string; href?: 
   },
   {
     icon: Clock,
-    title: 'Door-to-destination timing',
-    body: 'Plan when to leave home for a supported international journey, using your own flight times.',
+    title: 'Need to be somewhere by a certain time?',
+    body: 'Flying for a wedding, funeral, event or important appointment? Check when you should leave and whether your full journey looks achievable. Available for supported journeys in limited beta.',
     href: '/arrive-by',
     linkLabel: 'Try Arrive By',
   },
