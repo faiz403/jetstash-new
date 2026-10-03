@@ -51,14 +51,15 @@ function renderSignal(slug: string, opts: { isServiceEnded?: boolean; withUrl?: 
 }
 
 describe('the fare / price block comes before the secondary share and evidence content', () => {
-  it('WhatsApp Share is no longer inside the hero; it renders after the fare block, with the same condition and analytics source', () => {
+  it('WhatsApp Share is no longer inside the hero; it renders after the fare decision and supporting-detail boundary, with the same condition and analytics source', () => {
     const heroStart = routePageSrc.indexOf('<section className="relative overflow-hidden bg-ink-900');
     const heroEnd = routePageSrc.indexOf('</section>', heroStart);
     expect(routePageSrc.slice(heroStart, heroEnd)).not.toContain('<WhatsAppShareButton');
     expect(routePageSrc.indexOf('<FareSignal')).toBeGreaterThan(heroEnd);
     expect(routePageSrc.indexOf('<WhatsAppShareButton')).toBeGreaterThan(routePageSrc.indexOf('<FareSignal'));
+    expect(routePageSrc.indexOf('<WhatsAppShareButton')).toBeGreaterThan(routePageSrc.indexOf('More route information'));
     expect(routePageSrc).toContain('source="route-hero"');
-    expect(routePageSrc).toMatch(/\{!bookBySnapshot && \(\s*<div className="mt-5">\s*<WhatsAppShareButton/);
+    expect(routePageSrc).toMatch(/\{!bookBySnapshot && \(\s*<div className="mt-6">\s*<WhatsAppShareButton/);
   });
 
   it('on a rendered page the fare block precedes the share button and the long Route Status evidence', async () => {
@@ -180,17 +181,20 @@ describe('routes with a current fare keep the fare, the date and the affiliate d
   });
 });
 
-describe('final acceptance tweak: the primary CTA clears the cookie banner on a fresh visit on MAN to DEL', () => {
-  it('service-ended hero summary is hidden on phones only (it repeats the Fare check lead), and still renders from sm up', async () => {
+describe('decision-first acceptance: the route answer and action precede supporting narrative', () => {
+  it('service-ended routes keep the full neutral summary, but only after the Fare check and More route information boundary', async () => {
     const html = await renderPage('manchester-delhi');
-    // the summary paragraph is present in the markup (nothing removed) but carries the phone-hidden classes
-    expect(html).toMatch(/class="[^"]*hidden sm:block[^"]*">There's no current nonstop service on Manchester to Delhi/);
+    const summary = "There's no current nonstop service on Manchester to Delhi";
+    expect(html).toContain(summary);
+    expect(html.indexOf(summary)).toBeGreaterThan(html.indexOf('Fare check'));
+    expect(html.indexOf(summary)).toBeGreaterThan(html.indexOf('More route information'));
   });
 
-  it('a route that is not service-ended keeps its hero summary visible on phones', async () => {
+  it('a direct route gives its compact availability answer in the hero and moves the full summary below the fare decision', async () => {
     const html = await renderPage('manchester-dubai');
-    expect(html).not.toMatch(/hidden sm:block[^"]*">[^<]*Dubai/);
     expect(html).toMatch(/<h1[^>]*>[^<]*Manchester to Dubai/);
+    expect(html).toContain('Direct flights available');
+    expect(html.indexOf('More route information')).toBeGreaterThan(html.indexOf('Fare check'));
   });
 
   it('the no-fare card puts the lead and the button side by side from lg up, and stacks them below lg', () => {

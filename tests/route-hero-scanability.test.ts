@@ -58,15 +58,15 @@ describe('the hero no longer contains the duplicate Trip.com CTA', () => {
   });
 });
 
-describe('WhatsApp Share remains available in the hero, in a standalone position', () => {
+describe('WhatsApp Share remains available after the decision-first route content', () => {
   it('WhatsAppShareButton is still imported and rendered from the route page', () => {
     expect(routePageSrc).toContain("import { WhatsAppShareButton } from '@/components/route/whatsapp-share-button';");
     expect(routePageSrc).toMatch(/<WhatsAppShareButton[\s\S]*?source="route-hero"/);
   });
 
   it('keeps its exact existing condition — it still moves into the Book-By panel instead of duplicating there, unchanged by this fix', () => {
-    // First-screen buying fix (3 Oct 2026): same condition, now rendered below the fare block (mt-5), not in the hero.
-    expect(routePageSrc).toMatch(/\{!bookBySnapshot && \(\s*<div className="mt-5">\s*<WhatsAppShareButton/);
+    // Decision-first route simplification (3 Oct 2026): same condition, now below the fare block and supporting-detail boundary.
+    expect(routePageSrc).toMatch(/\{!bookBySnapshot && \(\s*<div className="mt-6">\s*<WhatsAppShareButton/);
   });
 });
 

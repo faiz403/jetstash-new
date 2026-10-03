@@ -275,68 +275,29 @@ export default async function RoutePage({ params }: { params: Promise<{ slug: st
                 status value (e.g. 'service-ended') can never silently fall
                 through to the wrong badge. */}
             <Badge variant="dark">{presentation.statusLabel}</Badge>
-            {/* Route Intelligence Completion (August 2026, phase 2): a
-                quiet dot + label beside the Route Status badge above, never
-                a second Badge component — that would read as two competing
-                pills for what a visitor would reasonably assume is one
-                fact. This is a genuinely separate fact (how much JetStash
-                has researched this route, not whether it's direct), so it
-                gets its own small, quieter treatment instead. */}
-            <span className="flex items-center gap-1.5 text-xs text-ink-300">
-              <span className={`inline-block h-1.5 w-1.5 shrink-0 rounded-full ${routeIntelligence.dotClassName}`} aria-hidden="true" />
-              {routeIntelligence.label}
-            </span>
           </div>
           <h1 className="stagger-in stagger-2 mt-3 animate-fade-up font-display text-4xl leading-[1.05] tracking-tight text-sand-50 sm:mt-4 sm:text-5xl">
             {airport.city} to {dest.city}
           </h1>
-          {/* Verification-pending leakage fix: route.intro must never render
-              raw here — presentation.summary is centrally-authored neutral
-              copy for a pending route, so this never depends on an intro
-              string being hedged correctly by whoever added the route. */}
-          {/* Service-ended routes (final acceptance tweak, 3 Oct 2026): on a phone the hero summary repeats exactly what the
-              Fare check lead directly below now says first ("Connecting flights available ... the former direct service has
-              ended ..."), and on a fresh visit the cookie banner covers everything below ~690px at 375x812, so the duplicate is
-              hidden below the sm breakpoint only. Nothing is removed: it still renders from sm up, the status badge above still
-              says "Direct service ended", and the Fare check lead carries the same message. */}
-          <p className={`stagger-in stagger-3 mt-3 max-w-2xl animate-fade-up text-base leading-relaxed text-ink-300 sm:mt-4 sm:text-lg${presentation.status === 'service-ended' ? ' hidden sm:block' : ''}`}>{presentation.summary}</p>
-
-          <div className="stagger-in stagger-4 mt-5 flex animate-fade-up flex-wrap gap-x-6 gap-y-3 sm:mt-5">
-            {presentation.status === 'unverified' ? (
-              // Premium presentation fix: one concise notice instead of
-              // three stat rows carrying a duplicated placeholder sentence.
-              <div className="flex max-w-lg items-start gap-3 rounded-md border border-white/15 bg-white/5 px-4 py-3.5">
-                <AlertCircle className="mt-0.5 h-4.5 w-4.5 shrink-0 text-brass-300" strokeWidth={2} />
-                <p className="text-sm leading-relaxed text-ink-200">
-                  Flight time, frequency and airline aren&apos;t published for this route until they&apos;re independently confirmed.
-                </p>
-              </div>
-            ) : presentation.status === 'service-ended' ? (
-              // Old-news repetition fix (12 Sept 2026, founder-approved
-              // commercial funnel fix): this box previously repeated "has
-              // ended... check current options directly with airlines" —
-              // already stated immediately above by presentation.summary —
-              // a second time before a reader even reached the one detailed
-              // Route Status explanation further down the page. It now
-              // states only the ONE fact distinct to this box: which
-              // specific facts are no longer shown and why, never restating
-              // the ended/check-options framing a third time.
-              <div className="hidden max-w-lg items-start gap-3 rounded-md border border-white/15 bg-white/5 px-4 py-3.5 sm:flex">
-                <ShieldCheck className="mt-0.5 h-4.5 w-4.5 shrink-0 text-terracotta-300" strokeWidth={2} />
-                <p className="text-sm leading-relaxed text-ink-200">
-                  Flight time, frequency and airline facts from the previous direct service are no longer shown.
-                </p>
-              </div>
-            ) : (
-              <>
-                <RouteStat icon={<Clock className="h-4 w-4" strokeWidth={2} />} label="Flight time" value={presentation.flightTime} />
-                <RouteStat icon={<Calendar className="h-4 w-4" strokeWidth={2} />} label="Frequency" value={presentation.frequency} />
-                {presentationAirlines.length > 0 && (
-                  <RouteStat icon={<Plane className="h-4 w-4" strokeWidth={2} />} label="Airlines" value={presentationAirlines.map((a) => a.name).join(', ')} />
-                )}
-              </>
-            )}
-          </div>
+          <p className="stagger-in stagger-3 mt-3 animate-fade-up text-base font-semibold leading-relaxed text-sand-100 sm:mt-4 sm:text-lg">
+            {presentation.status === 'direct'
+              ? 'Direct flights available'
+              : presentation.status === 'connecting'
+                ? 'Connecting flights available'
+                : presentation.status === 'service-ended'
+                  ? 'Former direct service ended · connecting flights available'
+                  : 'Current service is not yet independently confirmed'}
+          </p>
+          {(presentation.status === 'direct' || presentation.status === 'connecting') && (
+            <p className="stagger-in stagger-4 mt-2 animate-fade-up text-sm text-ink-300">
+              Typical flight time: {presentation.flightTime}
+            </p>
+          )}
+          {presentation.status === 'service-ended' && firstScreenConnecting && (
+            <p className="stagger-in stagger-4 mt-2 animate-fade-up text-sm text-ink-300">
+              Usually {firstScreenConnecting.typicalStops} {firstScreenConnecting.typicalStops === 1 ? 'stop' : 'stops'} · {firstScreenConnecting.typicalJourneyTime}
+            </p>
+          )}
 
           {/* Route Page Scanability fix (21 Aug 2026): the hero's own Trip.com
               CTA, its "check the itinerary/baggage" caption, and the
@@ -354,35 +315,6 @@ export default async function RoutePage({ params }: { params: Promise<{ slug: st
               now that it no longer shares a flex row with the removed CTA. */}
         </div>
       </section>
-
-      {/* MAN→ISB Flagship Verdict pilot, Phase 1 (September 2026,
-          founder-approved narrow scope). Renders only when journeyChoice
-          exists — today that means manchester-islamabad only, the same
-          gate Journey Choice itself already uses. Placed as the very first
-          thing after the hero so the page's actual decision (Journey
-          Choice's own trade-off) is visible within the first 1-2 mobile
-          screens instead of ~6 screens down, without duplicating either
-          Journey Choice's cards or Fare Signal's own detail card below —
-          see components/route/route-verdict.tsx's own doc comment for the
-          full evidence-separation rule this component enforces. */}
-      {journeyChoice && (
-        <section className="bg-sand-50 py-10 sm:py-12">
-          <div className="mx-auto max-w-content px-5 sm:px-8">
-            <RouteVerdict
-              routeLabel={`${airport.city} to ${dest.city}`}
-              routeSlug={route.slug}
-              routeStatus={presentation.status}
-              flightTime={presentation.status === 'direct' || presentation.status === 'connecting' ? presentation.flightTime : null}
-              routeDirectness={presentation.status === 'direct' || presentation.status === 'connecting' ? presentation.status : null}
-              routeStatusLabel={presentation.status === 'direct' || presentation.status === 'connecting' ? presentation.statusLabel : null}
-              routeAirlineLabel={presentationAirlines.length > 0 ? presentationAirlines.map((a) => a.name).join(', ') : null}
-              journeyChoice={journeyChoice}
-              tripComHandoff={journeyChoiceTripComHandoff}
-              fareSignal={fareSignal}
-            />
-          </div>
-        </section>
-      )}
 
       <section className="bg-white py-4 sm:py-8">
         <div className="mx-auto max-w-content px-5 sm:px-8">
@@ -419,11 +351,49 @@ export default async function RoutePage({ params }: { params: Promise<{ slug: st
                 : null
             }
           />
-          {/* First-screen buying fix (3 Oct 2026): the share action moved out of
-              the hero, below the fare/price block, so the buying decision comes
-              first. Same condition, same component, same analytics source. */}
+        </div>
+      </section>
+
+      <section className="border-t border-sand-200 bg-sand-50 py-8 sm:py-10" aria-labelledby="more-route-information-heading">
+        <div className="mx-auto max-w-content px-5 sm:px-8">
+          <div className="max-w-3xl">
+            <p className="text-xs font-bold uppercase tracking-[0.16em] text-terracotta-700">Supporting detail</p>
+            <h2 id="more-route-information-heading" className="mt-2 font-display text-2xl text-ink-900 sm:text-3xl">More route information</h2>
+            <p className="mt-3 text-base leading-relaxed text-ink-600">{presentation.summary}</p>
+            <div className="mt-5 flex items-center gap-1.5 text-xs text-ink-500">
+              <span className={`inline-block h-1.5 w-1.5 shrink-0 rounded-full ${routeIntelligence.dotClassName}`} aria-hidden="true" />
+              {routeIntelligence.label}
+            </div>
+          </div>
+
+          <div className="mt-6 flex flex-wrap gap-x-6 gap-y-4">
+            {presentation.status === 'unverified' ? (
+              <div className="flex max-w-lg items-start gap-3 rounded-md border border-sand-300 bg-white px-4 py-3.5">
+                <AlertCircle className="mt-0.5 h-4.5 w-4.5 shrink-0 text-brass-600" strokeWidth={2} />
+                <p className="text-sm leading-relaxed text-ink-700">
+                  Flight time, frequency and airline aren&apos;t published for this route until they&apos;re independently confirmed.
+                </p>
+              </div>
+            ) : presentation.status === 'service-ended' ? (
+              <div className="flex max-w-lg items-start gap-3 rounded-md border border-sand-300 bg-white px-4 py-3.5">
+                <ShieldCheck className="mt-0.5 h-4.5 w-4.5 shrink-0 text-terracotta-600" strokeWidth={2} />
+                <p className="text-sm leading-relaxed text-ink-700">
+                  Flight time, frequency and airline facts from the previous direct service are no longer shown.
+                </p>
+              </div>
+            ) : (
+              <>
+                <RouteStat icon={<Clock className="h-4 w-4" strokeWidth={2} />} label="Flight time" value={presentation.flightTime} />
+                <RouteStat icon={<Calendar className="h-4 w-4" strokeWidth={2} />} label="Frequency" value={presentation.frequency} />
+                {presentationAirlines.length > 0 && (
+                  <RouteStat icon={<Plane className="h-4 w-4" strokeWidth={2} />} label="Airlines" value={presentationAirlines.map((a) => a.name).join(', ')} />
+                )}
+              </>
+            )}
+          </div>
+
           {!bookBySnapshot && (
-            <div className="mt-5">
+            <div className="mt-6">
               <WhatsAppShareButton
                 url={`${siteConfig.url}/routes/${route.slug}`}
                 text={presentation.shareText}
@@ -434,6 +404,25 @@ export default async function RoutePage({ params }: { params: Promise<{ slug: st
           )}
         </div>
       </section>
+
+      {journeyChoice && (
+        <section className="bg-sand-50 pb-10 sm:pb-12">
+          <div className="mx-auto max-w-content px-5 sm:px-8">
+            <RouteVerdict
+              routeLabel={`${airport.city} to ${dest.city}`}
+              routeSlug={route.slug}
+              routeStatus={presentation.status}
+              flightTime={presentation.status === 'direct' || presentation.status === 'connecting' ? presentation.flightTime : null}
+              routeDirectness={presentation.status === 'direct' || presentation.status === 'connecting' ? presentation.status : null}
+              routeStatusLabel={presentation.status === 'direct' || presentation.status === 'connecting' ? presentation.statusLabel : null}
+              routeAirlineLabel={presentationAirlines.length > 0 ? presentationAirlines.map((a) => a.name).join(', ') : null}
+              journeyChoice={journeyChoice}
+              tripComHandoff={journeyChoiceTripComHandoff}
+              fareSignal={fareSignal}
+            />
+          </div>
+        </section>
+      )}
 
       {/* Journey Choice, moved up from its previous position deep in the
           fare section below (MAN→ISB Flagship Verdict pilot, Phase 1) so it
