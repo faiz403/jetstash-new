@@ -30,13 +30,14 @@ describe('privacy policy: retention is explained by criteria, not by an unfinish
   });
 
   it('gives a criterion for each kind of information', () => {
-    expect(retention).toMatch(/Contact form and quote request messages: kept in our mailbox while we are dealing with your enquiry/);
-    expect(retention).toMatch(/for a reasonable time afterwards/);
-    expect(retention).toMatch(/Travel Club and Route Watch: your email address and preferences are kept for as long as you stay subscribed/);
-    expect(retention).toMatch(/unsubscribe or ask us to delete your details, we stop emailing you and delete or anonymise them/);
-    expect(retention).toMatch(/honour your opt-out or to meet a legal obligation/);
+    expect(retention).toMatch(/Contact form and quote request messages: kept only for as long as reasonably needed to deal with your enquiry, any follow-up, and any related legal or administrative need/);
+    expect(retention).toMatch(/They are deleted when they are no longer needed/);
+    expect(retention).toMatch(/Travel Club and Route Watch: your email address and preferences are kept while you remain subscribed/);
+    expect(retention).toMatch(/we stop using them for those messages and delete them where appropriate/);
+    expect(retention).toMatch(/retaining only the minimum information needed to honour your opt-out or meet a legal obligation/);
     expect(retention).toMatch(/Website server logs and security data: held by our hosting provider for the short periods it sets/);
-    expect(retention).toMatch(/Optional Google Ads measurement: only if you accept it/);
+    expect(retention).toMatch(/Optional Google Ads measurement: used only if you accept it/);
+    expect(retention).toMatch(/Google processes that measurement data under its own terms and privacy policy/);
   });
 
   it('points to the Arrive By section for Arrive By instead of repeating or contradicting it', () => {

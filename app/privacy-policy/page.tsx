@@ -276,14 +276,14 @@ const sections: { title: string; body: React.ReactNode }[] = [
         </p>
         <ul className="flex list-disc flex-col gap-1.5 pl-5">
           <li>
-            Contact form and quote request messages: kept in our mailbox while we are dealing with your enquiry, and
-            for a reasonable time afterwards in case you reply or a question comes up about what was said. We then
-            delete them.
+            Contact form and quote request messages: kept only for as long as reasonably needed to deal with your
+            enquiry, any follow-up, and any related legal or administrative need. They are deleted when they are no
+            longer needed.
           </li>
           <li>
-            Travel Club and Route Watch: your email address and preferences are kept for as long as you stay
-            subscribed. If you unsubscribe or ask us to delete your details, we stop emailing you and delete or
-            anonymise them, except where we need to keep the minimum required to honour your opt-out or to meet a
+            Travel Club and Route Watch: your email address and preferences are kept while you remain subscribed. If
+            you unsubscribe or ask us to delete your details, we stop using them for those messages and delete them
+            where appropriate, while retaining only the minimum information needed to honour your opt-out or meet a
             legal obligation.
           </li>
           <li>
@@ -295,8 +295,8 @@ const sections: { title: string; body: React.ReactNode }[] = [
             described under Arrive By above.
           </li>
           <li>
-            Optional Google Ads measurement: only if you accept it, and then handled by Google under its own terms
-            rather than ours.
+            Optional Google Ads measurement: used only if you accept it. Google processes that measurement data under
+            its own terms and privacy policy.
           </li>
         </ul>
         <p>
