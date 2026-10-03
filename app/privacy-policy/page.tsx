@@ -269,17 +269,44 @@ const sections: { title: string; body: React.ReactNode }[] = [
   {
     title: 'How long we keep information',
     body: (
-      <p>
-        We don&apos;t yet have formal, fixed retention periods set for every kind of information described above. As
-        a general principle, we keep it for as long as it&apos;s needed for the purpose it was collected for, for
-        example for as long as you stay subscribed to Travel Club or Route Watch, or for a reasonable period after
-        we&apos;ve answered a one-off enquiry, and delete or anonymise it once that purpose has passed. Setting exact
-        retention periods for each type of data is still on our to-do list and needs a formal decision. Email{' '}
-        <a href="mailto:privacy@jetstash.co.uk" className="font-medium text-terracotta-600 underline">
-          privacy@jetstash.co.uk
-        </a>{' '}
-        if you&apos;d like more detail on a specific case in the meantime.
-      </p>
+      <>
+        <p>
+          We don&apos;t keep personal information for longer than we need it for the reason we collected it. Rather than
+          one fixed period for everything, we decide by purpose, as set out below.
+        </p>
+        <ul className="flex list-disc flex-col gap-1.5 pl-5">
+          <li>
+            Contact form and quote request messages: kept only for as long as reasonably needed to deal with your
+            enquiry, any follow-up, and any related legal or administrative need. They are deleted when they are no
+            longer needed.
+          </li>
+          <li>
+            Travel Club and Route Watch: your email address and preferences are kept while you remain subscribed. If
+            you unsubscribe or ask us to delete your details, we stop using them for those messages and delete them
+            where appropriate, while retaining only the minimum information needed to honour your opt-out or meet a
+            legal obligation.
+          </li>
+          <li>
+            Website server logs and security data: held by our hosting provider for the short periods it sets, and used
+            only to keep the site secure and working.
+          </li>
+          <li>
+            Arrive By: we do not retain your journey details. The short-lived and anonymous items it does keep are
+            described under Arrive By above.
+          </li>
+          <li>
+            Optional Google Ads measurement: used only if you accept it. Google processes that measurement data under
+            its own terms and privacy policy.
+          </li>
+        </ul>
+        <p>
+          To ask what we hold about you, or to have something deleted sooner, email{' '}
+          <a href="mailto:privacy@jetstash.co.uk" className="font-medium text-terracotta-600 underline">
+            privacy@jetstash.co.uk
+          </a>
+          .
+        </p>
+      </>
     ),
   },
   {
