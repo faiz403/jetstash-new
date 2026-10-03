@@ -28,7 +28,8 @@ export function Footer() {
                 hello@jetstash.co.uk
               </a>
             </div>
-            <p className="mt-5 max-w-sm text-xs leading-relaxed text-ink-300">
+            <p className="mt-4 max-w-sm text-xs leading-relaxed text-ink-300">{siteConfig.operatorStatement}</p>
+            <p className="mt-4 max-w-sm text-xs leading-relaxed text-ink-300">
               Every fare on this site is an example checked by a person on a stated date. Never a live price
               claim, never invented urgency. That standard is the product.
             </p>

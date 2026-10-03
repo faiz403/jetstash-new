@@ -22,6 +22,12 @@ export const siteConfig = {
    * route file directly.
    */
   contactEmail: 'contact@jetstash.co.uk',
+  /**
+   * Public operator statement, shown in the footer and on /contact. Same public-safe
+   * identity as Privacy Policy section 01; the full legal name is never published
+   * (enforced by tests/privacy-notice-completion.test.ts).
+   */
+  operatorStatement: 'JetStash is operated by Faiz Ahmed, trading as JetStash.',
 };
 
 // The nav is the brand's spine: lead with the travel-intelligence product,

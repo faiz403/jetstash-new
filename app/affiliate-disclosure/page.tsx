@@ -15,6 +15,10 @@ const sections: { title: string; body: React.ReactNode }[] = [
     body: 'JetStash earns a commission on some bookings made through links on this site, typically when you click through to an airline, travel agent or booking platform and complete a purchase. This is how JetStash is funded.',
   },
   {
+    title: 'Who you book with',
+    body: 'JetStash does not sell flights, take payment or make bookings. When you click through and book, you book with the third-party provider, and your contract is with that provider, not with JetStash. Trip.com is currently our flight-booking partner where a flight link is shown.',
+  },
+  {
     title: 'It never changes your price',
     body: 'This arrangement does not affect the price you pay. Commission is paid to JetStash by the partner business, not added to your fare.',
   },
