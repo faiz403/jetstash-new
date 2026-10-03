@@ -170,6 +170,9 @@ export default async function RoutePage({ params }: { params: Promise<{ slug: st
   // evidence than Journey Choice's own exact-match comparison batch.
   const journeyChoice = getJourneyChoiceForRoute(route.slug, nowIso);
   const fareSignal = getFareSignalForRoute(route.slug, nowIso);
+  // First-screen buying fix (3 Oct 2026): the connecting pattern already held in route data, surfaced next to the
+  // fare block only where the route status permits it (service-ended routes), never inferred.
+  const firstScreenConnecting = presentation.canShowConnectingAlternative ? route.connectingAlternative ?? null : null;
   // First Standout Fare Pilot (25 Aug 2026, founder-approved,
   // manchester-islamabad only — see data/standout-fare-approvals.ts).
   // Evaluated against the FULL archive (not the route-scoped
@@ -252,13 +255,13 @@ export default async function RoutePage({ params }: { params: Promise<{ slug: st
       />
       {/* Route heroes borrow the destination's photograph (dimmed, decorative) —
           one image per destination serves every surface, per docs/visual-identity.md. */}
-      <section className="relative overflow-hidden bg-ink-900 py-16 sm:py-20">
+      <section className="relative overflow-hidden bg-ink-900 py-8 sm:py-10">
         <HeroBackdrop
           image={(() => { const img = getDestinationImage(dest.slug); return img ? { ...img, alt: '' } : null; })()}
           objectPositionClassName={ROUTE_HERO_FOCAL_POSITION[dest.slug]}
         />
         <div className="relative mx-auto max-w-content px-5 sm:px-8">
-          <nav aria-label="Breadcrumb" className="mb-5 flex items-center gap-1.5 text-xs text-ink-300">
+          <nav aria-label="Breadcrumb" className="mb-3 flex items-center gap-1.5 text-xs text-ink-300 sm:mb-4">
             <Link href="/" className="hover:text-brass-300">Home</Link>
             <span>/</span>
             <Link href={`/airports/${airport.slug}`} className="hover:text-brass-300">{airport.name}</Link>
@@ -284,16 +287,21 @@ export default async function RoutePage({ params }: { params: Promise<{ slug: st
               {routeIntelligence.label}
             </span>
           </div>
-          <h1 className="stagger-in stagger-2 mt-4 animate-fade-up font-display text-4xl leading-[1.05] tracking-tight text-sand-50 sm:text-5xl">
+          <h1 className="stagger-in stagger-2 mt-3 animate-fade-up font-display text-4xl leading-[1.05] tracking-tight text-sand-50 sm:mt-4 sm:text-5xl">
             {airport.city} to {dest.city}
           </h1>
           {/* Verification-pending leakage fix: route.intro must never render
               raw here — presentation.summary is centrally-authored neutral
               copy for a pending route, so this never depends on an intro
               string being hedged correctly by whoever added the route. */}
-          <p className="stagger-in stagger-3 mt-4 max-w-2xl animate-fade-up text-lg leading-relaxed text-ink-300">{presentation.summary}</p>
+          {/* Service-ended routes (final acceptance tweak, 3 Oct 2026): on a phone the hero summary repeats exactly what the
+              Fare check lead directly below now says first ("Connecting flights available ... the former direct service has
+              ended ..."), and on a fresh visit the cookie banner covers everything below ~690px at 375x812, so the duplicate is
+              hidden below the sm breakpoint only. Nothing is removed: it still renders from sm up, the status badge above still
+              says "Direct service ended", and the Fare check lead carries the same message. */}
+          <p className={`stagger-in stagger-3 mt-3 max-w-2xl animate-fade-up text-base leading-relaxed text-ink-300 sm:mt-4 sm:text-lg${presentation.status === 'service-ended' ? ' hidden sm:block' : ''}`}>{presentation.summary}</p>
 
-          <div className="stagger-in stagger-4 mt-7 flex animate-fade-up flex-wrap gap-6">
+          <div className="stagger-in stagger-4 mt-5 flex animate-fade-up flex-wrap gap-x-6 gap-y-3 sm:mt-5">
             {presentation.status === 'unverified' ? (
               // Premium presentation fix: one concise notice instead of
               // three stat rows carrying a duplicated placeholder sentence.
@@ -313,7 +321,7 @@ export default async function RoutePage({ params }: { params: Promise<{ slug: st
               // states only the ONE fact distinct to this box: which
               // specific facts are no longer shown and why, never restating
               // the ended/check-options framing a third time.
-              <div className="flex max-w-lg items-start gap-3 rounded-md border border-white/15 bg-white/5 px-4 py-3.5">
+              <div className="hidden max-w-lg items-start gap-3 rounded-md border border-white/15 bg-white/5 px-4 py-3.5 sm:flex">
                 <ShieldCheck className="mt-0.5 h-4.5 w-4.5 shrink-0 text-terracotta-300" strokeWidth={2} />
                 <p className="text-sm leading-relaxed text-ink-200">
                   Flight time, frequency and airline facts from the previous direct service are no longer shown.
@@ -344,16 +352,6 @@ export default async function RoutePage({ params }: { params: Promise<{ slug: st
               Book-By panel when one exists, so it isn't duplicated there
               either) — only its layout position changes, to a standalone row
               now that it no longer shares a flex row with the removed CTA. */}
-          {!bookBySnapshot && (
-            <div className="mt-7">
-              <WhatsAppShareButton
-                url={`${siteConfig.url}/routes/${route.slug}`}
-                text={presentation.shareText}
-                route={route.slug}
-                source="route-hero"
-              />
-            </div>
-          )}
         </div>
       </section>
 
@@ -386,7 +384,7 @@ export default async function RoutePage({ params }: { params: Promise<{ slug: st
         </section>
       )}
 
-      <section className="bg-white py-8 sm:py-10">
+      <section className="bg-white py-4 sm:py-8">
         <div className="mx-auto max-w-content px-5 sm:px-8">
           {/* Route Page Journey Clarity System (20 Aug 2026): routeStatusLabel
               and routeAirlineLabel are the same presentation.statusLabel and
@@ -410,7 +408,30 @@ export default async function RoutePage({ params }: { params: Promise<{ slug: st
             routeServiceConnections={route.routeServiceConnections ?? null}
             standoutFare={standoutFare}
             isServiceEnded={presentation.status === 'service-ended'}
+            routeLabel={`${airport.city} to ${dest.city}`}
+            connectingSummary={
+              firstScreenConnecting
+                ? {
+                    stops: firstScreenConnecting.typicalStops,
+                    hubs: firstScreenConnecting.hubAirports,
+                    journeyTime: firstScreenConnecting.typicalJourneyTime,
+                  }
+                : null
+            }
           />
+          {/* First-screen buying fix (3 Oct 2026): the share action moved out of
+              the hero, below the fare/price block, so the buying decision comes
+              first. Same condition, same component, same analytics source. */}
+          {!bookBySnapshot && (
+            <div className="mt-5">
+              <WhatsAppShareButton
+                url={`${siteConfig.url}/routes/${route.slug}`}
+                text={presentation.shareText}
+                route={route.slug}
+                source="route-hero"
+              />
+            </div>
+          )}
         </div>
       </section>
 

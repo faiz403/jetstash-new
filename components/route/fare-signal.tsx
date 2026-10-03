@@ -136,15 +136,15 @@ export function formatRouting(observation: FareSignalObservation): string | null
  */
 function SignalCta({ href, routeSlug, standout = false, label = TRIPCOM_DEFAULT_CTA_LABEL }: { href: string; routeSlug: string; standout?: boolean; label?: string }) {
   return (
-    <div className="mt-5">
-      <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:gap-4">
+    <div className="mt-3 sm:mt-5">
+      <div className="flex flex-col items-stretch gap-2 sm:flex-row sm:items-center sm:gap-4">
         <TrackedOutboundLink
           event="tripcom_click"
           properties={{ route: routeSlug, source: standout ? 'fare-signal-standout' : 'fare-signal' }}
           href={href}
           target="_blank"
           rel={PROVIDER_REL}
-          className="inline-flex items-center gap-1.5 rounded-sm bg-ink-900 px-4 py-2.5 text-sm font-semibold text-sand-50 transition-all hover:bg-brass-600 active:scale-[0.985]"
+          className="inline-flex min-h-12 items-center justify-center gap-1.5 rounded-sm bg-ink-900 px-5 py-3 text-base font-semibold text-sand-50 transition-all hover:bg-brass-600 active:scale-[0.985]"
         >
           {label}
           <ArrowUpRight className="h-4 w-4" strokeWidth={2.25} />
@@ -211,17 +211,84 @@ function NoCtaFallback() {
  */
 function GenericFlightSearchFallback() {
   return (
-    <div className="mt-5">
+    <div className="mt-3 sm:mt-5">
       <a
         href={GENERIC_FLIGHT_SEARCH_URL}
         target="_blank"
         rel={GENERIC_FLIGHT_SEARCH_REL}
-        className="inline-flex items-center gap-1.5 rounded-sm border border-ink-300 px-4 py-2.5 text-sm font-semibold text-ink-700 transition-all hover:border-ink-500 hover:text-ink-900 active:scale-[0.985]"
+        className="inline-flex min-h-12 w-full items-center justify-center gap-1.5 rounded-sm border-2 border-ink-700 bg-white px-5 py-3 text-base font-semibold text-ink-900 transition-all hover:border-ink-900 hover:bg-sand-100 active:scale-[0.985] sm:w-auto"
       >
         {GENERIC_FLIGHT_SEARCH_CTA_LABEL}
         <ArrowUpRight className="h-4 w-4" strokeWidth={2.25} />
       </a>
       <p className="mt-2 text-xs leading-snug text-ink-400">{GENERIC_FLIGHT_SEARCH_NOTE}</p>
+    </div>
+  );
+}
+
+/**
+ * First-screen buying fix (3 Oct 2026, founder-approved). A real traveller
+ * asked for Manchester to Delhi and the page opened on a dead-looking
+ * "No current fare tracked." with the useful answer (it is still bookable
+ * with a connection) several screens below. This lead replaces that line
+ * for the plain no-fare state only; it never invents a fare, never claims a
+ * live price, and only says "Connecting flights available" where JetStash
+ * already holds evidence for it: a service-ended route (whose connecting
+ * alternative is required by presentation.canShowConnectingAlternative) or a
+ * route whose own verified status is 'connecting'. A verification-pending
+ * route gets the neutral "Check today's ... prices" line only, never a
+ * directness claim. All wording is derived from the route label, never typed
+ * per route.
+ */
+export interface ConnectingSummary {
+  stops: number;
+  hubs: string[];
+  journeyTime: string;
+}
+
+export function checkPricesHeading(routeLabel: string | null): string {
+  return routeLabel ? `Check today's ${routeLabel.replace(' to ', ' \u2192 ')} prices` : "Check today's prices";
+}
+
+function NoFareLead({
+  routeLabel,
+  isServiceEnded,
+  routeDirectness,
+  connectingSummary,
+  hasCta,
+}: {
+  routeLabel: string | null;
+  isServiceEnded: boolean;
+  routeDirectness: 'direct' | 'connecting' | null;
+  connectingSummary: ConnectingSummary | null;
+  hasCta: boolean;
+}) {
+  const connecting = isServiceEnded || routeDirectness === 'connecting';
+  return (
+    <div>
+      {connecting && hasCta ? (
+        <>
+          <p className="font-display text-xl leading-tight text-ink-900 sm:text-2xl">Connecting flights available</p>
+          <p className="mt-1 text-sm leading-relaxed text-ink-700">
+            {isServiceEnded ? 'The former direct service has ended. ' : ''}
+            {connectingSummary
+              ? `Usually ${connectingSummary.stops} stop${connectingSummary.stops > 1 ? 's' : ''} · ${connectingSummary.journeyTime} · via ${connectingSummary.hubs.join(', ')}.`
+              : 'This journey is still bookable with a connection.'}
+          </p>
+          <p className="mt-1 text-sm text-ink-600">JetStash hasn&apos;t logged a current fare for this route yet.</p>
+          <p className="mt-3 text-sm font-semibold text-ink-900">{checkPricesHeading(routeLabel)}</p>
+        </>
+      ) : hasCta ? (
+        <>
+          <p className="font-display text-xl leading-tight text-ink-900 sm:text-2xl">{checkPricesHeading(routeLabel)}</p>
+          <p className="mt-1 text-sm text-ink-600">JetStash hasn&apos;t logged a current fare for this route yet.</p>
+        </>
+      ) : (
+        <div className="flex items-start gap-3 text-sm text-ink-600">
+          <RouteIcon className="mt-0.5 h-4 w-4 shrink-0 text-ink-400" strokeWidth={2} />
+          <p>No current fare tracked.</p>
+        </div>
+      )}
     </div>
   );
 }
@@ -385,12 +452,14 @@ function routeServiceFareMismatch(
 
 function RouteVsFareCallout({ mismatch }: { mismatch: RouteVsFareMismatch }) {
   return (
-    <div className="mt-4 flex items-start gap-3 rounded-md border border-terracotta-200 bg-white p-4">
+    <div className="mt-3 flex items-start gap-3 rounded-md border border-terracotta-200 bg-white p-3 sm:mt-4 sm:p-4">
       <Info className="mt-0.5 h-4 w-4 shrink-0 text-terracotta-600" strokeWidth={2} aria-hidden="true" />
       <div>
-        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-terracotta-600">Route service</p>
-        <p className="mt-1 text-sm font-medium text-ink-900">{mismatch.routeValue}</p>
-        <p className="mt-1.5 text-sm leading-relaxed text-ink-600">{mismatch.note}</p>
+        <p className="flex flex-wrap items-baseline gap-x-2">
+          <span className="text-xs font-semibold uppercase tracking-[0.14em] text-terracotta-600">Route service</span>
+          <span className="text-sm font-medium text-ink-900">{mismatch.routeValue}</span>
+        </p>
+        <p className="mt-1 text-sm leading-relaxed text-ink-600">{mismatch.note}</p>
       </div>
     </div>
   );
@@ -418,7 +487,7 @@ function CurrentSignal({ data, tripComUrl, routeSlug, routeDirectness, routeStat
   const standout = standoutFare && standoutFare.observation.id === data.id ? standoutFare : null;
   return (
     <>
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+      <div className="flex flex-col gap-1.5 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
         <div>
           <p className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-terracotta-600">
             {standout && <Sparkles className="h-3.5 w-3.5" strokeWidth={2.25} aria-hidden="true" />}
@@ -432,7 +501,7 @@ function CurrentSignal({ data, tripComUrl, routeSlug, routeDirectness, routeStat
           <p className="mt-1">Checked {formatChecked(data.observedDate)}</p>
         </div>
       </div>
-      <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-ink-700">
+      <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-ink-700 sm:mt-5">
         {routing && <span className="inline-flex items-center gap-2"><Plane className="h-4 w-4 text-terracotta-600" />{routing}</span>}
         <span className="inline-flex items-center gap-2"><CalendarDays className="h-4 w-4 text-terracotta-600" />{formatChecked(data.departureDate)} – {formatChecked(data.returnDate)}</span>
         {data.isSelfTransfer && <SelfTransferNote />}
@@ -487,7 +556,13 @@ export function FareSignal({
   routeServiceConnections = null,
   standoutFare = null,
   isServiceEnded = false,
+  routeLabel = null,
+  connectingSummary = null,
 }: {
+  /** "Manchester to Delhi" -- used only to word the no-fare lead ("Check today's Manchester \u2192 Delhi prices"); never a data source. */
+  routeLabel?: string | null;
+  /** route.connectingAlternative's own stops/hubs/journey time, passed only when presentation.canShowConnectingAlternative is true. */
+  connectingSummary?: ConnectingSummary | null;
   signal: FareSignalData;
   tripComUrl: string | null;
   routeSlug: string;
@@ -519,7 +594,7 @@ export function FareSignal({
   standoutFare?: StandoutFarePresentation | null;
 }) {
   return (
-    <section aria-labelledby="fare-signal-heading" className="rounded-md border border-ink-200 bg-sand-50 p-5 sm:p-6">
+    <section aria-labelledby="fare-signal-heading" className="rounded-md border border-ink-200 bg-sand-50 p-4 sm:p-6">
       <div className="flex items-center gap-2.5">
         <Search className="h-5 w-5 text-terracotta-600" strokeWidth={2} />
         {/* Fare Answer Simplification (Astra product review, 10-11 Sept
@@ -537,18 +612,24 @@ export function FareSignal({
       {signal.strongerSignal && (
         <p className="mt-4 text-sm font-medium text-ink-700">{signal.strongerSignal}</p>
       )}
-      <div className="mt-4">
+      <div className="mt-3 sm:mt-4">
         {signal.state === 'current' && signal.observation ? <CurrentSignal data={signal.observation} tripComUrl={tripComUrl} routeSlug={routeSlug} routeDirectness={routeDirectness} routeStatusLabel={routeStatusLabel} routeAirlineLabel={routeAirlineLabel} routeServiceConnections={routeServiceConnections} standoutFare={standoutFare} isServiceEnded={isServiceEnded} /> : null}
         {signal.state === 'recent' && signal.observation ? <RecentSignal data={signal.observation} tripComUrl={tripComUrl} routeSlug={routeSlug} routeDirectness={routeDirectness} routeStatusLabel={routeStatusLabel} routeAirlineLabel={routeAirlineLabel} routeServiceConnections={routeServiceConnections} isServiceEnded={isServiceEnded} /> : null}
         {signal.state === 'none' ? (
-          <>
+          // Final acceptance tweak (3 Oct 2026): from lg up the lead and the button sit side by side, so a wide screen
+          // (where the cookie banner is only a short bar) shows the button without a scroll. Below lg nothing changes:
+          // the same stacked order. The lg:[...] variants only remove the button wrapper's top margin and stack the button over its disclosure inside that column.
+          <div className="lg:grid lg:grid-cols-[1.15fr_1fr] lg:items-start lg:gap-10 lg:[&>div:last-child]:mt-0 lg:[&>div:last-child>div]:flex-col lg:[&>div:last-child>div]:items-stretch">
             {signal.noneReason === 'poor-itinerary-suppressed' ? (
               <SuppressedFareExplanation />
             ) : (
-              <div className="flex items-start gap-3 text-sm text-ink-600">
-                <RouteIcon className="mt-0.5 h-4 w-4 shrink-0 text-ink-400" strokeWidth={2} />
-                <p>No current fare tracked.</p>
-              </div>
+              <NoFareLead
+                routeLabel={routeLabel}
+                isServiceEnded={isServiceEnded}
+                routeDirectness={routeDirectness}
+                connectingSummary={connectingSummary}
+                hasCta={Boolean(tripComUrl) || !isServiceEnded}
+              />
             )}
             {/* Route Page Scanability fix (21 Aug 2026): a route can have a
                 verified Trip.com CTA with no current fare logged (e.g.
@@ -566,7 +647,7 @@ export function FareSignal({
             ) : (
               <GenericFlightSearchFallback />
             )}
-          </>
+          </div>
         ) : null}
       </div>
     </section>

@@ -65,7 +65,8 @@ describe('WhatsApp Share remains available in the hero, in a standalone position
   });
 
   it('keeps its exact existing condition — it still moves into the Book-By panel instead of duplicating there, unchanged by this fix', () => {
-    expect(routePageSrc).toMatch(/\{!bookBySnapshot && \(\s*<div className="mt-7">\s*<WhatsAppShareButton/);
+    // First-screen buying fix (3 Oct 2026): same condition, now rendered below the fare block (mt-5), not in the hero.
+    expect(routePageSrc).toMatch(/\{!bookBySnapshot && \(\s*<div className="mt-5">\s*<WhatsAppShareButton/);
   });
 });
 
@@ -161,7 +162,7 @@ describe('verification-pending routes remain fail-closed on route-service claims
     const html = renderToStaticMarkup(
       FareSignal({ signal, tripComUrl, routeSlug: route.slug, routeDirectness: null, routeStatusLabel: null, routeAirlineLabel: null })
     ).replace(/\s+/g, ' ');
-    expect(html).toContain('No current fare tracked.');
+    expect(html.replace(/&#x27;/g, "'")).toContain("JetStash hasn't logged a current fare for this route yet.");
     expect(html).not.toContain('Route service');
     expect(html).not.toMatch(/\bDirect\b/);
     // The CTA is legitimate here — it comes from booking-providers.ts's own
