@@ -207,18 +207,18 @@ describe('4-8. Future observations cannot alter a historical Fare Signal, and be
   it('7. 1 Sep LHR→JED (£464, separate tickets, 1/1 stop) cannot alter the 31 Aug Fare Signal', () => {
     // 16 Sept 2026 UPDATE: same reasoning as test 6 above -- the pre-
     // existing 25 Aug £361 poor-itinerary observation is skipped in favour
-    // of the route's own older, still-fresh, suitable 19 August £535
-    // observation, instead of failing closed. The hypothetical remains
+    // of the route's own older, still-fresh, exact-profile 18 August £367
+    // non-self-transfer observation under the two-signal policy. The hypothetical remains
     // correctly excluded by causal availability either way.
     const beforeReal = getFareSignalForRoute('london-heathrow-jeddah', AUG_31);
     expect(beforeReal.state).toBe('current');
-    expect(beforeReal.observation?.price).toBe(535);
+    expect(beforeReal.observation?.price).toBe(367);
 
     const withHypothetical = publishableWithHypothetical('london-heathrow-jeddah', LHR_JED_HYPOTHETICAL, AUG_31);
     expect(withHypothetical.some((o) => o.id === LHR_JED_HYPOTHETICAL.id)).toBe(false);
     const afterHypothetical = deriveFareSignal(withHypothetical, AUG_31);
     expect(afterHypothetical.state).toBe('current');
-    expect(afterHypothetical.observation?.price).toBe(535);
+    expect(afterHypothetical.observation?.price).toBe(367);
   });
 
   it('8. the same three observations ARE available, and correctly drive Fare Signal, at 1 September 2026 -- proving this is availability, not deletion', () => {
@@ -249,6 +249,9 @@ describe('4-8. Future observations cannot alter a historical Fare Signal, and be
     expect(jed.some((o) => o.id === LHR_JED_HYPOTHETICAL.id)).toBe(true);
     const jedSignal = deriveFareSignal(jed, SEP_1);
     expect(jedSignal.state).toBe('current');
+    // The available 1 Sep separate-ticket check uses the 23 kg profile;
+    // the £367 clean record is not that exact profile, so the two-signal
+    // policy correctly refuses a cross-profile substitution.
     expect(jedSignal.observation?.price).toBe(464);
   });
 });

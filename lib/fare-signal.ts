@@ -50,6 +50,13 @@ export interface FareSignalObservation {
    * or structured fields actually record.
    */
   journeyConsequences: string[];
+  /**
+   * A connection detail retained verbatim from a structured weekly-check
+   * phrase (for example, "19 hr 35 min layover at Edinburgh Airport").
+   * Null means the observation did not record that exact detail; it is
+   * never inferred from a journey duration or stop count.
+   */
+  connectionDetail?: string | null;
 }
 
 export interface FareSignal {
@@ -60,6 +67,13 @@ export interface FareSignal {
   strongerSignal: string | null;
   /** Populated only when state === 'none' AND the specific reason is isPoorItinerarySuitability() — see FareSignalNoneReason's own doc comment. Every other 'none' cause leaves this null. */
   noneReason: FareSignalNoneReason | null;
+  /**
+   * A cheaper, fresh, like-for-like self-transfer observation. It is
+   * secondary evidence only: never a replacement for the primary Fare
+   * Signal and never present unless its own archive record explicitly says
+   * self-transfer.
+   */
+  lowerSelfTransfer?: FareSignalObservation | null;
 }
 
 /**
@@ -112,6 +126,11 @@ export function toSignalObservation(observation: FareObservation): FareSignalObs
     journeyConsequences: formatJourneyConsequenceSummary(
       getJourneyConsequences(observation, getDestinationIataCode(observation.routeSlug))
     ),
+    // The weekly observation format has an explicit, semicolon-delimited
+    // "connection detail shown:" field. Reusing only that whole recorded
+    // fragment is deliberately narrower than trying to infer a layover from
+    // a total journey time.
+    connectionDetail: observation.priceNote.match(/\bconnection detail shown:\s*([^;]+);/i)?.[1]?.trim() ?? null,
   };
 }
 
@@ -325,7 +344,7 @@ export { isPoorItinerarySuitability };
  * see data/fare-observations.ts and lib/itinerary-suitability.ts for what
  * "genuine" and "suitable" mean, neither of which this function redefines.
  */
-export function selectRepresentativeObservation(
+function selectBaseRepresentativeObservation(
   observations: FareObservation[],
   nowIso: string
 ): { observation: FareObservation | null; state: FareSignalState; freshness: FareFreshnessState | null; noneReason: FareSignalNoneReason | null } {
@@ -375,6 +394,105 @@ export function selectRepresentativeObservation(
 }
 
 /**
+ * Two-signal fare policy (October 2026): the normal representative selector
+ * remains the single source of truth for freshness, cabin preference and
+ * poor-itinerary suppression. Only when that selected current fare is an
+ * explicitly recorded self-transfer do we look for a fresh, exact-profile
+ * clean observation to use as the primary planning signal.
+ *
+ * This shared selector keeps Fare Signal and the existing Book-By view
+ * aligned on the same primary evidence. It changes no booking URL, CTA or
+ * raw archive entry.
+ */
+function selectTwoSignalFareObservation(
+  observations: FareObservation[],
+  selected: FareObservation,
+  state: FareSignalState,
+  nowIso: string
+): { primary: FareObservation; lowerSelfTransfer: FareObservation | null } {
+  if (state !== 'current' || !isSelfTransferItinerary(selected.priceNote)) {
+    return { primary: selected, lowerSelfTransfer: null };
+  }
+
+  // An absent profile/date is not a licence to make a looser comparison.
+  // A substitute must match every stored comparison dimension exactly.
+  if (!selected.profileId || !selected.departureDate || !selected.returnDate) {
+    return { primary: selected, lowerSelfTransfer: null };
+  }
+
+  const isFreshComparable = (observation: FareObservation) => (
+    observation.routeSlug === selected.routeSlug
+    && observation.cabin === selected.cabin
+    && observation.profileId === selected.profileId
+    && observation.departureDate === selected.departureDate
+    && observation.returnDate === selected.returnDate
+    && observation.comparisonEligibility !== 'historical'
+    && isPubliclyPublishable(observation)
+    && getFareFreshnessState(daysBetweenIso(observation.observedDate, nowIso)) === 'fresh'
+  );
+
+  const cleanPrimary = observations
+    .filter(isFreshComparable)
+    .filter((observation) => !isSelfTransferItinerary(observation.priceNote))
+    .filter((observation) => !isPoorItinerarySuitability(observation))
+    .sort(compareByRepresentativePriority)[0];
+
+  if (!cleanPrimary) return { primary: selected, lowerSelfTransfer: null };
+
+  const lowerSelfTransfer = observations
+    .filter(isFreshComparable)
+    .filter((observation) => isSelfTransferItinerary(observation.priceNote))
+    .filter((observation) => observation.price < cleanPrimary.price)
+    .sort(compareByRepresentativePriority)[0] ?? null;
+
+  return { primary: cleanPrimary, lowerSelfTransfer };
+}
+
+/**
+ * Shared representative selector. Keeping the quality-aware primary here
+ * means Fare Signal and the existing Book-By view cannot quietly diverge
+ * about which comparable fare they are describing.
+ */
+export function selectRepresentativeObservation(
+  observations: FareObservation[],
+  nowIso: string
+): { observation: FareObservation | null; state: FareSignalState; freshness: FareFreshnessState | null; noneReason: FareSignalNoneReason | null } {
+  const base = selectBaseRepresentativeObservation(observations, nowIso);
+  if (!base.observation) return base;
+  const { primary } = selectTwoSignalFareObservation(observations, base.observation, base.state, nowIso);
+  return {
+    ...base,
+    observation: primary,
+    freshness: getFareFreshnessState(daysBetweenIso(primary.observedDate, nowIso)),
+  };
+}
+
+function selectLowerSelfTransferForPrimary(
+  observations: FareObservation[],
+  primary: FareObservation,
+  state: FareSignalState,
+  nowIso: string
+): FareObservation | null {
+  if (state !== 'current' || isSelfTransferItinerary(primary.priceNote) || !primary.profileId || !primary.departureDate || !primary.returnDate) {
+    return null;
+  }
+  return observations
+    .filter((observation) => (
+      observation.routeSlug === primary.routeSlug
+      && observation.cabin === primary.cabin
+      && observation.profileId === primary.profileId
+      && observation.departureDate === primary.departureDate
+      && observation.returnDate === primary.returnDate
+      && observation.comparisonEligibility !== 'historical'
+      && isPubliclyPublishable(observation)
+      && getFareFreshnessState(daysBetweenIso(observation.observedDate, nowIso)) === 'fresh'
+      && isSelfTransferItinerary(observation.priceNote)
+      && observation.price < primary.price
+    ))
+    .sort(compareByRepresentativePriority)[0] ?? null;
+}
+
+/**
  * Derives the single public Fare Signal from the same publishability and
  * freshness rules used by the existing fare surfaces. Historical entries can
  * remain in the archive, but never displace a current observation when one is
@@ -384,10 +502,12 @@ export function selectRepresentativeObservation(
 export function deriveFareSignal(observations: FareObservation[], nowIso: string): FareSignal {
   const { observation: selected, state, freshness, noneReason } = selectRepresentativeObservation(observations, nowIso);
   const signalObservation = selected ? toSignalObservation(selected) : null;
+  const lowerRawSelfTransfer = selected ? selectLowerSelfTransferForPrimary(observations, selected, state, nowIso) : null;
+  const lowerSelfTransfer = lowerRawSelfTransfer ? toSignalObservation(lowerRawSelfTransfer) : null;
   if (!selected || !signalObservation) {
     return { state: 'none', observation: null, freshness: null, strongerSignal: null, noneReason };
   }
-  return { state, observation: signalObservation, freshness, strongerSignal: null, noneReason: null };
+  return { state, observation: signalObservation, freshness, strongerSignal: null, noneReason: null, lowerSelfTransfer };
 }
 
 export function getFareSignalForRoute(routeSlug: string, nowIso: string): FareSignal {

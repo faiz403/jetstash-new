@@ -114,12 +114,12 @@ describe('Standout Fare — First Public Standout Fare Pilot', () => {
     expect(html).not.toContain('Standout Fare');
   });
 
-  it('8. LHR-JED was never a Standout Fare -- the generic Fare Signal now correctly resolves to an older suitable observation', () => {
+  it('8. LHR-JED was never a Standout Fare -- the generic Fare Signal now correctly leads with the fresh comparable non-self-transfer observation', () => {
     const standout = getApprovedStandoutFare('london-heathrow-jeddah', 'Economy', fareObservations, NOW);
     expect(standout).toBeNull();
     const signal = getFareSignalForRoute('london-heathrow-jeddah', NOW);
     const html = renderToStaticMarkup(FareSignal({ signal, tripComUrl: getTripComRouteUrl('london-heathrow-jeddah'), routeSlug: 'london-heathrow-jeddah', standoutFare: standout }));
-    expect(signal.observation?.price).toBe(535);
+    expect(signal.observation?.price).toBe(367);
     expect(html).toContain('Fare spotted');
     expect(html).not.toContain('Recent fares checked');
     expect(html).not.toContain('Standout Fare');

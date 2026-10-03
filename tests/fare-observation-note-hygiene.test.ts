@@ -75,14 +75,14 @@ describe('Birmingham → Amritsar and Heathrow → Jeddah customer-facing fare c
     assertClean('london-heathrow-jeddah Fare History panel', jedHtml);
   });
 
-  it('the Book-By Countdown\'s Verified Check citation is clean for both routes -- their 25 August self-transfer, 2+-stop-per-leg observations are still correctly skipped for representative selection (the 16 Sept 2026 suitability walk — see docs/project-control/fare-evidence/full-portfolio-controlled-batch-2026-09-15.md — finds each route an older, suitable, still-fresh 19 August observation instead of failing closed), so a real citation exists again, and it is clean, same as the archive text and Fare History panel proven clean elsewhere in this file', () => {
+  it('the Book-By Countdown\'s Verified Check citation is clean for both routes -- the shared two-signal selector keeps it aligned with Fare Signal\'s fresh comparable non-self-transfer primary, so a real citation exists again, and it is clean, same as the archive text and Fare History panel proven clean elsewhere in this file', () => {
     const suppressionEvidenceIso = '2026-08-25';
     const bhxSnapshot = computeBookBySnapshot('birmingham-amritsar', new Date(`${suppressionEvidenceIso}T12:00:00Z`));
     const jedSnapshot = computeBookBySnapshot('london-heathrow-jeddah', new Date(`${suppressionEvidenceIso}T12:00:00Z`));
     expect(bhxSnapshot?.latestObservation).toBeTruthy();
     expect(jedSnapshot?.latestObservation).toBeTruthy();
     expect(bhxSnapshot!.latestObservation!.price).toBe(603);
-    expect(jedSnapshot!.latestObservation!.price).toBe(535);
+    expect(jedSnapshot!.latestObservation!.price).toBe(367);
     assertClean('birmingham-amritsar Book-By citation', bhxSnapshot!.latestObservation!.priceNote);
     assertClean('london-heathrow-jeddah Book-By citation', jedSnapshot!.latestObservation!.priceNote);
   });

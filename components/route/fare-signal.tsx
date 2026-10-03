@@ -473,7 +473,7 @@ interface RouteContextProps {
   routeServiceConnections?: { outbound?: string[]; return?: string[] } | null;
 }
 
-function CurrentSignal({ data, tripComUrl, routeSlug, routeDirectness, routeStatusLabel, routeAirlineLabel, routeServiceConnections, standoutFare, isServiceEnded = false }: { data: FareSignalObservation; tripComUrl: string | null; routeSlug: string; standoutFare?: StandoutFarePresentation | null; isServiceEnded?: boolean } & RouteContextProps) {
+function CurrentSignal({ data, lowerSelfTransfer, tripComUrl, routeSlug, routeDirectness, routeStatusLabel, routeAirlineLabel, routeServiceConnections, standoutFare, isServiceEnded = false }: { data: FareSignalObservation; lowerSelfTransfer?: FareSignalObservation | null; tripComUrl: string | null; routeSlug: string; standoutFare?: StandoutFarePresentation | null; isServiceEnded?: boolean } & RouteContextProps) {
   const routing = formatRouting(data);
   const mismatch = routeVsFareMismatch(routeDirectness, routeStatusLabel, routeAirlineLabel, data.directness)
     ?? routeServiceFareMismatch(routeServiceConnections, routeStatusLabel, routeAirlineLabel, data.directness, data.connectionAirports);
@@ -494,6 +494,7 @@ function CurrentSignal({ data, tripComUrl, routeSlug, routeDirectness, routeStat
             {standout ? 'Standout Fare' : 'Fare spotted'}
           </p>
           <p className="mt-1 font-display text-3xl text-ink-900">£{data.price.toLocaleString('en-GB')} return</p>
+          {lowerSelfTransfer ? <p className="mt-1.5 text-sm font-medium text-ink-700">Latest comparable non-self-transfer fare observed</p> : null}
           <JourneyConsequenceLine consequences={data.journeyConsequences} />
         </div>
         <div className="text-sm text-ink-600 sm:text-right">
@@ -507,6 +508,16 @@ function CurrentSignal({ data, tripComUrl, routeSlug, routeDirectness, routeStat
         {data.isSelfTransfer && <SelfTransferNote />}
       </div>
       {standout && <StandoutEvidence standout={standout} />}
+      {lowerSelfTransfer ? (
+        <div className="mt-4 rounded-sm border border-ink-200 bg-white p-3 text-sm text-ink-700">
+          <p className="font-semibold">Lower fare also seen: £{lowerSelfTransfer.price.toLocaleString('en-GB')} return</p>
+          <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1">
+            <SelfTransferNote />
+            {lowerSelfTransfer.connectionDetail ? <span>· {lowerSelfTransfer.connectionDetail}</span> : null}
+            <span>· checked {formatChecked(lowerSelfTransfer.observedDate)}</span>
+          </p>
+        </div>
+      ) : null}
       {mismatch && <RouteVsFareCallout mismatch={mismatch} />}
       {tripComUrl ? (
         <SignalCta href={tripComUrl} routeSlug={routeSlug} standout={Boolean(standout)} />
@@ -613,7 +624,7 @@ export function FareSignal({
         <p className="mt-4 text-sm font-medium text-ink-700">{signal.strongerSignal}</p>
       )}
       <div className="mt-3 sm:mt-4">
-        {signal.state === 'current' && signal.observation ? <CurrentSignal data={signal.observation} tripComUrl={tripComUrl} routeSlug={routeSlug} routeDirectness={routeDirectness} routeStatusLabel={routeStatusLabel} routeAirlineLabel={routeAirlineLabel} routeServiceConnections={routeServiceConnections} standoutFare={standoutFare} isServiceEnded={isServiceEnded} /> : null}
+        {signal.state === 'current' && signal.observation ? <CurrentSignal data={signal.observation} lowerSelfTransfer={signal.lowerSelfTransfer} tripComUrl={tripComUrl} routeSlug={routeSlug} routeDirectness={routeDirectness} routeStatusLabel={routeStatusLabel} routeAirlineLabel={routeAirlineLabel} routeServiceConnections={routeServiceConnections} standoutFare={standoutFare} isServiceEnded={isServiceEnded} /> : null}
         {signal.state === 'recent' && signal.observation ? <RecentSignal data={signal.observation} tripComUrl={tripComUrl} routeSlug={routeSlug} routeDirectness={routeDirectness} routeStatusLabel={routeStatusLabel} routeAirlineLabel={routeAirlineLabel} routeServiceConnections={routeServiceConnections} isServiceEnded={isServiceEnded} /> : null}
         {signal.state === 'none' ? (
           // Final acceptance tweak (3 Oct 2026): from lg up the lead and the button sit side by side, so a wide screen
