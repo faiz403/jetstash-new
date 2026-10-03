@@ -167,11 +167,17 @@ describe current depth plainly and distinguish route intelligence from lighter d
 Service withdrawals, resumptions, frequency reductions, seasonal returns and significant schedule
 changes should be first-class, dated and sourced. Route Status V1 is shipped.
 
-### Arrive By is a future flagship
+### Arrive By is a live limited beta, frozen for feature work
 
 The approved concept is the urgent-arrival feasibility use case: funerals, weddings, hospital
 visits, religious travel and deadline-critical meetings. It must compare fastest and easiest
 plausible journeys and work backwards from the required arrival time.
+
+**Decision (3 October 2026):** full-journey V1 is live in Production as a limited beta (PR #293), with
+anonymous aggregate outcome counters (PR #294). It is frozen for feature work: no new features, no
+redesign, no calculation changes, no airport broadening, no new analytics vendors, until real beta
+evidence identifies a defect or a clearly validated opportunity. It stays `noindex` and out of the main
+navigation and sitemap during the beta.
 
 ### Travel Confidence is evidence, not a mysterious score
 
@@ -275,8 +281,8 @@ Batch B's own evidence files.
 
 ## Deferred
 
-- Full Arrive By implementation, pending trustworthy schedule and ground-transport inputs. The
-  evidence-gated product specification is complete in `ARRIVE_BY_SPEC.md`.
+- Further Arrive By feature work: V1 is live as a limited beta and frozen (see "Arrive By is a live limited
+  beta, frozen for feature work"). The specification remains in `ARRIVE_BY_SPEC.md`.
 - Flight-deal automation.
 - Broad SEO expansion beyond priority pages.
 - Advanced newsletter growth mechanics.
