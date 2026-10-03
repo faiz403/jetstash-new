@@ -90,7 +90,11 @@ describe('the 25 August 2026 batch -- real observations, real founder-specified 
   const nowResolvesToOlderSuitable: Record<string, { id: string; price: number }> = {
     'manchester-lahore': { id: 'obs-man-lhe-economy-20260818-8w-v1', price: 628 },
     'manchester-dubai': { id: 'obs-man-dxb-economy-20260818-8w-v1', price: 350 },
-    'london-heathrow-jeddah': { id: 'obs-lhr-jed-economy-20260819-8w-v1', price: 535 },
+    // Two-signal Fare Policy (October 2026): the newer £535 record is an
+    // explicit self-transfer, so the fresh, exact-profile £367 clean fare
+    // becomes the factual primary; the £535 self-transfer is not shown as
+    // secondary because it is not lower.
+    'london-heathrow-jeddah': { id: 'obs-lhr-jed-economy-20260818-8w-v1', price: 367 },
     'london-heathrow-doha': { id: 'obs-lhr-doh-economy-20260818-8w-v1', price: 471 },
     'birmingham-amritsar': { id: 'obs-bhx-atq-economy-20260819-8w-v1', price: 603 },
     'london-gatwick-amritsar': { id: 'obs-lgw-atq-economy-20260818-8w-v1', price: 650 },
@@ -141,7 +145,7 @@ describe('rendered Fare Signal -- label appears in the primary/prominent area, n
     const expectLabel: Record<string, boolean> = {
       'manchester-lahore': false,
       'manchester-dubai': false,
-      'london-heathrow-jeddah': true,
+      'london-heathrow-jeddah': false,
       'london-heathrow-doha': false,
       'birmingham-amritsar': false,
       'london-gatwick-amritsar': false,
