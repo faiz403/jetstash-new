@@ -161,7 +161,8 @@ describe('verification-pending routes stay fail-closed', () => {
 
     const html = renderFareSignalForRoute('birmingham-ahmedabad');
     expect(html).not.toContain('Route service');
-    expect(html).toContain('No current fare tracked.');
+    // First-screen buying fix (3 Oct 2026): the plain "No current fare tracked." line became a route-specific lead.
+    expect(html.replace(/&#x27;/g, "'")).toContain("JetStash hasn't logged a current fare for this route yet.");
   });
 
   it('every currently-unverified route resolves routeDirectness to null (the page never passes a status label for a route it cannot vouch for)', () => {
@@ -204,7 +205,8 @@ describe('no-fare routes remain truthful', () => {
     expect(signal.state).toBe('none');
     const html = renderFareSignalForRoute('birmingham-ahmedabad');
     expect(html).not.toContain('Route service');
-    expect(html).toContain('No current fare tracked.');
+    // First-screen buying fix (3 Oct 2026): the plain "No current fare tracked." line became a route-specific lead.
+    expect(html.replace(/&#x27;/g, "'")).toContain("JetStash hasn't logged a current fare for this route yet.");
     void presentation;
   });
 });

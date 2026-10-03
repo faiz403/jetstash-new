@@ -182,7 +182,8 @@ describe('Live control cases against the real archive (2 Sep 2026)', () => {
     expect(signal.noneReason).toBeNull();
 
     const html = renderFareSignalForRoute('birmingham-ahmedabad');
-    expect(html).toContain('No current fare tracked.');
+    // First-screen buying fix (3 Oct 2026): the plain line became a route-specific lead stating the same fact.
+    expect(html.replace(/&#x27;/g, "'")).toContain("JetStash hasn't logged a current fare for this route yet.");
     expect(html).not.toContain('Recent fares checked');
   });
 });

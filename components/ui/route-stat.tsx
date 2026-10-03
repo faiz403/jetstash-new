@@ -10,9 +10,9 @@
  */
 export function RouteStat({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
   return (
-    <div className="flex items-center gap-2.5">
-      <div className="flex h-9 w-9 items-center justify-center rounded-sm bg-white/10 text-brass-300">{icon}</div>
-      <div>
+    <div className="flex w-full items-baseline gap-2 sm:w-auto sm:items-center sm:gap-2.5">
+      <div className="hidden h-9 w-9 items-center justify-center rounded-sm bg-white/10 text-brass-300 sm:flex">{icon}</div>
+      <div className="flex flex-wrap items-baseline gap-x-2 sm:block">
         <p className="text-xs text-ink-300">{label}</p>
         <p className="text-sm font-semibold text-sand-100">{value}</p>
       </div>

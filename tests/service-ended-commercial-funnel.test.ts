@@ -134,7 +134,9 @@ describe('8. No tracked fare is invented for Delhi/Mumbai', () => {
     for (const slug of ['manchester-delhi', 'manchester-mumbai']) {
       const element = await RoutePage({ params: Promise.resolve({ slug }) });
       const html = renderToStaticMarkup(element);
-      expect(html, slug).toContain('No current fare tracked.');
+      // First-screen buying fix (3 Oct 2026): the plain line became a connecting-first lead stating the same fact.
+      expect(html.replace(/&#x27;/g, "'"), slug).toContain("JetStash hasn't logged a current fare for this route yet.");
+      expect(html, slug).toContain('Connecting flights available');
       expect(html, slug).not.toContain('Standout Fare');
     }
   });
