@@ -78,32 +78,32 @@ export function CommercialPaths() {
 const JOURNEY_CHECKS: { icon: typeof Plane; title: string; body: string; href?: string; linkLabel?: string }[] = [
   {
     icon: Plane,
-    title: 'Route & service status',
-    body: 'Whether a route runs direct, on which airline, and any announced pause or withdrawal — verified from the carrier’s own source, dated and sourced.',
+    title: 'Is it direct, and has it changed?',
+    body: 'Whether a route flies direct, on which airline, and any announced pause or withdrawal, checked against the carrier’s own source and dated.',
+  },
+  {
+    icon: Receipt,
+    title: 'What fare did we last see?',
+    body: 'Every fare shows the date a person checked it, who flies it, how many stops, and whether it is a self-transfer. It is a dated observation, not today’s price.',
   },
   {
     icon: ShieldCheck,
-    title: 'Booking-window timing',
-    body: 'When to book, traced to a real festival, fare or booking-window record. Never fake urgency.',
+    title: 'When to book',
+    body: 'Booking timing traced to a real festival, fare or booking-window record. Never fake urgency.',
   },
   {
     icon: FileCheck2,
-    title: 'Travel-ready documents',
-    body: 'Passport validity and visa guidance for your trip, sourced from official government pages.',
+    title: 'Can you travel?',
+    body: 'Passport validity and visa guidance for your trip, from official government pages.',
     href: '/travel-ready-check',
     linkLabel: 'Check your travel readiness',
   },
   {
     icon: Clock,
-    title: 'Need to be somewhere by a certain time?',
-    body: 'Flying for a wedding, funeral, event or important appointment? Check when you should leave and whether your full journey looks achievable. Available for supported journeys in limited beta.',
+    title: 'The flight is only part of the journey',
+    body: 'Need to be somewhere by a certain time? Arrive By helps you work out when to leave and whether your full journey looks achievable. Limited beta for supported journeys.',
     href: '/arrive-by',
     linkLabel: 'Try Arrive By',
-  },
-  {
-    icon: Receipt,
-    title: 'Fares, dated by a person',
-    body: 'Every fare shows the date a person actually checked it. Booking comes after the intelligence, never before.',
   },
 ];
 
@@ -114,17 +114,18 @@ export function WhyJetStash() {
   return (
     <section className="bg-sand-50 py-14 sm:py-20">
       <div className="mx-auto max-w-content px-5 sm:px-8">
-        <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-terracotta-600">The JetStash difference</span>
+        <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-terracotta-600">Why check first</span>
         {/* Founder copy correction (August 2026): was "A fare is not the whole
             journey." — retired because it repeated the new hero headline's
             exact proposition ("Check the whole journey, not just the fare.")
             almost word for word. Section content underneath is unchanged. */}
         <h2 className="mt-3 max-w-2xl font-display text-3xl leading-[1.08] text-ink-900 sm:text-4xl">
-          What JetStash checks
+          What you see before you book
         </h2>
         <p className="mt-4 max-w-2xl text-base leading-relaxed text-ink-600 sm:text-lg">
-          A booking journey often starts with a price. JetStash starts with what&apos;s actually known — checked, dated
-          and sourced — before that price can make sense.
+          The lowest fare isn&apos;t automatically the best journey: it can hide a self-transfer, a long layover or a route that
+          has changed. JetStash shows what is known about the journey, dated and sourced, before you go to a provider to
+          check today&apos;s price.
         </p>
 
         <div className="mt-9 grid gap-x-8 gap-y-6 sm:grid-cols-2">

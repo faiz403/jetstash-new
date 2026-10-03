@@ -1,7 +1,8 @@
 import Link from 'next/link';
 import { ArrowUpRight, Plane } from 'lucide-react';
 import type { Destination } from '@/data/destinations';
-import { formatRouteStatusDate } from '@/lib/route-status-copy';
+import { airportShortName } from '@/lib/route-card-fare';
+import { RouteCardFare } from '@/components/route/route-card-fare';
 import { getDestinationFlightGuideEntries, type DestinationFlightGuideEntry } from '@/lib/destination-flight-guides';
 import { getTripComDestinationHandoffUrl, PROVIDER_REL } from '@/lib/booking-providers';
 import { AffiliateLinkDisclosure } from '@/components/ui/affiliate-link-disclosure';
@@ -21,21 +22,6 @@ function routeStatusLabel(status: DestinationFlightGuideEntry['routeStatus']): s
   }
 }
 
-function fareStatusLabel(entry: DestinationFlightGuideEntry): string {
-  const signal = entry.fareSignal;
-  if (!signal?.observation) return 'No current fare observed';
-
-  const fare = new Intl.NumberFormat('en-GB', {
-    style: 'currency',
-    currency: signal.observation.currency,
-    maximumFractionDigits: 0,
-  }).format(signal.observation.price);
-  const checkedDate = formatRouteStatusDate(signal.observation.observedDate);
-
-  if (signal.state === 'current') return `Fare observed: ${fare} return · checked ${checkedDate}`;
-  return `Previous fare observation: ${fare} return · checked ${checkedDate}`;
-}
-
 interface DestinationFlightGuidesProps {
   destination: Destination;
   nowIso: string;
@@ -51,7 +37,7 @@ export function DestinationFlightGuides({ destination, nowIso }: DestinationFlig
   const blocked = unavailable.filter((entry) => !getTripComDestinationHandoffUrl(entry.airport.slug, destination.slug));
 
   return (
-    <section aria-labelledby="destination-flight-guides-heading" className="mt-10">
+    <section aria-labelledby="destination-flight-guides-heading">
       <h3 id="destination-flight-guides-heading" className="font-display text-xl text-ink-900">
         Flights to {destination.city} from the UK
       </h3>
@@ -60,30 +46,24 @@ export function DestinationFlightGuides({ destination, nowIso }: DestinationFlig
         <div className="mt-4 grid gap-3 sm:grid-cols-2">
           {guides.map((entry) => (
             <article key={entry.airport.slug} className="rounded-sm border border-ink-100 p-4">
-              <div className="flex items-start gap-2">
-                <Plane className="mt-0.5 h-4 w-4 shrink-0 text-ink-400" strokeWidth={2} />
-                <div>
-                  <h4 className="text-sm font-semibold text-ink-800">
-                    {entry.airport.city} → {destination.city}
-                  </h4>
-                  <p className="mt-1 text-xs text-ink-500">{routeStatusLabel(entry.routeStatus)}</p>
-                  <p className="mt-1 text-xs leading-relaxed text-ink-500">{fareStatusLabel(entry)}</p>
-                  {/* Route Intelligence Completion (August 2026, phase 2):
-                      a quiet dot + label alongside the two existing lines
-                      above — routeStatusLabel answers "is this route
-                      direct/connecting", this answers the separate "how
-                      much has JetStash researched it" question. entry.intelligence
-                      is only ever null when routeStatus is also null (no
-                      route guide at all), a case this branch never renders
-                      in (see the `guides` filter above), so the fallback
-                      is unreachable in practice but kept for type safety. */}
-                  {entry.intelligence && (
-                    <p className="mt-1 flex items-center gap-1.5 text-xs text-ink-400">
-                      <span className={`inline-block h-1.5 w-1.5 shrink-0 rounded-full ${entry.intelligence.dotClassName}`} aria-hidden="true" />
-                      {entry.intelligence.label}
-                    </p>
-                  )}
-                </div>
+              {/* Consumer clarity pass (3 Oct 2026): exact airport name (Heathrow and Gatwick are both
+                  "London"), then the route status, then the fare in a fixed hierarchy: the fare, who
+                  flies it and how many stops, the checked date, any material warning. The internal
+                  research label moved behind "Details". */}
+              <h4 className="text-sm font-semibold text-ink-900">
+                {airportShortName(entry.airport.name)} → {destination.city}
+              </h4>
+              <p className="mt-0.5 text-xs text-ink-500">{routeStatusLabel(entry.routeStatus)}</p>
+              <div className="mt-3">
+                {entry.fareSignal?.observation && (entry.fareSignal.state === 'current' || entry.fareSignal.state === 'recent') ? (
+                  <RouteCardFare
+                    observation={entry.fareSignal.observation}
+                    state={entry.fareSignal.state}
+                    lowerSelfTransfer={entry.fareSignal.lowerSelfTransfer ?? null}
+                  />
+                ) : (
+                  <p className="text-sm text-ink-600">No fare logged yet</p>
+                )}
               </div>
               <Link
                 href={entry.href!}
@@ -92,6 +72,15 @@ export function DestinationFlightGuides({ destination, nowIso }: DestinationFlig
                 View flight details
                 <ArrowUpRight className="h-4 w-4" strokeWidth={2.25} />
               </Link>
+              {entry.intelligence && (
+                <details className="mt-3 text-xs text-ink-500">
+                  <summary className="cursor-pointer font-medium text-ink-600">Details</summary>
+                  <p className="mt-1.5 flex items-center gap-1.5">
+                    <span className={`inline-block h-1.5 w-1.5 shrink-0 rounded-full ${entry.intelligence.dotClassName}`} aria-hidden="true" />
+                    {entry.intelligence.label}
+                  </p>
+                </details>
+              )}
             </article>
           ))}
         </div>

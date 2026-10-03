@@ -24,10 +24,13 @@ const atlasSrc = readFileSync(join(process.cwd(), 'components/founder/atlas-feel
 describe('homepage opening hero uses the approved copy', () => {
   it('has the exact eyebrow, headline and supporting copy', () => {
     expect(heroSrc).toContain('Before you book a flight');
-    expect(heroSrc).toContain('Understand your journey before you pay.');
+    // Consumer clarity pass (3 Oct 2026): plainer proposition, still no live-price, cheapest or market-wide claim.
+    expect(heroSrc).toContain('Check the journey behind the fare.');
     expect(heroSrc).toContain(
-      'Choose your UK airport and destination. See the route, what has changed and what you still need to check before booking.'
+      "Direct or with stops? What fare did we last see? Has the service changed? Pick your airport and destination to find out, then check today's price with a booking provider."
     );
+    const visibleCopy = ['Check the journey behind the fare.', "Direct or with stops? What fare did we last see? Has the service changed? Pick your airport and destination to find out, then check today's price with a booking provider."].join(' ');
+    expect(visibleCopy).not.toMatch(/cheapest|guaranteed|live price|best price|compare the market/i);
   });
 
   // Founder copy correction (August 2026): eyebrow prop stays sentence-case in
@@ -46,7 +49,7 @@ describe('homepage opening hero uses the approved copy', () => {
   // just the title text (not a change to PageHero's own h1, which keeps
   // font-display for every other page and heading, homepage included).
   it('the headline renders in font-sans, not font-display, via a scoped span — PageHero itself is untouched', () => {
-    expect(heroSrc).toMatch(/title=\{<span className="font-sans">Understand your journey before you pay\.<\/span>\}/);
+    expect(heroSrc).toMatch(/title=\{<span className="font-sans">Check the journey behind the fare\.<\/span>\}/);
     const pageHeroSrc = readFileSync(join(process.cwd(), 'components/sections/page-hero.tsx'), 'utf8');
     expect(pageHeroSrc).toContain('font-display text-4xl leading-[1.08] tracking-tight text-sand-50 sm:text-5xl');
   });

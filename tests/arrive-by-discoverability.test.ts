@@ -25,7 +25,7 @@ describe('Arrive By limited-beta discoverability', () => {
 
   it('retains the homepage destination and route CTA without navigation or footer expansion', () => {
     const homepage = read('components/homepage-v2/homepage-sections.tsx');
-    expect(homepage).toContain("title: 'Need to be somewhere by a certain time?'");
+    expect(homepage).toContain("title: 'The flight is only part of the journey'");
     expect(homepage).toMatch(/href: '\/arrive-by',\s+linkLabel: 'Try Arrive By'/);
     expect(read('components/route/arrive-by-route-panel.tsx')).toContain('Plan with Arrive By');
     for (const path of ['components/layout/header.tsx', 'components/layout/footer.tsx']) expect(read(path)).not.toContain('/arrive-by');

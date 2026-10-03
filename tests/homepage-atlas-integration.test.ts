@@ -46,6 +46,8 @@ describe('public homepage Route Atlas integration', () => {
     const airportDetailSource = fs.readFileSync(path.join(root, 'app/airports/[slug]/page.tsx'), 'utf8');
     expect(airportDetailSource).toContain('className="relative aspect-[16/9] overflow-hidden sm:absolute sm:inset-0 sm:aspect-auto"');
     expect(airportDetailSource).toContain('<HeroBackdrop image={');
-    expect(airportDetailSource).toContain('pb-16 pt-8 sm:px-8 sm:py-20');
+    // Consumer clarity pass (3 Oct 2026): the photo is still shown complete (16:9) before the copy on mobile; only the
+    // padding under the text shrank so the route cards start sooner.
+    expect(airportDetailSource).toContain('pb-8 pt-6 sm:px-8 sm:py-20');
   });
 });

@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { Plane, ArrowUpRight, Info, MapPin } from 'lucide-react';
+import { Plane, ArrowUpRight, Info } from 'lucide-react';
 import { airports, getAirportBySlug } from '@/data/airports';
 import { truncateMetadataDescription } from '@/data/routes';
 import { getDealsByAirport } from '@/data/deals';
@@ -12,7 +12,10 @@ import { getNotesByAirport } from '@/data/airport-notes';
 import { getTipsForScope } from '@/data/traveller-tips';
 import { DealCard } from '@/components/ui/deal-card';
 import { NoFareFallback } from '@/components/ui/no-fare-fallback';
-import { hasCurrentFareSignalAmongRoutes } from '@/lib/fare-signal';
+import { hasCurrentFareSignalAmongRoutes, getFareSignalForRoute } from '@/lib/fare-signal';
+import { airportShortName } from '@/lib/route-card-fare';
+import { RouteCardFare } from '@/components/route/route-card-fare';
+import { AirportRouteGrid, type AirportRouteItem } from '@/components/airport/airport-route-grid';
 import { Badge } from '@/components/ui/badge';
 import { TravellerTipList } from '@/components/route/traveller-tip-list';
 import { JsonLd, breadcrumbSchema } from '@/components/seo/json-ld';
@@ -74,6 +77,27 @@ export default async function AirportPage({ params }: { params: Promise<{ slug: 
   const compareAirports = (airport.compareAirportSlugs ?? [])
     .map((slug) => getAirportBySlug(slug))
     .filter((a): a is NonNullable<typeof a> => Boolean(a));
+  // Consumer clarity pass (3 Oct 2026): one serialisable item per route for the lead route grid. Status, fare and
+  // flight time all come from the same canonical sources the route page uses; nothing is re-derived here.
+  const routeItems: AirportRouteItem[] = routesHere.flatMap((route) => {
+    const dest = getRouteDestination(route);
+    if (!dest) return [];
+    const presentation = getEffectiveRoutePresentation(route, routeStatusEvents, nowIsoForFareCheck);
+    const signal = getFareSignalForRoute(route.slug, nowIsoForFareCheck);
+    const showsFare = signal.observation && (signal.state === 'current' || signal.state === 'recent');
+    return [
+      {
+        slug: route.slug,
+        country: dest.country,
+        title: `${airportShortName(airport.name)} → ${dest.city}`,
+        statusLabel: presentation.statusLabel,
+        detail: presentation.status === 'unverified' || presentation.status === 'service-ended' ? null : presentation.flightTime,
+        fare: showsFare ? (
+          <RouteCardFare observation={signal.observation!} state={signal.state as 'current' | 'recent'} lowerSelfTransfer={signal.lowerSelfTransfer ?? null} />
+        ) : null,
+      },
+    ];
+  });
   const practicalNotes = getNotesByAirport(airport.slug);
   const travellerTips = getTipsForScope({ airportSlug: airport.slug });
 
@@ -96,7 +120,7 @@ export default async function AirportPage({ params }: { params: Promise<{ slug: 
         >
           {airport.code}
         </span>
-        <div className="relative mx-auto max-w-content px-5 pb-16 pt-8 sm:px-8 sm:py-20">
+        <div className="relative mx-auto max-w-content px-5 pb-8 pt-6 sm:px-8 sm:py-20">
           <nav aria-label="Breadcrumb" className="mb-5 flex items-center gap-1.5 text-xs text-ink-300">
             <Link href="/" className="hover:text-brass-300">Home</Link>
             <span>/</span>
@@ -112,30 +136,8 @@ export default async function AirportPage({ params }: { params: Promise<{ slug: 
         </div>
       </section>
 
-      {/* Why this airport — community-specific framing */}
-      <section className="bg-white py-14 sm:py-16">
-        <div className="mx-auto max-w-content px-5 sm:px-8">
-          <div className="grid gap-10 lg:grid-cols-[1.3fr_0.7fr]">
-            <div>
-              <h2 className="font-display text-2xl text-ink-900">Why {airport.city} is the right airport for this route</h2>
-              <p className="mt-4 leading-relaxed text-ink-600">{airport.whyThisAirport}</p>
-            </div>
-            <div className="rounded-md border border-ink-100 bg-sand-50 p-6">
-              <span className="text-xs font-semibold uppercase tracking-wide text-terracotta-600">Serves communities in</span>
-              <div className="mt-3 flex flex-wrap gap-2">
-                {airport.servesCommunities.map((c) => (
-                  <span key={c} className="rounded-full border border-ink-200 bg-white px-3 py-1 text-xs font-medium text-ink-700">
-                    {c}
-                  </span>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* Route hub links — either this airport's own routes, or a genuine comparison link */}
-      <section className="bg-sand-50 py-14 sm:py-16">
+      <section className="bg-sand-50 py-8 sm:py-16">
         <div className="mx-auto max-w-content px-5 sm:px-8">
           {routesHere.length > 0 ? (
             <>
@@ -145,37 +147,9 @@ export default async function AirportPage({ params }: { params: Promise<{ slug: 
                   badge (below) carries the actual per-route status. */}
               <h2 className="font-display text-2xl text-ink-900 sm:text-3xl">Routes from {airport.name}</h2>
               <p className="mt-2 max-w-xl text-sm text-ink-500">
-                Each route below has its own guide: booking windows, peak periods and airline coverage specific to that exact pairing.
+                Pick a route to see whether it flies direct, the latest fare JetStash checked, and where to check today&apos;s price.
               </p>
-              <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-                {routesHere.map((route) => {
-                  const dest = getRouteDestination(route);
-                  if (!dest) return null;
-                  const presentation = getEffectiveRoutePresentation(route, routeStatusEvents, new Date().toISOString().slice(0, 10));
-                  return (
-                    <Link
-                      key={route.slug}
-                      href={`/routes/${route.slug}`}
-                      className="group flex flex-col rounded-md border border-ink-100 bg-white p-6 shadow-card transition-all hover:-translate-y-1 hover:shadow-card-hover"
-                    >
-                      <span className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-ink-400">
-                        <MapPin className="h-3.5 w-3.5" strokeWidth={2.25} />
-                        {dest.country}
-                      </span>
-                      <h3 className="mt-2 font-display text-xl text-ink-900">{airport.city} → {dest.city}</h3>
-                      <p className="mt-1.5 text-sm text-ink-500">
-                        {presentation.status === 'unverified' || presentation.status === 'service-ended'
-                          ? presentation.statusLabel
-                          : `${presentation.flightTime} · ${presentation.statusLabel}`}
-                      </p>
-                      <span className="mt-4 flex items-center gap-1.5 text-sm font-semibold text-ink-900">
-                        View route guide
-                        <ArrowUpRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" strokeWidth={2.25} />
-                      </span>
-                    </Link>
-                  );
-                })}
-              </div>
+              <AirportRouteGrid items={routeItems} />
             </>
           ) : compareAirports.length > 0 ? (
             <>
@@ -205,6 +179,28 @@ export default async function AirportPage({ params }: { params: Promise<{ slug: 
           ) : (
             <NoFareFallback cityLabel={airport.name} />
           )}
+        </div>
+      </section>
+
+      {/* Why this airport — community-specific framing */}
+      <section className="bg-white py-14 sm:py-16">
+        <div className="mx-auto max-w-content px-5 sm:px-8">
+          <div className="grid gap-10 lg:grid-cols-[1.3fr_0.7fr]">
+            <div>
+              <h2 className="font-display text-2xl text-ink-900">Why {airport.city} is the right airport for this route</h2>
+              <p className="mt-4 leading-relaxed text-ink-600">{airport.whyThisAirport}</p>
+            </div>
+            <div className="rounded-md border border-ink-100 bg-sand-50 p-6">
+              <span className="text-xs font-semibold uppercase tracking-wide text-terracotta-600">Serves communities in</span>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {airport.servesCommunities.map((c) => (
+                  <span key={c} className="rounded-full border border-ink-200 bg-white px-3 py-1 text-xs font-medium text-ink-700">
+                    {c}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
