@@ -67,9 +67,10 @@ business meetings and religious travel. A traveller enters their starting locati
 and required arrival time; JetStash works backwards to show the fastest and easiest plausible
 journeys, including conservative airport, immigration, baggage and onward-ground-time allowances.
 
-**Current status:** the evidence-gated specification is complete in `ARRIVE_BY_SPEC.md`.
-Implementation remains deferred until the necessary schedule and ground-transport data can support
-honest estimates.
+**Current status:** LIVE as a limited beta since the PR #293 launch (3 October 2026 reconciliation); FROZEN for
+feature work. The evidence-gated specification remains in `ARRIVE_BY_SPEC.md`. MAN is transit-first;
+ISB / LHE / KHI are road-pickup-first; unsupported airports fail closed. Reopen only if real beta evidence
+identifies a defect or a clearly validated opportunity. See `STATUS.md` for the full record.
 
 **Non-negotiable boundary:** it must never promise that a traveller will arrive on time. It must
 label assumptions, uncertainty, connection risk and the point after which the journey is no longer
@@ -137,7 +138,7 @@ plus `connectingAlternative` specifically for connecting routes). Fare Coverage 
 - Automated flight-deal collection until a reliable, lawful and maintainable data source exists.
 - SEO expansion beyond the core launch pages.
 - Newsletter growth mechanics beyond the honest human-operated workflow.
-- Full Arrive By implementation.
+- Further Arrive By feature work (V1 is live as a limited beta and frozen until real beta evidence).
 - Broad international expansion outside the UK-departure and priority-corridor strategy.
 
 ## Prioritisation rule

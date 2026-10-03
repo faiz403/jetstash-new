@@ -22,6 +22,32 @@ rate limiting rather than the current process-local limiter.
 
 **Production site:** `https://jetstash.co.uk`
 
+## Arrive By: live limited beta and feature freeze, 3 October 2026
+
+**Arrive By full-journey V1 is LIVE in Production as a limited beta.** This supersedes the older
+Stage 1/Stage 2 "private, founder-only preview" entry further below, which is kept as dated history.
+
+- **Surfaces:** public landing page and planner at `/arrive-by` (deliberately `noindex, follow`, absent
+  from `app/sitemap.ts`, and not in the main nav, mobile nav or footer); a "Try Arrive By" entry point on
+  the homepage; "Plan with Arrive By" on the supported route pages (Manchester to Islamabad, Lahore and
+  Karachi). Legacy `/arrive-by/manchester` and `/arrive-by/pakistan` redirect to the unified shell.
+- **Engines:** Manchester (MAN) is `TRANSIT_FIRST` (first-important-service logic, missed-service
+  scenario, conditional driving rescue). Islamabad, Lahore and Karachi (ISB / LHE / KHI) are
+  `ROAD_PICKUP_FIRST`. Unsupported airports fail closed; no global transit is invented.
+- **Guards:** at most 10 billable Google calls per journey, a 2,000-call monthly budget (alerts at 50% and
+  80%, hard stop at 100%), a shared 5-per-60-seconds limiter, durable Upstash/Redis backing, fail closed if
+  durable storage is unavailable.
+- **PR record:** #293 launched the production implementation; #290 was an obsolete prototype and is closed
+  as superseded by #293; #294 added anonymous aggregate beta outcome counters (Production-only, fixed metric
+  and reason names, about three months' retention, no journey data); #295 added the standalone landing page
+  and discoverability; #296 updated the Arrive By privacy wording and the advance Google notice.
+- **Not claimed:** no external-user validation yet (evidence so far is engineering plus synthetic
+  validation); no live flight tracking, PNR lookup, airline integration, terminal or queue prediction, and
+  no guarantee wording.
+- **FROZEN for feature work.** No further Arrive By engineering unless real beta evidence identifies a defect
+  or a clearly validated opportunity. Open verification: the #294 Production counter read in the Upstash
+  console, which needs a founder login.
+
 ## Astra programme closure and current operating state — 14 September 2026
 
 **The full Astra founder-review programme (#1–#20) is CLOSED.** Every workstream from
@@ -470,6 +496,8 @@ underlying delivery history remains intact.
   Stage 1 engine** (`lib/arrive-by/engine.ts`); the engine now guarantees `earliest <= latest` for
   every result, the Stage 2 display-side workaround has been removed, and regression tests cover
   all six routes.
+  *(Superseded 3 October 2026: Arrive By full-journey V1 is now a live limited beta; see "Arrive By: live limited
+  beta and feature freeze, 3 October 2026".)*
 - The Visual Identity System v2 documentation refactor is shipped (`docs/visual-identity.md`,
   `VISUAL_REVIEW_CHECKLIST.md`): Visual Principles, Editorial Photography, Interactive Visual
   Systems and an Asset Catalogue with Lifecycle status per entry. This is the documentation
@@ -978,8 +1006,8 @@ for a day that was not actually checked, and never create a fare merely to fill 
 
 - `CONV-001` — use real analytics to test homepage conversion hierarchy; no redesign based only on
   opinion. See `LAUNCH_CHECKLIST.md` item F — this is also the paid-advertising analytics blocker.
-- `ARR-001` — specification complete in `ARRIVE_BY_SPEC.md`; implementation remains deferred until
-  schedule and ground-transport sources can support honest estimates.
+- `ARR-001` — Arrive By full-journey V1 is LIVE as a limited beta and FROZEN for feature work (see "Arrive By:
+  live limited beta and feature freeze, 3 October 2026"). Reopen only on real beta evidence.
 - The full `LAUNCH_CHECKLIST.md` queue (items A–J) — organic-launch hardening, paid-advertising
   readiness and post-launch housekeeping, in the order agreed with the founder on 29 July 2026.
 
