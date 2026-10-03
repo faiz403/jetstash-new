@@ -179,3 +179,30 @@ describe('routes with a current fare keep the fare, the date and the affiliate d
     expect(html).toContain('Route service');
   });
 });
+
+describe('final acceptance tweak: the primary CTA clears the cookie banner on a fresh visit on MAN to DEL', () => {
+  it('service-ended hero summary is hidden on phones only (it repeats the Fare check lead), and still renders from sm up', async () => {
+    const html = await renderPage('manchester-delhi');
+    // the summary paragraph is present in the markup (nothing removed) but carries the phone-hidden classes
+    expect(html).toMatch(/class="[^"]*hidden sm:block[^"]*">There's no current nonstop service on Manchester to Delhi/);
+  });
+
+  it('a route that is not service-ended keeps its hero summary visible on phones', async () => {
+    const html = await renderPage('manchester-dubai');
+    expect(html).not.toMatch(/hidden sm:block[^"]*">[^<]*Dubai/);
+    expect(html).toMatch(/<h1[^>]*>[^<]*Manchester to Dubai/);
+  });
+
+  it('the no-fare card puts the lead and the button side by side from lg up, and stacks them below lg', () => {
+    const { html } = renderSignal('manchester-delhi', { isServiceEnded: true, routeContext: false });
+    expect(html).toContain('lg:grid');
+    expect(html).toContain('lg:grid-cols-[1.15fr_1fr]');
+    // below lg the order is unchanged: lead first, then the button
+    expect(html.indexOf('Connecting flights available')).toBeLessThan(html.indexOf('Compare current connecting flights on Trip.com'));
+  });
+
+  it('the cookie banner and its consent behaviour were not touched', () => {
+    const changed = readFileSync(join(process.cwd(), 'components/route/fare-signal.tsx'), 'utf8') + routePageSrc;
+    expect(changed).not.toMatch(/cookie-banner|ConsentBanner|consent-banner/i);
+  });
+});

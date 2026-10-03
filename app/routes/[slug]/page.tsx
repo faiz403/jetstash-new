@@ -294,7 +294,12 @@ export default async function RoutePage({ params }: { params: Promise<{ slug: st
               raw here — presentation.summary is centrally-authored neutral
               copy for a pending route, so this never depends on an intro
               string being hedged correctly by whoever added the route. */}
-          <p className="stagger-in stagger-3 mt-3 max-w-2xl animate-fade-up text-base leading-relaxed text-ink-300 sm:mt-4 sm:text-lg">{presentation.summary}</p>
+          {/* Service-ended routes (final acceptance tweak, 3 Oct 2026): on a phone the hero summary repeats exactly what the
+              Fare check lead directly below now says first ("Connecting flights available ... the former direct service has
+              ended ..."), and on a fresh visit the cookie banner covers everything below ~690px at 375x812, so the duplicate is
+              hidden below the sm breakpoint only. Nothing is removed: it still renders from sm up, the status badge above still
+              says "Direct service ended", and the Fare check lead carries the same message. */}
+          <p className={`stagger-in stagger-3 mt-3 max-w-2xl animate-fade-up text-base leading-relaxed text-ink-300 sm:mt-4 sm:text-lg${presentation.status === 'service-ended' ? ' hidden sm:block' : ''}`}>{presentation.summary}</p>
 
           <div className="stagger-in stagger-4 mt-5 flex animate-fade-up flex-wrap gap-x-6 gap-y-3 sm:mt-5">
             {presentation.status === 'unverified' ? (

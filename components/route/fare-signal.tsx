@@ -616,7 +616,10 @@ export function FareSignal({
         {signal.state === 'current' && signal.observation ? <CurrentSignal data={signal.observation} tripComUrl={tripComUrl} routeSlug={routeSlug} routeDirectness={routeDirectness} routeStatusLabel={routeStatusLabel} routeAirlineLabel={routeAirlineLabel} routeServiceConnections={routeServiceConnections} standoutFare={standoutFare} isServiceEnded={isServiceEnded} /> : null}
         {signal.state === 'recent' && signal.observation ? <RecentSignal data={signal.observation} tripComUrl={tripComUrl} routeSlug={routeSlug} routeDirectness={routeDirectness} routeStatusLabel={routeStatusLabel} routeAirlineLabel={routeAirlineLabel} routeServiceConnections={routeServiceConnections} isServiceEnded={isServiceEnded} /> : null}
         {signal.state === 'none' ? (
-          <>
+          // Final acceptance tweak (3 Oct 2026): from lg up the lead and the button sit side by side, so a wide screen
+          // (where the cookie banner is only a short bar) shows the button without a scroll. Below lg nothing changes:
+          // the same stacked order. The lg:[...] variants only remove the button wrapper's top margin and stack the button over its disclosure inside that column.
+          <div className="lg:grid lg:grid-cols-[1.15fr_1fr] lg:items-start lg:gap-10 lg:[&>div:last-child]:mt-0 lg:[&>div:last-child>div]:flex-col lg:[&>div:last-child>div]:items-stretch">
             {signal.noneReason === 'poor-itinerary-suppressed' ? (
               <SuppressedFareExplanation />
             ) : (
@@ -644,7 +647,7 @@ export function FareSignal({
             ) : (
               <GenericFlightSearchFallback />
             )}
-          </>
+          </div>
         ) : null}
       </div>
     </section>
