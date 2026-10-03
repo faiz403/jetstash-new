@@ -35,6 +35,7 @@ export default function ContactPage() {
               </a>
               .
             </p>
+            <p className="mt-3 text-sm text-ink-400">{siteConfig.operatorStatement}</p>
           </div>
 
           <div className="flex flex-col gap-5">
