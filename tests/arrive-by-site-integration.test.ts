@@ -35,7 +35,7 @@ describe('Arrive By final site integration', () => {
   it('limits route panels to public capability-backed pairs and keeps homepage discovery secondary', () => {
     expect(routePage).toContain('getPublicJourneyRoutePair(airport.code, dest.iataCode)');
     expect(routePage).toContain('ArriveByRoutePanel');
-    expect(homepage).toContain("title: 'Need to be somewhere by a certain time?'");
+    expect(homepage).toContain("title: 'The flight is only part of the journey'");
     expect(homepage).toContain("href: '/arrive-by'");
   });
 

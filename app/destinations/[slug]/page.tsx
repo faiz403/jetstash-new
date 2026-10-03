@@ -83,7 +83,7 @@ export default async function DestinationPage({ params }: { params: Promise<{ sl
           { name: dest.city, href: `/destinations/${dest.slug}` },
         ])}
       />
-      <section className="relative overflow-hidden bg-ink-900 py-16 sm:py-20">
+      <section className="relative overflow-hidden bg-ink-900 py-8 sm:py-20">
         <HeroBackdrop />
         <div className="relative mx-auto max-w-content px-5 sm:px-8">
           <nav aria-label="Breadcrumb" className="mb-5 flex items-center gap-1.5 text-xs text-ink-300">
@@ -106,7 +106,8 @@ export default async function DestinationPage({ params }: { params: Promise<{ sl
                 ))}
               </div>
             </div>
-            <div className="stagger-in stagger-3 relative aspect-[4/3] animate-fade-up overflow-hidden rounded-md border border-white/10">
+            {/* Consumer clarity pass (3 Oct 2026): decorative, so it steps aside on phones where the flights block is the job. */}
+            <div className="stagger-in stagger-3 relative hidden aspect-[4/3] animate-fade-up overflow-hidden rounded-md border border-white/10 sm:block">
               <DestinationVisual
                 slug={dest.slug}
                 label={dest.city}
@@ -130,10 +131,12 @@ export default async function DestinationPage({ params }: { params: Promise<{ sl
         <div className="mx-auto max-w-content px-5 sm:px-8">
           <div className="grid gap-10 lg:grid-cols-[1.3fr_0.7fr]">
             <div>
-              <h2 className="font-display text-2xl text-ink-900">About {dest.city}</h2>
-              <p className="mt-4 leading-relaxed text-ink-600">{dest.description}</p>
-
+              {/* Consumer clarity pass (3 Oct 2026): "how do I get there from the UK?" is what a destination page
+                  is for, so the flights block leads and the descriptive "About" copy follows it. */}
               <DestinationFlightGuides destination={dest} nowIso={new Date().toISOString().slice(0, 10)} />
+
+              <h2 className="mt-10 font-display text-2xl text-ink-900">About {dest.city}</h2>
+              <p className="mt-4 leading-relaxed text-ink-600">{dest.description}</p>
               {hasHolidayIntelligence(dest.slug) && <HolidayIntelligence destination={dest} nowIso={new Date().toISOString().slice(0, 10)} />}
             </div>
 

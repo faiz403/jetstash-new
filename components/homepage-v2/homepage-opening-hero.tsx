@@ -73,8 +73,12 @@ export function HomepageOpeningHero({ journeyCheck }: { journeyCheck: JourneyChe
       // this text, not a change to PageHero's own h1 (which keeps font-display
       // for every other page and every other heading on this one) — see
       // PageHero's own doc comment, still unchanged.
-      title={<span className="font-sans">Understand your journey before you pay.</span>}
-      description="Choose your UK airport and destination. See the route, what has changed and what you still need to check before booking."
+      title={<span className="font-sans">Check the journey behind the fare.</span>}
+      // Consumer clarity pass (3 Oct 2026): the previous description ("See the route, what has changed and what you
+      // still need to check") was accurate but abstract. This version asks the three questions JetStash actually
+      // answers, in the traveller's own words, and ends by saying where today's price comes from. No claim of live
+      // prices, cheapest fares, market-wide comparison or savings.
+      description="Direct or with stops? What fare did we last see? Has the service changed? Pick your airport and destination to find out, then check today's price with a booking provider."
       heroKey="routes"
       size="compact"
       className={SHORT_VIEWPORT_HERO_PADDING}
