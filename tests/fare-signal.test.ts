@@ -239,7 +239,7 @@ describe('Fare Signal production coverage counts', () => {
     expect(signals.filter((signal) => signal.state === 'current')).toHaveLength(83);
     expect(signals.filter((signal) => signal.state === 'recent')).toHaveLength(0);
     expect(signals.filter((signal) => signal.state === 'none')).toHaveLength(6);
-    expect(routes.filter((route) => getTripComRouteUrl(route.slug)).length).toBe(45);
+    expect(routes.filter((route) => getTripComRouteUrl(route.slug)).length).toBe(44);
   });
 
   it('does not backfill Heathrow-Mumbai’s incomplete historic record, while allowing the fresh complete observation to render', () => {

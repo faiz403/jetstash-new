@@ -181,10 +181,10 @@ describe('8. No unrelated route was changed by this batch', () => {
     expect(getRouteBySlug('manchester-abu-dhabi')).toBeUndefined();
   });
 
-  it('a sibling route sharing an airline/destination with this batch is untouched (manchester-agadir, not in the due-soon batch)', () => {
+  it('records the later 4 October portfolio re-verification for manchester-agadir', () => {
     const route = getRouteBySlug('manchester-agadir')!;
-    expect(route.verification?.verifiedDate).toBe('2026-09-03');
-    expect(route.verification?.reviewDueDate).toBe('2026-10-03');
+    expect(route.verification?.verifiedDate).toBe('2026-10-04');
+    expect(route.verification?.reviewDueDate).toBe('2026-11-03');
   });
 
   it('a sibling route sharing an airport with this batch is untouched (london-gatwick-antalya, not in the due-soon batch)', () => {

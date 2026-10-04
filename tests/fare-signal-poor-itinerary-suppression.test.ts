@@ -257,8 +257,8 @@ describe('7. the four originally-flagged routes now correctly resolve to an olde
 // KNOWN_SUPPRESSED_ROUTES this batch (manchester-dubai, london-heathrow-
 // jeddah) -- explicit, dedicated coverage that they are genuinely current
 // now, not merely inferred from their absence in block 7's it.each list.
-describe('7b. manchester-dubai and london-heathrow-jeddah correctly un-suppressed on 1 September 2026 -- their newest evidence has fewer than 2 stops per leg', () => {
-  it.each(['manchester-dubai', 'london-heathrow-jeddah'])('%s has a current Fare Signal whose observation does not match the poor-itinerary signature', (slug) => {
+describe('7b. routes remain subject to both itinerary suitability and current route verification', () => {
+  it.each(['manchester-dubai'])('%s has a current Fare Signal whose observation does not match the poor-itinerary signature', (slug) => {
     const signal = getFareSignalForRoute(slug, NOW_ISO);
     expect(signal.state, slug).toBe('current');
     expect(signal.observation, slug).not.toBeNull();
@@ -270,6 +270,10 @@ describe('7b. manchester-dubai and london-heathrow-jeddah correctly un-suppresse
     // applies, without needing the raw FareObservation.
     const poor = signal.observation!.isSelfTransfer && ((signal.observation!.outboundStops ?? 0) >= 2 || (signal.observation!.returnStops ?? 0) >= 2);
     expect(poor, slug).toBe(false);
+  });
+
+  it('holds london-heathrow-jeddah after its route verification expired on 3 October 2026', () => {
+    expect(getFareSignalForRoute('london-heathrow-jeddah', NOW_ISO).state).toBe('none');
   });
 });
 

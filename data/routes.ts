@@ -1030,11 +1030,11 @@ export const routes: Route[] = [
     isDirect: true,
     verification: {
       status: 'verified',
-      sourceName: "Manchester Airport's current Agadir destination guide, corroborated by Jet2 and easyJet booking pages",
-      sourceUrl: 'https://www.manchesterairport.co.uk/destinations-and-guides/agadir/',
-      verifiedDate: '2026-09-03',
-      reviewDueDate: '2026-10-03',
-      note: 'Route Intelligence Freshness rolling-review Batch 2 (3 September 2026): reconfirmed via the same primary source, still live, still lists Agadir as a current destination. No specific operator or frequency detail was visible on this session\'s page render (the Jet2/easyJet corroboration was not independently re-checked this session), matching the prior check\'s depth -- kept on RECENT / CHANGING rather than upgraded on unchanged evidence.',
+      sourceName: "Manchester Airport's current Morocco and destinations information",
+      sourceUrl: 'https://www.manchesterairport.co.uk/destinations-and-guides/morocco-video/',
+      verifiedDate: '2026-10-04',
+      reviewDueDate: '2026-11-03',
+      note: 'Portfolio truth review (4 October 2026): Manchester Airport\'s current Morocco page explicitly identifies AGA as Agadir, presents an active Flights to Agadir action, and its current A-Z destinations list includes Agadir. This reconfirms the destination pairing only. The page does not establish the exact operator split or frequency, so those remain itinerary-specific; the prior 3h55 planning figure is not used as new evidence in this review.',
     },
     intro:
       'Current airport and airline evidence supports direct Manchester–Agadir service. Manchester Airport publishes a 3h55 planning figure, but exact dates, operating airline and timing vary, so check the full itinerary before booking.',
@@ -1266,6 +1266,7 @@ export const routes: Route[] = [
     frequency: 'British Airways confirmed direct; exact current daily frequency not independently reconfirmed by the 29 August 2026 check — see note. Other operators require separate confirmation.',
     airlineSlugs: ['virgin-atlantic', 'british-airways', 'air-india'],
     isDirect: true,
+    verification: { status: 'verified', sourceName: 'British Airways official Delhi route page', sourceUrl: 'https://www.britishairways.com/content/flights/india/delhi', verifiedDate: '2026-08-29', reviewDueDate: '2026-11-27', note: 'Portfolio structure repair (4 October 2026): route-level verification now explicitly records what the existing current British Airways airline-verification already proves — a direct LHR-DEL service and an 8h45m planning duration. This does not verify Virgin Atlantic or Air India, and it does not add a numeric frequency claim; those remain governed by the per-airline evidence below.' },
     airlineVerifications: [
       {
         airlineSlug: 'british-airways',
@@ -1339,11 +1340,11 @@ export const routes: Route[] = [
     isDirect: true,
     verification: {
       status: 'verified',
-      sourceName: 'Qatar Airways official London-Doha booking route',
-      sourceUrl: 'https://www.qatarairways.com/en-sa/destinations/flights-to-doha/from-london.html',
-      verifiedDate: '2026-09-03',
-      reviewDueDate: '2026-10-03',
-      note: 'Route Intelligence Freshness rolling-review Batch 1 (3 September 2026): reconfirmed via the same primary source, still live, no specific frequency figure published. The spring-2026 schedule-reduction signal noted at the 18 August check (independent reporting, not a primary source, kept out of public copy) has not been independently confirmed or refuted this session. Kept on RECENT / CHANGING pending that resolution — 30-day review window per the locked verification cadence policy, not the 90-day STABLE window.',
+      sourceName: 'Qatar Airways official London Heathrow–Doha route page',
+      sourceUrl: 'https://www.qatarairways.com/en-gb/destinations/flights-to-doha/from-london.html/',
+      verifiedDate: '2026-10-04',
+      reviewDueDate: '2026-11-03',
+      note: 'Portfolio truth review (4 October 2026): Qatar Airways\' current official route page explicitly identifies London Heathrow (LHR) to Doha (DOH), states that the flights regularly take just under seven hours, and says Qatar Airways operates direct flights to Doha. It directs travellers to the live timetable for frequency, so no numeric frequency is asserted. Kept on a 30-day review cadence because the earlier 2026 disruption history makes a longer administrative assumption inappropriate.',
     },
     // SEO Domination Batch 1B (23 Aug 2026): re-targets "business class to
     // doha from uk" / "business class flights to doha" now that the
@@ -1552,6 +1553,7 @@ export const routes: Route[] = [
     frequency: 'Unverified — no confirmed daily schedule; check the live search for your dates',
     airlineSlugs: [],
     isDirect: false,
+    verification: { status: 'unverified', sourceName: 'JetStash portfolio evidence audit', verifiedDate: '2026-10-04', reviewDueDate: '2026-10-18', note: 'No qualifying external route-level source is recorded. Existing fare observations prove only that individual connecting itineraries appeared for their searched dates; they do not prove a stable operator, hub, frequency or journey time.' },
     intro:
       "There is no current direct service from Leeds Bradford to Amritsar. This is a connecting route, and JetStash's own recorded fare checks have found two-stop itineraries via different hubs on different dates — not a single stable one-stop routing. Check the live itinerary for your own dates, including the actual airlines, hub and stop count, before booking.",
     bookingWindowNote:
@@ -1575,6 +1577,7 @@ export const routes: Route[] = [
     frequency: 'Unverified — no confirmed daily schedule; check the live search for your dates',
     airlineSlugs: [],
     isDirect: false,
+    verification: { status: 'unverified', sourceName: 'JetStash portfolio evidence audit', verifiedDate: '2026-10-04', reviewDueDate: '2026-10-18', note: 'No qualifying external route-level source is recorded. Existing fare observations prove only that individual connecting itineraries appeared for their searched dates; they do not prove a stable operator, hub, frequency or journey time.' },
     intro:
       "Leeds Bradford has no current confirmed direct service to Islamabad. Claims of a direct route have circulated periodically, but none have turned into a stable, ongoing schedule. This is a connecting route, and JetStash's own recorded fare checks have found the actual hub and airlines vary by date — not a single stable Gulf routing. Check the live search for your own dates, or compare against Manchester's direct PIA service, before booking.",
     bookingWindowNote:
@@ -1589,6 +1592,7 @@ export const routes: Route[] = [
     frequency: 'Air India and Virgin Atlantic each confirmed 2x daily; British Airways confirmed direct, exact daily count not separately confirmed — see note',
     airlineSlugs: ['british-airways', 'air-india', 'virgin-atlantic'],
     isDirect: true,
+    verification: { status: 'verified', sourceName: 'Air India official Mumbai–London Heathrow product deployment release', sourceUrl: 'https://www.airindia.com/in/en/newsroom/press-release/Air-India-elevates-Mumbai-London-Heathrow-services-with-brand-new-B787-9-featuring-new-premium-cabins.html', verifiedDate: '2026-09-14', reviewDueDate: '2026-12-13', note: 'Portfolio structure repair (4 October 2026): route-level verification now explicitly records what the existing current Air India airline-verification already proves — direct LHR-BOM service, including two daily Air India flights, corroborated by Heathrow live schedule evidence. British Airways and Virgin Atlantic remain governed by their own per-airline records below.' },
     airlineVerifications: [
       {
         airlineSlug: 'british-airways',
@@ -1638,6 +1642,7 @@ export const routes: Route[] = [
     frequency: 'British Airways and Virgin Atlantic each independently confirmed daily direct via their own current sources; Air India is not verified — see note',
     airlineSlugs: ['british-airways', 'virgin-atlantic'],
     isDirect: true,
+    verification: { status: 'verified', sourceName: 'Virgin Atlantic official Bengaluru destination page', sourceUrl: 'https://www.virginatlantic.com/where-we-fly/asia/india/bengaluru', verifiedDate: '2026-08-29', reviewDueDate: '2026-11-27', note: 'Portfolio structure repair (4 October 2026): route-level verification now explicitly records what the existing current Virgin Atlantic airline-verification already proves — daily direct LHR-BLR service with a published 10-hour planning duration. British Airways remains governed by its separate per-airline record below.' },
     airlineVerifications: [
       {
         airlineSlug: 'british-airways',
@@ -1793,6 +1798,7 @@ export const routes: Route[] = [
     frequency: 'Daily, connecting via Doha',
     airlineSlugs: ['qatar-airways'],
     isDirect: false,
+    verification: { status: 'unverified', sourceName: 'JetStash portfolio evidence audit', verifiedDate: '2026-10-04', reviewDueDate: '2026-10-18', note: 'No qualifying route-level source is recorded for the stated Doha routing, daily frequency or journey time. A booking-engine result may prove an itinerary for a searched date, but not these standing claims.' },
     intro:
       'There is no current direct Manchester to Jeddah service. Qatar Airways\' connecting itinerary via Doha is the most consistent option, using the same regular Manchester to Doha service that operates as a standalone route in its own right.',
     bookingWindowNote:
@@ -1807,6 +1813,7 @@ export const routes: Route[] = [
     frequency: 'Daily, connecting via Istanbul, Doha or Jeddah',
     airlineSlugs: ['turkish-airlines', 'qatar-airways', 'saudia'],
     isDirect: false,
+    verification: { status: 'unverified', sourceName: 'JetStash portfolio evidence audit', verifiedDate: '2026-10-04', reviewDueDate: '2026-10-18', note: 'No qualifying route-level source is recorded for the stated operators, hubs, daily frequency or journey time. Those claims require fresh external verification before they can be treated as current.' },
     intro:
       'Birmingham has no direct Madinah service. Turkish Airlines\' connection via Istanbul is the most frequently used option, though Qatar Airways via Doha and Saudia via Jeddah are both worth comparing, particularly for Umrah itineraries that already include a Jeddah leg.',
     bookingWindowNote:
@@ -2074,6 +2081,7 @@ export const routes: Route[] = [
     frequency: 'Multiple daily 1-stop options, no direct service',
     airlineSlugs: ['qatar-airways', 'indigo', 'british-airways', 'air-india'],
     isDirect: false,
+    verification: { status: 'unverified', sourceName: 'JetStash portfolio evidence audit', verifiedDate: '2026-10-04', reviewDueDate: '2026-10-18', note: 'No qualifying route-level source is recorded for the stated operators, one-stop pattern, frequency or journey time. Existing fare observations are itinerary-specific and do not establish these standing route claims.' },
     intro:
       'There is no direct Manchester to Amritsar service. Qatar Airways\' one-stop routing via Doha is currently the shortest one-stop option, at around 13h 20m total, though other one-stop combinations via Delhi or London add meaningfully to journey time. Birmingham and Gatwick both have genuine direct Amritsar services, worth comparing against a Manchester connection if either is within reasonable travelling distance.',
     bookingWindowNote:
@@ -2094,6 +2102,7 @@ export const routes: Route[] = [
     frequency: 'Multiple daily 1-stop options, no direct service',
     airlineSlugs: ['qatar-airways', 'etihad-airways', 'emirates'],
     isDirect: false,
+    verification: { status: 'unverified', sourceName: 'JetStash portfolio evidence audit', verifiedDate: '2026-10-04', reviewDueDate: '2026-10-18', note: 'No qualifying route-level source is recorded for the stated operators, hubs, frequency or journey time. Existing fare observations are itinerary-specific and do not establish these standing route claims.' },
     intro:
       'There is no direct Manchester to Ahmedabad service. Doha is the most commonly used one-stop connection, chosen on the large majority of one-stop itineraries booked on this route, with Abu Dhabi and Dubai as the other realistic Gulf-hub alternatives. London Gatwick has the UK\'s only direct service to Ahmedabad, worth comparing against a Manchester connection for Gujarati heritage travellers based in the North West.',
     bookingWindowNote:
@@ -2114,6 +2123,7 @@ export const routes: Route[] = [
     frequency: 'Multiple daily 1-stop options, no current direct service',
     airlineSlugs: ['turkish-airlines', 'saudia', 'egyptair', 'royal-jordanian'],
     isDirect: false,
+    verification: { status: 'unverified', sourceName: 'JetStash portfolio evidence audit', verifiedDate: '2026-10-04', reviewDueDate: '2026-10-18', note: 'No qualifying route-level source is recorded for the stated operators, hubs, frequency or journey time. Existing fare observations are itinerary-specific and do not establish these standing route claims.' },
     intro:
       'Manchester once had a direct Saudia service to Madinah, but it doesn\'t currently operate. Turkish Airlines\' one-stop routing via Istanbul is currently the shortest one-stop option, at around 9h 15m total. EgyptAir via Cairo and Royal Jordanian via Amman are the other commonly used alternatives.',
     bookingWindowNote:
@@ -2218,7 +2228,7 @@ export const routes: Route[] = [
   {
     slug: 'manchester-athens', airportSlug: 'manchester', destinationSlug: 'athens',
     flightTime: 'Published planning duration: 3h 50m; check the exact flight for your dates', frequency: 'Manchester Airport lists direct service; exact operators, dates and frequency vary', airlineSlugs: [], isDirect: true,
-    verification: { status: 'verified', sourceName: "Manchester Airport's official Athens destination guide", sourceUrl: 'https://www.manchesterairport.co.uk/destinations-and-guides/athens/', verifiedDate: '2026-09-03', reviewDueDate: '2026-10-03', note: 'Route Intelligence Freshness rolling-review Batch 2 (3 September 2026): reconfirmed via the same source, still live, still lists Athens as a current destination. No operator was identified this session, matching the prior check\'s depth -- kept on RECENT / CHANGING rather than upgraded on unchanged evidence.' },
+    verification: { status: 'verified', sourceName: "Manchester Airport's official Aegean Airlines page", sourceUrl: 'https://www.manchesterairport.co.uk/flight-operators/aegean-airlines/', verifiedDate: '2026-10-04', reviewDueDate: '2026-11-03', note: 'Portfolio truth review (4 October 2026): Manchester Airport\'s current official airline page states explicitly that Aegean flies direct from Manchester to Athens and directs travellers to live departures for exact times. This proves the current direct pairing and operator, but not a numeric frequency; the public frequency remains hedged. Aegean is not added to airlineSlugs because it is not yet present in JetStash\'s airline catalogue.' },
     intro: 'Manchester Airport lists direct service to Athens and publishes a 3h50m planning figure. Check the exact operator, schedule and fare for your dates.',
     bookingWindowNote: 'Confirm the live schedule, fare conditions and baggage terms for the selected flight.', peakPeriodIds: [],
   },
@@ -2299,11 +2309,11 @@ export const routes: Route[] = [
     isDirect: true,
     verification: {
       status: 'verified',
-      sourceName: 'Heathrow Airport\'s own media centre: "Spring takes off at Heathrow with new routes and greater choice for passengers"',
-      sourceUrl: 'https://mediacentre.heathrow.com/pressrelease/detail/24969',
-      verifiedDate: '2026-09-03',
-      reviewDueDate: '2026-10-03',
-      note: 'Route Intelligence Freshness rolling-review Batch 2 (3 September 2026): Heathrow\'s own live "Which terminal?" airline directory currently lists Pakistan International Airlines as an active Heathrow airline, corroborating (without independently reconfirming the specific Lahore routing or frequency) that the airline relationship remains current. The launch press release cited above was re-read but is unchanged historical evidence, not a fresh current-status source; today is not the route\'s Monday operating day so the live departures board could not be checked either way this session. Deliberately kept on RECENT / CHANGING rather than upgraded -- this remains a comparatively new route (launched 30 March 2026) with frequency still unconfirmed beyond the launch figure. PIA\'s own site (piac.com.pk) remains Cloudflare-blocked to this session\'s tooling.',
+      sourceName: 'Pakistan International Airlines official Heathrow operation notice',
+      sourceUrl: 'https://www.piac.com.pk/help-contact/lhr-operation',
+      verifiedDate: '2026-10-04',
+      reviewDueDate: '2026-11-03',
+      note: 'Portfolio truth review (4 October 2026): PIA\'s current official Heathrow operation notice states that, effective 29 March 2026, PIA operates from Heathrow Terminal 4 for passengers travelling to and from Lahore and Islamabad. This reconfirms the LHR-LHE pairing and operator. It does not reconfirm the launch-era weekly Monday frequency, so the public frequency wording continues to identify that figure as historical launch evidence rather than current schedule proof.',
     },
     // KEPT ON DEFAULT METADATA — CLUSTER SECONDARY (SEO Domination Batch
     // 1B, 23 Aug 2026): unlike the 22 Aug attempt this replaces, the

@@ -76,7 +76,6 @@ describe('destination flight guides', () => {
       istanbul: ['manchester', 'birmingham', 'leeds-bradford'],
       dalaman: ['manchester', 'birmingham', 'leeds-bradford', 'bristol', 'glasgow', 'newcastle'],
       bodrum: ['manchester', 'birmingham', 'leeds-bradford', 'glasgow'],
-      izmir: ['manchester'],
     };
 
     for (const [destinationSlug, originSlugs] of Object.entries(expected)) {
@@ -93,6 +92,7 @@ describe('destination flight guides', () => {
     for (const destinationSlug of Object.keys(expected)) {
       expect(getTripComDestinationHandoffUrl('london-gatwick', destinationSlug)).toBeNull();
     }
+    expect(getTripComDestinationHandoffUrl('manchester', 'izmir')).toBeNull();
   });
 
   it('renders continuation handoffs only for missing route guides and fails closed otherwise', () => {
@@ -166,7 +166,6 @@ describe('destination flight guides', () => {
       barcelona: ['manchester', 'birmingham', 'bristol', 'leeds-bradford'],
       faro: ['bristol', 'manchester', 'birmingham', 'leeds-bradford'],
       athens: ['manchester', 'birmingham', 'glasgow'],
-      rome: ['manchester', 'birmingham', 'bristol'],
     };
 
     for (const [destinationSlug, originSlugs] of Object.entries(expected)) {
@@ -182,6 +181,9 @@ describe('destination flight guides', () => {
 
     for (const destinationSlug of Object.keys(expected)) {
       expect(getTripComDestinationHandoffUrl('london-gatwick', destinationSlug)).toBeNull();
+    }
+    for (const originSlug of ['manchester', 'birmingham', 'bristol']) {
+      expect(getTripComDestinationHandoffUrl(originSlug, 'rome')).toBeNull();
     }
   });
 

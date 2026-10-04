@@ -86,7 +86,7 @@ describe('Manchester Turkey route guides', () => {
   });
 
   it('keeps the existing exact Trip.com handoff on each new route', () => {
-    for (const slug of ['manchester-istanbul', 'manchester-dalaman', 'manchester-bodrum', 'manchester-antalya', 'manchester-izmir']) {
+    for (const slug of ['manchester-istanbul', 'manchester-dalaman', 'manchester-bodrum', 'manchester-antalya']) {
       const url = getTripComFlightHandoffUrl(slug);
       expect(url, slug).toContain('Allianceid=9804124');
       expect(url, slug).toContain('SID=327450313');
@@ -95,6 +95,7 @@ describe('Manchester Turkey route guides', () => {
       expect(url, slug).not.toContain('ddate=');
       expect(url, slug).not.toContain('rdate=');
     }
+    expect(getTripComFlightHandoffUrl('manchester-izmir')).toBeNull();
   });
 
   it('replaces the destination-page continuation with the exact route guide', () => {

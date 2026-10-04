@@ -6,7 +6,6 @@ const RESTORED = [
   ['manchester', 'barcelona'], ['birmingham', 'barcelona'], ['bristol', 'barcelona'], ['leeds-bradford', 'barcelona'],
   ['bristol', 'faro'], ['manchester', 'faro'], ['birmingham', 'faro'], ['leeds-bradford', 'faro'],
   ['manchester', 'athens'], ['birmingham', 'athens'],
-  ['manchester', 'rome'], ['birmingham', 'rome'], ['bristol', 'rome'],
 ] as const;
 
 describe('Europe route-guide handoff regression', () => {
@@ -27,6 +26,13 @@ describe('Europe route-guide handoff regression', () => {
   it('keeps Gatwick fail-closed even when a route guide exists', () => {
     for (const destination of ['barcelona', 'faro', 'athens', 'rome']) {
       expect(getTripComFlightHandoffUrl(`london-gatwick-${destination}`, 'london-gatwick', destination)).toBeNull();
+    }
+  });
+
+  it('fails closed for Rome because the generated ROM handoff is not exact-airport FCO', () => {
+    for (const origin of ['manchester', 'birmingham', 'bristol']) {
+      expect(getTripComDestinationHandoffUrl(origin, 'rome')).toBeNull();
+      expect(getTripComFlightHandoffUrl(`${origin}-rome`, origin, 'rome')).toBeNull();
     }
   });
 });

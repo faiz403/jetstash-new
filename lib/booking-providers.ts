@@ -109,8 +109,8 @@ export const NO_VERIFIED_PARTNER_LINK_NOTE =
 
 /**
  * Route-slug-keyed, exact dashboard-generated Trip.com Flights-page affiliate
- * links — see file header for provenance. 45 of JetStash's current 80 routes are
- * covered; the other 35 remain intentionally absent where Trip.com's tooling
+ * links — see file header for provenance. 44 of JetStash's current 89 routes are
+ * covered; the other 45 remain intentionally absent where Trip.com's tooling
  * does not provide a safe exact handoff (including the known London-origin limits).
  */
 const TRIPCOM_ROUTE_URLS: Readonly<Record<string, string>> = {
@@ -126,8 +126,6 @@ const TRIPCOM_ROUTE_URLS: Readonly<Record<string, string>> = {
     'https://www.trip.com/flights/Manchester-to-Bodrum/tickets-MAN-BJV?flighttype=S&dcity=MAN&acity=BJV&Allianceid=9804124&SID=327450313&trip_sub1=&trip_sub3=D19206196',
   'manchester-antalya':
     'https://www.trip.com/flights/Manchester-to-Antalya/tickets-MAN-AYT?flighttype=S&dcity=MAN&acity=AYT&Allianceid=9804124&SID=327450313&trip_sub1=&trip_sub3=D19205349',
-  'manchester-izmir':
-    'https://www.trip.com/flights/Manchester-to-Izmir/tickets-MAN-IZM?flighttype=S&dcity=MAN&acity=IZM&Allianceid=9804124&SID=327450313&trip_sub1=&trip_sub3=D19206224',
   'manchester-marrakech':
     'https://www.trip.com/flights/Manchester-to-Marrakech/tickets-MAN-RAK?flighttype=S&dcity=MAN&acity=RAK&Allianceid=9804124&SID=327450313&trip_sub1=&trip_sub3=D19206602',
   'bristol-marrakech':
@@ -234,8 +232,6 @@ const TRIPCOM_DESTINATION_URLS: Readonly<Record<string, string>> = {
     'https://www.trip.com/flights/Leeds-to-Bodrum/tickets-LBA-BJV?flighttype=S&dcity=LBA&acity=BJV&Allianceid=9804124&SID=327450313&trip_sub1=&trip_sub3=D19206245',
   'glasgow-bodrum':
     'https://www.trip.com/flights/Glasgow-to-Bodrum/tickets-GLA-BJV?flighttype=S&dcity=GLA&acity=BJV&Allianceid=9804124&SID=327450313&trip_sub1=&trip_sub3=D19206217',
-  'manchester-izmir':
-    'https://www.trip.com/flights/Manchester-to-Izmir/tickets-MAN-IZM?flighttype=S&dcity=MAN&acity=IZM&Allianceid=9804124&SID=327450313&trip_sub1=&trip_sub3=D19206224',
   'manchester-marrakech':
     'https://www.trip.com/flights/Manchester-to-Marrakech/tickets-MAN-RAK?flighttype=S&dcity=MAN&acity=RAK&Allianceid=9804124&SID=327450313&trip_sub1=&trip_sub3=D19206602',
   'bristol-marrakech':
@@ -266,12 +262,6 @@ const TRIPCOM_DESTINATION_URLS: Readonly<Record<string, string>> = {
     'https://www.trip.com/flights/Birmingham-to-Athens/tickets-BHX-ATH?flighttype=S&dcity=BHX&acity=ATH&Allianceid=9804124&SID=327450313&trip_sub1=&trip_sub3=D19206602',
   'glasgow-athens':
     'https://www.trip.com/flights/Glasgow-to-Athens/tickets-GLA-ATH?flighttype=S&dcity=GLA&acity=ATH&Allianceid=9804124&SID=327450313&trip_sub1=&trip_sub3=D19206602',
-  'manchester-rome':
-    'https://www.trip.com/flights/Manchester-to-Rome/tickets-MAN-ROM?flighttype=S&dcity=MAN&acity=ROM&Allianceid=9804124&SID=327450313&trip_sub1=&trip_sub3=D19206602',
-  'birmingham-rome':
-    'https://www.trip.com/flights/Birmingham-to-Rome/tickets-BHX-ROM?flighttype=S&dcity=BHX&acity=ROM&Allianceid=9804124&SID=327450313&trip_sub1=&trip_sub3=D19206602',
-  'bristol-rome':
-    'https://www.trip.com/flights/Bristol-to-Rome/tickets-BRS-ROM?flighttype=S&dcity=BRS&acity=ROM&Allianceid=9804124&SID=327450313&trip_sub1=&trip_sub3=D19206602',
   'birmingham-delhi':
     'https://www.trip.com/flights/Birmingham-to-New%20Delhi/tickets-BHX-DEL?flighttype=S&dcity=BHX&acity=DEL&Allianceid=9804124&SID=327450313&trip_sub1=&trip_sub3=D19206602',
   'birmingham-ahmedabad':

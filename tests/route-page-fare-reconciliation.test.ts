@@ -247,8 +247,8 @@ describe('the two divergent fail-closed sentences are now one shared constant', 
     // this PR adds no CTA and removes none (26, not 25, after the
     // 7 September 2026 canonical addition of london-gatwick-doha, which
     // has no route-level Trip.com link).
-    expect(withUrl).toBe(63);
-    expect(withoutUrl).toBe(26);
+    expect(withUrl).toBe(59);
+    expect(withoutUrl).toBe(30);
   });
 });
 

@@ -14,7 +14,6 @@ const HANDOFFS = [
   ['manchester', 'barcelona'], ['birmingham', 'barcelona'], ['bristol', 'barcelona'], ['leeds-bradford', 'barcelona'],
   ['bristol', 'faro'], ['manchester', 'faro'], ['birmingham', 'faro'], ['leeds-bradford', 'faro'],
   ['manchester', 'athens'], ['birmingham', 'athens'], ['glasgow', 'athens'],
-  ['manchester', 'rome'], ['birmingham', 'rome'], ['bristol', 'rome'],
 ];
 
 describe('Europe route-guide completion', () => {
@@ -38,6 +37,9 @@ describe('Europe route-guide completion', () => {
     }
     for (const destination of ['barcelona', 'faro', 'athens', 'rome']) {
       expect(getTripComDestinationHandoffUrl('gatwick', destination)).toBeNull();
+    }
+    for (const origin of ['manchester', 'birmingham', 'bristol']) {
+      expect(getTripComDestinationHandoffUrl(origin, 'rome')).toBeNull();
     }
   });
 

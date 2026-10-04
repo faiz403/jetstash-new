@@ -86,7 +86,7 @@ describe('8. Existing sibling Doha routes are unchanged', () => {
     const man = getRouteByAirportAndDestination('manchester', 'doha')!;
     const bhx = getRouteByAirportAndDestination('birmingham', 'doha')!;
     expect(lhr.flightTime).toBe('Direct; duration varies by schedule');
-    expect(lhr.verification?.verifiedDate).toBe('2026-09-03');
+    expect(lhr.verification?.verifiedDate).toBe('2026-10-04');
     expect(man.flightTime).toBe('Under 7h direct (Qatar Airways route page)');
     expect(man.verification?.verifiedDate).toBe('2026-08-18');
     expect(bhx.isDirect).toBe(true);
