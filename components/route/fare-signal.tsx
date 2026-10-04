@@ -520,7 +520,12 @@ function CurrentSignal({ data, lowerSelfTransfer, tripComUrl, routeSlug, routeDi
       ) : null}
       {mismatch && <RouteVsFareCallout mismatch={mismatch} />}
       {tripComUrl ? (
-        <SignalCta href={tripComUrl} routeSlug={routeSlug} standout={Boolean(standout)} />
+        <SignalCta
+          href={tripComUrl}
+          routeSlug={routeSlug}
+          standout={Boolean(standout)}
+          label={isServiceEnded ? SERVICE_ENDED_CTA_LABEL : undefined}
+        />
       ) : isServiceEnded ? (
         <NoCtaFallback />
       ) : (
@@ -547,7 +552,11 @@ function RecentSignal({ data, tripComUrl, routeSlug, routeDirectness, routeStatu
       <p className="mt-4 text-sm leading-relaxed text-ink-600">Price may have changed.</p>
       {mismatch && <RouteVsFareCallout mismatch={mismatch} />}
       {tripComUrl ? (
-        <SignalCta href={tripComUrl} routeSlug={routeSlug} />
+        <SignalCta
+          href={tripComUrl}
+          routeSlug={routeSlug}
+          label={isServiceEnded ? SERVICE_ENDED_CTA_LABEL : undefined}
+        />
       ) : isServiceEnded ? (
         <NoCtaFallback />
       ) : (

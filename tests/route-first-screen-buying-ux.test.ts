@@ -104,21 +104,23 @@ describe('service-ended routes: connecting flights are available, said first', (
       const route = getRouteBySlug(slug)!;
       const alt = route.connectingAlternative!;
       expect(alt).toBeTruthy();
-      const lead = html.indexOf('Connecting flights available');
+      const lead = html.indexOf('Former direct service ended · connecting flights available');
       expect(lead).toBeGreaterThan(-1);
-      expect(html).toContain('The former direct service has ended.');
       expect(html).toContain(`Usually ${alt.typicalStops} stop`);
       expect(html).toContain(alt.typicalJourneyTime);
       for (const hub of alt.hubAirports) expect(html).toContain(hub);
       expect(html).toContain(SERVICE_ENDED_CTA_LABEL);
-      expect(html).toContain("JetStash hasn't logged a current fare for this route yet.");
+      expect(html).toContain(slug === 'manchester-delhi' ? '£634 return' : '£522 return');
+      expect(html).toContain('Etihad');
+      expect(html).toContain('Checked 4 October 2026');
       // the long historical explanation stays, but below the lead
       expect(html).toContain('Direct service ended');
       expect(html.indexOf('Post-effective-date verification')).toBeGreaterThan(lead);
-      // the route page still shows the same connecting block and still never invents a fare
+      // The route page still shows the same connecting block; the fare is a
+      // separately recorded exact-route observation rather than an invented
+      // continuation of the ended nonstop service.
       expect(html).toContain('You can still fly this route with a connection');
       expect(html).not.toContain('Standout Fare');
-      expect(html).not.toContain('Fare spotted');
     });
   }
 

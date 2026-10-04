@@ -153,6 +153,15 @@ describe('Mumbai destination P1 trust fix', () => {
         observedDate: '2026-09-29',
         fareDirectness: 'connecting',
       },
+      // Commercial-completeness rescue: append-only fresh connecting fare
+      // evidence. The Mumbai destination, route verification and service
+      // status remain unchanged.
+      {
+        id: 'obs-man-bom-economy-20261004-rescue-v1',
+        price: 522,
+        observedDate: '2026-10-04',
+        fareDirectness: 'connecting',
+      },
     ]);
   });
 

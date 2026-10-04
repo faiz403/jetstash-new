@@ -1,6 +1,7 @@
 import { airports, getAirportBySlug } from '@/data/airports';
 import { destinations, getDestinationBySlug } from '@/data/destinations';
 import { fareObservations, getPublishableObservationsByRoute, type FareObservation } from '@/data/fare-observations';
+import { gscRoutePerformance, type GscPeriodMetrics } from '@/data/gsc-route-performance-2026-09-29';
 import { routeStatusEvents, validateStatusLedger } from '@/data/route-status-events';
 import { routeWarnings } from '@/data/route-warnings';
 import { routes, type Route } from '@/data/routes';
@@ -42,6 +43,20 @@ export interface PortfolioRouteAuditRow {
   currentFareKind: 'clean' | 'self-transfer' | null;
   currentFareProfile: string | null;
   bookingHandoffType: string | null;
+  commercialHandoffType: 'exact-tripcom' | 'tripcom-destination-fallback' | 'google-flights' | 'none';
+  exactAirportPreserved: boolean;
+  monetised: boolean;
+  currentCta: string | null;
+  farePublishable: boolean;
+  fareSuppressionReason: string | null;
+  fareRescueCategory: 'A_FRESH_CHECK_READY' | 'B_REFRESH_ROUTE_FIRST' | 'C_SERVICE_ENDED_CONNECTING_ONLY' | 'D_CONTRADICTORY_OR_UNSAFE' | 'E_STALE_CLEAN_HISTORY' | 'F_POOR_ITINERARY_ONLY' | null;
+  verificationCurrent: boolean;
+  commercialReadiness: 'TRAFFIC_READY' | 'TRAFFIC_READY_NON_MONETISED' | 'FARE_GAP' | 'EVIDENCE_GAP' | 'HOLD';
+  gscDataPresent: boolean;
+  gscLast28: GscPeriodMetrics;
+  gscPrior28: GscPeriodMetrics;
+  gscLast90: GscPeriodMetrics;
+  organicOpportunityScore: number;
   activeWarnings: string[];
   serviceEnded: boolean;
   observationCount: number;
@@ -191,6 +206,59 @@ export function buildPortfolioAudit(nowIso: string): PortfolioRouteAuditRow[] {
     const raw = fareObservations.filter((observation) => observation.routeSlug === route.slug);
     const publishable = getPublishableObservationsByRoute(route.slug, nowIso);
     const selectedRaw = signal.observation ? fareObservations.find((observation) => observation.id === signal.observation?.id) : undefined;
+    const handoff = getTripComFlightHandoff(route.slug, route.airportSlug, route.destinationSlug, nowIso);
+    const verificationCurrent = presentation.status !== 'unverified'
+      && presentation.status !== 'service-ended'
+      && Boolean(route.verification?.reviewDueDate && route.verification.reviewDueDate >= nowIso);
+    const fareSuppressionReason = signal.observation
+      ? null
+      : signal.noneReason === 'poor-itinerary-suppressed'
+        ? 'Only poor-itinerary evidence is currently eligible; the public fare is suppressed.'
+        : presentation.status === 'unverified'
+          ? 'Route verification/status is not strong enough to support a current public fare.'
+          : presentation.status === 'service-ended'
+            ? 'The direct service has ended and no suitable current connecting fare is publishable.'
+            : publishable.length === 0 && raw.length > 0
+              ? 'Historical observations exist, but none currently passes publishability and freshness rules.'
+              : 'No current publishable fare observation exists.';
+    const commercialReadiness: PortfolioRouteAuditRow['commercialReadiness'] = presentation.status === 'service-ended'
+      ? 'HOLD'
+      : presentation.status === 'unverified'
+      ? 'EVIDENCE_GAP'
+      : !signal.observation
+          ? (handoff ? 'FARE_GAP' : 'EVIDENCE_GAP')
+          : !handoff
+            ? 'TRAFFIC_READY_NON_MONETISED'
+            : verificationCurrent
+              ? 'TRAFFIC_READY'
+              : 'EVIDENCE_GAP';
+    const fareRescueCategory: PortfolioRouteAuditRow['fareRescueCategory'] = signal.observation
+      ? null
+      : presentation.status === 'service-ended'
+        ? 'C_SERVICE_ENDED_CONNECTING_ONLY'
+        : presentation.status === 'unverified' && sourceStrength(route) === 'mixed-or-contradictory'
+          ? 'D_CONTRADICTORY_OR_UNSAFE'
+          : presentation.status === 'unverified'
+            ? 'B_REFRESH_ROUTE_FIRST'
+            : signal.noneReason === 'poor-itinerary-suppressed'
+              ? 'F_POOR_ITINERARY_ONLY'
+              : raw.some((observation) => !isSelfTransferItinerary(observation.priceNote))
+                ? 'E_STALE_CLEAN_HISTORY'
+                : 'A_FRESH_CHECK_READY';
+    const gsc = gscRoutePerformance.find((entry) => entry.slug === route.slug);
+    const emptyGsc: GscPeriodMetrics = { clicks: 0, impressions: 0, ctrPercent: 0, averagePosition: null };
+    const gscLast28 = gsc?.last28 ?? emptyGsc;
+    const position = gscLast28.averagePosition;
+    const positionWeight = position === null ? 0 : position >= 4 && position <= 10 ? 4 : position > 10 && position <= 20 ? 3 : position > 20 && position <= 40 ? 2 : 1;
+    const readinessWeight = commercialReadiness === 'TRAFFIC_READY'
+      ? 1
+      : commercialReadiness === 'TRAFFIC_READY_NON_MONETISED'
+        ? 0.8
+        : commercialReadiness === 'FARE_GAP'
+          ? 0.6
+          : commercialReadiness === 'EVIDENCE_GAP'
+            ? 0.25
+            : 0.1;
     return {
       slug: route.slug,
       origin: airport?.city ?? route.airportSlug,
@@ -213,7 +281,25 @@ export function buildPortfolioAudit(nowIso: string): PortfolioRouteAuditRow[] {
       currentFareAgeDays: signal.observation ? daysBetweenIso(signal.observation.observedDate, nowIso) : null,
       currentFareKind: selectedRaw ? (isSelfTransferItinerary(selectedRaw.priceNote) ? 'self-transfer' : 'clean') : null,
       currentFareProfile: selectedRaw?.profileId ?? null,
-      bookingHandoffType: getTripComFlightHandoff(route.slug, route.airportSlug, route.destinationSlug, nowIso)?.kind ?? null,
+      bookingHandoffType: handoff?.kind ?? null,
+      commercialHandoffType: handoff
+        ? handoff.kind === 'destination-fallback' ? 'tripcom-destination-fallback' : 'exact-tripcom'
+        : 'google-flights',
+      exactAirportPreserved: Boolean(handoff),
+      monetised: Boolean(handoff),
+      currentCta: handoff
+        ? handoff.kind === 'service-ended-connecting' ? 'Compare current connecting flights on Trip.com' : 'Compare flights on Trip.com'
+        : 'Search current flights',
+      farePublishable: Boolean(signal.observation),
+      fareSuppressionReason,
+      fareRescueCategory,
+      verificationCurrent,
+      commercialReadiness,
+      gscDataPresent: Boolean(gsc),
+      gscLast28,
+      gscPrior28: gsc?.prior28 ?? emptyGsc,
+      gscLast90: gsc?.last90 ?? emptyGsc,
+      organicOpportunityScore: Math.round(gscLast28.impressions * positionWeight * readinessWeight * 100) / 100,
       activeWarnings: routeWarnings.filter((warning) => warning.routeSlug === route.slug && warning.status === 'active').map((warning) => warning.id),
       serviceEnded: presentation.status === 'service-ended',
       observationCount: raw.length,
@@ -240,5 +326,10 @@ export function summarizePortfolioAudit(rows: PortfolioRouteAuditRow[], nowIso: 
     cleanPrimary: rows.filter((row) => row.currentFareKind === 'clean').length,
     monetisedHandoff: rows.filter((row) => row.bookingHandoffType !== null).length,
     nonMonetisedFallback: rows.filter((row) => row.bookingHandoffType === null).length,
+    trafficReady: rows.filter((row) => row.commercialReadiness === 'TRAFFIC_READY').length,
+    trafficReadyNonMonetised: rows.filter((row) => row.commercialReadiness === 'TRAFFIC_READY_NON_MONETISED').length,
+    fareGap: rows.filter((row) => row.commercialReadiness === 'FARE_GAP').length,
+    evidenceGap: rows.filter((row) => row.commercialReadiness === 'EVIDENCE_GAP').length,
+    hold: rows.filter((row) => row.commercialReadiness === 'HOLD').length,
   };
 }
