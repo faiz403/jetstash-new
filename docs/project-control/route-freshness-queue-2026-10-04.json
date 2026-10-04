@@ -1,0 +1,1325 @@
+{
+  "summary": {
+    "asOf": "2026-10-04",
+    "overdue": 12,
+    "dueWithin7Days": 27,
+    "dueWithin8To14Days": 13,
+    "needsHumanReview": 0,
+    "totalQueue": 52,
+    "policy": "Queue generation never refreshes dates or changes public claims. A route moves forward only after fresh evidence is manually recorded and reviewed."
+  },
+  "queue": [
+    {
+      "slug": "birmingham-ahmedabad",
+      "route": "Birmingham → Ahmedabad",
+      "airportPair": "??? → ???",
+      "verificationStatus": "unverified",
+      "verifiedDate": "2026-09-04",
+      "reviewDueDate": "2026-09-18",
+      "currentEvidenceSource": "Air India's own current live booking page for this exact pair, which contradicts itself",
+      "evidenceUrl": "https://www.airindia.com/en/book-flights/birmingham-to-ahmedabad-flights",
+      "standingClaims": {
+        "directness": "direct option recorded",
+        "frequency": "Unverified — genuinely conflicting sources, see note",
+        "flightTime": "Unverified — genuinely conflicting sources, see note",
+        "operators": [
+          "air-india"
+        ]
+      },
+      "ageDays": 30,
+      "bucket": "overdue",
+      "riskFlags": [
+        "status-not-verified",
+        "directness-claim",
+        "frequency-claim"
+      ],
+      "priorityScore": 161
+    },
+    {
+      "slug": "london-gatwick-ahmedabad",
+      "route": "London → Ahmedabad",
+      "airportPair": "??? → ???",
+      "verificationStatus": "unverified",
+      "verifiedDate": "2026-09-04",
+      "reviewDueDate": "2026-09-18",
+      "currentEvidenceSource": "Air India's own current booking/schedule surfaces and current commercial offer terms, genuinely conflicting",
+      "evidenceUrl": "https://www.airindia.com/en-in/book-flights/ahmedabad-to-london-flights",
+      "standingClaims": {
+        "directness": "direct option recorded",
+        "frequency": "Unverified — genuinely conflicting sources, see note",
+        "flightTime": "Unverified — genuinely conflicting sources, see note",
+        "operators": [
+          "air-india"
+        ]
+      },
+      "ageDays": 30,
+      "bucket": "overdue",
+      "riskFlags": [
+        "status-not-verified",
+        "directness-claim",
+        "frequency-claim"
+      ],
+      "priorityScore": 161
+    },
+    {
+      "slug": "london-heathrow-dhaka",
+      "route": "London → Dhaka",
+      "airportPair": "??? → ???",
+      "verificationStatus": "unverified",
+      "verifiedDate": "2026-09-04",
+      "reviewDueDate": "2026-09-18",
+      "currentEvidenceSource": "Heathrow's own live flight-tracking pages for flights BG201 and BG202, plus Heathrow's own airline-directory page for Biman Bangladesh Airlines",
+      "evidenceUrl": "https://www.heathrow.com/departures/terminal-4/flight-details/BG202",
+      "standingClaims": {
+        "directness": "direct option recorded",
+        "frequency": "Unverified — confirm directly with Biman Bangladesh Airlines before booking",
+        "flightTime": "Unverified — a current London-Dhaka Biman service is real, but whether it is nonstop is unconfirmed, see note",
+        "operators": [
+          "biman-bangladesh"
+        ]
+      },
+      "ageDays": 30,
+      "bucket": "overdue",
+      "riskFlags": [
+        "status-not-verified",
+        "directness-claim",
+        "frequency-claim"
+      ],
+      "priorityScore": 161
+    },
+    {
+      "slug": "london-heathrow-sylhet",
+      "route": "London → Sylhet",
+      "airportPair": "??? → ???",
+      "verificationStatus": "unverified",
+      "verifiedDate": "2026-09-04",
+      "reviewDueDate": "2026-09-18",
+      "currentEvidenceSource": "Heathrow's own live flight-tracking page for flight BG202, plus multiple independent flight-schedule aggregators describing BG202 as routing via Sylhet",
+      "evidenceUrl": "https://www.heathrow.com/departures/terminal-4/flight-details/BG202",
+      "standingClaims": {
+        "directness": "direct option recorded",
+        "frequency": "Unverified — confirm directly with Biman Bangladesh Airlines before booking",
+        "flightTime": "Unverified — no confirmed Sylhet-specific service, see note",
+        "operators": [
+          "biman-bangladesh"
+        ]
+      },
+      "ageDays": 30,
+      "bucket": "overdue",
+      "riskFlags": [
+        "status-not-verified",
+        "directness-claim",
+        "frequency-claim"
+      ],
+      "priorityScore": 161
+    },
+    {
+      "slug": "manchester-sylhet",
+      "route": "Manchester → Sylhet",
+      "airportPair": "??? → ???",
+      "verificationStatus": "unverified",
+      "verifiedDate": "2026-09-04",
+      "reviewDueDate": "2026-09-18",
+      "currentEvidenceSource": "Manchester Airport's own current Sylhet destination page (manchesterairport.co.uk/destinations-and-guides/sylhet/), directly fetched, set against Biman Bangladesh Airlines' current official Manchester-Dhaka-via-Sylhet notice",
+      "evidenceUrl": "https://www.manchesterairport.co.uk/destinations-and-guides/sylhet/",
+      "standingClaims": {
+        "directness": "direct option recorded",
+        "frequency": "Historically up to 3x weekly when operating; Manchester Airport's own current page contradicts recent resumption reporting — see note",
+        "flightTime": "Unverified — Manchester Airport's own current page says this destination is not currently served, see note",
+        "operators": [
+          "biman-bangladesh"
+        ]
+      },
+      "ageDays": 30,
+      "bucket": "overdue",
+      "riskFlags": [
+        "status-not-verified",
+        "directness-claim",
+        "frequency-claim"
+      ],
+      "priorityScore": 161
+    },
+    {
+      "slug": "manchester-delhi",
+      "route": "Manchester → Delhi",
+      "airportPair": "??? → ???",
+      "verificationStatus": "verified",
+      "verifiedDate": "2026-07-23",
+      "reviewDueDate": "2026-08-31",
+      "currentEvidenceSource": "IndiGo official press release: \"IndiGo Adjusts Wide-body Network to Enhance Operational Resilience and Schedule Reliability\" (4 Feb 2026)",
+      "evidenceUrl": "https://www.goindigo.in/press-releases/indigo-adjusts-wide-body-network-to-enhance-operational-resilience-and-schedule-reliability.html",
+      "standingClaims": {
+        "directness": "direct option recorded",
+        "frequency": "3x weekly direct (reduced from 5x weekly in Feb 2026)",
+        "flightTime": "9h 30m direct (currently)",
+        "operators": [
+          "indigo"
+        ]
+      },
+      "ageDays": 73,
+      "bucket": "overdue",
+      "riskFlags": [
+        "directness-claim",
+        "frequency-claim",
+        "old-evidence"
+      ],
+      "priorityScore": 132
+    },
+    {
+      "slug": "manchester-mumbai",
+      "route": "Manchester → Mumbai",
+      "airportPair": "??? → ???",
+      "verificationStatus": "verified",
+      "verifiedDate": "2026-07-23",
+      "reviewDueDate": "2026-08-31",
+      "currentEvidenceSource": "IndiGo official press release: \"IndiGo Adjusts Wide-body Network to Enhance Operational Resilience and Schedule Reliability\" (4 Feb 2026)",
+      "evidenceUrl": "https://www.goindigo.in/press-releases/indigo-adjusts-wide-body-network-to-enhance-operational-resilience-and-schedule-reliability.html",
+      "standingClaims": {
+        "directness": "direct option recorded",
+        "frequency": "4x weekly direct (Mon/Tue/Sat/Sun ex-Manchester, per Feb 2026 schedule)",
+        "flightTime": "9h 45m direct (currently)",
+        "operators": [
+          "indigo"
+        ]
+      },
+      "ageDays": 73,
+      "bucket": "overdue",
+      "riskFlags": [
+        "directness-claim",
+        "frequency-claim",
+        "old-evidence"
+      ],
+      "priorityScore": 132
+    },
+    {
+      "slug": "london-gatwick-athens",
+      "route": "London → Athens",
+      "airportPair": "??? → ???",
+      "verificationStatus": "verified",
+      "verifiedDate": "2026-08-13",
+      "reviewDueDate": "2026-09-13",
+      "currentEvidenceSource": "London Gatwick's official destinations information",
+      "evidenceUrl": "https://www.gatwickairport.com/flights/destinations.html",
+      "standingClaims": {
+        "directness": "direct option recorded",
+        "frequency": "Gatwick destination information lists Athens; exact operators and frequency vary",
+        "flightTime": "Direct destination listed by Gatwick; check the exact flight for duration",
+        "operators": []
+      },
+      "ageDays": 52,
+      "bucket": "overdue",
+      "riskFlags": [
+        "directness-claim",
+        "frequency-claim"
+      ],
+      "priorityScore": 131
+    },
+    {
+      "slug": "london-heathrow-jeddah",
+      "route": "London → Jeddah",
+      "airportPair": "??? → ???",
+      "verificationStatus": "verified",
+      "verifiedDate": "2026-09-03",
+      "reviewDueDate": "2026-10-03",
+      "currentEvidenceSource": "Saudia's own current London-Jeddah booking page",
+      "evidenceUrl": "https://www.saudia.com/en-gb/flight-deals-from-london-to-saudi-arabia",
+      "standingClaims": {
+        "directness": "direct option recorded",
+        "frequency": "Saudia operates direct service; exact current frequency not confirmed by a current official schedule",
+        "flightTime": "6h 15m, per Saudia's published route figure; not independently reconfirmed against a current Saudia source this session",
+        "operators": [
+          "saudia"
+        ]
+      },
+      "ageDays": 31,
+      "bucket": "overdue",
+      "riskFlags": [
+        "directness-claim",
+        "frequency-claim"
+      ],
+      "priorityScore": 131
+    },
+    {
+      "slug": "manchester-rome",
+      "route": "Manchester → Rome",
+      "airportPair": "??? → ???",
+      "verificationStatus": "verified",
+      "verifiedDate": "2026-09-03",
+      "reviewDueDate": "2026-10-03",
+      "currentEvidenceSource": "Manchester Airport's official Rome destination guide",
+      "evidenceUrl": "https://www.manchesterairport.co.uk/destinations-and-guides/rome/",
+      "standingClaims": {
+        "directness": "direct option recorded",
+        "frequency": "Manchester Airport lists direct service to Rome; exact airport, operators and frequency vary",
+        "flightTime": "Published planning duration: 2h 45m; check the exact flight for your dates",
+        "operators": []
+      },
+      "ageDays": 31,
+      "bucket": "overdue",
+      "riskFlags": [
+        "directness-claim",
+        "frequency-claim"
+      ],
+      "priorityScore": 131
+    },
+    {
+      "slug": "birmingham-mumbai",
+      "route": "Birmingham → Mumbai",
+      "airportPair": "??? → ???",
+      "verificationStatus": "verified",
+      "verifiedDate": "2026-08-18",
+      "reviewDueDate": "2026-10-02",
+      "currentEvidenceSource": "Birmingham Airport's own official Mumbai destination page (airport.birminghamairport.co.uk)",
+      "evidenceUrl": "https://airport.birminghamairport.co.uk/destinations/where-we-fly/mumbai/",
+      "standingClaims": {
+        "directness": "connecting only recorded",
+        "frequency": "Connecting options exist; exact schedules and frequency have not been independently verified — check directly with the airline or a booking site.",
+        "flightTime": "Journey duration varies by connection and has not been independently established.",
+        "operators": [
+          "air-india",
+          "emirates",
+          "qatar-airways",
+          "saudia",
+          "turkish-airlines"
+        ]
+      },
+      "ageDays": 47,
+      "bucket": "overdue",
+      "riskFlags": [
+        "frequency-claim"
+      ],
+      "priorityScore": 111
+    },
+    {
+      "slug": "manchester-dhaka",
+      "route": "Manchester → Dhaka",
+      "airportPair": "??? → ???",
+      "verificationStatus": "verified",
+      "verifiedDate": "2026-08-18",
+      "reviewDueDate": "2026-10-02",
+      "currentEvidenceSource": "Biman Bangladesh Airlines current official notice: \"BIMAN BANGLADESH AIRLINES WILL RESUME DHAKA-MANCHESTER-DHAKA (VIA SYLHET) FLIGHTS FROM 01 JULY 2026 (EVERY TUESDAY & SATURDAY).\" — cross-checked against independent Bangladeshi press reporting of the 1 July 2026 resumption",
+      "evidenceUrl": "https://biman-airlines.com/",
+      "standingClaims": {
+        "directness": "connecting only recorded",
+        "frequency": "Every Tuesday and Saturday, per Biman's current official notice",
+        "flightTime": "One stop via Sylhet — not a nonstop service, per Biman's current official notice",
+        "operators": [
+          "biman-bangladesh"
+        ]
+      },
+      "ageDays": 47,
+      "bucket": "overdue",
+      "riskFlags": [
+        "frequency-claim"
+      ],
+      "priorityScore": 111
+    },
+    {
+      "slug": "birmingham-agadir",
+      "route": "Birmingham → Agadir",
+      "airportPair": "??? → ???",
+      "verificationStatus": "verified",
+      "verifiedDate": "2026-09-04",
+      "reviewDueDate": "2026-10-04",
+      "currentEvidenceSource": "Birmingham Airport's current Agadir destination page and 2026 route announcement",
+      "evidenceUrl": "https://www.birminghamairport.co.uk/destinations/where-we-fly/agadir/",
+      "standingClaims": {
+        "directness": "direct option recorded",
+        "frequency": "Direct service is listed by Birmingham Airport; exact dates and frequency vary by schedule",
+        "flightTime": "Approximate published flight time: 3h 30m from Birmingham Airport",
+        "operators": [
+          "ryanair",
+          "easyjet"
+        ]
+      },
+      "ageDays": 30,
+      "bucket": "due-within-7-days",
+      "riskFlags": [
+        "directness-claim",
+        "frequency-claim"
+      ],
+      "priorityScore": 101
+    },
+    {
+      "slug": "birmingham-antalya",
+      "route": "Birmingham → Antalya",
+      "airportPair": "??? → ???",
+      "verificationStatus": "verified",
+      "verifiedDate": "2026-09-04",
+      "reviewDueDate": "2026-10-04",
+      "currentEvidenceSource": "Birmingham Airport's official Antalya destination page",
+      "evidenceUrl": "https://airport.birminghamairport.co.uk/destinations/where-we-fly/antalya/",
+      "standingClaims": {
+        "directness": "direct option recorded",
+        "frequency": "Direct service; exact dates and frequency vary by schedule",
+        "flightTime": "Approximate published flight time: 4h 20m from Birmingham Airport",
+        "operators": [
+          "corendon",
+          "easyjet",
+          "jet2",
+          "tui",
+          "sunexpress"
+        ]
+      },
+      "ageDays": 30,
+      "bucket": "due-within-7-days",
+      "riskFlags": [
+        "directness-claim",
+        "frequency-claim"
+      ],
+      "priorityScore": 101
+    },
+    {
+      "slug": "birmingham-bodrum",
+      "route": "Birmingham → Bodrum",
+      "airportPair": "??? → ???",
+      "verificationStatus": "verified",
+      "verifiedDate": "2026-09-04",
+      "reviewDueDate": "2026-10-04",
+      "currentEvidenceSource": "Birmingham Airport's official Bodrum destination page, corroborated by Jet2's current summer programme",
+      "evidenceUrl": "https://airport.birminghamairport.co.uk/destinations/where-we-fly/bodrum/",
+      "standingClaims": {
+        "directness": "direct option recorded",
+        "frequency": "Seasonal direct service; exact operating days vary by schedule",
+        "flightTime": "Approximate published flight time: 4h 15m from Birmingham Airport",
+        "operators": [
+          "jet2",
+          "tui"
+        ]
+      },
+      "ageDays": 30,
+      "bucket": "due-within-7-days",
+      "riskFlags": [
+        "directness-claim",
+        "frequency-claim"
+      ],
+      "priorityScore": 101
+    },
+    {
+      "slug": "bristol-dalaman",
+      "route": "Bristol → Dalaman",
+      "airportPair": "??? → ???",
+      "verificationStatus": "verified",
+      "verifiedDate": "2026-09-04",
+      "reviewDueDate": "2026-10-04",
+      "currentEvidenceSource": "Bristol Airport's current Dalaman destination page",
+      "evidenceUrl": "https://www.bristolairport.co.uk/where-can-i-fly/destinations/europe/turkey/dalaman/",
+      "standingClaims": {
+        "directness": "direct option recorded",
+        "frequency": "Bristol Airport's own page states it flies daily from March to November (summer only), with easyJet, TUI and Jet2.com",
+        "flightTime": "Published duration not listed on Bristol Airport's route page; check the exact flight for your dates",
+        "operators": [
+          "easyjet",
+          "tui",
+          "jet2"
+        ]
+      },
+      "ageDays": 30,
+      "bucket": "due-within-7-days",
+      "riskFlags": [
+        "directness-claim",
+        "frequency-claim"
+      ],
+      "priorityScore": 101
+    },
+    {
+      "slug": "glasgow-bodrum",
+      "route": "Glasgow → Bodrum",
+      "airportPair": "??? → ???",
+      "verificationStatus": "verified",
+      "verifiedDate": "2026-09-04",
+      "reviewDueDate": "2026-10-04",
+      "currentEvidenceSource": "Glasgow Airport's current Bodrum destination schedule",
+      "evidenceUrl": "https://www.glasgowairport.com/destinations/bodrum/",
+      "standingClaims": {
+        "directness": "direct option recorded",
+        "frequency": "Current Glasgow Airport schedule lists seasonal direct Jet2 examples; exact dates and frequency vary",
+        "flightTime": "Approximately 4h 33m from Glasgow Airport; individual flights can differ",
+        "operators": [
+          "jet2"
+        ]
+      },
+      "ageDays": 30,
+      "bucket": "due-within-7-days",
+      "riskFlags": [
+        "directness-claim",
+        "frequency-claim"
+      ],
+      "priorityScore": 101
+    },
+    {
+      "slug": "london-gatwick-antalya",
+      "route": "London → Antalya",
+      "airportPair": "??? → ???",
+      "verificationStatus": "verified",
+      "verifiedDate": "2026-09-04",
+      "reviewDueDate": "2026-10-04",
+      "currentEvidenceSource": "Gatwick Airport Jet2 summer 2026 base announcement, corroborated by SunExpress's current flight plan",
+      "evidenceUrl": "https://www.mediacentre.gatwickairport.com/news/london-gatwick-celebrates-arrival-of-jet2-becoming-airline-s-newest-airport-base-79203-40f32.html",
+      "standingClaims": {
+        "directness": "direct option recorded",
+        "frequency": "Seasonal direct service is published by Jet2 and SunExpress; exact dates and frequency vary",
+        "flightTime": "Published duration not recorded in this evidence check; check the exact flight for your dates",
+        "operators": [
+          "jet2",
+          "sunexpress"
+        ]
+      },
+      "ageDays": 30,
+      "bucket": "due-within-7-days",
+      "riskFlags": [
+        "directness-claim",
+        "frequency-claim"
+      ],
+      "priorityScore": 101
+    },
+    {
+      "slug": "london-gatwick-istanbul",
+      "route": "London → Istanbul",
+      "airportPair": "??? → ???",
+      "verificationStatus": "verified",
+      "verifiedDate": "2026-09-04",
+      "reviewDueDate": "2026-10-04",
+      "currentEvidenceSource": "Gatwick Airport media centre: Pegasus daily London Gatwick-Istanbul launch announcement",
+      "evidenceUrl": "https://www.mediacentre.gatwickairport.com/news/new-daily-flights-to-istanbul-from-london-gatwick-launch-with-pegasus-airlines-this-summer-2c983-40f32.html",
+      "standingClaims": {
+        "directness": "direct option recorded",
+        "frequency": "Pegasus publishes daily direct Gatwick to Istanbul Sabiha Gokcen service; exact departure times vary",
+        "flightTime": "Published duration not recorded in this evidence check; check the exact flight for your dates",
+        "operators": [
+          "pegasus"
+        ]
+      },
+      "ageDays": 30,
+      "bucket": "due-within-7-days",
+      "riskFlags": [
+        "directness-claim",
+        "frequency-claim"
+      ],
+      "priorityScore": 101
+    },
+    {
+      "slug": "manchester-barcelona",
+      "route": "Manchester → Barcelona",
+      "airportPair": "??? → ???",
+      "verificationStatus": "verified",
+      "verifiedDate": "2026-09-04",
+      "reviewDueDate": "2026-10-04",
+      "currentEvidenceSource": "Manchester Airport's official Barcelona destination guide",
+      "evidenceUrl": "https://www.manchesterairport.co.uk/destinations-and-guides/barcelona/",
+      "standingClaims": {
+        "directness": "direct option recorded",
+        "frequency": "Manchester Airport lists direct service; exact operators, dates and frequency vary",
+        "flightTime": "Published planning duration: 2h 30m; check the exact flight for your dates",
+        "operators": []
+      },
+      "ageDays": 30,
+      "bucket": "due-within-7-days",
+      "riskFlags": [
+        "directness-claim",
+        "frequency-claim"
+      ],
+      "priorityScore": 101
+    },
+    {
+      "slug": "newcastle-dalaman",
+      "route": "Newcastle → Dalaman",
+      "airportPair": "??? → ???",
+      "verificationStatus": "verified",
+      "verifiedDate": "2026-09-04",
+      "reviewDueDate": "2026-10-04",
+      "currentEvidenceSource": "Newcastle Airport's current airline directory",
+      "evidenceUrl": "https://www.newcastleairport.com/our-destinations/our-airlines/",
+      "standingClaims": {
+        "directness": "direct option recorded",
+        "frequency": "SunExpress publishes multiple weekly summer flights; exact dates and frequency vary",
+        "flightTime": "Published duration not listed in Newcastle Airport's current destination evidence; check the exact flight for your dates",
+        "operators": [
+          "sunexpress"
+        ]
+      },
+      "ageDays": 30,
+      "bucket": "due-within-7-days",
+      "riskFlags": [
+        "directness-claim",
+        "frequency-claim"
+      ],
+      "priorityScore": 101
+    },
+    {
+      "slug": "london-gatwick-bodrum",
+      "route": "London → Bodrum",
+      "airportPair": "??? → ???",
+      "verificationStatus": "verified",
+      "verifiedDate": "2026-09-07",
+      "reviewDueDate": "2026-10-07",
+      "currentEvidenceSource": "SunExpress official Summer 2026 UK network announcement",
+      "evidenceUrl": "https://www.sunexpress.com/en-gb/company/media-center/press-releases/sunexpress-expands-uk-route-network-for-summer-2026-with-launch-of-services-from-east-midlands/",
+      "standingClaims": {
+        "directness": "direct option recorded",
+        "frequency": "SunExpress publishes twice-weekly direct summer 2026 service; exact operating days vary",
+        "flightTime": "Published duration not recorded in this evidence check; check the exact flight for your dates",
+        "operators": [
+          "sunexpress"
+        ]
+      },
+      "ageDays": 27,
+      "bucket": "due-within-7-days",
+      "riskFlags": [
+        "directness-claim",
+        "frequency-claim"
+      ],
+      "priorityScore": 100
+    },
+    {
+      "slug": "london-gatwick-dalaman",
+      "route": "London → Dalaman",
+      "airportPair": "??? → ???",
+      "verificationStatus": "verified",
+      "verifiedDate": "2026-09-07",
+      "reviewDueDate": "2026-10-07",
+      "currentEvidenceSource": "SunExpress official UK network material and Summer 2026 flight plan",
+      "evidenceUrl": "https://www.sunexpress.com/en-gb/company/media-center/press-releases/sunexpress-named-official-airline-partner-of-crystal-palace-football-club/",
+      "standingClaims": {
+        "directness": "direct option recorded",
+        "frequency": "Seasonal direct SunExpress service is published; exact dates and frequency vary",
+        "flightTime": "Published duration not recorded in this evidence check; check the exact flight for your dates",
+        "operators": [
+          "sunexpress"
+        ]
+      },
+      "ageDays": 27,
+      "bucket": "due-within-7-days",
+      "riskFlags": [
+        "directness-claim",
+        "frequency-claim"
+      ],
+      "priorityScore": 100
+    },
+    {
+      "slug": "london-gatwick-doha",
+      "route": "London → Doha",
+      "airportPair": "??? → ???",
+      "verificationStatus": "verified",
+      "verifiedDate": "2026-09-07",
+      "reviewDueDate": "2026-10-07",
+      "currentEvidenceSource": "Qatar Airways' own official Gatwick-Doha booking route, corroborated by the airline's own live Flight Status system",
+      "evidenceUrl": "https://www.qatarairways.com/en-gb/destinations/flights-to-doha/from-london-gatwick.html",
+      "standingClaims": {
+        "directness": "direct option recorded",
+        "frequency": "Qatar Airways confirmed direct; exact current weekly frequency not independently reconfirmed — see note.",
+        "flightTime": "Direct; duration varies by schedule",
+        "operators": [
+          "qatar-airways"
+        ]
+      },
+      "ageDays": 27,
+      "bucket": "due-within-7-days",
+      "riskFlags": [
+        "directness-claim",
+        "frequency-claim"
+      ],
+      "priorityScore": 100
+    },
+    {
+      "slug": "london-gatwick-izmir",
+      "route": "London → Izmir",
+      "airportPair": "??? → ???",
+      "verificationStatus": "verified",
+      "verifiedDate": "2026-09-07",
+      "reviewDueDate": "2026-10-07",
+      "currentEvidenceSource": "SunExpress official Summer 2026 flight plan, corroborated by current Crystal Palace F.C. partnership press release",
+      "evidenceUrl": "https://static.sunexpress.com/media/wn1lmfyn/sxs-flightplan-s26-27nov_0126.pdf",
+      "standingClaims": {
+        "directness": "direct option recorded",
+        "frequency": "Seasonal direct SunExpress service is listed in the April-October 2026 plan; exact frequency varies",
+        "flightTime": "Published duration not recorded in this evidence check; check the exact flight for your dates",
+        "operators": [
+          "sunexpress"
+        ]
+      },
+      "ageDays": 27,
+      "bucket": "due-within-7-days",
+      "riskFlags": [
+        "directness-claim",
+        "frequency-claim"
+      ],
+      "priorityScore": 100
+    },
+    {
+      "slug": "london-heathrow-casablanca",
+      "route": "London → Casablanca",
+      "airportPair": "??? → ???",
+      "verificationStatus": "verified",
+      "verifiedDate": "2026-09-07",
+      "reviewDueDate": "2026-10-07",
+      "currentEvidenceSource": "Royal Air Maroc's current London–Casablanca booking page",
+      "evidenceUrl": "https://www.royalairmaroc.com/en_gb/flights-from-london-to-casablanca",
+      "standingClaims": {
+        "directness": "direct option recorded",
+        "frequency": "Royal Air Maroc publishes Heathrow–Casablanca options; exact dates and frequency vary",
+        "flightTime": "Published duration not recorded in this evidence check; check the exact flight for your dates",
+        "operators": []
+      },
+      "ageDays": 27,
+      "bucket": "due-within-7-days",
+      "riskFlags": [
+        "directness-claim",
+        "frequency-claim"
+      ],
+      "priorityScore": 100
+    },
+    {
+      "slug": "manchester-antalya",
+      "route": "Manchester → Antalya",
+      "airportPair": "??? → ???",
+      "verificationStatus": "verified",
+      "verifiedDate": "2026-09-07",
+      "reviewDueDate": "2026-10-07",
+      "currentEvidenceSource": "SunExpress official Summer 2026 flight plan, corroborated by current Jet2 and Corendon route pages and Manchester Airport destination guide",
+      "evidenceUrl": "https://static.sunexpress.com/media/wn1lmfyn/sxs-flightplan-s26-27nov_0126.pdf",
+      "standingClaims": {
+        "directness": "direct option recorded",
+        "frequency": "Seasonal direct service; exact airlines, dates and frequency vary by schedule",
+        "flightTime": "Published timings vary by source; check the exact flight and date",
+        "operators": [
+          "sunexpress",
+          "jet2",
+          "corendon"
+        ]
+      },
+      "ageDays": 27,
+      "bucket": "due-within-7-days",
+      "riskFlags": [
+        "directness-claim",
+        "frequency-claim"
+      ],
+      "priorityScore": 100
+    },
+    {
+      "slug": "manchester-bodrum",
+      "route": "Manchester → Bodrum",
+      "airportPair": "??? → ???",
+      "verificationStatus": "verified",
+      "verifiedDate": "2026-09-07",
+      "reviewDueDate": "2026-10-07",
+      "currentEvidenceSource": "SunExpress official summer 2026 UK network announcement, corroborated by Manchester Airport destination guide",
+      "evidenceUrl": "https://www.sunexpress.com/en-gb/company/media-center/press-releases/sunexpress-expands-uk-route-network-for-summer-2026-with-launch-of-services-from-east-midlands/",
+      "standingClaims": {
+        "directness": "direct option recorded",
+        "frequency": "SunExpress: twice-weekly direct service in the summer 2026 programme; exact operating days require checking",
+        "flightTime": "Published timings vary by source; check the exact flight for your dates",
+        "operators": [
+          "sunexpress"
+        ]
+      },
+      "ageDays": 27,
+      "bucket": "due-within-7-days",
+      "riskFlags": [
+        "directness-claim",
+        "frequency-claim"
+      ],
+      "priorityScore": 100
+    },
+    {
+      "slug": "manchester-dalaman",
+      "route": "Manchester → Dalaman",
+      "airportPair": "??? → ???",
+      "verificationStatus": "verified",
+      "verifiedDate": "2026-09-07",
+      "reviewDueDate": "2026-10-07",
+      "currentEvidenceSource": "SunExpress official Manchester–Dalaman announcement, corroborated by Manchester Airport destination guide",
+      "evidenceUrl": "https://www.sunexpress.com/en-gb/company/media-center/press-releases/sunexpress-launches-convenient-night-flights-from-manchester-to-dalaman/",
+      "standingClaims": {
+        "directness": "direct option recorded",
+        "frequency": "SunExpress: 15 weekly direct overnight flights in its current summer 2026 programme; exact dates may vary",
+        "flightTime": "Scheduled flight time: 4h 30m from Manchester",
+        "operators": [
+          "sunexpress"
+        ]
+      },
+      "ageDays": 27,
+      "bucket": "due-within-7-days",
+      "riskFlags": [
+        "directness-claim",
+        "frequency-claim"
+      ],
+      "priorityScore": 100
+    },
+    {
+      "slug": "manchester-izmir",
+      "route": "Manchester → Izmir",
+      "airportPair": "??? → ???",
+      "verificationStatus": "verified",
+      "verifiedDate": "2026-09-07",
+      "reviewDueDate": "2026-10-07",
+      "currentEvidenceSource": "SunExpress official Summer 2026 flight plan and programme announcement, corroborated by Manchester Airport destination guide",
+      "evidenceUrl": "https://static.sunexpress.com/media/wn1lmfyn/sxs-flightplan-s26-27nov_0126.pdf",
+      "standingClaims": {
+        "directness": "direct option recorded",
+        "frequency": "Seasonal direct service in SunExpress’s April–October 2026 programme; exact frequency and dates vary",
+        "flightTime": "Published planning figure: 4h 20m from Manchester Airport; exact duration varies by flight",
+        "operators": [
+          "sunexpress"
+        ]
+      },
+      "ageDays": 27,
+      "bucket": "due-within-7-days",
+      "riskFlags": [
+        "directness-claim",
+        "frequency-claim"
+      ],
+      "priorityScore": 100
+    },
+    {
+      "slug": "leeds-bradford-antalya",
+      "route": "Leeds → Antalya",
+      "airportPair": "??? → ???",
+      "verificationStatus": "verified",
+      "verifiedDate": "2026-09-08",
+      "reviewDueDate": "2026-10-08",
+      "currentEvidenceSource": "Leeds Bradford Airport's own live departures board, corroborated by its current Antalya destination page",
+      "evidenceUrl": "https://www.leedsbradfordairport.co.uk/flights/departures",
+      "standingClaims": {
+        "directness": "direct option recorded",
+        "frequency": "Leeds Bradford Airport names Jet2, TUI and SunExpress as operators; exact dates and frequency vary by airline and schedule",
+        "flightTime": "Published duration not listed by Leeds Bradford Airport; check the exact flight for your dates",
+        "operators": [
+          "jet2",
+          "tui",
+          "sunexpress"
+        ]
+      },
+      "ageDays": 26,
+      "bucket": "due-within-7-days",
+      "riskFlags": [
+        "directness-claim",
+        "frequency-claim"
+      ],
+      "priorityScore": 100
+    },
+    {
+      "slug": "leeds-bradford-bodrum",
+      "route": "Leeds → Bodrum",
+      "airportPair": "??? → ???",
+      "verificationStatus": "verified",
+      "verifiedDate": "2026-09-08",
+      "reviewDueDate": "2026-10-08",
+      "currentEvidenceSource": "Leeds Bradford Airport's own live departures board",
+      "evidenceUrl": "https://www.leedsbradfordairport.co.uk/flights/departures",
+      "standingClaims": {
+        "directness": "direct option recorded",
+        "frequency": "Leeds Bradford Airport's own live departures board names Jet2 as a current operator; exact dates and frequency vary by schedule",
+        "flightTime": "Published duration not listed by Leeds Bradford Airport; check the exact flight for your dates",
+        "operators": [
+          "jet2"
+        ]
+      },
+      "ageDays": 26,
+      "bucket": "due-within-7-days",
+      "riskFlags": [
+        "directness-claim",
+        "frequency-claim"
+      ],
+      "priorityScore": 100
+    },
+    {
+      "slug": "leeds-bradford-dalaman",
+      "route": "Leeds → Dalaman",
+      "airportPair": "??? → ???",
+      "verificationStatus": "verified",
+      "verifiedDate": "2026-09-08",
+      "reviewDueDate": "2026-10-08",
+      "currentEvidenceSource": "Leeds Bradford Airport's own live departures board, corroborated by its current Dalaman destination page",
+      "evidenceUrl": "https://www.leedsbradfordairport.co.uk/flights/departures",
+      "standingClaims": {
+        "directness": "direct option recorded",
+        "frequency": "Leeds Bradford Airport names Jet2 Holidays and TUI as operators; exact dates and frequency vary by airline and schedule",
+        "flightTime": "Published duration not listed by Leeds Bradford Airport; check the exact flight for your dates",
+        "operators": [
+          "jet2",
+          "tui"
+        ]
+      },
+      "ageDays": 26,
+      "bucket": "due-within-7-days",
+      "riskFlags": [
+        "directness-claim",
+        "frequency-claim"
+      ],
+      "priorityScore": 100
+    },
+    {
+      "slug": "london-gatwick-agadir",
+      "route": "London → Agadir",
+      "airportPair": "??? → ???",
+      "verificationStatus": "verified",
+      "verifiedDate": "2026-09-08",
+      "reviewDueDate": "2026-10-08",
+      "currentEvidenceSource": "easyJet's current London Gatwick–Agadir booking timetable, corroborated by British Airways' current Agadir route page",
+      "evidenceUrl": "https://stafftravel.easyjet.com/en/cheap-flights/London-Gatwick/Agadir",
+      "standingClaims": {
+        "directness": "direct option recorded",
+        "frequency": "Current easyJet timetable shows bookable nonstop dates from late September through November 2026; British Airways also publishes direct Gatwick–Agadir service. Exact operating days vary",
+        "flightTime": "Just under 4h (British Airways); check the exact flight for your dates",
+        "operators": [
+          "easyjet",
+          "british-airways"
+        ]
+      },
+      "ageDays": 26,
+      "bucket": "due-within-7-days",
+      "riskFlags": [
+        "directness-claim",
+        "frequency-claim"
+      ],
+      "priorityScore": 100
+    },
+    {
+      "slug": "london-gatwick-marrakech",
+      "route": "London → Marrakech",
+      "airportPair": "??? → ???",
+      "verificationStatus": "verified",
+      "verifiedDate": "2026-09-08",
+      "reviewDueDate": "2026-10-08",
+      "currentEvidenceSource": "London Gatwick's own live flight-search system",
+      "evidenceUrl": "https://www.gatwickairport.com/flights?destination=D",
+      "standingClaims": {
+        "directness": "direct option recorded",
+        "frequency": "London Gatwick's own live flight board names easyJet as a current operator, with at least two flights on a single day observed; exact frequency and dates vary",
+        "flightTime": "Published duration not recorded in this evidence check; check the exact flight for your dates",
+        "operators": [
+          "easyjet"
+        ]
+      },
+      "ageDays": 26,
+      "bucket": "due-within-7-days",
+      "riskFlags": [
+        "directness-claim",
+        "frequency-claim"
+      ],
+      "priorityScore": 100
+    },
+    {
+      "slug": "birmingham-delhi",
+      "route": "Birmingham → Delhi",
+      "airportPair": "??? → ???",
+      "verificationStatus": "verified",
+      "verifiedDate": "2026-08-21",
+      "reviewDueDate": "2026-10-05",
+      "currentEvidenceSource": "Air India's own current route-information page for this exact pair, reconciled against Birmingham Airport's own 2019 press release describing the same tag-service structure",
+      "evidenceUrl": "https://www.airindia.com/en/book-flights/birmingham-to-delhi-flights",
+      "standingClaims": {
+        "directness": "connecting only recorded",
+        "frequency": "Three times weekly on the confirmed tag-service pattern (see note); exact current frequency not independently re-verified",
+        "flightTime": "Connecting via Amritsar — journey time depends on the connection, see note",
+        "operators": [
+          "air-india"
+        ]
+      },
+      "ageDays": 44,
+      "bucket": "due-within-7-days",
+      "riskFlags": [
+        "frequency-claim"
+      ],
+      "priorityScore": 81
+    },
+    {
+      "slug": "birmingham-islamabad",
+      "route": "Birmingham → Islamabad",
+      "airportPair": "??? → ???",
+      "verificationStatus": "verified",
+      "verifiedDate": "2026-08-21",
+      "reviewDueDate": "2026-10-05",
+      "currentEvidenceSource": "PIA's own live booking engine (book-pia.crane.aero) — a direct BHX-ISB availability search, not a marketing or aggregator page",
+      "evidenceUrl": "https://book-pia.crane.aero/ibe/availability?tripType=ROUND_TRIP&depPort=BHX&arrPort=ISB",
+      "standingClaims": {
+        "directness": "connecting only recorded",
+        "frequency": "Connecting options exist; exact schedules and frequency have not been independently established",
+        "flightTime": "Connecting via Istanbul — journey time depends on the connection, see note",
+        "operators": [
+          "pia"
+        ]
+      },
+      "ageDays": 44,
+      "bucket": "due-within-7-days",
+      "riskFlags": [
+        "frequency-claim"
+      ],
+      "priorityScore": 81
+    },
+    {
+      "slug": "birmingham-lahore",
+      "route": "Birmingham → Lahore",
+      "airportPair": "??? → ???",
+      "verificationStatus": "verified",
+      "verifiedDate": "2026-08-21",
+      "reviewDueDate": "2026-10-05",
+      "currentEvidenceSource": "PIA's own live booking engine (book-pia.crane.aero) — a direct BHX-LHE availability search, not a marketing or aggregator page",
+      "evidenceUrl": "https://book-pia.crane.aero/ibe/availability?tripType=ROUND_TRIP&depPort=BHX&arrPort=LHE",
+      "standingClaims": {
+        "directness": "connecting only recorded",
+        "frequency": "Connecting options exist; exact schedules and frequency have not been independently established",
+        "flightTime": "Connecting via Istanbul — journey time depends on the connection, see note",
+        "operators": [
+          "pia"
+        ]
+      },
+      "ageDays": 44,
+      "bucket": "due-within-7-days",
+      "riskFlags": [
+        "frequency-claim"
+      ],
+      "priorityScore": 81
+    },
+    {
+      "slug": "manchester-karachi",
+      "route": "Manchester → Karachi",
+      "airportPair": "??? → ???",
+      "verificationStatus": "verified",
+      "verifiedDate": "2026-08-21",
+      "reviewDueDate": "2026-10-05",
+      "currentEvidenceSource": "PIA's own live booking engine (book-pia.crane.aero) — a direct MAN-KHI availability search, not a marketing or aggregator page",
+      "evidenceUrl": "https://book-pia.crane.aero/ibe/availability?tripType=ROUND_TRIP&depPort=MAN&arrPort=KHI",
+      "standingClaims": {
+        "directness": "connecting only recorded",
+        "frequency": "Connecting options exist; exact schedules and frequency have not been independently established",
+        "flightTime": "Connecting — journey time depends on the routing sold; not fixed, see note",
+        "operators": [
+          "pia"
+        ]
+      },
+      "ageDays": 44,
+      "bucket": "due-within-7-days",
+      "riskFlags": [
+        "frequency-claim"
+      ],
+      "priorityScore": 81
+    },
+    {
+      "slug": "birmingham-madinah",
+      "route": "Birmingham → Madinah",
+      "airportPair": "??? → ???",
+      "verificationStatus": "unverified",
+      "verifiedDate": "2026-10-04",
+      "reviewDueDate": "2026-10-18",
+      "currentEvidenceSource": "JetStash portfolio evidence audit",
+      "evidenceUrl": null,
+      "standingClaims": {
+        "directness": "connecting only recorded",
+        "frequency": "Daily, connecting via Istanbul, Doha or Jeddah",
+        "flightTime": "8h 50m, one stop",
+        "operators": [
+          "turkish-airlines",
+          "qatar-airways",
+          "saudia"
+        ]
+      },
+      "ageDays": 0,
+      "bucket": "due-within-8-14-days",
+      "riskFlags": [
+        "status-not-verified",
+        "frequency-claim"
+      ],
+      "priorityScore": 80
+    },
+    {
+      "slug": "leeds-bradford-amritsar",
+      "route": "Leeds → Amritsar",
+      "airportPair": "??? → ???",
+      "verificationStatus": "unverified",
+      "verifiedDate": "2026-10-04",
+      "reviewDueDate": "2026-10-18",
+      "currentEvidenceSource": "JetStash portfolio evidence audit",
+      "evidenceUrl": null,
+      "standingClaims": {
+        "directness": "connecting only recorded",
+        "frequency": "Unverified — no confirmed daily schedule; check the live search for your dates",
+        "flightTime": "Unverified — actual stop count and journey time vary by date, see note",
+        "operators": []
+      },
+      "ageDays": 0,
+      "bucket": "due-within-8-14-days",
+      "riskFlags": [
+        "status-not-verified",
+        "frequency-claim"
+      ],
+      "priorityScore": 80
+    },
+    {
+      "slug": "leeds-bradford-islamabad",
+      "route": "Leeds → Islamabad",
+      "airportPair": "??? → ???",
+      "verificationStatus": "unverified",
+      "verifiedDate": "2026-10-04",
+      "reviewDueDate": "2026-10-18",
+      "currentEvidenceSource": "JetStash portfolio evidence audit",
+      "evidenceUrl": null,
+      "standingClaims": {
+        "directness": "connecting only recorded",
+        "frequency": "Unverified — no confirmed daily schedule; check the live search for your dates",
+        "flightTime": "Unverified — actual stop count and journey time vary by date, see note",
+        "operators": []
+      },
+      "ageDays": 0,
+      "bucket": "due-within-8-14-days",
+      "riskFlags": [
+        "status-not-verified",
+        "frequency-claim"
+      ],
+      "priorityScore": 80
+    },
+    {
+      "slug": "manchester-ahmedabad",
+      "route": "Manchester → Ahmedabad",
+      "airportPair": "??? → ???",
+      "verificationStatus": "unverified",
+      "verifiedDate": "2026-10-04",
+      "reviewDueDate": "2026-10-18",
+      "currentEvidenceSource": "JetStash portfolio evidence audit",
+      "evidenceUrl": null,
+      "standingClaims": {
+        "directness": "connecting only recorded",
+        "frequency": "Multiple daily 1-stop options, no direct service",
+        "flightTime": "Around 13h, usually 1 stop",
+        "operators": [
+          "qatar-airways",
+          "etihad-airways",
+          "emirates"
+        ]
+      },
+      "ageDays": 0,
+      "bucket": "due-within-8-14-days",
+      "riskFlags": [
+        "status-not-verified",
+        "frequency-claim"
+      ],
+      "priorityScore": 80
+    },
+    {
+      "slug": "manchester-amritsar",
+      "route": "Manchester → Amritsar",
+      "airportPair": "??? → ???",
+      "verificationStatus": "unverified",
+      "verifiedDate": "2026-10-04",
+      "reviewDueDate": "2026-10-18",
+      "currentEvidenceSource": "JetStash portfolio evidence audit",
+      "evidenceUrl": null,
+      "standingClaims": {
+        "directness": "connecting only recorded",
+        "frequency": "Multiple daily 1-stop options, no direct service",
+        "flightTime": "13h 20m, usually 1 stop",
+        "operators": [
+          "qatar-airways",
+          "indigo",
+          "british-airways",
+          "air-india"
+        ]
+      },
+      "ageDays": 0,
+      "bucket": "due-within-8-14-days",
+      "riskFlags": [
+        "status-not-verified",
+        "frequency-claim"
+      ],
+      "priorityScore": 80
+    },
+    {
+      "slug": "manchester-jeddah",
+      "route": "Manchester → Jeddah",
+      "airportPair": "??? → ???",
+      "verificationStatus": "unverified",
+      "verifiedDate": "2026-10-04",
+      "reviewDueDate": "2026-10-18",
+      "currentEvidenceSource": "JetStash portfolio evidence audit",
+      "evidenceUrl": null,
+      "standingClaims": {
+        "directness": "connecting only recorded",
+        "frequency": "Daily, connecting via Doha",
+        "flightTime": "10h, one stop",
+        "operators": [
+          "qatar-airways"
+        ]
+      },
+      "ageDays": 0,
+      "bucket": "due-within-8-14-days",
+      "riskFlags": [
+        "status-not-verified",
+        "frequency-claim"
+      ],
+      "priorityScore": 80
+    },
+    {
+      "slug": "manchester-madinah",
+      "route": "Manchester → Madinah",
+      "airportPair": "??? → ???",
+      "verificationStatus": "unverified",
+      "verifiedDate": "2026-10-04",
+      "reviewDueDate": "2026-10-18",
+      "currentEvidenceSource": "JetStash portfolio evidence audit",
+      "evidenceUrl": null,
+      "standingClaims": {
+        "directness": "connecting only recorded",
+        "frequency": "Multiple daily 1-stop options, no current direct service",
+        "flightTime": "9h 15m, usually 1 stop",
+        "operators": [
+          "turkish-airlines",
+          "saudia",
+          "egyptair",
+          "royal-jordanian"
+        ]
+      },
+      "ageDays": 0,
+      "bucket": "due-within-8-14-days",
+      "riskFlags": [
+        "status-not-verified",
+        "frequency-claim"
+      ],
+      "priorityScore": 80
+    },
+    {
+      "slug": "manchester-islamabad",
+      "route": "Manchester → Islamabad",
+      "airportPair": "??? → ???",
+      "verificationStatus": "verified",
+      "verifiedDate": "2026-09-12",
+      "reviewDueDate": "2026-10-12",
+      "currentEvidenceSource": "Manchester Airport's own media centre: \"Hundreds of thousands of people to benefit as Pakistan International Airlines launches new route from Manchester Airport\" (mediacentre.manchesterairport.co.uk, 6 Oct 2025), corroborated by Manchester Airport's 19 May 2026 article describing the route as an ongoing \"successful\" service",
+      "evidenceUrl": "https://mediacentre.manchesterairport.co.uk/hundreds-of-thousands-of-people-to-benefit-as-pakistan-international-airlines-launches-new-route-from-manchester-airport/",
+      "standingClaims": {
+        "directness": "direct option recorded",
+        "frequency": "4x weekly direct. Typical days: Mon, Tue, Thu & Sat. Check PIA for your exact date.",
+        "flightTime": "7h 45m direct",
+        "operators": [
+          "pia"
+        ]
+      },
+      "ageDays": 22,
+      "bucket": "due-within-8-14-days",
+      "riskFlags": [
+        "directness-claim",
+        "frequency-claim"
+      ],
+      "priorityScore": 70
+    },
+    {
+      "slug": "leeds-bradford-barcelona",
+      "route": "Leeds → Barcelona",
+      "airportPair": "??? → ???",
+      "verificationStatus": "verified",
+      "verifiedDate": "2026-09-14",
+      "reviewDueDate": "2026-10-14",
+      "currentEvidenceSource": "Leeds Bradford Airport's official direct destinations list",
+      "evidenceUrl": "https://www.leedsbradfordairport.co.uk/direct-destinations",
+      "standingClaims": {
+        "directness": "direct option recorded",
+        "frequency": "Leeds Bradford direct-destinations list includes Barcelona; exact operators and frequency vary",
+        "flightTime": "Direct destination listed by Leeds Bradford Airport; check the exact flight for duration",
+        "operators": []
+      },
+      "ageDays": 20,
+      "bucket": "due-within-8-14-days",
+      "riskFlags": [
+        "directness-claim",
+        "frequency-claim"
+      ],
+      "priorityScore": 70
+    },
+    {
+      "slug": "london-gatwick-faro",
+      "route": "London → Faro",
+      "airportPair": "??? → ???",
+      "verificationStatus": "verified",
+      "verifiedDate": "2026-09-14",
+      "reviewDueDate": "2026-10-14",
+      "currentEvidenceSource": "London Gatwick's official destinations information",
+      "evidenceUrl": "https://www.gatwickairport.com/flights/destinations.html",
+      "standingClaims": {
+        "directness": "direct option recorded",
+        "frequency": "Gatwick destination information lists Faro; exact operators and frequency vary",
+        "flightTime": "Direct destination listed by Gatwick; approximately 3h; check the exact flight for duration",
+        "operators": []
+      },
+      "ageDays": 20,
+      "bucket": "due-within-8-14-days",
+      "riskFlags": [
+        "directness-claim",
+        "frequency-claim"
+      ],
+      "priorityScore": 70
+    },
+    {
+      "slug": "manchester-faro",
+      "route": "Manchester → Faro",
+      "airportPair": "??? → ???",
+      "verificationStatus": "verified",
+      "verifiedDate": "2026-09-14",
+      "reviewDueDate": "2026-10-14",
+      "currentEvidenceSource": "Manchester Airport's official Faro destination guide",
+      "evidenceUrl": "https://www.manchesterairport.co.uk/destinations-and-guides/faro/",
+      "standingClaims": {
+        "directness": "direct option recorded",
+        "frequency": "Manchester Airport lists direct service; exact operators, dates and frequency vary",
+        "flightTime": "Published planning duration: 3h; check the exact flight for your dates",
+        "operators": []
+      },
+      "ageDays": 20,
+      "bucket": "due-within-8-14-days",
+      "riskFlags": [
+        "directness-claim",
+        "frequency-claim"
+      ],
+      "priorityScore": 70
+    },
+    {
+      "slug": "manchester-lahore",
+      "route": "Manchester → Lahore",
+      "airportPair": "??? → ???",
+      "verificationStatus": "verified",
+      "verifiedDate": "2026-09-14",
+      "reviewDueDate": "2026-10-14",
+      "currentEvidenceSource": "Manchester Airport's own media centre: \"A dozen new routes are launching from Manchester Airport this summer\" (mediacentre.manchesterairport.co.uk, 19 May 2026), re-checked live 14 September 2026",
+      "evidenceUrl": "https://mediacentre.manchesterairport.co.uk/a-dozen-new-routes-are-launching-from-manchester-airport-this-summer--from-med-beach-hotspots-to-major-global-hubs/",
+      "standingClaims": {
+        "directness": "direct option recorded",
+        "frequency": "Direct — current frequency not confirmed by an official schedule, see note",
+        "flightTime": "8h direct",
+        "operators": [
+          "pia"
+        ]
+      },
+      "ageDays": 20,
+      "bucket": "due-within-8-14-days",
+      "riskFlags": [
+        "directness-claim",
+        "frequency-claim"
+      ],
+      "priorityScore": 70
+    },
+    {
+      "slug": "london-gatwick-amritsar",
+      "route": "London → Amritsar",
+      "airportPair": "??? → ???",
+      "verificationStatus": "verified",
+      "verifiedDate": "2026-09-17",
+      "reviewDueDate": "2026-10-17",
+      "currentEvidenceSource": "Air India official London-Amritsar booking route and newsroom press release",
+      "evidenceUrl": "https://www.airindia.com/en-in/book-flights/london-to-amritsar-flights",
+      "standingClaims": {
+        "directness": "direct option recorded",
+        "frequency": "Non-stop service shown by Air India; exact operating days vary",
+        "flightTime": "Direct; check the live schedule for duration",
+        "operators": [
+          "air-india"
+        ]
+      },
+      "ageDays": 17,
+      "bucket": "due-within-8-14-days",
+      "riskFlags": [
+        "directness-claim",
+        "frequency-claim"
+      ],
+      "priorityScore": 70
+    }
+  ]
+}

@@ -10,7 +10,8 @@
     "start": "next start",
     "lint": "next lint",
     "test": "vitest run",
-    "data:audit": "tsx scripts/generate-portfolio-audit.ts",
+      "data:audit": "tsx scripts/generate-portfolio-audit.ts",
+      "data:freshness-queue": "tsx scripts/generate-route-freshness-queue.ts",
     "indexnow:submit": "node scripts/indexnow-submit.mjs",
     "brevo:setup": "node scripts/setup-brevo-attributes.mjs"
   },
