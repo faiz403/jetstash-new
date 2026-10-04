@@ -245,8 +245,8 @@ describe('no evidence or trust wording was accidentally lost — full 88-route s
     // monetised handoff) now get the temporary generic Google Flights
     // fallback instead of failing fully closed — see this file's Google
     // Flights fallback tests above and tests/lhr-lgw-google-flights-fallback.test.ts.
-    expect(withCta).toBe(63);
-    expect(genericFallback).toBe(26);
+    expect(withCta).toBe(59);
+    expect(genericFallback).toBe(30);
     expect(failClosed).toBe(0);
     expect(withCta + failClosed + genericFallback).toBe(89);
   });

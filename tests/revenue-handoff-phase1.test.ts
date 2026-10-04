@@ -37,7 +37,7 @@ describe('First Revenue Sprint Phase 1 — public route handoffs', () => {
     }
 
     expect(counts.exact + counts.fallback + counts.serviceEndedConnecting + counts.noSafe).toBe(routes.length);
-    expect(counts).toEqual({ exact: 43, fallback: 18, serviceEndedConnecting: 2, noSafe: 26 });
+    expect(counts).toEqual({ exact: 42, fallback: 15, serviceEndedConnecting: 2, noSafe: 30 });
   });
 
   it('uses effective route truth to allow only the service-ended-connecting handoff for a currently service-ended route, never the ordinary exact/fallback kinds', () => {
@@ -76,11 +76,7 @@ describe('First Revenue Sprint Phase 1 — public route handoffs', () => {
       expect(url.hostname, route.slug).toBe('www.trip.com');
       expect(url.pathname, route.slug).toMatch(/^\/flights\//);
       expect(url.searchParams.get('dcity'), route.slug).toBe(airport.code);
-      // Trip.com uses city codes for Izmir and Rome, while JetStash correctly
-      // records their individual airports as ADB and FCO. Dashboard-generated
-      // handoffs are retained rather than hand-edited to airport codes.
-      const providerDestinationCode = ({ izmir: 'IZM', rome: 'ROM' } as Record<string, string>)[route.destinationSlug] ?? destination.iataCode;
-      expect(url.searchParams.get('acity'), route.slug).toBe(providerDestinationCode);
+      expect(url.searchParams.get('acity'), route.slug).toBe(destination.iataCode);
       expect(url.searchParams.get('Allianceid'), route.slug).toBe('9804124');
       expect(url.searchParams.get('SID'), route.slug).toBe('327450313');
       expect(url.searchParams.get('trip_sub3'), route.slug).toMatch(/^D\d+$/);

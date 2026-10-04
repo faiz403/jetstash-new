@@ -21,7 +21,6 @@ const SUPPORTED_ROUTES = [
   'manchester-dalaman',
   'manchester-bodrum',
   'manchester-antalya',
-  'manchester-izmir',
   'manchester-dubai',
   'manchester-karachi',
   'manchester-dhaka',
@@ -63,6 +62,10 @@ const SUPPORTED_ROUTES = [
 ];
 
 const UNSUPPORTED_ROUTES = [
+  // Trip.com's generated handoff used metropolitan IZM rather than the
+  // route's exact ADB airport. It is intentionally suppressed rather than
+  // hand-edited into an unverified affiliate URL.
+  'manchester-izmir',
   'london-heathrow-delhi',
   'london-heathrow-doha',
   'london-heathrow-jeddah',
@@ -145,13 +148,13 @@ describe('every current route slug is classified exactly once', () => {
     expect(overlap).toEqual([]);
   });
 
-  it('is exactly 45 supported and 44 unsupported (44, not 43, after the 7 September 2026 canonical addition of london-gatwick-doha, which has no route-level Trip.com link)', () => {
-    expect(SUPPORTED_ROUTES).toHaveLength(45);
-    expect(UNSUPPORTED_ROUTES).toHaveLength(44);
+  it('is exactly 44 supported and 45 unsupported after the exact-airport audit suppressed the metropolitan-code Manchester–Izmir handoff', () => {
+    expect(SUPPORTED_ROUTES).toHaveLength(44);
+    expect(UNSUPPORTED_ROUTES).toHaveLength(45);
   });
 });
 
-describe('all 45 supported routes receive their exact, real Trip.com URL', () => {
+describe('all 44 supported routes receive their exact, real Trip.com URL', () => {
   it.each(SUPPORTED_ROUTES)('%s resolves to a genuine trip.com/flights URL', (slug) => {
     const url = getTripComRouteUrl(slug);
     expect(url).not.toBeNull();

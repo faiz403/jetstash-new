@@ -145,25 +145,25 @@ describe('Current-dataset reconciliation (current-state invariant: recomputed in
     expect(allEntries.filter((e) => e.tripComUrl === null)).toHaveLength(expectedNoHandoff);
   });
 
-  // The exact 16 routes the audit named — asserted as regression evidence
+  // The exact routes whose handoffs remain airport-exact after the portfolio audit.
   // for this fix, never read by production code.
-  it('the 16 audit-named routes are restored', () => {
+  it('the 13 audit-named routes with exact-airport handoffs remain restored', () => {
     const airportGroups = buildTrackedFareAirportGroups(routes, undefined, nowIso);
     const bySlug = new Map(airportGroups.flatMap((g) => g.entries).map((e) => [e.routeSlug, e.tripComUrl]));
     const restoredExpected = [
-      'manchester-barcelona', 'manchester-faro', 'manchester-athens', 'manchester-rome',
-      'birmingham-barcelona', 'birmingham-faro', 'birmingham-athens', 'birmingham-rome',
+      'manchester-barcelona', 'manchester-faro', 'manchester-athens',
+      'birmingham-barcelona', 'birmingham-faro', 'birmingham-athens',
       'birmingham-dubai', 'birmingham-doha', 'birmingham-jeddah',
       'leeds-bradford-barcelona', 'leeds-bradford-faro',
-      'bristol-barcelona', 'bristol-faro', 'bristol-rome',
+      'bristol-barcelona', 'bristol-faro',
     ];
-    expect(restoredExpected).toHaveLength(16);
+    expect(restoredExpected).toHaveLength(13);
     for (const slug of restoredExpected) {
       expect(bySlug.get(slug), `${slug} should now have a handoff`).not.toBeNull();
     }
   });
 
-  it('every remaining no-handoff route is London Heathrow/Gatwick — the documented aggregate-search limitation, not a new gap', () => {
+  it('every remaining no-handoff route is London-origin or an explicitly suppressed metropolitan-code handoff', () => {
     // Structural invariant: the durable property is "no-handoff routes are
     // always London-origin", not a specific count of them — that count
     // moves as routes enter/leave current tracking, which is expected.
@@ -173,7 +173,8 @@ describe('Current-dataset reconciliation (current-state invariant: recomputed in
     for (const e of blocked) {
       const route = routes.find((r) => r.slug === e.routeSlug)!;
       const airport = getRouteAirport(route)!;
-      expect(['london-heathrow', 'london-gatwick']).toContain(airport.slug);
+      const exactAirportSuppression = ['manchester-izmir', 'manchester-rome', 'birmingham-rome', 'bristol-rome'];
+      expect(['london-heathrow', 'london-gatwick'].includes(airport.slug) || exactAirportSuppression.includes(e.routeSlug)).toBe(true);
     }
   });
 });

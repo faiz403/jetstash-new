@@ -13,7 +13,7 @@ describe('affiliate-status founder guidance', () => {
     // 45 of 89, not 45 of 80/82/88 — the count is live-computed in lib/founder-insights.ts;
     // the denominator moved to 89 after the 7 September 2026 canonical
     // addition of london-gatwick-doha (no route-level Trip.com link).
-    expect(affiliate?.headline).toContain('45 of 89');
+    expect(affiliate?.headline).toContain('44 of 89');
     expect(affiliate?.headline).not.toMatch(/TravelUp is/i);
     expect(affiliate?.action).not.toContain('travelup.com');
   });
