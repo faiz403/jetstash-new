@@ -116,7 +116,7 @@ describe('Target 3: Manchester-Mumbai route-status recheck before optimising "di
     const presentation = getEffectiveRoutePresentation(route, routeStatusEvents, '2026-09-05');
     expect(presentation.status).toBe('service-ended');
     expect(presentation.metadataTitle).not.toContain('Direct Flight Status Update');
-    expect(presentation.metadataTitle).toBe('Manchester to Mumbai: Route Guide');
+    expect(presentation.metadataTitle).toBe('Manchester to Mumbai Flights: Direct Service Ended');
   });
 
   it('before fresh verification existed, the same boundary correctly self-corrected to the automatic fail-closed "unverified" state — still true today for any route in that position', () => {
@@ -148,5 +148,18 @@ describe('Deliberately not implemented: Karachi', () => {
     // Batch 1's own 22 Aug 2026 entry.
     const businessObs = fareObservations.filter((o) => o.routeSlug === 'manchester-karachi' && o.cabin === 'Business');
     expect(businessObs.every((o) => o.id === 'obs-man-khi-business-20260822-8w-v1')).toBe(true);
+  });
+});
+
+describe('service-ended title change is Mumbai-specific (4 Oct 2026 funnel audit)', () => {
+  it('manchester-delhi keeps the default service-ended title because no query evidence supports changing it', () => {
+    const route = getRouteBySlug('manchester-delhi')!;
+    const presentation = getEffectiveRoutePresentation(route, routeStatusEvents, '2026-10-04');
+    expect(presentation.status).toBe('service-ended');
+    expect(presentation.metadataTitle).toBe('Manchester to Delhi: Route Guide');
+  });
+
+  it('only manchester-mumbai carries a serviceEndedSeoTitle', () => {
+    expect(routes.filter((r) => r.serviceEndedSeoTitle).map((r) => r.slug)).toEqual(['manchester-mumbai']);
   });
 });

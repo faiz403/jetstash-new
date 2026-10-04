@@ -154,6 +154,13 @@ export interface Route {
    */
   seoTitle?: string;
   /**
+   * Title used ONLY while the route resolves to the service-ended presentation.
+   * Route-specific on purpose: set only where Search Console query evidence
+   * supports it (never inherited by other service-ended routes). Unlike
+   * seoTitle it cannot leak into a direct or connecting state.
+   */
+  serviceEndedSeoTitle?: string;
+  /**
    * Optional per-route override for the generated <meta description> —
    * same rules, origin and precedence as seoTitle above. The default
    * (truncateMetadataDescription(route.intro)) should keep serving almost
@@ -1199,7 +1206,11 @@ export const routes: Route[] = [
     // reading as two variants of one thing. Character budget: 53 chars +
     // the automatic " | JetStash" suffix = 64, under the site's own ≤65
     // guideline ceiling.
-    seoTitle: 'Manchester–Lahore Business Class: Fare & Direct Route',
+    // 4 Oct 2026 funnel audit: 90-day Search Console shows 15 queries for this
+    // page, none about Business Class (all generic route/direct/PIA queries),
+    // and every UK SERP result leads with "Flights". Title now matches that
+    // demand; the Business fare is still described in seoDescription.
+    seoTitle: 'Manchester–Lahore Flights: Fare & Direct Route',
     seoDescription:
       'PIA operates Manchester–Lahore direct. JetStash separately tracks a connecting Business Class fare, and shows how it differs from the direct route service.',
     businessClarity: {
@@ -2037,6 +2048,11 @@ export const routes: Route[] = [
     slug: 'manchester-mumbai',
     airportSlug: 'manchester',
     destinationSlug: 'mumbai',
+    // 4 Oct 2026 funnel audit: all 37 Search Console queries for this page (522
+    // impressions, 90d) are flight/flights/direct-flight searches, and UK SERP
+    // titles lead with 'Flights'. Manchester to Delhi is deliberately NOT changed
+    // (no query evidence retrieved for it).
+    serviceEndedSeoTitle: 'Manchester to Mumbai Flights: Direct Service Ended',
     flightTime: '9h 45m direct (currently)',
     frequency: '4x weekly direct (Mon/Tue/Sat/Sun ex-Manchester, per Feb 2026 schedule)',
     airlineSlugs: ['indigo'],
@@ -2978,7 +2994,7 @@ export function buildServiceEndedPresentation(route: Route): RoutePresentation {
     airlineSlugs: [],
     summary,
     metadataDescription: `${pair}: the previously verified direct service has ended. Check current options before booking.`,
-    metadataTitle: `${pair}: Route Guide`,
+    metadataTitle: route.serviceEndedSeoTitle ?? `${pair}: Route Guide`,
     shareText: `${pair}'s previously verified direct service has ended. Check current options directly with airlines before booking.`,
     socialDetail: statusLabel,
     socialFooter: 'Route status updated · jetstash.co.uk',

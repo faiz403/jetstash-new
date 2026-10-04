@@ -40,7 +40,7 @@ describe('London–Doha and Manchester–Lahore get their intended, evidence-saf
   it('manchester-lahore carries the exact proposed title/description', () => {
     const route = getRouteBySlug('manchester-lahore')!;
     const presentation = getRoutePresentation(route, NOW_ISO);
-    expect(presentation.metadataTitle).toBe('Manchester–Lahore Business Class: Fare & Direct Route');
+    expect(presentation.metadataTitle).toBe('Manchester–Lahore Flights: Fare & Direct Route');
     expect(presentation.metadataDescription).toBe(
       'PIA operates Manchester–Lahore direct. JetStash separately tracks a connecting Business Class fare, and shows how it differs from the direct route service.'
     );

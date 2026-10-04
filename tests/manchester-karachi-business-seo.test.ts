@@ -128,7 +128,7 @@ describe('Metadata isolation — only manchester-karachi gains this override', (
   it('manchester-lahore and london-heathrow-doha overrides are byte-for-byte unchanged from PR #168', () => {
     const lahore = getRouteBySlug('manchester-lahore')!;
     const doha = getRouteBySlug('london-heathrow-doha')!;
-    expect(lahore.seoTitle).toBe('Manchester–Lahore Business Class: Fare & Direct Route');
+    expect(lahore.seoTitle).toBe('Manchester–Lahore Flights: Fare & Direct Route');
     expect(doha.seoTitle).toBe('London–Doha Business Class: Fare & Direct Route');
   });
 
