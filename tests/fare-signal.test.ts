@@ -234,9 +234,9 @@ describe('Fare Signal production coverage counts', () => {
     // "none" drops to 6 (london-gatwick-doha, plus the 5 routes that
     // genuinely have no publishable evidence at all as of this date).
     const signals = routes.map((route) => getFareSignalForRoute(route.slug, '2026-08-25'));
-    expect(signals.filter((signal) => signal.state === 'current')).toHaveLength(83);
+    expect(signals.filter((signal) => signal.state === 'current')).toHaveLength(82);
     expect(signals.filter((signal) => signal.state === 'recent')).toHaveLength(0);
-    expect(signals.filter((signal) => signal.state === 'none')).toHaveLength(6);
+    expect(signals.filter((signal) => signal.state === 'none')).toHaveLength(7);
     expect(routes.filter((route) => getTripComRouteUrl(route.slug)).length).toBe(44);
   });
 

@@ -468,12 +468,12 @@ describe('full 88-route dataset safety check (Phase 8)', () => {
     // manchester-delhi and manchester-mumbai's IndiGo-withdrawal
     // service-ended routes) have no suitable fallback of any kind and
     // correctly stay in noFare.
-    expect(directConnectingFare).toBe(55);
+    expect(directConnectingFare).toBe(54);
     expect(directDirectFare).toBe(13);
     expect(connectingConnectingFare).toBe(13);
     expect(connectingDirectFare).toBe(0);
     expect(noFare).toBe(3);
-    expect(unverified).toBe(5);
+    expect(unverified).toBe(6);
     expect(directConnectingFare + directDirectFare + connectingConnectingFare + connectingDirectFare + noFare + unverified).toBe(89);
   });
 });

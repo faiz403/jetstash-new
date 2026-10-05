@@ -58,7 +58,7 @@ describe('Fare Coverage Programme Batch 4', () => {
     // 2026 (Fare Coverage Batch 1, then Connecting Journey Structure +
     // BHX-DEL unlock) — see tests/fare-coverage-batch-3.test.ts's
     // identical update for the full explanation.
-    expect(current).toHaveLength(83);
+    expect(current).toHaveLength(82);
     // Fare Signal poor-itinerary suppression (31 Aug 2026) originally meant
     // 7 of these 83 tracked routes showed the no-fare fallback — their only
     // publishable observation at the time was a confirmed self-transfer,

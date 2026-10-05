@@ -259,8 +259,8 @@ describe('H. Real current archive reconciliation matches the independently compu
 
     expect(withVerification).toHaveLength(89);
     expect(verified.length + unverified.length).toBe(89);
-    expect(verified.length).toBe(77);
-    expect(unverified.length).toBe(12);
+    expect(verified.length).toBe(78);
+    expect(unverified.length).toBe(11);
   });
 });
 
@@ -315,7 +315,6 @@ describe('J. COV-001 (21 August 2026) did not disturb the genuinely untouched ev
   // Batch 3. The remaining three, plus the two Air India disputes, are
   // confirmed genuinely untouched.
   const untouchedSlugs = [
-    'london-heathrow-dhaka',
     'manchester-sylhet',
     'london-heathrow-sylhet',
     'birmingham-ahmedabad',
@@ -326,6 +325,12 @@ describe('J. COV-001 (21 August 2026) did not disturb the genuinely untouched ev
     const route = routes.find((r) => r.slug === slug);
     expect(route, `expected a route with slug ${slug}`).toBeDefined();
     expect(route!.verification!.status).toBe('unverified');
+  });
+
+  it('london-heathrow-dhaka now carries the approved neutral verified state', () => {
+    const route = routes.find((r) => r.slug === 'london-heathrow-dhaka')!;
+    expect(route.verification!.status).toBe('verified');
+    expect(route.verification!.reviewDueDate).toBe('2026-11-04');
   });
 });
 

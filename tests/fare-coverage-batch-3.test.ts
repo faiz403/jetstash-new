@@ -90,7 +90,7 @@ describe('Fare Coverage Programme Batch 3', () => {
     // (Connecting Journey Structure + BHX-DEL unlock): birmingham-delhi's
     // 13 August observation was unsuppressed and a fresh 22 August one
     // appended.
-    expect(current).toHaveLength(83);
+    expect(current).toHaveLength(82);
     // Fare Signal poor-itinerary suppression (31 Aug 2026) originally meant
     // "tracked" (has any publishable observation, checked above) and
     // "signalled" (has a displayable current Fare Signal) were no longer

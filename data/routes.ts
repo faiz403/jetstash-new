@@ -75,6 +75,8 @@ export interface Route {
   frequency: string; // e.g. "Daily direct" or "4x weekly via Dubai"
   airlineSlugs: string[]; // references data/airlines.ts
   isDirect: boolean;
+  /** Optional explicit service shape. `unspecified` means the exact route/service is current, but directness and stop pattern are not established. */
+  serviceShape?: 'direct' | 'connecting' | 'unspecified';
   /** Optional until every route has one — see getDisplayDirectness()'s fallback behaviour for routes without it. */
   verification?: RouteVerification;
   /** Per-airline evidence, only where it differs from a single route-level claim — see AirlineVerification's doc comment. Optional; most routes have one uncontested operator and don't need this. */
@@ -1688,20 +1690,21 @@ export const routes: Route[] = [
     slug: 'london-heathrow-dhaka',
     airportSlug: 'london-heathrow',
     destinationSlug: 'dhaka',
-    flightTime: 'Unverified — a current London-Dhaka Biman service is real, but whether it is nonstop is unconfirmed, see note',
-    frequency: 'Unverified — confirm directly with Biman Bangladesh Airlines before booking',
+    flightTime: 'Current London Heathrow–Dhaka Biman service is confirmed; exact stop pattern and duration must be checked for your date',
+    frequency: 'Service confirmed; frequency and routing vary or are not established from the reviewed primary evidence',
     airlineSlugs: ['biman-bangladesh'],
     isDirect: true,
+    serviceShape: 'unspecified',
     verification: {
-      status: 'unverified',
+      status: 'verified',
       sourceName: "Heathrow's own live flight-tracking pages for flights BG201 and BG202, plus Heathrow's own airline-directory page for Biman Bangladesh Airlines",
       sourceUrl: 'https://www.heathrow.com/departures/terminal-4/flight-details/BG202',
-      verifiedDate: '2026-09-04',
-      reviewDueDate: '2026-09-18',
-      note: 'Recheck (founder-directed): Heathrow\'s own site confirms live, current flight-tracking pages for named flight numbers BG201 and BG202 — real, current evidence this exact service operates, going beyond the previous airline-directory-only finding. Several independent flight-schedule aggregators (not treated as primary sources here, per this project\'s sourcing standard) consistently describe BG202 as making a scheduled stop at Sylhet. Biman\'s current official Manchester notice separately confirms that its Manchester-Dhaka service is via Sylhet, but neither source directly confirms or rules out a Sylhet stop on this specific Heathrow flight. Kept unverified: the safest accurate status given real evidence of current operation but no confirmed stop pattern either way — do not publish a "nonstop" claim, and do not publish a specific duration or frequency, until a genuine Biman or Heathrow route-specific primary source resolves this. Route Verification Refresh Batch 2 (19 August 2026): Heathrow\'s own BG201/BG202 pages, re-opened directly, confirm the service still operates; the source URL above has been corrected to the current live page (the previous URL pointed at a stale terminal designation). Biman\'s own site (biman-airlines.com) was inaccessible this session (persistent Cloudflare check), so the stop-pattern question remains unresolved. Rolling Reverification Batch 4 (4 September 2026): re-opened directly (not a search snippet) -- BG202 to Dhaka still shows live on Heathrow\'s own tracker, "ON TIME", a simple single-leg London (LHR) to Dhaka (DAC) display with no Sylhet leg surfaced anywhere on Heathrow\'s own page. The specific gate/terminal shown is a day-of-flight operational detail, not a stable route fact, and is not asserted here. This is unchanged from the prior check: Heathrow\'s simplified tracker still cannot confirm or rule out an intermediate technical stop. Biman\'s own site was attempted again directly (not bypassed) and returned the same Cloudflare "Just a moment..." challenge as every prior session -- BLOCKED, unresolved by design of this project\'s sourcing standard. Kept unverified; genuinely reconfirmed, still unresolved.',
+      verifiedDate: '2026-10-05',
+      reviewDueDate: '2026-11-04',
+      note: 'Heathrow\'s current flight-tracking pages for named Biman flights BG201 and BG202 confirm that the exact LHR–DAC service operates. This supports the neutral claim that Biman currently operates between Heathrow and Dhaka. The reviewed primary evidence does not establish nonstop status, frequency, duration or any Sylhet stop pattern, so those claims are intentionally not made.',
     },
     intro:
-      'Biman Bangladesh Airlines currently operates a real, live London Heathrow to Dhaka service — Heathrow\'s own flight-tracking system confirms named flights BG201 and BG202 — but no primary source directly confirms whether this service is nonstop or makes a scheduled stop at Sylhet. Several independent flight-schedule sources describe a Sylhet stop on this same flight, but this has not been confirmed against Biman\'s own site or a Heathrow route-specific source. Treat any "direct London to Dhaka" or "nonstop" claim seen elsewhere as unconfirmed until checked directly with the airline.',
+      'Biman currently operates between London Heathrow and Dhaka. The exact stop pattern, duration and schedule can vary or remain unconfirmed for a particular date, so check the exact flight before booking.',
     bookingWindowNote:
       'No JetStash-logged fare history exists for this route, and its exact stop pattern is unconfirmed. Check directly with Biman Bangladesh Airlines for the current routing and schedule before planning around any assumed booking window.',
     peakPeriodIds: [],
@@ -2264,9 +2267,9 @@ export const routes: Route[] = [
   },
   {
     slug: 'manchester-rome', airportSlug: 'manchester', destinationSlug: 'rome',
-    flightTime: 'Published planning duration: 2h 45m; check the exact flight for your dates', frequency: 'Manchester Airport lists direct service to Rome; exact airport, operators and frequency vary', airlineSlugs: [], isDirect: true,
-    verification: { status: 'verified', sourceName: "Manchester Airport's official Rome destination guide", sourceUrl: 'https://www.manchesterairport.co.uk/destinations-and-guides/rome/', verifiedDate: '2026-09-03', reviewDueDate: '2026-10-03', note: 'Route Intelligence Freshness rolling-review Batch 1 (3 September 2026): reconfirmed via the same primary source, still live, still lists Rome as a current direct destination. No specific operator or frequency figure is published on this page, matching the prior check -- evidence depth has not improved, so this stays on the shorter RECENT / CHANGING 30-day window rather than STABLE, deliberately not upgraded on thin evidence.' },
-    intro: 'Manchester Airport lists direct service to Rome and publishes a 2h45m planning figure. Rome can use different airports, so check the exact airport, operator and date before booking.',
+    flightTime: 'Manchester Airport lists Rome/FCO as a destination; duration is not established for the exact FCO itinerary', frequency: 'Rome/FCO destination is confirmed; operators, schedules and service shape vary or are not established', airlineSlugs: [], isDirect: true, serviceShape: 'unspecified',
+    verification: { status: 'verified', sourceName: "Manchester Airport's official Rome destination guide", sourceUrl: 'https://www.manchesterairport.co.uk/destinations-and-guides/rome/', verifiedDate: '2026-10-05', reviewDueDate: '2026-11-04', note: 'Manchester Airport\'s current Rome destination guide lists Rome and the airport codes CIA and FCO. This supports the neutral route-information claim for the exact FCO destination, but does not establish an FCO-specific operator, frequency, schedule or duration. Those details must be checked on the exact itinerary.' },
+    intro: 'Manchester Airport currently lists Rome/FCO as a destination. Operators, schedules and the exact service shape vary, so check the exact flight and airport before booking.',
     bookingWindowNote: 'Confirm the Rome airport, live schedule, fare conditions and baggage terms on the exact itinerary.', peakPeriodIds: [],
   },
   {
@@ -2562,7 +2565,7 @@ export function getRoutePeakPeriods(route: Route) {
   return getPeakPeriodsByIds(route.peakPeriodIds);
 }
 
-export type DisplayDirectness = 'direct' | 'connecting' | 'unverified';
+export type DisplayDirectness = 'direct' | 'connecting' | 'unspecified' | 'unverified';
 
 export function isVerificationCurrent(v: { status: RouteVerificationStatus; reviewDueDate: string } | undefined, nowIso: string): boolean {
   if (!v) return false;
@@ -2634,9 +2637,17 @@ export function getDealAirlineDisplayStatus(route: Route, airlineSlug: string, n
  * back to 'direct', and never conflated with 'connecting' either.
  */
 export function getDisplayDirectness(route: Route, nowIso: string): DisplayDirectness {
-  if (!route.isDirect) return 'connecting';
   const routeLevelCurrent = isVerificationCurrent(route.verification, nowIso);
   const anyAirlineCurrent = (route.airlineVerifications ?? []).some((v) => isVerificationCurrent(v, nowIso));
+  if (route.serviceShape === 'unspecified') {
+    const evidenceEffective = !route.verification?.verifiedDate || route.verification.verifiedDate <= nowIso;
+    return evidenceEffective && (routeLevelCurrent || anyAirlineCurrent) ? 'unspecified' : 'unverified';
+  }
+  if (route.serviceShape === 'connecting') return 'connecting';
+  if (route.serviceShape === 'direct') {
+    return routeLevelCurrent || anyAirlineCurrent ? 'direct' : 'unverified';
+  }
+  if (!route.isDirect) return 'connecting';
   return routeLevelCurrent || anyAirlineCurrent ? 'direct' : 'unverified';
 }
 
@@ -2707,8 +2718,9 @@ const MAX_SOCIAL_DETAIL_LENGTH = 50;
  * connecting. Never invents a duration, schedule, or airline fact — the
  * fallback labels name only the route's status, nothing more specific.
  */
-function buildSocialDetail(status: 'direct' | 'connecting', flightTime: string, statusLabel: string): string {
+function buildSocialDetail(status: 'direct' | 'connecting' | 'unspecified', flightTime: string, statusLabel: string): string {
   if (flightTime.length <= MAX_SOCIAL_DETAIL_LENGTH) return flightTime;
+  if (status === 'unspecified') return `${statusLabel} — see route guide for details`;
   return status === 'direct' ? `${statusLabel} — see route guide for details` : 'Connecting — compare options before booking';
 }
 
@@ -2735,9 +2747,12 @@ function cleanDirectDurationFragment(flightTime: string): string {
  * parenthetical qualifier, and nesting one pair inside another read badly
  * (see cleanDirectDurationFragment).
  */
-function buildShareText(status: 'direct' | 'connecting', pair: string, flightTime: string): string {
+function buildShareText(status: 'direct' | 'connecting' | 'unspecified', pair: string, flightTime: string): string {
   if (status === 'connecting') {
     return `${pair} is a connecting route — no confirmed direct service currently exists. Compare total journey time, schedules and ticket conditions before booking.`;
+  }
+  if (status === 'unspecified') {
+    return `${pair} service is confirmed, but the exact service shape varies or is not established. Check the exact flight, airport and schedule before booking.`;
   }
   const cleaned = flightTime.length <= MAX_SOCIAL_DETAIL_LENGTH ? cleanDirectDurationFragment(flightTime) : '';
   const durationFragment = cleaned ? ` — ${cleaned}` : '';
@@ -2812,7 +2827,7 @@ export type RoutePresentation =
       canShowConnectingAlternative: false;
     })
   | (RoutePresentationBase & {
-      status: 'direct' | 'connecting';
+      status: 'direct' | 'connecting' | 'unspecified';
       flightTime: string;
       frequency: string;
       /**
@@ -3065,9 +3080,9 @@ export function getRoutePresentation(route: Route, nowIso: string): RoutePresent
     return buildUnverifiedPresentation(route);
   }
 
-  const statusLabel = status === 'direct' ? 'Direct' : 'Connecting';
+  const statusLabel = status === 'direct' ? 'Direct' : status === 'connecting' ? 'Connecting' : 'Service confirmed';
   const airlineSlugs =
-    status === 'direct'
+    status === 'direct' || status === 'unspecified'
       ? route.airlineSlugs.filter((slug) => getRouteAirlineDisplayStatus(route, slug, nowIso) === 'verified')
       : route.airlineSlugs;
 
@@ -3100,7 +3115,7 @@ export function getRoutePresentation(route: Route, nowIso: string): RoutePresent
   const hasPeakPeriodContent = route.peakPeriodIds.length > 0;
   const defaultMetadataTitle = hasPeakPeriodContent
     ? `${titlePair.replace(' to ', '–')} Flights: Booking & Peak Periods`
-    : `${titlePair} Flights: ${status === 'direct' ? 'Route Guide' : 'Connection Guide'}`;
+    : `${titlePair} Flights: ${status === 'direct' ? 'Route Guide' : status === 'connecting' ? 'Connection Guide' : 'Route Information'}`;
 
   return {
     status,

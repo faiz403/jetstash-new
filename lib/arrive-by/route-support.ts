@@ -132,6 +132,19 @@ export function getArriveByRouteSupport(originAirportSlug: string, destinationSl
     };
   }
 
+  if (presentation.status === 'unspecified') {
+    return {
+      supported: true,
+      route,
+      routeSlug,
+      journeyType: 'verification-pending',
+      blockedForTravelDate: true,
+      routeWarning: presentation.summary,
+      routeFlightTimeText: route.flightTime,
+      sourceProvenance,
+    };
+  }
+
   // status is 'direct' or 'connecting' as of nowIso.
   if (blockedForTravelDate) {
     // Mirrors data/route-status-events.ts's own core invariant: an

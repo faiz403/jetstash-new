@@ -358,7 +358,7 @@ export function summarizePortfolioAudit(rows: PortfolioRouteAuditRow[], nowIso: 
     threeMonthFareCoverage: `${rows.filter((row) => row.currentFareHasThreeMonthCoverage).length} / ${rows.length}`,
     fullProfiledFareCoverage: `${rows.filter((row) => row.currentFareCoverageLevel === 'full-profiled').length} / ${rows.length}`,
     threeMonthFareWindow: getRollingFareTravelWindow(nowIso),
-    verified: rows.filter((row) => row.publicStatus === 'direct' || row.publicStatus === 'connecting').length,
+    verified: rows.filter((row) => row.publicStatus === 'direct' || row.publicStatus === 'connecting' || row.publicStatus === 'unspecified').length,
     unverifiedOrPending: rows.filter((row) => row.publicStatus === 'unverified').length,
     serviceEnded: rows.filter((row) => row.serviceEnded).length,
     missingVerificationObjects: rows.filter((row) => row.verificationStatus === null).length,

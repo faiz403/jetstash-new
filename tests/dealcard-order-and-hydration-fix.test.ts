@@ -222,9 +222,9 @@ describe('Defect 2 follow-up (founder review) — cabin-specific fallback wordin
       affected.push({ id: d.id, cabin: d.cabin, sentence });
     }
 
-    expect(affected.length).toBe(7);
+    expect(affected.length).toBe(8);
     expect(affected.filter((a) => a.cabin === 'Business')).toHaveLength(6);
-    expect(affected.filter((a) => a.cabin === 'Economy')).toHaveLength(1);
+    expect(affected.filter((a) => a.cabin === 'Economy')).toHaveLength(2);
     // Manchester-Islamabad's own Business card, by name — the exact card
     // Participant 1 read as contradictory. Untouched by this batch
     // (manchester-islamabad is not one of the four routes it evidenced).

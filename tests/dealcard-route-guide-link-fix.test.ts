@@ -78,7 +78,7 @@ describe('DealCard route-guide link — full blast-radius breakdown, scoped fix'
     // left resting on a single publishable observation rather than several.
     const { one } = dealsByObservationCount();
     expect(one.sort()).toEqual(
-      ['lba-isb-economy', 'lhr-business-lhe', 'lhr-doh-business', 'man-fco-economy', 'man-khi-business', 'man-khi-economy', 'man-lhe-business'].sort()
+      ['lba-isb-economy', 'lhr-business-lhe', 'lhr-doh-business', 'man-khi-business', 'man-khi-economy', 'man-lhe-business'].sort()
     );
   });
 

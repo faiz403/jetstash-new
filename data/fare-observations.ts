@@ -1387,7 +1387,7 @@ export function isObservationPublishable(observation: FareObservation, route: Ro
   if (!route) return false;
   if (route.slug !== observation.routeSlug) return false;
   const status = getEffectiveRoutePresentation(route, routeStatusEvents, nowIso).status;
-  if (status === 'direct' || status === 'connecting') return true;
+  if (status === 'direct' || status === 'connecting' || status === 'unspecified') return true;
   // Commercial-completeness rescue (4 October 2026): an ended DIRECT
   // service may still show a newly and deliberately collected CONNECTING
   // fare, but only when the archive record itself is a route-status

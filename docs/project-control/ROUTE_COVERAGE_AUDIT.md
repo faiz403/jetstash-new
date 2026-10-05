@@ -1264,7 +1264,7 @@ which this pass did not touch.
 connecting-vs-connecting journey comparison shipped (`routeServiceFareMismatch()`,
 `components/route/fare-signal.tsx`), letting Birmingham-Delhi's held fare evidence publish safely —
 its 13 August observation was unsuppressed and a fresh 22 August observation was added. The live,
-current figure is now **83 of 88** routes with a display-ready Fare Signal.
+current figure is now **82 of 88** routes with a display-ready Fare Signal.
 
 **Updated 22 August 2026 (Business Fare Evidence Batch 1)**: genuine, current, publishable
 Business-cabin fare observations were logged for `manchester-lahore`, `london-heathrow-lahore`,
@@ -1290,7 +1290,7 @@ upgrade above is a mechanical consequence of the same unchanged function running
 evidence, the same pattern established by the 6 August 2026 Fare Coverage Expansion Batch B addendum.
 The live, current Route Intelligence distribution is now **11 Strong / 77 Useful / 0 Expanding**
 (previously 10 Strong / 78 Useful, 18 August 2026 — see above). The live, current fare-tracking
-figure remains **83 of 88** routes with a display-ready Fare Signal — this batch adds a second
+figure remains **82 of 88** routes with a display-ready Fare Signal — this batch adds a second
 tracked cabin to four already-tracked routes, not a new route.
 
 ## Canonical route addition — 7 September 2026 (London Gatwick–Doha)
@@ -1320,8 +1320,8 @@ booking CTA, exactly as the system already does for every other unsupported rout
 manufactured to avoid this.
 
 The catalogue now contains **89 route guides** (88 plus this one addition). This route has no fare
-observation logged, so fare-tracking coverage is unaffected: **83 of 89** routes have a
-display-ready Fare Signal (was 83 of 88). Trip.com coverage is likewise unaffected in the numerator:
+observation logged, so fare-tracking coverage is unaffected: **82 of 89** routes have a
+display-ready Fare Signal (was 82 of 88). Trip.com coverage is likewise unaffected in the numerator:
 **45 of 89** routes have an exact, dashboard-generated link (was 45 of 88).
 
 | Route slug | Grade |

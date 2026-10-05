@@ -216,10 +216,10 @@ describe('BD-001 — Manchester to Dhaka: Connecting, never claimed nonstop', ()
   });
 });
 
-const PENDING_BANGLADESH_SLUGS = ['manchester-sylhet', 'london-heathrow-dhaka', 'london-heathrow-sylhet'];
+const PENDING_BANGLADESH_SLUGS = ['manchester-sylhet', 'london-heathrow-sylhet'];
 
-describe('BD-001 — Manchester-Sylhet, Heathrow-Dhaka and Heathrow-Sylhet: Verification Pending, no facts leaked', () => {
-  it('all three are isDirect:true with no current verification — render as Verification Pending', () => {
+describe('BD-001 — Manchester-Sylhet and Heathrow-Sylhet: Verification Pending, no facts leaked', () => {
+  it('both remain pending while the exact Sylhet service evidence is unresolved', () => {
     for (const slug of PENDING_BANGLADESH_SLUGS) {
       const route = getRouteBySlug(slug)!;
       expect(route.isDirect).toBe(true);
@@ -247,14 +247,6 @@ describe('BD-001 — Manchester-Sylhet, Heathrow-Dhaka and Heathrow-Sylhet: Veri
     }
   });
 
-  it('the Heathrow-Dhaka note documents the rechecked live flight-tracking evidence (BG201/BG202) without claiming a confirmed stop pattern or fixed terminal', () => {
-    const route = getRouteBySlug('london-heathrow-dhaka')!;
-    const copy = [route.intro, route.bookingWindowNote, route.flightTime, route.frequency, route.verification!.note].join(' ');
-    expect(copy).toMatch(/BG201|BG202/);
-    expect(copy.toLowerCase()).toMatch(/could not|unconfirmed|kept unverified/);
-    expect(copy).not.toMatch(/Terminal \d/);
-  });
-
   it('the Heathrow-Sylhet note explicitly corrects the earlier "zero evidence" rejection rather than silently changing it', () => {
     const route = getRouteBySlug('london-heathrow-sylhet')!;
     expect(route.verification!.note!.toLowerCase()).toMatch(/zero evidence.*inaccurate|founder-directed correction/);
@@ -270,9 +262,8 @@ describe('BD-001 — no fare invented, no unrelated destination or route added',
   // manchester-dhaka gained a genuine, dated fare observation and a
   // matching Deal entry from Fare Coverage Expansion Batch B (6 August
   // 2026, a later, separate initiative - see FARE_COVERAGE_BATCH_B.md).
-  // Every other Bangladesh route (both Sylhet routes, and Heathrow-Dhaka)
-  // was deliberately excluded from that batch's queue for being
-  // unverified, and remains fare-free here.
+  // The Sylhet routes were deliberately excluded from publication while
+  // Heathrow-Dhaka now uses the neutral, verified service-exists state.
   it('every Bangladesh route now has genuine archived fare evidence (Weekly Full Fare Refresh #1, 18 August 2026) — searched normally per the founder\'s explicit instruction that fare observation and route verification are separate questions, never used to resolve or bypass verification', () => {
     // All four Bangladesh routes are 'unverified' (see data/routes.ts) —
     // that stays true regardless of this fare evidence existing. Each
@@ -310,7 +301,9 @@ describe('BD-001 — no fare invented, no unrelated destination or route added',
     // resolved by an observation existing.
     expect(getRouteBySlug('manchester-dhaka')!.verification?.status).toBe('verified');
     expect(getFareRangeSummary('manchester-dhaka', 'Economy', '2026-08-18')).not.toBeNull();
-    for (const slug of ['london-heathrow-dhaka', 'london-heathrow-sylhet', 'manchester-sylhet']) {
+    expect(getRouteBySlug('london-heathrow-dhaka')!.verification?.status).toBe('verified');
+    expect(getFareRangeSummary('london-heathrow-dhaka', 'Economy', '2026-08-18')).toBeNull();
+    for (const slug of ['london-heathrow-sylhet', 'manchester-sylhet']) {
       expect(getRouteBySlug(slug)!.verification?.status, slug).toBe('unverified');
       expect(getFareRangeSummary(slug, 'Economy', '2026-08-18'), slug).toBeNull();
     }

@@ -464,7 +464,7 @@ describe('The audit and fare-archive documents accurately reflect the closed obs
     // See the route verification test determinism batch, 29 Aug 2026.
     const auditDocDate = '2026-08-22';
     const totalTracked = routes.filter((r) => getPublishableObservationsByRoute(r.slug, auditDocDate).length > 0).length;
-    expect(totalTracked).toBe(83);
+    expect(totalTracked).toBe(82);
     expect(auditDoc).toContain(`${totalTracked} of 88`);
   });
 });
