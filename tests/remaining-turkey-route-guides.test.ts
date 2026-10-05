@@ -58,7 +58,7 @@ describe('remaining Turkey route guides', () => {
       'bristol-antalya': '2026-09-04',
       'bristol-dalaman': '2026-10-05',
       'newcastle-dalaman': '2026-10-05',
-      'london-gatwick-antalya': '2026-09-04',
+      'london-gatwick-antalya': '2026-10-05',
       'leeds-bradford-dalaman': '2026-09-08',
       'leeds-bradford-bodrum': '2026-09-08',
       'london-gatwick-dalaman': '2026-09-07',

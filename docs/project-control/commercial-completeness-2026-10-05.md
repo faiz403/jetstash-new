@@ -3,9 +3,9 @@
 ## Outcome
 
 - 89 public routes audited from current main.
-- 79 routes have a publishable current fare; 10 remain held back.
+- 82 routes have a publishable current fare; 7 remain held back.
 - 59 routes have a safe monetised handoff; 30 use a safe non-monetised fallback.
-- Traffic readiness: 53 TRAFFIC_READY, 22 TRAFFIC_READY_BUT_NON_MONETISED, 0 FARE_GAP, 12 EVIDENCE_GAP, 2 HOLD.
+- Traffic readiness: 53 TRAFFIC_READY, 25 TRAFFIC_READY_BUT_NON_MONETISED, 0 FARE_GAP, 9 EVIDENCE_GAP, 2 HOLD.
 - GSC is settled through 2026-09-29. It returned route rows for 25 routes; 64 are recorded as zero/absent, not silently omitted.
 
 ## Fare rescues completed
@@ -19,13 +19,10 @@
 | Route | Rescue category | Reason | 28d impressions | Position |
 |---|---|---|---:|---:|
 | london-gatwick-istanbul | B_REFRESH_ROUTE_FIRST | Route verification/status is not strong enough to support a current public fare. | 0 | — |
-| london-gatwick-antalya | B_REFRESH_ROUTE_FIRST | Route verification/status is not strong enough to support a current public fare. | 0 | — |
-| london-heathrow-jeddah | B_REFRESH_ROUTE_FIRST | Route verification/status is not strong enough to support a current public fare. | 7 | 12.285714 |
 | london-heathrow-dhaka | D_CONTRADICTORY_OR_UNSAFE | Route verification/status is not strong enough to support a current public fare. | 0 | — |
 | manchester-sylhet | D_CONTRADICTORY_OR_UNSAFE | Route verification/status is not strong enough to support a current public fare. | 7 | 8.857143 |
 | london-heathrow-sylhet | D_CONTRADICTORY_OR_UNSAFE | Route verification/status is not strong enough to support a current public fare. | 0 | — |
 | london-gatwick-ahmedabad | D_CONTRADICTORY_OR_UNSAFE | Route verification/status is not strong enough to support a current public fare. | 17 | 8.470588 |
-| london-gatwick-athens | B_REFRESH_ROUTE_FIRST | Route verification/status is not strong enough to support a current public fare. | 0 | — |
 | manchester-rome | B_REFRESH_ROUTE_FIRST | Route verification/status is not strong enough to support a current public fare. | 0 | — |
 | birmingham-ahmedabad | D_CONTRADICTORY_OR_UNSAFE | Route verification/status is not strong enough to support a current public fare. | 0 | — |
 
@@ -42,15 +39,15 @@ All entries remain NOT_GENERATED. The unchanged LHR–JED expiry experiment on 6
 | 3 | london-heathrow-dubai | LHR–DXB | £389 | 46 | 14.847826 |
 | 4 | london-gatwick-rome | LGW–FCO | £70 | 25 | 22.88 |
 | 5 | london-gatwick-ahmedabad | LGW–AMD | held back | 17 | 8.470588 |
-| 6 | london-heathrow-delhi | LHR–DEL | £455 | 5 | 15.2 |
-| 7 | london-heathrow-mumbai | LHR–BOM | £424 | 5 | 10.2 |
-| 8 | london-heathrow-jeddah | LHR–JED | held back | 7 | 12.285714 |
+| 6 | london-heathrow-jeddah | LHR–JED | £529 | 7 | 12.285714 |
+| 7 | london-heathrow-delhi | LHR–DEL | £455 | 5 | 15.2 |
+| 8 | london-heathrow-mumbai | LHR–BOM | £424 | 5 | 10.2 |
 | 9 | birmingham-rome | BHX–FCO | £160 | 0 | — |
 | 10 | bristol-rome | BRS–FCO | £176 | 0 | — |
 | 11 | london-gatwick-agadir | LGW–AGA | £138 | 0 | — |
 | 12 | london-gatwick-amritsar | LGW–ATQ | £1220 | 0 | — |
-| 13 | london-gatwick-antalya | LGW–AYT | held back | 0 | — |
-| 14 | london-gatwick-athens | LGW–ATH | held back | 0 | — |
+| 13 | london-gatwick-antalya | LGW–AYT | £111 | 0 | — |
+| 14 | london-gatwick-athens | LGW–ATH | £98 | 0 | — |
 | 15 | london-gatwick-barcelona | LGW–BCN | £32 | 0 | — |
 | 16 | london-gatwick-bodrum | LGW–BJV | £179 | 0 | — |
 | 17 | london-gatwick-dalaman | LGW–DLM | £58 | 0 | — |
@@ -93,9 +90,9 @@ The score is deliberately transparent: last-28-day impressions × ranking-band w
 | 15 | leeds-bradford-bodrum | 32 | 8 | 8.5 | ready | monetised | TRAFFIC_READY |
 | 16 | leeds-bradford-amritsar | 27 | 9 | 12 | ready | monetised | TRAFFIC_READY |
 | 17 | london-gatwick-ahmedabad | 17 | 17 | 8.470588 | gap | fallback | EVIDENCE_GAP |
-| 18 | leeds-bradford-barcelona | 16 | 4 | 9.25 | ready | monetised | TRAFFIC_READY |
-| 19 | london-heathrow-delhi | 12 | 5 | 15.2 | ready | fallback | TRAFFIC_READY_NON_MONETISED |
-| 20 | london-heathrow-mumbai | 12 | 5 | 10.2 | ready | fallback | TRAFFIC_READY_NON_MONETISED |
+| 18 | london-heathrow-jeddah | 16.8 | 7 | 12.285714 | ready | fallback | TRAFFIC_READY_NON_MONETISED |
+| 19 | leeds-bradford-barcelona | 16 | 4 | 9.25 | ready | monetised | TRAFFIC_READY |
+| 20 | london-heathrow-delhi | 12 | 5 | 15.2 | ready | fallback | TRAFFIC_READY_NON_MONETISED |
 
 ## Internal discovery findings
 

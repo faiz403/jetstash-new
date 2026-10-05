@@ -272,8 +272,8 @@ describe('7b. routes remain subject to both itinerary suitability and current ro
     expect(poor, slug).toBe(false);
   });
 
-  it('holds london-heathrow-jeddah after its route verification expired on 3 October 2026', () => {
-    expect(getFareSignalForRoute('london-heathrow-jeddah', NOW_ISO).state).toBe('none');
+  it('restores london-heathrow-jeddah after the 5 October 2026 route re-verification', () => {
+    expect(getFareSignalForRoute('london-heathrow-jeddah', NOW_ISO).state).toBe('current');
   });
 });
 

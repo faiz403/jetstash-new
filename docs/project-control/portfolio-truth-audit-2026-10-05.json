@@ -22,22 +22,22 @@
   },
   "summary": {
     "totalPublicRoutes": 89,
-    "verified": 77,
-    "unverifiedOrPending": 10,
+    "verified": 80,
+    "unverifiedOrPending": 7,
     "serviceEnded": 2,
     "missingVerificationObjects": 0,
-    "overdue": 14,
+    "overdue": 11,
     "dueWithin14Days": 31,
-    "currentFare": 79,
-    "noFare": 10,
+    "currentFare": 82,
+    "noFare": 7,
     "selfTransferPrimary": 1,
-    "cleanPrimary": 78,
+    "cleanPrimary": 81,
     "monetisedHandoff": 59,
     "nonMonetisedFallback": 30,
     "trafficReady": 53,
-    "trafficReadyNonMonetised": 22,
+    "trafficReadyNonMonetised": 25,
     "fareGap": 0,
-    "evidenceGap": 12,
+    "evidenceGap": 9,
     "hold": 2
   },
   "validationIssues": [
@@ -46,18 +46,6 @@
       "code": "ROUTE_REVIEW_OVERDUE",
       "subject": "london-gatwick-istanbul",
       "message": "Review was due 2026-10-04."
-    },
-    {
-      "severity": "warning",
-      "code": "ROUTE_REVIEW_OVERDUE",
-      "subject": "london-gatwick-antalya",
-      "message": "Review was due 2026-10-04."
-    },
-    {
-      "severity": "warning",
-      "code": "ROUTE_REVIEW_OVERDUE",
-      "subject": "london-heathrow-jeddah",
-      "message": "Review was due 2026-10-03."
     },
     {
       "severity": "warning",
@@ -110,12 +98,6 @@
     {
       "severity": "warning",
       "code": "ROUTE_REVIEW_OVERDUE",
-      "subject": "london-gatwick-athens",
-      "message": "Review was due 2026-09-13."
-    },
-    {
-      "severity": "warning",
-      "code": "ROUTE_REVIEW_OVERDUE",
       "subject": "manchester-rome",
       "message": "Review was due 2026-10-03."
     },
@@ -134,30 +116,6 @@
       "reviewDueDate": "2026-10-04",
       "historicalObservationCount": 7,
       "sourceStrength": "primary",
-      "bookingHandoffType": null,
-      "suppressionReason": "Route verification/status is not strong enough to support a current public fare.",
-      "rescueCategory": "B_REFRESH_ROUTE_FIRST",
-      "commercialReadiness": "EVIDENCE_GAP"
-    },
-    {
-      "slug": "london-gatwick-antalya",
-      "publicStatus": "unverified",
-      "verificationStatus": "verified",
-      "reviewDueDate": "2026-10-04",
-      "historicalObservationCount": 6,
-      "sourceStrength": "primary",
-      "bookingHandoffType": null,
-      "suppressionReason": "Route verification/status is not strong enough to support a current public fare.",
-      "rescueCategory": "B_REFRESH_ROUTE_FIRST",
-      "commercialReadiness": "EVIDENCE_GAP"
-    },
-    {
-      "slug": "london-heathrow-jeddah",
-      "publicStatus": "unverified",
-      "verificationStatus": "verified",
-      "reviewDueDate": "2026-10-03",
-      "historicalObservationCount": 14,
-      "sourceStrength": "secondary-or-unclear",
       "bookingHandoffType": null,
       "suppressionReason": "Route verification/status is not strong enough to support a current public fare.",
       "rescueCategory": "B_REFRESH_ROUTE_FIRST",
@@ -209,18 +167,6 @@
       "bookingHandoffType": null,
       "suppressionReason": "Route verification/status is not strong enough to support a current public fare.",
       "rescueCategory": "D_CONTRADICTORY_OR_UNSAFE",
-      "commercialReadiness": "EVIDENCE_GAP"
-    },
-    {
-      "slug": "london-gatwick-athens",
-      "publicStatus": "unverified",
-      "verificationStatus": "verified",
-      "reviewDueDate": "2026-09-13",
-      "historicalObservationCount": 6,
-      "sourceStrength": "primary",
-      "bookingHandoffType": null,
-      "suppressionReason": "Route verification/status is not strong enough to support a current public fare.",
-      "rescueCategory": "B_REFRESH_ROUTE_FIRST",
       "commercialReadiness": "EVIDENCE_GAP"
     },
     {
@@ -288,7 +234,7 @@
       "exactOriginIata": "LGW",
       "exactDestinationIata": "AYT",
       "currentFallback": "google-flights",
-      "currentFareState": "held back: Route verification/status is not strong enough to support a current public fare.",
+      "currentFareState": "£111 checked 2026-09-29",
       "proposedTripSub3Convention": "route:london-gatwick-antalya",
       "requiresEmbeddedDates": true,
       "generationDateField": "affiliateGeneratedAt",
@@ -297,7 +243,7 @@
       "stalenessHandling": "Blocked pending the unchanged LHR-JED 6/8 October expiry result; never publish a link whose outbound date has passed.",
       "currentVisibleCta": "Search current flights",
       "proposedVisibleCta": "Compare flights on Trip.com",
-      "priority": "blocked",
+      "priority": "high",
       "linkStatus": "NOT_GENERATED"
     },
     {
@@ -458,7 +404,7 @@
       "exactOriginIata": "LHR",
       "exactDestinationIata": "JED",
       "currentFallback": "google-flights",
-      "currentFareState": "held back: Route verification/status is not strong enough to support a current public fare.",
+      "currentFareState": "£529 checked 2026-09-22",
       "proposedTripSub3Convention": "route:london-heathrow-jeddah",
       "requiresEmbeddedDates": true,
       "generationDateField": "affiliateGeneratedAt",
@@ -467,7 +413,7 @@
       "stalenessHandling": "Blocked pending the unchanged LHR-JED 6/8 October expiry result; never publish a link whose outbound date has passed.",
       "currentVisibleCta": "Search current flights",
       "proposedVisibleCta": "Compare flights on Trip.com",
-      "priority": "blocked",
+      "priority": "high",
       "linkStatus": "NOT_GENERATED"
     },
     {
@@ -628,7 +574,7 @@
       "exactOriginIata": "LGW",
       "exactDestinationIata": "ATH",
       "currentFallback": "google-flights",
-      "currentFareState": "held back: Route verification/status is not strong enough to support a current public fare.",
+      "currentFareState": "£98 checked 2026-09-22",
       "proposedTripSub3Convention": "route:london-gatwick-athens",
       "requiresEmbeddedDates": true,
       "generationDateField": "affiliateGeneratedAt",
@@ -637,7 +583,7 @@
       "stalenessHandling": "Blocked pending the unchanged LHR-JED 6/8 October expiry result; never publish a link whose outbound date has passed.",
       "currentVisibleCta": "Search current flights",
       "proposedVisibleCta": "Compare flights on Trip.com",
-      "priority": "blocked",
+      "priority": "high",
       "linkStatus": "NOT_GENERATED"
     },
     {
@@ -1103,6 +1049,26 @@
     },
     {
       "rank": 18,
+      "slug": "london-heathrow-jeddah",
+      "score": 16.8,
+      "last28": {
+        "clicks": 0,
+        "impressions": 7,
+        "ctrPercent": 0,
+        "averagePosition": 12.285714
+      },
+      "last90": {
+        "clicks": 0,
+        "impressions": 299,
+        "ctrPercent": 0,
+        "averagePosition": 44.327759
+      },
+      "farePublishable": true,
+      "monetised": false,
+      "commercialReadiness": "TRAFFIC_READY_NON_MONETISED"
+    },
+    {
+      "rank": 19,
       "slug": "leeds-bradford-barcelona",
       "score": 16,
       "last28": {
@@ -1122,7 +1088,7 @@
       "commercialReadiness": "TRAFFIC_READY"
     },
     {
-      "rank": 19,
+      "rank": 20,
       "slug": "london-heathrow-delhi",
       "score": 12,
       "last28": {
@@ -1136,26 +1102,6 @@
         "impressions": 5,
         "ctrPercent": 0,
         "averagePosition": 15.2
-      },
-      "farePublishable": true,
-      "monetised": false,
-      "commercialReadiness": "TRAFFIC_READY_NON_MONETISED"
-    },
-    {
-      "rank": 20,
-      "slug": "london-heathrow-mumbai",
-      "score": 12,
-      "last28": {
-        "clicks": 0,
-        "impressions": 5,
-        "ctrPercent": 0,
-        "averagePosition": 10.2
-      },
-      "last90": {
-        "clicks": 0,
-        "impressions": 21,
-        "ctrPercent": 0,
-        "averagePosition": 35.52381
       },
       "farePublishable": true,
       "monetised": false,
@@ -2313,7 +2259,7 @@
       "destination": "Antalya",
       "originIata": "LGW",
       "destinationIata": "AYT",
-      "publicStatus": "unverified",
+      "publicStatus": "direct",
       "declaredDirectness": "direct",
       "operatorClaims": [
         "jet2",
@@ -2322,26 +2268,26 @@
       "frequencyClaim": "Seasonal direct service is published by Jet2 and SunExpress; exact dates and frequency vary",
       "durationClaim": "Published duration not recorded in this evidence check; check the exact flight for your dates",
       "verificationStatus": "verified",
-      "verifiedDate": "2026-09-04",
-      "reviewDueDate": "2026-10-04",
-      "verificationSource": "Gatwick Airport Jet2 summer 2026 base announcement, corroborated by SunExpress's current flight plan",
-      "verificationSourceUrl": "https://www.mediacentre.gatwickairport.com/news/london-gatwick-celebrates-arrival-of-jet2-becoming-airline-s-newest-airport-base-79203-40f32.html",
+      "verifiedDate": "2026-10-05",
+      "reviewDueDate": "2026-11-04",
+      "verificationSource": "Gatwick Airport current flight information, with the existing Jet2 summer 2026 route announcement",
+      "verificationSourceUrl": "https://www.gatwickairport.com/flights?destination=A",
       "sourceStrength": "primary",
-      "currentFare": null,
-      "currentFareObservedDate": null,
-      "currentFareAgeDays": null,
-      "currentFareKind": null,
-      "currentFareProfile": null,
+      "currentFare": 111,
+      "currentFareObservedDate": "2026-09-29",
+      "currentFareAgeDays": 6,
+      "currentFareKind": "clean",
+      "currentFareProfile": "london-gatwick-antalya-economy-1adult-23kg-v1",
       "bookingHandoffType": null,
       "commercialHandoffType": "google-flights",
       "exactAirportPreserved": false,
       "monetised": false,
       "currentCta": "Search current flights",
-      "farePublishable": false,
-      "fareSuppressionReason": "Route verification/status is not strong enough to support a current public fare.",
-      "fareRescueCategory": "B_REFRESH_ROUTE_FIRST",
-      "verificationCurrent": false,
-      "commercialReadiness": "EVIDENCE_GAP",
+      "farePublishable": true,
+      "fareSuppressionReason": null,
+      "fareRescueCategory": null,
+      "verificationCurrent": true,
+      "commercialReadiness": "TRAFFIC_READY_NON_MONETISED",
       "gscDataPresent": false,
       "gscLast28": {
         "clicks": 0,
@@ -2365,7 +2311,7 @@
       "activeWarnings": [],
       "serviceEnded": false,
       "observationCount": 6,
-      "publishableObservationCount": 0
+      "publishableObservationCount": 6
     },
     {
       "slug": "london-gatwick-dalaman",
@@ -3378,7 +3324,7 @@
       "destination": "Jeddah",
       "originIata": "LHR",
       "destinationIata": "JED",
-      "publicStatus": "unverified",
+      "publicStatus": "direct",
       "declaredDirectness": "direct",
       "operatorClaims": [
         "saudia"
@@ -3386,26 +3332,26 @@
       "frequencyClaim": "Saudia operates direct service; exact current frequency not confirmed by a current official schedule",
       "durationClaim": "6h 15m, per Saudia's published route figure; not independently reconfirmed against a current Saudia source this session",
       "verificationStatus": "verified",
-      "verifiedDate": "2026-09-03",
-      "reviewDueDate": "2026-10-03",
-      "verificationSource": "Saudia's own current London-Jeddah booking page",
-      "verificationSourceUrl": "https://www.saudia.com/en-gb/flight-deals-from-london-to-saudi-arabia",
-      "sourceStrength": "secondary-or-unclear",
-      "currentFare": null,
-      "currentFareObservedDate": null,
-      "currentFareAgeDays": null,
-      "currentFareKind": null,
-      "currentFareProfile": null,
+      "verifiedDate": "2026-10-05",
+      "reviewDueDate": "2026-11-04",
+      "verificationSource": "Heathrow's current SV120 flight tracker and official Saudi Arabia route page",
+      "verificationSourceUrl": "https://www.heathrow.com/departures/terminal-4/flight-details/SV120",
+      "sourceStrength": "primary",
+      "currentFare": 529,
+      "currentFareObservedDate": "2026-09-22",
+      "currentFareAgeDays": 13,
+      "currentFareKind": "clean",
+      "currentFareProfile": "london-heathrow-jeddah-economy-1adult-23kg-v1",
       "bookingHandoffType": null,
       "commercialHandoffType": "google-flights",
       "exactAirportPreserved": false,
       "monetised": false,
       "currentCta": "Search current flights",
-      "farePublishable": false,
-      "fareSuppressionReason": "Route verification/status is not strong enough to support a current public fare.",
-      "fareRescueCategory": "B_REFRESH_ROUTE_FIRST",
-      "verificationCurrent": false,
-      "commercialReadiness": "EVIDENCE_GAP",
+      "farePublishable": true,
+      "fareSuppressionReason": null,
+      "fareRescueCategory": null,
+      "verificationCurrent": true,
+      "commercialReadiness": "TRAFFIC_READY_NON_MONETISED",
       "gscDataPresent": true,
       "gscLast28": {
         "clicks": 0,
@@ -3425,11 +3371,11 @@
         "ctrPercent": 0,
         "averagePosition": 44.327759
       },
-      "organicOpportunityScore": 5.25,
+      "organicOpportunityScore": 16.8,
       "activeWarnings": [],
       "serviceEnded": false,
       "observationCount": 14,
-      "publishableObservationCount": 0
+      "publishableObservationCount": 12
     },
     {
       "slug": "manchester-karachi",
@@ -5679,32 +5625,32 @@
       "destination": "Athens",
       "originIata": "LGW",
       "destinationIata": "ATH",
-      "publicStatus": "unverified",
+      "publicStatus": "direct",
       "declaredDirectness": "direct",
       "operatorClaims": [],
       "frequencyClaim": "Gatwick destination information lists Athens; exact operators and frequency vary",
       "durationClaim": "Direct destination listed by Gatwick; check the exact flight for duration",
       "verificationStatus": "verified",
-      "verifiedDate": "2026-08-13",
-      "reviewDueDate": "2026-09-13",
-      "verificationSource": "London Gatwick's official destinations information",
-      "verificationSourceUrl": "https://www.gatwickairport.com/flights/destinations.html",
+      "verifiedDate": "2026-10-05",
+      "reviewDueDate": "2026-11-04",
+      "verificationSource": "London Gatwick's current official flight information board",
+      "verificationSourceUrl": "https://www.gatwickairport.com/flights?destination=A",
       "sourceStrength": "primary",
-      "currentFare": null,
-      "currentFareObservedDate": null,
-      "currentFareAgeDays": null,
-      "currentFareKind": null,
-      "currentFareProfile": null,
+      "currentFare": 98,
+      "currentFareObservedDate": "2026-09-22",
+      "currentFareAgeDays": 13,
+      "currentFareKind": "clean",
+      "currentFareProfile": "london-gatwick-athens-economy-1adult-23kg-v1",
       "bookingHandoffType": null,
       "commercialHandoffType": "google-flights",
       "exactAirportPreserved": false,
       "monetised": false,
       "currentCta": "Search current flights",
-      "farePublishable": false,
-      "fareSuppressionReason": "Route verification/status is not strong enough to support a current public fare.",
-      "fareRescueCategory": "B_REFRESH_ROUTE_FIRST",
-      "verificationCurrent": false,
-      "commercialReadiness": "EVIDENCE_GAP",
+      "farePublishable": true,
+      "fareSuppressionReason": null,
+      "fareRescueCategory": null,
+      "verificationCurrent": true,
+      "commercialReadiness": "TRAFFIC_READY_NON_MONETISED",
       "gscDataPresent": false,
       "gscLast28": {
         "clicks": 0,
@@ -5728,7 +5674,7 @@
       "activeWarnings": [],
       "serviceEnded": false,
       "observationCount": 6,
-      "publishableObservationCount": 0
+      "publishableObservationCount": 6
     },
     {
       "slug": "manchester-rome",
