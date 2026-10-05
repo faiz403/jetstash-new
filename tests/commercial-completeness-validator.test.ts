@@ -17,8 +17,8 @@ describe('commercial completeness reporting', () => {
       + summary.hold
     ).toBe(89);
     expect(summary).toMatchObject({
-      currentFare: 81,
-      noFare: 8,
+      currentFare: 83,
+      noFare: 6,
       monetisedHandoff: 59,
       nonMonetisedFallback: 30,
     });
@@ -32,9 +32,9 @@ describe('commercial completeness reporting', () => {
     expect(fallback.every((row) => row.currentCta === 'Search current flights')).toBe(true);
   });
 
-  it('keeps the eight unresolved fares held back and explains each gap', () => {
+  it('keeps the six unresolved fares held back at the 4 October boundary and explains each gap', () => {
     const noFare = rows.filter((row) => !row.farePublishable);
-    expect(noFare).toHaveLength(8);
+    expect(noFare).toHaveLength(6);
     expect(noFare.every((row) => Boolean(row.fareSuppressionReason))).toBe(true);
     expect(noFare.every((row) => row.currentFare === null)).toBe(true);
   });

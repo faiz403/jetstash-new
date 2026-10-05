@@ -844,11 +844,11 @@ export const routes: Route[] = [
     isDirect: true,
     verification: {
       status: 'verified',
-      sourceName: "Gatwick Airport Jet2 summer 2026 base announcement, corroborated by SunExpress's current flight plan",
-      sourceUrl: 'https://www.mediacentre.gatwickairport.com/news/london-gatwick-celebrates-arrival-of-jet2-becoming-airline-s-newest-airport-base-79203-40f32.html',
-      verifiedDate: '2026-09-04',
-      reviewDueDate: '2026-10-04',
-      note: 'Gatwick Airport states Jet2 operates three weekly direct Antalya flights in its summer 2026 programme. SunExpress also lists London Gatwick-Antalya in its current seasonal flight plan. Exact dates, frequency and duration vary, and Trip.com remains blocked for this airport-specific pair. Rolling Reverification Batch 6 (4 September 2026): reconfirmed the primary Jet2/Gatwick press release directly -- still live, unchanged, and the underlying Jet2 Gatwick base it describes (announced for March 2026) is now confirmed operational by this session\'s date. SunExpress\'s own flight-plan PDF remains inaccessible to this session\'s browser tooling (triggers a file download rather than rendering, same limitation as prior sessions) -- not bypassed. First formal cadence classification: RECENT / CHANGING (30-day window), matching the existing seasonal framing.',
+      sourceName: "Gatwick Airport current flight information, with the existing Jet2 summer 2026 route announcement",
+      sourceUrl: 'https://www.gatwickairport.com/flights?destination=A',
+      verifiedDate: '2026-10-05',
+      reviewDueDate: '2026-11-04',
+      note: 'Gatwick Airport states Jet2 operates three weekly direct Antalya flights in its summer 2026 programme. SunExpress also lists London Gatwick-Antalya in its current seasonal flight plan. Exact dates, frequency and duration vary, and Trip.com remains blocked for this airport-specific pair. Rolling Reverification Batch 6 (4 September 2026): reconfirmed the primary Jet2/Gatwick press release directly -- still live, unchanged, and the underlying Jet2 Gatwick base it describes (announced for March 2026) is now confirmed operational by this session\'s date. SunExpress\'s own flight-plan PDF remains inaccessible to this session\'s browser tooling (triggers a file download rather than rendering, same limitation as prior sessions) -- not bypassed. First formal cadence classification: RECENT / CHANGING (30-day window), matching the existing seasonal framing. Route Verification Recovery Batch 2 (5 October 2026): Gatwick\'s current official flight board was reread and showed multiple direct Antalya services on the live board. This reconfirms current direct route operation; no new operator, frequency or duration claim is added.',
     },
     airlineVerifications: [
       {
@@ -1432,11 +1432,11 @@ export const routes: Route[] = [
     // route-status event was added, since the route has not ended.
     verification: {
       status: 'verified',
-      sourceName: "Saudia's own current London-Jeddah booking page",
-      sourceUrl: 'https://www.saudia.com/en-gb/flight-deals-from-london-to-saudi-arabia',
-      verifiedDate: '2026-09-03',
-      reviewDueDate: '2026-10-03',
-      note: 'Saudia\'s own live booking page lists London (LHR) to Jeddah (JED) as a current, bookable route, with genuinely fresh fare timestamps ("Viewed 8 minutes ago") across multiple date ranges spanning September through October 2026 -- this is current, dated, primary evidence, not a marketing page alone. No specific current frequency figure was independently reconfirmed this session (Heathrow\'s own routes table separately states 2 daily flights, but that table\'s surrounding article carries an older 2025 dateline, so it is not relied on alone here). Classified RECENT / CHANGING (30-day window), not STABLE, because this route just lost an operator (British Airways) and its full current operating pattern under Saudia alone has not yet been independently reconfirmed over time.',
+      sourceName: "Heathrow's current SV120 flight tracker and official Saudi Arabia route page",
+      sourceUrl: 'https://www.heathrow.com/departures/terminal-4/flight-details/SV120',
+      verifiedDate: '2026-10-05',
+      reviewDueDate: '2026-11-04',
+      note: 'Saudia\'s own live booking page lists London (LHR) to Jeddah (JED) as a current, bookable route, with genuinely fresh fare timestamps ("Viewed 8 minutes ago") across multiple date ranges spanning September through October 2026 -- this is current, dated, primary evidence, not a marketing page alone. No specific current frequency figure was independently reconfirmed this session (Heathrow\'s own routes table separately states 2 daily flights, but that table\'s surrounding article carries an older 2025 dateline, so it is not relied on alone here). Classified RECENT / CHANGING (30-day window), not STABLE, because this route just lost an operator (British Airways) and its full current operating pattern under Saudia alone has not yet been independently reconfirmed over time. Route Verification Recovery Batch 2 (5 October 2026): Heathrow\'s current SV120 tracker was reread and showed Saudia departing London Heathrow (LHR) for Jeddah (JED), while Heathrow\'s official Saudi Arabia route page states daily Jeddah service. This reconfirms the direct Saudia route; no new duration claim is added.',
     },
     intro:
       'The primary direct Umrah arrival route from the UK. Saudia operates direct service, confirmed via its own current booking page. British Airways ended its Heathrow-Jeddah service from 24 April 2026, as part of a wider Middle East network reduction, and is no longer included as a current operator here. Check the exact date and current schedule before booking. Most flight-inclusive Umrah packages are built around the Jeddah corridor, with onward ground transport to Makkah.',
@@ -2258,7 +2258,7 @@ export const routes: Route[] = [
   {
     slug: 'london-gatwick-athens', airportSlug: 'london-gatwick', destinationSlug: 'athens',
     flightTime: 'Direct destination listed by Gatwick; check the exact flight for duration', frequency: 'Gatwick destination information lists Athens; exact operators and frequency vary', airlineSlugs: [], isDirect: true,
-    verification: { status: 'verified', sourceName: "London Gatwick's official destinations information", sourceUrl: 'https://www.gatwickairport.com/flights/destinations.html', verifiedDate: '2026-08-13', reviewDueDate: '2026-09-13', note: 'Gatwick destination information lists Athens. Exact airline, dates, frequency and duration must be checked for the selected flight; no Gatwick affiliate fallback is used.' },
+    verification: { status: 'verified', sourceName: "London Gatwick's current official flight information board", sourceUrl: 'https://www.gatwickairport.com/flights?destination=A', verifiedDate: '2026-10-05', reviewDueDate: '2026-11-04', note: 'Gatwick destination information lists Athens. Exact airline, dates, frequency and duration must be checked for the selected flight; no Gatwick affiliate fallback is used. Route Verification Recovery Batch 2 (5 October 2026): Gatwick\'s current official flight board was reread and showed direct easyJet flight EZY8188 to Athens. This supports the direct-destination claim only; no broader operator or frequency claim is added.' },
     intro: 'Gatwick destination information lists Athens as a direct destination. Check the exact airline, operating day, duration and fare for your dates.',
     bookingWindowNote: 'JetStash does not currently have an airport-specific Gatwick booking handoff for this pair. Check the exact itinerary directly before booking.', peakPeriodIds: [],
   },
