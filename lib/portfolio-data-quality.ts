@@ -9,6 +9,8 @@ import { getTripComFlightHandoff, getTripComRouteUrl } from '@/lib/booking-provi
 import { isSelfTransferItinerary } from '@/lib/fare-self-transfer';
 import { getFareSignalForRoute } from '@/lib/fare-signal';
 import { daysBetweenIso } from '@/lib/freshness-thresholds';
+import { getFreshFareCoverageLevel, getRollingFareTravelWindow } from '@/lib/fare-window';
+import type { FareSearchCoverageLevel } from '@/data/fare-observations';
 import { getEffectiveRoutePresentation } from '@/lib/route-status-copy';
 
 export type PortfolioValidationSeverity = 'error' | 'warning';
@@ -39,7 +41,13 @@ export interface PortfolioRouteAuditRow {
   sourceStrength: 'primary' | 'mixed-or-contradictory' | 'secondary-or-unclear' | 'missing';
   currentFare: number | null;
   currentFareObservedDate: string | null;
+  currentFareDepartureDate: string | null;
+  currentFareReturnDate: string | null;
   currentFareAgeDays: number | null;
+  currentFareWindowStatus: 'current' | 'stale' | 'none';
+  currentFareHasThreeMonthCoverage: boolean;
+  currentFareCoverageLevel: FareSearchCoverageLevel | null;
+  currentFareRefreshDueDate: string | null;
   currentFareKind: 'clean' | 'self-transfer' | null;
   currentFareProfile: string | null;
   bookingHandoffType: string | null;
@@ -127,6 +135,33 @@ function observationErrors(observation: FareObservation): PortfolioValidationIss
   }
   if (observation.sourceUrl) {
     try { new URL(observation.sourceUrl); } catch { issues.push({ severity: 'error', code: 'FARE_INVALID_SOURCE_URL', subject, message: 'sourceUrl is not a valid absolute URL.' }); }
+  }
+  const coverage = observation.searchCoverage;
+  if (coverage) {
+    if (coverage.level === 'fixed' && coverage.method !== 'fixed-date') {
+      issues.push({ severity: 'error', code: 'FARE_INVALID_SEARCH_COVERAGE_LEVEL', subject, message: 'FIXED coverage must use a fixed-date search method.' });
+    }
+    if (coverage.level === 'full-continuous' && coverage.method !== 'flexible-date') {
+      issues.push({ severity: 'error', code: 'FARE_INVALID_SEARCH_COVERAGE_LEVEL', subject, message: 'FULL_CONTINUOUS coverage must use a flexible-date search method.' });
+    }
+    if (coverage.level === 'full-profiled' && coverage.method !== 'flexible-date') {
+      issues.push({ severity: 'error', code: 'FARE_INVALID_SEARCH_COVERAGE_LEVEL', subject, message: 'FULL_PROFILED coverage must use a flexible-date search method.' });
+    }
+    if (coverage.level === 'full-continuous' && !coverage.continuousStayRange) {
+      issues.push({ severity: 'error', code: 'FARE_INVALID_SEARCH_COVERAGE_LEVEL', subject, message: 'FULL_CONTINUOUS coverage must record an explicit continuous stay range.' });
+    }
+    if (coverage.level === 'full-profiled' && JSON.stringify([...new Set(coverage.stayProfiles ?? [])].sort((a, b) => a - b)) !== JSON.stringify([7, 14, 21, 28, 42])) {
+      issues.push({ severity: 'error', code: 'FARE_INVALID_SEARCH_COVERAGE_LEVEL', subject, message: 'FULL_PROFILED coverage must record all approved stay profiles: 7, 14, 21 and 28 and 42 nights.' });
+    }
+    if (!validIsoDate(coverage.windowStart) || !validIsoDate(coverage.windowEnd) || coverage.windowEnd < coverage.windowStart) {
+      issues.push({ severity: 'error', code: 'FARE_INVALID_SEARCH_WINDOW', subject, message: 'searchCoverage window must contain an ordered pair of real YYYY-MM-DD dates.' });
+    }
+    if (!Number.isInteger(coverage.stayMinNights) || !Number.isInteger(coverage.stayMaxNights) || coverage.stayMinNights < 1 || coverage.stayMaxNights < coverage.stayMinNights) {
+      issues.push({ severity: 'error', code: 'FARE_INVALID_SEARCH_STAY_RANGE', subject, message: 'searchCoverage stay range must contain ordered positive whole-night values.' });
+    }
+    if (Number.isNaN(Date.parse(coverage.searchedAt))) {
+      issues.push({ severity: 'error', code: 'FARE_INVALID_SEARCHED_AT', subject, message: 'searchCoverage searchedAt must be a real timestamp.' });
+    }
   }
   return issues;
 }
@@ -278,7 +313,13 @@ export function buildPortfolioAudit(nowIso: string): PortfolioRouteAuditRow[] {
       sourceStrength: sourceStrength(route),
       currentFare: signal.observation?.price ?? null,
       currentFareObservedDate: signal.observation?.observedDate ?? null,
+      currentFareDepartureDate: signal.observation?.departureDate ?? null,
+      currentFareReturnDate: signal.observation?.returnDate ?? null,
+      currentFareWindowStatus: signal.observation ? (signal.state === 'current' ? 'current' : 'stale') : 'none',
+      currentFareHasThreeMonthCoverage: selectedRaw ? getFreshFareCoverageLevel(selectedRaw, nowIso) === 'full-continuous' : false,
+      currentFareCoverageLevel: selectedRaw ? getFreshFareCoverageLevel(selectedRaw, nowIso) : null,
       currentFareAgeDays: signal.observation ? daysBetweenIso(signal.observation.observedDate, nowIso) : null,
+      currentFareRefreshDueDate: signal.observation ? addDays(signal.observation.observedDate, 14) : null,
       currentFareKind: selectedRaw ? (isSelfTransferItinerary(selectedRaw.priceNote) ? 'self-transfer' : 'clean') : null,
       currentFareProfile: selectedRaw?.profileId ?? null,
       bookingHandoffType: handoff?.kind ?? null,
@@ -314,6 +355,9 @@ export function summarizePortfolioAudit(rows: PortfolioRouteAuditRow[], nowIso: 
   const dueSoonIso = soon.toISOString().slice(0, 10);
   return {
     totalPublicRoutes: rows.length,
+    threeMonthFareCoverage: `${rows.filter((row) => row.currentFareHasThreeMonthCoverage).length} / ${rows.length}`,
+    fullProfiledFareCoverage: `${rows.filter((row) => row.currentFareCoverageLevel === 'full-profiled').length} / ${rows.length}`,
+    threeMonthFareWindow: getRollingFareTravelWindow(nowIso),
     verified: rows.filter((row) => row.publicStatus === 'direct' || row.publicStatus === 'connecting').length,
     unverifiedOrPending: rows.filter((row) => row.publicStatus === 'unverified').length,
     serviceEnded: rows.filter((row) => row.serviceEnded).length,
@@ -332,4 +376,10 @@ export function summarizePortfolioAudit(rows: PortfolioRouteAuditRow[], nowIso: 
     evidenceGap: rows.filter((row) => row.commercialReadiness === 'EVIDENCE_GAP').length,
     hold: rows.filter((row) => row.commercialReadiness === 'HOLD').length,
   };
+}
+
+function addDays(iso: string, days: number): string {
+  const date = new Date(`${iso}T12:00:00Z`);
+  date.setUTCDate(date.getUTCDate() + days);
+  return date.toISOString().slice(0, 10);
 }

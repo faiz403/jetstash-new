@@ -500,6 +500,15 @@ function CurrentSignal({ data, lowerSelfTransfer, tripComUrl, routeSlug, routeDi
         <div className="text-sm text-ink-600 sm:text-right">
           <p>{data.airline} · {data.cabin}</p>
           <p className="mt-1">Checked {formatChecked(data.observedDate)}</p>
+          <p className="mt-1 text-xs text-ink-500">
+            {data.fareCoverageLevel === 'full-continuous'
+              ? 'Lowest fare we found in the next 3 months'
+              : data.fareCoverageLevel === 'full-profiled'
+                ? 'Lowest fare we found across our standard trip lengths in the next 3 months'
+                : data.fareCoverageLevel === 'partial'
+                  ? 'Lowest fare we found in the dates checked'
+                  : 'Fare found for these dates'}
+          </p>
         </div>
       </div>
       <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-ink-700 sm:mt-5">

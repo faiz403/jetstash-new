@@ -34,7 +34,7 @@ import { getFareSectionCopy } from '@/lib/fare-section-copy';
  * Watcher, Standout Fare and fare history.
  */
 
-const NOW_ISO = new Date().toISOString().slice(0, 10);
+const NOW_ISO = '2026-10-03';
 
 // 1 September 2026 Tuesday weekly batch update: manchester-dubai and
 // london-heathrow-jeddah each got a newer, currently-current observation

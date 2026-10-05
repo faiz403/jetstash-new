@@ -11,6 +11,8 @@ import { daysBetweenIso, getFareFreshnessState, type FareFreshnessState } from '
 import { isSelfTransferItinerary } from '@/lib/fare-self-transfer';
 import { getJourneyConsequences, formatJourneyConsequenceSummary, extractStopViaFromText } from '@/lib/journey-consequence';
 import { isPoorItinerarySuitability } from '@/lib/itinerary-suitability';
+import { getFreshFareCoverageLevel, isLowestFarePolicyActive, isObservationWithinRollingFareWindow } from '@/lib/fare-window';
+import type { FareSearchCoverageLevel } from '@/data/fare-observations';
 
 export type FareSignalState = 'current' | 'recent' | 'none';
 
@@ -57,6 +59,8 @@ export interface FareSignalObservation {
    * never inferred from a journey duration or stop count.
    */
   connectionDetail?: string | null;
+  hasThreeMonthSearchCoverage?: boolean;
+  fareCoverageLevel?: FareSearchCoverageLevel;
 }
 
 export interface FareSignal {
@@ -85,7 +89,7 @@ export interface FareSignal {
  * one mapping, reused, so the two surfaces can never silently disagree
  * about what a given observation's public-safe fields are.
  */
-export function toSignalObservation(observation: FareObservation): FareSignalObservation | null {
+export function toSignalObservation(observation: FareObservation, nowIso = observation.observedDate): FareSignalObservation | null {
   if (!isPubliclyPublishable(observation)) return null;
 
   // Itinerary-shape disclosure fix (8 September 2026, founder review):
@@ -131,6 +135,8 @@ export function toSignalObservation(observation: FareObservation): FareSignalObs
     // fragment is deliberately narrower than trying to infer a layover from
     // a total journey time.
     connectionDetail: observation.priceNote.match(/\bconnection detail shown:\s*([^;]+);/i)?.[1]?.trim() ?? null,
+    fareCoverageLevel: getFreshFareCoverageLevel(observation, nowIso) ?? 'fixed',
+    hasThreeMonthSearchCoverage: getFreshFareCoverageLevel(observation, nowIso) === 'full-continuous',
   };
 }
 
@@ -183,6 +189,23 @@ function compareByRepresentativePriority(a: FareObservation, b: FareObservation)
 }
 
 /**
+ * The public fare is now the lowest suitable fare found for a sensible
+ * 7–42-night return inside the rolling three-month travel window. Quality
+ * filters still run before this comparator; this only changes the winning
+ * observation among already-eligible candidates.
+ */
+function compareByLowestFarePriority(a: FareObservation, b: FareObservation): number {
+  const byPrice = a.price - b.price;
+  if (byPrice !== 0) return byPrice;
+  return compareByRepresentativePriority(a, b);
+}
+
+function isCleanUsableFare(observation: FareObservation): boolean {
+  return !isSelfTransferItinerary(observation.priceNote)
+    && (observation.fareDirectness === 'direct' || observation.fareDirectness === 'connecting');
+}
+
+/**
  * Suitability walk (16 Sept 2026, full-portfolio selector-impact review —
  * see docs/project-control/fare-evidence/full-portfolio-controlled-batch-2026-09-15.md).
  * Both selectLatestObservation() and selectCurrentEconomyPool() build
@@ -203,10 +226,25 @@ function firstSuitableByPriority(sortedCandidates: FareObservation[]): FareObser
   return sortedCandidates.find((observation) => !isPoorItinerarySuitability(observation));
 }
 
-function selectLatestObservation(observations: FareObservation[]): { observation?: FareObservation; historicalOnly: boolean } {
-  const nonHistorical = observations.filter((observation) => observation.comparisonEligibility !== 'historical');
-  const candidates = nonHistorical.length > 0 ? nonHistorical : observations;
-  const sorted = [...candidates].sort(compareByRepresentativePriority);
+function selectLatestObservation(observations: FareObservation[], nowIso: string): { observation?: FareObservation; historicalOnly: boolean } {
+  if (!isLowestFarePolicyActive(nowIso)) {
+    const nonHistorical = observations.filter((observation) => observation.comparisonEligibility !== 'historical');
+    const candidates = nonHistorical.length > 0 ? nonHistorical : observations;
+    const sorted = [...candidates].sort(compareByRepresentativePriority);
+    const publishableSorted = sorted.filter(isPubliclyPublishable);
+    return {
+      observation: firstSuitableByPriority(publishableSorted) ?? publishableSorted[0] ?? sorted[0],
+      historicalOnly: nonHistorical.length === 0 && candidates.length > 0,
+    };
+  }
+  const nonHistorical = observations
+    .filter((observation) => observation.comparisonEligibility !== 'historical')
+    .filter((observation) => isObservationWithinRollingFareWindow(observation, nowIso));
+  // An out-of-window archive entry must never become the public fallback.
+  const candidates = nonHistorical.length > 0
+    ? nonHistorical
+    : observations.filter((observation) => isObservationWithinRollingFareWindow(observation, nowIso));
+  const sorted = [...candidates].sort(compareByLowestFarePriority);
   const publishableSorted = sorted.filter(isPubliclyPublishable);
   return {
     // firstSuitableByPriority() only ever walks the SAME already-eligible,
@@ -276,14 +314,26 @@ function selectCurrentEconomyPool(observations: FareObservation[], nowIso: strin
   // be treated as the preferred *current* Economy signal, or a lone
   // historical Economy record would wrongly block a genuinely current
   // Business observation from ever surfacing.
-  return [...observations]
+  const pool = [...observations]
     .filter((observation) =>
       observation.cabin === 'Economy'
       && observation.comparisonEligibility !== 'historical'
       && isPubliclyPublishable(observation)
       && getFareFreshnessState(daysBetweenIso(observation.observedDate, nowIso)) === 'fresh'
     )
-    .sort(compareByRepresentativePriority);
+    .filter((observation) => !isLowestFarePolicyActive(nowIso) || (
+      isObservationWithinRollingFareWindow(observation, nowIso)
+      && (isCleanUsableFare(observation) || isSelfTransferItinerary(observation.priceNote))
+    ));
+  if (!isLowestFarePolicyActive(nowIso)) return pool.sort(compareByRepresentativePriority);
+  // A clean itinerary wins over self-transfer evidence whenever one exists;
+  // price then decides among candidates of the same quality class.
+  return pool.sort((a, b) => {
+    const aSelfTransfer = !isCleanUsableFare(a);
+    const bSelfTransfer = !isCleanUsableFare(b);
+    if (aSelfTransfer !== bSelfTransfer) return aSelfTransfer ? 1 : -1;
+    return compareByLowestFarePriority(a, b);
+  });
 }
 
 /**
@@ -369,7 +419,7 @@ function selectBaseRepresentativeObservation(
     return { observation: null, state: 'none', freshness: null, noneReason: 'poor-itinerary-suppressed' };
   }
 
-  const { observation: latest, historicalOnly } = selectLatestObservation(observations);
+  const { observation: latest, historicalOnly } = selectLatestObservation(observations, nowIso);
   if (!latest || !isPubliclyPublishable(latest)) {
     return { observation: null, state: 'none', freshness: null, noneReason: null };
   }
@@ -473,23 +523,27 @@ function selectLowerSelfTransferForPrimary(
   state: FareSignalState,
   nowIso: string
 ): FareObservation | null {
-  if (state !== 'current' || isSelfTransferItinerary(primary.priceNote) || !primary.profileId || !primary.departureDate || !primary.returnDate) {
+  if (state !== 'current' || isSelfTransferItinerary(primary.priceNote) || !primary.departureDate || !primary.returnDate) {
     return null;
   }
-  return observations
+  const candidates = observations
     .filter((observation) => (
       observation.routeSlug === primary.routeSlug
       && observation.cabin === primary.cabin
-      && observation.profileId === primary.profileId
-      && observation.departureDate === primary.departureDate
-      && observation.returnDate === primary.returnDate
       && observation.comparisonEligibility !== 'historical'
       && isPubliclyPublishable(observation)
+      && (!isLowestFarePolicyActive(nowIso) || isObservationWithinRollingFareWindow(observation, nowIso))
       && getFareFreshnessState(daysBetweenIso(observation.observedDate, nowIso)) === 'fresh'
       && isSelfTransferItinerary(observation.priceNote)
       && observation.price < primary.price
     ))
-    .sort(compareByRepresentativePriority)[0] ?? null;
+    .filter((observation) => isLowestFarePolicyActive(nowIso) || (
+      observation.profileId === primary.profileId
+      && observation.departureDate === primary.departureDate
+      && observation.returnDate === primary.returnDate
+    ))
+    .sort(compareByRepresentativePriority);
+  return candidates[0] ?? null;
 }
 
 /**
@@ -501,9 +555,9 @@ function selectLowerSelfTransferForPrimary(
  */
 export function deriveFareSignal(observations: FareObservation[], nowIso: string): FareSignal {
   const { observation: selected, state, freshness, noneReason } = selectRepresentativeObservation(observations, nowIso);
-  const signalObservation = selected ? toSignalObservation(selected) : null;
+  const signalObservation = selected ? toSignalObservation(selected, nowIso) : null;
   const lowerRawSelfTransfer = selected ? selectLowerSelfTransferForPrimary(observations, selected, state, nowIso) : null;
-  const lowerSelfTransfer = lowerRawSelfTransfer ? toSignalObservation(lowerRawSelfTransfer) : null;
+  const lowerSelfTransfer = lowerRawSelfTransfer ? toSignalObservation(lowerRawSelfTransfer, nowIso) : null;
   if (!selected || !signalObservation) {
     return { state: 'none', observation: null, freshness: null, strongerSignal: null, noneReason };
   }
