@@ -59,10 +59,10 @@ describe('birmingham-rome: restored to STABLE', () => {
 describe('birmingham-agadir: stays RECENT/CHANGING, corrected basis', () => {
   const route = getRouteBySlug('birmingham-agadir')!;
 
-  it('keeps its genuine 30-day window and unchanged dates -- no administrative date movement', () => {
+  it('records the fresh recovery date on the same genuine 30-day window', () => {
     expect(route.verification?.status).toBe('verified');
-    expect(route.verification?.verifiedDate).toBe('2026-09-04');
-    expect(route.verification?.reviewDueDate).toBe('2026-10-04');
+    expect(route.verification?.verifiedDate).toBe('2026-10-05');
+    expect(route.verification?.reviewDueDate).toBe('2026-11-04');
   });
 
   it('reviewDueDate is exactly 30 days after verifiedDate', () => {
