@@ -43,7 +43,7 @@ function fixtureObservation(overrides: Partial<FareObservation> = {}): FareObser
  * is ever fabricated or promoted; only the explanation improves.
  */
 
-const NOW_ISO = new Date().toISOString().slice(0, 10);
+const NOW_ISO = '2026-10-03';
 
 function renderFareSignalForRoute(slug: string, nowIso = NOW_ISO): string {
   const signal = getFareSignalForRoute(slug, nowIso);

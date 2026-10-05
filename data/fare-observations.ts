@@ -125,7 +125,29 @@ export interface FareObservation {
   /** Layover durations shown for each reviewed leg, in minutes. */
   outboundLayoverMinutes?: number[];
   returnLayoverMinutes?: number[];
+  /**
+   * Evidence about how the fare search was covered. Historic observations do
+   * not have this field and must never be treated as a three-month sweep.
+   */
+  searchCoverage?: FareSearchCoverage;
 }
+
+export interface FareSearchCoverage {
+  level: FareSearchCoverageLevel;
+  method: 'flexible-date' | 'fixed-date' | 'partial';
+  windowStart: string;
+  windowEnd: string;
+  stayMinNights: number;
+  stayMaxNights: number;
+  searchedAt: string;
+  source: 'google-flights' | 'kayak' | 'airline' | 'trip.com' | 'other';
+  /** Explicit evidence of a continuous range; profiles alone never imply it. */
+  continuousStayRange?: { minNights: number; maxNights: number };
+  /** Exact approved profiles covered by a profiled search. */
+  stayProfiles?: number[];
+}
+
+export type FareSearchCoverageLevel = 'full-continuous' | 'full-profiled' | 'partial' | 'fixed';
 
 /**
  * Truth Reset (July 2026): an observation is only safe to show publicly —

@@ -6,6 +6,7 @@ import { deriveFareSignal, getFareSignalForRoute } from '@/lib/fare-signal';
 import { FareSignal } from '@/components/route/fare-signal';
 
 const NOW = '2026-10-03';
+const POLICY_NOW = '2026-10-04';
 
 function observation(overrides: Partial<FareObservation> = {}): FareObservation {
   return {
@@ -43,16 +44,16 @@ describe('two-signal fare policy', () => {
     expect(signal.lowerSelfTransfer).toMatchObject({ id: 'fixture', price: 175, isSelfTransfer: true, observedDate: '2026-09-29', connectionDetail: '19 hr 35 min layover at Fixture Airport' });
   });
 
-  it('does not cross profiles, cabins or travel dates to manufacture a clean primary', () => {
+  it('uses the lowest in-window clean fare even when its comparison profile differs', () => {
     const selfTransfer = observation();
     const wrongProfile = observation({ id: 'wrong-profile', observedDate: '2026-09-22', price: 233, priceNote: 'single ticket', profileId: 'another-profile' });
     const wrongCabin = observation({ id: 'wrong-cabin', observedDate: '2026-09-22', price: 233, priceNote: 'single ticket', cabin: 'Business' });
     const wrongDates = observation({ id: 'wrong-dates', observedDate: '2026-09-22', price: 233, priceNote: 'single ticket', departureDate: '2026-11-18' });
-    const signal = deriveFareSignal([selfTransfer, wrongProfile, wrongCabin, wrongDates], NOW);
+    const signal = deriveFareSignal([selfTransfer, wrongProfile, wrongCabin, wrongDates], POLICY_NOW);
 
-    expect(signal.observation?.id).toBe('fixture');
-    expect(signal.observation?.isSelfTransfer).toBe(true);
-    expect(signal.lowerSelfTransfer).toBeNull();
+    expect(signal.observation?.id).toBe('wrong-dates');
+    expect(signal.observation?.isSelfTransfer).toBe(false);
+    expect(signal.lowerSelfTransfer?.id).toBe('fixture');
   });
 
   it('does not promote a clean observation outside the existing freshness window', () => {
@@ -64,7 +65,7 @@ describe('two-signal fare policy', () => {
     expect(signal.lowerSelfTransfer).toBeNull();
   });
 
-  it('keeps raw archive evidence unchanged and leaves an unmatched live self-transfer primary', () => {
+  it('keeps raw archive evidence unchanged while exposing lower self-transfer evidence separately', () => {
     const before = JSON.stringify(fareObservations);
     const signal = getFareSignalForRoute('glasgow-antalya', NOW);
 

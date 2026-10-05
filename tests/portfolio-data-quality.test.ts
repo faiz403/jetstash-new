@@ -25,8 +25,8 @@ describe('portfolio data-quality contract', () => {
     expect(rows.get('manchester-islamabad')?.bookingHandoffType).not.toBeNull();
     expect(rows.get('london-gatwick-rome')?.bookingHandoffType).toBeNull();
     expect(rows.get('birmingham-antalya')?.currentFareKind).toBe('clean');
-    expect(rows.get('glasgow-antalya')?.currentFareKind).toBe('self-transfer');
-    expect(rows.get('london-heathrow-jeddah')?.currentFare).toBe(529);
+    expect(rows.get('glasgow-antalya')?.currentFareKind).toBe('clean');
+    expect(rows.get('london-heathrow-jeddah')?.currentFare).toBe(367);
     expect(rows.get('manchester-izmir')?.bookingHandoffType).toBeNull();
   });
 

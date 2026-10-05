@@ -29,7 +29,7 @@ const recentFixture: FareObservation = {
 };
 
 describe('universal Fare Signal derivation', () => {
-  it('shows the latest current publishable fare without promoting the historical Etihad check', () => {
+  it('shows the latest current publishable fare before the three-month policy activation date without promoting the historical Etihad check', () => {
     // Classification B: this test's own assertions name the 25 Aug Riyadh
     // Air recheck (PR #182) -- evaluated at that date, not 11 Aug.
     const RIYADH_AIR_EVIDENCE_ISO = '2026-08-25';
@@ -39,8 +39,6 @@ describe('universal Fare Signal derivation', () => {
     // observation for this route, which now becomes the latest — the
     // function selects the latest observedDate regardless of nowIso.
     // PR #182 (25 Aug): a same-day emergency-recheck now outranks the
-    // routine check it re-verifies, so this resolves to the £480 recheck,
-    // not the £460 routine observation — evidence recency, not a price rule.
     expect(signal.observation?.price).toBe(480);
     expect(signal.observation?.airline).toBe('Riyadh Air');
     expect(signal.observation?.observedDate).toBe('2026-08-25');
