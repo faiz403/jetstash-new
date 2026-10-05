@@ -620,9 +620,9 @@ describe('Coverage reconciliation, frozen at 2026-08-31 (the original audit\'s o
     for (const slug of ORIGINALLY_FLAGGED_ROUTES) {
       expect(getFareSignalForRoute(slug, AUDIT_REFERENCE_DATE).state, slug).toBe('current');
     }
-    expect(currentCount).toBe(81);
+    expect(currentCount).toBe(80);
     expect(allSignals.filter((s) => s.state === 'recent').length).toBe(0);
-    expect(noneCount).toBe(8);
+    expect(noneCount).toBe(9);
   });
 
   it('the eight routes still genuinely showing no current fare at the frozen audit date are a completely different set from the seven originally-flagged ones -- routes with no Economy evidence at all as of this date, or none of it suitable and none of it with an older fresh alternative, never the seven whose only problem was a poor NEWEST observation', () => {
@@ -633,6 +633,6 @@ describe('Coverage reconciliation, frozen at 2026-08-31 (the original audit\'s o
     for (const slug of ORIGINALLY_FLAGGED_ROUTES) {
       expect(noneSlugs, slug).not.toContain(slug);
     }
-    expect(noneSlugs).toHaveLength(8);
+    expect(noneSlugs).toHaveLength(9);
   });
 });

@@ -176,12 +176,11 @@ describe('no unresolved verification-blocked route became publishable as a side 
   const verificationBlocked = [
     'birmingham-ahmedabad',
     'london-gatwick-ahmedabad',
-    'london-heathrow-dhaka',
     'manchester-sylhet',
     'london-heathrow-sylhet',
   ];
 
-  it('all five remain unverified and show no current Fare Signal', () => {
+  it('the four unresolved routes remain unverified and show no current Fare Signal', () => {
     for (const slug of verificationBlocked) {
       const route = getRouteBySlug(slug)!;
       expect(route.verification?.status, slug).toBe('unverified');

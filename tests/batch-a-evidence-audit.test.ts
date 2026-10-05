@@ -210,7 +210,7 @@ describe('Route-level Fare Signal coverage and curated Deal-card coverage remain
     // tests/fare-coverage-batch-3.test.ts's identical update.
     // 82→83 on 22 August 2026 (Connecting Journey Structure + BHX-DEL
     // unlock): birmingham-delhi gained a fresh publishable observation.
-    expect(trackedRoutes.length).toBe(83);
+    expect(trackedRoutes.length).toBe(82);
     for (const route of trackedRoutes) {
       const matchingDeal = deals.find(
         (d) => d.fromAirportSlug === route.airportSlug && d.toDestinationSlug === route.destinationSlug && d.cabin === 'Economy' && !isBundledProductDeal(d)

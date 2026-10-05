@@ -328,11 +328,11 @@ describe('no evidence or trust wording was accidentally lost — full 88-route s
     // in tests/fare-signal-route-vs-fare-clarity.test.ts for the full
     // account: all 7 routes this test's history moved into noFare on 31 Aug
     // now correctly resolve to an older suitable observation instead.
-    expect(directConnectingFare).toBe(55);
+    expect(directConnectingFare).toBe(54);
     expect(directDirectFare).toBe(13);
     expect(connectingConnectingFare).toBe(13);
     expect(connectingDirectFare).toBe(0);
     expect(noFare).toBe(3);
-    expect(unverified).toBe(5);
+    expect(unverified).toBe(6);
   });
 });

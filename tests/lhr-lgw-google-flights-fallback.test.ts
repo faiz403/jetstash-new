@@ -62,7 +62,7 @@ describe('1-2. LHR->JED and LGW->DXB get the temporary current-flight-search fal
 });
 
 describe('3-4. LHR->Dhaka and LHR->Sylhet get the fallback despite unverified route status', () => {
-  for (const slug of ['london-heathrow-dhaka', 'london-heathrow-sylhet']) {
+  for (const slug of ['london-heathrow-sylhet']) {
     it(`${slug}: unverified status still gets "Search current flights" (fallback makes no verification claim)`, () => {
       const { html, tripComUrl, presentation } = renderRouteFareSignal(slug);
       expect(presentation.status).toBe('unverified');

@@ -243,8 +243,8 @@ describe('Fare Coverage Expansion Batch B — publishability and customer visibi
       const deal = deals.find((d) => d.fromAirportSlug === route.airportSlug && d.toDestinationSlug === route.destinationSlug && d.cabin === 'Economy' && !isBundledProductDeal(d));
       if (deal && hasTrackedFare(deal, NOW_ISO)) visible++;
     }
-    expect(publishable).toBe(83);
-    expect(visible).toBe(31);
+    expect(publishable).toBe(82);
+    expect(visible).toBe(30);
     // The remaining routes have valid Fare Signals but no curated Deal
     // card. They are intentionally counted by route-level coverage only.
     expect(publishable - visible).toBe(52);

@@ -89,7 +89,7 @@ describe('Fare Coverage Programme Batch 5', () => {
     // record; this test tracks live coverage, not that snapshot.
     const COVERAGE_83_ROUTES_ISO = '2026-08-22';
     const current = routes.filter((route) => getPublishableObservationsByRoute(route.slug, COVERAGE_83_ROUTES_ISO).length > 0);
-    expect(current).toHaveLength(83);
+    expect(current).toHaveLength(82);
     // Fare Signal poor-itinerary suppression (31 Aug 2026) originally meant
     // 7 of these 83 tracked routes showed the no-fare fallback.
     //

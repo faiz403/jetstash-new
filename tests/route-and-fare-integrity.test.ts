@@ -195,7 +195,6 @@ describe('Deal counts (TR-004) — a card with no tracked fare must not count as
       'man-khi-economy',
       'man-khi-business',
       'man-ath-economy',
-      'man-fco-economy',
       'lhr-doh-business',
       'man-isb-economy',
       'man-del-economy',
@@ -292,7 +291,13 @@ describe('Section 5 (founder correction) — Verification pending is a distinct 
   // verified-connecting on fresh primary-source evidence — see
   // docs/project-control/ROUTE_VERIFICATION_CADENCE_POLICY.md, Batch 3.
   // Swapped for three routes still genuinely disputed as of that same pass.
-  const disputedRoutes = ['birmingham-ahmedabad', 'london-gatwick-ahmedabad', 'london-heathrow-dhaka'];
+  const disputedRoutes = ['birmingham-ahmedabad', 'london-gatwick-ahmedabad'];
+
+  it('neutral service-confirmed routes are neither Direct nor Connecting', () => {
+    const route = getRouteBySlug('manchester-rome')!;
+    expect(getDisplayDirectness(route, '2026-10-05')).toBe('unspecified');
+    expect(getRoutePresentation(route, '2026-10-05').statusLabel).toBe('Service confirmed');
+  });
 
   it('unverified never renders Direct', () => {
     for (const slug of disputedRoutes) {

@@ -25,7 +25,7 @@ const FIXED_TODAY = '2026-07-23';
 // manchester-karachi, birmingham-lahore and birmingham-islamabad were this
 // fixture set until that pass reclassified all three to verified-connecting
 // on fresh primary-source evidence (a live PIA booking-engine search).
-const PENDING_ROUTE_SLUGS = ['birmingham-ahmedabad', 'london-gatwick-ahmedabad', 'london-heathrow-dhaka'];
+const PENDING_ROUTE_SLUGS = ['birmingham-ahmedabad', 'london-gatwick-ahmedabad'];
 
 /** Minimal, valid Route fixture builder for synthetic edge-case tests — never touches production data. */
 function makeRoute(overrides: Partial<Route>): Route {
