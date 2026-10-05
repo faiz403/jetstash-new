@@ -3,7 +3,7 @@ import { readFileSync } from 'fs';
 import { join } from 'path';
 import { routes, getRouteAirport, getRouteDestination } from '@/data/routes';
 import { getFareSignalForRoute } from '@/lib/fare-signal';
-import { getSafeTripComFlightHandoffUrl } from '@/lib/booking-providers';
+import { getSafeTripComFlightHandoffUrl, getTripComFlightHandoff } from '@/lib/booking-providers';
 import { buildTrackedFareAirportGroups } from '@/lib/tracked-fare-groups';
 
 /**
@@ -92,11 +92,22 @@ describe('Semantic parity: every current tracked-fare entry resolves identically
     expect(entry?.tripComUrl).toBe(routeGuideHandoffUrl('manchester-dubai'));
   });
 
-  it('a restored exact-pair fallback handoff now works (manchester-barcelona, only in TRIPCOM_DESTINATION_URLS)', () => {
-    const entry = allEntries.find((e) => e.routeSlug === 'manchester-barcelona');
-    expect(entry?.tripComUrl).not.toBeNull();
-    expect(entry?.tripComUrl).toContain('MAN-BCN');
-    expect(entry?.tripComUrl).toBe(routeGuideHandoffUrl('manchester-barcelona'));
+  it('a current exact-pair fallback handoff resolves identically on both surfaces', () => {
+    // Do not pin this assertion to a route whose Fare Signal may age out of
+    // the live tracked-fares listing. Select a current entry whose resolver
+    // genuinely uses the exact-pair destination fallback, then compare the
+    // tracked-fares and route-guide answers. This keeps the parity guard
+    // meaningful without turning a historical fare observation into a test
+    // fixture that must remain current forever.
+    const entry = allEntries.find((candidate) => {
+      const route = routes.find((r) => r.slug === candidate.routeSlug)!;
+      const airport = getRouteAirport(route)!;
+      const dest = getRouteDestination(route)!;
+      return getTripComFlightHandoff(route.slug, airport.slug, dest.slug, nowIso)?.kind === 'destination-fallback';
+    });
+    expect(entry, 'expected at least one current destination-fallback handoff entry').toBeDefined();
+    expect(entry!.tripComUrl).not.toBeNull();
+    expect(entry!.tripComUrl).toBe(routeGuideHandoffUrl(entry!.routeSlug));
   });
 
   it('a genuine no-handoff route (London-origin, no aggregate broadening) correctly fails closed on both surfaces', () => {
