@@ -129,14 +129,19 @@ describe('6-7. Manchester-Delhi and Manchester-Mumbai get a current connecting p
   }
 });
 
-describe('8. No tracked fare is invented for Delhi/Mumbai', () => {
-  it('manchester-delhi and manchester-mumbai route pages never show a fabricated fare, Standout Fare, or discount', async () => {
-    for (const slug of ['manchester-delhi', 'manchester-mumbai']) {
+describe('8. Fresh connecting fares remain separate from the ended direct services', () => {
+  it('shows only the two exact, clean connecting rescue observations and never invents a Standout Fare', async () => {
+    const expected = new Map([
+      ['manchester-delhi', '£634 return'],
+      ['manchester-mumbai', '£522 return'],
+    ]);
+    for (const slug of expected.keys()) {
       const element = await RoutePage({ params: Promise.resolve({ slug }) });
       const html = renderToStaticMarkup(element);
-      // First-screen buying fix (3 Oct 2026): the plain line became a connecting-first lead stating the same fact.
-      expect(html.replace(/&#x27;/g, "'"), slug).toContain("JetStash hasn't logged a current fare for this route yet.");
-      expect(html, slug).toContain('Connecting flights available');
+      expect(html, slug).toContain(expected.get(slug));
+      expect(html, slug).toContain('Checked 4 October 2026');
+      expect(html, slug).toContain('Connecting journey via AUH');
+      expect(html.toLowerCase(), slug).toContain('connecting flights available');
       expect(html, slug).not.toContain('Standout Fare');
     }
   });

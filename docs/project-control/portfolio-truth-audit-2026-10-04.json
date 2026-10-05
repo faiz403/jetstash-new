@@ -1,6 +1,25 @@
 {
   "generatedAt": "2026-10-04T12:00:00Z",
   "auditDate": "2026-10-04",
+  "gsc": {
+    "settledThrough": "2026-09-29",
+    "periods": {
+      "last28": [
+        "2026-09-02",
+        "2026-09-29"
+      ],
+      "prior28": [
+        "2026-08-05",
+        "2026-09-01"
+      ],
+      "last90": [
+        "2026-07-02",
+        "2026-09-29"
+      ]
+    },
+    "routesWithAnyReturnedData": 25,
+    "routesAbsentFromReturnedRows": 64
+  },
   "summary": {
     "totalPublicRoutes": 89,
     "verified": 79,
@@ -9,12 +28,17 @@
     "missingVerificationObjects": 0,
     "overdue": 12,
     "dueWithin14Days": 40,
-    "currentFare": 79,
-    "noFare": 10,
+    "currentFare": 81,
+    "noFare": 8,
     "selfTransferPrimary": 1,
-    "cleanPrimary": 78,
+    "cleanPrimary": 80,
     "monetisedHandoff": 59,
-    "nonMonetisedFallback": 30
+    "nonMonetisedFallback": 30,
+    "trafficReady": 53,
+    "trafficReadyNonMonetised": 24,
+    "fareGap": 0,
+    "evidenceGap": 10,
+    "hold": 2
   },
   "validationIssues": [
     {
@@ -98,7 +122,10 @@
       "reviewDueDate": "2026-10-03",
       "historicalObservationCount": 14,
       "sourceStrength": "secondary-or-unclear",
-      "bookingHandoffType": null
+      "bookingHandoffType": null,
+      "suppressionReason": "Route verification/status is not strong enough to support a current public fare.",
+      "rescueCategory": "B_REFRESH_ROUTE_FIRST",
+      "commercialReadiness": "EVIDENCE_GAP"
     },
     {
       "slug": "london-heathrow-dhaka",
@@ -107,7 +134,10 @@
       "reviewDueDate": "2026-09-18",
       "historicalObservationCount": 5,
       "sourceStrength": "mixed-or-contradictory",
-      "bookingHandoffType": null
+      "bookingHandoffType": null,
+      "suppressionReason": "Route verification/status is not strong enough to support a current public fare.",
+      "rescueCategory": "D_CONTRADICTORY_OR_UNSAFE",
+      "commercialReadiness": "EVIDENCE_GAP"
     },
     {
       "slug": "manchester-sylhet",
@@ -116,7 +146,10 @@
       "reviewDueDate": "2026-09-18",
       "historicalObservationCount": 5,
       "sourceStrength": "mixed-or-contradictory",
-      "bookingHandoffType": "exact-route"
+      "bookingHandoffType": "exact-route",
+      "suppressionReason": "Route verification/status is not strong enough to support a current public fare.",
+      "rescueCategory": "D_CONTRADICTORY_OR_UNSAFE",
+      "commercialReadiness": "EVIDENCE_GAP"
     },
     {
       "slug": "london-heathrow-sylhet",
@@ -125,7 +158,10 @@
       "reviewDueDate": "2026-09-18",
       "historicalObservationCount": 5,
       "sourceStrength": "mixed-or-contradictory",
-      "bookingHandoffType": null
+      "bookingHandoffType": null,
+      "suppressionReason": "Route verification/status is not strong enough to support a current public fare.",
+      "rescueCategory": "D_CONTRADICTORY_OR_UNSAFE",
+      "commercialReadiness": "EVIDENCE_GAP"
     },
     {
       "slug": "london-gatwick-ahmedabad",
@@ -134,25 +170,10 @@
       "reviewDueDate": "2026-09-18",
       "historicalObservationCount": 8,
       "sourceStrength": "mixed-or-contradictory",
-      "bookingHandoffType": null
-    },
-    {
-      "slug": "manchester-delhi",
-      "publicStatus": "service-ended",
-      "verificationStatus": "verified",
-      "reviewDueDate": "2026-08-31",
-      "historicalObservationCount": 6,
-      "sourceStrength": "primary",
-      "bookingHandoffType": "service-ended-connecting"
-    },
-    {
-      "slug": "manchester-mumbai",
-      "publicStatus": "service-ended",
-      "verificationStatus": "verified",
-      "reviewDueDate": "2026-08-31",
-      "historicalObservationCount": 6,
-      "sourceStrength": "primary",
-      "bookingHandoffType": "service-ended-connecting"
+      "bookingHandoffType": null,
+      "suppressionReason": "Route verification/status is not strong enough to support a current public fare.",
+      "rescueCategory": "D_CONTRADICTORY_OR_UNSAFE",
+      "commercialReadiness": "EVIDENCE_GAP"
     },
     {
       "slug": "london-gatwick-athens",
@@ -161,7 +182,10 @@
       "reviewDueDate": "2026-09-13",
       "historicalObservationCount": 6,
       "sourceStrength": "primary",
-      "bookingHandoffType": null
+      "bookingHandoffType": null,
+      "suppressionReason": "Route verification/status is not strong enough to support a current public fare.",
+      "rescueCategory": "B_REFRESH_ROUTE_FIRST",
+      "commercialReadiness": "EVIDENCE_GAP"
     },
     {
       "slug": "manchester-rome",
@@ -170,7 +194,10 @@
       "reviewDueDate": "2026-10-03",
       "historicalObservationCount": 6,
       "sourceStrength": "primary",
-      "bookingHandoffType": null
+      "bookingHandoffType": null,
+      "suppressionReason": "Route verification/status is not strong enough to support a current public fare.",
+      "rescueCategory": "B_REFRESH_ROUTE_FIRST",
+      "commercialReadiness": "EVIDENCE_GAP"
     },
     {
       "slug": "birmingham-ahmedabad",
@@ -179,7 +206,924 @@
       "reviewDueDate": "2026-09-18",
       "historicalObservationCount": 6,
       "sourceStrength": "mixed-or-contradictory",
-      "bookingHandoffType": "destination-fallback"
+      "bookingHandoffType": "destination-fallback",
+      "suppressionReason": "Route verification/status is not strong enough to support a current public fare.",
+      "rescueCategory": "D_CONTRADICTORY_OR_UNSAFE",
+      "commercialReadiness": "EVIDENCE_GAP"
+    }
+  ],
+  "customLinkMigrationManifest": [
+    {
+      "routeSlug": "manchester-izmir",
+      "exactOriginIata": "MAN",
+      "exactDestinationIata": "ADB",
+      "currentFallback": "google-flights",
+      "currentFareState": "£198 checked 2026-09-22",
+      "proposedTripSub3Convention": "route:manchester-izmir",
+      "requiresEmbeddedDates": true,
+      "generationDateField": "affiliateGeneratedAt",
+      "embeddedOutboundDateField": "affiliateOutboundDate",
+      "embeddedReturnDateField": "affiliateReturnDate",
+      "stalenessHandling": "Blocked pending the unchanged LHR-JED 6/8 October expiry result; never publish a link whose outbound date has passed.",
+      "currentVisibleCta": "Search current flights",
+      "proposedVisibleCta": "Compare flights on Trip.com",
+      "priority": "high",
+      "linkStatus": "NOT_GENERATED"
+    },
+    {
+      "routeSlug": "london-gatwick-istanbul",
+      "exactOriginIata": "LGW",
+      "exactDestinationIata": "IST",
+      "currentFallback": "google-flights",
+      "currentFareState": "£143 checked 2026-09-29",
+      "proposedTripSub3Convention": "route:london-gatwick-istanbul",
+      "requiresEmbeddedDates": true,
+      "generationDateField": "affiliateGeneratedAt",
+      "embeddedOutboundDateField": "affiliateOutboundDate",
+      "embeddedReturnDateField": "affiliateReturnDate",
+      "stalenessHandling": "Blocked pending the unchanged LHR-JED 6/8 October expiry result; never publish a link whose outbound date has passed.",
+      "currentVisibleCta": "Search current flights",
+      "proposedVisibleCta": "Compare flights on Trip.com",
+      "priority": "high",
+      "linkStatus": "NOT_GENERATED"
+    },
+    {
+      "routeSlug": "london-gatwick-antalya",
+      "exactOriginIata": "LGW",
+      "exactDestinationIata": "AYT",
+      "currentFallback": "google-flights",
+      "currentFareState": "£111 checked 2026-09-29",
+      "proposedTripSub3Convention": "route:london-gatwick-antalya",
+      "requiresEmbeddedDates": true,
+      "generationDateField": "affiliateGeneratedAt",
+      "embeddedOutboundDateField": "affiliateOutboundDate",
+      "embeddedReturnDateField": "affiliateReturnDate",
+      "stalenessHandling": "Blocked pending the unchanged LHR-JED 6/8 October expiry result; never publish a link whose outbound date has passed.",
+      "currentVisibleCta": "Search current flights",
+      "proposedVisibleCta": "Compare flights on Trip.com",
+      "priority": "high",
+      "linkStatus": "NOT_GENERATED"
+    },
+    {
+      "routeSlug": "london-gatwick-dalaman",
+      "exactOriginIata": "LGW",
+      "exactDestinationIata": "DLM",
+      "currentFallback": "google-flights",
+      "currentFareState": "£58 checked 2026-09-29",
+      "proposedTripSub3Convention": "route:london-gatwick-dalaman",
+      "requiresEmbeddedDates": true,
+      "generationDateField": "affiliateGeneratedAt",
+      "embeddedOutboundDateField": "affiliateOutboundDate",
+      "embeddedReturnDateField": "affiliateReturnDate",
+      "stalenessHandling": "Blocked pending the unchanged LHR-JED 6/8 October expiry result; never publish a link whose outbound date has passed.",
+      "currentVisibleCta": "Search current flights",
+      "proposedVisibleCta": "Compare flights on Trip.com",
+      "priority": "high",
+      "linkStatus": "NOT_GENERATED"
+    },
+    {
+      "routeSlug": "london-gatwick-bodrum",
+      "exactOriginIata": "LGW",
+      "exactDestinationIata": "BJV",
+      "currentFallback": "google-flights",
+      "currentFareState": "£179 checked 2026-09-29",
+      "proposedTripSub3Convention": "route:london-gatwick-bodrum",
+      "requiresEmbeddedDates": true,
+      "generationDateField": "affiliateGeneratedAt",
+      "embeddedOutboundDateField": "affiliateOutboundDate",
+      "embeddedReturnDateField": "affiliateReturnDate",
+      "stalenessHandling": "Blocked pending the unchanged LHR-JED 6/8 October expiry result; never publish a link whose outbound date has passed.",
+      "currentVisibleCta": "Search current flights",
+      "proposedVisibleCta": "Compare flights on Trip.com",
+      "priority": "high",
+      "linkStatus": "NOT_GENERATED"
+    },
+    {
+      "routeSlug": "london-gatwick-izmir",
+      "exactOriginIata": "LGW",
+      "exactDestinationIata": "ADB",
+      "currentFallback": "google-flights",
+      "currentFareState": "£223 checked 2026-09-22",
+      "proposedTripSub3Convention": "route:london-gatwick-izmir",
+      "requiresEmbeddedDates": true,
+      "generationDateField": "affiliateGeneratedAt",
+      "embeddedOutboundDateField": "affiliateOutboundDate",
+      "embeddedReturnDateField": "affiliateReturnDate",
+      "stalenessHandling": "Blocked pending the unchanged LHR-JED 6/8 October expiry result; never publish a link whose outbound date has passed.",
+      "currentVisibleCta": "Search current flights",
+      "proposedVisibleCta": "Compare flights on Trip.com",
+      "priority": "high",
+      "linkStatus": "NOT_GENERATED"
+    },
+    {
+      "routeSlug": "london-gatwick-marrakech",
+      "exactOriginIata": "LGW",
+      "exactDestinationIata": "RAK",
+      "currentFallback": "google-flights",
+      "currentFareState": "£57 checked 2026-09-29",
+      "proposedTripSub3Convention": "route:london-gatwick-marrakech",
+      "requiresEmbeddedDates": true,
+      "generationDateField": "affiliateGeneratedAt",
+      "embeddedOutboundDateField": "affiliateOutboundDate",
+      "embeddedReturnDateField": "affiliateReturnDate",
+      "stalenessHandling": "Blocked pending the unchanged LHR-JED 6/8 October expiry result; never publish a link whose outbound date has passed.",
+      "currentVisibleCta": "Search current flights",
+      "proposedVisibleCta": "Compare flights on Trip.com",
+      "priority": "high",
+      "linkStatus": "NOT_GENERATED"
+    },
+    {
+      "routeSlug": "london-gatwick-agadir",
+      "exactOriginIata": "LGW",
+      "exactDestinationIata": "AGA",
+      "currentFallback": "google-flights",
+      "currentFareState": "£138 checked 2026-09-22",
+      "proposedTripSub3Convention": "route:london-gatwick-agadir",
+      "requiresEmbeddedDates": true,
+      "generationDateField": "affiliateGeneratedAt",
+      "embeddedOutboundDateField": "affiliateOutboundDate",
+      "embeddedReturnDateField": "affiliateReturnDate",
+      "stalenessHandling": "Blocked pending the unchanged LHR-JED 6/8 October expiry result; never publish a link whose outbound date has passed.",
+      "currentVisibleCta": "Search current flights",
+      "proposedVisibleCta": "Compare flights on Trip.com",
+      "priority": "high",
+      "linkStatus": "NOT_GENERATED"
+    },
+    {
+      "routeSlug": "london-heathrow-casablanca",
+      "exactOriginIata": "LHR",
+      "exactDestinationIata": "CMN",
+      "currentFallback": "google-flights",
+      "currentFareState": "£177 checked 2026-09-29",
+      "proposedTripSub3Convention": "route:london-heathrow-casablanca",
+      "requiresEmbeddedDates": true,
+      "generationDateField": "affiliateGeneratedAt",
+      "embeddedOutboundDateField": "affiliateOutboundDate",
+      "embeddedReturnDateField": "affiliateReturnDate",
+      "stalenessHandling": "Blocked pending the unchanged LHR-JED 6/8 October expiry result; never publish a link whose outbound date has passed.",
+      "currentVisibleCta": "Search current flights",
+      "proposedVisibleCta": "Compare flights on Trip.com",
+      "priority": "high",
+      "linkStatus": "NOT_GENERATED"
+    },
+    {
+      "routeSlug": "london-gatwick-tangier",
+      "exactOriginIata": "LGW",
+      "exactDestinationIata": "TNG",
+      "currentFallback": "google-flights",
+      "currentFareState": "£162 checked 2026-09-22",
+      "proposedTripSub3Convention": "route:london-gatwick-tangier",
+      "requiresEmbeddedDates": true,
+      "generationDateField": "affiliateGeneratedAt",
+      "embeddedOutboundDateField": "affiliateOutboundDate",
+      "embeddedReturnDateField": "affiliateReturnDate",
+      "stalenessHandling": "Blocked pending the unchanged LHR-JED 6/8 October expiry result; never publish a link whose outbound date has passed.",
+      "currentVisibleCta": "Search current flights",
+      "proposedVisibleCta": "Compare flights on Trip.com",
+      "priority": "high",
+      "linkStatus": "NOT_GENERATED"
+    },
+    {
+      "routeSlug": "london-heathrow-delhi",
+      "exactOriginIata": "LHR",
+      "exactDestinationIata": "DEL",
+      "currentFallback": "google-flights",
+      "currentFareState": "£455 checked 2026-09-22",
+      "proposedTripSub3Convention": "route:london-heathrow-delhi",
+      "requiresEmbeddedDates": true,
+      "generationDateField": "affiliateGeneratedAt",
+      "embeddedOutboundDateField": "affiliateOutboundDate",
+      "embeddedReturnDateField": "affiliateReturnDate",
+      "stalenessHandling": "Blocked pending the unchanged LHR-JED 6/8 October expiry result; never publish a link whose outbound date has passed.",
+      "currentVisibleCta": "Search current flights",
+      "proposedVisibleCta": "Compare flights on Trip.com",
+      "priority": "high",
+      "linkStatus": "NOT_GENERATED"
+    },
+    {
+      "routeSlug": "london-heathrow-doha",
+      "exactOriginIata": "LHR",
+      "exactDestinationIata": "DOH",
+      "currentFallback": "google-flights",
+      "currentFareState": "£408 checked 2026-09-22",
+      "proposedTripSub3Convention": "route:london-heathrow-doha",
+      "requiresEmbeddedDates": true,
+      "generationDateField": "affiliateGeneratedAt",
+      "embeddedOutboundDateField": "affiliateOutboundDate",
+      "embeddedReturnDateField": "affiliateReturnDate",
+      "stalenessHandling": "Blocked pending the unchanged LHR-JED 6/8 October expiry result; never publish a link whose outbound date has passed.",
+      "currentVisibleCta": "Search current flights",
+      "proposedVisibleCta": "Compare flights on Trip.com",
+      "priority": "high",
+      "linkStatus": "NOT_GENERATED"
+    },
+    {
+      "routeSlug": "london-heathrow-jeddah",
+      "exactOriginIata": "LHR",
+      "exactDestinationIata": "JED",
+      "currentFallback": "google-flights",
+      "currentFareState": "held back: Route verification/status is not strong enough to support a current public fare.",
+      "proposedTripSub3Convention": "route:london-heathrow-jeddah",
+      "requiresEmbeddedDates": true,
+      "generationDateField": "affiliateGeneratedAt",
+      "embeddedOutboundDateField": "affiliateOutboundDate",
+      "embeddedReturnDateField": "affiliateReturnDate",
+      "stalenessHandling": "Blocked pending the unchanged LHR-JED 6/8 October expiry result; never publish a link whose outbound date has passed.",
+      "currentVisibleCta": "Search current flights",
+      "proposedVisibleCta": "Compare flights on Trip.com",
+      "priority": "blocked",
+      "linkStatus": "NOT_GENERATED"
+    },
+    {
+      "routeSlug": "london-heathrow-mumbai",
+      "exactOriginIata": "LHR",
+      "exactDestinationIata": "BOM",
+      "currentFallback": "google-flights",
+      "currentFareState": "£424 checked 2026-09-29",
+      "proposedTripSub3Convention": "route:london-heathrow-mumbai",
+      "requiresEmbeddedDates": true,
+      "generationDateField": "affiliateGeneratedAt",
+      "embeddedOutboundDateField": "affiliateOutboundDate",
+      "embeddedReturnDateField": "affiliateReturnDate",
+      "stalenessHandling": "Blocked pending the unchanged LHR-JED 6/8 October expiry result; never publish a link whose outbound date has passed.",
+      "currentVisibleCta": "Search current flights",
+      "proposedVisibleCta": "Compare flights on Trip.com",
+      "priority": "high",
+      "linkStatus": "NOT_GENERATED"
+    },
+    {
+      "routeSlug": "london-heathrow-bengaluru",
+      "exactOriginIata": "LHR",
+      "exactDestinationIata": "BLR",
+      "currentFallback": "google-flights",
+      "currentFareState": "£423 checked 2026-09-29",
+      "proposedTripSub3Convention": "route:london-heathrow-bengaluru",
+      "requiresEmbeddedDates": true,
+      "generationDateField": "affiliateGeneratedAt",
+      "embeddedOutboundDateField": "affiliateOutboundDate",
+      "embeddedReturnDateField": "affiliateReturnDate",
+      "stalenessHandling": "Blocked pending the unchanged LHR-JED 6/8 October expiry result; never publish a link whose outbound date has passed.",
+      "currentVisibleCta": "Search current flights",
+      "proposedVisibleCta": "Compare flights on Trip.com",
+      "priority": "high",
+      "linkStatus": "NOT_GENERATED"
+    },
+    {
+      "routeSlug": "london-heathrow-dhaka",
+      "exactOriginIata": "LHR",
+      "exactDestinationIata": "DAC",
+      "currentFallback": "google-flights",
+      "currentFareState": "held back: Route verification/status is not strong enough to support a current public fare.",
+      "proposedTripSub3Convention": "route:london-heathrow-dhaka",
+      "requiresEmbeddedDates": true,
+      "generationDateField": "affiliateGeneratedAt",
+      "embeddedOutboundDateField": "affiliateOutboundDate",
+      "embeddedReturnDateField": "affiliateReturnDate",
+      "stalenessHandling": "Blocked pending the unchanged LHR-JED 6/8 October expiry result; never publish a link whose outbound date has passed.",
+      "currentVisibleCta": "Search current flights",
+      "proposedVisibleCta": "Compare flights on Trip.com",
+      "priority": "blocked",
+      "linkStatus": "NOT_GENERATED"
+    },
+    {
+      "routeSlug": "london-heathrow-sylhet",
+      "exactOriginIata": "LHR",
+      "exactDestinationIata": "ZYL",
+      "currentFallback": "google-flights",
+      "currentFareState": "held back: Route verification/status is not strong enough to support a current public fare.",
+      "proposedTripSub3Convention": "route:london-heathrow-sylhet",
+      "requiresEmbeddedDates": true,
+      "generationDateField": "affiliateGeneratedAt",
+      "embeddedOutboundDateField": "affiliateOutboundDate",
+      "embeddedReturnDateField": "affiliateReturnDate",
+      "stalenessHandling": "Blocked pending the unchanged LHR-JED 6/8 October expiry result; never publish a link whose outbound date has passed.",
+      "currentVisibleCta": "Search current flights",
+      "proposedVisibleCta": "Compare flights on Trip.com",
+      "priority": "blocked",
+      "linkStatus": "NOT_GENERATED"
+    },
+    {
+      "routeSlug": "london-gatwick-ahmedabad",
+      "exactOriginIata": "LGW",
+      "exactDestinationIata": "AMD",
+      "currentFallback": "google-flights",
+      "currentFareState": "held back: Route verification/status is not strong enough to support a current public fare.",
+      "proposedTripSub3Convention": "route:london-gatwick-ahmedabad",
+      "requiresEmbeddedDates": true,
+      "generationDateField": "affiliateGeneratedAt",
+      "embeddedOutboundDateField": "affiliateOutboundDate",
+      "embeddedReturnDateField": "affiliateReturnDate",
+      "stalenessHandling": "Blocked pending the unchanged LHR-JED 6/8 October expiry result; never publish a link whose outbound date has passed.",
+      "currentVisibleCta": "Search current flights",
+      "proposedVisibleCta": "Compare flights on Trip.com",
+      "priority": "blocked",
+      "linkStatus": "NOT_GENERATED"
+    },
+    {
+      "routeSlug": "london-gatwick-amritsar",
+      "exactOriginIata": "LGW",
+      "exactDestinationIata": "ATQ",
+      "currentFallback": "google-flights",
+      "currentFareState": "£1220 checked 2026-09-29",
+      "proposedTripSub3Convention": "route:london-gatwick-amritsar",
+      "requiresEmbeddedDates": true,
+      "generationDateField": "affiliateGeneratedAt",
+      "embeddedOutboundDateField": "affiliateOutboundDate",
+      "embeddedReturnDateField": "affiliateReturnDate",
+      "stalenessHandling": "Blocked pending the unchanged LHR-JED 6/8 October expiry result; never publish a link whose outbound date has passed.",
+      "currentVisibleCta": "Search current flights",
+      "proposedVisibleCta": "Compare flights on Trip.com",
+      "priority": "high",
+      "linkStatus": "NOT_GENERATED"
+    },
+    {
+      "routeSlug": "london-gatwick-doha",
+      "exactOriginIata": "LGW",
+      "exactDestinationIata": "DOH",
+      "currentFallback": "google-flights",
+      "currentFareState": "£388 checked 2026-09-22",
+      "proposedTripSub3Convention": "route:london-gatwick-doha",
+      "requiresEmbeddedDates": true,
+      "generationDateField": "affiliateGeneratedAt",
+      "embeddedOutboundDateField": "affiliateOutboundDate",
+      "embeddedReturnDateField": "affiliateReturnDate",
+      "stalenessHandling": "Blocked pending the unchanged LHR-JED 6/8 October expiry result; never publish a link whose outbound date has passed.",
+      "currentVisibleCta": "Search current flights",
+      "proposedVisibleCta": "Compare flights on Trip.com",
+      "priority": "high",
+      "linkStatus": "NOT_GENERATED"
+    },
+    {
+      "routeSlug": "london-gatwick-barcelona",
+      "exactOriginIata": "LGW",
+      "exactDestinationIata": "BCN",
+      "currentFallback": "google-flights",
+      "currentFareState": "£32 checked 2026-09-29",
+      "proposedTripSub3Convention": "route:london-gatwick-barcelona",
+      "requiresEmbeddedDates": true,
+      "generationDateField": "affiliateGeneratedAt",
+      "embeddedOutboundDateField": "affiliateOutboundDate",
+      "embeddedReturnDateField": "affiliateReturnDate",
+      "stalenessHandling": "Blocked pending the unchanged LHR-JED 6/8 October expiry result; never publish a link whose outbound date has passed.",
+      "currentVisibleCta": "Search current flights",
+      "proposedVisibleCta": "Compare flights on Trip.com",
+      "priority": "high",
+      "linkStatus": "NOT_GENERATED"
+    },
+    {
+      "routeSlug": "london-gatwick-faro",
+      "exactOriginIata": "LGW",
+      "exactDestinationIata": "FAO",
+      "currentFallback": "google-flights",
+      "currentFareState": "£49 checked 2026-09-29",
+      "proposedTripSub3Convention": "route:london-gatwick-faro",
+      "requiresEmbeddedDates": true,
+      "generationDateField": "affiliateGeneratedAt",
+      "embeddedOutboundDateField": "affiliateOutboundDate",
+      "embeddedReturnDateField": "affiliateReturnDate",
+      "stalenessHandling": "Blocked pending the unchanged LHR-JED 6/8 October expiry result; never publish a link whose outbound date has passed.",
+      "currentVisibleCta": "Search current flights",
+      "proposedVisibleCta": "Compare flights on Trip.com",
+      "priority": "high",
+      "linkStatus": "NOT_GENERATED"
+    },
+    {
+      "routeSlug": "london-gatwick-athens",
+      "exactOriginIata": "LGW",
+      "exactDestinationIata": "ATH",
+      "currentFallback": "google-flights",
+      "currentFareState": "held back: Route verification/status is not strong enough to support a current public fare.",
+      "proposedTripSub3Convention": "route:london-gatwick-athens",
+      "requiresEmbeddedDates": true,
+      "generationDateField": "affiliateGeneratedAt",
+      "embeddedOutboundDateField": "affiliateOutboundDate",
+      "embeddedReturnDateField": "affiliateReturnDate",
+      "stalenessHandling": "Blocked pending the unchanged LHR-JED 6/8 October expiry result; never publish a link whose outbound date has passed.",
+      "currentVisibleCta": "Search current flights",
+      "proposedVisibleCta": "Compare flights on Trip.com",
+      "priority": "blocked",
+      "linkStatus": "NOT_GENERATED"
+    },
+    {
+      "routeSlug": "manchester-rome",
+      "exactOriginIata": "MAN",
+      "exactDestinationIata": "FCO",
+      "currentFallback": "google-flights",
+      "currentFareState": "held back: Route verification/status is not strong enough to support a current public fare.",
+      "proposedTripSub3Convention": "route:manchester-rome",
+      "requiresEmbeddedDates": true,
+      "generationDateField": "affiliateGeneratedAt",
+      "embeddedOutboundDateField": "affiliateOutboundDate",
+      "embeddedReturnDateField": "affiliateReturnDate",
+      "stalenessHandling": "Blocked pending the unchanged LHR-JED 6/8 October expiry result; never publish a link whose outbound date has passed.",
+      "currentVisibleCta": "Search current flights",
+      "proposedVisibleCta": "Compare flights on Trip.com",
+      "priority": "blocked",
+      "linkStatus": "NOT_GENERATED"
+    },
+    {
+      "routeSlug": "birmingham-rome",
+      "exactOriginIata": "BHX",
+      "exactDestinationIata": "FCO",
+      "currentFallback": "google-flights",
+      "currentFareState": "£160 checked 2026-09-22",
+      "proposedTripSub3Convention": "route:birmingham-rome",
+      "requiresEmbeddedDates": true,
+      "generationDateField": "affiliateGeneratedAt",
+      "embeddedOutboundDateField": "affiliateOutboundDate",
+      "embeddedReturnDateField": "affiliateReturnDate",
+      "stalenessHandling": "Blocked pending the unchanged LHR-JED 6/8 October expiry result; never publish a link whose outbound date has passed.",
+      "currentVisibleCta": "Search current flights",
+      "proposedVisibleCta": "Compare flights on Trip.com",
+      "priority": "high",
+      "linkStatus": "NOT_GENERATED"
+    },
+    {
+      "routeSlug": "london-gatwick-rome",
+      "exactOriginIata": "LGW",
+      "exactDestinationIata": "FCO",
+      "currentFallback": "google-flights",
+      "currentFareState": "£70 checked 2026-09-29",
+      "proposedTripSub3Convention": "route:london-gatwick-rome",
+      "requiresEmbeddedDates": true,
+      "generationDateField": "affiliateGeneratedAt",
+      "embeddedOutboundDateField": "affiliateOutboundDate",
+      "embeddedReturnDateField": "affiliateReturnDate",
+      "stalenessHandling": "Blocked pending the unchanged LHR-JED 6/8 October expiry result; never publish a link whose outbound date has passed.",
+      "currentVisibleCta": "Search current flights",
+      "proposedVisibleCta": "Compare flights on Trip.com",
+      "priority": "high",
+      "linkStatus": "NOT_GENERATED"
+    },
+    {
+      "routeSlug": "bristol-rome",
+      "exactOriginIata": "BRS",
+      "exactDestinationIata": "FCO",
+      "currentFallback": "google-flights",
+      "currentFareState": "£176 checked 2026-09-22",
+      "proposedTripSub3Convention": "route:bristol-rome",
+      "requiresEmbeddedDates": true,
+      "generationDateField": "affiliateGeneratedAt",
+      "embeddedOutboundDateField": "affiliateOutboundDate",
+      "embeddedReturnDateField": "affiliateReturnDate",
+      "stalenessHandling": "Blocked pending the unchanged LHR-JED 6/8 October expiry result; never publish a link whose outbound date has passed.",
+      "currentVisibleCta": "Search current flights",
+      "proposedVisibleCta": "Compare flights on Trip.com",
+      "priority": "high",
+      "linkStatus": "NOT_GENERATED"
+    },
+    {
+      "routeSlug": "london-heathrow-lahore",
+      "exactOriginIata": "LHR",
+      "exactDestinationIata": "LHE",
+      "currentFallback": "google-flights",
+      "currentFareState": "£564 checked 2026-09-29",
+      "proposedTripSub3Convention": "route:london-heathrow-lahore",
+      "requiresEmbeddedDates": true,
+      "generationDateField": "affiliateGeneratedAt",
+      "embeddedOutboundDateField": "affiliateOutboundDate",
+      "embeddedReturnDateField": "affiliateReturnDate",
+      "stalenessHandling": "Blocked pending the unchanged LHR-JED 6/8 October expiry result; never publish a link whose outbound date has passed.",
+      "currentVisibleCta": "Search current flights",
+      "proposedVisibleCta": "Compare flights on Trip.com",
+      "priority": "high",
+      "linkStatus": "NOT_GENERATED"
+    },
+    {
+      "routeSlug": "london-gatwick-dubai",
+      "exactOriginIata": "LGW",
+      "exactDestinationIata": "DXB",
+      "currentFallback": "google-flights",
+      "currentFareState": "£369 checked 2026-09-22",
+      "proposedTripSub3Convention": "route:london-gatwick-dubai",
+      "requiresEmbeddedDates": true,
+      "generationDateField": "affiliateGeneratedAt",
+      "embeddedOutboundDateField": "affiliateOutboundDate",
+      "embeddedReturnDateField": "affiliateReturnDate",
+      "stalenessHandling": "Blocked pending the unchanged LHR-JED 6/8 October expiry result; never publish a link whose outbound date has passed.",
+      "currentVisibleCta": "Search current flights",
+      "proposedVisibleCta": "Compare flights on Trip.com",
+      "priority": "high",
+      "linkStatus": "NOT_GENERATED"
+    },
+    {
+      "routeSlug": "london-heathrow-dubai",
+      "exactOriginIata": "LHR",
+      "exactDestinationIata": "DXB",
+      "currentFallback": "google-flights",
+      "currentFareState": "£389 checked 2026-09-22",
+      "proposedTripSub3Convention": "route:london-heathrow-dubai",
+      "requiresEmbeddedDates": true,
+      "generationDateField": "affiliateGeneratedAt",
+      "embeddedOutboundDateField": "affiliateOutboundDate",
+      "embeddedReturnDateField": "affiliateReturnDate",
+      "stalenessHandling": "Blocked pending the unchanged LHR-JED 6/8 October expiry result; never publish a link whose outbound date has passed.",
+      "currentVisibleCta": "Search current flights",
+      "proposedVisibleCta": "Compare flights on Trip.com",
+      "priority": "high",
+      "linkStatus": "NOT_GENERATED"
+    }
+  ],
+  "top20OrganicOpportunities": [
+    {
+      "rank": 1,
+      "slug": "manchester-islamabad",
+      "score": 598,
+      "last28": {
+        "clicks": 0,
+        "impressions": 299,
+        "ctrPercent": 0,
+        "averagePosition": 39.384615
+      },
+      "last90": {
+        "clicks": 2,
+        "impressions": 525,
+        "ctrPercent": 0.380952,
+        "averagePosition": 40.71619
+      },
+      "farePublishable": true,
+      "monetised": true,
+      "commercialReadiness": "TRAFFIC_READY"
+    },
+    {
+      "rank": 2,
+      "slug": "manchester-dubai",
+      "score": 459,
+      "last28": {
+        "clicks": 0,
+        "impressions": 459,
+        "ctrPercent": 0,
+        "averagePosition": 43.411765
+      },
+      "last90": {
+        "clicks": 0,
+        "impressions": 579,
+        "ctrPercent": 0,
+        "averagePosition": 45.255613
+      },
+      "farePublishable": true,
+      "monetised": true,
+      "commercialReadiness": "TRAFFIC_READY"
+    },
+    {
+      "rank": 3,
+      "slug": "manchester-lahore",
+      "score": 326,
+      "last28": {
+        "clicks": 0,
+        "impressions": 163,
+        "ctrPercent": 0,
+        "averagePosition": 21.368098
+      },
+      "last90": {
+        "clicks": 0,
+        "impressions": 163,
+        "ctrPercent": 0,
+        "averagePosition": 21.368098
+      },
+      "farePublishable": true,
+      "monetised": true,
+      "commercialReadiness": "TRAFFIC_READY"
+    },
+    {
+      "rank": 4,
+      "slug": "manchester-agadir",
+      "score": 190,
+      "last28": {
+        "clicks": 0,
+        "impressions": 95,
+        "ctrPercent": 0,
+        "averagePosition": 24.178947
+      },
+      "last90": {
+        "clicks": 0,
+        "impressions": 95,
+        "ctrPercent": 0,
+        "averagePosition": 24.178947
+      },
+      "farePublishable": true,
+      "monetised": true,
+      "commercialReadiness": "TRAFFIC_READY"
+    },
+    {
+      "rank": 5,
+      "slug": "birmingham-bodrum",
+      "score": 188,
+      "last28": {
+        "clicks": 0,
+        "impressions": 47,
+        "ctrPercent": 0,
+        "averagePosition": 9.914894
+      },
+      "last90": {
+        "clicks": 0,
+        "impressions": 47,
+        "ctrPercent": 0,
+        "averagePosition": 9.914894
+      },
+      "farePublishable": true,
+      "monetised": true,
+      "commercialReadiness": "TRAFFIC_READY"
+    },
+    {
+      "rank": 6,
+      "slug": "manchester-izmir",
+      "score": 153.6,
+      "last28": {
+        "clicks": 0,
+        "impressions": 96,
+        "ctrPercent": 0,
+        "averagePosition": 26.166667
+      },
+      "last90": {
+        "clicks": 0,
+        "impressions": 96,
+        "ctrPercent": 0,
+        "averagePosition": 26.166667
+      },
+      "farePublishable": true,
+      "monetised": false,
+      "commercialReadiness": "TRAFFIC_READY_NON_MONETISED"
+    },
+    {
+      "rank": 7,
+      "slug": "birmingham-athens",
+      "score": 128,
+      "last28": {
+        "clicks": 2,
+        "impressions": 32,
+        "ctrPercent": 6.25,
+        "averagePosition": 8.25
+      },
+      "last90": {
+        "clicks": 2,
+        "impressions": 50,
+        "ctrPercent": 4,
+        "averagePosition": 10.3
+      },
+      "farePublishable": true,
+      "monetised": true,
+      "commercialReadiness": "TRAFFIC_READY"
+    },
+    {
+      "rank": 8,
+      "slug": "london-gatwick-dubai",
+      "score": 124.8,
+      "last28": {
+        "clicks": 0,
+        "impressions": 52,
+        "ctrPercent": 0,
+        "averagePosition": 16.096154
+      },
+      "last90": {
+        "clicks": 0,
+        "impressions": 52,
+        "ctrPercent": 0,
+        "averagePosition": 16.096154
+      },
+      "farePublishable": true,
+      "monetised": false,
+      "commercialReadiness": "TRAFFIC_READY_NON_MONETISED"
+    },
+    {
+      "rank": 9,
+      "slug": "london-heathrow-dubai",
+      "score": 110.4,
+      "last28": {
+        "clicks": 0,
+        "impressions": 46,
+        "ctrPercent": 0,
+        "averagePosition": 14.847826
+      },
+      "last90": {
+        "clicks": 0,
+        "impressions": 46,
+        "ctrPercent": 0,
+        "averagePosition": 14.847826
+      },
+      "farePublishable": true,
+      "monetised": false,
+      "commercialReadiness": "TRAFFIC_READY_NON_MONETISED"
+    },
+    {
+      "rank": 10,
+      "slug": "manchester-doha",
+      "score": 96,
+      "last28": {
+        "clicks": 0,
+        "impressions": 24,
+        "ctrPercent": 0,
+        "averagePosition": 9.375
+      },
+      "last90": {
+        "clicks": 0,
+        "impressions": 61,
+        "ctrPercent": 0,
+        "averagePosition": 9.721311
+      },
+      "farePublishable": true,
+      "monetised": true,
+      "commercialReadiness": "TRAFFIC_READY"
+    },
+    {
+      "rank": 11,
+      "slug": "manchester-dalaman",
+      "score": 92,
+      "last28": {
+        "clicks": 0,
+        "impressions": 23,
+        "ctrPercent": 0,
+        "averagePosition": 9.652174
+      },
+      "last90": {
+        "clicks": 0,
+        "impressions": 24,
+        "ctrPercent": 0,
+        "averagePosition": 9.708333
+      },
+      "farePublishable": true,
+      "monetised": true,
+      "commercialReadiness": "TRAFFIC_READY"
+    },
+    {
+      "rank": 12,
+      "slug": "manchester-mumbai",
+      "score": 57.4,
+      "last28": {
+        "clicks": 0,
+        "impressions": 287,
+        "ctrPercent": 0,
+        "averagePosition": 37.425087
+      },
+      "last90": {
+        "clicks": 1,
+        "impressions": 522,
+        "ctrPercent": 0.191571,
+        "averagePosition": 36.942529
+      },
+      "farePublishable": true,
+      "monetised": true,
+      "commercialReadiness": "HOLD"
+    },
+    {
+      "rank": 13,
+      "slug": "glasgow-bodrum",
+      "score": 44,
+      "last28": {
+        "clicks": 0,
+        "impressions": 11,
+        "ctrPercent": 0,
+        "averagePosition": 9.727273
+      },
+      "last90": {
+        "clicks": 0,
+        "impressions": 20,
+        "ctrPercent": 0,
+        "averagePosition": 9.9
+      },
+      "farePublishable": true,
+      "monetised": true,
+      "commercialReadiness": "TRAFFIC_READY"
+    },
+    {
+      "rank": 14,
+      "slug": "london-gatwick-rome",
+      "score": 40,
+      "last28": {
+        "clicks": 0,
+        "impressions": 25,
+        "ctrPercent": 0,
+        "averagePosition": 22.88
+      },
+      "last90": {
+        "clicks": 0,
+        "impressions": 25,
+        "ctrPercent": 0,
+        "averagePosition": 22.88
+      },
+      "farePublishable": true,
+      "monetised": false,
+      "commercialReadiness": "TRAFFIC_READY_NON_MONETISED"
+    },
+    {
+      "rank": 15,
+      "slug": "leeds-bradford-bodrum",
+      "score": 32,
+      "last28": {
+        "clicks": 0,
+        "impressions": 8,
+        "ctrPercent": 0,
+        "averagePosition": 8.5
+      },
+      "last90": {
+        "clicks": 0,
+        "impressions": 8,
+        "ctrPercent": 0,
+        "averagePosition": 8.5
+      },
+      "farePublishable": true,
+      "monetised": true,
+      "commercialReadiness": "TRAFFIC_READY"
+    },
+    {
+      "rank": 16,
+      "slug": "leeds-bradford-amritsar",
+      "score": 27,
+      "last28": {
+        "clicks": 0,
+        "impressions": 9,
+        "ctrPercent": 0,
+        "averagePosition": 12
+      },
+      "last90": {
+        "clicks": 0,
+        "impressions": 9,
+        "ctrPercent": 0,
+        "averagePosition": 12
+      },
+      "farePublishable": true,
+      "monetised": true,
+      "commercialReadiness": "TRAFFIC_READY"
+    },
+    {
+      "rank": 17,
+      "slug": "london-gatwick-ahmedabad",
+      "score": 17,
+      "last28": {
+        "clicks": 0,
+        "impressions": 17,
+        "ctrPercent": 0,
+        "averagePosition": 8.470588
+      },
+      "last90": {
+        "clicks": 0,
+        "impressions": 48,
+        "ctrPercent": 0,
+        "averagePosition": 8.020833
+      },
+      "farePublishable": false,
+      "monetised": false,
+      "commercialReadiness": "EVIDENCE_GAP"
+    },
+    {
+      "rank": 18,
+      "slug": "leeds-bradford-barcelona",
+      "score": 16,
+      "last28": {
+        "clicks": 0,
+        "impressions": 4,
+        "ctrPercent": 0,
+        "averagePosition": 9.25
+      },
+      "last90": {
+        "clicks": 0,
+        "impressions": 8,
+        "ctrPercent": 0,
+        "averagePosition": 22.625
+      },
+      "farePublishable": true,
+      "monetised": true,
+      "commercialReadiness": "TRAFFIC_READY"
+    },
+    {
+      "rank": 19,
+      "slug": "london-heathrow-delhi",
+      "score": 12,
+      "last28": {
+        "clicks": 0,
+        "impressions": 5,
+        "ctrPercent": 0,
+        "averagePosition": 15.2
+      },
+      "last90": {
+        "clicks": 0,
+        "impressions": 5,
+        "ctrPercent": 0,
+        "averagePosition": 15.2
+      },
+      "farePublishable": true,
+      "monetised": false,
+      "commercialReadiness": "TRAFFIC_READY_NON_MONETISED"
+    },
+    {
+      "rank": 20,
+      "slug": "london-heathrow-mumbai",
+      "score": 12,
+      "last28": {
+        "clicks": 0,
+        "impressions": 5,
+        "ctrPercent": 0,
+        "averagePosition": 10.2
+      },
+      "last90": {
+        "clicks": 0,
+        "impressions": 21,
+        "ctrPercent": 0,
+        "averagePosition": 35.52381
+      },
+      "farePublishable": true,
+      "monetised": false,
+      "commercialReadiness": "TRAFFIC_READY_NON_MONETISED"
     }
   ],
   "routes": [
@@ -208,6 +1152,35 @@
       "currentFareKind": "clean",
       "currentFareProfile": "manchester-istanbul-economy-1adult-23kg-v1",
       "bookingHandoffType": "exact-route",
+      "commercialHandoffType": "exact-tripcom",
+      "exactAirportPreserved": true,
+      "monetised": true,
+      "currentCta": "Compare flights on Trip.com",
+      "farePublishable": true,
+      "fareSuppressionReason": null,
+      "fareRescueCategory": null,
+      "verificationCurrent": true,
+      "commercialReadiness": "TRAFFIC_READY",
+      "gscDataPresent": false,
+      "gscLast28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscPrior28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscLast90": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "organicOpportunityScore": 0,
       "activeWarnings": [],
       "serviceEnded": false,
       "observationCount": 6,
@@ -238,6 +1211,35 @@
       "currentFareKind": "clean",
       "currentFareProfile": "manchester-dalaman-economy-1adult-23kg-v1",
       "bookingHandoffType": "exact-route",
+      "commercialHandoffType": "exact-tripcom",
+      "exactAirportPreserved": true,
+      "monetised": true,
+      "currentCta": "Compare flights on Trip.com",
+      "farePublishable": true,
+      "fareSuppressionReason": null,
+      "fareRescueCategory": null,
+      "verificationCurrent": true,
+      "commercialReadiness": "TRAFFIC_READY",
+      "gscDataPresent": true,
+      "gscLast28": {
+        "clicks": 0,
+        "impressions": 23,
+        "ctrPercent": 0,
+        "averagePosition": 9.652174
+      },
+      "gscPrior28": {
+        "clicks": 0,
+        "impressions": 1,
+        "ctrPercent": 0,
+        "averagePosition": 11
+      },
+      "gscLast90": {
+        "clicks": 0,
+        "impressions": 24,
+        "ctrPercent": 0,
+        "averagePosition": 9.708333
+      },
+      "organicOpportunityScore": 92,
       "activeWarnings": [],
       "serviceEnded": false,
       "observationCount": 6,
@@ -268,6 +1270,35 @@
       "currentFareKind": "clean",
       "currentFareProfile": "manchester-bodrum-economy-1adult-23kg-v1",
       "bookingHandoffType": "exact-route",
+      "commercialHandoffType": "exact-tripcom",
+      "exactAirportPreserved": true,
+      "monetised": true,
+      "currentCta": "Compare flights on Trip.com",
+      "farePublishable": true,
+      "fareSuppressionReason": null,
+      "fareRescueCategory": null,
+      "verificationCurrent": true,
+      "commercialReadiness": "TRAFFIC_READY",
+      "gscDataPresent": false,
+      "gscLast28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscPrior28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscLast90": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "organicOpportunityScore": 0,
       "activeWarnings": [],
       "serviceEnded": false,
       "observationCount": 6,
@@ -300,6 +1331,35 @@
       "currentFareKind": "clean",
       "currentFareProfile": "manchester-antalya-economy-1adult-23kg-v1",
       "bookingHandoffType": "exact-route",
+      "commercialHandoffType": "exact-tripcom",
+      "exactAirportPreserved": true,
+      "monetised": true,
+      "currentCta": "Compare flights on Trip.com",
+      "farePublishable": true,
+      "fareSuppressionReason": null,
+      "fareRescueCategory": null,
+      "verificationCurrent": true,
+      "commercialReadiness": "TRAFFIC_READY",
+      "gscDataPresent": false,
+      "gscLast28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscPrior28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscLast90": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "organicOpportunityScore": 0,
       "activeWarnings": [],
       "serviceEnded": false,
       "observationCount": 6,
@@ -330,6 +1390,35 @@
       "currentFareKind": "clean",
       "currentFareProfile": "manchester-izmir-economy-1adult-23kg-v1",
       "bookingHandoffType": null,
+      "commercialHandoffType": "google-flights",
+      "exactAirportPreserved": false,
+      "monetised": false,
+      "currentCta": "Search current flights",
+      "farePublishable": true,
+      "fareSuppressionReason": null,
+      "fareRescueCategory": null,
+      "verificationCurrent": true,
+      "commercialReadiness": "TRAFFIC_READY_NON_MONETISED",
+      "gscDataPresent": true,
+      "gscLast28": {
+        "clicks": 0,
+        "impressions": 96,
+        "ctrPercent": 0,
+        "averagePosition": 26.166667
+      },
+      "gscPrior28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscLast90": {
+        "clicks": 0,
+        "impressions": 96,
+        "ctrPercent": 0,
+        "averagePosition": 26.166667
+      },
+      "organicOpportunityScore": 153.6,
       "activeWarnings": [],
       "serviceEnded": false,
       "observationCount": 6,
@@ -361,6 +1450,35 @@
       "currentFareKind": "clean",
       "currentFareProfile": "birmingham-istanbul-economy-1adult-23kg-v1",
       "bookingHandoffType": "exact-route",
+      "commercialHandoffType": "exact-tripcom",
+      "exactAirportPreserved": true,
+      "monetised": true,
+      "currentCta": "Compare flights on Trip.com",
+      "farePublishable": true,
+      "fareSuppressionReason": null,
+      "fareRescueCategory": null,
+      "verificationCurrent": true,
+      "commercialReadiness": "TRAFFIC_READY",
+      "gscDataPresent": false,
+      "gscLast28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscPrior28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscLast90": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "organicOpportunityScore": 0,
       "activeWarnings": [],
       "serviceEnded": false,
       "observationCount": 6,
@@ -395,6 +1513,35 @@
       "currentFareKind": "clean",
       "currentFareProfile": "birmingham-antalya-economy-1adult-23kg-v1",
       "bookingHandoffType": "exact-route",
+      "commercialHandoffType": "exact-tripcom",
+      "exactAirportPreserved": true,
+      "monetised": true,
+      "currentCta": "Compare flights on Trip.com",
+      "farePublishable": true,
+      "fareSuppressionReason": null,
+      "fareRescueCategory": null,
+      "verificationCurrent": true,
+      "commercialReadiness": "TRAFFIC_READY",
+      "gscDataPresent": false,
+      "gscLast28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscPrior28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscLast90": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "organicOpportunityScore": 0,
       "activeWarnings": [],
       "serviceEnded": false,
       "observationCount": 6,
@@ -427,6 +1574,35 @@
       "currentFareKind": "clean",
       "currentFareProfile": "birmingham-dalaman-economy-1adult-23kg-v1",
       "bookingHandoffType": "exact-route",
+      "commercialHandoffType": "exact-tripcom",
+      "exactAirportPreserved": true,
+      "monetised": true,
+      "currentCta": "Compare flights on Trip.com",
+      "farePublishable": true,
+      "fareSuppressionReason": null,
+      "fareRescueCategory": null,
+      "verificationCurrent": true,
+      "commercialReadiness": "TRAFFIC_READY",
+      "gscDataPresent": false,
+      "gscLast28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscPrior28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscLast90": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "organicOpportunityScore": 0,
       "activeWarnings": [],
       "serviceEnded": false,
       "observationCount": 6,
@@ -458,6 +1634,35 @@
       "currentFareKind": "clean",
       "currentFareProfile": "birmingham-bodrum-economy-1adult-23kg-v1",
       "bookingHandoffType": "exact-route",
+      "commercialHandoffType": "exact-tripcom",
+      "exactAirportPreserved": true,
+      "monetised": true,
+      "currentCta": "Compare flights on Trip.com",
+      "farePublishable": true,
+      "fareSuppressionReason": null,
+      "fareRescueCategory": null,
+      "verificationCurrent": true,
+      "commercialReadiness": "TRAFFIC_READY",
+      "gscDataPresent": true,
+      "gscLast28": {
+        "clicks": 0,
+        "impressions": 47,
+        "ctrPercent": 0,
+        "averagePosition": 9.914894
+      },
+      "gscPrior28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscLast90": {
+        "clicks": 0,
+        "impressions": 47,
+        "ctrPercent": 0,
+        "averagePosition": 9.914894
+      },
+      "organicOpportunityScore": 188,
       "activeWarnings": [],
       "serviceEnded": false,
       "observationCount": 6,
@@ -490,6 +1695,35 @@
       "currentFareKind": "clean",
       "currentFareProfile": "leeds-bradford-antalya-economy-1adult-23kg-v1",
       "bookingHandoffType": "exact-route",
+      "commercialHandoffType": "exact-tripcom",
+      "exactAirportPreserved": true,
+      "monetised": true,
+      "currentCta": "Compare flights on Trip.com",
+      "farePublishable": true,
+      "fareSuppressionReason": null,
+      "fareRescueCategory": null,
+      "verificationCurrent": true,
+      "commercialReadiness": "TRAFFIC_READY",
+      "gscDataPresent": false,
+      "gscLast28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscPrior28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscLast90": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "organicOpportunityScore": 0,
       "activeWarnings": [],
       "serviceEnded": false,
       "observationCount": 5,
@@ -521,6 +1755,35 @@
       "currentFareKind": "clean",
       "currentFareProfile": "leeds-bradford-dalaman-economy-1adult-23kg-v1",
       "bookingHandoffType": "exact-route",
+      "commercialHandoffType": "exact-tripcom",
+      "exactAirportPreserved": true,
+      "monetised": true,
+      "currentCta": "Compare flights on Trip.com",
+      "farePublishable": true,
+      "fareSuppressionReason": null,
+      "fareRescueCategory": null,
+      "verificationCurrent": true,
+      "commercialReadiness": "TRAFFIC_READY",
+      "gscDataPresent": false,
+      "gscLast28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscPrior28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscLast90": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "organicOpportunityScore": 0,
       "activeWarnings": [],
       "serviceEnded": false,
       "observationCount": 5,
@@ -551,6 +1814,35 @@
       "currentFareKind": "clean",
       "currentFareProfile": "leeds-bradford-bodrum-economy-1adult-23kg-v1",
       "bookingHandoffType": "exact-route",
+      "commercialHandoffType": "exact-tripcom",
+      "exactAirportPreserved": true,
+      "monetised": true,
+      "currentCta": "Compare flights on Trip.com",
+      "farePublishable": true,
+      "fareSuppressionReason": null,
+      "fareRescueCategory": null,
+      "verificationCurrent": true,
+      "commercialReadiness": "TRAFFIC_READY",
+      "gscDataPresent": true,
+      "gscLast28": {
+        "clicks": 0,
+        "impressions": 8,
+        "ctrPercent": 0,
+        "averagePosition": 8.5
+      },
+      "gscPrior28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscLast90": {
+        "clicks": 0,
+        "impressions": 8,
+        "ctrPercent": 0,
+        "averagePosition": 8.5
+      },
+      "organicOpportunityScore": 32,
       "activeWarnings": [],
       "serviceEnded": false,
       "observationCount": 4,
@@ -584,6 +1876,35 @@
       "currentFareKind": "self-transfer",
       "currentFareProfile": "glasgow-antalya-economy-1adult-23kg-v1",
       "bookingHandoffType": "exact-route",
+      "commercialHandoffType": "exact-tripcom",
+      "exactAirportPreserved": true,
+      "monetised": true,
+      "currentCta": "Compare flights on Trip.com",
+      "farePublishable": true,
+      "fareSuppressionReason": null,
+      "fareRescueCategory": null,
+      "verificationCurrent": true,
+      "commercialReadiness": "TRAFFIC_READY",
+      "gscDataPresent": false,
+      "gscLast28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscPrior28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscLast90": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "organicOpportunityScore": 0,
       "activeWarnings": [],
       "serviceEnded": false,
       "observationCount": 6,
@@ -616,6 +1937,35 @@
       "currentFareKind": "clean",
       "currentFareProfile": "glasgow-dalaman-economy-1adult-23kg-v1",
       "bookingHandoffType": "exact-route",
+      "commercialHandoffType": "exact-tripcom",
+      "exactAirportPreserved": true,
+      "monetised": true,
+      "currentCta": "Compare flights on Trip.com",
+      "farePublishable": true,
+      "fareSuppressionReason": null,
+      "fareRescueCategory": null,
+      "verificationCurrent": true,
+      "commercialReadiness": "TRAFFIC_READY",
+      "gscDataPresent": false,
+      "gscLast28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscPrior28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscLast90": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "organicOpportunityScore": 0,
       "activeWarnings": [],
       "serviceEnded": false,
       "observationCount": 5,
@@ -646,6 +1996,35 @@
       "currentFareKind": "clean",
       "currentFareProfile": "glasgow-bodrum-economy-1adult-23kg-v1",
       "bookingHandoffType": "exact-route",
+      "commercialHandoffType": "exact-tripcom",
+      "exactAirportPreserved": true,
+      "monetised": true,
+      "currentCta": "Compare flights on Trip.com",
+      "farePublishable": true,
+      "fareSuppressionReason": null,
+      "fareRescueCategory": null,
+      "verificationCurrent": true,
+      "commercialReadiness": "TRAFFIC_READY",
+      "gscDataPresent": true,
+      "gscLast28": {
+        "clicks": 0,
+        "impressions": 11,
+        "ctrPercent": 0,
+        "averagePosition": 9.727273
+      },
+      "gscPrior28": {
+        "clicks": 0,
+        "impressions": 9,
+        "ctrPercent": 0,
+        "averagePosition": 10.111111
+      },
+      "gscLast90": {
+        "clicks": 0,
+        "impressions": 20,
+        "ctrPercent": 0,
+        "averagePosition": 9.9
+      },
+      "organicOpportunityScore": 44,
       "activeWarnings": [],
       "serviceEnded": false,
       "observationCount": 4,
@@ -679,6 +2058,35 @@
       "currentFareKind": "clean",
       "currentFareProfile": "bristol-antalya-economy-1adult-23kg-v1",
       "bookingHandoffType": "exact-route",
+      "commercialHandoffType": "exact-tripcom",
+      "exactAirportPreserved": true,
+      "monetised": true,
+      "currentCta": "Compare flights on Trip.com",
+      "farePublishable": true,
+      "fareSuppressionReason": null,
+      "fareRescueCategory": null,
+      "verificationCurrent": true,
+      "commercialReadiness": "TRAFFIC_READY",
+      "gscDataPresent": false,
+      "gscLast28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscPrior28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscLast90": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "organicOpportunityScore": 0,
       "activeWarnings": [],
       "serviceEnded": false,
       "observationCount": 5,
@@ -711,6 +2119,35 @@
       "currentFareKind": "clean",
       "currentFareProfile": "bristol-dalaman-economy-1adult-23kg-v1",
       "bookingHandoffType": "exact-route",
+      "commercialHandoffType": "exact-tripcom",
+      "exactAirportPreserved": true,
+      "monetised": true,
+      "currentCta": "Compare flights on Trip.com",
+      "farePublishable": true,
+      "fareSuppressionReason": null,
+      "fareRescueCategory": null,
+      "verificationCurrent": true,
+      "commercialReadiness": "TRAFFIC_READY",
+      "gscDataPresent": false,
+      "gscLast28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscPrior28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscLast90": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "organicOpportunityScore": 0,
       "activeWarnings": [],
       "serviceEnded": false,
       "observationCount": 5,
@@ -741,6 +2178,35 @@
       "currentFareKind": "clean",
       "currentFareProfile": "newcastle-dalaman-economy-1adult-23kg-v1",
       "bookingHandoffType": "exact-route",
+      "commercialHandoffType": "exact-tripcom",
+      "exactAirportPreserved": true,
+      "monetised": true,
+      "currentCta": "Compare flights on Trip.com",
+      "farePublishable": true,
+      "fareSuppressionReason": null,
+      "fareRescueCategory": null,
+      "verificationCurrent": true,
+      "commercialReadiness": "TRAFFIC_READY",
+      "gscDataPresent": false,
+      "gscLast28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscPrior28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscLast90": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "organicOpportunityScore": 0,
       "activeWarnings": [],
       "serviceEnded": false,
       "observationCount": 6,
@@ -771,6 +2237,35 @@
       "currentFareKind": "clean",
       "currentFareProfile": "london-gatwick-istanbul-economy-1adult-23kg-v1",
       "bookingHandoffType": null,
+      "commercialHandoffType": "google-flights",
+      "exactAirportPreserved": false,
+      "monetised": false,
+      "currentCta": "Search current flights",
+      "farePublishable": true,
+      "fareSuppressionReason": null,
+      "fareRescueCategory": null,
+      "verificationCurrent": true,
+      "commercialReadiness": "TRAFFIC_READY_NON_MONETISED",
+      "gscDataPresent": false,
+      "gscLast28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscPrior28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscLast90": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "organicOpportunityScore": 0,
       "activeWarnings": [],
       "serviceEnded": false,
       "observationCount": 7,
@@ -802,6 +2297,35 @@
       "currentFareKind": "clean",
       "currentFareProfile": "london-gatwick-antalya-economy-1adult-23kg-v1",
       "bookingHandoffType": null,
+      "commercialHandoffType": "google-flights",
+      "exactAirportPreserved": false,
+      "monetised": false,
+      "currentCta": "Search current flights",
+      "farePublishable": true,
+      "fareSuppressionReason": null,
+      "fareRescueCategory": null,
+      "verificationCurrent": true,
+      "commercialReadiness": "TRAFFIC_READY_NON_MONETISED",
+      "gscDataPresent": false,
+      "gscLast28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscPrior28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscLast90": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "organicOpportunityScore": 0,
       "activeWarnings": [],
       "serviceEnded": false,
       "observationCount": 6,
@@ -832,6 +2356,35 @@
       "currentFareKind": "clean",
       "currentFareProfile": "london-gatwick-dalaman-economy-1adult-23kg-v1",
       "bookingHandoffType": null,
+      "commercialHandoffType": "google-flights",
+      "exactAirportPreserved": false,
+      "monetised": false,
+      "currentCta": "Search current flights",
+      "farePublishable": true,
+      "fareSuppressionReason": null,
+      "fareRescueCategory": null,
+      "verificationCurrent": true,
+      "commercialReadiness": "TRAFFIC_READY_NON_MONETISED",
+      "gscDataPresent": false,
+      "gscLast28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscPrior28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscLast90": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "organicOpportunityScore": 0,
       "activeWarnings": [],
       "serviceEnded": false,
       "observationCount": 7,
@@ -862,6 +2415,35 @@
       "currentFareKind": "clean",
       "currentFareProfile": "london-gatwick-bodrum-economy-1adult-23kg-v1",
       "bookingHandoffType": null,
+      "commercialHandoffType": "google-flights",
+      "exactAirportPreserved": false,
+      "monetised": false,
+      "currentCta": "Search current flights",
+      "farePublishable": true,
+      "fareSuppressionReason": null,
+      "fareRescueCategory": null,
+      "verificationCurrent": true,
+      "commercialReadiness": "TRAFFIC_READY_NON_MONETISED",
+      "gscDataPresent": false,
+      "gscLast28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscPrior28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscLast90": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "organicOpportunityScore": 0,
       "activeWarnings": [],
       "serviceEnded": false,
       "observationCount": 6,
@@ -892,6 +2474,35 @@
       "currentFareKind": "clean",
       "currentFareProfile": "london-gatwick-izmir-economy-1adult-23kg-v1",
       "bookingHandoffType": null,
+      "commercialHandoffType": "google-flights",
+      "exactAirportPreserved": false,
+      "monetised": false,
+      "currentCta": "Search current flights",
+      "farePublishable": true,
+      "fareSuppressionReason": null,
+      "fareRescueCategory": null,
+      "verificationCurrent": true,
+      "commercialReadiness": "TRAFFIC_READY_NON_MONETISED",
+      "gscDataPresent": false,
+      "gscLast28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscPrior28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscLast90": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "organicOpportunityScore": 0,
       "activeWarnings": [],
       "serviceEnded": false,
       "observationCount": 6,
@@ -922,6 +2533,35 @@
       "currentFareKind": "clean",
       "currentFareProfile": "manchester-marrakech-economy-1adult-23kg-v1",
       "bookingHandoffType": "exact-route",
+      "commercialHandoffType": "exact-tripcom",
+      "exactAirportPreserved": true,
+      "monetised": true,
+      "currentCta": "Compare flights on Trip.com",
+      "farePublishable": true,
+      "fareSuppressionReason": null,
+      "fareRescueCategory": null,
+      "verificationCurrent": true,
+      "commercialReadiness": "TRAFFIC_READY",
+      "gscDataPresent": false,
+      "gscLast28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscPrior28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscLast90": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "organicOpportunityScore": 0,
       "activeWarnings": [],
       "serviceEnded": false,
       "observationCount": 6,
@@ -953,6 +2593,35 @@
       "currentFareKind": "clean",
       "currentFareProfile": "bristol-marrakech-economy-1adult-23kg-v1",
       "bookingHandoffType": "exact-route",
+      "commercialHandoffType": "exact-tripcom",
+      "exactAirportPreserved": true,
+      "monetised": true,
+      "currentCta": "Compare flights on Trip.com",
+      "farePublishable": true,
+      "fareSuppressionReason": null,
+      "fareRescueCategory": null,
+      "verificationCurrent": true,
+      "commercialReadiness": "TRAFFIC_READY",
+      "gscDataPresent": false,
+      "gscLast28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscPrior28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscLast90": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "organicOpportunityScore": 0,
       "activeWarnings": [],
       "serviceEnded": false,
       "observationCount": 6,
@@ -983,6 +2652,35 @@
       "currentFareKind": "clean",
       "currentFareProfile": "london-gatwick-marrakech-economy-1adult-23kg-v1",
       "bookingHandoffType": null,
+      "commercialHandoffType": "google-flights",
+      "exactAirportPreserved": false,
+      "monetised": false,
+      "currentCta": "Search current flights",
+      "farePublishable": true,
+      "fareSuppressionReason": null,
+      "fareRescueCategory": null,
+      "verificationCurrent": true,
+      "commercialReadiness": "TRAFFIC_READY_NON_MONETISED",
+      "gscDataPresent": false,
+      "gscLast28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscPrior28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscLast90": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "organicOpportunityScore": 0,
       "activeWarnings": [],
       "serviceEnded": false,
       "observationCount": 6,
@@ -1014,6 +2712,35 @@
       "currentFareKind": "clean",
       "currentFareProfile": "manchester-agadir-economy-1adult-23kg-v1",
       "bookingHandoffType": "exact-route",
+      "commercialHandoffType": "exact-tripcom",
+      "exactAirportPreserved": true,
+      "monetised": true,
+      "currentCta": "Compare flights on Trip.com",
+      "farePublishable": true,
+      "fareSuppressionReason": null,
+      "fareRescueCategory": null,
+      "verificationCurrent": true,
+      "commercialReadiness": "TRAFFIC_READY",
+      "gscDataPresent": true,
+      "gscLast28": {
+        "clicks": 0,
+        "impressions": 95,
+        "ctrPercent": 0,
+        "averagePosition": 24.178947
+      },
+      "gscPrior28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscLast90": {
+        "clicks": 0,
+        "impressions": 95,
+        "ctrPercent": 0,
+        "averagePosition": 24.178947
+      },
+      "organicOpportunityScore": 190,
       "activeWarnings": [],
       "serviceEnded": false,
       "observationCount": 6,
@@ -1045,6 +2772,35 @@
       "currentFareKind": "clean",
       "currentFareProfile": "birmingham-agadir-economy-1adult-23kg-v1",
       "bookingHandoffType": "exact-route",
+      "commercialHandoffType": "exact-tripcom",
+      "exactAirportPreserved": true,
+      "monetised": true,
+      "currentCta": "Compare flights on Trip.com",
+      "farePublishable": true,
+      "fareSuppressionReason": null,
+      "fareRescueCategory": null,
+      "verificationCurrent": true,
+      "commercialReadiness": "TRAFFIC_READY",
+      "gscDataPresent": false,
+      "gscLast28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscPrior28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscLast90": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "organicOpportunityScore": 0,
       "activeWarnings": [],
       "serviceEnded": false,
       "observationCount": 6,
@@ -1076,6 +2832,35 @@
       "currentFareKind": "clean",
       "currentFareProfile": "london-gatwick-agadir-economy-1adult-23kg-v1",
       "bookingHandoffType": null,
+      "commercialHandoffType": "google-flights",
+      "exactAirportPreserved": false,
+      "monetised": false,
+      "currentCta": "Search current flights",
+      "farePublishable": true,
+      "fareSuppressionReason": null,
+      "fareRescueCategory": null,
+      "verificationCurrent": true,
+      "commercialReadiness": "TRAFFIC_READY_NON_MONETISED",
+      "gscDataPresent": false,
+      "gscLast28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscPrior28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscLast90": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "organicOpportunityScore": 0,
       "activeWarnings": [],
       "serviceEnded": false,
       "observationCount": 6,
@@ -1104,6 +2889,35 @@
       "currentFareKind": "clean",
       "currentFareProfile": "london-heathrow-casablanca-economy-1adult-23kg-v1",
       "bookingHandoffType": null,
+      "commercialHandoffType": "google-flights",
+      "exactAirportPreserved": false,
+      "monetised": false,
+      "currentCta": "Search current flights",
+      "farePublishable": true,
+      "fareSuppressionReason": null,
+      "fareRescueCategory": null,
+      "verificationCurrent": true,
+      "commercialReadiness": "TRAFFIC_READY_NON_MONETISED",
+      "gscDataPresent": false,
+      "gscLast28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscPrior28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscLast90": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "organicOpportunityScore": 0,
       "activeWarnings": [],
       "serviceEnded": false,
       "observationCount": 6,
@@ -1132,6 +2946,35 @@
       "currentFareKind": "clean",
       "currentFareProfile": "london-gatwick-tangier-economy-1adult-23kg-v1",
       "bookingHandoffType": null,
+      "commercialHandoffType": "google-flights",
+      "exactAirportPreserved": false,
+      "monetised": false,
+      "currentCta": "Search current flights",
+      "farePublishable": true,
+      "fareSuppressionReason": null,
+      "fareRescueCategory": null,
+      "verificationCurrent": true,
+      "commercialReadiness": "TRAFFIC_READY_NON_MONETISED",
+      "gscDataPresent": false,
+      "gscLast28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscPrior28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscLast90": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "organicOpportunityScore": 0,
       "activeWarnings": [],
       "serviceEnded": false,
       "observationCount": 6,
@@ -1162,6 +3005,35 @@
       "currentFareKind": "clean",
       "currentFareProfile": "manchester-lahore-economy-1adult-23kg-v1",
       "bookingHandoffType": "exact-route",
+      "commercialHandoffType": "exact-tripcom",
+      "exactAirportPreserved": true,
+      "monetised": true,
+      "currentCta": "Compare flights on Trip.com",
+      "farePublishable": true,
+      "fareSuppressionReason": null,
+      "fareRescueCategory": null,
+      "verificationCurrent": true,
+      "commercialReadiness": "TRAFFIC_READY",
+      "gscDataPresent": true,
+      "gscLast28": {
+        "clicks": 0,
+        "impressions": 163,
+        "ctrPercent": 0,
+        "averagePosition": 21.368098
+      },
+      "gscPrior28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscLast90": {
+        "clicks": 0,
+        "impressions": 163,
+        "ctrPercent": 0,
+        "averagePosition": 21.368098
+      },
+      "organicOpportunityScore": 326,
       "activeWarnings": [],
       "serviceEnded": false,
       "observationCount": 16,
@@ -1192,6 +3064,35 @@
       "currentFareKind": "clean",
       "currentFareProfile": "manchester-islamabad-economy-1adult-23kg-v1",
       "bookingHandoffType": "exact-route",
+      "commercialHandoffType": "exact-tripcom",
+      "exactAirportPreserved": true,
+      "monetised": true,
+      "currentCta": "Compare flights on Trip.com",
+      "farePublishable": true,
+      "fareSuppressionReason": null,
+      "fareRescueCategory": null,
+      "verificationCurrent": true,
+      "commercialReadiness": "TRAFFIC_READY",
+      "gscDataPresent": true,
+      "gscLast28": {
+        "clicks": 0,
+        "impressions": 299,
+        "ctrPercent": 0,
+        "averagePosition": 39.384615
+      },
+      "gscPrior28": {
+        "clicks": 2,
+        "impressions": 226,
+        "ctrPercent": 0.884956,
+        "averagePosition": 42.477876
+      },
+      "gscLast90": {
+        "clicks": 2,
+        "impressions": 525,
+        "ctrPercent": 0.380952,
+        "averagePosition": 40.71619
+      },
+      "organicOpportunityScore": 598,
       "activeWarnings": [],
       "serviceEnded": false,
       "observationCount": 18,
@@ -1224,6 +3125,35 @@
       "currentFareKind": "clean",
       "currentFareProfile": "london-heathrow-delhi-economy-1adult-23kg-v1",
       "bookingHandoffType": null,
+      "commercialHandoffType": "google-flights",
+      "exactAirportPreserved": false,
+      "monetised": false,
+      "currentCta": "Search current flights",
+      "farePublishable": true,
+      "fareSuppressionReason": null,
+      "fareRescueCategory": null,
+      "verificationCurrent": true,
+      "commercialReadiness": "TRAFFIC_READY_NON_MONETISED",
+      "gscDataPresent": true,
+      "gscLast28": {
+        "clicks": 0,
+        "impressions": 5,
+        "ctrPercent": 0,
+        "averagePosition": 15.2
+      },
+      "gscPrior28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscLast90": {
+        "clicks": 0,
+        "impressions": 5,
+        "ctrPercent": 0,
+        "averagePosition": 15.2
+      },
+      "organicOpportunityScore": 12,
       "activeWarnings": [],
       "serviceEnded": false,
       "observationCount": 12,
@@ -1254,6 +3184,35 @@
       "currentFareKind": "clean",
       "currentFareProfile": "birmingham-amritsar-economy-1adult-23kg-v1",
       "bookingHandoffType": "exact-route",
+      "commercialHandoffType": "exact-tripcom",
+      "exactAirportPreserved": true,
+      "monetised": true,
+      "currentCta": "Compare flights on Trip.com",
+      "farePublishable": true,
+      "fareSuppressionReason": null,
+      "fareRescueCategory": null,
+      "verificationCurrent": true,
+      "commercialReadiness": "TRAFFIC_READY",
+      "gscDataPresent": false,
+      "gscLast28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscPrior28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscLast90": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "organicOpportunityScore": 0,
       "activeWarnings": [],
       "serviceEnded": false,
       "observationCount": 16,
@@ -1284,6 +3243,35 @@
       "currentFareKind": "clean",
       "currentFareProfile": "manchester-dubai-economy-1adult-23kg-v1",
       "bookingHandoffType": "exact-route",
+      "commercialHandoffType": "exact-tripcom",
+      "exactAirportPreserved": true,
+      "monetised": true,
+      "currentCta": "Compare flights on Trip.com",
+      "farePublishable": true,
+      "fareSuppressionReason": null,
+      "fareRescueCategory": null,
+      "verificationCurrent": true,
+      "commercialReadiness": "TRAFFIC_READY",
+      "gscDataPresent": true,
+      "gscLast28": {
+        "clicks": 0,
+        "impressions": 459,
+        "ctrPercent": 0,
+        "averagePosition": 43.411765
+      },
+      "gscPrior28": {
+        "clicks": 0,
+        "impressions": 120,
+        "ctrPercent": 0,
+        "averagePosition": 52.308333
+      },
+      "gscLast90": {
+        "clicks": 0,
+        "impressions": 579,
+        "ctrPercent": 0,
+        "averagePosition": 45.255613
+      },
+      "organicOpportunityScore": 459,
       "activeWarnings": [],
       "serviceEnded": false,
       "observationCount": 10,
@@ -1314,6 +3302,35 @@
       "currentFareKind": "clean",
       "currentFareProfile": "london-heathrow-doha-economy-1adult-23kg-v1",
       "bookingHandoffType": null,
+      "commercialHandoffType": "google-flights",
+      "exactAirportPreserved": false,
+      "monetised": false,
+      "currentCta": "Search current flights",
+      "farePublishable": true,
+      "fareSuppressionReason": null,
+      "fareRescueCategory": null,
+      "verificationCurrent": true,
+      "commercialReadiness": "TRAFFIC_READY_NON_MONETISED",
+      "gscDataPresent": false,
+      "gscLast28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscPrior28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscLast90": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "organicOpportunityScore": 0,
       "activeWarnings": [],
       "serviceEnded": false,
       "observationCount": 12,
@@ -1344,6 +3361,35 @@
       "currentFareKind": null,
       "currentFareProfile": null,
       "bookingHandoffType": null,
+      "commercialHandoffType": "google-flights",
+      "exactAirportPreserved": false,
+      "monetised": false,
+      "currentCta": "Search current flights",
+      "farePublishable": false,
+      "fareSuppressionReason": "Route verification/status is not strong enough to support a current public fare.",
+      "fareRescueCategory": "B_REFRESH_ROUTE_FIRST",
+      "verificationCurrent": false,
+      "commercialReadiness": "EVIDENCE_GAP",
+      "gscDataPresent": true,
+      "gscLast28": {
+        "clicks": 0,
+        "impressions": 7,
+        "ctrPercent": 0,
+        "averagePosition": 12.285714
+      },
+      "gscPrior28": {
+        "clicks": 0,
+        "impressions": 5,
+        "ctrPercent": 0,
+        "averagePosition": 28.6
+      },
+      "gscLast90": {
+        "clicks": 0,
+        "impressions": 299,
+        "ctrPercent": 0,
+        "averagePosition": 44.327759
+      },
+      "organicOpportunityScore": 5.25,
       "activeWarnings": [],
       "serviceEnded": false,
       "observationCount": 14,
@@ -1374,6 +3420,35 @@
       "currentFareKind": "clean",
       "currentFareProfile": "manchester-karachi-economy-1adult-23kg-v1",
       "bookingHandoffType": "exact-route",
+      "commercialHandoffType": "exact-tripcom",
+      "exactAirportPreserved": true,
+      "monetised": true,
+      "currentCta": "Compare flights on Trip.com",
+      "farePublishable": true,
+      "fareSuppressionReason": null,
+      "fareRescueCategory": null,
+      "verificationCurrent": true,
+      "commercialReadiness": "TRAFFIC_READY",
+      "gscDataPresent": false,
+      "gscLast28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscPrior28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscLast90": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "organicOpportunityScore": 0,
       "activeWarnings": [],
       "serviceEnded": false,
       "observationCount": 8,
@@ -1404,6 +3479,35 @@
       "currentFareKind": "clean",
       "currentFareProfile": "birmingham-lahore-economy-1adult-23kg-v1",
       "bookingHandoffType": "exact-route",
+      "commercialHandoffType": "exact-tripcom",
+      "exactAirportPreserved": true,
+      "monetised": true,
+      "currentCta": "Compare flights on Trip.com",
+      "farePublishable": true,
+      "fareSuppressionReason": null,
+      "fareRescueCategory": null,
+      "verificationCurrent": true,
+      "commercialReadiness": "TRAFFIC_READY",
+      "gscDataPresent": false,
+      "gscLast28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscPrior28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscLast90": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "organicOpportunityScore": 0,
       "activeWarnings": [],
       "serviceEnded": false,
       "observationCount": 6,
@@ -1434,6 +3538,35 @@
       "currentFareKind": "clean",
       "currentFareProfile": "birmingham-islamabad-economy-1adult-23kg-v1",
       "bookingHandoffType": "exact-route",
+      "commercialHandoffType": "exact-tripcom",
+      "exactAirportPreserved": true,
+      "monetised": true,
+      "currentCta": "Compare flights on Trip.com",
+      "farePublishable": true,
+      "fareSuppressionReason": null,
+      "fareRescueCategory": null,
+      "verificationCurrent": true,
+      "commercialReadiness": "TRAFFIC_READY",
+      "gscDataPresent": false,
+      "gscLast28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscPrior28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscLast90": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "organicOpportunityScore": 0,
       "activeWarnings": [],
       "serviceEnded": false,
       "observationCount": 6,
@@ -1462,6 +3595,35 @@
       "currentFareKind": "clean",
       "currentFareProfile": "leeds-bradford-amritsar-economy-1adult-23kg-v1",
       "bookingHandoffType": "exact-route",
+      "commercialHandoffType": "exact-tripcom",
+      "exactAirportPreserved": true,
+      "monetised": true,
+      "currentCta": "Compare flights on Trip.com",
+      "farePublishable": true,
+      "fareSuppressionReason": null,
+      "fareRescueCategory": null,
+      "verificationCurrent": true,
+      "commercialReadiness": "TRAFFIC_READY",
+      "gscDataPresent": true,
+      "gscLast28": {
+        "clicks": 0,
+        "impressions": 9,
+        "ctrPercent": 0,
+        "averagePosition": 12
+      },
+      "gscPrior28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscLast90": {
+        "clicks": 0,
+        "impressions": 9,
+        "ctrPercent": 0,
+        "averagePosition": 12
+      },
+      "organicOpportunityScore": 27,
       "activeWarnings": [],
       "serviceEnded": false,
       "observationCount": 6,
@@ -1490,6 +3652,35 @@
       "currentFareKind": "clean",
       "currentFareProfile": "leeds-bradford-islamabad-economy-1adult-23kg-v1",
       "bookingHandoffType": "exact-route",
+      "commercialHandoffType": "exact-tripcom",
+      "exactAirportPreserved": true,
+      "monetised": true,
+      "currentCta": "Compare flights on Trip.com",
+      "farePublishable": true,
+      "fareSuppressionReason": null,
+      "fareRescueCategory": null,
+      "verificationCurrent": true,
+      "commercialReadiness": "TRAFFIC_READY",
+      "gscDataPresent": false,
+      "gscLast28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscPrior28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscLast90": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "organicOpportunityScore": 0,
       "activeWarnings": [
         "lba-isb-unstable-direct-claims"
       ],
@@ -1524,6 +3715,35 @@
       "currentFareKind": "clean",
       "currentFareProfile": "london-heathrow-mumbai-economy-1adult-23kg-v1",
       "bookingHandoffType": null,
+      "commercialHandoffType": "google-flights",
+      "exactAirportPreserved": false,
+      "monetised": false,
+      "currentCta": "Search current flights",
+      "farePublishable": true,
+      "fareSuppressionReason": null,
+      "fareRescueCategory": null,
+      "verificationCurrent": true,
+      "commercialReadiness": "TRAFFIC_READY_NON_MONETISED",
+      "gscDataPresent": true,
+      "gscLast28": {
+        "clicks": 0,
+        "impressions": 5,
+        "ctrPercent": 0,
+        "averagePosition": 10.2
+      },
+      "gscPrior28": {
+        "clicks": 0,
+        "impressions": 2,
+        "ctrPercent": 0,
+        "averagePosition": 19.5
+      },
+      "gscLast90": {
+        "clicks": 0,
+        "impressions": 21,
+        "ctrPercent": 0,
+        "averagePosition": 35.52381
+      },
+      "organicOpportunityScore": 12,
       "activeWarnings": [],
       "serviceEnded": false,
       "observationCount": 9,
@@ -1555,6 +3775,35 @@
       "currentFareKind": "clean",
       "currentFareProfile": "london-heathrow-bengaluru-economy-1adult-23kg-v1",
       "bookingHandoffType": null,
+      "commercialHandoffType": "google-flights",
+      "exactAirportPreserved": false,
+      "monetised": false,
+      "currentCta": "Search current flights",
+      "farePublishable": true,
+      "fareSuppressionReason": null,
+      "fareRescueCategory": null,
+      "verificationCurrent": true,
+      "commercialReadiness": "TRAFFIC_READY_NON_MONETISED",
+      "gscDataPresent": false,
+      "gscLast28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscPrior28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscLast90": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "organicOpportunityScore": 0,
       "activeWarnings": [],
       "serviceEnded": false,
       "observationCount": 6,
@@ -1585,6 +3834,35 @@
       "currentFareKind": null,
       "currentFareProfile": null,
       "bookingHandoffType": null,
+      "commercialHandoffType": "google-flights",
+      "exactAirportPreserved": false,
+      "monetised": false,
+      "currentCta": "Search current flights",
+      "farePublishable": false,
+      "fareSuppressionReason": "Route verification/status is not strong enough to support a current public fare.",
+      "fareRescueCategory": "D_CONTRADICTORY_OR_UNSAFE",
+      "verificationCurrent": false,
+      "commercialReadiness": "EVIDENCE_GAP",
+      "gscDataPresent": true,
+      "gscLast28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscPrior28": {
+        "clicks": 0,
+        "impressions": 1,
+        "ctrPercent": 0,
+        "averagePosition": 31
+      },
+      "gscLast90": {
+        "clicks": 0,
+        "impressions": 1,
+        "ctrPercent": 0,
+        "averagePosition": 31
+      },
+      "organicOpportunityScore": 0,
       "activeWarnings": [],
       "serviceEnded": false,
       "observationCount": 5,
@@ -1615,6 +3893,35 @@
       "currentFareKind": "clean",
       "currentFareProfile": "manchester-dhaka-economy-1adult-23kg-v1",
       "bookingHandoffType": "exact-route",
+      "commercialHandoffType": "exact-tripcom",
+      "exactAirportPreserved": true,
+      "monetised": true,
+      "currentCta": "Compare flights on Trip.com",
+      "farePublishable": true,
+      "fareSuppressionReason": null,
+      "fareRescueCategory": null,
+      "verificationCurrent": false,
+      "commercialReadiness": "EVIDENCE_GAP",
+      "gscDataPresent": false,
+      "gscLast28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscPrior28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscLast90": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "organicOpportunityScore": 0,
       "activeWarnings": [],
       "serviceEnded": false,
       "observationCount": 6,
@@ -1645,6 +3952,35 @@
       "currentFareKind": null,
       "currentFareProfile": null,
       "bookingHandoffType": "exact-route",
+      "commercialHandoffType": "exact-tripcom",
+      "exactAirportPreserved": true,
+      "monetised": true,
+      "currentCta": "Compare flights on Trip.com",
+      "farePublishable": false,
+      "fareSuppressionReason": "Route verification/status is not strong enough to support a current public fare.",
+      "fareRescueCategory": "D_CONTRADICTORY_OR_UNSAFE",
+      "verificationCurrent": false,
+      "commercialReadiness": "EVIDENCE_GAP",
+      "gscDataPresent": true,
+      "gscLast28": {
+        "clicks": 0,
+        "impressions": 7,
+        "ctrPercent": 0,
+        "averagePosition": 8.857143
+      },
+      "gscPrior28": {
+        "clicks": 0,
+        "impressions": 1,
+        "ctrPercent": 0,
+        "averagePosition": 7
+      },
+      "gscLast90": {
+        "clicks": 0,
+        "impressions": 8,
+        "ctrPercent": 0,
+        "averagePosition": 8.625
+      },
+      "organicOpportunityScore": 7,
       "activeWarnings": [],
       "serviceEnded": false,
       "observationCount": 5,
@@ -1675,6 +4011,35 @@
       "currentFareKind": null,
       "currentFareProfile": null,
       "bookingHandoffType": null,
+      "commercialHandoffType": "google-flights",
+      "exactAirportPreserved": false,
+      "monetised": false,
+      "currentCta": "Search current flights",
+      "farePublishable": false,
+      "fareSuppressionReason": "Route verification/status is not strong enough to support a current public fare.",
+      "fareRescueCategory": "D_CONTRADICTORY_OR_UNSAFE",
+      "verificationCurrent": false,
+      "commercialReadiness": "EVIDENCE_GAP",
+      "gscDataPresent": false,
+      "gscLast28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscPrior28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscLast90": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "organicOpportunityScore": 0,
       "activeWarnings": [],
       "serviceEnded": false,
       "observationCount": 5,
@@ -1705,6 +4070,35 @@
       "currentFareKind": "clean",
       "currentFareProfile": "manchester-doha-economy-1adult-23kg-v1",
       "bookingHandoffType": "exact-route",
+      "commercialHandoffType": "exact-tripcom",
+      "exactAirportPreserved": true,
+      "monetised": true,
+      "currentCta": "Compare flights on Trip.com",
+      "farePublishable": true,
+      "fareSuppressionReason": null,
+      "fareRescueCategory": null,
+      "verificationCurrent": true,
+      "commercialReadiness": "TRAFFIC_READY",
+      "gscDataPresent": true,
+      "gscLast28": {
+        "clicks": 0,
+        "impressions": 24,
+        "ctrPercent": 0,
+        "averagePosition": 9.375
+      },
+      "gscPrior28": {
+        "clicks": 0,
+        "impressions": 28,
+        "ctrPercent": 0,
+        "averagePosition": 11.464286
+      },
+      "gscLast90": {
+        "clicks": 0,
+        "impressions": 61,
+        "ctrPercent": 0,
+        "averagePosition": 9.721311
+      },
+      "organicOpportunityScore": 96,
       "activeWarnings": [],
       "serviceEnded": false,
       "observationCount": 8,
@@ -1735,6 +4129,35 @@
       "currentFareKind": "clean",
       "currentFareProfile": "manchester-jeddah-economy-1adult-23kg-v1",
       "bookingHandoffType": "exact-route",
+      "commercialHandoffType": "exact-tripcom",
+      "exactAirportPreserved": true,
+      "monetised": true,
+      "currentCta": "Compare flights on Trip.com",
+      "farePublishable": true,
+      "fareSuppressionReason": null,
+      "fareRescueCategory": null,
+      "verificationCurrent": true,
+      "commercialReadiness": "TRAFFIC_READY",
+      "gscDataPresent": false,
+      "gscLast28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscPrior28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscLast90": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "organicOpportunityScore": 0,
       "activeWarnings": [],
       "serviceEnded": false,
       "observationCount": 6,
@@ -1767,6 +4190,35 @@
       "currentFareKind": "clean",
       "currentFareProfile": "birmingham-madinah-economy-1adult-23kg-v1",
       "bookingHandoffType": "exact-route",
+      "commercialHandoffType": "exact-tripcom",
+      "exactAirportPreserved": true,
+      "monetised": true,
+      "currentCta": "Compare flights on Trip.com",
+      "farePublishable": true,
+      "fareSuppressionReason": null,
+      "fareRescueCategory": null,
+      "verificationCurrent": true,
+      "commercialReadiness": "TRAFFIC_READY",
+      "gscDataPresent": false,
+      "gscLast28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscPrior28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscLast90": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "organicOpportunityScore": 0,
       "activeWarnings": [],
       "serviceEnded": false,
       "observationCount": 6,
@@ -1801,6 +4253,35 @@
       "currentFareKind": "clean",
       "currentFareProfile": "birmingham-mumbai-economy-1adult-23kg-v1",
       "bookingHandoffType": "exact-route",
+      "commercialHandoffType": "exact-tripcom",
+      "exactAirportPreserved": true,
+      "monetised": true,
+      "currentCta": "Compare flights on Trip.com",
+      "farePublishable": true,
+      "fareSuppressionReason": null,
+      "fareRescueCategory": null,
+      "verificationCurrent": false,
+      "commercialReadiness": "EVIDENCE_GAP",
+      "gscDataPresent": false,
+      "gscLast28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscPrior28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscLast90": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "organicOpportunityScore": 0,
       "activeWarnings": [],
       "serviceEnded": false,
       "observationCount": 7,
@@ -1831,6 +4312,35 @@
       "currentFareKind": "clean",
       "currentFareProfile": "glasgow-dubai-economy-1adult-23kg-v1",
       "bookingHandoffType": "exact-route",
+      "commercialHandoffType": "exact-tripcom",
+      "exactAirportPreserved": true,
+      "monetised": true,
+      "currentCta": "Compare flights on Trip.com",
+      "farePublishable": true,
+      "fareSuppressionReason": null,
+      "fareRescueCategory": null,
+      "verificationCurrent": true,
+      "commercialReadiness": "TRAFFIC_READY",
+      "gscDataPresent": true,
+      "gscLast28": {
+        "clicks": 0,
+        "impressions": 2,
+        "ctrPercent": 0,
+        "averagePosition": 9.5
+      },
+      "gscPrior28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscLast90": {
+        "clicks": 0,
+        "impressions": 2,
+        "ctrPercent": 0,
+        "averagePosition": 9.5
+      },
+      "organicOpportunityScore": 8,
       "activeWarnings": [],
       "serviceEnded": false,
       "observationCount": 6,
@@ -1861,6 +4371,35 @@
       "currentFareKind": "clean",
       "currentFareProfile": "edinburgh-dubai-economy-1adult-23kg-v1",
       "bookingHandoffType": "exact-route",
+      "commercialHandoffType": "exact-tripcom",
+      "exactAirportPreserved": true,
+      "monetised": true,
+      "currentCta": "Compare flights on Trip.com",
+      "farePublishable": true,
+      "fareSuppressionReason": null,
+      "fareRescueCategory": null,
+      "verificationCurrent": true,
+      "commercialReadiness": "TRAFFIC_READY",
+      "gscDataPresent": false,
+      "gscLast28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscPrior28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscLast90": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "organicOpportunityScore": 0,
       "activeWarnings": [],
       "serviceEnded": false,
       "observationCount": 6,
@@ -1891,6 +4430,35 @@
       "currentFareKind": "clean",
       "currentFareProfile": "newcastle-dubai-economy-1adult-23kg-v1",
       "bookingHandoffType": "exact-route",
+      "commercialHandoffType": "exact-tripcom",
+      "exactAirportPreserved": true,
+      "monetised": true,
+      "currentCta": "Compare flights on Trip.com",
+      "farePublishable": true,
+      "fareSuppressionReason": null,
+      "fareRescueCategory": null,
+      "verificationCurrent": true,
+      "commercialReadiness": "TRAFFIC_READY",
+      "gscDataPresent": true,
+      "gscLast28": {
+        "clicks": 0,
+        "impressions": 1,
+        "ctrPercent": 0,
+        "averagePosition": 4
+      },
+      "gscPrior28": {
+        "clicks": 0,
+        "impressions": 3,
+        "ctrPercent": 0,
+        "averagePosition": 5.666667
+      },
+      "gscLast90": {
+        "clicks": 0,
+        "impressions": 9,
+        "ctrPercent": 0,
+        "averagePosition": 4.222222
+      },
+      "organicOpportunityScore": 4,
       "activeWarnings": [],
       "serviceEnded": false,
       "observationCount": 6,
@@ -1921,6 +4489,35 @@
       "currentFareKind": null,
       "currentFareProfile": null,
       "bookingHandoffType": null,
+      "commercialHandoffType": "google-flights",
+      "exactAirportPreserved": false,
+      "monetised": false,
+      "currentCta": "Search current flights",
+      "farePublishable": false,
+      "fareSuppressionReason": "Route verification/status is not strong enough to support a current public fare.",
+      "fareRescueCategory": "D_CONTRADICTORY_OR_UNSAFE",
+      "verificationCurrent": false,
+      "commercialReadiness": "EVIDENCE_GAP",
+      "gscDataPresent": true,
+      "gscLast28": {
+        "clicks": 0,
+        "impressions": 17,
+        "ctrPercent": 0,
+        "averagePosition": 8.470588
+      },
+      "gscPrior28": {
+        "clicks": 0,
+        "impressions": 16,
+        "ctrPercent": 0,
+        "averagePosition": 8
+      },
+      "gscLast90": {
+        "clicks": 0,
+        "impressions": 48,
+        "ctrPercent": 0,
+        "averagePosition": 8.020833
+      },
+      "organicOpportunityScore": 17,
       "activeWarnings": [],
       "serviceEnded": false,
       "observationCount": 8,
@@ -1951,6 +4548,35 @@
       "currentFareKind": "clean",
       "currentFareProfile": "london-gatwick-amritsar-economy-1adult-23kg-v1",
       "bookingHandoffType": null,
+      "commercialHandoffType": "google-flights",
+      "exactAirportPreserved": false,
+      "monetised": false,
+      "currentCta": "Search current flights",
+      "farePublishable": true,
+      "fareSuppressionReason": null,
+      "fareRescueCategory": null,
+      "verificationCurrent": true,
+      "commercialReadiness": "TRAFFIC_READY_NON_MONETISED",
+      "gscDataPresent": false,
+      "gscLast28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscPrior28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscLast90": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "organicOpportunityScore": 0,
       "activeWarnings": [],
       "serviceEnded": false,
       "observationCount": 7,
@@ -1981,6 +4607,35 @@
       "currentFareKind": "clean",
       "currentFareProfile": "london-gatwick-doha-economy-1adult-23kg-v1",
       "bookingHandoffType": null,
+      "commercialHandoffType": "google-flights",
+      "exactAirportPreserved": false,
+      "monetised": false,
+      "currentCta": "Search current flights",
+      "farePublishable": true,
+      "fareSuppressionReason": null,
+      "fareRescueCategory": null,
+      "verificationCurrent": true,
+      "commercialReadiness": "TRAFFIC_READY_NON_MONETISED",
+      "gscDataPresent": false,
+      "gscLast28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscPrior28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscLast90": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "organicOpportunityScore": 0,
       "activeWarnings": [],
       "serviceEnded": false,
       "observationCount": 3,
@@ -2005,16 +4660,45 @@
       "verificationSource": "IndiGo official press release: \"IndiGo Adjusts Wide-body Network to Enhance Operational Resilience and Schedule Reliability\" (4 Feb 2026)",
       "verificationSourceUrl": "https://www.goindigo.in/press-releases/indigo-adjusts-wide-body-network-to-enhance-operational-resilience-and-schedule-reliability.html",
       "sourceStrength": "primary",
-      "currentFare": null,
-      "currentFareObservedDate": null,
-      "currentFareAgeDays": null,
-      "currentFareKind": null,
-      "currentFareProfile": null,
+      "currentFare": 634,
+      "currentFareObservedDate": "2026-10-04",
+      "currentFareAgeDays": 0,
+      "currentFareKind": "clean",
+      "currentFareProfile": "manchester-delhi-economy-1adult-23kg-v1",
       "bookingHandoffType": "service-ended-connecting",
+      "commercialHandoffType": "exact-tripcom",
+      "exactAirportPreserved": true,
+      "monetised": true,
+      "currentCta": "Compare current connecting flights on Trip.com",
+      "farePublishable": true,
+      "fareSuppressionReason": null,
+      "fareRescueCategory": null,
+      "verificationCurrent": false,
+      "commercialReadiness": "HOLD",
+      "gscDataPresent": false,
+      "gscLast28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscPrior28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscLast90": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "organicOpportunityScore": 0,
       "activeWarnings": [],
       "serviceEnded": true,
-      "observationCount": 6,
-      "publishableObservationCount": 0
+      "observationCount": 7,
+      "publishableObservationCount": 1
     },
     {
       "slug": "manchester-mumbai",
@@ -2035,16 +4719,45 @@
       "verificationSource": "IndiGo official press release: \"IndiGo Adjusts Wide-body Network to Enhance Operational Resilience and Schedule Reliability\" (4 Feb 2026)",
       "verificationSourceUrl": "https://www.goindigo.in/press-releases/indigo-adjusts-wide-body-network-to-enhance-operational-resilience-and-schedule-reliability.html",
       "sourceStrength": "primary",
-      "currentFare": null,
-      "currentFareObservedDate": null,
-      "currentFareAgeDays": null,
-      "currentFareKind": null,
-      "currentFareProfile": null,
+      "currentFare": 522,
+      "currentFareObservedDate": "2026-10-04",
+      "currentFareAgeDays": 0,
+      "currentFareKind": "clean",
+      "currentFareProfile": "manchester-mumbai-economy-1adult-23kg-v1",
       "bookingHandoffType": "service-ended-connecting",
+      "commercialHandoffType": "exact-tripcom",
+      "exactAirportPreserved": true,
+      "monetised": true,
+      "currentCta": "Compare current connecting flights on Trip.com",
+      "farePublishable": true,
+      "fareSuppressionReason": null,
+      "fareRescueCategory": null,
+      "verificationCurrent": false,
+      "commercialReadiness": "HOLD",
+      "gscDataPresent": true,
+      "gscLast28": {
+        "clicks": 0,
+        "impressions": 287,
+        "ctrPercent": 0,
+        "averagePosition": 37.425087
+      },
+      "gscPrior28": {
+        "clicks": 1,
+        "impressions": 235,
+        "ctrPercent": 0.425532,
+        "averagePosition": 36.353191
+      },
+      "gscLast90": {
+        "clicks": 1,
+        "impressions": 522,
+        "ctrPercent": 0.191571,
+        "averagePosition": 36.942529
+      },
+      "organicOpportunityScore": 57.4,
       "activeWarnings": [],
       "serviceEnded": true,
-      "observationCount": 6,
-      "publishableObservationCount": 0
+      "observationCount": 7,
+      "publishableObservationCount": 1
     },
     {
       "slug": "manchester-amritsar",
@@ -2074,6 +4787,35 @@
       "currentFareKind": "clean",
       "currentFareProfile": "manchester-amritsar-economy-1adult-23kg-v1",
       "bookingHandoffType": "exact-route",
+      "commercialHandoffType": "exact-tripcom",
+      "exactAirportPreserved": true,
+      "monetised": true,
+      "currentCta": "Compare flights on Trip.com",
+      "farePublishable": true,
+      "fareSuppressionReason": null,
+      "fareRescueCategory": null,
+      "verificationCurrent": true,
+      "commercialReadiness": "TRAFFIC_READY",
+      "gscDataPresent": false,
+      "gscLast28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscPrior28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscLast90": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "organicOpportunityScore": 0,
       "activeWarnings": [],
       "serviceEnded": false,
       "observationCount": 6,
@@ -2106,6 +4848,35 @@
       "currentFareKind": "clean",
       "currentFareProfile": "manchester-ahmedabad-economy-1adult-23kg-v1",
       "bookingHandoffType": "exact-route",
+      "commercialHandoffType": "exact-tripcom",
+      "exactAirportPreserved": true,
+      "monetised": true,
+      "currentCta": "Compare flights on Trip.com",
+      "farePublishable": true,
+      "fareSuppressionReason": null,
+      "fareRescueCategory": null,
+      "verificationCurrent": true,
+      "commercialReadiness": "TRAFFIC_READY",
+      "gscDataPresent": false,
+      "gscLast28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscPrior28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscLast90": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "organicOpportunityScore": 0,
       "activeWarnings": [],
       "serviceEnded": false,
       "observationCount": 6,
@@ -2139,6 +4910,35 @@
       "currentFareKind": "clean",
       "currentFareProfile": "manchester-madinah-economy-1adult-23kg-v1",
       "bookingHandoffType": "exact-route",
+      "commercialHandoffType": "exact-tripcom",
+      "exactAirportPreserved": true,
+      "monetised": true,
+      "currentCta": "Compare flights on Trip.com",
+      "farePublishable": true,
+      "fareSuppressionReason": null,
+      "fareRescueCategory": null,
+      "verificationCurrent": true,
+      "commercialReadiness": "TRAFFIC_READY",
+      "gscDataPresent": false,
+      "gscLast28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscPrior28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscLast90": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "organicOpportunityScore": 0,
       "activeWarnings": [],
       "serviceEnded": false,
       "observationCount": 9,
@@ -2167,6 +4967,35 @@
       "currentFareKind": "clean",
       "currentFareProfile": "manchester-barcelona-economy-1adult-23kg-v1",
       "bookingHandoffType": "destination-fallback",
+      "commercialHandoffType": "tripcom-destination-fallback",
+      "exactAirportPreserved": true,
+      "monetised": true,
+      "currentCta": "Compare flights on Trip.com",
+      "farePublishable": true,
+      "fareSuppressionReason": null,
+      "fareRescueCategory": null,
+      "verificationCurrent": true,
+      "commercialReadiness": "TRAFFIC_READY",
+      "gscDataPresent": false,
+      "gscLast28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscPrior28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscLast90": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "organicOpportunityScore": 0,
       "activeWarnings": [],
       "serviceEnded": false,
       "observationCount": 6,
@@ -2195,6 +5024,35 @@
       "currentFareKind": "clean",
       "currentFareProfile": "birmingham-barcelona-economy-1adult-23kg-v1",
       "bookingHandoffType": "destination-fallback",
+      "commercialHandoffType": "tripcom-destination-fallback",
+      "exactAirportPreserved": true,
+      "monetised": true,
+      "currentCta": "Compare flights on Trip.com",
+      "farePublishable": true,
+      "fareSuppressionReason": null,
+      "fareRescueCategory": null,
+      "verificationCurrent": true,
+      "commercialReadiness": "TRAFFIC_READY",
+      "gscDataPresent": false,
+      "gscLast28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscPrior28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscLast90": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "organicOpportunityScore": 0,
       "activeWarnings": [],
       "serviceEnded": false,
       "observationCount": 6,
@@ -2223,6 +5081,35 @@
       "currentFareKind": "clean",
       "currentFareProfile": "london-gatwick-barcelona-economy-1adult-23kg-v1",
       "bookingHandoffType": null,
+      "commercialHandoffType": "google-flights",
+      "exactAirportPreserved": false,
+      "monetised": false,
+      "currentCta": "Search current flights",
+      "farePublishable": true,
+      "fareSuppressionReason": null,
+      "fareRescueCategory": null,
+      "verificationCurrent": true,
+      "commercialReadiness": "TRAFFIC_READY_NON_MONETISED",
+      "gscDataPresent": false,
+      "gscLast28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscPrior28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscLast90": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "organicOpportunityScore": 0,
       "activeWarnings": [],
       "serviceEnded": false,
       "observationCount": 6,
@@ -2251,6 +5138,35 @@
       "currentFareKind": "clean",
       "currentFareProfile": "bristol-barcelona-economy-1adult-23kg-v1",
       "bookingHandoffType": "destination-fallback",
+      "commercialHandoffType": "tripcom-destination-fallback",
+      "exactAirportPreserved": true,
+      "monetised": true,
+      "currentCta": "Compare flights on Trip.com",
+      "farePublishable": true,
+      "fareSuppressionReason": null,
+      "fareRescueCategory": null,
+      "verificationCurrent": true,
+      "commercialReadiness": "TRAFFIC_READY",
+      "gscDataPresent": false,
+      "gscLast28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscPrior28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscLast90": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "organicOpportunityScore": 0,
       "activeWarnings": [],
       "serviceEnded": false,
       "observationCount": 6,
@@ -2279,6 +5195,35 @@
       "currentFareKind": "clean",
       "currentFareProfile": "leeds-bradford-barcelona-economy-1adult-23kg-v1",
       "bookingHandoffType": "destination-fallback",
+      "commercialHandoffType": "tripcom-destination-fallback",
+      "exactAirportPreserved": true,
+      "monetised": true,
+      "currentCta": "Compare flights on Trip.com",
+      "farePublishable": true,
+      "fareSuppressionReason": null,
+      "fareRescueCategory": null,
+      "verificationCurrent": true,
+      "commercialReadiness": "TRAFFIC_READY",
+      "gscDataPresent": true,
+      "gscLast28": {
+        "clicks": 0,
+        "impressions": 4,
+        "ctrPercent": 0,
+        "averagePosition": 9.25
+      },
+      "gscPrior28": {
+        "clicks": 0,
+        "impressions": 4,
+        "ctrPercent": 0,
+        "averagePosition": 36
+      },
+      "gscLast90": {
+        "clicks": 0,
+        "impressions": 8,
+        "ctrPercent": 0,
+        "averagePosition": 22.625
+      },
+      "organicOpportunityScore": 16,
       "activeWarnings": [],
       "serviceEnded": false,
       "observationCount": 6,
@@ -2310,6 +5255,35 @@
       "currentFareKind": "clean",
       "currentFareProfile": "bristol-faro-economy-1adult-23kg-v1",
       "bookingHandoffType": "destination-fallback",
+      "commercialHandoffType": "tripcom-destination-fallback",
+      "exactAirportPreserved": true,
+      "monetised": true,
+      "currentCta": "Compare flights on Trip.com",
+      "farePublishable": true,
+      "fareSuppressionReason": null,
+      "fareRescueCategory": null,
+      "verificationCurrent": true,
+      "commercialReadiness": "TRAFFIC_READY",
+      "gscDataPresent": false,
+      "gscLast28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscPrior28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscLast90": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "organicOpportunityScore": 0,
       "activeWarnings": [],
       "serviceEnded": false,
       "observationCount": 6,
@@ -2338,6 +5312,35 @@
       "currentFareKind": "clean",
       "currentFareProfile": "manchester-faro-economy-1adult-23kg-v1",
       "bookingHandoffType": "destination-fallback",
+      "commercialHandoffType": "tripcom-destination-fallback",
+      "exactAirportPreserved": true,
+      "monetised": true,
+      "currentCta": "Compare flights on Trip.com",
+      "farePublishable": true,
+      "fareSuppressionReason": null,
+      "fareRescueCategory": null,
+      "verificationCurrent": true,
+      "commercialReadiness": "TRAFFIC_READY",
+      "gscDataPresent": false,
+      "gscLast28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscPrior28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscLast90": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "organicOpportunityScore": 0,
       "activeWarnings": [],
       "serviceEnded": false,
       "observationCount": 6,
@@ -2370,6 +5373,35 @@
       "currentFareKind": "clean",
       "currentFareProfile": "birmingham-faro-economy-1adult-23kg-v1",
       "bookingHandoffType": "destination-fallback",
+      "commercialHandoffType": "tripcom-destination-fallback",
+      "exactAirportPreserved": true,
+      "monetised": true,
+      "currentCta": "Compare flights on Trip.com",
+      "farePublishable": true,
+      "fareSuppressionReason": null,
+      "fareRescueCategory": null,
+      "verificationCurrent": true,
+      "commercialReadiness": "TRAFFIC_READY",
+      "gscDataPresent": false,
+      "gscLast28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscPrior28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscLast90": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "organicOpportunityScore": 0,
       "activeWarnings": [],
       "serviceEnded": false,
       "observationCount": 6,
@@ -2398,6 +5430,35 @@
       "currentFareKind": "clean",
       "currentFareProfile": "leeds-bradford-faro-economy-1adult-23kg-v1",
       "bookingHandoffType": "destination-fallback",
+      "commercialHandoffType": "tripcom-destination-fallback",
+      "exactAirportPreserved": true,
+      "monetised": true,
+      "currentCta": "Compare flights on Trip.com",
+      "farePublishable": true,
+      "fareSuppressionReason": null,
+      "fareRescueCategory": null,
+      "verificationCurrent": true,
+      "commercialReadiness": "TRAFFIC_READY",
+      "gscDataPresent": false,
+      "gscLast28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscPrior28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscLast90": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "organicOpportunityScore": 0,
       "activeWarnings": [],
       "serviceEnded": false,
       "observationCount": 6,
@@ -2426,6 +5487,35 @@
       "currentFareKind": "clean",
       "currentFareProfile": "london-gatwick-faro-economy-1adult-23kg-v1",
       "bookingHandoffType": null,
+      "commercialHandoffType": "google-flights",
+      "exactAirportPreserved": false,
+      "monetised": false,
+      "currentCta": "Search current flights",
+      "farePublishable": true,
+      "fareSuppressionReason": null,
+      "fareRescueCategory": null,
+      "verificationCurrent": true,
+      "commercialReadiness": "TRAFFIC_READY_NON_MONETISED",
+      "gscDataPresent": false,
+      "gscLast28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscPrior28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscLast90": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "organicOpportunityScore": 0,
       "activeWarnings": [],
       "serviceEnded": false,
       "observationCount": 6,
@@ -2454,6 +5544,35 @@
       "currentFareKind": "clean",
       "currentFareProfile": "manchester-athens-economy-1adult-23kg-v1",
       "bookingHandoffType": "destination-fallback",
+      "commercialHandoffType": "tripcom-destination-fallback",
+      "exactAirportPreserved": true,
+      "monetised": true,
+      "currentCta": "Compare flights on Trip.com",
+      "farePublishable": true,
+      "fareSuppressionReason": null,
+      "fareRescueCategory": null,
+      "verificationCurrent": true,
+      "commercialReadiness": "TRAFFIC_READY",
+      "gscDataPresent": false,
+      "gscLast28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscPrior28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscLast90": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "organicOpportunityScore": 0,
       "activeWarnings": [],
       "serviceEnded": false,
       "observationCount": 6,
@@ -2484,6 +5603,35 @@
       "currentFareKind": "clean",
       "currentFareProfile": "birmingham-athens-economy-1adult-23kg-v1",
       "bookingHandoffType": "destination-fallback",
+      "commercialHandoffType": "tripcom-destination-fallback",
+      "exactAirportPreserved": true,
+      "monetised": true,
+      "currentCta": "Compare flights on Trip.com",
+      "farePublishable": true,
+      "fareSuppressionReason": null,
+      "fareRescueCategory": null,
+      "verificationCurrent": true,
+      "commercialReadiness": "TRAFFIC_READY",
+      "gscDataPresent": true,
+      "gscLast28": {
+        "clicks": 2,
+        "impressions": 32,
+        "ctrPercent": 6.25,
+        "averagePosition": 8.25
+      },
+      "gscPrior28": {
+        "clicks": 0,
+        "impressions": 18,
+        "ctrPercent": 0,
+        "averagePosition": 13.944444
+      },
+      "gscLast90": {
+        "clicks": 2,
+        "impressions": 50,
+        "ctrPercent": 4,
+        "averagePosition": 10.3
+      },
+      "organicOpportunityScore": 128,
       "activeWarnings": [],
       "serviceEnded": false,
       "observationCount": 6,
@@ -2512,6 +5660,35 @@
       "currentFareKind": null,
       "currentFareProfile": null,
       "bookingHandoffType": null,
+      "commercialHandoffType": "google-flights",
+      "exactAirportPreserved": false,
+      "monetised": false,
+      "currentCta": "Search current flights",
+      "farePublishable": false,
+      "fareSuppressionReason": "Route verification/status is not strong enough to support a current public fare.",
+      "fareRescueCategory": "B_REFRESH_ROUTE_FIRST",
+      "verificationCurrent": false,
+      "commercialReadiness": "EVIDENCE_GAP",
+      "gscDataPresent": false,
+      "gscLast28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscPrior28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscLast90": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "organicOpportunityScore": 0,
       "activeWarnings": [],
       "serviceEnded": false,
       "observationCount": 6,
@@ -2540,6 +5717,35 @@
       "currentFareKind": null,
       "currentFareProfile": null,
       "bookingHandoffType": null,
+      "commercialHandoffType": "google-flights",
+      "exactAirportPreserved": false,
+      "monetised": false,
+      "currentCta": "Search current flights",
+      "farePublishable": false,
+      "fareSuppressionReason": "Route verification/status is not strong enough to support a current public fare.",
+      "fareRescueCategory": "B_REFRESH_ROUTE_FIRST",
+      "verificationCurrent": false,
+      "commercialReadiness": "EVIDENCE_GAP",
+      "gscDataPresent": false,
+      "gscLast28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscPrior28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscLast90": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "organicOpportunityScore": 0,
       "activeWarnings": [],
       "serviceEnded": false,
       "observationCount": 6,
@@ -2570,6 +5776,35 @@
       "currentFareKind": "clean",
       "currentFareProfile": "birmingham-rome-economy-1adult-23kg-v1",
       "bookingHandoffType": null,
+      "commercialHandoffType": "google-flights",
+      "exactAirportPreserved": false,
+      "monetised": false,
+      "currentCta": "Search current flights",
+      "farePublishable": true,
+      "fareSuppressionReason": null,
+      "fareRescueCategory": null,
+      "verificationCurrent": true,
+      "commercialReadiness": "TRAFFIC_READY_NON_MONETISED",
+      "gscDataPresent": false,
+      "gscLast28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscPrior28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscLast90": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "organicOpportunityScore": 0,
       "activeWarnings": [],
       "serviceEnded": false,
       "observationCount": 6,
@@ -2598,6 +5833,35 @@
       "currentFareKind": "clean",
       "currentFareProfile": "london-gatwick-rome-economy-1adult-23kg-v1",
       "bookingHandoffType": null,
+      "commercialHandoffType": "google-flights",
+      "exactAirportPreserved": false,
+      "monetised": false,
+      "currentCta": "Search current flights",
+      "farePublishable": true,
+      "fareSuppressionReason": null,
+      "fareRescueCategory": null,
+      "verificationCurrent": true,
+      "commercialReadiness": "TRAFFIC_READY_NON_MONETISED",
+      "gscDataPresent": true,
+      "gscLast28": {
+        "clicks": 0,
+        "impressions": 25,
+        "ctrPercent": 0,
+        "averagePosition": 22.88
+      },
+      "gscPrior28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscLast90": {
+        "clicks": 0,
+        "impressions": 25,
+        "ctrPercent": 0,
+        "averagePosition": 22.88
+      },
+      "organicOpportunityScore": 40,
       "activeWarnings": [],
       "serviceEnded": false,
       "observationCount": 6,
@@ -2628,6 +5892,35 @@
       "currentFareKind": "clean",
       "currentFareProfile": "bristol-rome-economy-1adult-23kg-v1",
       "bookingHandoffType": null,
+      "commercialHandoffType": "google-flights",
+      "exactAirportPreserved": false,
+      "monetised": false,
+      "currentCta": "Search current flights",
+      "farePublishable": true,
+      "fareSuppressionReason": null,
+      "fareRescueCategory": null,
+      "verificationCurrent": true,
+      "commercialReadiness": "TRAFFIC_READY_NON_MONETISED",
+      "gscDataPresent": false,
+      "gscLast28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscPrior28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscLast90": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "organicOpportunityScore": 0,
       "activeWarnings": [],
       "serviceEnded": false,
       "observationCount": 6,
@@ -2658,6 +5951,35 @@
       "currentFareKind": "clean",
       "currentFareProfile": "london-heathrow-lahore-economy-1adult-23kg-v1",
       "bookingHandoffType": null,
+      "commercialHandoffType": "google-flights",
+      "exactAirportPreserved": false,
+      "monetised": false,
+      "currentCta": "Search current flights",
+      "farePublishable": true,
+      "fareSuppressionReason": null,
+      "fareRescueCategory": null,
+      "verificationCurrent": true,
+      "commercialReadiness": "TRAFFIC_READY_NON_MONETISED",
+      "gscDataPresent": false,
+      "gscLast28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscPrior28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscLast90": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "organicOpportunityScore": 0,
       "activeWarnings": [],
       "serviceEnded": false,
       "observationCount": 7,
@@ -2688,6 +6010,35 @@
       "currentFareKind": "clean",
       "currentFareProfile": "london-gatwick-dubai-economy-1adult-23kg-v1",
       "bookingHandoffType": null,
+      "commercialHandoffType": "google-flights",
+      "exactAirportPreserved": false,
+      "monetised": false,
+      "currentCta": "Search current flights",
+      "farePublishable": true,
+      "fareSuppressionReason": null,
+      "fareRescueCategory": null,
+      "verificationCurrent": true,
+      "commercialReadiness": "TRAFFIC_READY_NON_MONETISED",
+      "gscDataPresent": true,
+      "gscLast28": {
+        "clicks": 0,
+        "impressions": 52,
+        "ctrPercent": 0,
+        "averagePosition": 16.096154
+      },
+      "gscPrior28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscLast90": {
+        "clicks": 0,
+        "impressions": 52,
+        "ctrPercent": 0,
+        "averagePosition": 16.096154
+      },
+      "organicOpportunityScore": 124.8,
       "activeWarnings": [],
       "serviceEnded": false,
       "observationCount": 6,
@@ -2718,6 +6069,35 @@
       "currentFareKind": "clean",
       "currentFareProfile": "birmingham-dubai-economy-1adult-23kg-v1",
       "bookingHandoffType": "destination-fallback",
+      "commercialHandoffType": "tripcom-destination-fallback",
+      "exactAirportPreserved": true,
+      "monetised": true,
+      "currentCta": "Compare flights on Trip.com",
+      "farePublishable": true,
+      "fareSuppressionReason": null,
+      "fareRescueCategory": null,
+      "verificationCurrent": true,
+      "commercialReadiness": "TRAFFIC_READY",
+      "gscDataPresent": false,
+      "gscLast28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscPrior28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscLast90": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "organicOpportunityScore": 0,
       "activeWarnings": [],
       "serviceEnded": false,
       "observationCount": 6,
@@ -2748,6 +6128,35 @@
       "currentFareKind": "clean",
       "currentFareProfile": "birmingham-doha-economy-1adult-23kg-v1",
       "bookingHandoffType": "destination-fallback",
+      "commercialHandoffType": "tripcom-destination-fallback",
+      "exactAirportPreserved": true,
+      "monetised": true,
+      "currentCta": "Compare flights on Trip.com",
+      "farePublishable": true,
+      "fareSuppressionReason": null,
+      "fareRescueCategory": null,
+      "verificationCurrent": true,
+      "commercialReadiness": "TRAFFIC_READY",
+      "gscDataPresent": false,
+      "gscLast28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscPrior28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscLast90": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "organicOpportunityScore": 0,
       "activeWarnings": [],
       "serviceEnded": false,
       "observationCount": 6,
@@ -2778,6 +6187,35 @@
       "currentFareKind": "clean",
       "currentFareProfile": "birmingham-jeddah-economy-1adult-23kg-v1",
       "bookingHandoffType": "destination-fallback",
+      "commercialHandoffType": "tripcom-destination-fallback",
+      "exactAirportPreserved": true,
+      "monetised": true,
+      "currentCta": "Compare flights on Trip.com",
+      "farePublishable": true,
+      "fareSuppressionReason": null,
+      "fareRescueCategory": null,
+      "verificationCurrent": true,
+      "commercialReadiness": "TRAFFIC_READY",
+      "gscDataPresent": false,
+      "gscLast28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscPrior28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscLast90": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "organicOpportunityScore": 0,
       "activeWarnings": [],
       "serviceEnded": false,
       "observationCount": 6,
@@ -2808,6 +6246,35 @@
       "currentFareKind": "clean",
       "currentFareProfile": "london-heathrow-dubai-economy-1adult-23kg-v1",
       "bookingHandoffType": null,
+      "commercialHandoffType": "google-flights",
+      "exactAirportPreserved": false,
+      "monetised": false,
+      "currentCta": "Search current flights",
+      "farePublishable": true,
+      "fareSuppressionReason": null,
+      "fareRescueCategory": null,
+      "verificationCurrent": true,
+      "commercialReadiness": "TRAFFIC_READY_NON_MONETISED",
+      "gscDataPresent": true,
+      "gscLast28": {
+        "clicks": 0,
+        "impressions": 46,
+        "ctrPercent": 0,
+        "averagePosition": 14.847826
+      },
+      "gscPrior28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscLast90": {
+        "clicks": 0,
+        "impressions": 46,
+        "ctrPercent": 0,
+        "averagePosition": 14.847826
+      },
+      "organicOpportunityScore": 110.4,
       "activeWarnings": [],
       "serviceEnded": false,
       "observationCount": 6,
@@ -2838,6 +6305,35 @@
       "currentFareKind": "clean",
       "currentFareProfile": "birmingham-delhi-economy-1adult-23kg-v1",
       "bookingHandoffType": "destination-fallback",
+      "commercialHandoffType": "tripcom-destination-fallback",
+      "exactAirportPreserved": true,
+      "monetised": true,
+      "currentCta": "Compare flights on Trip.com",
+      "farePublishable": true,
+      "fareSuppressionReason": null,
+      "fareRescueCategory": null,
+      "verificationCurrent": true,
+      "commercialReadiness": "TRAFFIC_READY",
+      "gscDataPresent": false,
+      "gscLast28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscPrior28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscLast90": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "organicOpportunityScore": 0,
       "activeWarnings": [],
       "serviceEnded": false,
       "observationCount": 7,
@@ -2868,6 +6364,35 @@
       "currentFareKind": null,
       "currentFareProfile": null,
       "bookingHandoffType": "destination-fallback",
+      "commercialHandoffType": "tripcom-destination-fallback",
+      "exactAirportPreserved": true,
+      "monetised": true,
+      "currentCta": "Compare flights on Trip.com",
+      "farePublishable": false,
+      "fareSuppressionReason": "Route verification/status is not strong enough to support a current public fare.",
+      "fareRescueCategory": "D_CONTRADICTORY_OR_UNSAFE",
+      "verificationCurrent": false,
+      "commercialReadiness": "EVIDENCE_GAP",
+      "gscDataPresent": false,
+      "gscLast28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscPrior28": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "gscLast90": {
+        "clicks": 0,
+        "impressions": 0,
+        "ctrPercent": 0,
+        "averagePosition": null
+      },
+      "organicOpportunityScore": 0,
       "activeWarnings": [],
       "serviceEnded": false,
       "observationCount": 6,
