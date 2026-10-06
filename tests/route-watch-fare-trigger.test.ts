@@ -292,25 +292,31 @@ describe('Real archive expectation (19 August 2026, post-supersession-fix) — o
   // corrected fare movement, not the discarded default-view draft — the
   // membership below is the real, freshly computed result against the
   // corrected archive, not carried over from the earlier draft.
-  // 6 October 2026 Chrome weekly sweep: the archive now carries, per route, a
-  // flagged self-transfer / separate-tickets secondary observation (when it is
-  // cheaper) plus the clean fare, all dated 6 October. Fare Watcher's
-  // latestCurrentObservationsByIdentity() tie-breaks same-date observations by
-  // LOWER price, so on the 68 routes that carry a secondary the detection under
-  // evaluation is that self-transfer fare, measured against the existing
-  // baseline. The real, freshly computed result is that no observation clears
-  // the unchanged strong-evidence threshold, so the Route Watch queue is empty.
-  // Thresholds, qualification rules and lifecycle are untouched; this is a
-  // recorded consequence of the new data, not a loosened or tightened rule.
-  it('the real fareObservations archive produces no current Route Watch candidates after the 6 October Chrome weekly sweep', () => {
+  // 6 October 2026 Chrome weekly sweep (after the evidence hold): the archive now
+  // carries, per ingested route, a flagged self-transfer / separate-tickets
+  // secondary (when cheaper) plus the clean fare, all dated 6 October. Fare
+  // Watcher's latestCurrentObservationsByIdentity() tie-breaks same-date
+  // observations by LOWER price, so on routes that carry a secondary the
+  // detection under evaluation is that self-transfer fare. Three routes
+  // (manchester-dalaman, london-gatwick-dalaman, london-gatwick-faro) were
+  // held out of the 6 October ingestion because their classification or price
+  // comparison could not be re-verified, so their latest observation is still
+  // the 29 September fare, which keeps qualifying. Those 29 September fares
+  // were recorded before the separate-tickets distinction was captured, so a
+  // candidate here is a lead for founder verification only, never a verified
+  // deal. Thresholds, qualification rules and lifecycle are untouched; the
+  // Fare Watcher self-transfer-awareness gap is tracked separately.
+  it('the real fareObservations archive produces three current Route Watch candidates after the 6 October Chrome weekly sweep', () => {
     const nowIso = new Date().toISOString().slice(0, 10);
     const candidates = generateRouteWatchFareCandidates(fareObservations, nowIso);
-    expect(candidates).toHaveLength(0);
-    const slugs = candidates.map((c) => c.routeSlug);
-    // Routes that qualified after the 29 September sweep must no longer appear
-    // unless the real data supports them.
-    for (const slug of ['manchester-dalaman', 'london-gatwick-dalaman', 'birmingham-agadir', 'glasgow-antalya', 'birmingham-amritsar', 'london-heathrow-delhi', 'manchester-islamabad']) {
-      expect(slugs).not.toContain(slug);
+    expect(candidates).toHaveLength(3);
+    expect(candidates.every((c) => c.lifecycle === 'detected' && c.founderVerificationRequired)).toBe(true);
+    const bySlug = new Map(candidates.map((c) => [c.routeSlug, c.qualification]));
+    expect(bySlug.get('manchester-dalaman')).toBe('standout-candidate');
+    expect(bySlug.get('london-gatwick-dalaman')).toBe('standout-candidate');
+    expect(bySlug.get('london-gatwick-faro')).toBe('standout-candidate');
+    for (const slug of ['birmingham-agadir', 'glasgow-antalya', 'birmingham-amritsar', 'london-heathrow-delhi', 'manchester-islamabad']) {
+      expect(candidates.map((c) => c.routeSlug)).not.toContain(slug);
     }
   });
 });
@@ -364,17 +370,16 @@ describe('I. Trust wording — no overclaim in rendered founder copy or customer
     for (const pattern of forbidden) expect(label).not.toMatch(pattern);
   });
 
-  it('the founder-facing state clearly states how many candidates cleared the threshold, never overclaiming urgency', () => {
-    // 4 -> 7 -> 6 -> 5 -> 6 -> 34 -> ... -> 26 (after the 29 September sweep) -> 0
-    // (after the 6 October Chrome sweep, see the dedicated regression above).
-    // With zero candidates the section carries the honest empty-state copy
-    // rather than a count; it must still be present, plainly worded, and free
-    // of every forbidden urgency/process phrase.
+  it('the non-empty state clearly states how many candidates cleared the threshold, never overclaiming urgency', () => {
+    // 4 -> 7 -> 6 -> 5 -> 6 -> 34 -> ... -> 26 (after the 29 September sweep) -> 3
+    // (after the 6 October Chrome sweep and its evidence hold, see the dedicated
+    // regression above). Exercise the actual non-empty-state copy against that
+    // final, verified count.
     const snapshot = getFounderSnapshot(new Date());
     const section = snapshot.grouped['nice-to-have'].find((s) => s.id === 'route-watch-fare-candidates')!;
-    expect(section.items).toHaveLength(0);
-    expect(section.headline).toMatch(/No fare observation currently clears Fare Watcher's strong evidence threshold/i);
-    expect(section.headline).toMatch(/nothing qualifies for a Route Watch lower-fare send today/i);
+    expect(section.items).toHaveLength(3);
+    expect(section.headline).toMatch(/3 fare observations clear Fare Watcher's strong evidence threshold/i);
+    expect(section.headline).toMatch(/Nothing sends itself/i);
     for (const pattern of forbidden) expect(section.headline).not.toMatch(pattern);
   });
 

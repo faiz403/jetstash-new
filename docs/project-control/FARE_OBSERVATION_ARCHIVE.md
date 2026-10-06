@@ -176,12 +176,16 @@ differs:
 ## Collection environment and ingestion rule (founder-approved 6 October 2026)
 
 Fare observations for this archive are collected in **Chrome with Google Flights** (signed-in normal profile,
-Cheapest tab, exact-airport pair, GBP). The Claude built-in browser is **not** archive-grade: on 6 October
-2026 it returned a systematically different result set from Chrome for the same searches — no
-self-transfer / separate-tickets rows at all, 4–81 rows per route against 8–291 in Chrome, and no baggage
-wording — so a fare such as MAN→DXB £421 could not be said to be the cheapest fare under the normal
-methodology. A 3-route Chrome diagnostic (MAN→DXB, MAN→LHE, LBA→AYT) confirmed the broader result set; the
-built-in browser sweep of the same day is kept outside the archive as context only.
+Cheapest tab, exact-airport pair, GBP), from a **visible, foreground tab**. The Claude built-in browser is
+**not** archive-grade: on 6 October 2026 it returned a systematically different result set from Chrome for the
+same searches (no self-transfer / separate-tickets rows, 4-81 rows per route against 8-291, no baggage
+wording), so a fare such as MAN-DXB £421 could not be said to be the cheapest under the normal methodology.
+
+**Result-set breadth is not guaranteed even in Chrome.** Later the same day the same searches returned far
+narrower sets (MAN-DXB 119 rows -> 13, MAN-DLM 72 -> 9) from hidden tabs, so the 13:0x row sets could not be
+re-evidenced. Cause unconfirmed (hidden-tab loading is the leading hypothesis). A collector must record row count
+and separate-tickets row count at collection time, and an observation whose classification cannot be re-verified
+is held, not ingested. See `fare-evidence/chrome-sweep-2026-10-06.md`.
 
 Ingestion rule:
 
@@ -200,11 +204,14 @@ booking; a missed connection depends on the booking provider). That label also a
 whose return is on another ticket, so notes quote the label rather than asserting a connection risk. Only the
 outbound leg is read from the result list; return-leg timing is not opened and each note says so.
 
-**6 October 2026 sweep (17 Nov / 1 Dec):** 82 routes ingested as 150 observations (82 clean, 68 self-transfer
-secondaries); 0 routes had no clean fare. The 7 routes whose only source was an incomplete KAYAK page
-(leeds-bradford-antalya/dalaman/bodrum, glasgow-dalaman, bristol-antalya/dalaman, newcastle-dalaman — Google
-Flights returned its error page for them in both browsers) are **not** ingested until a complete result set is
-observed.
+**6 October 2026 sweep (17 Nov / 1 Dec):** 138 observations ingested across 78 routes (78 clean, 60
+self-transfer secondaries). 11 clean fares with a non-stop outbound carry `fareDirectness: 'unknown'` because
+only the outbound leg was read (direct needs both legs evidenced). **Held, not ingested:** 12 observations
+(the 7 non-stop-outbound separate-tickets secondaries and the four flagged price pairs: manchester-dalaman,
+london-gatwick-dalaman, london-gatwick-faro, london-gatwick-tangier) because their classification or comparison
+could not be re-verified; and the 7 routes whose only source was an incomplete KAYAK page
+(leeds-bradford-antalya/dalaman/bodrum, glasgow-dalaman, bristol-antalya/dalaman, newcastle-dalaman). A large
+price gap alone is not a hold criterion; there is no price-ratio cutoff.
 
 Business-class observations are welcome, but must be kept as a separate cabin record. Do not mix
 cabin, passenger count, baggage assumptions or airport scope when comparing a series.
