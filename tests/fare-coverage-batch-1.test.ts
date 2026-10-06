@@ -234,9 +234,12 @@ describe('no Fare Watcher candidate is created merely because this PR adds an ob
     const publishable = fareObservations.filter((o) => isPubliclyPublishable(o));
     const expectedCount: Record<string, number> = {
       'leeds-bradford-bodrum': 4,
-      'manchester-karachi': 5,
-      'birmingham-lahore': 5,
-      'birmingham-islamabad': 5,
+      // 6 October 2026 weekly sweep appended two observations (self-transfer
+      // secondary + clean) to each of these three routes; leeds-bradford-bodrum
+      // was not ingested (its only source was an incomplete KAYAK page).
+      'manchester-karachi': 7,
+      'birmingham-lahore': 7,
+      'birmingham-islamabad': 7,
     };
     for (const { routeSlug } of APPROVED) {
       const comparable = publishable.filter((o) => o.routeSlug === routeSlug && o.cabin === 'Economy');

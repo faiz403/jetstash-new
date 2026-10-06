@@ -96,6 +96,7 @@ evidence shows a regression, changed requirement or stale external fact.
 | `ARR-LIVE-002` | Added anonymous aggregate beta outcome counters (fixed metric and reason names, no journey data, about three months retention, Production only). Production counter read still open pending an Upstash console login. | Repository verified: PR #294, merge `fdda34f` | Live |
 | `ARR-LIVE-003` | Added the standalone Arrive By landing page, homepage "Try Arrive By" entry point and supported-route "Plan with Arrive By" links. | Repository verified: PR #295, merge `85bcffc` | Live |
 | `ARR-LIVE-004` | Updated the Arrive By privacy wording (what goes to Google, the hashed rate-limit identifier, the counters) and added the advance Google notice above the submit button. | Repository verified: PR #296, merge `03cb2e2` | Live |
+| `FARE-SWEEP-20261006` | 6 October 2026 weekly editorial fare sweep (17 Nov / 1 Dec, 89 routes attempted). Collected in Chrome after a built-in-browser run was found to suppress self-transfer rows and baggage wording (kept as context only, not archived). Ingested 82 routes as 150 observations under the clean-primary / flagged-self-transfer-secondary rule (see `FARE_OBSERVATION_ARCHIVE.md`); 7 routes with only an incomplete KAYAK result were deliberately not ingested. Route Watch / Fare Watcher candidates are now 0 under the unchanged threshold. | Repository verified: PR pending at the time of writing | Pending merge |
 
 ## Launch readiness
 

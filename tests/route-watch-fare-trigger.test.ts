@@ -292,32 +292,26 @@ describe('Real archive expectation (19 August 2026, post-supersession-fix) — o
   // corrected fare movement, not the discarded default-view draft — the
   // membership below is the real, freshly computed result against the
   // corrected archive, not carried over from the earlier draft.
-  it('the real fareObservations archive produces 26 current Route Watch candidates after the 29 September full weekly sweep', () => {
+  // 6 October 2026 Chrome weekly sweep: the archive now carries, per route, a
+  // flagged self-transfer / separate-tickets secondary observation (when it is
+  // cheaper) plus the clean fare, all dated 6 October. Fare Watcher's
+  // latestCurrentObservationsByIdentity() tie-breaks same-date observations by
+  // LOWER price, so on the 68 routes that carry a secondary the detection under
+  // evaluation is that self-transfer fare, measured against the existing
+  // baseline. The real, freshly computed result is that no observation clears
+  // the unchanged strong-evidence threshold, so the Route Watch queue is empty.
+  // Thresholds, qualification rules and lifecycle are untouched; this is a
+  // recorded consequence of the new data, not a loosened or tightened rule.
+  it('the real fareObservations archive produces no current Route Watch candidates after the 6 October Chrome weekly sweep', () => {
     const nowIso = new Date().toISOString().slice(0, 10);
     const candidates = generateRouteWatchFareCandidates(fareObservations, nowIso);
-    expect(candidates).toHaveLength(26);
-    expect(candidates.every((c) => c.lifecycle === 'detected' && c.founderVerificationRequired)).toBe(true);
-    const bySlug = new Map(candidates.map((c) => [c.routeSlug, c.qualification]));
-    // Representative spot-checks across both qualifications, not an
-    // exhaustive re-listing of all 26.
-    expect(bySlug.get('manchester-dalaman')).toBe('standout-candidate');
-    expect(bySlug.get('london-gatwick-dalaman')).toBe('standout-candidate');
-    expect(bySlug.get('birmingham-agadir')).toBe('standout-candidate');
-    expect(bySlug.get('london-heathrow-doha')).toBe('standout-candidate');
-    expect(bySlug.get('london-heathrow-jeddah')).toBe('standout-candidate');
-    expect(bySlug.get('manchester-jeddah')).toBe('standout-candidate');
-    expect(bySlug.get('glasgow-antalya')).toBe('notable-drop');
-    expect(bySlug.get('london-gatwick-athens')).toBe('standout-candidate');
-    // birmingham-dubai and edinburgh-dubai qualify on a baseline built
-    // purely from fares that genuinely land at DXB — their Sharjah records
-    // are excluded, so neither drop is measured against a different airport.
-    expect(bySlug.get('birmingham-dubai')).toBe('notable-drop');
-    expect(bySlug.get('edinburgh-dubai')).toBe('standout-candidate');
-    // Routes whose 29 September controlled fare does not clear the current
-    // threshold must not appear at all.
-    expect(candidates.map((c) => c.routeSlug)).not.toContain('birmingham-amritsar');
-    expect(candidates.map((c) => c.routeSlug)).not.toContain('london-heathrow-delhi');
-    expect(candidates.map((c) => c.routeSlug)).not.toContain('manchester-islamabad');
+    expect(candidates).toHaveLength(0);
+    const slugs = candidates.map((c) => c.routeSlug);
+    // Routes that qualified after the 29 September sweep must no longer appear
+    // unless the real data supports them.
+    for (const slug of ['manchester-dalaman', 'london-gatwick-dalaman', 'birmingham-agadir', 'glasgow-antalya', 'birmingham-amritsar', 'london-heathrow-delhi', 'manchester-islamabad']) {
+      expect(slugs).not.toContain(slug);
+    }
   });
 });
 
@@ -370,18 +364,17 @@ describe('I. Trust wording — no overclaim in rendered founder copy or customer
     for (const pattern of forbidden) expect(label).not.toMatch(pattern);
   });
 
-  it('the non-empty state clearly states how many candidates cleared the threshold, never overclaiming urgency', () => {
-    // 4 -> 7 -> 6 -> 5 -> 6 -> 34 (Tuesday full weekly refresh, its same-day
-    // emergency rechecks, the 13 September MAN-ISB direct-PIA append, the
-    // 15 September editorial batch, then the 16 September full-portfolio
-    // controlled sweep — see the dedicated regression above for the full
-    // account of why 34 is now correct). Exercise the actual non-empty-state
-    // copy against that final, verified count.
+  it('the founder-facing state clearly states how many candidates cleared the threshold, never overclaiming urgency', () => {
+    // 4 -> 7 -> 6 -> 5 -> 6 -> 34 -> ... -> 26 (after the 29 September sweep) -> 0
+    // (after the 6 October Chrome sweep, see the dedicated regression above).
+    // With zero candidates the section carries the honest empty-state copy
+    // rather than a count; it must still be present, plainly worded, and free
+    // of every forbidden urgency/process phrase.
     const snapshot = getFounderSnapshot(new Date());
     const section = snapshot.grouped['nice-to-have'].find((s) => s.id === 'route-watch-fare-candidates')!;
-    expect(section.items).toHaveLength(26);
-    expect(section.headline).toMatch(/26 fare observations clear Fare Watcher's strong evidence threshold/i);
-    expect(section.headline).toMatch(/Nothing sends itself/i);
+    expect(section.items).toHaveLength(0);
+    expect(section.headline).toMatch(/No fare observation currently clears Fare Watcher's strong evidence threshold/i);
+    expect(section.headline).toMatch(/nothing qualifies for a Route Watch lower-fare send today/i);
     for (const pattern of forbidden) expect(section.headline).not.toMatch(pattern);
   });
 

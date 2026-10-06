@@ -173,6 +173,39 @@ differs:
 - baggage allowance recorded as shown (`included`, the stated allowance, or `not stated`);
 - lowest visible fare only when the result is a bookable itinerary, not an advert or an estimate.
 
+## Collection environment and ingestion rule (founder-approved 6 October 2026)
+
+Fare observations for this archive are collected in **Chrome with Google Flights** (signed-in normal profile,
+Cheapest tab, exact-airport pair, GBP). The Claude built-in browser is **not** archive-grade: on 6 October
+2026 it returned a systematically different result set from Chrome for the same searches — no
+self-transfer / separate-tickets rows at all, 4–81 rows per route against 8–291 in Chrome, and no baggage
+wording — so a fare such as MAN→DXB £421 could not be said to be the cheapest fare under the normal
+methodology. A 3-route Chrome diagnostic (MAN→DXB, MAN→LHE, LBA→AYT) confirmed the broader result set; the
+built-in browser sweep of the same day is kept outside the archive as context only.
+
+Ingestion rule:
+
+1. Chrome Google Flights first.
+2. Record the cheapest exact-airport fare carrying a separate-tickets / self-transfer notice, if present.
+3. Record the cheapest exact-airport fare without that notice (the clean fare), if present.
+4. The clean fare is the public primary observation; it is appended LAST so naive latest-observation consumers see it.
+5. The cheaper self-transfer fare is a separate, flagged secondary observation (priceNote states it explicitly).
+6. If no clean fare exists, the self-transfer fare may be the only observation, with the same explicit wording.
+7. KAYAK only when Google Flights genuinely fails for the route.
+8. A KAYAK result must load completely before it is archive-eligible.
+9. Any incomplete or ambiguous result stays context only and is never ingested.
+
+Google Flights labels such rows "Separate tickets booked together" (tickets from more than one airline or
+booking; a missed connection depends on the booking provider). That label also appears on a non-stop outbound
+whose return is on another ticket, so notes quote the label rather than asserting a connection risk. Only the
+outbound leg is read from the result list; return-leg timing is not opened and each note says so.
+
+**6 October 2026 sweep (17 Nov / 1 Dec):** 82 routes ingested as 150 observations (82 clean, 68 self-transfer
+secondaries); 0 routes had no clean fare. The 7 routes whose only source was an incomplete KAYAK page
+(leeds-bradford-antalya/dalaman/bodrum, glasgow-dalaman, bristol-antalya/dalaman, newcastle-dalaman — Google
+Flights returned its error page for them in both browsers) are **not** ingested until a complete result set is
+observed.
+
 Business-class observations are welcome, but must be kept as a separate cabin record. Do not mix
 cabin, passenger count, baggage assumptions or airport scope when comparing a series.
 
