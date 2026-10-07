@@ -13,6 +13,8 @@ import { getJourneyConsequences, formatJourneyConsequenceSummary, extractStopVia
 import { isPoorItinerarySuitability } from '@/lib/itinerary-suitability';
 import { getFreshFareCoverageLevel, isLowestFarePolicyActive, isObservationWithinRollingFareWindow } from '@/lib/fare-window';
 import type { FareSearchCoverageLevel } from '@/data/fare-observations';
+import { fareReverifications, type FareReverification } from '@/data/fare-reverifications';
+import { withoutReverifiedObservations } from '@/lib/fare-reverification';
 
 export type FareSignalState = 'current' | 'recent' | 'none';
 
@@ -503,13 +505,26 @@ function selectTwoSignalFareObservation(
  * means Fare Signal and the existing Book-By view cannot quietly diverge
  * about which comparable fare they are describing.
  */
+/**
+ * FARE-SIGNAL-RECHECK-001 (7 October 2026): before any selection, drop the
+ * observations a valid structured reverification (data/fare-reverifications.ts)
+ * has taken out of public current-fare selection -- a later targeted recheck
+ * that re-found the same itinerary at a different price, or whose own record
+ * states the earlier fare could not be reproduced. This is NOT a "newest fare
+ * wins" rule: it only ever removes the specific, explicitly contradicted
+ * observation, and never promotes the recheck, which must still win under the
+ * ordinary clean / display-eligibility / lowest-fare rules below. The archive,
+ * Fare Watcher, Route Watch and the approval records are unaffected.
+ */
 export function selectRepresentativeObservation(
   observations: FareObservation[],
-  nowIso: string
+  nowIso: string,
+  reverifications: readonly FareReverification[] = fareReverifications
 ): { observation: FareObservation | null; state: FareSignalState; freshness: FareFreshnessState | null; noneReason: FareSignalNoneReason | null } {
-  const base = selectBaseRepresentativeObservation(observations, nowIso);
+  const live = withoutReverifiedObservations(observations, nowIso, reverifications);
+  const base = selectBaseRepresentativeObservation(live, nowIso);
   if (!base.observation) return base;
-  const { primary } = selectTwoSignalFareObservation(observations, base.observation, base.state, nowIso);
+  const { primary } = selectTwoSignalFareObservation(live, base.observation, base.state, nowIso);
   return {
     ...base,
     observation: primary,
@@ -553,10 +568,11 @@ function selectLowerSelfTransferForPrimary(
  * available. V1 deliberately has no stronger-price signal: the archive does
  * not yet provide a defensible same-profile baseline for every route.
  */
-export function deriveFareSignal(observations: FareObservation[], nowIso: string): FareSignal {
-  const { observation: selected, state, freshness, noneReason } = selectRepresentativeObservation(observations, nowIso);
+export function deriveFareSignal(observations: FareObservation[], nowIso: string, reverifications: readonly FareReverification[] = fareReverifications): FareSignal {
+  const live = withoutReverifiedObservations(observations, nowIso, reverifications);
+  const { observation: selected, state, freshness, noneReason } = selectRepresentativeObservation(live, nowIso, reverifications);
   const signalObservation = selected ? toSignalObservation(selected, nowIso) : null;
-  const lowerRawSelfTransfer = selected ? selectLowerSelfTransferForPrimary(observations, selected, state, nowIso) : null;
+  const lowerRawSelfTransfer = selected ? selectLowerSelfTransferForPrimary(live, selected, state, nowIso) : null;
   const lowerSelfTransfer = lowerRawSelfTransfer ? toSignalObservation(lowerRawSelfTransfer, nowIso) : null;
   if (!selected || !signalObservation) {
     return { state: 'none', observation: null, freshness: null, strongerSignal: null, noneReason };

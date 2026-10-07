@@ -80,7 +80,7 @@ describe('two-signal fare policy', () => {
 
     expect(signal.observation).toMatchObject({ id: 'obs-bhx-ayt-economy-20260922-v1', price: 233, airline: 'Turkish Airlines' });
     expect(signal.lowerSelfTransfer).toMatchObject({ id: 'obs-bhx-ayt-economy-20260929-v1', price: 175 });
-    expect(text).toContain('Latest comparable non-self-transfer fare observed');
+    expect(text).toContain('Lowest comparable non-self-transfer fare observed');
     expect(text).toContain('Lower fare also seen: £175 return');
     expect(text).toContain('Self-transfer');
     expect(text).toContain('19 hr 35 min layover at Edinburgh Airport in Edinburgh');

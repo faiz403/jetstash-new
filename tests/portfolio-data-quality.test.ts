@@ -26,7 +26,7 @@ describe('portfolio data-quality contract', () => {
     expect(rows.get('london-gatwick-rome')?.bookingHandoffType).toBeNull();
     expect(rows.get('birmingham-antalya')?.currentFareKind).toBe('clean');
     expect(rows.get('glasgow-antalya')?.currentFareKind).toBe('clean');
-    expect(rows.get('london-heathrow-jeddah')?.currentFare).toBe(367);
+    expect(rows.get('london-heathrow-jeddah')?.currentFare).toBe(495); // FARE-SIGNAL-RECHECK-001: the 18 Aug £367 was explicitly not reproduced, so the 4 Oct audit falls back to the 11 Aug clean Etihad £495
     expect(rows.get('manchester-izmir')?.bookingHandoffType).toBeNull();
   });
 
