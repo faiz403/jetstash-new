@@ -39,7 +39,7 @@ import type { DealCabin } from '@/data/deals';
  *   - `revokedDate`, once set, makes the record permanently inert without
  *     deleting it — consistent with this codebase's append-only evidence
  *     convention elsewhere (data/fare-observations.ts, data/route-status-
- *     events.ts). Nothing currently sets it; it exists so a founder
+ *     events.ts). First set on 7 October 2026 for the london-gatwick-dalaman approval (STANDOUT-DLM-001); it exists so a founder
  *     decision to pull a pilot never requires deleting the audit trail.
  */
 export interface StandoutFareApproval {
@@ -79,6 +79,7 @@ export const standoutFareApprovals: StandoutFareApproval[] = [
     approvedDate: '2026-09-29',
     approvedBy: 'founder',
     note:
-      'Founder-approved single-fare publication. Final live recheck £58 return for 17 November–1 December 2026, easyJet nonstop LGW-DLM and DLM-LGW, with overhead-bin access excluded and checked baggage unconfirmed. £79 below JetStash comparable median £137 (57.66% below); evidence trail £55 batch → £56 first recheck → £58 final recheck.',
+      'Founder-approved single-fare publication. Final live recheck £58 return for 17 November–1 December 2026, easyJet nonstop LGW-DLM and DLM-LGW, with overhead-bin access excluded and checked baggage unconfirmed. £79 below JetStash comparable median £137 (57.66% below); evidence trail £55 batch → £56 first recheck → £58 final recheck. REVOKED 7 October 2026 (STANDOUT-DLM-001): fail-closed, not a finding that the fare was wrong. The approved £58 observation never recorded its booking provider or offer label, so under the offer-level methodology it cannot be shown to have been a clean (airline-direct or otherwise unlabelled) offer. A same-itinerary easyJet-direct £55 offer with no label was seen on 7 October 2026, but it cannot retroactively establish the 29 September evidence, and it cannot qualify as Fare Watcher evidence (booking-horizon baseline). The observation is preserved and excluded from public surfaces.',
+    revokedDate: '2026-10-07',
   },
 ];
