@@ -219,9 +219,11 @@ individual booking option:
 - Worked example (7 Oct 2026): the same two non-stop easyJet flights were GBP 48 via BudgetAir ("Separate tickets booked
   together") and GBP 49 direct with easyJet (no label). GBP 49 is the clean fare; GBP 48 is separate-ticket evidence only.
   An expensive different itinerary must not be used as the clean fare while a cheaper clean offer exists.
-- "Self transfer" badge rows (independent legs, typically different airlines or one-way tickets) had no unlabelled
-  offer in any check made on 7 October. The "Separate tickets booked together" label is the one that can sit on the
-  cheapest agent offer while an airline-direct offer is unlabelled.
+- On 7 October, every booking option opened for a row carrying the "Self transfer" badge was itself labelled; no
+  unlabelled offer was found in those inspected offers. That is an observation about the offers inspected, not a claim
+  that such itineraries can never be sold as one protected ticket (interline and codeshare tickets exist): the booking
+  options must be read. The "Separate tickets booked together" label is the one seen sitting on the cheapest agent
+  offer while an airline-direct offer is unlabelled.
 - A non-stop outbound and non-stop return sold as separate tickets is separate-ticket booking structure. It is not a
   connection-risk self transfer and must not be described as one unless a journey leg actually needs a self-transfer
   connection. Raw evidence keeps the exact Google label; the product schema is not changed for this.
