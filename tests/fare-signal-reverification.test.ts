@@ -61,7 +61,7 @@ function entry(overrides: Partial<FareReverification> = {}): FareReverification 
     id: 'fixture-reverification',
     reverifyingObservationId: 'recheck',
     targetObservationId: 'older',
-    outcome: 'same-itinerary-repriced',
+    action: 'supersede',
     recordedDate: '2026-10-07',
     note: 'fixture',
     ...overrides,
@@ -148,7 +148,7 @@ describe('explicit non-reproduction removes exactly the contradicted observation
   it('retires only the target: a synthetic not-reproduced entry removes it and nothing else', () => {
     const target = older({ price: 300 });
     const other = obs({ id: 'other', price: 480, source: 'Lufthansa' });
-    const entries = [entry({ outcome: 'not-reproduced' })];
+    const entries = [entry({ action: 'retire' })];
     expect([...getReverifiedObservationIds([target, recheck({ source: 'KLM' }), other], NOW, entries)]).toEqual(['older']);
   });
 
@@ -165,7 +165,7 @@ describe('explicit non-reproduction removes exactly the contradicted observation
     expect(inert([older()])).toBe(true); // recheck absent from the publishable set (e.g. excluded)
     expect(inert([recheck()])).toBe(true); // target absent
     expect(inert(base, entry({ targetObservationId: 'recheck' }))).toBe(true); // an observation cannot reverify itself
-    expect(inert(base, entry({ outcome: 'something-else' as never }))).toBe(true);
+    expect(inert(base, entry({ action: 'something-else' as never }))).toBe(true);
     // And the control: the same inputs with valid evidence do retire the target.
     expect(inert(base)).toBe(false);
   });
@@ -197,15 +197,15 @@ describe('the fallback after explicit non-reproduction independently satisfies n
     const target = older({ price: 300 });
     const selfTransferRecheck = recheck({ price: 330, priceNote: 'return, one adult; separate tickets booked together', source: 'Wizz Air / Pegasus', outboundConnectionAirports: ['Milan (BGY)'] });
     const clean = obs({ id: 'clean', price: 480, source: 'Lufthansa', observedDate: '2026-10-04', outboundConnectionAirports: ['Frankfurt (FRA)'] });
-    const signal = deriveFareSignal([target, selfTransferRecheck, clean], NOW, [entry({ outcome: 'not-reproduced' })]);
+    const signal = deriveFareSignal([target, selfTransferRecheck, clean], NOW, [entry({ action: 'retire' })]);
     expect(signal.observation?.id).toBe('clean');
     // Same result when the recheck is even cheaper than the clean alternative: clean wins over self-transfer.
     const cheaperSelfTransfer = { ...selfTransferRecheck, price: 200 };
-    expect(deriveFareSignal([target, cheaperSelfTransfer, clean], NOW, [entry({ outcome: 'not-reproduced' })]).observation?.id).toBe('clean');
+    expect(deriveFareSignal([target, cheaperSelfTransfer, clean], NOW, [entry({ action: 'retire' })]).observation?.id).toBe('clean');
     // A clean recheck is not special either: it only wins if it is the lowest eligible fare.
     const cleanRecheckPricier = recheck({ price: 600, source: 'KLM', outboundConnectionAirports: ['Amsterdam (AMS)'] });
-    expect(deriveFareSignal([target, cleanRecheckPricier, clean], NOW, [entry({ outcome: 'not-reproduced' })]).observation?.id).toBe('clean');
-    expect(deriveFareSignal([target, cleanRecheckPricier], NOW, [entry({ outcome: 'not-reproduced' })]).observation?.id).toBe('recheck');
+    expect(deriveFareSignal([target, cleanRecheckPricier, clean], NOW, [entry({ action: 'retire' })]).observation?.id).toBe('clean');
+    expect(deriveFareSignal([target, cleanRecheckPricier], NOW, [entry({ action: 'retire' })]).observation?.id).toBe('recheck');
   });
 });
 
@@ -223,10 +223,10 @@ describe('the lowest-fare policy is otherwise untouched', () => {
   });
 
   it('the ledger holds exactly the three approved entries', () => {
-    expect(fareReverifications.map((e) => [e.reverifyingObservationId, e.targetObservationId, e.outcome])).toEqual([
-      [ISB.recheck, ISB.routine, 'same-itinerary-repriced'],
-      [BHX_ATQ.recheck, BHX_ATQ.older, 'not-reproduced'],
-      [LHR_JED.recheck, LHR_JED.older, 'not-reproduced'],
+    expect(fareReverifications.map((e) => [e.reverifyingObservationId, e.targetObservationId, e.action])).toEqual([
+      [ISB.recheck, ISB.routine, 'supersede'],
+      [BHX_ATQ.recheck, BHX_ATQ.older, 'retire'],
+      [LHR_JED.recheck, LHR_JED.older, 'retire'],
     ]);
   });
 
@@ -259,7 +259,7 @@ describe('the ledger data is internally consistent and never edits the archive',
   });
 
   it('audit-only: each not-reproduced recheck record itself states the earlier fare could not be reproduced (test-side evidence check; production never parses the note)', () => {
-    for (const e of fareReverifications.filter((x) => x.outcome === 'not-reproduced')) {
+    for (const e of fareReverifications.filter((x) => x.action === 'retire')) {
       const target = fareObservations.find((o) => o.id === e.targetObservationId)!;
       const verifier = fareObservations.find((o) => o.id === e.reverifyingObservationId)!;
       expect(verifier.priceNote).toContain(`£${target.price} fare could not be reproduced`);

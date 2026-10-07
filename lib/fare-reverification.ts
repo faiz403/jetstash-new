@@ -50,8 +50,8 @@ function isValidReverification(entry: FareReverification, target: FareObservatio
   // The exact same travel window: a recheck of different dates says nothing about this fare.
   if (!target.departureDate || target.departureDate !== recheck.departureDate) return false;
   if (!target.returnDate || target.returnDate !== recheck.returnDate) return false;
-  if (entry.outcome === 'same-itinerary-repriced') return isSameStructuredItinerary(target, recheck);
-  return entry.outcome === 'not-reproduced';
+  if (entry.action === 'supersede') return isSameStructuredItinerary(target, recheck);
+  return entry.action === 'retire';
 }
 
 /**
