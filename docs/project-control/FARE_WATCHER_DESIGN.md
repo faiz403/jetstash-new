@@ -75,6 +75,39 @@ three-point comparable prior baseline (Â£524, Â£562, Â£621; median Â£562
 Â£621 and Â£626 are ordinary fares under this first threshold set. The Etihad
 Â£645 row is explicitly historical and excluded.
 
+### Self-transfer / separate-ticket fares are never a candidate (FWATCH-ST-001, 7 October 2026)
+
+The weekly archive records a flagged self-transfer / separate-ticket secondary beside the clean fare for the
+same route and date, and older observations may carry the same evidence in `priceNote`. That evidence is read
+only through the existing `isSelfTransferItinerary()` detector (`lib/fare-self-transfer.ts`); Fare Watcher
+adds no second classifier. Three narrow rules apply:
+
+1. **Same-day selection.** When a clean observation and a self-transfer observation share the observation day,
+   the clean one is preferred before price, so a cheaper flagged fare cannot displace it as the detection.
+2. **A self-transfer observation is never itself a candidate.** It still takes part in "latest observation"
+   selection, so a newer self-transfer-only snapshot retires (supersedes) an older clean lead instead of
+   letting a stale clean fare resurface.
+3. **A self-transfer recheck is never the evaluated fare of a candidate.** A candidate whose latest matching
+   recheck is self-transfer is retired, not evaluated on the flagged price; on the same day a clean recheck
+   outranks a flagged one.
+
+Deliberately **not** changed: the comparable baseline (self-transfer observations still count as baseline
+points), medians, previous lows, the £25 / 10% thresholds, the three-point minimum, booking-horizon rules,
+qualification tiers, lifecycle, the Standout contract and approvals.
+
+**What the fix guarantees, and what it does not.** On the current JetStash archive the fix only removes
+misleading candidates; this is checked on every day from 11 August to 7 October 2026 in
+`tests/fare-watcher-self-transfer-boundary.test.ts`. It is not a universal guarantee. Same-day clean and flagged
+pairs from the weekly sweep normally share travel dates, so their qualification context is unchanged and only
+the detection's identity switches from the flagged fare to the clean one. In the general case, if a same-day
+clean and flagged observation have different travel dates, preferring the clean observation can change the
+qualification baseline and may produce a different candidate outcome, including a candidate that the flagged
+observation would not have produced; a boundary test documents this limit without endorsing it.
+
+Whether self-transfer points should leave the baseline is a separate methodology decision
+(`FWATCH-BASELINE-001`). Observations whose `priceNote` does not state their booking structure cannot be
+identified by this rule.
+
 ## Future provider boundary
 
 `lib/fare-source-adapter.ts` defines a typed, unimplemented adapter boundary:

@@ -69,11 +69,14 @@ describe('controlled weekly fare observation batch — 25 August 2026', () => {
     expect(candidates.filter((candidate) => BATCH_IDS.includes(candidate.id.replace('fare-watcher-', '') as typeof BATCH_IDS[number]))).toEqual(
       expect.arrayContaining([
         expect.objectContaining({ routeSlug: 'manchester-islamabad', currentFare: 480, qualification: 'standout-candidate', lifecycle: 'detected', founderVerificationRequired: true, checkedDate: '2026-08-25' }),
-        expect.objectContaining({ routeSlug: 'manchester-lahore', currentFare: 547, qualification: 'standout-candidate', lifecycle: 'detected', founderVerificationRequired: true, checkedDate: '2026-08-25' }),
-        expect.objectContaining({ routeSlug: 'london-heathrow-jeddah', currentFare: 361, qualification: 'standout-candidate', lifecycle: 'detected', founderVerificationRequired: true, checkedDate: '2026-08-25' }),
-        expect.objectContaining({ routeSlug: 'birmingham-amritsar', currentFare: 591, qualification: 'notable-drop', lifecycle: 'detected', founderVerificationRequired: true, checkedDate: '2026-08-25' }),
       ])
     );
+    // FWATCH-ST-001 (7 October 2026): manchester-lahore, london-heathrow-jeddah and birmingham-amritsar
+    // detections and rechecks are explicit self-transfer fares, so they are no longer Fare Watcher candidates;
+    // only manchester-islamabad (clean evidence) is. The qualification maths asserted just below is unchanged.
+    for (const slug of ['manchester-lahore', 'london-heathrow-jeddah', 'birmingham-amritsar']) {
+      expect(candidates.some((candidate) => candidate.routeSlug === slug), slug).toBe(false);
+    }
     expect(results.find((result) => result.candidate.id === BATCH_IDS[1])).toMatchObject({
       qualification: 'standout-candidate',
       baselineMedian: 620,

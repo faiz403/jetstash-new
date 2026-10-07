@@ -1,5 +1,6 @@
 import { isIndependentComparisonObservation, isMethodologyExcluded, type FareObservation } from '@/data/fare-observations';
 import { hasTripComRoute } from '@/lib/booking-providers';
+import { isSelfTransferItinerary } from '@/lib/fare-self-transfer';
 import { daysBetweenIso, OBSERVATION_FRESH_DAYS, OBSERVATION_STALE_DAYS } from '@/lib/freshness-thresholds';
 
 /** Qualification is intentionally stricter than the public Fare Signal. */
@@ -330,13 +331,18 @@ function toCandidate(result: FareWatcherQualificationResult, detection: FareObse
 /**
  * True when `a` should replace `b` as the "latest" observation for the same
  * comparison identity: later observedDate wins; on a genuine same-day tie,
- * the lower price wins; a final id comparison makes the result fully
+ * a clean fare beats a self-transfer / separate-ticket one regardless of
+ * price (7 Oct 2026 -- the archive logs a flagged self-transfer secondary
+ * beside the clean fare, and its lower price must never win), then the
+ * lower price wins; a final id comparison makes the result fully
  * deterministic. Mirrors the existing "latest observation" tie-break
  * already used by `selectLatestObservation` in lib/fare-signal.ts, so the
  * two "what's the current one" derivations in the codebase agree.
  */
 function isNewerCandidate(a: FareObservation, b: FareObservation): boolean {
   if (a.observedDate !== b.observedDate) return a.observedDate > b.observedDate;
+  const aSelfTransfer = isSelfTransferItinerary(a.priceNote);
+  if (aSelfTransfer !== isSelfTransferItinerary(b.priceNote)) return !aSelfTransfer;
   if (a.price !== b.price) return a.price < b.price;
   return a.id.localeCompare(b.id) < 0;
 }
@@ -398,7 +404,15 @@ function latestCurrentObservationsByIdentity(observations: readonly FareObservat
       latestByIdentity.set(key, observation);
     }
   }
-  return [...latestByIdentity.values()];
+  // Self-transfer / separate-ticket fares are never a deal candidate on
+  // their own (7 Oct 2026). A self-transfer observation still takes part in
+  // the "latest" selection above on purpose: a newer self-transfer-only
+  // snapshot supersedes (retires) an older clean lead exactly as it always
+  // did, so a stale clean fare is never resurrected -- but if it is what is
+  // left standing for the identity, the identity yields no detection at all.
+  // Same-day it can only win when no clean observation exists for that date
+  // (see isNewerCandidate()).
+  return [...latestByIdentity.values()].filter((observation) => !isSelfTransferItinerary(observation.priceNote));
 }
 
 /**
@@ -448,6 +462,12 @@ export function generateFareWatcherCandidates(observations: FareObservation[], n
   return latestCurrentObservationsByIdentity(observations, nowIso)
     .map((detection) => {
       const recheck = findLatestVerificationRecheck(detection, observations);
+      // A self-transfer recheck is still verification evidence -- it is how
+      // a clean detection that could not be reproduced is retired -- but it
+      // can never be the evaluated fare of a deal candidate (7 Oct 2026).
+      // Same-day, a clean recheck always outranks a self-transfer one (see
+      // isNewerCandidate()), so this only fires when no clean recheck exists.
+      if (recheck && isSelfTransferItinerary(recheck.priceNote)) return null;
       const evaluationSource = recheck ?? detection;
       const result = qualifyFareWatcherObservation(evaluationSource, observations, nowIso);
       return toCandidate(result, detection);
