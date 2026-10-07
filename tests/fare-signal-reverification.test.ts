@@ -336,6 +336,12 @@ describe('public wording: the secondary line describes the selector truthfully',
     expect(html).toContain('£480');
   });
 
+  it('the airport-page intro no longer claims the shown fare is the latest one checked', () => {
+    const page = readFileSync(join(process.cwd(), 'app', 'airports', '[slug]', 'page.tsx'), 'utf8');
+    expect(page).not.toContain('the latest fare JetStash checked');
+    expect(page).toContain('a fare JetStash has tracked');
+  });
+
   it('the old wording appears in no component, lib or app file', () => {
     const component = readFileSync(join(process.cwd(), 'components', 'route', 'fare-signal.tsx'), 'utf8');
     expect(component).not.toContain('Latest comparable');

@@ -147,7 +147,7 @@ export default async function AirportPage({ params }: { params: Promise<{ slug: 
                   badge (below) carries the actual per-route status. */}
               <h2 className="font-display text-2xl text-ink-900 sm:text-3xl">Routes from {airport.name}</h2>
               <p className="mt-2 max-w-xl text-sm text-ink-500">
-                Pick a route to see whether it flies direct, the latest fare JetStash checked, and where to check today&apos;s price.
+                Pick a route to see whether it flies direct, a fare JetStash has tracked, and where to check today&apos;s price.
               </p>
               <AirportRouteGrid items={routeItems} />
             </>
