@@ -198,6 +198,9 @@ describe('Manchester-Dubai\'s new fare observation matches the approved specific
       // recorded under strict exact-airport pairing (lands at DXB, not SHJ).
       'obs-man-dxb-economy-20260922-v1',
       'obs-man-dxb-economy-20260929-v1',
+      // 6 October 2026 weekly sweep — a self-transfer secondary and a clean fare.
+      'obs-man-dxb-economy-20261006-selftransfer-v1',
+      'obs-man-dxb-economy-20261006-v1',
     ].includes(o.id));
     expect(historic.length).toBeGreaterThanOrEqual(2);
     for (const o of historic) {
@@ -241,8 +244,9 @@ describe('Manchester-Doha\'s original fare observation is untouched by this roun
     // added 15 September 2026 by the full-portfolio controlled sweep
     // (obs-man-doh-economy-20260915-8w-v1) — see docs/project-control/
     // fare-evidence/full-portfolio-controlled-batch-2026-09-15.md. A seventh
-    // was added 22 September 2026 by the weekly sweep.
-    expect(getPublishableObservationsByRoute('manchester-doha', NOW_ISO).length).toBe(8);
+    // was added 22 September 2026 by the weekly sweep. Two more (a self-transfer
+    // secondary and a clean fare) were added 6 October 2026.
+    expect(getPublishableObservationsByRoute('manchester-doha', NOW_ISO).length).toBe(10);
   });
 
   it('an incomplete fare record (missing dates) can never become publishable, regardless of route status', () => {

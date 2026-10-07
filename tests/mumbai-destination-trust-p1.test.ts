@@ -162,6 +162,21 @@ describe('Mumbai destination P1 trust fix', () => {
         observedDate: '2026-10-04',
         fareDirectness: 'connecting',
       },
+      // 6 October 2026 weekly sweep: append-only connecting evidence, a flagged
+      // self-transfer secondary followed by the clean fare. Nothing about the
+      // route record, its verification or its status events changed.
+      {
+        id: 'obs-man-bom-economy-20261006-selftransfer-v1',
+        price: 443,
+        observedDate: '2026-10-06',
+        fareDirectness: 'connecting',
+      },
+      {
+        id: 'obs-man-bom-economy-20261006-v1',
+        price: 462,
+        observedDate: '2026-10-06',
+        fareDirectness: 'connecting',
+      },
     ]);
   });
 

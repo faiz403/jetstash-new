@@ -188,7 +188,9 @@ describe('DEST-001 — no fare invented, no route other than this one added', ()
     // append-only — this route's history carries no alternate-airport
     // record, so nothing here was excluded by that day's correction.
     const observations = fareObservations.filter((o) => o.routeSlug === 'london-heathrow-bengaluru');
-    expect(observations).toHaveLength(6);
+    // 6 October 2026: the weekly sweep appended a seventh (a clean fare only; no
+    // cheaper self-transfer option was visible), again append-only.
+    expect(observations).toHaveLength(7);
     expect(observations[0].id).toBe('obs-lhr-blr-economy-20260806-8w-v1');
     expect(observations[0].source).toBe('Gulf Air');
     expect(observations[1].id).toBe('obs-lhr-blr-economy-20260818-8w-v1');
@@ -196,6 +198,7 @@ describe('DEST-001 — no fare invented, no route other than this one added', ()
     expect(observations[3].id).toBe('obs-lhr-blr-economy-20260915-8w-v1');
     expect(observations[4].id).toBe('obs-lhr-blr-economy-20260922-v1');
     expect(observations[5].id).toBe('obs-lhr-blr-economy-20260929-v1');
+    expect(observations[6].id).toBe('obs-lhr-blr-economy-20261006-v1');
   });
 
   it('exactly one deal card exists for this route, added by Fare Coverage Expansion Batch B', () => {
