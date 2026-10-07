@@ -472,7 +472,12 @@ describe('FARE-001 pilot — historic examples stay private; only fully dated, e
     // canonical-airport fares. As with COV-001 above, they are excluded,
     // not deleted, and not date-incomplete.
     const incomplete = fareObservations.filter((o) => !isPubliclyPublishable(o));
-    expect(incomplete).toHaveLength(40);
+    // 40 -> 41 (STANDOUT-DLM-001, 7 October 2026): the 29 September £58
+    // london-gatwick-dalaman final recheck was added to
+    // methodologyExcludedObservationIds because it never recorded its booking
+    // provider or offer label, so it cannot be shown to have been a clean
+    // offer. It is preserved unchanged, not deleted and not date-incomplete.
+    expect(incomplete).toHaveLength(41);
     for (const o of incomplete) {
       expect(isPubliclyPublishable(o), `observation ${o.id}`).toBe(false);
     }
