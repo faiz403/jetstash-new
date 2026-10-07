@@ -494,7 +494,7 @@ function CurrentSignal({ data, lowerSelfTransfer, tripComUrl, routeSlug, routeDi
             {standout ? 'Standout Fare' : 'Fare spotted'}
           </p>
           <p className="mt-1 font-display text-3xl text-ink-900">£{data.price.toLocaleString('en-GB')} return</p>
-          {lowerSelfTransfer ? <p className="mt-1.5 text-sm font-medium text-ink-700">Latest comparable non-self-transfer fare observed</p> : null}
+          {lowerSelfTransfer ? <p className="mt-1.5 text-sm font-medium text-ink-700">Lowest comparable non-self-transfer fare observed</p> : null}
           <JourneyConsequenceLine consequences={data.journeyConsequences} />
         </div>
         <div className="text-sm text-ink-600 sm:text-right">
