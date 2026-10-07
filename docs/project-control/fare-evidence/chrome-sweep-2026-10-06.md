@@ -1,6 +1,6 @@
 # Chrome weekly fare sweep, 6 October 2026: evidence record and hold
 
-Status: PR #314, founder hold applied the same day. This file preserves the evidence behind what was ingested, what was held and why. The full raw extractor output also lives outside the repo in C:/Users/faiz2/jetstash-fare-sweep-2026-10-06/ (chrome-observations.jsonl, fare-sweep-chrome-2026-10-06.json, chrome-diagnostic-2026-10-06.md, held-entries.json).
+Status: PR #314, founder hold applied the same day; updated 7 Oct 2026 (held-12 verification and offer-level exposure audit: 132 observations / 73 routes now ingested, 18 held). This file preserves the evidence behind what was ingested, what was held and why. The full raw extractor output also lives outside the repo in C:/Users/faiz2/jetstash-fare-sweep-2026-10-06/ (chrome-observations.jsonl, fare-sweep-chrome-2026-10-06.json, chrome-diagnostic-2026-10-06.md, held-entries.json).
 
 ## Collection
 - Google Flights in Chrome, Cheapest tab, 1 adult, economy, GBP, outbound 17 Nov 2026, return 1 Dec 2026, exact-airport pair (the row's airport pair was checked on every row read).
@@ -47,14 +47,13 @@ Raw extractor lines for the held routes:
 {"s":"london-gatwick-athens","src":"chrome-google-flights","at":"13:29:42","rows":116,"ex":116,"st":72,"r":{"p":87,"al":"easyJet","s":0,"dur":"3 hr 45 min","self":true,"bag":"This price does not include overhead bin access."},"nonSelf":{"p":184,"al":"SWISS","s":1,"dur":"6 hr 10 min","lay":"1h45m Zurich","self":false}}
 ```
 
-## Ingested with fareDirectness "unknown" (11 observations)
+## Ingested with fareDirectness "unknown" (10 observations; was 11 before obs-lgw-rak was held on 7 Oct)
 A clean fare whose outbound is non-stop is not recorded as "direct": direct requires both legs evidenced non-stop and the return leg was not opened. These carry outboundDirectness "direct", outboundStops 0 and fareDirectness "unknown", so they are not clean-usable for Fare Signal until a both-legs check exists (fail-closed).
 
 - `obs-man-ist-economy-20261006-v1` - manchester-istanbul £186 Turkish Airlines (outbound non-stop; return leg not opened)
 - `obs-man-ayt-economy-20261006-v1` - manchester-antalya £136 easyJet (outbound non-stop; return leg not opened)
 - `obs-gla-ayt-economy-20261006-v1` - glasgow-antalya £163 Jet2 (outbound non-stop; return leg not opened)
 - `obs-man-rak-economy-20261006-v1` - manchester-marrakech £75 Ryanair UK (outbound non-stop; return leg not opened)
-- `obs-lgw-rak-economy-20261006-v1` - london-gatwick-marrakech £75 TUI Airways (outbound non-stop; return leg not opened)
 - `obs-bhx-aga-economy-20261006-v1` - birmingham-agadir £62 easyJet (outbound non-stop; return leg not opened)
 - `obs-man-bcn-economy-20261006-v1` - manchester-barcelona £130 Vueling (outbound non-stop; return leg not opened)
 - `obs-lgw-bcn-economy-20261006-v1` - london-gatwick-barcelona £50 easyJet (outbound non-stop; return leg not opened)
@@ -97,3 +96,22 @@ Consequences recorded, nothing changed here: (a) the held clean primaries on the
 
 ### Outcome
 Released: 0. Excluded: 12 (10 could not be reproduced at the recorded price or at all; 2 reproduced exactly, #5 and #11, but the cheapest-clean claim is not supported or is unsafe to publish). Ingested observations remain 138 across 78 routes.
+
+## Offer-level exposure audit and six further holds (7 October 2026, 03:35-04:17 BST)
+
+Founder ruling (approved 7 Oct 2026): cleanliness is a property of the individual bookable offer, not of the Google Flights result row. If the same flights are GBP 48 through BudgetAir with "Separate tickets booked together" and GBP 49 directly with easyJet without that label, GBP 49 is the clean fare and GBP 48 is separate-ticket evidence only. The frozen clean definition (protected, non-self-transfer, at most one stop) is unchanged but is applied to the booking option. Nothing was released from the original 12.
+
+What the 6 Oct data could and could not show: only the single cheapest rejected row and the chosen clean primary were stored per search, with a flagged / not-flagged boolean (not the exact badge). The historical clean OFFER price cannot be reconstructed, so the audit used today's booking pages as a proxy for how each itinerary is sold, and held where historical exposure could not be ruled out.
+
+Audit, across the 78 routes ingested at the time:
+- Moved to held (4, already agreed): london-gatwick-antalya GBP 181, bristol-marrakech GBP 212, london-gatwick-marrakech GBP 75, london-gatwick-athens GBP 184. Each had a cheaper non-stop easyJet pair rejected on its row label, and the easyJet-direct offer for such a pair is unlabelled (AYT GBP 112, BRS-RAK GBP 88, ATH GBP 96 on 7 Oct; LGW-RAK not priced direct).
+- Moved to held (2, found by the audit): both birmingham-dubai observations (primary GBP 480 and secondary GBP 392). The cheaper rejected row was a Pegasus single-carrier one-stop itinerary that could have an unlabelled offer; it is not reproducible on 7 Oct, so the historical clean price cannot be established. The secondary note refers to the clean fare for the same search, so both are held. This revives the 29 Sep birmingham-dubai fare (GBP 326, three stops, self-transfer shown) as a Route Watch notable-drop lead.
+- 12 further routes had a cheaper single-carrier-outbound flagged row stored. Ten (birmingham-dalaman, manchester-marrakech, manchester-agadir, manchester-barcelona, leeds-bradford-barcelona, bristol-faro, birmingham-faro, leeds-bradford-faro, manchester-rome, birmingham-jeddah) carry the "Self transfer" badge and every booking option opened was also "Self transfer" (eSky, Kiwi.com, Gotogate, Mytrip, Flightnetwork): no clean offer exists, primary stands. manchester-faro: the cheaper TAP row (GBP 169, BudgetAir "Separate tickets") also has unlabelled offers at GBP 182 (Trip.com) and GBP 192 (Booking.com) and TAP direct at GBP 202; the cheapest clean offer, GBP 182, is above the stored clean GBP 176, so the primary stands. birmingham-dubai: see above.
+- 48 routes where the cheapest rejected row was a multi-airline combination were scanned live for any labelled row below the stored clean primary. Five had one (manchester-dubai Pegasus GBP 383; london-gatwick-agadir Norwegian GBP 182; manchester-jeddah Royal Air Maroc GBP 469, Qatar GBP 490 and a third GBP 493; manchester-madinah Pegasus GBP 456; london-gatwick-dubai Pegasus GBP 357). Every booking option opened for those carried a "Separate tickets booked together" label (Kiwi.com, BudgetAir, Expedia, Booking.com, ly.com): no unlabelled offer, primaries stand.
+- 14 further routes: the cheapest 6 Oct row was itself clean, so no cheaper rejected row existed.
+
+Limits of this audit: for a labelled candidate only the cheapest one was opened (manchester-jeddah: the cheapest three). Prices are 7 Oct, not 6 Oct. A route can still carry an intermediate labelled row that this audit did not open; the new collection rule (record the exact badge and booking options at collection) removes that gap prospectively.
+
+Wording correction: the 59 ingested secondary notes previously said Google "labels this fare 'Separate tickets booked together'". The 6 Oct extractor only stored a flagged boolean, and multi-airline combinations show the "Self transfer" badge, so the notes now say "separate tickets or self-transfer (the exact badge text shown on the row was not recorded on the day)". Self-transfer detection (isSelfTransferItinerary) is unchanged and still matches.
+
+Final counts, recomputed from data/fare-observations.ts: 132 observations dated 6 Oct ingested across 73 routes (73 clean, 59 secondary). Held: 18 observations (original 12 plus 6 above). 10 clean fares carry fareDirectness "unknown". Route Watch now has 5 candidates, all derived from older 29 Sep fares of held routes (manchester-dalaman, london-gatwick-dalaman, london-gatwick-faro, london-gatwick-athens, birmingham-dubai), each a lead for founder verification only; the Fare Watcher self-transfer-awareness gap is tracked separately.

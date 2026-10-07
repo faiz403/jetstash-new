@@ -297,24 +297,28 @@ describe('Real archive expectation (19 August 2026, post-supersession-fix) — o
   // secondary (when cheaper) plus the clean fare, all dated 6 October. Fare
   // Watcher's latestCurrentObservationsByIdentity() tie-breaks same-date
   // observations by LOWER price, so on routes that carry a secondary the
-  // detection under evaluation is that self-transfer fare. Three routes
-  // (manchester-dalaman, london-gatwick-dalaman, london-gatwick-faro) were
-  // held out of the 6 October ingestion because their classification or price
-  // comparison could not be re-verified, so their latest observation is still
-  // the 29 September fare, which keeps qualifying. Those 29 September fares
+  // detection under evaluation is that self-transfer fare. Five routes
+  // (manchester-dalaman, london-gatwick-dalaman, london-gatwick-faro,
+  // london-gatwick-athens and birmingham-dubai) were held out of the 6 October
+  // ingestion because their classification or price comparison could not be
+  // re-verified (Athens and Dubai after the 7 October offer-level exposure
+  // audit), so their latest observation is still the 29 September fare, which
+  // keeps qualifying. Those 29 September fares
   // were recorded before the separate-tickets distinction was captured, so a
   // candidate here is a lead for founder verification only, never a verified
   // deal. Thresholds, qualification rules and lifecycle are untouched; the
   // Fare Watcher self-transfer-awareness gap is tracked separately.
-  it('the real fareObservations archive produces three current Route Watch candidates after the 6 October Chrome weekly sweep', () => {
+  it('the real fareObservations archive produces five current Route Watch candidates after the 6 October Chrome weekly sweep', () => {
     const nowIso = new Date().toISOString().slice(0, 10);
     const candidates = generateRouteWatchFareCandidates(fareObservations, nowIso);
-    expect(candidates).toHaveLength(3);
+    expect(candidates).toHaveLength(5);
     expect(candidates.every((c) => c.lifecycle === 'detected' && c.founderVerificationRequired)).toBe(true);
     const bySlug = new Map(candidates.map((c) => [c.routeSlug, c.qualification]));
     expect(bySlug.get('manchester-dalaman')).toBe('standout-candidate');
     expect(bySlug.get('london-gatwick-dalaman')).toBe('standout-candidate');
     expect(bySlug.get('london-gatwick-faro')).toBe('standout-candidate');
+    expect(bySlug.get('london-gatwick-athens')).toBe('standout-candidate');
+    expect(bySlug.get('birmingham-dubai')).toBe('notable-drop');
     for (const slug of ['birmingham-agadir', 'glasgow-antalya', 'birmingham-amritsar', 'london-heathrow-delhi', 'manchester-islamabad']) {
       expect(candidates.map((c) => c.routeSlug)).not.toContain(slug);
     }
@@ -377,8 +381,8 @@ describe('I. Trust wording — no overclaim in rendered founder copy or customer
     // final, verified count.
     const snapshot = getFounderSnapshot(new Date());
     const section = snapshot.grouped['nice-to-have'].find((s) => s.id === 'route-watch-fare-candidates')!;
-    expect(section.items).toHaveLength(3);
-    expect(section.headline).toMatch(/3 fare observations clear Fare Watcher's strong evidence threshold/i);
+    expect(section.items).toHaveLength(5);
+    expect(section.headline).toMatch(/5 fare observations clear Fare Watcher's strong evidence threshold/i);
     expect(section.headline).toMatch(/Nothing sends itself/i);
     for (const pattern of forbidden) expect(section.headline).not.toMatch(pattern);
   });

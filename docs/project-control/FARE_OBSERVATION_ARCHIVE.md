@@ -183,7 +183,9 @@ wording), so a fare such as MAN-DXB £421 could not be said to be the cheapest u
 
 **Result-set breadth is not guaranteed even in Chrome.** Later the same day the same searches returned far
 narrower sets (MAN-DXB 119 rows -> 13, MAN-DLM 72 -> 9) from hidden tabs, so the 13:0x row sets could not be
-re-evidenced. Cause unconfirmed (hidden-tab loading is the leading hypothesis). A collector must record row count
+re-evidenced. On 7 October 2026 the broad result state was reproduced (MAN-DXB 121 rows against 125, MAN-DLM 71
+against 72) with Chrome visible and the full results expanded ("View more flights"). Visibility and the expansion
+were changed together, so visibility alone is NOT proven to be the cause. A collector must record row count
 and separate-tickets row count at collection time, and an observation whose classification cannot be re-verified
 is held, not ingested. See `fare-evidence/chrome-sweep-2026-10-06.md`.
 
@@ -199,19 +201,46 @@ Ingestion rule:
 8. A KAYAK result must load completely before it is archive-eligible.
 9. Any incomplete or ambiguous result stays context only and is never ingested.
 
-Google Flights labels such rows "Separate tickets booked together" (tickets from more than one airline or
+Google Flights flags such rows "Separate tickets booked together" or "Self transfer" (tickets from more than one airline or
 booking; a missed connection depends on the booking provider). That label also appears on a non-stop outbound
 whose return is on another ticket, so notes quote the label rather than asserting a connection risk. Only the
 outbound leg is read from the result list; return-leg timing is not opened and each note says so.
 
-**6 October 2026 sweep (17 Nov / 1 Dec):** 138 observations ingested across 78 routes (78 clean, 60
-self-transfer secondaries). 11 clean fares with a non-stop outbound carry `fareDirectness: 'unknown'` because
-only the outbound leg was read (direct needs both legs evidenced). **Held, not ingested:** 12 observations
-(the 7 non-stop-outbound separate-tickets secondaries and the four flagged price pairs: manchester-dalaman,
-london-gatwick-dalaman, london-gatwick-faro, london-gatwick-tangier) because their classification or comparison
-could not be re-verified; and the 7 routes whose only source was an incomplete KAYAK page
-(leeds-bradford-antalya/dalaman/bodrum, glasgow-dalaman, bristol-antalya/dalaman, newcastle-dalaman). A large
-price gap alone is not a hold criterion; there is no price-ratio cutoff.
+### Offer-level cleanliness (founder-approved 7 October 2026, prospective)
+
+A Google Flights result row is not itself clean or dirty. Its headline price and label belong to the CHEAPEST
+bookable offer for those flights, and that offer is often an online-travel-agent bundle. Cleanliness is decided on the
+individual booking option:
+
+- Open the itinerary (select the flights, then the cheapest return) and read the Booking options list. The JetStash
+  clean fare for an itinerary is its cheapest option that carries no "Separate tickets booked together" / "Self transfer"
+  label (typically the airline direct offer). The frozen definition is unchanged: a protected, non-self-transfer
+  booking with at most one stop. It is applied to the booking option, not automatically to every provider on the row.
+- Worked example (7 Oct 2026): the same two non-stop easyJet flights were GBP 48 via BudgetAir ("Separate tickets booked
+  together") and GBP 49 direct with easyJet (no label). GBP 49 is the clean fare; GBP 48 is separate-ticket evidence only.
+  An expensive different itinerary must not be used as the clean fare while a cheaper clean offer exists.
+- "Self transfer" badge rows (independent legs, typically different airlines or one-way tickets) had no unlabelled
+  offer in any check made on 7 October. The "Separate tickets booked together" label is the one that can sit on the
+  cheapest agent offer while an airline-direct offer is unlabelled.
+- A non-stop outbound and non-stop return sold as separate tickets is separate-ticket booking structure. It is not a
+  connection-risk self transfer and must not be described as one unless a journey leg actually needs a self-transfer
+  connection. Raw evidence keeps the exact Google label; the product schema is not changed for this.
+- Collectors must record the exact badge text per row (and, for any labelled cheaper row below the clean fare, the
+  booking options) at collection time. Before 7 October only a flagged / not-flagged boolean was stored, so historical
+  secondary notes say "separate tickets or self-transfer" rather than quoting one label.
+- Days 1-4 calibration data and other historical evidence are not rewritten: a label seen today on an itinerary does not
+  prove an earlier classification was wrong.
+
+**6 October 2026 sweep (17 Nov / 1 Dec):** 132 observations ingested across 73 routes (73 clean, 59
+self-transfer secondaries). 10 clean fares with a non-stop outbound carry `fareDirectness: 'unknown'` because
+only the outbound leg was read (direct needs both legs evidenced). **Held, not ingested: 18 observations.** The
+original 12 (the 7 non-stop-outbound separate-tickets secondaries, plus the clean fares of manchester-dalaman,
+london-gatwick-dalaman, london-gatwick-faro and london-gatwick-tangier and the london-gatwick-tangier secondary) were rechecked on 7 October with both legs opened; none
+was released (see the evidence record). Six more were moved to held on 7 October after the offer-level exposure audit:
+the clean primaries of london-gatwick-antalya, bristol-marrakech, london-gatwick-marrakech and london-gatwick-athens,
+and both observations for birmingham-dubai. Also not ingested: the 7 routes whose only source was an incomplete KAYAK page
+(leeds-bradford-antalya/dalaman/bodrum, glasgow-dalaman, bristol-antalya/dalaman, newcastle-dalaman). A large price gap
+alone is not a hold criterion; there is no price-ratio cutoff. Details: `fare-evidence/chrome-sweep-2026-10-06.md`.
 
 Business-class observations are welcome, but must be kept as a separate cabin record. Do not mix
 cabin, passenger count, baggage assumptions or airport scope when comparing a series.
