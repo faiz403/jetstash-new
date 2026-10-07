@@ -201,9 +201,9 @@ describe('Fare Watcher / Standout Fares', () => {
     // Step 6 required real-data results, verified against the actual engine
     // (not hardcoded into production logic): MAN-ISB detection £460,
     // verified £480, median £621, ~£141/22.7% below median, still
-    // qualifies; MAN-LHE detection £538, verified £547, median £620,
-    // ~£73/11.8% below median, still qualifies; LHR-JED and BHX-ATQ use the
-    // engine's own current median rather than a stale expectation.
+    // qualifies. MAN-LHE, LHR-JED and BHX-ATQ are NOT candidates since 7 October
+    // 2026 (FWATCH-ST-001): each one's 25 August detection and recheck carry explicit
+    // self-transfer evidence, so only MAN-ISB (clean evidence) remains.
     const candidates = generateFareWatcherCandidates(fareObservations, '2026-08-25');
     const bySlug = Object.fromEntries(candidates.map((candidate) => [candidate.routeSlug, candidate]));
 
@@ -218,26 +218,22 @@ describe('Fare Watcher / Standout Fares', () => {
     expect(bySlug['manchester-islamabad'].differencePercent).toBeCloseTo(22.7, 1);
     expect(bySlug['manchester-islamabad'].verifiedObservation).toMatchObject({ observationReason: 'emergency-recheck', price: 480 });
 
-    expect(bySlug['manchester-lahore']).toMatchObject({
-      id: 'fare-watcher-obs-man-lhe-economy-20260825-8w-v1',
-      currentFare: 547,
-      baselineMedian: 620,
-      differencePounds: 73,
-      qualification: 'standout-candidate',
-    });
-    expect(bySlug['manchester-lahore'].differencePercent).toBeCloseTo(11.8, 1);
-    expect(bySlug['manchester-lahore'].verifiedObservation).toMatchObject({ observationReason: 'emergency-recheck', price: 547 });
+    // FWATCH-ST-001 (7 October 2026): the MAN-LHE detection (obs-man-lhe-economy-20260825-8w-v1) and its
+    // emergency-recheck both carry explicit self-transfer evidence (three stops across Ryanair / Air Cairo /
+    // flyadeal / Fly Jinnah; "self-transfer" in the note). Fare Watcher used to surface this as a GBP 547
+    // standout-candidate; a self-transfer observation is never a candidate and a self-transfer recheck is never
+    // the evaluated fare, so there is no manchester-lahore candidate. Qualification maths is unchanged (see
+    // tests/fare-watcher-self-transfer-boundary.test.ts).
+    expect(bySlug['manchester-lahore']).toBeUndefined();
 
-    // LHR-JED and BHX-ATQ: verified price stayed the same or moved only
-    // slightly, evaluated against the engine's own current median -- both
-    // still qualify (their exact tier is not asserted here, since it is a
-    // function of the live archive rather than this fix).
-    expect(bySlug['london-heathrow-jeddah']).toBeDefined();
-    expect(bySlug['london-heathrow-jeddah'].currentFare).toBe(361);
-    expect(bySlug['london-heathrow-jeddah'].verifiedObservation).toMatchObject({ observationReason: 'emergency-recheck', price: 361 });
-    expect(bySlug['birmingham-amritsar']).toBeDefined();
-    expect(bySlug['birmingham-amritsar'].currentFare).toBe(591);
-    expect(bySlug['birmingham-amritsar'].verifiedObservation).toMatchObject({ observationReason: 'emergency-recheck', price: 591 });
+    // LHR-JED and BHX-ATQ (FWATCH-ST-001, 7 October 2026): their 25 August detections
+    // (obs-lhr-jed-economy-20260825-8w-v1, obs-bhx-atq-economy-20260825-8w-v1) and rechecks
+    // both say "self-transfer" (multi-carrier itineraries stitched from separate tickets). Fare
+    // Watcher used to surface them as candidates (GBP 361 and GBP 591); a self-transfer
+    // observation is never a candidate and a self-transfer recheck is never the evaluated
+    // fare, so neither route has a candidate. The same applies to MAN-LHE above.
+    expect(bySlug['london-heathrow-jeddah']).toBeUndefined();
+    expect(bySlug['birmingham-amritsar']).toBeUndefined();
 
     // None of the four routes' emergency-recheck observations became a
     // second, independent candidate in their own right.

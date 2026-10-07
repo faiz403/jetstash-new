@@ -193,6 +193,16 @@ describe('four-fare simulation -- proves the deferred append would now resolve c
     const before = generateFareWatcherCandidates(fareObservations, NOW_ISO);
     const after = generateFareWatcherCandidates([...fareObservations, ...simulatedRechecks], NOW_ISO);
     for (const { routeSlug } of pairs) {
+      // FWATCH-ST-001 (7 October 2026): the real 25 August detections for manchester-lahore,
+      // london-heathrow-jeddah and birmingham-amritsar (and their rechecks) carry explicit self-transfer
+      // evidence, so none of them is ever a candidate -- before OR after the simulated clean recheck is
+      // added (a recheck can only verify an existing candidate, never create or resurrect one). Only
+      // manchester-islamabad (clean evidence) is a candidate, and its figures are unchanged.
+      if (['manchester-lahore', 'london-heathrow-jeddah', 'birmingham-amritsar'].includes(routeSlug)) {
+        expect(before.find((x) => x.routeSlug === routeSlug), routeSlug).toBeUndefined();
+        expect(after.find((x) => x.routeSlug === routeSlug), routeSlug).toBeUndefined();
+        continue;
+      }
       const b = before.find((c) => c.routeSlug === routeSlug);
       const a = after.find((c) => c.routeSlug === routeSlug);
       expect(a, routeSlug).toBeDefined();
