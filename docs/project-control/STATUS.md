@@ -181,9 +181,15 @@ Manchester–Sylhet. Their archive records are preserved; public presentation re
   work locked in: a source being reachable today does not by itself prove today's operational
   truth — genuine continuity requires either a live/real-time source or two temporally distinct
   observations of the same fact, not one static document re-opened. No Batch 7 is scheduled.
-- **Fare Watcher / Standout Fare:** Phase 1 is live on Manchester–Islamabad with exactly one public,
-  founder-approved Standout Fare. The engine and approval gate are complete for this phase; further
-  routes, new UI and threshold changes are frozen pending real traffic evidence.
+- **Fare Watcher / Standout Fare:** No Standout Fare is currently live anywhere on JetStash (checked 7 October 2026).
+  Phase 1 shipped with one founder-approved Standout Fare on Manchester–Islamabad (25 August). That approval
+  resolved from 25 to 31 August and retired automatically on 1 September, when a newer routine observation
+  became the current detection; this is expected Fare Watcher / Standout lifecycle behaviour (not a defect;
+  `STANDOUT-ISB-001`), and the approval record is intact but dormant. A second approval (london-gatwick-dalaman
+  £58, 29 September) was failed closed and revoked on 7 October because its booking offer was never recorded
+  (`STANDOUT-DLM-001`, PR #316). The engine and approval gate are unchanged; further routes, new UI and
+  threshold changes remain frozen pending real traffic evidence. Whether an approval should survive later
+  observations is an open product-contract question (`STANDOUT-LIFE-001`).
 - **Quote Request:** PR #187 is live. It is a research/decision-support enquiry: JetStash researches
   options and trade-offs, but does not take booking payment or make bookings. Broader Quote Request
   redesign is closed unless customer evidence exposes a new problem.
@@ -924,6 +930,8 @@ candidate). Two pre-existing tests that had hardcoded the stale-detection bug's 
 20260825`) were updated to the corrected values — same test-maintenance pattern as PR #178/#183.
 Full Vitest (134 files / 2,733 tests), `tsc --noEmit`, `next lint` and `next build` all pass.
 
+*Update 7 October 2026: this approval retired automatically on 1 September 2026 when a newer routine observation became the current detection (expected lifecycle behaviour, `STANDOUT-ISB-001`); no Standout Fare is currently live. The text below is the dated record of the 25 August launch.*
+
 **First Public Standout Fare Pilot (25 Aug 2026, founder-approved, PR #185, MERGED — LIVE on
 production at `14bfdb9`):**
 manchester-islamabad only — JetStash's first customer-facing Fare Watcher surface. Deliberately
@@ -967,6 +975,8 @@ london-heathrow-jeddah and birmingham-amritsar confirmed to still render only "F
 Google Ads conversion path (`lib/google-ads-conversions.ts`) confirmed to key only off the `event`
 string, never the new conditional `source` property, so `fireGoogleAdsConversion` is unaffected by
 this pilot.
+
+*Update 7 October 2026: the pilot Standout Fare is no longer live (retired automatically 1 September; see the Fare Watcher / Standout Fare status bullet above). The freeze below is unchanged.*
 
 **FARE WATCHER PHASE 1 — CUSTOMER-FACING PILOT LIVE. WAIT FOR REAL TRAFFIC (25 Aug 2026, founder
 decision).** The full lifecycle the founder wanted before touching the public product is now real,

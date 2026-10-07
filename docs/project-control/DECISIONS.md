@@ -59,6 +59,7 @@ preserved as dated snapshots rather than rewritten.
 - Fare Watcher Phase 1 is live with one founder-approved public Standout Fare on
   Manchester–Islamabad. Further routes, new Fare Watcher UI, threshold changes and homepage
   promotion remain frozen pending real evidence.
+- Update 7 October 2026: that Standout approval retired automatically on 1 September 2026 when a newer routine observation became current (expected lifecycle behaviour), and the second approval (london-gatwick-dalaman) was revoked on 7 October 2026 for lack of offer-level evidence. No Standout Fare is currently live. The freeze on further routes, new UI and threshold changes is unchanged; whether approvals should survive later observations is a separate, open product-contract question (`STANDOUT-LIFE-001`) and is not decided here.
 - Quote Request role clarity is closed by PR #187: JetStash researches options and trade-offs but
   does not take booking payment or make bookings. Reopen only on customer evidence of a new issue.
 - The Search Console sitemap/discovery follow-up is closed: the current submitted inventory was
