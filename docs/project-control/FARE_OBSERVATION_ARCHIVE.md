@@ -237,6 +237,7 @@ individual booking option:
 - Collectors must record the exact badge text per row (and, for any labelled cheaper row below the clean fare, the
   booking options) at collection time. Before 7 October only a flagged / not-flagged boolean was stored, so historical
   secondary notes say "separate tickets or self-transfer" rather than quoting one label.
+- Applied example (STANDOUT-DLM-001, 7 October 2026): a public Standout whose approved observation never recorded its booking offer was failed closed (observation preserved and methodology-excluded, approval revoked) rather than rescued; a fresh targeted offer-level re-verification became the ordinary fare. See `fare-evidence/standout-dlm-001-2026-10-07.md`.
 - Days 1-4 calibration data and other historical evidence are not rewritten: a label seen today on an itinerary does not
   prove an earlier classification was wrong.
 

@@ -3,10 +3,11 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import type { FareObservation } from '@/data/fare-observations';
-import { fareObservations } from '@/data/fare-observations';
+import { fareObservations, isMethodologyExcluded } from '@/data/fare-observations';
 import type { StandoutFareApproval } from '@/data/standout-fare-approvals';
 import { standoutFareApprovals } from '@/data/standout-fare-approvals';
 import { deriveApprovedStandoutFare, getApprovedStandoutFare } from '@/lib/standout-fare';
+import { generateFareWatcherCandidates } from '@/lib/fare-watcher';
 import { getFareSignalForRoute } from '@/lib/fare-signal';
 import { getComparableOptionsByObservationIds } from '@/lib/smart-fare-route-adapter';
 import { deriveJourneyChoice } from '@/lib/journey-choice';
@@ -136,29 +137,56 @@ describe('Standout Fare — First Public Standout Fare Pilot', () => {
     expect(html).not.toContain('Standout Fare');
   });
 
-  it('confirms the two active founder approvals are the deliberately controlled MAN-ISB and LGW-DLM entries', () => {
+  it('confirms exactly one founder approval is still active (MAN-ISB); the LGW-DLM approval is retained in the ledger but revoked (STANDOUT-DLM-001, 7 October 2026)', () => {
     const active = standoutFareApprovals.filter((a) => !a.revokedDate);
-    expect(active).toHaveLength(2);
-    expect(active.map((a) => a.routeSlug).sort()).toEqual(['london-gatwick-dalaman', 'manchester-islamabad']);
+    expect(active).toHaveLength(1);
+    expect(active.map((a) => a.routeSlug)).toEqual(['manchester-islamabad']);
+    // Revoked, never deleted: the audit trail survives, and the reason is evidence quality, not fare movement.
+    const dlm = standoutFareApprovals.find((a) => a.routeSlug === 'london-gatwick-dalaman');
+    expect(dlm).toBeDefined();
+    expect(dlm!.revokedDate).toBe('2026-10-07');
+    expect(dlm!.approvedVerifiedObservationId).toBe('obs-lgw-dlm-economy-20260929-final-recheck-v1');
+    expect(dlm!.note).toContain('STANDOUT-DLM-001');
+    expect(dlm!.note).toContain('never recorded its booking provider or offer label');
   });
 
-  it('the founder-approved Gatwick–Dalaman fare renders only from the exact £58 final recheck', () => {
-    const standout = getApprovedStandoutFare('london-gatwick-dalaman', 'Economy', fareObservations, '2026-09-29');
-    expect(standout).not.toBeNull();
-    expect(standout!.observation.id).toBe('obs-lgw-dlm-economy-20260929-final-recheck-v1');
-    expect(standout!.observation.price).toBe(58);
-    expect(standout!.observation.airline).toBe('easyJet');
-    expect(standout!.observation.isSelfTransfer).toBe(false);
-    expect(standout!.baselineMedian).toBe(137);
-    expect(standout!.differencePounds).toBe(79);
-    expect(standout!.differencePercent).toBeCloseTo(57.66, 2);
-    expect(standout!.baggageDetail).toContain('overhead-bin access excluded');
-    const signal = getFareSignalForRoute('london-gatwick-dalaman', '2026-09-29');
-    const html = renderToStaticMarkup(FareSignal({ signal, tripComUrl: getTripComRouteUrl('london-gatwick-dalaman'), routeSlug: 'london-gatwick-dalaman', standoutFare: standout }));
-    expect(html).toContain('Standout Fare');
-    expect(html).toContain('£79 below JetStash&#x27;s comparable tracked median of £137.');
-    expect(html).toContain('overhead-bin access excluded');
-    expect(html).not.toMatch(/checked baggage included|baggage included/i);
+  it('LGW-DLM fails closed after STANDOUT-DLM-001: the 29 Sept £58 is preserved but excluded, and the fresh £55 easyJet-direct re-verification is the ordinary Fare Signal, not a Standout', () => {
+    // The historical observation is preserved byte-for-byte in the archive (never deleted or rewritten), but excluded from public surfaces and Fare Watcher.
+    const historic = fareObservations.find((o) => o.id === 'obs-lgw-dlm-economy-20260929-final-recheck-v1');
+    expect(historic).toBeDefined();
+    expect(historic!.price).toBe(58);
+    expect(historic!.fareDirectness).toBe('direct');
+    expect(isMethodologyExcluded(historic!.id)).toBe(true);
+    // No Standout card on either side of the change, under the frozen contract.
+    for (const asOf of ['2026-09-29', '2026-10-07']) {
+      expect(getApprovedStandoutFare('london-gatwick-dalaman', 'Economy', fareObservations, asOf), asOf).toBeNull();
+    }
+    // The public fare is the targeted offer-level re-verification: easyJet direct, both legs read, no separate-ticket/self-transfer label.
+    const signal = getFareSignalForRoute('london-gatwick-dalaman', '2026-10-07');
+    expect(signal.state).toBe('current');
+    expect(signal.observation?.id).toBe('obs-lgw-dlm-economy-20261007-offer-level-reverification-v1');
+    expect(signal.observation?.price).toBe(55);
+    expect(signal.observation?.airline).toBe('easyJet');
+    expect(signal.observation?.directness).toBe('direct');
+    expect(signal.observation?.outboundStops).toBe(0);
+    expect(signal.observation?.returnStops).toBe(0);
+    expect(signal.observation?.isSelfTransfer).toBe(false);
+    expect(signal.lowerSelfTransfer).toBeNull();
+    const html = renderToStaticMarkup(FareSignal({ signal, tripComUrl: getTripComRouteUrl('london-gatwick-dalaman'), routeSlug: 'london-gatwick-dalaman', standoutFare: null }));
+    expect(html).toContain('Fare spotted');
+    expect(html).toContain('£55');
+    expect(html).not.toContain('Standout Fare');
+    // The £55 cannot qualify as a Fare Watcher candidate under the frozen booking-horizon rules; that is expected and is not rescued by any contract change.
+    const candidates = generateFareWatcherCandidates([...fareObservations], '2026-10-07');
+    expect(candidates.some((c) => c.routeSlug === 'london-gatwick-dalaman')).toBe(false);
+    // The 22 Sept record's own note says the return leg was not independently read, so its directness is unknown, not confirmed direct.
+    const sept22 = fareObservations.find((o) => o.id === 'obs-lgw-dlm-economy-20260922-v1');
+    expect(sept22!.price).toBe(82);
+    expect(sept22!.fareDirectness).toBe('unknown');
+    expect(sept22!.outboundDirectness).toBe('direct');
+    expect(sept22!.priceNote).toContain('exact return timing is not independently confirmed');
+    // The £54 BudgetAir offer is recorded in the evidence note only, never as an active fare observation.
+    expect(fareObservations.filter((o) => o.routeSlug === 'london-gatwick-dalaman' && o.price === 54)).toHaveLength(0);
   });
 
   it('10. a candidate that loses qualification (recheck raises price past the standing thresholds) fails closed', () => {
