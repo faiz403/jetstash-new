@@ -201,10 +201,13 @@ Ingestion rule:
 8. A KAYAK result must load completely before it is archive-eligible.
 9. Any incomplete or ambiguous result stays context only and is never ingested.
 
+Rules 2-6 describe how the 6 October sweep was ingested, using the label on the result ROW. From 7 October the
+offer-level section below governs what counts as the clean fare.
+
 Google Flights flags such rows "Separate tickets booked together" or "Self transfer" (tickets from more than one airline or
-booking; a missed connection depends on the booking provider). That label also appears on a non-stop outbound
-whose return is on another ticket, so notes quote the label rather than asserting a connection risk. Only the
-outbound leg is read from the result list; return-leg timing is not opened and each note says so.
+booking; a missed connection depends on the booking provider). The label can also appear on a non-stop outbound
+whose return is on another ticket, so a flagged row is not by itself a connection risk. Only the outbound leg is read
+from the result list; return-leg timing is not opened and each note says so.
 
 ### Offer-level cleanliness (founder-approved 7 October 2026, prospective)
 
@@ -224,6 +227,10 @@ individual booking option:
   that such itineraries can never be sold as one protected ticket (interline and codeshare tickets exist): the booking
   options must be read. The "Separate tickets booked together" label is the one seen sitting on the cheapest agent
   offer while an airline-direct offer is unlabelled.
+- Known limitation of the 7 October audit: on the 48 routes whose cheapest rejected 6 October row was a multi-airline
+  combination, the rows carrying the "Self transfer" badge were NOT opened. For those rows the evidence is the Google
+  Flights row badge, not an inspection of every underlying booking offer, and a single-ticket offer on them is not
+  ruled out.
 - A non-stop outbound and non-stop return sold as separate tickets is separate-ticket booking structure. It is not a
   connection-risk self transfer and must not be described as one unless a journey leg actually needs a self-transfer
   connection. Raw evidence keeps the exact Google label; the product schema is not changed for this.

@@ -375,7 +375,7 @@ describe('I. Trust wording — no overclaim in rendered founder copy or customer
   });
 
   it('the non-empty state clearly states how many candidates cleared the threshold, never overclaiming urgency', () => {
-    // 4 -> 7 -> 6 -> 5 -> 6 -> 34 -> ... -> 26 (after the 29 September sweep) -> 3
+    // 4 -> 7 -> 6 -> 5 -> 6 -> 34 -> ... -> 26 (after the 29 September sweep) -> 5
     // (after the 6 October Chrome sweep and its evidence hold, see the dedicated
     // regression above). Exercise the actual non-empty-state copy against that
     // final, verified count.
