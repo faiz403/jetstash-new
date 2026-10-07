@@ -18,8 +18,9 @@ import { deriveApprovedStandoutFare } from '@/lib/standout-fare';
  *   2. a self-transfer observation is never itself a candidate;
  *   3. a self-transfer recheck is never the evaluated fare of a candidate.
  * Explicitly NOT changed (and proven unchanged below): baseline membership,
- * medians, previous lows, thresholds, booking-horizon rules, Standout behaviour,
- * and the set of routes that can produce a candidate (the fix may only remove).
+ * medians, previous lows, thresholds, booking-horizon rules and Standout behaviour.
+ * On the real archive the fix only removes misleading candidates; it does NOT carry a
+ * universal "can only remove" guarantee (see the KNOWN BOUNDARY block below).
  */
 
 const SELF_TRANSFER_NOTE = 'return, one adult; self-transfer; outbound 2 stops';
@@ -110,6 +111,78 @@ describe('3. a self-transfer recheck never becomes the evaluated fare', () => {
   });
 });
 
+describe('3b. a LATER self-transfer recheck retires the candidate; it never falls back to an earlier clean recheck', () => {
+  const AS_OF = '2026-08-12';
+  // A recheck only matches its detection when route, cabin, profile, currency AND the exact travel dates are equal.
+  const withDatesOf = (d: FareObservation) => ({ departureDate: d.departureDate, returnDate: d.returnDate });
+
+  it('clean candidate + earlier clean recheck + later self-transfer recheck => no candidate at all (not evaluated on the clean recheck, not on the flagged price)', () => {
+    const detection = obs('detection', '2026-08-10', 400);
+    const earlierCleanRecheck = obs('clean-recheck', '2026-08-10', 430, { observationReason: 'emergency-recheck', ...withDatesOf(detection) });
+    const laterFlaggedRecheck = obs('flagged-recheck-later', '2026-08-11', 380, { observationReason: 'emergency-recheck', priceNote: SELF_TRANSFER_NOTE, ...withDatesOf(detection) });
+
+    // Precondition: with the clean recheck alone, a candidate exists and is evaluated on that clean recheck.
+    const [before] = generateFareWatcherCandidates([detection, earlierCleanRecheck, ...baseline()], AS_OF);
+    expect(before).toMatchObject({ id: 'fare-watcher-detection', currentFare: 430 });
+    expect(before.verifiedObservation.id).toBe('clean-recheck');
+
+    // The later flagged recheck is the latest verification evidence, so the candidate is retired outright: Fare Watcher does
+    // NOT fall back to the older clean recheck, and never evaluates the flagged GBP 380.
+    for (const archive of [
+      [detection, earlierCleanRecheck, laterFlaggedRecheck, ...baseline()],
+      [laterFlaggedRecheck, earlierCleanRecheck, detection, ...baseline()],
+    ]) {
+      expect(generateFareWatcherCandidates(archive, AS_OF)).toEqual([]);
+    }
+  });
+
+  it('control: a LATER CLEAN recheck becomes the evaluated fare normally', () => {
+    const detection = obs('detection', '2026-08-10', 400);
+    const earlierCleanRecheck = obs('clean-recheck', '2026-08-10', 430, { observationReason: 'emergency-recheck', ...withDatesOf(detection) });
+    const laterCleanRecheck = obs('clean-recheck-later', '2026-08-11', 440, { observationReason: 'emergency-recheck', ...withDatesOf(detection) });
+    const [candidate] = generateFareWatcherCandidates([detection, earlierCleanRecheck, laterCleanRecheck, ...baseline()], AS_OF);
+    expect(candidate).toMatchObject({ id: 'fare-watcher-detection', currentFare: 440 });
+    expect(candidate.verifiedObservation.id).toBe('clean-recheck-later');
+  });
+});
+
+/**
+ * KNOWN BOUNDARY -- this documents the limit of the fix; it does NOT endorse the behaviour below.
+ *
+ * On the real JetStash archive the fix only removes misleading candidates (proved day by day further down). The algorithm,
+ * however, has no universal "can only remove candidates" guarantee. Rule 1 prefers a same-day CLEAN observation over a cheaper
+ * flagged one. A candidate's baseline depends on the candidate's own travel dates / trip length, so if the two same-day
+ * observations have DIFFERENT travel geometry, preferring the clean one evaluates it against a different baseline and can
+ * produce a candidate that the flagged one would not have. Weekly-sweep pairs normally share travel dates, so for them the
+ * qualification context is unchanged and only the detection's identity switches from the flagged fare to the clean one.
+ */
+describe('KNOWN BOUNDARY: same-day clean/flagged pairs with DIFFERENT travel dates can change the qualification outcome (documented, not endorsed)', () => {
+  const clean = () => obs('clean', '2026-08-10', 450);
+  /** Same observation day and profile, cheaper, flagged -- but a 21-night trip, so the 14-night baseline is not comparable to it. */
+  const flaggedOtherTripLength = () => obs('flagged-other-trip-length', '2026-08-10', 380, { priceNote: SELF_TRANSFER_NOTE, returnDate: addDays(addDays('2026-08-10', 56), 21) });
+  const flaggedSameDates = () => obs('flagged-same-dates', '2026-08-10', 380, { priceNote: SELF_TRANSFER_NOTE });
+  /** The code reads priceNote only through the detector, so erasing the evidence reproduces the pre-fix behaviour exactly. */
+  const preFix = (archive: FareObservation[]) => archive.map((o) => ({ ...o, priceNote: 'neutralised' }));
+
+  it('DIFFERENT trip length: pre-fix there is no candidate (the cheaper flagged fare has no comparable baseline), post-fix the clean fare qualifies against its own baseline -- a new candidate', () => {
+    const archive = [clean(), flaggedOtherTripLength(), ...baseline()];
+    expect(generateFareWatcherCandidates(preFix(archive), NOW)).toEqual([]);
+    const after = generateFareWatcherCandidates(archive, NOW);
+    expect(after.map((c) => c.id)).toEqual(['fare-watcher-clean']);
+    expect(after[0]).toMatchObject({ currentFare: 450, qualification: 'standout-candidate', baselineSampleSize: 3 });
+  });
+
+  it('SAME travel dates (the weekly-sweep shape): the route already had a candidate pre-fix; only the detection\'s identity switches from the flagged fare to the clean one, on the same baseline', () => {
+    const archive = [clean(), flaggedSameDates(), ...baseline()];
+    const before = generateFareWatcherCandidates(preFix(archive), NOW);
+    const after = generateFareWatcherCandidates(archive, NOW);
+    expect(before.map((c) => c.id)).toEqual(['fare-watcher-flagged-same-dates']);
+    expect(after.map((c) => c.id)).toEqual(['fare-watcher-clean']);
+    expect(after.map((c) => c.routeSlug)).toEqual(before.map((c) => c.routeSlug));
+    expect([after[0].baselineMedian, after[0].baselineSampleSize, after[0].previousLow]).toEqual([before[0].baselineMedian, before[0].baselineSampleSize, before[0].previousLow]);
+  });
+});
+
 describe('clean observations qualify exactly as before; baselines and medians are untouched', () => {
   it('a clean candidate over a clean baseline is unchanged', () => {
     const [candidate] = generateFareWatcherCandidates([obs('c', '2026-08-10', 400), ...baseline()], NOW);
@@ -135,10 +208,12 @@ describe('clean observations qualify exactly as before; baselines and medians ar
 /**
  * The code reads `priceNote` only through isSelfTransferItinerary(), so running the
  * same code on an archive whose notes carry no self-transfer evidence reproduces the
- * behaviour from before the fix exactly. That gives a real-archive proof that the
- * fix can only REMOVE leads, never create or alter one.
+ * behaviour from before the fix exactly. That gives a real-archive proof that, on
+ * JetStash's actual archive, the fix only REMOVES misleading leads and neither creates
+ * nor alters one. (This is a property of the archive, not a universal guarantee: see
+ * the KNOWN BOUNDARY block above for the synthetic case where it does not hold.)
  */
-describe('real archive: the fix can only remove leads', () => {
+describe('real archive: on the actual archive the fix only removes leads', () => {
   const neutral: FareObservation[] = fareObservations.map((o) => ({ ...o, priceNote: 'neutralised' }));
   const days: string[] = [];
   for (let d = '2026-08-11'; d <= '2026-10-07'; d = addDays(d, 1)) days.push(d);

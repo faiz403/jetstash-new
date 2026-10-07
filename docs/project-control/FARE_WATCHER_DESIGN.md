@@ -93,11 +93,20 @@ adds no second classifier. Three narrow rules apply:
 
 Deliberately **not** changed: the comparable baseline (self-transfer observations still count as baseline
 points), medians, previous lows, the £25 / 10% thresholds, the three-point minimum, booking-horizon rules,
-qualification tiers, lifecycle, the Standout contract and approvals. The fix can only remove leads and cannot
-create one; this is checked against the real archive on every day from 11 August to 7 October 2026 in
-`tests/fare-watcher-self-transfer-boundary.test.ts`. Whether self-transfer points should leave the baseline
-is a separate methodology decision (`FWATCH-BASELINE-001`). Observations whose `priceNote` does not state
-their booking structure cannot be identified by this rule.
+qualification tiers, lifecycle, the Standout contract and approvals.
+
+**What the fix guarantees, and what it does not.** On the current JetStash archive the fix only removes
+misleading candidates; this is checked on every day from 11 August to 7 October 2026 in
+`tests/fare-watcher-self-transfer-boundary.test.ts`. It is not a universal guarantee. Same-day clean and flagged
+pairs from the weekly sweep normally share travel dates, so their qualification context is unchanged and only
+the detection's identity switches from the flagged fare to the clean one. In the general case, if a same-day
+clean and flagged observation have different travel dates, preferring the clean observation can change the
+qualification baseline and may produce a different candidate outcome, including a candidate that the flagged
+observation would not have produced; a boundary test documents this limit without endorsing it.
+
+Whether self-transfer points should leave the baseline is a separate methodology decision
+(`FWATCH-BASELINE-001`). Observations whose `priceNote` does not state their booking structure cannot be
+identified by this rule.
 
 ## Future provider boundary
 
