@@ -93,7 +93,7 @@ export default async function AirportPage({ params }: { params: Promise<{ slug: 
         statusLabel: presentation.statusLabel,
         detail: presentation.status === 'unverified' || presentation.status === 'service-ended' ? null : presentation.flightTime,
         fare: showsFare ? (
-          <RouteCardFare observation={signal.observation!} state={signal.state as 'current' | 'recent'} lowerSelfTransfer={signal.lowerSelfTransfer ?? null} />
+          <RouteCardFare observation={signal.observation!} state={signal.state as 'current' | 'recent'} lowerSelfTransfer={signal.lowerSelfTransfer ?? null} nowIso={nowIsoForFareCheck} />
         ) : null,
       },
     ];

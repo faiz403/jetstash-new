@@ -332,6 +332,7 @@ export default async function RoutePage({ params }: { params: Promise<{ slug: st
               must stay silent. */}
           <FareSignal
             signal={fareSignal}
+            nowIso={nowIso}
             tripComUrl={tripComUrl}
             routeSlug={route.slug}
             routeDirectness={presentation.status === 'direct' || presentation.status === 'connecting' ? presentation.status : null}

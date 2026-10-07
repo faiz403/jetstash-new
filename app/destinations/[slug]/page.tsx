@@ -133,7 +133,7 @@ export default async function DestinationPage({ params }: { params: Promise<{ sl
             <div>
               {/* Consumer clarity pass (3 Oct 2026): "how do I get there from the UK?" is what a destination page
                   is for, so the flights block leads and the descriptive "About" copy follows it. */}
-              <DestinationFlightGuides destination={dest} nowIso={new Date().toISOString().slice(0, 10)} />
+              <DestinationFlightGuides destination={dest} nowIso={nowIsoForFareCheck} />
 
               <h2 className="mt-10 font-display text-2xl text-ink-900">About {dest.city}</h2>
               <p className="mt-4 leading-relaxed text-ink-600">{dest.description}</p>

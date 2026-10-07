@@ -6,6 +6,8 @@ import { NO_VERIFIED_PARTNER_LINK_NOTE, PROVIDER_REL, SERVICE_ENDED_CTA_LABEL, T
 import { SELF_TRANSFER_LABEL } from '@/lib/fare-self-transfer';
 import { TrackedOutboundLink } from '@/components/ui/tracked-outbound-link';
 import { AffiliateLinkDisclosure } from '@/components/ui/affiliate-link-disclosure';
+import { FareAgeWarning } from '@/components/route/fare-age-warning';
+import { getFareAgeWarningText } from '@/lib/fare-age-warning';
 
 /**
  * Self-transfer prominence fix (25 Aug 2026, founder-approved). Renders
@@ -473,7 +475,7 @@ interface RouteContextProps {
   routeServiceConnections?: { outbound?: string[]; return?: string[] } | null;
 }
 
-function CurrentSignal({ data, lowerSelfTransfer, tripComUrl, routeSlug, routeDirectness, routeStatusLabel, routeAirlineLabel, routeServiceConnections, standoutFare, isServiceEnded = false }: { data: FareSignalObservation; lowerSelfTransfer?: FareSignalObservation | null; tripComUrl: string | null; routeSlug: string; standoutFare?: StandoutFarePresentation | null; isServiceEnded?: boolean } & RouteContextProps) {
+function CurrentSignal({ data, nowIso, lowerSelfTransfer, tripComUrl, routeSlug, routeDirectness, routeStatusLabel, routeAirlineLabel, routeServiceConnections, standoutFare, isServiceEnded = false }: { data: FareSignalObservation; nowIso: string; lowerSelfTransfer?: FareSignalObservation | null; tripComUrl: string | null; routeSlug: string; standoutFare?: StandoutFarePresentation | null; isServiceEnded?: boolean } & RouteContextProps) {
   const routing = formatRouting(data);
   const mismatch = routeVsFareMismatch(routeDirectness, routeStatusLabel, routeAirlineLabel, data.directness)
     ?? routeServiceFareMismatch(routeServiceConnections, routeStatusLabel, routeAirlineLabel, data.directness, data.connectionAirports);
@@ -500,6 +502,7 @@ function CurrentSignal({ data, lowerSelfTransfer, tripComUrl, routeSlug, routeDi
         <div className="text-sm text-ink-600 sm:text-right">
           <p>{data.airline} · {data.cabin}</p>
           <p className="mt-1">Checked {formatChecked(data.observedDate)}</p>
+          <FareAgeWarning observedDate={data.observedDate} nowIso={nowIso} />
           <p className="mt-1 text-xs text-ink-500">
             {data.fareCoverageLevel === 'full-continuous'
               ? 'Lowest fare we found in the next 3 months'
@@ -544,7 +547,7 @@ function CurrentSignal({ data, lowerSelfTransfer, tripComUrl, routeSlug, routeDi
   );
 }
 
-function RecentSignal({ data, tripComUrl, routeSlug, routeDirectness, routeStatusLabel, routeAirlineLabel, routeServiceConnections, isServiceEnded = false }: { data: FareSignalObservation; tripComUrl: string | null; routeSlug: string; isServiceEnded?: boolean } & RouteContextProps) {
+function RecentSignal({ data, nowIso, tripComUrl, routeSlug, routeDirectness, routeStatusLabel, routeAirlineLabel, routeServiceConnections, isServiceEnded = false }: { data: FareSignalObservation; nowIso: string; tripComUrl: string | null; routeSlug: string; isServiceEnded?: boolean } & RouteContextProps) {
   const mismatch = routeVsFareMismatch(routeDirectness, routeStatusLabel, routeAirlineLabel, data.directness)
     ?? routeServiceFareMismatch(routeServiceConnections, routeStatusLabel, routeAirlineLabel, data.directness, data.connectionAirports);
   return (
@@ -558,7 +561,9 @@ function RecentSignal({ data, tripComUrl, routeSlug, routeDirectness, routeStatu
         <p className="text-sm text-ink-600">Checked {formatChecked(data.observedDate)}</p>
       </div>
       {data.isSelfTransfer && <div className="mt-3"><SelfTransferNote /></div>}
-      <p className="mt-4 text-sm leading-relaxed text-ink-600">Price may have changed.</p>
+      <p className="mt-4 text-sm leading-relaxed text-ink-600">
+        {getFareAgeWarningText(data.observedDate, nowIso) ?? 'Price may have changed.'}
+      </p>
       {mismatch && <RouteVsFareCallout mismatch={mismatch} />}
       {tripComUrl ? (
         <SignalCta
@@ -577,6 +582,7 @@ function RecentSignal({ data, tripComUrl, routeSlug, routeDirectness, routeStatu
 
 export function FareSignal({
   signal,
+  nowIso,
   tripComUrl,
   routeSlug,
   routeDirectness = null,
@@ -593,6 +599,8 @@ export function FareSignal({
   /** route.connectingAlternative's own stops/hubs/journey time, passed only when presentation.canShowConnectingAlternative is true. */
   connectingSummary?: ConnectingSummary | null;
   signal: FareSignalData;
+  /** Same date used to derive this page's Fare Signal, for stable SSR age copy. */
+  nowIso?: string;
   tripComUrl: string | null;
   routeSlug: string;
   /**
@@ -622,6 +630,7 @@ export function FareSignal({
    */
   standoutFare?: StandoutFarePresentation | null;
 }) {
+  const effectiveNowIso = nowIso ?? new Date().toISOString().slice(0, 10);
   return (
     <section aria-labelledby="fare-signal-heading" className="rounded-md border border-ink-200 bg-sand-50 p-4 sm:p-6">
       <div className="flex items-center gap-2.5">
@@ -642,8 +651,8 @@ export function FareSignal({
         <p className="mt-4 text-sm font-medium text-ink-700">{signal.strongerSignal}</p>
       )}
       <div className="mt-3 sm:mt-4">
-        {signal.state === 'current' && signal.observation ? <CurrentSignal data={signal.observation} lowerSelfTransfer={signal.lowerSelfTransfer} tripComUrl={tripComUrl} routeSlug={routeSlug} routeDirectness={routeDirectness} routeStatusLabel={routeStatusLabel} routeAirlineLabel={routeAirlineLabel} routeServiceConnections={routeServiceConnections} standoutFare={standoutFare} isServiceEnded={isServiceEnded} /> : null}
-        {signal.state === 'recent' && signal.observation ? <RecentSignal data={signal.observation} tripComUrl={tripComUrl} routeSlug={routeSlug} routeDirectness={routeDirectness} routeStatusLabel={routeStatusLabel} routeAirlineLabel={routeAirlineLabel} routeServiceConnections={routeServiceConnections} isServiceEnded={isServiceEnded} /> : null}
+        {signal.state === 'current' && signal.observation ? <CurrentSignal data={signal.observation} nowIso={effectiveNowIso} lowerSelfTransfer={signal.lowerSelfTransfer} tripComUrl={tripComUrl} routeSlug={routeSlug} routeDirectness={routeDirectness} routeStatusLabel={routeStatusLabel} routeAirlineLabel={routeAirlineLabel} routeServiceConnections={routeServiceConnections} standoutFare={standoutFare} isServiceEnded={isServiceEnded} /> : null}
+        {signal.state === 'recent' && signal.observation ? <RecentSignal data={signal.observation} nowIso={effectiveNowIso} tripComUrl={tripComUrl} routeSlug={routeSlug} routeDirectness={routeDirectness} routeStatusLabel={routeStatusLabel} routeAirlineLabel={routeAirlineLabel} routeServiceConnections={routeServiceConnections} isServiceEnded={isServiceEnded} /> : null}
         {signal.state === 'none' ? (
           // Final acceptance tweak (3 Oct 2026): from lg up the lead and the button sit side by side, so a wide screen
           // (where the cookie banner is only a short bar) shows the button without a scroll. Below lg nothing changes:
