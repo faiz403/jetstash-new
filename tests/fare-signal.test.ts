@@ -124,7 +124,7 @@ describe('Fare Signal presentation and CTA boundaries', () => {
 
   it('renders a recent fare without calling it current or a deal', () => {
     const signal = deriveFareSignal([recentFixture], '2026-08-11');
-    const text = renderToStaticMarkup(FareSignal({ signal, tripComUrl: null, routeSlug: 'fixture-route' }));
+    const text = renderToStaticMarkup(FareSignal({ signal, nowIso: '2026-01-16', tripComUrl: null, routeSlug: 'fixture-route' }));
     expect(text).toContain('Last tracked fare');
     expect(text).toContain('Price may have changed.');
     expect(text).not.toContain('Fare spotted');

@@ -60,6 +60,7 @@ export function DestinationFlightGuides({ destination, nowIso }: DestinationFlig
                     observation={entry.fareSignal.observation}
                     state={entry.fareSignal.state}
                     lowerSelfTransfer={entry.fareSignal.lowerSelfTransfer ?? null}
+                    nowIso={nowIso}
                   />
                 ) : (
                   <p className="text-sm text-ink-600">No fare logged yet</p>

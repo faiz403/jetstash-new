@@ -30,9 +30,9 @@ export const revalidate = 21600;
 // the title teaching taxonomy the page itself doesn't. No page content,
 // route/fare data or route logic changed.
 export const metadata: Metadata = {
-  title: 'Tracked Fares — Every Current Fare',
+  title: 'Tracked Fares — Checked fares by UK airport',
   description:
-    'Every route JetStash currently has a checked, dated fare for — grouped by UK departure airport. Independent of the curated Deals selection. Never a live price feed.',
+    'Every route JetStash has a checked, dated fare for — grouped by UK departure airport. Independent of the curated Deals selection. Never a live price feed.',
   alternates: { canonical: `${siteConfig.url}/tracked-fares` },
 };
 
@@ -47,10 +47,10 @@ export default function TrackedFaresPage() {
       <PageHero
         heroKey="deals"
         eyebrow="Tracked fares"
-        title="Every route with a current tracked fare"
+        title="Every route with a tracked fare"
         description={
           <>
-            {trackedRouteCount} of our {routes.length} routes currently have a checked, dated fare — every one shown
+            {trackedRouteCount} of our {routes.length} routes have a checked, dated fare — every one shown
             below, grouped by UK departure airport. This is the exhaustive list, independent of{' '}
             <Link href="/deals" className="font-medium text-brass-300 underline underline-offset-2 hover:text-brass-200">
               our curated Deal selection
@@ -59,12 +59,12 @@ export default function TrackedFaresPage() {
           </>
         }
         stats={[
-          { value: `${trackedRouteCount} of ${routes.length}`, label: 'Routes with a current tracked fare' },
+          { value: `${trackedRouteCount} of ${routes.length}`, label: 'Routes with a tracked fare' },
           { value: String(airportCount), label: 'UK airports represented' },
         ]}
       />
 
-      <TrackedFaresExplorer airportGroups={airportGroups} />
+      <TrackedFaresExplorer airportGroups={airportGroups} nowIso={nowIso} />
 
       <section className="border-t border-ink-100 bg-sand-50 py-10 sm:py-12">
         <div className="mx-auto max-w-content px-5 sm:px-8">

@@ -8,6 +8,7 @@ import { PROVIDER_REL, TRIPCOM_DEFAULT_CTA_LABEL, TRIPCOM_FRESH_SEARCH_NOTE } fr
 import { TrackedOutboundLink } from '@/components/ui/tracked-outbound-link';
 import { AffiliateLinkDisclosure } from '@/components/ui/affiliate-link-disclosure';
 import type { TrackedFareAirportGroup, TrackedFareEntry } from '@/lib/tracked-fare-groups';
+import { FareAgeWarning } from '@/components/route/fare-age-warning';
 
 /**
  * Exhaustive Tracked Fares (PR #140) — search/accordion mechanics
@@ -53,7 +54,7 @@ export function isAirportVisible(airportSlug: string, expanded: Set<string>, isS
   return isSearching || expanded.has(airportSlug);
 }
 
-export function TrackedFaresExplorer({ airportGroups }: { airportGroups: TrackedFareAirportGroup[] }) {
+export function TrackedFaresExplorer({ airportGroups, nowIso = new Date().toISOString().slice(0, 10) }: { airportGroups: TrackedFareAirportGroup[]; nowIso?: string }) {
   const allAirports = useMemo(() => airportGroups.map((g) => g.airportSlug), [airportGroups]);
 
   const [query, setQuery] = useState('');
@@ -104,6 +105,7 @@ export function TrackedFaresExplorer({ airportGroups }: { airportGroups: Tracked
             <AirportSection
               key={group.airportSlug}
               group={group}
+              nowIso={nowIso}
               isOpen={isAirportVisible(group.airportSlug, expanded, isSearching)}
               onToggle={() => toggleAirport(group.airportSlug)}
               isLast={i === visibleGroups.length - 1}
@@ -150,11 +152,13 @@ function SearchField({ value, onChange }: { value: string; onChange: (v: string)
 
 function AirportSection({
   group,
+  nowIso,
   isOpen,
   onToggle,
   isLast,
 }: {
   group: TrackedFareAirportGroup;
+  nowIso: string;
   isOpen: boolean;
   onToggle: () => void;
   isLast: boolean;
@@ -189,7 +193,7 @@ function AirportSection({
         {isOpen && (
           <div id={panelId} className="mt-8 grid animate-fade-up gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {group.entries.map((entry) => (
-              <TrackedFareCard key={entry.routeSlug} airportCity={group.airportCity} entry={entry} />
+              <TrackedFareCard key={entry.routeSlug} airportCity={group.airportCity} entry={entry} nowIso={nowIso} />
             ))}
           </div>
         )}
@@ -243,7 +247,7 @@ function JourneyConsequenceLine({ consequences }: { consequences: string[] }) {
   );
 }
 
-function TrackedFareCard({ airportCity, entry }: { airportCity: string; entry: TrackedFareEntry }) {
+function TrackedFareCard({ airportCity, entry, nowIso }: { airportCity: string; entry: TrackedFareEntry; nowIso: string }) {
   const { observation, tripComUrl } = entry;
   const directness = directnessLabel(entry);
 
@@ -270,6 +274,7 @@ function TrackedFareCard({ airportCity, entry }: { airportCity: string; entry: T
         <span className="h-1.5 w-1.5 rounded-full bg-brass-400" aria-hidden="true" />
         Checked {formatChecked(observation.observedDate)}
       </p>
+      <FareAgeWarning observedDate={observation.observedDate} nowIso={nowIso} />
 
       <div className="mt-4 flex flex-col gap-2">
         {tripComUrl ? (

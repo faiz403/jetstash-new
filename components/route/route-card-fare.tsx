@@ -3,6 +3,7 @@ import type { FareSignalObservation } from '@/lib/fare-signal';
 import { formatChecked } from '@/data/deals';
 import { SELF_TRANSFER_LABEL } from '@/lib/fare-self-transfer';
 import { describeFareStops } from '@/lib/route-card-fare';
+import { FareAgeWarning } from '@/components/route/fare-age-warning';
 
 /**
  * Consumer clarity pass (3 Oct 2026). The one compact fare summary used by route cards on
@@ -18,10 +19,12 @@ export function RouteCardFare({
   observation,
   state,
   lowerSelfTransfer = null,
+  nowIso = new Date().toISOString().slice(0, 10),
 }: {
   observation: FareSignalObservation;
   state: 'current' | 'recent';
   lowerSelfTransfer?: FareSignalObservation | null;
+  nowIso?: string;
 }) {
   const stops = describeFareStops(observation);
   return (
@@ -43,6 +46,7 @@ export function RouteCardFare({
       <p className="mt-1 text-xs text-ink-500">
         {state === 'current' ? 'Checked' : 'Previous fare, checked'} {formatChecked(observation.observedDate)}
       </p>
+      <FareAgeWarning observedDate={observation.observedDate} nowIso={nowIso} />
       {observation.journeyConsequences.length > 0 && (
         <p className="mt-1.5 text-xs font-medium text-terracotta-700">{observation.journeyConsequences.join(' · ')}</p>
       )}

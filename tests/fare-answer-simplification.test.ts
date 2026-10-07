@@ -55,7 +55,7 @@ describe('1. "Fare Signal" is no longer public-facing text anywhere it was found
 
   it('the /tracked-fares metadata title no longer combines "Tracked Fares" with "Fare Signal"', () => {
     expect(trackedFaresPageSrc).not.toContain('Every Current Fare Signal');
-    expect(trackedFaresPageSrc).toContain("title: 'Tracked Fares — Every Current Fare'");
+    expect(trackedFaresPageSrc).toContain("title: 'Tracked Fares — Checked fares by UK airport'");
   });
 
   it('the id "fare-signal-heading" and the FareSignal component/file name are deliberately unchanged — internal names, not the public terminology this task targets', () => {
