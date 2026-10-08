@@ -30,6 +30,11 @@ describe('Arrive By result explanations', () => {
     expect(ArriveByReadyBySummary({ plan: { ...plan, finalArrival: undefined } })).toBeNull();
   });
 
+  it('uses the actual arrival timestamp for deadline arithmetic rather than the rounded headline clock', () => {
+    const html = renderToStaticMarkup(createElement(ArriveByReadyBySummary, { plan: { ...plan, finalArrival: { ...plan.finalArrival!, iso: '2026-11-03T17:47:00.000Z', clock: '17:45' } } }));
+    expect(html).toContain('Expected physical arrival: around 17:47');
+  });
+
   it('opens the missed-service explanation when the next checked service misses the ready-by time and qualifies the road rescue', () => {
     const html = renderToStaticMarkup(createElement(ArriveByMissedServiceDetails, {
       timeZone: 'Europe/London',

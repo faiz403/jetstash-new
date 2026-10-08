@@ -15,7 +15,7 @@ export function ArriveByReadyBySummary({ plan }: { plan: JourneyPlan }) {
 
   return <section aria-labelledby="arrive-by-ready-by-title" className="mt-4 rounded-sm border border-ink-200 bg-white p-4 text-sm text-ink-700" data-testid="ready-by-summary">
     <h3 id="arrive-by-ready-by-title" className="font-semibold text-ink-900">Your ready-by check</h3>
-    <p className="mt-2">Expected physical arrival: around {plan.finalArrival.clock} on {describeDay(plan.finalArrival.dateLabel, plan.finalArrival.dayOffset)}.</p>
+    <p className="mt-2">Expected physical arrival: around {clockOf(Date.parse(plan.finalArrival.iso), zone)} on {describeDay(plan.finalArrival.dateLabel, plan.finalArrival.dayOffset)}.</p>
     {readinessLeg && <p className="mt-1">With your {readinessLeg.minutes}-minute readiness buffer, expected ready time is around {clockOf(Date.parse(readinessLeg.endIso), zone)} on {dateLabelOf(Date.parse(readinessLeg.endIso), zone)}.</p>}
     <p className="mt-1">You need to be ready by {clockOf(deadlineMs, zone)} on {dateLabelOf(deadlineMs, zone)}.</p>
     <p className="mt-1">To keep that buffer, latest acceptable physical arrival is around {clockOf(latestArrivalMs, zone)} on {dateLabelOf(latestArrivalMs, zone)}.</p>

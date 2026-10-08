@@ -172,7 +172,7 @@ export function ArriveByFullJourney({ departureAirports, arrivalAirports, initia
 
   function PendingChoice({ which }: { which: Pending }) {
     const detail = pendingFor(which);
-    if (!detail) return null;
+    if (!detail || !plan || pendingSides(plan)[which] === 'NONE') return null;
     const heading = which === 'start' ? 'Your start location' : 'Your final destination';
     const side = which;
     const typed = which === 'start' ? start : destination;

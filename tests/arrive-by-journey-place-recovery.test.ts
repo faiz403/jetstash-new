@@ -174,6 +174,18 @@ describe('ROOT CAUSE: a client that sends only the latest choice oscillates; the
 });
 
 describe('the recovery reducer (pure)', () => {
+  it('successful transit detail is not an unresolved destination and preserves its accepted place', () => {
+    const sent = chooseConfirmed(EMPTY_RECOVERY, 'destination', 'co-op-live');
+    const plan = { arrivalDetail: { outcome: 'ETA_ONLY', transit: { firstService: 'Northern', expectedArrivalIso: '2026-10-09T17:07:00.000Z' } } } as JourneyPlan;
+    expect(pendingSides(plan)).toEqual({ start: 'NONE', destination: 'NONE' });
+    expect(reconcileWithPlan(sent, plan)).toBe(sent);
+  });
+
+  it('the public UI only renders a recovery prompt for an actually pending side', () => {
+    const source = readFileSync(join(process.cwd(), 'components', 'arrive-by-full-journey.tsx'), 'utf8');
+    expect(source).toContain("if (!detail || !plan || pendingSides(plan)[which] === 'NONE') return null;");
+  });
+
   it('each side holds its own choice; choosing one never touches the other', () => {
     let state = chooseSelected(EMPTY_RECOVERY, 'start', 's1');
     state = chooseConfirmed(state, 'destination', 'd1');

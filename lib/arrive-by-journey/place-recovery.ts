@@ -89,7 +89,8 @@ const kind = (detail: { pendingConfirmation?: unknown; pendingSelection?: unknow
 export function pendingSides(plan: JourneyPlan): PendingSides {
   return {
     start: kind(plan.startDetail, true),
-    destination: kind(plan.arrivalDetail && plan.arrivalDetail.outcome !== 'ROUTE_UNAVAILABLE' ? plan.arrivalDetail : undefined, true),
+    // Successful transit keeps arrivalDetail to explain the journey, not to request place recovery.
+    destination: kind(plan.arrivalDetail && plan.arrivalDetail.outcome !== 'ROUTE_UNAVAILABLE' && plan.arrivalDetail.outcome !== 'ETA_ONLY' ? plan.arrivalDetail : undefined, true),
   };
 }
 
