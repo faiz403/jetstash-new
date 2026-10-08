@@ -129,10 +129,11 @@ const sections: { title: string; body: React.ReactNode }[] = [
           provider. A place identifier you are asked to confirm
           may be held briefly in your browser between steps, then sent back to JetStash for re-verification. Three
           small things are kept, none of them a journey: a one-way hashed identifier derived from your IP address for about a
-          minute, in a short-lived database entry, to limit how often one person can run checks; a running monthly count of the
-          Google lookups the service has made; and anonymous daily counts of how many checks were submitted and what
-          kind of outcome each had (for example a usable result, or that a start location could not be confirmed).
-          Those counts hold no journey details or identifiers and are kept for about three months. If your start or
+          minute, in a short-lived database entry, to limit journey checks and protect aggregate interaction counts from spam; a running monthly count of the
+          Google lookups the service has made; and anonymous daily counts of checks started, completed or failed,
+          the broad verdict shown, whether a driving rescue estimate was returned, and whether the missed-service
+          explanation was opened. Those counts hold no journey details or identifiers and are kept for about three months.
+          If your start or
           destination is a private home, we recommend entering the nearest venue or locality instead of an exact
           address.
         </p>

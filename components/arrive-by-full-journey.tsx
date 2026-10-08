@@ -1,12 +1,14 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import Link from 'next/link';
 import { ArriveByIntroduction } from '@/components/arrive-by-introduction';
+import { ArriveByMissedServiceDetails, ArriveByReadyBySummary, ArriveByRoadEstimateDisclosure } from '@/components/arrive-by-result-explanations';
 import { calendarDayOffset, clockOf, dateLabelOf, describeDay } from '@/lib/arrive-by-journey/local-time';
 import type { AirportOption } from '@/lib/arrive-by-journey/airport-options';
 import type { PublicJourneyRoutePair } from '@/lib/arrive-by-journey/public-route-pairs';
 import type { JourneyPlan, TimelineLeg } from '@/lib/arrive-by-journey/types';
+import type { BetaInteraction } from '@/lib/arrive-by-journey/beta-metrics';
 import {
   EMPTY_RECOVERY, chooseConfirmed, chooseSelected, invalidateForArrivalAirportChange, invalidateSide, pendingSides, reconcileWithPlan, toRequestFields,
   type RecoveryState,
@@ -24,8 +26,9 @@ import {
  *
  * and one answer order: WHEN SHOULD I LEAVE first, then the departure-airport result, then the final arrival.
  * It posts only what the traveller typed to the server; airports, coordinates,
- * time zones and country rules are resolved server-side. There is no analytics
- * or browser storage of exact journey details.
+ * time zones and country rules are resolved server-side. There is no third-party
+ * analytics or browser storage of exact journey details; the internal counter
+ * endpoint accepts only fixed event labels and broad result categories.
  */
 
 const field = 'mt-1 w-full rounded-sm border border-ink-200 bg-white px-3 py-2 text-base text-ink-900';
@@ -93,6 +96,8 @@ export function ArriveByFullJourney({ departureAirports, arrivalAirports, initia
   const [loading, setLoading] = useState(false);
   const resultRef = useRef<HTMLDivElement>(null);
   const startRef = useRef<HTMLInputElement>(null);
+  const journeyStartedSignalSent = useRef(false);
+  const lastReportedPlan = useRef<JourneyPlan | null>(null);
   /** Venue names the traveller was shown (and accepted) in a recovery prompt, so the final result keeps the recognisable name. Display only. */
   const chosenNames = useRef<{ start?: string; destination?: string }>({});
   const arrivalEngine = arrivalAirports.find((airport) => airport.code === arrivalAirport)?.journeyEngine;
@@ -101,6 +106,7 @@ export function ArriveByFullJourney({ departureAirports, arrivalAirports, initia
   /** `next` is passed explicitly because React state updates are asynchronous: the request must carry the choices just made. */
   async function run(next: RecoveryState = recovery) {
     setLoading(true); setError(''); setPlan(null);
+    recordInteraction({ event: 'calculation_started' });
     try {
       const response = await fetch('/api/arrive-by/journey', {
         method: 'POST',
@@ -131,14 +137,35 @@ export function ArriveByFullJourney({ departureAirports, arrivalAirports, initia
     }
   }
 
+  const recordInteraction = useCallback((interaction: BetaInteraction) => {
+    void fetch('/api/arrive-by/interaction', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(interaction),
+      keepalive: true,
+    }).catch(() => undefined);
+  }, []);
+
   // Focus the answer once it has actually rendered (an effect runs after commit).
   useEffect(() => {
-    if (plan) resultRef.current?.focus();
-  }, [plan]);
+    if (!plan || lastReportedPlan.current === plan) return;
+    lastReportedPlan.current = plan;
+    resultRef.current?.focus();
+    const verdict = plan.state === 'POSSIBLE_WITH_MARGIN' ? 'yes'
+      : plan.state === 'POSSIBLE_BUT_TIGHT' ? 'tight'
+        : plan.state === 'NOT_FEASIBLE' ? 'no'
+          : plan.state === 'ESTIMATE_ONLY' ? 'estimate' : 'unknown';
+    recordInteraction({ event: 'result_shown', verdict, rescueShown: Boolean(plan.arrivalDetail?.transit?.rescue?.attempted) });
+  }, [plan, recordInteraction]);
 
   function submit(event: FormEvent) {
     event.preventDefault();
     void run();
+  }
+
+  function clearResult() {
+    setPlan(null);
+    setError('');
   }
 
   const pendingFor = (which: Pending) => (which === 'start' ? plan?.startDetail : plan?.arrivalDetail);
@@ -189,38 +216,38 @@ export function ArriveByFullJourney({ departureAirports, arrivalAirports, initia
 
     {prefillNotice && <p role="status" className="mt-4 max-w-3xl rounded-sm border border-brass bg-brass-50 p-3 text-sm text-ink-700">{prefillNotice}</p>}
 
-    <form onSubmit={submit} className="mt-6 grid gap-4 rounded-md border border-ink-200 bg-sand-50 p-4 sm:p-6">
-      <fieldset className="grid gap-4"><legend className="text-base font-semibold text-ink-900">Your journey to the airport</legend>
+      <form onSubmit={submit} onFocusCapture={() => { if (!journeyStartedSignalSent.current) { journeyStartedSignalSent.current = true; recordInteraction({ event: 'journey_started' }); } }} className="mt-6 grid gap-4 rounded-md border border-ink-200 bg-sand-50 p-4 sm:p-6">
+      <fieldset disabled={loading} className="grid gap-4"><legend className="text-base font-semibold text-ink-900">Your journey to the airport</legend>
         <label className="text-sm">Where are you starting from? <span className="text-ink-500">(UK town, postcode or place)</span>
           <span className="mt-1 block text-xs text-ink-500">Leave time assumes you drive there, using live traffic.</span>
-          <input ref={startRef} className={field} required maxLength={180} value={start} placeholder="e.g. Preston" onChange={(e) => { chosenNames.current.start = undefined; setStart(e.target.value); setRecovery((r) => invalidateSide(r, 'start')); setPlan(null); }} />
+          <input ref={startRef} className={field} required maxLength={180} value={start} placeholder="e.g. Preston" onChange={(e) => { chosenNames.current.start = undefined; setStart(e.target.value); setRecovery((r) => invalidateSide(r, 'start')); clearResult(); }} />
         </label>
         <label className="text-sm">Which airport are you flying from?
-          <select className={field} value={departureAirport} onChange={(e) => setDepartureAirport(e.target.value)}>{departureAirports.map((option) => <option key={option.code} value={option.code}>{label(option)}</option>)}</select>
+          <select className={field} value={departureAirport} onChange={(e) => { setDepartureAirport(e.target.value); clearResult(); }}>{departureAirports.map((option) => <option key={option.code} value={option.code}>{label(option)}</option>)}</select>
         </label>
         <label className="text-sm">How many minutes before the flight do you want to be at the departure airport?
-          <input className={field} type="number" min="0" max="480" step="5" required value={bufferMinutes} onChange={(e) => setBufferMinutes(e.target.value)} />
+          <input className={field} type="number" min="0" max="480" step="5" required value={bufferMinutes} onChange={(e) => { setBufferMinutes(e.target.value); clearResult(); }} />
         </label>
       </fieldset>
-      <fieldset className="grid gap-4 border-t border-ink-200 pt-4"><legend className="pt-4 text-base font-semibold text-ink-900">Your flight</legend>
-        <label className="text-sm">When does the flight leave? <span className="text-ink-500">(local time at the departure airport)</span><input className={field} type="datetime-local" required value={departsLocal} onChange={(e) => setDepartsLocal(e.target.value)} /></label>
+      <fieldset disabled={loading} className="grid gap-4 border-t border-ink-200 pt-4"><legend className="pt-4 text-base font-semibold text-ink-900">Your flight</legend>
+        <label className="text-sm">When does the flight leave? <span className="text-ink-500">(local time at the departure airport)</span><input className={field} type="datetime-local" required value={departsLocal} onChange={(e) => { setDepartsLocal(e.target.value); clearResult(); }} /></label>
         <label className="text-sm">Where are you landing?
-          <select className={field} value={arrivalAirport} onChange={(e) => { const country = (code: string) => arrivalAirports.find((a) => a.code === code)?.country; setRecovery((r) => invalidateForArrivalAirportChange(r, country(arrivalAirport), country(e.target.value))); setArrivalAirport(e.target.value); }}>{arrivalAirports.map((option) => <option key={option.code} value={option.code}>{label(option)}</option>)}</select>
+          <select className={field} value={arrivalAirport} onChange={(e) => { const country = (code: string) => arrivalAirports.find((a) => a.code === code)?.country; setRecovery((r) => invalidateForArrivalAirportChange(r, country(arrivalAirport), country(e.target.value))); setArrivalAirport(e.target.value); clearResult(); }}>{arrivalAirports.map((option) => <option key={option.code} value={option.code}>{label(option)}</option>)}</select>
         </label>
-        <label className="text-sm">When does it land? <span className="text-ink-500">(local time at the arrival airport)</span><input className={field} type="datetime-local" required value={arrivesLocal} onChange={(e) => setArrivesLocal(e.target.value)} /></label>
-        <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={hasConnection} onChange={(e) => setHasConnection(e.target.checked)} /> Does your itinerary include a connection? We can&apos;t calculate connection risk yet.</label>
+        <label className="text-sm">When does it land? <span className="text-ink-500">(local time at the arrival airport)</span><input className={field} type="datetime-local" required value={arrivesLocal} onChange={(e) => { setArrivesLocal(e.target.value); clearResult(); }} /></label>
+        <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={hasConnection} onChange={(e) => { setHasConnection(e.target.checked); clearResult(); }} /> Does your itinerary include a connection? We can&apos;t calculate connection risk yet.</label>
       </fieldset>
-      <fieldset className="grid gap-4 border-t border-ink-200 pt-4"><legend className="pt-4 text-base font-semibold text-ink-900">After you land</legend>
-        <label className="text-sm">Where are you going after that?<input className={field} required maxLength={180} value={destination} placeholder="e.g. Mirpur, Azad Kashmir" onChange={(e) => { chosenNames.current.destination = undefined; setDestination(e.target.value); setRecovery((r) => invalidateSide(r, 'destination')); setPlan(null); }} /></label>
-        <label className="text-sm">How many minutes after landing before you&apos;re outside the arrival airport?<input className={field} type="number" min="0" max="480" step="5" required value={exitMinutes} onChange={(e) => setExitMinutes(e.target.value)} /><span className="mt-1 block text-xs text-ink-500">Your own estimate for immigration, baggage and walking out — Arrive By does not assume this for you.</span></label>
+      <fieldset disabled={loading} className="grid gap-4 border-t border-ink-200 pt-4"><legend className="pt-4 text-base font-semibold text-ink-900">After you land</legend>
+        <label className="text-sm">Where are you going after that?<input className={field} required maxLength={180} value={destination} placeholder="e.g. Mirpur, Azad Kashmir" onChange={(e) => { chosenNames.current.destination = undefined; setDestination(e.target.value); setRecovery((r) => invalidateSide(r, 'destination')); clearResult(); }} /></label>
+        <label className="text-sm">How many minutes after landing before you&apos;re outside the arrival airport?<input className={field} type="number" min="0" max="480" step="5" required value={exitMinutes} onChange={(e) => { setExitMinutes(e.target.value); clearResult(); }} /><span className="mt-1 block text-xs text-ink-500">Your own estimate for immigration, baggage and walking out — Arrive By does not assume this for you.</span></label>
         {arrivalEngine === 'TRANSIT_FIRST' ? <p className="rounded-sm border border-ink-200 bg-white p-3 text-sm text-ink-700">For Manchester arrivals, Arrive By checks the onward public-transport journey. It will show what happens if the first important service is missed, and a driving estimate only where that missed journey would no longer meet your ready-by time.</p> : <>
-          <label className="text-sm">How are you leaving the arrival airport?<select className={field} value={pickupMode} onChange={(e) => setPickupMode(e.target.value as PickupMode)}>{(Object.keys(PICKUP_LABELS) as PickupMode[]).map((mode) => <option key={mode} value={mode}>{PICKUP_LABELS[mode]}</option>)}</select></label>
-          <label className="text-sm">Wait for the car/pickup after leaving the terminal (minutes) <span className="text-ink-500">(optional)</span><input className={field} type="number" min="0" max="480" step="5" value={pickupWait} onChange={(e) => setPickupWait(e.target.value)} /></label>
+          <label className="text-sm">How are you leaving the arrival airport?<select className={field} value={pickupMode} onChange={(e) => { setPickupMode(e.target.value as PickupMode); clearResult(); }}>{(Object.keys(PICKUP_LABELS) as PickupMode[]).map((mode) => <option key={mode} value={mode}>{PICKUP_LABELS[mode]}</option>)}</select></label>
+          <label className="text-sm">Wait for the car/pickup after leaving the terminal (minutes) <span className="text-ink-500">(optional)</span><input className={field} type="number" min="0" max="480" step="5" value={pickupWait} onChange={(e) => { setPickupWait(e.target.value); clearResult(); }} /></label>
         </>}
       </fieldset>
-      <fieldset className="grid gap-4 border-t border-ink-200 pt-4"><legend className="pt-4 text-base font-semibold text-ink-900">Deadline and ready-by details <span className="font-normal text-ink-500">(optional)</span></legend>
-        <label className="text-sm">Need to arrive by <span className="text-ink-500">(local time at the arrival airport)</span><input className={field} type="datetime-local" value={deadline} onChange={(e) => setDeadline(e.target.value)} /></label>
-        {deadline && <label className="text-sm">Minutes you need at the destination before that time <span className="text-ink-500">(optional)</span><input className={field} type="number" min="0" max="480" step="5" value={readiness} onChange={(e) => setReadiness(e.target.value)} /></label>}
+      <fieldset disabled={loading} className="grid gap-4 border-t border-ink-200 pt-4"><legend className="pt-4 text-base font-semibold text-ink-900">Deadline and ready-by details <span className="font-normal text-ink-500">(optional)</span></legend>
+        <label className="text-sm">Need to arrive by <span className="text-ink-500">(local time at the arrival airport)</span><input className={field} type="datetime-local" value={deadline} onChange={(e) => { setDeadline(e.target.value); clearResult(); }} /></label>
+        {deadline && <label className="text-sm">Minutes you need at the destination before that time <span className="text-ink-500">(optional)</span><input className={field} type="number" min="0" max="480" step="5" value={readiness} onChange={(e) => { setReadiness(e.target.value); clearResult(); }} /></label>}
       </fieldset>
       <p className="text-xs leading-relaxed text-ink-500" data-testid="google-notice">
         Journey locations are sent to Google Maps Platform to calculate your estimate. JetStash does not retain your journey details after the check is completed. See our <Link href="/privacy-policy" className="underline">privacy policy</Link> and <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" className="underline">Google&apos;s Privacy Policy</a>.
@@ -252,12 +279,9 @@ export function ArriveByFullJourney({ departureAirports, arrivalAirports, initia
         <ul className="mt-3 list-disc space-y-1 pl-5 text-sm text-ink-700">
           {plan.reasons.map((reason) => <li key={reason}>{reason}</li>)}
         </ul>
-        {plan.deadline && <p className="mt-2 text-sm text-ink-700">Margin against your deadline: about {plan.deadline.marginMinutes} minutes.</p>}
-        {plan.arrivalDetail?.transit && <div className="mt-3 rounded-sm border border-ink-200 bg-white p-3 text-sm text-ink-700">
-          <p>Expected onward journey uses {plan.arrivalDetail.transit.firstService}.</p>
-          {plan.arrivalDetail.transit.missedServiceArrivalIso && <p className="mt-1">If you miss that first service, the next checked journey arrives around {clockOf(Date.parse(plan.arrivalDetail.transit.missedServiceArrivalIso), plan.finalArrival?.zone ?? 'Europe/London')}.</p>}
-          {plan.arrivalDetail.transit.rescue?.attempted && <p className="mt-1">Driving estimate after the missed service: {plan.arrivalDetail.transit.rescue.available ? plan.arrivalDetail.transit.rescue.meetsReadyBy ? 'may still meet your ready-by time.' : 'does not meet your ready-by time.' : 'could not be confirmed.'}</p>}
-        </div>}
+        <ArriveByReadyBySummary plan={plan} />
+        {arrivalEngine !== 'TRANSIT_FIRST' && plan.finalArrival && <ArriveByRoadEstimateDisclosure pickupLabel={PICKUP_LABELS[pickupMode]} />}
+        {plan.arrivalDetail?.transit && <ArriveByMissedServiceDetails transit={plan.arrivalDetail.transit} timeZone={plan.finalArrival?.zone ?? 'Europe/London'} onOpen={() => recordInteraction({ event: 'missed_service_opened' })} />}
         {(plan.startDetail || plan.arrivalDetail) && <p className="mt-3 text-xs text-ink-500" data-testid="place-status">
           Start: {pendingSides(plan).start === 'NONE' ? 'confirmed' : 'needs a check'} · Destination: {pendingSides(plan).destination === 'NONE' ? 'confirmed' : 'needs a check'}
         </p>}
