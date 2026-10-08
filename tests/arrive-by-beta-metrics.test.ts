@@ -246,11 +246,11 @@ describe('Arrive By beta counters: measurement can never affect a journey', () =
     expect(upstashBodies).toEqual([]);
   });
 
-  it('leaves the rate limiter, budget guard and engine call exactly as they were', () => {
+  it('preserves the rate limiter, budget guard and live engine settings with the explicit scheduled-arrival policy', () => {
     const route = readFileSync(join(process.cwd(), 'app', 'api', 'arrive-by', 'journey', 'route.ts'), 'utf8');
     expect(route.indexOf('checkPublicJourneyRateLimit(request)')).toBeLessThan(route.indexOf('request.json()'));
     expect(route).toContain('createJourneyCallGuard(process.env');
-    expect(route).toContain("planFullJourney(input, { apiKey, guard, nowIso: new Date().toISOString(), airportMode: 'public', originMode: 'LIVE', transitFirst: 'LIVE', placeNames: 'LIVE' })");
+    expect(route).toContain("planFullJourney(input, { apiKey, guard, nowIso: new Date().toISOString(), airportMode: 'public', originMode: 'LIVE', transitFirst: 'LIVE', placeNames: 'LIVE', flightConnections: 'FINAL_ARRIVAL_ANCHOR' })");
     expect(route).toContain('status: 429');
     expect(route).toContain('status: 413');
     expect(route).toContain('status: 422');

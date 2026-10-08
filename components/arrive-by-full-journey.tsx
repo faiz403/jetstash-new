@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import Link from 'next/link';
 import { ArriveByIntroduction } from '@/components/arrive-by-introduction';
-import { ArriveByMissedServiceDetails, ArriveByReadyBySummary, ArriveByRoadEstimateDisclosure } from '@/components/arrive-by-result-explanations';
+import { ArriveByMissedServiceDetails, ArriveByReadyBySummary, ArriveByRoadEstimateDisclosure, ArriveByScheduledFlightDisclosure } from '@/components/arrive-by-result-explanations';
 import { calendarDayOffset, clockOf, dateLabelOf, describeDay } from '@/lib/arrive-by-journey/local-time';
 import type { AirportOption } from '@/lib/arrive-by-journey/airport-options';
 import type { PublicJourneyRoutePair } from '@/lib/arrive-by-journey/public-route-pairs';
@@ -234,8 +234,9 @@ export function ArriveByFullJourney({ departureAirports, arrivalAirports, initia
         <label className="text-sm">Where are you landing?
           <select className={field} value={arrivalAirport} onChange={(e) => { const country = (code: string) => arrivalAirports.find((a) => a.code === code)?.country; setRecovery((r) => invalidateForArrivalAirportChange(r, country(arrivalAirport), country(e.target.value))); setArrivalAirport(e.target.value); clearResult(); }}>{arrivalAirports.map((option) => <option key={option.code} value={option.code}>{label(option)}</option>)}</select>
         </label>
-        <label className="text-sm">When does it land? <span className="text-ink-500">(local time at the arrival airport)</span><input className={field} type="datetime-local" required value={arrivesLocal} onChange={(e) => { setArrivesLocal(e.target.value); clearResult(); }} /></label>
-        <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={hasConnection} onChange={(e) => { setHasConnection(e.target.checked); clearResult(); }} /> Does your itinerary include a connection? We can&apos;t calculate connection risk yet.</label>
+        <label className="text-sm">When does it land? <span className="text-ink-500">(final scheduled landing, local time at the arrival airport)</span><input className={field} type="datetime-local" required value={arrivesLocal} onChange={(e) => { setArrivesLocal(e.target.value); clearResult(); }} /></label>
+        <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={hasConnection} onChange={(e) => { setHasConnection(e.target.checked); clearResult(); }} /> Does your itinerary include a connection?</label>
+        {hasConnection && <p className="text-sm text-ink-600">Enter your first departure and final scheduled landing. We do not check the flight connection; onward timing assumes you reach the final arrival airport at the time you enter.</p>}
       </fieldset>
       <fieldset disabled={loading} className="grid gap-4 border-t border-ink-200 pt-4"><legend className="pt-4 text-base font-semibold text-ink-900">After you land</legend>
         <label className="text-sm">Where are you going after that?<input className={field} required maxLength={180} value={destination} placeholder="e.g. Mirpur, Azad Kashmir" onChange={(e) => { chosenNames.current.destination = undefined; setDestination(e.target.value); setRecovery((r) => invalidateSide(r, 'destination')); clearResult(); }} /></label>
@@ -279,9 +280,10 @@ export function ArriveByFullJourney({ departureAirports, arrivalAirports, initia
         <ul className="mt-3 list-disc space-y-1 pl-5 text-sm text-ink-700">
           {plan.reasons.map((reason) => <li key={reason}>{reason}</li>)}
         </ul>
+        {plan.scheduledFlightAssumption && <ArriveByScheduledFlightDisclosure assumption={plan.scheduledFlightAssumption} />}
         <ArriveByReadyBySummary plan={plan} />
-        {arrivalEngine !== 'TRANSIT_FIRST' && plan.finalArrival && <ArriveByRoadEstimateDisclosure pickupLabel={PICKUP_LABELS[pickupMode]} />}
-        {plan.arrivalDetail?.transit && <ArriveByMissedServiceDetails transit={plan.arrivalDetail.transit} timeZone={plan.finalArrival?.zone ?? 'Europe/London'} onOpen={() => recordInteraction({ event: 'missed_service_opened' })} />}
+        {arrivalEngine !== 'TRANSIT_FIRST' && plan.finalArrival && <ArriveByRoadEstimateDisclosure pickupLabel={PICKUP_LABELS[pickupMode]} pickupWaitMinutes={plan.timeline.find((leg) => leg.kind === 'PICKUP_WAIT')?.minutes} />}
+        {plan.arrivalDetail?.transit && <ArriveByMissedServiceDetails transit={plan.arrivalDetail.transit} timeZone={plan.finalArrival?.zone ?? 'Europe/London'} deadline={plan.deadline} onOpen={() => recordInteraction({ event: 'missed_service_opened' })} />}
         {(plan.startDetail || plan.arrivalDetail) && <p className="mt-3 text-xs text-ink-500" data-testid="place-status">
           Start: {pendingSides(plan).start === 'NONE' ? 'confirmed' : 'needs a check'} · Destination: {pendingSides(plan).destination === 'NONE' ? 'confirmed' : 'needs a check'}
         </p>}

@@ -52,7 +52,7 @@ export interface FlightInput {
   arrivesLocal: string;
   /** Optional label the traveller gave it ("PK 786"). Display only, never looked up. */
   label?: string;
-  /** Number of stops/connections inside this entry. Anything above 0 cannot be evidenced in V1 and fails closed. */
+  /** Number of stops/connections inside this entry. Not validated in V1. The pure solver fails closed; an explicit orchestration policy may use the final scheduled arrival with a visible connection disclaimer. */
   declaredConnections?: number;
 }
 
@@ -146,6 +146,8 @@ export const STATE_LABEL: Record<JourneyState, string> = {
 };
 
 export interface JourneyPlan {
+  /** Conditional schedule anchor, never evidence that an upstream flight connection is feasible. */
+  scheduledFlightAssumption?: { arrivalAirportName: string; arrivesIso: string; timeZone: string };
   state: JourneyState;
   stateLabel: string;
   /** Plain reasons the state is what it is (always at least one for non-estimate states). */

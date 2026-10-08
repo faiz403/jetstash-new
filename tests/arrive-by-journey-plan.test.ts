@@ -355,6 +355,30 @@ describe('airport rules (UK departures only; capability-gated arrivals)', () => 
 });
 
 describe('cheap failures cost nothing', () => {
+  it('public scheduled-flight policy anchors onward timing to entered final arrival without changing the default connection rejection', async () => {
+    const input = { ...PRESTON_TO_MIRPUR, flight: { ...PRESTON_TO_MIRPUR.flight, declaredConnections: 1 } };
+    const g = google([locality('PK', 'Pakistan', 'Mirpur')]);
+    const strict = await planFullJourney(input, { apiKey: KEY, guard: guardWith(), originMode: 'ENTERED', nowIso: NOW, baseFetch: g.fetch });
+    expect(strict.notEvidenced?.reason).toBe('CONNECTION_NOT_MODELLED');
+    expect(g.calls).toEqual([]);
+    const anchored = await planFullJourney(input, { apiKey: KEY, guard: guardWith(), originMode: 'ENTERED', nowIso: NOW, baseFetch: g.fetch, flightConnections: 'FINAL_ARRIVAL_ANCHOR' });
+    expect(anchored.state).toBe('ESTIMATE_ONLY');
+    expect(anchored.finalArrival?.clock).toBe('03:35');
+    expect(anchored.scheduledFlightAssumption).toMatchObject({ arrivalAirportName: 'Islamabad International Airport', arrivesIso: '2027-01-15T18:30:00.000Z', timeZone: 'Asia/Karachi' });
+    expect(anchored.timeline.find((leg) => leg.kind === 'FLIGHT')?.label).toContain('connection not checked');
+    expect(input.flight.declaredConnections).toBe(1);
+  });
+
+  it('the scheduled-flight policy preserves impossible chronology and unsupported airport failures without spending', async () => {
+    const g = google([locality('PK', 'Pakistan', 'Mirpur')]);
+    const deps = { apiKey: KEY, guard: guardWith(), originMode: 'ENTERED' as const, airportMode: 'public' as const, nowIso: NOW, baseFetch: g.fetch, flightConnections: 'FINAL_ARRIVAL_ANCHOR' as const };
+    const chronology = await planFullJourney({ ...PRESTON_TO_MIRPUR, flight: { departsLocal: '2027-01-15T11:00', arrivesLocal: '2027-01-15T10:00', declaredConnections: 1 } }, deps);
+    expect(chronology.notEvidenced?.reason).toBe('INVALID_INPUT');
+    const unsupported = await planFullJourney({ ...PRESTON_TO_MIRPUR, arrivalAirport: 'DXB', flight: { ...PRESTON_TO_MIRPUR.flight, declaredConnections: 1 } }, deps);
+    expect(unsupported.notEvidenced?.reason).toBe('AIRPORT_NOT_SUPPORTED');
+    expect(g.calls).toEqual([]);
+  });
+
   it('invalid times, declared connections and blank places are rejected before any reservation or Google call', async () => {
     const g = google([locality('PK', 'Pakistan', 'Mirpur')]);
     const store = new InMemoryCallBudgetStore();
