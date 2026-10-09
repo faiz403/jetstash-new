@@ -47,7 +47,7 @@ describe('Arrive By result explanations', () => {
         rescue: { attempted: true, available: true, arrivalIso: '2026-11-03T18:00:00.000Z', meetsReadyBy: true },
       },
     }));
-    expect(html).toContain('<details open="">');
+    expect(html).toMatch(/<details\b[^>]*\sopen=""[^>]*>/);
     expect(html).toContain('What if I miss the first service?');
     expect(html).toContain('arrives around 18:45 and misses your ready-by time.');
     expect(html).toContain('Car / taxi rescue estimate');

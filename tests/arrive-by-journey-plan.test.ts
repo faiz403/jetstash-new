@@ -150,6 +150,42 @@ describe('validated global road capability remains separate from transit-first',
 });
 
 describe('the 10-call hard stop', () => {
+  it('meters confirmation and calculation independently but charges all 5 + 7 calls to the shared monthly budget', async () => {
+    // Budget-contract regression, not a replay of Google itinerary evidence.
+    // Provider seams reproduce the observed request costs without live calls.
+    const store = new InMemoryCallBudgetStore();
+    const guard = guardWith(store);
+    const underlying = vi.fn(async () => new Response('{}')) as unknown as typeof fetch;
+    const provider = (calls: number, confirmed: boolean) => async (
+      _key: string, _airports: unknown, _input: unknown, ledger: GoogleCallLedger,
+    ): Promise<{ leg: ResolvedLeg }> => {
+      for (let i = 0; i < calls; i += 1) await ledger.fetch('https://routes.googleapis.com/directions/v2:computeRoutes');
+      return { leg: confirmed
+        ? { status: 'OK', expectedSeconds: 600, evidence: { kind: 'GOOGLE_ROUTES', source: 'budget test provider' } }
+        : { status: 'NOT_EVIDENCED', reason: 'ARRIVAL_DESTINATION_UNCONFIRMED' } };
+    };
+    const deps = { apiKey: KEY, guard, originMode: 'ENTERED' as const, nowIso: NOW, baseFetch: underlying };
+    const pending = await planFullJourney(PRESTON_TO_MIRPUR, { ...deps, arrivalLegProvider: provider(5, false) });
+    expect(pending.state).toBe('CANNOT_CONFIRM');
+    expect(pending.calls).toMatchObject({ used: 5, ceiling: 10 });
+    expect(await store.incrementBy(MONTH_KEY, 0, 1)).toBe(5);
+
+    const completed = await planFullJourney({ ...PRESTON_TO_MIRPUR, confirmedPlaceId: 'venue-1' }, {
+      ...deps, arrivalLegProvider: provider(7, true),
+    });
+    expect(completed.headline).toBeDefined();
+    expect(completed.calls).toMatchObject({ used: 7, ceiling: 10 });
+    expect(underlying).toHaveBeenCalledTimes(12);
+    expect(await store.incrementBy(MONTH_KEY, 0, 1)).toBe(12);
+
+    // A new request still cannot exceed 10: no weakening of the hard stop.
+    const overBudget = await planFullJourney(PRESTON_TO_MIRPUR, { ...deps, arrivalLegProvider: provider(11, true) });
+    expect(overBudget.notEvidenced?.reason).toBe('CALL_CEILING_REACHED');
+    expect(overBudget.calls).toMatchObject({ used: 10, ceiling: 10 });
+    expect(underlying).toHaveBeenCalledTimes(22);
+    expect(await store.incrementBy(MONTH_KEY, 0, 1)).toBe(22);
+  });
+
   it('the ledger allows exactly 10 Google calls, refuses the 11th, and never sends it', async () => {
     const base = vi.fn(async () => new Response('{}', { status: 200 })) as unknown as typeof fetch;
     const ledger = new GoogleCallLedger(JOURNEY_CALL_CEILING, base);
