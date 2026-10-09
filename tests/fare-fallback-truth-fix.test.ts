@@ -1,8 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { hasCurrentFareSignalAmongRoutes, hasCurrentFareSignalForCabinAmongRoutes } from '@/lib/fare-signal';
+import { getFareSignalForRoute, hasCurrentFareSignalAmongRoutes, hasCurrentFareSignalForCabinAmongRoutes } from '@/lib/fare-signal';
 import { NoFareFallback } from '@/components/ui/no-fare-fallback';
-import { routes, getRoutesByAirport, getRoutesByDestination } from '@/data/routes';
+import { routes, getRouteBySlug, getRoutesByAirport, getRoutesByDestination } from '@/data/routes';
+import { getPublishableObservationsByRoute } from '@/data/fare-observations';
+import { routeStatusEvents } from '@/data/route-status-events';
+import { getEffectiveRoutePresentation } from '@/lib/route-status-copy';
 import { getDealsByAirport, getDealsByDestination } from '@/data/deals';
 import AirportPage from '@/app/airports/[slug]/page';
 import DestinationPage from '@/app/destinations/[slug]/page';
@@ -27,16 +30,14 @@ const NO_TRACKED_FARE_PHRASE = /logged a tracked fare/i;
 const NEUTRAL_PHRASE = /no curated fare card.*tracked fare evidence is available/i;
 
 const nowIso = new Date().toISOString().slice(0, 10);
+// The positive MAN–AYT fixture is valid through this date, not indefinitely.
+// Use the existing explicit evaluation-date seam; do not freeze production time.
+const MAN_AYT_VALID_DATE = '2026-10-07';
 
 describe('hasCurrentFareSignalAmongRoutes — the canonical multi-route check', () => {
   it('is true when at least one route in scope has a current Fare Signal', () => {
-    // Manchester-Antalya is a long-standing, consistently fresh route.
-    // (Not manchester-dubai: since Fare Signal poor-itinerary suppression,
-    // 31 Aug 2026, its only current Economy observation is a confirmed
-    // self-transfer, 2-stop-each-way itinerary — see
-    // tests/fare-signal-cabin-safety.test.ts and tests/fare-signal.test.ts
-    // for the full account.)
-    expect(hasCurrentFareSignalAmongRoutes(['manchester-antalya', 'not-a-real-route'], nowIso)).toBe(true);
+    // Evaluate the real archive while MAN–AYT's route evidence is valid.
+    expect(hasCurrentFareSignalAmongRoutes(['manchester-antalya', 'not-a-real-route'], MAN_AYT_VALID_DATE)).toBe(true);
   });
 
   it('is false for an empty scope', () => {
@@ -75,7 +76,7 @@ describe('hasCurrentFareSignalAmongRoutes — the canonical multi-route check', 
 
 describe('hasCurrentFareSignalForCabinAmongRoutes — cabin-scoped sibling for /business-class', () => {
   it('is true for Economy cabin among routes that include a current Economy fare', () => {
-    expect(hasCurrentFareSignalForCabinAmongRoutes(['manchester-antalya'], 'Economy', nowIso)).toBe(true);
+    expect(hasCurrentFareSignalForCabinAmongRoutes(['manchester-antalya'], 'Economy', MAN_AYT_VALID_DATE)).toBe(true);
   });
 
   it('is false when no route in scope has evidence for that cabin', () => {
@@ -110,6 +111,26 @@ describe('hasCurrentFareSignalForCabinAmongRoutes — cabin-scoped sibling for /
 
   it('remains false for Business cabin among a scope that genuinely has none — the gap is closed for exactly these four routes, not globally', () => {
     expect(hasCurrentFareSignalForCabinAmongRoutes(['manchester-istanbul'], 'Business', nowIso)).toBe(false);
+  });
+});
+
+describe('MAN–AYT route-verification expiry — both sides of the boundary', () => {
+  it('keeps the route and Fare Signal current through the review due date', () => {
+    const route = getRouteBySlug('manchester-antalya')!;
+    expect(route.verification?.reviewDueDate).toBe(MAN_AYT_VALID_DATE);
+    expect(getEffectiveRoutePresentation(route, routeStatusEvents, MAN_AYT_VALID_DATE).status).toBe('direct');
+    expect(getPublishableObservationsByRoute(route.slug, MAN_AYT_VALID_DATE).length).toBeGreaterThan(0);
+    expect(getFareSignalForRoute(route.slug, MAN_AYT_VALID_DATE).state).toBe('current');
+  });
+
+  it('fails observations and Fare Signal closed from the following day', () => {
+    const route = getRouteBySlug('manchester-antalya')!;
+    const expiredDate = '2026-10-08';
+    expect(getEffectiveRoutePresentation(route, routeStatusEvents, expiredDate).status).toBe('unverified');
+    expect(getPublishableObservationsByRoute(route.slug, expiredDate)).toHaveLength(0);
+    expect(getFareSignalForRoute(route.slug, expiredDate).state).toBe('none');
+    expect(hasCurrentFareSignalAmongRoutes([route.slug], expiredDate)).toBe(false);
+    expect(hasCurrentFareSignalForCabinAmongRoutes([route.slug], 'Economy', expiredDate)).toBe(false);
   });
 });
 

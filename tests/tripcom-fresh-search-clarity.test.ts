@@ -30,6 +30,9 @@ const holidayIntelSrc = readFileSync(join(process.cwd(), 'components/destination
 const bookingProvidersSrc = readFileSync(join(process.cwd(), 'lib/booking-providers.ts'), 'utf8');
 
 const nowIso = new Date().toISOString().slice(0, 10);
+// This positive fixture uses MAN–AYT's last valid route-review day, rather
+// than assuming its production evidence remains current forever.
+const MAN_AYT_VALID_DATE = '2026-10-07';
 
 describe('1. one shared source of truth for the wording', () => {
   it('TRIPCOM_FRESH_SEARCH_NOTE is defined once, in lib/booking-providers.ts, next to the dateless-link documentation', () => {
@@ -64,12 +67,8 @@ describe('2. wording preserves the required meaning and implies nothing false', 
 
 describe('3. appears on the two intended Fare Signal → Trip.com handoff surfaces, and only when a handoff exists', () => {
   it('route-page Fare Signal (current state): renders the note next to the CTA when a Trip.com URL is present', () => {
-    // manchester-antalya, not manchester-dubai: since Fare Signal
-    // poor-itinerary suppression (31 Aug 2026), manchester-dubai's only
-    // current Economy observation is a confirmed self-transfer, 2-stop-
-    // each-way itinerary and no longer has a current Fare Signal — see
-    // tests/fare-signal.test.ts for the full account.
-    const signal = getFareSignalForRoute('manchester-antalya', nowIso);
+    // Evaluate the real archive while MAN–AYT's route evidence is valid.
+    const signal = getFareSignalForRoute('manchester-antalya', MAN_AYT_VALID_DATE);
     expect(signal.state).toBe('current');
     const tripComUrl = getTripComFlightHandoffUrl('manchester-antalya');
     expect(tripComUrl).not.toBeNull();
