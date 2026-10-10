@@ -60,7 +60,7 @@ describe('Main and footer navigation no longer say "Deals"', () => {
 
   it('/deals stays reachable via a dedicated footer entry (Option B: no second primary-nav item)', () => {
     expect(mainNav.map((item) => item.label)).not.toContain('Deals');
-    const entry = footerNav.specialist.find((item) => item.label === 'Curated fare cards');
+    const entry = footerNav.specialist.find((item) => item.label === 'Deals');
     expect(entry?.href).toBe('/deals');
   });
 
@@ -86,7 +86,7 @@ describe('/deals page filter pill no longer says "All deals"', () => {
 
 describe('The /deals route keeps its URL while clarifying curated card scope', () => {
   it('the /deals route keeps its URL and distinguishes route coverage from curated cards', () => {
-    expect(dealsPageSrc).toContain("title: 'Curated fare cards from UK airports'");
+    expect(dealsPageSrc).toContain("title: 'Tracked Fares from UK Airports'");
     expect(dealsPageSrc).toContain('alternates: { canonical: `${siteConfig.url}/deals` }');
     expect(dealsPageSrc).toContain('curated selection of routes and categories');
     // Fare Answer Simplification (10-11 Sept 2026): this sentence used to

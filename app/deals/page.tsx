@@ -15,7 +15,7 @@ import { JsonLd, dealsListSchema } from '@/components/seo/json-ld';
 export const revalidate = 21600;
 
 export const metadata: Metadata = {
-  title: 'Curated fare cards from UK airports',
+  title: 'Tracked Fares from UK Airports',
   description:
     'Hand-checked fare observations across JetStash’s current international route coverage, with deepest coverage in South Asia and the Gulf. Never a live price claim.',
   alternates: { canonical: `${siteConfig.url}/deals` },
@@ -44,8 +44,8 @@ export default function DealsPage() {
       <JsonLd data={dealsListSchema(deals)} />
       <PageHero
         heroKey="deals"
-        eyebrow="Curated fare cards"
-        title="Curated fare cards"
+        eyebrow="Tracked fares"
+        title="Fares we're tracking"
         description={
           <>
             As of {formatChecked(coverage.asOfIso)}, we have a tracked fare from the last {coverage.freshDays} days on {coverage.trackedRoutes} of our {coverage.totalRoutes} routes — coverage is

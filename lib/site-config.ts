@@ -78,7 +78,7 @@ export const footerNav = {
     // Exhaustive Tracked Fares (PR #140, August 2026): /deals stays
     // reachable — deliberately footer-only, not primary nav (Option B) —
     // now that "Tracked Fares" itself points elsewhere.
-    { label: 'Curated fare cards', href: '/deals' },
+    { label: 'Deals', href: '/deals' },
   ],
   company: [
     { label: 'About JetStash', href: '/about' },

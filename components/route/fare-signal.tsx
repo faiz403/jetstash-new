@@ -276,7 +276,7 @@ function NoFareLead({
   const noFareLine = hasFareHistory
     ? 'JetStash has no current fare to show for this route. Earlier checks are in the fare history below.'
     : hasLoggedFares
-      ? 'JetStash has no current fare to show for this route.'
+      ? "JetStash has checked this route before, but there isn't a current fare we can safely show."
       : "JetStash hasn't logged a fare for this route yet.";
   return (
     <div>

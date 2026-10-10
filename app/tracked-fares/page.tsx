@@ -33,7 +33,7 @@ export const revalidate = 21600;
 export const metadata: Metadata = {
   title: 'Tracked Fares — Checked fares by UK airport',
   description:
-    'Every route JetStash has a checked, dated fare for — grouped by UK departure airport. Independent of the curated fare cards. Never a live price feed.',
+    'Every route JetStash has a checked, dated fare for — grouped by UK departure airport. Independent of the curated Deals selection. Never a live price feed.',
   alternates: { canonical: `${siteConfig.url}/tracked-fares` },
 };
 
@@ -55,7 +55,7 @@ export default function TrackedFaresPage() {
             As of {formatChecked(coverage.asOfIso)}, {trackedRouteCount} of our {routes.length} routes have a checked, dated fare from the last {coverage.freshDays} days — every one shown
             below, grouped by UK departure airport. This is the exhaustive list, independent of{' '}
             <Link href="/deals" className="font-medium text-brass-300 underline underline-offset-2 hover:text-brass-200">
-              our curated fare cards
+              our curated Deal selection
             </Link>
             . Never a live price feed — always confirm the final price before booking.
           </>
