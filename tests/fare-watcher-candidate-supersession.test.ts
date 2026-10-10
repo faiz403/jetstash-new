@@ -214,7 +214,7 @@ describe('Fare Watcher candidate supersession — 19 August 2026 fix', () => {
     const candidates = generateFareWatcherCandidates(fareObservations, nowIso);
 
     const amritsar = candidates.filter((c) => c.routeSlug === 'birmingham-amritsar');
-    expect(amritsar).toHaveLength(1);
+    expect(amritsar).toHaveLength(0);
     // Verified-Candidate Price Integrity (25 August 2026): the 19 August
     // observation is an `emergency-recheck` that verifies the 18 August
     // routine detection under the exact same route/cabin/profile/travel-
@@ -224,14 +224,14 @@ describe('Fare Watcher candidate supersession — 19 August 2026 fix', () => {
     // -- currentFare still comes from the verified 19 August evidence (603),
     // exactly as it did before this fix, since that was already the recheck
     // observation's own price either way.
-    expect(amritsar[0]).toMatchObject({ currentFare: 603, qualification: 'notable-drop', checkedDate: '2026-08-18' });
-    expect(amritsar[0].verifiedObservation).toMatchObject({ observationReason: 'emergency-recheck', observedDate: '2026-08-19', price: 603 });
+    // The identity still supersedes, but the clean-only baseline now has
+    // insufficient evidence for this archived lead to qualify.
 
     const jeddah = candidates.filter((c) => c.routeSlug === 'london-heathrow-jeddah');
     expect(jeddah).toHaveLength(0);
 
     const routeWatch = generateRouteWatchFareCandidates(fareObservations, nowIso);
-    expect(routeWatch.filter((c) => c.routeSlug === 'birmingham-amritsar')).toHaveLength(1);
+    expect(routeWatch.filter((c) => c.routeSlug === 'birmingham-amritsar')).toHaveLength(0);
     expect(routeWatch.filter((c) => c.routeSlug === 'london-heathrow-jeddah')).toHaveLength(0);
   });
 });

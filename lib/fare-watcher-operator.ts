@@ -1,5 +1,5 @@
 import type { FareObservation } from '@/data/fare-observations';
-import { qualifyFareWatcherObservation, type FareWatcherQualificationResult } from '@/lib/fare-watcher';
+import { evaluateFareWatcherCandidates, isFareWatcherCleanEvidence, type FareWatcherQualificationResult } from '@/lib/fare-watcher';
 import { isSelfTransferItinerary } from '@/lib/fare-self-transfer';
 import { isPoorItinerarySuitability } from '@/lib/itinerary-suitability';
 import {
@@ -23,6 +23,8 @@ export type FareWatcherOperatorDisposition =
   | 'no-result'
   | 'ordinary'
   | 'suppressed-poor-itinerary'
+  | 'suppressed-self-transfer'
+  | 'suppressed-unknown-directness'
   | 'founder-review-required';
 
 export interface FareWatcherOperatorEntry {
@@ -63,11 +65,10 @@ export function prepareFareWatcherOperatorReport(
       };
     }
 
-    const qualification = qualifyFareWatcherObservation(
-      observation,
-      [...existingObservations, observation],
-      profile.observedDate
-    );
+    const evaluation = evaluateFareWatcherCandidates(
+      [...existingObservations, observation], profile.observedDate
+    ).find((item) => item.detection.id === observation.id || item.qualification?.candidate.id === observation.id);
+    const qualification = evaluation?.qualification ?? null;
     const itineraryEvidenceComplete = Number.isInteger(observation.outboundStops)
       && Number.isInteger(observation.returnStops);
     const poorItinerary = itineraryEvidenceComplete
@@ -76,7 +77,9 @@ export function prepareFareWatcherOperatorReport(
     const selfTransfer = isSelfTransferItinerary(observation.priceNote);
     const disposition: FareWatcherOperatorDisposition = poorItinerary === true
       ? 'suppressed-poor-itinerary'
-      : qualification.qualification === 'ordinary-fare' || qualification.qualification === 'insufficient-baseline'
+      : !isFareWatcherCleanEvidence(observation)
+        ? selfTransfer ? 'suppressed-self-transfer' : 'suppressed-unknown-directness'
+      : !evaluation?.candidate
         ? 'ordinary'
         : 'founder-review-required';
 

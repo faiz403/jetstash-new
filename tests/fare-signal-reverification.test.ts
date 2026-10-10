@@ -275,32 +275,24 @@ describe('the ledger data is internally consistent and never edits the archive',
   });
 });
 
-describe('Fare Watcher, Route Watch and Standout are unchanged', () => {
-  it('Fare Watcher and Route Watch do not read the ledger or the Fare Signal selector', () => {
+describe('retirement does not change Fare Watcher identity or Standout lifecycle', () => {
+  it('Fare Watcher shares structured retirement without coupling to the public selector', () => {
     const fw = readFileSync(join(process.cwd(), 'lib', 'fare-watcher.ts'), 'utf8');
     const rw = readFileSync(join(process.cwd(), 'lib', 'route-watch-fare-trigger.ts'), 'utf8');
     for (const src of [fw, rw]) {
-      expect(src).not.toContain('fare-reverification');
-      expect(src).not.toContain('fare-reverifications');
       expect(src).not.toContain("from '@/lib/fare-signal'");
     }
+    expect(fw).toContain('getActiveReverifiedObservationIds');
   });
 
-  it('Fare Watcher and Route Watch produce exactly the same candidates as before the change', () => {
+  it('Fare Watcher and Route Watch obey the current clean-evidence founder ruling', () => {
     const watcher = generateFareWatcherCandidates([...fareObservations], NOW);
-    expect(watcher.map((c) => [c.routeSlug, c.currentFare, c.qualification])).toEqual([
-      ['manchester-dalaman', 52, 'standout-candidate'],
-      ['london-gatwick-faro', 49, 'standout-candidate'],
-      ['london-gatwick-marrakech', 57, 'new-recent-low'],
-    ]);
+    expect(watcher).toEqual([]);
     const routeWatch = generateRouteWatchFareCandidates([...fareObservations], NOW);
-    expect(routeWatch.map((c) => [c.routeSlug, c.currentFare, c.qualification])).toEqual([
-      ['manchester-dalaman', 52, 'standout-candidate'],
-      ['london-gatwick-faro', 49, 'standout-candidate'],
-    ]);
+    expect(routeWatch).toEqual([]);
   });
 
-  it('the six affected observations are still in the archive, unedited, and still count as Fare Watcher baseline evidence', () => {
+  it('the six affected observations remain in the archive unedited', () => {
     const expected: Array<[string, number]> = [
       [ISB.routine, 460], [ISB.recheck, 480], [BHX_ATQ.older, 579], [BHX_ATQ.recheck, 603], [LHR_JED.older, 367], [LHR_JED.recheck, 535],
     ];

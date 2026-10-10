@@ -301,27 +301,15 @@ describe('Real archive expectation (19 August 2026, post-supersession-fix) — o
   // FWATCH-ST-001 (7 October 2026): Fare Watcher no longer lets a self-transfer /
   // separate-ticket observation be a candidate (the 29 September london-gatwick-athens
   // and birmingham-dubai fares carry that evidence in priceNote), so only the two
-  // clean leads remain: london-gatwick-faro and manchester-dalaman. These are
+  // unflagged leads remained: london-gatwick-faro and manchester-dalaman.
+  // The 10 October founder ruling now excludes their unknown directness too,
+  // leaving the current queue empty. These are
   // regression expectations for the CURRENT archive, not rules encoded in the
-  // application. Medians, baselines and thresholds are unchanged. A candidate here
+  // application. Clean-only baseline membership changes; thresholds remain. A candidate here
   // is still a lead for founder verification only, never a verified deal.
   // london-gatwick-dalaman left this list on 7 October 2026 (STANDOUT-DLM-001).
-  it('the real fareObservations archive produces two current Route Watch candidates after the 6 October Chrome weekly sweep and the self-transfer fix', () => {
-    const nowIso = new Date().toISOString().slice(0, 10);
-    const candidates = generateRouteWatchFareCandidates(fareObservations, nowIso);
-    expect(candidates).toHaveLength(2);
-    expect(candidates.every((c) => c.lifecycle === 'detected' && c.founderVerificationRequired)).toBe(true);
-    const bySlug = new Map(candidates.map((c) => [c.routeSlug, c.qualification]));
-    expect(bySlug.get('manchester-dalaman')).toBe('standout-candidate');
-    expect(candidates.map((c) => c.routeSlug)).not.toContain('london-gatwick-dalaman');
-    expect(bySlug.get('london-gatwick-faro')).toBe('standout-candidate');
-    for (const slug of ['london-gatwick-athens', 'birmingham-dubai']) {
-      // self-transfer / separate-ticket fares (priceNote evidence) are never candidates
-      expect(candidates.map((candidate) => candidate.routeSlug), slug).not.toContain(slug);
-    }
-    for (const slug of ['birmingham-agadir', 'glasgow-antalya', 'birmingham-amritsar', 'london-heathrow-delhi', 'manchester-islamabad']) {
-      expect(candidates.map((c) => c.routeSlug)).not.toContain(slug);
-    }
+  it('the founder clean-evidence ruling leaves no current Route Watch candidates', () => {
+    expect(generateRouteWatchFareCandidates(fareObservations, '2026-10-09')).toEqual([]);
   });
 });
 
@@ -374,16 +362,14 @@ describe('I. Trust wording — no overclaim in rendered founder copy or customer
     for (const pattern of forbidden) expect(label).not.toMatch(pattern);
   });
 
-  it('the non-empty state clearly states how many candidates cleared the threshold, never overclaiming urgency', () => {
-    // 4 -> 7 -> 6 -> 4 -> 2 -> 6 -> 34 -> ... -> 26 (after the 29 September sweep) -> 5
-    // (after the 6 October Chrome sweep and its evidence hold, then the FWATCH-ST-001 self-transfer fix; see the dedicated
-    // regression above). Exercise the actual non-empty-state copy against that
-    // final, verified count.
-    const snapshot = getFounderSnapshot(new Date());
+  it('the current empty state explains the evidence threshold without overclaiming urgency', () => {
+    // The clean-evidence ruling permits an empty queue; the operator copy
+    // should explain that result without lowering its threshold.
+    const snapshot = getFounderSnapshot(new Date('2026-10-09T12:00:00Z'));
     const section = snapshot.grouped['nice-to-have'].find((s) => s.id === 'route-watch-fare-candidates')!;
-    expect(section.items).toHaveLength(2);
-    expect(section.headline).toMatch(/2 fare observations clear Fare Watcher's strong evidence threshold/i);
-    expect(section.headline).toMatch(/Nothing sends itself/i);
+    expect(section.items).toHaveLength(0);
+    expect(section.headline).toMatch(/No fare observation currently clears Fare Watcher's strong evidence threshold/i);
+    expect(section.headline).toMatch(/nothing qualifies for a Route Watch lower-fare send today/i);
     for (const pattern of forbidden) expect(section.headline).not.toMatch(pattern);
   });
 

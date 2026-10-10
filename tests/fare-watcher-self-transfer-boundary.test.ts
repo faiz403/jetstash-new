@@ -1,9 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import type { DealCabin } from '@/data/deals';
 import { fareObservations, type FareObservation } from '@/data/fare-observations';
 import { standoutFareApprovals } from '@/data/standout-fare-approvals';
 import { isSelfTransferItinerary } from '@/lib/fare-self-transfer';
-import { generateFareWatcherCandidates, qualifyFareWatcherObservation, type FareWatcherCandidate } from '@/lib/fare-watcher';
+import { generateFareWatcherCandidates, qualifyFareWatcherObservation } from '@/lib/fare-watcher';
 import { generateRouteWatchFareCandidates } from '@/lib/route-watch-fare-trigger';
 import { deriveApprovedStandoutFare } from '@/lib/standout-fare';
 
@@ -17,8 +16,8 @@ import { deriveApprovedStandoutFare } from '@/lib/standout-fare';
  *   1. same-day tie: a clean fare beats a (cheaper) self-transfer one;
  *   2. a self-transfer observation is never itself a candidate;
  *   3. a self-transfer recheck is never the evaluated fare of a candidate.
- * Explicitly NOT changed (and proven unchanged below): baseline membership,
- * medians, previous lows, thresholds, booking-horizon rules and Standout behaviour.
+ * Founder ruling (10 October 2026): clean qualification baselines now exclude
+ * self-transfer and unknown directness. Thresholds, horizon and identity remain.
  * On the real archive the fix only removes misleading candidates; it does NOT carry a
  * universal "can only remove" guarantee (see the KNOWN BOUNDARY block below).
  */
@@ -68,8 +67,7 @@ describe('1. same-day selection: a cheaper self-transfer observation cannot beat
 describe('2. a self-transfer observation never becomes a Fare Watcher candidate', () => {
   it('a self-transfer-only identity with an otherwise qualifying price produces no candidate', () => {
     const flagged = obs('flagged', '2026-08-10', 380, { priceNote: SELF_TRANSFER_NOTE });
-    // Evaluated directly the price would qualify -- the exclusion is at candidate selection, not a baseline change.
-    expect(qualifyFareWatcherObservation(flagged, [flagged, ...baseline()], NOW).qualification).toBe('standout-candidate');
+    expect(qualifyFareWatcherObservation(flagged, [flagged, ...baseline()], NOW).qualification).toBe('insufficient-baseline');
     expect(generateFareWatcherCandidates([flagged, ...baseline()], NOW)).toEqual([]);
   });
 
@@ -183,94 +181,59 @@ describe('KNOWN BOUNDARY: same-day clean/flagged pairs with DIFFERENT travel dat
   });
 });
 
-describe('clean observations qualify exactly as before; baselines and medians are untouched', () => {
+describe('clean qualification excludes self-transfer baseline evidence', () => {
   it('a clean candidate over a clean baseline is unchanged', () => {
     const [candidate] = generateFareWatcherCandidates([obs('c', '2026-08-10', 400), ...baseline()], NOW);
     expect(candidate).toMatchObject({ currentFare: 400, qualification: 'standout-candidate', baselineMedian: 510, previousLow: 500, differencePounds: 110, baselineSampleSize: 3 });
     expect(candidate.differencePercent).toBeCloseTo(21.568, 2);
   });
 
-  it('self-transfer observations REMAIN in a clean candidate\'s baseline (baseline membership and median are not changed by this fix)', () => {
+  it('self-transfer observations remain archived but cannot establish a clean baseline', () => {
     const mixed = [obs('b1', '2026-07-01', 500), obs('b2', '2026-07-02', 300, { priceNote: SELF_TRANSFER_NOTE }), obs('b3', '2026-07-03', 520), obs('b4', '2026-07-04', 510)];
     const clean = obs('c', '2026-08-10', 400);
     const [candidate] = generateFareWatcherCandidates([clean, ...mixed], NOW);
-    expect(candidate.baselineSampleSize).toBe(4);
-    expect(candidate.baselineMedian).toBe(505); // median of 300, 500, 510, 520 -- the flagged GBP 300 is still counted
-    expect(candidate.previousLow).toBe(300);
-    expect(candidate.qualification).toBe('notable-drop');
-    // Baseline membership is reported by the qualification result: the flagged point is a member and no exclusion is recorded for it.
+    expect(candidate.baselineSampleSize).toBe(3);
+    expect(candidate.baselineMedian).toBe(510);
+    expect(candidate.previousLow).toBe(500);
+    expect(candidate.qualification).toBe('standout-candidate');
     const result = qualifyFareWatcherObservation(clean, [clean, ...mixed], NOW);
-    expect(result.comparableBaseline.map((b) => b.id)).toEqual(expect.arrayContaining(['b1', 'b2', 'b3', 'b4']));
-    expect(result.exclusions.some((e) => e.observationId === 'b2')).toBe(false);
+    expect(result.comparableBaseline.map((b) => b.id)).toEqual(['b1', 'b3', 'b4']);
+    expect(result.exclusions).toContainEqual({ observationId: 'b2', reason: 'self-transfer' });
   });
 });
 
-/**
- * The code reads `priceNote` only through isSelfTransferItinerary(), so running the
- * same code on an archive whose notes carry no self-transfer evidence reproduces the
- * behaviour from before the fix exactly. That gives a real-archive proof that, on
- * JetStash's actual archive, the fix only REMOVES misleading leads and neither creates
- * nor alters one. (This is a property of the archive, not a universal guarantee: see
- * the KNOWN BOUNDARY block above for the synthetic case where it does not hold.)
- */
-describe('real archive: on the actual archive the fix only removes leads', () => {
-  const neutral: FareObservation[] = fareObservations.map((o) => ({ ...o, priceNote: 'neutralised' }));
+describe('real archive: every deal surface uses only known non-self-transfer evidence', () => {
   const days: string[] = [];
-  for (let d = '2026-08-11'; d <= '2026-10-07'; d = addDays(d, 1)) days.push(d);
+  for (let d = '2026-08-11'; d <= '2026-10-09'; d = addDays(d, 1)) days.push(d);
 
-  const figures = (c: FareWatcherCandidate) => [c.currentFare, c.baselineMedian, c.previousLow, c.baselineSampleSize, c.qualification, c.differencePounds, c.verifiedObservation.id].join('|');
-
-  it('on every day from 11 August to 7 October the candidate routes are a subset of the pre-fix routes, and every candidate with an unchanged identity has identical figures', () => {
-    let removedSomewhere = 0;
-    for (const d of days) {
-      const after = generateFareWatcherCandidates([...fareObservations], d);
-      const before = generateFareWatcherCandidates(neutral, d);
-      const beforeRoutes = new Set(before.map((c) => c.routeSlug));
-      for (const c of after) {
-        expect(beforeRoutes.has(c.routeSlug), `${d} ${c.routeSlug} is a NEW candidate route`).toBe(true);
-        const same = before.find((b) => b.id === c.id);
-        if (same) expect(figures(c), `${d} ${c.id}`).toBe(figures(same));
+  it('Fare Watcher and Route Watch never qualify unknown or self-transfer evidence', () => {
+    for (const day of days) {
+      for (const candidate of generateFareWatcherCandidates([...fareObservations], day)) {
+        expect(candidate.verifiedObservation.fareDirectness).toMatch(/^(direct|connecting)$/);
+        expect(isSelfTransferItinerary(candidate.verifiedObservation.priceNote)).toBe(false);
+        const result = qualifyFareWatcherObservation(candidate.verifiedObservation, fareObservations, day);
+        expect(result.comparableBaseline.every((o) => !isSelfTransferItinerary(o.priceNote)
+          && (o.fareDirectness === 'direct' || o.fareDirectness === 'connecting'))).toBe(true);
       }
-      removedSomewhere += before.length - after.length;
-    }
-    expect(removedSomewhere).toBeGreaterThan(0); // the fix does remove something on this archive
-  });
-
-  it('Route Watch is likewise a subset on every day', () => {
-    for (const d of days) {
-      const after = generateRouteWatchFareCandidates([...fareObservations], d).map((c) => c.routeSlug);
-      const before = new Set(generateRouteWatchFareCandidates(neutral, d).map((c) => c.routeSlug));
-      for (const slug of after) expect(before.has(slug), `${d} ${slug}`).toBe(true);
-    }
-  });
-
-  it('public Standout behaviour is identical on every day for every approval in the ledger', () => {
-    const view = (archive: readonly FareObservation[], slug: string, cabin: DealCabin, d: string) => {
-      const s = deriveApprovedStandoutFare(standoutFareApprovals, slug, cabin, archive, d);
-      return s ? [s.observation.id, s.observation.price, s.baselineMedian, s.differencePounds, s.qualification].join('|') : null;
-    };
-    for (const approval of standoutFareApprovals) {
-      for (const d of days.filter((x) => x >= '2026-08-25')) {
-        expect(view(fareObservations, approval.routeSlug, approval.cabin, d), `${approval.id} ${d}`).toBe(view(neutral, approval.routeSlug, approval.cabin, d));
+      for (const candidate of generateRouteWatchFareCandidates([...fareObservations], day)) {
+        expect(candidate.verifiedObservation.fareDirectness).toMatch(/^(direct|connecting)$/);
+        expect(isSelfTransferItinerary(candidate.verifiedObservation.priceNote)).toBe(false);
       }
     }
   });
 
-  // Regression expectations for the CURRENT archive only -- never encoded in application logic.
-  it('current archive (7 October 2026): the three self-transfer-derived leads are gone and nothing is added', () => {
-    const fw = generateFareWatcherCandidates([...fareObservations], '2026-10-07').map((c) => c.routeSlug).sort();
-    const rw = generateRouteWatchFareCandidates([...fareObservations], '2026-10-07').map((c) => c.routeSlug).sort();
-    expect(fw).toEqual(['london-gatwick-faro', 'london-gatwick-marrakech', 'manchester-dalaman']);
-    expect(rw).toEqual(['london-gatwick-faro', 'manchester-dalaman']);
-    const before = generateFareWatcherCandidates(neutral, '2026-10-07').map((c) => c.routeSlug).sort();
-    expect(before).toEqual(['birmingham-dubai', 'london-gatwick-athens', 'london-gatwick-faro', 'london-gatwick-marrakech', 'london-gatwick-tangier', 'manchester-dalaman']);
-    expect(fw.every((slug) => before.includes(slug))).toBe(true);
-    // The retained candidates keep the medians and baselines they had before the fix.
-    const afterC = generateFareWatcherCandidates([...fareObservations], '2026-10-07');
-    const beforeC = generateFareWatcherCandidates(neutral, '2026-10-07');
-    for (const c of afterC) {
-      const b = beforeC.find((x) => x.routeSlug === c.routeSlug)!;
-      expect([c.baselineMedian, c.baselineSampleSize, c.previousLow, c.qualification]).toEqual([b.baselineMedian, b.baselineSampleSize, b.previousLow, b.qualification]);
+  it('keeps exact Standout identity lifecycle and does not pin dormant approvals', () => {
+    const slug = 'manchester-islamabad';
+    const approval = standoutFareApprovals.find((a) => a.routeSlug === slug)!;
+    expect(deriveApprovedStandoutFare(standoutFareApprovals, slug, 'Economy', fareObservations, '2026-08-31')?.observation.id).toBe(approval.approvedVerifiedObservationId);
+    expect(deriveApprovedStandoutFare(standoutFareApprovals, slug, 'Economy', fareObservations, '2026-09-01')).toBeNull();
+    for (const a of standoutFareApprovals) {
+      expect(deriveApprovedStandoutFare(standoutFareApprovals, a.routeSlug, a.cabin, fareObservations, '2026-10-09')).toBeNull();
     }
+  });
+
+  it('current portfolio deliberately has no clean Fare Watcher or Route Watch leads', () => {
+    expect(generateFareWatcherCandidates([...fareObservations], '2026-10-09')).toEqual([]);
+    expect(generateRouteWatchFareCandidates([...fareObservations], '2026-10-09')).toEqual([]);
   });
 });

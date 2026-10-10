@@ -53,8 +53,8 @@ describe('controlled weekly fare observation batch — 25 August 2026', () => {
       return qualifyFareWatcherObservation(candidate, fareObservations, '2026-08-25');
     });
     expect(results.map((result) => result.qualification)).toEqual([
-      'standout-candidate', 'standout-candidate', 'insufficient-baseline',
-      'standout-candidate', 'insufficient-baseline', 'notable-drop', 'insufficient-baseline',
+      'standout-candidate', 'insufficient-baseline', 'insufficient-baseline',
+      'insufficient-baseline', 'insufficient-baseline', 'insufficient-baseline', 'insufficient-baseline',
     ]);
     expect(results.every((result) => result.evidenceLimits.length > 0)).toBe(true);
     // Verified-Candidate Price Integrity (25 August 2026): each of these
@@ -73,15 +73,16 @@ describe('controlled weekly fare observation batch — 25 August 2026', () => {
     );
     // FWATCH-ST-001 (7 October 2026): manchester-lahore, london-heathrow-jeddah and birmingham-amritsar
     // detections and rechecks are explicit self-transfer fares, so they are no longer Fare Watcher candidates;
-    // only manchester-islamabad (clean evidence) is. The qualification maths asserted just below is unchanged.
+    // only manchester-islamabad (clean evidence) is. The clean-only baseline
+    // below preserves diagnostics but cannot qualify the self-transfer fare.
     for (const slug of ['manchester-lahore', 'london-heathrow-jeddah', 'birmingham-amritsar']) {
       expect(candidates.some((candidate) => candidate.routeSlug === slug), slug).toBe(false);
     }
     expect(results.find((result) => result.candidate.id === BATCH_IDS[1])).toMatchObject({
-      qualification: 'standout-candidate',
-      baselineMedian: 620,
+      qualification: 'insufficient-baseline',
+      baselineMedian: 628,
       previousLow: 574,
-      baselineSampleSize: 5,
+      baselineSampleSize: 3,
     });
   });
 });

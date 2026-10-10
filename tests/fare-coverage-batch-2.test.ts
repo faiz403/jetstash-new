@@ -92,8 +92,7 @@ describe('Fare Coverage Programme Batch 2', () => {
 
   it('reruns Fare Watcher Phase 1 without qualifying a Standout Fare', () => {
     const candidates = generateFareWatcherCandidates(fareObservations, NOW_ISO);
-    expect(candidates).toHaveLength(1);
-    expect(candidates[0]).toMatchObject({ routeSlug: 'manchester-lahore', currentFare: 574, qualification: 'new-recent-low', lifecycle: 'detected' });
+    expect(candidates).toEqual([]);
     expect(candidates.every((candidate) => candidate.qualification !== 'standout-candidate')).toBe(true);
   });
 });

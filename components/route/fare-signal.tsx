@@ -523,6 +523,9 @@ function CurrentSignal({ data, nowIso, lowerSelfTransfer, tripComUrl, routeSlug,
       {lowerSelfTransfer ? (
         <div className="mt-4 rounded-sm border border-ink-200 bg-white p-3 text-sm text-ink-700">
           <p className="font-semibold">Lower fare also seen: £{lowerSelfTransfer.price.toLocaleString('en-GB')} return</p>
+          {lowerSelfTransfer.departureDate !== data.departureDate || lowerSelfTransfer.returnDate !== data.returnDate ? (
+            <p className="mt-1">Travel dates: {formatChecked(lowerSelfTransfer.departureDate)} – {formatChecked(lowerSelfTransfer.returnDate)}</p>
+          ) : null}
           <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1">
             <SelfTransferNote />
             {lowerSelfTransfer.connectionDetail ? <span>· {lowerSelfTransfer.connectionDetail}</span> : null}

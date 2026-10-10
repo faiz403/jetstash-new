@@ -71,9 +71,9 @@ describe('Standout Fare — First Public Standout Fare Pilot', () => {
     expect(standout!.observation.isSelfTransfer).toBe(false);
   });
 
-  it('3. the £621 comparable tracked median is derived from Fare Watcher\'s live baseline, not hardcoded', () => {
+  it('3. the clean comparable tracked median is derived from Fare Watcher\'s live baseline, not hardcoded', () => {
     const standout = getApprovedStandoutFare('manchester-islamabad', 'Economy', fareObservations, NOW);
-    expect(standout!.baselineMedian).toBe(621);
+    expect(standout!.baselineMedian).toBe(623.5);
     // Proof it's derived, not a literal: change the archive and the median moves with it.
     const inflatedArchive = fareObservations.map((o) =>
       o.routeSlug === 'manchester-islamabad' && o.cabin === 'Economy' && o.comparisonEligibility === 'current' && o.observationReason !== 'emergency-recheck' && o.id !== 'obs-man-isb-economy-20260825-8w-v1'
@@ -81,13 +81,13 @@ describe('Standout Fare — First Public Standout Fare Pilot', () => {
         : o
     );
     const movedStandout = getApprovedStandoutFare('manchester-islamabad', 'Economy', inflatedArchive, NOW);
-    expect(movedStandout!.baselineMedian).not.toBe(621);
+    expect(movedStandout!.baselineMedian).toBe(723.5);
   });
 
-  it('4. the £141 / ~22.7% derivation is correct', () => {
+  it('4. the clean-baseline £143.50 / ~23.0% derivation is correct', () => {
     const standout = getApprovedStandoutFare('manchester-islamabad', 'Economy', fareObservations, NOW);
-    expect(standout!.differencePounds).toBe(141);
-    expect(standout!.differencePercent).toBeCloseTo(22.7, 1);
+    expect(standout!.differencePounds).toBe(143.5);
+    expect(standout!.differencePercent).toBeCloseTo(23.015, 2);
     expect(standout!.qualification).toBe('standout-candidate');
   });
 
@@ -288,7 +288,7 @@ describe('Standout Fare — First Public Standout Fare Pilot', () => {
     const signal = getFareSignalForRoute('manchester-islamabad', NOW);
     const html = renderToStaticMarkup(FareSignal({ signal, tripComUrl: getTripComRouteUrl('manchester-islamabad'), routeSlug: 'manchester-islamabad', standoutFare: standout }));
     expect(html).toContain('Standout Fare');
-    expect(html).toContain('£141 below JetStash&#x27;s comparable tracked median of £621.');
+    expect(html).toContain('£144 below JetStash&#x27;s comparable tracked median of £624.');
     expect(html).toContain('Baggage: not stated; optional charges and bag fees may apply.');
     expect(html.toLowerCase()).not.toMatch(/cheapest|\bbest\b|bargain|amazing deal|guaranteed saving|market average|usual price|baggage included|baggage is included/);
     expect(html).not.toContain('£0');

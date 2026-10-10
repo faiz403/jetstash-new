@@ -1,4 +1,5 @@
 import {
+  fareObservations,
   getPublishableObservationsByRoute,
   getPublishableObservationsByRouteAndCabin,
   isPubliclyPublishable,
@@ -14,7 +15,8 @@ import { isPoorItinerarySuitability } from '@/lib/itinerary-suitability';
 import { getFreshFareCoverageLevel, isLowestFarePolicyActive, isObservationWithinRollingFareWindow } from '@/lib/fare-window';
 import type { FareSearchCoverageLevel } from '@/data/fare-observations';
 import { fareReverifications, type FareReverification } from '@/data/fare-reverifications';
-import { withoutReverifiedObservations } from '@/lib/fare-reverification';
+import { getRetirementAffectedFareIdentities, withoutReverifiedObservations } from '@/lib/fare-reverification';
+import { isCleanFareEvidence } from '@/lib/fare-evidence-eligibility';
 
 export type FareSignalState = 'current' | 'recent' | 'none';
 
@@ -202,10 +204,7 @@ function compareByLowestFarePriority(a: FareObservation, b: FareObservation): nu
   return compareByRepresentativePriority(a, b);
 }
 
-function isCleanUsableFare(observation: FareObservation): boolean {
-  return !isSelfTransferItinerary(observation.priceNote)
-    && (observation.fareDirectness === 'direct' || observation.fareDirectness === 'connecting');
-}
+const isCleanUsableFare = isCleanFareEvidence;
 
 /**
  * Suitability walk (16 Sept 2026, full-portfolio selector-impact review —
@@ -241,11 +240,13 @@ function selectLatestObservation(observations: FareObservation[], nowIso: string
   }
   const nonHistorical = observations
     .filter((observation) => observation.comparisonEligibility !== 'historical')
-    .filter((observation) => isObservationWithinRollingFareWindow(observation, nowIso));
+    .filter((observation) => isObservationWithinRollingFareWindow(observation, nowIso))
+    .filter((observation) => isCleanUsableFare(observation) || isSelfTransferItinerary(observation.priceNote));
   // An out-of-window archive entry must never become the public fallback.
   const candidates = nonHistorical.length > 0
     ? nonHistorical
-    : observations.filter((observation) => isObservationWithinRollingFareWindow(observation, nowIso));
+    : observations.filter((observation) => isObservationWithinRollingFareWindow(observation, nowIso)
+      && (isCleanUsableFare(observation) || isSelfTransferItinerary(observation.priceNote)));
   const sorted = [...candidates].sort(compareByLowestFarePriority);
   const publishableSorted = sorted.filter(isPubliclyPublishable);
   return {
@@ -485,7 +486,7 @@ function selectTwoSignalFareObservation(
 
   const cleanPrimary = observations
     .filter(isFreshComparable)
-    .filter((observation) => !isSelfTransferItinerary(observation.priceNote))
+    .filter(isCleanUsableFare)
     .filter((observation) => !isPoorItinerarySuitability(observation))
     .sort(compareByRepresentativePriority)[0];
 
@@ -513,18 +514,22 @@ function selectTwoSignalFareObservation(
  * states the earlier fare could not be reproduced. This is NOT a "newest fare
  * wins" rule: it only ever removes the specific, explicitly contradicted
  * observation, and never promotes the recheck, which must still win under the
- * ordinary clean / display-eligibility / lowest-fare rules below. The archive,
- * Fare Watcher, Route Watch and the approval records are unaffected.
+ * ordinary clean / display-eligibility / lowest-fare rules below. The archive
+ * and approval records are unaffected.
  */
 export function selectRepresentativeObservation(
   observations: FareObservation[],
   nowIso: string,
-  reverifications: readonly FareReverification[] = fareReverifications
+  reverifications: readonly FareReverification[] = fareReverifications,
+  evidence: readonly FareObservation[] = fareObservations
 ): { observation: FareObservation | null; state: FareSignalState; freshness: FareFreshnessState | null; noneReason: FareSignalNoneReason | null } {
-  const live = withoutReverifiedObservations(observations, nowIso, reverifications);
-  const base = selectBaseRepresentativeObservation(live, nowIso);
+  const live = withoutReverifiedObservations(observations, nowIso, reverifications, evidence);
+  const affected = getRetirementAffectedFareIdentities(observations, nowIso, reverifications, evidence);
+  const primaryPool = live.filter((observation) =>
+    !affected.has(`${observation.routeSlug}|${observation.cabin}`) || isCleanUsableFare(observation));
+  const base = selectBaseRepresentativeObservation(primaryPool, nowIso);
   if (!base.observation) return base;
-  const { primary } = selectTwoSignalFareObservation(live, base.observation, base.state, nowIso);
+  const { primary } = selectTwoSignalFareObservation(primaryPool, base.observation, base.state, nowIso);
   return {
     ...base,
     observation: primary,
@@ -568,9 +573,9 @@ function selectLowerSelfTransferForPrimary(
  * available. V1 deliberately has no stronger-price signal: the archive does
  * not yet provide a defensible same-profile baseline for every route.
  */
-export function deriveFareSignal(observations: FareObservation[], nowIso: string, reverifications: readonly FareReverification[] = fareReverifications): FareSignal {
-  const live = withoutReverifiedObservations(observations, nowIso, reverifications);
-  const { observation: selected, state, freshness, noneReason } = selectRepresentativeObservation(live, nowIso, reverifications);
+export function deriveFareSignal(observations: FareObservation[], nowIso: string, reverifications: readonly FareReverification[] = fareReverifications, evidence: readonly FareObservation[] = fareObservations): FareSignal {
+  const live = withoutReverifiedObservations(observations, nowIso, reverifications, evidence);
+  const { observation: selected, state, freshness, noneReason } = selectRepresentativeObservation(observations, nowIso, reverifications, evidence);
   const signalObservation = selected ? toSignalObservation(selected, nowIso) : null;
   const lowerRawSelfTransfer = selected ? selectLowerSelfTransferForPrimary(live, selected, state, nowIso) : null;
   const lowerSelfTransfer = lowerRawSelfTransfer ? toSignalObservation(lowerRawSelfTransfer, nowIso) : null;

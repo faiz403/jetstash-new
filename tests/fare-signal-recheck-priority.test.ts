@@ -133,6 +133,7 @@ describe('Fare Watcher baseline-depth protection unweakened by this change', () 
     const withoutRecheck = fareObservations;
     const recheckOfManIsb = fixture({
       id: 'fx-watcher-guard-recheck',
+      fareDirectness: 'connecting',
       routeSlug: 'manchester-islamabad',
       price: 480,
       observedDate: '2026-08-25',

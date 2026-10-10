@@ -1,18 +1,19 @@
-import type { FareObservation } from '@/data/fare-observations';
+import { fareObservations, isPubliclyPublishable, type FareObservation } from '@/data/fare-observations';
 import { fareReverifications, type FareReverification } from '@/data/fare-reverifications';
-import { isLowestFarePolicyActive } from '@/lib/fare-window';
+import { isLowestFarePolicyActive, isObservationWithinRollingFareWindow } from '@/lib/fare-window';
+import { daysBetweenIso, OBSERVATION_FRESH_DAYS } from '@/lib/freshness-thresholds';
 
 /**
  * FARE-SIGNAL-RECHECK-001 (7 October 2026). Pure helpers that turn the
  * explicit reverification ledger (data/fare-reverifications.ts) into the set
  * of observation ids that are no longer eligible for PUBLIC current-fare
- * selection. Used only by lib/fare-signal.ts; Fare Watcher, Route Watch and
- * Standout never call this.
+ * selection and clean qualification. Fare Signal and Fare Watcher share
+ * this guard; Route Watch, operator reporting and Standout inherit it.
  *
  * Every guard below is a structured-field comparison. There is no parsing of
  * `priceNote` and no fuzzy itinerary matching. A ledger entry only takes
  * effect when ALL of its structured evidence checks out against the
- * observations actually being evaluated; any doubt makes the entry inert, so
+ * authoritative observation evidence; any doubt makes the entry inert, so
  * the target stays eligible (the failure mode is "show the older fare", never
  * "hide a fare on a hunch").
  */
@@ -56,17 +57,18 @@ function isValidReverification(entry: FareReverification, target: FareObservatio
 
 /**
  * Ids of observations in `observations` that a valid ledger entry has taken
- * out of public current-fare selection as of `nowIso`. Both the target and
- * the reverifying observation must be present in `observations` (i.e. both
- * already publicly publishable and causally available); otherwise the entry
- * does nothing.
+ * out of public current-fare selection as of `nowIso`. Validate against the
+ * authoritative archive before display or baseline filters. A filtered
+ * supporting recheck must never resurrect its explicitly retired target.
+ * Supplied records override archive records, allowing isolated evidence replay.
  */
 export function getReverifiedObservationIds(
   observations: readonly FareObservation[],
   nowIso: string,
-  ledger: readonly FareReverification[] = fareReverifications
+  ledger: readonly FareReverification[] = fareReverifications,
+  evidence: readonly FareObservation[] = fareObservations
 ): Set<string> {
-  const byId = new Map(observations.map((observation) => [observation.id, observation]));
+  const byId = new Map([...evidence, ...observations].map((observation) => [observation.id, observation]));
   const retired = new Set<string>();
   for (const entry of ledger) {
     const target = byId.get(entry.targetObservationId);
@@ -75,6 +77,41 @@ export function getReverifiedObservationIds(
     if (isValidReverification(entry, target, recheck, nowIso)) retired.add(target.id);
   }
   return retired;
+}
+
+/** Keep the existing policy activation and requested-time evidence guards shared. */
+export function getActiveReverifiedObservationIds(
+  observations: readonly FareObservation[],
+  nowIso: string,
+  ledger: readonly FareReverification[] = fareReverifications,
+  evidence: readonly FareObservation[] = fareObservations
+): Set<string> {
+  return isLowestFarePolicyActive(nowIso)
+    ? getReverifiedObservationIds(observations, nowIso, ledger, evidence)
+    : new Set();
+}
+
+/**
+ * A retirement affects fallback only while its target could otherwise be a
+ * current fare in that route/cabin's active travel window. It must not
+ * permanently suppress ordinary self-transfer-only future searches.
+ */
+export function getRetirementAffectedFareIdentities(
+  observations: readonly FareObservation[],
+  nowIso: string,
+  ledger: readonly FareReverification[] = fareReverifications,
+  evidence: readonly FareObservation[] = fareObservations
+): Set<string> {
+  const retired = getActiveReverifiedObservationIds(observations, nowIso, ledger, evidence);
+  const byId = new Map([...evidence, ...observations].map((observation) => [observation.id, observation]));
+  return new Set([...retired].flatMap((id) => {
+    const target = byId.get(id)!;
+    return target.comparisonEligibility !== 'historical'
+      && isPubliclyPublishable(target)
+      && daysBetweenIso(target.observedDate, nowIso) <= OBSERVATION_FRESH_DAYS
+      && isObservationWithinRollingFareWindow(target, nowIso)
+      ? [`${target.routeSlug}|${target.cabin}`] : [];
+  }));
 }
 
 /**
@@ -89,9 +126,9 @@ export function getReverifiedObservationIds(
 export function withoutReverifiedObservations(
   observations: FareObservation[],
   nowIso: string,
-  ledger: readonly FareReverification[] = fareReverifications
+  ledger: readonly FareReverification[] = fareReverifications,
+  evidence: readonly FareObservation[] = fareObservations
 ): FareObservation[] {
-  if (!isLowestFarePolicyActive(nowIso)) return observations;
-  const retired = getReverifiedObservationIds(observations, nowIso, ledger);
+  const retired = getActiveReverifiedObservationIds(observations, nowIso, ledger, evidence);
   return retired.size === 0 ? observations : observations.filter((observation) => !retired.has(observation.id));
 }
