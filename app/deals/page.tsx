@@ -4,7 +4,7 @@ import { PageHero } from '@/components/sections/page-hero';
 import { DealsExplorer } from '@/components/sections/deals-explorer';
 import { deals, formatChecked } from '@/data/deals';
 import { fareObservations } from '@/data/fare-observations';
-import { getTrackedFareCoverage } from '@/lib/tracked-fare-groups';
+import { formatCoverageAsOf, getTrackedFareCoverage } from '@/lib/tracked-fare-groups';
 import { routes } from '@/data/routes';
 import { siteConfig } from '@/lib/site-config';
 import { JsonLd, dealsListSchema } from '@/components/seo/json-ld';
@@ -48,7 +48,7 @@ export default function DealsPage() {
         title="Fares we're tracking"
         description={
           <>
-            As of {formatChecked(coverage.asOfIso)}, we have a tracked fare from the last {coverage.freshDays} days on {coverage.trackedRoutes} of our {coverage.totalRoutes} routes — coverage is
+            As of {formatCoverageAsOf(coverage.generatedAtIso)}, we have a tracked fare from the last {coverage.freshDays} days on {coverage.trackedRoutes} of our {coverage.totalRoutes} routes — coverage is
             being expanded gradually using manually verified observations, not a live price feed. Every fare shown
             below is a real check logged by hand, dated. Where we've checked a route more than
             once, you'll see the range we've actually observed — never a single price left to quietly go stale.
@@ -61,7 +61,7 @@ export default function DealsPage() {
           </>
         }
         stats={[
-          { value: `${coverage.trackedRoutes} of ${coverage.totalRoutes}`, label: `Routes with a tracked fare, as of ${formatChecked(coverage.asOfIso)}` },
+          { value: `${coverage.trackedRoutes} of ${coverage.totalRoutes}`, label: `Routes with a tracked fare, as of ${formatCoverageAsOf(coverage.generatedAtIso)}` },
           { value: String(fareObservations.length), label: 'Fare checks logged' },
           { value: String(airportCount), label: 'UK airports' },
           { value: formatChecked(latestCheck), label: 'Most recent check' },

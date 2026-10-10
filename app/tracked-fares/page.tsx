@@ -3,8 +3,7 @@ import Link from 'next/link';
 import { ArrowUpRight } from 'lucide-react';
 import { PageHero } from '@/components/sections/page-hero';
 import { TrackedFaresExplorer } from '@/components/sections/tracked-fares-explorer';
-import { buildTrackedFareAirportGroups, getTrackedFareCoverage } from '@/lib/tracked-fare-groups';
-import { formatChecked } from '@/data/deals';
+import { buildTrackedFareAirportGroups, formatCoverageAsOf, getTrackedFareCoverage } from '@/lib/tracked-fare-groups';
 import { routes } from '@/data/routes';
 import { siteConfig } from '@/lib/site-config';
 
@@ -52,7 +51,7 @@ export default function TrackedFaresPage() {
         title="Every route with a tracked fare"
         description={
           <>
-            As of {formatChecked(coverage.asOfIso)}, {trackedRouteCount} of our {routes.length} routes have a checked, dated fare from the last {coverage.freshDays} days — every one shown
+            As of {formatCoverageAsOf(coverage.generatedAtIso)}, {trackedRouteCount} of our {routes.length} routes have a checked, dated fare from the last {coverage.freshDays} days — every one shown
             below, grouped by UK departure airport. This is the exhaustive list, independent of{' '}
             <Link href="/deals" className="font-medium text-brass-300 underline underline-offset-2 hover:text-brass-200">
               our curated Deal selection
@@ -61,7 +60,7 @@ export default function TrackedFaresPage() {
           </>
         }
         stats={[
-          { value: `${trackedRouteCount} of ${routes.length}`, label: `Routes with a tracked fare, as of ${formatChecked(coverage.asOfIso)}` },
+          { value: `${trackedRouteCount} of ${routes.length}`, label: `Routes with a tracked fare, as of ${formatCoverageAsOf(coverage.generatedAtIso)}` },
           { value: String(airportCount), label: 'UK airports represented' },
         ]}
       />

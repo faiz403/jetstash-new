@@ -8,7 +8,7 @@ import { fareObservations, getPublishableObservationsByRoute } from '@/data/fare
 import { routes } from '@/data/routes';
 import { getFareSignalForRoute } from '@/lib/fare-signal';
 import { toTravellerFareNote } from '@/lib/fare-note-display';
-import { buildTrackedFareAirportGroups, getTrackedFareCoverage } from '@/lib/tracked-fare-groups';
+import { buildTrackedFareAirportGroups, formatCoverageAsOf, getTrackedFareCoverage } from '@/lib/tracked-fare-groups';
 import { GENERIC_FLIGHT_SEARCH_CTA_LABEL, SERVICE_ENDED_CTA_LABEL, TRIPCOM_DEFAULT_CTA_LABEL } from '@/lib/booking-providers';
 import { footerNav, mainNav } from '@/lib/site-config';
 
@@ -43,13 +43,23 @@ describe('1. one shared coverage count', () => {
     }
   });
 
+  it('the as-of stamp carries a UK time and comes from the same evaluation instant as the count', () => {
+    expect(formatCoverageAsOf('2026-10-10T13:00:00.000Z')).toBe('10 October 2026, 14:00 BST');
+    expect(formatCoverageAsOf('2026-12-10T13:00:00.000Z')).toBe('10 December 2026, 13:00 GMT');
+    const coverage = getTrackedFareCoverage(routes, '2026-10-10', '2026-10-10T13:00:00.000Z');
+    expect(coverage.generatedAtIso).toBe('2026-10-10T13:00:00.000Z');
+    for (const file of ['components/homepage-v2/homepage-sections.tsx', 'app/deals/page.tsx', 'app/tracked-fares/page.tsx']) {
+      expect(read(file)).not.toMatch(/setInterval|useEffect|force-dynamic/);
+    }
+  });
+
   it('the homepage, /deals and /tracked-fares all use that one helper and show an "as of" date', () => {
     const home = read('components/homepage-v2/homepage-sections.tsx');
     const deals = read('app/deals/page.tsx');
     const tracked = read('app/tracked-fares/page.tsx');
     for (const src of [home, deals, tracked]) {
       expect(src).toContain('getTrackedFareCoverage');
-      expect(src).toContain('formatChecked(coverage.asOfIso)');
+      expect(src).toContain('formatCoverageAsOf(coverage.generatedAtIso)');
       expect(src).not.toContain('routesWithTrackedFare');
     }
     // The old per-page definition (any publishable observation) is gone from all three pages.
@@ -205,10 +215,13 @@ describe('7. /deals and /tracked-fares naming is deliberately unchanged in this 
 describe('4b. audit of the remaining one-off notes (narrow, explicit handling only)', () => {
   const note = (id: string) => toTravellerFareNote(fareObservations.find((o) => o.id === id)!.priceNote);
 
-  it('a KAYAK result that was a standard connecting itinerary is never described as a self-transfer', () => {
+  it('a KAYAK result that was a standard connecting itinerary is never described as a self-transfer, nor asserted beyond the retained evidence', () => {
     const out = note('obs-lba-isb-economy-20260916-kayak-v1');
     expect(out).not.toContain('self-transfer combination');
-    expect(out).toContain('standard interline booking, not a self-transfer');
+    expect(out).toContain('connecting itinerary; KAYAK did not flag it as self-transfer');
+    expect(out).not.toContain('interline');
+    expect(note('obs-lhr-doh-business-20260822-8w-v1')).toContain('connecting itinerary, not self-transfer');
+    expect(note('obs-lhr-doh-business-20260822-8w-v1')).not.toContain('different');
   });
 
   it('KAYAK results that really were self-transfer combinations keep that fact', () => {

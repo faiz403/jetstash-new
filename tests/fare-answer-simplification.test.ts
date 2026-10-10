@@ -50,7 +50,7 @@ describe('1. "Fare Signal" is no longer public-facing text anywhere it was found
     // what must be gone is the literal combined public-facing phrase.
     expect(dealsPageSrc).not.toContain('tracked Fare Signal');
     expect(dealsPageSrc).not.toContain("label: 'Routes with tracked Fare Signals'");
-    expect(dealsPageSrc).toContain('label: `Routes with a tracked fare, as of ${formatChecked(coverage.asOfIso)}`');
+    expect(dealsPageSrc).toContain('label: `Routes with a tracked fare, as of ${formatCoverageAsOf(coverage.generatedAtIso)}`');
   });
 
   it('the /tracked-fares metadata title no longer combines "Tracked Fares" with "Fare Signal"', () => {

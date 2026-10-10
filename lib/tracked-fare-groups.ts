@@ -123,14 +123,24 @@ export interface TrackedFareCoverage {
   trackedRoutes: number;
   totalRoutes: number;
   asOfIso: string;
+  /** Full ISO timestamp of the moment this count was evaluated (page generation); shown as the "as of" time. */
+  generatedAtIso: string;
   /** A Fare Signal is "current" for this many days after the check (lib/freshness-thresholds.ts). */
   freshDays: number;
 }
 
+/** UK-facing "10 October 2026, 14:00 BST" for a coverage timestamp. Display only; rendered at generation time, never a live clock. */
+export function formatCoverageAsOf(iso: string): string {
+  const parts = new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/London', day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false, timeZoneName: 'short' }).formatToParts(new Date(iso));
+  const p = (type: string) => parts.find((part) => part.type === type)?.value ?? '';
+  return `${p('day')} ${p('month')} ${p('year')}, ${p('hour')}:${p('minute')} ${p('timeZoneName')}`;
+}
+
 export function getTrackedFareCoverage(
   routeList: Route[] = defaultRoutes,
-  nowIso: string = new Date().toISOString().slice(0, 10)
+  nowIso: string = new Date().toISOString().slice(0, 10),
+  generatedAtIso: string = new Date().toISOString()
 ): TrackedFareCoverage {
   const trackedRoutes = buildTrackedFareAirportGroups(routeList, undefined, nowIso).reduce((sum, group) => sum + group.entries.length, 0);
-  return { trackedRoutes, totalRoutes: routeList.length, asOfIso: nowIso, freshDays: OBSERVATION_FRESH_DAYS };
+  return { trackedRoutes, totalRoutes: routeList.length, asOfIso: nowIso, generatedAtIso, freshDays: OBSERVATION_FRESH_DAYS };
 }

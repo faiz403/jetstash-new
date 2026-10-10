@@ -2,8 +2,7 @@ import Link from 'next/link';
 import { ArrowUpRight, ArrowRight, Plane, BellRing, ShieldCheck, FileCheck2, Receipt, Clock } from 'lucide-react';
 import { ROUTE_WATCH_INITIAL_COPY } from '@/lib/route-watch-config';
 import { routes } from '@/data/routes';
-import { formatChecked } from '@/data/deals';
-import { getTrackedFareCoverage } from '@/lib/tracked-fare-groups';
+import { formatCoverageAsOf, getTrackedFareCoverage } from '@/lib/tracked-fare-groups';
 
 /**
  * Homepage v2 — server-rendered sections below the signature hero (protected
@@ -162,7 +161,7 @@ export function WhyJetStash() {
           </Link>
         </div>
         <p className="mt-4 text-xs text-ink-500">
-          Coverage note: as of {formatChecked(coverage.asOfIso)}, {coverage.trackedRoutes} of {coverage.totalRoutes} UK routes have a tracked fare from the last {coverage.freshDays} days.
+          Coverage note: as of {formatCoverageAsOf(coverage.generatedAtIso)}, {coverage.trackedRoutes} of {coverage.totalRoutes} UK routes have a tracked fare from the last {coverage.freshDays} days.
         </p>
       </div>
     </section>
