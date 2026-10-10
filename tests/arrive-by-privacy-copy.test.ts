@@ -48,10 +48,14 @@ describe('privacy policy: the live Arrive By journey is described accurately', (
     expect(section).toMatch(/none of it is sent to our analytics provider/);
   });
 
-  it('keeps the claim "none of it is sent to analytics" true: the live journey component fires no analytics event', () => {
+  it('keeps journey details out of third-party analytics; only fixed event names go to the internal counter endpoint', () => {
     const component = read('components', 'arrive-by-full-journey.tsx');
     expect(component).not.toMatch(/\btrack\(/);
     expect(component).not.toMatch(/@vercel\/analytics|lib\/analytics/);
+    expect(component).toContain("'/api/arrive-by/interaction'");
+    expect(component).toContain('JSON.stringify(interaction)');
+    const interactionSender = component.split('const recordInteraction')[1]?.split('}, []);')[0] ?? '';
+    expect(interactionSender).not.toMatch(/start|destination|airport|flight|address|time/i);
   });
 
   it('lists Google and Upstash as service providers and as places data may be processed', () => {

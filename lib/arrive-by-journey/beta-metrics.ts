@@ -53,6 +53,21 @@ export type BetaOutcome =
   | { kind: 'refused_budget' }
   | { kind: 'error' };
 
+type VerdictSignal = 'yes' | 'tight' | 'no' | 'unknown' | 'estimate';
+export type BetaInteraction =
+  | { event: 'journey_started' }
+  | { event: 'calculation_started' }
+  | { event: 'missed_service_opened' }
+  | { event: 'result_shown'; verdict: VerdictSignal; rescueShown: boolean };
+const BETA_INTERACTIONS: ReadonlySet<string> = new Set(['journey_started', 'calculation_started', 'missed_service_opened', 'result_shown']);
+export function isBetaInteraction(value: unknown): value is BetaInteraction {
+  if (typeof value !== 'object' || value === null || !('event' in value) || typeof value.event !== 'string' || !BETA_INTERACTIONS.has(value.event)) return false;
+  if (value.event === 'result_shown') return 'verdict' in value && ['yes', 'tight', 'no', 'unknown', 'estimate'].includes(String(value.verdict)) && 'rescueShown' in value && typeof value.rescueShown === 'boolean';
+  return true;
+}
+type BetaSignal = 'calculation_started' | 'calculation_completed' | 'calculation_failed' | 'rescue_option_shown'
+  | `verdict_shown:${VerdictSignal}` | 'journey_started' | 'missed_service_opened';
+
 const REASON_SET: ReadonlySet<string> = new Set(CANNOT_CONFIRM_REASONS);
 
 /** Accepts anything, returns only an allowlisted reason (or UNSPECIFIED). Free text can never pass through. */
@@ -63,7 +78,8 @@ export function toAllowedReason(value: unknown): CannotConfirmReason | 'UNSPECIF
 /** The single terminal outcome for a plan the engine returned. Never throws. */
 export function classifyPlan(plan: Pick<JourneyPlan, 'state' | 'notEvidenced'> | null | undefined): BetaOutcome {
   try {
-    if (!plan || plan.state !== 'CANNOT_CONFIRM') return { kind: 'result_usable' };
+    if (!plan) return { kind: 'error' };
+    if (plan.state !== 'CANNOT_CONFIRM') return { kind: 'result_usable' };
     if (plan.notEvidenced?.reason === 'MONTHLY_BUDGET_UNAVAILABLE') return { kind: 'refused_budget' };
     return { kind: 'cannot_confirm', reason: toAllowedReason(plan.notEvidenced?.reason) };
   } catch {
@@ -86,6 +102,16 @@ export function metricKey(utcDay: string, field: string): string {
   return `arrive-by:metric:${utcDay}:${field}`;
 }
 
+function outcomeSignals(outcome: BetaOutcome): BetaSignal[] {
+  const signals: BetaSignal[] = [];
+  if (outcome.kind === 'result_usable' || outcome.kind === 'cannot_confirm') {
+    signals.push('calculation_completed');
+  } else {
+    signals.push('calculation_failed');
+  }
+  return signals;
+}
+
 export interface RecordDeps {
   /** Tests inject a store. In production the configured Upstash store is used. */
   store?: CallBudgetStore;
@@ -102,15 +128,31 @@ function resolveStore(deps: RecordDeps): CallBudgetStore | undefined {
   return getConfiguredCallBudgetStore(process.env);
 }
 
-/** Adds one submission and its one terminal outcome. Counts only; never throws. */
+/** Adds one submission, one terminal outcome, and fixed aggregate signals. Counts only; never throws. */
 export async function recordBetaOutcome(outcome: BetaOutcome, deps: RecordDeps = {}): Promise<void> {
   try {
     const store = resolveStore(deps);
     if (!store) return;
     const day = (deps.now ?? new Date()).toISOString().slice(0, 10);
-    await Promise.all(['submissions', outcomeField(outcome)].map((field) => store.incrementBy(metricKey(day, field), 1, BETA_METRIC_TTL_SECONDS)));
+    const fields = ['submissions', outcomeField(outcome), ...outcomeSignals(outcome).map((signal) => `signal:${signal}`)];
+    await Promise.all(fields.map((field) => store.incrementBy(metricKey(day, field), 1, BETA_METRIC_TTL_SECONDS)));
   } catch {
     // A counter failure must never change what the traveller experiences.
+  }
+}
+
+/** Records a tightly allowlisted UI interaction; no journey or identity data is accepted. */
+export async function recordBetaInteraction(event: BetaInteraction, deps: RecordDeps = {}): Promise<void> {
+  try {
+    const store = resolveStore(deps);
+    if (!store) return;
+    const day = (deps.now ?? new Date()).toISOString().slice(0, 10);
+    const signals: BetaSignal[] = event.event === 'result_shown'
+      ? [`verdict_shown:${event.verdict}`, ...(event.rescueShown ? ['rescue_option_shown' as const] : [])]
+      : [event.event];
+    await Promise.all(signals.map((signal) => store.incrementBy(metricKey(day, `signal:${signal}`), 1, BETA_METRIC_TTL_SECONDS)));
+  } catch {
+    // Interaction measurement is best effort and never affects the journey.
   }
 }
 

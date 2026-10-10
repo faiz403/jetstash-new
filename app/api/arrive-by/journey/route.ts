@@ -71,7 +71,7 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const plan = await planFullJourney(input, { apiKey, guard, nowIso: new Date().toISOString(), airportMode: 'public', originMode: 'LIVE', transitFirst: 'LIVE', placeNames: 'LIVE' });
+    const plan = await planFullJourney(input, { apiKey, guard, nowIso: new Date().toISOString(), airportMode: 'public', originMode: 'LIVE', transitFirst: 'LIVE', placeNames: 'LIVE', flightConnections: 'FINAL_ARRIVAL_ANCHOR' });
     const response = NextResponse.json(plan);
     // Scheduled only after the response exists, so one submission can never be counted as both a result and an error.
     scheduleBetaMetric(() => recordBetaOutcome(classifyPlan(plan)));

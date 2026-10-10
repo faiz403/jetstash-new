@@ -4,16 +4,17 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { NextRequest } from 'next/server';
 import { InMemoryCallBudgetStore } from '@/lib/arrive-by-journey/call-budget';
 import {
-  CANNOT_CONFIRM_REASONS, classifyPlan, isGenuineSubmission, metricKey, outcomeField, recordBetaOutcome, toAllowedReason,
+  CANNOT_CONFIRM_REASONS, classifyPlan, isGenuineSubmission, metricKey, outcomeField, recordBetaOutcome, recordBetaInteraction, toAllowedReason,
 } from '@/lib/arrive-by-journey/beta-metrics';
 
-const hoisted = vi.hoisted(() => ({ rate: vi.fn(), plan: vi.fn() }));
-vi.mock('@/lib/arrive-by-shared/rate-limit', () => ({ checkPublicJourneyRateLimit: hoisted.rate }));
+const hoisted = vi.hoisted(() => ({ rate: vi.fn(), interactionRate: vi.fn(), plan: vi.fn() }));
+vi.mock('@/lib/arrive-by-shared/rate-limit', () => ({ checkPublicJourneyRateLimit: hoisted.rate, checkPublicJourneyInteractionRateLimit: hoisted.interactionRate }));
 vi.mock('@/lib/arrive-by-journey/plan', async (original) => ({ ...(await original<typeof import('@/lib/arrive-by-journey/plan')>()), planFullJourney: hoisted.plan }));
 
 import { POST } from '@/app/api/arrive-by/journey/route';
+import { POST as POST_INTERACTION } from '@/app/api/arrive-by/interaction/route';
 
-const KEY_PATTERN = /^arrive-by:metric:\d{4}-\d{2}-\d{2}:(submissions|result_usable|error|refused:rate_limit|refused:budget|cannot_confirm:[A-Z_]+)$/;
+const KEY_PATTERN = /^arrive-by:metric:\d{4}-\d{2}-\d{2}:(submissions|result_usable|error|refused:rate_limit|refused:budget|cannot_confirm:[A-Z_]+|signal:(calculation_started|calculation_completed|calculation_failed|rescue_option_shown|journey_started|missed_service_opened|verdict_shown:(yes|tight|no|unknown|estimate)))$/;
 
 const goodBody = {
   start: 'Preston', departureAirport: 'MAN', arrivalAirport: 'ISB', destination: 'Mirpur',
@@ -28,11 +29,17 @@ function req(body: unknown, opts: { contentLength?: boolean | number; raw?: stri
   return new NextRequest('http://localhost/api/arrive-by/journey', { method: 'POST', headers, body: text });
 }
 
+function interactionReq(body: unknown) {
+  const text = JSON.stringify(body);
+  return new NextRequest('http://localhost/api/arrive-by/interaction', { method: 'POST', headers: { 'content-type': 'application/json', 'content-length': String(Buffer.byteLength(text)), 'x-forwarded-for': '198.51.100.9' }, body: text });
+}
+
 let counts: Map<string, number>;
 let upstashBodies: string[];
 let failMetricWrites = false;
 const flush = () => new Promise((resolve) => setTimeout(resolve, 5));
-const terminals = () => [...counts.entries()].filter(([key]) => !key.endsWith(':submissions'));
+const terminals = () => [...counts.entries()].filter(([key]) => !key.endsWith(':submissions') && !key.includes(':signal:'));
+const signals = () => [...counts.entries()].filter(([key]) => key.includes(':signal:')).map(([key]) => key.split(':').slice(3).join(':')).sort();
 const total = (entries: Array<[string, number]>) => entries.reduce((sum, [, value]) => sum + value, 0);
 const submissions = () => [...counts.entries()].filter(([key]) => key.endsWith(':submissions')).reduce((sum, [, value]) => sum + value, 0);
 
@@ -41,6 +48,7 @@ beforeEach(() => {
   upstashBodies = [];
   failMetricWrites = false;
   hoisted.rate.mockReset().mockResolvedValue({ limited: false });
+  hoisted.interactionRate.mockReset().mockResolvedValue({ limited: false });
   hoisted.plan.mockReset();
   vi.stubEnv('NODE_ENV', 'production');
   vi.stubEnv('VERCEL_ENV', 'production');
@@ -62,13 +70,14 @@ afterEach(() => { vi.unstubAllEnvs(); vi.unstubAllGlobals(); });
 
 describe('Arrive By beta counters: one submission, exactly one terminal outcome', () => {
   it('counts a usable result as submissions + result_usable only', async () => {
-    hoisted.plan.mockResolvedValue({ state: 'POSSIBLE_WITH_MARGIN', timeline: [] });
+    hoisted.plan.mockResolvedValue({ state: 'POSSIBLE_WITH_MARGIN', timeline: [], arrivalDetail: { transit: { firstService: 'Northern', expectedArrivalIso: '2027-01-15T10:30:00.000Z', rescue: { attempted: true, available: true } } } });
     const response = await POST(req(goodBody));
     await flush();
     expect(response.status).toBe(200);
-    expect(await response.json()).toEqual({ state: 'POSSIBLE_WITH_MARGIN', timeline: [] });
+    expect(await response.json()).toMatchObject({ state: 'POSSIBLE_WITH_MARGIN', timeline: [] });
     expect(submissions()).toBe(1);
     expect(terminals().map(([key, value]) => [key.split(':').slice(3).join(':'), value])).toEqual([['result_usable', 1]]);
+    expect(signals()).toEqual(['signal:calculation_completed']);
   });
 
   it.each(['POSSIBLE_BUT_TIGHT', 'NOT_FEASIBLE', 'ESTIMATE_ONLY'])('treats %s as a usable planning result', async (state) => {
@@ -167,6 +176,48 @@ describe('Arrive By beta counters: noise is not a submission', () => {
   });
 });
 
+describe('Arrive By beta counters: UI interaction events are fixed, count-only values', () => {
+  it('accepts a known interaction and ignores unrelated personal fields', async () => {
+    const response = await POST_INTERACTION(interactionReq({ event: 'missed_service_opened', destination: 'Secret Hospital', address: '12 Acacia Road', airport: 'ISB' }));
+    await flush();
+    expect(response.status).toBe(204);
+    const metricBodies = upstashBodies.filter((body) => body.includes('arrive-by:metric:'));
+    expect(metricBodies).toHaveLength(1);
+    const commands = JSON.parse(metricBodies[0]) as string[][];
+    expect(commands[0][1]).toMatch(/^arrive-by:metric:\d{4}-\d{2}-\d{2}:signal:missed_service_opened$/);
+    expect(metricBodies[0]).not.toMatch(/Secret Hospital|Acacia|ISB|destination|address/);
+  });
+
+  it('uses a separate non-billable limiter and does not consume the journey calculation allowance', async () => {
+    const response = await POST_INTERACTION(interactionReq({ event: 'calculation_started' }));
+    expect(response.status).toBe(204);
+    expect(hoisted.interactionRate).toHaveBeenCalledOnce();
+    expect(hoisted.rate).not.toHaveBeenCalled();
+  });
+
+  it('rejects arbitrary event values without writing an interaction counter', async () => {
+    const response = await POST_INTERACTION(interactionReq({ event: 'destination_entered', destination: 'Secret Hospital' }));
+    await flush();
+    expect(response.status).toBe(400);
+    expect(upstashBodies.filter((body) => body.includes('arrive-by:metric:'))).toEqual([]);
+  });
+
+  it('records a rendered verdict and rescue presence using only fixed categories', async () => {
+    const response = await POST_INTERACTION(interactionReq({ event: 'result_shown', verdict: 'yes', rescueShown: true, destination: 'Secret Hospital' }));
+    await flush();
+    expect(response.status).toBe(204);
+    expect(signals()).toEqual(['signal:rescue_option_shown', 'signal:verdict_shown:yes']);
+  });
+
+  it('does not write shared metrics from a Preview deployment', async () => {
+    vi.stubEnv('VERCEL_ENV', 'preview');
+    const response = await POST_INTERACTION(interactionReq({ event: 'journey_started' }));
+    await flush();
+    expect(response.status).toBe(204);
+    expect(upstashBodies.filter((body) => body.includes('arrive-by:metric:'))).toEqual([]);
+  });
+});
+
 describe('Arrive By beta counters: measurement can never affect a journey', () => {
   it('returns the identical response when the metric store is down', async () => {
     hoisted.plan.mockResolvedValue({ state: 'POSSIBLE_WITH_MARGIN', timeline: [] });
@@ -195,11 +246,11 @@ describe('Arrive By beta counters: measurement can never affect a journey', () =
     expect(upstashBodies).toEqual([]);
   });
 
-  it('leaves the rate limiter, budget guard and engine call exactly as they were', () => {
+  it('preserves the rate limiter, budget guard and live engine settings with the explicit scheduled-arrival policy', () => {
     const route = readFileSync(join(process.cwd(), 'app', 'api', 'arrive-by', 'journey', 'route.ts'), 'utf8');
     expect(route.indexOf('checkPublicJourneyRateLimit(request)')).toBeLessThan(route.indexOf('request.json()'));
     expect(route).toContain('createJourneyCallGuard(process.env');
-    expect(route).toContain("planFullJourney(input, { apiKey, guard, nowIso: new Date().toISOString(), airportMode: 'public', originMode: 'LIVE', transitFirst: 'LIVE', placeNames: 'LIVE' })");
+    expect(route).toContain("planFullJourney(input, { apiKey, guard, nowIso: new Date().toISOString(), airportMode: 'public', originMode: 'LIVE', transitFirst: 'LIVE', placeNames: 'LIVE', flightConnections: 'FINAL_ARRIVAL_ANCHOR' })");
     expect(route).toContain('status: 429');
     expect(route).toContain('status: 413');
     expect(route).toContain('status: 422');
@@ -242,8 +293,18 @@ describe('Arrive By beta counters: privacy', () => {
     const store = new InMemoryCallBudgetStore();
     const spy = vi.spyOn(store, 'incrementBy');
     await recordBetaOutcome({ kind: 'refused_rate_limit' }, { store, now: new Date('2026-10-03T23:59:00Z') });
-    expect(spy.mock.calls.map((call) => call[0])).toEqual(['arrive-by:metric:2026-10-03:submissions', 'arrive-by:metric:2026-10-03:refused:rate_limit']);
+    expect(spy.mock.calls.map((call) => call[0])).toEqual([
+      'arrive-by:metric:2026-10-03:submissions', 'arrive-by:metric:2026-10-03:refused:rate_limit',
+      'arrive-by:metric:2026-10-03:signal:calculation_failed',
+    ]);
     expect(spy.mock.calls.every((call) => call[1] === 1 && call[2] === 90 * 24 * 60 * 60)).toBe(true);
+  });
+
+  it('records only a fixed missed-service interaction in a daily aggregate', async () => {
+    const store = new InMemoryCallBudgetStore();
+    const spy = vi.spyOn(store, 'incrementBy');
+    await recordBetaInteraction({ event: 'missed_service_opened' }, { store, now: new Date('2026-10-03T23:59:00Z') });
+    expect(spy.mock.calls).toEqual([['arrive-by:metric:2026-10-03:signal:missed_service_opened', 1, 90 * 24 * 60 * 60]]);
   });
 
   it('keeps the metrics module free of request and identity data', () => {

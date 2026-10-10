@@ -150,6 +150,42 @@ describe('validated global road capability remains separate from transit-first',
 });
 
 describe('the 10-call hard stop', () => {
+  it('meters confirmation and calculation independently but charges all 5 + 7 calls to the shared monthly budget', async () => {
+    // Budget-contract regression, not a replay of Google itinerary evidence.
+    // Provider seams reproduce the observed request costs without live calls.
+    const store = new InMemoryCallBudgetStore();
+    const guard = guardWith(store);
+    const underlying = vi.fn(async () => new Response('{}')) as unknown as typeof fetch;
+    const provider = (calls: number, confirmed: boolean) => async (
+      _key: string, _airports: unknown, _input: unknown, ledger: GoogleCallLedger,
+    ): Promise<{ leg: ResolvedLeg }> => {
+      for (let i = 0; i < calls; i += 1) await ledger.fetch('https://routes.googleapis.com/directions/v2:computeRoutes');
+      return { leg: confirmed
+        ? { status: 'OK', expectedSeconds: 600, evidence: { kind: 'GOOGLE_ROUTES', source: 'budget test provider' } }
+        : { status: 'NOT_EVIDENCED', reason: 'ARRIVAL_DESTINATION_UNCONFIRMED' } };
+    };
+    const deps = { apiKey: KEY, guard, originMode: 'ENTERED' as const, nowIso: NOW, baseFetch: underlying };
+    const pending = await planFullJourney(PRESTON_TO_MIRPUR, { ...deps, arrivalLegProvider: provider(5, false) });
+    expect(pending.state).toBe('CANNOT_CONFIRM');
+    expect(pending.calls).toMatchObject({ used: 5, ceiling: 10 });
+    expect(await store.incrementBy(MONTH_KEY, 0, 1)).toBe(5);
+
+    const completed = await planFullJourney({ ...PRESTON_TO_MIRPUR, confirmedPlaceId: 'venue-1' }, {
+      ...deps, arrivalLegProvider: provider(7, true),
+    });
+    expect(completed.headline).toBeDefined();
+    expect(completed.calls).toMatchObject({ used: 7, ceiling: 10 });
+    expect(underlying).toHaveBeenCalledTimes(12);
+    expect(await store.incrementBy(MONTH_KEY, 0, 1)).toBe(12);
+
+    // A new request still cannot exceed 10: no weakening of the hard stop.
+    const overBudget = await planFullJourney(PRESTON_TO_MIRPUR, { ...deps, arrivalLegProvider: provider(11, true) });
+    expect(overBudget.notEvidenced?.reason).toBe('CALL_CEILING_REACHED');
+    expect(overBudget.calls).toMatchObject({ used: 10, ceiling: 10 });
+    expect(underlying).toHaveBeenCalledTimes(22);
+    expect(await store.incrementBy(MONTH_KEY, 0, 1)).toBe(22);
+  });
+
   it('the ledger allows exactly 10 Google calls, refuses the 11th, and never sends it', async () => {
     const base = vi.fn(async () => new Response('{}', { status: 200 })) as unknown as typeof fetch;
     const ledger = new GoogleCallLedger(JOURNEY_CALL_CEILING, base);
@@ -355,6 +391,30 @@ describe('airport rules (UK departures only; capability-gated arrivals)', () => 
 });
 
 describe('cheap failures cost nothing', () => {
+  it('public scheduled-flight policy anchors onward timing to entered final arrival without changing the default connection rejection', async () => {
+    const input = { ...PRESTON_TO_MIRPUR, flight: { ...PRESTON_TO_MIRPUR.flight, declaredConnections: 1 } };
+    const g = google([locality('PK', 'Pakistan', 'Mirpur')]);
+    const strict = await planFullJourney(input, { apiKey: KEY, guard: guardWith(), originMode: 'ENTERED', nowIso: NOW, baseFetch: g.fetch });
+    expect(strict.notEvidenced?.reason).toBe('CONNECTION_NOT_MODELLED');
+    expect(g.calls).toEqual([]);
+    const anchored = await planFullJourney(input, { apiKey: KEY, guard: guardWith(), originMode: 'ENTERED', nowIso: NOW, baseFetch: g.fetch, flightConnections: 'FINAL_ARRIVAL_ANCHOR' });
+    expect(anchored.state).toBe('ESTIMATE_ONLY');
+    expect(anchored.finalArrival?.clock).toBe('03:35');
+    expect(anchored.scheduledFlightAssumption).toMatchObject({ arrivalAirportName: 'Islamabad International Airport', arrivesIso: '2027-01-15T18:30:00.000Z', timeZone: 'Asia/Karachi' });
+    expect(anchored.timeline.find((leg) => leg.kind === 'FLIGHT')?.label).toContain('connection not checked');
+    expect(input.flight.declaredConnections).toBe(1);
+  });
+
+  it('the scheduled-flight policy preserves impossible chronology and unsupported airport failures without spending', async () => {
+    const g = google([locality('PK', 'Pakistan', 'Mirpur')]);
+    const deps = { apiKey: KEY, guard: guardWith(), originMode: 'ENTERED' as const, airportMode: 'public' as const, nowIso: NOW, baseFetch: g.fetch, flightConnections: 'FINAL_ARRIVAL_ANCHOR' as const };
+    const chronology = await planFullJourney({ ...PRESTON_TO_MIRPUR, flight: { departsLocal: '2027-01-15T11:00', arrivesLocal: '2027-01-15T10:00', declaredConnections: 1 } }, deps);
+    expect(chronology.notEvidenced?.reason).toBe('INVALID_INPUT');
+    const unsupported = await planFullJourney({ ...PRESTON_TO_MIRPUR, arrivalAirport: 'DXB', flight: { ...PRESTON_TO_MIRPUR.flight, declaredConnections: 1 } }, deps);
+    expect(unsupported.notEvidenced?.reason).toBe('AIRPORT_NOT_SUPPORTED');
+    expect(g.calls).toEqual([]);
+  });
+
   it('invalid times, declared connections and blank places are rejected before any reservation or Google call', async () => {
     const g = google([locality('PK', 'Pakistan', 'Mirpur')]);
     const store = new InMemoryCallBudgetStore();

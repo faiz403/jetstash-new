@@ -14,6 +14,7 @@ import { InMemoryCallBudgetStore, getConfiguredCallBudgetStore } from '@/lib/arr
  */
 export const ARRIVE_BY_RATE_LIMIT_MAX = 5;
 export const ARRIVE_BY_RATE_LIMIT_WINDOW_MS = 60 * 1000;
+export const ARRIVE_BY_INTERACTION_RATE_LIMIT_MAX = 30;
 
 export function checkArriveByRateLimit(request: NextRequest): { limited: boolean } {
   return checkRateLimit(`arrive-by:${getClientIdentifier(request)}`, ARRIVE_BY_RATE_LIMIT_MAX, ARRIVE_BY_RATE_LIMIT_WINDOW_MS);
@@ -33,6 +34,23 @@ export async function checkPublicJourneyRateLimit(
   try {
     const count = await store.incrementBy(`arrive-by:journey-rate:${clientHash}`, 1, ARRIVE_BY_RATE_LIMIT_WINDOW_MS / 1000);
     return { limited: count > ARRIVE_BY_RATE_LIMIT_MAX };
+  } catch {
+    return { limited: true, unavailable: true };
+  }
+}
+
+/** UI counters are non-billable and must not consume the five-call journey allowance. */
+export async function checkPublicJourneyInteractionRateLimit(
+  request: NextRequest,
+  env: Record<string, string | undefined> = process.env,
+): Promise<{ limited: boolean; unavailable?: boolean }> {
+  const configured = getConfiguredCallBudgetStore(env);
+  if (env.NODE_ENV === 'production' && !configured) return { limited: true, unavailable: true };
+  const store = configured ?? localJourneyRateStore;
+  const clientHash = createHash('sha256').update(getClientIdentifier(request)).digest('hex');
+  try {
+    const count = await store.incrementBy(`arrive-by:interaction-rate:${clientHash}`, 1, ARRIVE_BY_RATE_LIMIT_WINDOW_MS / 1000);
+    return { limited: count > ARRIVE_BY_INTERACTION_RATE_LIMIT_MAX };
   } catch {
     return { limited: true, unavailable: true };
   }

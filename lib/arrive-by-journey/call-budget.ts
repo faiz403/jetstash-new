@@ -5,8 +5,11 @@
  * current Geocoding/Routes billing mix and each solve path's exact call count
  * are unverified (founder decision, 30 Sep 2026):
  *
- *   per journey   at most JOURNEY_CALL_CEILING (10) billable Google calls. The
- *                 ledger refuses the 11th; the journey becomes CANNOT CONFIRM.
+ *   per calculation request   at most JOURNEY_CALL_CEILING (10) billable Google
+ *                 calls across BOTH journey legs, including place-name recovery.
+ *                 The ledger refuses the 11th; the journey becomes CANNOT CONFIRM.
+ *                 Confirm/select resubmissions run a fresh calculation and ledger;
+ *                 this is not a cumulative ceiling for the UI interaction.
  *   per month     MONTHLY_CALL_LIMIT (2,000) calls in total across all journeys,
  *                 with internal alerts at 50% and 80% and a hard stop at 100%.
  *

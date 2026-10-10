@@ -5,6 +5,7 @@ import { enteredOriginLeg, roadArrivalLeg } from './providers';
 import { googleOriginLeg, type OriginLegOutcome } from './origin-leg';
 import { transitArrivalLeg } from './transit-arrival-leg';
 import { solveJourney, shortPlaceName } from './solver';
+import { scheduledFlightForSolver, withScheduledFlightAssumption, type FlightConnectionPolicy } from './scheduled-flight';
 import { STATE_LABEL, type JourneyInput, type JourneyPlan, type NotEvidencedReason, type ResolvedLeg } from './types';
 
 /**
@@ -26,6 +27,8 @@ import { STATE_LABEL, type JourneyInput, type JourneyPlan, type NotEvidencedReas
  */
 
 export interface PlanDeps {
+  /** Public opt-in only: use entered final landing as a conditional anchor; do not validate upstream connections. */
+  flightConnections?: FlightConnectionPolicy;
   apiKey: string;
   guard: MonthlyCallGuard;
   nowIso: string;
@@ -63,7 +66,7 @@ export async function planFullJourney(input: JourneyInput, deps: PlanDeps): Prom
     destinationLabel: input.destination,
     departureAirport: { code: departure.code, name: departure.name, timeZone: departure.timeZone },
     arrivalAirport: { code: arrival.code, name: arrival.name, timeZone: arrival.timeZone },
-    flight: input.flight,
+    flight: scheduledFlightForSolver(input.flight, deps.flightConnections),
     preferences: input.preferences,
     nowIso: deps.nowIso,
   };
@@ -148,7 +151,7 @@ export async function planFullJourney(input: JourneyInput, deps: PlanDeps): Prom
       startDetail = await enrichPendingNames(startDetail, lookup, ledger);
       arrivalDetail = await enrichPendingNames(arrivalDetail, lookup, ledger);
     }
-    return {
+    return withScheduledFlightAssumption({
       ...finished,
       places: {
         start: startPlace && (startPlace.display || startPlace.resolvedAddress) ? { typed: input.start, display: startPlace.display, address: startPlace.resolvedAddress } : undefined,
@@ -160,7 +163,7 @@ export async function planFullJourney(input: JourneyInput, deps: PlanDeps): Prom
         : undefined,
       arrivalDetail,
       calls: { used: ledger.used, ceiling, breakdown: { ...ledger.breakdown() } },
-    };
+    }, input.flight, arrival.name, deps.flightConnections);
   } finally {
     await deps.guard.settle(reservation, ledger.used);
   }

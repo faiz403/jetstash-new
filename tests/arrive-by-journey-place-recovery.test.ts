@@ -174,6 +174,30 @@ describe('ROOT CAUSE: a client that sends only the latest choice oscillates; the
 });
 
 describe('the recovery reducer (pure)', () => {
+  it.each(['The Midland, Manchester', 'Sheffield station'])('confirmed %s stays resolved through a transit/missed-service/rescue result', (destination) => {
+    const sent = chooseConfirmed(EMPTY_RECOVERY, 'destination', destination);
+    const plan = { arrivalDetail: { outcome: 'ETA_ONLY', transit: { firstService: 'Northern', expectedArrivalIso: '2026-10-10T11:45:00.000Z', missedServiceArrivalIso: '2026-10-10T12:01:00.000Z', rescue: { attempted: true, available: true, arrivalIso: '2026-10-10T11:30:00.000Z' } } } } as JourneyPlan;
+    expect(pendingSides(plan).destination).toBe('NONE');
+    expect(reconcileWithPlan(sent, plan).destination.confirmedPlaceId).toBe(destination);
+    expect(invalidateSide(sent, 'destination').destination).toEqual({});
+  });
+
+  it('an ambiguous unconfirmed destination still requires a choice', () => {
+    const plan = { arrivalDetail: { outcome: 'DESTINATION_NEEDS_SELECTION', pendingSelection: { candidates: [{ placeId: 'one', formattedAddress: 'One' }, { placeId: 'two', formattedAddress: 'Two' }] } } } as JourneyPlan;
+    expect(pendingSides(plan).destination).toBe('SELECT');
+  });
+  it('successful transit detail is not an unresolved destination and preserves its accepted place', () => {
+    const sent = chooseConfirmed(EMPTY_RECOVERY, 'destination', 'co-op-live');
+    const plan = { arrivalDetail: { outcome: 'ETA_ONLY', transit: { firstService: 'Northern', expectedArrivalIso: '2026-10-09T17:07:00.000Z' } } } as JourneyPlan;
+    expect(pendingSides(plan)).toEqual({ start: 'NONE', destination: 'NONE' });
+    expect(reconcileWithPlan(sent, plan)).toBe(sent);
+  });
+
+  it('the public UI only renders a recovery prompt for an actually pending side', () => {
+    const source = readFileSync(join(process.cwd(), 'components', 'arrive-by-full-journey.tsx'), 'utf8');
+    expect(source).toContain("if (!detail || !plan || pendingSides(plan)[which] === 'NONE') return null;");
+  });
+
   it('each side holds its own choice; choosing one never touches the other', () => {
     let state = chooseSelected(EMPTY_RECOVERY, 'start', 's1');
     state = chooseConfirmed(state, 'destination', 'd1');
@@ -231,7 +255,7 @@ describe('RECOVERY COMBINATIONS (fixed client, real route, stubbed Google): ever
       const firstResolved: PlaceSide = order === 'start-first' ? 'start' : 'destination';
       const second = session.sentBodies[1];
       expect(Object.keys(second).some((k) => (firstResolved === 'start' ? /^start/.test(k) : /^(confirmed|selected)PlaceId$/.test(k)))).toBe(true);
-      // A recovery request never blows the 10-call journey ceiling (2 geocodes + up to 3 route queries + one Places name lookup per unnamed candidate shown).
+      // Each recovery calculation has its own 10-call ceiling, spanning both legs; the UI session is not one shared ledger.
       for (const calls of session.googleCallsPerRequest) expect(calls).toBeLessThanOrEqual(10);
     },
   );
