@@ -2,6 +2,8 @@ import { isIndependentComparisonObservation, isMethodologyExcluded, type FareObs
 import { hasTripComRoute } from '@/lib/booking-providers';
 import { isSelfTransferItinerary } from '@/lib/fare-self-transfer';
 import { daysBetweenIso, OBSERVATION_FRESH_DAYS, OBSERVATION_STALE_DAYS } from '@/lib/freshness-thresholds';
+import { isCleanFareEvidence } from '@/lib/fare-evidence-eligibility';
+import { getActiveReverifiedObservationIds } from '@/lib/fare-reverification';
 
 /** Qualification is intentionally stricter than the public Fare Signal. */
 export const FARE_WATCHER_MIN_BASELINE = 3;
@@ -40,6 +42,7 @@ export interface FareWatcherExclusion {
     | 'methodology-excluded'
     | 'self-transfer'
     | 'unknown-directness'
+    | 'retired'
     | 'verification-recheck';
 }
 
@@ -111,10 +114,7 @@ function validProfile(observation: FareObservation): boolean {
 }
 
 /** Known directness and no explicit self-transfer notice; no ticket-protection inference. */
-export function isFareWatcherCleanEvidence(observation: FareObservation): boolean {
-  return !isSelfTransferItinerary(observation.priceNote)
-    && (observation.fareDirectness === 'direct' || observation.fareDirectness === 'connecting');
-}
+export const isFareWatcherCleanEvidence = isCleanFareEvidence;
 
 function bookingHorizon(observation: FareObservation): number | null {
   if (!observation.departureDate) return null;
@@ -146,8 +146,9 @@ export function qualifyFareWatcherObservation(
   const candidateHorizon = bookingHorizon(candidate);
   const candidateTripLength = tripLength(candidate);
   const baseline: FareObservation[] = [];
+  const retired = getActiveReverifiedObservationIds([...observations, candidate], nowIso);
 
-  if (!validProfile(candidate) || candidate.comparisonEligibility !== 'current') {
+  if (!validProfile(candidate) || candidate.comparisonEligibility !== 'current' || retired.has(candidate.id)) {
     return {
       candidate,
       qualification: 'insufficient-baseline',
@@ -158,7 +159,9 @@ export function qualifyFareWatcherObservation(
       baselineSampleSize: 0,
       comparableBaseline: [],
       exclusions: [],
-      evidenceLimits: ['The candidate is not a complete, explicitly current GBP observation.'],
+      evidenceLimits: [retired.has(candidate.id)
+        ? 'The evaluated observation is explicitly retired or superseded.'
+        : 'The candidate is not a complete, explicitly current GBP observation.'],
     };
   }
   // Fare Watcher Methodology-Exclusion audit (22 August 2026): an
@@ -198,6 +201,10 @@ export function qualifyFareWatcherObservation(
 
   for (const observation of observations) {
     if (observation.id === candidate.id) continue;
+    if (retired.has(observation.id)) {
+      exclusions.push(exclusion(observation, 'retired'));
+      continue;
+    }
     // Fare Watcher Methodology-Exclusion audit (22 August 2026): checked
     // before every other baseline test. An observation methodology-
     // excludes for insufficient retained itinerary evidence (data/fare-
@@ -384,11 +391,9 @@ function isNewerCandidate(a: FareObservation, b: FareObservation): boolean {
  *
  * This ONLY decides which observation is ever promoted to a candidate. It
  * does not touch baseline computation: `qualifyFareWatcherObservation` is
- * still called with the full, unfiltered observation list, so a superseded
- * observation (like the 18 August one above) remains fully available as
- * comparable baseline evidence for whichever observation IS selected as the
- * candidate — exactly how it already legitimately became part of the 19
- * August observation's own baseline median.
+ * still called with the full observation list. Routine identity supersession
+ * alone does not remove historical baseline evidence; an explicit structured
+ * retirement does, through the shared qualification guard.
  */
 function latestCurrentObservationsByIdentity(observations: readonly FareObservation[], nowIso: string): FareObservation[] {
   const latestByIdentity = new Map<string, FareObservation>();
@@ -472,23 +477,34 @@ function findLatestVerificationRecheck(detection: FareObservation, observations:
   return latest;
 }
 
-/** Generates internal leads only. It never writes the archive or publishes UI copy. */
-export function generateFareWatcherCandidates(observations: FareObservation[], nowIso: string): FareWatcherCandidate[] {
+export interface FareWatcherEvaluation {
+  detection: FareObservation;
+  qualification: FareWatcherQualificationResult | null;
+  candidate: FareWatcherCandidate | null;
+}
+
+/** The actual production selection/evaluation contract, also used by operator reporting. */
+export function evaluateFareWatcherCandidates(observations: FareObservation[], nowIso: string): FareWatcherEvaluation[] {
   return latestCurrentObservationsByIdentity(observations, nowIso)
     .map((detection) => {
-      if (!isFareWatcherCleanEvidence(detection)) return null;
+      const rejected = { detection, qualification: null, candidate: null };
+      if (!isFareWatcherCleanEvidence(detection)) return rejected;
       const recheck = findLatestVerificationRecheck(detection, observations, nowIso);
-      // A self-transfer recheck is still verification evidence -- it is how
-      // a clean detection that could not be reproduced is retired -- but it
-      // can never be the evaluated fare of a deal candidate (7 Oct 2026).
-      // Same-day, a clean recheck always outranks a self-transfer one (see
-      // isNewerCandidate()), so this only fires when no clean recheck exists.
-      if (recheck && isSelfTransferItinerary(recheck.priceNote)) return null;
+      // Rechecks remain verification evidence even when ineligible. The
+      // shared qualification guard rejects unknown/self-transfer evidence
+      // without letting the original detection's cheaper price reappear.
       const evaluationSource = recheck ?? detection;
+      // A retired routine record may anchor an existing identity only. It
+      // cannot supply the fare when its surviving clean recheck is absent.
       const result = qualifyFareWatcherObservation(evaluationSource, observations, nowIso);
-      return toCandidate(result, detection);
-    })
-    .filter((candidate): candidate is FareWatcherCandidate => candidate !== null);
+      return { detection, qualification: result, candidate: toCandidate(result, detection) };
+    });
+}
+
+/** Generates internal leads only. It never writes the archive or publishes UI copy. */
+export function generateFareWatcherCandidates(observations: FareObservation[], nowIso: string): FareWatcherCandidate[] {
+  return evaluateFareWatcherCandidates(observations, nowIso)
+    .flatMap(({ candidate }) => candidate ? [candidate] : []);
 }
 
 export function isFareWatcherCandidateExpired(candidate: FareWatcherCandidate, nowIso: string): boolean {

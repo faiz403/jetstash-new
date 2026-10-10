@@ -1,5 +1,5 @@
 import type { FareObservation } from '@/data/fare-observations';
-import { isFareWatcherCleanEvidence, qualifyFareWatcherObservation, type FareWatcherQualificationResult } from '@/lib/fare-watcher';
+import { evaluateFareWatcherCandidates, isFareWatcherCleanEvidence, type FareWatcherQualificationResult } from '@/lib/fare-watcher';
 import { isSelfTransferItinerary } from '@/lib/fare-self-transfer';
 import { isPoorItinerarySuitability } from '@/lib/itinerary-suitability';
 import {
@@ -65,11 +65,10 @@ export function prepareFareWatcherOperatorReport(
       };
     }
 
-    const qualification = qualifyFareWatcherObservation(
-      observation,
-      [...existingObservations, observation],
-      profile.observedDate
-    );
+    const evaluation = evaluateFareWatcherCandidates(
+      [...existingObservations, observation], profile.observedDate
+    ).find((item) => item.detection.id === observation.id || item.qualification?.candidate.id === observation.id);
+    const qualification = evaluation?.qualification ?? null;
     const itineraryEvidenceComplete = Number.isInteger(observation.outboundStops)
       && Number.isInteger(observation.returnStops);
     const poorItinerary = itineraryEvidenceComplete
@@ -80,7 +79,7 @@ export function prepareFareWatcherOperatorReport(
       ? 'suppressed-poor-itinerary'
       : !isFareWatcherCleanEvidence(observation)
         ? selfTransfer ? 'suppressed-self-transfer' : 'suppressed-unknown-directness'
-      : qualification.qualification === 'ordinary-fare' || qualification.qualification === 'insufficient-baseline'
+      : !evaluation?.candidate
         ? 'ordinary'
         : 'founder-review-required';
 

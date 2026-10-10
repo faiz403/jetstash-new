@@ -276,14 +276,13 @@ describe('the ledger data is internally consistent and never edits the archive',
 });
 
 describe('retirement does not change Fare Watcher identity or Standout lifecycle', () => {
-  it('Fare Watcher and Route Watch do not read the ledger or the Fare Signal selector', () => {
+  it('Fare Watcher shares structured retirement without coupling to the public selector', () => {
     const fw = readFileSync(join(process.cwd(), 'lib', 'fare-watcher.ts'), 'utf8');
     const rw = readFileSync(join(process.cwd(), 'lib', 'route-watch-fare-trigger.ts'), 'utf8');
     for (const src of [fw, rw]) {
-      expect(src).not.toContain('fare-reverification');
-      expect(src).not.toContain('fare-reverifications');
       expect(src).not.toContain("from '@/lib/fare-signal'");
     }
+    expect(fw).toContain('getActiveReverifiedObservationIds');
   });
 
   it('Fare Watcher and Route Watch obey the current clean-evidence founder ruling', () => {

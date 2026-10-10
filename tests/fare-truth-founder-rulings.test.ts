@@ -88,14 +88,15 @@ describe('founder fare truth rulings', () => {
   });
 
   it('one-stop self-transfer operator evidence cannot be recommended for founder review', () => {
+    const sameBaseline = baseline().map((o) => ({ ...o, routeSlug: 'manchester-dubai', profileId: 'manchester-dubai-economy-operator-v1' }));
     const report = prepareFareWatcherOperatorReport([{
       routeSlug: 'manchester-dubai', usable: true, fare: 100, airline: 'Example Airline', source: 'google-flights', baggage: 'not stated',
       outboundDirectness: 'connecting', outboundStops: 1, returnDirectness: 'connecting', returnStops: 1, evidenceNote: 'self-transfer on both legs',
     }], { observedDate: '2026-10-01', departureDate: '2026-11-17', returnDate: '2026-12-01', observationReason: 'routine-weekly' },
-    baseline().map((o) => ({ ...o, routeSlug: 'manchester-dubai', profileId: 'manchester-dubai-economy-operator-v1' })));
+    sameBaseline);
     expect(report.entries[0]).toMatchObject({ disposition: 'suppressed-self-transfer', selfTransfer: true, poorItinerary: false });
     const prepared = report.entries[0].validation.preparedObservation!;
-    expect(generateFareWatcherCandidates([prepared, ...baseline()], '2026-10-01')).toEqual([]);
+    expect(generateFareWatcherCandidates([prepared, ...sameBaseline], '2026-10-01')).toEqual([]);
   });
 
   it('all 35 different-date public secondaries disclose their own dates beside their price', () => {

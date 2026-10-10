@@ -87,7 +87,7 @@ describe('Fare Watcher operator report', () => {
     ], profile, baseline);
     const result = report.entries[0];
 
-    expect(result.qualification?.qualification).toBe('insufficient-baseline');
+    expect(result.qualification).toBeNull();
     expect(result.selfTransfer).toBe(true);
     expect(result.poorItinerary).toBe(true);
     expect(result.disposition).toBe('suppressed-poor-itinerary');
