@@ -325,7 +325,7 @@ export interface TripComFlightHandoff {
  * still operates. See the file's own header comment on
  * getTripComFlightHandoff() below for the exact evidence gate this requires.
  */
-export const SERVICE_ENDED_CTA_LABEL = 'Compare current connecting flights on Trip.com';
+export const SERVICE_ENDED_CTA_LABEL = 'Compare connecting flights on Trip.com';
 
 /**
  * CTA label consolidation (12 Sept 2026, founder-approved, following the 12
@@ -387,7 +387,7 @@ export const TRIPCOM_DEFAULT_CTA_LABEL = 'Compare flights on Trip.com';
  * tripComUrl is never null for them.
  */
 export const GENERIC_FLIGHT_SEARCH_URL = 'https://www.google.com/travel/flights';
-export const GENERIC_FLIGHT_SEARCH_CTA_LABEL = 'Search current flights';
+export const GENERIC_FLIGHT_SEARCH_CTA_LABEL = 'Search flights on Google Flights';
 export const GENERIC_FLIGHT_SEARCH_REL = 'nofollow noopener noreferrer';
 export const GENERIC_FLIGHT_SEARCH_NOTE =
   'Opens Google Flights. JetStash does not earn commission from this link. Enter your airports and dates there.';

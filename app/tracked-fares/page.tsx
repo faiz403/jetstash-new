@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { ArrowUpRight } from 'lucide-react';
 import { PageHero } from '@/components/sections/page-hero';
 import { TrackedFaresExplorer } from '@/components/sections/tracked-fares-explorer';
-import { buildTrackedFareAirportGroups } from '@/lib/tracked-fare-groups';
+import { buildTrackedFareAirportGroups, formatCoverageAsOf, getTrackedFareCoverage } from '@/lib/tracked-fare-groups';
 import { routes } from '@/data/routes';
 import { siteConfig } from '@/lib/site-config';
 
@@ -39,7 +39,8 @@ export const metadata: Metadata = {
 export default function TrackedFaresPage() {
   const nowIso = new Date().toISOString().slice(0, 10);
   const airportGroups = buildTrackedFareAirportGroups(routes, undefined, nowIso);
-  const trackedRouteCount = airportGroups.reduce((sum, g) => sum + g.entries.length, 0);
+  const coverage = getTrackedFareCoverage(routes, nowIso);
+  const trackedRouteCount = coverage.trackedRoutes;
   const airportCount = airportGroups.length;
 
   return (
@@ -50,7 +51,7 @@ export default function TrackedFaresPage() {
         title="Every route with a tracked fare"
         description={
           <>
-            {trackedRouteCount} of our {routes.length} routes have a checked, dated fare — every one shown
+            As of {formatCoverageAsOf(coverage.generatedAtIso)}, {trackedRouteCount} of our {routes.length} routes have a checked, dated fare from the last {coverage.freshDays} days — every one shown
             below, grouped by UK departure airport. This is the exhaustive list, independent of{' '}
             <Link href="/deals" className="font-medium text-brass-300 underline underline-offset-2 hover:text-brass-200">
               our curated Deal selection
@@ -59,7 +60,7 @@ export default function TrackedFaresPage() {
           </>
         }
         stats={[
-          { value: `${trackedRouteCount} of ${routes.length}`, label: 'Routes with a tracked fare' },
+          { value: `${trackedRouteCount} of ${routes.length}`, label: `Routes with a tracked fare, as of ${formatCoverageAsOf(coverage.generatedAtIso)}` },
           { value: String(airportCount), label: 'UK airports represented' },
         ]}
       />

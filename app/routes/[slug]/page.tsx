@@ -342,6 +342,8 @@ export default async function RoutePage({ params }: { params: Promise<{ slug: st
             standoutFare={standoutFare}
             isServiceEnded={presentation.status === 'service-ended'}
             routeLabel={`${airport.city} to ${dest.city}`}
+            hasFareHistory={fareObservations.length > 0}
+            hasLoggedFares={allFareObservations.some((o) => o.routeSlug === route.slug)}
             connectingSummary={
               firstScreenConnecting
                 ? {

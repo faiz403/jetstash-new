@@ -258,7 +258,13 @@ function NoFareLead({
   routeDirectness,
   connectingSummary,
   hasCta,
+  hasFareHistory,
+  hasLoggedFares,
 }: {
+  /** True when the route has earlier tracked checks (shown in the fare history below) even though none is currently eligible to show. */
+  hasFareHistory: boolean;
+  /** True when the archive holds any check for this route, even if none is currently shown (so "never logged" is never claimed for a route that has been checked). */
+  hasLoggedFares: boolean;
   routeLabel: string | null;
   isServiceEnded: boolean;
   routeDirectness: 'direct' | 'connecting' | null;
@@ -266,6 +272,12 @@ function NoFareLead({
   hasCta: boolean;
 }) {
   const connecting = isServiceEnded || routeDirectness === 'connecting';
+  // Three honest states: earlier checks are shown below / checks exist but none is currently shown / nothing ever logged.
+  const noFareLine = hasFareHistory
+    ? 'JetStash has no current fare to show for this route. Earlier checks are in the fare history below.'
+    : hasLoggedFares
+      ? "JetStash has checked this route before, but there isn't a current fare we can safely show."
+      : "JetStash hasn't logged a fare for this route yet.";
   return (
     <div>
       {connecting && hasCta ? (
@@ -277,13 +289,13 @@ function NoFareLead({
               ? `Usually ${connectingSummary.stops} stop${connectingSummary.stops > 1 ? 's' : ''} · ${connectingSummary.journeyTime} · via ${connectingSummary.hubs.join(', ')}.`
               : 'This journey is still bookable with a connection.'}
           </p>
-          <p className="mt-1 text-sm text-ink-600">JetStash hasn&apos;t logged a current fare for this route yet.</p>
+          <p className="mt-1 text-sm text-ink-600">{noFareLine}</p>
           <p className="mt-3 text-sm font-semibold text-ink-900">{checkPricesHeading(routeLabel)}</p>
         </>
       ) : hasCta ? (
         <>
           <p className="font-display text-xl leading-tight text-ink-900 sm:text-2xl">{checkPricesHeading(routeLabel)}</p>
-          <p className="mt-1 text-sm text-ink-600">JetStash hasn&apos;t logged a current fare for this route yet.</p>
+          <p className="mt-1 text-sm text-ink-600">{noFareLine}</p>
         </>
       ) : (
         <div className="flex items-start gap-3 text-sm text-ink-600">
@@ -596,9 +608,15 @@ export function FareSignal({
   isServiceEnded = false,
   routeLabel = null,
   connectingSummary = null,
+  hasFareHistory = false,
+  hasLoggedFares = false,
 }: {
   /** "Manchester to Delhi" -- used only to word the no-fare lead ("Check today's Manchester \u2192 Delhi prices"); never a data source. */
   routeLabel?: string | null;
+  /** True when the route has earlier tracked fare checks (fare history exists) -- lets the no-fare lead say "no current fare" instead of "none logged". Never affects eligibility. */
+  hasFareHistory?: boolean;
+  /** True when the archive holds any check for this route even if none is currently shown (e.g. all excluded from public surfaces). Never affects eligibility. */
+  hasLoggedFares?: boolean;
   /** route.connectingAlternative's own stops/hubs/journey time, passed only when presentation.canShowConnectingAlternative is true. */
   connectingSummary?: ConnectingSummary | null;
   signal: FareSignalData;
@@ -670,6 +688,8 @@ export function FareSignal({
                 routeDirectness={routeDirectness}
                 connectingSummary={connectingSummary}
                 hasCta={Boolean(tripComUrl) || !isServiceEnded}
+                hasFareHistory={hasFareHistory}
+                hasLoggedFares={hasLoggedFares}
               />
             )}
             {/* Route Page Scanability fix (21 Aug 2026): a route can have a

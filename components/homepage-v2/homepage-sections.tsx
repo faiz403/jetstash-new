@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { ArrowUpRight, ArrowRight, Plane, BellRing, ShieldCheck, FileCheck2, Receipt, Clock } from 'lucide-react';
 import { ROUTE_WATCH_INITIAL_COPY } from '@/lib/route-watch-config';
 import { routes } from '@/data/routes';
-import { getPublishableObservationsByRoute } from '@/data/fare-observations';
+import { formatCoverageAsOf, getTrackedFareCoverage } from '@/lib/tracked-fare-groups';
 
 /**
  * Homepage v2 — server-rendered sections below the signature hero (protected
@@ -108,8 +108,7 @@ const JOURNEY_CHECKS: { icon: typeof Plane; title: string; body: string; href?: 
 ];
 
 export function WhyJetStash() {
-  const todayIso = new Date().toISOString().slice(0, 10);
-  const routesWithTrackedFare = routes.filter((route) => getPublishableObservationsByRoute(route.slug, todayIso).length > 0).length;
+  const coverage = getTrackedFareCoverage(routes);
 
   return (
     <section className="bg-sand-50 py-14 sm:py-20">
@@ -162,7 +161,7 @@ export function WhyJetStash() {
           </Link>
         </div>
         <p className="mt-4 text-xs text-ink-500">
-          Coverage note: {routesWithTrackedFare} of {routes.length} UK routes currently have tracked fares.
+          Coverage note: as of {formatCoverageAsOf(coverage.generatedAtIso)}, {coverage.trackedRoutes} of {coverage.totalRoutes} UK routes have a tracked fare from the last {coverage.freshDays} days.
         </p>
       </div>
     </section>

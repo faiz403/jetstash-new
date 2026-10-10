@@ -75,7 +75,7 @@ describe('no fare + a safe handoff: a helpful, honest lead instead of a dead-loo
     const { html, url } = renderSignal('birmingham-ahmedabad');
     expect(url).not.toBeNull();
     expect(html).toContain("Check today's Birmingham → Ahmedabad prices");
-    expect(html).toContain("JetStash hasn't logged a current fare for this route yet.");
+    expect(html).toContain("JetStash hasn't logged a fare for this route yet.");
     expect(html).toContain('Compare flights on Trip.com');
     expect(html).toContain('Ad · Affiliate link.');
     expect(html).toContain('JetStash earns commission on eligible bookings through this link');
@@ -128,7 +128,7 @@ describe('service-ended routes: connecting flights are available, said first', (
     const { html } = renderSignal('birmingham-ahmedabad', { isServiceEnded: true, withUrl: false });
     expect(html).toContain(NO_VERIFIED_PARTNER_LINK_NOTE);
     expect(html).not.toContain('Connecting flights available');
-    expect(html).not.toContain('Search current flights');
+    expect(html).not.toContain('Search flights on Google Flights');
   });
 });
 
@@ -152,7 +152,7 @@ describe('exact Trip.com handoffs and the London Google Flights fallback are unc
     const { html, url } = renderSignal('london-heathrow-dhaka');
     expect(url).toBeNull();
     expect(html).toContain("Check today's London → Dhaka prices");
-    expect(html).toContain('Search current flights');
+    expect(html).toContain('Search flights on Google Flights');
     expect(html).toContain(`href="${GENERIC_FLIGHT_SEARCH_URL}"`);
     expect(html).toContain('does not earn commission');
     expect(html).not.toContain('trip.com');
@@ -164,7 +164,7 @@ describe('exact Trip.com handoffs and the London Google Flights fallback are unc
   it('london-gatwick-athens keeps the same fallback (no monetised handoff invented)', () => {
     const { html, url } = renderSignal('london-gatwick-athens');
     expect(url).toBeNull();
-    expect(html).toContain('Search current flights');
+    expect(html).toContain('Search flights on Google Flights');
     expect(html).not.toContain('trip.com');
   });
 });
@@ -204,7 +204,7 @@ describe('decision-first acceptance: the route answer and action precede support
     expect(html).toContain('lg:grid');
     expect(html).toContain('lg:grid-cols-[1.15fr_1fr]');
     // below lg the order is unchanged: lead first, then the button
-    expect(html.indexOf('Connecting flights available')).toBeLessThan(html.indexOf('Compare current connecting flights on Trip.com'));
+    expect(html.indexOf('Connecting flights available')).toBeLessThan(html.indexOf('Compare connecting flights on Trip.com'));
   });
 
   it('the cookie banner and its consent behaviour were not touched', () => {

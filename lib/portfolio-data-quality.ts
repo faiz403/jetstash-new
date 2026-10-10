@@ -329,8 +329,8 @@ export function buildPortfolioAudit(nowIso: string): PortfolioRouteAuditRow[] {
       exactAirportPreserved: Boolean(handoff),
       monetised: Boolean(handoff),
       currentCta: handoff
-        ? handoff.kind === 'service-ended-connecting' ? 'Compare current connecting flights on Trip.com' : 'Compare flights on Trip.com'
-        : 'Search current flights',
+        ? handoff.kind === 'service-ended-connecting' ? 'Compare connecting flights on Trip.com' : 'Compare flights on Trip.com'
+        : 'Search flights on Google Flights',
       farePublishable: Boolean(signal.observation),
       fareSuppressionReason,
       fareRescueCategory,

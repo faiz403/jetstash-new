@@ -3,6 +3,7 @@ import type { FareObservation } from '@/data/fare-observations';
 import { isPubliclyPublishable } from '@/data/fare-observations';
 import { formatChecked, type DealCabin } from '@/data/deals';
 import { getFareFreshnessState, daysBetweenIso } from '@/lib/freshness-thresholds';
+import { toTravellerFareNote } from '@/lib/fare-note-display';
 
 /**
  * Renders a route's fare observation history — the accumulating record
@@ -82,7 +83,7 @@ export function FareHistoryPanel({ observations }: { observations: FareObservati
                         <p className={`font-display text-lg ${isStale ? 'text-ink-500' : 'text-ink-900'}`}>
                           £{obs.price.toLocaleString('en-GB')}
                         </p>
-                        <p className="text-[11px] text-ink-400">{obs.priceNote}</p>
+                        <p className="text-[11px] text-ink-400">{toTravellerFareNote(obs.priceNote)}</p>
                       </div>
                     </div>
                   );
