@@ -56,7 +56,9 @@ const SEGMENT_RULES: readonly Rule[] = [
   { test: /^baggage not stated on this specific fare tier\b/i, out: 'baggage not stated' },
   { test: /^the 14-night stay length is unchanged\b/i, out: null },
   { test: /^all \d+ segments\b.*individually expanded and confirmed\b/i, out: null },
-  { test: /^this route's own verified direct .* service\b.*genuinely different, connecting\b/i, out: 'connecting itinerary, not self-transfer' },
+  // The single-booking reassurance is restated once, by the connecting-itinerary rule below.
+  { test: /^NOT self-transfer, single itinerary$/, out: null },
+  { test: /^this route's own verified direct .* service\b.*genuinely different, connecting\b/i, out: 'Connecting itinerary on a single booking; not self-transfer' },
   { test: /^Google separately flags £[\d,]+ as "typical for Business Class"/i, out: null },
   { test: /^the route record itself still states\b/i, out: null },
   { test: /^a genuine nonstop Air India option exists on this route\b/i, out: 'a nonstop Air India option also exists on this route' },

@@ -220,8 +220,9 @@ describe('4b. audit of the remaining one-off notes (narrow, explicit handling on
     expect(out).not.toContain('self-transfer combination');
     expect(out).toContain('connecting itinerary; KAYAK did not flag it as self-transfer');
     expect(out).not.toContain('interline');
-    expect(note('obs-lhr-doh-business-20260822-8w-v1')).toContain('connecting itinerary, not self-transfer');
+    expect(note('obs-lhr-doh-business-20260822-8w-v1')).toContain('Connecting itinerary on a single booking; not self-transfer');
     expect(note('obs-lhr-doh-business-20260822-8w-v1')).not.toContain('different');
+    expect(note('obs-lhr-doh-business-20260822-8w-v1').match(/self-transfer/gi)).toHaveLength(1);
   });
 
   it('KAYAK results that really were self-transfer combinations keep that fact', () => {
