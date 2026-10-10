@@ -1,5 +1,5 @@
 import type { FareObservation } from '@/data/fare-observations';
-import { qualifyFareWatcherObservation, type FareWatcherQualificationResult } from '@/lib/fare-watcher';
+import { isFareWatcherCleanEvidence, qualifyFareWatcherObservation, type FareWatcherQualificationResult } from '@/lib/fare-watcher';
 import { isSelfTransferItinerary } from '@/lib/fare-self-transfer';
 import { isPoorItinerarySuitability } from '@/lib/itinerary-suitability';
 import {
@@ -23,6 +23,8 @@ export type FareWatcherOperatorDisposition =
   | 'no-result'
   | 'ordinary'
   | 'suppressed-poor-itinerary'
+  | 'suppressed-self-transfer'
+  | 'suppressed-unknown-directness'
   | 'founder-review-required';
 
 export interface FareWatcherOperatorEntry {
@@ -76,6 +78,8 @@ export function prepareFareWatcherOperatorReport(
     const selfTransfer = isSelfTransferItinerary(observation.priceNote);
     const disposition: FareWatcherOperatorDisposition = poorItinerary === true
       ? 'suppressed-poor-itinerary'
+      : !isFareWatcherCleanEvidence(observation)
+        ? selfTransfer ? 'suppressed-self-transfer' : 'suppressed-unknown-directness'
       : qualification.qualification === 'ordinary-fare' || qualification.qualification === 'insufficient-baseline'
         ? 'ordinary'
         : 'founder-review-required';

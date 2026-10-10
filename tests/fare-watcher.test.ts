@@ -29,9 +29,8 @@ function baselineFixture(id: string, observedDate: string, departureDate: string
 describe('Fare Watcher / Standout Fares', () => {
   it('audits the real archive without fabricating a standout candidate', () => {
     const candidates = generateFareWatcherCandidates(fareObservations, '2026-08-11');
-    expect(candidates).toHaveLength(1);
-    expect(candidates[0]).toMatchObject({ routeSlug: 'manchester-lahore', currentFare: 574, qualification: 'new-recent-low', founderVerificationRequired: true, lifecycle: 'detected' });
-    expect(qualifyFareWatcherObservation(currentIslamabad[0], fareObservations, '2026-08-11')).toMatchObject({ qualification: 'ordinary-fare', baselineSampleSize: 3, baselineMedian: 562, previousLow: 524 });
+    expect(candidates).toEqual([]);
+    expect(qualifyFareWatcherObservation(currentIslamabad[0], fareObservations, '2026-08-11')).toMatchObject({ qualification: 'insufficient-baseline', baselineSampleSize: 0, baselineMedian: null, previousLow: null });
   });
 
   it('reports the five 11 August observations without qualifying a Standout Fare', () => {
@@ -42,13 +41,10 @@ describe('Fare Watcher / Standout Fares', () => {
     });
 
     expect(results.map((result) => result.candidate.price)).toEqual([574, 601, 454, 823, 495]);
-    expect(results.map((result) => result.qualification)).toEqual(['new-recent-low', 'ordinary-fare', 'insufficient-baseline', 'ordinary-fare', 'insufficient-baseline']);
-    expect(results.map((result) => result.baselineSampleSize)).toEqual([3, 5, 2, 3, 2]);
-    expect(results[0]).toMatchObject({ baselineMedian: 620, previousLow: 578, differencePounds: 46 });
-    expect(results[1]).toMatchObject({ baselineMedian: 621, previousLow: 524, differencePounds: 20 });
-    expect(results[2]).toMatchObject({ baselineMedian: null, previousLow: 432 });
-    expect(results[3]).toMatchObject({ baselineMedian: 733, previousLow: 714, differencePounds: -90 });
-    expect(results[4]).toMatchObject({ baselineMedian: null, previousLow: 487 });
+    expect(results.map((result) => result.qualification)).toEqual(Array(5).fill('insufficient-baseline'));
+    expect(results.map((result) => result.baselineSampleSize)).toEqual([1, 2, 0, 0, 0]);
+    expect(results.map((result) => result.previousLow)).toEqual([638, 621, null, null, null]);
+    expect(results.every((result) => result.baselineMedian === null)).toBe(true);
     expect(results.every((result) => result.qualification !== 'standout-candidate')).toBe(true);
   });
 
@@ -191,8 +187,8 @@ describe('Fare Watcher / Standout Fares', () => {
     const bhxResult = qualifyFareWatcherObservation(bhx, fareObservations, '2026-08-25');
     const jedResult = qualifyFareWatcherObservation(jed, fareObservations, '2026-08-25');
 
-    expect(bhxResult.baselineSampleSize).toBe(5);
-    expect(jedResult.baselineSampleSize).toBe(4);
+    expect(bhxResult.baselineSampleSize).toBe(2);
+    expect(jedResult.baselineSampleSize).toBe(2);
     expect(bhxResult.exclusions).toContainEqual({ observationId: 'obs-bhx-atq-economy-20260819-8w-v1', reason: 'verification-recheck' });
     expect(jedResult.exclusions).toContainEqual({ observationId: 'obs-lhr-jed-economy-20260819-8w-v1', reason: 'verification-recheck' });
   });
@@ -200,7 +196,7 @@ describe('Fare Watcher / Standout Fares', () => {
   it('real archive: a matching emergency-recheck becomes the evaluated evidence while candidate identity stays anchored to the original detection (Verified-Candidate Price Integrity, 25 August 2026)', () => {
     // Step 6 required real-data results, verified against the actual engine
     // (not hardcoded into production logic): MAN-ISB detection £460,
-    // verified £480, median £621, ~£141/22.7% below median, still
+    // verified £480, clean median £623.50, £143.50/~23.0% below median, still
     // qualifies. MAN-LHE, LHR-JED and BHX-ATQ are NOT candidates since 7 October
     // 2026 (FWATCH-ST-001): each one's 25 August detection and recheck carry explicit
     // self-transfer evidence, so only MAN-ISB (clean evidence) remains.
@@ -210,12 +206,12 @@ describe('Fare Watcher / Standout Fares', () => {
     expect(bySlug['manchester-islamabad']).toMatchObject({
       id: 'fare-watcher-obs-man-isb-economy-20260825-8w-v1',
       currentFare: 480,
-      baselineMedian: 621,
-      differencePounds: 141,
+      baselineMedian: 623.5,
+      differencePounds: 143.5,
       qualification: 'standout-candidate',
       checkedDate: '2026-08-25',
     });
-    expect(bySlug['manchester-islamabad'].differencePercent).toBeCloseTo(22.7, 1);
+    expect(bySlug['manchester-islamabad'].differencePercent).toBeCloseTo(23.015, 2);
     expect(bySlug['manchester-islamabad'].verifiedObservation).toMatchObject({ observationReason: 'emergency-recheck', price: 480 });
 
     // FWATCH-ST-001 (7 October 2026): the MAN-LHE detection (obs-man-lhe-economy-20260825-8w-v1) and its

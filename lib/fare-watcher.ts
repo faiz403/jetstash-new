@@ -38,6 +38,8 @@ export interface FareWatcherExclusion {
     | 'outside-baseline-window'
     | 'not-earlier-than-candidate'
     | 'methodology-excluded'
+    | 'self-transfer'
+    | 'unknown-directness'
     | 'verification-recheck';
 }
 
@@ -106,6 +108,12 @@ function validProfile(observation: FareObservation): boolean {
     && observation.returnDate
     && observation.observedDate
   );
+}
+
+/** Known directness and no explicit self-transfer notice; no ticket-protection inference. */
+export function isFareWatcherCleanEvidence(observation: FareObservation): boolean {
+  return !isSelfTransferItinerary(observation.priceNote)
+    && (observation.fareDirectness === 'direct' || observation.fareDirectness === 'connecting');
 }
 
 function bookingHorizon(observation: FareObservation): number | null {
@@ -246,6 +254,10 @@ export function qualifyFareWatcherObservation(
       exclusions.push(exclusion(observation, 'outside-baseline-window'));
       continue;
     }
+    if (!isFareWatcherCleanEvidence(observation)) {
+      exclusions.push(exclusion(observation, isSelfTransferItinerary(observation.priceNote) ? 'self-transfer' : 'unknown-directness'));
+      continue;
+    }
     baseline.push(observation);
   }
 
@@ -276,6 +288,7 @@ export function qualifyFareWatcherObservation(
   if (meaningfulDrop && newRecentLow) qualification = 'standout-candidate';
   else if (meaningfulDrop) qualification = 'notable-drop';
   else if (newRecentLow) qualification = 'new-recent-low';
+  if (!isFareWatcherCleanEvidence(candidate)) qualification = 'insufficient-baseline';
 
   return {
     candidate,
@@ -288,6 +301,7 @@ export function qualifyFareWatcherObservation(
     comparableBaseline: baseline,
     exclusions,
     evidenceLimits: [
+      ...(!isFareWatcherCleanEvidence(candidate) ? ['The candidate requires known directness and non-self-transfer evidence.'] : []),
       'The comparison describes JetStash observations only; it is not a market-wide claim.',
       'Baggage, seat fees and other mandatory costs remain separate evidence fields and are not assumed to be zero.',
     ],
@@ -446,9 +460,10 @@ function isMatchingVerificationRecheck(detection: FareObservation, other: FareOb
  * — so "latest matching recheck wins" follows one shared ordering rule
  * rather than a second one invented here.
  */
-function findLatestVerificationRecheck(detection: FareObservation, observations: readonly FareObservation[]): FareObservation | null {
+function findLatestVerificationRecheck(detection: FareObservation, observations: readonly FareObservation[], nowIso: string): FareObservation | null {
   let latest: FareObservation | null = null;
   for (const observation of observations) {
+    if (observation.observedDate > nowIso) continue;
     if (!isMatchingVerificationRecheck(detection, observation)) continue;
     if (!latest || isNewerCandidate(observation, latest)) {
       latest = observation;
@@ -461,7 +476,8 @@ function findLatestVerificationRecheck(detection: FareObservation, observations:
 export function generateFareWatcherCandidates(observations: FareObservation[], nowIso: string): FareWatcherCandidate[] {
   return latestCurrentObservationsByIdentity(observations, nowIso)
     .map((detection) => {
-      const recheck = findLatestVerificationRecheck(detection, observations);
+      if (!isFareWatcherCleanEvidence(detection)) return null;
+      const recheck = findLatestVerificationRecheck(detection, observations, nowIso);
       // A self-transfer recheck is still verification evidence -- it is how
       // a clean detection that could not be reproduced is retired -- but it
       // can never be the evaluated fare of a deal candidate (7 Oct 2026).

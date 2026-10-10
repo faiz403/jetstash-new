@@ -1,4 +1,4 @@
-import type { FareObservation } from '@/data/fare-observations';
+import { fareObservations, type FareObservation } from '@/data/fare-observations';
 import { fareReverifications, type FareReverification } from '@/data/fare-reverifications';
 import { isLowestFarePolicyActive } from '@/lib/fare-window';
 
@@ -12,7 +12,7 @@ import { isLowestFarePolicyActive } from '@/lib/fare-window';
  * Every guard below is a structured-field comparison. There is no parsing of
  * `priceNote` and no fuzzy itinerary matching. A ledger entry only takes
  * effect when ALL of its structured evidence checks out against the
- * observations actually being evaluated; any doubt makes the entry inert, so
+ * authoritative observation evidence; any doubt makes the entry inert, so
  * the target stays eligible (the failure mode is "show the older fare", never
  * "hide a fare on a hunch").
  */
@@ -56,17 +56,18 @@ function isValidReverification(entry: FareReverification, target: FareObservatio
 
 /**
  * Ids of observations in `observations` that a valid ledger entry has taken
- * out of public current-fare selection as of `nowIso`. Both the target and
- * the reverifying observation must be present in `observations` (i.e. both
- * already publicly publishable and causally available); otherwise the entry
- * does nothing.
+ * out of public current-fare selection as of `nowIso`. Validate against the
+ * authoritative archive before display or baseline filters. A filtered
+ * supporting recheck must never resurrect its explicitly retired target.
+ * Supplied records override archive records, allowing isolated evidence replay.
  */
 export function getReverifiedObservationIds(
   observations: readonly FareObservation[],
   nowIso: string,
-  ledger: readonly FareReverification[] = fareReverifications
+  ledger: readonly FareReverification[] = fareReverifications,
+  evidence: readonly FareObservation[] = fareObservations
 ): Set<string> {
-  const byId = new Map(observations.map((observation) => [observation.id, observation]));
+  const byId = new Map([...evidence, ...observations].map((observation) => [observation.id, observation]));
   const retired = new Set<string>();
   for (const entry of ledger) {
     const target = byId.get(entry.targetObservationId);
@@ -89,9 +90,10 @@ export function getReverifiedObservationIds(
 export function withoutReverifiedObservations(
   observations: FareObservation[],
   nowIso: string,
-  ledger: readonly FareReverification[] = fareReverifications
+  ledger: readonly FareReverification[] = fareReverifications,
+  evidence: readonly FareObservation[] = fareObservations
 ): FareObservation[] {
   if (!isLowestFarePolicyActive(nowIso)) return observations;
-  const retired = getReverifiedObservationIds(observations, nowIso, ledger);
+  const retired = getReverifiedObservationIds(observations, nowIso, ledger, evidence);
   return retired.size === 0 ? observations : observations.filter((observation) => !retired.has(observation.id));
 }

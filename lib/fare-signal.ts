@@ -241,11 +241,13 @@ function selectLatestObservation(observations: FareObservation[], nowIso: string
   }
   const nonHistorical = observations
     .filter((observation) => observation.comparisonEligibility !== 'historical')
-    .filter((observation) => isObservationWithinRollingFareWindow(observation, nowIso));
+    .filter((observation) => isObservationWithinRollingFareWindow(observation, nowIso))
+    .filter((observation) => isCleanUsableFare(observation) || isSelfTransferItinerary(observation.priceNote));
   // An out-of-window archive entry must never become the public fallback.
   const candidates = nonHistorical.length > 0
     ? nonHistorical
-    : observations.filter((observation) => isObservationWithinRollingFareWindow(observation, nowIso));
+    : observations.filter((observation) => isObservationWithinRollingFareWindow(observation, nowIso)
+      && (isCleanUsableFare(observation) || isSelfTransferItinerary(observation.priceNote)));
   const sorted = [...candidates].sort(compareByLowestFarePriority);
   const publishableSorted = sorted.filter(isPubliclyPublishable);
   return {
@@ -485,7 +487,7 @@ function selectTwoSignalFareObservation(
 
   const cleanPrimary = observations
     .filter(isFreshComparable)
-    .filter((observation) => !isSelfTransferItinerary(observation.priceNote))
+    .filter(isCleanUsableFare)
     .filter((observation) => !isPoorItinerarySuitability(observation))
     .sort(compareByRepresentativePriority)[0];
 
