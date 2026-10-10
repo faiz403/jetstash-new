@@ -2,6 +2,7 @@ import { routes as defaultRoutes, getRouteAirport, getRouteDestination, type Rou
 import { airports as defaultAirports, type Airport } from '@/data/airports';
 import { getFareSignalForRoute, type FareSignalObservation } from '@/lib/fare-signal';
 import { getSafeTripComFlightHandoffUrl } from '@/lib/booking-providers';
+import { OBSERVATION_FRESH_DAYS } from '@/lib/freshness-thresholds';
 
 /**
  * Exhaustive Tracked Fares (PR #140) — the data/grouping half, mirroring
@@ -101,4 +102,35 @@ export function buildTrackedFareAirportGroups(
       return { airportSlug: airport.slug, airportName: airport.name, airportCity: airport.city, entries };
     })
     .filter((group): group is TrackedFareAirportGroup => group !== null);
+}
+
+/**
+ * The ONE definition of "how many routes currently have a tracked fare", shared by
+ * the homepage coverage note, /deals and /tracked-fares (10 October 2026 customer
+ * copy / consistency batch). Before this, the homepage and /deals counted routes with
+ * ANY publishable observation while /tracked-fares counted routes with a current Fare
+ * Signal. Those agreed on a given day but drifted apart as fares aged out (and each
+ * page is regenerated on its own six-hour schedule), so the three pages could show
+ * three different numbers. All three now use this function, which counts exactly the
+ * entries /tracked-fares lists (a current Fare Signal), so a count can never exceed
+ * or fall short of the list it describes.
+ *
+ * `asOfIso` is the date the count was computed for. The pages are regenerated on a
+ * schedule, so they show it ("as of 10 October 2026") to make clear the number is a
+ * dated snapshot, not a live counter.
+ */
+export interface TrackedFareCoverage {
+  trackedRoutes: number;
+  totalRoutes: number;
+  asOfIso: string;
+  /** A Fare Signal is "current" for this many days after the check (lib/freshness-thresholds.ts). */
+  freshDays: number;
+}
+
+export function getTrackedFareCoverage(
+  routeList: Route[] = defaultRoutes,
+  nowIso: string = new Date().toISOString().slice(0, 10)
+): TrackedFareCoverage {
+  const trackedRoutes = buildTrackedFareAirportGroups(routeList, undefined, nowIso).reduce((sum, group) => sum + group.entries.length, 0);
+  return { trackedRoutes, totalRoutes: routeList.length, asOfIso: nowIso, freshDays: OBSERVATION_FRESH_DAYS };
 }

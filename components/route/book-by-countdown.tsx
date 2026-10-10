@@ -19,6 +19,7 @@ import { AffiliateLinkDisclosure } from '@/components/ui/affiliate-link-disclosu
 import { WhatsAppShareButton } from '@/components/route/whatsapp-share-button';
 import { siteConfig } from '@/lib/site-config';
 import { OBSERVATION_FRESH_DAYS } from '@/lib/freshness-thresholds';
+import { toTravellerFareNote } from '@/lib/fare-note-display';
 import { track } from '@/lib/analytics';
 
 /**
@@ -255,11 +256,11 @@ export function BookByCountdown({
             <span
               className={`text-[11px] font-semibold uppercase tracking-wide ${observationIsOld ? 'text-ink-400' : 'text-brass-700'}`}
             >
-              Verified check{observationIsOld ? ' · aged' : ''}
+              Last fare check{observationIsOld ? ' · aged' : ''}
             </span>
             <p className="mt-1 text-sm text-ink-600">
               <span className="font-semibold text-ink-900">£{observation.price.toLocaleString('en-GB')}</span>{' '}
-              {observation.priceNote} ({observation.source}, {observation.cabin}) — checked {formatBookByDate(observation.observedDate)}.
+              {toTravellerFareNote(observation.priceNote)} ({observation.source}, {observation.cabin}) — checked {formatBookByDate(observation.observedDate)}.
               {observationIsOld && ' An older check, shown for context only — not an indication of today’s price.'} See the full
               fare history below.
             </p>

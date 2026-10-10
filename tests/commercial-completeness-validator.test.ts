@@ -29,7 +29,7 @@ describe('commercial completeness reporting', () => {
     expect(fallback).toHaveLength(30);
     expect(fallback.every((row) => row.commercialHandoffType === 'google-flights')).toBe(true);
     expect(fallback.every((row) => row.exactAirportPreserved === false)).toBe(true);
-    expect(fallback.every((row) => row.currentCta === 'Search current flights')).toBe(true);
+    expect(fallback.every((row) => row.currentCta === 'Search flights on Google Flights')).toBe(true);
   });
 
   it('keeps the six unresolved fares held back at the 4 October boundary and explains each gap', () => {

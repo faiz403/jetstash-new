@@ -89,7 +89,7 @@ export function HolidayIntelligence({ destination, nowIso }: HolidayIntelligence
                       rel="nofollow sponsored noopener noreferrer"
                       className="mt-3 inline-flex items-center gap-1.5 rounded-sm bg-ink-900 px-4 py-2.5 text-sm font-semibold text-sand-50 transition-colors hover:bg-brass-600"
                     >
-                      Check live flights on Trip.com
+                      Compare flights on Trip.com
                       <ArrowUpRight className="h-4 w-4" strokeWidth={2.25} />
                     </TrackedOutboundLink>
                     <AffiliateLinkDisclosure providerName="Trip.com" className="mt-2 text-ink-500">

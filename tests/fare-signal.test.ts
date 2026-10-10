@@ -137,7 +137,7 @@ describe('Fare Signal presentation and CTA boundaries', () => {
     expect(getTripComRouteUrl('london-heathrow-mumbai')).toBeNull();
     expect(text).not.toContain('Check current price');
     expect(text).not.toContain('Trip.com');
-    expect(text).toContain('Search current flights');
+    expect(text).toContain('Search flights on Google Flights');
     expect(text).toContain('https://www.google.com/travel/flights');
     expect(text).not.toContain('Exact partner booking link is not currently verified for this route.');
   });

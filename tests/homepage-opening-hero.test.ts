@@ -99,8 +99,8 @@ describe('homepage opening hero uses the approved copy', () => {
     expect(heroSrc).not.toContain("import { routes } from '@/data/routes'");
     expect(heroSrc).not.toContain("import { getPublishableObservationsByRoute } from '@/data/fare-observations'");
     expect(sectionsSrc).toContain("import { routes } from '@/data/routes'");
-    expect(sectionsSrc).toContain("import { getPublishableObservationsByRoute } from '@/data/fare-observations'");
-    expect(sectionsSrc).toMatch(/Coverage note: \{routesWithTrackedFare\} of \{routes\.length\}/);
+    expect(sectionsSrc).toContain("import { getTrackedFareCoverage } from '@/lib/tracked-fare-groups'");
+    expect(sectionsSrc).toMatch(/Coverage note: as of \{formatChecked\(coverage\.asOfIso\)\}, \{coverage\.trackedRoutes\} of \{coverage\.totalRoutes\}/);
     expect(heroSrc).not.toMatch(/stats=\{/);
     expect(sectionsSrc).not.toMatch(/\d+ of \d+ UK routes/);
   });
