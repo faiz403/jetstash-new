@@ -27,6 +27,8 @@ type Rule = { test: RegExp; out: string | null };
 const SEGMENT_RULES: readonly Rule[] = [
   // Collection-method descriptions (no traveller value).
   { test: /^(lowest visible|cheapest clean fare visible)\b/i, out: null },
+  // A few older notes put a real disclosure after the search description in the same segment; keep it.
+  { test: /^fresh Google Flights\b.*\bSeparate tickets \/ self-combined return booking$/i, out: 'Separate tickets: outbound and return are booked separately' },
   { test: /^fresh Google Flights\b/i, out: null },
   { test: /^Google Flights, exact\b/i, out: null },
   { test: /^Google Flights returned zero results\b/i, out: null },

@@ -8,7 +8,8 @@ import { fareObservations, getPublishableObservationsByRoute } from '@/data/fare
 import { routes } from '@/data/routes';
 import { getFareSignalForRoute } from '@/lib/fare-signal';
 import { toTravellerFareNote } from '@/lib/fare-note-display';
-import { buildTrackedFareAirportGroups, formatCoverageAsOf, getTrackedFareCoverage } from '@/lib/tracked-fare-groups';
+import { buildTrackedFareAirportGroups, formatCoverageAsOf, getTrackedFareCoverage, getUkDateIso } from '@/lib/tracked-fare-groups';
+import { isSelfTransferItinerary } from '@/lib/fare-self-transfer';
 import { GENERIC_FLIGHT_SEARCH_CTA_LABEL, SERVICE_ENDED_CTA_LABEL, TRIPCOM_DEFAULT_CTA_LABEL } from '@/lib/booking-providers';
 import { footerNav, mainNav } from '@/lib/site-config';
 
@@ -31,9 +32,9 @@ function walk(dir: string, out: string[] = []): string[] {
 }
 
 describe('1. one shared coverage count', () => {
-  it('counts exactly the routes /tracked-fares lists (a current Fare Signal), for any date', () => {
+  it('counts exactly the routes /tracked-fares lists (a current Fare Signal), for the existing future eligibility dates', () => {
     for (const day of ['2026-10-09', '2026-10-14', '2026-10-20', '2026-11-05']) {
-      const coverage = getTrackedFareCoverage(routes, day);
+      const coverage = getTrackedFareCoverage(routes, new Date(day + 'T12:00:00.000Z'));
       const listed = buildTrackedFareAirportGroups(routes, undefined, day).reduce((sum, group) => sum + group.entries.length, 0);
       const current = routes.filter((route) => getFareSignalForRoute(route.slug, day).state === 'current').length;
       expect(coverage.trackedRoutes, day).toBe(listed);
@@ -43,14 +44,34 @@ describe('1. one shared coverage count', () => {
     }
   });
 
-  it('the as-of stamp carries a UK time and comes from the same evaluation instant as the count', () => {
-    expect(formatCoverageAsOf('2026-10-10T13:00:00.000Z')).toBe('10 October 2026, 14:00 BST');
-    expect(formatCoverageAsOf('2026-12-10T13:00:00.000Z')).toBe('10 December 2026, 13:00 GMT');
-    const coverage = getTrackedFareCoverage(routes, '2026-10-10', '2026-10-10T13:00:00.000Z');
-    expect(coverage.generatedAtIso).toBe('2026-10-10T13:00:00.000Z');
+  it('one captured instant drives the evaluation day, the count and the displayed stamp (UK time, BST and GMT, incl. just after UK midnight)', () => {
+    const cases: Array<[string, string, string]> = [
+      ['normal BST daytime', '2026-10-10T13:00:00.000Z', '10 October 2026, 14:00 BST'],
+      ['00:30 BST (23:30 UTC the previous day)', '2026-10-10T23:30:00.000Z', '11 October 2026, 00:30 BST'],
+      ['normal GMT daytime', '2026-12-10T13:00:00.000Z', '10 December 2026, 13:00 GMT'],
+      ['late evening GMT', '2026-12-10T23:30:00.000Z', '10 December 2026, 23:30 GMT'],
+    ];
+    for (const [label, iso, stamp] of cases) {
+      const instant = new Date(iso);
+      const coverage = getTrackedFareCoverage(routes, instant);
+      expect(coverage.generatedAtIso, label).toBe(iso);
+      expect(formatCoverageAsOf(coverage.generatedAtIso), label).toBe(stamp);
+      // The evaluation day is the UK day shown in the stamp, never the previous UTC day.
+      expect(coverage.asOfIso, label).toBe(getUkDateIso(instant));
+      const shownDay = Number(stamp.split(' ')[0]);
+      expect(Number(coverage.asOfIso.slice(8, 10)), label).toBe(shownDay);
+      // And the count is exactly the Fare Signal population for that evaluation day.
+      const current = routes.filter((route) => getFareSignalForRoute(route.slug, coverage.asOfIso).state === 'current').length;
+      expect(coverage.trackedRoutes, label).toBe(current);
+    }
+    expect(getTrackedFareCoverage(routes, new Date('2026-10-10T23:30:00.000Z')).asOfIso).toBe('2026-10-11');
+  });
+
+  it('the pages stay static: no client clock and no dynamic rendering for the stamp', () => {
     for (const file of ['components/homepage-v2/homepage-sections.tsx', 'app/deals/page.tsx', 'app/tracked-fares/page.tsx']) {
       expect(read(file)).not.toMatch(/setInterval|useEffect|force-dynamic/);
     }
+    expect(read('app/tracked-fares/page.tsx')).not.toContain('toISOString().slice(0, 10)');
   });
 
   it('the homepage, /deals and /tracked-fares all use that one helper and show an "as of" date', () => {
@@ -143,6 +164,24 @@ describe('4. internal evidence notes stay out of traveller copy (archive untouch
     expect(toTravellerFareNote(separate)).toBe('return, per person, one adult; separate tickets: not covered by one airline ticket, so a missed connection is not protected; return leg not checked; baggage not stated (no overhead bin access)');
     const clean = 'return, per person, one adult; cheapest clean fare visible (no separate-tickets or self-transfer notice); Google Flights, exact 17 Nov/1 Dec search; searched as an exact airport pair, so only itineraries actually landing at ISB were considered; Etihad, 1 stop; outbound MAN to ISB, 14 hr; connection detail shown: 3h 45m Abu Dhabi; no separate-tickets or self-transfer notice was shown for this itinerary; the return leg was not opened, so exact return timing and routing are not independently confirmed; baggage not stated';
     expect(toTravellerFareNote(clean)).toBe('return, per person, one adult; Etihad, 1 stop; outbound MAN to ISB, 14 hr; connection: 3h 45m Abu Dhabi; return leg not checked; baggage not stated');
+  });
+
+  it('every observation the original data classifies as self-transfer / separate tickets still discloses it in the traveller-facing note', () => {
+    const flagged = fareObservations.filter((observation) => isSelfTransferItinerary(observation.priceNote));
+    expect(flagged.length).toBeGreaterThan(100);
+    const empty = flagged.filter((observation) => !observation.priceNote.trim());
+    expect(empty.map((observation) => observation.id)).toEqual([]);
+    const lost = flagged.filter((observation) => !/self-transfer|separate tickets?/i.test(toTravellerFareNote(observation.priceNote)));
+    expect(lost.map((observation) => observation.id)).toEqual([]);
+  });
+
+  it('MAN-BCN 18 Aug (two one-way tickets) keeps its separate-tickets disclosure and none of the search-description wording', () => {
+    const observation = fareObservations.find((o) => o.id === 'obs-man-bcn-economy-20260818-8w-v1')!;
+    expect(isSelfTransferItinerary(observation.priceNote)).toBe(true);
+    const shown = toTravellerFareNote(observation.priceNote);
+    expect(shown).toContain('Separate tickets: outbound and return are booked separately');
+    expect(shown).not.toMatch(/Fresh Google Flights|GBP|Economy,/);
+    expect(shown).toContain('outbound direct; return direct');
   });
 
   it('unrecognised notes are kept as written, never emptied', () => {

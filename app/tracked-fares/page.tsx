@@ -37,9 +37,9 @@ export const metadata: Metadata = {
 };
 
 export default function TrackedFaresPage() {
-  const nowIso = new Date().toISOString().slice(0, 10);
+  const coverage = getTrackedFareCoverage(routes);
+  const nowIso = coverage.asOfIso;
   const airportGroups = buildTrackedFareAirportGroups(routes, undefined, nowIso);
-  const coverage = getTrackedFareCoverage(routes, nowIso);
   const trackedRouteCount = coverage.trackedRoutes;
   const airportCount = airportGroups.length;
 

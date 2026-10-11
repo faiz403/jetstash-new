@@ -115,13 +115,16 @@ export function buildTrackedFareAirportGroups(
  * entries /tracked-fares lists (a current Fare Signal), so a count can never exceed
  * or fall short of the list it describes.
  *
- * `asOfIso` is the date the count was computed for. The pages are regenerated on a
- * schedule, so they show it ("as of 10 October 2026") to make clear the number is a
- * dated snapshot, not a live counter.
+ * Everything is derived from ONE captured instant (`evaluatedAt`): the UK calendar day
+ * the Fare Signal population is evaluated for (`asOfIso`, Europe/London) and the stamp
+ * the pages show ("as of 10 October 2026, 14:00 BST") can therefore never disagree,
+ * including in the hour after UK midnight. The pages are regenerated on a schedule, so
+ * the stamp makes clear the number is a dated snapshot, not a live counter.
  */
 export interface TrackedFareCoverage {
   trackedRoutes: number;
   totalRoutes: number;
+  /** UK (Europe/London) calendar day of `generatedAtIso`; the day the count was evaluated for. */
   asOfIso: string;
   /** Full ISO timestamp of the moment this count was evaluated (page generation); shown as the "as of" time. */
   generatedAtIso: string;
@@ -136,11 +139,18 @@ export function formatCoverageAsOf(iso: string): string {
   return `${p('day')} ${p('month')} ${p('year')}, ${p('hour')}:${p('minute')} ${p('timeZoneName')}`;
 }
 
+/** YYYY-MM-DD calendar day of an instant in UK time (Europe/London). */
+export function getUkDateIso(instant: Date): string {
+  const parts = new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/London', year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(instant);
+  const p = (type: string) => parts.find((part) => part.type === type)?.value ?? '';
+  return `${p('year')}-${p('month')}-${p('day')}`;
+}
+
 export function getTrackedFareCoverage(
   routeList: Route[] = defaultRoutes,
-  nowIso: string = new Date().toISOString().slice(0, 10),
-  generatedAtIso: string = new Date().toISOString()
+  evaluatedAt: Date = new Date()
 ): TrackedFareCoverage {
-  const trackedRoutes = buildTrackedFareAirportGroups(routeList, undefined, nowIso).reduce((sum, group) => sum + group.entries.length, 0);
-  return { trackedRoutes, totalRoutes: routeList.length, asOfIso: nowIso, generatedAtIso, freshDays: OBSERVATION_FRESH_DAYS };
+  const asOfIso = getUkDateIso(evaluatedAt);
+  const trackedRoutes = buildTrackedFareAirportGroups(routeList, undefined, asOfIso).reduce((sum, group) => sum + group.entries.length, 0);
+  return { trackedRoutes, totalRoutes: routeList.length, asOfIso, generatedAtIso: evaluatedAt.toISOString(), freshDays: OBSERVATION_FRESH_DAYS };
 }
