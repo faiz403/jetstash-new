@@ -38,7 +38,7 @@ export function NoFareFallback({ cityLabel, routeSlug, hasFareSignalElsewhere = 
       <p className="mt-4 max-w-sm text-sm leading-relaxed text-ink-600">
         {hasFareSignalElsewhere
           ? <>There&apos;s no curated fare card for {cityLabel} yet, but tracked fare evidence is available on the individual route guides.</>
-          : <>We haven&apos;t logged a tracked fare for {cityLabel} yet.{tripComUrl ? ' Compare flights on Trip.com to see current options.' : ''}</>}
+          : <>We haven&apos;t logged a tracked fare for {cityLabel} yet.{tripComUrl ? ' Compare flights on Trip.com to see options.' : ''}</>}
       </p>
       {tripComUrl ? (
         <>

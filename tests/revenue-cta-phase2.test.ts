@@ -37,7 +37,7 @@ describe('Phase 2 public CTA clarity', () => {
     const html = renderToStaticMarkup(FareSignal({ signal, tripComUrl: getSafeTripComFlightHandoffUrl('london-heathrow-mumbai'), routeSlug: 'london-heathrow-mumbai' }));
     expect(html).not.toContain('Compare flights on Trip.com');
     expect(html).not.toContain('Ad · Affiliate link.');
-    expect(html).toContain('Search current flights');
+    expect(html).toContain('Search flights on Google Flights');
     expect(html).toContain('JetStash does not earn commission from this link');
   });
 });

@@ -126,7 +126,7 @@ describe('no-CTA routes still show the exact fail-closed message, in Fare Signal
     expect(tripComUrl).toBeNull();
     const signal = getFareSignalForRoute(route.slug, NOW_ISO);
     const html = renderToStaticMarkup(FareSignal({ signal, tripComUrl, routeSlug: route.slug })).replace(/\s+/g, ' ');
-    expect(html).toContain('Search current flights');
+    expect(html).toContain('Search flights on Google Flights');
     expect(html).not.toContain('Exact partner booking link is not currently verified for this route.');
     expect(html).not.toContain('Check current price');
   });
@@ -162,7 +162,7 @@ describe('verification-pending routes remain fail-closed on route-service claims
     const html = renderToStaticMarkup(
       FareSignal({ signal, tripComUrl, routeSlug: route.slug, routeDirectness: null, routeStatusLabel: null, routeAirlineLabel: null })
     ).replace(/\s+/g, ' ');
-    expect(html.replace(/&#x27;/g, "'")).toContain("JetStash hasn't logged a current fare for this route yet.");
+    expect(html.replace(/&#x27;/g, "'")).toContain("JetStash hasn't logged a fare for this route yet.");
     expect(html).not.toContain('Route service');
     expect(html).not.toMatch(/\bDirect\b/);
     // The CTA is legitimate here — it comes from booking-providers.ts's own
@@ -183,7 +183,7 @@ describe('verification-pending routes remain fail-closed on route-service claims
     const { route } = presentationFor(unverifiedNoCta!.slug);
     const signal = getFareSignalForRoute(route.slug, NOW_ISO);
     const html = renderToStaticMarkup(FareSignal({ signal, tripComUrl: null, routeSlug: route.slug, isServiceEnded: false })).replace(/\s+/g, ' ');
-    expect(html).toContain('Search current flights');
+    expect(html).toContain('Search flights on Google Flights');
     expect(html).not.toContain('Exact partner booking link is not currently verified for this route.');
   });
 
@@ -193,7 +193,7 @@ describe('verification-pending routes remain fail-closed on route-service claims
       FareSignal({ signal, tripComUrl: null, routeSlug: 'birmingham-ahmedabad', isServiceEnded: true })
     ).replace(/\s+/g, ' ');
     expect(html).toContain('Exact partner booking link is not currently verified for this route.');
-    expect(html).not.toContain('Search current flights');
+    expect(html).not.toContain('Search flights on Google Flights');
   });
 });
 
@@ -224,7 +224,7 @@ describe('no evidence or trust wording was accidentally lost — full 88-route s
       );
       const hasCtaText = html.includes('Compare flights on Trip.com') || html.includes(SERVICE_ENDED_CTA_LABEL);
       const hasFailClosedText = html.includes('Exact partner booking link is not currently verified for this route.');
-      const hasGenericFallback = html.includes('Search current flights');
+      const hasGenericFallback = html.includes('Search flights on Google Flights');
       // Exactly one of the three must be true.
       expect([hasCtaText, hasFailClosedText, hasGenericFallback].filter(Boolean).length, route.slug).toBe(1);
       expect(hasCtaText, route.slug).toBe(Boolean(tripComUrl));

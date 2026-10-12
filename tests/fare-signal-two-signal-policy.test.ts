@@ -85,6 +85,6 @@ describe('two-signal fare policy', () => {
     expect(text).toContain('Self-transfer');
     expect(text).toContain('19 hr 35 min layover at Edinburgh Airport in Edinburgh');
     expect(text).toContain('checked 29 September 2026');
-    expect(text).toContain('Search current flights');
+    expect(text).toContain('Search flights on Google Flights');
   });
 });

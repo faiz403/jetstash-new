@@ -55,7 +55,7 @@ describe('decision-first route hierarchy', () => {
   it('keeps a safe next action on representative no-fare routes', async () => {
     for (const slug of ['manchester-delhi', 'london-heathrow-dhaka', 'london-gatwick-athens']) {
       const html = await renderRoute(slug);
-      expect(html).toMatch(/Compare (?:current connecting )?flights on Trip\.com|Search current flights/);
+      expect(html).toMatch(/Compare (?:connecting )?flights on Trip\.com|Search flights on Google Flights/);
     }
   });
 });

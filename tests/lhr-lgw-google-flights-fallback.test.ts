@@ -50,7 +50,7 @@ function renderRouteFareSignal(slug: string) {
 
 describe('1-2. LHR->JED and LGW->DXB get the temporary current-flight-search fallback', () => {
   for (const slug of ['london-heathrow-jeddah', 'london-gatwick-dubai']) {
-    it(`${slug}: renders "Search current flights" linking to Google Flights, no Trip.com CTA`, () => {
+    it(`${slug}: renders "Search flights on Google Flights" linking to Google Flights, no Trip.com CTA`, () => {
       const { html, tripComUrl } = renderRouteFareSignal(slug);
       expect(tripComUrl).toBeNull();
       expect(html).toContain(GENERIC_FLIGHT_SEARCH_CTA_LABEL);
@@ -63,7 +63,7 @@ describe('1-2. LHR->JED and LGW->DXB get the temporary current-flight-search fal
 
 describe('3-4. LHR->Dhaka and LHR->Sylhet get the fallback despite unverified route status', () => {
   for (const slug of ['london-heathrow-sylhet']) {
-    it(`${slug}: unverified status still gets "Search current flights" (fallback makes no verification claim)`, () => {
+    it(`${slug}: unverified status still gets "Search flights on Google Flights" (fallback makes no verification claim)`, () => {
       const { html, tripComUrl, presentation } = renderRouteFareSignal(slug);
       expect(presentation.status).toBe('unverified');
       expect(tripComUrl).toBeNull();
@@ -125,7 +125,7 @@ describe('12-13. MAN->Delhi and MAN->Mumbai retain the restored service-ended Tr
 });
 
 describe('14. generic fallback never renders when a monetised handoff exists', () => {
-  it('every route with a resolved tripComUrl never renders "Search current flights"', () => {
+  it('every route with a resolved tripComUrl never renders "Search flights on Google Flights"', () => {
     for (const route of routes) {
       const airport = getRouteAirport(route);
       const dest = getRouteDestination(route);
@@ -199,7 +199,7 @@ describe('shared condition renders correctly on the full route page (not just th
     const element = RoutePage({ params: Promise.resolve({ slug: 'london-heathrow-jeddah' }) });
     return element.then((el) => {
       const html = renderToStaticMarkup(el);
-      const occurrences = html.split('Search current flights').length - 1;
+      const occurrences = html.split('Search flights on Google Flights').length - 1;
       expect(occurrences).toBe(1);
     });
   });
@@ -207,6 +207,6 @@ describe('shared condition renders correctly on the full route page (not just th
   it('a normal monetised route (manchester-dubai) never renders the generic fallback anywhere on the page', async () => {
     const element = await RoutePage({ params: Promise.resolve({ slug: 'manchester-dubai' }) });
     const html = renderToStaticMarkup(element);
-    expect(html).not.toContain('Search current flights');
+    expect(html).not.toContain('Search flights on Google Flights');
   });
 });

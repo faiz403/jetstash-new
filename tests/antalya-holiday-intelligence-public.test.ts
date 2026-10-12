@@ -53,7 +53,7 @@ describe('public Antalya holiday intelligence', () => {
     expect(statuses).toEqual([]);
     expect(getTripComFlightHandoffUrl('london-gatwick-antalya')).toBeNull();
     expect(componentSrc).toContain('{handoff.airportName} → {destination.city}');
-    expect(componentSrc).toContain('Check live flights on Trip.com');
+    expect(componentSrc).toContain('Compare flights on Trip.com');
     expect(componentSrc).toContain('<AffiliateLinkDisclosure providerName="Trip.com"');
     expect(componentSrc).toContain('Flight actions are shown on the individual {destination.city} route guides above.');
     expect(componentSrc).not.toContain('No airport-specific partner handoff is available for Antalya yet.');

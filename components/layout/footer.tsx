@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { footerNav, siteConfig } from '@/lib/site-config';
 import { Logomark } from '../ui/logomark';
 import { CookieSettingsButton } from '../ui/cookie-settings-button';
+import { FooterPriceNotice } from './footer-price-notice';
 
 export function Footer() {
   return (
@@ -53,10 +54,7 @@ export function Footer() {
             <p>© {new Date().getFullYear()} JetStash. All rights reserved.</p>
             <CookieSettingsButton />
           </div>
-          <p className="max-w-xl">
-            Prices shown across this site are indicative and subject to change. Always confirm the final price
-            with the airline or operator before booking.
-          </p>
+          <FooterPriceNotice />
         </div>
       </div>
     </footer>

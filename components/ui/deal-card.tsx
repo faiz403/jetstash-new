@@ -6,6 +6,7 @@ import { getEffectiveRoutePresentation } from '@/lib/route-status-copy';
 import { getFareRangeSummary } from '@/data/fare-observations';
 import { getSafeTripComFlightHandoffUrl, SERVICE_ENDED_CTA_LABEL, TRIPCOM_DEFAULT_CTA_LABEL, PROVIDER_REL } from '@/lib/booking-providers';
 import { getFareFreshnessState, daysBetweenIso, OBSERVATION_STALE_DAYS } from '@/lib/freshness-thresholds';
+import { toTravellerFareNote } from '@/lib/fare-note-display';
 import { Plane, ArrowUpRight, AlertTriangle } from 'lucide-react';
 import { Badge } from './badge';
 import { DestinationVisual } from './destination-visual';
@@ -152,7 +153,7 @@ export function DealCard({ deal, nowIso, headingLevel = 'h3' }: { deal: Deal; no
                   ? `£${range.min.toLocaleString('en-GB')}–£${range.max.toLocaleString('en-GB')}`
                   : `£${range.min.toLocaleString('en-GB')}`}
               </span>
-              <span className="text-sm text-ink-400">{range.priceNote}</span>
+              <span className="text-sm text-ink-400">{toTravellerFareNote(range.priceNote)}</span>
             </div>
             <JourneyConsequenceLine consequences={range.journeyConsequences} />
             {fareSourceLabel && <p className="mt-1 text-sm font-medium text-ink-500">{fareSourceLabel}</p>}

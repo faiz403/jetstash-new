@@ -184,7 +184,7 @@ describe('rendered Fare Signal -- label appears in the primary/prominent area, n
     // rather than the old plain fail-closed sentence — see
     // GenericFlightSearchFallback in components/route/fare-signal.tsx.
     const html = renderFareSignalForRoute('manchester-barcelona');
-    expect(html).toContain('Search current flights');
+    expect(html).toContain('Search flights on Google Flights');
     expect(html).toContain(SELF_TRANSFER_LABEL);
   });
 

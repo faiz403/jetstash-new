@@ -3,7 +3,8 @@ import Link from 'next/link';
 import { PageHero } from '@/components/sections/page-hero';
 import { DealsExplorer } from '@/components/sections/deals-explorer';
 import { deals, formatChecked } from '@/data/deals';
-import { fareObservations, getPublishableObservationsByRoute } from '@/data/fare-observations';
+import { fareObservations } from '@/data/fare-observations';
+import { formatCoverageAsOf, getTrackedFareCoverage } from '@/lib/tracked-fare-groups';
 import { routes } from '@/data/routes';
 import { siteConfig } from '@/lib/site-config';
 import { JsonLd, dealsListSchema } from '@/components/seo/json-ld';
@@ -36,8 +37,7 @@ export default function DealsPage() {
   // The hero count is route-level Fare Signal coverage. DealsExplorer below
   // intentionally remains a curated card catalogue, so its card count is not
   // expected to equal this route-level total.
-  const nowIsoForCoverage = new Date().toISOString().slice(0, 10);
-  const routesWithTrackedFare = routes.filter((r) => getPublishableObservationsByRoute(r.slug, nowIsoForCoverage).length > 0).length;
+  const coverage = getTrackedFareCoverage(routes);
 
   return (
     <>
@@ -48,7 +48,7 @@ export default function DealsPage() {
         title="Fares we're tracking"
         description={
           <>
-            We're currently tracking fares on {routesWithTrackedFare} of our {routes.length} routes — coverage is
+            As of {formatCoverageAsOf(coverage.generatedAtIso)}, we have a tracked fare from the last {coverage.freshDays} days on {coverage.trackedRoutes} of our {coverage.totalRoutes} routes — coverage is
             being expanded gradually using manually verified observations, not a live price feed. Every fare shown
             below is a real check logged by hand, dated. Where we've checked a route more than
             once, you'll see the range we've actually observed — never a single price left to quietly go stale.
@@ -61,7 +61,7 @@ export default function DealsPage() {
           </>
         }
         stats={[
-          { value: `${routesWithTrackedFare} of ${routes.length}`, label: 'Routes with a tracked fare' },
+          { value: `${coverage.trackedRoutes} of ${coverage.totalRoutes}`, label: `Routes with a tracked fare, as of ${formatCoverageAsOf(coverage.generatedAtIso)}` },
           { value: String(fareObservations.length), label: 'Fare checks logged' },
           { value: String(airportCount), label: 'UK airports' },
           { value: formatChecked(latestCheck), label: 'Most recent check' },
