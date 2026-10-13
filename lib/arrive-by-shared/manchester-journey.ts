@@ -31,9 +31,9 @@ import { resolveDestination, type DestinationResolutionConfig } from './destinat
 
 const ENDPOINT = 'https://routes.googleapis.com/directions/v2:computeRoutes';
 
-async function callGoogle(apiKey: string, body: unknown): Promise<GoogleRoutesResponse> {
+async function callGoogle(apiKey: string, body: unknown, fetchImpl: typeof fetch): Promise<GoogleRoutesResponse> {
   try {
-    const response = await fetch(ENDPOINT, {
+    const response = await fetchImpl(ENDPOINT, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -54,13 +54,14 @@ export async function computeManchesterJourney(
   apiKey: string,
   input: GooglePrototypeInput,
   destinationRules: DestinationResolutionConfig,
+  fetchImpl: typeof fetch = fetch,
 ): Promise<GooglePrototypeResult | GoogleDestinationPendingResult> {
   const timeZone = GOOGLE_ARRIVE_BY_ORIGINS[input.originId].timeZone;
 
   // Destination-safety gate, shared with Pakistan's engine (see
   // destination-resolution.ts in this same directory). The transit/car
   // engine below is never reached until this resolves to CONFIRMED.
-  const destinationResolution = await resolveDestination(apiKey, input.destination, destinationRules);
+  const destinationResolution = await resolveDestination(apiKey, input.destination, destinationRules, fetchImpl);
   const confirmed = Boolean(input.confirmedPlaceId) && destinationResolution.placeId === input.confirmedPlaceId && destinationResolution.confidence === 'NEEDS_CONFIRMATION';
   const selectedCandidate = destinationResolution.confidence === 'NEEDS_SELECTION' && input.selectedPlaceId
     ? destinationResolution.candidates?.find((candidate) => candidate.placeId === input.selectedPlaceId)
@@ -91,7 +92,7 @@ export async function computeManchesterJourney(
   // ready time can actually catch it. The second request below advances
   // past that itinerary's first important service.
   const deadlineIso = localDateTimeToIso(input.deadline, timeZone);
-  const primaryResponse = await callGoogle(apiKey, googleRoutesRequest(resolvedInput, { arrivalTime: deadlineIso }));
+  const primaryResponse = await callGoogle(apiKey, googleRoutesRequest(resolvedInput, { arrivalTime: deadlineIso }), fetchImpl);
   let primary: ReturnType<typeof normaliseGoogleItinerary> | null = null;
   try {
     primary = normaliseGoogleItinerary(primaryResponse);
@@ -103,14 +104,14 @@ export async function computeManchesterJourney(
     const immediateDeparture = localDateTimeToIso(input.availableAt, timeZone);
     let immediateDriveResponse: GoogleRoutesResponse | null;
     try {
-      immediateDriveResponse = await callGoogle(apiKey, googleDriveRequest(resolvedInput, immediateDeparture));
+      immediateDriveResponse = await callGoogle(apiKey, googleDriveRequest(resolvedInput, immediateDeparture), fetchImpl);
     } catch {
       immediateDriveResponse = null;
     }
     return buildGoogleNoTransitPrototypeResult(input, immediateDriveResponse);
   }
   const missedServiceDeparture = new Date(Date.parse(primary.firstImportantService.departureTime) + 60000).toISOString();
-  const fallbackResponse = await callGoogle(apiKey, googleRoutesRequest(resolvedInput, { departureTime: missedServiceDeparture }));
+  const fallbackResponse = await callGoogle(apiKey, googleRoutesRequest(resolvedInput, { departureTime: missedServiceDeparture }), fetchImpl);
   const preliminary = buildGooglePrototypeResult(input, primaryResponse, fallbackResponse, new Date().toISOString());
   const driveResponses: {
     immediateCar?: GoogleRoutesResponse | null;
@@ -119,13 +120,13 @@ export async function computeManchesterJourney(
   if (!preliminary.judgement.meetsDeadline) {
     const immediateDeparture = localDateTimeToIso(input.availableAt, timeZone);
     try {
-      driveResponses.immediateCar = await callGoogle(apiKey, googleDriveRequest(resolvedInput, immediateDeparture));
+      driveResponses.immediateCar = await callGoogle(apiKey, googleDriveRequest(resolvedInput, immediateDeparture), fetchImpl);
     } catch {
       driveResponses.immediateCar = null;
     }
   } else if (!preliminary.fallbackJudgement.meetsDeadline) {
     try {
-      driveResponses.missedServiceCarRescue = await callGoogle(apiKey, googleDriveRequest(resolvedInput, primary.firstImportantService.departureTime));
+      driveResponses.missedServiceCarRescue = await callGoogle(apiKey, googleDriveRequest(resolvedInput, primary.firstImportantService.departureTime), fetchImpl);
     } catch {
       driveResponses.missedServiceCarRescue = null;
     }

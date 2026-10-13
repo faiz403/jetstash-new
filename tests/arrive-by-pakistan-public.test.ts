@@ -59,9 +59,9 @@ describe('legacy Pakistan page redirects to the unified shell (Phase 4)', () => 
 });
 
 describe('public API rate limiting', () => {
-  it('uses the shared Arrive By-wide limiter (lib/arrive-by-shared/rate-limit.ts, itself built on lib/form-security.ts), not a Pakistan-only implementation', () => {
+  it('uses the shared durable calculation limiter, not a Pakistan-only allowance', () => {
     expect(publicApiRouteSrc).toMatch(/from ['"]@\/lib\/arrive-by-shared\/rate-limit['"]/);
-    expect(publicApiRouteSrc).toContain('checkArriveByRateLimit');
+    expect(publicApiRouteSrc).toContain('await checkPublicJourneyRateLimit(request)');
   });
 
   it('returns 429 with the specified recovery copy when limited', () => {
@@ -69,9 +69,9 @@ describe('public API rate limiting', () => {
     expect(publicApiRouteSrc).toContain("You've checked several journeys in a short time. Please wait a moment and try again.");
   });
 
-  it('is documented as best-effort, not a hard cap or distributed guarantee — matches the founder-approved framing', () => {
-    expect(publicApiRouteSrc).toMatch(/best-effort/i);
-    expect(publicApiRouteSrc).not.toMatch(/hard (spend )?cap/i);
+  it('documents the shared durable safeguards and backend fail-closed behaviour', () => {
+    expect(publicApiRouteSrc).toMatch(/durable calculation limiter and monthly Google allowance/);
+    expect(publicApiRouteSrc).toMatch(/fails closed/);
   });
 });
 

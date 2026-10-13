@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { computePakistanJourney } from '@/lib/arrive-by-pakistan/journey';
 import { cleanInput } from '@/lib/arrive-by-pakistan/clean-input';
-import { checkArriveByRateLimit } from '@/lib/arrive-by-shared/rate-limit';
+import { checkPublicJourneyRateLimit } from '@/lib/arrive-by-shared/rate-limit';
+import { PublicCallBudgetUnavailable, runPublicGoogleCalculation } from '@/lib/arrive-by-shared/public-call-budget';
 
 export const dynamic = 'force-dynamic';
 
@@ -12,20 +13,17 @@ export const dynamic = 'force-dynamic';
  * lives) — this file only adds what a public, unauthenticated surface
  * needs: rate limiting.
  *
- * checkArriveByRateLimit (lib/arrive-by-shared/rate-limit.ts) shares one
- * budget across every Arrive By public endpoint, keyed by client only, not
- * per airport — so switching airports never grants a fresh allowance. Same
- * best-effort, in-memory, per-serverless-instance limiter already used by
- * the four public form endpoints — not a distributed WAF, not a hard spend
- * cap. That's a deliberate, disclosed choice for a small beta: it is
- * proven in production for this codebase's other public routes, adds no
- * new infrastructure, and the existing Google budget alert remains the
- * (non-hard) backstop above it. Revisit with stronger, distributed
- * enforcement only if real beta traffic shows this isn't enough.
+ * The durable calculation limiter and monthly Google allowance are shared
+ * with the canonical journey API and every legacy public endpoint. Switching
+ * airports or APIs never grants a fresh allowance. Production fails closed
+ * when the shared backend is unavailable.
  */
 
 export async function POST(request: NextRequest) {
-  const rate = checkArriveByRateLimit(request);
+  const rate = await checkPublicJourneyRateLimit(request);
+  if (rate.unavailable) {
+    return NextResponse.json({ error: "Arrive By can't run live checks right now. Please try again later." }, { status: 503 });
+  }
   if (rate.limited) {
     return NextResponse.json({ error: "You've checked several journeys in a short time. Please wait a moment and try again." }, { status: 429 });
   }
@@ -34,9 +32,10 @@ export async function POST(request: NextRequest) {
   if (!apiKey) return NextResponse.json({ error: 'Live journey lookup is not configured.' }, { status: 503 });
   try {
     const input = cleanInput(await request.json());
-    const result = await computePakistanJourney(apiKey, input);
+    const result = await runPublicGoogleCalculation((meteredFetch) => computePakistanJourney(apiKey, input, meteredFetch));
     return NextResponse.json(result);
   } catch (error) {
+    if (error instanceof PublicCallBudgetUnavailable) return NextResponse.json({ error: error.message }, { status: 503 });
     const message = error instanceof Error ? error.message : 'Arrive By could not check this journey.';
     return NextResponse.json({ error: message }, { status: 422 });
   }

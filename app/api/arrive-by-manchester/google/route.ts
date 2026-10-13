@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { cleanInput } from '@/lib/arrive-by-shared/manchester-clean-input';
 import { computeManchesterJourney } from '@/lib/arrive-by-shared/manchester-journey';
 import { getAirportProfile, canEnablePublicly, POLICY_PENDING } from '@/lib/arrive-by-shared/airport-registry';
-import { checkArriveByRateLimit } from '@/lib/arrive-by-shared/rate-limit';
+import { checkPublicJourneyRateLimit } from '@/lib/arrive-by-shared/rate-limit';
+import { PublicCallBudgetUnavailable, runPublicGoogleCalculation } from '@/lib/arrive-by-shared/public-call-budget';
 
 export const dynamic = 'force-dynamic';
 
@@ -14,13 +15,15 @@ export const dynamic = 'force-dynamic';
  * public, unauthenticated surface needs: rate limiting and a registry
  * public-enablement check.
  *
- * checkArriveByRateLimit (lib/arrive-by-shared/rate-limit.ts) shares one
- * budget across every Arrive By public endpoint -- Pakistan and Manchester
- * together -- keyed by client only, not per airport, so switching airports
- * never grants a fresh allowance.
+ * The durable calculation limiter and monthly Google allowance are shared
+ * with the canonical journey API and every legacy public endpoint. Switching
+ * airports or APIs never grants a fresh allowance.
  */
 export async function POST(request: NextRequest) {
-  const rate = checkArriveByRateLimit(request);
+  const rate = await checkPublicJourneyRateLimit(request);
+  if (rate.unavailable) {
+    return NextResponse.json({ error: "Arrive By can't run live checks right now. Please try again later." }, { status: 503 });
+  }
   if (rate.limited) {
     return NextResponse.json({ error: "You've checked several journeys in a short time. Please wait a moment and try again." }, { status: 429 });
   }
@@ -37,9 +40,10 @@ export async function POST(request: NextRequest) {
     const destinationRules = profile.destinationRules.expectedCountryCodes === POLICY_PENDING
       ? {}
       : { expectedCountryCodes: profile.destinationRules.expectedCountryCodes, regionBias: profile.destinationRules.regionBias };
-    const result = await computeManchesterJourney(apiKey, input, destinationRules);
+    const result = await runPublicGoogleCalculation((meteredFetch) => computeManchesterJourney(apiKey, input, destinationRules, meteredFetch));
     return NextResponse.json(result);
   } catch (error) {
+    if (error instanceof PublicCallBudgetUnavailable) return NextResponse.json({ error: error.message }, { status: 503 });
     const message = error instanceof Error ? error.message : 'Arrive By could not check this journey.';
     return NextResponse.json({ error: message }, { status: 422 });
   }
