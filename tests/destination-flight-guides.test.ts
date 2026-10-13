@@ -98,7 +98,8 @@ describe('destination flight guides', () => {
   it('renders continuation handoffs only for missing route guides and fails closed otherwise', () => {
     const source = readFileSync(join(process.cwd(), 'components/destination/destination-flight-guides.tsx'), 'utf8');
     expect(source).toContain('getTripComDestinationHandoffUrl');
-    expect(source).toContain('Compare flights on Trip.com');
+    expect(source).toContain('getTripComSearchCtaLabel');
+    expect(source).toContain('TRIPCOM_NO_FARE_SEARCH_NOTE');
     expect(source).toContain('<AffiliateLinkDisclosure providerName="Trip.com"');
     expect(source).toContain('entry.href');
     expect(source).toContain('blocked');

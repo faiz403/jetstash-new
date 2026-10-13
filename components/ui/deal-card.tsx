@@ -4,7 +4,7 @@ import { getRouteByAirportAndDestination } from '@/data/routes';
 import { routeStatusEvents } from '@/data/route-status-events';
 import { getEffectiveRoutePresentation } from '@/lib/route-status-copy';
 import { getFareRangeSummary } from '@/data/fare-observations';
-import { getSafeTripComFlightHandoffUrl, SERVICE_ENDED_CTA_LABEL, TRIPCOM_DEFAULT_CTA_LABEL, PROVIDER_REL } from '@/lib/booking-providers';
+import { getSafeTripComFlightHandoffUrl, SERVICE_ENDED_CTA_LABEL, getTripComSearchCtaLabel, TRIPCOM_FRESH_SEARCH_NOTE, TRIPCOM_NO_FARE_SEARCH_NOTE, PROVIDER_REL } from '@/lib/booking-providers';
 import { getFareFreshnessState, daysBetweenIso, OBSERVATION_STALE_DAYS } from '@/lib/freshness-thresholds';
 import { toTravellerFareNote } from '@/lib/fare-note-display';
 import { Plane, ArrowUpRight, AlertTriangle } from 'lucide-react';
@@ -331,12 +331,13 @@ export function DealCard({ deal, nowIso, headingLevel = 'h3' }: { deal: Deal; no
               rel={PROVIDER_REL}
               className="mt-5 inline-flex items-center justify-center gap-1.5 rounded-sm bg-ink-900 px-4 py-3 text-sm font-semibold text-sand-50 transition-all duration-200 hover:bg-brass-600 active:scale-[0.985]"
             >
-              {presentation?.status === 'service-ended' ? SERVICE_ENDED_CTA_LABEL : TRIPCOM_DEFAULT_CTA_LABEL}
+              {presentation?.status === 'service-ended' ? SERVICE_ENDED_CTA_LABEL : getTripComSearchCtaLabel(matchedRoute?.slug)}
               <ArrowUpRight className="h-4 w-4" strokeWidth={2.25} />
             </TrackedOutboundLink>
             <AffiliateLinkDisclosure providerName="Trip.com" className="mt-2 text-center text-ink-400">
               Check the itinerary, baggage allowance and booking terms before paying.
             </AffiliateLinkDisclosure>
+            <p className="mt-1.5 text-center text-xs text-ink-400">{range ? TRIPCOM_FRESH_SEARCH_NOTE : TRIPCOM_NO_FARE_SEARCH_NOTE}</p>
           </>
         ) : (
           // Fail-closed, deliberately understated — no CTA, no generic Trip.com link.

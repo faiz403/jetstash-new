@@ -4,8 +4,9 @@ import { useEffect, useId, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { AlertTriangle, ArrowUpRight, ChevronDown, Search, X } from 'lucide-react';
 import { formatChecked } from '@/data/deals';
-import { PROVIDER_REL, TRIPCOM_DEFAULT_CTA_LABEL, TRIPCOM_FRESH_SEARCH_NOTE } from '@/lib/booking-providers';
+import { PROVIDER_REL, getTripComSearchCtaLabel, TRIPCOM_FRESH_SEARCH_NOTE } from '@/lib/booking-providers';
 import { TrackedOutboundLink } from '@/components/ui/tracked-outbound-link';
+import { SELF_TRANSFER_EXPLANATION } from '@/lib/fare-self-transfer';
 import { AffiliateLinkDisclosure } from '@/components/ui/affiliate-link-disclosure';
 import type { TrackedFareAirportGroup, TrackedFareEntry } from '@/lib/tracked-fare-groups';
 import { FareAgeWarning } from '@/components/route/fare-age-warning';
@@ -267,6 +268,7 @@ function TrackedFareCard({ airportCity, entry, nowIso }: { airportCity: string; 
       </div>
       <p className="mt-1 text-xs text-ink-500">{observation.airline}{directness ? ` · ${directness}` : ''}</p>
       <JourneyConsequenceLine consequences={observation.journeyConsequences} />
+      {observation.isSelfTransfer && <p className="mt-1 text-xs leading-relaxed text-ink-600">{SELF_TRANSFER_EXPLANATION}</p>}
       <p className="mt-2 text-xs text-ink-400">
         {formatChecked(observation.departureDate)} – {formatChecked(observation.returnDate)}
       </p>
@@ -287,7 +289,7 @@ function TrackedFareCard({ airportCity, entry, nowIso }: { airportCity: string; 
               rel={PROVIDER_REL}
               className="inline-flex items-center justify-center gap-1.5 rounded-sm bg-ink-900 px-4 py-2.5 text-sm font-semibold text-sand-50 transition-all hover:bg-brass-600 active:scale-[0.985]"
             >
-              {TRIPCOM_DEFAULT_CTA_LABEL}
+              {getTripComSearchCtaLabel(entry.routeSlug)}
               <ArrowUpRight className="h-4 w-4" strokeWidth={2.25} />
             </TrackedOutboundLink>
             <AffiliateLinkDisclosure providerName="Trip.com" className="text-ink-400" />

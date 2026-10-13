@@ -231,8 +231,8 @@ describe('4. internal evidence notes stay out of traveller copy (archive untouch
 
 describe('6. one honest flight-search CTA vocabulary (labels only; no URL touched)', () => {
   it('labels describe what each link does and avoid "live" / "current price" claims', () => {
-    expect(TRIPCOM_DEFAULT_CTA_LABEL).toBe('Compare flights on Trip.com');
-    expect(SERVICE_ENDED_CTA_LABEL).toBe('Compare connecting flights on Trip.com');
+    expect(TRIPCOM_DEFAULT_CTA_LABEL).toBe('Search flights on Trip.com');
+    expect(SERVICE_ENDED_CTA_LABEL).toBe('Search connecting flights on Trip.com');
     expect(GENERIC_FLIGHT_SEARCH_CTA_LABEL).toBe('Search flights on Google Flights');
     for (const label of [TRIPCOM_DEFAULT_CTA_LABEL, SERVICE_ENDED_CTA_LABEL, GENERIC_FLIGHT_SEARCH_CTA_LABEL]) {
       expect(label).not.toMatch(/\blive\b|\bcurrent\b|today|price/i);

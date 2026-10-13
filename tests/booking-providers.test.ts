@@ -386,7 +386,7 @@ describe('Trip.com CTA is primary, singular, and correctly wired on Fare Signal'
   });
 
   it('uses the required CTA wording', () => {
-    expect(fareSignalSrc).toContain('TRIPCOM_DEFAULT_CTA_LABEL');
+    expect(fareSignalSrc).toContain('getTripComSearchCtaLabel');
     expect(routePageSrc).not.toContain('Compare flights on Trip.com');
   });
 

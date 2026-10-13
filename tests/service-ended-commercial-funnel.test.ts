@@ -1,3 +1,4 @@
+import { getTripComSearchCtaLabel } from '@/lib/booking-providers';
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'fs';
 import { join } from 'path';
@@ -48,7 +49,7 @@ describe('1-2. Service-ended + connectingAlternative + exact handoff → connect
 describe('3. CTA wording never implies a nonstop/direct is currently available', () => {
   it('SERVICE_ENDED_CTA_LABEL names neither "direct" nor "nonstop", and never claims to book a flight', () => {
     expect(SERVICE_ENDED_CTA_LABEL.toLowerCase()).not.toMatch(/direct|nonstop|book this/);
-    expect(SERVICE_ENDED_CTA_LABEL).toBe('Compare connecting flights on Trip.com');
+    expect(SERVICE_ENDED_CTA_LABEL).toBe('Search connecting flights on Trip.com');
   });
 
   it('manchester-delhi and manchester-mumbai route pages never render a nonstop-implying CTA phrase', async () => {
@@ -210,7 +211,7 @@ describe('12. Heathrow/Gatwick blocked routes remain blocked — no loosened saf
     )!;
     const element = await RoutePage({ params: Promise.resolve({ slug: blockedRoute.slug }) });
     const html = renderToStaticMarkup(element);
-    expect(html).not.toContain('Compare connecting flights on Trip.com');
+    expect(html).not.toContain('Search connecting flights on Trip.com');
   });
 });
 
@@ -240,7 +241,7 @@ describe('representative unaffected routes stay unaffected', () => {
     for (const slug of ['manchester-islamabad', 'manchester-dubai']) {
       const element = await RoutePage({ params: Promise.resolve({ slug }) });
       const html = renderToStaticMarkup(element);
-      expect(html, slug).toContain('Compare flights on Trip.com');
+      expect(html, slug).toContain(getTripComSearchCtaLabel(slug));
       expect(html, slug).not.toContain(SERVICE_ENDED_CTA_LABEL);
     }
   });

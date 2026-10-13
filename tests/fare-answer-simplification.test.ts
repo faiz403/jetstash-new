@@ -95,7 +95,7 @@ describe('3. Live rendered output — MAN-ISB, MAN-DXB, MAN-Mumbai, and a no-han
     const html = renderToStaticMarkup(element);
     expect(html).toContain('Fare check');
     expect(html).not.toContain('Fare Signal');
-    expect(html).toContain('Compare flights on Trip.com');
+    expect(html).toContain('Search Manchester to Dubai flights on Trip.com');
   });
 
   it('manchester-mumbai: service-ended status intact, current-connecting Trip.com CTA renders with non-nonstop-implying wording, unaffected by the rename', async () => {
@@ -108,8 +108,9 @@ describe('3. Live rendered output — MAN-ISB, MAN-DXB, MAN-Mumbai, and a no-han
     const element = await RoutePage({ params: Promise.resolve({ slug: 'manchester-mumbai' }) });
     const html = renderToStaticMarkup(element);
     expect(html).toContain('Direct service ended');
-    expect(html).toContain('Compare connecting flights on Trip.com');
+    expect(html).toContain('Search connecting flights on Trip.com');
     expect(html).not.toContain('Compare flights on Trip.com');
+    expect(html).not.toContain('Search Manchester to Mumbai flights on Trip.com');
   });
 
   it('london-heathrow-jeddah (no safe Trip.com handoff): still renders no Trip.com CTA anywhere — this pass invents no new CTA', async () => {
@@ -119,6 +120,7 @@ describe('3. Live rendered output — MAN-ISB, MAN-DXB, MAN-Mumbai, and a no-han
     const element = await RoutePage({ params: Promise.resolve({ slug }) });
     const html = renderToStaticMarkup(element);
     expect(html).not.toContain('Compare flights on Trip.com');
+    expect(html).not.toMatch(/Search [^<>]*flights on Trip\.com/);
   });
 });
 
