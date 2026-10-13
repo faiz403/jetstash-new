@@ -183,7 +183,7 @@ describe('Defect 2 follow-up (founder review) — cabin-specific fallback wordin
   it('the CTA below the fallback (route-guide link, Trip.com button) is structurally unchanged', () => {
     expect(dealCardSrc).toContain('More on the route guide');
     expect(dealCardSrc).toContain('Booking-window guidance on the route guide');
-    expect(dealCardSrc).toContain('TRIPCOM_DEFAULT_CTA_LABEL');
+    expect(dealCardSrc).toContain('getTripComSearchCtaLabel');
     expect(dealCardSrc).toContain('Direct flight comparison is not available for this airport yet.');
   });
 
@@ -278,15 +278,24 @@ describe('Defect 2 follow-up (founder review) — cabin-specific fallback wordin
   // visitor receives for the two cards at the centre of this whole defect.
   it('man-isb-business genuinely renders "No Business class fare checks logged yet" — the real card Participant 1 misread', () => {
     const dealDef = deals.find((d) => d.id === 'man-isb-business')!;
-    const html = renderToStaticMarkup(DealCard({ deal: dealDef }));
+    const html = renderToStaticMarkup(DealCard({ deal: dealDef, nowIso }));
     expect(html).toContain('No Business class fare checks logged yet — check the live price below');
     expect(html).not.toMatch(/>No fare checks logged yet/);
   });
 
   it('man-isb-economy genuinely renders its real fare range, untouched by the wording fix (only the no-fare branch changed)', () => {
     const dealDef = deals.find((d) => d.id === 'man-isb-economy')!;
-    const html = renderToStaticMarkup(DealCard({ deal: dealDef }));
+    const html = renderToStaticMarkup(DealCard({ deal: dealDef, nowIso: '2026-10-12' }));
     expect(html).toMatch(/£\d/);
     expect(html).not.toContain('fare checks logged yet');
+  });
+
+  it('MAN→ISB Economy fails closed after verification expiry rather than displaying its historical range as current', () => {
+    const dealDef = deals.find((d) => d.id === 'man-isb-economy')!;
+    expect(getFareRangeSummary('manchester-islamabad', 'Economy', '2026-10-12')).not.toBeNull();
+    expect(getFareRangeSummary('manchester-islamabad', 'Economy', '2026-10-13')).toBeNull();
+    const html = renderToStaticMarkup(DealCard({ deal: dealDef, nowIso: '2026-10-13' }));
+    expect(html).not.toMatch(/£\d/);
+    expect(html).toContain('Verification pending');
   });
 });

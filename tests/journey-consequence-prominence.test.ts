@@ -72,7 +72,7 @@ describe('Manchester-Istanbul (£153 self-transfer, Barcelona airport change) �
   it('shows the price and the decisive consequence together, before the CTA — PR #232: BOTH legs are independently decisive (each states its own long layover), so both durations now appear', () => {
     const priceIdx = html.indexOf('£153');
     const consequenceIdx = html.indexOf('Self-transfer · Barcelona airport change · Outbound: 27h 55m · Return: 26h');
-    const ctaIdx = html.indexOf('Compare flights on Trip.com');
+    const ctaIdx = html.indexOf('Search Manchester to Istanbul flights on Trip.com');
     expect(priceIdx).toBeGreaterThan(-1);
     expect(consequenceIdx).toBeGreaterThan(priceIdx);
     expect(consequenceIdx).toBeLessThan(ctaIdx);
@@ -153,7 +153,7 @@ describe('arrival-airport mismatch disclosure — no live example remains, so it
   it('leads the consequence line with the arrival-airport mismatch, before the CTA', () => {
     const priceIdx = html.indexOf('£336');
     const mismatchIdx = html.indexOf('Arrives at SHJ');
-    const ctaIdx = html.indexOf('Compare flights on Trip.com');
+    const ctaIdx = html.indexOf('Search Manchester to Dubai flights on Trip.com');
     expect(priceIdx).toBeGreaterThan(-1);
     expect(mismatchIdx).toBeGreaterThan(priceIdx);
     expect(mismatchIdx).toBeLessThan(ctaIdx);
@@ -250,7 +250,7 @@ describe('DealCard — the specific "lower card" Astra\'s own review quoted dire
     const html = renderDealCardById('man-lhe-business');
     const priceIdx = html.indexOf('£3,051');
     const consequenceIdx = html.indexOf('Self-transfer · Outbound: 34h 50m · Return: 43h 20m');
-    const ctaIdx = html.indexOf('Compare flights on Trip.com');
+    const ctaIdx = html.indexOf('Search Manchester to Lahore flights on Trip.com');
     expect(priceIdx).toBeGreaterThan(-1);
     expect(consequenceIdx).toBeGreaterThan(priceIdx);
     expect(consequenceIdx).toBeLessThan(ctaIdx);
@@ -264,7 +264,7 @@ describe('DealCard — the specific "lower card" Astra\'s own review quoted dire
     // must not start asserting "DXB" as itinerary evidence either.
     expect(html).not.toContain('Arrives at SHJ');
     expect(html).not.toContain('Arrives at DXB');
-    expect(html).toContain('Compare flights on Trip.com');
+    expect(html).toContain('Search Manchester to Dubai flights on Trip.com');
   });
 
   it('control: a genuinely clean direct fare (Glasgow-Bodrum, nonstop both ways) shows no journey-consequence line at all — the new line adds zero density to an ordinary card', () => {

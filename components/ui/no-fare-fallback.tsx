@@ -1,5 +1,5 @@
 import { SearchX, ArrowUpRight } from 'lucide-react';
-import { getSafeTripComFlightHandoffUrl, PROVIDER_REL, TRIPCOM_DEFAULT_CTA_LABEL } from '@/lib/booking-providers';
+import { getSafeTripComFlightHandoffUrl, PROVIDER_REL, getTripComSearchCtaLabel, TRIPCOM_NO_FARE_SEARCH_NOTE } from '@/lib/booking-providers';
 import { TrackedOutboundLink } from './tracked-outbound-link';
 import { AffiliateLinkDisclosure } from './affiliate-link-disclosure';
 
@@ -38,7 +38,7 @@ export function NoFareFallback({ cityLabel, routeSlug, hasFareSignalElsewhere = 
       <p className="mt-4 max-w-sm text-sm leading-relaxed text-ink-600">
         {hasFareSignalElsewhere
           ? <>There&apos;s no curated fare card for {cityLabel} yet, but tracked fare evidence is available on the individual route guides.</>
-          : <>We haven&apos;t logged a tracked fare for {cityLabel} yet.{tripComUrl ? ' Compare flights on Trip.com to see options.' : ''}</>}
+          : <>We haven&apos;t logged a tracked fare for {cityLabel} yet.{tripComUrl ? ' Search flights on Trip.com to see options.' : ''}</>}
       </p>
       {tripComUrl ? (
         <>
@@ -50,12 +50,13 @@ export function NoFareFallback({ cityLabel, routeSlug, hasFareSignalElsewhere = 
             rel={PROVIDER_REL}
             className="mt-5 inline-flex items-center gap-1.5 rounded-sm bg-ink-900 px-5 py-3 text-sm font-semibold text-sand-50 transition-all hover:bg-brass-600 active:scale-[0.985]"
           >
-            {TRIPCOM_DEFAULT_CTA_LABEL}
+            {getTripComSearchCtaLabel(routeSlug)}
             <ArrowUpRight className="h-4 w-4" strokeWidth={2.25} />
           </TrackedOutboundLink>
           <AffiliateLinkDisclosure providerName="Trip.com" className="mt-3 text-ink-400">
             Check the itinerary, baggage allowance and booking terms before paying.
           </AffiliateLinkDisclosure>
+          <p className="mt-1.5 text-xs text-ink-400">{TRIPCOM_NO_FARE_SEARCH_NOTE}</p>
         </>
       ) : (
         <p className="mt-3 text-xs text-ink-400">Direct flight comparison is not available for this airport yet.</p>

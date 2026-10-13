@@ -14,7 +14,7 @@ import {
 } from '@/lib/booking-intelligence';
 import { computeReadiness, VERDICT_COPY, type EngineSnapshot, type TravelReadySignal } from '@/lib/travel-intelligence-engine';
 import { getRouteBySlug, getRouteAirport, getRouteDestination } from '@/data/routes';
-import { getSafeTripComFlightHandoffUrl, NO_VERIFIED_PARTNER_LINK_NOTE, PROVIDER_REL, TRIPCOM_DEFAULT_CTA_LABEL } from '@/lib/booking-providers';
+import { getSafeTripComFlightHandoffUrl, NO_VERIFIED_PARTNER_LINK_NOTE, PROVIDER_REL, getTripComSearchCtaLabel, TRIPCOM_FRESH_SEARCH_NOTE, TRIPCOM_NO_FARE_SEARCH_NOTE } from '@/lib/booking-providers';
 import { AffiliateLinkDisclosure } from '@/components/ui/affiliate-link-disclosure';
 import { WhatsAppShareButton } from '@/components/route/whatsapp-share-button';
 import { siteConfig } from '@/lib/site-config';
@@ -133,7 +133,7 @@ export function BookByCountdown({
   // itself is still fully communicated by bookByTopLabel/bookByDateLabel
   // and this panel's own state-dependent copy above; the clickable action
   // text is now the same shared label every ordinary Trip.com handoff uses.
-  const bookLabel = TRIPCOM_DEFAULT_CTA_LABEL;
+  const bookLabel = getTripComSearchCtaLabel(snapshot.routeSlug);
   const brassBook = snapshot.state !== 'too-early' && snapshot.state !== 'pre-surge';
 
   const observation = snapshot.latestObservation;
@@ -309,7 +309,7 @@ export function BookByCountdown({
                 onClick={() => track('bookby_cta_click', { route: snapshot.routeSlug, state: snapshot.state })}
                 className="inline-flex items-center gap-1.5 text-sm font-semibold text-ink-900 underline decoration-ink-300 underline-offset-4 transition-colors hover:text-brass-600 hover:decoration-brass-600"
               >
-                {TRIPCOM_DEFAULT_CTA_LABEL}
+                {bookLabel}
                 <ArrowUpRight className="h-4 w-4" strokeWidth={2.25} />
               </a>
             )}
@@ -366,9 +366,12 @@ export function BookByCountdown({
         />
       </div>
       {bookingUrl && (
-        <AffiliateLinkDisclosure providerName="Trip.com" className="mt-2.5 text-ink-400">
-          Check the itinerary, baggage allowance and booking terms before paying.
-        </AffiliateLinkDisclosure>
+        <>
+          <AffiliateLinkDisclosure providerName="Trip.com" className="mt-2.5 text-ink-400">
+            Check the itinerary, baggage allowance and booking terms before paying.
+          </AffiliateLinkDisclosure>
+          <p className="mt-1.5 text-xs text-ink-400">{observation ? TRIPCOM_FRESH_SEARCH_NOTE : TRIPCOM_NO_FARE_SEARCH_NOTE}</p>
+        </>
       )}
 
       {/* ── Why this advice? ──────────────────────────────────────────────── */}

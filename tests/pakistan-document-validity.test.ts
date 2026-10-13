@@ -266,7 +266,7 @@ describe('18. No Trip.com/CTA changes', () => {
   it('the booking-CTA/Trip.com handoff block of the component is untouched by this fix', () => {
     expect(componentSrc).toContain('getTripComFlightHandoff(matchedRoute.slug, airportSlugForCta, destinationSlug)');
     expect(componentSrc).toContain('SERVICE_ENDED_CTA_LABEL');
-    expect(componentSrc).toContain('TRIPCOM_DEFAULT_CTA_LABEL');
+    expect(componentSrc).toContain('getTripComSearchCtaLabel');
   });
 });
 

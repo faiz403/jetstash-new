@@ -102,7 +102,7 @@ describe('public Manchester API uses the shared, registry-gated engine', () => {
 
   it('uses the shared Arrive By-wide rate limiter', () => {
     expect(publicApiRouteSrc).toMatch(/from ['"]@\/lib\/arrive-by-shared\/rate-limit['"]/);
-    expect(publicApiRouteSrc).toContain('checkArriveByRateLimit');
+    expect(publicApiRouteSrc).toContain('await checkPublicJourneyRateLimit(request)');
   });
 
   it('returns 429 with the specified recovery copy when limited', () => {

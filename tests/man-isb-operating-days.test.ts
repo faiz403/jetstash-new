@@ -1,6 +1,9 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { getRouteBySlug, routes } from '@/data/routes';
+import { routeStatusEvents } from '@/data/route-status-events';
+import { getEffectiveRoutePresentation } from '@/lib/route-status-copy';
+import { getFareSignalForRoute } from '@/lib/fare-signal';
 import { getComparableOptionsByObservationIds } from '@/lib/smart-fare-route-adapter';
 import { deriveJourneyChoice } from '@/lib/journey-choice';
 import { getSafeTripComFlightHandoffUrl } from '@/lib/booking-providers';
@@ -17,9 +20,15 @@ import RoutePage from '@/app/routes/[slug]/page';
 
 const NOW_ISO = '2026-09-12';
 
-async function renderManIsbPage() {
-  const element = await RoutePage({ params: Promise.resolve({ slug: 'manchester-islamabad' }) });
-  return renderToStaticMarkup(element);
+async function renderManIsbPage(day = NOW_ISO) {
+  vi.useFakeTimers({ toFake: ['Date'] });
+  try {
+    vi.setSystemTime(new Date(`${day}T12:00:00.000Z`));
+    const element = await RoutePage({ params: Promise.resolve({ slug: 'manchester-islamabad' }) });
+    return renderToStaticMarkup(element);
+  } finally {
+    vi.useRealTimers();
+  }
 }
 
 describe('1. MAN->ISB exposes the operating-day information', () => {
@@ -28,10 +37,43 @@ describe('1. MAN->ISB exposes the operating-day information', () => {
     expect(route.frequency).toMatch(/Mon.*Tue.*Thu.*Sat/);
   });
 
-  it('renders live on the route page', async () => {
+  it('renders on the route page while the recorded verification is valid', async () => {
     const html = await renderManIsbPage();
     // '&' is HTML-escaped to '&amp;' in rendered static markup.
     expect(html).toMatch(/Mon, Tue, Thu (&|&amp;) Sat/);
+  });
+});
+
+describe('route verification expiry does not rewrite standing service or fare evidence', () => {
+  it('allows PIA schedule guidance on 12 October, separately from the connecting £480 recheck', async () => {
+    const route = getRouteBySlug('manchester-islamabad')!;
+    expect(getEffectiveRoutePresentation(route, routeStatusEvents, '2026-10-12').status).toBe('direct');
+    expect(await renderManIsbPage('2026-10-12')).toMatch(/Mon, Tue, Thu (&|&amp;) Sat/);
+    const signal = getFareSignalForRoute(route.slug, '2026-10-12');
+    expect(signal.state).toBe('current');
+    expect(signal.observation?.id).toBe('obs-man-isb-economy-20260825-recheck-v1');
+    expect(signal.observation?.price).toBe(480);
+    expect(signal.observation?.directness).toBe('connecting');
+    expect(signal.observation?.airline).toBe('Riyadh Air');
+    expect(signal.observation?.id).not.toBe('obs-man-isb-economy-20260825-8w-v1');
+  });
+
+  it('fails closed on 13 October without promoting the retired £460 fare or stale weekdays', async () => {
+    const route = getRouteBySlug('manchester-islamabad')!;
+    const presentation = getEffectiveRoutePresentation(route, routeStatusEvents, '2026-10-13');
+    expect(presentation.status).toBe('unverified');
+    expect(presentation.frequency).toBeNull();
+    const signal = getFareSignalForRoute(route.slug, '2026-10-13');
+    expect(signal.state).toBe('none');
+    expect(signal.observation).toBeNull();
+    const html = await renderManIsbPage('2026-10-13');
+    expect(html).not.toMatch(/Mon, Tue, Thu (&|&amp;) Sat/);
+    expect(html).not.toContain('4x weekly direct');
+    expect(html).not.toContain('Fare spotted');
+    // Expiry suppresses public claims; it does not mutate the standing archive.
+    expect(route.isDirect).toBe(true);
+    expect(route.airlineSlugs).toEqual(['pia']);
+    expect(route.verification?.status).toBe('verified');
   });
 });
 
@@ -112,7 +154,7 @@ describe('10. Trip.com handoff remains unchanged', () => {
 
   it('the Trip.com CTA still renders with the consolidated label, unaffected by this fix', async () => {
     const html = await renderManIsbPage();
-    expect(html).toContain('Compare flights on Trip.com');
+    expect(html).toContain('Search Manchester to Islamabad flights on Trip.com');
   });
 });
 
@@ -137,6 +179,7 @@ describe('12. no direct fare is invented', () => {
     const html = await renderManIsbPage();
     // The frequency/schedule fact is new; no £ fare claim should accompany it.
     const frequencyLine = html.match(/4x weekly direct[^<]*/)?.[0] ?? '';
+    expect(frequencyLine).not.toBe('');
     expect(frequencyLine).not.toMatch(/£\d/);
   });
 });

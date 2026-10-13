@@ -3,7 +3,8 @@ import { cleanRoadInput } from '@/lib/arrive-by-shared/clean-road-input';
 import { computeRoadJourney } from '@/lib/arrive-by-shared/road-journey';
 import { getAirportCapability, getEstimateLabel, resolveAirportProfile } from '@/lib/arrive-by-shared/airport-capability';
 import { resolveRoutingOrigin, POLICY_PENDING } from '@/lib/arrive-by-shared/airport-registry';
-import { checkArriveByRateLimit } from '@/lib/arrive-by-shared/rate-limit';
+import { checkPublicJourneyRateLimit } from '@/lib/arrive-by-shared/rate-limit';
+import { PublicCallBudgetUnavailable, runPublicGoogleCalculation } from '@/lib/arrive-by-shared/public-call-budget';
 
 export const dynamic = 'force-dynamic';
 
@@ -26,17 +27,17 @@ export const dynamic = 'force-dynamic';
  * route_testable or blocked airport fails closed with 404 -- and, like an
  * unknown code, without revealing which, and before any Google call.
  *
- * Shares the product-wide rate-limit budget (arrive-by:<client>, 5/60s)
- * with every other public Arrive By endpoint. Airport search is local and
- * never reaches this route, so it does not consume that budget. Same
- * best-effort, in-memory limiter as the other public routes -- not a
- * distributed WAF or a hard spend cap; revisit before any indexing or
- * promotion.
+ * Shares the durable product-wide calculation allowance (5/60s) and monthly
+ * Google call budget with the canonical journey API and legacy endpoints.
+ * Airport search stays local and analytics uses its independent allowance.
  */
 const AIRPORT_UNAVAILABLE = 'Arrive By can\'t calculate this airport journey yet.';
 
 export async function POST(request: NextRequest) {
-  const rate = checkArriveByRateLimit(request);
+  const rate = await checkPublicJourneyRateLimit(request);
+  if (rate.unavailable) {
+    return NextResponse.json({ error: "Arrive By can't run live checks right now. Please try again later." }, { status: 503 });
+  }
   if (rate.limited) {
     return NextResponse.json({ error: "You've checked several journeys in a short time. Please wait a moment and try again." }, { status: 429 });
   }
@@ -61,14 +62,17 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const result = await computeRoadJourney(
+    const destinationRules = { expectedCountryCodes: profile.destinationRules.expectedCountryCodes, regionBias: profile.destinationRules.regionBias };
+    const result = await runPublicGoogleCalculation((meteredFetch) => computeRoadJourney(
       apiKey,
       { code: profile.code, displayName: profile.displayName, timeZone: profile.timeZone, origin: resolveRoutingOrigin(profile) },
       { ...input, airportCode: profile.code },
-      { expectedCountryCodes: profile.destinationRules.expectedCountryCodes, regionBias: profile.destinationRules.regionBias },
-    );
+      destinationRules,
+      meteredFetch,
+    ));
     return NextResponse.json({ ...result, estimateLabel: getEstimateLabel(profile) });
   } catch (error) {
+    if (error instanceof PublicCallBudgetUnavailable) return NextResponse.json({ error: error.message }, { status: 503 });
     // Only our own validation message is passed through; anything else (a malformed
     // Google payload, say) becomes a generic failure -- never a raw upstream error.
     const message = error instanceof Error && error.message === 'Enter a valid date and time.' ? error.message : 'Arrive By could not check this journey.';

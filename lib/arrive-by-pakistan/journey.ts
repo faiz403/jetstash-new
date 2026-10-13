@@ -10,13 +10,14 @@ import type { PakistanJourneyInput, PakistanJourneyResult } from './types';
  * Asia/Karachi timezone, and the PK-only destination policy with region
  * bias 'pk'. Behaviour is unchanged from before that engine was extracted.
  */
-export async function computePakistanJourney(apiKey: string, input: PakistanJourneyInput): Promise<PakistanJourneyResult> {
+export async function computePakistanJourney(apiKey: string, input: PakistanJourneyInput, fetchImpl: typeof fetch = fetch): Promise<PakistanJourneyResult> {
   const airport = getPakistanAirport(input.airportCode);
   const result = await computeRoadJourney(
     apiKey,
     { code: airport.code, displayName: airport.displayName, timeZone: airport.timeZone, origin: { kind: 'address', value: airport.routingAddress } },
     input,
     { expectedCountryCodes: ['PK'], regionBias: 'pk' },
+    fetchImpl,
   );
   return result as PakistanJourneyResult;
 }

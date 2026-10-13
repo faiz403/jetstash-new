@@ -1,3 +1,4 @@
+import { getTripComSearchCtaLabel } from '@/lib/booking-providers';
 import { describe, it, expect } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { readFileSync } from 'node:fs';
@@ -44,6 +45,7 @@ function presentationFor(slug: string, evaluationDateIso: string = NOW_ISO) {
 describe('the hero no longer contains the duplicate Trip.com CTA', () => {
   it('the hero CTA button, its wording, its caption and the continuation cue are all gone from the route page', () => {
     expect(routePageSrc).not.toContain('Compare flights on Trip.com');
+    expect(routePageSrc).not.toContain('getTripComSearchCtaLabel');
     expect(routePageSrc).not.toContain('More JetStash intelligence below');
     expect(routePageSrc).not.toContain('route-intelligence-continuation-cue');
     // The itinerary/baggage caveat is gone from the hero specifically —
@@ -107,7 +109,7 @@ describe('Fare Signal is the one remaining first commercial decision unit', () =
     expect(html).toContain('20 October 2026'); // dates
     expect(html).toContain('Route service'); // PR #155 distinction (mismatch case)
     expect(html).toContain('PIA · Direct');
-    expect(html).toContain('Compare flights on Trip.com'); // CTA
+    expect(html).toContain('Search Manchester to Islamabad flights on Trip.com'); // CTA
     expect(html).toContain('Ad · Affiliate link.</span> JetStash earns commission on eligible bookings through this link, at no extra cost to you.');
     expect(html).toContain('Check the itinerary, baggage allowance and booking terms before paying.');
   });
@@ -167,7 +169,7 @@ describe('verification-pending routes remain fail-closed on route-service claims
     expect(html).not.toMatch(/\bDirect\b/);
     // The CTA is legitimate here — it comes from booking-providers.ts's own
     // separate dashboard-verified map, not from route-service evidence.
-    expect(html).toContain('Compare flights on Trip.com');
+    expect(html).toContain('Search Birmingham to Ahmedabad flights on Trip.com');
   });
 
   it('a route with neither a fare nor a verified CTA (unverified + no handoff) shows the generic current-flight-search fallback, not a silent gap (Google Flights fallback, 12 Sept 2026, founder-approved — explicitly includes unverified routes like LHR-Dhaka/LHR-Sylhet since the fallback makes no service-verification claim)', () => {
@@ -222,7 +224,7 @@ describe('no evidence or trust wording was accidentally lost — full 88-route s
           isServiceEnded,
         })
       );
-      const hasCtaText = html.includes('Compare flights on Trip.com') || html.includes(SERVICE_ENDED_CTA_LABEL);
+      const hasCtaText = html.includes(getTripComSearchCtaLabel(route.slug)) || html.includes(SERVICE_ENDED_CTA_LABEL);
       const hasFailClosedText = html.includes('Exact partner booking link is not currently verified for this route.');
       const hasGenericFallback = html.includes('Search flights on Google Flights');
       // Exactly one of the three must be true.

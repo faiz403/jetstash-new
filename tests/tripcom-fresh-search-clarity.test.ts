@@ -40,21 +40,21 @@ describe('1. one shared source of truth for the wording', () => {
   });
 
   it('fare-signal.tsx and tracked-fares-explorer.tsx both import the shared constant rather than hand-typing their own wording', () => {
-    expect(fareSignalSrc).toContain("TRIPCOM_FRESH_SEARCH_NOTE } from '@/lib/booking-providers'");
+    expect(fareSignalSrc).toMatch(/import \{[^}]*TRIPCOM_FRESH_SEARCH_NOTE[^}]*\} from '@\/lib\/booking-providers'/);
     expect(explorerSrc).toContain("TRIPCOM_FRESH_SEARCH_NOTE } from '@/lib/booking-providers'");
-    expect(fareSignalSrc).toContain('{TRIPCOM_FRESH_SEARCH_NOTE}');
+    expect(fareSignalSrc).toContain('hasDisplayedFare ? TRIPCOM_FRESH_SEARCH_NOTE : TRIPCOM_NO_FARE_SEARCH_NOTE');
     expect(explorerSrc).toContain('{TRIPCOM_FRESH_SEARCH_NOTE}');
   });
 });
 
 describe('2. wording preserves the required meaning and implies nothing false', () => {
   it('states Trip.com opens a fresh/new search', () => {
-    expect(TRIPCOM_FRESH_SEARCH_NOTE).toMatch(/new route search/i);
+    expect(TRIPCOM_FRESH_SEARCH_NOTE).toMatch(/new search/i);
   });
 
   it('tells the customer to re-enter dates/itinerary to compare like for like', () => {
-    expect(TRIPCOM_FRESH_SEARCH_NOTE).toMatch(/re-enter/i);
-    expect(TRIPCOM_FRESH_SEARCH_NOTE).toMatch(/like for like/i);
+    expect(TRIPCOM_FRESH_SEARCH_NOTE).toMatch(/enter your travel dates/i);
+    expect(TRIPCOM_FRESH_SEARCH_NOTE).toMatch(/Select Return/i);
   });
 
   it('never implies the observed fare is still available, live, or automatically carried across', () => {
@@ -96,7 +96,7 @@ describe('3. appears on the two intended Fare Signal → Trip.com handoff surfac
   });
 
   it('/tracked-fares TrackedFareCard: the note sits inside the same conditional branch as the Trip.com CTA (renders only when tripComUrl exists)', () => {
-    expect(explorerSrc).toMatch(/tripComUrl \? \(\s*<>[\s\S]*TRIPCOM_DEFAULT_CTA_LABEL[\s\S]*TRIPCOM_FRESH_SEARCH_NOTE[\s\S]*<\/>\s*\) : \(/);
+    expect(explorerSrc).toMatch(/tripComUrl \? \(\s*<>[\s\S]*getTripComSearchCtaLabel[\s\S]*TRIPCOM_FRESH_SEARCH_NOTE[\s\S]*<\/>\s*\) : \(/);
   });
 
   it('/tracked-fares: every current entry with a real handoff carries the note, none of the no-handoff entries would (source-conditional, not per-entry duplicated text)', () => {
@@ -118,8 +118,8 @@ describe('4. not repeated excessively and not shown on unrelated links', () => {
     expect(occurrences).toBe(2); // 1 import + 1 usage
   });
 
-  it('DealCard is untouched: it shows a range/summary, not a single dated itinerary, and keeps its own existing caution copy', () => {
-    expect(dealCardSrc).not.toContain('TRIPCOM_FRESH_SEARCH_NOTE');
+  it('DealCard explains the fresh search while retaining its itinerary and baggage warning', () => {
+    expect(dealCardSrc).toContain('range ? TRIPCOM_FRESH_SEARCH_NOTE : TRIPCOM_NO_FARE_SEARCH_NOTE');
     expect(dealCardSrc).toContain('Check the itinerary, baggage allowance and booking terms');
   });
 
