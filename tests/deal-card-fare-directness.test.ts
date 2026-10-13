@@ -23,7 +23,9 @@ import { getTripComRouteUrl } from '@/lib/booking-providers';
  * in data/deals.ts for the full resolution order.
  */
 
-const NOW_ISO = new Date().toISOString().slice(0, 10);
+// These positive integration fixtures exercise recorded evidence while verified.
+// Expired evidence has separate explicit boundary assertions below.
+const NOW_ISO = '2026-10-12';
 
 describe('getDealFareDirectnessLabel — a route being direct never implies a specific displayed fare is direct', () => {
   it('Manchester-Dubai (a verified-direct route) displays "Connecting" for its Gulf Air fare, never "Direct flight"', () => {
@@ -152,6 +154,19 @@ describe('FareRangeSummary.observedDirectness aggregates per-observation fareDir
     const range = getFareRangeSummary('manchester-islamabad', 'Economy', NOW_ISO);
     expect(range).not.toBeNull();
     expect(range!.observedDirectness).toBeUndefined();
+  });
+
+  it.each([
+    ['manchester-islamabad', 'man-isb-economy', '2026-10-12', '2026-10-13'],
+    ['manchester-lahore', 'man-lhe-economy', '2026-10-14', '2026-10-15'],
+  ])('%s stops publishing its fare range and direct-service badge after verification expires', (slug, dealId, valid, expired) => {
+    const deal = deals.find((d) => d.id === dealId)!;
+    expect(getFareRangeSummary(slug, 'Economy', valid)).not.toBeNull();
+    expect(getDealDirectnessLabel(deal, valid)).toBe('Direct flight');
+    expect(getFareRangeSummary(slug, 'Economy', expired)).toBeNull();
+    expect(getDealDirectnessLabel(deal, expired)).not.toBe('Direct flight');
+    expect(getDealFareDirectnessLabel(deal, expired)).not.toBe('Direct flight');
+    expect(getDealFareDirectnessLabel(deal, expired)).not.toBe('Connecting');
   });
 
   it('manchester-mumbai now resolves to a real, evidenced "connecting" once the 18 August Weekly Full Fare Refresh #1 observation supplied its first ever stated fareDirectness value (previously undefined: its only observation was explicitly \'unknown\', which never counts toward an aggregate)', () => {

@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { renderToStaticMarkup } from 'react-dom/server';
@@ -91,9 +91,22 @@ describe('1. one shared coverage count', () => {
 
 describe('2. "Verified check" is gone', () => {
   it('a route page with a recheck says "Last fare check", never "Verified check"', async () => {
-    const html = renderToStaticMarkup(await RoutePage({ params: Promise.resolve({ slug: 'manchester-islamabad' }) }));
-    expect(html).toContain('Last fare check');
-    expect(html).not.toContain('Verified check');
+    // The positive wording fixture needs publishable evidence, not an expired route.
+    vi.useFakeTimers({ toFake: ['Date'] });
+    try {
+      vi.setSystemTime(new Date('2026-10-12T12:00:00.000Z'));
+      const html = renderToStaticMarkup(await RoutePage({ params: Promise.resolve({ slug: 'manchester-islamabad' }) }));
+      expect(html).toContain('Last fare check');
+      expect(html).not.toContain('Verified check');
+      vi.setSystemTime(new Date('2026-10-13T12:00:00.000Z'));
+      const expired = renderToStaticMarkup(await RoutePage({ params: Promise.resolve({ slug: 'manchester-islamabad' }) }));
+      expect(getPublishableObservationsByRoute('manchester-islamabad', '2026-10-13')).toEqual([]);
+      expect(expired).not.toContain('Last fare check');
+      expect(expired).not.toContain('Verified check');
+      expect(expired).not.toContain('Fare spotted');
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it('no component or page source still says "Verified check"', () => {
@@ -195,10 +208,18 @@ describe('4. internal evidence notes stay out of traveller copy (archive untouch
   });
 
   it('a rendered route page no longer shows the methodology wording in fare history', async () => {
-    const html = renderToStaticMarkup(await RoutePage({ params: Promise.resolve({ slug: 'manchester-islamabad' }) }));
-    expect(html).not.toContain('exact airport pair');
-    expect(html).not.toContain('badge text shown on the row');
-    expect(html).not.toContain('against the previous comparable check');
+    // Expiry hides history entirely; that must not make this display test vacuous.
+    vi.useFakeTimers({ toFake: ['Date'] });
+    try {
+      vi.setSystemTime(new Date(`${NOW}T12:00:00.000Z`));
+      const html = renderToStaticMarkup(await RoutePage({ params: Promise.resolve({ slug: 'manchester-islamabad' }) }));
+      expect(html).toContain('Fare history &amp; current example');
+      expect(html).not.toContain('exact airport pair');
+      expect(html).not.toContain('badge text shown on the row');
+      expect(html).not.toContain('against the previous comparable check');
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it('the display transform is used only for display, never by selection or Fare Watcher logic', () => {

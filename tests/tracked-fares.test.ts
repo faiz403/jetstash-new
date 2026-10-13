@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { afterEach, beforeEach, describe, it, expect, vi } from 'vitest';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import { renderToStaticMarkup } from 'react-dom/server';
@@ -164,13 +164,66 @@ describe('7, 8 & 9. search matching — destination, country, airport, case-inse
 });
 
 describe('10. the page itself — live stat, terminology, cross-link, no fabricated CTA', () => {
-  const element = TrackedFaresPage();
-  const html = renderToStaticMarkup(element);
+  const daytimeInstant = '2026-10-12T12:00:00.000Z';
+  const daytimeUkDay = '2026-10-12';
+  let html: string;
+
+  // Scope the clock to page tests and render after setting it, not at module load.
+  // Expected UK days below are explicit fixtures, independent of the coverage helper.
+  beforeEach(() => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date(daytimeInstant));
+    html = renderToStaticMarkup(TrackedFaresPage());
+  });
+  afterEach(() => vi.useRealTimers());
+
+  const currentFareCount = (ukDay: string) => routes.filter((route) => getFareSignalForRoute(route.slug, ukDay).state === 'current').length;
+  const renderedHeroCount = (markup: string) => {
+    // Read the actual hero statistic, not a matching number elsewhere on the page.
+    const match = markup.match(/<dd\b[^>]*>(\d+) of (\d+)<\/dd>/);
+    expect(match, 'the rendered hero must contain its coverage statistic').not.toBeNull();
+    return { current: Number(match![1]), total: Number(match![2]) };
+  };
+  const assertCoverage = (markup: string, ukDay: string) => {
+    expect(renderedHeroCount(markup)).toEqual({ current: currentFareCount(ukDay), total: routes.length });
+  };
 
   it('the hero stat matches the live count exactly, never a hand-typed figure', () => {
-    const liveCount = routes.filter((r) => getFareSignalForRoute(r.slug, new Date().toISOString().slice(0, 10)).state === 'current').length;
-    expect(html).toContain(`${liveCount} of ${routes.length}`);
+    assertCoverage(html, daytimeUkDay);
     expect(pageSrc).not.toMatch(/value: ['"]\d+ of \d+['"]/);
+  });
+
+  it.each([
+    ['ordinary BST daytime', '2026-10-12T12:00:00.000Z', '2026-10-12'],
+    ['just before UK midnight', '2026-10-12T22:59:59.000Z', '2026-10-12'],
+    ['UK midnight while UTC is still yesterday', '2026-10-12T23:00:00.000Z', '2026-10-13'],
+    ['00:30 BST while UTC is still yesterday', '2026-10-12T23:30:00.000Z', '2026-10-13'],
+    ['after UTC midnight', '2026-10-13T00:00:00.000Z', '2026-10-13'],
+    ['ordinary GMT daytime', '2026-12-10T13:00:00.000Z', '2026-12-10'],
+    ['before the spring clock change', '2026-03-29T00:30:00.000Z', '2026-03-29'],
+    ['after the spring clock change', '2026-03-29T01:30:00.000Z', '2026-03-29'],
+    ['before the autumn clock change', '2026-10-25T00:30:00.000Z', '2026-10-25'],
+    ['after the autumn clock change', '2026-10-25T01:30:00.000Z', '2026-10-25'],
+  ])('the hero matches independently eligible Fare Signals: %s', (_label, instant, ukDay) => {
+    vi.setSystemTime(new Date(instant));
+    assertCoverage(renderToStaticMarkup(TrackedFaresPage()), ukDay);
+  });
+
+  it('changes the hero population when eligibility changes at UK midnight, not one hour later', () => {
+    vi.setSystemTime(new Date('2026-10-12T22:59:59.000Z'));
+    const before = renderToStaticMarkup(TrackedFaresPage());
+    assertCoverage(before, '2026-10-12');
+    vi.setSystemTime(new Date('2026-10-12T23:00:00.000Z'));
+    const after = renderToStaticMarkup(TrackedFaresPage());
+    assertCoverage(after, '2026-10-13');
+    expect(renderedHeroCount(after).current).toBeLessThan(renderedHeroCount(before).current);
+  });
+
+  it('rejects an incorrect hero count even if a correct count appears elsewhere', () => {
+    const wrongCount = currentFareCount(daytimeUkDay) + 1;
+    const wrongHero = html.replace(/(<dd\b[^>]*>)\d+ of/, `$1${wrongCount} of`);
+    expect(wrongHero).not.toBe(html);
+    expect(() => assertCoverage(`${wrongHero}<p>${currentFareCount(daytimeUkDay)} of ${routes.length}</p>`, daytimeUkDay)).toThrow();
   });
 
   it('never uses "deal", "cheap", "saving" or "best" anywhere on the page or its card — evidence, not a marketing selection', () => {
