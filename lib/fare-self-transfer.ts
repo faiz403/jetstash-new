@@ -38,6 +38,8 @@
  */
 
 export const SELF_TRANSFER_LABEL = 'Self-transfer itinerary';
+export const SELF_TRANSFER_EXPLANATION =
+  'Self-transfer may involve separate tickets, collecting and rechecking baggage, and reduced protection if a connection is missed.';
 
 const NEGATION_PATTERNS: RegExp[] = [
   /\bno\s+self-transfer\b/i,

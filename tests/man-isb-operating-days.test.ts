@@ -154,7 +154,7 @@ describe('10. Trip.com handoff remains unchanged', () => {
 
   it('the Trip.com CTA still renders with the consolidated label, unaffected by this fix', async () => {
     const html = await renderManIsbPage();
-    expect(html).toContain('Compare flights on Trip.com');
+    expect(html).toContain('Search Manchester to Islamabad flights on Trip.com');
   });
 });
 

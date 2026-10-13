@@ -1,5 +1,6 @@
 import { ArrowUpRight, Plane } from 'lucide-react';
 import type { Destination } from '@/data/destinations';
+import { getTripComSearchCtaLabel, TRIPCOM_NO_FARE_SEARCH_NOTE } from '@/lib/booking-providers';
 import { formatRouteStatusDate } from '@/lib/route-status-copy';
 import {
   getHolidayFlightHandoffStatuses,
@@ -89,12 +90,13 @@ export function HolidayIntelligence({ destination, nowIso }: HolidayIntelligence
                       rel="nofollow sponsored noopener noreferrer"
                       className="mt-3 inline-flex items-center gap-1.5 rounded-sm bg-ink-900 px-4 py-2.5 text-sm font-semibold text-sand-50 transition-colors hover:bg-brass-600"
                     >
-                      Compare flights on Trip.com
+                      {getTripComSearchCtaLabel(undefined, { origin: handoff.airportName, destination: destination.city })}
                       <ArrowUpRight className="h-4 w-4" strokeWidth={2.25} />
                     </TrackedOutboundLink>
                     <AffiliateLinkDisclosure providerName="Trip.com" className="mt-2 text-ink-500">
                       Check the itinerary, dates and booking terms before paying.
                     </AffiliateLinkDisclosure>
+                    <p className="mt-1.5 text-xs text-ink-500">{TRIPCOM_NO_FARE_SEARCH_NOTE}</p>
                   </article>
                 ))}
               </div>

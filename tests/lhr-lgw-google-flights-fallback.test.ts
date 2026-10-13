@@ -55,7 +55,7 @@ describe('1-2. LHR->JED and LGW->DXB get the temporary current-flight-search fal
       expect(tripComUrl).toBeNull();
       expect(html).toContain(GENERIC_FLIGHT_SEARCH_CTA_LABEL);
       expect(html).toContain(GENERIC_FLIGHT_SEARCH_URL);
-      expect(html).not.toContain('Compare flights on Trip.com');
+      expect(html).not.toMatch(/Search [^<>]*flights on Trip\.com/);
       expect(html).not.toContain(SERVICE_ENDED_CTA_LABEL);
     });
   }

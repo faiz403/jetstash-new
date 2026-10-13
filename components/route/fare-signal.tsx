@@ -2,8 +2,8 @@ import { AlertTriangle, ArrowUpRight, CalendarDays, Info, Plane, Search, Sparkle
 import type { FareSignal as FareSignalData, FareSignalObservation } from '@/lib/fare-signal';
 import type { StandoutFarePresentation } from '@/lib/standout-fare';
 import { formatChecked } from '@/data/deals';
-import { NO_VERIFIED_PARTNER_LINK_NOTE, PROVIDER_REL, SERVICE_ENDED_CTA_LABEL, TRIPCOM_DEFAULT_CTA_LABEL, GENERIC_FLIGHT_SEARCH_URL, GENERIC_FLIGHT_SEARCH_CTA_LABEL, GENERIC_FLIGHT_SEARCH_REL, GENERIC_FLIGHT_SEARCH_NOTE, TRIPCOM_FRESH_SEARCH_NOTE } from '@/lib/booking-providers';
-import { SELF_TRANSFER_LABEL } from '@/lib/fare-self-transfer';
+import { NO_VERIFIED_PARTNER_LINK_NOTE, PROVIDER_REL, SERVICE_ENDED_CTA_LABEL, getTripComSearchCtaLabel, GENERIC_FLIGHT_SEARCH_URL, GENERIC_FLIGHT_SEARCH_CTA_LABEL, GENERIC_FLIGHT_SEARCH_REL, GENERIC_FLIGHT_SEARCH_NOTE, TRIPCOM_FRESH_SEARCH_NOTE, TRIPCOM_NO_FARE_SEARCH_NOTE } from '@/lib/booking-providers';
+import { SELF_TRANSFER_LABEL, SELF_TRANSFER_EXPLANATION } from '@/lib/fare-self-transfer';
 import { TrackedOutboundLink } from '@/components/ui/tracked-outbound-link';
 import { AffiliateLinkDisclosure } from '@/components/ui/affiliate-link-disclosure';
 import { FareAgeWarning } from '@/components/route/fare-age-warning';
@@ -17,17 +17,18 @@ import { getFareAgeWarningText } from '@/lib/fare-age-warning';
  * (and as its own line in RecentSignal, which shows no routing row at
  * all), per the founder brief: "alongside the fare's routing information
  * -- not only in Fare History, a Business panel, or a deep-detail view."
- * Deliberately the exact label text agreed, nothing added: no claim about
- * baggage transfer or connection protection is made here or implied --
- * those stay whatever the existing baggage/optional-charges caveats
- * already say.
+ * The conditional explanation describes possible self-transfer consequences;
+ * it does not assert baggage rules or protection for a particular booking.
  */
 function SelfTransferNote() {
   return (
-    <span className="inline-flex items-center gap-1.5 rounded-sm border border-terracotta-300 bg-terracotta-50 px-2 py-1 text-xs font-semibold text-terracotta-700">
-      <AlertTriangle className="h-3.5 w-3.5 shrink-0" strokeWidth={2.25} aria-hidden="true" />
-      {SELF_TRANSFER_LABEL}
-    </span>
+    <>
+      <span className="inline-flex items-center gap-1.5 rounded-sm border border-terracotta-300 bg-terracotta-50 px-2 py-1 text-xs font-semibold text-terracotta-700">
+        <AlertTriangle className="h-3.5 w-3.5 shrink-0" strokeWidth={2.25} aria-hidden="true" />
+        {SELF_TRANSFER_LABEL}
+      </span>
+      <span className="basis-full text-xs leading-relaxed text-ink-600">{SELF_TRANSFER_EXPLANATION}</span>
+    </>
   );
 }
 
@@ -136,7 +137,7 @@ export function formatRouting(observation: FareSignalObservation): string | null
  * enough to tell whether the pilot's CTA specifically is generating
  * engagement, with zero new analytics surface added.
  */
-function SignalCta({ href, routeSlug, standout = false, label = TRIPCOM_DEFAULT_CTA_LABEL }: { href: string; routeSlug: string; standout?: boolean; label?: string }) {
+function SignalCta({ href, routeSlug, standout = false, label = getTripComSearchCtaLabel(routeSlug), hasDisplayedFare = true }: { href: string; routeSlug: string; standout?: boolean; label?: string; hasDisplayedFare?: boolean }) {
   return (
     <div className="mt-3 sm:mt-5">
       <div className="flex flex-col items-stretch gap-2 sm:flex-row sm:items-center sm:gap-4">
@@ -164,7 +165,7 @@ function SignalCta({ href, routeSlug, standout = false, label = TRIPCOM_DEFAULT_
           Check the itinerary, baggage allowance and booking terms before paying.
         </AffiliateLinkDisclosure>
       </div>
-      <p className="mt-1.5 text-xs text-ink-400">{TRIPCOM_FRESH_SEARCH_NOTE}</p>
+      <p className="mt-1.5 text-xs text-ink-400">{hasDisplayedFare ? TRIPCOM_FRESH_SEARCH_NOTE : TRIPCOM_NO_FARE_SEARCH_NOTE}</p>
     </div>
   );
 }
@@ -701,6 +702,7 @@ export function FareSignal({
               <SignalCta
                 href={tripComUrl}
                 routeSlug={routeSlug}
+                hasDisplayedFare={false}
                 label={isServiceEnded ? SERVICE_ENDED_CTA_LABEL : undefined}
               />
             ) : isServiceEnded ? (

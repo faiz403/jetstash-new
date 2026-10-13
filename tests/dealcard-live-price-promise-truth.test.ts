@@ -70,7 +70,7 @@ describe('DealCard never promises "check the live price below" when no live-pric
     const dealDef = deals.find((d) => d.id === 'man-isb-business')!;
     const html = renderToStaticMarkup(DealCard({ deal: dealDef }));
     expect(html).toContain('No Business class fare checks logged yet — check the live price below');
-    expect(html).toContain('Compare flights on Trip.com');
+    expect(html).toContain('Search Manchester to Islamabad flights on Trip.com');
   });
 
   it('a deal with no matching route at all also gets the honest "not available" wording, never the live-price promise', () => {

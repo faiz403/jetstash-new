@@ -17,7 +17,7 @@ describe('Phase 2 public CTA clarity', () => {
     // constant instead of a hand-typed string. This test's own purpose —
     // Trip.com is named, disclosure/analytics/layout are unchanged — still
     // holds.
-    expect(fareSignalSrc).toContain('TRIPCOM_DEFAULT_CTA_LABEL');
+    expect(fareSignalSrc).toContain('getTripComSearchCtaLabel');
     expect(fareSignalSrc).toContain('providerName="Trip.com"');
     expect(fareSignalSrc).toContain("source: standout ? 'fare-signal-standout' : 'fare-signal'");
     expect(fareSignalSrc).toContain('flex flex-col');
@@ -28,14 +28,14 @@ describe('Phase 2 public CTA clarity', () => {
     const href = getSafeTripComFlightHandoffUrl('manchester-dubai');
     expect(href).toBeTruthy();
     const html = renderToStaticMarkup(FareSignal({ signal, tripComUrl: href, routeSlug: 'manchester-dubai' }));
-    expect(html).toContain('Compare flights on Trip.com');
+    expect(html).toContain('Search Manchester to Dubai flights on Trip.com');
     expect(html).toContain('Ad · Affiliate link.');
   });
 
   it('fails closed on the monetised-partner claim when the route has no safe partner handoff (Google Flights fallback, 12 Sept 2026, founder-approved: a non-monetised current-flight-search action now renders instead of the plain fail-closed sentence)', () => {
     const signal = getFareSignalForRoute('london-heathrow-mumbai', '2026-08-11');
     const html = renderToStaticMarkup(FareSignal({ signal, tripComUrl: getSafeTripComFlightHandoffUrl('london-heathrow-mumbai'), routeSlug: 'london-heathrow-mumbai' }));
-    expect(html).not.toContain('Compare flights on Trip.com');
+    expect(html).not.toContain('Search Manchester to Dubai flights on Trip.com');
     expect(html).not.toContain('Ad · Affiliate link.');
     expect(html).toContain('Search flights on Google Flights');
     expect(html).toContain('JetStash does not earn commission from this link');

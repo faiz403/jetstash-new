@@ -674,7 +674,7 @@ describe('Cross-surface leakage fix — fare section heading is content-aware, n
     const text = collectStrings(fallback).join(' ');
     expect(text).toMatch(/haven'?t logged a tracked fare/i);
     expect(text).toMatch(/Birmingham to Mumbai/);
-    expect(text).toMatch(/Compare flights on Trip\.com/);
+    expect(text).toMatch(/Search Birmingham to Mumbai flights on Trip\.com/);
   });
 });
 

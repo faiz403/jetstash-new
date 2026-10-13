@@ -36,7 +36,7 @@
  * hand — every booking CTA in the app reads its outbound URL from here.
  */
 
-import { getRouteBySlug } from '@/data/routes';
+import { getRouteBySlug, getRouteAirport, getRouteDestination } from '@/data/routes';
 import { routeStatusEvents } from '@/data/route-status-events';
 import { getEffectiveRoutePresentation } from '@/lib/route-status-copy';
 
@@ -70,7 +70,10 @@ export const PROVIDER_REL = 'nofollow sponsored noopener noreferrer';
  * observed itinerary above the CTA has nothing to clarify.
  */
 export const TRIPCOM_FRESH_SEARCH_NOTE =
-  'Trip.com opens a new route search. Re-enter the dates and itinerary shown above to compare like for like.';
+  'Opens a new search. Select Return and enter your travel dates. The fare shown above is not carried across.';
+
+export const TRIPCOM_NO_FARE_SEARCH_NOTE =
+  'Opens a new search. Choose your trip type and travel dates.';
 
 /**
  * The one fail-closed sentence for "this route has no dashboard-verified
@@ -325,7 +328,7 @@ export interface TripComFlightHandoff {
  * still operates. See the file's own header comment on
  * getTripComFlightHandoff() below for the exact evidence gate this requires.
  */
-export const SERVICE_ENDED_CTA_LABEL = 'Compare connecting flights on Trip.com';
+export const SERVICE_ENDED_CTA_LABEL = 'Search connecting flights on Trip.com';
 
 /**
  * CTA label consolidation (12 Sept 2026, founder-approved, following the 12
@@ -353,7 +356,21 @@ export const SERVICE_ENDED_CTA_LABEL = 'Compare connecting flights on Trip.com';
  * site keeps its own existing href/rel/target/tracked-event exactly as
  * before, only the visible label text now comes from here.
  */
-export const TRIPCOM_DEFAULT_CTA_LABEL = 'Compare flights on Trip.com';
+export const TRIPCOM_DEFAULT_CTA_LABEL = 'Search flights on Trip.com';
+
+/** The separately approved dated pilot keeps its existing action wording. */
+export const TRIPCOM_DATED_CTA_LABEL = 'Compare flights on Trip.com';
+
+/** Copy only: uses established route names without changing the handoff URL. */
+export function getTripComSearchCtaLabel(routeSlug?: string, names?: { origin: string; destination: string }): string {
+  if (names) return `Search ${names.origin} to ${names.destination} flights on Trip.com`;
+  const route = routeSlug ? getRouteBySlug(routeSlug) : undefined;
+  if (!route) return TRIPCOM_DEFAULT_CTA_LABEL;
+  const airport = getRouteAirport(route);
+  const destination = getRouteDestination(route);
+  if (!airport || !destination) return TRIPCOM_DEFAULT_CTA_LABEL;
+  return `Search ${airport.city} to ${destination.city} flights on Trip.com`;
+}
 
 /**
  * Temporary non-monetised current-flight-search fallback (12 Sept 2026,

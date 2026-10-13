@@ -4,7 +4,7 @@ import type { Destination } from '@/data/destinations';
 import { airportShortName } from '@/lib/route-card-fare';
 import { RouteCardFare } from '@/components/route/route-card-fare';
 import { getDestinationFlightGuideEntries, type DestinationFlightGuideEntry } from '@/lib/destination-flight-guides';
-import { getTripComDestinationHandoffUrl, PROVIDER_REL } from '@/lib/booking-providers';
+import { getTripComDestinationHandoffUrl, PROVIDER_REL, getTripComSearchCtaLabel, TRIPCOM_NO_FARE_SEARCH_NOTE } from '@/lib/booking-providers';
 import { AffiliateLinkDisclosure } from '@/components/ui/affiliate-link-disclosure';
 
 function routeStatusLabel(status: DestinationFlightGuideEntry['routeStatus']): string {
@@ -110,12 +110,13 @@ export function DestinationFlightGuides({ destination, nowIso }: DestinationFlig
                 rel={PROVIDER_REL}
                 className="mt-4 inline-flex items-center gap-1.5 rounded-sm bg-ink-900 px-4 py-2.5 text-sm font-semibold text-sand-50 transition-colors hover:bg-brass-600"
               >
-                Compare flights on Trip.com
+                {getTripComSearchCtaLabel(undefined, { origin: entry.airport.city, destination: destination.city })}
                 <ArrowUpRight className="h-4 w-4" strokeWidth={2.25} />
               </a>
               <AffiliateLinkDisclosure providerName="Trip.com" className="mt-2 text-ink-500">
                 Check the itinerary, dates and booking terms before paying.
               </AffiliateLinkDisclosure>
+              <p className="mt-1.5 text-xs text-ink-500">{TRIPCOM_NO_FARE_SEARCH_NOTE}</p>
             </article>
           ))}
         </div>

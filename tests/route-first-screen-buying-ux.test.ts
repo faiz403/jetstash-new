@@ -76,7 +76,7 @@ describe('no fare + a safe handoff: a helpful, honest lead instead of a dead-loo
     expect(url).not.toBeNull();
     expect(html).toContain("Check today's Birmingham → Ahmedabad prices");
     expect(html).toContain("JetStash hasn't logged a fare for this route yet.");
-    expect(html).toContain('Compare flights on Trip.com');
+    expect(html).toContain('Search Birmingham to Ahmedabad flights on Trip.com');
     expect(html).toContain('Ad · Affiliate link.');
     expect(html).toContain('JetStash earns commission on eligible bookings through this link');
     // an unverified route never gets a directness claim it cannot back
@@ -176,7 +176,7 @@ describe('routes with a current fare keep the fare, the date and the affiliate d
     expect(html).toMatch(/Fare spotted|Standout Fare|Last tracked fare/);
     expect(html).toMatch(/£[\d,]+ return/);
     expect(html).toMatch(/Checked \d{1,2} \w+ \d{4}/);
-    expect(html).toContain('Compare flights on Trip.com');
+    expect(html).toContain('Search Manchester to Dubai flights on Trip.com');
     expect(html).toContain('Ad · Affiliate link.');
     expect(html).toContain('min-h-12');
     expect(html).toContain('Route service');
@@ -204,7 +204,7 @@ describe('decision-first acceptance: the route answer and action precede support
     expect(html).toContain('lg:grid');
     expect(html).toContain('lg:grid-cols-[1.15fr_1fr]');
     // below lg the order is unchanged: lead first, then the button
-    expect(html.indexOf('Connecting flights available')).toBeLessThan(html.indexOf('Compare connecting flights on Trip.com'));
+    expect(html.indexOf('Connecting flights available')).toBeLessThan(html.indexOf('Search connecting flights on Trip.com'));
   });
 
   it('the cookie banner and its consent behaviour were not touched', () => {

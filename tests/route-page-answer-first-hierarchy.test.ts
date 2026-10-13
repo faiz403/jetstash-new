@@ -125,7 +125,7 @@ describe('3. Safe CTA proximity and fail-closed behaviour — unchanged by this 
     expect(getSafeTripComFlightHandoffUrl(slug, 'manchester', 'islamabad')).not.toBeNull();
     const element = await RoutePage({ params: Promise.resolve({ slug }) });
     const html = renderToStaticMarkup(element);
-    const ctaIdx = html.indexOf('Compare flights on Trip.com');
+    const ctaIdx = html.indexOf('Search Manchester to Islamabad flights on Trip.com');
     const compareRoutesIdx = html.indexOf('Other UK airports for');
     expect(ctaIdx).toBeGreaterThan(-1);
     if (compareRoutesIdx > -1) {
@@ -141,7 +141,7 @@ describe('3. Safe CTA proximity and fail-closed behaviour — unchanged by this 
     expect(url, `expected ${slug} to have no safe Trip.com handoff for this test to be meaningful`).toBeNull();
     const element = await RoutePage({ params: Promise.resolve({ slug }) });
     const html = renderToStaticMarkup(element);
-    expect(html).not.toContain('Compare flights on Trip.com');
+    expect(html).not.toMatch(/Search [^<>]*flights on Trip\.com/);
   });
 
   it('manchester-mumbai: service-ended status is unchanged by this hierarchy PR (the current-connecting Trip.com handoff is a separate, later, founder-approved policy change — see tests/service-ended-commercial-funnel.test.ts)', async () => {
@@ -166,7 +166,7 @@ describe('4. MAN-ISB Journey Choice controlled facts — unchanged, only reposit
     const element = await RoutePage({ params: Promise.resolve({ slug: 'manchester-islamabad' }) });
     const html = renderToStaticMarkup(element);
     const heroIdx = html.indexOf('Manchester to Islamabad');
-    const ctaIdx = html.indexOf('Compare flights on Trip.com');
+    const ctaIdx = html.indexOf('Search Manchester to Islamabad flights on Trip.com');
     const dealsHeadingIdx = html.indexOf('id="route-watch"');
     expect(heroIdx).toBeGreaterThan(-1);
     expect(ctaIdx).toBeGreaterThan(-1);
