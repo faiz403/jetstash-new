@@ -141,7 +141,7 @@ describe('3. Safe CTA proximity and fail-closed behaviour — unchanged by this 
     expect(url, `expected ${slug} to have no safe Trip.com handoff for this test to be meaningful`).toBeNull();
     const element = await RoutePage({ params: Promise.resolve({ slug }) });
     const html = renderToStaticMarkup(element);
-    expect(html).not.toContain('Search Manchester to Islamabad flights on Trip.com');
+    expect(html).not.toMatch(/Search [^<>]*flights on Trip\.com/);
   });
 
   it('manchester-mumbai: service-ended status is unchanged by this hierarchy PR (the current-connecting Trip.com handoff is a separate, later, founder-approved policy change — see tests/service-ended-commercial-funnel.test.ts)', async () => {
