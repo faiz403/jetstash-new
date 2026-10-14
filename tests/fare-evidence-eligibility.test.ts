@@ -21,4 +21,17 @@ describe('fare evidence must positively establish a single itinerary before it i
     expect(hasPositiveNonSelfTransferEvidence(observation)).toBe(false);
     expect(isCleanFareEvidence(observation)).toBe(false);
   });
+
+  it('rejects the Birmingham–Delhi self-transfer record that says it has no single ticket', () => {
+    const observation = fareObservations.find((fare) => fare.id === 'obs-bhx-del-economy-20260822-8w-v1')!;
+    expect(observation.priceNote).toContain('self-transfer — no single ticket');
+    expect(hasPositiveNonSelfTransferEvidence(observation)).toBe(false);
+    expect(isCleanFareEvidence(observation)).toBe(false);
+  });
+
+  it('rejects a negated single-ticket claim while retaining a separate positive itinerary statement', () => {
+    const observation = fareObservations.find((fare) => fare.id === 'obs-lba-bjv-economy-20260822-8w-v1')!;
+    expect(hasPositiveNonSelfTransferEvidence({ ...observation, priceNote: 'not covered by a single airline ticket' })).toBe(false);
+    expect(hasPositiveNonSelfTransferEvidence({ ...observation, priceNote: 'not self-transfer, single itinerary' })).toBe(true);
+  });
 });
