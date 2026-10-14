@@ -125,9 +125,9 @@ export function getDealFareDirectnessLabel(deal: Pick<Deal, 'fromAirportSlug' | 
   if (!range) return getDealDirectnessLabel(deal, nowIso);
   if (range.observedDirectness === 'direct') return 'Direct flight';
   if (range.observedDirectness === 'connecting') return 'Connecting';
-  const sourceAirlineSlugs = range.sources.map((s) => airlines.find((a) => s.toLowerCase().includes(a.name.toLowerCase()))?.slug);
-  const everySourceIsAVerifiedRouteOperator = sourceAirlineSlugs.every((slug) => slug !== undefined && route.airlineSlugs.includes(slug));
-  if (everySourceIsAVerifiedRouteOperator) return getDealDirectnessLabel(deal, nowIso);
+  // A route's verified operator cannot fill a missing leg of a particular
+  // logged fare. Unknown or mixed fare evidence must not inherit route-level
+  // directness for a price displayed beside it.
   return undefined;
 }
 

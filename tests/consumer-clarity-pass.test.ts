@@ -36,10 +36,13 @@ const observation = (over: Partial<FareSignalObservation> = {}): FareSignalObser
   departureDate: '2026-11-17',
   returnDate: '2026-12-01',
   directness: 'connecting',
+  outboundDirectness: 'connecting',
+  returnDirectness: 'connecting',
   outboundStops: 1,
   returnStops: 1,
   connectionAirports: [],
   isSelfTransfer: false,
+  hasPositiveNonSelfTransferEvidence: false,
   journeyConsequences: [],
   ...over,
 });

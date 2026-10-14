@@ -30,26 +30,24 @@ import { deals, getDealDirectnessLabel, getDealFareDirectnessLabel } from '@/dat
 const NOW_ISO = new Date().toISOString().slice(0, 10);
 
 describe('DealCard reconciles a mismatched fare against the route\'s own directness', () => {
-  it('manchester-dubai: a Direct route showing a Connecting fare states the route\'s own reality in the card\'s own text, not just the corner badge', () => {
+  it('manchester-dubai: a mixed-evidence fare range gets no route or fare directness badge', () => {
     const deal = deals.find((d) => d.id === 'man-dxb-economy')!;
-    // Confirm the premise this test depends on, same as
-    // deal-card-fare-directness.test.ts: the route is verified direct, but
-    // this specific fare is connecting.
+    // The route is verified direct, but the fare archive includes entries
+    // without complete directness evidence, so a range-level fare badge is
+    // not supported.
     expect(getDealDirectnessLabel(deal, NOW_ISO)).toBe('Direct flight');
-    expect(getDealFareDirectnessLabel(deal, NOW_ISO)).toBe('Connecting');
+    expect(getDealFareDirectnessLabel(deal, NOW_ISO)).toBeUndefined();
 
     const html = renderToStaticMarkup(DealCard({ deal, nowIso: NOW_ISO })).replace(/\s+/g, ' ');
-    expect(html).toContain('Route: Direct');
-    expect(html).toContain('This fare is a different, connecting journey.');
+    expect(html).not.toContain('Direct flight');
+    expect(html).not.toContain('Connecting</span>');
+    expect(html).not.toContain('This fare is a different');
   });
 
-  it('never joins the reconciliation sentence with a dash separator -- JetStash public copy avoids dash separators', () => {
+  it('does not render a route-fare reconciliation sentence without a fare-wide classification', () => {
     const deal = deals.find((d) => d.id === 'man-dxb-economy')!;
     const html = renderToStaticMarkup(DealCard({ deal, nowIso: NOW_ISO })).replace(/\s+/g, ' ');
-    const idx = html.indexOf('This fare is a different');
-    expect(idx).toBeGreaterThan(-1);
-    const nearby = html.slice(Math.max(0, idx - 60), idx);
-    expect(nearby).not.toMatch(/[—–]/);
+    expect(html).not.toContain('This fare is a different');
   });
 
   it('a card where the fare already agrees with the route\'s own directness renders no reconciliation line at all -- nothing changes for the common case', () => {

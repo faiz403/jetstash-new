@@ -44,12 +44,14 @@ describe('1. MAN-DXB £420 remains £420, and every affected route keeps its own
   });
 });
 
-describe('2 & 11. Each affected route is now represented as a connecting itinerary, with its stated connection city visible', () => {
-  it.each(AFFECTED_ROUTES)('$slug shows "Connecting journey via $city" at the fare decision point', ({ slug, city }) => {
+describe('2 & 11. Each affected route keeps its known outbound routing and leaves the unverified return leg open', () => {
+  it.each(AFFECTED_ROUTES)('$slug shows connecting outbound and unconfirmed return directness', ({ slug, city }) => {
     const data = getSignalObservation(slug);
     expect(data.directness, slug).toBe('connecting');
     expect(data.connectionAirports, slug).toEqual([city]);
-    expect(formatRouting(data), slug).toBe(`Connecting journey via ${city}`);
+    expect(data.outboundDirectness, slug).toBe('connecting');
+    expect(data.returnDirectness, slug).toBeNull();
+    expect(formatRouting(data), slug).toBe('Connecting outbound · return directness unconfirmed');
   });
 });
 
@@ -110,7 +112,8 @@ describe('5. No unsupported saving/Standout/deal wording is introduced', () => {
   it('formatRouting()\'s output for every affected route contains only factual, non-promotional wording', () => {
     for (const { slug, city } of AFFECTED_ROUTES) {
       const routing = formatRouting(getSignalObservation(slug))!;
-      expect(routing, slug).toBe(`Connecting journey via ${city}`);
+      expect(routing, slug).toBe('Connecting outbound · return directness unconfirmed');
+      expect(routing, slug).not.toContain(city);
       expect(routing, slug).not.toMatch(/\b(great deal|cheap|best|saving|standout)\b/i);
     }
   });
@@ -158,14 +161,17 @@ describe('7 & 12. Asymmetric stop-count formatting remains correct, and no fare 
       departureDate: '2026-10-01',
       returnDate: '2026-10-15',
       directness: 'connecting',
+      outboundDirectness: 'connecting',
+      returnDirectness: 'connecting',
       outboundStops: 1,
       returnStops: 1,
       connectionAirports: ['Istanbul Airport (IST)'],
       isSelfTransfer: false,
+      hasPositiveNonSelfTransferEvidence: false,
       journeyConsequences: [],
     };
     expect(formatStops(observation)).toBe('1 stop each way');
-    expect(formatRouting(observation)).toBe('Connecting · 1 stop each way via Istanbul Airport (IST)');
+    expect(formatRouting(observation)).toBe('Connecting outbound · connecting return · 1 stop each way via Istanbul Airport (IST)');
   });
 });
 

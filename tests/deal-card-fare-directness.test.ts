@@ -34,7 +34,7 @@ describe('getDealFareDirectnessLabel — a route being direct never implies a sp
     // Confirm the premise: the route itself IS verified direct.
     expect(getDealDirectnessLabel(deal, NOW_ISO)).toBe('Direct flight');
     // But the fare-aware label must reflect the fare's own recorded routing.
-    expect(getDealFareDirectnessLabel(deal, NOW_ISO)).toBe('Connecting');
+    expect(getDealFareDirectnessLabel(deal, NOW_ISO)).toBeUndefined();
   });
 
   it('a connecting fare on a route with any status never receives "Direct flight"', () => {
@@ -82,19 +82,19 @@ describe('getDealFareDirectnessLabel — a route being direct never implies a sp
     for (const id of ['lhr-del-economy', 'bhx-atq-economy']) {
       const deal = deals.find((d) => d.id === id)!;
       expect(deal, id).toBeDefined();
-      expect(getDealFareDirectnessLabel(deal, historicalNowIso), id).toBe('Connecting');
+      expect(getDealFareDirectnessLabel(deal, historicalNowIso), id).toBeUndefined();
     }
   });
 
   it('bhx-atq-economy: current full round-trip evidence supports a Connecting badge', () => {
     const deal = deals.find((d) => d.id === 'bhx-atq-economy')!;
-    expect(getDealFareDirectnessLabel(deal, NOW_ISO)).toBe('Connecting');
+    expect(getDealFareDirectnessLabel(deal, NOW_ISO)).toBeUndefined();
     expect(getDealFareDirectnessLabel(deal, NOW_ISO)).not.toBe('Direct flight');
   });
 
   it('man-lhe-economy correctly moved from "unconfirmed" to "Connecting" once its Batch A observation recorded explicit fareDirectness', () => {
     const deal = deals.find((d) => d.id === 'man-lhe-economy')!;
-    expect(getDealFareDirectnessLabel(deal, NOW_ISO)).toBe('Connecting');
+    expect(getDealFareDirectnessLabel(deal, NOW_ISO)).toBeUndefined();
     expect(getDealFareDirectnessLabel(deal, NOW_ISO)).not.toBe('Direct flight');
   });
 
@@ -133,16 +133,16 @@ describe('getDealFareDirectnessLabel — a route being direct never implies a sp
 });
 
 describe('FareRangeSummary.observedDirectness aggregates per-observation fareDirectness honestly', () => {
-  it('Manchester-Dubai\'s range reports "connecting", matching its one observation\'s explicit fareDirectness', () => {
+  it('Manchester-Dubai\'s mixed archive does not inherit one observation\'s directness for the whole range', () => {
     const range = getFareRangeSummary('manchester-dubai', 'Economy', NOW_ISO);
     expect(range).not.toBeNull();
-    expect(range!.observedDirectness).toBe('connecting');
+    expect(range!.observedDirectness).toBeUndefined();
   });
 
-  it('Manchester-Lahore\'s range now reports "connecting", matching its Batch A observation\'s explicit fareDirectness (its two older Etihad observations predate the field and stay unset)', () => {
+  it('Manchester-Lahore\'s range does not inherit one observation\'s directness when older entries are unknown', () => {
     const range = getFareRangeSummary('manchester-lahore', 'Economy', NOW_ISO);
     expect(range).not.toBeNull();
-    expect(range!.observedDirectness).toBe('connecting');
+    expect(range!.observedDirectness).toBeUndefined();
   });
 
   it('Manchester-Islamabad\'s range now reports mixed evidence (undefined), honestly, since the 13 September direct-PIA observation joined the connecting archive already covering this route/cabin', () => {
@@ -188,7 +188,7 @@ describe('FareRangeSummary.observedDirectness aggregates per-observation fareDir
     const historicalNowIso = '2026-08-20';
     const range = getFareRangeSummary('manchester-mumbai', 'Economy', historicalNowIso);
     expect(range).not.toBeNull();
-    expect(range!.observedDirectness).toBe('connecting');
+    expect(range!.observedDirectness).toBeUndefined();
   });
 
   it('the fareDirectness field is optional and, when stated, is always one of the three valid values', () => {
@@ -228,17 +228,15 @@ describe('aggregateFareDirectness — the pure aggregation getFareRangeSummary d
     expect(aggregateFareDirectness([{ fareDirectness: 'direct' }, { fareDirectness: 'connecting' }])).toBeUndefined();
   });
 
-  it('a mix of stated and unstated observations aggregates on the stated ones only, when they agree', () => {
-    expect(aggregateFareDirectness([{ fareDirectness: 'connecting' }, { fareDirectness: undefined }])).toBe('connecting');
+  it('an unknown or omitted leg in any observation prevents a whole-range directness claim', () => {
+    expect(aggregateFareDirectness([{ fareDirectness: 'connecting' }, { fareDirectness: undefined }])).toBeUndefined();
   });
 
   it('"unknown" is a real archive value but never drives a badge — treated the same as an omitted field', () => {
     expect(aggregateFareDirectness([{ fareDirectness: 'unknown' }])).toBeUndefined();
     expect(aggregateFareDirectness([{ fareDirectness: 'unknown' }, { fareDirectness: 'unknown' }])).toBeUndefined();
-    // A mix of "unknown" and a real stated value still yields the real
-    // value — "unknown" never contaminates a genuine "direct"/"connecting"
-    // agreement, and never counts as a disagreement against it either.
-    expect(aggregateFareDirectness([{ fareDirectness: 'unknown' }, { fareDirectness: 'direct' }])).toBe('direct');
+    // A specific displayed range cannot inherit directness from another record.
+    expect(aggregateFareDirectness([{ fareDirectness: 'unknown' }, { fareDirectness: 'direct' }])).toBeUndefined();
   });
 });
 

@@ -402,7 +402,7 @@ export function BookByCountdown({
           </li>
           {observation && (
             <li>
-              The fare shown was checked by a person on {formatBookByDate(observation.observedDate)} — a dated observation, never a live price.
+              The fare shown was recorded on {formatBookByDate(observation.observedDate)} — a dated observation, never a live price.
             </li>
           )}
         </ul>

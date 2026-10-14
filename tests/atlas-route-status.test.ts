@@ -499,7 +499,7 @@ describe('The route coverage audit document stays in sync with the real data', (
   it('the /deals page hero states the same live-computed coverage sentence the audit recommends', () => {
     const dealsPageSrc = readFileSync(join(process.cwd(), 'app/deals/page.tsx'), 'utf8');
     expect(dealsPageSrc).toContain('getTrackedFareCoverage');
-    expect(dealsPageSrc).toMatch(/coverage is\s*[\s\S]{0,20}being expanded gradually using manually verified observations/);
+    expect(dealsPageSrc).toMatch(/coverage is\s*[\s\S]{0,20}being expanded gradually using dated fare observations/);
   });
 });
 

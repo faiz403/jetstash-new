@@ -1,5 +1,5 @@
 import { AlertTriangle, ArrowUpRight, CalendarDays, Info, Plane, Search, Sparkles, Route as RouteIcon } from 'lucide-react';
-import type { FareSignal as FareSignalData, FareSignalObservation } from '@/lib/fare-signal';
+import { formatFareLegDirectness, type FareSignal as FareSignalData, type FareSignalObservation } from '@/lib/fare-signal';
 import type { StandoutFarePresentation } from '@/lib/standout-fare';
 import { formatChecked } from '@/data/deals';
 import { NO_VERIFIED_PARTNER_LINK_NOTE, PROVIDER_REL, SERVICE_ENDED_CTA_LABEL, getTripComSearchCtaLabel, GENERIC_FLIGHT_SEARCH_URL, GENERIC_FLIGHT_SEARCH_CTA_LABEL, GENERIC_FLIGHT_SEARCH_REL, GENERIC_FLIGHT_SEARCH_NOTE, TRIPCOM_FRESH_SEARCH_NOTE, TRIPCOM_NO_FARE_SEARCH_NOTE } from '@/lib/booking-providers';
@@ -122,10 +122,14 @@ export function formatRouting(observation: FareSignalObservation): string | null
   const connection = observation.connectionAirports.length > 0
     ? ` via ${observation.connectionAirports.join(' and ')}`
     : '';
-  if (observation.directness === 'direct') return 'Direct journey';
-  if (observation.directness === 'connecting' && stops) return `Connecting · ${stops}${connection}`;
-  if (observation.directness === 'connecting') return `Connecting journey${connection}`;
-  return null;
+  const status = formatFareLegDirectness(observation);
+  if (!status) return null;
+  if (/unconfirmed/.test(status)) return status;
+  if (observation.directness === 'connecting' && stops && !observation.outboundDirectness && !observation.returnDirectness) {
+    return `Connecting · ${stops}${connection}`;
+  }
+  if (stops && / outbound · .* return$/.test(status)) return `${status} · ${stops}${connection}`;
+  return status === 'Connecting journey' ? `${status}${connection}` : status;
 }
 
 /**
@@ -509,7 +513,7 @@ function CurrentSignal({ data, nowIso, lowerSelfTransfer, tripComUrl, routeSlug,
             {standout ? 'Standout Fare' : 'Fare spotted'}
           </p>
           <p className="mt-1 font-display text-3xl text-ink-900">£{data.price.toLocaleString('en-GB')} return</p>
-          {lowerSelfTransfer ? <p className="mt-1.5 text-sm font-medium text-ink-700">Lowest comparable non-self-transfer fare observed</p> : null}
+          {lowerSelfTransfer && data.hasPositiveNonSelfTransferEvidence ? <p className="mt-1.5 text-sm font-medium text-ink-700">Lowest comparable non-self-transfer fare observed</p> : null}
           <JourneyConsequenceLine consequences={data.journeyConsequences} />
         </div>
         <div className="text-sm text-ink-600 sm:text-right">
@@ -564,6 +568,7 @@ function CurrentSignal({ data, nowIso, lowerSelfTransfer, tripComUrl, routeSlug,
 }
 
 function RecentSignal({ data, nowIso, tripComUrl, routeSlug, routeDirectness, routeStatusLabel, routeAirlineLabel, routeServiceConnections, isServiceEnded = false }: { data: FareSignalObservation; nowIso: string; tripComUrl: string | null; routeSlug: string; isServiceEnded?: boolean } & RouteContextProps) {
+  const routing = formatRouting(data);
   const mismatch = routeVsFareMismatch(routeDirectness, routeStatusLabel, routeAirlineLabel, data.directness)
     ?? routeServiceFareMismatch(routeServiceConnections, routeStatusLabel, routeAirlineLabel, data.directness, data.connectionAirports);
   return (
@@ -576,6 +581,7 @@ function RecentSignal({ data, nowIso, tripComUrl, routeSlug, routeDirectness, ro
         </div>
         <p className="text-sm text-ink-600">Checked {formatChecked(data.observedDate)}</p>
       </div>
+      {routing && <p className="mt-3 text-sm text-ink-700">{routing}</p>}
       {data.isSelfTransfer && <div className="mt-3"><SelfTransferNote /></div>}
       <p className="mt-4 text-sm leading-relaxed text-ink-600">
         {getFareAgeWarningText(data.observedDate, nowIso) ?? 'Price may have changed.'}

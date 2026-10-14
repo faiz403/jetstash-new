@@ -88,41 +88,38 @@ describe('fareDirectness resolution rules the audit established', () => {
   // evidence it names actually existed, rather than sharing the file's
   // NOW_ISO — moving the shared constant would incorrectly let this later
   // evidence leak into the genuine 6-August reconstructions above.
-  it('the 6 August unknown value is not a guess, while the later fully reviewed options aggregate as connecting', () => {
-    // Earliest date manchester-islamabad has real, stated 'connecting'
-    // evidence (the three 10 August Turkish Airlines/Etihad checks) --
-    // the 6 August entry itself is 'unknown' and correctly excluded from
-    // the aggregate by aggregateFareDirectness().
+  it('the 6 August unknown value prevents a whole-range connecting claim even after later connecting checks', () => {
+    // The 10 August records state connecting, but the range also contains
+    // the earlier unknown observation, so it cannot inherit their label.
     const EARLIEST_CONNECTING_EVIDENCE_ISO = '2026-08-10';
     const range = getFareRangeSummary('manchester-islamabad', 'Economy', EARLIEST_CONNECTING_EVIDENCE_ISO);
     expect(range).not.toBeNull();
-    expect(range!.observedDirectness).toBe('connecting');
+    expect(range!.observedDirectness).toBeUndefined();
   });
 
-  it('Manchester-Doha now resolves to a real, evidenced "connecting" once the 18 August Weekly Full Fare Refresh #1 observation supplied the route/cabin\'s first ever stated fareDirectness value - honest aggregation, not a guess (previously undefined: one observation predates the field, one is explicitly \'unknown\', neither states \'direct\'/\'connecting\')', () => {
+  it('Manchester-Doha keeps range directness unlabelled while older observations lack directness evidence', () => {
     // The 18 August observation this test's own title names.
     const WEEKLY_FULL_FARE_REFRESH_1_ISO = '2026-08-18';
     const range = getFareRangeSummary('manchester-doha', 'Economy', WEEKLY_FULL_FARE_REFRESH_1_ISO);
     expect(range).not.toBeNull();
     expect(range!.count).toBe(3);
-    expect(range!.observedDirectness).toBe('connecting');
+    expect(range!.observedDirectness).toBeUndefined();
   });
 
-  it('Manchester-Dubai and Manchester-Lahore keep their genuine, evidence-backed directness after the audit', () => {
+  it('Manchester-Dubai and Manchester-Lahore do not apply later directness to older unknown fare records', () => {
     expect(getFareRangeSummary('manchester-dubai', 'Economy', NOW_ISO)!.observedDirectness).toBe('connecting');
-    expect(getFareRangeSummary('manchester-lahore', 'Economy', NOW_ISO)!.observedDirectness).toBe('connecting');
+    expect(getFareRangeSummary('manchester-lahore', 'Economy', NOW_ISO)!.observedDirectness).toBeUndefined();
   });
 });
 
 describe('bhx-atq-economy reflects the latest evidence-complete observation', () => {
-  it('shows Connecting only after both legs were reviewed', () => {
-    // Classification B: birmingham-amritsar's 6 August entry is itself
-    // 'unknown' (outbound-only); the earliest stated 'connecting' evidence
-    // is the 11 August KLM/IndiGo/Air India check.
+  it('keeps the deal badge unlabelled when the route range includes an older outbound-only observation', () => {
+    // The 11 August check states connecting, but the older outbound-only
+    // observation remains part of the displayed range.
     const EARLIEST_CONNECTING_EVIDENCE_ISO = '2026-08-11';
     const deal = deals.find((d) => d.id === 'bhx-atq-economy')!;
     const label = getDealFareDirectnessLabel(deal, EARLIEST_CONNECTING_EVIDENCE_ISO);
-    expect(label).toBe('Connecting');
+    expect(label).toBeUndefined();
     expect(label).not.toBe('Direct flight');
   });
 });

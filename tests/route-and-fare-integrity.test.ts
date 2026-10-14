@@ -119,7 +119,7 @@ describe('Fare-observation completeness gating (TR-002) — Verified Check must 
     expect(range!.earliestDate).toBe('2026-07-28');
     expect(range!.latestDate).toBe('2026-08-25');
     expect(range!.sources).toEqual(['Etihad', 'Turkish Airlines', 'Ryanair / Air Cairo / flyadeal / Fly Jinnah (outbound), Pakistan International Airlines / Pegasus / Ryanair (return)', 'Ryanair / Air Arabia / Fly Jinnah (outbound)']);
-    expect(range!.observedDirectness).toBe('connecting');
+    expect(range!.observedDirectness).toBeUndefined();
   });
 });
 

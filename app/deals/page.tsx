@@ -49,8 +49,8 @@ export default function DealsPage() {
         description={
           <>
             As of {formatCoverageAsOf(coverage.generatedAtIso)}, we have a tracked fare from the last {coverage.freshDays} days on {coverage.trackedRoutes} of our {coverage.totalRoutes} routes — coverage is
-            being expanded gradually using manually verified observations, not a live price feed. Every fare shown
-            below is a real check logged by hand, dated. Where we've checked a route more than
+            being expanded gradually using dated fare observations, not a live price feed. Every fare shown
+            below is tied to its recorded date. Where the archive has more than one check for a route
             once, you'll see the range we've actually observed — never a single price left to quietly go stale.
             The cards below are a curated selection of routes and categories, so a route can have a tracked fare
             even when it is not shown as one of the cards here. Always confirm the final price before booking.{' '}
