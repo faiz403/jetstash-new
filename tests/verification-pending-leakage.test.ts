@@ -298,12 +298,11 @@ describe('Metadata output — generateMetadata() never builds a pending route\'s
   });
 
   it('regression: the SAME route produces the restrained pending metadata once the clock passes its reviewDueDate — proves generateMetadata does not depend on today\'s real date, only on the (mocked) clock at test time', async () => {
-    // manchester-lahore's reviewDueDate moved from 2026-09-14 to 2026-10-14
-    // in the 14 September 2026 Route Verification Maintenance refresh (a
-    // genuine frequency-evidence update, not a date-laundering extension —
-    // see data/routes.ts), so the mocked "day after" clock moves with it.
+    // manchester-lahore's reviewDueDate is 2026-11-12 after the 13 October
+    // 2026 Route Verification Maintenance re-check (see data/routes.ts), so
+    // the mocked "day after" clock moves with it.
     vi.useFakeTimers();
-    vi.setSystemTime(new Date('2026-10-15T12:00:00Z')); // the day after reviewDueDate
+    vi.setSystemTime(new Date('2026-11-13T12:00:00Z')); // the day after reviewDueDate
     const meta = await generateMetadata({ params: Promise.resolve({ slug: 'manchester-lahore' }) });
     expect(meta.title).toMatch(/Verification in Progress/i);
     assertNoForbiddenClaims(String(meta.description));

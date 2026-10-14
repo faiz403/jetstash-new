@@ -37,11 +37,11 @@ describe('Business Class presentation guard', () => {
     expect(html).not.toContain('Tracked Business fare');
   });
 
-  it('withholds Lahore history once its route verification expires on 15 October', async () => {
-    const valid = await renderRouteAt('manchester-lahore', '2026-10-14');
+  it('withholds Lahore history once its route verification expires on 13 November', async () => {
+    const valid = await renderRouteAt('manchester-lahore', '2026-11-12');
     expect(valid).toContain('3,051');
     expect(valid).not.toContain('Tracked Business fare');
-    const expired = await renderRouteAt('manchester-lahore', '2026-10-15');
+    const expired = await renderRouteAt('manchester-lahore', '2026-11-13');
     expect(expired).not.toContain('3,051');
     expect(expired).not.toContain('Tracked Business fare');
     expect(expired).not.toContain('Fare spotted');

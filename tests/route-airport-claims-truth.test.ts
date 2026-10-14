@@ -158,7 +158,7 @@ describe('No route/fare/verification data changed — this PR is editorial wordi
     expect(lahore.isDirect).toBe(true);
     expect(lahore.frequency).toBe('Direct — current frequency not confirmed by an official schedule, see note');
     expect(lahore.verification?.status).toBe('verified');
-    expect(lahore.verification?.reviewDueDate).toBe('2026-10-14');
+    expect(lahore.verification?.reviewDueDate).toBe('2026-11-12');
   });
 
   it('manchester-dubai: verification, frequency, flightTime, isDirect are unchanged', () => {
