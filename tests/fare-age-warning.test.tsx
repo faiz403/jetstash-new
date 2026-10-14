@@ -23,10 +23,13 @@ const observation = (observedDate: string): FareSignalObservation => ({
   departureDate: '2026-11-17',
   returnDate: '2026-12-01',
   directness: 'direct',
+  outboundDirectness: 'direct',
+  returnDirectness: 'direct',
   outboundStops: 0,
   returnStops: 0,
   connectionAirports: [],
   isSelfTransfer: false,
+  hasPositiveNonSelfTransferEvidence: false,
   journeyConsequences: [],
 });
 

@@ -1607,20 +1607,19 @@ export interface FareRangeSummary {
  * observation has recorded `fareDirectness: 'direct'` yet — the only case
  * evidenced so far is Manchester-Dubai's 'connecting' Gulf Air fare — so the
  * 'direct' branch would otherwise be exercised by no real data at all).
- * Agrees only when every observation that states a value states the SAME
- * one; `undefined` when none state one, when they disagree, or when the
- * only values stated are `'unknown'` — never a majority guess. `'unknown'`
- * is a real, explicit archive value (a collector looked and couldn't tell)
- * but must never drive a badge, so it's treated the same as an omitted
- * field here — the distinction matters for the record, not for display.
+ * Agrees only when every observation has the same explicit `direct` or
+ * `connecting` value; `undefined` when any observation omits the value,
+ * records `'unknown'`, or disagrees. A range badge describes every fare in
+ * that range, so a newer complete check cannot fill gaps in older records.
+ * `'unknown'` remains an explicit archive value but never drives a badge.
  */
 export function aggregateFareDirectness(
   observations: Pick<FareObservation, 'fareDirectness'>[]
 ): 'direct' | 'connecting' | undefined {
-  const stated = observations
-    .map((o) => o.fareDirectness)
-    .filter((d): d is 'direct' | 'connecting' => d === 'direct' || d === 'connecting');
-  return stated.length > 0 && stated.every((d) => d === stated[0]) ? stated[0] : undefined;
+  if (observations.length === 0) return undefined;
+  const first = observations[0].fareDirectness;
+  if (first !== 'direct' && first !== 'connecting') return undefined;
+  return observations.every((observation) => observation.fareDirectness === first) ? first : undefined;
 }
 
 /**

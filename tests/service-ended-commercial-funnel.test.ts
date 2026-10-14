@@ -141,7 +141,7 @@ describe('8. Fresh connecting fares remain separate from the ended direct servic
       const html = renderToStaticMarkup(element);
       expect(html, slug).toContain(expected.get(slug));
       expect(html, slug).toContain('Checked 4 October 2026');
-      expect(html, slug).toContain('Connecting journey via AUH');
+      expect(html, slug).toContain('Connecting outbound · return directness unconfirmed');
       expect(html.toLowerCase(), slug).toContain('connecting flights available');
       expect(html, slug).not.toContain('Standout Fare');
     }

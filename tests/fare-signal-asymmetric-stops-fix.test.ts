@@ -55,13 +55,13 @@ describe('Asymmetric-itinerary fix — the two live-reproduced production cases'
 
     const routing = formatRouting(observation);
     expect(routing).not.toMatch(/0 stops each way/);
-    expect(routing).toBe('Connecting · 0 stops outbound, 1 stop return');
+    expect(routing).toBe('Nonstop outbound · connecting return · 0 stops outbound, 1 stop return');
 
     const trackedStops = formatStopsTrackedFares(observation);
     expect(trackedStops).toBe('0 stops outbound, 1 stop return');
     const label = directnessLabel(toTrackedEntry(observation));
     expect(label).not.toMatch(/0 stops each way/);
-    expect(label).toBe('Connecting · 0 stops outbound, 1 stop return');
+    expect(label).toBe('Nonstop outbound · connecting return · 0 stops outbound, 1 stop return');
   });
 
   it('bristol-faro (obs-brs-fao-economy-20260901-8w-v1): 0 stops outbound, 1 stop return — same fix, second reproduced route', () => {
@@ -70,9 +70,9 @@ describe('Asymmetric-itinerary fix — the two live-reproduced production cases'
     expect(observation.returnStops).toBe(1);
 
     expect(formatStops(observation)).toBe('0 stops outbound, 1 stop return');
-    expect(formatRouting(observation)).toBe('Connecting · 0 stops outbound, 1 stop return');
+    expect(formatRouting(observation)).toBe('Nonstop outbound · connecting return · 0 stops outbound, 1 stop return');
     expect(formatStopsTrackedFares(observation)).toBe('0 stops outbound, 1 stop return');
-    expect(directnessLabel(toTrackedEntry(observation))).toBe('Connecting · 0 stops outbound, 1 stop return');
+    expect(directnessLabel(toTrackedEntry(observation))).toBe('Nonstop outbound · connecting return · 0 stops outbound, 1 stop return');
   });
 });
 
@@ -130,5 +130,30 @@ describe('Asymmetric-itinerary fix — dataset-wide protection', () => {
       expect(formatRouting(observation), observation.id).toBe('Direct journey');
       expect(directnessLabel(toTrackedEntry(observation)), observation.id).toBe('Direct');
     }
+  });
+});
+
+describe('outbound-only itinerary evidence remains leg-scoped on customer fare cards', () => {
+  it.each([
+    ['obs-man-bcn-economy-20261006-v1', 'Nonstop outbound · return directness unconfirmed'],
+    ['obs-lgw-bcn-economy-20261006-v1', 'Nonstop outbound · return directness unconfirmed'],
+    ['obs-bhx-bcn-economy-20261006-v1', 'Connecting outbound · return directness unconfirmed'],
+  ])('%s preserves the known outbound and does not claim return directness', (id, expected) => {
+    const observation = toObservation(id);
+    expect(observation.returnDirectness).toBeNull();
+    expect(formatRouting(observation)).toBe(expected);
+    expect(directnessLabel(toTrackedEntry(observation))).toBe(expected);
+    expect(formatRouting(observation)).not.toMatch(/^Direct journey$/);
+  });
+
+  it('the Birmingham–Barcelona £71 record cannot label the return itinerary as direct or as non-self-transfer', () => {
+    const observation = toObservation('obs-bhx-bcn-economy-20260916-8w-v1');
+    expect(observation.price).toBe(71);
+    expect(observation.outboundDirectness).toBe('direct');
+    expect(observation.returnDirectness).toBeNull();
+    expect(observation.directness).toBeNull();
+    expect(observation.hasPositiveNonSelfTransferEvidence).toBe(false);
+    expect(formatRouting(observation)).toBe('Nonstop outbound · return directness unconfirmed');
+    expect(formatRouting(observation)).not.toBe('Direct journey');
   });
 });

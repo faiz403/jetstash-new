@@ -217,13 +217,11 @@ describe('Fix 3 — credibility wording corrected: no invented team, no JetStash
     expect(homepageSectionsSrc).not.toMatch(/Trip\.com partner search/);
   });
 
-  it('the underlying facts these sentences convey are still present, just without the invented team/live-fare claim', () => {
-    // Deals page: still explains fares are hand-checked and dated.
-    expect(dealsPageSrc).toMatch(/a real check logged by hand, dated/);
-    // About page: the section title already said "checked by a person" —
-    // confirming that framing is still there and the body no longer contradicts it.
-    expect(aboutPageSrc).toMatch(/checked by a person/);
-    expect(aboutPageSrc).toMatch(/a real fare check logged by hand/);
+  it('the underlying dated-observation facts remain without unsupported personal-check claims', () => {
+    expect(dealsPageSrc).toMatch(/tied to its recorded date/);
+    expect(aboutPageSrc).toMatch(/dated fare observation/);
+    expect(dealsPageSrc).not.toMatch(/logged by hand/i);
+    expect(aboutPageSrc).not.toMatch(/checked by a person|logged by hand/i);
     // Fare history panel: still explains figures are checked/recorded, not live.
     expect(fareHistoryPanelSrc).toMatch(/a fare checked and recorded on the date shown, not a live price feed/);
   });

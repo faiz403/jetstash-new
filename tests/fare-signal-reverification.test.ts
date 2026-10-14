@@ -319,11 +319,12 @@ describe('retirement does not change Fare Watcher identity or Standout lifecycle
 });
 
 describe('public wording: the secondary line describes the selector truthfully', () => {
-  it('says "Lowest comparable non-self-transfer fare observed" and no longer claims "Latest"', () => {
+  it('omits a non-self-transfer comparison claim when the primary record does not establish a single itinerary', () => {
     const signal = getFareSignalForRoute('manchester-islamabad', NOW);
     expect(signal.lowerSelfTransfer).not.toBeNull();
     const html = renderToStaticMarkup(FareSignal({ signal, tripComUrl: getTripComRouteUrl('manchester-islamabad'), routeSlug: 'manchester-islamabad', standoutFare: null }));
-    expect(html).toContain('Lowest comparable non-self-transfer fare observed');
+    expect(signal.observation?.hasPositiveNonSelfTransferEvidence).toBe(false);
+    expect(html).not.toContain('Lowest comparable non-self-transfer fare observed');
     expect(html).not.toContain('Latest comparable non-self-transfer fare observed');
     expect(html).toContain('£480');
   });
@@ -338,6 +339,7 @@ describe('public wording: the secondary line describes the selector truthfully',
     const component = readFileSync(join(process.cwd(), 'components', 'route', 'fare-signal.tsx'), 'utf8');
     expect(component).not.toContain('Latest comparable');
     expect(component).toContain('Lowest comparable non-self-transfer fare observed');
+    expect(component).toContain('data.hasPositiveNonSelfTransferEvidence');
   });
 });
 

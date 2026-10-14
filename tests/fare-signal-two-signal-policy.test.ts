@@ -74,13 +74,14 @@ describe('two-signal fare policy', () => {
     expect(JSON.stringify(fareObservations)).toBe(before);
   });
 
-  it('renders both factual signals for Birmingham–Antalya without altering the booking CTA', () => {
+  it('renders the dated fare and explicit self-transfer alternative without claiming the primary is non-self-transfer', () => {
     const signal = getFareSignalForRoute('birmingham-antalya', NOW);
     const text = renderToStaticMarkup(FareSignal({ signal, tripComUrl: null, routeSlug: 'birmingham-antalya' })).replace(/\s+/g, ' ');
 
     expect(signal.observation).toMatchObject({ id: 'obs-bhx-ayt-economy-20260922-v1', price: 233, airline: 'Turkish Airlines' });
     expect(signal.lowerSelfTransfer).toMatchObject({ id: 'obs-bhx-ayt-economy-20260929-v1', price: 175 });
-    expect(text).toContain('Lowest comparable non-self-transfer fare observed');
+    expect(signal.observation?.hasPositiveNonSelfTransferEvidence).toBe(false);
+    expect(text).not.toContain('Lowest comparable non-self-transfer fare observed');
     expect(text).toContain('Lower fare also seen: £175 return');
     expect(text).toContain('Self-transfer');
     expect(text).toContain('19 hr 35 min layover at Edinburgh Airport in Edinburgh');

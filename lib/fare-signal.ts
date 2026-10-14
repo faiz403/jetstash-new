@@ -16,7 +16,7 @@ import { getFreshFareCoverageLevel, isLowestFarePolicyActive, isObservationWithi
 import type { FareSearchCoverageLevel } from '@/data/fare-observations';
 import { fareReverifications, type FareReverification } from '@/data/fare-reverifications';
 import { getRetirementAffectedFareIdentities, withoutReverifiedObservations } from '@/lib/fare-reverification';
-import { isCleanFareEvidence } from '@/lib/fare-evidence-eligibility';
+import { hasPositiveNonSelfTransferEvidence, isCleanFareEvidence } from '@/lib/fare-evidence-eligibility';
 
 export type FareSignalState = 'current' | 'recent' | 'none';
 
@@ -42,11 +42,16 @@ export interface FareSignalObservation {
   departureDate: string;
   returnDate: string;
   directness: Exclude<FareObservation['fareDirectness'], undefined | 'unknown'> | null;
+  /** Leg-specific facts survive even when round-trip directness is unknown. */
+  outboundDirectness: 'direct' | 'connecting' | null;
+  returnDirectness: 'direct' | 'connecting' | null;
   outboundStops: number | null;
   returnStops: number | null;
   connectionAirports: string[];
   /** See lib/fare-self-transfer.ts -- true only when the observation's own priceNote explicitly, unambiguously records a self-transfer or separate-ticket itinerary. Never inferred from stop/airline count. */
   isSelfTransfer: boolean;
+  /** False unless the record positively says this is one ticket/itinerary. */
+  hasPositiveNonSelfTransferEvidence: boolean;
   /**
    * Bad-fare prominence fix (5 Sept 2026, independently reproduced Astra
    * findings) — see lib/journey-consequence.ts's own doc comment for the
@@ -111,6 +116,17 @@ export function toSignalObservation(observation: FareObservation, nowIso = obser
     ? extractStopViaFromText(observation.priceNote)
     : null;
 
+  const outboundDirectness = observation.outboundDirectness === 'direct' || observation.outboundDirectness === 'connecting'
+    ? observation.outboundDirectness
+    : observation.outboundStops !== undefined
+      ? observation.outboundStops === 0 ? 'direct' : 'connecting'
+      : stopVia?.leg === 'outbound' ? 'connecting' : null;
+  const returnDirectness = observation.returnDirectness === 'direct' || observation.returnDirectness === 'connecting'
+    ? observation.returnDirectness
+    : observation.returnStops !== undefined
+      ? observation.returnStops === 0 ? 'direct' : 'connecting'
+      : stopVia?.leg === 'return' ? 'connecting' : null;
+  const hasPartialLegEvidence = Boolean(outboundDirectness) !== Boolean(returnDirectness);
   return {
     id: observation.id,
     cabin: observation.cabin,
@@ -120,9 +136,13 @@ export function toSignalObservation(observation: FareObservation, nowIso = obser
     observedDate: observation.observedDate,
     departureDate: observation.departureDate!,
     returnDate: observation.returnDate!,
-    directness: observation.fareDirectness === 'direct' || observation.fareDirectness === 'connecting'
-      ? observation.fareDirectness
+    directness: observation.fareDirectness === 'direct' && hasPartialLegEvidence
+      ? null
+      : observation.fareDirectness === 'direct' || observation.fareDirectness === 'connecting'
+        ? observation.fareDirectness
       : (stopVia ? 'connecting' : null),
+    outboundDirectness,
+    returnDirectness,
     outboundStops: observation.outboundStops ?? (stopVia?.leg === 'outbound' ? stopVia.stops : null),
     returnStops: observation.returnStops ?? (stopVia?.leg === 'return' ? stopVia.stops : null),
     connectionAirports: [...new Set([
@@ -131,6 +151,7 @@ export function toSignalObservation(observation: FareObservation, nowIso = obser
       ...(stopVia ? [stopVia.connectionCity] : []),
     ])],
     isSelfTransfer: isSelfTransferItinerary(observation.priceNote),
+    hasPositiveNonSelfTransferEvidence: hasPositiveNonSelfTransferEvidence(observation),
     journeyConsequences: formatJourneyConsequenceSummary(
       getJourneyConsequences(observation, getDestinationIataCode(observation.routeSlug))
     ),
@@ -142,6 +163,23 @@ export function toSignalObservation(observation: FareObservation, nowIso = obser
     fareCoverageLevel: getFreshFareCoverageLevel(observation, nowIso) ?? 'fixed',
     hasThreeMonthSearchCoverage: getFreshFareCoverageLevel(observation, nowIso) === 'full-continuous',
   };
+}
+
+/** A truthful itinerary summary that never extends one leg's evidence to the other. */
+export function formatFareLegDirectness(observation: Pick<FareSignalObservation, 'directness' | 'outboundDirectness' | 'returnDirectness'>): string | null {
+  const { outboundDirectness: outbound, returnDirectness: returning } = observation;
+  if (outbound && !returning) {
+    return `${outbound === 'direct' ? 'Nonstop' : 'Connecting'} outbound · return directness unconfirmed`;
+  }
+  if (returning && !outbound) {
+    return `Outbound directness unconfirmed · ${returning === 'direct' ? 'nonstop' : 'connecting'} return`;
+  }
+  if (outbound && returning && (outbound !== 'direct' || returning !== 'direct')) {
+    return `${outbound === 'direct' ? 'Nonstop' : 'Connecting'} outbound · ${returning === 'direct' ? 'nonstop' : 'connecting'} return`;
+  }
+  if (observation.directness === 'direct') return 'Direct journey';
+  if (observation.directness === 'connecting') return 'Connecting journey';
+  return null;
 }
 
 /** The route's own destination IATA code, or null if the route/destination can't be resolved — used only to detect an arrival-airport mismatch; see lib/journey-consequence.ts. */

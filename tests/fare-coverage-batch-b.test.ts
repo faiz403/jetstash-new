@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { fareObservations, getPublishableObservationsByRoute, getFareRangeSummary, aggregateFareDirectness } from '@/data/fare-observations';
+import { fareObservations, getPublishableObservationsByRoute, getPublishableObservationsByRouteAndCabin, getFareRangeSummary, aggregateFareDirectness } from '@/data/fare-observations';
 import { deals, getDealFareDirectnessLabel, hasTrackedFare, isBundledProductDeal } from '@/data/deals';
 import { routes } from '@/data/routes';
 import { getActiveWarningsByRoute } from '@/data/route-warnings';
@@ -167,16 +167,15 @@ describe('Fare Coverage Expansion Batch B — publishability and customer visibi
     // london-heathrow-bengaluru: see the aggregateFareDirectness test above
     // — its 18 August evidence genuinely disagrees with Batch B's, so the
     // badge correctly shows nothing rather than picking a side.
-    const expectedByRoute: Record<string, string | undefined> = {
-      'london-heathrow-bengaluru': undefined,
-    };
     for (const slug of NEW_ROUTES) {
       if (REVERTED_TO_USEFUL_18_AUG.includes(slug)) continue; // see the dedicated test above
       const route = routes.find((r) => r.slug === slug)!;
       const deal = deals.find((d) => d.fromAirportSlug === route.airportSlug && d.toDestinationSlug === route.destinationSlug && d.cabin === 'Economy' && !isBundledProductDeal(d));
       expect(deal, slug).toBeDefined();
       expect(hasTrackedFare(deal!, NOW_ISO), slug).toBe(true);
-      expect(getDealFareDirectnessLabel(deal!, NOW_ISO), slug).toBe(slug in expectedByRoute ? expectedByRoute[slug] : 'Connecting');
+      const rangeDirectness = getFareRangeSummary(slug, 'Economy', NOW_ISO)?.observedDirectness;
+      const expectedBadge = rangeDirectness === 'direct' ? 'Direct flight' : rangeDirectness === 'connecting' ? 'Connecting' : undefined;
+      expect(getDealFareDirectnessLabel(deal!, NOW_ISO), slug).toBe(expectedBadge);
     }
   });
 
@@ -354,10 +353,9 @@ describe('Fare Coverage Expansion Batch B — no scope creep', () => {
       if (REVERTED_TO_USEFUL_18_AUG.includes(slug)) continue; // no longer publishable — see the dedicated test above
       const range = getFareRangeSummary(slug, 'Economy', NOW_ISO);
       expect(range, slug).not.toBeNull();
-      const obs = fareObservations.filter((o) => o.routeSlug === slug && o.cabin === 'Economy');
+      const obs = getPublishableObservationsByRouteAndCabin(slug, 'Economy', NOW_ISO);
       const expectedDirectness = aggregateFareDirectness(obs);
       expect(range!.observedDirectness, slug).toBe(expectedDirectness);
-      expect(range!.observedDirectness, slug).toBe(slug in expectedByRoute ? expectedByRoute[slug] : 'connecting');
     }
   });
 });

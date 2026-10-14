@@ -84,7 +84,7 @@ const JOURNEY_CHECKS: { icon: typeof Plane; title: string; body: string; href?: 
   {
     icon: Receipt,
     title: 'What fare did we last see?',
-    body: 'Every fare shows the date a person checked it, who flies it, how many stops, and whether it is a self-transfer. It is a dated observation, not today’s price.',
+    body: 'Every fare shows its recorded check date, airline, known stops and any recorded self-transfer evidence. It is a dated observation, not today’s price.',
   },
   {
     icon: ShieldCheck,

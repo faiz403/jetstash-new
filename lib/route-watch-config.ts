@@ -9,7 +9,7 @@
 export const MAX_WATCHED_ROUTES = 3;
 
 export const ROUTE_WATCH_INITIAL_COPY =
-  "Watch this route for meaningful, human-reviewed updates. This is not an automatic price-drop alert. Track up to 3 routes with one sign-up.";
+  "Watch this route for meaningful route and fare updates. This is not an automatic price-drop alert. Track up to 3 routes with one sign-up.";
 
 export const ROUTE_WATCH_SUCCESS_COPY =
-  "You're watching this route. If we find a meaningful update after review, we'll email you.";
+  "You're watching this route. If a meaningful update is recorded, we'll email you.";

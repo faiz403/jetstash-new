@@ -127,10 +127,13 @@ describe('direct route: connecting fare remains clearly distinguished from route
       departureDate: '2026-10-01',
       returnDate: '2026-10-15',
       directness: 'direct',
+      outboundDirectness: 'direct',
+      returnDirectness: 'direct',
       outboundStops: 0,
       returnStops: 0,
       connectionAirports: [],
       isSelfTransfer: false,
+      hasPositiveNonSelfTransferEvidence: true,
       journeyConsequences: [],
     };
     const html = renderToStaticMarkup(
@@ -262,10 +265,13 @@ describe('airline identity cannot drift between route intelligence and the fare 
       departureDate: '2026-10-01',
       returnDate: '2026-10-15',
       directness: 'connecting',
+      outboundDirectness: 'connecting',
+      returnDirectness: 'connecting',
       outboundStops: 1,
       returnStops: 1,
       connectionAirports: ['Doha'],
       isSelfTransfer: false,
+      hasPositiveNonSelfTransferEvidence: true,
       journeyConsequences: [],
     };
     const html = renderToStaticMarkup(

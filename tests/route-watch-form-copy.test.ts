@@ -40,8 +40,9 @@ describe('Route Watch config — copy matches the real implementation (Brevo sto
     expect(MAX_WATCHED_ROUTES).toBe(3);
   });
 
-  it('initial copy says the updates are human-reviewed', () => {
-    expect(ROUTE_WATCH_INITIAL_COPY).toMatch(/human-reviewed/i);
+  it('initial copy describes route and fare updates without promising an unsupported review process', () => {
+    expect(ROUTE_WATCH_INITIAL_COPY).toMatch(/route and fare updates/i);
+    expect(ROUTE_WATCH_INITIAL_COPY).not.toMatch(/human-reviewed/i);
   });
 
   it('initial copy says it is not an automatic price-drop alert', () => {
@@ -63,9 +64,9 @@ describe('Route Watch config — copy matches the real implementation (Brevo sto
     }
   });
 
-  it('success copy makes no unsupported capability claim beyond "we review, then email if it matters"', () => {
+  it('success copy confirms watching and email without claiming an undocumented review step', () => {
     expect(ROUTE_WATCH_SUCCESS_COPY).toMatch(/watching this route/i);
-    expect(ROUTE_WATCH_SUCCESS_COPY).toMatch(/review/i);
+    expect(ROUTE_WATCH_SUCCESS_COPY).not.toMatch(/review/i);
     expect(ROUTE_WATCH_SUCCESS_COPY).not.toMatch(/price|fare|book by|document/i);
   });
 });

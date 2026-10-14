@@ -10,6 +10,7 @@ import { SELF_TRANSFER_EXPLANATION } from '@/lib/fare-self-transfer';
 import { AffiliateLinkDisclosure } from '@/components/ui/affiliate-link-disclosure';
 import type { TrackedFareAirportGroup, TrackedFareEntry } from '@/lib/tracked-fare-groups';
 import { FareAgeWarning } from '@/components/route/fare-age-warning';
+import { formatFareLegDirectness } from '@/lib/fare-signal';
 
 /**
  * Exhaustive Tracked Fares (PR #140) — search/accordion mechanics
@@ -221,12 +222,15 @@ export function formatStops(observation: TrackedFareEntry['observation']): strin
 
 export function directnessLabel(entry: TrackedFareEntry): string | null {
   const { observation } = entry;
-  if (observation.directness === 'direct') return 'Direct';
-  if (observation.directness === 'connecting') {
+  const status = formatFareLegDirectness(observation);
+  if (status === 'Direct journey') return 'Direct';
+  if (status === 'Connecting journey') {
     const stops = formatStops(observation);
     return stops ? `Connecting · ${stops}` : 'Connecting';
   }
-  return null;
+  const stops = formatStops(observation);
+  if (stops && status && / outbound · .* return$/.test(status)) return `${status} · ${stops}`;
+  return status;
 }
 
 /**

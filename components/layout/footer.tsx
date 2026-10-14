@@ -31,8 +31,8 @@ export function Footer() {
             </div>
             <p className="mt-4 max-w-sm text-xs leading-relaxed text-ink-300">{siteConfig.operatorStatement}</p>
             <p className="mt-4 max-w-sm text-xs leading-relaxed text-ink-300">
-              Every fare on this site is an example checked by a person on a stated date. Never a live price
-              claim, never invented urgency. That standard is the product.
+              Every fare on this site is a dated example, never a live price claim. Never invented urgency.
+              That standard is the product.
             </p>
             <p className="mt-4 max-w-sm text-xs leading-relaxed text-ink-300">
               JetStash earns a commission on some bookings made through partner links. This never affects the price
