@@ -61,7 +61,7 @@ describe('Mumbai destination P1 trust fix', () => {
     expect(destination.familyVisitContent?.packingNote).toMatch(/baggage allowance/i);
   });
 
-  it('leaves MAN→BOM route, verification, status-event and fare evidence unchanged', () => {
+  it('leaves MAN→BOM route, verification and status events unchanged while preserving and appending fare evidence', () => {
     expect(route).toMatchObject({
       slug: ROUTE_SLUG,
       airportSlug: 'manchester',
@@ -177,7 +177,31 @@ describe('Mumbai destination P1 trust fix', () => {
         observedDate: '2026-10-06',
         fareDirectness: 'connecting',
       },
+      // 17 October 2026: the December observation is append-only. The
+      // retained evidence records one stop via Bahrain but not the return
+      // timings or layover duration; the entry explicitly preserves that
+      // limitation rather than inferring missing itinerary details.
+      {
+        id: 'obs-man-bom-economy-20261016-8w-v1',
+        price: 598,
+        observedDate: '2026-10-16',
+        fareDirectness: 'connecting',
+      },
     ]);
+
+    const decemberObservation = getObservationsByRoute(ROUTE_SLUG).find(
+      (observation) => observation.id === 'obs-man-bom-economy-20261016-8w-v1',
+    )!;
+    expect(decemberObservation).toMatchObject({
+      departureDate: '2026-12-11',
+      returnDate: '2026-12-25',
+      baggage: '1 free carry-on; checked baggage available for a fee',
+      outboundStops: 1,
+      returnStops: 1,
+      outboundConnectionAirports: ['BAH'],
+      returnConnectionAirports: ['BAH'],
+    });
+    expect(decemberObservation.priceNote).toMatch(/exact return times and layover duration were not retained/i);
   });
 
   it('does not change any destination record outside Mumbai', () => {
