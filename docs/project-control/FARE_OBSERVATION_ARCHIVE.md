@@ -779,3 +779,37 @@ Baggage is currently recorded as `included`, a stated allowance, or `not stated`
 distinct state for a fare that explicitly includes *no* checked bag versus a result that simply
 doesn't mention baggage at all. Both currently record as `not stated`. Worth a fourth `excluded`
 state in a future pass; not required before the archive can start.
+
+## December fare research — 16 October 2026 (archived 17 October)
+
+The four research candidates below are selected Google Flights round-trip results for one adult
+in Economy, checked on 16 October for 11–25 December 2026. They are checked-date observations,
+not guaranteed airline checkout prices. Both legs were selected in Google Flights and each was
+reported as connecting through the named airport. Checked baggage costs extra on the three Gulf
+Air results; it was shown included on the Qatar Airways result. See
+`fare-evidence/december-fares-2026-10-16-archived-2026-10-17.md` for the retained session report
+times, source limitations and archive details.
+
+| Research candidate | Price | Carrier(s) | Connection | Baggage qualification | Publication decision under existing gate |
+|---|---:|---|---|---|---|
+| Manchester–Islamabad | £682 | Gulf Air | One stop via Bahrain each way | One carry-on; checked bag costs extra | Held: current route verification is pending; `isObservationPublishable()` fails its route-status gate |
+| Birmingham–Islamabad (`obs-bhx-isb-economy-20261016-8w-v1`) | £1,098 | Qatar Airways | One stop via Doha each way | Carry-on and checked bag shown included | Eligible: exact route and dates exist; current route presentation is connecting |
+| Manchester–Delhi | £720 | Gulf Air | One stop via Bahrain each way | One carry-on; checked bag costs extra | Held: service-ended status; routine-weekly record does not meet the existing route-status-recheck exception |
+| Manchester–Mumbai | £598 | Gulf Air | One stop via Bahrain each way | One carry-on; checked bag costs extra | Held: service-ended status; routine-weekly record does not meet the existing route-status-recheck exception |
+
+**One-off founder-approved documentation exception:** the original research report and targeted
+recheck were timestamped in the Codex session on 16 October, but no evidence document was saved in
+the repository during that session. The founder approved archiving those original session findings
+on 17 October for these four PR #331 candidates only. This accepts the later repository archival
+date; it does not relax the fare-evidence standard, make unsupported itinerary details valid, change
+the general checklist, or establish an exception for future observations. Only the Birmingham–
+Islamabad candidate remains in the active observation dataset. The other three are held in the
+evidence archive and are not added as publishable records. This follows the existing route
+verification/service-ended gates; no observation reason or eligibility rule was changed to make
+them pass. Source notes support prices, carriers, dates, selected routes and baggage conditions,
+but do not substantiate exact times, journey durations or layover durations; those details are
+omitted. No airline checkout verification or saved screenshot is claimed.
+
+The evidence requirements otherwise remain in force. The source research and its limits are
+preserved in the linked evidence file; do not treat this archive write-up as proof of current fare
+availability.
