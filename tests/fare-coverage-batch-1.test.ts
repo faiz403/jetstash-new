@@ -239,7 +239,9 @@ describe('no Fare Watcher candidate is created merely because this PR adds an ob
       // was not ingested (its only source was an incomplete KAYAK page).
       'manchester-karachi': 7,
       'birmingham-lahore': 7,
-      'birmingham-islamabad': 7,
+      // 17 October 2026: Birmingham–Islamabad is the only December research
+      // candidate retained as an active record after route-status revalidation.
+      'birmingham-islamabad': 8,
     };
     for (const { routeSlug } of APPROVED) {
       const comparable = publishable.filter((o) => o.routeSlug === routeSlug && o.cabin === 'Economy');
