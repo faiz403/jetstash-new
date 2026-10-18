@@ -8,7 +8,7 @@ import {
 import type { DealCabin } from '@/data/deals';
 import { getRouteBySlug } from '@/data/routes';
 import { getDestinationBySlug } from '@/data/destinations';
-import { daysBetweenIso, getFareFreshnessState, type FareFreshnessState } from '@/lib/freshness-thresholds';
+import { daysBetweenIso, getFareFreshnessState, meetsPromotedDepartureLeadTime, type FareFreshnessState } from '@/lib/freshness-thresholds';
 import { isSelfTransferItinerary } from '@/lib/fare-self-transfer';
 import { getJourneyConsequences, formatJourneyConsequenceSummary, extractStopViaFromText } from '@/lib/journey-consequence';
 import { isPoorItinerarySuitability } from '@/lib/itinerary-suitability';
@@ -556,11 +556,12 @@ function selectTwoSignalFareObservation(
  * and approval records are unaffected.
  */
 export function selectRepresentativeObservation(
-  observations: FareObservation[],
+  allObservations: FareObservation[],
   nowIso: string,
   reverifications: readonly FareReverification[] = fareReverifications,
   evidence: readonly FareObservation[] = fareObservations
 ): { observation: FareObservation | null; state: FareSignalState; freshness: FareFreshnessState | null; noneReason: FareSignalNoneReason | null } {
+  const observations = withPromotableDepartures(allObservations, nowIso);
   const live = withoutReverifiedObservations(observations, nowIso, reverifications, evidence);
   const affected = getRetirementAffectedFareIdentities(observations, nowIso, reverifications, evidence);
   const primaryPool = live.filter((observation) =>
@@ -573,6 +574,18 @@ export function selectRepresentativeObservation(
     observation: primary,
     freshness: getFareFreshnessState(daysBetweenIso(primary.observedDate, nowIso)),
   };
+}
+
+/**
+ * 14-day departure guard (17 Oct 2026): a fare whose travel departs fewer
+ * than MIN_PROMOTED_DEPARTURE_LEAD_DAYS away can never be the headline, the
+ * secondary self-transfer line or Book-By's checked fare. Applied before
+ * every other selection rule, so the existing freshness, quality,
+ * reverification and lowest-fare rules choose among promotable evidence
+ * only and their own ordering is unchanged.
+ */
+function withPromotableDepartures(observations: FareObservation[], nowIso: string): FareObservation[] {
+  return observations.filter((observation) => meetsPromotedDepartureLeadTime(observation.departureDate, nowIso));
 }
 
 function selectLowerSelfTransferForPrimary(
@@ -611,7 +624,8 @@ function selectLowerSelfTransferForPrimary(
  * available. V1 deliberately has no stronger-price signal: the archive does
  * not yet provide a defensible same-profile baseline for every route.
  */
-export function deriveFareSignal(observations: FareObservation[], nowIso: string, reverifications: readonly FareReverification[] = fareReverifications, evidence: readonly FareObservation[] = fareObservations): FareSignal {
+export function deriveFareSignal(allObservations: FareObservation[], nowIso: string, reverifications: readonly FareReverification[] = fareReverifications, evidence: readonly FareObservation[] = fareObservations): FareSignal {
+  const observations = withPromotableDepartures(allObservations, nowIso);
   const live = withoutReverifiedObservations(observations, nowIso, reverifications, evidence);
   const { observation: selected, state, freshness, noneReason } = selectRepresentativeObservation(observations, nowIso, reverifications, evidence);
   const signalObservation = selected ? toSignalObservation(selected, nowIso) : null;

@@ -199,7 +199,9 @@ describe('rendered Fare Signal -- label appears in the primary/prominent area, n
 describe('scope discipline -- this fix touches presentation only', () => {
   it('does not add a structured field to FareObservation itself (data/fare-observations.ts)', () => {
     const src = readFileSync(join(process.cwd(), 'data/fare-observations.ts'), 'utf-8');
-    expect(src).not.toContain('isSelfTransfer');
+    // A field declaration, not a mention: getFareRangeSummary() imports the
+    // isSelfTransferItinerary() predicate (17 Oct 2026), which adds no field.
+    expect(src).not.toMatch(/\bisSelfTransfer\??\s*:/);
   });
 
   it('lib/fare-self-transfer.ts is not imported by Journey Choice, Book-By or the Trip.com dated handoff', () => {

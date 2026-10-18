@@ -184,8 +184,10 @@ describe('Mumbai destination P1 trust fix', () => {
     // Digest recomputed for this integration: Doha's ukAirports/visaNote and
     // Dubai's visaNote legitimately changed via the separately-approved
     // a771262 (LGW-DOH) and 8b60ddf (UAE/Qatar) fixes, both present here.
+    // Recomputed 17 Oct 2026: Islamabad's flightTimeFromUK changed from the
+    // exact "7h 45m" to "About 7½ hours" with the MAN-ISB re-verification.
     const otherDestinations = destinations.filter((item) => item.slug !== 'mumbai');
     const digest = createHash('sha256').update(JSON.stringify(otherDestinations)).digest('hex');
-    expect(digest).toBe('182555ea2b10a86ab7d3ee3c0a0ff3ccb588cb901ecfdccfe68c65be90b4bafb');
+    expect(digest).toBe('44f24fddc4e183f101bdf1996e6502cd89135b6b9be33840622cb5ff3b3fd77b');
   });
 });

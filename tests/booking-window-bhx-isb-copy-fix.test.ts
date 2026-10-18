@@ -65,9 +65,11 @@ describe('data/booking-windows.ts — bhx-isb-eid-recommended stale copy fix', (
     // Spot-check the two entries most likely to have been touched by
     // accident (same file, adjacent, same PR/route family) are exactly the
     // pre-existing wording.
+    // Updated 17 Oct 2026 by the MAN-ISB re-verification (unsupported
+    // "fewer weekly frequencies than Lahore" comparison removed).
     const manIsb = bookingWindows.find((w) => w.id === 'man-isb-eid-recommended');
     expect(manIsb!.guidance).toBe(
-      "This route's pattern is similar to Manchester–Lahore: for fixed Eid dates, planning to book 3+ months ahead is a reasonable approach. It also runs fewer weekly frequencies than Lahore, so seats can fill faster in peak weeks."
+      "This route's pattern is similar to Manchester–Lahore: for fixed Eid dates, planning to book 3+ months ahead is a reasonable approach. With four weekly direct flights, seats on the busiest Eid dates can still fill fast."
     );
     const manKhi = bookingWindows.find((w) => w.id === 'man-khi-eid-wedding-recommended');
     expect(manKhi!.guidance).toBe(

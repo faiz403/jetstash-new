@@ -210,12 +210,15 @@ describe('10. the page itself — live stat, terminology, cross-link, no fabrica
   });
 
   it('changes the hero population when eligibility changes at UK midnight, not one hour later', () => {
-    vi.setSystemTime(new Date('2026-10-12T22:59:59.000Z'));
+    // The former 12/13 October boundary (MAN→ISB verification expiry) moved
+    // when that route was re-verified on 17 Oct 2026. London Gatwick→Amritsar
+    // leaves the current population at UK midnight on 17/18 October (BST).
+    vi.setSystemTime(new Date('2026-10-17T22:59:59.000Z'));
     const before = renderToStaticMarkup(TrackedFaresPage());
-    assertCoverage(before, '2026-10-12');
-    vi.setSystemTime(new Date('2026-10-12T23:00:00.000Z'));
+    assertCoverage(before, '2026-10-17');
+    vi.setSystemTime(new Date('2026-10-17T23:00:00.000Z'));
     const after = renderToStaticMarkup(TrackedFaresPage());
-    assertCoverage(after, '2026-10-13');
+    assertCoverage(after, '2026-10-18');
     expect(renderedHeroCount(after).current).toBeLessThan(renderedHeroCount(before).current);
   });
 

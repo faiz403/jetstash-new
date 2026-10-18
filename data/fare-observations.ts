@@ -9,6 +9,8 @@ import { getEffectiveRoutePresentation } from '@/lib/route-status-copy';
 // lib/journey-consequence.ts only imports FareObservation as a TYPE from
 // this file (erased at compile time, never a runtime import) -- no cycle.
 import { getJourneyConsequences, formatJourneyConsequenceSummary } from '@/lib/journey-consequence';
+import { isSelfTransferItinerary } from '@/lib/fare-self-transfer';
+import { meetsPromotedDepartureLeadTime } from '@/lib/freshness-thresholds';
 
 export interface FareObservation {
   id: string;
@@ -1572,9 +1574,11 @@ export interface FareRangeSummary {
   max: number;
   earliestDate: string;
   latestDate: string;
+  /** observedDate of the check that sets `min` — use this, not latestDate, when a surface states when the minimum was checked. */
+  minimumObservedDate: string;
   /** Distinct airlines or providers the displayed observation(s) came from. Never substitute a deal's curation airline here. */
   sources: string[];
-  /** Taken from the most recent observation — the most representative note for the range shown. */
+  /** Taken from the observation that sets `min`, so the note beside a price always describes that same fare (17 Oct 2026). */
   priceNote: string;
   /**
    * The observations' own recorded `fareDirectness`, when every observation
@@ -1591,7 +1595,7 @@ export interface FareRangeSummary {
    * independently reproduced Astra findings — DealCard was the specifically
    * flagged "lower card" showing complex Economy/Business examples with no
    * self-transfer, airport-change or duration information at all). Computed
-   * from the SAME most-recent observation `priceNote` above is taken from,
+   * from the SAME minimum-price observation `priceNote` above is taken from,
    * via lib/journey-consequence.ts's one shared extractor — never a second,
    * DealCard-specific derivation that could drift from what Fare Signal
    * itself would show for the same observation. Empty array when nothing
@@ -1632,23 +1636,36 @@ export function aggregateFareDirectness(
  * facts instead of showing a price.
  */
 export function getFareRangeSummary(routeSlug: string, cabin: DealCabin, nowIso: string): FareRangeSummary | null {
-  const observations = getPublishableObservationsByRouteAndCabin(routeSlug, cabin, nowIso);
+  // Deal-card trust fix (17 Oct 2026): a range is a promotional price, so
+  // (1) a check whose travel departs inside the 14-day guard never sets it,
+  // and (2) a self-transfer check never sets the minimum of an otherwise
+  // clean range. A self-transfer-only range is still shown, with the
+  // self-transfer consequence carried by the observation that sets the
+  // minimum. The archive itself is untouched.
+  const promotable = getPublishableObservationsByRouteAndCabin(routeSlug, cabin, nowIso)
+    .filter((o) => meetsPromotedDepartureLeadTime(o.departureDate, nowIso));
+  const clean = promotable.filter((o) => !isSelfTransferItinerary(o.priceNote));
+  const observations = clean.length > 0 ? clean : promotable;
   if (observations.length === 0) return null;
   const prices = observations.map((o) => o.price);
   const observedDirectness = aggregateFareDirectness(observations);
-  const mostRecent = observations[observations.length - 1];
+  // The note and journey consequences describe the exact observation the
+  // displayed minimum comes from — never a different (e.g. newer, cleaner)
+  // check. Ties go to the most recent check at that price.
+  const minimumObservation = observations.reduce((lowest, o) => (o.price <= lowest.price ? o : lowest));
 
   const route = getRouteBySlug(routeSlug);
   const destinationIataCode = route ? getDestinationBySlug(route.destinationSlug)?.iataCode ?? null : null;
   return {
     count: observations.length,
-    min: Math.min(...prices),
+    min: minimumObservation.price,
     max: Math.max(...prices),
     earliestDate: observations[0].observedDate,
     latestDate: observations[observations.length - 1].observedDate,
+    minimumObservedDate: minimumObservation.observedDate,
     sources: [...new Set(observations.map((o) => o.source))],
-    priceNote: mostRecent.priceNote,
+    priceNote: minimumObservation.priceNote,
     observedDirectness,
-    journeyConsequences: formatJourneyConsequenceSummary(getJourneyConsequences(mostRecent, destinationIataCode)),
+    journeyConsequences: formatJourneyConsequenceSummary(getJourneyConsequences(minimumObservation, destinationIataCode)),
   };
 }

@@ -439,7 +439,9 @@ describe('Fare-observation publication predicate — pure, synthetic-fixture-tes
     const range = getFareRangeSummary('manchester-lahore', 'Economy', GENUINELY_EVIDENCED_ISO);
     expect(range).not.toBeNull();
     expect(range!.count).toBeGreaterThanOrEqual(2);
-    expect(range!.min).toBe(538);
+    // £538 is a self-transfer check, which no longer sets a clean range's
+    // minimum (deal-card trust fix, 17 Oct 2026); £574 is the lowest clean check.
+    expect(range!.min).toBe(574);
     expect(range!.sources).toContain('Etihad');
   });
 });

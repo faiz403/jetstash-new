@@ -792,6 +792,32 @@ visually honest about age. `lib/founder-insights.ts`'s `bookByCadenceStatus()` e
 route to `'attention'` once its latest observation passes `OBSERVATION_STALE_DAYS`, distinct from the
 routine `'watch'` for merely due-for-a-refresh.
 
+**A fare for a flight leaving within 14 days is never promoted (October 2026).** An old check
+for a flight leaving this week is not a planning signal, so `MIN_PROMOTED_DEPARTURE_LEAD_DAYS` = 14
+in `lib/freshness-thresholds.ts` keeps any observation whose `departureDate` is fewer than 14 UK
+calendar days away off every promotional surface: the Fare Signal headline, the secondary "lower
+fare also seen" self-transfer line, Standout Fares, Book-By's checked fare and deal-card price
+ranges. It is measured from the travel departure date, never the check date, applies from
+`PROMOTED_DEPARTURE_GUARD_START_DATE` (17 Oct 2026; earlier test dates keep their old semantics,
+as with the lowest-fare policy), and runs before the existing selection rules, so the 60-day
+freshness, recheck-priority and lowest-fare rules are unchanged and simply choose among promotable
+evidence. A missing departure date never qualifies. Excluded observations stay in the dated fare
+history. Pages pass the UTC render date as `nowIso`, but a visitor reads the page on their UK date,
+which can be a day later (00:00–01:00 BST, or an ISR copy rendered late and served after UK
+midnight), so `meetsPromotedDepartureLeadTime()` adds `PROMOTED_DEPARTURE_SAFETY_MARGIN_DAYS` = 1
+and requires 15 days at render. That keeps every page served within about 23 hours of rendering at
+14+ UK days (the 6-hour revalidation sits well inside this). Two known limits: the margin can
+exclude a fare exactly 14 UK days out, and an ISR copy left unvisited for more than about a day keeps
+being served stale until a background regeneration succeeds (Next's default one-year `expireTime`),
+which no fixed margin covers.
+
+**A deal-card range describes one fare at a time (October 2026).** `getFareRangeSummary()` never
+lets a self-transfer check set the minimum of a range that has any qualifying clean check; a
+self-transfer-only range is still shown, with its self-transfer consequence. The note, journey
+consequences and `minimumObservedDate` all come from the exact observation that sets the
+displayed minimum, never a newer or cleaner check. When publishable checks exist but none
+qualifies, the card says "No current … fare to show", never "No … fare checks logged yet".
+
 **Automated fare *collection* is not currently safe — this is a real ceiling, not a missed fix.**
 JetStash's only live connection is Trip.com's affiliate link programme (click-tracking only, via
 dashboard-generated links — no price-feed or display license of any kind), and scraping any airline

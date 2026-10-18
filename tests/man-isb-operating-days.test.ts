@@ -2,6 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { getRouteBySlug, routes } from '@/data/routes';
 import { routeStatusEvents } from '@/data/route-status-events';
+import { bookingWindows } from '@/data/booking-windows';
 import { getEffectiveRoutePresentation } from '@/lib/route-status-copy';
 import { getFareSignalForRoute } from '@/lib/fare-signal';
 import { getComparableOptionsByObservationIds } from '@/lib/smart-fare-route-adapter';
@@ -58,15 +59,18 @@ describe('route verification expiry does not rewrite standing service or fare ev
     expect(signal.observation?.id).not.toBe('obs-man-isb-economy-20260825-8w-v1');
   });
 
-  it('fails closed on 13 October without promoting the retired £460 fare or stale weekdays', async () => {
+  // Re-verified 17 Oct 2026 against Manchester Airport's PIA operator page
+  // (review due 16 Nov), so the fail-closed boundary is now 17 November.
+  it('fails closed on 17 November without promoting the retired £460 fare or stale weekdays', async () => {
     const route = getRouteBySlug('manchester-islamabad')!;
-    const presentation = getEffectiveRoutePresentation(route, routeStatusEvents, '2026-10-13');
+    expect(route.verification?.reviewDueDate).toBe('2026-11-16');
+    const presentation = getEffectiveRoutePresentation(route, routeStatusEvents, '2026-11-17');
     expect(presentation.status).toBe('unverified');
     expect(presentation.frequency).toBeNull();
-    const signal = getFareSignalForRoute(route.slug, '2026-10-13');
+    const signal = getFareSignalForRoute(route.slug, '2026-11-17');
     expect(signal.state).toBe('none');
     expect(signal.observation).toBeNull();
-    const html = await renderManIsbPage('2026-10-13');
+    const html = await renderManIsbPage('2026-11-17');
     expect(html).not.toMatch(/Mon, Tue, Thu (&|&amp;) Sat/);
     expect(html).not.toContain('4x weekly direct');
     expect(html).not.toContain('Fare spotted');
@@ -133,6 +137,8 @@ describe('8. 4x/week fact is correct and consistent (corrects the prior stale "2
   it('the now-false "fewer weekly frequencies than Lahore" comparison is removed from bookingWindowNote', () => {
     const route = getRouteBySlug('manchester-islamabad')!;
     expect(route.bookingWindowNote).not.toMatch(/fewer weekly frequencies than Lahore/);
+    // 17 Oct 2026: the same comparison is also gone from Book-By's guidance.
+    expect(bookingWindows.filter((w) => w.routeSlug === 'manchester-islamabad').map((w) => w.guidance).join(' ')).not.toMatch(/fewer weekly frequencies/);
   });
 });
 
