@@ -58,8 +58,12 @@ describe('Route-warning truth alignment: the three unsourced "3 times a week" wa
   it('4b. London Gatwick–Amritsar\'s supported route presentation (hedged frequency, direct status) is completely unchanged', () => {
     const route = getRouteBySlug('london-gatwick-amritsar')!;
     expect(route.frequency).toBe('Non-stop service shown by Air India; exact operating days vary');
-    const presentation = getEffectiveRoutePresentation(route, routeStatusEvents, NOW_ISO);
-    expect(presentation.status).toBe('direct');
+    // Pinned to the route's review due date (17 Oct 2026): this test is about
+    // the hedged presentation, not the live clock. The day after, the route
+    // must fail closed until it is re-verified.
+    expect(route.verification?.reviewDueDate).toBe('2026-10-17');
+    expect(getEffectiveRoutePresentation(route, routeStatusEvents, '2026-10-17').status).toBe('direct');
+    expect(getEffectiveRoutePresentation(route, routeStatusEvents, '2026-10-18').status).toBe('unverified');
   });
 
   it('4c. London Gatwick–Ahmedabad\'s supported route presentation (unverified/disputed) is completely unchanged — no replacement frequency claim was invented', () => {
