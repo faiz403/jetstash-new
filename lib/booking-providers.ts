@@ -76,6 +76,44 @@ export const TRIPCOM_NO_FARE_SEARCH_NOTE =
   'Opens a new search. Choose your trip type and travel dates.';
 
 /**
+ * Return-dates note (18 Oct 2026, founder-approved, manchester-islamabad
+ * only). The Trip.com link itself is unchanged and still dateless/one-way
+ * by default; this only names the displayed fare's own travel dates in the
+ * instruction beneath it, so the customer knows exactly what to enter.
+ * The dates are never stored here — callers pass the exact observation the
+ * Fare Signal is showing, so they update or disappear with that fare.
+ */
+export const TRIPCOM_RETURN_DATES_NOTE_ROUTE_SLUGS: readonly string[] = ['manchester-islamabad'];
+
+const ISO_DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+const MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+
+function parseIsoDateParts(iso: string): { day: number; month: string; year: number } | null {
+  if (!ISO_DATE_RE.test(iso)) return null;
+  const [year, month, day] = iso.split('-').map(Number);
+  const date = new Date(Date.UTC(year, month - 1, day));
+  if (date.getUTCFullYear() !== year || date.getUTCMonth() !== month - 1 || date.getUTCDate() !== day) return null;
+  return { day, month: MONTH_NAMES[month - 1], year };
+}
+
+/**
+ * Dated version of TRIPCOM_FRESH_SEARCH_NOTE for an allowlisted route, or
+ * null (caller keeps its existing generic note) when the route isn't
+ * allowlisted, no fare is displayed, or the dates aren't a valid return.
+ */
+export function getTripComReturnDatesNote(
+  routeSlug: string,
+  fare: { departureDate: string; returnDate: string } | null | undefined,
+): string | null {
+  if (!fare || !TRIPCOM_RETURN_DATES_NOTE_ROUTE_SLUGS.includes(routeSlug)) return null;
+  const out = parseIsoDateParts(fare.departureDate);
+  const back = parseIsoDateParts(fare.returnDate);
+  if (!out || !back || fare.returnDate <= fare.departureDate) return null;
+  const outText = out.year === back.year ? `${out.day} ${out.month}` : `${out.day} ${out.month} ${out.year}`;
+  return `Opens a new Trip.com search. Select Return and enter ${outText} to ${back.day} ${back.month} ${back.year}. The fare shown above is not carried across.`;
+}
+
+/**
  * The one fail-closed sentence for "this route has no dashboard-verified
  * partner link" (Route Page Simplification Phase 1, 25 Aug 2026).
  *
