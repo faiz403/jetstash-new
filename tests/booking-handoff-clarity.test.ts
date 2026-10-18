@@ -16,10 +16,14 @@ import { getDestinationBySlug } from '@/data/destinations';
 const NOW = '2026-10-13';
 const LHE_URL = 'https://www.trip.com/flights/Manchester-to-Lahore/tickets-MAN-LHE?flighttype=S&dcity=MAN&acity=LHE&locale=en-XX&curr=GBP&Allianceid=9804124&SID=327450313&trip_sub1=&trip_sub3=D19082226';
 
-function renderSignal(routeSlug: string) {
+// MAN→ISB was re-verified on 17 Oct 2026 (review due 16 Nov), so its
+// suppressed-fare case is now exercised the day after that expiry.
+const MAN_ISB_EXPIRED = '2026-11-17';
+
+function renderSignal(routeSlug: string, nowIso = NOW) {
   return renderToStaticMarkup(FareSignal({
-    routeSlug, signal: getFareSignalForRoute(routeSlug, NOW), nowIso: NOW,
-    tripComUrl: getSafeTripComFlightHandoffUrl(routeSlug, undefined, undefined, NOW),
+    routeSlug, signal: getFareSignalForRoute(routeSlug, nowIso), nowIso,
+    tripComUrl: getSafeTripComFlightHandoffUrl(routeSlug, undefined, undefined, nowIso),
   }));
 }
 
@@ -37,8 +41,8 @@ describe('generic flight-search handoff clarity', () => {
   });
 
   it('does not refer to an unseen fare or dates when route verification suppresses the fare', () => {
-    expect(getFareSignalForRoute('manchester-islamabad', NOW).state).toBe('none');
-    const html = renderSignal('manchester-islamabad');
+    expect(getFareSignalForRoute('manchester-islamabad', MAN_ISB_EXPIRED).state).toBe('none');
+    const html = renderSignal('manchester-islamabad', MAN_ISB_EXPIRED);
     expect(html).toContain('Search Manchester to Islamabad flights on Trip.com');
     expect(html).toContain(TRIPCOM_NO_FARE_SEARCH_NOTE);
     expect(html).not.toContain(TRIPCOM_FRESH_SEARCH_NOTE);

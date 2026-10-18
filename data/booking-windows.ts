@@ -72,8 +72,11 @@ export const bookingWindows: BookingWindow[] = [
     routeSlug: 'manchester-islamabad',
     label: 'Recommended booking window for fixed Eid dates',
     weeksBeforeDeparture: { min: 12, max: 20 },
+    // 17 Oct 2026: the "fewer weekly frequencies than Lahore" comparison was
+    // removed from the route's bookingWindowNote on 12 Sept as unsupported
+    // but survived here; replaced with that note's own sell-out caveat.
     guidance:
-      "This route's pattern is similar to Manchester–Lahore: for fixed Eid dates, planning to book 3+ months ahead is a reasonable approach. It also runs fewer weekly frequencies than Lahore, so seats can fill faster in peak weeks.",
+      "This route's pattern is similar to Manchester–Lahore: for fixed Eid dates, planning to book 3+ months ahead is a reasonable approach. With four weekly direct flights, seats on the busiest Eid dates can still fill fast.",
     role: 'recommended',
     appliesToPeriodIds: ['eid-al-fitr', 'eid-al-adha'],
   },

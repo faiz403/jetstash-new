@@ -113,12 +113,15 @@ describe('Fare-observation completeness gating (TR-002) — Verified Check must 
     const CONTROLLED_WEEKLY_CHECK_ISO = '2026-08-25';
     const range = getFareRangeSummary('manchester-lahore', 'Economy', CONTROLLED_WEEKLY_CHECK_ISO);
     expect(range).not.toBeNull();
-    expect(range!.count).toBe(7);
-    expect(range!.min).toBe(538);
+    // Deal-card trust fix (17 Oct 2026): the two self-transfer checks
+    // (£538 and the 25 August pair) no longer set a clean range's minimum,
+    // so the range is the five clean Etihad/Turkish checks.
+    expect(range!.count).toBe(5);
+    expect(range!.min).toBe(574);
     expect(range!.max).toBe(638);
     expect(range!.earliestDate).toBe('2026-07-28');
-    expect(range!.latestDate).toBe('2026-08-25');
-    expect(range!.sources).toEqual(['Etihad', 'Turkish Airlines', 'Ryanair / Air Cairo / flyadeal / Fly Jinnah (outbound), Pakistan International Airlines / Pegasus / Ryanair (return)', 'Ryanair / Air Arabia / Fly Jinnah (outbound)']);
+    expect(range!.latestDate).toBe('2026-08-18');
+    expect(range!.sources).toEqual(['Etihad', 'Turkish Airlines']);
     expect(range!.observedDirectness).toBeUndefined();
   });
 });

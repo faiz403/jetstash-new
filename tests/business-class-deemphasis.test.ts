@@ -70,7 +70,8 @@ describe('Route-page priority remains answer-first', () => {
   });
 
   it('does not keep the positive fare panel after MAN→ISB verification expires', async () => {
-    const html = await renderRouteAt('manchester-islamabad', '2026-10-13');
+    // Re-verified 17 Oct 2026 (review due 16 Nov) — the day after expiry.
+    const html = await renderRouteAt('manchester-islamabad', '2026-11-17');
     expect(html).not.toContain('Fare spotted');
     expect(html).not.toContain('Journey Choice');
     const fallback = 'JetStash has checked this route before';

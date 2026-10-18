@@ -22,6 +22,29 @@ rate limiting rather than the current process-local limiter.
 
 **Production site:** `https://jetstash.co.uk`
 
+## MAN→ISB re-verification and promoted-fare guards — 17 October 2026 (local branch, not merged)
+
+Manchester→Islamabad's route verification lapsed on 12 October and the route correctly failed
+closed (no fares, schedule or Book-By; title "Verification in Progress"). Restoring it alone would
+have brought back misleading prices: a £480 headline checked 25 August for a 20 October departure,
+and a £428 deal-card minimum that was an unwarned three-stop self-transfer. Founder-approved
+correction on branch `fix/man-isb-reverify-fare-guards`:
+
+- MAN→ISB re-verified 17 October against Manchester Airport's own PIA operator page (review due
+  16 November, 30-day RECENT/CHANGING); duration softened to "About 7½ hours direct"; the
+  unsupported "fewer weekly frequencies than Lahore" Book-By line removed.
+- Site-wide: no fare departing within 14 UK days is promoted (headline, secondary, Standout,
+  Book-By, deal-card ranges), with a one-day safety margin for UTC/UK midnight and ISR caching.
+- Site-wide: a self-transfer check no longer sets a clean deal-card minimum, and the note beside a
+  price describes that same check. On 17 October this changed 70 ranges across 66 of 89 routes;
+  43 of the previous minimums were unwarned self-transfers and 33 departed inside the guard.
+
+MAN→ISB now headlines £521 Etihad (6 October check, 17 November–1 December) with £449 as the
+labelled self-transfer secondary. Its newest checks depart 17 November, so they last qualify on
+2 November (UTC render date) and the headline correctly disappears from 3 November unless newer
+fare evidence (`FARE-001`) is added first. The £682 Gulf Air
+December check stays held. See `JETSTASH_PRINCIPLES.md` §14.4.
+
 ## Arrive By: live limited beta and feature freeze, 3 October 2026
 
 **Arrive By full-journey V1 is LIVE in Production as a limited beta.** This supersedes the older

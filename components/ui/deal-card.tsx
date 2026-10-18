@@ -3,7 +3,7 @@ import { Deal, DealCabin, formatChecked, getDealFareDirectnessLabel, getDealAirl
 import { getRouteByAirportAndDestination } from '@/data/routes';
 import { routeStatusEvents } from '@/data/route-status-events';
 import { getEffectiveRoutePresentation } from '@/lib/route-status-copy';
-import { getFareRangeSummary } from '@/data/fare-observations';
+import { getFareRangeSummary, getPublishableObservationsByRouteAndCabin } from '@/data/fare-observations';
 import { getSafeTripComFlightHandoffUrl, SERVICE_ENDED_CTA_LABEL, getTripComSearchCtaLabel, TRIPCOM_FRESH_SEARCH_NOTE, TRIPCOM_NO_FARE_SEARCH_NOTE, PROVIDER_REL } from '@/lib/booking-providers';
 import { getFareFreshnessState, daysBetweenIso, OBSERVATION_STALE_DAYS } from '@/lib/freshness-thresholds';
 import { toTravellerFareNote } from '@/lib/fare-note-display';
@@ -69,6 +69,7 @@ export function DealCard({ deal, nowIso, headingLevel = 'h3' }: { deal: Deal; no
   // fares, which are not evidence for a bundled product's price; see
   // isBundledProductDeal's doc comment in data/deals.ts.
   const range = matchedRoute && !isBundledProductDeal(deal) ? getFareRangeSummary(matchedRoute.slug, deal.cabin, effectiveNowIso) : null;
+  const hasLoggedChecks = matchedRoute ? getPublishableObservationsByRouteAndCabin(matchedRoute.slug, deal.cabin, effectiveNowIso).length > 0 : false;
   // A duration belongs to a specific airport-to-destination route, never to
   // a destination in general. This presentation removes duration facts when
   // the route is unverified or the service has ended.
@@ -268,9 +269,18 @@ export function DealCard({ deal, nowIso, headingLevel = 'h3' }: { deal: Deal; no
                 // component already computes for the CTA below — never a
                 // second, independent check — so the promise can never
                 // outrun what actually renders beneath it.
-                : tripComUrl
-                  ? `No ${cabinLabel[deal.cabin]} fare checks logged yet — check the live price below`
-                  : `No ${cabinLabel[deal.cabin]} fare checks logged yet, and live-price comparison isn't available for this airport`}
+                //
+                // No-current-fare truth fix (17 Oct 2026): the range is also
+                // null when publishable checks exist but none passes the
+                // 14-day departure guard. "Logged yet" would then be false,
+                // so those cards say there is no current fare instead.
+                : hasLoggedChecks
+                  ? tripComUrl
+                    ? `No current ${cabinLabel[deal.cabin]} fare to show — check the live price below`
+                    : `No current ${cabinLabel[deal.cabin]} fare to show, and live-price comparison isn't available for this airport`
+                  : tripComUrl
+                    ? `No ${cabinLabel[deal.cabin]} fare checks logged yet — check the live price below`
+                    : `No ${cabinLabel[deal.cabin]} fare checks logged yet, and live-price comparison isn't available for this airport`}
             </div>
             {matchedRoute && (
               <Link

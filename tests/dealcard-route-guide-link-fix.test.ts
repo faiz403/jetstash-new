@@ -76,9 +76,12 @@ describe('DealCard route-guide link — full blast-radius breakdown, scoped fix'
     // earlier tracked fares were Ciampino (CIA) itineraries recorded against a
     // Fiumicino (FCO) route and are now methodology-excluded, so the card is
     // left resting on a single publishable observation rather than several.
+    // 17 October 2026: lhr-cmn-flight and man-bcn-flight join this bucket.
+    // Self-transfer checks no longer count towards a clean range, leaving
+    // each card on a single clean check.
     const { one } = dealsByObservationCount();
     expect(one.sort()).toEqual(
-      ['lba-isb-economy', 'lhr-business-lhe', 'lhr-doh-business', 'man-khi-business', 'man-khi-economy', 'man-lhe-business'].sort()
+      ['lba-isb-economy', 'lhr-business-lhe', 'lhr-cmn-flight', 'lhr-doh-business', 'man-bcn-flight', 'man-khi-business', 'man-khi-economy', 'man-lhe-business'].sort()
     );
   });
 

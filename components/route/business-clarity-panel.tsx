@@ -43,9 +43,11 @@ export function BusinessClarityPanel({
   fareRange,
 }: {
   clarity: BusinessClarityData;
-  fareRange: { min: number; latestDate: string };
+  fareRange: { min: number; minimumObservedDate: string };
 }) {
-  const fareDescription = `£${fareRange.min.toLocaleString('en-GB')}, checked ${formatChecked(fareRange.latestDate)} — ${clarity.trackedFareShape}`;
+  // The checked date is the minimum's own check date, never the range's
+  // newest check (17 Oct 2026) — price and date describe the same fare.
+  const fareDescription = `£${fareRange.min.toLocaleString('en-GB')}, checked ${formatChecked(fareRange.minimumObservedDate)} — ${clarity.trackedFareShape}`;
 
   return (
     <div className="mt-8 rounded-md border border-terracotta-200 bg-white p-6">

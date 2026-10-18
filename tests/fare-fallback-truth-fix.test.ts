@@ -102,11 +102,16 @@ describe('hasCurrentFareSignalForCabinAmongRoutes — cabin-scoped sibling for /
   // are unaffected; the aggregate check across the whole catalogue still
   // holds true because of those two.
   it('is true for Business cabin among the four routes Business Fare Evidence Batch 1 evidenced — 2 of the 4 individually, 2 more now suppressed by poor-itinerary evidence', () => {
-    expect(hasCurrentFareSignalForCabinAmongRoutes(routes.map((r) => r.slug), 'Business', nowIso)).toBe(true);
-    expect(hasCurrentFareSignalForCabinAmongRoutes(['manchester-lahore'], 'Business', nowIso)).toBe(false);
-    expect(hasCurrentFareSignalForCabinAmongRoutes(['london-heathrow-lahore'], 'Business', nowIso)).toBe(false);
-    expect(hasCurrentFareSignalForCabinAmongRoutes(['london-heathrow-doha'], 'Business', nowIso)).toBe(true);
-    expect(hasCurrentFareSignalForCabinAmongRoutes(['manchester-karachi'], 'Business', nowIso)).toBe(true);
+    // Pinned to the day before the 14-day departure guard (17 Oct 2026):
+    // both remaining Business checks depart within 14 days of the live
+    // clock, which the guard now correctly withholds (asserted below).
+    const beforeGuard = '2026-10-16';
+    expect(hasCurrentFareSignalForCabinAmongRoutes(routes.map((r) => r.slug), 'Business', beforeGuard)).toBe(true);
+    expect(hasCurrentFareSignalForCabinAmongRoutes(['manchester-lahore'], 'Business', beforeGuard)).toBe(false);
+    expect(hasCurrentFareSignalForCabinAmongRoutes(['london-heathrow-lahore'], 'Business', beforeGuard)).toBe(false);
+    expect(hasCurrentFareSignalForCabinAmongRoutes(['london-heathrow-doha'], 'Business', beforeGuard)).toBe(true);
+    expect(hasCurrentFareSignalForCabinAmongRoutes(['manchester-karachi'], 'Business', beforeGuard)).toBe(true);
+    expect(hasCurrentFareSignalForCabinAmongRoutes(['london-heathrow-doha', 'manchester-karachi'], 'Business', '2026-10-17')).toBe(false);
   });
 
   it('remains false for Business cabin among a scope that genuinely has none — the gap is closed for exactly these four routes, not globally', () => {

@@ -7,6 +7,7 @@ import {
   type FareWatcherQualification,
 } from '@/lib/fare-watcher';
 import { toSignalObservation, type FareSignalObservation } from '@/lib/fare-signal';
+import { meetsPromotedDepartureLeadTime } from '@/lib/freshness-thresholds';
 
 /**
  * First Standout Fare Pilot (25 Aug 2026, founder-approved). The one public
@@ -88,6 +89,8 @@ export function deriveApprovedStandoutFare(
   if (isFareWatcherCandidateExpired(candidate, nowIso)) return null;
   if (candidate.verifiedObservation.id !== approval.approvedVerifiedObservationId) return null;
   if (candidate.verifiedObservation.cabin !== approval.cabin) return null;
+  // 14-day departure guard (17 Oct 2026) — see lib/freshness-thresholds.ts.
+  if (!meetsPromotedDepartureLeadTime(candidate.verifiedObservation.departureDate, nowIso)) return null;
 
   const signalObservation = toSignalObservation(candidate.verifiedObservation);
   if (!signalObservation) return null;

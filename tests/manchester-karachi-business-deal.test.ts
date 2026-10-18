@@ -125,7 +125,9 @@ describe('Generic Fare Signal is unaffected — stays Economy £539', () => {
 describe('Rendered DealCard — /routes/manchester-karachi and /business-class both use this component', () => {
   it('shows £2,553, Business cabin, Connecting badge, and a working route-guide link (bucket A — count === 1)', () => {
     const deal = deals.find((d) => d.id === 'man-khi-business')!;
-    const html = renderToStaticMarkup(DealCard({ deal }));
+    // Pinned to this file's date: on the live clock the £2,553 check's
+    // 17 Oct departure is now inside the 14-day guard (17 Oct 2026).
+    const html = renderToStaticMarkup(DealCard({ deal, nowIso: NOW_ISO }));
     expect(html).toContain('2,553');
     expect(html).toContain('Business class');
     expect(html).toContain('href="/routes/manchester-karachi"');

@@ -95,7 +95,12 @@ describe('Every data/routes.ts entry has a tracked Atlas Route Intelligence stat
   });
 
   it('confirms london-heathrow-lahore specifically is the route that moved — no other route\'s grade changed in this batch', () => {
-    expect(trackedBySlug.get('london-heathrow-lahore')?.intelligenceLevel).toBe('strong');
+    // Pinned to the day before the 14-day departure guard (17 Oct 2026):
+    // the route's only deal is Business, and its single Business check now
+    // departs inside the guard on the live clock, so the visible-fare gate
+    // correctly reads 'useful' from 17 October.
+    const route = routes.find((r) => r.slug === 'london-heathrow-lahore')!;
+    expect(computeRouteIntelligenceLevel(route, '2026-10-16')).toBe('strong');
   });
 });
 
