@@ -2,7 +2,7 @@ import { AlertTriangle, ArrowUpRight, CalendarDays, Info, Plane, Search, Sparkle
 import { formatFareLegDirectness, type FareSignal as FareSignalData, type FareSignalObservation } from '@/lib/fare-signal';
 import type { StandoutFarePresentation } from '@/lib/standout-fare';
 import { formatChecked } from '@/data/deals';
-import { NO_VERIFIED_PARTNER_LINK_NOTE, PROVIDER_REL, SERVICE_ENDED_CTA_LABEL, getTripComSearchCtaLabel, GENERIC_FLIGHT_SEARCH_URL, GENERIC_FLIGHT_SEARCH_CTA_LABEL, GENERIC_FLIGHT_SEARCH_REL, GENERIC_FLIGHT_SEARCH_NOTE, TRIPCOM_FRESH_SEARCH_NOTE, TRIPCOM_NO_FARE_SEARCH_NOTE } from '@/lib/booking-providers';
+import { NO_VERIFIED_PARTNER_LINK_NOTE, PROVIDER_REL, SERVICE_ENDED_CTA_LABEL, getTripComSearchCtaLabel, GENERIC_FLIGHT_SEARCH_URL, GENERIC_FLIGHT_SEARCH_CTA_LABEL, GENERIC_FLIGHT_SEARCH_REL, GENERIC_FLIGHT_SEARCH_NOTE, TRIPCOM_FRESH_SEARCH_NOTE, TRIPCOM_NO_FARE_SEARCH_NOTE, getTripComReturnDatesNote } from '@/lib/booking-providers';
 import { SELF_TRANSFER_LABEL, SELF_TRANSFER_EXPLANATION } from '@/lib/fare-self-transfer';
 import { TrackedOutboundLink } from '@/components/ui/tracked-outbound-link';
 import { AffiliateLinkDisclosure } from '@/components/ui/affiliate-link-disclosure';
@@ -141,7 +141,7 @@ export function formatRouting(observation: FareSignalObservation): string | null
  * enough to tell whether the pilot's CTA specifically is generating
  * engagement, with zero new analytics surface added.
  */
-function SignalCta({ href, routeSlug, standout = false, label = getTripComSearchCtaLabel(routeSlug), hasDisplayedFare = true }: { href: string; routeSlug: string; standout?: boolean; label?: string; hasDisplayedFare?: boolean }) {
+function SignalCta({ href, routeSlug, standout = false, label = getTripComSearchCtaLabel(routeSlug), hasDisplayedFare = true, returnDatesNote = null }: { href: string; routeSlug: string; standout?: boolean; label?: string; hasDisplayedFare?: boolean; returnDatesNote?: string | null }) {
   return (
     <div className="mt-3 sm:mt-5">
       <div className="flex flex-col items-stretch gap-2 sm:flex-row sm:items-center sm:gap-4">
@@ -169,7 +169,7 @@ function SignalCta({ href, routeSlug, standout = false, label = getTripComSearch
           Check the itinerary, baggage allowance and booking terms before paying.
         </AffiliateLinkDisclosure>
       </div>
-      <p className="mt-1.5 text-xs text-ink-400">{hasDisplayedFare ? TRIPCOM_FRESH_SEARCH_NOTE : TRIPCOM_NO_FARE_SEARCH_NOTE}</p>
+      <p className="mt-1.5 text-xs text-ink-400">{returnDatesNote ?? (hasDisplayedFare ? TRIPCOM_FRESH_SEARCH_NOTE : TRIPCOM_NO_FARE_SEARCH_NOTE)}</p>
     </div>
   );
 }
@@ -557,6 +557,9 @@ function CurrentSignal({ data, nowIso, lowerSelfTransfer, tripComUrl, routeSlug,
           routeSlug={routeSlug}
           standout={Boolean(standout)}
           label={isServiceEnded ? SERVICE_ENDED_CTA_LABEL : undefined}
+          // Names this exact displayed fare's own dates (allowlisted routes
+          // only); never on a service-ended route's connecting search.
+          returnDatesNote={isServiceEnded ? null : getTripComReturnDatesNote(routeSlug, data)}
         />
       ) : isServiceEnded ? (
         <NoCtaFallback />
