@@ -1,0 +1,546 @@
+{
+  "$comment": "Weekly fare-sweep source configuration (FARE-METHOD-001). templateUrl is the saved Google Flights round-trip search for each route; its embedded dates are NOT the sweep dates. Generate dated URLs with: node scripts/fare-sweep/generate-sweep-urls.mjs <YYYY-MM-DD>. Imported 19 Oct 2026 from the 13 Oct sweep urls89.json (all 89 frozen at 2026-11-17/2026-12-01). kayakFallback marks routes where Google Flights returned no usable results on 13 Oct.",
+  "routes": [
+    {
+      "slug": "manchester-istanbul",
+      "origin": "MAN",
+      "destination": "IST",
+      "templateUrl": "https://www.google.com/travel/flights/search?tfs=CBwQAhoeEgoyMDI2LTExLTE3agcIARIDTUFOcgcIARIDSVNUGh4SCjIwMjYtMTItMDFqBwgBEgNJU1RyBwgBEgNNQU5AAUgBcAGCAQsI____________AZgBAQ&tfu=EgoIABAAGAAgAigB&hl=en&gl=GB&curr=GBP"
+    },
+    {
+      "slug": "manchester-dalaman",
+      "origin": "MAN",
+      "destination": "DLM",
+      "templateUrl": "https://www.google.com/travel/flights/search?tfs=CBwQAhoeEgoyMDI2LTExLTE3agcIARIDTUFOcgcIARIDRExNGh4SCjIwMjYtMTItMDFqBwgBEgNETE1yBwgBEgNNQU5AAUgBcAGCAQsI____________AZgBAQ&tfu=EgoIABAAGAAgAigB&hl=en&gl=GB&curr=GBP"
+    },
+    {
+      "slug": "manchester-bodrum",
+      "origin": "MAN",
+      "destination": "BJV",
+      "templateUrl": "https://www.google.com/travel/flights/search?tfs=CBwQAhoeEgoyMDI2LTExLTE3agcIARIDTUFOcgcIARIDQkpWGh4SCjIwMjYtMTItMDFqBwgBEgNCSlZyBwgBEgNNQU5AAUgBcAGCAQsI____________AZgBAQ&tfu=EgoIABAAGAAgAigB&hl=en&gl=GB&curr=GBP"
+    },
+    {
+      "slug": "manchester-antalya",
+      "origin": "MAN",
+      "destination": "AYT",
+      "templateUrl": "https://www.google.com/travel/flights/search?tfs=CBwQAhoeEgoyMDI2LTExLTE3agcIARIDTUFOcgcIARIDQVlUGh4SCjIwMjYtMTItMDFqBwgBEgNBWVRyBwgBEgNNQU5AAUgBcAGCAQsI____________AZgBAQ&tfu=EgoIABAAGAAgAigB&hl=en&gl=GB&curr=GBP"
+    },
+    {
+      "slug": "manchester-izmir",
+      "origin": "MAN",
+      "destination": "ADB",
+      "templateUrl": "https://www.google.com/travel/flights/search?tfs=CBwQAhoeEgoyMDI2LTExLTE3agcIARIDTUFOcgcIARIDQURCGh4SCjIwMjYtMTItMDFqBwgBEgNBREJyBwgBEgNNQU5AAUgBcAGCAQsI____________AZgBAQ&tfu=EgoIABAAGAAgAigB&hl=en&gl=GB&curr=GBP"
+    },
+    {
+      "slug": "birmingham-istanbul",
+      "origin": "BHX",
+      "destination": "IST",
+      "templateUrl": "https://www.google.com/travel/flights/search?tfs=CBwQAhoeEgoyMDI2LTExLTE3agcIARIDQkhYcgcIARIDSVNUGh4SCjIwMjYtMTItMDFqBwgBEgNJU1RyBwgBEgNCSFhAAUgBcAGCAQsI____________AZgBAQ&tfu=EgoIABAAGAAgAigB&hl=en&gl=GB&curr=GBP"
+    },
+    {
+      "slug": "birmingham-antalya",
+      "origin": "BHX",
+      "destination": "AYT",
+      "templateUrl": "https://www.google.com/travel/flights/search?tfs=CBwQAhoeEgoyMDI2LTExLTE3agcIARIDQkhYcgcIARIDQVlUGh4SCjIwMjYtMTItMDFqBwgBEgNBWVRyBwgBEgNCSFhAAUgBcAGCAQsI____________AZgBAQ&tfu=EgoIABAAGAAgAigB&hl=en&gl=GB&curr=GBP"
+    },
+    {
+      "slug": "birmingham-dalaman",
+      "origin": "BHX",
+      "destination": "DLM",
+      "templateUrl": "https://www.google.com/travel/flights/search?tfs=CBwQAhoeEgoyMDI2LTExLTE3agcIARIDQkhYcgcIARIDRExNGh4SCjIwMjYtMTItMDFqBwgBEgNETE1yBwgBEgNCSFhAAUgBcAGCAQsI____________AZgBAQ&tfu=EgoIABAAGAAgAigB&hl=en&gl=GB&curr=GBP"
+    },
+    {
+      "slug": "birmingham-bodrum",
+      "origin": "BHX",
+      "destination": "BJV",
+      "templateUrl": "https://www.google.com/travel/flights/search?tfs=CBwQAhoeEgoyMDI2LTExLTE3agcIARIDQkhYcgcIARIDQkpWGh4SCjIwMjYtMTItMDFqBwgBEgNCSlZyBwgBEgNCSFhAAUgBcAGCAQsI____________AZgBAQ&tfu=EgoIABAAGAAgAigB&hl=en&gl=GB&curr=GBP"
+    },
+    {
+      "slug": "leeds-bradford-antalya",
+      "origin": "LBA",
+      "destination": "AYT",
+      "templateUrl": "https://www.google.com/travel/flights/search?tfs=CBwQAhoeEgoyMDI2LTExLTE3agcIARIDTEJBcgcIARIDQVlUGh4SCjIwMjYtMTItMDFqBwgBEgNBWVRyBwgBEgNMQkFAAUgBcAGCAQsI____________AZgBAQ&tfu=EgoIABAAGAAgAigB&hl=en&gl=GB&curr=GBP",
+      "kayakFallback": true
+    },
+    {
+      "slug": "leeds-bradford-dalaman",
+      "origin": "LBA",
+      "destination": "DLM",
+      "templateUrl": "https://www.google.com/travel/flights/search?tfs=CBwQAhoeEgoyMDI2LTExLTE3agcIARIDTEJBcgcIARIDRExNGh4SCjIwMjYtMTItMDFqBwgBEgNETE1yBwgBEgNMQkFAAUgBcAGCAQsI____________AZgBAQ&tfu=EgoIABAAGAAgAigB&hl=en&gl=GB&curr=GBP",
+      "kayakFallback": true
+    },
+    {
+      "slug": "leeds-bradford-bodrum",
+      "origin": "LBA",
+      "destination": "BJV",
+      "templateUrl": "https://www.google.com/travel/flights/search?tfs=CBwQAhoeEgoyMDI2LTExLTE3agcIARIDTEJBcgcIARIDQkpWGh4SCjIwMjYtMTItMDFqBwgBEgNCSlZyBwgBEgNMQkFAAUgBcAGCAQsI____________AZgBAQ&tfu=EgoIABAAGAAgAigB&hl=en&gl=GB&curr=GBP",
+      "kayakFallback": true
+    },
+    {
+      "slug": "glasgow-antalya",
+      "origin": "GLA",
+      "destination": "AYT",
+      "templateUrl": "https://www.google.com/travel/flights/search?tfs=CBwQAhoeEgoyMDI2LTExLTE3agcIARIDR0xBcgcIARIDQVlUGh4SCjIwMjYtMTItMDFqBwgBEgNBWVRyBwgBEgNHTEFAAUgBcAGCAQsI____________AZgBAQ&tfu=EgoIABAAGAAgAigB&hl=en&gl=GB&curr=GBP"
+    },
+    {
+      "slug": "glasgow-dalaman",
+      "origin": "GLA",
+      "destination": "DLM",
+      "templateUrl": "https://www.google.com/travel/flights/search?tfs=CBwQAhoeEgoyMDI2LTExLTE3agcIARIDR0xBcgcIARIDRExNGh4SCjIwMjYtMTItMDFqBwgBEgNETE1yBwgBEgNHTEFAAUgBcAGCAQsI____________AZgBAQ&tfu=EgoIABAAGAAgAigB&hl=en&gl=GB&curr=GBP",
+      "kayakFallback": true
+    },
+    {
+      "slug": "glasgow-bodrum",
+      "origin": "GLA",
+      "destination": "BJV",
+      "templateUrl": "https://www.google.com/travel/flights/search?tfs=CBwQAhoeEgoyMDI2LTExLTE3agcIARIDR0xBcgcIARIDQkpWGh4SCjIwMjYtMTItMDFqBwgBEgNCSlZyBwgBEgNHTEFAAUgBcAGCAQsI____________AZgBAQ&tfu=EgoIABAAGAAgAigB&hl=en&gl=GB&curr=GBP"
+    },
+    {
+      "slug": "bristol-antalya",
+      "origin": "BRS",
+      "destination": "AYT",
+      "templateUrl": "https://www.google.com/travel/flights/search?tfs=CBwQAhoeEgoyMDI2LTExLTE3agcIARIDQlJTcgcIARIDQVlUGh4SCjIwMjYtMTItMDFqBwgBEgNBWVRyBwgBEgNCUlNAAUgBcAGCAQsI____________AZgBAQ&tfu=EgoIABAAGAAgAigB&hl=en&gl=GB&curr=GBP",
+      "kayakFallback": true
+    },
+    {
+      "slug": "bristol-dalaman",
+      "origin": "BRS",
+      "destination": "DLM",
+      "templateUrl": "https://www.google.com/travel/flights/search?tfs=CBwQAhoeEgoyMDI2LTExLTE3agcIARIDQlJTcgcIARIDRExNGh4SCjIwMjYtMTItMDFqBwgBEgNETE1yBwgBEgNCUlNAAUgBcAGCAQsI____________AZgBAQ&tfu=EgoIABAAGAAgAigB&hl=en&gl=GB&curr=GBP",
+      "kayakFallback": true
+    },
+    {
+      "slug": "newcastle-dalaman",
+      "origin": "NCL",
+      "destination": "DLM",
+      "templateUrl": "https://www.google.com/travel/flights/search?tfs=CBwQAhoeEgoyMDI2LTExLTE3agcIARIDTkNMcgcIARIDRExNGh4SCjIwMjYtMTItMDFqBwgBEgNETE1yBwgBEgNOQ0xAAUgBcAGCAQsI____________AZgBAQ&tfu=EgoIABAAGAAgAigB&hl=en&gl=GB&curr=GBP",
+      "kayakFallback": true
+    },
+    {
+      "slug": "london-gatwick-istanbul",
+      "origin": "LGW",
+      "destination": "IST",
+      "templateUrl": "https://www.google.com/travel/flights/search?tfs=CBwQAhoeEgoyMDI2LTExLTE3agcIARIDTEdXcgcIARIDSVNUGh4SCjIwMjYtMTItMDFqBwgBEgNJU1RyBwgBEgNMR1dAAUgBcAGCAQsI____________AZgBAQ&tfu=EgoIABAAGAAgAigB&hl=en&gl=GB&curr=GBP"
+    },
+    {
+      "slug": "london-gatwick-antalya",
+      "origin": "LGW",
+      "destination": "AYT",
+      "templateUrl": "https://www.google.com/travel/flights/search?tfs=CBwQAhoeEgoyMDI2LTExLTE3agcIARIDTEdXcgcIARIDQVlUGh4SCjIwMjYtMTItMDFqBwgBEgNBWVRyBwgBEgNMR1dAAUgBcAGCAQsI____________AZgBAQ&tfu=EgoIABAAGAAgAigB&hl=en&gl=GB&curr=GBP"
+    },
+    {
+      "slug": "london-gatwick-dalaman",
+      "origin": "LGW",
+      "destination": "DLM",
+      "templateUrl": "https://www.google.com/travel/flights/search?tfs=CBwQAhoeEgoyMDI2LTExLTE3agcIARIDTEdXcgcIARIDRExNGh4SCjIwMjYtMTItMDFqBwgBEgNETE1yBwgBEgNMR1dAAUgBcAGCAQsI____________AZgBAQ&tfu=EgoIABAAGAAgAigB&hl=en&gl=GB&curr=GBP"
+    },
+    {
+      "slug": "london-gatwick-bodrum",
+      "origin": "LGW",
+      "destination": "BJV",
+      "templateUrl": "https://www.google.com/travel/flights/search?tfs=CBwQAhoeEgoyMDI2LTExLTE3agcIARIDTEdXcgcIARIDQkpWGh4SCjIwMjYtMTItMDFqBwgBEgNCSlZyBwgBEgNMR1dAAUgBcAGCAQsI____________AZgBAQ&tfu=EgoIABAAGAAgAigB&hl=en&gl=GB&curr=GBP"
+    },
+    {
+      "slug": "london-gatwick-izmir",
+      "origin": "LGW",
+      "destination": "ADB",
+      "templateUrl": "https://www.google.com/travel/flights/search?tfs=CBwQAhoeEgoyMDI2LTExLTE3agcIARIDTEdXcgcIARIDQURCGh4SCjIwMjYtMTItMDFqBwgBEgNBREJyBwgBEgNMR1dAAUgBcAGCAQsI____________AZgBAQ&tfu=EgoIABAAGAAgAigB&hl=en&gl=GB&curr=GBP"
+    },
+    {
+      "slug": "manchester-marrakech",
+      "origin": "MAN",
+      "destination": "RAK",
+      "templateUrl": "https://www.google.com/travel/flights/search?tfs=CBwQAhoeEgoyMDI2LTExLTE3agcIARIDTUFOcgcIARIDUkFLGh4SCjIwMjYtMTItMDFqBwgBEgNSQUtyBwgBEgNNQU5AAUgBcAGCAQsI____________AZgBAQ&tfu=EgoIABAAGAAgAigB&hl=en&gl=GB&curr=GBP"
+    },
+    {
+      "slug": "bristol-marrakech",
+      "origin": "BRS",
+      "destination": "RAK",
+      "templateUrl": "https://www.google.com/travel/flights/search?tfs=CBwQAhoeEgoyMDI2LTExLTE3agcIARIDQlJTcgcIARIDUkFLGh4SCjIwMjYtMTItMDFqBwgBEgNSQUtyBwgBEgNCUlNAAUgBcAGCAQsI____________AZgBAQ&tfu=EgoIABAAGAAgAigB&hl=en&gl=GB&curr=GBP"
+    },
+    {
+      "slug": "london-gatwick-marrakech",
+      "origin": "LGW",
+      "destination": "RAK",
+      "templateUrl": "https://www.google.com/travel/flights/search?tfs=CBwQAhoeEgoyMDI2LTExLTE3agcIARIDTEdXcgcIARIDUkFLGh4SCjIwMjYtMTItMDFqBwgBEgNSQUtyBwgBEgNMR1dAAUgBcAGCAQsI____________AZgBAQ&tfu=EgoIABAAGAAgAigB&hl=en&gl=GB&curr=GBP"
+    },
+    {
+      "slug": "manchester-agadir",
+      "origin": "MAN",
+      "destination": "AGA",
+      "templateUrl": "https://www.google.com/travel/flights/search?tfs=CBwQAhoeEgoyMDI2LTExLTE3agcIARIDTUFOcgcIARIDQUdBGh4SCjIwMjYtMTItMDFqBwgBEgNBR0FyBwgBEgNNQU5AAUgBcAGCAQsI____________AZgBAQ&tfu=EgoIABAAGAAgAigB&hl=en&gl=GB&curr=GBP"
+    },
+    {
+      "slug": "birmingham-agadir",
+      "origin": "BHX",
+      "destination": "AGA",
+      "templateUrl": "https://www.google.com/travel/flights/search?tfs=CBwQAhoeEgoyMDI2LTExLTE3agcIARIDQkhYcgcIARIDQUdBGh4SCjIwMjYtMTItMDFqBwgBEgNBR0FyBwgBEgNCSFhAAUgBcAGCAQsI____________AZgBAQ&tfu=EgoIABAAGAAgAigB&hl=en&gl=GB&curr=GBP"
+    },
+    {
+      "slug": "london-gatwick-agadir",
+      "origin": "LGW",
+      "destination": "AGA",
+      "templateUrl": "https://www.google.com/travel/flights/search?tfs=CBwQAhoeEgoyMDI2LTExLTE3agcIARIDTEdXcgcIARIDQUdBGh4SCjIwMjYtMTItMDFqBwgBEgNBR0FyBwgBEgNMR1dAAUgBcAGCAQsI____________AZgBAQ&tfu=EgoIABAAGAAgAigB&hl=en&gl=GB&curr=GBP"
+    },
+    {
+      "slug": "london-heathrow-casablanca",
+      "origin": "LHR",
+      "destination": "CMN",
+      "templateUrl": "https://www.google.com/travel/flights/search?tfs=CBwQAhoeEgoyMDI2LTExLTE3agcIARIDTEhScgcIARIDQ01OGh4SCjIwMjYtMTItMDFqBwgBEgNDTU5yBwgBEgNMSFJAAUgBcAGCAQsI____________AZgBAQ&tfu=EgoIABAAGAAgAigB&hl=en&gl=GB&curr=GBP"
+    },
+    {
+      "slug": "london-gatwick-tangier",
+      "origin": "LGW",
+      "destination": "TNG",
+      "templateUrl": "https://www.google.com/travel/flights/search?tfs=CBwQAhoeEgoyMDI2LTExLTE3agcIARIDTEdXcgcIARIDVE5HGh4SCjIwMjYtMTItMDFqBwgBEgNUTkdyBwgBEgNMR1dAAUgBcAGCAQsI____________AZgBAQ&tfu=EgoIABAAGAAgAigB&hl=en&gl=GB&curr=GBP"
+    },
+    {
+      "slug": "manchester-lahore",
+      "origin": "MAN",
+      "destination": "LHE",
+      "templateUrl": "https://www.google.com/travel/flights/search?tfs=CBwQAhoeEgoyMDI2LTExLTE3agcIARIDTUFOcgcIARIDTEhFGh4SCjIwMjYtMTItMDFqBwgBEgNMSEVyBwgBEgNNQU5AAUgBcAGCAQsI____________AZgBAQ&tfu=EgoIABAAGAAgAigB&hl=en&gl=GB&curr=GBP"
+    },
+    {
+      "slug": "manchester-islamabad",
+      "origin": "MAN",
+      "destination": "ISB",
+      "templateUrl": "https://www.google.com/travel/flights/search?tfs=CBwQAhoeEgoyMDI2LTExLTE3agcIARIDTUFOcgcIARIDSVNCGh4SCjIwMjYtMTItMDFqBwgBEgNJU0JyBwgBEgNNQU5AAUgBcAGCAQsI____________AZgBAQ&tfu=EgoIABAAGAAgAigB&hl=en&gl=GB&curr=GBP"
+    },
+    {
+      "slug": "london-heathrow-delhi",
+      "origin": "LHR",
+      "destination": "DEL",
+      "templateUrl": "https://www.google.com/travel/flights/search?tfs=CBwQAhoeEgoyMDI2LTExLTE3agcIARIDTEhScgcIARIDREVMGh4SCjIwMjYtMTItMDFqBwgBEgNERUxyBwgBEgNMSFJAAUgBcAGCAQsI____________AZgBAQ&tfu=EgoIABAAGAAgAigB&hl=en&gl=GB&curr=GBP"
+    },
+    {
+      "slug": "birmingham-amritsar",
+      "origin": "BHX",
+      "destination": "ATQ",
+      "templateUrl": "https://www.google.com/travel/flights/search?tfs=CBwQAhoeEgoyMDI2LTExLTE3agcIARIDQkhYcgcIARIDQVRRGh4SCjIwMjYtMTItMDFqBwgBEgNBVFFyBwgBEgNCSFhAAUgBcAGCAQsI____________AZgBAQ&tfu=EgoIABAAGAAgAigB&hl=en&gl=GB&curr=GBP"
+    },
+    {
+      "slug": "manchester-dubai",
+      "origin": "MAN",
+      "destination": "DXB",
+      "templateUrl": "https://www.google.com/travel/flights/search?tfs=CBwQAhoeEgoyMDI2LTExLTE3agcIARIDTUFOcgcIARIDRFhCGh4SCjIwMjYtMTItMDFqBwgBEgNEWEJyBwgBEgNNQU5AAUgBcAGCAQsI____________AZgBAQ&tfu=EgoIABAAGAAgAigB&hl=en&gl=GB&curr=GBP"
+    },
+    {
+      "slug": "london-heathrow-doha",
+      "origin": "LHR",
+      "destination": "DOH",
+      "templateUrl": "https://www.google.com/travel/flights/search?tfs=CBwQAhoeEgoyMDI2LTExLTE3agcIARIDTEhScgcIARIDRE9IGh4SCjIwMjYtMTItMDFqBwgBEgNET0hyBwgBEgNMSFJAAUgBcAGCAQsI____________AZgBAQ&tfu=EgoIABAAGAAgAigB&hl=en&gl=GB&curr=GBP"
+    },
+    {
+      "slug": "london-heathrow-jeddah",
+      "origin": "LHR",
+      "destination": "JED",
+      "templateUrl": "https://www.google.com/travel/flights/search?tfs=CBwQAhoeEgoyMDI2LTExLTE3agcIARIDTEhScgcIARIDSkVEGh4SCjIwMjYtMTItMDFqBwgBEgNKRURyBwgBEgNMSFJAAUgBcAGCAQsI____________AZgBAQ&tfu=EgoIABAAGAAgAigB&hl=en&gl=GB&curr=GBP"
+    },
+    {
+      "slug": "manchester-karachi",
+      "origin": "MAN",
+      "destination": "KHI",
+      "templateUrl": "https://www.google.com/travel/flights/search?tfs=CBwQAhoeEgoyMDI2LTExLTE3agcIARIDTUFOcgcIARIDS0hJGh4SCjIwMjYtMTItMDFqBwgBEgNLSElyBwgBEgNNQU5AAUgBcAGCAQsI____________AZgBAQ&tfu=EgoIABAAGAAgAigB&hl=en&gl=GB&curr=GBP"
+    },
+    {
+      "slug": "birmingham-lahore",
+      "origin": "BHX",
+      "destination": "LHE",
+      "templateUrl": "https://www.google.com/travel/flights/search?tfs=CBwQAhoeEgoyMDI2LTExLTE3agcIARIDQkhYcgcIARIDTEhFGh4SCjIwMjYtMTItMDFqBwgBEgNMSEVyBwgBEgNCSFhAAUgBcAGCAQsI____________AZgBAQ&tfu=EgoIABAAGAAgAigB&hl=en&gl=GB&curr=GBP"
+    },
+    {
+      "slug": "birmingham-islamabad",
+      "origin": "BHX",
+      "destination": "ISB",
+      "templateUrl": "https://www.google.com/travel/flights/search?tfs=CBwQAhoeEgoyMDI2LTExLTE3agcIARIDQkhYcgcIARIDSVNCGh4SCjIwMjYtMTItMDFqBwgBEgNJU0JyBwgBEgNCSFhAAUgBcAGCAQsI____________AZgBAQ&tfu=EgoIABAAGAAgAigB&hl=en&gl=GB&curr=GBP"
+    },
+    {
+      "slug": "leeds-bradford-amritsar",
+      "origin": "LBA",
+      "destination": "ATQ",
+      "templateUrl": "https://www.google.com/travel/flights/search?tfs=CBwQAhoeEgoyMDI2LTExLTE3agcIARIDTEJBcgcIARIDQVRRGh4SCjIwMjYtMTItMDFqBwgBEgNBVFFyBwgBEgNMQkFAAUgBcAGCAQsI____________AZgBAQ&tfu=EgoIABAAGAAgAigB&hl=en&gl=GB&curr=GBP"
+    },
+    {
+      "slug": "leeds-bradford-islamabad",
+      "origin": "LBA",
+      "destination": "ISB",
+      "templateUrl": "https://www.google.com/travel/flights/search?tfs=CBwQAhoeEgoyMDI2LTExLTE3agcIARIDTEJBcgcIARIDSVNCGh4SCjIwMjYtMTItMDFqBwgBEgNJU0JyBwgBEgNMQkFAAUgBcAGCAQsI____________AZgBAQ&tfu=EgoIABAAGAAgAigB&hl=en&gl=GB&curr=GBP"
+    },
+    {
+      "slug": "london-heathrow-mumbai",
+      "origin": "LHR",
+      "destination": "BOM",
+      "templateUrl": "https://www.google.com/travel/flights/search?tfs=CBwQAhoeEgoyMDI2LTExLTE3agcIARIDTEhScgcIARIDQk9NGh4SCjIwMjYtMTItMDFqBwgBEgNCT01yBwgBEgNMSFJAAUgBcAGCAQsI____________AZgBAQ&tfu=EgoIABAAGAAgAigB&hl=en&gl=GB&curr=GBP"
+    },
+    {
+      "slug": "london-heathrow-bengaluru",
+      "origin": "LHR",
+      "destination": "BLR",
+      "templateUrl": "https://www.google.com/travel/flights/search?tfs=CBwQAhoeEgoyMDI2LTExLTE3agcIARIDTEhScgcIARIDQkxSGh4SCjIwMjYtMTItMDFqBwgBEgNCTFJyBwgBEgNMSFJAAUgBcAGCAQsI____________AZgBAQ&tfu=EgoIABAAGAAgAigB&hl=en&gl=GB&curr=GBP"
+    },
+    {
+      "slug": "london-heathrow-dhaka",
+      "origin": "LHR",
+      "destination": "DAC",
+      "templateUrl": "https://www.google.com/travel/flights/search?tfs=CBwQAhoeEgoyMDI2LTExLTE3agcIARIDTEhScgcIARIDREFDGh4SCjIwMjYtMTItMDFqBwgBEgNEQUNyBwgBEgNMSFJAAUgBcAGCAQsI____________AZgBAQ&tfu=EgoIABAAGAAgAigB&hl=en&gl=GB&curr=GBP"
+    },
+    {
+      "slug": "manchester-dhaka",
+      "origin": "MAN",
+      "destination": "DAC",
+      "templateUrl": "https://www.google.com/travel/flights/search?tfs=CBwQAhoeEgoyMDI2LTExLTE3agcIARIDTUFOcgcIARIDREFDGh4SCjIwMjYtMTItMDFqBwgBEgNEQUNyBwgBEgNNQU5AAUgBcAGCAQsI____________AZgBAQ&tfu=EgoIABAAGAAgAigB&hl=en&gl=GB&curr=GBP"
+    },
+    {
+      "slug": "manchester-sylhet",
+      "origin": "MAN",
+      "destination": "ZYL",
+      "templateUrl": "https://www.google.com/travel/flights/search?tfs=CBwQAhoeEgoyMDI2LTExLTE3agcIARIDTUFOcgcIARIDWllMGh4SCjIwMjYtMTItMDFqBwgBEgNaWUxyBwgBEgNNQU5AAUgBcAGCAQsI____________AZgBAQ&tfu=EgoIABAAGAAgAigB&hl=en&gl=GB&curr=GBP"
+    },
+    {
+      "slug": "london-heathrow-sylhet",
+      "origin": "LHR",
+      "destination": "ZYL",
+      "templateUrl": "https://www.google.com/travel/flights/search?tfs=CBwQAhoeEgoyMDI2LTExLTE3agcIARIDTEhScgcIARIDWllMGh4SCjIwMjYtMTItMDFqBwgBEgNaWUxyBwgBEgNMSFJAAUgBcAGCAQsI____________AZgBAQ&tfu=EgoIABAAGAAgAigB&hl=en&gl=GB&curr=GBP"
+    },
+    {
+      "slug": "manchester-doha",
+      "origin": "MAN",
+      "destination": "DOH",
+      "templateUrl": "https://www.google.com/travel/flights/search?tfs=CBwQAhoeEgoyMDI2LTExLTE3agcIARIDTUFOcgcIARIDRE9IGh4SCjIwMjYtMTItMDFqBwgBEgNET0hyBwgBEgNNQU5AAUgBcAGCAQsI____________AZgBAQ&tfu=EgoIABAAGAAgAigB&hl=en&gl=GB&curr=GBP"
+    },
+    {
+      "slug": "manchester-jeddah",
+      "origin": "MAN",
+      "destination": "JED",
+      "templateUrl": "https://www.google.com/travel/flights/search?tfs=CBwQAhoeEgoyMDI2LTExLTE3agcIARIDTUFOcgcIARIDSkVEGh4SCjIwMjYtMTItMDFqBwgBEgNKRURyBwgBEgNNQU5AAUgBcAGCAQsI____________AZgBAQ&tfu=EgoIABAAGAAgAigB&hl=en&gl=GB&curr=GBP"
+    },
+    {
+      "slug": "birmingham-madinah",
+      "origin": "BHX",
+      "destination": "MED",
+      "templateUrl": "https://www.google.com/travel/flights/search?tfs=CBwQAhoeEgoyMDI2LTExLTE3agcIARIDQkhYcgcIARIDTUVEGh4SCjIwMjYtMTItMDFqBwgBEgNNRURyBwgBEgNCSFhAAUgBcAGCAQsI____________AZgBAQ&tfu=EgoIABAAGAAgAigB&hl=en&gl=GB&curr=GBP"
+    },
+    {
+      "slug": "birmingham-mumbai",
+      "origin": "BHX",
+      "destination": "BOM",
+      "templateUrl": "https://www.google.com/travel/flights/search?tfs=CBwQAhoeEgoyMDI2LTExLTE3agcIARIDQkhYcgcIARIDQk9NGh4SCjIwMjYtMTItMDFqBwgBEgNCT01yBwgBEgNCSFhAAUgBcAGCAQsI____________AZgBAQ&tfu=EgoIABAAGAAgAigB&hl=en&gl=GB&curr=GBP"
+    },
+    {
+      "slug": "glasgow-dubai",
+      "origin": "GLA",
+      "destination": "DXB",
+      "templateUrl": "https://www.google.com/travel/flights/search?tfs=CBwQAhoeEgoyMDI2LTExLTE3agcIARIDR0xBcgcIARIDRFhCGh4SCjIwMjYtMTItMDFqBwgBEgNEWEJyBwgBEgNHTEFAAUgBcAGCAQsI____________AZgBAQ&tfu=EgoIABAAGAAgAigB&hl=en&gl=GB&curr=GBP"
+    },
+    {
+      "slug": "edinburgh-dubai",
+      "origin": "EDI",
+      "destination": "DXB",
+      "templateUrl": "https://www.google.com/travel/flights/search?tfs=CBwQAhoeEgoyMDI2LTExLTE3agcIARIDRURJcgcIARIDRFhCGh4SCjIwMjYtMTItMDFqBwgBEgNEWEJyBwgBEgNFRElAAUgBcAGCAQsI____________AZgBAQ&tfu=EgoIABAAGAAgAigB&hl=en&gl=GB&curr=GBP"
+    },
+    {
+      "slug": "newcastle-dubai",
+      "origin": "NCL",
+      "destination": "DXB",
+      "templateUrl": "https://www.google.com/travel/flights/search?tfs=CBwQAhoeEgoyMDI2LTExLTE3agcIARIDTkNMcgcIARIDRFhCGh4SCjIwMjYtMTItMDFqBwgBEgNEWEJyBwgBEgNOQ0xAAUgBcAGCAQsI____________AZgBAQ&tfu=EgoIABAAGAAgAigB&hl=en&gl=GB&curr=GBP"
+    },
+    {
+      "slug": "london-gatwick-ahmedabad",
+      "origin": "LGW",
+      "destination": "AMD",
+      "templateUrl": "https://www.google.com/travel/flights/search?tfs=CBwQAhoeEgoyMDI2LTExLTE3agcIARIDTEdXcgcIARIDQU1EGh4SCjIwMjYtMTItMDFqBwgBEgNBTURyBwgBEgNMR1dAAUgBcAGCAQsI____________AZgBAQ&tfu=EgoIABAAGAAgAigB&hl=en&gl=GB&curr=GBP"
+    },
+    {
+      "slug": "london-gatwick-amritsar",
+      "origin": "LGW",
+      "destination": "ATQ",
+      "templateUrl": "https://www.google.com/travel/flights/search?tfs=CBwQAhoeEgoyMDI2LTExLTE3agcIARIDTEdXcgcIARIDQVRRGh4SCjIwMjYtMTItMDFqBwgBEgNBVFFyBwgBEgNMR1dAAUgBcAGCAQsI____________AZgBAQ&tfu=EgoIABAAGAAgAigB&hl=en&gl=GB&curr=GBP"
+    },
+    {
+      "slug": "london-gatwick-doha",
+      "origin": "LGW",
+      "destination": "DOH",
+      "templateUrl": "https://www.google.com/travel/flights/search?tfs=CBwQAhoeEgoyMDI2LTExLTE3agcIARIDTEdXcgcIARIDRE9IGh4SCjIwMjYtMTItMDFqBwgBEgNET0hyBwgBEgNMR1dAAUgBcAGCAQsI____________AZgBAQ&tfu=EgoIABAAGAAgAigB&hl=en&gl=GB&curr=GBP"
+    },
+    {
+      "slug": "manchester-delhi",
+      "origin": "MAN",
+      "destination": "DEL",
+      "templateUrl": "https://www.google.com/travel/flights/search?tfs=CBwQAhoeEgoyMDI2LTExLTE3agcIARIDTUFOcgcIARIDREVMGh4SCjIwMjYtMTItMDFqBwgBEgNERUxyBwgBEgNNQU5AAUgBcAGCAQsI____________AZgBAQ&tfu=EgoIABAAGAAgAigB&hl=en&gl=GB&curr=GBP"
+    },
+    {
+      "slug": "manchester-mumbai",
+      "origin": "MAN",
+      "destination": "BOM",
+      "templateUrl": "https://www.google.com/travel/flights/search?tfs=CBwQAhoeEgoyMDI2LTExLTE3agcIARIDTUFOcgcIARIDQk9NGh4SCjIwMjYtMTItMDFqBwgBEgNCT01yBwgBEgNNQU5AAUgBcAGCAQsI____________AZgBAQ&tfu=EgoIABAAGAAgAigB&hl=en&gl=GB&curr=GBP"
+    },
+    {
+      "slug": "manchester-amritsar",
+      "origin": "MAN",
+      "destination": "ATQ",
+      "templateUrl": "https://www.google.com/travel/flights/search?tfs=CBwQAhoeEgoyMDI2LTExLTE3agcIARIDTUFOcgcIARIDQVRRGh4SCjIwMjYtMTItMDFqBwgBEgNBVFFyBwgBEgNNQU5AAUgBcAGCAQsI____________AZgBAQ&tfu=EgoIABAAGAAgAigB&hl=en&gl=GB&curr=GBP"
+    },
+    {
+      "slug": "manchester-ahmedabad",
+      "origin": "MAN",
+      "destination": "AMD",
+      "templateUrl": "https://www.google.com/travel/flights/search?tfs=CBwQAhoeEgoyMDI2LTExLTE3agcIARIDTUFOcgcIARIDQU1EGh4SCjIwMjYtMTItMDFqBwgBEgNBTURyBwgBEgNNQU5AAUgBcAGCAQsI____________AZgBAQ&tfu=EgoIABAAGAAgAigB&hl=en&gl=GB&curr=GBP"
+    },
+    {
+      "slug": "manchester-madinah",
+      "origin": "MAN",
+      "destination": "MED",
+      "templateUrl": "https://www.google.com/travel/flights/search?tfs=CBwQAhoeEgoyMDI2LTExLTE3agcIARIDTUFOcgcIARIDTUVEGh4SCjIwMjYtMTItMDFqBwgBEgNNRURyBwgBEgNNQU5AAUgBcAGCAQsI____________AZgBAQ&tfu=EgoIABAAGAAgAigB&hl=en&gl=GB&curr=GBP"
+    },
+    {
+      "slug": "manchester-barcelona",
+      "origin": "MAN",
+      "destination": "BCN",
+      "templateUrl": "https://www.google.com/travel/flights/search?tfs=CBwQAhoeEgoyMDI2LTExLTE3agcIARIDTUFOcgcIARIDQkNOGh4SCjIwMjYtMTItMDFqBwgBEgNCQ05yBwgBEgNNQU5AAUgBcAGCAQsI____________AZgBAQ&tfu=EgoIABAAGAAgAigB&hl=en&gl=GB&curr=GBP"
+    },
+    {
+      "slug": "birmingham-barcelona",
+      "origin": "BHX",
+      "destination": "BCN",
+      "templateUrl": "https://www.google.com/travel/flights/search?tfs=CBwQAhoeEgoyMDI2LTExLTE3agcIARIDQkhYcgcIARIDQkNOGh4SCjIwMjYtMTItMDFqBwgBEgNCQ05yBwgBEgNCSFhAAUgBcAGCAQsI____________AZgBAQ&tfu=EgoIABAAGAAgAigB&hl=en&gl=GB&curr=GBP"
+    },
+    {
+      "slug": "london-gatwick-barcelona",
+      "origin": "LGW",
+      "destination": "BCN",
+      "templateUrl": "https://www.google.com/travel/flights/search?tfs=CBwQAhoeEgoyMDI2LTExLTE3agcIARIDTEdXcgcIARIDQkNOGh4SCjIwMjYtMTItMDFqBwgBEgNCQ05yBwgBEgNMR1dAAUgBcAGCAQsI____________AZgBAQ&tfu=EgoIABAAGAAgAigB&hl=en&gl=GB&curr=GBP"
+    },
+    {
+      "slug": "bristol-barcelona",
+      "origin": "BRS",
+      "destination": "BCN",
+      "templateUrl": "https://www.google.com/travel/flights/search?tfs=CBwQAhoeEgoyMDI2LTExLTE3agcIARIDQlJTcgcIARIDQkNOGh4SCjIwMjYtMTItMDFqBwgBEgNCQ05yBwgBEgNCUlNAAUgBcAGCAQsI____________AZgBAQ&tfu=EgoIABAAGAAgAigB&hl=en&gl=GB&curr=GBP"
+    },
+    {
+      "slug": "leeds-bradford-barcelona",
+      "origin": "LBA",
+      "destination": "BCN",
+      "templateUrl": "https://www.google.com/travel/flights/search?tfs=CBwQAhoeEgoyMDI2LTExLTE3agcIARIDTEJBcgcIARIDQkNOGh4SCjIwMjYtMTItMDFqBwgBEgNCQ05yBwgBEgNMQkFAAUgBcAGCAQsI____________AZgBAQ&tfu=EgoIABAAGAAgAigB&hl=en&gl=GB&curr=GBP"
+    },
+    {
+      "slug": "bristol-faro",
+      "origin": "BRS",
+      "destination": "FAO",
+      "templateUrl": "https://www.google.com/travel/flights/search?tfs=CBwQAhoeEgoyMDI2LTExLTE3agcIARIDQlJTcgcIARIDRkFPGh4SCjIwMjYtMTItMDFqBwgBEgNGQU9yBwgBEgNCUlNAAUgBcAGCAQsI____________AZgBAQ&tfu=EgoIABAAGAAgAigB&hl=en&gl=GB&curr=GBP"
+    },
+    {
+      "slug": "manchester-faro",
+      "origin": "MAN",
+      "destination": "FAO",
+      "templateUrl": "https://www.google.com/travel/flights/search?tfs=CBwQAhoeEgoyMDI2LTExLTE3agcIARIDTUFOcgcIARIDRkFPGh4SCjIwMjYtMTItMDFqBwgBEgNGQU9yBwgBEgNNQU5AAUgBcAGCAQsI____________AZgBAQ&tfu=EgoIABAAGAAgAigB&hl=en&gl=GB&curr=GBP"
+    },
+    {
+      "slug": "birmingham-faro",
+      "origin": "BHX",
+      "destination": "FAO",
+      "templateUrl": "https://www.google.com/travel/flights/search?tfs=CBwQAhoeEgoyMDI2LTExLTE3agcIARIDQkhYcgcIARIDRkFPGh4SCjIwMjYtMTItMDFqBwgBEgNGQU9yBwgBEgNCSFhAAUgBcAGCAQsI____________AZgBAQ&tfu=EgoIABAAGAAgAigB&hl=en&gl=GB&curr=GBP"
+    },
+    {
+      "slug": "leeds-bradford-faro",
+      "origin": "LBA",
+      "destination": "FAO",
+      "templateUrl": "https://www.google.com/travel/flights/search?tfs=CBwQAhoeEgoyMDI2LTExLTE3agcIARIDTEJBcgcIARIDRkFPGh4SCjIwMjYtMTItMDFqBwgBEgNGQU9yBwgBEgNMQkFAAUgBcAGCAQsI____________AZgBAQ&tfu=EgoIABAAGAAgAigB&hl=en&gl=GB&curr=GBP"
+    },
+    {
+      "slug": "london-gatwick-faro",
+      "origin": "LGW",
+      "destination": "FAO",
+      "templateUrl": "https://www.google.com/travel/flights/search?tfs=CBwQAhoeEgoyMDI2LTExLTE3agcIARIDTEdXcgcIARIDRkFPGh4SCjIwMjYtMTItMDFqBwgBEgNGQU9yBwgBEgNMR1dAAUgBcAGCAQsI____________AZgBAQ&tfu=EgoIABAAGAAgAigB&hl=en&gl=GB&curr=GBP"
+    },
+    {
+      "slug": "manchester-athens",
+      "origin": "MAN",
+      "destination": "ATH",
+      "templateUrl": "https://www.google.com/travel/flights/search?tfs=CBwQAhoeEgoyMDI2LTExLTE3agcIARIDTUFOcgcIARIDQVRIGh4SCjIwMjYtMTItMDFqBwgBEgNBVEhyBwgBEgNNQU5AAUgBcAGCAQsI____________AZgBAQ&tfu=EgoIABAAGAAgAigB&hl=en&gl=GB&curr=GBP"
+    },
+    {
+      "slug": "birmingham-athens",
+      "origin": "BHX",
+      "destination": "ATH",
+      "templateUrl": "https://www.google.com/travel/flights/search?tfs=CBwQAhoeEgoyMDI2LTExLTE3agcIARIDQkhYcgcIARIDQVRIGh4SCjIwMjYtMTItMDFqBwgBEgNBVEhyBwgBEgNCSFhAAUgBcAGCAQsI____________AZgBAQ&tfu=EgoIABAAGAAgAigB&hl=en&gl=GB&curr=GBP"
+    },
+    {
+      "slug": "london-gatwick-athens",
+      "origin": "LGW",
+      "destination": "ATH",
+      "templateUrl": "https://www.google.com/travel/flights/search?tfs=CBwQAhoeEgoyMDI2LTExLTE3agcIARIDTEdXcgcIARIDQVRIGh4SCjIwMjYtMTItMDFqBwgBEgNBVEhyBwgBEgNMR1dAAUgBcAGCAQsI____________AZgBAQ&tfu=EgoIABAAGAAgAigB&hl=en&gl=GB&curr=GBP"
+    },
+    {
+      "slug": "manchester-rome",
+      "origin": "MAN",
+      "destination": "FCO",
+      "templateUrl": "https://www.google.com/travel/flights/search?tfs=CBwQAhoeEgoyMDI2LTExLTE3agcIARIDTUFOcgcIARIDRkNPGh4SCjIwMjYtMTItMDFqBwgBEgNGQ09yBwgBEgNNQU5AAUgBcAGCAQsI____________AZgBAQ&tfu=EgoIABAAGAAgAigB&hl=en&gl=GB&curr=GBP"
+    },
+    {
+      "slug": "birmingham-rome",
+      "origin": "BHX",
+      "destination": "FCO",
+      "templateUrl": "https://www.google.com/travel/flights/search?tfs=CBwQAhoeEgoyMDI2LTExLTE3agcIARIDQkhYcgcIARIDRkNPGh4SCjIwMjYtMTItMDFqBwgBEgNGQ09yBwgBEgNCSFhAAUgBcAGCAQsI____________AZgBAQ&tfu=EgoIABAAGAAgAigB&hl=en&gl=GB&curr=GBP"
+    },
+    {
+      "slug": "london-gatwick-rome",
+      "origin": "LGW",
+      "destination": "FCO",
+      "templateUrl": "https://www.google.com/travel/flights/search?tfs=CBwQAhoeEgoyMDI2LTExLTE3agcIARIDTEdXcgcIARIDRkNPGh4SCjIwMjYtMTItMDFqBwgBEgNGQ09yBwgBEgNMR1dAAUgBcAGCAQsI____________AZgBAQ&tfu=EgoIABAAGAAgAigB&hl=en&gl=GB&curr=GBP"
+    },
+    {
+      "slug": "bristol-rome",
+      "origin": "BRS",
+      "destination": "FCO",
+      "templateUrl": "https://www.google.com/travel/flights/search?tfs=CBwQAhoeEgoyMDI2LTExLTE3agcIARIDQlJTcgcIARIDRkNPGh4SCjIwMjYtMTItMDFqBwgBEgNGQ09yBwgBEgNCUlNAAUgBcAGCAQsI____________AZgBAQ&tfu=EgoIABAAGAAgAigB&hl=en&gl=GB&curr=GBP"
+    },
+    {
+      "slug": "london-heathrow-lahore",
+      "origin": "LHR",
+      "destination": "LHE",
+      "templateUrl": "https://www.google.com/travel/flights/search?tfs=CBwQAhoeEgoyMDI2LTExLTE3agcIARIDTEhScgcIARIDTEhFGh4SCjIwMjYtMTItMDFqBwgBEgNMSEVyBwgBEgNMSFJAAUgBcAGCAQsI____________AZgBAQ&tfu=EgoIABAAGAAgAigB&hl=en&gl=GB&curr=GBP"
+    },
+    {
+      "slug": "london-gatwick-dubai",
+      "origin": "LGW",
+      "destination": "DXB",
+      "templateUrl": "https://www.google.com/travel/flights/search?tfs=CBwQAhoeEgoyMDI2LTExLTE3agcIARIDTEdXcgcIARIDRFhCGh4SCjIwMjYtMTItMDFqBwgBEgNEWEJyBwgBEgNMR1dAAUgBcAGCAQsI____________AZgBAQ&tfu=EgoIABAAGAAgAigB&hl=en&gl=GB&curr=GBP"
+    },
+    {
+      "slug": "birmingham-dubai",
+      "origin": "BHX",
+      "destination": "DXB",
+      "templateUrl": "https://www.google.com/travel/flights/search?tfs=CBwQAhoeEgoyMDI2LTExLTE3agcIARIDQkhYcgcIARIDRFhCGh4SCjIwMjYtMTItMDFqBwgBEgNEWEJyBwgBEgNCSFhAAUgBcAGCAQsI____________AZgBAQ&tfu=EgoIABAAGAAgAigB&hl=en&gl=GB&curr=GBP"
+    },
+    {
+      "slug": "birmingham-doha",
+      "origin": "BHX",
+      "destination": "DOH",
+      "templateUrl": "https://www.google.com/travel/flights/search?tfs=CBwQAhoeEgoyMDI2LTExLTE3agcIARIDQkhYcgcIARIDRE9IGh4SCjIwMjYtMTItMDFqBwgBEgNET0hyBwgBEgNCSFhAAUgBcAGCAQsI____________AZgBAQ&tfu=EgoIABAAGAAgAigB&hl=en&gl=GB&curr=GBP"
+    },
+    {
+      "slug": "birmingham-jeddah",
+      "origin": "BHX",
+      "destination": "JED",
+      "templateUrl": "https://www.google.com/travel/flights/search?tfs=CBwQAhoeEgoyMDI2LTExLTE3agcIARIDQkhYcgcIARIDSkVEGh4SCjIwMjYtMTItMDFqBwgBEgNKRURyBwgBEgNCSFhAAUgBcAGCAQsI____________AZgBAQ&tfu=EgoIABAAGAAgAigB&hl=en&gl=GB&curr=GBP"
+    },
+    {
+      "slug": "london-heathrow-dubai",
+      "origin": "LHR",
+      "destination": "DXB",
+      "templateUrl": "https://www.google.com/travel/flights/search?tfs=CBwQAhoeEgoyMDI2LTExLTE3agcIARIDTEhScgcIARIDRFhCGh4SCjIwMjYtMTItMDFqBwgBEgNEWEJyBwgBEgNMSFJAAUgBcAGCAQsI____________AZgBAQ&tfu=EgoIABAAGAAgAigB&hl=en&gl=GB&curr=GBP"
+    },
+    {
+      "slug": "birmingham-delhi",
+      "origin": "BHX",
+      "destination": "DEL",
+      "templateUrl": "https://www.google.com/travel/flights/search?tfs=CBwQAhoeEgoyMDI2LTExLTE3agcIARIDQkhYcgcIARIDREVMGh4SCjIwMjYtMTItMDFqBwgBEgNERUxyBwgBEgNCSFhAAUgBcAGCAQsI____________AZgBAQ&tfu=EgoIABAAGAAgAigB&hl=en&gl=GB&curr=GBP"
+    },
+    {
+      "slug": "birmingham-ahmedabad",
+      "origin": "BHX",
+      "destination": "AMD",
+      "templateUrl": "https://www.google.com/travel/flights/search?tfs=CBwQAhoeEgoyMDI2LTExLTE3agcIARIDQkhYcgcIARIDQU1EGh4SCjIwMjYtMTItMDFqBwgBEgNBTURyBwgBEgNCSFhAAUgBcAGCAQsI____________AZgBAQ&tfu=EgoIABAAGAAgAigB&hl=en&gl=GB&curr=GBP"
+    }
+  ]
+}

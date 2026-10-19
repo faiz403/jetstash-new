@@ -22,12 +22,13 @@ rate limiting rather than the current process-local limiter.
 
 **Production site:** `https://jetstash.co.uk`
 
-## B1 route-claim corrections — 19 October 2026 (local branch, not merged)
+## B1 route-claim corrections — 19 October 2026 (merged in PR #335, live in Production)
 
 B1 route re-verification of the 15 routes with overdue route reviews found two failures and six
 inconclusive results (evidence kept outside the repository in
-`C:\Users\faiz2\jetstash-fare-sweep-2026-10-20\`). Founder-approved local corrections on branch
-`fix/b1-batch1-route-claim-corrections`: Manchester→Jeddah moved to verification-pending
+`C:\Users\faiz2\jetstash-fare-sweep-2026-10-20\`). Founder-approved corrections from branch
+`fix/b1-batch1-route-claim-corrections`, merged in PR #335 and verified in Production at
+`eba18bff6be4960c61b5982ed23f5cb7a205cae7`: Manchester→Jeddah moved to verification-pending
 (possible Saudia nonstop not airline-confirmed; unsourced Doha/10h/daily claims removed);
 IndiGo removed from Manchester→Amritsar; the unsourced Manchester→Ahmedabad "majority of bookings"
 statistic removed; unsupported operators, hubs, durations and frequencies hedged on the Madinah,
@@ -39,6 +40,22 @@ destination-page route labels now share one verification-evidence rule (verified
 route-level record is current; lapsed records say "last confirmed <date>"; pending and ended
 direct services never read as verified or operating). See ROUTE_COVERAGE_AUDIT.md's 19 October
 2026 addendum.
+
+## Rolling weekly fare-sweep window — 19 October 2026 (local branch, not merged)
+
+- **Finding:** the 6 and 13 October sweeps searched every one of the 89 routes for 17 November–1
+  December 2026, because both reused one saved set of Google Flights URLs with frozen dates.
+- **Fix (collection tooling only):**
+  - `lib/fare-sweep-dates.ts` computes the FARE-METHOD-001 window: sweep + 56 days, then 14 nights.
+  - `scripts/fare-sweep/sweep-routes.json` holds the 89-route configuration in the repository.
+  - `scripts/fare-sweep/generate-sweep-urls.mjs` produces dated URLs, plus a Christmas/New Year
+    peak-season flag taken from `data/peak-period-dates.ts`.
+  - Procedure: `FARE_COLLECTION_CHECKLIST.md` §2.
+- **Next sweep:** 20 October 2026 sweeps 15–29 December 2026, which is peak season.
+- **Unchanged:** fare observations, route verification, public copy, affiliate links and site
+  behaviour.
+- **Separate:** this does not fix the 3 November MAN→ISB fare expiry. Fresh fares must still be
+  collected, validated and ingested before then.
 
 ## MAN→ISB re-verification and promoted-fare guards — 17 October 2026 (local branch, not merged)
 
