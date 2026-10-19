@@ -179,6 +179,11 @@ describe('resolveProfileId — Fare Profile Decision Audit (18 August 2026): pro
       returnDirectness: 'direct',
       baggage: 'not stated',
       source: 'google-flights',
+      // LGW→IST airport-integrity (19 Oct 2026): london-gatwick-istanbul now
+      // requires itinerary-level evidence: a Google Flights URL whose selected
+      // outbound and return flights both use LGW and IST. Synthetic fixture
+      // (segments carry only airports and dates; no flight number).
+      sourceUrl: 'https://www.google.com/travel/flights/booking?tfs=CBwQAho2EgoyMDI2LTExLTE3IhYKA0xHVxIKMjAyNi0xMS0xNxoDSVNUagcIARIDTEdXcgcIARIDSVNUGjYSCjIwMjYtMTItMDEiFgoDSVNUEgoyMDI2LTEyLTAxGgNMR1dqBwgBEgNJU1RyBwgBEgNMR1dAAUgBcAGYAQE&hl=en&gl=GB&curr=GBP',
     };
     const result = validateWeeklyFareEntry(entry, profile, [supersededExcluded, currentValid]);
     expect(result.status).toBe('INVALID');
@@ -218,6 +223,11 @@ describe('resolveProfileId — Fare Profile Decision Audit (18 August 2026): pro
       returnDirectness: 'direct',
       baggage: 'not stated',
       source: 'google-flights',
+      // LGW→IST airport-integrity (19 Oct 2026): london-gatwick-istanbul now
+      // requires itinerary-level evidence: a Google Flights URL whose selected
+      // outbound and return flights both use LGW and IST. Synthetic fixture
+      // (segments carry only airports and dates; no flight number).
+      sourceUrl: 'https://www.google.com/travel/flights/booking?tfs=CBwQAho2EgoyMDI2LTExLTE3IhYKA0xHVxIKMjAyNi0xMS0xNxoDSVNUagcIARIDTEdXcgcIARIDSVNUGjYSCjIwMjYtMTItMDEiFgoDSVNUEgoyMDI2LTEyLTAxGgNMR1dqBwgBEgNJU1RyBwgBEgNMR1dAAUgBcAGYAQE&hl=en&gl=GB&curr=GBP',
       profileIdOverride: 'london-gatwick-istanbul-saw-economy-1adult-23kg-v1',
     };
     const result = validateWeeklyFareEntry(entry, profile, [supersededExcluded, currentValid]);

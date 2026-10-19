@@ -235,9 +235,11 @@ describe('Fare Signal production coverage counts', () => {
     // genuinely have no publishable evidence at all as of this date).
     const signals = routes.map((route) => getFareSignalForRoute(route.slug, '2026-08-25'));
     // current 82→81, none 7→8: B1 route re-verification (19 Oct 2026): manchester-jeddah moved to verification-pending, so its observations are no longer publishable at any evaluation date (route records are not versioned).
-    expect(signals.filter((signal) => signal.state === 'current')).toHaveLength(81);
+    // 81→80: LGW→IST airport-integrity correction (19 Oct 2026): obs-lgw-ist-economy-20260818-8w-v1 (Pegasus £162, a Sabiha Gökçen fare) is now methodology-excluded, so london-gatwick-istanbul no longer counts at past dates when the route was verified.
+    expect(signals.filter((signal) => signal.state === 'current')).toHaveLength(80);
     expect(signals.filter((signal) => signal.state === 'recent')).toHaveLength(0);
-    expect(signals.filter((signal) => signal.state === 'none')).toHaveLength(8);
+    // 8→9: LGW→IST airport-integrity correction (19 Oct 2026): obs-lgw-ist-economy-20260818-8w-v1 (a Sabiha Gökçen fare) is now excluded, and london-gatwick-istanbul now requires airport-coded IST evidence, so it no longer counts at past dates when the route was verified.
+    expect(signals.filter((signal) => signal.state === 'none')).toHaveLength(9);
     expect(routes.filter((route) => getTripComRouteUrl(route.slug)).length).toBe(44);
   });
 

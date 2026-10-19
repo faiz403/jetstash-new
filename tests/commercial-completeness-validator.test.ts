@@ -18,8 +18,9 @@ describe('commercial completeness reporting', () => {
     ).toBe(89);
     expect(summary).toMatchObject({
       // currentFare 83→82, noFare 6→7: B1 route re-verification (19 Oct 2026): manchester-jeddah moved to verification-pending, so its observations are no longer publishable at any evaluation date (route records are not versioned).
-      currentFare: 82,
-      noFare: 7,
+      // currentFare 82→81, noFare 7→8 at 4 Oct: LGW→IST airport-integrity correction (19 Oct 2026): obs-lgw-ist-economy-20260818-8w-v1 (a Sabiha Gökçen fare) is now excluded, and london-gatwick-istanbul now requires airport-coded IST evidence, so it no longer counts at past dates when the route was verified.
+      currentFare: 81,
+      noFare: 8,
       monetisedHandoff: 59,
       nonMonetisedFallback: 30,
     });
@@ -33,10 +34,12 @@ describe('commercial completeness reporting', () => {
     expect(fallback.every((row) => row.currentCta === 'Search flights on Google Flights')).toBe(true);
   });
 
-  it('keeps the seven unresolved fares held back at the 4 October boundary and explains each gap', () => {
+  it('keeps the eight unresolved fares held back at the 4 October boundary and explains each gap', () => {
     const noFare = rows.filter((row) => !row.farePublishable);
     // 6→7: manchester-jeddah is verification-pending after B1 (19 Oct 2026).
-    expect(noFare).toHaveLength(7);
+    // 7→8: LGW→IST airport-integrity correction (19 Oct 2026): obs-lgw-ist-economy-20260818-8w-v1 (a Sabiha Gökçen fare) is now excluded, and london-gatwick-istanbul now requires airport-coded IST evidence, so it no longer counts at past dates when the route was verified.
+    expect(noFare).toHaveLength(8);
+    expect(noFare.some((row) => row.slug === 'london-gatwick-istanbul')).toBe(true);
     expect(noFare.some((row) => row.slug === 'manchester-jeddah')).toBe(true);
     expect(noFare.every((row) => Boolean(row.fareSuppressionReason))).toBe(true);
     expect(noFare.every((row) => row.currentFare === null)).toBe(true);

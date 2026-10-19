@@ -22,6 +22,13 @@ rate limiting rather than the current process-local limiter.
 
 **Production site:** `https://jetstash.co.uk`
 
+## Gatwick→Istanbul airport-integrity correction — 19 October 2026 (local branch, not merged)
+
+- **Branch:** founder-approved local fix on `fix/lgw-ist-airport-integrity` from `f829244`.
+- **Exclusion:** the £162 Pegasus Sabiha Gökçen observation (`obs-lgw-ist-economy-20260818-8w-v1`) is now methodology-excluded; it stays in the archive unchanged.
+- **Automatic check:** `lib/fare-airport-pair.ts` reads airport codes only from allowlisted Google Flights and KAYAK URLs. Any contradicting airport, on either leg, blocks an observation on every route. Gatwick→Istanbul additionally needs the selected outbound and return flights to use LGW and IST; search-only, one-way, city-level or malformed evidence fails closed. Ingestion applies the same rule. It is not system-wide: most archived URLs carry no readable airports, and the Manchester–Mumbai Journey Brief fallback and Fare Watcher internal leads do not run it.
+- **Public effect:** none. Gatwick→Istanbul stays verification-pending with no published fare, and no other route's page changes. See ROUTE_COVERAGE_AUDIT.md's 19 October airport-integrity addendum.
+
 ## B1 Batch 2 route-record corrections — 19 October 2026 (local branch, not merged)
 
 B1 Batch 2 re-checked the 22 expired routes: 15 pass, 1 fails and 6 are inconclusive, based on current October 2026 operation. The official SunExpress winter 2026/27 timetable was used to separate winter from summer-only service.

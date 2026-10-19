@@ -621,9 +621,11 @@ describe('Coverage reconciliation, frozen at 2026-08-31 (the original audit\'s o
       expect(getFareSignalForRoute(slug, AUDIT_REFERENCE_DATE).state, slug).toBe('current');
     }
     // current 80→79, none 9→10: B1 route re-verification (19 Oct 2026): manchester-jeddah moved to verification-pending, so its observations are no longer publishable at any evaluation date (route records are not versioned).
-    expect(currentCount).toBe(79);
+    // 79→78: LGW→IST airport-integrity correction (19 Oct 2026): obs-lgw-ist-economy-20260818-8w-v1 (Pegasus £162, a Sabiha Gökçen fare) is now methodology-excluded, so london-gatwick-istanbul no longer counts at past dates when the route was verified.
+    expect(currentCount).toBe(78);
     expect(allSignals.filter((s) => s.state === 'recent').length).toBe(0);
-    expect(noneCount).toBe(10);
+    // 10→11: LGW→IST airport-integrity correction (19 Oct 2026): obs-lgw-ist-economy-20260818-8w-v1 (a Sabiha Gökçen fare) is now excluded, and london-gatwick-istanbul now requires airport-coded IST evidence, so it no longer counts at past dates when the route was verified.
+    expect(noneCount).toBe(11);
   });
 
   it('the eight routes still genuinely showing no current fare at the frozen audit date are a completely different set from the seven originally-flagged ones -- routes with no Economy evidence at all as of this date, or none of it suitable and none of it with an older fresh alternative, never the seven whose only problem was a poor NEWEST observation', () => {
@@ -636,6 +638,8 @@ describe('Coverage reconciliation, frozen at 2026-08-31 (the original audit\'s o
     }
     // 9→10: B1 route re-verification (19 Oct 2026): manchester-jeddah moved to verification-pending, so its observations are no longer publishable at any evaluation date (route records are not versioned).
     expect(noneSlugs).toContain('manchester-jeddah');
-    expect(noneSlugs).toHaveLength(10);
+    // 10→11: LGW→IST airport-integrity correction (19 Oct 2026): obs-lgw-ist-economy-20260818-8w-v1 (Pegasus £162, a Sabiha Gökçen fare) is now methodology-excluded, so london-gatwick-istanbul no longer counts at past dates when the route was verified.
+    expect(noneSlugs).toContain('london-gatwick-istanbul');
+    expect(noneSlugs).toHaveLength(11);
   });
 });

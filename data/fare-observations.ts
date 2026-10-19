@@ -2,6 +2,8 @@ import type { DealCabin } from './deals';
 import { getRouteBySlug, type Route } from './routes';
 import { routeStatusEvents } from './route-status-events';
 import { getDestinationBySlug } from './destinations';
+import { getAirportBySlug } from './airports';
+import { isAirportPairPublishable, STRICT_AIRPORT_PAIR_ROUTE_SLUGS } from '@/lib/fare-airport-pair';
 // lib/route-status-copy.ts imports FROM data/routes.ts — importing it here
 // (data/fare-observations.ts also imports from data/routes.ts, never the
 // reverse) does not create a cycle.
@@ -247,6 +249,12 @@ const methodologyExcludedObservationIds = new Set([
   // london-gatwick-istanbul — landed SAW, route claims IST
   // (obs-lgw-ist-economy-20260814-8w-v1 is already excluded above under COV-001)
   'obs-lgw-saw-economy-20260814-8w-v1',
+  // LGW→IST airport-integrity correction (19 October 2026, founder-approved):
+  // Pegasus £162, profile london-gatwick-istanbul-saw. Pegasus serves Sabiha
+  // Gökçen (SAW), not Istanbul Airport (IST), and this record's own profile
+  // is the SAW series; it has no source URL, so the automatic airport-pair
+  // check cannot see it. Missed by the 22 September audit. Kept, not deleted.
+  'obs-lgw-ist-economy-20260818-8w-v1',
   'obs-lgw-ist-economy-20260901-8w-v1',
   'obs-lgw-ist-economy-20260916-8w-v1',
   // manchester-rome — landed CIA, route claims FCO
@@ -1537,6 +1545,17 @@ export function isObservationPublishable(observation: FareObservation, route: Ro
   if (!isObservationCausallyAvailable(observation, nowIso)) return false;
   if (!route) return false;
   if (route.slug !== observation.routeSlug) return false;
+  // Airport-pair integrity (19 October 2026): a fare whose own search URL
+  // encodes a different airport (e.g. SAW for an IST route) never publishes,
+  // and strict routes require a positive airport match. See
+  // lib/fare-airport-pair.ts.
+  const originCode = getAirportBySlug(route.airportSlug)?.code;
+  const destinationCode = getDestinationBySlug(route.destinationSlug)?.iataCode;
+  if (!originCode || !destinationCode) {
+    if (STRICT_AIRPORT_PAIR_ROUTE_SLUGS.has(route.slug)) return false;
+  } else if (!isAirportPairPublishable(observation.sourceUrl, route.slug, originCode, destinationCode)) {
+    return false;
+  }
   const status = getEffectiveRoutePresentation(route, routeStatusEvents, nowIso).status;
   if (status === 'direct' || status === 'connecting' || status === 'unspecified') return true;
   // Commercial-completeness rescue (4 October 2026): an ended DIRECT

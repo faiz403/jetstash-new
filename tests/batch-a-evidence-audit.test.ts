@@ -208,7 +208,8 @@ describe('Route-level Fare Signal coverage and curated Deal-card coverage remain
     // 82→83 on 22 August 2026 (Connecting Journey Structure + BHX-DEL
     // unlock): birmingham-delhi gained a fresh publishable observation.
     // 82→81: B1 route re-verification (19 Oct 2026): manchester-jeddah moved to verification-pending, so its observations are no longer publishable at any evaluation date (route records are not versioned).
-    expect(trackedRoutes.length).toBe(81);
+    // 81→80: LGW→IST airport-integrity correction (19 Oct 2026): obs-lgw-ist-economy-20260818-8w-v1 (Pegasus £162, a Sabiha Gökçen fare) is now methodology-excluded, so london-gatwick-istanbul no longer counts at past dates when the route was verified.
+    expect(trackedRoutes.length).toBe(80);
     for (const route of trackedRoutes) {
       const matchingDeal = deals.find(
         (d) => d.fromAirportSlug === route.airportSlug && d.toDestinationSlug === route.destinationSlug && d.cabin === 'Economy' && !isBundledProductDeal(d)
