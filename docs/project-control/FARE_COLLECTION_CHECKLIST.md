@@ -30,6 +30,36 @@ polling, scraping or API harvesting) and the route's stable `profileId`.
       length). Both dates are required for the observation to be publicly displayable at all
       (`isPubliclyPublishable()`).
 
+### Weekly sweep dates (rolling window, 19 October 2026)
+
+The 6 and 13 October 2026 sweeps reused one saved set of searches whose dates were frozen at
+17 November–1 December 2026, so the window never advanced. Weekly sweep URLs are now generated, not
+reused:
+
+- [ ] Run `node --no-warnings scripts/fare-sweep/generate-sweep-urls.mjs <sweep date> --out <file>`
+      on the Tuesday of the sweep. It applies FARE-METHOD-001 from `lib/fare-sweep-dates.ts`:
+      departure = sweep date + 56 days, return = departure + 14 nights (20 October 2026 → 15–29
+      December 2026). It refuses a non-Tuesday unless `--allow-non-tuesday` is passed.
+- [ ] The route list and saved Google Flights searches live in `scripts/fare-sweep/sweep-routes.json`
+      (89 routes). Only the two dates inside each URL change; airports and every other search
+      setting stay byte-identical, and each URL is re-read after rewriting.
+- [ ] On every result page, confirm the exact airports and both dates before recording anything.
+- [ ] If the output says `peakSeason: true` (the window overlaps the `christmas-new-year`
+      occurrence in `data/peak-period-dates.ts`), label every observation from that sweep as
+      peak-season in the sweep evidence, and never present it as directly comparable with fares
+      from another travel window. Public copy does not change without separate approval.
+- [ ] **KAYAK fallbacks** (Google Flights returned no usable results on 13 October):
+      `leeds-bradford-antalya`, `leeds-bradford-dalaman`, `leeds-bradford-bodrum`,
+      `bristol-antalya`, `bristol-dalaman`, `newcastle-dalaman`, `glasgow-dalaman`. Try Google
+      Flights first; if it again returns nothing usable, open the generated `kayakUrl`
+      (`kayak.co.uk/flights/<ORIGIN>-<DEST>/<departure>/<return>`). The 13 October sweep did not
+      record its KAYAK URLs, so check on the page that KAYAK kept both exact airports, both dates and
+      Return before recording. If it didn't, enter the same airports and generated dates in KAYAK's
+      own search form, and record the resulting URL as `sourceUrl`.
+- [ ] A displayed price is not verification. Record the outbound and return legs, exact airports and
+      any self-transfer exactly as shown. An observation without return-leg evidence must not be
+      described as verified.
+
 ## 3. Traveller profile
 
 - [ ] One adult, no children, return economy (the baseline profile) — or record and justify the
