@@ -470,7 +470,9 @@ describe('The audit and fare-archive documents accurately reflect the closed obs
     const totalTracked = routes.filter((r) => getPublishableObservationsByRoute(r.slug, auditDocDate).length > 0).length;
     // 82→81: B1 route re-verification (19 Oct 2026): manchester-jeddah moved to verification-pending, so its observations are no longer publishable at any evaluation date (route records are not versioned). ROUTE_COVERAGE_AUDIT.md's B1 addendum records the
     // recomputed 22 August figure.
-    expect(totalTracked).toBe(81);
+    // 81→80: LGW→IST airport-integrity correction (19 Oct 2026): obs-lgw-ist-economy-20260818-8w-v1 (Pegasus £162, a Sabiha Gökçen fare) is now methodology-excluded, so london-gatwick-istanbul no longer counts at past dates when the route was verified. ROUTE_COVERAGE_AUDIT.md's 19 October airport-integrity
+    // addendum records the recomputed figure.
+    expect(totalTracked).toBe(80);
     expect(auditDoc).toContain(`${totalTracked} of 88`);
   });
 });

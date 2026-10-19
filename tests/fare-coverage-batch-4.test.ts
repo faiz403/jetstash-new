@@ -58,7 +58,8 @@ describe('Fare Coverage Programme Batch 4', () => {
     // 2026 (Fare Coverage Batch 1, then Connecting Journey Structure +
     // BHX-DEL unlock) — see tests/fare-coverage-batch-3.test.ts's
     // identical update for the full explanation. 82→81: B1 route re-verification (19 Oct 2026): manchester-jeddah moved to verification-pending, so its observations are no longer publishable at any evaluation date (route records are not versioned).
-    expect(current).toHaveLength(81);
+    // 81→80: LGW→IST airport-integrity correction (19 Oct 2026): obs-lgw-ist-economy-20260818-8w-v1 (Pegasus £162, a Sabiha Gökçen fare) is now methodology-excluded, so london-gatwick-istanbul no longer counts at past dates when the route was verified.
+    expect(current).toHaveLength(80);
     // Fare Signal poor-itinerary suppression (31 Aug 2026) originally meant
     // 7 of these 83 tracked routes showed the no-fare fallback — their only
     // publishable observation at the time was a confirmed self-transfer,

@@ -54,10 +54,10 @@ describe('Fare Coverage Programme Batch 5', () => {
     // route whose destination is Istanbul (IST) — the same alternate-airport
     // problem this test already describes for its sibling record, now
     // applied consistently rather than to one of the pair.
-    expect(getPublishableObservationsByRoute('london-gatwick-istanbul', WEEKLY_FULL_FARE_REFRESH_1_ISO).map((entry) => entry.id)).toEqual([
-      'obs-lgw-ist-economy-20260818-8w-v1',
-    ]);
-    expect(getFareSignalForRoute('london-gatwick-istanbul', WEEKLY_FULL_FARE_REFRESH_1_ISO).observation?.id).toBe('obs-lgw-ist-economy-20260818-8w-v1');
+    // LGW→IST airport-integrity correction (19 Oct 2026): obs-lgw-ist-economy-20260818-8w-v1 (Pegasus £162, a Sabiha Gökçen fare) is now methodology-excluded, so london-gatwick-istanbul no longer counts at past dates when the route was verified. It was the last remaining SAW record publishing for this IST
+    // route at 18 August, so nothing publishes for it at that date now.
+    expect(getPublishableObservationsByRoute('london-gatwick-istanbul', WEEKLY_FULL_FARE_REFRESH_1_ISO).map((entry) => entry.id)).toEqual([]);
+    expect(getFareSignalForRoute('london-gatwick-istanbul', WEEKLY_FULL_FARE_REFRESH_1_ISO).observation).toBeNull();
   });
 
   it('Batch 5\'s own controlled search (14 August 2026) genuinely found no options for Leeds Bradford–Bodrum at the time — a real gap that stood until Fare Coverage Batch 1 closed it on 22 August 2026', () => {
@@ -90,7 +90,8 @@ describe('Fare Coverage Programme Batch 5', () => {
     const COVERAGE_83_ROUTES_ISO = '2026-08-22';
     const current = routes.filter((route) => getPublishableObservationsByRoute(route.slug, COVERAGE_83_ROUTES_ISO).length > 0);
     // 82→81: B1 route re-verification (19 Oct 2026): manchester-jeddah moved to verification-pending, so its observations are no longer publishable at any evaluation date (route records are not versioned).
-    expect(current).toHaveLength(81);
+    // 81→80: LGW→IST airport-integrity correction (19 Oct 2026): obs-lgw-ist-economy-20260818-8w-v1 (Pegasus £162, a Sabiha Gökçen fare) is now methodology-excluded, so london-gatwick-istanbul no longer counts at past dates when the route was verified.
+    expect(current).toHaveLength(80);
     // Fare Signal poor-itinerary suppression (31 Aug 2026) originally meant
     // 7 of these 83 tracked routes showed the no-fare fallback.
     //

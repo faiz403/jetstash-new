@@ -498,7 +498,8 @@ describe('FARE-001 pilot — historic examples stay private; only fully dated, e
     // methodologyExcludedObservationIds because it never recorded its booking
     // provider or offer label, so it cannot be shown to have been a clean
     // offer. It is preserved unchanged, not deleted and not date-incomplete.
-    expect(incomplete).toHaveLength(41);
+    // 41→42: LGW→IST airport-integrity correction (19 Oct 2026): obs-lgw-ist-economy-20260818-8w-v1 (Pegasus £162, a Sabiha Gökçen fare) is now methodology-excluded, so london-gatwick-istanbul no longer counts at past dates when the route was verified.
+    expect(incomplete).toHaveLength(42);
     for (const o of incomplete) {
       expect(isPubliclyPublishable(o), `observation ${o.id}`).toBe(false);
     }
@@ -659,7 +660,8 @@ describe('FARE-001 pilot — historic examples stay private; only fully dated, e
       'obs-lgw-dlm-economy-20260818-8w-v1',
       'obs-lgw-dxb-economy-20260818-8w-v1',
       'obs-lgw-fao-economy-20260818-8w-v1',
-      'obs-lgw-ist-economy-20260818-8w-v1',
+      // obs-lgw-ist-economy-20260818-8w-v1 removed (19 Oct 2026): a Sabiha
+      // Gökçen fare, now methodology-excluded from the IST route.
       'obs-lgw-adb-economy-20260818-8w-v1',
       'obs-lgw-rak-economy-20260818-8w-v1',
       'obs-lgw-fco-economy-20260818-8w-v1',

@@ -254,11 +254,13 @@ describe('Fare Coverage Expansion Batch B — publishability and customer visibi
     }
     // 82→81 and 30→29: B1 route re-verification (19 Oct 2026): manchester-jeddah moved to verification-pending, so its observations are no longer publishable at any evaluation date (route records are not versioned). Its curated man-jed-economy card therefore
     // shows no fare either.
-    expect(publishable).toBe(81);
+    // 81→80: LGW→IST airport-integrity correction (19 Oct 2026): obs-lgw-ist-economy-20260818-8w-v1 (Pegasus £162, a Sabiha Gökçen fare) is now methodology-excluded, so london-gatwick-istanbul no longer counts at past dates when the route was verified.
+    expect(publishable).toBe(80);
     expect(visible).toBe(29);
     // The remaining routes have valid Fare Signals but no curated Deal
     // card. They are intentionally counted by route-level coverage only.
-    expect(publishable - visible).toBe(52);
+    // 52→51: LGW→IST airport-integrity correction (19 Oct 2026): obs-lgw-ist-economy-20260818-8w-v1 (a Sabiha Gökçen fare) is now excluded, and london-gatwick-istanbul now requires airport-coded IST evidence, so it no longer counts at past dates when the route was verified.
+    expect(publishable - visible).toBe(51);
   });
 
   it('London Heathrow-Jeddah remains without a curated card, alongside the later Fare-Signal-only routes', () => {

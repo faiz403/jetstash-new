@@ -1,6 +1,7 @@
 import type { DealCabin } from '@/data/deals';
 import type { FareObservation } from '@/data/fare-observations';
 import { getRouteBySlug, getRouteAirport, getRouteDestination } from '@/data/routes';
+import { getAirportPairEvidence, STRICT_AIRPORT_PAIR_ROUTE_SLUGS } from '@/lib/fare-airport-pair';
 
 /**
  * Weekly Full Fare Observation Refresh — Stage B ingestion helper (18 August
@@ -338,6 +339,18 @@ export function validateWeeklyFareEntry(
   }
   if (entry.destination && destination && entry.destination.toUpperCase() !== destination.iataCode.toUpperCase()) {
     issues.push(issue('destination', `Supplied destination "${entry.destination}" does not match the route's own destination code "${destination.iataCode}".`));
+  }
+  // Airport-pair integrity (19 October 2026, lib/fare-airport-pair.ts): any
+  // airport the source URL encodes must be the route's exact pair (e.g. SAW
+  // never prices an IST route). Strict routes also require a positive
+  // itinerary-level match; the route slug, id or profileId never counts.
+  if (entry.usable && airport && destination) {
+    const evidence = getAirportPairEvidence(entry.sourceUrl, airport.code, destination.iataCode);
+    if (evidence.status === 'mismatch') {
+      issues.push(issue('sourceUrl', `Source URL airports do not match the route's exact pair: ${evidence.reason}.`));
+    } else if (STRICT_AIRPORT_PAIR_ROUTE_SLUGS.has(route.slug) && evidence.status !== 'match') {
+      issues.push(issue('sourceUrl', `Route "${route.slug}" requires a source URL whose selected outbound and return flights both use the exact ${airport.code}-${destination.iataCode} airport pair (${evidence.reason})`));
+    }
   }
   if (!airport) issues.push(issue('routeSlug', `Route "${entry.routeSlug}" has no matching Airport record — cannot derive an id/profileId.`));
   if (!destination) issues.push(issue('routeSlug', `Route "${entry.routeSlug}" has no matching Destination record — cannot derive an id/profileId.`));

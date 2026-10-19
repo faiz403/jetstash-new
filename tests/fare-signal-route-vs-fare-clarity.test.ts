@@ -475,13 +475,14 @@ describe('full 88-route dataset safety check (Phase 8)', () => {
     // service-ended routes) have no suitable fallback of any kind and
     // correctly stay in noFare.
     expect(directConnectingFare).toBe(54);
-    expect(directDirectFare).toBe(13);
+    // directDirectFare 13→12, noFare 3→4: LGW→IST airport-integrity correction (19 Oct 2026): obs-lgw-ist-economy-20260818-8w-v1 (a Sabiha Gökçen fare) is now excluded, and london-gatwick-istanbul now requires airport-coded IST evidence, so it no longer counts at past dates when the route was verified.
+    expect(directDirectFare).toBe(12);
     // connectingConnectingFare 13 -> 12, unverified 6 -> 7 (B1 route
     // re-verification, 19 Oct 2026): manchester-jeddah moved from a connecting
     // route with a connecting fare to verification-pending.
     expect(connectingConnectingFare).toBe(12);
     expect(connectingDirectFare).toBe(0);
-    expect(noFare).toBe(3);
+    expect(noFare).toBe(4);
     expect(unverified).toBe(7);
     expect(directConnectingFare + directDirectFare + connectingConnectingFare + connectingDirectFare + noFare + unverified).toBe(89);
   });

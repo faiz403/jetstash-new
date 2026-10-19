@@ -377,18 +377,17 @@ describe('Gatwick routes with conflicting or unresolved evidence stay unresolved
   // observation is the manual methodology-exclusion list; one SAW-profile
   // observation is not on it. Until that is separately corrected the route
   // must stay pending, which keeps every observation unpublishable.
-  it('no Sabiha Gokcen (SAW) observation can publish on the IST route: each is excluded, or the route stays pending', () => {
+  it('no Sabiha Gokcen (SAW) observation can publish on the IST route: every one is excluded, and the route stays pending', () => {
     const r = route('london-gatwick-istanbul');
     const sawObs = fareObservations.filter((o) => o.routeSlug === 'london-gatwick-istanbul' && /SAW|Sabiha/i.test(`${o.profileId ?? ''} ${o.priceNote} ${o.sourceUrl ?? ''}`));
     expect(sawObs.length).toBeGreaterThan(0);
     const unexcluded = sawObs.filter((o) => !isMethodologyExcluded(o.id)).map((o) => o.id);
-    // Known gap, reported for a separate correction: update this list only
-    // when that correction is made, never to make the test pass.
-    expect(unexcluded).toEqual(['obs-lgw-ist-economy-20260818-8w-v1']);
-    if (unexcluded.length > 0) {
-      expect(getEffectiveRoutePresentation(r, routeStatusEvents, NOW).status).toBe('unverified');
-      for (const o of sawObs) expect(isObservationPublishable(o, r, NOW), o.id).toBe(false);
-    }
+    // The gap pinned here was closed by the LGW→IST airport-integrity
+    // correction (19 Oct 2026): obs-lgw-ist-economy-20260818-8w-v1 is now
+    // methodology-excluded.
+    expect(unexcluded).toEqual([]);
+    expect(getEffectiveRoutePresentation(r, routeStatusEvents, NOW).status).toBe('unverified');
+    for (const o of sawObs) expect(isObservationPublishable(o, r, NOW), o.id).toBe(false);
   });
 });
 
