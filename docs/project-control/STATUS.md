@@ -22,6 +22,17 @@ rate limiting rather than the current process-local limiter.
 
 **Production site:** `https://jetstash.co.uk`
 
+## B1 Batch 2 route-record corrections — 19 October 2026 (local branch, not merged)
+
+B1 Batch 2 re-checked the 22 expired routes: 15 pass, 1 fails and 6 are inconclusive, based on current October 2026 operation. The official SunExpress winter 2026/27 timetable was used to separate winter from summer-only service.
+- **Branch:** founder-approved local corrections on `fix/b1-batch2-route-corrections`.
+- **Birmingham→Ahmedabad:** the direct model is removed; the route stays fail-closed.
+- **SunExpress Turkey wording:** dated seasonal wording. Manchester→Antalya has Thursday/Sunday winter service. Dalaman and Izmir are summer-only. Bodrum no longer names SunExpress as a current operator.
+- **Operator lists:** corrected, and new operators are not displayed as verified.
+- **Sylhet:** outdated "not served" wording is replaced.
+- **Kept unresolved:** the Gatwick→Ahmedabad conflict, Gatwick→Amritsar's reported 25 October cancellation, and the Gatwick→Istanbul IST/SAW identity question.
+- **No record re-dated and no fare published:** re-dating would republish fares whose return legs are unverified, so all 22 routes stay pending until fare verification. See ROUTE_COVERAGE_AUDIT.md's 19 October 2026 Batch 2 addendum.
+
 ## B1 route-claim corrections — 19 October 2026 (merged in PR #335, live in Production)
 
 B1 route re-verification of the 15 routes with overdue route reviews found two failures and six

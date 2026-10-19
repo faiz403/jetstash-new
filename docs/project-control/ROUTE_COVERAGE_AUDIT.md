@@ -1368,3 +1368,47 @@ journey time. The homepage atlas (`lib/atlas-network-data.ts`) and destination-p
 one shared helper, `lib/route-verification-evidence.ts`: a connecting route is labelled verified
 only while its record is current, a lapsed record is shown as "last confirmed <date>", pending
 routes use neutral re-check wording, and ended direct services read "Direct service ended".
+
+## B1 route re-verification Batch 2 corrections — 19 October 2026
+
+B1 Batch 2 re-checked the 22 routes whose route records had expired.
+- **Evidence (outside the repository):** `C:\Users\faiz2\jetstash-fare-sweep-2026-10-20\b1-batch2-route-report-2026-10-19.md`, 29 external page loads.
+- **SunExpress addendum:** `b1-batch2-addendum-sunexpress-winter-2026-10-19.md`, built from one approved download of SunExpress's official winter 2026/27 timetable PDF (SHA-256 `e9e53968…2d77`, "Valid as of August 2026", subject to change).
+- **Initial results:** 15 PASS (current operation in October 2026), 1 FAIL, 6 INCONCLUSIVE.
+- **Scope:** route verification only. No fare was verified.
+
+**Kept separate, as the founder required:** route evidence, seasonal schedules and bookable fares.
+- **No record re-dated:** simulating a re-date showed that every candidate route would immediately republish 4–10 fare observations each, all checked between 6 August and 29 September 2026 with unverified return legs. All 22 routes therefore stay verification-pending (no fares, no schedule claims, neutral atlas and destination labels) until fare verification is completed.
+- **Not re-dated, with reasons:**
+  - **Gatwick–Doha, Heathrow–Casablanca, Gatwick–Agadir, Manchester–Faro, Leeds Bradford–Barcelona:** they passed on primary or tracked evidence, but re-dating would republish unverified fares.
+  - **Sylhet routes:** tracker evidence only.
+  - **Gatwick–Ahmedabad:** sources conflict.
+
+**Corrections (route data only; public pages remain pending):**
+- **Birmingham–Ahmedabad:** the direct model is removed. Air India's own page shows "0 direct flights" and Birmingham Airport has no Ahmedabad page, so the record is now `isDirect: false` with `serviceShape: 'unspecified'` and an `unverified` record. It stays fail-closed; no connecting hub is asserted.
+- **SunExpress Turkey routes:** the official schedules are recorded without overclaiming.
+  - **Manchester–Antalya:** the winter 2026/27 timetable lists Thursdays and Sundays. The PDF prints no flight numbers and no "nonstop", and Tuesday-to-Tuesday December searches do not fall on those days.
+  - **Dalaman and Izmir from Manchester and Gatwick:** summer 2026 and Summer 2027 only.
+  - **Bodrum from Manchester and Gatwick:** SunExpress is removed as a current operator (absent from its own winter 2026/27 and Summer 2027 schedules); the summer 2026 service is kept as dated history.
+- **Operators:**
+  - **Manchester–Dalaman:** easyJet and Jet2 added.
+  - **Manchester–Antalya:** easyJet added.
+  - **Display:** all three were seen on Manchester Airport's own board on 19 October 2026. None has its own airline-level verification, so none is shown publicly as a verified airline.
+  - **Leeds Bradford–Antalya:** SunExpress removed (SunExpress lists no Leeds Bradford service). TUI kept, because absence from a three-day board window is not evidence.
+- **Sylhet (Manchester, Heathrow):** outdated "not served / no confirmed Sylhet service" wording replaced with tracked October 2026 operations. No December schedule is claimed, and both stay unverified (tracker-only; Biman's site is behind a bot check).
+- **Gatwick–Ahmedabad:** the conflict is kept visible (Gatwick board and tracked AI160 operations vs Air India's "0 direct" page); it stays unverified.
+- **Gatwick–Amritsar:** a dated note records a reported cancellation from 25 October 2026 (secondary source, unconfirmed). It is not labelled ended.
+- **Gatwick–Istanbul:** the founder ruled on 19 October 2026 that this route is LGW → IST (Istanbul Airport); Sabiha Gökçen (SAW) is a different airport. The record's Pegasus/SAW frequency wording still needs correcting before re-verification. Of its nine archived observations, five identify SAW (four already excluded, one £162 Pegasus observation not excluded) and four identify IST. Nothing was changed; see the airport-integrity section below.
+
+Fare-tracking coverage is unchanged by this batch: all 22 routes were already pending and remain so.
+
+**Codex follow-ups (same branch):**
+- **Manchester–Sylhet:** wording now separates the one flight tracked as operated (13 October 2026) from the departures only scheduled for 20 and 24 October, and claims no operating pattern or December schedule.
+- **Birmingham–Ahmedabad:** the internal portfolio audit now reports its declared shape as `unspecified` (serviceShape takes precedence over isDirect).
+
+**Gatwick–Istanbul airport integrity (founder ruling 19 October 2026):** the route is LGW → IST (Istanbul Airport). Sabiha Gökçen (SAW) fares can never verify or price it, and no observation, slug or destination airport was changed.
+- **Current guard:** the only protection against a SAW observation publishing on this IST route is the manual methodology-exclusion list in `data/fare-observations.ts`. Fare observations carry no structured landing-airport field, so nothing checks a fare's destination airport automatically.
+- **Covered:** four of this route's SAW observations are on that list.
+- **Gap:** `obs-lgw-ist-economy-20260818-8w-v1` (Pegasus £162, profile `london-gatwick-istanbul-saw-…`) is not on the list, so it would publish if the route were reactivated.
+- **Protection for now:** a regression test pins this gap and requires the route to stay pending while any SAW observation is unexcluded.
+- **Before reactivation (separate correction needed):** exclude that observation, and ideally add a structural landing-airport check.
