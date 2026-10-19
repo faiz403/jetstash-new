@@ -332,9 +332,12 @@ describe('no evidence or trust wording was accidentally lost — full 88-route s
     // now correctly resolve to an older suitable observation instead.
     expect(directConnectingFare).toBe(54);
     expect(directDirectFare).toBe(13);
-    expect(connectingConnectingFare).toBe(13);
+    // connectingConnectingFare 13 -> 12, unverified 6 -> 7 (B1 route
+    // re-verification, 19 Oct 2026): manchester-jeddah moved from a connecting
+    // route with a connecting fare to verification-pending.
+    expect(connectingConnectingFare).toBe(12);
     expect(connectingDirectFare).toBe(0);
     expect(noFare).toBe(3);
-    expect(unverified).toBe(6);
+    expect(unverified).toBe(7);
   });
 });

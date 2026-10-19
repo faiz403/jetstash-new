@@ -5,12 +5,20 @@ import { getFareSignalForRoute, type FareSignal } from '@/lib/fare-signal';
 import { getEffectiveRoutePresentation } from '@/lib/route-status-copy';
 import { getRouteIntelligenceDisplayForRoute, type RouteIntelligenceDisplay } from '@/lib/route-intelligence-display';
 import { routeStatusEvents } from '@/data/route-status-events';
+import { getRouteVerificationEvidence, type RouteVerificationEvidence } from '@/lib/route-verification-evidence';
 
 export interface DestinationFlightGuideEntry {
   airport: Airport;
   routeSlug: string | null;
   href: string | null;
   routeStatus: RoutePresentation['status'] | null;
+  /**
+   * Route-level confirmation behind routeStatus (B1, 19 Oct 2026): the same
+   * shared reading the homepage atlas uses, so a lapsed record is labelled
+   * as historical evidence rather than as currently verified. Null exactly
+   * when routeStatus is null.
+   */
+  verificationEvidence: RouteVerificationEvidence | null;
   fareSignal: FareSignal | null;
   /**
    * Route Intelligence Completion (August 2026, phase 2) — the same
@@ -47,7 +55,7 @@ export function getDestinationFlightGuideEntries(
 
     const route = getRouteByAirportAndDestination(airportSlug, destination.slug);
     if (!route) {
-      entries.push({ airport, routeSlug: null, href: null, routeStatus: null, fareSignal: null, intelligence: null });
+      entries.push({ airport, routeSlug: null, href: null, routeStatus: null, verificationEvidence: null, fareSignal: null, intelligence: null });
       continue;
     }
 
@@ -56,6 +64,7 @@ export function getDestinationFlightGuideEntries(
       routeSlug: route.slug,
       href: `/routes/${route.slug}`,
       routeStatus: getEffectiveRoutePresentation(route, routeStatusEvents, nowIso).status,
+      verificationEvidence: getRouteVerificationEvidence(route, nowIso),
       fareSignal: getFareSignalForRoute(route.slug, nowIso),
       intelligence: getRouteIntelligenceDisplayForRoute(route, nowIso),
     });

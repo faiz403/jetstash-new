@@ -89,8 +89,8 @@ describe('Fare Coverage Programme Batch 3', () => {
     // following COV-001's 21 August reclassification). 82→83, same day
     // (Connecting Journey Structure + BHX-DEL unlock): birmingham-delhi's
     // 13 August observation was unsuppressed and a fresh 22 August one
-    // appended.
-    expect(current).toHaveLength(82);
+    // appended. 82→81: B1 route re-verification (19 Oct 2026): manchester-jeddah moved to verification-pending, so its observations are no longer publishable at any evaluation date (route records are not versioned).
+    expect(current).toHaveLength(81);
     // Fare Signal poor-itinerary suppression (31 Aug 2026) originally meant
     // "tracked" (has any publishable observation, checked above) and
     // "signalled" (has a displayable current Fare Signal) were no longer

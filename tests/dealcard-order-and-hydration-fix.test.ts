@@ -222,9 +222,12 @@ describe('Defect 2 follow-up (founder review) — cabin-specific fallback wordin
       affected.push({ id: d.id, cabin: d.cabin, sentence });
     }
 
-    expect(affected.length).toBe(8);
+    // 8→9 (Economy 2→3): B1 route re-verification (19 Oct 2026): manchester-jeddah moved to verification-pending, so its observations are no longer publishable at any evaluation date (route records are not versioned). Its man-jed-economy card now shows the
+    // same truthful no-fare sentence.
+    expect(affected.length).toBe(9);
     expect(affected.filter((a) => a.cabin === 'Business')).toHaveLength(6);
-    expect(affected.filter((a) => a.cabin === 'Economy')).toHaveLength(2);
+    expect(affected.filter((a) => a.cabin === 'Economy')).toHaveLength(3);
+    expect(affected.some((a) => a.id === 'man-jed-economy')).toBe(true);
     // Manchester-Islamabad's own Business card, by name — the exact card
     // Participant 1 read as contradictory. Untouched by this batch
     // (manchester-islamabad is not one of the four routes it evidenced).

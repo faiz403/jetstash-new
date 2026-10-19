@@ -144,19 +144,21 @@ describe('3. Existing service-ended handling (Delhi/Mumbai) remains correct', ()
   });
 
   it('does not invent "service ended" wording for a secondary reference whose real Route is merely connecting, not ended', () => {
-    // manchester-jeddah is a genuinely connecting (isDirect: false) Route —
-    // never service-ended — so a synthetic secondary mention of Manchester
-    // against Jeddah must be left exactly as written, not upgraded to an
-    // ended-service claim the ledger never made.
-    const jeddah = getDestinationBySlug('jeddah')!;
-    const manchesterJeddah = getRouteByAirportAndDestination('manchester', 'jeddah')!;
-    expect(getEffectiveRoutePresentation(manchesterJeddah, routeStatusEvents, '2026-09-03').status).toBe('connecting');
+    // birmingham-mumbai is a genuinely connecting (isDirect: false) Route —
+    // never service-ended — so a synthetic secondary mention of Birmingham
+    // against Mumbai must be left exactly as written, not upgraded to an
+    // ended-service claim the ledger never made. (This test used
+    // manchester-jeddah until B1 route re-verification, 19 Oct 2026, moved
+    // that route to verification-pending.)
+    const mumbai = getDestinationBySlug('mumbai')!;
+    const birminghamMumbai = getRouteByAirportAndDestination('birmingham', 'mumbai')!;
+    expect(getEffectiveRoutePresentation(birminghamMumbai, routeStatusEvents, '2026-09-03').status).toBe('connecting');
     const synthetic = {
-      ...jeddah,
-      flightTimeFromUK: `${jeddah.flightTimeFromUK}; Manchester options vary by route`,
+      ...mumbai,
+      flightTimeFromUK: '9h direct from London Heathrow; Birmingham options vary by route',
     };
     expect(getDestinationFlightTimeFromUK(synthetic, '2026-09-03')).toBe(
-      `${jeddah.flightTimeFromUK}; Manchester options vary by route`,
+      '9h direct from London Heathrow; Birmingham options vary by route',
     );
   });
 

@@ -207,7 +207,8 @@ describe('Route-level Fare Signal coverage and curated Deal-card coverage remain
     // tests/fare-coverage-batch-3.test.ts's identical update.
     // 82→83 on 22 August 2026 (Connecting Journey Structure + BHX-DEL
     // unlock): birmingham-delhi gained a fresh publishable observation.
-    expect(trackedRoutes.length).toBe(82);
+    // 82→81: B1 route re-verification (19 Oct 2026): manchester-jeddah moved to verification-pending, so its observations are no longer publishable at any evaluation date (route records are not versioned).
+    expect(trackedRoutes.length).toBe(81);
     for (const route of trackedRoutes) {
       const matchingDeal = deals.find(
         (d) => d.fromAirportSlug === route.airportSlug && d.toDestinationSlug === route.destinationSlug && d.cabin === 'Economy' && !isBundledProductDeal(d)
@@ -257,10 +258,13 @@ describe('Newly promoted Strong routes — the content-depth finding is tracked,
   // qualifies for Strong. See ROUTE_COVERAGE_AUDIT.md's "Route Intelligence
   // Scoring v2 (RIS-001)" addendum for the full model and the recomputed
   // 32-route table.
-  it('Manchester-Amritsar and Manchester-Ahmedabad have exactly the minimum two categories (connectingAlternative + fare) and correctly grade "useful" under RIS-001\'s diversity gate, not "strong"', () => {
+  it('Manchester-Amritsar and Manchester-Ahmedabad keep fare evidence only (connectingAlternative removed in B1, 19 Oct 2026) and correctly grade "useful", not "strong"', () => {
     for (const slug of ['manchester-amritsar', 'manchester-ahmedabad']) {
       const route = routes.find((r) => r.slug === slug)!;
-      expect(Boolean(route.connectingAlternative), `${slug} connectingAlternative`).toBe(true);
+      // B1 route re-verification (19 Oct 2026): connectingAlternative was
+      // removed from both routes because its hubs, airlines and journey
+      // time were unsourced, leaving fare evidence as the only category.
+      expect(Boolean(route.connectingAlternative), `${slug} connectingAlternative`).toBe(false);
       expect(getPublishableObservationsByRoute(slug, NOW_ISO).length > 0, `${slug} fare`).toBe(true);
       // Neither route has any of the four "substantive" categories -
       // confirming the "bare minimum, nothing else" finding stays true and

@@ -69,6 +69,8 @@ const NEW_DEAL_IDS = ['lhr-blr-economy', 'man-jed-economy', 'bhx-bom-economy', '
 // the route below RIS-001's two-category threshold.
 const UPGRADED_TO_STRONG = ['london-heathrow-bengaluru'];
 const REVERTED_TO_USEFUL_18_AUG = ['london-gatwick-ahmedabad'];
+// B1 route re-verification (19 Oct 2026): manchester-jeddah moved to verification-pending, so its observations are no longer publishable at any evaluation date (route records are not versioned).
+const PENDING_AFTER_B1_19_OCT = ['manchester-jeddah'];
 
 describe('Fare Coverage Expansion Batch B — observation methodology', () => {
   it('every Batch B observation exists, is dated 6 August 2026, and uses the 8-week/14-night profile', () => {
@@ -150,6 +152,7 @@ describe('Fare Coverage Expansion Batch B — publishability and customer visibi
     const needsAug25 = new Set(['london-heathrow-doha', 'london-gatwick-amritsar']);
     for (const slug of NEW_ROUTES) {
       if (REVERTED_TO_USEFUL_18_AUG.includes(slug)) continue; // see below
+      if (PENDING_AFTER_B1_19_OCT.includes(slug)) continue; // see the dedicated B1 test
       const evalIso = needsAug25.has(slug) ? AUG_25_OBS_ISO : NOW_ISO;
       const publishable = getPublishableObservationsByRoute(slug, evalIso);
       const expected = slug === 'london-heathrow-doha' ? 4 : stillJustOne.includes(slug) ? 1 : threeAfterBatch.includes(slug) ? 3 : 2;
@@ -163,12 +166,19 @@ describe('Fare Coverage Expansion Batch B — publishability and customer visibi
     expect(getPublishableObservationsByRoute('london-gatwick-ahmedabad', NOW_ISO).length).toBe(0);
   });
 
+  it('manchester-jeddah\'s Batch B observations remain in the archive but are no longer publishable after B1 moved the route to verification-pending (19 Oct 2026)', () => {
+    const raw = fareObservations.filter((o) => o.routeSlug === 'manchester-jeddah' && o.cabin === 'Economy');
+    expect(raw.length).toBeGreaterThanOrEqual(1); // append-only archive — never deleted
+    expect(getPublishableObservationsByRoute('manchester-jeddah', NOW_ISO).length).toBe(0);
+  });
+
   it('every new route has a customer-visible fare (a real Deal that renders it), and the badge reflects the fare\'s own evidenced directness', () => {
     // london-heathrow-bengaluru: see the aggregateFareDirectness test above
     // — its 18 August evidence genuinely disagrees with Batch B's, so the
     // badge correctly shows nothing rather than picking a side.
     for (const slug of NEW_ROUTES) {
       if (REVERTED_TO_USEFUL_18_AUG.includes(slug)) continue; // see the dedicated test above
+      if (PENDING_AFTER_B1_19_OCT.includes(slug)) continue; // see the dedicated B1 test
       const route = routes.find((r) => r.slug === slug)!;
       const deal = deals.find((d) => d.fromAirportSlug === route.airportSlug && d.toDestinationSlug === route.destinationSlug && d.cabin === 'Economy' && !isBundledProductDeal(d));
       expect(deal, slug).toBeDefined();
@@ -242,8 +252,10 @@ describe('Fare Coverage Expansion Batch B — publishability and customer visibi
       const deal = deals.find((d) => d.fromAirportSlug === route.airportSlug && d.toDestinationSlug === route.destinationSlug && d.cabin === 'Economy' && !isBundledProductDeal(d));
       if (deal && hasTrackedFare(deal, NOW_ISO)) visible++;
     }
-    expect(publishable).toBe(82);
-    expect(visible).toBe(30);
+    // 82→81 and 30→29: B1 route re-verification (19 Oct 2026): manchester-jeddah moved to verification-pending, so its observations are no longer publishable at any evaluation date (route records are not versioned). Its curated man-jed-economy card therefore
+    // shows no fare either.
+    expect(publishable).toBe(81);
+    expect(visible).toBe(29);
     // The remaining routes have valid Fare Signals but no curated Deal
     // card. They are intentionally counted by route-level coverage only.
     expect(publishable - visible).toBe(52);
@@ -351,6 +363,7 @@ describe('Fare Coverage Expansion Batch B — no scope creep', () => {
     };
     for (const slug of NEW_ROUTES) {
       if (REVERTED_TO_USEFUL_18_AUG.includes(slug)) continue; // no longer publishable — see the dedicated test above
+      if (PENDING_AFTER_B1_19_OCT.includes(slug)) continue; // no longer publishable — see the dedicated B1 test
       const range = getFareRangeSummary(slug, 'Economy', NOW_ISO);
       expect(range, slug).not.toBeNull();
       const obs = getPublishableObservationsByRouteAndCabin(slug, 'Economy', NOW_ISO);

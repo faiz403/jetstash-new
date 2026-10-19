@@ -99,11 +99,14 @@ describe('founder fare truth rulings', () => {
     expect(generateFareWatcherCandidates([prepared, ...sameBaseline], '2026-10-01')).toEqual([]);
   });
 
-  it('all 35 different-date public secondaries disclose their own dates beside their price', () => {
+  it('all 34 different-date public secondaries disclose their own dates beside their price', () => {
     const signals = routes.map((route) => ({ route, signal: getFareSignalForRoute(route.slug, NOW) }));
-    expect(signals.filter(({ signal }) => signal.observation)).toHaveLength(70);
+    // 70→69: B1 route re-verification (19 Oct 2026): manchester-jeddah moved to verification-pending, so its observations are no longer publishable at any evaluation date (route records are not versioned).
+    expect(signals.filter(({ signal }) => signal.observation)).toHaveLength(69);
     const mismatches = signals.filter(({ signal: { observation: p, lowerSelfTransfer: s } }) => p && s && (p.departureDate !== s.departureDate || p.returnDate !== s.returnDate));
-    expect(mismatches).toHaveLength(35);
+    // 35→34: manchester-jeddah's different-date secondary is no longer
+    // public after B1 moved the route to verification-pending (19 Oct 2026).
+    expect(mismatches).toHaveLength(34);
     for (const { route, signal } of mismatches) {
       const secondary = signal.lowerSelfTransfer!;
       const html = renderToStaticMarkup(FareSignal({ signal, tripComUrl: null, routeSlug: route.slug, nowIso: NOW }));

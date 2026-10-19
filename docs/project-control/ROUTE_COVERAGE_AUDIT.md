@@ -1327,3 +1327,44 @@ display-ready Fare Signal (was 82 of 88). Trip.com coverage is likewise unaffect
 | Route slug | Grade |
 |---|---|
 | `london-gatwick-doha` | Useful |
+
+## B1 route re-verification corrections — 19 October 2026
+
+B1 re-checked the 15 routes whose route review was overdue while they still displayed fares
+(evidence: `C:\Users\faiz2\jetstash-fare-sweep-2026-10-20\b1-batch1-route-report-2026-10-19.md`,
+26 source pages, outside the repository). Route verification only; no fare was verified.
+
+- `manchester-jeddah` failed: its "no current direct service", "10h, one stop" and "Daily,
+  connecting via Doha" claims were unsourced, and a 19 October 2026 Google Flights search for
+  15 December 2026 listed a Saudia nonstop that Saudia's own schedule has not confirmed. The route
+  is now verification-pending (`serviceShape: 'unspecified'`, `unverified` record): neutral
+  copy, no fare, no schedule claims.
+- `manchester-amritsar` failed on its IndiGo operator claim (IndiGo left Manchester on
+  31 August 2026). IndiGo, British Airways and Air India were removed; Qatar Airways (own route
+  page) remains.
+- `manchester-ahmedabad`: the unsourced "large majority of one-stop itineraries booked" statistic
+  was removed; Etihad Airways and Emirates were removed; durations and frequency were hedged.
+- `manchester-madinah` and `birmingham-madinah`: Turkish Airlines (own route pages) kept; the
+  other named operators, durations and daily-frequency claims removed.
+- `manchester-amritsar`, `manchester-ahmedabad` and `manchester-madinah` lost their
+  `connectingAlternative` blocks (unsourced hubs, airlines and journey times).
+- `birmingham-lahore` and `birmingham-islamabad`: the structured `routeServiceConnections` IST
+  claim was removed; the 21 August PIA observation stays as dated wording.
+- `birmingham-mumbai` and `birmingham-delhi` were re-dated from their own primary sources (review
+  due 3 December 2026); Birmingham-Delhi's Air India versus Birmingham Airport conflict stays
+  recorded. All inconclusive records keep their original, lapsed review dates.
+
+Fare-tracking coverage consequence: `manchester-jeddah` no longer has publishable observations
+at any evaluation date because route records are not versioned. Recomputed at this audit's
+22 August 2026 reference date, coverage is now **81 of 89** routes with a display-ready Fare
+Signal (was 82 of 89), and the historical 22 August snapshot recorded above as 82 of 88 now
+evaluates to **81 of 88**. No observation was deleted.
+
+Codex review follow-ups (same branch): `leeds-bradford-islamabad`'s unsourced claim that
+Manchester's direct PIA service is "both cheaper and faster" for many Bradford-based travellers
+was replaced with neutral advice to compare total fare, airport travel, connections, layovers and
+journey time. The homepage atlas (`lib/atlas-network-data.ts`) and destination-page route labels
+(`components/destination/destination-flight-guides.tsx`) now read route-level confirmation through
+one shared helper, `lib/route-verification-evidence.ts`: a connecting route is labelled verified
+only while its record is current, a lapsed record is shown as "last confirmed <date>", pending
+routes use neutral re-check wording, and ended direct services read "Direct service ended".

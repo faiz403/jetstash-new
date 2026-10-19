@@ -204,10 +204,13 @@ describe('Strongest ("strong") route status requires BROAD depth evidence — at
     expect(computeRouteIntelligenceLevel(route, NOW_ISO)).toBe('useful');
   });
 
-  it('manchester-amritsar and manchester-ahmedabad have two depth categories (breadth) but stay "useful" under RIS-001\'s diversity gate — connectingAlternative + fare alone is not enough', () => {
+  it('manchester-amritsar and manchester-ahmedabad have one depth category (fare) after B1 removed their unsourced connectingAlternative, and stay "useful"', () => {
     for (const slug of ['manchester-amritsar', 'manchester-ahmedabad']) {
       const route = getRouteBySlug(slug)!;
-      expect(depthCategoryCount(route), slug).toBe(2);
+      // B1 route re-verification (19 Oct 2026): connectingAlternative was
+      // removed (unsourced hubs, airlines and journey time), so only fare
+      // evidence remains as a depth category.
+      expect(depthCategoryCount(route), slug).toBe(1);
       expect(computeRouteIntelligenceLevel(route, NOW_ISO), slug).toBe('useful');
     }
   });

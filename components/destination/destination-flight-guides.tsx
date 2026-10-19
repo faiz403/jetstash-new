@@ -6,15 +6,29 @@ import { RouteCardFare } from '@/components/route/route-card-fare';
 import { getDestinationFlightGuideEntries, type DestinationFlightGuideEntry } from '@/lib/destination-flight-guides';
 import { getTripComDestinationHandoffUrl, PROVIDER_REL, getTripComSearchCtaLabel, TRIPCOM_NO_FARE_SEARCH_NOTE } from '@/lib/booking-providers';
 import { AffiliateLinkDisclosure } from '@/components/ui/affiliate-link-disclosure';
+import { formatRouteStatusDate } from '@/lib/route-status-copy';
 
-function routeStatusLabel(status: DestinationFlightGuideEntry['routeStatus']): string {
-  switch (status) {
+// B1 route re-verification (19 Oct 2026): 'connecting' was always labelled
+// "Connecting route verified", even for a lapsed or never-verified record.
+// It now follows the same shared evidence reading as the homepage atlas:
+// verified only while the record is current; a lapsed record says when it
+// was last confirmed. 'direct' and 'unspecified' are only reachable with
+// current evidence (getDisplayDirectness), and an ended direct service is
+// named as such so it is never read as operating.
+export function routeStatusLabel(entry: Pick<DestinationFlightGuideEntry, 'routeStatus' | 'verificationEvidence'>): string {
+  switch (entry.routeStatus) {
     case 'direct':
       return 'Direct service verified';
-    case 'connecting':
-      return 'Connecting route verified';
+    case 'unspecified':
+      return 'Current service confirmed';
+    case 'connecting': {
+      const evidence = entry.verificationEvidence;
+      if (evidence?.state === 'current') return 'Connecting route verified';
+      if (evidence?.state === 'historical') return `Connecting route · last confirmed ${formatRouteStatusDate(evidence.lastConfirmedDate)}`;
+      return 'Connecting route';
+    }
     case 'service-ended':
-      return 'Service ended';
+      return 'Direct service ended';
     case 'unverified':
       return 'Route verification pending';
     default:
@@ -53,7 +67,7 @@ export function DestinationFlightGuides({ destination, nowIso }: DestinationFlig
               <h4 className="text-sm font-semibold text-ink-900">
                 {airportShortName(entry.airport.name)} → {destination.city}
               </h4>
-              <p className="mt-0.5 text-xs text-ink-500">{routeStatusLabel(entry.routeStatus)}</p>
+              <p className="mt-0.5 text-xs text-ink-500">{routeStatusLabel(entry)}</p>
               <div className="mt-3">
                 {entry.fareSignal?.observation && (entry.fareSignal.state === 'current' || entry.fareSignal.state === 'recent') ? (
                   <RouteCardFare

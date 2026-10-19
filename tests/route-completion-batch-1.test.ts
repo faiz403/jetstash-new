@@ -468,7 +468,9 @@ describe('The audit and fare-archive documents accurately reflect the closed obs
     // See the route verification test determinism batch, 29 Aug 2026.
     const auditDocDate = '2026-08-22';
     const totalTracked = routes.filter((r) => getPublishableObservationsByRoute(r.slug, auditDocDate).length > 0).length;
-    expect(totalTracked).toBe(82);
+    // 82→81: B1 route re-verification (19 Oct 2026): manchester-jeddah moved to verification-pending, so its observations are no longer publishable at any evaluation date (route records are not versioned). ROUTE_COVERAGE_AUDIT.md's B1 addendum records the
+    // recomputed 22 August figure.
+    expect(totalTracked).toBe(81);
     expect(auditDoc).toContain(`${totalTracked} of 88`);
   });
 });

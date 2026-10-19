@@ -207,7 +207,8 @@ describe('Deal counts (TR-004) — a card with no tracked fare must not count as
       'man-doh-economy',
       'man-med-economy',
       'lhr-blr-economy',
-      'man-jed-economy',
+      // man-jed-economy removed (B1 route re-verification, 19 Oct 2026):
+      // manchester-jeddah is verification-pending, so its card shows no fare.
       'bhx-bom-economy',
       'bhx-med-economy',
       'man-dac-economy',
