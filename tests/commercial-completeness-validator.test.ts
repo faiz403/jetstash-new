@@ -17,8 +17,9 @@ describe('commercial completeness reporting', () => {
       + summary.hold
     ).toBe(89);
     expect(summary).toMatchObject({
-      currentFare: 83,
-      noFare: 6,
+      // currentFare 83→82, noFare 6→7: B1 route re-verification (19 Oct 2026): manchester-jeddah moved to verification-pending, so its observations are no longer publishable at any evaluation date (route records are not versioned).
+      currentFare: 82,
+      noFare: 7,
       monetisedHandoff: 59,
       nonMonetisedFallback: 30,
     });
@@ -32,9 +33,11 @@ describe('commercial completeness reporting', () => {
     expect(fallback.every((row) => row.currentCta === 'Search flights on Google Flights')).toBe(true);
   });
 
-  it('keeps the six unresolved fares held back at the 4 October boundary and explains each gap', () => {
+  it('keeps the seven unresolved fares held back at the 4 October boundary and explains each gap', () => {
     const noFare = rows.filter((row) => !row.farePublishable);
-    expect(noFare).toHaveLength(6);
+    // 6→7: manchester-jeddah is verification-pending after B1 (19 Oct 2026).
+    expect(noFare).toHaveLength(7);
+    expect(noFare.some((row) => row.slug === 'manchester-jeddah')).toBe(true);
     expect(noFare.every((row) => Boolean(row.fareSuppressionReason))).toBe(true);
     expect(noFare.every((row) => row.currentFare === null)).toBe(true);
   });

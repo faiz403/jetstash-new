@@ -1463,7 +1463,7 @@ export const routes: Route[] = [
       sourceUrl: 'https://book-pia.crane.aero/ibe/availability?tripType=ROUND_TRIP&depPort=MAN&arrPort=KHI',
       verifiedDate: '2026-08-21',
       reviewDueDate: '2026-10-05',
-      note: 'COV-001 verification-gap audit (21 August 2026): a live Manchester-Karachi search run directly on PIA\'s own ticketing engine (round trip, 1-15 Sep 2026, the dates sampled) returned 10 fare results. None was a nonstop itinerary. The results split across two different routings: PIA\'s own metal connecting via Islamabad (flights PK-702-PK-301/309), and separate Emirates/Saudia-coded itineraries connecting via Dubai or Jeddah. Because the routing was not consistent across the sampled results, no single via-city is recorded as a fixed fact here — this evidence supports "connecting, not nonstop" as the durable claim, not a specific permanent hub. Scope: this is what PIA\'s own live booking results showed for the sampled 1-15 Sep 2026 window on 21 August 2026 — a live fare search reflects the schedule and codeshare partners available at the time of the query, not a permanent published timetable, so this should be re-checked on the normal CONNECTING/STRUCTURAL cadence rather than treated as a one-time settled fact. Supersedes the prior DISPUTED classification (Route Verification Refresh Batch 2, 19 August 2026): that pass could only confirm Manchester Airport\'s own guide-page system returns a 404 for Karachi, which was corroborating but not conclusive; today\'s live booking-engine check is the qualifying primary-source evidence this route previously lacked.',
+      note: 'COV-001 verification-gap audit (21 August 2026): a live Manchester-Karachi search run directly on PIA\'s own ticketing engine (round trip, 1-15 Sep 2026, the dates sampled) returned 10 fare results. None was a nonstop itinerary. The results split across two different routings: PIA\'s own metal connecting via Islamabad (flights PK-702-PK-301/309), and separate Emirates/Saudia-coded itineraries connecting via Dubai or Jeddah. Because the routing was not consistent across the sampled results, no single via-city is recorded as a fixed fact here — this evidence supports "connecting, not nonstop" as the durable claim, not a specific permanent hub. Scope: this is what PIA\'s own live booking results showed for the sampled 1-15 Sep 2026 window on 21 August 2026 — a live fare search reflects the schedule and codeshare partners available at the time of the query, not a permanent published timetable, so this should be re-checked on the normal CONNECTING/STRUCTURAL cadence rather than treated as a one-time settled fact. Supersedes the prior DISPUTED classification (Route Verification Refresh Batch 2, 19 August 2026): that pass could only confirm Manchester Airport\'s own guide-page system returns a 404 for Karachi, which was corroborating but not conclusive; today\'s live booking-engine check is the qualifying primary-source evidence this route previously lacked. B1 route re-verification (19 October 2026): Manchester Airport\'s current PIA page names Islamabad as PIA\'s direct Manchester route and its Karachi guide returns 404, consistent with no nonstop. PIA\'s own connecting product was not re-checked (that needs a booking-engine search, not authorised in B1); a 19 October 2026 Google Flights search for 15 December 2026 showed Etihad connections via Abu Dhabi. Result: INCONCLUSIVE; review date intentionally not extended.',
     },
     // SEO Domination — Manchester-Karachi Business (23 Aug 2026): targets
     // "business class flights to karachi" / "business class to karachi"
@@ -1492,7 +1492,7 @@ export const routes: Route[] = [
     seoDescription:
       'Track checked Business Class fares for Manchester–Karachi, with itinerary, connection and fare-history details kept separate from the route’s verified service status.',
     intro:
-      'PIA sells Manchester to Karachi as a connecting itinerary, not a nonstop flight. A live search on PIA\'s own booking engine (21 August 2026) showed routings via Islamabad on PIA\'s own aircraft, alongside codeshare options via Dubai or Jeddah — the exact routing varies by date and fare class, so check the live itinerary for your own dates rather than assuming a fixed hub.',
+      'Manchester to Karachi is a connecting journey, not a nonstop flight. A live search on PIA\'s own booking engine (21 August 2026) showed routings via Islamabad on PIA\'s own aircraft, alongside codeshare options via Dubai or Jeddah — the exact routing varies by date and fare class, so check the live itinerary for your own dates rather than assuming a fixed hub.',
     bookingWindowNote:
       'Because this is a connecting route, compare the full itinerary PIA actually offers for your dates rather than a headline duration. Book 2 to 3 months ahead of Eid or wedding season regardless of routing.',
     peakPeriodIds: ['eid-al-fitr', 'eid-al-adha', 'wedding-season', 'uk-summer-holidays'],
@@ -1501,7 +1501,7 @@ export const routes: Route[] = [
     slug: 'birmingham-lahore',
     airportSlug: 'birmingham',
     destinationSlug: 'lahore',
-    flightTime: 'Connecting via Istanbul — journey time depends on the connection, see note',
+    flightTime: 'Connecting; routing and journey time vary (PIA\'s own booking engine showed Istanbul on 21 August 2026), see note',
     frequency: 'Connecting options exist; exact schedules and frequency have not been independently established',
     airlineSlugs: ['pia'],
     isDirect: false,
@@ -1511,16 +1511,17 @@ export const routes: Route[] = [
       sourceUrl: 'https://book-pia.crane.aero/ibe/availability?tripType=ROUND_TRIP&depPort=BHX&arrPort=LHE',
       verifiedDate: '2026-08-21',
       reviewDueDate: '2026-10-05',
-      note: 'COV-001 verification-gap audit (21 August 2026): a live Birmingham-Lahore search run directly on PIA\'s own ticketing engine (round trip, 1-15 Sep 2026, the dates sampled) returned 6 fare results, both directions. Every result — 6 of 6 — routed via Istanbul New Airport on a PIA-ticketed connecting itinerary (PK-5968/PK-5970 into PK-5714/PK-5744). No nonstop option appeared, and the via-city was consistent across every sampled result, unlike the mixed pattern found on Manchester-Karachi the same session — Istanbul is recorded here because the evidence supports it as the currently observed routing, not because it is assumed to be permanent. Scope: this is what PIA\'s own live booking results showed for the sampled 1-15 Sep 2026 window on 21 August 2026, and should be re-checked on the normal CONNECTING/STRUCTURAL cadence rather than treated as a one-time settled fact. Supersedes the prior DISPUTED classification: Birmingham Airport\'s absence of Lahore from its own destination directory (Route Verification Refresh Batch 1/2, corroborating but not conclusive on its own) is now explained — there genuinely is no Birmingham-originating PIA flight to Lahore, only a through-ticketed connection via Istanbul.',
+      note: 'COV-001 verification-gap audit (21 August 2026): a live Birmingham-Lahore search run directly on PIA\'s own ticketing engine (round trip, 1-15 Sep 2026, the dates sampled) returned 6 fare results, both directions. Every result — 6 of 6 — routed via Istanbul New Airport on a PIA-ticketed connecting itinerary (PK-5968/PK-5970 into PK-5714/PK-5744). No nonstop option appeared, and the via-city was consistent across every sampled result, unlike the mixed pattern found on Manchester-Karachi the same session — Istanbul is recorded here because the evidence supports it as the currently observed routing, not because it is assumed to be permanent. Scope: this is what PIA\'s own live booking results showed for the sampled 1-15 Sep 2026 window on 21 August 2026, and should be re-checked on the normal CONNECTING/STRUCTURAL cadence rather than treated as a one-time settled fact. Supersedes the prior DISPUTED classification: Birmingham Airport\'s absence of Lahore from its own destination directory (Route Verification Refresh Batch 1/2, corroborating but not conclusive on its own) is now explained — there genuinely is no Birmingham-originating PIA flight to Lahore, only a through-ticketed connection via Istanbul. B1 route re-verification (19 October 2026): Birmingham Airport\'s current destination index (birminghamairport.co.uk/destinations/where-we-fly/) lists no Lahore page, consistent with no direct service. PIA\'s own routing via Istanbul was not re-checked (that needs a booking-engine search, not authorised in B1), and a 19 October 2026 Google Flights search for 15 December 2026 showed connecting itineraries via other hubs. Result: INCONCLUSIVE; review date intentionally not extended.',
     },
-    // routeServiceConnections (22 Aug 2026, Connecting Journey Structure):
-    // both outbound and return evidenced directly — the note above states
-    // "6 fare results, both directions... 6 of 6 routed via Istanbul" from
-    // PIA's own live booking engine, the strongest evidence tier this field
-    // uses.
-    routeServiceConnections: { outbound: ['IST'], return: ['IST'] },
+    // routeServiceConnections ({ outbound: ['IST'], return: ['IST'] }, set
+    // 22 Aug 2026 from the 21 Aug PIA booking-engine search) was removed in
+    // B1 route re-verification (19 Oct 2026): that search has not been
+    // re-run, and a 19 Oct 2026 Google Flights search for December showed
+    // connecting itineraries via other hubs, so Istanbul is no longer kept
+    // as a structured standing routing claim. The dated observation stays in
+    // the verification note and intro.
     intro:
-      'PIA sells Birmingham to Lahore as a connecting itinerary via Istanbul, not a nonstop flight. A live search on PIA\'s own booking engine (21 August 2026) consistently routed every result through Istanbul New Airport — check the live itinerary for your own dates to confirm the current routing and connection time.',
+      'Birmingham to Lahore is a connecting journey, not a nonstop flight. When checked on 21 August 2026, PIA\'s own booking engine routed every result through Istanbul New Airport; other connecting itineraries via different hubs are also sold, so check the live itinerary for your own dates to confirm the current routing and connection time.',
     bookingWindowNote:
       'Because this is a connecting route, compare the full itinerary PIA actually offers for your dates rather than a headline duration. Book 2 to 3 months ahead of Eid or wedding season regardless of routing.',
     peakPeriodIds: ['eid-al-fitr', 'eid-al-adha', 'wedding-season', 'uk-summer-holidays'],
@@ -1529,7 +1530,7 @@ export const routes: Route[] = [
     slug: 'birmingham-islamabad',
     airportSlug: 'birmingham',
     destinationSlug: 'islamabad',
-    flightTime: 'Connecting via Istanbul — journey time depends on the connection, see note',
+    flightTime: 'Connecting; routing and journey time vary (PIA\'s own booking engine showed Istanbul on 21 August 2026), see note',
     frequency: 'Connecting options exist; exact schedules and frequency have not been independently established',
     airlineSlugs: ['pia'],
     isDirect: false,
@@ -1539,15 +1540,17 @@ export const routes: Route[] = [
       sourceUrl: 'https://book-pia.crane.aero/ibe/availability?tripType=ROUND_TRIP&depPort=BHX&arrPort=ISB',
       verifiedDate: '2026-08-21',
       reviewDueDate: '2026-10-05',
-      note: 'COV-001 verification-gap audit (21 August 2026): a live Birmingham-Islamabad search run directly on PIA\'s own ticketing engine (round trip, 1-15 Sep 2026, the dates sampled) returned 6 fare results, both directions. Every result — 6 of 6 — routed via Istanbul New Airport on a PIA-ticketed connecting itinerary (PK-5968/PK-5970 into PK-5710/PK-5711). No nonstop option appeared, and the via-city was consistent across every sampled result. Scope: this is what PIA\'s own live booking results showed for the sampled 1-15 Sep 2026 window on 21 August 2026, and should be re-checked on the normal CONNECTING/STRUCTURAL cadence rather than treated as a one-time settled fact. Supersedes the prior DISPUTED classification: Birmingham Airport\'s absence of Islamabad from its own destination directory (Route Verification Refresh Batch 1/2, corroborating but not conclusive on its own) is now explained — there genuinely is no Birmingham-originating PIA flight to Islamabad, only a through-ticketed connection via Istanbul.',
+      note: 'COV-001 verification-gap audit (21 August 2026): a live Birmingham-Islamabad search run directly on PIA\'s own ticketing engine (round trip, 1-15 Sep 2026, the dates sampled) returned 6 fare results, both directions. Every result — 6 of 6 — routed via Istanbul New Airport on a PIA-ticketed connecting itinerary (PK-5968/PK-5970 into PK-5710/PK-5711). No nonstop option appeared, and the via-city was consistent across every sampled result. Scope: this is what PIA\'s own live booking results showed for the sampled 1-15 Sep 2026 window on 21 August 2026, and should be re-checked on the normal CONNECTING/STRUCTURAL cadence rather than treated as a one-time settled fact. Supersedes the prior DISPUTED classification: Birmingham Airport\'s absence of Islamabad from its own destination directory (Route Verification Refresh Batch 1/2, corroborating but not conclusive on its own) is now explained — there genuinely is no Birmingham-originating PIA flight to Islamabad, only a through-ticketed connection via Istanbul. B1 route re-verification (19 October 2026): Birmingham Airport\'s current destination index (birminghamairport.co.uk/destinations/where-we-fly/) lists no Islamabad page, consistent with no direct service. PIA\'s own routing via Istanbul was not re-checked (that needs a booking-engine search, not authorised in B1), and a 19 October 2026 Google Flights search for 15 December 2026 showed connecting itineraries via other hubs. Result: INCONCLUSIVE; review date intentionally not extended.',
     },
-    // routeServiceConnections (22 Aug 2026, Connecting Journey Structure):
-    // both outbound and return evidenced directly — same live PIA
-    // booking-engine search as birmingham-lahore, "6 fare results, both
-    // directions... 6 of 6 routed via Istanbul".
-    routeServiceConnections: { outbound: ['IST'], return: ['IST'] },
+    // routeServiceConnections ({ outbound: ['IST'], return: ['IST'] }, set
+    // 22 Aug 2026 from the 21 Aug PIA booking-engine search) was removed in
+    // B1 route re-verification (19 Oct 2026): that search has not been
+    // re-run, and a 19 Oct 2026 Google Flights search for December showed
+    // connecting itineraries via other hubs, so Istanbul is no longer kept
+    // as a structured standing routing claim. The dated observation stays in
+    // the verification note and intro.
     intro:
-      'PIA sells Birmingham to Islamabad as a connecting itinerary via Istanbul, not a nonstop flight. A live search on PIA\'s own booking engine (21 August 2026) consistently routed every result through Istanbul New Airport — check the live itinerary for your own dates to confirm the current routing and connection time.',
+      'Birmingham to Islamabad is a connecting journey, not a nonstop flight. When checked on 21 August 2026, PIA\'s own booking engine routed every result through Istanbul New Airport; other connecting itineraries via different hubs are also sold, so check the live itinerary for your own dates to confirm the current routing and connection time.',
     bookingWindowNote:
       'Because this is a connecting route, compare the full itinerary PIA actually offers for your dates rather than a headline duration. If travelling for Eid, book 2 to 3 months ahead regardless of the exact connection.',
     peakPeriodIds: ['eid-al-fitr', 'eid-al-adha', 'uk-summer-holidays'],
@@ -1597,7 +1600,10 @@ export const routes: Route[] = [
     intro:
       "Leeds Bradford has no current confirmed direct service to Islamabad. Claims of a direct route have circulated periodically, but none have turned into a stable, ongoing schedule. This is a connecting route, and JetStash's own recorded fare checks have found the actual hub and airlines vary by date — not a single stable Gulf routing. Check the live search for your own dates, or compare against Manchester's direct PIA service, before booking.",
     bookingWindowNote:
-      'Always compare the total cost and time of a Leeds Bradford connection against driving to Manchester. For many Bradford-based travellers, Manchester\'s direct PIA service ends up both cheaper and faster once the whole journey is accounted for.',
+      // B1 route re-verification (19 Oct 2026, Codex review): removed the
+      // unsourced claim that Manchester's direct PIA service "ends up both
+      // cheaper and faster" for "many Bradford-based travellers".
+      'Compare a Leeds Bradford connection with departing from Manchester on the total fare, travel to the departure airport, connections, layovers and overall journey time for your dates before booking.',
     peakPeriodIds: ['eid-al-fitr', 'eid-al-adha', 'uk-summer-holidays'],
   },
   {
@@ -1811,30 +1817,47 @@ export const routes: Route[] = [
     slug: 'manchester-jeddah',
     airportSlug: 'manchester',
     destinationSlug: 'jeddah',
-    flightTime: '10h, one stop',
-    frequency: 'Daily, connecting via Doha',
-    airlineSlugs: ['qatar-airways'],
-    isDirect: false,
-    verification: { status: 'unverified', sourceName: 'JetStash portfolio evidence audit', verifiedDate: '2026-10-04', reviewDueDate: '2026-10-18', note: 'No qualifying route-level source is recorded for the stated Doha routing, daily frequency or journey time. A booking-engine result may prove an itinerary for a searched date, but not these standing claims.' },
+    // B1 route re-verification (19 Oct 2026): fail-closed. The previous
+    // record claimed "10h, one stop", "Daily, connecting via Doha", Qatar
+    // Airways as the operator and "no current direct service" (isDirect:
+    // false), none of it sourced (4 Oct 2026 audit note, preserved below).
+    // A 19 Oct 2026 Google Flights search for 15 Dec 2026 listed a Saudia
+    // nonstop MAN-JED row, which contradicts "no direct" but is not
+    // airline-confirmed. Per the standing rule for a route under genuine
+    // dispute, the shape is left unspecified with an 'unverified' record, so
+    // the page shows neutral verification-pending copy and no fare until
+    // Saudia's own schedule confirms or rules out the nonstop.
+    flightTime: 'Being re-checked: stop pattern and journey time are not confirmed',
+    frequency: 'Being re-checked: operators and schedule are not confirmed',
+    airlineSlugs: [],
+    isDirect: true,
+    serviceShape: 'unspecified',
+    // verifiedDate/reviewDueDate are the original 4 October 2026 audit dates,
+    // deliberately not extended by B1 (no qualifying evidence was found).
+    verification: { status: 'unverified', sourceName: 'JetStash portfolio evidence audit', verifiedDate: '2026-10-04', reviewDueDate: '2026-10-18', note: 'No qualifying route-level source is recorded for the stated Doha routing, daily frequency or journey time. A booking-engine result may prove an itinerary for a searched date, but not these standing claims. B1 route re-verification (19 October 2026): a Google Flights search made on 19 October 2026 for 15 December 2026 listed a Saudia nonstop Manchester-Jeddah option. That is not confirmation from Saudia\'s own schedule, so neither a direct service nor its absence is asserted, and the previously stated Doha routing, daily frequency, journey time and no-direct claims were removed. Manchester Airport\'s current Jeddah guide names no airline. Result: FAIL on the previous claims, now verification-pending; review date intentionally not extended.' },
     intro:
-      'There is no current direct Manchester to Jeddah service. Qatar Airways\' connecting itinerary via Doha is the most consistent option, using the same regular Manchester to Doha service that operates as a standalone route in its own right.',
+      'Manchester to Jeddah service details are being re-checked. Connecting itineraries are sold, and a possible seasonal nonstop has not been confirmed from the airline\'s own schedule. Check the exact flight, stops and journey time for your dates before booking.',
     bookingWindowNote:
-      'Because the connection runs through Doha on an already high-frequency service, availability is generally good outside Ramadan and the weeks immediately before Hajj season, when both legs see sharp demand spikes.',
+      'Ramadan and the weeks immediately before Hajj season are typically the highest-demand windows for Jeddah travel. Check the exact itinerary, stops and fare conditions for your dates before booking.',
     peakPeriodIds: ['ramadan', 'pre-hajj', 'school-half-terms-umrah'],
   },
   {
     slug: 'birmingham-madinah',
     airportSlug: 'birmingham',
     destinationSlug: 'madinah',
-    flightTime: '8h 50m, one stop',
-    frequency: 'Daily, connecting via Istanbul, Doha or Jeddah',
-    airlineSlugs: ['turkish-airlines', 'qatar-airways', 'saudia'],
+    // B1 route re-verification (19 Oct 2026): Qatar Airways and Saudia were
+    // removed and "8h 50m" / "Daily" hedged; none was sourced. Turkish
+    // Airlines' own route page markets this pair. The record stays
+    // 'unverified' with its original dates (INCONCLUSIVE, not extended).
+    flightTime: 'Connecting; stops and journey time vary by itinerary',
+    frequency: 'Connecting options exist; exact schedules and frequency have not been independently established',
+    airlineSlugs: ['turkish-airlines'],
     isDirect: false,
-    verification: { status: 'unverified', sourceName: 'JetStash portfolio evidence audit', verifiedDate: '2026-10-04', reviewDueDate: '2026-10-18', note: 'No qualifying route-level source is recorded for the stated operators, hubs, daily frequency or journey time. Those claims require fresh external verification before they can be treated as current.' },
+    verification: { status: 'unverified', sourceName: 'JetStash portfolio evidence audit', verifiedDate: '2026-10-04', reviewDueDate: '2026-10-18', note: 'No qualifying route-level source is recorded for the stated operators, hubs, daily frequency or journey time. Those claims require fresh external verification before they can be treated as current. B1 route re-verification (19 October 2026): Turkish Airlines\' own Birmingham-Medina route page (turkishairlines.com/en/flights-from-birmingham-1-to-medina) markets this pair for November and December 2026 dates; Birmingham Airport\'s destination index lists no Madinah page. Qatar Airways, Saudia, the 8h 50m duration and daily frequency were not supported and were removed. Result: INCONCLUSIVE; review date intentionally not extended.' },
     intro:
-      'Birmingham has no direct Madinah service. Turkish Airlines\' connection via Istanbul is the most frequently used option, though Qatar Airways via Doha and Saudia via Jeddah are both worth comparing, particularly for Umrah itineraries that already include a Jeddah leg.',
+      'Birmingham has no direct Madinah service. Turkish Airlines markets a connecting itinerary for this route, and other connecting options may exist. Stops and journey time vary, so check the exact itinerary for your dates before booking.',
     bookingWindowNote:
-      'For Umrah travel specifically, compare flying into Jeddah and travelling overland to Madinah against a direct-to-Madinah connection. The total journey time difference is often smaller than expected, and Jeddah routings sometimes price lower.',
+      'For Umrah travel specifically, compare flying into Jeddah and travelling overland to Madinah against a connection into Madinah itself. Check the exact itineraries, total journey time and current fares for both options before booking.',
     peakPeriodIds: ['ramadan', 'pre-hajj', 'school-half-terms-umrah'],
   },
   {
@@ -1857,9 +1880,9 @@ export const routes: Route[] = [
       status: 'verified',
       sourceName: "Birmingham Airport's own official Mumbai destination page (airport.birminghamairport.co.uk)",
       sourceUrl: 'https://airport.birminghamairport.co.uk/destinations/where-we-fly/mumbai/',
-      verifiedDate: '2026-08-18',
-      reviewDueDate: '2026-10-02',
-      note: 'Route Verification Refresh Batch 1 (18 August 2026): re-checked against Birmingham Airport\'s own current Mumbai destination page (search-indexed content, per this project\'s standing rule that a direct-fetch block does not itself block evidence when the same official page is independently reachable another way) — unchanged in substance from the prior check. This source confirms only that no direct Birmingham–Mumbai flight currently exists ("There are currently no direct flights to Mumbai"), and separately names hub cities (Amsterdam, Delhi, Dubai, Istanbul, Paris) and airlines (Air France, Air India, Emirates, KLM, Lufthansa, Qatar Airways, Turkish Airlines, Saudia, Swiss) it associates with reaching Mumbai from Birmingham. It does not map any specific airline to any specific hub, and does not establish total journey duration, frequency, demand periods, fare behaviour, or self-transfer risk for any named itinerary — none of those are claimed anywhere in this route\'s public copy. Does not by itself change the public "Connecting route" display, which already follows from isDirect: false regardless of this record. This is a structural "no direct service" claim depending on the airport\'s own current destination list staying accurate, not a single schedule fact — classified CONNECTING / STRUCTURAL, 45-day review window per the locked verification cadence policy.',
+      verifiedDate: '2026-10-19',
+      reviewDueDate: '2026-12-03',
+      note: 'B1 route re-verification (19 October 2026): the same official Birmingham Airport Mumbai page was reread directly and still states "There are currently no direct flights to Mumbai", lists hub cities Amsterdam, Delhi, Dubai, Istanbul and Paris, and names Air France, Air India, Emirates, KLM, Lufthansa, Qatar Airways, Turkish Airlines, Saudia and Swiss. Re-dated on the same CONNECTING / STRUCTURAL 45-day cadence (previous record: verified 18 August 2026, review due 2 October 2026). Route Verification Refresh Batch 1 (18 August 2026): re-checked against Birmingham Airport\'s own current Mumbai destination page (search-indexed content, per this project\'s standing rule that a direct-fetch block does not itself block evidence when the same official page is independently reachable another way) — unchanged in substance from the prior check. This source confirms only that no direct Birmingham–Mumbai flight currently exists ("There are currently no direct flights to Mumbai"), and separately names hub cities (Amsterdam, Delhi, Dubai, Istanbul, Paris) and airlines (Air France, Air India, Emirates, KLM, Lufthansa, Qatar Airways, Turkish Airlines, Saudia, Swiss) it associates with reaching Mumbai from Birmingham. It does not map any specific airline to any specific hub, and does not establish total journey duration, frequency, demand periods, fare behaviour, or self-transfer risk for any named itinerary — none of those are claimed anywhere in this route\'s public copy. Does not by itself change the public "Connecting route" display, which already follows from isDirect: false regardless of this record. This is a structural "no direct service" claim depending on the airport\'s own current destination list staying accurate, not a single schedule fact — classified CONNECTING / STRUCTURAL, 45-day review window per the locked verification cadence policy.',
     },
     intro:
       'Birmingham has no direct service to Mumbai. Birmingham Airport\'s own destination page confirms this, and separately lists Air India, Emirates, Qatar Airways, Saudia and Turkish Airlines among the airlines connecting Birmingham to Mumbai and hub cities including Amsterdam, Delhi, Dubai, Istanbul and Paris — the source does not say which airline uses which hub, so treat any specific routing as unconfirmed and compare options directly before booking.',
@@ -2092,71 +2115,86 @@ export const routes: Route[] = [
       typicalStops: 1,
       hubAirports: ['Dubai', 'Doha', 'Abu Dhabi'],
       typicalAirlines: ['Emirates', 'Qatar Airways', 'Etihad Airways', 'British Airways'],
-      typicalJourneyTime: '12 to 14h total, depending on layover length',
+      // B1 route re-verification (19 Oct 2026): "12 to 14h total" was not
+      // supported; the cheapest December 2026 connecting itineraries seen
+      // on 19 Oct ran 20 to 29 hours, so the duration is hedged.
+      typicalJourneyTime: 'Varies widely by connection and layover length',
     },
   },
   {
     slug: 'manchester-amritsar',
     airportSlug: 'manchester',
     destinationSlug: 'amritsar',
-    flightTime: '13h 20m, usually 1 stop',
-    frequency: 'Multiple daily 1-stop options, no direct service',
-    airlineSlugs: ['qatar-airways', 'indigo', 'british-airways', 'air-india'],
+    // B1 route re-verification (19 Oct 2026): IndiGo removed (it stopped
+    // flying to and from Manchester on 31 Aug 2026, per its own 2 Jun 2026
+    // release). British Airways and Air India removed as unsourced. "13h
+    // 20m", "usually 1 stop" and "multiple daily" were hedged, and the
+    // "genuine direct" Birmingham/Gatwick comparison was removed (Gatwick's
+    // own Amritsar verification has expired): none was re-verified here. Qatar
+    // Airways' own route page markets this pair. connectingAlternative was
+    // removed because its stops, hubs and journey time were unsourced. The
+    // record stays 'unverified' with its original dates (not extended).
+    flightTime: 'Connecting; stops and journey time vary by itinerary',
+    frequency: 'Connecting options exist; exact schedules and frequency have not been independently established',
+    airlineSlugs: ['qatar-airways'],
     isDirect: false,
-    verification: { status: 'unverified', sourceName: 'JetStash portfolio evidence audit', verifiedDate: '2026-10-04', reviewDueDate: '2026-10-18', note: 'No qualifying route-level source is recorded for the stated operators, one-stop pattern, frequency or journey time. Existing fare observations are itinerary-specific and do not establish these standing route claims.' },
+    verification: { status: 'unverified', sourceName: 'JetStash portfolio evidence audit', verifiedDate: '2026-10-04', reviewDueDate: '2026-10-18', note: 'No qualifying route-level source is recorded for the stated operators, one-stop pattern, frequency or journey time. Existing fare observations are itinerary-specific and do not establish these standing route claims. B1 route re-verification (19 October 2026): IndiGo, previously listed as an operator, stopped flying to and from Manchester on 31 August 2026 (IndiGo press release, 2 June 2026), so it was removed. Qatar Airways\' own Manchester-Amritsar route page markets this pair but states no stop pattern or duration. British Airways, Air India, the 13h 20m duration and one-stop pattern were not supported and were removed. Result: FAIL on the IndiGo operator claim, now corrected; review date intentionally not extended.' },
     intro:
-      'There is no direct Manchester to Amritsar service. Qatar Airways\' one-stop routing via Doha is currently the shortest one-stop option, at around 13h 20m total, though other one-stop combinations via Delhi or London add meaningfully to journey time. Birmingham and Gatwick both have genuine direct Amritsar services, worth comparing against a Manchester connection if either is within reasonable travelling distance.',
+      'There is no direct Manchester to Amritsar service. Qatar Airways markets a connecting itinerary for this route, and other connecting options may exist; the number of stops and total journey time vary. Check the exact itinerary for your dates before booking.',
     bookingWindowNote:
-      'Because every option here involves a connection, total journey time and layover length matter as much as the headline price. Compare the Doha one-stop against driving to Birmingham or Gatwick for their direct services, particularly for family travel with young children or elderly relatives.',
+      'Because every option here involves a connection, total journey time and layover length matter as much as the headline price. Compare the full itinerary for your dates, particularly for family travel with young children or elderly relatives.',
     peakPeriodIds: ['baisakhi', 'diwali', 'uk-summer-holidays'],
-    connectingAlternative: {
-      typicalStops: 1,
-      hubAirports: ['Doha', 'Delhi', 'London Heathrow'],
-      typicalAirlines: ['Qatar Airways', 'IndiGo', 'British Airways'],
-      typicalJourneyTime: '13 to 15h total, depending on the connection',
-    },
   },
   {
     slug: 'manchester-ahmedabad',
     airportSlug: 'manchester',
     destinationSlug: 'ahmedabad',
-    flightTime: 'Around 13h, usually 1 stop',
-    frequency: 'Multiple daily 1-stop options, no direct service',
-    airlineSlugs: ['qatar-airways', 'etihad-airways', 'emirates'],
+    // B1 route re-verification (19 Oct 2026): removed the unsourced claim
+    // that Doha is "chosen on the large majority of one-stop itineraries
+    // booked on this route". "Around 13h", "usually 1 stop" and "multiple
+    // daily" were hedged. Etihad Airways and Emirates were removed because
+    // no airline-owned source was re-checked for them; Qatar Airways' own
+    // route page markets this pair. The Gatwick "UK's only direct service"
+    // claim was removed outright (Codex review, 19 Oct 2026): the London
+    // airport for that service is itself unresolved in
+    // london-gatwick-ahmedabad's own record, so no other airport is named
+    // in its place. connectingAlternative was removed because its hubs and
+    // journey time were unsourced. The record stays 'unverified' with its
+    // original dates (not extended).
+    flightTime: 'Connecting; stops and journey time vary by itinerary',
+    frequency: 'Connecting options exist; exact schedules and frequency have not been independently established',
+    airlineSlugs: ['qatar-airways'],
     isDirect: false,
-    verification: { status: 'unverified', sourceName: 'JetStash portfolio evidence audit', verifiedDate: '2026-10-04', reviewDueDate: '2026-10-18', note: 'No qualifying route-level source is recorded for the stated operators, hubs, frequency or journey time. Existing fare observations are itinerary-specific and do not establish these standing route claims.' },
+    verification: { status: 'unverified', sourceName: 'JetStash portfolio evidence audit', verifiedDate: '2026-10-04', reviewDueDate: '2026-10-18', note: 'No qualifying route-level source is recorded for the stated operators, hubs, frequency or journey time. Existing fare observations are itinerary-specific and do not establish these standing route claims. B1 route re-verification (19 October 2026): Qatar Airways\' own Manchester-Ahmedabad route page markets this pair but states no stop pattern or duration. The unsourced statement that Doha is chosen on the large majority of one-stop itineraries was removed, along with Etihad Airways, Emirates, the 13h duration and the one-stop and daily-frequency claims. Result: INCONCLUSIVE; review date intentionally not extended.' },
     intro:
-      'There is no direct Manchester to Ahmedabad service. Doha is the most commonly used one-stop connection, chosen on the large majority of one-stop itineraries booked on this route, with Abu Dhabi and Dubai as the other realistic Gulf-hub alternatives. London Gatwick has the UK\'s only direct service to Ahmedabad, worth comparing against a Manchester connection for Gujarati heritage travellers based in the North West.',
+      'There is no direct Manchester to Ahmedabad service. Qatar Airways markets a connecting itinerary for this route, and other connecting options may exist; the number of stops and total journey time vary. Check the exact itinerary for your dates before booking.',
     bookingWindowNote:
-      'Compare a Gulf one-stop departing Manchester against the cost and time of travelling to Gatwick for Air India\'s direct service. For some North West travellers the direct Gatwick option works out better overall once the whole journey is accounted for, particularly around Navratri and Diwali when both routes see sharp demand spikes.',
+      'Compare the full connecting itinerary from Manchester for your dates, including total journey time and layovers, particularly around Navratri and Diwali when demand on India routes tends to rise.',
     peakPeriodIds: ['navratri', 'diwali', 'uk-summer-holidays'],
-    connectingAlternative: {
-      typicalStops: 1,
-      hubAirports: ['Doha', 'Abu Dhabi', 'Dubai'],
-      typicalAirlines: ['Qatar Airways', 'Etihad Airways', 'Emirates'],
-      typicalJourneyTime: '13 to 16h total, depending on the connection',
-    },
   },
   {
     slug: 'manchester-madinah',
     airportSlug: 'manchester',
     destinationSlug: 'madinah',
-    flightTime: '9h 15m, usually 1 stop',
-    frequency: 'Multiple daily 1-stop options, no current direct service',
-    airlineSlugs: ['turkish-airlines', 'saudia', 'egyptair', 'royal-jordanian'],
+    // B1 route re-verification (19 Oct 2026): Saudia, EgyptAir and Royal
+    // Jordanian removed as unsourced; "9h 15m", "usually 1 stop" and
+    // "multiple daily" hedged; the historic Saudia direct line removed
+    // because it was not re-checked; and the bookingWindowNote's claim that
+    // Manchester's Jeddah service runs via Doha removed (manchester-jeddah
+    // is now verification-pending). Turkish Airlines' own route page markets
+    // this pair. connectingAlternative was removed because its hubs and
+    // journey time were unsourced. The record stays 'unverified' with its
+    // original dates (not extended).
+    flightTime: 'Connecting; stops and journey time vary by itinerary',
+    frequency: 'Connecting options exist; exact schedules and frequency have not been independently established',
+    airlineSlugs: ['turkish-airlines'],
     isDirect: false,
-    verification: { status: 'unverified', sourceName: 'JetStash portfolio evidence audit', verifiedDate: '2026-10-04', reviewDueDate: '2026-10-18', note: 'No qualifying route-level source is recorded for the stated operators, hubs, frequency or journey time. Existing fare observations are itinerary-specific and do not establish these standing route claims.' },
+    verification: { status: 'unverified', sourceName: 'JetStash portfolio evidence audit', verifiedDate: '2026-10-04', reviewDueDate: '2026-10-18', note: 'No qualifying route-level source is recorded for the stated operators, hubs, frequency or journey time. Existing fare observations are itinerary-specific and do not establish these standing route claims. B1 route re-verification (19 October 2026): Turkish Airlines\' own Manchester-Medina route page (turkishairlines.com/en/flights-from-manchester-1-to-medina) markets this pair for November and December 2026 dates. Saudia, EgyptAir, Royal Jordanian, the 9h 15m duration and the one-stop and daily-frequency claims were not supported and were removed. Result: INCONCLUSIVE; review date intentionally not extended.' },
     intro:
-      'Manchester once had a direct Saudia service to Madinah, but it doesn\'t currently operate. Turkish Airlines\' one-stop routing via Istanbul is currently the shortest one-stop option, at around 9h 15m total. EgyptAir via Cairo and Royal Jordanian via Amman are the other commonly used alternatives.',
+      'There is no current direct Manchester to Madinah service. Turkish Airlines markets a connecting itinerary for this route, and other connecting options may exist. Stops and journey time vary, so check the exact itinerary for your dates before booking.',
     bookingWindowNote:
-      'For Umrah travel specifically, compare flying into Jeddah and travelling overland to Madinah against a direct-to-Madinah connection. Manchester\'s Jeddah service runs through the same Doha-based connection pattern as the wider network, and the total journey time difference is often smaller than expected.',
+      'For Umrah travel specifically, compare flying into Jeddah and travelling overland to Madinah against a connection into Madinah itself. Check the exact itinerary, stops and journey time for both options before booking.',
     peakPeriodIds: ['ramadan', 'pre-hajj', 'school-half-terms-umrah'],
-    connectingAlternative: {
-      typicalStops: 1,
-      hubAirports: ['Istanbul', 'Cairo', 'Amman'],
-      typicalAirlines: ['Turkish Airlines', 'EgyptAir', 'Royal Jordanian'],
-      typicalJourneyTime: '9 to 11h total, depending on the connection',
-    },
   },
   {
     slug: 'manchester-barcelona', airportSlug: 'manchester', destinationSlug: 'barcelona',
@@ -2485,9 +2523,9 @@ export const routes: Route[] = [
       status: 'verified',
       sourceName: 'Air India\'s own current route-information page for this exact pair, reconciled against Birmingham Airport\'s own 2019 press release describing the same tag-service structure',
       sourceUrl: 'https://www.airindia.com/en/book-flights/birmingham-to-delhi-flights',
-      verifiedDate: '2026-08-21',
-      reviewDueDate: '2026-10-05',
-      note: 'COV-001 verification-gap audit (21 August 2026): the two-source conflict identified in Route Verification Refresh Batch 2 (19 August 2026) — Birmingham Airport\'s own page naming Air India as "direct", 7h55m, against Air India\'s own page stating "No direct flights available" — is now reconciled, not merely re-observed. Air India\'s own current page explicitly names the routing: "Last flight from Birmingham airport AI 118 departs at 20:30 (via ATQ)" — AI118 is the same flight number Birmingham Airport\'s own 2019 press release ("Air India Resumes Six Direct Weekly Services to India from Birmingham Airport") already described as a Boeing 787 tag-service running three times weekly to Delhi and onward to Amritsar, and three times weekly to Amritsar and onward to Delhi, on one flight number. Both sources describe the same real service; the apparent conflict was a difference in each source\'s own use of "direct" (Birmingham Airport: single flight number, no aircraft change) versus "nonstop" (Air India\'s own FAQ and structured field: no scheduled stop) — Air India\'s own current schedule confirms the stop is real. Recorded here as connecting via Amritsar because Air India\'s own current page is the source that names the routing explicitly; frequency (three times weekly) is carried over from the 2019 tag-service pattern and is not independently re-verified for the current 2026 schedule, so it is flagged as such rather than stated as freshly confirmed.',
+      verifiedDate: '2026-10-19',
+      reviewDueDate: '2026-12-03',
+      note: 'B1 route re-verification (19 October 2026): Air India\'s own Birmingham-Delhi page (airindia.com/en-gb/book-flights/birmingham-to-delhi-flights) was reread and still states "Direct flight from Birmingham to Delhi: No direct flights available" and "AI 118 departs at 20:30 (via ATQ)". Birmingham Airport\'s own Delhi page was also reread and still says "Airlines that fly direct: Air India" with an approximate 7h 55m flight time, so the two-source conflict described below remains open in the sources themselves; Air India\'s own page stays the governing source for the stop. Frequency was not re-verified. Re-dated on the same 45-day cadence (previous record: verified 21 August 2026, review due 5 October 2026). COV-001 verification-gap audit (21 August 2026): the two-source conflict identified in Route Verification Refresh Batch 2 (19 August 2026) — Birmingham Airport\'s own page naming Air India as "direct", 7h55m, against Air India\'s own page stating "No direct flights available" — is now reconciled, not merely re-observed. Air India\'s own current page explicitly names the routing: "Last flight from Birmingham airport AI 118 departs at 20:30 (via ATQ)" — AI118 is the same flight number Birmingham Airport\'s own 2019 press release ("Air India Resumes Six Direct Weekly Services to India from Birmingham Airport") already described as a Boeing 787 tag-service running three times weekly to Delhi and onward to Amritsar, and three times weekly to Amritsar and onward to Delhi, on one flight number. Both sources describe the same real service; the apparent conflict was a difference in each source\'s own use of "direct" (Birmingham Airport: single flight number, no aircraft change) versus "nonstop" (Air India\'s own FAQ and structured field: no scheduled stop) — Air India\'s own current schedule confirms the stop is real. Recorded here as connecting via Amritsar because Air India\'s own current page is the source that names the routing explicitly; frequency (three times weekly) is carried over from the 2019 tag-service pattern and is not independently re-verified for the current 2026 schedule, so it is flagged as such rather than stated as freshly confirmed.',
     },
     // routeServiceConnections (22 Aug 2026, Connecting Journey Structure;
     // corrected 22 Aug 2026, founder remediation): outbound is Air India's

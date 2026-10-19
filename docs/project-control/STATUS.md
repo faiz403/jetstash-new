@@ -22,6 +22,24 @@ rate limiting rather than the current process-local limiter.
 
 **Production site:** `https://jetstash.co.uk`
 
+## B1 route-claim corrections — 19 October 2026 (local branch, not merged)
+
+B1 route re-verification of the 15 routes with overdue route reviews found two failures and six
+inconclusive results (evidence kept outside the repository in
+`C:\Users\faiz2\jetstash-fare-sweep-2026-10-20\`). Founder-approved local corrections on branch
+`fix/b1-batch1-route-claim-corrections`: Manchester→Jeddah moved to verification-pending
+(possible Saudia nonstop not airline-confirmed; unsourced Doha/10h/daily claims removed);
+IndiGo removed from Manchester→Amritsar; the unsourced Manchester→Ahmedabad "majority of bookings"
+statistic removed; unsupported operators, hubs, durations and frequencies hedged on the Madinah,
+Amritsar and Ahmedabad routes; the structured Istanbul routing removed from Birmingham→Lahore and
+Birmingham→Islamabad. Only Birmingham→Mumbai and Birmingham→Delhi were re-dated. No fare was
+verified. Codex review follow-ups: Leeds Bradford→Islamabad's unsourced "cheaper and faster via
+Manchester" claim replaced with neutral compare-the-whole-journey advice, and the homepage atlas and
+destination-page route labels now share one verification-evidence rule (verified only while the
+route-level record is current; lapsed records say "last confirmed <date>"; pending and ended
+direct services never read as verified or operating). See ROUTE_COVERAGE_AUDIT.md's 19 October
+2026 addendum.
+
 ## MAN→ISB re-verification and promoted-fare guards — 17 October 2026 (local branch, not merged)
 
 Manchester→Islamabad's route verification lapsed on 12 October and the route correctly failed

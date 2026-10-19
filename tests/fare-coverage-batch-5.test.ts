@@ -89,7 +89,8 @@ describe('Fare Coverage Programme Batch 5', () => {
     // record; this test tracks live coverage, not that snapshot.
     const COVERAGE_83_ROUTES_ISO = '2026-08-22';
     const current = routes.filter((route) => getPublishableObservationsByRoute(route.slug, COVERAGE_83_ROUTES_ISO).length > 0);
-    expect(current).toHaveLength(82);
+    // 82→81: B1 route re-verification (19 Oct 2026): manchester-jeddah moved to verification-pending, so its observations are no longer publishable at any evaluation date (route records are not versioned).
+    expect(current).toHaveLength(81);
     // Fare Signal poor-itinerary suppression (31 Aug 2026) originally meant
     // 7 of these 83 tracked routes showed the no-fare fallback.
     //

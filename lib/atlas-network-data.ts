@@ -1,6 +1,7 @@
-import { getRouteBySlug, getRouteStatus as deriveRouteStatus, getDisplayDirectness } from '@/data/routes';
+import { getRouteBySlug, getRouteStatus as deriveRouteStatus, getDisplayDirectness, isVerificationCurrent } from '@/data/routes';
 import { routeStatusEvents } from '@/data/route-status-events';
-import { getRouteStatusCopy, formatRouteStatusDate } from '@/lib/route-status-copy';
+import { getRouteStatusCopy, formatRouteStatusDate, getEffectiveRoutePresentation } from '@/lib/route-status-copy';
+import { getRouteVerificationEvidence } from '@/lib/route-verification-evidence';
 import { getDestinationBySlug } from '@/data/destinations';
 import { getAirportBySlug } from '@/data/airports';
 import { getNetworkEvidence } from '@/data/network-evidence';
@@ -167,29 +168,58 @@ function buildDestinationPoint(airportSlug: string, destSlug: string, x: number,
 
   const status = deriveRouteStatus(route, routeStatusEvents, nowIso);
   const intelligenceLevel = computeRouteIntelligenceLevel(route, nowIso);
-  // Branches on route.isDirect, not just verification status — a route can
-  // be genuinely VERIFIED as connecting (birmingham-mumbai: Birmingham
-  // Airport's own page confirms no direct service exists at all), and the
-  // earlier version of this function claimed "Direct service verified" for
-  // exactly that case regardless of isDirect. Latent since Manchester never
-  // happened to have a verified+non-direct route; surfaced the moment
-  // Birmingham did. Fixed generically, not special-cased to Birmingham.
-  let verdict = route.isDirect
-    ? 'Direct service not yet independently verified — check directly with the airline before booking.'
-    : 'Modelled as a connecting route — check directly with the airline for current routing before booking.';
-  let detail: string | null = route.verification?.note ?? null;
+  // B1 route re-verification (19 Oct 2026, Codex finding): the verdict now
+  // goes through the same gates as the route page. It previously branched
+  // on raw route.isDirect (so a verification-pending route read "Direct
+  // service not yet independently verified", implying a direct service)
+  // and treated any `status: 'verified'` record as current, even after its
+  // review date had passed. Now:
+  //   - pending ('unverified' presentation): neutral re-check copy, no raw
+  //     verification note, no raw route.flightTime;
+  //   - 'direct' / 'unspecified': only reachable with a current record;
+  //   - 'connecting': "verified" only while the route-level record is
+  //     current. A lapsed record is shown as historical evidence ("Last
+  //     confirmed ...; due for a fresh check"), not as current
+  //     confirmation, and not as unverified either;
+  //   - 'service-ended' is handled by the ledger branch further below.
+  // Verified-connecting still branches on shape, not just status — a route
+  // can be genuinely verified as connecting (birmingham-mumbai: Birmingham
+  // Airport's own page confirms no direct service exists at all).
+  const presentation = getEffectiveRoutePresentation(route, routeStatusEvents, nowIso);
+  const routeLevelCurrent = isVerificationCurrent(route.verification, nowIso);
+  let verdict: string;
+  let detail: string | null = null;
+  let presentedFlightTime: string = route.flightTime;
 
-  if (route.verification?.status === 'verified' || getDisplayDirectness(route, nowIso) === 'direct') {
-    verdict = route.isDirect ? 'Direct service verified.' : 'Connecting route verified — no direct service currently exists.';
-    if (route.verification) {
+  if (presentation.status === 'unverified') {
+    verdict = 'Route details are being re-checked — confirm the current service directly with the airline before booking.';
+    presentedFlightTime = 'Schedule and journey time being re-checked';
+  } else if (presentation.status === 'direct' || presentation.status === 'unspecified') {
+    verdict = presentation.status === 'direct'
+      ? 'Direct service verified.'
+      : 'Current service confirmed; stop pattern and journey time vary — check the exact flight before booking.';
+    if (routeLevelCurrent && route.verification) {
       detail = `Checked ${formatRouteStatusDate(route.verification.verifiedDate)}.`;
     } else {
-      // No route-level verification record — the 'direct' verdict above
-      // came from a current per-airline verification instead (see
+      // No current route-level record — the verdict above came from a
+      // current per-airline verification instead (see
       // getDisplayDirectness/computeRouteIntelligenceLevel). Cite that
       // evidence directly rather than leaving detail blank.
-      const currentAirline = (route.airlineVerifications ?? []).find((v) => v.verifiedDate);
-      detail = currentAirline ? `${currentAirline.sourceName}, checked ${formatRouteStatusDate(currentAirline.verifiedDate)}.` : detail;
+      const currentAirline = (route.airlineVerifications ?? []).find((v) => isVerificationCurrent(v, nowIso));
+      detail = currentAirline ? `${currentAirline.sourceName}, checked ${formatRouteStatusDate(currentAirline.verifiedDate)}.` : null;
+    }
+  } else {
+    // Connecting (or service-ended, overridden below): the shared evidence
+    // reading keeps this wording in step with destination pages.
+    const evidence = getRouteVerificationEvidence(route, nowIso);
+    if (evidence.state === 'current') {
+      verdict = 'Connecting route verified — no direct service currently exists.';
+      detail = `Checked ${formatRouteStatusDate(evidence.lastConfirmedDate)}.`;
+    } else {
+      verdict = 'Modelled as a connecting route — check directly with the airline for current routing before booking.';
+      detail = evidence.state === 'historical'
+        ? `Last confirmed ${formatRouteStatusDate(evidence.lastConfirmedDate)}; due for a fresh check.`
+        : null;
     }
   }
 
@@ -254,7 +284,7 @@ function buildDestinationPoint(airportSlug: string, destSlug: string, x: number,
     serviceNotice,
     verdict,
     detail,
-    flightTime: flightTimeOverride ?? route.flightTime,
+    flightTime: flightTimeOverride ?? presentedFlightTime,
     href: `/destinations/${destSlug}`,
     routeHref: `/routes/${route.slug}`,
   };

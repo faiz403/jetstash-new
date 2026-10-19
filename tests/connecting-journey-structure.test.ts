@@ -111,26 +111,22 @@ describe('2. Birmingham-Delhi\'s connecting-vs-connecting mismatch is live again
   });
 });
 
-describe('3. Birmingham-Lahore and Birmingham-Islamabad stay clean: proven-same routing renders no callout', () => {
-  it('birmingham-lahore: route (IST) and fare (Istanbul Airport (IST)) resolve to the same hub', () => {
-    const route = getRouteBySlug('birmingham-lahore')!;
-    expect(route.routeServiceConnections).toEqual({ outbound: ['IST'], return: ['IST'] });
-    const signal = getFareSignalForRoute('birmingham-lahore', NOW_ISO);
-    expect(signal.observation?.connectionAirports).toEqual(['Istanbul Airport (IST)']);
-    const html = renderFareSignalForRoute('birmingham-lahore');
-    expect(html).not.toContain('Route service');
-    expect(html).not.toContain('different connecting journey');
-  });
-
-  it('birmingham-islamabad: route (IST) and fare (Istanbul Airport (IST)) resolve to the same hub', () => {
-    const route = getRouteBySlug('birmingham-islamabad')!;
-    expect(route.routeServiceConnections).toEqual({ outbound: ['IST'], return: ['IST'] });
-    const signal = getFareSignalForRoute('birmingham-islamabad', NOW_ISO);
-    expect(signal.observation?.connectionAirports).toEqual(['Istanbul Airport (IST)']);
-    const html = renderFareSignalForRoute('birmingham-islamabad');
-    expect(html).not.toContain('Route service');
-    expect(html).not.toContain('different connecting journey');
-  });
+describe('3. Birmingham-Lahore and Birmingham-Islamabad: the stale Istanbul routing is no longer a structured claim', () => {
+  // B1 route re-verification (19 Oct 2026): routeServiceConnections IST was
+  // removed from both routes because the 21 Aug PIA booking-engine search
+  // behind it has not been re-run and December searches showed other hubs.
+  // With no structured route routing, no comparison runs, so no callout.
+  for (const slug of ['birmingham-lahore', 'birmingham-islamabad']) {
+    it(`${slug}: carries no routeServiceConnections and renders no Route service callout`, () => {
+      const route = getRouteBySlug(slug)!;
+      expect(route.routeServiceConnections).toBeUndefined();
+      expect(route.flightTime).not.toMatch(/^Connecting via Istanbul/);
+      expect(route.intro).toContain('When checked on 21 August 2026');
+      const html = renderFareSignalForRoute(slug);
+      expect(html).not.toContain('Route service');
+      expect(html).not.toContain('different connecting journey');
+    });
+  }
 });
 
 describe('4. Manchester-Karachi stays completely silent: no routeServiceConnections, so no comparison ever runs', () => {
@@ -260,7 +256,9 @@ describe('12. unresolved routes (no routeServiceConnections evidence) remain fai
   it('the vast majority of routes carry no routeServiceConnections field at all', () => {
     const withField = routes.filter((r) => r.routeServiceConnections);
     expect(withField.map((r) => r.slug).sort()).toEqual(
-      ['birmingham-delhi', 'birmingham-islamabad', 'birmingham-lahore', 'manchester-dhaka'].sort()
+      // birmingham-islamabad and birmingham-lahore removed in B1 route
+      // re-verification (19 Oct 2026); see section 3.
+      ['birmingham-delhi', 'manchester-dhaka'].sort()
     );
   });
 });
