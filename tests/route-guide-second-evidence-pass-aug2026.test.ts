@@ -97,7 +97,11 @@ describe('birmingham-ahmedabad preserves the genuine, internal Air India evidenc
 
   it('is marked unverified, not a settled connecting claim', () => {
     expect(route.verification?.status).toBe('unverified');
-    expect(route.isDirect).toBe(true); // standing "genuine dispute stays isDirect: true" rule
+    // B1 route re-verification Batch 2 (19 Oct 2026, founder-approved corrections): the direct model was removed (isDirect: false) on two
+    // primary signals against a direct service, but serviceShape
+    // 'unspecified' keeps it pending rather than a settled Connecting claim.
+    expect(route.isDirect).toBe(false);
+    expect(route.serviceShape).toBe('unspecified');
   });
 
   it('getDisplayDirectness() correctly reports this as unverified, never a resolved direct or connecting claim', () => {

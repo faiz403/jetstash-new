@@ -80,9 +80,12 @@ describe('remaining Turkey route guides', () => {
     // this is a genuine evidence upgrade, not a fabricated fact (see that
     // route's own updated verification note).
     const lba = getRoutePresentation(getRouteBySlug('leeds-bradford-antalya')!, NOW_ISO);
-    expect(getAirlinesBySlugs(lba.airlineSlugs).map((airline) => airline.name)).toEqual(['Jet2', 'TUI', 'SunExpress']);
+    // B1 route re-verification Batch 2 (19 Oct 2026, founder-approved corrections): SunExpress removed: its own winter 2026/27
+    // timetable and Summer 2027 UK schedule list no Leeds Bradford service.
+    // TUI kept (absence from a three-day board window is not evidence).
+    expect(getAirlinesBySlugs(lba.airlineSlugs).map((airline) => airline.name)).toEqual(['Jet2', 'TUI']);
     expect(lba.flightTime).toContain('Published duration not listed');
-    expect(lba.frequency).toContain('Jet2, TUI and SunExpress');
+    expect(lba.frequency).toContain('SunExpress lists no Leeds Bradford service');
 
     const glasgowDalaman = getRoutePresentation(getRouteBySlug('glasgow-dalaman')!, NOW_ISO);
     expect(getAirlinesBySlugs(glasgowDalaman.airlineSlugs).map((airline) => airline.name)).toEqual(['TUI', 'Jet2', 'easyJet']);

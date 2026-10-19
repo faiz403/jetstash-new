@@ -22,8 +22,13 @@ describe('getDisplayDirectness — a route must never show Direct without a curr
     // status) demotes it. birmingham-islamabad, this test's fixture until
     // COV-001, was reclassified to verified-connecting that same pass and no
     // longer fits this example.
+    // B1 route re-verification Batch 2 (19 Oct 2026, founder-approved corrections): birmingham-ahmedabad's direct model was removed
+    // (isDirect: false) but it stays fail-closed via serviceShape
+    // 'unspecified' + an 'unverified' record, so it still renders as
+    // unverified, never direct and never connecting.
     const route = getRouteBySlug('birmingham-ahmedabad')!;
-    expect(route.isDirect).toBe(true);
+    expect(route.isDirect).toBe(false);
+    expect(route.serviceShape).toBe('unspecified');
     expect(getDisplayDirectness(route, FIXED_TODAY)).toBe('unverified');
   });
 
@@ -324,8 +329,20 @@ describe('Section 5 (founder correction) — Verification pending is a distinct 
     // precisely so that "we don't know" can never masquerade as the
     // evidenced claim "we know there's no direct service." Flipping
     // isDirect to false without evidence would be exactly that masquerade.
+    // B1 route re-verification Batch 2 (19 Oct 2026, founder-approved corrections): birmingham-ahmedabad is the one deliberate exception.
+    // Two primary signals contradict a direct service (Air India's structured
+    // "0 direct flights" field; Birmingham Airport lists no Ahmedabad
+    // destination), so isDirect is false, but it is NOT shown as Connecting:
+    // serviceShape 'unspecified' keeps it pending until the connecting
+    // service itself is verified.
     for (const slug of disputedRoutes) {
       const route = getRouteBySlug(slug)!;
+      if (slug === 'birmingham-ahmedabad') {
+        expect(route.isDirect).toBe(false);
+        expect(route.serviceShape).toBe('unspecified');
+        expect(getDisplayDirectness(route, FIXED_TODAY)).toBe('unverified');
+        continue;
+      }
       expect(route.isDirect).toBe(true);
     }
     // A genuinely uncontested connecting route, by contrast, correctly

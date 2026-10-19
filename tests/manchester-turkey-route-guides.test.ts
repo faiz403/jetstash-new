@@ -43,9 +43,17 @@ describe('Manchester Turkey route guides', () => {
     const presentation = getRoutePresentation(route, NOW_ISO);
 
     expect(presentation.status).toBe('direct');
-    expect(getAirlinesBySlugs(presentation.airlineSlugs).map((airline) => airline.name)).toEqual(['SunExpress']);
-    expect(presentation.frequency).toContain('15 weekly direct overnight flights');
-    expect(presentation.summary).toContain('Check the exact dates, schedule and baggage terms before booking.');
+    // B1 route re-verification Batch 2 (19 Oct 2026, founder-approved corrections): easyJet and Jet2 added from Manchester Airport's
+    // 19 Oct 2026 departures board; SunExpress wording made seasonal and dated
+    // (no SunExpress winter 2026/27 Dalaman service).
+    // The record now names three operators, but none has its own airline-level
+    // verification, so the public presentation shows no airline (fail-closed:
+    // a newly observed operator is never displayed as verified).
+    expect(route.airlineSlugs).toEqual(['sunexpress', 'easyjet', 'jet2']);
+    expect(presentation.airlineSlugs).toEqual([]);
+    expect(presentation.frequency).toContain('up to 15 weekly overnight flights in summer 2026');
+    expect(presentation.frequency).toContain('no winter 2026/27 service');
+    expect(presentation.summary).toContain('Check the exact dates, airline and schedule before booking.');
   });
 
   it('keeps Bodrum seasonal and preserves conflicting published timings', () => {
@@ -53,7 +61,12 @@ describe('Manchester Turkey route guides', () => {
     const presentation = getRoutePresentation(route, NOW_ISO);
 
     expect(presentation.status).toBe('direct');
-    expect(presentation.frequency).toContain('twice-weekly direct service in the summer 2026 programme');
+    // B1 route re-verification Batch 2 (19 Oct 2026, founder-approved corrections): SunExpress lists Bodrum in neither its winter
+    // 2026/27 timetable nor its Summer 2027 UK schedule, so it is no longer a
+    // current operator; the summer 2026 service is kept as dated history.
+    expect(presentation.airlineSlugs).toEqual([]);
+    expect(presentation.frequency).toContain('SunExpress flew twice weekly in summer 2026');
+    expect(presentation.frequency).toContain('current operators are not confirmed');
     expect(presentation.summary).toContain('Manchester Airport says flights are summer-only');
     expect(presentation.flightTime).toContain('Published timings vary by source');
     expect(presentation.summary).not.toMatch(/4h\s*\d*m/);
@@ -64,12 +77,20 @@ describe('Manchester Turkey route guides', () => {
     const presentation = getRoutePresentation(route, NOW_ISO);
 
     expect(presentation.status).toBe('direct');
+    // B1 route re-verification Batch 2 (19 Oct 2026, founder-approved corrections): easyJet added from Manchester Airport's 19 Oct
+    // 2026 board; SunExpress winter 2026/27 Thursday/Sunday listing recorded
+    // without claiming nonstop operation or exact-date availability.
+    // easyJet is named on the record but has no airline-level verification, so
+    // the public presentation still shows only the three previously verified airlines.
+    expect(route.airlineSlugs).toEqual(['sunexpress', 'jet2', 'corendon', 'easyjet']);
     expect(getAirlinesBySlugs(presentation.airlineSlugs).map((airline) => airline.name)).toEqual(['SunExpress', 'Jet2', 'Corendon']);
-    expect(presentation.frequency).toContain('Seasonal direct service');
+    expect(presentation.frequency).toContain('lists Manchester–Antalya on Thursdays and Sundays (subject to change)');
+    expect(presentation.frequency).toContain('winter schedules not confirmed');
     expect(presentation.flightTime).toContain('Published timings vary by source');
     expect(presentation.flightTime).not.toMatch(/\b4h\s*\d+m\b/);
-    expect(presentation.summary).toContain('Published timings differ by source');
+    expect(presentation.summary).toContain('Operating days, airlines and timings vary');
     expect(presentation.summary.toLowerCase()).not.toContain('year-round');
+    expect(presentation.summary.toLowerCase()).not.toContain('nonstop');
   });
 
   it('keeps Izmir seasonal with a planning duration and no fixed frequency', () => {

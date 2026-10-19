@@ -29,7 +29,13 @@ export interface PortfolioRouteAuditRow {
   originIata: string;
   destinationIata: string;
   publicStatus: string;
-  declaredDirectness: 'direct' | 'connecting';
+  /**
+   * The service shape the route record declares. 'unspecified' means the
+   * record deliberately asserts neither direct nor connecting (for example
+   * birmingham-ahmedabad after B1 Batch 2, 19 Oct 2026: no direct service is
+   * evidenced and the connecting service is not yet verified).
+   */
+  declaredDirectness: 'direct' | 'connecting' | 'unspecified';
   operatorClaims: string[];
   frequencyClaim: string;
   durationClaim: string;
@@ -301,7 +307,9 @@ export function buildPortfolioAudit(nowIso: string): PortfolioRouteAuditRow[] {
       originIata: airport?.code ?? '',
       destinationIata: destination?.iataCode ?? '',
       publicStatus: presentation.status,
-      declaredDirectness: route.isDirect ? 'direct' : 'connecting',
+      // serviceShape takes precedence over the legacy isDirect boolean, the
+      // same order getDisplayDirectness() uses.
+      declaredDirectness: route.serviceShape ?? (route.isDirect ? 'direct' : 'connecting'),
       operatorClaims: [...route.airlineSlugs],
       frequencyClaim: route.frequency,
       durationClaim: route.flightTime,
