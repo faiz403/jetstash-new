@@ -148,14 +148,22 @@ export function DealCard({ deal, nowIso, headingLevel = 'h3' }: { deal: Deal; no
       <div className="flex flex-1 flex-col px-5 py-5">
         {range ? (
           <>
-            <div className="flex items-baseline gap-2">
-              <span className={`font-display text-3xl tracking-tight tabular-nums ${isStale ? 'text-ink-500' : 'text-ink-900'}`}>
+            <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+              <span className={`whitespace-nowrap font-display text-3xl tracking-tight tabular-nums ${isStale ? 'text-ink-500' : 'text-ink-900'}`}>
                 {range.count > 1
                   ? `£${range.min.toLocaleString('en-GB')}–£${range.max.toLocaleString('en-GB')}`
                   : `£${range.min.toLocaleString('en-GB')}`}
               </span>
-              <span className="text-sm text-ink-400">{toTravellerFareNote(range.priceNote)}</span>
+              <span className="basis-full text-sm text-ink-400">{range.count > 1 ? 'Details of the minimum shown: ' : ''}{toTravellerFareNote(range.priceNote)}</span>
             </div>
+            <p className="mt-1 text-sm font-medium text-ink-700">
+              Travel {formatChecked(range.departureDate)}–{formatChecked(range.returnDate)}
+            </p>
+            {range.count > 1 && (
+              <p className="mt-1 text-xs text-ink-400">
+                Baggage and fare conditions may differ between checks; see individual fare details.
+              </p>
+            )}
             <JourneyConsequenceLine consequences={range.journeyConsequences} />
             {fareSourceLabel && <p className="mt-1 text-sm font-medium text-ink-500">{fareSourceLabel}</p>}
             {/* Route/fare reconciliation (Tier-1 Commercial Readiness QA

@@ -27,27 +27,25 @@ import { deals, getDealDirectnessLabel, getDealFareDirectnessLabel } from '@/dat
  * route is completely unchanged.
  */
 
-const NOW_ISO = new Date().toISOString().slice(0, 10);
+const NOW_ISO = '2026-10-20';
 
 describe('DealCard reconciles a mismatched fare against the route\'s own directness', () => {
-  it('manchester-dubai: a mixed-evidence fare range gets no route or fare directness badge', () => {
+  it('manchester-dubai: the selected connecting travel period is distinguished from direct route service', () => {
     const deal = deals.find((d) => d.id === 'man-dxb-economy')!;
-    // The route is verified direct, but the fare archive includes entries
-    // without complete directness evidence, so a range-level fare badge is
-    // not supported.
+    // The selected November checks are connecting; older trips are outside the range.
     expect(getDealDirectnessLabel(deal, NOW_ISO)).toBe('Direct flight');
-    expect(getDealFareDirectnessLabel(deal, NOW_ISO)).toBeUndefined();
+    expect(getDealFareDirectnessLabel(deal, NOW_ISO)).toBe('Connecting');
 
     const html = renderToStaticMarkup(DealCard({ deal, nowIso: NOW_ISO })).replace(/\s+/g, ' ');
-    expect(html).not.toContain('Direct flight');
-    expect(html).not.toContain('Connecting</span>');
-    expect(html).not.toContain('This fare is a different');
+    expect(html).toContain('Route: Direct.');
+    expect(html).toContain('Connecting</span>');
+    expect(html).toContain('This fare is a different, connecting journey.');
   });
 
-  it('does not render a route-fare reconciliation sentence without a fare-wide classification', () => {
+  it('renders reconciliation from the selected period classification', () => {
     const deal = deals.find((d) => d.id === 'man-dxb-economy')!;
     const html = renderToStaticMarkup(DealCard({ deal, nowIso: NOW_ISO })).replace(/\s+/g, ' ');
-    expect(html).not.toContain('This fare is a different');
+    expect(html).toContain('This fare is a different, connecting journey.');
   });
 
   it('a card where the fare already agrees with the route\'s own directness renders no reconciliation line at all -- nothing changes for the common case', () => {

@@ -351,25 +351,14 @@ describe('Fare Coverage Expansion Batch B — no scope creep', () => {
   });
 
   it('aggregateFareDirectness never guesses across disagreeing observations for any Batch B route', () => {
-    // 18 August 2026: Weekly Full Fare Refresh #1 added a second Economy
-    // observation for every route below except leeds-bradford-islamabad
-    // (NO RESULT that run — its lone Batch B observation stands alone).
-    // london-heathrow-bengaluru's fresh 18 August check genuinely found
-    // both legs direct on British Airways, disagreeing with Batch B's own
-    // outbound-only-connecting evidence — the aggregate now honestly
-    // resolves to undefined (never guesses between the two), which IS the
-    // "never guesses across disagreeing observations" behaviour this test
-    // exists to prove, not a defect.
-    const expectedByRoute: Record<string, string | undefined> = {
-      'london-heathrow-bengaluru': undefined,
-    };
+    // Directness describes the selected travel pair, never other archived trips.
     for (const slug of NEW_ROUTES) {
       if (REVERTED_TO_USEFUL_18_AUG.includes(slug)) continue; // no longer publishable — see the dedicated test above
       if (PENDING_AFTER_B1_19_OCT.includes(slug)) continue; // no longer publishable — see the dedicated B1 test
       const range = getFareRangeSummary(slug, 'Economy', NOW_ISO);
       expect(range, slug).not.toBeNull();
       const obs = getPublishableObservationsByRouteAndCabin(slug, 'Economy', NOW_ISO);
-      const expectedDirectness = aggregateFareDirectness(obs);
+      const expectedDirectness = aggregateFareDirectness(obs.filter((o) => o.departureDate === range!.departureDate && o.returnDate === range!.returnDate));
       expect(range!.observedDirectness, slug).toBe(expectedDirectness);
     }
   });

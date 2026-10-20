@@ -34,7 +34,7 @@ describe('getDealFareDirectnessLabel — a route being direct never implies a sp
     // Confirm the premise: the route itself IS verified direct.
     expect(getDealDirectnessLabel(deal, NOW_ISO)).toBe('Direct flight');
     // But the fare-aware label must reflect the fare's own recorded routing.
-    expect(getDealFareDirectnessLabel(deal, NOW_ISO)).toBeUndefined();
+    expect(getDealFareDirectnessLabel(deal, NOW_ISO)).toBe('Connecting');
   });
 
   it('a connecting fare on a route with any status never receives "Direct flight"', () => {
@@ -82,19 +82,19 @@ describe('getDealFareDirectnessLabel — a route being direct never implies a sp
     for (const id of ['lhr-del-economy', 'bhx-atq-economy']) {
       const deal = deals.find((d) => d.id === id)!;
       expect(deal, id).toBeDefined();
-      expect(getDealFareDirectnessLabel(deal, historicalNowIso), id).toBeUndefined();
+      expect(getDealFareDirectnessLabel(deal, historicalNowIso), id).toBe('Connecting');
     }
   });
 
   it('bhx-atq-economy: current full round-trip evidence supports a Connecting badge', () => {
     const deal = deals.find((d) => d.id === 'bhx-atq-economy')!;
-    expect(getDealFareDirectnessLabel(deal, NOW_ISO)).toBeUndefined();
+    expect(getDealFareDirectnessLabel(deal, NOW_ISO)).toBe('Connecting');
     expect(getDealFareDirectnessLabel(deal, NOW_ISO)).not.toBe('Direct flight');
   });
 
   it('man-lhe-economy correctly moved from "unconfirmed" to "Connecting" once its Batch A observation recorded explicit fareDirectness', () => {
     const deal = deals.find((d) => d.id === 'man-lhe-economy')!;
-    expect(getDealFareDirectnessLabel(deal, NOW_ISO)).toBeUndefined();
+    expect(getDealFareDirectnessLabel(deal, NOW_ISO)).toBe('Connecting');
     expect(getDealFareDirectnessLabel(deal, NOW_ISO)).not.toBe('Direct flight');
   });
 
@@ -133,27 +133,22 @@ describe('getDealFareDirectnessLabel — a route being direct never implies a sp
 });
 
 describe('FareRangeSummary.observedDirectness aggregates per-observation fareDirectness honestly', () => {
-  it('Manchester-Dubai\'s mixed archive does not inherit one observation\'s directness for the whole range', () => {
+  it('Manchester-Dubai classifies the selected connecting period without older trips', () => {
     const range = getFareRangeSummary('manchester-dubai', 'Economy', NOW_ISO);
     expect(range).not.toBeNull();
-    expect(range!.observedDirectness).toBeUndefined();
+    expect(range!.observedDirectness).toBe('connecting');
   });
 
-  it('Manchester-Lahore\'s range does not inherit one observation\'s directness when older entries are unknown', () => {
+  it('Manchester-Lahore classifies only evidence in the selected period', () => {
     const range = getFareRangeSummary('manchester-lahore', 'Economy', NOW_ISO);
     expect(range).not.toBeNull();
-    expect(range!.observedDirectness).toBeUndefined();
+    expect(range!.observedDirectness).toBe('connecting');
   });
 
-  it('Manchester-Islamabad\'s range now reports mixed evidence (undefined), honestly, since the 13 September direct-PIA observation joined the connecting archive already covering this route/cabin', () => {
-    // Before 13 Sept 2026 this range was purely connecting (the 10 August
-    // options). The new direct PIA observation is genuinely publishable
-    // alongside them, so aggregateFareDirectness() correctly refuses to
-    // claim either "direct" or "connecting" once the stated values disagree
-    // -- never averaging or picking a majority, exactly as designed.
+  it('Manchester-Islamabad excludes the older direct PIA travel period from a connecting range', () => {
     const range = getFareRangeSummary('manchester-islamabad', 'Economy', NOW_ISO);
     expect(range).not.toBeNull();
-    expect(range!.observedDirectness).toBeUndefined();
+    expect(range!.observedDirectness).toBe('connecting');
   });
 
   // The "valid" dates are no longer the day before expiry: from 17 Oct 2026
@@ -191,7 +186,7 @@ describe('FareRangeSummary.observedDirectness aggregates per-observation fareDir
     const historicalNowIso = '2026-08-20';
     const range = getFareRangeSummary('manchester-mumbai', 'Economy', historicalNowIso);
     expect(range).not.toBeNull();
-    expect(range!.observedDirectness).toBeUndefined();
+    expect(range!.observedDirectness).toBe('connecting');
   });
 
   it('the fareDirectness field is optional and, when stated, is always one of the three valid values', () => {

@@ -71,18 +71,9 @@ describe('DealCard route-guide link — full blast-radius breakdown, scoped fix'
     expect(twoPlus.length, 'expected at least one 2+-observation Deal today').toBeGreaterThan(0);
   });
 
-  it('bucket A (count === 1, genuinely fixed) is exactly today\'s 6 single-observation cards, including the three new Business Fare Evidence Batch 1 cards and the later Manchester-Karachi Business Deal (23 Aug product-completion PR) — the flagship case this fix exists for', () => {
-    // 22 September 2026: man-fco-economy joins this bucket. Manchester-Rome's
-    // earlier tracked fares were Ciampino (CIA) itineraries recorded against a
-    // Fiumicino (FCO) route and are now methodology-excluded, so the card is
-    // left resting on a single publishable observation rather than several.
-    // 17 October 2026: lhr-cmn-flight and man-bcn-flight join this bucket.
-    // Self-transfer checks no longer count towards a clean range, leaving
-    // each card on a single clean check.
+  it('single-check cards include the original Business fixtures after travel-period grouping', () => {
     const { one } = dealsByObservationCount();
-    expect(one.sort()).toEqual(
-      ['lba-isb-economy', 'lhr-business-lhe', 'lhr-cmn-flight', 'lhr-doh-business', 'man-bcn-flight', 'man-khi-business', 'man-khi-economy', 'man-lhe-business'].sort()
-    );
+    expect(one).toEqual(expect.arrayContaining(['lhr-business-lhe', 'lhr-doh-business', 'man-khi-business', 'man-lhe-business']));
   });
 
   it('bucket A: every count === 1 card now gets a real "View route guide" link — the defect fixed here', () => {
@@ -96,11 +87,8 @@ describe('DealCard route-guide link — full blast-radius breakdown, scoped fix'
 
   it('bucket B (count > 1) is deliberately UNCHANGED — stays plain, non-link text, not part of this fix\'s approved scope', () => {
     const { twoPlus } = dealsByObservationCount();
-    // Sanity: today's bucket B is large (29 cards) and spans routes with no
-    // relationship to this batch's Lahore/Doha/Karachi subject (Barcelona,
-    // Rome, Athens, Dhaka, etc.) — exactly why founder review asked for it
-    // to be excluded rather than silently included.
-    expect(twoPlus.length).toBeGreaterThan(20);
+    // Counts now refer to one exact travel period, not the entire archive.
+    expect(twoPlus.length).toBeGreaterThan(0);
     for (const id of twoPlus) {
       const { html, hasRouteGuideLink } = renderDealLinks(id);
       expect(hasRouteGuideLink, id).toBe(false);

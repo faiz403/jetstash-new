@@ -153,8 +153,10 @@ describe('No fabricated fare ever appears for this route', () => {
     const range = getFareRangeSummary('manchester-mumbai', 'Economy', '2026-08-18');
     expect(range).not.toBeNull();
     expect(range!.min).toBe(445);
-    expect(range!.max).toBe(461);
-    expect(range!.sources).toEqual(['Gulf Air', 'Etihad']);
+    expect(range!.max).toBe(445);
+    expect(range!.sources).toEqual(['Etihad']);
+    expect(range!.departureDate).toBe('2026-10-13');
+    expect(range!.returnDate).toBe('2026-10-27');
   });
 
   it('the Economy prototype copy contains no currency figure', () => {
