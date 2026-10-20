@@ -438,10 +438,11 @@ describe('Fare-observation publication predicate — pure, synthetic-fixture-tes
     const GENUINELY_EVIDENCED_ISO = '2026-08-25';
     const range = getFareRangeSummary('manchester-lahore', 'Economy', GENUINELY_EVIDENCED_ISO);
     expect(range).not.toBeNull();
-    expect(range!.count).toBeGreaterThanOrEqual(2);
-    // £538 is a self-transfer check, which no longer sets a clean range's
-    // minimum (deal-card trust fix, 17 Oct 2026); £574 is the lowest clean check.
-    expect(range!.min).toBe(574);
+    expect(range!.count).toBe(1);
+    expect(range!.departureDate).toBe('2026-10-13');
+    expect(range!.returnDate).toBe('2026-10-27');
+    // The newest eligible clean period contains the 18 August Etihad check.
+    expect(range!.min).toBe(628);
     expect(range!.sources).toContain('Etihad');
   });
 });

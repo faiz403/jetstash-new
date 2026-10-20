@@ -22,6 +22,19 @@ rate limiting rather than the current process-local limiter.
 
 **Production site:** `https://jetstash.co.uk`
 
+## Fare-range travel-period correction — 20 October 2026 (local only, awaiting independent review)
+
+Founder-approved implementation on `codex/fare-range-travel-window`, based on `e744cff`.
+Deal-card ranges now use one exact departure/return pair, selected from the newest eligible
+check after the existing clean-ticket preference. Cards name that travel period separately
+from check dates and qualify differences in baggage and fare conditions. No observation
+was ingested or edited; the proposed Manchester–Dubai Emirates fare remains outside this task.
+The fixed-date comparison covers all 89 routes and three cabins: 17 summaries narrow to one
+period, including six curated flight cards; all 201 previously hidden summaries remain hidden.
+Publication eligibility, Fare Signals, route verification and affiliate behaviour are unchanged.
+See [the review record](FARE_RANGE_TRAVEL_PERIOD_REVIEW_2026-10-20.md) for the complete impact,
+validation evidence and independent-review instructions. This is not a Production release.
+
 ## Gatwick→Istanbul airport-integrity correction — 19 October 2026 (local branch, not merged)
 
 - **Branch:** founder-approved local fix on `fix/lgw-ist-airport-integrity` from `f829244`.

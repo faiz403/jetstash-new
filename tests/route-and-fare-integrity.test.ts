@@ -118,16 +118,14 @@ describe('Fare-observation completeness gating (TR-002) — Verified Check must 
     const CONTROLLED_WEEKLY_CHECK_ISO = '2026-08-25';
     const range = getFareRangeSummary('manchester-lahore', 'Economy', CONTROLLED_WEEKLY_CHECK_ISO);
     expect(range).not.toBeNull();
-    // Deal-card trust fix (17 Oct 2026): the two self-transfer checks
-    // (£538 and the 25 August pair) no longer set a clean range's minimum,
-    // so the range is the five clean Etihad/Turkish checks.
-    expect(range!.count).toBe(5);
-    expect(range!.min).toBe(574);
-    expect(range!.max).toBe(638);
-    expect(range!.earliestDate).toBe('2026-07-28');
+    // Only the newest eligible clean check's 13-27 October travel period counts.
+    expect(range!.count).toBe(1);
+    expect(range!.min).toBe(628);
+    expect(range!.max).toBe(628);
+    expect(range!.earliestDate).toBe('2026-08-18');
     expect(range!.latestDate).toBe('2026-08-18');
-    expect(range!.sources).toEqual(['Etihad', 'Turkish Airlines']);
-    expect(range!.observedDirectness).toBeUndefined();
+    expect(range!.sources).toEqual(['Etihad']);
+    expect(range!.observedDirectness).toBe('connecting');
   });
 });
 
@@ -871,10 +869,8 @@ describe('FARE-001 pilot — historic examples stay private; only fully dated, e
     // Classification B: the 18 August 2026 Weekly Full Fare Refresh #1
     // observation this test names is after this file's FIXED_TODAY.
     const WEEKLY_FULL_FARE_REFRESH_1_ISO = '2026-08-18';
-    // 2026-08-18: Weekly Full Fare Refresh #1 added a second complete
-    // observation (Etihad, £450), alongside the existing 13 August one
-    // (Gulf Air, £424).
-    expect(getFareRangeSummary('london-heathrow-mumbai', 'Economy', WEEKLY_FULL_FARE_REFRESH_1_ISO)).toMatchObject({ count: 2, min: 424, max: 450 });
+    // The complete 18 August check selects a different travel pair from 13 August.
+    expect(getFareRangeSummary('london-heathrow-mumbai', 'Economy', WEEKLY_FULL_FARE_REFRESH_1_ISO)).toMatchObject({ count: 1, min: 450, max: 450, departureDate: '2026-10-13', returnDate: '2026-10-27' });
   });
 
   it('keeps every remaining methodology-excluded or structurally-incomplete observation out of public output, even once its own route has other publishable data', () => {

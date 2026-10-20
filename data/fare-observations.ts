@@ -1588,6 +1588,9 @@ export function getLatestPublishableObservation(routeSlug: string, nowIso: strin
 }
 
 export interface FareRangeSummary {
+  /** Exact travel dates shared by every check in this summary. */
+  departureDate: string;
+  returnDate: string;
   count: number;
   min: number;
   max: number;
@@ -1646,6 +1649,43 @@ export function aggregateFareDirectness(
   return observations.every((observation) => observation.fareDirectness === first) ? first : undefined;
 }
 
+/** Strict date-only travel evidence; never infer dates from notes or search URLs. */
+export function hasValidFareRangeTravelDates(
+  observation: Pick<FareObservation, 'departureDate' | 'returnDate'>,
+): boolean {
+  const isDate = (value: string | undefined): value is string => {
+    if (!value || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+    const time = Date.parse(value + 'T12:00:00Z');
+    return Number.isFinite(time) && new Date(time).toISOString().slice(0, 10) === value;
+  };
+  return isDate(observation.departureDate)
+    && isDate(observation.returnDate)
+    && observation.returnDate > observation.departureDate;
+}
+
+/**
+ * Select one exact travel period from an already publication/lead-time-gated pool.
+ * Preserve the global clean-ticket preference before selecting the newest check's
+ * period. Same-day anchors prefer the lowest price, then departure, return and ID.
+ * Date equality is necessary for a range, not evidence of equal baggage or terms.
+ */
+export function selectFareRangeTravelPeriod(observations: FareObservation[]): FareObservation[] {
+  const dated = observations.filter(hasValidFareRangeTravelDates);
+  const clean = dated.filter((observation) => !isSelfTransferItinerary(observation.priceNote));
+  const pool = clean.length > 0 ? clean : dated;
+  const anchor = [...pool].sort((a, b) =>
+    b.observedDate.localeCompare(a.observedDate)
+      || a.price - b.price
+      || a.departureDate!.localeCompare(b.departureDate!)
+      || a.returnDate!.localeCompare(b.returnDate!)
+      || a.id.localeCompare(b.id),
+  )[0];
+  if (!anchor) return [];
+  return pool.filter((observation) => observation.departureDate === anchor.departureDate
+      && observation.returnDate === anchor.returnDate)
+    .sort((a, b) => a.observedDate.localeCompare(b.observedDate) || a.id.localeCompare(b.id));
+}
+
 /**
  * Derives an honest price range from real logged observations — never a
  * "current price" claim. A single observation still returns a summary
@@ -1663,8 +1703,7 @@ export function getFareRangeSummary(routeSlug: string, cabin: DealCabin, nowIso:
   // minimum. The archive itself is untouched.
   const promotable = getPublishableObservationsByRouteAndCabin(routeSlug, cabin, nowIso)
     .filter((o) => meetsPromotedDepartureLeadTime(o.departureDate, nowIso));
-  const clean = promotable.filter((o) => !isSelfTransferItinerary(o.priceNote));
-  const observations = clean.length > 0 ? clean : promotable;
+  const observations = selectFareRangeTravelPeriod(promotable);
   if (observations.length === 0) return null;
   const prices = observations.map((o) => o.price);
   const observedDirectness = aggregateFareDirectness(observations);
@@ -1676,6 +1715,8 @@ export function getFareRangeSummary(routeSlug: string, cabin: DealCabin, nowIso:
   const route = getRouteBySlug(routeSlug);
   const destinationIataCode = route ? getDestinationBySlug(route.destinationSlug)?.iataCode ?? null : null;
   return {
+    departureDate: minimumObservation.departureDate!,
+    returnDate: minimumObservation.returnDate!,
     count: observations.length,
     min: minimumObservation.price,
     max: Math.max(...prices),
