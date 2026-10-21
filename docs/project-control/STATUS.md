@@ -22,6 +22,15 @@ rate limiting rather than the current process-local limiter.
 
 **Production site:** `https://jetstash.co.uk`
 
+## Manchester–Dubai re-verification — 21 October 2026 (local only, awaiting independent review)
+
+Founder-approved route-data correction on `data/man-dxb-reverify-2026-10-21`, based on `28bbf00`. It is separate from the SEO indexing pilot, and that pilot's Manchester–Dubai Quick answers depend on it.
+- **Source check:** Emirates' own route page, fetched 21 October 2026, still states 21 flights per week. It lists three A380 nonstops a day each way, at 7h05m–7h50m to Dubai and 7h45m–8h10m back.
+- **Correction:** the outdated "8h direct" flight time becomes "About 7–8h direct to Dubai; up to 8h 10m back".
+- **Review cadence:** STABLE, 90 days, so the next review is due 19 January 2027.
+- **Unchanged:** no fare, affiliate link or other route is changed.
+- **Evidence:** kept outside the repository in `C:\Users\faiz2\jetstash-route-reverification-2026-10-21\`.
+
 ## Fare-range travel-period correction — 20 October 2026 (local only, awaiting independent review)
 
 Founder-approved implementation on `codex/fare-range-travel-window`, based on `e744cff`.
