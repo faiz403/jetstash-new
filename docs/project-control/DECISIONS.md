@@ -5,6 +5,33 @@ evidence and an explicit founder decision.
 
 ## Approved
 
+### SEO maintenance mode — narrow 28-day indexing-pilot exception — 21 October 2026
+
+Founder-approved after the 21 October 2026 read-only indexing diagnosis. Only 27 of 89 route pages were indexed, and 99 URLs had never been crawled, with no technical blocker. SEO otherwise stays in maintenance mode, and the build freeze below still applies to everything outside this exception.
+
+**In scope:**
+- **Internal links.** Server-rendered route-guide links on existing pages (`/` and the three pilot pages). Targets are chosen only through `lib/seo-indexing-pilot.ts`'s gate: Direct or Connecting under Route Status, **and** current route-level verification.
+- **Three-page content pilot.** Evidence-led "Quick answers" on exactly three existing pages: `/routes/manchester-islamabad`, `/routes/manchester-dubai` and `/routes/birmingham-delhi`. Each answer states only what that route's cited primary source supports. It is bound to that exact verification check, and is withdrawn if the check lapses or changes.
+- **One indexing request batch** of at most 5 URLs, made only after the above are live in Production and separately approved.
+
+**Excluded:**
+- new pages or routes, and mass-generated content;
+- Wave 2 content changes;
+- title changes to Manchester–Lahore or Manchester–Mumbai before the 1–2 November readout;
+- FAQ schema;
+- mass indexing requests and sitemap submissions;
+- paid tools;
+- any `noindex` or removal;
+- any change to fares, fare observations, affiliate links, route verification or publication eligibility;
+- promoting a verification-pending route.
+
+**Measurement:**
+- **Baseline:** 27/89 route pages indexed, observed 21 October 2026, from Search Console data dated 12 October.
+- **Targets:** minimum signal 32; 28-day ambition 37–42; 90-day stretch 60+ subject to evidence and further approval. These are targets, not forecasts.
+- **Window:** the 28 days start at an approved Production deployment, with checkpoints at days 0, 7, 14 and 28. Obvious blockers are reported immediately.
+- **At day 28:** the founder decides whether to scale, adjust or return fully to maintenance mode.
+- **Full record:** `SEO_INDEXING_PILOT_2026-10-21.md`.
+
 ### Astra programme closure — build freeze, validation mode, 90-day first-booking goal — 14 September 2026
 
 Reconciled `main` at `2f1ede5136c3d4d63d947df6da07607130f840a6` (PR #272) after the full Astra
