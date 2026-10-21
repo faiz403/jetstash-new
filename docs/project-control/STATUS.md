@@ -22,6 +22,21 @@ rate limiting rather than the current process-local limiter.
 
 **Production site:** `https://jetstash.co.uk`
 
+## Manchester–Doha truth correction and Heathrow–Doha evidence gap — 21 October 2026 (local only)
+
+Founder-approved route-data correction on `data/man-doh-truth-correction-2026-10-21`, from `56f90da`.
+- **Manchester–Doha:** Manchester Airport's own Qatar Airways page states "Qatar Airways flies direct to Doha".
+  Qatar Airways' own route page now says only that it "operates flights" and gives no duration or
+  frequency. The unsupported "Under 7h" flight time, "regular"/"high frequency" wording, the comparison
+  with South Asia routes and the route-specific school-holiday premium and peak-demand periods are removed;
+  direct service is kept. STABLE, 90 days, review due 19 January 2027.
+- **Heathrow–Doha (unresolved, record unchanged):** Qatar Airways' London page no longer states direct
+  service or the "just under seven hours" its 4 October record cites, and no Heathrow or Qatar timetable
+  source was found. Per the cadence policy it is not re-dated: it lapses after 3 November 2026 and the
+  route page falls back to Verification pending until fresh official evidence is found.
+- **Evidence:** kept outside the repository in `C:\Users\faiz2\jetstash-route-reverification-2026-10-21\doha\`.
+- **Unchanged:** fares, affiliate links, other route records and Arrive By's airport release configuration.
+
 ## SEO indexing pilot — 21 October 2026 (PR for review; not merged, not deployed)
 
 Founder-approved 28-day experiment on `seo/indexing-pilot-2026-10-21`, based on `eaa4f48` (main after PR #340). It is the narrow exception recorded in DECISIONS.md; SEO otherwise stays in maintenance mode.
