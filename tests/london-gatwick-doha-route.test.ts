@@ -81,14 +81,15 @@ describe('7. Doha ukAirports includes London Gatwick', () => {
 });
 
 describe('8. Existing sibling Doha routes are unchanged', () => {
-  it('london-heathrow-doha, manchester-doha, birmingham-doha are untouched', () => {
+  it('london-heathrow-doha and birmingham-doha are untouched; manchester-doha carries only its 21 Oct 2026 truth correction', () => {
     const lhr = getRouteByAirportAndDestination('london-heathrow', 'doha')!;
     const man = getRouteByAirportAndDestination('manchester', 'doha')!;
     const bhx = getRouteByAirportAndDestination('birmingham', 'doha')!;
     expect(lhr.flightTime).toBe('Direct; duration varies by schedule');
     expect(lhr.verification?.verifiedDate).toBe('2026-10-04');
-    expect(man.flightTime).toBe('Under 7h direct (Qatar Airways route page)');
-    expect(man.verification?.verifiedDate).toBe('2026-08-18');
+    expect(man.flightTime).toBe('Direct service listed by Manchester Airport; check the exact flight for duration');
+    expect(man.verification?.verifiedDate).toBe('2026-10-21');
+    expect(man.isDirect).toBe(true);
     expect(bhx.isDirect).toBe(true);
   });
 });

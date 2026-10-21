@@ -534,19 +534,19 @@ describe('Direct-route share-text formatting fix — no nested parentheses, no r
     expect(p.shareText).not.toMatch(/[()]/);
   });
 
-  it('a direct route with an existing attribution qualifier (manchester-doha, "Under 7h direct (Qatar Airways route page)") preserves the attribution and drops only the word "direct"', () => {
-    // Previously fixtured on london-heathrow-jeddah, whose flightTime text
-    // changed (Route Intelligence Freshness rolling-review, TR-010 Round 4,
-    // 3 September 2026 -- British Airways removed as an operator). This test
-    // is about the general share-text formatting behaviour, not about that
-    // specific route, so it's repointed to another real route carrying the
-    // same "direct (attribution)" pattern.
-    const route = getRouteBySlug('manchester-doha')!;
-    expect(route.flightTime).toBe('Under 7h direct (Qatar Airways route page)');
+  it('a direct route with an existing attribution qualifier (glasgow-dubai, "7h 40m direct (Emirates route page)") preserves the attribution and drops only the word "direct"', () => {
+    // Previously fixtured on london-heathrow-jeddah, then manchester-doha;
+    // both flightTime texts changed after fresh route checks (manchester-doha:
+    // 21 October 2026 truth correction removed the unsupported "Under 7h").
+    // This test is about the general share-text formatting behaviour, not
+    // about a specific route, so it's repointed to another real route
+    // carrying the same "direct (attribution)" pattern.
+    const route = getRouteBySlug('glasgow-dubai')!;
+    expect(route.flightTime).toBe('7h 40m direct (Emirates route page)');
     const p = getRoutePresentation(route, FIXED_TODAY);
     expect(p.status).toBe('direct');
-    expect(p.shareText).toContain('Under 7h (Qatar Airways route page)');
-    expect(p.shareText).not.toContain('direct (Qatar');
+    expect(p.shareText).toContain('7h 40m (Emirates route page)');
+    expect(p.shareText).not.toContain('direct (Emirates');
   });
 
   it('connecting-route share text is unaffected by this fix — birmingham-mumbai\'s message is unchanged', () => {
