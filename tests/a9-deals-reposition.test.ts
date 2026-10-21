@@ -65,7 +65,8 @@ describe('Main and footer navigation no longer say "Deals"', () => {
   });
 
   it('no other nav or footer entry was touched by this change', () => {
-    expect(mainNav.map((item) => item.label)).toEqual(['Routes', 'Destinations', 'UK Airports', 'Travel Ready', 'Guides', 'Tracked Fares']);
+    // 'Arrive By' was added separately (founder direction, 21 October 2026).
+    expect(mainNav.map((item) => item.label)).toEqual(['Routes', 'Destinations', 'UK Airports', 'Travel Ready', 'Arrive By', 'Guides', 'Tracked Fares']);
     expect(footerNav.explore.map((item) => item.label)).toEqual(['All Routes', 'All Destinations', 'UK Airports', 'Travel Ready Check', 'Travel Guides']);
   });
 });

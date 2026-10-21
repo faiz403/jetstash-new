@@ -1,7 +1,7 @@
 # SEO indexing pilot: baseline, targets and measurement plan
 
 - **Approved:** by the founder on 21 October 2026. This is a narrow exception to SEO maintenance mode; see DECISIONS.md.
-- **Status:** on branch `seo/indexing-pilot-2026-10-21`, based on `eaa4f48` (main after PR #340). Opened as a PR for review; not merged, not deployed.
+- **Status:** LIVE. Merged as PR #341 (`56f90da`); Production deployment 21 October 2026 12:48 UTC, which is Day 0. Checkpoints: Day 7 on 28 October, Day 14 on 4 November, Day 28 on 18 November 2026.
 - **Measurement start:** the 28-day window starts on the day an approved Production deployment goes live, not when local work began.
 
 ## Why

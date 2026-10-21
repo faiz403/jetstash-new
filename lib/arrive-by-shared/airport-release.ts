@@ -18,8 +18,10 @@
  * registry and are unaffected by this table. A `temporarily_unsupported`
  * kill switch beats any release status.
  *
- * ARRIVE_BY_RELEASED_AIRPORTS is empty on purpose. Adding an entry is the
- * Phase D public-rollout decision, not something a probe can do.
+ * Adding an entry is the Phase D public-rollout decision, made airport by
+ * airport, never something a probe can do. Each release is bound to an
+ * evidence review date: once that date passes without a fresh probe and an
+ * updated entry, the airport falls back to internal_only (fail closed).
  */
 
 export type GenericAirportReleaseStatus = 'internal_only' | 'public_beta' | 'public';
@@ -30,16 +32,34 @@ export interface ReleaseEntry {
   decidedDate: string;
   /** Who/what approved it -- never blank, so a release is never an unexplained flag. */
   approvedNote: string;
+  /** Last day (inclusive, UTC) the release stands on its recorded capability evidence. After it, the airport is internal_only again. */
+  evidenceReviewDueDate: string;
 }
 
 /** Keyed by IATA. Absent = internal_only. */
-export const ARRIVE_BY_RELEASED_AIRPORTS: Readonly<Record<string, ReleaseEntry>> = {};
+export const ARRIVE_BY_RELEASED_AIRPORTS: Readonly<Record<string, ReleaseEntry>> = {
+  // Doha-only public beta first (founder direction, 21 October 2026). Capability evidence: Phase C
+  // live probe 30 September 2026 (identity 0.72 km from the catalogue point; DRIVE to Al Khor
+  // confirmed). Road-only, airport-level estimates; same-country destinations only. Review 90 days
+  // after the probe.
+  DOH: {
+    status: 'public_beta',
+    decidedDate: '2026-10-21',
+    approvedNote: 'Founder direction 21 Oct 2026: Doha-only Arrive By public beta first, before the other evidenced airports; takes effect only with a separately approved Production release.',
+    evidenceReviewDueDate: '2026-12-29',
+  },
+};
+
+const todayUtc = () => new Date().toISOString().slice(0, 10);
 
 export function getGenericAirportRelease(
   code: string,
   table: Readonly<Record<string, ReleaseEntry>> = ARRIVE_BY_RELEASED_AIRPORTS,
+  nowIso: string = todayUtc(),
 ): GenericAirportReleaseStatus {
-  return table[code]?.status ?? 'internal_only';
+  const entry = table[code];
+  if (!entry || nowIso.slice(0, 10) > entry.evidenceReviewDueDate) return 'internal_only';
+  return entry.status;
 }
 
 export function isPubliclyReleased(status: GenericAirportReleaseStatus): boolean {
@@ -50,6 +70,8 @@ export function assertValidReleaseEntry(code: string, entry: ReleaseEntry): void
   if (!/^[A-Z]{3}$/.test(code)) throw new Error(`Release entry ${code}: not an IATA code.`);
   if (!/^\d{4}-\d{2}-\d{2}$/.test(entry.decidedDate)) throw new Error(`Release entry ${code}: decidedDate must be YYYY-MM-DD.`);
   if (!entry.approvedNote.trim()) throw new Error(`Release entry ${code}: an approval note is required.`);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(entry.evidenceReviewDueDate)) throw new Error(`Release entry ${code}: evidenceReviewDueDate must be YYYY-MM-DD.`);
+  if (entry.evidenceReviewDueDate <= entry.decidedDate) throw new Error(`Release entry ${code}: evidenceReviewDueDate must be after decidedDate.`);
 }
 
 for (const [code, entry] of Object.entries(ARRIVE_BY_RELEASED_AIRPORTS)) assertValidReleaseEntry(code, entry);
