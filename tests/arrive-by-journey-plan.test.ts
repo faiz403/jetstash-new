@@ -469,7 +469,9 @@ describe('scope: public full journey and arrival-only compatibility', () => {
     expect(read('lib', 'arrive-by-journey', 'solver.ts')).toContain("from '../arrive-by-shared/format'");
   });
 
-  it('the release table is untouched: no worldwide release, MAN/ISB/LHE/KHI remain the only public airports', () => {
-    expect(read('lib', 'arrive-by-shared', 'airport-release.ts')).toMatch(/ARRIVE_BY_RELEASED_AIRPORTS: Readonly<Record<string, ReleaseEntry>> = \{\};/);
+  it('only Doha is released: no worldwide release beyond MAN/ISB/LHE/KHI and the Doha beta', () => {
+    const src = read('lib', 'arrive-by-shared', 'airport-release.ts');
+    const releasedCodes = [...src.matchAll(/^\s{2}([A-Z]{3}): \{/gm)].map((m) => m[1]);
+    expect(releasedCodes).toEqual(['DOH']);
   });
 });

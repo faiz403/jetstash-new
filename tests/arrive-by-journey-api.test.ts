@@ -539,7 +539,9 @@ describe('the internal UI and its non-public status', () => {
     expect(page).toContain('getDepartureAirportOptions()');
   });
 
-  it('nothing is released: the release table is still empty', () => {
-    expect(read('lib', 'arrive-by-shared', 'airport-release.ts')).toMatch(/ARRIVE_BY_RELEASED_AIRPORTS: Readonly<Record<string, ReleaseEntry>> = \{\};/);
+  it('only Doha is released: no worldwide release beyond MAN/ISB/LHE/KHI and the Doha beta', () => {
+    const src = read('lib', 'arrive-by-shared', 'airport-release.ts');
+    const releasedCodes = [...src.matchAll(/^\s{2}([A-Z]{3}): \{/gm)].map((m) => m[1]);
+    expect(releasedCodes).toEqual(['DOH']);
   });
 });

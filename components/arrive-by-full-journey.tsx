@@ -6,6 +6,7 @@ import { ArriveByIntroduction } from '@/components/arrive-by-introduction';
 import { ArriveByMissedServiceDetails, ArriveByReadyBySummary, ArriveByRoadEstimateDisclosure, ArriveByScheduledFlightDisclosure } from '@/components/arrive-by-result-explanations';
 import { calendarDayOffset, clockOf, dateLabelOf, describeDay } from '@/lib/arrive-by-journey/local-time';
 import type { AirportOption } from '@/lib/arrive-by-journey/airport-options';
+import { describeOnwardCoverage } from '@/lib/arrive-by-journey/coverage-copy';
 import type { PublicJourneyRoutePair } from '@/lib/arrive-by-journey/public-route-pairs';
 import type { JourneyPlan, TimelineLeg } from '@/lib/arrive-by-journey/types';
 import type { BetaInteraction } from '@/lib/arrive-by-journey/beta-metrics';
@@ -210,7 +211,7 @@ export function ArriveByFullJourney({ departureAirports, arrivalAirports, initia
     <p className="mt-3 max-w-3xl text-ink-600">Start → departure airport → flight → arrival airport → final destination. Enter your own flight times and buffers; Arrive By checks the supported live onward journeys and works out when to leave.</p>
     <ul className="mt-3 max-w-3xl list-disc space-y-1 pl-5 text-sm text-ink-500">
       <li>Flight times are entered by you — Arrive By does not track a live flight.</li>
-      <li>Onward planning currently supports Manchester, Islamabad, Lahore and Karachi. Estimates are airport-level, not terminal-level.</li>
+      <li>{describeOnwardCoverage(arrivalAirports)} Estimates are airport-level, not terminal-level.</li>
       <li>Transport conditions and schedules can change.</li>
     </ul>
 

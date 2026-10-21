@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { getPublicJourneyRoutePair, getPublicJourneyRoutePairs } from '@/lib/arrive-by-journey/public-route-pairs';
 
 const read = (...parts: string[]) => readFileSync(join(process.cwd(), ...parts), 'utf8');
@@ -10,11 +10,24 @@ const routePage = read('app', 'routes', '[slug]', 'page.tsx');
 const homepage = read('components', 'homepage-v2', 'homepage-sections.tsx');
 
 describe('Arrive By final site integration', () => {
+  afterEach(() => { vi.useRealTimers(); });
+
   it('exposes only verified public route pairs for contextual route panels', () => {
-    const pairs = getPublicJourneyRoutePairs();
+    // Fixed baseline: route pairs follow each route's dated presentation, so the real clock would make this drift.
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date('2026-10-21T12:00:00Z'));
+    const pairs = getPublicJourneyRoutePairs('2026-10-21');
     expect(pairs.length).toBeGreaterThan(0);
-    expect(getPublicJourneyRoutePair('MAN', 'ISB')).toMatchObject({ routeSlug: 'manchester-islamabad' });
-    expect(getPublicJourneyRoutePair('MAN', 'DXB')).toBeUndefined();
+    expect(getPublicJourneyRoutePair('MAN', 'ISB', '2026-10-21')).toMatchObject({ routeSlug: 'manchester-islamabad' });
+    expect(getPublicJourneyRoutePair('MAN', 'DXB', '2026-10-21')).toBeUndefined();
+  });
+
+  it('removes a route panel once the route page stops presenting it as Direct or Connecting', () => {
+    // Manchester-Islamabad's 17 Oct check is due 16 Nov 2026 (inclusive); without re-verification it presents as unverified after.
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date('2026-11-16T12:00:00Z'));
+    expect(getPublicJourneyRoutePair('MAN', 'ISB', '2026-11-16')).toMatchObject({ routeSlug: 'manchester-islamabad' });
+    expect(getPublicJourneyRoutePair('MAN', 'ISB', '2026-11-17')).toBeUndefined();
   });
 
   it('accepts an allowlisted full-journey airport pair without changing the legacy airport-only dispatch', () => {
@@ -33,7 +46,7 @@ describe('Arrive By final site integration', () => {
   });
 
   it('limits route panels to public capability-backed pairs and keeps homepage discovery secondary', () => {
-    expect(routePage).toContain('getPublicJourneyRoutePair(airport.code, dest.iataCode)');
+    expect(routePage).toContain('getPublicJourneyRoutePair(airport.code, dest.iataCode, nowIso)');
     expect(routePage).toContain('ArriveByRoutePanel');
     expect(homepage).toContain("title: 'The flight is only part of the journey'");
     expect(homepage).toContain("href: '/arrive-by'");

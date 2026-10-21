@@ -22,9 +22,25 @@ rate limiting rather than the current process-local limiter.
 
 **Production site:** `https://jetstash.co.uk`
 
-## SEO indexing pilot — 21 October 2026 (PR for review; not merged, not deployed)
+## Arrive By: Doha-only public beta prepared — 21 October 2026 (local only, not released)
 
-Founder-approved 28-day experiment on `seo/indexing-pilot-2026-10-21`, based on `eaa4f48` (main after PR #340). It is the narrow exception recorded in DECISIONS.md; SEO otherwise stays in maintenance mode.
+Founder-approved narrow amendment to the 3 October Arrive By freeze (see DECISIONS.md), on
+`feat/arrive-by-doha-beta-2026-10-21` from `56f90da`. Goal: Arrive By on all 89 routes, released only where
+journeys genuinely calculate.
+- **Coverage today:** 7 of 89 routes show "Plan with Arrive By" (Manchester to Islamabad, Lahore and Karachi;
+  Birmingham to Islamabad and Lahore; Leeds Bradford to Islamabad; Heathrow to Lahore). 22 more have existing
+  capability evidence (Dubai 7, Doha 4, Delhi 3, Mumbai 3, Ahmedabad 3, Dhaka 2); 60 need new evidence.
+- **This change:** releases Doha only, as a public beta bound to a 29 December 2026 evidence review date
+  (fail closed after it); a route page offers Arrive By only while it presents the route as Direct or
+  Connecting; planner coverage wording is generated from the live airport list and says which arrivals are
+  road-only; "Arrive By" joins the desktop and mobile navigation. `/arrive-by` stays noindex and out of the
+  sitemap; call budget and rate limits are unchanged.
+- **Release:** planned after the SEO pilot's Day 28 assessment (18 November 2026), with separate approval.
+
+## SEO indexing pilot — 21 October 2026 (LIVE via PR #341; Day 0 = 21 October 2026)
+
+Founder-approved 28-day experiment, merged as PR #341 (`56f90da`) and verified in Production on 21 October 2026.
+Checkpoints: Day 7 on 28 October, Day 14 (Wave 2 gate) on 4 November, Day 28 on 18 November. It is the narrow exception recorded in DECISIONS.md; SEO otherwise stays in maintenance mode.
 - **Why:** Google has indexed only 27 of 89 route pages, and 99 URLs show "Discovered – currently not indexed" with no crawl. There is no technical blocker. The homepage exposed one server-rendered route link.
 - **Change:**
   - Gated, server-rendered route-guide links on the homepage and three pilot pages.
@@ -32,7 +48,7 @@ Founder-approved 28-day experiment on `seo/indexing-pilot-2026-10-21`, based on 
   - The first Codex review on 21 Oct returned FAIL with no P0/P1; its P2/P3 findings are fixed. The Codex re-review returned PASS; its two P3 wording points are also fixed.
   - Manchester–Dubai's answers now render, because the 21 Oct check they are bound to landed in PR #340.
 - **Unchanged:** fares, affiliate links, route verification, titles (including the Lahore/Mumbai experiment) and the sitemap.
-- **Measurement:** the 28-day window starts only at an approved Production deployment.
+- **Measurement:** the 28-day window started at the Production deployment on 21 October 2026. Baseline: 27 of 89 route pages indexed (Search Console Page indexing, last updated 12 October 2026).
 - **Risk:** Manchester–Islamabad's review falls due on 16 Nov, inside the window. Its winter operating-day check is due on or after 27 Oct.
 - **Details:** baseline, targets, checkpoints and that risk are in [the pilot record](SEO_INDEXING_PILOT_2026-10-21.md).
 
@@ -45,7 +61,7 @@ Founder-approved route-data correction, merged as PR #340 (`eaa4f48`) and verifi
 - **Unchanged:** no fare, affiliate link or other route is changed.
 - **Evidence:** kept outside the repository in `C:\Users\faiz2\jetstash-route-reverification-2026-10-21\`.
 
-## Fare-range travel-period correction — 20 October 2026 (local only, awaiting independent review)
+## Fare-range travel-period correction — 20 October 2026 (DONE, live via PR #339)
 
 Founder-approved implementation on `codex/fare-range-travel-window`, based on `e744cff`.
 Deal-card ranges now use one exact departure/return pair, selected from the newest eligible
@@ -139,10 +155,11 @@ December check stays held. See `JETSTASH_PRINCIPLES.md` §14.4.
 **Arrive By full-journey V1 is LIVE in Production as a limited beta.** This supersedes the older
 Stage 1/Stage 2 "private, founder-only preview" entry further below, which is kept as dated history.
 
-- **Surfaces:** public landing page and planner at `/arrive-by` (deliberately `noindex, follow`, absent
-  from `app/sitemap.ts`, and not in the main nav, mobile nav or footer); a "Try Arrive By" entry point on
-  the homepage; "Plan with Arrive By" on the supported route pages (Manchester to Islamabad, Lahore and
-  Karachi). Legacy `/arrive-by/manchester` and `/arrive-by/pakistan` redirect to the unified shell.
+- **Surfaces (as of 3 October 2026):** public landing page and planner at `/arrive-by` (deliberately `noindex, follow`, absent
+  from `app/sitemap.ts`, and not in the main nav, mobile nav or footer; the 21 October amendment adds it to the
+  main and mobile navigation, see the Doha-only beta entry above); a "Try Arrive By" entry point on
+  the homepage; "Plan with Arrive By" on the supported route pages (seven as of 21 October 2026; see the
+  Doha-only beta entry above). Legacy `/arrive-by/manchester` and `/arrive-by/pakistan` redirect to the unified shell.
 - **Engines:** Manchester (MAN) is `TRANSIT_FIRST` (first-important-service logic, missed-service
   scenario, conditional driving rescue). Islamabad, Lahore and Karachi (ISB / LHE / KHI) are
   `ROAD_PICKUP_FIRST`. Unsupported airports fail closed; no global transit is invented.

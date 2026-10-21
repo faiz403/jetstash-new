@@ -23,6 +23,8 @@ describe('International brand positioning', () => {
       'Destinations',
       'UK Airports',
       'Travel Ready',
+      // Arrive By expansion (founder direction, 21 October 2026).
+      'Arrive By',
       'Guides',
       // A9 reposition (August 2026): 'Deals' -> 'Tracked Fares' — see
       // lib/site-config.ts's own comment on this entry.

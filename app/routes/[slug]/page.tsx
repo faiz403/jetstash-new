@@ -145,7 +145,7 @@ export default async function RoutePage({ params }: { params: Promise<{ slug: st
     notFound();
     return null;
   }
-  const arriveByPair = getPublicJourneyRoutePair(airport.code, dest.iataCode);
+  const arriveByPair = getPublicJourneyRoutePair(airport.code, dest.iataCode, nowIso);
   const seoPilotActive = isSeoPilotPage(route.slug) && isRouteEligibleForSeoLink(route, nowIso);
   const seoRouteLinks = seoPilotActive ? getSeoRouteLinks(nowIso, route.slug) : [];
   const quickAnswers = seoPilotActive ? getQuickAnswersContent(route, nowIso) : null;

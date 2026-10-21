@@ -25,7 +25,9 @@ const read = (...parts: string[]) => readFileSync(join(process.cwd(), ...parts),
 
 const passedChecks = { identityVerified: true, routeProbed: true };
 const evidence = (status: CapabilityEvidence['status']): CapabilityEvidence => ({ status, verifiedDate: '2026-09-30', note: 'test', checks: passedChecks });
-const release = (status: ReleaseEntry['status']): ReleaseEntry => ({ status, decidedDate: '2026-09-30', approvedNote: 'test-only release' });
+const release = (status: ReleaseEntry['status']): ReleaseEntry => ({ status, decidedDate: '2026-09-30', approvedNote: 'test-only release', evidenceReviewDueDate: '2099-12-31' });
+/** A day inside Doha's release window, so shipped-state assertions do not depend on the real clock. */
+const IN_DOHA_WINDOW = new Date('2026-11-20T12:00:00Z');
 
 const originalFetch = global.fetch;
 const originalKey = process.env.GOOGLE_ROUTES_API_KEY;
@@ -88,27 +90,49 @@ describe('capability and release are separate gates', () => {
     expect(() => assertValidReleaseEntry('LHR', { ...release('public'), decidedDate: 'soon' })).toThrow(/YYYY-MM-DD/);
     expect(() => assertValidReleaseEntry('LHR', { ...release('public'), approvedNote: ' ' })).toThrow(/approval note/);
     expect(getGenericAirportRelease('LHR', {})).toBe('internal_only');
+    expect(() => assertValidReleaseEntry('LHR', { ...release('public'), evidenceReviewDueDate: 'later' })).toThrow(/evidenceReviewDueDate must be YYYY-MM-DD/);
+    expect(() => assertValidReleaseEntry('LHR', { ...release('public'), evidenceReviewDueDate: '2026-09-30' })).toThrow(/after decidedDate/);
+  });
+
+  it('a release falls back to internal_only the day after its evidence review date (inclusive)', () => {
+    const table = { LHR: { ...release('public_beta'), evidenceReviewDueDate: '2026-12-29' } };
+    expect(getGenericAirportRelease('LHR', table, '2026-12-29')).toBe('public_beta');
+    expect(getGenericAirportRelease('LHR', table, '2026-12-29T23:59:59Z')).toBe('public_beta');
+    expect(getGenericAirportRelease('LHR', table, '2026-12-30')).toBe('internal_only');
   });
 });
 
 describe('committed live evidence does not expose anything', () => {
-  it('there is real committed evidence, and the release table is empty', () => {
+  afterEach(() => { vi.useRealTimers(); });
+
+  it('there is real committed evidence, and Doha is the only release, bound to its evidence review date', () => {
     expect(Object.keys(shippedEvidence).length).toBeGreaterThan(20);
-    expect(Object.keys(shippedRelease)).toEqual([]);
+    expect(Object.keys(shippedRelease)).toEqual(['DOH']);
+    expect(shippedRelease.DOH).toMatchObject({ status: 'public_beta', evidenceReviewDueDate: '2026-12-29' });
+    expect(shippedEvidence.DOH).toMatchObject({ status: 'road_supported', verifiedDate: '2026-09-30', checks: passedChecks });
   });
 
-  it('every airport with road_supported evidence is still NOT journey-eligible in the shipped state', () => {
-    const supported = Object.entries(shippedEvidence).filter(([, e]) => e.status === 'road_supported').map(([code]) => code);
+  it('every other airport with road_supported evidence is still NOT journey-eligible in the shipped state', () => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(IN_DOHA_WINDOW);
+    const supported = Object.entries(shippedEvidence).filter(([code, e]) => e.status === 'road_supported' && code !== 'DOH').map(([code]) => code);
     expect(supported.length).toBeGreaterThan(20);
     for (const code of supported) {
       expect(getAirportCapability(code), code).toMatchObject({ status: 'road_supported', capabilityApproved: true, releaseStatus: 'internal_only', journeyEligible: false });
       expect(getRoadAirportInfo(code), code).toBeUndefined();
     }
+    expect(getAirportCapability('DOH')).toMatchObject({ status: 'road_supported', releaseStatus: 'public_beta', journeyEligible: true });
   });
 
-  it('across the whole catalogue, exactly the four explicit profiles are publicly eligible', () => {
-    const eligible = getCatalogueAirports().filter((a) => getAirportCapability(a.iata)?.journeyEligible).map((a) => a.iata).sort();
-    expect(eligible).toEqual(['ISB', 'KHI', 'LHE', 'MAN']);
+  it('across the whole catalogue, the four explicit profiles plus Doha are publicly eligible, and Doha drops out after its review date', () => {
+    const eligible = () => getCatalogueAirports().filter((a) => getAirportCapability(a.iata)?.journeyEligible).map((a) => a.iata).sort();
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(IN_DOHA_WINDOW);
+    expect(eligible()).toEqual(['DOH', 'ISB', 'KHI', 'LHE', 'MAN']);
+    vi.setSystemTime(new Date('2026-12-29T23:00:00Z'));
+    expect(eligible()).toEqual(['DOH', 'ISB', 'KHI', 'LHE', 'MAN']);
+    vi.setSystemTime(new Date('2026-12-30T00:30:00Z'));
+    expect(eligible()).toEqual(['ISB', 'KHI', 'LHE', 'MAN']);
   });
 
   it('the public shell refuses a verified-but-unreleased airport and shows the safe "can\'t calculate yet" state', () => {
@@ -373,7 +397,7 @@ describe('operator probe: live-flow behaviour (Google mocked)', () => {
   it('probing never writes to the release table', async () => {
     mockGoogle();
     await probeAirport('k', spec, now);
-    expect(Object.keys(releaseTable)).toEqual([]);
+    expect(releaseTable).toEqual(shippedRelease);
   });
 });
 

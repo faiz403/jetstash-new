@@ -29,7 +29,8 @@ export interface AirportOption {
 const toOption = (code: string): AirportOption | undefined => {
   const airport = getCatalogueAirport(code);
   const profile = airport ? resolveAirportProfile(airport.iata) : undefined;
-  return airport ? { code: airport.iata, name: airport.name, city: airport.city, country: getCountryName(airport.countryCode), journeyEngine: profile?.journeyEngine } : undefined;
+  // An explicit profile's city wins: the catalogue files Islamabad International under its district (Attock).
+  return airport ? { code: airport.iata, name: airport.name, city: profile?.city ?? airport.city, country: getCountryName(airport.countryCode), journeyEngine: profile?.journeyEngine } : undefined;
 };
 
 const byLabel = (a: AirportOption, b: AirportOption) => a.country.localeCompare(b.country) || a.city.localeCompare(b.city) || a.code.localeCompare(b.code);
