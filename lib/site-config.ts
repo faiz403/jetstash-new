@@ -39,6 +39,10 @@ export const mainNav = [
   { label: 'Destinations', href: '/destinations' },
   { label: 'UK Airports', href: '/airports' },
   { label: 'Travel Ready', href: '/travel-ready-check' },
+  // Arrive By expansion (founder direction, 21 October 2026): the planner is
+  // easy to find, but /arrive-by itself stays noindex and out of the sitemap
+  // while it is a limited beta.
+  { label: 'Arrive By', href: '/arrive-by' },
   { label: 'Guides', href: '/guides' },
   // A9 reposition (August 2026): was 'Deals', which implies JetStash has
   // proven a price is unusually good against historical data — it hasn't.
