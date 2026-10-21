@@ -22,9 +22,23 @@ rate limiting rather than the current process-local limiter.
 
 **Production site:** `https://jetstash.co.uk`
 
-## Manchester–Dubai re-verification — 21 October 2026 (local only, awaiting independent review)
+## SEO indexing pilot — 21 October 2026 (PR for review; not merged, not deployed)
 
-Founder-approved route-data correction on `data/man-dxb-reverify-2026-10-21`, based on `28bbf00`. It is separate from the SEO indexing pilot, and that pilot's Manchester–Dubai Quick answers depend on it.
+Founder-approved 28-day experiment on `seo/indexing-pilot-2026-10-21`, based on `eaa4f48` (main after PR #340). It is the narrow exception recorded in DECISIONS.md; SEO otherwise stays in maintenance mode.
+- **Why:** Google has indexed only 27 of 89 route pages, and 99 URLs show "Discovered – currently not indexed" with no crawl. There is no technical blocker. The homepage exposed one server-rendered route link.
+- **Change:**
+  - Gated, server-rendered route-guide links on the homepage and three pilot pages.
+  - "Quick answers" on Manchester–Islamabad, Manchester–Dubai and Birmingham–Delhi. They state only what each route's cited source supports, and each set is bound to its verification check.
+  - The first Codex review on 21 Oct returned FAIL with no P0/P1; its P2/P3 findings are fixed. The Codex re-review returned PASS; its two P3 wording points are also fixed.
+  - Manchester–Dubai's answers now render, because the 21 Oct check they are bound to landed in PR #340.
+- **Unchanged:** fares, affiliate links, route verification, titles (including the Lahore/Mumbai experiment) and the sitemap.
+- **Measurement:** the 28-day window starts only at an approved Production deployment.
+- **Risk:** Manchester–Islamabad's review falls due on 16 Nov, inside the window. Its winter operating-day check is due on or after 27 Oct.
+- **Details:** baseline, targets, checkpoints and that risk are in [the pilot record](SEO_INDEXING_PILOT_2026-10-21.md).
+
+## Manchester–Dubai re-verification — 21 October 2026 (DONE, live via PR #340)
+
+Founder-approved route-data correction, merged as PR #340 (`eaa4f48`) and verified in Production on 21 October 2026. It is separate from the SEO indexing pilot, and that pilot's Manchester–Dubai Quick answers depend on it.
 - **Source check:** Emirates' own route page, fetched 21 October 2026, still states 21 flights per week. It lists three A380 nonstops a day each way, at 7h05m–7h50m to Dubai and 7h45m–8h10m back.
 - **Correction:** the outdated "8h direct" flight time becomes "About 7–8h direct to Dubai; up to 8h 10m back".
 - **Review cadence:** STABLE, 90 days, so the next review is due 19 January 2027.

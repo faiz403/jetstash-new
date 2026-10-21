@@ -50,6 +50,9 @@ import { BusinessClarityPanel } from '@/components/route/business-clarity-panel'
 import { RouteVerdict } from '@/components/route/route-verdict';
 import { ArriveByRoutePanel } from '@/components/route/arrive-by-route-panel';
 import { getPublicJourneyRoutePair } from '@/lib/arrive-by-journey/public-route-pairs';
+import { isSeoPilotPage, isRouteEligibleForSeoLink, getSeoRouteLinks, getQuickAnswersContent } from '@/lib/seo-indexing-pilot';
+import { RouteQuickAnswers } from '@/components/route/route-quick-answers';
+import { SeoRouteLinks } from '@/components/route/seo-route-links';
 
 /**
  * Route-hero focal-position overrides, keyed by destination slug. HeroBackdrop's default
@@ -143,6 +146,9 @@ export default async function RoutePage({ params }: { params: Promise<{ slug: st
     return null;
   }
   const arriveByPair = getPublicJourneyRoutePair(airport.code, dest.iataCode);
+  const seoPilotActive = isSeoPilotPage(route.slug) && isRouteEligibleForSeoLink(route, nowIso);
+  const seoRouteLinks = seoPilotActive ? getSeoRouteLinks(nowIso, route.slug) : [];
+  const quickAnswers = seoPilotActive ? getQuickAnswersContent(route, nowIso) : null;
 
   const dealsHere = getDealsByDestination(dest.slug)
     .filter((d) => d.fromAirportSlug === airport.slug)
@@ -404,6 +410,24 @@ export default async function RoutePage({ params }: { params: Promise<{ slug: st
                 source="route-hero"
               />
             </div>
+          )}
+
+          {/* SEO indexing pilot (21 Oct 2026): three pages only, and only while
+              the route passes the same Route Status gate plus current
+              verification — see lib/seo-indexing-pilot.ts. Quick answers are
+              additionally withheld unless the route still carries the exact
+              check they were written against. Every other route page,
+              including the Lahore/Mumbai title experiment, is untouched. */}
+          {seoPilotActive && (
+            <>
+              {quickAnswers && <RouteQuickAnswers route={route} content={quickAnswers} airport={airport} dest={dest} />}
+              <SeoRouteLinks
+                className="mt-8 max-w-3xl"
+                links={seoRouteLinks}
+                heading="More route guides checked against airline and airport sources"
+                intro="Each one shows its own checked date and source, and is linked here only while that check is current."
+              />
+            </>
           )}
         </div>
       </section>

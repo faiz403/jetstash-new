@@ -3,6 +3,8 @@ import { ArrowUpRight, ArrowRight, Plane, BellRing, ShieldCheck, FileCheck2, Rec
 import { ROUTE_WATCH_INITIAL_COPY } from '@/lib/route-watch-config';
 import { routes } from '@/data/routes';
 import { formatCoverageAsOf, getTrackedFareCoverage } from '@/lib/tracked-fare-groups';
+import { getSeoRouteLinks } from '@/lib/seo-indexing-pilot';
+import { SeoRouteLinks } from '@/components/route/seo-route-links';
 
 /**
  * Homepage v2 — server-rendered sections below the signature hero (protected
@@ -163,6 +165,15 @@ export function WhyJetStash() {
         <p className="mt-4 text-xs text-ink-500">
           Coverage note: as of {formatCoverageAsOf(coverage.generatedAtIso)}, {coverage.trackedRoutes} of {coverage.totalRoutes} UK routes have a tracked fare from the last {coverage.freshDays} days.
         </p>
+
+        {/* SEO indexing pilot (21 Oct 2026): server-rendered route links,
+            gated by lib/seo-indexing-pilot.ts — the Atlas above navigates
+            client-side, so these are the homepage's crawlable route links. */}
+        <SeoRouteLinks
+          className="mt-8 border-t border-ink-100 pt-6"
+          links={getSeoRouteLinks(coverage.asOfIso)}
+          heading="Route guides with a current airline or airport check"
+        />
       </div>
     </section>
   );
