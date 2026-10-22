@@ -151,7 +151,7 @@ function SignalCta({ href, routeSlug, standout = false, label = getTripComSearch
           href={href}
           target="_blank"
           rel={PROVIDER_REL}
-          className="inline-flex min-h-12 items-center justify-center gap-1.5 rounded-sm bg-ink-900 px-5 py-3 text-base font-semibold text-sand-50 transition-all hover:bg-brass-600 active:scale-[0.985]"
+          className="inline-flex min-h-12 items-center justify-center gap-1.5 rounded-sm bg-ink-900 px-5 py-3 text-base font-semibold text-sand-50 transition-all hover:bg-brass-700 active:scale-[0.985]"
         >
           {label}
           <ArrowUpRight className="h-4 w-4" strokeWidth={2.25} />
@@ -390,11 +390,36 @@ function routeVsFareMismatch(
   // the prop; every real caller today supplies it.
   const label = routeStatusLabel ?? (routeDirectness === 'direct' ? 'Direct' : 'Connecting');
   const routeValue = routeAirlineLabel ? `${routeAirlineLabel} · ${label}` : label;
-  const fareDirectnessWord = fareDirectness === 'direct' ? 'direct' : 'connecting';
-  return {
-    routeValue,
-    note: `This tracked fare is a different, ${fareDirectnessWord} journey.`,
-  };
+  // First-impression sprint 1 (22 Oct 2026): say both things plainly. A
+  // verified nonstop service and a connecting tracked fare are both true, and
+  // a visitor must not read the connecting fare's price as a nonstop price.
+  const note = fareDirectness === 'connecting'
+    ? 'Nonstop flights are listed for this route, but this tracked fare is a connecting journey, so its price is not a nonstop price.'
+    : "This route's verified service connects, but this tracked fare is a nonstop journey.";
+  return { routeValue, note };
+}
+
+/**
+ * True when the route's verified service is nonstop but the featured fare is a
+ * connecting itinerary. Drives the plain "Connecting fare, not nonstop" cue
+ * rendered directly beside the price, ahead of any secondary offer.
+ */
+export function isConnectingFareOnDirectRoute(
+  routeDirectness: 'direct' | 'connecting' | null,
+  fareDirectness: FareSignalObservation['directness']
+): boolean {
+  return routeDirectness === 'direct' && fareDirectness === 'connecting';
+}
+
+function ConnectingFareTag() {
+  return (
+    <p className="mt-2">
+      <span className="inline-flex items-center gap-1.5 rounded-full border border-terracotta-200 bg-terracotta-50 px-2.5 py-1 text-xs font-semibold text-terracotta-800">
+        <Plane className="h-3.5 w-3.5" strokeWidth={2.25} aria-hidden="true" />
+        Connecting fare, not nonstop
+      </span>
+    </p>
+  );
 }
 
 /**
@@ -548,6 +573,7 @@ function CurrentSignal({ data, nowIso, lowerSelfTransfer, tripComUrl, routeSlug,
             {standout ? 'Standout Fare' : 'Fare spotted'}
           </p>
           <p className="mt-1 font-display text-3xl text-ink-900">£{data.price.toLocaleString('en-GB')} return</p>
+          {isConnectingFareOnDirectRoute(routeDirectness, data.directness) ? <ConnectingFareTag /> : null}
           {lowerSelfTransfer && data.hasPositiveNonSelfTransferEvidence ? <p className="mt-1.5 text-sm font-medium text-ink-700">Lowest comparable non-self-transfer fare observed</p> : null}
           <JourneyConsequenceLine consequences={data.journeyConsequences} />
         </div>
@@ -571,6 +597,10 @@ function CurrentSignal({ data, nowIso, lowerSelfTransfer, tripComUrl, routeSlug,
         <span className="inline-flex items-center gap-2"><CalendarDays className="h-4 w-4 text-terracotta-600" />{formatChecked(data.departureDate)} – {formatChecked(data.returnDate)}</span>
         {data.isSelfTransfer && <SelfTransferNote />}
       </div>
+      {/* Sprint 1 (22 Oct 2026): the route-vs-fare explanation now sits
+          directly under the price and routing, ahead of any secondary offer,
+          instead of after the lower self-transfer fare. */}
+      {mismatch && <RouteVsFareCallout mismatch={mismatch} />}
       {standout && <StandoutEvidence standout={standout} />}
       {lowerSelfTransfer ? (
         <div className="mt-4 rounded-sm border border-ink-200 bg-white p-3 text-sm text-ink-700">
@@ -585,7 +615,6 @@ function CurrentSignal({ data, nowIso, lowerSelfTransfer, tripComUrl, routeSlug,
           </p>
         </div>
       ) : null}
-      {mismatch && <RouteVsFareCallout mismatch={mismatch} />}
       {tripComUrl ? (
         <SignalCta
           href={tripComUrl}
@@ -615,16 +644,17 @@ function RecentSignal({ data, nowIso, tripComUrl, routeSlug, routeDirectness, ro
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-terracotta-600">Last tracked fare</p>
           <p className="mt-1 font-display text-3xl text-ink-900">£{data.price.toLocaleString('en-GB')} return</p>
+          {isConnectingFareOnDirectRoute(routeDirectness, data.directness) ? <ConnectingFareTag /> : null}
           <JourneyConsequenceLine consequences={data.journeyConsequences} />
         </div>
         <p className="text-sm text-ink-600">Checked {formatChecked(data.observedDate)}</p>
       </div>
       {routing && <p className="mt-3 text-sm text-ink-700">{routing}</p>}
       {data.isSelfTransfer && <div className="mt-3"><SelfTransferNote /></div>}
+      {mismatch && <RouteVsFareCallout mismatch={mismatch} />}
       <p className="mt-4 text-sm leading-relaxed text-ink-600">
         {getFareAgeWarningText(data.observedDate, nowIso) ?? 'Price may have changed.'}
       </p>
-      {mismatch && <RouteVsFareCallout mismatch={mismatch} />}
       {tripComUrl ? (
         <SignalCta
           href={tripComUrl}

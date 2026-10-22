@@ -98,7 +98,7 @@ describe('9. No unsupported numeric frequency introduced', () => {
   it('frequency and flightTime avoid asserting an unevidenced specific number', () => {
     expect(route.frequency).not.toMatch(/\d+x\s*(weekly|daily)|per week|per day/i);
     expect(route.flightTime).not.toMatch(/\d+h\s*\d*m?\b/i); // no "6h 30m"-style specific duration
-    expect(route.frequency).toMatch(/not independently reconfirmed/i);
+    expect(route.frequency).toMatch(/not reconfirmed/i);
   });
 });
 

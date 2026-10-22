@@ -156,7 +156,35 @@ export function DealCard({ deal, nowIso, headingLevel = 'h3' }: { deal: Deal; no
               </span>
               <span className="basis-full text-sm text-ink-400">{range.count > 1 ? 'Details of the minimum shown: ' : ''}{toTravellerFareNote(range.priceNote)}</span>
             </div>
-            <p className="mt-1 text-sm font-medium text-ink-700">
+            {/* Route/fare reconciliation (Tier-1 QA follow-up, Sept 2026; moved
+                beside the price in first-impression sprint 1, 22 Oct 2026).
+                The explanation used to sit in small grey text below the fare
+                details. It now follows the price directly, in plain words,
+                and says both things: nonstop flights are listed for the route,
+                but this fare connects. Gated on a genuine mismatch, so cards
+                where the fare agrees with the route are unchanged. */}
+            {directness && range.observedDirectness && range.observedDirectness !== presentation?.status && (
+              <div className="mt-3">
+                {presentation?.status === 'direct' && range.observedDirectness === 'connecting' ? (
+                  <>
+                    <span className="inline-flex items-center gap-1.5 rounded-full border border-terracotta-200 bg-terracotta-50 px-2.5 py-1 text-xs font-semibold text-terracotta-800">
+                      <Plane className="h-3.5 w-3.5" strokeWidth={2.25} aria-hidden="true" />
+                      Connecting fare, not nonstop
+                    </span>
+                    <p className="mt-1.5 text-sm text-ink-600">
+                      Nonstop flights are listed for this route, but this fare connects, so its price is not a nonstop price.
+                    </p>
+                  </>
+                ) : presentation?.status === 'connecting' && range.observedDirectness === 'direct' ? (
+                  <p className="text-sm text-ink-600">
+                    This fare is a nonstop journey, but the route&apos;s verified service connects.
+                  </p>
+                ) : (
+                  <p className="text-sm text-ink-600">This fare is a {range.observedDirectness} journey.</p>
+                )}
+              </div>
+            )}
+            <p className="mt-3 text-sm font-medium text-ink-700">
               Travel {formatChecked(range.departureDate)}–{formatChecked(range.returnDate)}
             </p>
             {range.count > 1 && (
@@ -166,27 +194,6 @@ export function DealCard({ deal, nowIso, headingLevel = 'h3' }: { deal: Deal; no
             )}
             <JourneyConsequenceLine consequences={range.journeyConsequences} />
             {fareSourceLabel && <p className="mt-1 text-sm font-medium text-ink-500">{fareSourceLabel}</p>}
-            {/* Route/fare reconciliation (Tier-1 Commercial Readiness QA
-                follow-up, September 2026): the top-right badge above already
-                states THIS FARE's own directness (via
-                getDealFareDirectnessLabel — e.g. "Connecting" on a Gulf Air
-                fare found under a route whose own verified service is
-                direct), but until this fix nothing in the card's own text
-                said so when a real price was shown — only the no-fare
-                branch below rendered routeFactLabel/airlineFactLabel, even
-                though both were already computed unconditionally above.
-                Gated on a genuine mismatch (never shown when the fare
-                already agrees with the route, so cards where there's
-                nothing to reconcile stay exactly as they were) — mirrors
-                the same distinction fare-signal.tsx's RouteVsFareCallout
-                already draws elsewhere on the route page itself, reusing
-                the already-computed local values rather than a new
-                component or a new derivation. */}
-            {directness && range.observedDirectness && range.observedDirectness !== presentation?.status && (
-              <p className="mt-1 text-xs text-ink-400">
-                {airlineFactLabel ? `${airlineFactLabel} · ${routeFactLabel}` : routeFactLabel}. This fare is a different, {range.observedDirectness} journey.
-              </p>
-            )}
 
             <div className="mt-4 flex items-center gap-1.5 text-xs text-ink-400">
               <span className={`h-1.5 w-1.5 rounded-full ${isStale ? 'bg-ink-300' : 'bg-brass-400'}`} />
@@ -347,7 +354,7 @@ export function DealCard({ deal, nowIso, headingLevel = 'h3' }: { deal: Deal; no
               href={tripComUrl}
               target="_blank"
               rel={PROVIDER_REL}
-              className="mt-5 inline-flex items-center justify-center gap-1.5 rounded-sm bg-ink-900 px-4 py-3 text-sm font-semibold text-sand-50 transition-all duration-200 hover:bg-brass-600 active:scale-[0.985]"
+              className="mt-5 inline-flex items-center justify-center gap-1.5 rounded-sm bg-ink-900 px-4 py-3 text-sm font-semibold text-sand-50 transition-all duration-200 hover:bg-brass-700 active:scale-[0.985]"
             >
               {presentation?.status === 'service-ended' ? SERVICE_ENDED_CTA_LABEL : getTripComSearchCtaLabel(matchedRoute?.slug)}
               <ArrowUpRight className="h-4 w-4" strokeWidth={2.25} />

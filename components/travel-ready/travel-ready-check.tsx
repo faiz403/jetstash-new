@@ -473,7 +473,7 @@ export function TravelReadyCheck({
             <button
               type="submit"
               data-analytics="ready-check-submit"
-              className="inline-flex h-12 items-center justify-center gap-1.5 rounded-sm bg-ink-900 px-6 text-sm font-semibold text-sand-50 transition-all hover:bg-brass-600 active:scale-[0.985]"
+              className="inline-flex h-12 items-center justify-center gap-1.5 rounded-sm bg-ink-900 px-6 text-sm font-semibold text-sand-50 transition-all hover:bg-brass-700 active:scale-[0.985]"
             >
               Check my travel readiness
             </button>
@@ -571,7 +571,7 @@ export function TravelReadyCheck({
                 href="#route-watch"
                 data-analytics="ready-check-watch"
                 onClick={() => track('ready_check_watch_click', { destination: destinationSlug, verdict: result.verdict })}
-                className="inline-flex h-12 items-center justify-center gap-1.5 rounded-sm bg-ink-900 px-6 text-sm font-semibold text-sand-50 transition-all hover:bg-brass-600 active:scale-[0.985]"
+                className="inline-flex h-12 items-center justify-center gap-1.5 rounded-sm bg-ink-900 px-6 text-sm font-semibold text-sand-50 transition-all hover:bg-brass-700 active:scale-[0.985]"
               >
                 <BellRing className="h-4 w-4" strokeWidth={2.25} />
                 Watch this route

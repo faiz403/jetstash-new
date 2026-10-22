@@ -295,7 +295,7 @@ export function BookByCountdown({
               href="#route-watch"
               data-analytics="bookby-watch"
               onClick={() => track('bookby_watch_click', { route: snapshot.routeSlug, state: snapshot.state })}
-              className="inline-flex h-12 items-center justify-center gap-1.5 rounded-sm bg-ink-900 px-6 text-sm font-semibold text-sand-50 transition-all hover:bg-brass-600 active:scale-[0.985]"
+              className="inline-flex h-12 items-center justify-center gap-1.5 rounded-sm bg-ink-900 px-6 text-sm font-semibold text-sand-50 transition-all hover:bg-brass-700 active:scale-[0.985]"
             >
               <BellRing className="h-4 w-4" strokeWidth={2.25} />
               Watch this route
@@ -326,7 +326,7 @@ export function BookByCountdown({
                 className={
                   brassBook
                     ? 'inline-flex h-12 items-center justify-center gap-1.5 rounded-sm bg-brass px-6 text-sm font-semibold text-ink-900 transition-all hover:bg-brass-400 hover:shadow-brass-glow active:scale-[0.985]'
-                    : 'inline-flex h-12 items-center justify-center gap-1.5 rounded-sm bg-ink-900 px-6 text-sm font-semibold text-sand-50 transition-all hover:bg-brass-600 active:scale-[0.985]'
+                    : 'inline-flex h-12 items-center justify-center gap-1.5 rounded-sm bg-ink-900 px-6 text-sm font-semibold text-sand-50 transition-all hover:bg-brass-700 active:scale-[0.985]'
                 }
               >
                 {bookLabel}

@@ -225,7 +225,7 @@ read Tailwind config, so those files mirror the palette by hand). If the palette
 | Token | Hex | Role |
 |---|---|---|
 | `ink` (900/DEFAULT `#0B0E14`) | near-black navy | Dark sections, body text |
-| `brass` (500/DEFAULT `#C8932E`) | warm gold | Primary CTA colour, focus ring, accents |
+| `brass` (500/DEFAULT `#C8932E`) | warm gold | Primary CTA colour, accents (focus ring is two-tone: ink on light, `brass-300` on dark sections) |
 | `terracotta` (500/DEFAULT `#C1502E`) | burnt orange | Secondary accent — eyebrows, category labels |
 | `sand` (DEFAULT `#F7F2E9`) | warm off-white | Light section backgrounds |
 
@@ -244,17 +244,17 @@ for zero rendered glyphs — don't re-add without a real callsite).
 ### 6.3 Interaction language — one vocabulary site-wide
 
 - **Solid conversion CTAs** (form submits, partner/affiliate links): hover to brass
-  (`hover:bg-brass-400 hover:shadow-brass-glow` on brass buttons, `hover:bg-brass-600` on ink
-  buttons), compress on press (`active:scale-[0.985]`).
+  (`hover:bg-brass-400 hover:shadow-brass-glow` on brass buttons, `hover:bg-brass-700` on ink
+  buttons: `brass-600` gave only about 3.9:1 with sand text), compress on press (`active:scale-[0.985]`).
 - **Dark navigational buttons**: hover `bg-ink-700`.
 - **Destination panels inside `group` cards**: zoom `group-hover:scale-[1.03]` over 500ms.
 - **Every dark hero** opens with the same arrival moment: `relative overflow-hidden` on the
   section, the brass radial-gradient overlay (`<HeroBackdrop />`), and
   `stagger-in stagger-N animate-fade-up` on badge → h1 → intro (staggered via `.stagger-1..4` in
   `globals.css`, `prefers-reduced-motion` collapses all of it).
-- **Focus**: no per-component `focus-visible:outline-none` — the global brass focus ring in
-  `globals.css` (`:focus-visible { outline: 2px solid #C8932E; ... }`) is the one keyboard
-  affordance for every interactive element.
+- **Focus**: no per-component `focus-visible:outline-none` — the global two-tone focus ring in
+  `globals.css` (ink outline on light surfaces, `brass-300` inside dark sections; at least 3:1
+  on both) is the one keyboard affordance for every interactive element.
 
 Match these on any new surface rather than inventing a variant.
 

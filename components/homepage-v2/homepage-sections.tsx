@@ -199,7 +199,7 @@ export function RouteWatchInvite() {
           </div>
           <Link
             href="/routes/manchester-mumbai#route-watch"
-            className="inline-flex h-12 shrink-0 items-center justify-center gap-1.5 rounded-sm bg-ink-900 px-6 text-sm font-semibold text-sand-50 transition-colors hover:bg-brass-600"
+            className="inline-flex h-12 shrink-0 items-center justify-center gap-1.5 rounded-sm bg-ink-900 px-6 text-sm font-semibold text-sand-50 transition-colors hover:bg-brass-700"
           >
             Watch a route
             <ArrowUpRight className="h-4 w-4" strokeWidth={2.25} />

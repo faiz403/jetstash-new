@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import { Fragment, isValidElement } from 'react';
@@ -110,46 +110,57 @@ describe('Umrah — visa copy no longer states a universal absolute', () => {
   });
 });
 
-describe('India hub — practicalNotes no longer contradict route-level truth', () => {
-  const element = IndiaHubPage();
-  const practicalNotes = (element.props as { practicalNotes: { title: string; body: string }[] }).practicalNotes;
-  const gatewayNote = practicalNotes.find((n) => /gatwick/i.test(n.title));
+// First-impression sprint 1 (22 Oct 2026): the Amritsar practical note is no
+// longer hand-written. It is derived from canonical route verification, so it
+// can never say Gatwick is direct while the same page lists Gatwick-Amritsar as
+// verification pending. These tests freeze the date to exercise each state.
+describe('India hub: the Amritsar practical note follows canonical route verification', () => {
+  const noteAt = (isoDate: string) => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date(`${isoDate}T12:00:00Z`));
+    try {
+      const element = IndiaHubPage();
+      const notes = (element.props as { practicalNotes: { title: string; body: string }[] }).practicalNotes;
+      return { notes, amritsar: notes.find((n) => /amritsar/i.test(n.title))! };
+    } finally {
+      vi.useRealTimers();
+    }
+  };
 
-  it('found the Gatwick gateway note (sanity check on the read itself)', () => {
-    expect(gatewayNote).toBeDefined();
+  it('names only the airport whose Amritsar route is currently verified direct (22 Oct 2026: Birmingham, not Gatwick)', () => {
+    expect(getRouteBySlug('london-gatwick-amritsar')?.verification?.reviewDueDate).toBe('2026-10-17');
+    const { amritsar } = noteAt('2026-10-22');
+    expect(amritsar.title).toBe('Direct Amritsar flights: verified from Birmingham');
+    expect(amritsar.body).toMatch(/Air India's direct Amritsar service from Birmingham is verified/);
+    expect(`${amritsar.title} ${amritsar.body}`).not.toMatch(/gatwick/i);
   });
 
-  it('accurately states the now-verified Birmingham direct Amritsar service', () => {
-    const route = getRouteBySlug('birmingham-amritsar');
-    expect(route?.isDirect).toBe(true);
-    expect(route?.verification?.status).toBe('verified');
-    expect(gatewayNote?.body).toMatch(/direct services from birmingham and gatwick to amritsar/i);
+  it('names Gatwick as well while its verification is current (10 Oct 2026)', () => {
+    const { amritsar } = noteAt('2026-10-10');
+    expect(amritsar.title).toMatch(/Birmingham and (London )?Gatwick/);
   });
 
-  it('no longer claims a confident non-stop Ahmedabad service — london-gatwick-ahmedabad is unverified in data/routes.ts', () => {
-    const route = getRouteBySlug('london-gatwick-ahmedabad');
-    expect(route?.verification?.status).toBe('unverified');
-    expect(gatewayNote?.body).not.toMatch(/non-stop uk routes to ahmedabad/i);
-    expect(gatewayNote?.body).toMatch(/genuine, unresolved conflict/i);
+  it('names no airport and makes no direct claim once every Amritsar verification has lapsed', () => {
+    const { amritsar } = noteAt('2026-12-31');
+    expect(amritsar.title).toBe("Check each airport's Amritsar service before you book");
+    expect(amritsar.body).toMatch(/no currently verified direct Amritsar service/);
+    expect(`${amritsar.title} ${amritsar.body}`).not.toMatch(/birmingham|gatwick/i);
   });
 
-  it('still correctly states the genuinely-confirmed Gatwick–Amritsar non-stop service', () => {
-    const route = getRouteBySlug('london-gatwick-amritsar');
-    expect(route?.isDirect).toBe(true);
-    expect(route?.verification?.status).toBe('verified');
-    expect(gatewayNote?.body).toMatch(/direct services from birmingham and gatwick to amritsar/i);
+  it('carries no hand-written Ahmedabad service-conflict claim (london-gatwick-ahmedabad stays unverified on its own cards)', () => {
+    expect(getRouteBySlug('london-gatwick-ahmedabad')?.verification?.status).toBe('unverified');
+    const { notes } = noteAt('2026-10-22');
+    for (const note of notes) expect(`${note.title} ${note.body}`).not.toMatch(/unresolved conflict|Gatwick or Heathrow/i);
   });
 
-  it('narrow same-class scan: no other practicalNote on this hub pairs "Birmingham" with a live "direct" claim, and the one Manchester+"direct" pairing is explicitly past-tense (ended), not a live claim', () => {
-    const otherNotes = practicalNotes.filter((n) => n !== gatewayNote);
+  it('narrow same-class scan: no other practicalNote pairs "Birmingham" with a live "direct" claim, and the one Manchester+"direct" pairing is past-tense (ended)', () => {
+    const { notes, amritsar } = noteAt('2026-10-22');
+    const otherNotes = notes.filter((n) => n !== amritsar);
     expect(otherNotes).toHaveLength(3);
     for (const note of otherNotes) {
       expect(note.body, note.title).not.toMatch(/birmingham.{0,60}\bdirect\b/i);
     }
     const manchesterDirectNote = otherNotes.find((n) => /manchester.{0,60}\bdirect\b/i.test(n.body));
-    // The only Manchester+"direct" pairing on this hub must be the
-    // service-ended note — a live/current direct claim for Manchester
-    // would be the same defect class as the Birmingham/Ahmedabad ones.
     expect(manchesterDirectNote?.body).toMatch(/direct services have ended/i);
   });
 });

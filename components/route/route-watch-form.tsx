@@ -177,7 +177,7 @@ export function RouteWatchForm({ defaultAirportSlug, defaultDestinationSlug, def
             <button
               type="submit"
               disabled={status === 'submitting'}
-              className="inline-flex h-11 items-center justify-center rounded-sm bg-ink-900 px-5 text-sm font-semibold text-sand-50 transition-all hover:bg-brass-600 active:scale-[0.985] disabled:opacity-60"
+              className="inline-flex h-11 items-center justify-center rounded-sm bg-ink-900 px-5 text-sm font-semibold text-sand-50 transition-all hover:bg-brass-700 active:scale-[0.985] disabled:opacity-60"
             >
               {status === 'submitting' ? 'Saving…' : 'Start Route Watch'}
             </button>

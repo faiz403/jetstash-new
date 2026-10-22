@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { RegionHubPage } from '@/components/sections/region-hub-page';
 import { getDestinationsByRegion } from '@/data/destinations';
+import { buildDirectRoutesNote } from '@/lib/hub-service-notes';
 
 // Pure ISR, matching the route detail pages — RegionHubPage renders
 // getEffectiveRoutePresentation() and DealCard, both of which must
@@ -16,30 +17,32 @@ export const metadata: Metadata = {
 
 export default function PakistanHubPage() {
   const destinations = getDestinationsByRegion('pakistan');
+  const nowIso = new Date().toISOString().slice(0, 10);
 
   return (
     <RegionHubPage
       eyebrow="Pakistan Hub"
       title="Pakistan, covered properly"
-      intro="Lahore, Islamabad and Karachi get the same depth of coverage here as any European city break, because for a huge number of UK travellers, this is the route that actually matters."
+      intro="Route guides, dated fare checks and document guidance for UK travellers flying to Lahore, Islamabad and Karachi."
       destinationsInRegion={destinations}
       airportsServed={['Manchester', 'Birmingham', 'London Heathrow']}
       showFamilyVisitCallout
       quoteRegion="pakistan"
       heroKey="pakistan"
-      visaNote="UK passport holders require a visa to enter Pakistan. The e-Visa system processes most tourist and family-visit applications within 7 days when applied for in advance. NICOP holders (Pakistan-origin UK nationals) typically do not require a separate visa. Confirm current requirements with NADRA or your nearest Pakistani consulate."
+      visaNote="British citizens need a visa for Pakistan and must apply in advance, unless they hold a valid NICOP, SNICOP or Pakistan Origin Card (POC). An expired, lost or renewing card is treated differently. Use the Travel Ready Check, the GOV.UK entry requirements for Pakistan and the official Pakistan online visa portal to confirm your position before you book."
       practicalNotes={[
         {
-          title: 'Eid and wedding season see the highest demand',
-          body: 'The weeks around Eid al-Fitr, Eid al-Adha and the UK summer holidays see the highest demand on Pakistan routes, and fares often move in the final weeks before them. Booking 2–3 months ahead gives you time to compare options before that rush — planning guidance, not a fare prediction.',
+          title: 'Plan around Eid and the UK summer holidays',
+          body: 'The weeks around Eid al-Fitr, Eid al-Adha and the UK summer holidays are popular times to travel to Pakistan, so check dated fares for your own dates early and leave time to compare options. Planning guidance, not a fare prediction.',
         },
+        buildDirectRoutesNote(
+          'Pakistan',
+          ['manchester-lahore', 'manchester-islamabad', 'birmingham-lahore', 'birmingham-islamabad', 'london-heathrow-lahore', 'leeds-bradford-islamabad', 'manchester-karachi'],
+          nowIso
+        ),
         {
-          title: 'Manchester is usually the most direct option in the north',
-          body: 'PIA and other carriers run direct Manchester to Lahore and Manchester to Islamabad services, often at a lower fare than connecting through London for travellers based in the North West, Yorkshire or the Midlands.',
-        },
-        {
-          title: 'Connecting via the Gulf can be cheaper for Karachi',
-          body: 'Emirates, Qatar Airways and Etihad all run competitive one-stop options to Karachi via Dubai, Doha or Abu Dhabi. Worth comparing against direct fares, particularly outside peak season.',
+          title: 'Compare stops and total journey time for Karachi',
+          body: 'Check each Karachi route guide for what JetStash has verified, and compare the total journey time and number of stops, not only the headline fare.',
         },
       ]}
     />

@@ -48,7 +48,7 @@ export function NoFareFallback({ cityLabel, routeSlug, hasFareSignalElsewhere = 
             href={tripComUrl}
             target="_blank"
             rel={PROVIDER_REL}
-            className="mt-5 inline-flex items-center gap-1.5 rounded-sm bg-ink-900 px-5 py-3 text-sm font-semibold text-sand-50 transition-all hover:bg-brass-600 active:scale-[0.985]"
+            className="mt-5 inline-flex items-center gap-1.5 rounded-sm bg-ink-900 px-5 py-3 text-sm font-semibold text-sand-50 transition-all hover:bg-brass-700 active:scale-[0.985]"
           >
             {getTripComSearchCtaLabel(routeSlug)}
             <ArrowUpRight className="h-4 w-4" strokeWidth={2.25} />

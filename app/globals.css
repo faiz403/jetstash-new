@@ -37,11 +37,22 @@ body {
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-/* Focus ring — visible keyboard navigation */
+/* Focus ring — visible keyboard navigation. Two tones so it keeps at least 3:1
+   contrast on both surfaces: ink on light surfaces, light brass inside dark
+   sections (header, footer, ink heroes). The earlier single brass ring was
+   about 2.7:1 on white. */
 :focus-visible {
-  outline: 2px solid #C8932E;
+  outline: 2px solid theme('colors.ink.900');
   outline-offset: 3px;
   border-radius: 4px;
+}
+
+header :focus-visible,
+footer :focus-visible,
+:is([class~="bg-ink-950"], [class~="bg-ink-900"], [class~="bg-ink-800"]) :focus-visible,
+[class*="bg-ink-900/"] :focus-visible,
+[class*="bg-ink-950/"] :focus-visible {
+  outline-color: theme('colors.brass.300');
 }
 
 .text-balance {

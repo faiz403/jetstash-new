@@ -75,7 +75,7 @@ describe('direct-route + connecting-fare: the distinction is explicit (Mancheste
     const html = renderFareSignalForRoute('manchester-islamabad', RIYADH_AIR_EVIDENCE_ISO);
     expect(html).toContain('Route service');
     expect(html).toContain('PIA · Direct');
-    expect(html).toContain('This tracked fare is a different, connecting journey.');
+    expect(html).toContain('Nonstop flights are listed for this route, but this tracked fare is a connecting journey, so its price is not a nonstop price.');
     // The current fare's own airline is shown by the existing header row.
     expect(html).toContain('Riyadh Air');
   });
@@ -148,7 +148,7 @@ describe('direct route: connecting fare remains clearly distinguished from route
     ).replace(/\s+/g, ' ');
     expect(html).toContain('Route service');
     expect(html).toContain('Fixture Connecting Air · Connecting');
-    expect(html).toContain('This tracked fare is a different, direct journey.');
+    expect(html).toContain('This route&#x27;s verified service connects, but this tracked fare is a nonstop journey.');
   });
 });
 
@@ -285,7 +285,7 @@ describe('airline identity cannot drift between route intelligence and the fare 
       })
     ).replace(/\s+/g, ' ');
     expect(html).toContain('PIA · Direct');
-    expect(html).toContain('This tracked fare is a different, connecting journey.');
+    expect(html).toContain('Nonstop flights are listed for this route, but this tracked fare is a connecting journey, so its price is not a nonstop price.');
   });
 });
 

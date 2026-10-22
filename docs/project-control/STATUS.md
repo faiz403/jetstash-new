@@ -22,7 +22,38 @@ rate limiting rather than the current process-local limiter.
 
 **Production site:** `https://jetstash.co.uk`
 
-## Phase 2: Birmingham–Amritsar re-verification and Manchester–Dhaka clarity — 22 October 2026 (PR for review; not merged, not deployed)
+## First-impression improvement sprint 1 — 22 October 2026 (PR for review; not merged, not deployed)
+
+On `fix/cx-sprint1-2026-10-22` from `53dc903`, from the founder-approved 22 October first-impression review.
+- **India hub contradiction:** `/india` said Air India "currently runs direct services from Birmingham and Gatwick to
+  Amritsar" while Gatwick–Amritsar showed verification pending. The Amritsar note (and a new Pakistan direct-routes
+  note) are now derived from canonical route verification (`lib/hub-service-notes.ts`), so they cannot disagree with the
+  route cards. The hand-written Ahmedabad conflict sentence was removed.
+- **Fare type beside the price:** where the route's verified service is nonstop but the featured fare connects, route
+  pages and deal cards show "Connecting fare, not nonstop" under the price and say plainly "Nonstop flights are listed
+  for this route, but this tracked fare is a connecting journey, so its price is not a nonstop price". The explanation
+  now sits ahead of the lower self-transfer offer and the booking button. The "Airline: verification pending · Route:
+  Direct" jargon is gone from the connecting-fare note; no-fare cards deliberately keep that airline-versus-route label
+  (earlier approved rule TR-010) and it is flagged as a clarity follow-up. Fares, affiliate links and Trip.com
+  parameters are unchanged.
+- **Internal wording removed** from every route record, plus a regression test over routes, destinations, airport
+  notes, traveller tips and guides (banned: "this session", "evidence check", "primary evidence", "destination
+  evidence", dangling "see note", "service shape").
+- **Keyboard focus and hover contrast:** the single brass focus ring (about 2.7:1 on white) is now two-tone (ink on light
+  surfaces, light brass inside dark sections), including the quote-form radios and the Arrive By light-surface controls
+  that had their own brass outline; ink buttons hover to `brass-700` (sand text 5.9:1) instead of `brass-600` (3.9:1).
+  Design docs updated. Brass outlines on dark-surface controls are unchanged.
+- **Unsupported generalisations replaced** with neutral copy: "Most trips here are family visits", the Pakistan "same
+  depth of coverage" line and its "often a lower fare" / "cheaper for Karachi" notes, Gulf "peak price" / "Ramadan rarely
+  affects flight pricing" notes, Umrah Ramadan price and 3–4-month claims (page and guide), India "generally lower-pressure
+  time to book". The Pakistan hub visa note now mirrors the canonical Travel Ready rule (visa needed unless a valid NICOP,
+  SNICOP or POC; expired cards are treated differently) and drops the "within 7 days" processing claim.
+- **Contact addresses (read-only, not changed):** see the PR description for the decision the founder needs to make.
+- **SEO pilot events** are logged in `SEO_INDEXING_PILOT_2026-10-21.md`.
+
+## Phase 2: Birmingham–Amritsar re-verification and Manchester–Dhaka clarity — 22 October 2026 (DONE, live via PR #345)
+
+Merged as `53dc903` and Production verified on 22 October 2026.
 
 Backlog recovery sprint, Phase 2, on `fix/phase2-bhx-atq-man-dac-2026-10-22` from `24503ab`.
 - **Birmingham–Amritsar re-verified (due 30 Oct).** Air India's own route-page schedule for

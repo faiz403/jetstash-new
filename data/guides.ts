@@ -94,7 +94,7 @@ export const guides: Guide[] = [
     paragraphs: [
       'Umrah packages bundle flights, hotels and transport, but the proportion of nights in Makkah versus Madinah, and the distance of each hotel from the Haram, varies enormously between operators advertising similar prices. Ask for the specific hotel names before booking, not just the star rating.',
       'A short checklist separates comparable quotes from incomparable ones: the named hotel in each city, its real distance from the Haram (walking distance or shuttle, and if shuttle, how often it runs), the exact split of nights between Makkah and Madinah, whether transfers between cities are private or shared, and whether visa handling is included in the price or charged on top. Two packages that look £100 apart can be hundreds apart once these are levelled.',
-      'Before paying, confirm the operator is ATOL-protected for flight-inclusive packages booked in the UK, since that\'s what protects your money if the operator fails. And be realistic about Ramadan. It\'s the highest-demand period of the year, prices rise accordingly, and the walking-distance hotels sell out first. If Ramadan is the point of the trip, book early and fix the hotel details in writing; if it isn\'t, travelling either side of it buys noticeably more package for the same money.',
+      'Before paying, confirm the operator is ATOL-protected for flight-inclusive packages booked in the UK, since that\'s what protects your money if the operator fails. And plan around Ramadan. It is a popular time for Umrah, so ask early about availability and fix the hotel details in writing. JetStash has not tracked package prices, so compare current quotes for your own dates rather than relying on a general expectation.',
     ],
   },
   {

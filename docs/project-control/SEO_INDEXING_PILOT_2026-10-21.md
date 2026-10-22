@@ -138,6 +138,19 @@ Every checkpoint records these items:
   stops before booking." Quick answers, links, title, canonical and indexing directives are
   unchanged. Account for it when reading Birmingham–Delhi movement. The same PR re-verifies
   Birmingham–Amritsar and updates the Amritsar card on `/india`.
+- **First-impression sprint 1 (founder-approved 22 October 2026; dated by its Production release,
+  merge commit and time to be added then):** customer-visible text changed on these pilot pages and
+  link targets, found by diffing the visible text of Production against the release build.
+  The homepage is unchanged. Titles, canonical URLs, indexing directives, Quick answers, link
+  blocks, fares and affiliate links are unchanged everywhere.
+  - **Pilot pages:** `manchester-islamabad` and `manchester-dubai` gain a "Connecting fare, not nonstop"
+    cue under the price and a plainer route-versus-fare explanation (and the lower self-transfer
+    offer now follows it); `manchester-islamabad` and `birmingham-delhi` lose the dangling "see note"
+    from route detail lines.
+  - **Link targets:** `london-heathrow-bengaluru`, `birmingham-dubai`, `birmingham-doha` and
+    `birmingham-jeddah` gain the same fare cue; `birmingham-jeddah` also loses internal wording from
+    its Saudia duration line. `birmingham-mumbai` is unchanged.
+  - **Also changed:** `/routes` (sibling card detail lines) and the India, Pakistan, Gulf and Umrah hubs.
 
 ## Wave 2 (not approved; only after a positive day-14 signal)
 
