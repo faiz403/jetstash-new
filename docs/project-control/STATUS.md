@@ -22,6 +22,22 @@ rate limiting rather than the current process-local limiter.
 
 **Production site:** `https://jetstash.co.uk`
 
+## Route trust corrections — 22 October 2026 (PR for review; not merged, not deployed)
+
+Backlog recovery sprint, Phase 1, on `fix/route-trust-corrections-2026-10-22` from `e4c3e84`.
+- **Contradictory hero status:** London Heathrow–Dhaka and Manchester–Rome (`unspecified`) showed a
+  "Service confirmed" badge above "Current service is not yet independently confirmed". The hero
+  sentence is now `presentation.statusHeadline`, authored beside `statusLabel` in `data/routes.ts`,
+  so badge and sentence cannot disagree. `unspecified` now reads "Service confirmed · stop pattern
+  and schedule not established". A service-ended route only promises connecting flights when its
+  record carries `connectingAlternative` (both live service-ended routes do; no visible change).
+- **Manchester–Dhaka:** verification expired 2 October 2026, but the page still cited Biman's
+  "current official notice" and an "every Tuesday and Saturday" schedule. Wording now dates both
+  claims to the 18 August 2026 check and says the current schedule is not re-confirmed. Verification
+  dates are unchanged; no new evidence was claimed.
+- Regression tests: `tests/route-trust-corrections-2026-10-22.test.ts`; one Bangladesh test updated
+  to the dated wording.
+
 ## Manchester–Doha truth correction and Heathrow–Doha evidence gap — 21 October 2026 (local only)
 
 Founder-approved route-data correction on `data/man-doh-truth-correction-2026-10-21`, from `56f90da`.

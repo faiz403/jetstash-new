@@ -196,10 +196,13 @@ describe('BD-001 — Manchester to Dhaka: Connecting, never claimed nonstop', ()
     expect(allCopy).not.toMatch(new RegExp(fixedTerminalPhrase));
   });
 
-  it('attributes the Tuesday and Saturday frequency directly to Biman\'s current official notice', () => {
+  it('attributes the Tuesday and Saturday frequency to Biman\'s notice as of its check date, not as current', () => {
     const route = getRouteBySlug('manchester-dhaka')!;
-    expect(route.frequency.toLowerCase()).toMatch(/every tuesday and saturday/);
-    expect(route.frequency.toLowerCase()).toMatch(/biman.*official notice/);
+    const frequency = route.frequency.toLowerCase();
+    expect(frequency).toMatch(/tuesdays and saturdays/);
+    expect(frequency).toMatch(/biman.*notice/);
+    expect(frequency).toMatch(/18 august 2026/);
+    expect(frequency).toMatch(/not re-confirmed/);
   });
 
   it('getRoutePresentation reports status "connecting"', () => {
