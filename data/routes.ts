@@ -1726,8 +1726,8 @@ export const routes: Route[] = [
     slug: 'manchester-dhaka',
     airportSlug: 'manchester',
     destinationSlug: 'dhaka',
-    flightTime: 'One stop via Sylhet — not a nonstop service, per Biman\'s current official notice',
-    frequency: 'Every Tuesday and Saturday, per Biman\'s current official notice',
+    flightTime: 'One stop via Sylhet, not a nonstop service, per Biman\'s official notice as checked on 18 August 2026; current routing not re-confirmed',
+    frequency: 'Biman\'s notice, as checked on 18 August 2026, listed Tuesdays and Saturdays; current operating days are not re-confirmed, so check with Biman',
     airlineSlugs: ['biman-bangladesh'],
     isDirect: false,
     verification: {
@@ -1746,7 +1746,7 @@ export const routes: Route[] = [
     // sourced legs. Sylhet's Osmani International Airport IATA code is ZYL.
     routeServiceConnections: { outbound: ['ZYL'], return: ['ZYL'] },
     intro:
-      "Manchester to Dhaka is a connecting journey with one stop via Sylhet, not a nonstop service. Biman Bangladesh Airlines' current official notice says this route resumed from 1 July 2026 and operates every Tuesday and Saturday. The notice does not establish aircraft, terminal or transfer arrangements, and this service has a documented history of suspension and relaunch — confirm the live routing and schedule directly with Biman before booking.",
+      "Manchester to Dhaka is a connecting journey with one stop via Sylhet, not a nonstop service. When JetStash last checked it on 18 August 2026, Biman Bangladesh Airlines' official notice said this route resumed from 1 July 2026 and operated every Tuesday and Saturday; JetStash has not re-confirmed the current schedule since. The notice does not establish aircraft, terminal or transfer arrangements, and this service has a documented history of suspension and relaunch — confirm the live routing and schedule directly with Biman before booking.",
     bookingWindowNote:
       'This route\'s service history has been too unstable for a reliable booking-window pattern. If currently operating, confirm the live schedule and exact stop pattern directly with Biman Bangladesh Airlines before booking, especially around Eid, when demand and disruption risk both rise.',
     peakPeriodIds: ['eid-al-fitr', 'eid-al-adha', 'uk-summer-holidays'],
@@ -2815,6 +2815,15 @@ interface RoutePresentationBase {
   /** The one canonical short label for this status — 'Direct', 'Connecting', or 'Verification pending'. Every surface should use this instead of re-deriving its own ternary. */
   statusLabel: string;
   /**
+   * The one canonical sentence that explains statusLabel in the route hero.
+   * Authored here, next to statusLabel, so the badge and its explanation can
+   * never disagree. Route trust corrections (22 Oct 2026): the hero used to
+   * build this sentence separately, so 'unspecified' routes showed a
+   * "Service confirmed" badge above "Current service is not yet
+   * independently confirmed".
+   */
+  statusHeadline: string;
+  /**
    * Airline slugs safe to name as an operator on this route right now.
    * - 'unverified' (pending) routes: always empty — nothing can be
    *   attributed to a service that isn't itself confirmed to exist.
@@ -3001,6 +3010,7 @@ export function buildUnverifiedPresentation(route: Route): RoutePresentation {
   return {
     status: 'unverified',
     statusLabel,
+    statusHeadline: 'Current service is not yet independently confirmed',
     flightTime: null,
     frequency: null,
     airlineSlugs: [],
@@ -3056,6 +3066,11 @@ export function buildServiceEndedPresentation(route: Route): RoutePresentation {
   return {
     status: 'service-ended',
     statusLabel,
+    // Same evidence rule as `summary` above: only promise connecting flights
+    // when this exact record carries connectingAlternative evidence.
+    statusHeadline: hasConnectingAlternative
+      ? 'Former direct service ended · connecting flights available'
+      : 'Former direct service ended',
     flightTime: null,
     frequency: null,
     airlineSlugs: [],
@@ -3133,6 +3148,14 @@ export function getRoutePresentation(route: Route, nowIso: string): RoutePresent
   }
 
   const statusLabel = status === 'direct' ? 'Direct' : status === 'connecting' ? 'Connecting' : 'Service confirmed';
+  // 'unspecified' confirms the airport pairing is served, never a stop
+  // pattern, frequency or operating days.
+  const statusHeadline =
+    status === 'direct'
+      ? 'Direct flights available'
+      : status === 'connecting'
+        ? 'Connecting flights available'
+        : 'Service confirmed · stop pattern and schedule not established';
   const airlineSlugs =
     status === 'direct' || status === 'unspecified'
       ? route.airlineSlugs.filter((slug) => getRouteAirlineDisplayStatus(route, slug, nowIso) === 'verified')
@@ -3172,6 +3195,7 @@ export function getRoutePresentation(route: Route, nowIso: string): RoutePresent
   return {
     status,
     statusLabel,
+    statusHeadline,
     flightTime: route.flightTime,
     frequency: route.frequency,
     airlineSlugs,

@@ -285,14 +285,10 @@ export default async function RoutePage({ params }: { params: Promise<{ slug: st
           <h1 className="stagger-in stagger-2 mt-3 animate-fade-up font-display text-4xl leading-[1.05] tracking-tight text-sand-50 sm:mt-4 sm:text-5xl">
             {airport.city} to {dest.city}
           </h1>
+          {/* Same rule as the badge: the explanatory sentence comes from
+              presentation, never a local ternary, so the two cannot disagree. */}
           <p className="stagger-in stagger-3 mt-3 animate-fade-up text-base font-semibold leading-relaxed text-sand-100 sm:mt-4 sm:text-lg">
-            {presentation.status === 'direct'
-              ? 'Direct flights available'
-              : presentation.status === 'connecting'
-                ? 'Connecting flights available'
-                : presentation.status === 'service-ended'
-                  ? 'Former direct service ended · connecting flights available'
-                  : 'Current service is not yet independently confirmed'}
+            {presentation.statusHeadline}
           </p>
           {(presentation.status === 'direct' || presentation.status === 'connecting') && (
             <p className="stagger-in stagger-4 mt-2 animate-fade-up text-sm text-ink-300">
