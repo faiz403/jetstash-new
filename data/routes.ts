@@ -1310,22 +1310,22 @@ export const routes: Route[] = [
     slug: 'birmingham-amritsar',
     airportSlug: 'birmingham',
     destinationSlug: 'amritsar',
-    flightTime: 'Approximately 10h 10m nonstop (Air India schedule)',
-    frequency: 'Air India nonstop service shown several times weekly; confirm your date',
+    flightTime: 'Nonstop: about 10h 35m out and 12h 35m back on Air India\'s winter schedule from 25 October 2026 (about 10h 10m and 11h 40m before then)',
+    frequency: 'Nonstop on selected days rather than daily; operating days vary, so confirm your date with Air India',
     airlineSlugs: ['air-india'],
     isDirect: true,
     verification: {
       status: 'verified',
       sourceName: 'Air India current BHX–ATQ schedule and Birmingham Airport Amritsar destination page',
       sourceUrl: 'https://www.airindia.com/en-in/book-flights/birmingham-to-amritsar-flights',
-      verifiedDate: '2026-09-30',
-      reviewDueDate: '2026-10-30',
-      note: 'Route refresh (30 September 2026): Air India\'s current route schedule for 22–28 September lists AI118 from Birmingham (BHX) to Amritsar (ATQ) as Non Stop, 10h 10m. Birmingham Airport\'s current Amritsar destination page independently names Air India as the direct carrier. Flight-tracking records corroborate recent AI118 operations. Air India\'s generic en-GB marketing page is internally contradictory: one structured field says no direct flights and 14h45m via Delhi, while other text on the same page says direct services exist. The concrete route schedule, rather than that generic template, is the evidence used here. Exact weekly operating days are not published because the current first-party sources do not present a stable unambiguous day pattern; the public frequency is therefore deliberately hedged. Recheck within 30 days because the generic page conflict remains.',
+      verifiedDate: '2026-10-22',
+      reviewDueDate: '2026-11-21',
+      note: 'Phase 2 re-verification (22 October 2026), read in Chrome because direct fetches of airindia.com stalled behind bot protection; extracts and SHA-256 kept outside the repository in C:\\Users\\faiz2\\jetstash-route-reverification-2026-10-22\\bhx-atq\\. Air India\'s own route-page schedule for 22–28 October 2026, a week that includes the first days of the winter schedule from 25 October, lists AI118 Birmingham 20:30 to Amritsar 07:05 as Non Stop, 10h 35m, operating on Sunday 25 and Wednesday 28 October that week, and AI117 Amritsar to Birmingham as Non Stop at 11h 40m (22 and 24 October) and 12h 35m (26 October). All other BHX–ATQ options that week connect via Delhi. The schedule shows one week only, so no stable weekday pattern or weekly count is claimed. Founder review (22 October 2026) noted that an independent timetable (flight.info, secondary) also lists AI118 nonstop on Friday 23 October at about 10h 10m, which Air India\'s widget did not mark; the 10h 10m figure matches Air India\'s own pre-winter schedule recorded on 30 September, so public copy distinguishes the winter schedule from 25 October (10h 35m out, 12h 35m back) from earlier departures (10h 10m out, 11h 40m back) and does not state how many days a week the nonstop runs. The page\'s generic text still says 10h 10m; the dated schedule is used instead. Birmingham Airport\'s current Amritsar page (destinations/where-we-fly/amritsar/; the old destinations/amritsar/ URL now returns 404) names Air India as the airline that flies direct; its "8 hours 5 minutes" approximate flight time conflicts with Air India\'s own schedule and is not used. Classified RECENT / CHANGING (seasonal schedule change, day pattern varies, generic-page conflicts persist): 30-day review window. Previous verification follows. Route refresh (30 September 2026): Air India\'s current route schedule for 22–28 September lists AI118 from Birmingham (BHX) to Amritsar (ATQ) as Non Stop, 10h 10m. Birmingham Airport\'s current Amritsar destination page independently names Air India as the direct carrier. Flight-tracking records corroborate recent AI118 operations. Air India\'s generic en-GB marketing page is internally contradictory: one structured field says no direct flights and 14h45m via Delhi, while other text on the same page says direct services exist. The concrete route schedule, rather than that generic template, is the evidence used here. Exact weekly operating days are not published because the current first-party sources do not present a stable unambiguous day pattern; the public frequency is therefore deliberately hedged. Recheck within 30 days because the generic page conflict remains.',
     },
     intro:
-      'Air India currently operates a nonstop Birmingham to Amritsar service. The current schedule shows AI118 at approximately 10h 10m; confirm the exact operating date, timing and baggage terms with Air India before booking.',
+      'Air India currently operates a nonstop Birmingham to Amritsar service. Its winter schedule from 25 October 2026 shows AI118 at about 10h 35m (about 10h 10m on earlier departures), on selected days rather than daily; confirm the exact operating date, timing and baggage terms with Air India before booking.',
     bookingWindowNote:
-      'The nonstop service is shown several times weekly rather than every day. Confirm your specific flight date and the exact fare conditions with Air India before booking.',
+      'The nonstop service runs on selected days rather than every day. Confirm your specific flight date and the exact fare conditions with Air India before booking.',
     peakPeriodIds: ['baisakhi', 'diwali', 'uk-summer-holidays'],
   },
   {
@@ -1726,7 +1726,9 @@ export const routes: Route[] = [
     slug: 'manchester-dhaka',
     airportSlug: 'manchester',
     destinationSlug: 'dhaka',
-    flightTime: 'One stop via Sylhet, not a nonstop service, per Biman\'s official notice as checked on 18 August 2026; current routing not re-confirmed',
+    // Read after the label "Typical flight time:", so it answers the duration
+    // question first: the recorded notice establishes the stop, not a duration.
+    flightTime: 'Not confirmed; one stop via Sylhet per Biman\'s notice as checked on 18 August 2026, current routing not re-confirmed',
     frequency: 'Biman\'s notice, as checked on 18 August 2026, listed Tuesdays and Saturdays; current operating days are not re-confirmed, so check with Biman',
     airlineSlugs: ['biman-bangladesh'],
     isDirect: false,

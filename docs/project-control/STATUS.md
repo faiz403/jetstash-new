@@ -22,7 +22,39 @@ rate limiting rather than the current process-local limiter.
 
 **Production site:** `https://jetstash.co.uk`
 
-## Route trust corrections — 22 October 2026 (PR for review; not merged, not deployed)
+## Phase 2: Birmingham–Amritsar re-verification and Manchester–Dhaka clarity — 22 October 2026 (PR for review; not merged, not deployed)
+
+Backlog recovery sprint, Phase 2, on `fix/phase2-bhx-atq-man-dac-2026-10-22` from `24503ab`.
+- **Birmingham–Amritsar re-verified (due 30 Oct).** Air India's own route-page schedule for
+  22–28 October 2026 shows nonstop AI118 BHX→ATQ at 10h 35m and AI117 back at 12h 35m on the
+  winter schedule from 25 October, and 11h 40m back before it; Birmingham Airport's current
+  Amritsar page names Air India as the direct airline. Founder review noted an independent
+  timetable listing AI118 nonstop on Friday 23 October at about 10h 10m (pre-winter, matching
+  Air India's own 30 September record), so public copy reads "Nonstop: about 10h 35m out and
+  12h 35m back on Air India's winter schedule from 25 October 2026 (about 10h 10m and 11h 40m
+  before then)" and states no weekly count or weekday pattern. RECENT / CHANGING, verified
+  22 October, review due 21 November 2026. Evidence and SHA-256 kept outside the repo in
+  `C:\Users\faiz2\jetstash-route-reverification-2026-10-22\bhx-atq\`.
+- **SEO pilot:** the Birmingham–Delhi fare-card line below is founder-approved (option (a)) and
+  logged as a known event in `SEO_INDEXING_PILOT_2026-10-21.md`.
+- **Amritsar destination page:** said the direct service was from London Gatwick (verification
+  lapsed 17 Oct) and that Birmingham meant a connecting journey. Now names Birmingham with Air
+  India on selected days.
+- **Manchester–Dhaka:** the flight-time value now answers the label first ("Not confirmed; one stop
+  via Sylhet…"). When a tracked fare records no structured connection airports, routes with
+  evidenced `routeServiceConnections` now compare the fare's recorded airline with the route's
+  verified airlines (`components/route/fare-signal.tsx`). Airline text cannot prove a different
+  service, so the line is hedged: "This tracked fare is on Emirates and flydubai and may be a
+  different connecting journey from this route's own service. Check the airlines and stops before
+  booking." Silent for the route's own airline, empty or abbreviated names. **This also adds the
+  same line to Birmingham–Delhi (SEO pilot page, Lufthansa fare).**
+- Two existing tests updated to the new Birmingham–Amritsar wording; one pinned to the review date
+  instead of the live clock. New `tests/phase2-bhx-atq-man-dac-2026-10-22.test.ts`.
+
+## Route trust corrections — 22 October 2026 (DONE, live via PR #344)
+
+Merged as `24503ab` and Production verified on 22 October 2026 (Vercel Production Ready; live
+Manchester–Rome, Heathrow–Dhaka and Manchester–Dhaka pages checked).
 
 Backlog recovery sprint, Phase 1, on `fix/route-trust-corrections-2026-10-22` from `e4c3e84`.
 - **Contradictory hero status:** London Heathrow–Dhaka and Manchester–Rome (`unspecified`) showed a
