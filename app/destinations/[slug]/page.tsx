@@ -153,7 +153,7 @@ export default async function DestinationPage({ params }: { params: Promise<{ sl
                     target="_blank"
                     rel="noopener noreferrer"
                     aria-label={`${visaLink.buttonLabel} — ${visaLink.sourceName} (opens in a new tab)`}
-                    className="inline-flex items-center gap-1.5 rounded-sm bg-ink-900 px-4 py-2.5 text-sm font-semibold text-sand-50 transition-colors hover:bg-brass-600"
+                    className="inline-flex items-center gap-1.5 rounded-sm bg-ink-900 px-4 py-2.5 text-sm font-semibold text-sand-50 transition-colors hover:bg-brass-700"
                   >
                     {visaLink.buttonLabel}
                     <ArrowUpRight className="h-4 w-4" strokeWidth={2.25} />

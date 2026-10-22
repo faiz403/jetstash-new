@@ -165,7 +165,7 @@ export function CookieConsentBanner() {
               <button
                 type="button"
                 onClick={() => handleChoice('granted')}
-                className="flex h-11 items-center justify-center rounded-sm bg-ink-900 px-4 text-xs font-semibold text-sand-50 transition-all hover:bg-brass-600 active:scale-[0.985] sm:text-sm"
+                className="flex h-11 items-center justify-center rounded-sm bg-ink-900 px-4 text-xs font-semibold text-sand-50 transition-all hover:bg-brass-700 active:scale-[0.985] sm:text-sm"
               >
                 Accept measurement
               </button>

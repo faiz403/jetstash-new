@@ -209,7 +209,7 @@ function LegacyPlanningWindow() {
 
           <button
             type="submit"
-            className="mt-1 inline-flex h-12 items-center justify-center gap-1.5 rounded-sm bg-ink-900 px-6 text-sm font-semibold text-sand-50 transition-all hover:bg-brass-600 active:scale-[0.985]"
+            className="mt-1 inline-flex h-12 items-center justify-center gap-1.5 rounded-sm bg-ink-900 px-6 text-sm font-semibold text-sand-50 transition-all hover:bg-brass-700 active:scale-[0.985]"
           >
             <Compass className="h-4 w-4" strokeWidth={2.25} />
             Calculate planning window

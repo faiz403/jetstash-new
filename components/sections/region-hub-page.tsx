@@ -139,10 +139,10 @@ export function RegionHubPage({
           <div className="mx-auto max-w-content px-5 sm:px-8">
             <div className="flex items-center gap-2.5">
               <Users className="h-5 w-5 text-brass-300" strokeWidth={2} />
-              <span className="text-xs font-semibold uppercase tracking-wide text-brass-300">Most trips here are family visits</span>
+              <span className="text-xs font-semibold uppercase tracking-wide text-brass-300">Visiting family?</span>
             </div>
             <h2 className="mt-3 max-w-xl font-display text-2xl leading-tight text-sand-50 sm:text-3xl">
-              Every destination guide below includes document, baggage and peak-period detail specific to visiting family
+              Each destination guide below has document, baggage and peak-period detail for visiting family
             </h2>
             <p className="mt-3 max-w-xl text-sm text-ink-300">
               Open any destination guide in this hub and scroll to the "Visiting family" section for NICOP/OCI

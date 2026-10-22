@@ -88,7 +88,7 @@ export function HolidayIntelligence({ destination, nowIso }: HolidayIntelligence
                       href={handoff.href}
                       target="_blank"
                       rel="nofollow sponsored noopener noreferrer"
-                      className="mt-3 inline-flex items-center gap-1.5 rounded-sm bg-ink-900 px-4 py-2.5 text-sm font-semibold text-sand-50 transition-colors hover:bg-brass-600"
+                      className="mt-3 inline-flex items-center gap-1.5 rounded-sm bg-ink-900 px-4 py-2.5 text-sm font-semibold text-sand-50 transition-colors hover:bg-brass-700"
                     >
                       {getTripComSearchCtaLabel(undefined, { origin: handoff.airportName, destination: destination.city })}
                       <ArrowUpRight className="h-4 w-4" strokeWidth={2.25} />
@@ -133,7 +133,7 @@ export function HolidayIntelligence({ destination, nowIso }: HolidayIntelligence
                   href={example.bookingUrl}
                   target="_blank"
                   rel={HOTEL_PROVIDER_REL}
-                  className="mt-4 inline-flex items-center gap-1.5 rounded-sm bg-ink-900 px-4 py-2.5 text-sm font-semibold text-sand-50 transition-colors hover:bg-brass-600"
+                  className="mt-4 inline-flex items-center gap-1.5 rounded-sm bg-ink-900 px-4 py-2.5 text-sm font-semibold text-sand-50 transition-colors hover:bg-brass-700"
                 >
                   Check current price on Trip.com
                   <ArrowUpRight className="h-4 w-4" strokeWidth={2.25} />

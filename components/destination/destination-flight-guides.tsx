@@ -122,7 +122,7 @@ export function DestinationFlightGuides({ destination, nowIso }: DestinationFlig
                 href={href}
                 target="_blank"
                 rel={PROVIDER_REL}
-                className="mt-4 inline-flex items-center gap-1.5 rounded-sm bg-ink-900 px-4 py-2.5 text-sm font-semibold text-sand-50 transition-colors hover:bg-brass-600"
+                className="mt-4 inline-flex items-center gap-1.5 rounded-sm bg-ink-900 px-4 py-2.5 text-sm font-semibold text-sand-50 transition-colors hover:bg-brass-700"
               >
                 {getTripComSearchCtaLabel(undefined, { origin: entry.airport.city, destination: destination.city })}
                 <ArrowUpRight className="h-4 w-4" strokeWidth={2.25} />

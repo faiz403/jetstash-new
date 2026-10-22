@@ -236,7 +236,7 @@ export function QuoteRequestForm({ initialTripType, initialRegion }: QuoteReques
       <button
         type="submit"
         disabled={status === 'submitting'}
-        className="inline-flex h-12 items-center justify-center rounded-sm bg-ink-900 font-semibold text-sand-50 transition-all hover:bg-brass-600 active:scale-[0.985] disabled:opacity-60"
+        className="inline-flex h-12 items-center justify-center rounded-sm bg-ink-900 font-semibold text-sand-50 transition-all hover:bg-brass-700 active:scale-[0.985] disabled:opacity-60"
       >
         {status === 'submitting' ? 'Sending…' : 'Request a quote'}
       </button>
@@ -358,7 +358,7 @@ function TripTypePicker({
           return (
             <label
               key={opt.value}
-              className={`flex h-11 cursor-pointer items-center gap-1.5 rounded-full border px-4 text-sm font-medium transition-colors has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-brass ${
+              className={`flex h-11 cursor-pointer items-center gap-1.5 rounded-full border px-4 text-sm font-medium transition-colors has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-ink-900 ${
                 checked
                   ? 'border-brass bg-brass text-ink-900'
                   : 'border-ink-200 bg-white text-ink-700 hover:border-brass/50 hover:bg-sand-50'

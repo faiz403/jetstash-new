@@ -119,7 +119,7 @@ describe('Fare Signal presentation and CTA boundaries', () => {
     })).replace(/\s+/g, ' ');
     expect(text).toContain('Route service');
     expect(text).toContain('PIA · Direct');
-    expect(text).toContain('This tracked fare is a different, connecting journey.');
+    expect(text).toContain('Nonstop flights are listed for this route, but this tracked fare is a connecting journey, so its price is not a nonstop price.');
   });
 
   it('renders a recent fare without calling it current or a deal', () => {

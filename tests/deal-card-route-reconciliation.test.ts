@@ -37,15 +37,15 @@ describe('DealCard reconciles a mismatched fare against the route\'s own directn
     expect(getDealFareDirectnessLabel(deal, NOW_ISO)).toBe('Connecting');
 
     const html = renderToStaticMarkup(DealCard({ deal, nowIso: NOW_ISO })).replace(/\s+/g, ' ');
-    expect(html).toContain('Route: Direct.');
     expect(html).toContain('Connecting</span>');
-    expect(html).toContain('This fare is a different, connecting journey.');
+    expect(html).toContain('Connecting fare, not nonstop');
+    expect(html).toContain('Nonstop flights are listed for this route, but this fare connects, so its price is not a nonstop price.');
   });
 
   it('renders reconciliation from the selected period classification', () => {
     const deal = deals.find((d) => d.id === 'man-dxb-economy')!;
     const html = renderToStaticMarkup(DealCard({ deal, nowIso: NOW_ISO })).replace(/\s+/g, ' ');
-    expect(html).toContain('This fare is a different, connecting journey.');
+    expect(html).toContain('Nonstop flights are listed for this route, but this fare connects, so its price is not a nonstop price.');
   });
 
   it('a card where the fare already agrees with the route\'s own directness renders no reconciliation line at all -- nothing changes for the common case', () => {
@@ -63,7 +63,7 @@ describe('DealCard reconciles a mismatched fare against the route\'s own directn
       if (routeIsDirectLike !== fareIsDirectLike) continue; // this is the mismatch case, tested above
       checkedAtLeastOne = true;
       const html = renderToStaticMarkup(DealCard({ deal, nowIso: NOW_ISO })).replace(/\s+/g, ' ');
-      expect(html, deal.id).not.toContain('This fare is a different');
+      expect(html, deal.id).not.toMatch(/Connecting fare, not nonstop|This fare is a (connecting|nonstop|direct) journey|Nonstop flights are listed for this route/);
     }
     expect(checkedAtLeastOne).toBe(true);
   });

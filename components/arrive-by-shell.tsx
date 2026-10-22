@@ -56,7 +56,7 @@ function AirportSelector() {
       onChange={(event) => setQuery(event.target.value.slice(0, 64))}
       placeholder="Airport code, name or city"
       autoComplete="off"
-      className="mt-2 w-full max-w-md rounded-md border border-ink-200 bg-white px-3 py-2 text-ink-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brass"
+      className="mt-2 w-full max-w-md rounded-md border border-ink-200 bg-white px-3 py-2 text-ink-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink-900"
     />
     {query.trim() && results.length === 0 && (
       <p className="mt-3 max-w-2xl text-sm text-ink-500" role="status">Arrive By can't calculate that airport journey yet. Choose one of the airports below.</p>
@@ -66,7 +66,7 @@ function AirportSelector() {
         <Link
           key={profile.code}
           href={`/arrive-by?airport=${profile.code}`}
-          className="rounded-md border border-ink-200 bg-sand-50 p-4 transition hover:border-brass hover:bg-brass-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brass"
+          className="rounded-md border border-ink-200 bg-sand-50 p-4 transition hover:border-brass hover:bg-brass-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink-900"
         >
           <p className="font-display text-xl">{profile.city}</p>
           <p className="text-sm text-ink-500">{profile.displayName} · {profile.code}</p>
@@ -100,7 +100,7 @@ function NotYetSupportedAirport({ code, name }: { code: string; name?: string })
 
 function ChangeAirportLink() {
   return <div className="mx-auto max-w-5xl px-4 pt-6 sm:px-8">
-    <Link href="/arrive-by" className="text-sm font-semibold text-brass-600 hover:text-brass-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brass">← Change airport</Link>
+    <Link href="/arrive-by" className="text-sm font-semibold text-brass-600 hover:text-brass-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brass-300">← Change airport</Link>
   </div>;
 }
 

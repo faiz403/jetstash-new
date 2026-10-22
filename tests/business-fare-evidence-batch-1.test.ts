@@ -170,7 +170,7 @@ describe('Lahore/Doha route-vs-fare mismatch behaviour is correct against their 
     const html = renderFareSignalForRoute('manchester-lahore', SUPPRESSION_EVIDENCE_ISO);
     expect(html).toContain('Fare spotted');
     expect(html).toContain('Route service');
-    expect(html).toContain('This tracked fare is a different, connecting journey.');
+    expect(html).toContain('Nonstop flights are listed for this route, but this tracked fare is a connecting journey, so its price is not a nonstop price.');
 
     const businessDeal = deals.find((d) => d.id === 'man-lhe-business')!;
     expect(hasTrackedFare(businessDeal, NOW_ISO)).toBe(true);
@@ -185,7 +185,7 @@ describe('Lahore/Doha route-vs-fare mismatch behaviour is correct against their 
     const html = renderFareSignalForRoute('london-heathrow-lahore');
     expect(html).toContain('Route service');
     expect(html).toContain('PIA · Direct');
-    expect(html).toContain('This tracked fare is a different, connecting journey.');
+    expect(html).toContain('Nonstop flights are listed for this route, but this tracked fare is a connecting journey, so its price is not a nonstop price.');
 
     const businessDeal = deals.find((d) => d.id === 'lhr-business-lhe')!;
     expect(hasTrackedFare(businessDeal, NOW_ISO)).toBe(true);
@@ -205,7 +205,7 @@ describe('Lahore/Doha route-vs-fare mismatch behaviour is correct against their 
     const html = renderFareSignalForRoute('london-heathrow-doha', SUPPRESSION_EVIDENCE_ISO);
     expect(html).toContain('Fare spotted');
     expect(html).toContain('Route service');
-    expect(html).toContain('This tracked fare is a different, connecting journey.');
+    expect(html).toContain('Nonstop flights are listed for this route, but this tracked fare is a connecting journey, so its price is not a nonstop price.');
 
     const businessDeal = deals.find((d) => d.id === 'lhr-doh-business')!;
     expect(hasTrackedFare(businessDeal, NOW_ISO)).toBe(true);

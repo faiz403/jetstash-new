@@ -154,16 +154,17 @@ export default function UmrahHubPage() {
               <h2 className="font-display text-2xl text-ink-900">Before you book</h2>
               <div className="mt-6 flex flex-col gap-6">
                 <div className="border-l-2 border-brass pl-4">
-                  <h3 className="font-semibold text-ink-900">Ramadan is the highest-demand period</h3>
+                  <h3 className="font-semibold text-ink-900">Ramadan and the weeks before Hajj are popular times</h3>
                   <p className="mt-1 text-sm leading-relaxed text-ink-500">
-                    Package prices rise significantly during Ramadan and the weeks immediately before Hajj season.
-                    Booking 3–4 months ahead is common practice for these windows.
+                    These are popular times to travel for Umrah, so ask operators early what is available and what each
+                    package includes. JetStash has not tracked package prices, so compare current quotes rather than
+                    relying on a general expectation.
                   </p>
                 </div>
                 <div className="border-l-2 border-brass pl-4">
                   <h3 className="font-semibold text-ink-900">Check which Makkah hotel zone is included</h3>
                   <p className="mt-1 text-sm leading-relaxed text-ink-500">
-                    Hotels within walking distance of the Haram cost considerably more than those requiring a
+                    Hotels within walking distance of the Haram can be priced differently from those that need a
                     shuttle. Package prices can look similar while offering very different proximity, so always
                     confirm the hotel name and distance, not just the star rating.
                   </p>
@@ -209,7 +210,7 @@ export default function UmrahHubPage() {
                 A dedicated Umrah visa is not always required. Saudi Arabia's official tourist eVisa — available to
                 UK passport holders — explicitly allows Umrah, excluding Hajj, which always needs its own separate
                 Hajj visa regardless of which visa you hold. Many Umrah packages are still sold with their own visa
-                arranged by the operator or directly through Nusuk, which remains a normal and often simpler route
+                arranged by the operator or directly through Nusuk, which is a normal route
                 for a package booking.
               </p>
               <p className="mt-3 text-sm leading-relaxed text-ink-600">

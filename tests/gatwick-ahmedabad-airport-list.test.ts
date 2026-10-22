@@ -62,7 +62,7 @@ describe('4. No route verification data changed — this is an airport-list-only
   it('london-gatwick-ahmedabad route record (isDirect, verification, flightTime, frequency, airlineSlugs) is unchanged', () => {
     expect(lgwAmd.isDirect).toBe(true);
     expect(lgwAmd.verification?.status).toBe('unverified');
-    expect(lgwAmd.flightTime).toBe('Unverified — genuinely conflicting sources, see note');
+    expect(lgwAmd.flightTime).toBe('Unverified — genuinely conflicting sources');
     expect(lgwAmd.airlineSlugs).toEqual(['air-india']);
   });
 });

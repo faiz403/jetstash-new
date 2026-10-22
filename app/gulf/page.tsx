@@ -21,7 +21,7 @@ export default function GulfHubPage() {
     <RegionHubPage
       eyebrow="Gulf Hub"
       title="The Gulf, beyond the stopover"
-      intro="Dubai and Doha work as standalone family holidays, weekend city breaks, or the most comfortable way to break up a longer journey south or east."
+      intro="Dubai and Doha work as standalone family holidays, weekend city breaks, or a way to break up a longer journey south or east."
       destinationsInRegion={destinations}
       airportsServed={['London Heathrow', 'Manchester', 'Birmingham', 'London Gatwick', 'Glasgow', 'Leeds Bradford']}
       quoteRegion="gulf"
@@ -29,16 +29,16 @@ export default function GulfHubPage() {
       visaNote="UAE: Current GOV.UK guidance says travellers using a full British Citizen passport can receive visitor or tourist permission free on arrival for up to 90 days within a 180-day period. The allowance may be continuous or split across multiple visits. Qatar: For tourism, travellers using a full British Citizen passport can receive free visitor permission on arrival for up to 30 days initially. Longer stays need an extension through Qatar's Ministry of Interior before expiry. Check the current official requirements for your passport, trip and supporting documents."
       practicalNotes={[
         {
-          title: 'Winter is peak season, and peak price',
-          body: 'November through March brings the most comfortable weather to the Gulf, which means UK school holiday periods within that window carry a significant price premium. Late spring and early autumn offer a reasonable balance of heat and value.',
+          title: 'Winter is the Gulf\'s most comfortable season',
+          body: 'November through March brings the most comfortable weather to the Gulf, and it overlaps UK school holidays, so check dated fares for your own dates early. JetStash tracks dated fare observations, not a seasonal price pattern.',
         },
         {
-          title: 'Stopover deals can beat a direct ticket to your final destination',
-          body: 'If you are ultimately headed further east, a Dubai or Doha stopover fare sometimes works out cheaper than a one-stop ticket booked purely as a connection. Worth comparing both ways.',
+          title: 'Compare a stopover with a one-stop connection',
+          body: 'If you are ultimately headed further east, compare a Dubai or Doha stopover with a one-stop ticket booked purely as a connection, and compare the total journey time as well as the fare.',
         },
         {
-          title: 'Ramadan changes the pace of the city, not the price',
-          body: 'Restaurant hours and some attractions adjust during Ramadan, but this rarely affects flight pricing directly. Plan logistics around it rather than expecting a fare difference.',
+          title: 'Ramadan changes the pace of the city',
+          body: 'Restaurant hours and some attractions adjust during Ramadan. JetStash has not tracked whether Ramadan changes flight prices on these routes, so compare dated fares for your dates.',
         },
       ]}
     />

@@ -777,7 +777,7 @@ export const routes: Route[] = [
     slug: 'newcastle-dalaman',
     airportSlug: 'newcastle',
     destinationSlug: 'dalaman',
-    flightTime: 'Published duration not listed in Newcastle Airport\'s current destination evidence; check the exact flight for your dates',
+    flightTime: 'Duration not listed by Newcastle Airport; check the exact flight for your dates',
     frequency: 'SunExpress publishes multiple weekly summer flights; exact dates and frequency vary',
     airlineSlugs: ['sunexpress'],
     isDirect: true,
@@ -810,7 +810,7 @@ export const routes: Route[] = [
     slug: 'london-gatwick-istanbul',
     airportSlug: 'london-gatwick',
     destinationSlug: 'istanbul',
-    flightTime: 'Published duration not recorded in this evidence check; check the exact flight for your dates',
+    flightTime: 'Duration not confirmed; check the exact flight for your dates',
     frequency: 'Pegasus publishes daily direct Gatwick to Istanbul Sabiha Gokcen service; exact departure times vary',
     airlineSlugs: ['pegasus'],
     isDirect: true,
@@ -843,7 +843,7 @@ export const routes: Route[] = [
     slug: 'london-gatwick-antalya',
     airportSlug: 'london-gatwick',
     destinationSlug: 'antalya',
-    flightTime: 'Published duration not recorded in this evidence check; check the exact flight for your dates',
+    flightTime: 'Duration not confirmed; check the exact flight for your dates',
     frequency: 'Seasonal direct service is published by Jet2 and SunExpress; exact dates and frequency vary',
     airlineSlugs: ['jet2', 'sunexpress'],
     isDirect: true,
@@ -873,7 +873,7 @@ export const routes: Route[] = [
     slug: 'london-gatwick-dalaman',
     airportSlug: 'london-gatwick',
     destinationSlug: 'dalaman',
-    flightTime: 'Published duration not recorded in this evidence check; check the exact flight for your dates',
+    flightTime: 'Duration not confirmed; check the exact flight for your dates',
     frequency: 'Seasonal. SunExpress flew it in summer 2026 and has announced Summer 2027; it lists no winter 2026/27 Gatwick–Dalaman service',
     airlineSlugs: ['sunexpress'],
     isDirect: true,
@@ -898,7 +898,7 @@ export const routes: Route[] = [
     slug: 'london-gatwick-bodrum',
     airportSlug: 'london-gatwick',
     destinationSlug: 'bodrum',
-    flightTime: 'Published duration not recorded in this evidence check; check the exact flight for your dates',
+    flightTime: 'Duration not confirmed; check the exact flight for your dates',
     frequency: 'Seasonal. SunExpress flew twice weekly in summer 2026 but lists Bodrum in neither its winter 2026/27 timetable nor its Summer 2027 UK schedule; current operators are not confirmed',
     airlineSlugs: [],
     isDirect: true,
@@ -924,7 +924,7 @@ export const routes: Route[] = [
     slug: 'london-gatwick-izmir',
     airportSlug: 'london-gatwick',
     destinationSlug: 'izmir',
-    flightTime: 'Published duration not recorded in this evidence check; check the exact flight for your dates',
+    flightTime: 'Duration not confirmed; check the exact flight for your dates',
     frequency: 'Seasonal. SunExpress flew it in its April-October 2026 plan (a departure was seen on 19 October 2026) and has announced Summer 2027; it lists no winter 2026/27 Gatwick–Izmir service',
     airlineSlugs: ['sunexpress'],
     isDirect: true,
@@ -1004,7 +1004,7 @@ export const routes: Route[] = [
     slug: 'london-gatwick-marrakech',
     airportSlug: 'london-gatwick',
     destinationSlug: 'marrakech',
-    flightTime: 'Published duration not recorded in this evidence check; check the exact flight for your dates',
+    flightTime: 'Duration not confirmed; check the exact flight for your dates',
     frequency: 'London Gatwick\'s own live flight board names easyJet as a current operator, with at least two flights on a single day observed; exact frequency and dates vary',
     airlineSlugs: ['easyjet'],
     isDirect: true,
@@ -1127,7 +1127,7 @@ export const routes: Route[] = [
     slug: 'london-heathrow-casablanca',
     airportSlug: 'london-heathrow',
     destinationSlug: 'casablanca',
-    flightTime: 'Published duration not recorded in this evidence check; check the exact flight for your dates',
+    flightTime: 'Duration not confirmed; check the exact flight for your dates',
     frequency: 'Royal Air Maroc publishes Heathrow–Casablanca options; exact dates and frequency vary',
     airlineSlugs: [],
     isDirect: true,
@@ -1149,7 +1149,7 @@ export const routes: Route[] = [
     slug: 'london-gatwick-tangier',
     airportSlug: 'london-gatwick',
     destinationSlug: 'tangier',
-    flightTime: 'Published duration not recorded in this evidence check; check the exact flight for your dates',
+    flightTime: 'Duration not confirmed; check the exact flight for your dates',
     frequency: 'Gatwick publishes direct Tangier service; exact operators, dates and frequency vary',
     airlineSlugs: [],
     isDirect: true,
@@ -1172,7 +1172,7 @@ export const routes: Route[] = [
     airportSlug: 'manchester',
     destinationSlug: 'lahore',
     flightTime: '8h direct',
-    frequency: 'Direct — current frequency not confirmed by an official schedule, see note',
+    frequency: 'Direct — current frequency not confirmed by an official schedule',
     airlineSlugs: ['pia'],
     isDirect: true,
     verification: {
@@ -1283,7 +1283,7 @@ export const routes: Route[] = [
     airportSlug: 'london-heathrow',
     destinationSlug: 'delhi',
     flightTime: '8h 45m direct',
-    frequency: 'British Airways confirmed direct; exact current daily frequency not independently reconfirmed by the 29 August 2026 check — see note. Other operators require separate confirmation.',
+    frequency: 'British Airways direct service, as checked on 29 August 2026; current daily frequency not reconfirmed, so check your date. Other operators need separate confirmation.',
     airlineSlugs: ['virgin-atlantic', 'british-airways', 'air-india'],
     isDirect: true,
     verification: { status: 'verified', sourceName: 'British Airways official Delhi route page', sourceUrl: 'https://www.britishairways.com/content/flights/india/delhi', verifiedDate: '2026-08-29', reviewDueDate: '2026-11-27', note: 'Portfolio structure repair (4 October 2026): route-level verification now explicitly records what the existing current British Airways airline-verification already proves — a direct LHR-DEL service and an 8h45m planning duration. This does not verify Virgin Atlantic or Air India, and it does not add a numeric frequency claim; those remain governed by the per-airline evidence below.' },
@@ -1411,7 +1411,7 @@ export const routes: Route[] = [
     slug: 'london-heathrow-jeddah',
     airportSlug: 'london-heathrow',
     destinationSlug: 'jeddah',
-    flightTime: '6h 15m, per Saudia\'s published route figure; not independently reconfirmed against a current Saudia source this session',
+    flightTime: 'About 6h 15m, per Saudia\'s published route figure; not yet reconfirmed against a current Saudia schedule',
     frequency: 'Saudia operates direct service; exact current frequency not confirmed by a current official schedule',
     airlineSlugs: ['saudia'],
     isDirect: true,
@@ -1457,7 +1457,7 @@ export const routes: Route[] = [
     slug: 'manchester-karachi',
     airportSlug: 'manchester',
     destinationSlug: 'karachi',
-    flightTime: 'Connecting — journey time depends on the routing sold; not fixed, see note',
+    flightTime: 'Connecting — journey time depends on the routing sold; not fixed',
     frequency: 'Connecting options exist; exact schedules and frequency have not been independently established',
     airlineSlugs: ['pia'],
     isDirect: false,
@@ -1505,7 +1505,7 @@ export const routes: Route[] = [
     slug: 'birmingham-lahore',
     airportSlug: 'birmingham',
     destinationSlug: 'lahore',
-    flightTime: 'Connecting; routing and journey time vary (PIA\'s own booking engine showed Istanbul on 21 August 2026), see note',
+    flightTime: 'Connecting; routing and journey time vary (PIA\'s own booking engine showed Istanbul on 21 August 2026)',
     frequency: 'Connecting options exist; exact schedules and frequency have not been independently established',
     airlineSlugs: ['pia'],
     isDirect: false,
@@ -1534,7 +1534,7 @@ export const routes: Route[] = [
     slug: 'birmingham-islamabad',
     airportSlug: 'birmingham',
     destinationSlug: 'islamabad',
-    flightTime: 'Connecting; routing and journey time vary (PIA\'s own booking engine showed Istanbul on 21 August 2026), see note',
+    flightTime: 'Connecting; routing and journey time vary (PIA\'s own booking engine showed Istanbul on 21 August 2026)',
     frequency: 'Connecting options exist; exact schedules and frequency have not been independently established',
     airlineSlugs: ['pia'],
     isDirect: false,
@@ -1572,7 +1572,7 @@ export const routes: Route[] = [
     // Amsterdam/Mumbai on KLM/IndiGo/Air India), never the claimed one-stop
     // Delhi or Abu Dhabi routing. Restated as evidence-limited rather than
     // replaced with a different unverified specific claim.
-    flightTime: 'Unverified — actual stop count and journey time vary by date, see note',
+    flightTime: 'Unverified — actual stop count and journey time vary by date',
     frequency: 'Unverified — no confirmed daily schedule; check the live search for your dates',
     airlineSlugs: [],
     isDirect: false,
@@ -1596,7 +1596,7 @@ export const routes: Route[] = [
     // never the claimed one-stop Dubai/Doha routing on Emirates/Qatar
     // Airways. Restated as evidence-limited rather than replaced with a
     // different unverified specific claim.
-    flightTime: 'Unverified — actual stop count and journey time vary by date, see note',
+    flightTime: 'Unverified — actual stop count and journey time vary by date',
     frequency: 'Unverified — no confirmed daily schedule; check the live search for your dates',
     airlineSlugs: [],
     isDirect: false,
@@ -1615,7 +1615,7 @@ export const routes: Route[] = [
     airportSlug: 'london-heathrow',
     destinationSlug: 'mumbai',
     flightTime: '9h direct',
-    frequency: 'Air India and Virgin Atlantic each confirmed 2x daily; British Airways confirmed direct, exact daily count not separately confirmed — see note',
+    frequency: 'Air India and Virgin Atlantic each confirmed 2x daily; British Airways confirmed direct, exact daily count not separately confirmed',
     airlineSlugs: ['british-airways', 'air-india', 'virgin-atlantic'],
     isDirect: true,
     verification: { status: 'verified', sourceName: 'Air India official Mumbai–London Heathrow product deployment release', sourceUrl: 'https://www.airindia.com/in/en/newsroom/press-release/Air-India-elevates-Mumbai-London-Heathrow-services-with-brand-new-B787-9-featuring-new-premium-cabins.html', verifiedDate: '2026-09-14', reviewDueDate: '2026-12-13', note: 'Portfolio structure repair (4 October 2026): route-level verification now explicitly records what the existing current Air India airline-verification already proves — direct LHR-BOM service, including two daily Air India flights, corroborated by Heathrow live schedule evidence. British Airways and Virgin Atlantic remain governed by their own per-airline records below.' },
@@ -1665,7 +1665,7 @@ export const routes: Route[] = [
     airportSlug: 'london-heathrow',
     destinationSlug: 'bengaluru',
     flightTime: "10h direct (Virgin Atlantic's own route page)",
-    frequency: 'British Airways and Virgin Atlantic each independently confirmed daily direct via their own current sources; Air India is not verified — see note',
+    frequency: 'British Airways and Virgin Atlantic each independently confirmed daily direct via their own current sources; Air India is not verified',
     airlineSlugs: ['british-airways', 'virgin-atlantic'],
     isDirect: true,
     verification: { status: 'verified', sourceName: 'Virgin Atlantic official Bengaluru destination page', sourceUrl: 'https://www.virginatlantic.com/where-we-fly/asia/india/bengaluru', verifiedDate: '2026-08-29', reviewDueDate: '2026-11-27', note: 'Portfolio structure repair (4 October 2026): route-level verification now explicitly records what the existing current Virgin Atlantic airline-verification already proves — daily direct LHR-BLR service with a published 10-hour planning duration. British Airways remains governed by its separate per-airline record below.' },
@@ -1704,7 +1704,7 @@ export const routes: Route[] = [
     airportSlug: 'london-heathrow',
     destinationSlug: 'dhaka',
     flightTime: 'Current London Heathrow–Dhaka Biman service is confirmed; exact stop pattern and duration must be checked for your date',
-    frequency: 'Service confirmed; frequency and routing vary or are not established from the reviewed primary evidence',
+    frequency: 'Service confirmed; frequency and routing are not established, so check the exact flight for your date',
     airlineSlugs: ['biman-bangladesh'],
     isDirect: true,
     serviceShape: 'unspecified',
@@ -1966,8 +1966,8 @@ export const routes: Route[] = [
     slug: 'london-gatwick-ahmedabad',
     airportSlug: 'london-gatwick',
     destinationSlug: 'ahmedabad',
-    flightTime: 'Unverified — genuinely conflicting sources, see note',
-    frequency: 'Unverified — genuinely conflicting sources, see note',
+    flightTime: 'Unverified — genuinely conflicting sources',
+    frequency: 'Unverified — genuinely conflicting sources',
     airlineSlugs: ['air-india'],
     isDirect: true,
     verification: {
@@ -2027,7 +2027,7 @@ export const routes: Route[] = [
     // schedule.
     flightTime: 'Direct; duration varies by schedule',
     // Deliberately no specific weekly/daily figure — see verification note.
-    frequency: 'Qatar Airways confirmed direct; exact current weekly frequency not independently reconfirmed — see note.',
+    frequency: 'Qatar Airways direct service; current weekly frequency not reconfirmed, so check your date.',
     airlineSlugs: ['qatar-airways'],
     isDirect: true,
     verification: {
@@ -2314,9 +2314,9 @@ export const routes: Route[] = [
   },
   {
     slug: 'manchester-rome', airportSlug: 'manchester', destinationSlug: 'rome',
-    flightTime: 'Manchester Airport lists Rome/FCO as a destination; duration is not established for the exact FCO itinerary', frequency: 'Rome/FCO destination is confirmed; operators, schedules and service shape vary or are not established', airlineSlugs: [], isDirect: true, serviceShape: 'unspecified',
+    flightTime: 'Manchester Airport lists Rome/FCO as a destination; duration is not established for the exact FCO itinerary', frequency: 'Rome/FCO is listed as a destination; operators, schedules and the type of service are not established', airlineSlugs: [], isDirect: true, serviceShape: 'unspecified',
     verification: { status: 'verified', sourceName: "Manchester Airport's official Rome destination guide", sourceUrl: 'https://www.manchesterairport.co.uk/destinations-and-guides/rome/', verifiedDate: '2026-10-05', reviewDueDate: '2026-11-04', note: 'Manchester Airport\'s current Rome destination guide lists Rome and the airport codes CIA and FCO. This supports the neutral route-information claim for the exact FCO destination, but does not establish an FCO-specific operator, frequency, schedule or duration. Those details must be checked on the exact itinerary.' },
-    intro: 'Manchester Airport currently lists Rome/FCO as a destination. Operators, schedules and the exact service shape vary, so check the exact flight and airport before booking.',
+    intro: 'Manchester Airport currently lists Rome/FCO as a destination. Operators, schedules and the type of service vary or are not established, so check the exact flight and airport before booking.',
     bookingWindowNote: 'Confirm the Rome airport, live schedule, fare conditions and baggage terms on the exact itinerary.', peakPeriodIds: [],
   },
   {
@@ -2404,7 +2404,7 @@ export const routes: Route[] = [
     airportSlug: 'london-gatwick',
     destinationSlug: 'dubai',
     flightTime: '7-8 hours, per Gatwick\'s own destination listing',
-    frequency: 'Emirates operates direct service; Gatwick\'s own homepage stated "now flying four times daily" as of this session\'s check, not independently reconfirmed against a dedicated schedule source',
+    frequency: 'Emirates direct service; Gatwick Airport\'s website said "now flying four times daily" when last checked, not reconfirmed against a schedule, so check your date',
     airlineSlugs: ['emirates'],
     isDirect: true,
     verification: {
@@ -2521,8 +2521,8 @@ export const routes: Route[] = [
     slug: 'birmingham-delhi',
     airportSlug: 'birmingham',
     destinationSlug: 'delhi',
-    flightTime: 'Connecting via Amritsar — journey time depends on the connection, see note',
-    frequency: 'Three times weekly on the confirmed tag-service pattern (see note); exact current frequency not independently re-verified',
+    flightTime: 'Connecting via Amritsar — journey time depends on the connection',
+    frequency: 'Three times weekly on the confirmed tag-service pattern; exact current frequency not independently re-verified',
     airlineSlugs: ['air-india'],
     isDirect: false,
     verification: {
@@ -2806,7 +2806,7 @@ function buildShareText(status: 'direct' | 'connecting' | 'unspecified', pair: s
     return `${pair} is a connecting route — no confirmed direct service currently exists. Compare total journey time, schedules and ticket conditions before booking.`;
   }
   if (status === 'unspecified') {
-    return `${pair} service is confirmed, but the exact service shape varies or is not established. Check the exact flight, airport and schedule before booking.`;
+    return `${pair} service is confirmed, but the type of service and its schedule are not established. Check the exact flight, airport and schedule before booking.`;
   }
   const cleaned = flightTime.length <= MAX_SOCIAL_DETAIL_LENGTH ? cleanDirectDurationFragment(flightTime) : '';
   const durationFragment = cleaned ? ` — ${cleaned}` : '';

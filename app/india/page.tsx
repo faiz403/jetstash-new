@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { RegionHubPage } from '@/components/sections/region-hub-page';
 import { getDestinationsByRegion } from '@/data/destinations';
+import { buildDirectServiceNote } from '@/lib/hub-service-notes';
 
 // Pure ISR, matching the route detail pages — RegionHubPage renders
 // getEffectiveRoutePresentation() and DealCard, both of which must
@@ -16,6 +17,14 @@ export const metadata: Metadata = {
 
 export default function IndiaHubPage() {
   const destinations = getDestinationsByRegion('india');
+  // Derived from canonical route verification so this note cannot contradict
+  // the route cards below it (sprint 1, 22 Oct 2026).
+  const nowIso = new Date().toISOString().slice(0, 10);
+  const amritsarNote = buildDirectServiceNote(
+    'Amritsar',
+    ['birmingham-amritsar', 'london-gatwick-amritsar', 'manchester-amritsar', 'leeds-bradford-amritsar'],
+    nowIso
+  );
 
   return (
     <RegionHubPage
@@ -30,13 +39,10 @@ export default function IndiaHubPage() {
       visaNote="UK passport holders require a visa for India. The e-Visa (tourist or business) is processed online and should be applied for at least 4 days before travel, though earlier is recommended during busy periods. Overseas Citizen of India (OCI) cardholders do not require a separate visa."
       practicalNotes={[
         {
-          title: 'Diwali and the December–January window see the highest demand',
-          body: 'Festival season and the Christmas–New Year period are the highest-demand windows on UK–India routes, and fares often move during them. Outside these windows, particularly February–April and September–October, this is generally a lower-pressure time to book. Planning guidance, not a fare prediction.',
+          title: 'Plan around Diwali and the December–January window',
+          body: 'Diwali and the Christmas–New Year period are popular times to travel to India, so check dated fares for your own dates early. JetStash tracks dated fare observations, not a seasonal price pattern. Planning guidance, not a fare prediction.',
         },
-        {
-          title: 'Birmingham and Gatwick both have direct Amritsar services',
-          body: 'Air India currently runs direct services from Birmingham and Gatwick to Amritsar. Neither should be assumed to operate every day, so confirm the exact flight date before booking. Its Ahmedabad service currently sits on a genuine, unresolved conflict between Air India\'s own sources over whether it flies from Gatwick or Heathrow, so confirm the exact departure airport before booking.',
-        },
+        amritsarNote,
         {
           title: 'Check current status before booking Manchester\'s Delhi and Mumbai services',
           body: 'The former Manchester–Delhi and Manchester–Mumbai IndiGo direct services have ended. Check the Route Status panel on each route guide for current options before booking.',
