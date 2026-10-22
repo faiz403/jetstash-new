@@ -409,19 +409,27 @@ function routeVsFareMismatch(
  * routeVsFareMismatch() so that function's existing behaviour (and its
  * test coverage) is untouched.
  *
- * Fail-closed by construction: this only ever compares when the route
- * itself carries structured, evidenced `routeServiceConnections`
- * (data/routes.ts -- populated for exactly the handful of routes with
- * primary-source evidence naming a specific hub for both directions) AND
- * the tracked fare itself carries structured connection-airport evidence
- * (`outboundConnectionAirports`/`returnConnectionAirports` on the
- * observation). A route or fare missing that structured evidence is never
- * compared -- silence is the default, not a guess (e.g. manchester-karachi
+ * Fail-closed by construction: this only ever runs when the route itself
+ * carries structured, evidenced `routeServiceConnections` (data/routes.ts
+ * -- populated for exactly the handful of routes with primary-source
+ * evidence naming a specific hub). It then has two evidence paths:
+ *   1. The fare carries structured connection-airport evidence
+ *      (`outboundConnectionAirports`/`returnConnectionAirports`): the two
+ *      airport lists are compared and a difference is stated plainly.
+ *   2. The fare carries no structured connection airports (22 Oct 2026,
+ *      Manchester-Dhaka): only the fare's recorded airline text can be
+ *      checked against the route's verified airlines. Airline text cannot
+ *      prove a different service (abbreviations, codeshare marketing
+ *      names), so this path never asserts a difference: it names the
+ *      fare's airlines and says the journey *may* differ, and stays silent
+ *      when the fare names the route's own airline, names no airline, or
+ *      names only an abbreviation.
+ * A route missing that structured evidence is never compared -- silence is
+ * the default, not a guess (e.g. manchester-karachi
  * deliberately has no `routeServiceConnections` because COV-001's live
  * booking-engine search found no single stable hub, so this function
  * never runs for it). Never parses `flightTime`, `verification.note` or
- * any other prose, and never infers a hub from airline identity -- it
- * only ever compares two already-structured airport lists.
+ * any other prose, and never infers a hub from airline identity.
  *
  * Airport codes are deliberately never repeated in the note text --
  * formatRouting() above already renders the tracked fare's own connection
@@ -441,21 +449,48 @@ function routeVsFareMismatch(
  * rather than risk a false match or false mismatch from comparing a code
  * against a full label.
  */
+const GENERIC_AIRLINE_WORDS = new Set(['air', 'airlines', 'airways', 'the']);
+
+export function fareNamesNoRouteAirline(fareAirline: string, routeAirlineNames: string[]): boolean {
+  const fare = fareAirline.toLowerCase();
+  return routeAirlineNames.every((name) => {
+    const full = name.trim().toLowerCase();
+    if (!full) return false;
+    // "Biman" alone identifies Biman Bangladesh Airlines; "Air" alone
+    // identifies nothing, so generic first words need the full name.
+    const firstWord = full.split(/\s+/)[0];
+    const namedByFirstWord = !GENERIC_AIRLINE_WORDS.has(firstWord) && fare.includes(firstWord);
+    return !fare.includes(full) && !namedByFirstWord;
+  });
+}
+
 function extractIataCode(label: string): string | null {
   const match = label.match(/\(([A-Z]{3})\)\s*$/);
   return match ? match[1] : null;
 }
 
-function routeServiceFareMismatch(
+export function routeServiceFareMismatch(
   routeConnections: { outbound?: string[]; return?: string[] } | null | undefined,
   routeStatusLabel: string | null,
   routeAirlineLabel: string | null,
   fareDirectness: FareSignalObservation['directness'],
-  fareConnectionAirports: string[]
+  fareConnectionAirports: string[],
+  fareAirline: string,
+  routeAirlineNames: string[]
 ): RouteVsFareMismatch | null {
   if (fareDirectness !== 'connecting' || !routeConnections) return null;
   const routeAirports = [...new Set([...(routeConnections.outbound ?? []), ...(routeConnections.return ?? [])])];
-  if (routeAirports.length === 0 || fareConnectionAirports.length === 0) return null;
+  if (routeAirports.length === 0) return null;
+  if (fareConnectionAirports.length === 0) {
+    // Evidence path 2 (see doc comment): airline text only, so hedged.
+    const airline = fareAirline.trim();
+    if (airline.length < 4 || routeAirlineNames.length === 0 || !fareNamesNoRouteAirline(airline, routeAirlineNames)) return null;
+    const label = routeStatusLabel ?? 'Connecting';
+    return {
+      routeValue: routeAirlineLabel ? `${routeAirlineLabel} · ${label}` : label,
+      note: `This tracked fare is on ${airline} and may be a different connecting journey from this route's own service. Check the airlines and stops before booking.`,
+    };
+  }
   const fareCodes = fareConnectionAirports.map(extractIataCode);
   if (fareCodes.some((code) => code === null)) return null;
   const routeSet = new Set(routeAirports);
@@ -495,7 +530,7 @@ interface RouteContextProps {
 function CurrentSignal({ data, nowIso, lowerSelfTransfer, tripComUrl, routeSlug, routeDirectness, routeStatusLabel, routeAirlineLabel, routeServiceConnections, standoutFare, isServiceEnded = false }: { data: FareSignalObservation; nowIso: string; lowerSelfTransfer?: FareSignalObservation | null; tripComUrl: string | null; routeSlug: string; standoutFare?: StandoutFarePresentation | null; isServiceEnded?: boolean } & RouteContextProps) {
   const routing = formatRouting(data);
   const mismatch = routeVsFareMismatch(routeDirectness, routeStatusLabel, routeAirlineLabel, data.directness)
-    ?? routeServiceFareMismatch(routeServiceConnections, routeStatusLabel, routeAirlineLabel, data.directness, data.connectionAirports);
+    ?? routeServiceFareMismatch(routeServiceConnections, routeStatusLabel, routeAirlineLabel, data.directness, data.connectionAirports, data.airline, routeAirlineLabel ? routeAirlineLabel.split(", ") : []);
   // First Standout Fare Pilot (25 Aug 2026): only ever applies when the
   // approved verified evidence IS the exact observation this Fare Signal is
   // already showing (matched by id, never by price or route slug alone) —
@@ -573,7 +608,7 @@ function CurrentSignal({ data, nowIso, lowerSelfTransfer, tripComUrl, routeSlug,
 function RecentSignal({ data, nowIso, tripComUrl, routeSlug, routeDirectness, routeStatusLabel, routeAirlineLabel, routeServiceConnections, isServiceEnded = false }: { data: FareSignalObservation; nowIso: string; tripComUrl: string | null; routeSlug: string; isServiceEnded?: boolean } & RouteContextProps) {
   const routing = formatRouting(data);
   const mismatch = routeVsFareMismatch(routeDirectness, routeStatusLabel, routeAirlineLabel, data.directness)
-    ?? routeServiceFareMismatch(routeServiceConnections, routeStatusLabel, routeAirlineLabel, data.directness, data.connectionAirports);
+    ?? routeServiceFareMismatch(routeServiceConnections, routeStatusLabel, routeAirlineLabel, data.directness, data.connectionAirports, data.airline, routeAirlineLabel ? routeAirlineLabel.split(", ") : []);
   return (
     <>
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">

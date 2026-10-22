@@ -173,7 +173,11 @@ export const destinations: Destination[] = [
     // airport the route guide actually supports, and to match that route's
     // own duration hedge ("Direct; check the live schedule for duration")
     // rather than invent a precise figure route.ts itself declines to give.
-    flightTimeFromUK: 'Direct from London Gatwick; check the live schedule for exact duration',
+    // Phase 2 (22 Oct 2026): birmingham-amritsar is now the verified direct
+    // route (Air India, re-verified 22 Oct); london-gatwick-amritsar's
+    // verification lapsed on 17 Oct and shows as pending, so it is no longer
+    // named here.
+    flightTimeFromUK: 'Direct from Birmingham with Air India on selected days; check the live schedule for exact duration',
     ukAirports: ['birmingham', 'london-gatwick', 'manchester'],
     visaNote: 'e-Visa required for UK passport holders, apply at least 4 days before travel.',
     familyVisitContent: {
@@ -182,7 +186,7 @@ export const destinations: Destination[] = [
       documentNote:
         'OCI cardholders do not require a separate visa; other UK passport holders need the standard e-Visa, applied for at least 4 days ahead.',
       packingNote:
-        'Air India\'s direct Amritsar service (London Gatwick) does not operate daily, so confirm specific flight days before assuming a non-stop option exists on your preferred date — and check whether a Birmingham, Leeds Bradford or Manchester departure would mean a connecting itinerary instead.',
+        'Air India\'s direct Amritsar service from Birmingham does not operate daily, so confirm specific flight days before assuming a non-stop option exists on your preferred date, and check whether a departure from another UK airport would mean a connecting itinerary instead.',
       peakPeriodIds: ['baisakhi', 'diwali', 'uk-summer-holidays'],
     },
   },

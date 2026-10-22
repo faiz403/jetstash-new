@@ -47,16 +47,21 @@ describe('Birmingham–Amritsar is accurately represented in airport-notes.ts', 
 });
 
 describe('Amritsar destination flightTimeFromUK matches the actually-verified direct route', () => {
-  it('no longer claims a direct Birmingham service', () => {
+  // Updated 22 Oct 2026 (Phase 2): Birmingham-Amritsar was re-verified as
+  // direct, and London Gatwick-Amritsar's verification lapsed on 17 Oct, so
+  // the destination now names Birmingham, not Gatwick.
+  it('names Birmingham, the re-verified direct route', () => {
     const amritsar = getDestinationBySlug('amritsar');
-    expect(amritsar?.flightTimeFromUK).not.toContain('Birmingham');
+    expect(amritsar?.flightTimeFromUK).toContain('Direct from Birmingham');
+    const birminghamRoute = routes.find((r) => r.slug === 'birmingham-amritsar');
+    expect(birminghamRoute?.verification).toMatchObject({ status: 'verified', verifiedDate: '2026-10-22' });
   });
 
-  it('names London Gatwick as a verified direct Amritsar route', () => {
+  it('no longer names London Gatwick while its verification has lapsed', () => {
     const amritsar = getDestinationBySlug('amritsar');
-    expect(amritsar?.flightTimeFromUK).toContain('London Gatwick');
+    expect(amritsar?.flightTimeFromUK).not.toContain('Gatwick');
     const gatwickRoute = routes.find((r) => r.slug === 'london-gatwick-amritsar');
-    expect(gatwickRoute?.isDirect).toBe(true);
+    expect(gatwickRoute?.verification?.reviewDueDate).toBe('2026-10-17');
   });
 
   it('only Birmingham and Gatwick are currently verified direct Amritsar routes', () => {

@@ -37,7 +37,8 @@ import { travellerTips, getTipsForScope } from '@/data/traveller-tips';
  * the original version of this tip go stale.
  */
 
-const NOW_ISO = '2026-09-30';
+// Inside the 22 October 2026 re-verification window (review due 21 November).
+const NOW_ISO = '2026-10-22';
 const route = getRouteBySlug('birmingham-amritsar')!;
 const presentation = getEffectiveRoutePresentation(route, routeStatusEvents, NOW_ISO);
 const tip = getTipsForScope({ routeSlug: 'birmingham-amritsar' })[0];
@@ -54,8 +55,8 @@ describe('1. Canonical route state is verified direct', () => {
   });
 
   it('route facts are the deliberately hedged verified direct facts', () => {
-    expect(route.flightTime).toBe('Approximately 10h 10m nonstop (Air India schedule)');
-    expect(route.frequency).toBe('Air India nonstop service shown several times weekly; confirm your date');
+    expect(route.flightTime).toBe('About 10h 35m nonstop to Amritsar; about 11h 40m to 12h 35m back (Air India schedule)');
+    expect(route.frequency).toBe('Air India\'s schedule for 22–28 October 2026 shows the nonstop on two days that week; operating days vary, so confirm your date');
     expect(route.airlineSlugs).toEqual(['air-india']);
     expect(route.peakPeriodIds).toEqual(['baisakhi', 'diwali', 'uk-summer-holidays']);
   });

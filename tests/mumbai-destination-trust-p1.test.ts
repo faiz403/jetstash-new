@@ -186,8 +186,10 @@ describe('Mumbai destination P1 trust fix', () => {
     // a771262 (LGW-DOH) and 8b60ddf (UAE/Qatar) fixes, both present here.
     // Recomputed 17 Oct 2026: Islamabad's flightTimeFromUK changed from the
     // exact "7h 45m" to "About 7½ hours" with the MAN-ISB re-verification.
+    // Recomputed 22 Oct 2026: Amritsar's flightTimeFromUK and packingNote now
+    // name Birmingham (re-verified) instead of the lapsed Gatwick route.
     const otherDestinations = destinations.filter((item) => item.slug !== 'mumbai');
     const digest = createHash('sha256').update(JSON.stringify(otherDestinations)).digest('hex');
-    expect(digest).toBe('44f24fddc4e183f101bdf1996e6502cd89135b6b9be33840622cb5ff3b3fd77b');
+    expect(digest).toBe('2398bc1a27dc5543ceb488349fb4778b3e5370e7a4ed238b50de86d63486fd56');
   });
 });
