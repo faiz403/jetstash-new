@@ -126,6 +126,19 @@ Every checkpoint records these items:
 - **Manchester–Dubai:** re-checked against Emirates on 21 October 2026 and recorded by PR #340; its review is now due 19 January 2027, after the window.
 - **Manchester–Islamabad:** a winter operating-day check is approved for on or after 27 October 2026, using official sources only. Re-dating that record withdraws this pilot's Islamabad answers until their wording is reviewed against the new check, which is intended.
 
+## Known events inside the window
+
+- **21 October 2026 (Day 0), PR #343:** Manchester–Doha accuracy correction (not a pilot page or
+  link target); changed the Manchester–Doha line on the homepage, `/routes` and `/gulf`.
+- **22 October 2026, PR #344:** route-hero status sentence fix (Heathrow–Dhaka, Manchester–Rome) and
+  Manchester–Dhaka dated wording. No pilot page changed.
+- **PR #345 (founder-approved option (a), 22 October 2026; dated by its Production release):**
+  **Birmingham–Delhi, a pilot page,** gains one fare-card line, "This tracked fare is on Lufthansa
+  and may be a different connecting journey from this route's own service. Check the airlines and
+  stops before booking." Quick answers, links, title, canonical and indexing directives are
+  unchanged. Account for it when reading Birmingham–Delhi movement. The same PR re-verifies
+  Birmingham–Amritsar and updates the Amritsar card on `/india`.
+
 ## Wave 2 (not approved; only after a positive day-14 signal)
 
 **Ready now** (verification current, no pending status on 21 Oct):

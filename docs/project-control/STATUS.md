@@ -26,12 +26,17 @@ rate limiting rather than the current process-local limiter.
 
 Backlog recovery sprint, Phase 2, on `fix/phase2-bhx-atq-man-dac-2026-10-22` from `24503ab`.
 - **Birmingham–Amritsar re-verified (due 30 Oct).** Air India's own route-page schedule for
-  22–28 October 2026 (covering the first winter-schedule days) shows nonstop AI118 BHX→ATQ at
-  10h 35m on two days that week and nonstop AI117 back at 11h 40m–12h 35m; Birmingham Airport's
-  current Amritsar page names Air India as the direct airline. The old "10h 10m" and "several
-  times weekly" claims are replaced; no weekday pattern is claimed from one week. RECENT / CHANGING,
-  verified 22 October, review due 21 November 2026. Evidence and SHA-256 kept outside the repo in
+  22–28 October 2026 shows nonstop AI118 BHX→ATQ at 10h 35m and AI117 back at 12h 35m on the
+  winter schedule from 25 October, and 11h 40m back before it; Birmingham Airport's current
+  Amritsar page names Air India as the direct airline. Founder review noted an independent
+  timetable listing AI118 nonstop on Friday 23 October at about 10h 10m (pre-winter, matching
+  Air India's own 30 September record), so public copy reads "Nonstop: about 10h 35m out and
+  12h 35m back on Air India's winter schedule from 25 October 2026 (about 10h 10m and 11h 40m
+  before then)" and states no weekly count or weekday pattern. RECENT / CHANGING, verified
+  22 October, review due 21 November 2026. Evidence and SHA-256 kept outside the repo in
   `C:\Users\faiz2\jetstash-route-reverification-2026-10-22\bhx-atq\`.
+- **SEO pilot:** the Birmingham–Delhi fare-card line below is founder-approved (option (a)) and
+  logged as a known event in `SEO_INDEXING_PILOT_2026-10-21.md`.
 - **Amritsar destination page:** said the direct service was from London Gatwick (verification
   lapsed 17 Oct) and that Birmingham meant a connecting journey. Now names Birmingham with Air
   India on selected days.

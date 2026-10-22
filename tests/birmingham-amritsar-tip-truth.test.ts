@@ -55,8 +55,8 @@ describe('1. Canonical route state is verified direct', () => {
   });
 
   it('route facts are the deliberately hedged verified direct facts', () => {
-    expect(route.flightTime).toBe('About 10h 35m nonstop to Amritsar; about 11h 40m to 12h 35m back (Air India schedule)');
-    expect(route.frequency).toBe('Air India\'s schedule for 22–28 October 2026 shows the nonstop on two days that week; operating days vary, so confirm your date');
+    expect(route.flightTime).toBe('Nonstop: about 10h 35m out and 12h 35m back on Air India\'s winter schedule from 25 October 2026 (about 10h 10m and 11h 40m before then)');
+    expect(route.frequency).toBe('Nonstop on selected days rather than daily; operating days vary, so confirm your date with Air India');
     expect(route.airlineSlugs).toEqual(['air-india']);
     expect(route.peakPeriodIds).toEqual(['baisakhi', 'diwali', 'uk-summer-holidays']);
   });

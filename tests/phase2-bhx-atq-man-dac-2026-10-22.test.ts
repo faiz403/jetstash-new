@@ -25,15 +25,15 @@ describe('Birmingham-Amritsar re-verification', () => {
     expect(days).toBe(30);
   });
 
-  it('states the scheduled durations and no longer the old 10h 10m', () => {
-    expect(route.flightTime).toMatch(/10h 35m nonstop/);
-    expect(route.flightTime).toMatch(/11h 40m to 12h 35m back/);
-    expect([route.flightTime, route.intro].join(' ')).not.toMatch(/10h 10m/);
+  it('separates the winter schedule from earlier departures', () => {
+    expect(route.flightTime.startsWith("Nonstop: about 10h 35m out and 12h 35m back on Air India's winter schedule from 25 October 2026")).toBe(true);
+    expect(route.flightTime).toContain('(about 10h 10m and 11h 40m before then)');
+    expect(route.intro).toContain('winter schedule from 25 October 2026 shows AI118 at about 10h 35m (about 10h 10m on earlier departures)');
   });
 
-  it('dates the frequency to the observed week and names no operating weekdays', () => {
-    expect(route.frequency).toMatch(/22–28 October 2026/);
-    expect(route.frequency).toMatch(/two days/);
+  it('claims no weekly count and names no operating weekdays', () => {
+    expect(route.frequency).toBe('Nonstop on selected days rather than daily; operating days vary, so confirm your date with Air India');
+    expect(route.frequency).not.toMatch(/\b(one|two|three|four|five|six|\d+) (days?|times|flights)\b/i);
     const visible = [route.frequency, route.intro, route.bookingWindowNote].join(' ');
     expect(visible).not.toMatch(/monday|tuesday|wednesday|thursday|friday|saturday|sunday|several times weekly/i);
     expect(visible).not.toMatch(/\b(operates|runs|flies) (daily|every day)\b/i);
