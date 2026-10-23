@@ -164,8 +164,8 @@ Every checkpoint records these items:
   Account for it when reading homepage-driven movement on Manchester–Islamabad. The card disappears on its own from
   17 November 2026 if nothing is re-verified by then.
 
-- **Homepage correction sprint (founder-approved 23 October 2026; dated by its Production release, merge commit and time to be
-  added then):** **the homepage's visible text and link set change slightly.** The Route Watch invitation now reads "Watch
+- **Homepage correction sprint (PR #348; merge commit `8765251324fca1858104ebeb3d0ff6fc750e9626`, merged 14:53:49 BST on
+  23 October 2026):** **the homepage's visible text and link set change slightly.** The Route Watch invitation now reads "Watch
   Manchester → Islamabad" and links to `/routes/manchester-islamabad#route-watch` (the same page the homepage already links
   to), replacing "Watch a route" which linked to `/routes/manchester-mumbai#route-watch` (a service-ended route, not a pilot
   page); that is the only link target removed (Manchester–Mumbai) and none is added. The closing band sentence changes from
@@ -173,6 +173,11 @@ Every checkpoint records these items:
   The mobile Route Atlas layout is repaired and its country/destination chips also show on tablet widths (the same chip
   text that phones already had; no new copy). Title, canonical, robots and every pilot-page link are
   unchanged; the pilot pages and link targets are byte-identical to Production in visible text.
+
+- **Atlas answer-card visibility fix (founder-approved 23 October 2026; dated by its Production release, merge commit and time
+  to be added then):** the homepage HTML gains one sentence inside the mobile/tablet Atlas chip controls, "Tap a destination in
+  {country} to see its route." (shown only while the route card is hidden; hidden from 1024 px up). No link, title, canonical,
+  robots or pilot-page change.
 
 ## Wave 2 (not approved; only after a positive day-14 signal)
 

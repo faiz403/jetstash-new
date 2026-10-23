@@ -22,7 +22,28 @@ rate limiting rather than the current process-local limiter.
 
 **Production site:** `https://jetstash.co.uk`
 
-## Homepage correction sprint — 23 October 2026 (PR for review; not merged, not deployed)
+## Atlas answer-card visibility fix — 23 October 2026 (PR for review; not merged, not deployed)
+
+On `fix/atlas-answer-visibility-2026-10-23` from `8765251`, after the founder's real-phone test of PR #348 found that tapping a
+destination did not visibly show its route card.
+- **Reproduced (live Production, touch emulation at 320 px):** the mobile answer card sits above the map and starts hidden.
+  Tapping a destination dot on the map (the visitor is scrolled down at the map) revealed the card above the viewport
+  (`top -1684, bottom 39`) while the page stayed on the map, so the card looked missing. At 390 px scroll anchoring happened
+  to keep it in view; iOS Safari has no scroll anchoring, so real iPhones behave like the 320 px case.
+- **Fix:** after a deliberate selection (press, tap, or Enter/Space on a chip or map control; never hover or plain focus) and
+  below lg, the card is scrolled into view: map taps align it just under the sticky header (`scroll-mt-24`), chip taps
+  scroll the minimum needed. A country tap now shows "Tap a destination in {country} to see its route." while the card is
+  hidden. lg+ never scrolls and never hides the card. Map panning, selection handlers and analytics are unchanged.
+- **Verified in touch emulation** at 320, 390 and 768 px: seven country/destination chip switches, two map-dot taps in a row,
+  keyboard Enter on a chip, no scroll on map hover at 1440 and 600 px, no sideways drift. Not tested on a real iPhone.
+- **Noticed, not changed:** the Manchester–Mumbai answer card is about 1,300–1,700 px tall on a phone because its route
+  verdict detail carries a long internal verification paragraph; it is a content question, not part of this fix.
+- **SEO pilot event:** one new mobile/tablet sentence in the homepage HTML; logged in `SEO_INDEXING_PILOT_2026-10-21.md`.
+
+## Homepage correction sprint — 23 October 2026 (DONE, live via PR #348)
+
+Merged as `8765251324fca1858104ebeb3d0ff6fc750e9626` at 14:53:49 BST on 23 October 2026 (13:53:49 UTC); Production verified in
+touch emulation. Real-phone check failed on answer-card visibility (see the fix above).
 
 On `fix/homepage-correction-2026-10-23` from `29e9d81`, from the founder-approved full homepage review.
 - **Mobile Route Atlas fixed at its cause.** Since 11 Sep (commit `1c0c4c2`) the mobile chip rows were direct grid children

@@ -1,7 +1,8 @@
 'use client';
 
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { getMapPanScrollLeft } from '@/lib/atlas-map-pan';
+import { getAnswerScrollBlock, getAnswerScrollSource } from '@/lib/atlas-answer-scroll';
 import Link from 'next/link';
 import { ArrowUpRight, ChevronRight } from 'lucide-react';
 import { COUNTRY_PATHS, getPathBBox } from '@/lib/atlas-country-geometry';
@@ -361,6 +362,37 @@ export function AtlasFeelTest({
   const mapStripRef = useRef<HTMLDivElement>(null);
   const mapSvgRef = useRef<SVGSVGElement>(null);
 
+  // Answer-card visibility on mobile/tablet (real-phone failure after PR #348, 23 Oct 2026). Below lg the answer card sits ABOVE
+  // the map in the DOM and starts hidden. Tapping a destination dot on the map (the visitor is scrolled down at the map) revealed
+  // the card above the viewport, and scroll anchoring then kept the map where it was, so the card looked missing; chip taps could
+  // also open it partly below the fold on short phones. The scroll is driven by an explicit ACTIVATION signal (a click, or Enter/
+  // Space, on a chip button or a map control), never by selection state, so it also works when the destination was already
+  // selected by hover/focus and when the same destination is tapped again, and it cannot fire from hover or plain focus. Each
+  // activation is a numbered request that is handled exactly once (no timed window, nothing left armed). Map taps align the card
+  // just under the sticky header; chip taps scroll the minimum, or align the top for a card taller than the screen. lg+ always
+  // shows the card and never scrolls.
+  const answerRef = useRef<HTMLDivElement>(null);
+  const hintRef = useRef<HTMLParagraphElement>(null);
+  const [answerScrollRequest, setAnswerScrollRequest] = useState(0);
+  const answerScrollSourceRef = useRef<'chip' | 'map'>('chip');
+  const answerScrollHandledRef = useRef(0);
+  function requestAnswerScroll(e: { target: EventTarget }, event: 'click' | 'keydown') {
+    const t = e.target as Element | null;
+    if (!t || typeof t.closest !== 'function') return;
+    const control = t.closest('button, [role="button"], text[data-atlas-country-label]');
+    const source = getAnswerScrollSource({
+      event,
+      controlTag: control ? control.tagName : null,
+      isRoleButton: control?.getAttribute('role') === 'button',
+      isCountryLabel: control?.hasAttribute('data-atlas-country-label') ?? false,
+      insideMapStrip: Boolean(control && mapStripRef.current?.contains(control)),
+      insideChipGroup: Boolean(control?.closest('[aria-label^="Choose a country"], [aria-label^="Choose a destination"]')),
+    });
+    if (!source) return;
+    answerScrollSourceRef.current = source;
+    setAnswerScrollRequest((n) => n + 1);
+  }
+
   // Centres a map point (SVG units) in the mobile strip. No-op where the strip does not scroll (sm+). Respects
   // reduced motion by jumping instead of animating.
   function panMapTo(pointX: number | null) {
@@ -382,6 +414,23 @@ export function AtlasFeelTest({
     const reduce = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     strip.scrollTo({ left, behavior: reduce ? 'auto' : 'smooth' });
   }
+
+  useEffect(() => {
+    if (answerScrollRequest === 0 || answerScrollHandledRef.current === answerScrollRequest) return;
+    answerScrollHandledRef.current = answerScrollRequest;
+    if (window.matchMedia('(min-width: 1024px)').matches) return;
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (!mobileRevealed) {
+      // A country tap: the card stays hidden and the hint explains the next step. From the map the hint is above the viewport,
+      // so bring it into view; from the chips it is already right below them.
+      if (answerScrollSourceRef.current === 'map') hintRef.current?.scrollIntoView({ block: 'nearest', behavior: reduce ? 'auto' : 'smooth' });
+      return;
+    }
+    const el = answerRef.current;
+    if (!el) return;
+    const block = getAnswerScrollBlock({ source: answerScrollSourceRef.current, cardHeight: el.getBoundingClientRect().height, viewportHeight: window.innerHeight });
+    el.scrollIntoView({ block, behavior: reduce ? 'auto' : 'smooth' });
+  }, [answerScrollRequest, mobileRevealed]);
 
   const activeCountry = countries.find((c) => c.slug === activeCountrySlug) ?? countries[0];
   const activeDest = activeCountry.destinations.find((d) => d.slug === activeDestSlug) ?? activeCountry.destinations[0];
@@ -661,7 +710,15 @@ export function AtlasFeelTest({
         </div>
       </header>
 
-      <div className="relative mx-auto max-w-[1600px] overflow-hidden px-6 py-8 sm:px-10 sm:py-10">
+      <div
+        className="relative mx-auto max-w-[1600px] overflow-hidden px-6 py-8 sm:px-10 sm:py-10"
+        // Bubble phase on purpose: React runs capture-phase and bubble-phase handlers as separate batches, so a capture handler's
+        // request would render BEFORE the chip's own onClick reveals the card; in the bubble phase both land in one render.
+        onClick={(e) => requestAnswerScroll(e, 'click')}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') requestAnswerScroll(e, 'keydown');
+        }}
+      >
         <p className="text-[13px] text-ink-300 lg:hidden">Select a country, then a destination, to see its route.</p>
         {/* Input-neutral wording — the map is genuinely operable by mouse
             hover, touch (mobile chip selector) and keyboard (Tab + Enter/
@@ -765,6 +822,7 @@ export function AtlasFeelTest({
               unmoved except in the DOM. */}
           {activeDest && (
             <div
+              ref={answerRef}
               aria-live="polite"
               // Progressive disclosure (density fix, August 2026): below lg the
               // panel stays out of the default layout — "hidden" here, not a
@@ -855,6 +913,12 @@ export function AtlasFeelTest({
                 </div>
               </div>
             </div>
+          )}
+
+          {/* Next step after a country tap: the answer card stays hidden until a destination is chosen, so say so. Placed in the card's
+              own slot, directly above the map, so it is in view whether the visitor is at the chips or scrolled down at the map. */}
+          {!mobileRevealed && (
+            <p ref={hintRef} className="min-w-0 text-[13px] leading-snug text-ink-300 lg:hidden">Tap a destination in {activeCountry.label} to see its route.</p>
           )}
 
           <div className="min-w-0 lg:order-1">
@@ -1021,7 +1085,7 @@ export function AtlasFeelTest({
                     thing. Pointer/hover handlers stay so a mouse user's
                     cursor lands correctly even when it's over the glyphs
                     themselves, which can sit outside the circle's radius. */}
-                <text x={labelX} y={labelY} textAnchor={labelAnchor} fontFamily="var(--font-display), Georgia, serif" fontSize={isActive ? 5.5 : 4} fontWeight={isActive ? 600 : 500} fill="#F7F2E9" stroke="#080A0F" strokeWidth="1.4" strokeOpacity="0.85" paintOrder="stroke" opacity={isActive ? 1 : 0.85} pointerEvents="auto" aria-hidden="true" className="cursor-pointer transition-all duration-500" onMouseEnter={() => activateCountry(c.slug)} onPointerEnter={() => activateCountry(c.slug)} onPointerDown={() => activateCountry(c.slug)} onClick={() => activateCountry(c.slug)}>
+                <text x={labelX} y={labelY} textAnchor={labelAnchor} fontFamily="var(--font-display), Georgia, serif" fontSize={isActive ? 5.5 : 4} fontWeight={isActive ? 600 : 500} fill="#F7F2E9" stroke="#080A0F" strokeWidth="1.4" strokeOpacity="0.85" paintOrder="stroke" opacity={isActive ? 1 : 0.85} pointerEvents="auto" aria-hidden="true" data-atlas-country-label="true" className="cursor-pointer transition-all duration-500" onMouseEnter={() => activateCountry(c.slug)} onPointerEnter={() => activateCountry(c.slug)} onPointerDown={() => activateCountry(c.slug)} onClick={() => activateCountry(c.slug)}>
                   {c.slug === 'uae' ? 'UAE' : c.label}
                 </text>
                 <circle
