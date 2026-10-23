@@ -65,9 +65,9 @@ describe('Mobile Atlas hierarchy: controls precede the answer, which precedes th
     expect(occurrences).toHaveLength(1);
   });
 
-  it('the chip selector stays sm:hidden, so its relocation has no effect on desktop/tablet layout or tab order', () => {
+  it('the chip selector stays hidden at lg and above, so its relocation has no effect on desktop layout or tab order', () => {
     const start = atlasSrc.indexOf('aria-label="Choose a country"', atlasSrc.indexOf('lg:grid-cols-[minmax(0,1fr)_22rem]'));
-    const wrapperOpenIdx = atlasSrc.lastIndexOf('<div className="flex flex-col gap-2 sm:hidden">', start);
+    const wrapperOpenIdx = atlasSrc.lastIndexOf('<div className="flex min-w-0 flex-col gap-2 lg:hidden">', start);
     expect(wrapperOpenIdx).toBeGreaterThan(-1);
   });
 

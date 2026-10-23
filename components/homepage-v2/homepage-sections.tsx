@@ -183,7 +183,12 @@ export function WhyJetStash() {
    bg-sand-100, matching CommercialPaths directly above (premium rhythm
    pass, August 2026) — see that section's own doc comment for why. Copy,
    card and CTA are unchanged; only the outer section tone moved. */
-export function RouteWatchInvite() {
+export function RouteWatchInvite({ watchRoute = null }: { watchRoute?: { slug: string; label: string } | null } = {}) {
+  // Homepage correction (23 Oct 2026): the button used to be a fixed link to Manchester-Mumbai, a route whose direct
+  // service has ended. Route Watch only exists as the per-route form on each route page, so it now names a current route
+  // (see lib/homepage-evidence.ts getHomepageWatchRoute) or, with none, honestly points at the route index.
+  const href = watchRoute ? `/routes/${watchRoute.slug}#route-watch` : '/routes';
+  const label = watchRoute ? `Watch ${watchRoute.label}` : 'Choose a route to watch';
   return (
     <section className="bg-sand-100 py-14 sm:py-20">
       <div className="mx-auto max-w-content px-5 sm:px-8">
@@ -198,10 +203,10 @@ export function RouteWatchInvite() {
             <p className="mt-2 text-sm leading-relaxed text-ink-600">{ROUTE_WATCH_INITIAL_COPY}</p>
           </div>
           <Link
-            href="/routes/manchester-mumbai#route-watch"
+            href={href}
             className="inline-flex h-12 shrink-0 items-center justify-center gap-1.5 rounded-sm bg-ink-900 px-6 text-sm font-semibold text-sand-50 transition-colors hover:bg-brass-700"
           >
-            Watch a route
+            {label}
             <ArrowUpRight className="h-4 w-4" strokeWidth={2.25} />
           </Link>
         </div>
@@ -223,7 +228,7 @@ export function ClosingBand() {
            */}
           <span className="font-display text-xl tracking-tight text-sand-50">JetStash</span>
           <p className="mt-2 max-w-md text-sm text-ink-300">
-            The first place to check before you book. One clear Journey Brief, checked and dated.
+            The first place to check before you book. Route status, fares and travel requirements, each checked and dated.
           </p>
         </div>
         {/* Back to the hero's handover — never the founder-gated prototype,

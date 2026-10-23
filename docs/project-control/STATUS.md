@@ -22,7 +22,30 @@ rate limiting rather than the current process-local limiter.
 
 **Production site:** `https://jetstash.co.uk`
 
-## Stage 2: first-screen and fare experience — 23 October 2026 (PR for review; not merged, not deployed)
+## Homepage correction sprint — 23 October 2026 (PR for review; not merged, not deployed)
+
+On `fix/homepage-correction-2026-10-23` from `29e9d81`, from the founder-approved full homepage review.
+- **Mobile Route Atlas fixed at its cause.** Since 11 Sep (commit `1c0c4c2`) the mobile chip rows were direct grid children
+  with no width constraint, so the single grid column grew to 1262 px inside the overflow-hidden section: the map strip had
+  nothing to scroll, the map and answer card were clipped, and tapping a chip drifted the section sideways. The grid column
+  is now `minmax(0,1fr)` with `min-w-0` on its items (desktop two-column template unchanged), and selecting a country,
+  destination or airport pans the map strip to centre the selection when a chip is tapped (`lib/atlas-map-pan.ts`; reduced
+  motion jumps instead; map hover never pans). The country and destination chips now also show at tablet widths
+  (640–1023 px), where the fitted map's touch targets are only a few pixels wide; desktop (1024 px and up) is unchanged.
+  Verified in touch emulation at 320, 375, 390, 430, 640, 768, 820 and 1023 px; a real-phone acceptance check is left to
+  the founder.
+- **Route Watch invitation:** the homepage button linked to Manchester–Mumbai (direct service ended). It now names a current
+  route chosen by `getHomepageWatchRoute` (today "Watch Manchester → Islamabad", linking to its existing `#route-watch`
+  form) or, if none qualifies, says "Choose a route to watch" and links to `/routes`. No new Route Watch feature.
+- **Closing band:** "One clear Journey Brief" (a founder-only prototype) replaced with "Route status, fares and travel
+  requirements, each checked and dated."
+- **Intentionally unchanged:** hero, evidence card, desktop Atlas and its animations, fares, Trip.com links, email and privacy
+  systems, analytics events, SEO pilot settings, PR #342. Deferred by the CEO: hero photography, grid polish.
+- **SEO pilot event** logged in `SEO_INDEXING_PILOT_2026-10-21.md`.
+
+## Stage 2: first-screen and fare experience — 23 October 2026 (DONE, live via PR #347)
+
+Merged as `29e9d81078c708d3e5fa1bfc77f13d6820e0029e` at 02:13:43 BST on 23 October 2026; Production verified.
 
 On `feat/stage2-first-screen-2026-10-23` from `3badd5e`, from the founder-approved Stage 2 design benchmark (items 1–3).
 - **Homepage:** the journey form no longer silently selects Manchester → Agadir (both selects start on "Choose airport" /
