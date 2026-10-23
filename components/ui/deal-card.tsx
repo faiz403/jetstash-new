@@ -154,8 +154,15 @@ export function DealCard({ deal, nowIso, headingLevel = 'h3' }: { deal: Deal; no
                   ? `£${range.min.toLocaleString('en-GB')}–£${range.max.toLocaleString('en-GB')}`
                   : `£${range.min.toLocaleString('en-GB')}`}
               </span>
-              <span className="basis-full text-sm text-ink-400">{range.count > 1 ? 'Details of the minimum shown: ' : ''}{toTravellerFareNote(range.priceNote)}</span>
             </div>
+            {/* Stage 2 scanning pass (23 Oct 2026): price, then who it was checked with and when, in one line,
+                so the three facts a reader scans for sit together. The long fare-details note moved below the
+                route/fare reconciliation and travel dates (same words, quieter type); nothing was removed. */}
+            {fareSourceLabel && (
+              <p className="mt-1 text-sm font-medium text-ink-700">
+                {fareSourceLabel} · {range.count > 1 ? 'latest ' : ''}{formatChecked(range.latestDate)}
+              </p>
+            )}
             {/* Route/fare reconciliation (Tier-1 QA follow-up, Sept 2026; moved
                 beside the price in first-impression sprint 1, 22 Oct 2026).
                 The explanation used to sit in small grey text below the fare
@@ -187,20 +194,22 @@ export function DealCard({ deal, nowIso, headingLevel = 'h3' }: { deal: Deal; no
             <p className="mt-3 text-sm font-medium text-ink-700">
               Travel {formatChecked(range.departureDate)}–{formatChecked(range.returnDate)}
             </p>
+            <JourneyConsequenceLine consequences={range.journeyConsequences} />
+            <p className="mt-2 text-xs leading-relaxed text-ink-500">
+              {range.count > 1 ? 'Details of the minimum shown: ' : ''}{toTravellerFareNote(range.priceNote)}
+            </p>
             {range.count > 1 && (
-              <p className="mt-1 text-xs text-ink-400">
+              <p className="mt-1 text-xs text-ink-500">
                 Baggage and fare conditions may differ between checks; see individual fare details.
               </p>
             )}
-            <JourneyConsequenceLine consequences={range.journeyConsequences} />
-            {fareSourceLabel && <p className="mt-1 text-sm font-medium text-ink-500">{fareSourceLabel}</p>}
 
-            <div className="mt-4 flex items-center gap-1.5 text-xs text-ink-400">
-              <span className={`h-1.5 w-1.5 rounded-full ${isStale ? 'bg-ink-300' : 'bg-brass-400'}`} />
-              {range.count > 1
-                ? `From ${range.count} checks since ${formatChecked(range.earliestDate)}`
-                : `One check, ${formatChecked(range.latestDate)}`}
-            </div>
+            {range.count > 1 && (
+              <div className="mt-4 flex items-center gap-1.5 text-xs text-ink-400">
+                <span className={`h-1.5 w-1.5 rounded-full ${isStale ? 'bg-ink-300' : 'bg-brass-400'}`} />
+                {`From ${range.count} checks since ${formatChecked(range.earliestDate)}`}
+              </div>
+            )}
             {isStale && (
               <p className="mt-1 text-xs text-ink-400">
                 This check is over {Math.floor(OBSERVATION_STALE_DAYS / 30)} months old — check live price for anything current.

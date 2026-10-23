@@ -138,8 +138,8 @@ Every checkpoint records these items:
   stops before booking." Quick answers, links, title, canonical and indexing directives are
   unchanged. Account for it when reading Birmingham–Delhi movement. The same PR re-verifies
   Birmingham–Amritsar and updates the Amritsar card on `/india`.
-- **First-impression sprint 1 (founder-approved 22 October 2026; dated by its Production release,
-  merge commit and time to be added then):** customer-visible text changed on these pilot pages and
+- **First-impression sprint 1 (PR #346; merge commit `3badd5edb6ee26e2fd7668542df45e374a1c6eeb`, merged
+  00:18:37 BST on 23 October 2026 = 23:18:37 UTC on 22 October):** customer-visible text changed on these pilot pages and
   link targets, found by diffing the visible text of Production against the release build.
   The homepage is unchanged. Titles, canonical URLs, indexing directives, Quick answers, link
   blocks, fares and affiliate links are unchanged everywhere.
@@ -151,6 +151,18 @@ Every checkpoint records these items:
     `birmingham-jeddah` gain the same fare cue; `birmingham-jeddah` also loses internal wording from
     its Saudia duration line. `birmingham-mumbai` is unchanged.
   - **Also changed:** `/routes` (sibling card detail lines) and the India, Pakistan, Gulf and Umrah hubs.
+- **Stage 2 first-screen sprint (founder-approved 23 October 2026; dated by its Production release, merge commit and
+  time to be added then):** **the homepage's visible text changes** (a neutral journey form instead of the Manchester →
+  Agadir default, and one example-check card for Manchester → Islamabad). The homepage link set is unchanged: the card's
+  only link goes to `manchester-islamabad`, which the homepage already linked to (verified: the homepage's internal
+  link set, title, canonical and robots tag are identical to Production). `/deals` loses most of its hero paragraph.
+  The shared deal card now puts the airline and checked date directly under the price ("Fare checked with X · latest
+  6 October 2026"), so the sibling fare cards embedded on route, destination, airport and hub pages change by a few
+  words, including pilot pages `manchester-islamabad` and `manchester-dubai` and link targets `london-heathrow-bengaluru`
+  and `birmingham-mumbai`; the fares, links and Quick answers on those pages are unchanged. No title, canonical, indexing
+  directive, Quick answers, link block, fare or affiliate link changes.
+  Account for it when reading homepage-driven movement on Manchester–Islamabad. The card disappears on its own from
+  17 November 2026 if nothing is re-verified by then.
 
 ## Wave 2 (not approved; only after a positive day-14 signal)
 

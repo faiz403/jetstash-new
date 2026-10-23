@@ -44,7 +44,7 @@ export function getVisibleFilters(nowIso: string): typeof filters {
   });
 }
 
-export function DealsExplorer() {
+export function DealsExplorer({ scopeNote }: { scopeNote?: string }) {
   const [active, setActive] = useState<DealCategory | 'all'>('all');
 
   const filtered = useMemo(() => {
@@ -87,11 +87,13 @@ export function DealsExplorer() {
           })}
         </div>
 
-        <p aria-live="polite" className="mt-6 text-sm text-ink-400">
+        <p aria-live="polite" className="mt-6 text-sm text-ink-500">
           {trackedCount === 0
             ? `No tracked fares logged in this category yet — showing ${searchOnlyCount} route search card${searchOnlyCount === 1 ? '' : 's'} instead.`
             : `Showing ${trackedCount} tracked fare${trackedCount === 1 ? '' : 's'}${searchOnlyCount > 0 ? ` and ${searchOnlyCount} route search card${searchOnlyCount === 1 ? '' : 's'}` : ''}.`}
         </p>
+
+        {scopeNote ? <p className="mt-1.5 max-w-3xl text-sm leading-relaxed text-ink-500">{scopeNote}</p> : null}
 
         <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {/* Heading-structure fix (6 Sept 2026, full-site crawl finding):

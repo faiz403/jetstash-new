@@ -167,6 +167,9 @@ describe('deal-card travel wording', () => {
     const html = renderToStaticMarkup(DealCard({ deal, nowIso: NOW }));
     expect(html).toContain('\u00a31,098'); expect(html).not.toContain('\u00a3634'); expect(html).not.toContain('\u00a3667');
     expect(html).toContain('Travel 11 December 2026\u201325 December 2026');
-    expect(html).toContain('One check, 16 October 2026'); expect(html).toContain('Fare checked with Qatar Airways');
+    // Stage 2 scanning pass: the single check's date now sits on the source line beside the price.
+    expect(html).toContain('Fare checked with Qatar Airways');
+    expect(html).toMatch(/Fare checked with Qatar Airways[^<]*(<!-- -->)? · (<!-- -->)*16 October 2026/);
+    expect(html).not.toContain('One check, ');
   });
 });

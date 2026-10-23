@@ -48,18 +48,15 @@ export default function DealsPage() {
         title="Fares we're tracking"
         description={
           <>
-            As of {formatCoverageAsOf(coverage.generatedAtIso)}, we have a tracked fare from the last {coverage.freshDays} days on {coverage.trackedRoutes} of our {coverage.totalRoutes} routes — coverage is
-            being expanded gradually using dated fare observations, not a live price feed. Every fare shown
-            below is tied to its recorded date. Where the archive has more than one check for a route
-            once, you'll see the range we've actually observed — never a single price left to quietly go stale.
-            The cards below are a curated selection of routes and categories, so a route can have a tracked fare
-            even when it is not shown as one of the cards here. Always confirm the final price before booking.{' '}
+            Dated fare observations, not live prices, on {coverage.trackedRoutes} of our {coverage.totalRoutes} routes.
+            Every fare is tied to its recorded date, so always confirm the final price before booking.{' '}
             <Link href="/about" className="font-medium text-brass-300 underline underline-offset-2 hover:text-brass-200">
-              Read our standards
+              How we track fares
             </Link>
             .
           </>
         }
+        size="compact"
         stats={[
           { value: `${coverage.trackedRoutes} of ${coverage.totalRoutes}`, label: `Routes with a tracked fare, as of ${formatCoverageAsOf(coverage.generatedAtIso)}` },
           { value: String(fareObservations.length), label: 'Fare checks logged' },
@@ -68,7 +65,12 @@ export default function DealsPage() {
         ]}
       />
 
-      <DealsExplorer />
+      {/* Stage 2 (23 Oct 2026): the coverage and curation detail that used to fill the hero now sits as one
+          short note directly above the cards (inside the explorer's light section), so the hero stays brief
+          without losing the distinction. */}
+      <DealsExplorer
+        scopeNote={`Routes counted as of ${formatCoverageAsOf(coverage.generatedAtIso)}, using fares checked in the last ${coverage.freshDays} days. The cards below are a curated selection of routes and categories, so a route can have a tracked fare even when it is not shown as one of the cards here.`}
+      />
     </>
   );
 }

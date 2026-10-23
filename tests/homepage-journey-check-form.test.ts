@@ -28,7 +28,7 @@ const heroSrc = readFileSync(join(process.cwd(), 'components/homepage-v2/homepag
 describe('JourneyCheckForm is wired onto the public homepage — inside the hero itself', () => {
   it('journey-desk-home.tsx computes journeyCheck and passes it to the hero, which imports and renders the real form', () => {
     expect(homeSrc).toContain("import type { JourneyCheckData } from '@/components/homepage-v2/journey-check-form';");
-    expect(homeSrc).toContain('<HomepageOpeningHero journeyCheck={journeyCheck} />');
+    expect(homeSrc).toContain('<HomepageOpeningHero journeyCheck={journeyCheck} evidence={evidence} evidenceExpiresOnIso={evidenceExpiresOnIso} />');
     expect(heroSrc).toContain("import { JourneyCheckForm, type JourneyCheckData } from '@/components/homepage-v2/journey-check-form';");
     expect(heroSrc).toContain('<JourneyCheckForm origins={journeyCheck.origins} destinations={journeyCheck.destinations} routeIndex={journeyCheck.routeIndex} />');
   });
