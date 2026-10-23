@@ -93,10 +93,19 @@ describe('Homepage Route Watch invitation — uses the shared config, cannot dri
     expect(text).not.toMatch(/we'?ll tell you when something genuinely changes/i);
   });
 
-  it('the "Watch a route" CTA anchors directly to the route-watch form, matching every other same-purpose CTA on the site', () => {
-    const element = RouteWatchInvite();
+  it('the CTA anchors directly to the route-watch form of a named current route, matching every other same-purpose CTA on the site', () => {
+    // Homepage correction (23 Oct 2026): it used to link to Manchester-Mumbai, whose direct service has ended.
+    const element = RouteWatchInvite({ watchRoute: { slug: 'manchester-islamabad', label: 'Manchester → Islamabad' } });
     const hrefs = collectHrefs(element);
-    expect(hrefs).toContain('/routes/manchester-mumbai#route-watch');
+    expect(hrefs).toContain('/routes/manchester-islamabad#route-watch');
+    expect(hrefs).not.toContain('/routes/manchester-mumbai#route-watch');
+    expect(collectStrings(element).join(' ')).toContain('Watch Manchester → Islamabad');
+  });
+
+  it('with no current route to name, it honestly points at the route index rather than a specific route', () => {
+    const element = RouteWatchInvite();
+    expect(collectHrefs(element)).toEqual(['/routes']);
+    expect(collectStrings(element).join(' ')).toContain('Choose a route to watch');
   });
 });
 

@@ -5,7 +5,7 @@ import { AtlasFeelTest } from '@/components/founder/atlas-feel-test';
 import { buildAtlasAirports } from '@/lib/atlas-network-data';
 import type { JourneyCheckData } from '@/components/homepage-v2/journey-check-form';
 import { HomepageOpeningHero } from '@/components/homepage-v2/homepage-opening-hero';
-import { getHomepageEvidenceExample, getHomepageEvidenceExpiryIso } from '@/lib/homepage-evidence';
+import { getHomepageEvidenceExample, getHomepageEvidenceExpiryIso, getHomepageWatchRoute } from '@/lib/homepage-evidence';
 import { WhyJetStash, RouteWatchInvite, ClosingBand, CommercialPaths } from '@/components/homepage-v2/homepage-sections';
 
 /**
@@ -72,7 +72,7 @@ export function JourneyDeskHome() {
 
       <CommercialPaths />
 
-      <RouteWatchInvite />
+      <RouteWatchInvite watchRoute={getHomepageWatchRoute(new Date().toISOString().slice(0, 10))} />
       <ClosingBand />
     </>
   );

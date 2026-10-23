@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useRef, useState } from 'react';
+import { getMapPanScrollLeft } from '@/lib/atlas-map-pan';
 import Link from 'next/link';
 import { ArrowUpRight, ChevronRight } from 'lucide-react';
 import { COUNTRY_PATHS, getPathBBox } from '@/lib/atlas-country-geometry';
@@ -356,6 +357,31 @@ export function AtlasFeelTest({
   // never needs to reset. No localStorage: this is about the current
   // view, not a dismissed-forever preference.
   const [hasScrolledMap, setHasScrolledMap] = useState(false);
+  // Mobile map strip + its SVG, so a country/destination selection can bring that place into view (see panMapTo).
+  const mapStripRef = useRef<HTMLDivElement>(null);
+  const mapSvgRef = useRef<SVGSVGElement>(null);
+
+  // Centres a map point (SVG units) in the mobile strip. No-op where the strip does not scroll (sm+). Respects
+  // reduced motion by jumping instead of animating.
+  function panMapTo(pointX: number | null) {
+    const strip = mapStripRef.current;
+    const svg = mapSvgRef.current;
+    if (!strip || !svg) return;
+    const left = pointX === null
+      ? 0
+      : getMapPanScrollLeft({
+          pointX,
+          viewBoxMinX: svg.viewBox.baseVal.x,
+          viewBoxWidth: svg.viewBox.baseVal.width,
+          svgPixelWidth: svg.getBoundingClientRect().width,
+          leadingOffset: parseFloat(getComputedStyle(strip).paddingLeft) || 0,
+          clientWidth: strip.clientWidth,
+          scrollWidth: strip.scrollWidth,
+        });
+    if (left === null) return;
+    const reduce = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    strip.scrollTo({ left, behavior: reduce ? 'auto' : 'smooth' });
+  }
 
   const activeCountry = countries.find((c) => c.slug === activeCountrySlug) ?? countries[0];
   const activeDest = activeCountry.destinations.find((d) => d.slug === activeDestSlug) ?? activeCountry.destinations[0];
@@ -405,6 +431,7 @@ export function AtlasFeelTest({
     lastTrackedDestRef.current = nextDest;
     setActiveDestSlug(nextDest);
     setMobileRevealed(false);
+    panMapTo(null);
   }
 
   // The one place a destination selection is both applied and measured —
@@ -635,14 +662,19 @@ export function AtlasFeelTest({
       </header>
 
       <div className="relative mx-auto max-w-[1600px] overflow-hidden px-6 py-8 sm:px-10 sm:py-10">
-        <p className="text-[13px] text-ink-300 sm:hidden">Select a country, then a destination, to see its route.</p>
+        <p className="text-[13px] text-ink-300 lg:hidden">Select a country, then a destination, to see its route.</p>
         {/* Input-neutral wording — the map is genuinely operable by mouse
             hover, touch (mobile chip selector) and keyboard (Tab + Enter/
             Space, see the hit-circles' own handlers below), so the
             instruction must not name only one of those. */}
-        <p className="hidden text-[13px] text-ink-300 sm:block">Select a country to explore its destinations.</p>
+        <p className="hidden text-[13px] text-ink-300 lg:block">Select a country to explore its destinations.</p>
 
-        <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_22rem] lg:gap-10">
+        {/* Mobile containment (homepage correction, 23 Oct 2026): the single mobile column must be allowed to shrink below the
+              chip rows' content width. A bare `grid` gives its implicit column `auto` sizing, so the non-wrapping chip rows
+              (about 1.4k px) stretched the whole column to 1262 px inside this overflow-hidden section, which clipped the map
+              strip and the answer card and left the strip with nothing to scroll. minmax(0,1fr) plus min-w-0 on the grid
+              items fixes the cause; lg+ keeps its two-column template unchanged. */}
+        <div className="grid grid-cols-[minmax(0,1fr)] items-start gap-8 lg:grid-cols-[minmax(0,1fr)_22rem] lg:gap-10">
           {/* Mobile Atlas hierarchy correction (Astra product review, 11
               Sept 2026 — founder follow-up): the first pass moved the
               answer above the map but left this chip selector — the
@@ -657,7 +689,7 @@ export function AtlasFeelTest({
               accessibility tree and tab order are unaffected by this move —
               a hidden element takes no grid track and is never reachable by
               Tab regardless of its DOM position. */}
-          <div className="flex flex-col gap-2 sm:hidden">
+          <div className="flex min-w-0 flex-col gap-2 lg:hidden">
             <div className="-mx-6 flex gap-2 overflow-x-auto px-6 pb-1 no-scrollbar" role="group" aria-label="Choose a country">
               {countries.map((c) => {
                 const isActive = c.slug === activeCountrySlug;
@@ -665,6 +697,9 @@ export function AtlasFeelTest({
                   <button
                     key={`country-chip-${c.slug}`}
                     type="button"
+                    // Pans the mobile map strip to the chosen country. Capture phase, on the chip only: map hover/focus/pointer handlers
+                    // never pan (a moving map under a still pointer could re-select), and the handlers themselves stay untouched.
+                    onClickCapture={() => panMapTo(c.x)}
                     onClick={() => activateCountry(c.slug)}
                     aria-pressed={isActive}
                     className={
@@ -691,6 +726,7 @@ export function AtlasFeelTest({
                   <button
                     key={`dest-chip-${d.slug}`}
                     type="button"
+                    onClickCapture={() => panMapTo(d.x)}
                     onClick={() => selectDestination(d.slug)}
                     aria-pressed={isActive}
                     className={
@@ -738,7 +774,7 @@ export function AtlasFeelTest({
               // mobileRevealed flips true from a genuine destination selection
               // (see selectDestination above). lg+ always shows it immediately,
               // exactly as before this change.
-              className={`max-w-md overflow-hidden rounded-md border border-white/10 bg-ink-900/90 shadow-[0_18px_40px_-24px_rgba(0,0,0,0.65)] lg:order-2 lg:sticky lg:top-6 lg:block ${mobileRevealed ? '' : 'hidden'}`}
+              className={`min-w-0 max-w-md overflow-hidden rounded-md border border-white/10 bg-ink-900/90 shadow-[0_18px_40px_-24px_rgba(0,0,0,0.65)] lg:order-2 lg:sticky lg:top-6 lg:block ${mobileRevealed ? '' : 'hidden'}`}
             >
               <div
                 className="h-[3px] w-full transition-colors duration-500"
@@ -832,6 +868,7 @@ export function AtlasFeelTest({
             visible and pannable rather than invisible. */}
         <div className="relative">
         <div
+          ref={mapStripRef}
           className="-mx-6 overflow-x-auto px-6 sm:mx-0 sm:overflow-visible sm:px-0"
           onScroll={(e) => {
             if (!hasScrolledMap && e.currentTarget.scrollLeft > 12) setHasScrolledMap(true);
@@ -849,7 +886,7 @@ export function AtlasFeelTest({
             overriding its children's own roles/names the way role="img"
             does. The map's keyboard/pointer interaction is unchanged —
             only the outer semantics changed. */}
-        <svg viewBox="418 230 336 220" className="h-auto w-[800px] max-w-none sm:w-full" role="group" aria-label={`${airportName}'s route network`}>
+        <svg viewBox="418 230 336 220" className="h-auto w-[800px] max-w-none sm:w-full" role="group" aria-label={`${airportName}'s route network`} ref={mapSvgRef}>
           <defs>
             <radialGradient id="ft-origin-glow" cx="0.5" cy="0.5" r="0.5">
               <stop offset="0" stopColor="#F7F2E9" stopOpacity="0.75" />

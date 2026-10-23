@@ -151,8 +151,8 @@ Every checkpoint records these items:
     `birmingham-jeddah` gain the same fare cue; `birmingham-jeddah` also loses internal wording from
     its Saudia duration line. `birmingham-mumbai` is unchanged.
   - **Also changed:** `/routes` (sibling card detail lines) and the India, Pakistan, Gulf and Umrah hubs.
-- **Stage 2 first-screen sprint (founder-approved 23 October 2026; dated by its Production release, merge commit and
-  time to be added then):** **the homepage's visible text changes** (a neutral journey form instead of the Manchester →
+- **Stage 2 first-screen sprint (PR #347; merge commit `29e9d81078c708d3e5fa1bfc77f13d6820e0029e`, merged 02:13:43 BST on
+  23 October 2026):** **the homepage's visible text changes** (a neutral journey form instead of the Manchester →
   Agadir default, and one example-check card for Manchester → Islamabad). The homepage link set is unchanged: the card's
   only link goes to `manchester-islamabad`, which the homepage already linked to (verified: the homepage's internal
   link set, title, canonical and robots tag are identical to Production). `/deals` loses most of its hero paragraph.
@@ -163,6 +163,16 @@ Every checkpoint records these items:
   directive, Quick answers, link block, fare or affiliate link changes.
   Account for it when reading homepage-driven movement on Manchester–Islamabad. The card disappears on its own from
   17 November 2026 if nothing is re-verified by then.
+
+- **Homepage correction sprint (founder-approved 23 October 2026; dated by its Production release, merge commit and time to be
+  added then):** **the homepage's visible text and link set change slightly.** The Route Watch invitation now reads "Watch
+  Manchester → Islamabad" and links to `/routes/manchester-islamabad#route-watch` (the same page the homepage already links
+  to), replacing "Watch a route" which linked to `/routes/manchester-mumbai#route-watch` (a service-ended route, not a pilot
+  page); that is the only link target removed (Manchester–Mumbai) and none is added. The closing band sentence changes from
+  "One clear Journey Brief, checked and dated." to "Route status, fares and travel requirements, each checked and dated."
+  The mobile Route Atlas layout is repaired and its country/destination chips also show on tablet widths (the same chip
+  text that phones already had; no new copy). Title, canonical, robots and every pilot-page link are
+  unchanged; the pilot pages and link targets are byte-identical to Production in visible text.
 
 ## Wave 2 (not approved; only after a positive day-14 signal)
 

@@ -119,3 +119,26 @@ export function getHomepageEvidenceExpiryIso(nowIso: string, horizonDays = 120):
   }
   return new Date(start + horizonDays * 86_400_000).toISOString().slice(0, 10);
 }
+
+/**
+ * The route the homepage's Route Watch invitation points at (homepage correction, 23 Oct 2026). It used to be a
+ * hard-coded link to Manchester-Mumbai, whose former direct service has ended, so the invitation sent visitors to a
+ * route that is no longer a current opportunity. Route Watch is a per-route form (the #route-watch block on each
+ * route page); there is no general watch page, so the honest target is a real, current route page.
+ *
+ * Reuses the same single route the homepage already links to (HOMEPAGE_EVIDENCE_CANDIDATE_SLUGS), so the homepage
+ * gains no new link target, and requires its effective status to be direct or connecting (verified, not ended or
+ * pending). Null when no route qualifies; the invitation then sends visitors to the route index instead.
+ */
+export function getHomepageWatchRoute(nowIso: string): { slug: string; label: string } | null {
+  for (const slug of HOMEPAGE_EVIDENCE_CANDIDATE_SLUGS) {
+    const route = getRouteBySlug(slug);
+    const described = describeRoute(slug, nowIso);
+    if (!route || !described) continue;
+    const presentation = getEffectiveRoutePresentation(route, routeStatusEvents, nowIso);
+    if (presentation.status === 'direct' || presentation.status === 'connecting') {
+      return { slug, label: described.originName + ' \u2192 ' + described.destinationCity };
+    }
+  }
+  return null;
+}
