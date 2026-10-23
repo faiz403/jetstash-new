@@ -22,7 +22,32 @@ rate limiting rather than the current process-local limiter.
 
 **Production site:** `https://jetstash.co.uk`
 
-## First-impression improvement sprint 1 — 22 October 2026 (PR for review; not merged, not deployed)
+## Stage 2: first-screen and fare experience — 23 October 2026 (PR for review; not merged, not deployed)
+
+On `feat/stage2-first-screen-2026-10-23` from `3badd5e`, from the founder-approved Stage 2 design benchmark (items 1–3).
+- **Homepage:** the journey form no longer silently selects Manchester → Agadir (both selects start on "Choose airport" /
+  "Choose destination", an incomplete submit asks for the missing choice instead of navigating). A compact evidence card
+  (`lib/homepage-evidence.ts`, `components/homepage-v2/homepage-evidence-card.tsx`) shows one example check for
+  Manchester → Islamabad: the last tracked fare with airline, checked date, travel dates, routing and the "Connecting fare,
+  not nonstop" cue, labelled "a dated observation, not today's price". It is shown only while the fare is current, fresh,
+  checked within 30 days and still departs with the 15-day promotion margin (to 2 Nov 2026); then it falls back to the
+  verified route finding with its verification date (3–16 Nov); then it disappears (the route's verification lapses 17 Nov).
+  It links only to a page the homepage already linked to, so the SEO pilot's link set is unchanged.
+- **/deals:** the hero is two sentences and a "How we track fares" link; the coverage/curation detail moved to one note above
+  the cards. Stats are unchanged. The first card sits about 180 px (desktop) and 235 px (mobile) higher.
+- **Deal cards:** the price is followed by one "Fare checked with {airline} · {date}" line, then the connecting-fare cue and
+  route explanation, travel dates and the (quieter) fare-details note. Nothing was removed; the "One check, {date}" line
+  that repeated the date was dropped.
+- **Where the card change shows:** the shared deal card is also embedded on route, destination, airport and hub pages,
+  where only the order and a few words of the fare line change (logged as an SEO pilot event).
+- **Intentionally unchanged:** fares, observations, booking URLs and Trip.com parameters, route verification, email and
+  contact routes, Brevo/Resend, analytics events, SEO pilot settings, PR #342, the route-page fare card.
+- **SEO pilot event** logged in `SEO_INDEXING_PILOT_2026-10-21.md`.
+
+## First-impression improvement sprint 1 — 22 October 2026 (DONE, live via PR #346)
+
+Merged as `3badd5edb6ee26e2fd7668542df45e374a1c6eeb` at 00:18:37 BST on 23 October 2026 (23:18:37 UTC on 22 October);
+Production verified on that commit.
 
 On `fix/cx-sprint1-2026-10-22` from `53dc903`, from the founder-approved 22 October first-impression review.
 - **India hub contradiction:** `/india` said Air India "currently runs direct services from Birmingham and Gatwick to

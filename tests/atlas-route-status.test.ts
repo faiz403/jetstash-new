@@ -502,7 +502,9 @@ describe('The route coverage audit document stays in sync with the real data', (
   it('the /deals page hero states the same live-computed coverage sentence the audit recommends', () => {
     const dealsPageSrc = readFileSync(join(process.cwd(), 'app/deals/page.tsx'), 'utf8');
     expect(dealsPageSrc).toContain('getTrackedFareCoverage');
-    expect(dealsPageSrc).toMatch(/coverage is\s*[\s\S]{0,20}being expanded gradually using dated fare observations/);
+    // Stage 2 (23 Oct 2026): the hero is two short sentences; the live coverage count and its as-of date stay.
+    expect(dealsPageSrc).toMatch(/Dated fare observations, not live prices, on \{coverage\.trackedRoutes\} of our \{coverage\.totalRoutes\} routes/);
+    expect(dealsPageSrc).toContain('Routes counted as of ${formatCoverageAsOf(coverage.generatedAtIso)}');
   });
 });
 

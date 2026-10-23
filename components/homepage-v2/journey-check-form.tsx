@@ -31,8 +31,13 @@ const selectClass =
  */
 export function JourneyCheckForm({ origins, destinations, routeIndex }: JourneyCheckData) {
   const router = useRouter();
-  const [fromSlug, setFromSlug] = useState(origins[0]?.slug ?? '');
-  const [toSlug, setToSlug] = useState(destinations[0]?.slug ?? '');
+  // Stage 2 (23 Oct 2026): both start unselected. The old defaults were origins[0] and destinations[0]
+  // (alphabetical, so Agadir) - an arbitrary pick presented as if it were the visitor's own choice.
+  const [fromSlug, setFromSlug] = useState('');
+  const [toSlug, setToSlug] = useState('');
+  const [needsChoice, setNeedsChoice] = useState(false);
+  const fromRef = useRef<HTMLSelectElement>(null);
+  const toRef = useRef<HTMLSelectElement>(null);
   // Fires 'started' once per mount on the first genuine change to either
   // select — never on initial render, never repeated. Same guarded-ref
   // pattern as travel-ready-check.tsx's own markStarted().
@@ -57,6 +62,7 @@ export function JourneyCheckForm({ origins, destinations, routeIndex }: JourneyC
   const routeSlug = routeIndex[`${fromSlug}|${toSlug}`];
   const fromLabel = origins.find((o) => o.slug === fromSlug)?.label ?? fromSlug;
   const toLabel = destinations.find((d) => d.slug === toSlug)?.label ?? toSlug;
+  const hasChoice = Boolean(fromSlug && toSlug);
   const toCity = toLabel.split(',')[0];
 
   function markStarted() {
@@ -67,6 +73,12 @@ export function JourneyCheckForm({ origins, destinations, routeIndex }: JourneyC
 
   function onSubmit(e: FormEvent) {
     e.preventDefault();
+    // Nothing silently chosen for the visitor: ask for the missing selection instead of navigating.
+    if (!fromSlug || !toSlug) {
+      setNeedsChoice(true);
+      (fromSlug ? toRef : fromRef).current?.focus();
+      return;
+    }
     // Every combination resolves to a real page (see the component doc
     // comment above), so a submit is always a valid, successful result —
     // only the safe category differs, never the full destination text.
@@ -96,8 +108,14 @@ export function JourneyCheckForm({ origins, destinations, routeIndex }: JourneyC
               markStarted();
               setFromSlug(e.target.value);
             }}
+            ref={fromRef}
+            aria-describedby="jc-status"
+            aria-invalid={needsChoice && !fromSlug ? true : undefined}
             className={selectClass}
           >
+            <option value="" className="bg-ink-900 text-sand-50">
+              Choose airport
+            </option>
             {origins.map((o) => (
               <option key={o.slug} value={o.slug} className="bg-ink-900 text-sand-50">
                 {o.label}
@@ -116,8 +134,14 @@ export function JourneyCheckForm({ origins, destinations, routeIndex }: JourneyC
               markStarted();
               setToSlug(e.target.value);
             }}
+            ref={toRef}
+            aria-describedby="jc-status"
+            aria-invalid={needsChoice && !toSlug ? true : undefined}
             className={selectClass}
           >
+            <option value="" className="bg-ink-900 text-sand-50">
+              Choose destination
+            </option>
             {destinations.map((d) => (
               <option key={d.slug} value={d.slug} className="bg-ink-900 text-sand-50">
                 {d.label}
@@ -134,8 +158,14 @@ export function JourneyCheckForm({ origins, destinations, routeIndex }: JourneyC
           <ArrowRight className="h-4 w-4" strokeWidth={2.25} />
         </button>
       </form>
-      <p aria-live="polite" className="mt-3 min-h-[1.5rem] text-[13px] leading-relaxed text-ink-300">
-        {routeSlug ? (
+      <p id="jc-status" aria-live="polite" className="mt-3 min-h-[1.5rem] text-[13px] leading-relaxed text-ink-300">
+        {!hasChoice ? (
+          needsChoice ? (
+            <>Choose both your airport and your destination, then press Check.</>
+          ) : (
+            <>Choose your airport and destination. We&apos;ll open the route guide with what we&apos;ve checked.</>
+          )
+        ) : routeSlug ? (
           <>
             We track {fromLabel} → {toCity}. Press Check to open the route guide.
           </>

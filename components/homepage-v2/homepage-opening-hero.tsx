@@ -2,6 +2,9 @@ import Link from 'next/link';
 import { ArrowUpRight } from 'lucide-react';
 import { PageHero } from '@/components/sections/page-hero';
 import { JourneyCheckForm, type JourneyCheckData } from '@/components/homepage-v2/journey-check-form';
+import { HomepageEvidenceCard } from '@/components/homepage-v2/homepage-evidence-card';
+import { HomepageEvidenceExpiryGuard } from '@/components/homepage-v2/homepage-evidence-expiry-guard';
+import type { HomepageEvidenceExample } from '@/lib/homepage-evidence';
 
 /**
  * The homepage's opening hero — added above the Route Atlas so a new
@@ -62,7 +65,15 @@ import { JourneyCheckForm, type JourneyCheckData } from '@/components/homepage-v
 // so an interpolated `${VAR}:py-8` silently never generates any CSS at all.
 const SHORT_VIEWPORT_HERO_PADDING = '[@media(max-height:800px)]:py-8';
 
-export function HomepageOpeningHero({ journeyCheck }: { journeyCheck: JourneyCheckData }) {
+export function HomepageOpeningHero({
+  journeyCheck,
+  evidence = null,
+  evidenceExpiresOnIso = null,
+}: {
+  journeyCheck: JourneyCheckData;
+  evidence?: HomepageEvidenceExample | null;
+  evidenceExpiresOnIso?: string | null;
+}) {
   return (
     <PageHero
       eyebrow="Before you book a flight"
@@ -119,6 +130,7 @@ export function HomepageOpeningHero({ journeyCheck }: { journeyCheck: JourneyChe
           anyway (see cookie-consent-banner.tsx's own comment); if that
           config is ever adopted, it needs a proper site-wide safe-area
           review, not a homepage-specific coupling landed years earlier. */}
+      <div className="xl:relative">
       <div id="your-journey" className="-mt-4 max-w-2xl sm:mt-0">
         {/* Mobile-only spacing trim (September 2026, consent-overlay fix):
             only the two gaps ABOVE the form's submit button are tightened —
@@ -161,6 +173,13 @@ export function HomepageOpeningHero({ journeyCheck }: { journeyCheck: JourneyChe
             <ArrowUpRight className="h-4 w-4" strokeWidth={2.25} aria-hidden="true" />
           </Link>
         </div>
+      </div>
+      {/* Stage 2 (23 Oct 2026): one evidenced example beside (wide) or below (narrow) the console. Omitted entirely when nothing eligible exists. */}
+      {evidence ? (
+        <HomepageEvidenceExpiryGuard expiresOnIso={evidenceExpiresOnIso}>
+          <HomepageEvidenceCard example={evidence} />
+        </HomepageEvidenceExpiryGuard>
+      ) : null}
       </div>
     </PageHero>
   );

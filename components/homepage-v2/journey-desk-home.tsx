@@ -5,6 +5,7 @@ import { AtlasFeelTest } from '@/components/founder/atlas-feel-test';
 import { buildAtlasAirports } from '@/lib/atlas-network-data';
 import type { JourneyCheckData } from '@/components/homepage-v2/journey-check-form';
 import { HomepageOpeningHero } from '@/components/homepage-v2/homepage-opening-hero';
+import { getHomepageEvidenceExample, getHomepageEvidenceExpiryIso } from '@/lib/homepage-evidence';
 import { WhyJetStash, RouteWatchInvite, ClosingBand, CommercialPaths } from '@/components/homepage-v2/homepage-sections';
 
 /**
@@ -39,6 +40,10 @@ export function JourneyDeskHome() {
   for (const r of routes) routeIndex[`${r.airportSlug}|${r.destinationSlug}`] = r.slug;
 
   const journeyCheck: JourneyCheckData = { origins, destinations, routeIndex };
+  // Stage 2 (23 Oct 2026): a fresh, eligible fare example, else a verified route finding, else nothing (see lib/homepage-evidence.ts).
+  const evidenceNowIso = new Date().toISOString().slice(0, 10);
+  const evidence = getHomepageEvidenceExample(evidenceNowIso);
+  const evidenceExpiresOnIso = getHomepageEvidenceExpiryIso(evidenceNowIso);
 
   return (
     <>
@@ -52,7 +57,7 @@ export function JourneyDeskHome() {
           now — the standalone "Before you book / See what is actually known
           about your journey" section that used to duplicate this exact
           interaction directly beneath the hero has been removed. */}
-      <HomepageOpeningHero journeyCheck={journeyCheck} />
+      <HomepageOpeningHero journeyCheck={journeyCheck} evidence={evidence} evidenceExpiresOnIso={evidenceExpiresOnIso} />
 
       <AtlasFeelTest airports={buildAtlasAirports()} defaultAirportSlug="manchester" />
 
