@@ -22,7 +22,26 @@ rate limiting rather than the current process-local limiter.
 
 **Production site:** `https://jetstash.co.uk`
 
-## Atlas answer-card visibility fix — 23 October 2026 (PR for review; not merged, not deployed)
+## Atlas service-ended card wording — 24 October 2026 (PR for review; not merged, not deployed)
+
+On `fix/mumbai-card-wording-2026-10-24` from `287fb42`, the one approved exception to the homepage text freeze (CEO ruling,
+24 Oct): the Manchester–Mumbai (and, identically, Manchester–Delhi) Atlas card showed internal verification terminology.
+- **Source:** `lib/atlas-network-data.ts` printed the Route Status ledger event's `explanation` (the audit narrative: booking-engine
+  searches, "Sold Out", OAG/GDS filings, codeshare detail, what is not inferred) twice per card, as the "Route intelligence" detail
+  and again inside the Active service notice. About 1,300 px tall at 390 px.
+- **Fix:** the card now states the same facts in plain English from structured fields only: verdict "Direct service ended — check
+  current options directly with the airline.", "Direct service ended 31 August 2026", "IndiGo's direct service has ended, effective
+  31 August 2026.", "Checked against IndiGo, AeroRoutes and Manchester Airport, most recently on 2 September 2026." and "Connecting
+  journeys may still be available. Check the airline, the stops and the total journey time before you book." The ledger records
+  and the route page's own evidence panel are untouched; the withdrawal-announced branch is unchanged.
+- **SEO pilot event:** visible homepage text change (Atlas card, Mumbai and Delhi only), logged in `SEO_INDEXING_PILOT_2026-10-21.md`.
+
+## Atlas answer-card visibility fix — 23 October 2026 (DONE, live via PR #349)
+
+Merged as `287fb42f759cdad5b7a66e555e2d07ce2399cd0f` at 00:37:16 BST on 24 October 2026 (23:37:16 UTC on 23 October); Production
+verified in touch emulation. The founder's real-phone acceptance check passed (24 Oct).
+
+Original entry:
 
 On `fix/atlas-answer-visibility-2026-10-23` from `8765251`, after the founder's real-phone test of PR #348 found that tapping a
 destination did not visibly show its route card.

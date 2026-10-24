@@ -259,11 +259,17 @@ function buildDestinationPoint(airportSlug: string, destSlug: string, x: number,
     const viewModel = getRouteStatusCopy(route, status, routeStatusEvents, nowIso);
     if (viewModel.kind === 'service-ended') {
       verdict = 'Direct service ended — check current options directly with the airline.';
-      detail = viewModel.explanation;
+      // Customer-facing wording only (24 Oct 2026 trust correction). The ledger's `explanation` is the audit narrative
+      // behind the claim (booking-engine searches, "Sold Out", OAG/GDS filings, codeshare detail, what is not inferred),
+      // written for evidence review, and it used to be printed twice in this card (about 1,300 px on a phone). The
+      // ledger record is untouched and still drives the route page's evidence panel; here the card states the same
+      // facts in plain English from structured fields only: who the claim was checked against and when, the effective
+      // date (below, as the flight-time line and the notice label), and what the visitor should do next.
+      detail = describeServiceEndedEvidence(viewModel.citations);
       flightTimeOverride = `Direct service ended ${formatRouteStatusDate(viewModel.effectiveFrom)}`;
       serviceNotice = {
         label: `${viewModel.citations[0]?.publisher ?? 'The airline'}'s direct service has ended, effective ${formatRouteStatusDate(viewModel.effectiveFrom)}.`,
-        detail: viewModel.explanation,
+        detail: SERVICE_ENDED_NEXT_STEP,
       };
     }
   }
@@ -1122,4 +1128,25 @@ export function buildAtlasAirports(nowIso: string = defaultNowIso): AirportNetwo
     buildLeedsBradfordNetwork(nowIso),
     buildBristolNetwork(nowIso),
   ];
+}
+
+/** What a visitor should do once a direct service has ended. Deliberately generic: it names no airline, route or itinerary the ledger has not evidenced. */
+export const SERVICE_ENDED_NEXT_STEP =
+  'Connecting journeys may still be available. Check the airline, the stops and the total journey time before you book.';
+
+/**
+ * Plain-English evidence line for a service-ended Atlas card, built only from the validated citations: who the claim was
+ * checked against (distinct publishers, in order) and the most recent valid check date. Returns null when no citation names a
+ * publisher; the date clause is omitted when no named citation carries a valid ISO date, so nothing is ever invented.
+ */
+export function describeServiceEndedEvidence(
+  citations: ReadonlyArray<{ publisher: string; accessedAt?: string }>
+): string | null {
+  const named = citations.filter((c) => c.publisher.trim().length > 0);
+  const publishers = [...new Set(named.map((c) => c.publisher.trim()))];
+  if (publishers.length === 0) return null;
+  const list = publishers.length === 1 ? publishers[0] : publishers.slice(0, -1).join(', ') + ' and ' + publishers[publishers.length - 1];
+  const dates = named.map((c) => c.accessedAt).filter((d): d is string => typeof d === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(d)).sort();
+  const latest = dates[dates.length - 1];
+  return latest ? `Checked against ${list}, most recently on ${formatRouteStatusDate(latest)}.` : `Checked against ${list}.`;
 }
