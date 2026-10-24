@@ -179,6 +179,16 @@ Every checkpoint records these items:
   {country} to see its route." (shown only while the route card is hidden; hidden from 1024 px up). No link, title, canonical,
   robots or pilot-page change.
 
+- **Atlas service-ended card wording (the one approved exception to the homepage text freeze, CEO ruling 24 October 2026; dated by its
+  Production release, merge commit and time to be added then):** the Manchester–Mumbai and Manchester–Delhi cards in the homepage
+  Route Atlas no longer print the ledger's internal verification narrative. Before: the "Route intelligence" detail and the Active
+  service notice each carried "Post-effective-date verification (2 September 2026): IndiGo's own live booking engine shows zero
+  IndiGo-operated (6E-operated) nonstop flight … Corroborated by AeroRoutes' report … none is inferred …" (about 1,300 px on a phone).
+  After: "Checked against IndiGo, AeroRoutes and Manchester Airport, most recently on 2 September 2026." and "Connecting journeys may
+  still be available. Check the airline, the stops and the total journey time before you book."; verdict, flight-time line and notice
+  label unchanged. No link, title, canonical, robots or pilot-page change. Homepage text is otherwise frozen to the 18 November
+  checkpoint. The PR #349 merge commit is `287fb42f759cdad5b7a66e555e2d07ce2399cd0f` (00:37:16 BST on 24 October 2026).
+
 ## Wave 2 (not approved; only after a positive day-14 signal)
 
 **Ready now** (verification current, no pending status on 21 Oct):
