@@ -145,30 +145,49 @@ const sections: { title: string; body: React.ReactNode }[] = [
     body: (
       <>
         <p>
-          JetStash doesn&apos;t use cookies for anything by default. Vercel Web Analytics and Vercel Speed Insights
-          operate independently of Google Ads consent and are built to work without cookies. JetStash&apos;s own
-          analytics event payloads contain named events with limited contextual fields such as route, destination,
-          state, source, trip type, region, intent, verdict or interest — not names, email addresses, phone numbers
-          or form contents. Vercel and its services may process ordinary technical information needed to provide
-          those services.
+          JetStash doesn&apos;t use cookies for anything by default. When you first visit, a notice asks about two
+          optional settings. Both are off until you choose, they are two separate choices, and accepting one never
+          switches on the other. Each has its own Decline and Accept button, and you can change either at any time using
+          &lsquo;Cookie settings&rsquo; in the footer of every page.
         </p>
         <p>
-          Separately, a cookie banner shown on your first visit offers optional Google Ads measurement. Nothing about
-          the Google Ads tag loads until you actively accept: no Google script is requested before that point, or if
-          you decline, or if you close the banner without choosing. If you accept, JetStash loads the Google Ads tag
-          and sends configured conversion signals for certain flight, hotel or baggage-partner clicks. The current
+          <strong className="font-semibold text-ink-800">Site statistics (optional).</strong> If you accept, JetStash
+          loads Vercel Web Analytics and Vercel Speed Insights, which count visits and measure page speed so we can
+          improve the site. They are built to work without cookies. Nothing about them loads until you accept: no
+          script is requested before that point, or if you decline, or if you close the notice without choosing.
+          Once running they send the address of the page you are on (with advertising click identifiers and the
+          address fragment removed before sending), your browser and device type and country, and the page that sent
+          you to JetStash if you arrived from another website, which your browser provides and which JetStash cannot
+          edit. They also keep a small value in your browser storage. JetStash&apos;s own analytics event payloads contain
+          named events with limited contextual fields such as route, destination, state, source, trip type, region,
+          intent, verdict or interest — not names, email addresses, phone numbers or form contents. Vercel and its
+          services may process ordinary technical information needed to provide those services. If you decline, or
+          withdraw later, JetStash removes that stored value and stops sending; the page reloads once so a script
+          already running is cleared.
+        </p>
+        <p>
+          <strong className="font-semibold text-ink-800">Google Ads measurement (optional).</strong> Nothing about the
+          Google Ads tag loads until you actively accept: no Google script is requested before that point, or if you
+          decline, or if you close the notice without choosing. If you accept, JetStash loads the Google Ads tag and
+          sends configured conversion signals for certain flight, hotel or baggage-partner clicks. The current
           JetStash code does not put your name, email address, phone number, address, form contents or the partner
           URL into those conversion-event payloads. Google&apos;s tag may also process ordinary browser, page, device or
           referrer information according to Google&apos;s own service behaviour and policies.
         </p>
         <p>
-          Your choice is remembered locally in your own browser, not in a JetStash account or server-side profile.
-          You can see and change it at any time using &lsquo;Cookie settings&rsquo; in the footer of every page —
-          declining after previously accepting switches this measurement off again for every page you load after
-          that (a one-off page reload may be needed to fully clear an already-loaded Google script from the current
-          tab, which the control handles for you). The current JetStash implementation does not configure
-          remarketing or personalised advertising. That describes JetStash&apos;s code, not every setting or behaviour
-          in Google&apos;s wider account ecosystem.
+          If you accept Google Ads measurement and Site statistics, JetStash also records, once per visit, which kind
+          of source brought you here (for example a Google Ads click, a search result, or a link from another site)
+          and attaches that kind of source to partner link clicks. This needs both choices, because it is advertising
+          measurement and it is sent through Site statistics. Only the kind of source is kept, for the visit, in your
+          browser; the advertising click identifier itself is not stored or sent to Vercel.
+        </p>
+        <p>
+          Your choices are remembered locally in your own browser, not in a JetStash account or server-side profile.
+          Declining or withdrawing switches that measurement off for every page you load after that (a one-off page
+          reload may be needed to fully clear an already-loaded script from the current tab, which the control handles
+          for you). The current JetStash implementation does not configure remarketing or personalised advertising.
+          That describes JetStash&apos;s code, not every setting or behaviour in Google&apos;s or Vercel&apos;s wider
+          service ecosystems.
         </p>
       </>
     ),

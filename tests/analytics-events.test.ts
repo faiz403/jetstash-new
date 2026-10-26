@@ -12,12 +12,12 @@ import { join } from 'path';
  * PR wires up.
  */
 
-const mocks = vi.hoisted(() => ({ vercelTrack: vi.fn(), storedChannel: vi.fn(() => null as string | null), statsObjected: vi.fn(() => false), hasConsent: vi.fn(() => true) }));
+const mocks = vi.hoisted(() => ({ vercelTrack: vi.fn(), storedChannel: vi.fn(() => null as string | null), statsConsent: vi.fn(() => true), hasConsent: vi.fn(() => true) }));
 
 vi.mock('@vercel/analytics', () => ({ track: mocks.vercelTrack }));
 // Channel attribution needs measurement consent; the real module returns null without it. The tests below drive both cases.
 vi.mock('@/lib/acquisition', () => ({ getStoredAcquisitionSource: mocks.storedChannel }));
-vi.mock('@/lib/consent', () => ({ isSiteStatisticsObjected: mocks.statsObjected, hasAdMeasurementConsent: mocks.hasConsent }));
+vi.mock('@/lib/consent', () => ({ hasSiteStatisticsConsent: mocks.statsConsent, hasAdMeasurementConsent: mocks.hasConsent }));
 
 import { track } from '@/lib/analytics';
 
@@ -26,8 +26,8 @@ describe('track()', () => {
     mocks.vercelTrack.mockReset();
     mocks.storedChannel.mockReset();
     mocks.storedChannel.mockReturnValue(null);
-    mocks.statsObjected.mockReset();
-    mocks.statsObjected.mockReturnValue(false);
+    mocks.statsConsent.mockReset();
+    mocks.statsConsent.mockReturnValue(true);
     mocks.hasConsent.mockReset();
     mocks.hasConsent.mockReturnValue(true);
   });
@@ -90,7 +90,7 @@ describe('track()', () => {
   });
 
   it('sends nothing to Vercel, and queues nothing for it, once the visitor has objected to site statistics', () => {
-    mocks.statsObjected.mockReturnValue(true);
+    mocks.statsConsent.mockReturnValue(false);
     mocks.storedChannel.mockReturnValue('reddit');
     track('tripcom_click', { route: 'manchester-dubai', source: 'fare-signal' });
     track('contact_submit_success');

@@ -4,7 +4,7 @@ import { useEffect, useRef } from 'react';
 import { usePathname } from 'next/navigation';
 import { track } from '@/lib/analytics';
 import { getOrClassifyAcquisitionSource, getStoredAcquisitionSource, purgeAcquisitionSource } from '@/lib/acquisition';
-import { CONSENT_GRANTED_EVENT, CONSENT_STORAGE_KEY, hasAdMeasurementConsent, isSiteStatisticsObjected, STATS_PREFERENCE_CHANGED_EVENT, STATS_OBJECTION_STORAGE_KEY } from '@/lib/consent';
+import { CONSENT_GRANTED_EVENT, CONSENT_STORAGE_KEY, hasAdMeasurementConsent, hasSiteStatisticsConsent, STATS_PREFERENCE_CHANGED_EVENT, STATS_CONSENT_STORAGE_KEY } from '@/lib/consent';
 
 /**
  * Fires exactly one 'acquisition_landing' event per browser session, on the
@@ -12,8 +12,10 @@ import { CONSENT_GRANTED_EVENT, CONSENT_STORAGE_KEY, hasAdMeasurementConsent, is
  * once in app/layout.tsx (alongside CookieConsentBanner), so it survives
  * client-side route changes rather than remounting per page.
  *
- * Advertising attribution, so it runs ONLY with the visitor's measurement
- * consent (October 2026): no decision, Decline and withdrawal mean it does
+ * Advertising attribution, so it runs ONLY with BOTH of the visitor's separate
+ * permissions (October 2026): Google Ads measurement (it is advertising
+ * attribution) and Site statistics (the event is sent to Vercel Analytics).
+ * No decision, Decline and withdrawal of either mean it does
  * nothing, reads no click identifier and keeps nothing in storage (and any
  * classification left over from before is removed). If the visitor accepts
  * while still on the landing page, the classification runs then, from that
@@ -47,7 +49,7 @@ export function AcquisitionLandingTracker() {
     if (typeof window === 'undefined') return;
     let cancelPending: (() => void) | null = null;
     const run = () => {
-      if (!hasAdMeasurementConsent() || isSiteStatisticsObjected()) {
+      if (!hasAdMeasurementConsent() || !hasSiteStatisticsConsent()) {
         purgeAcquisitionSource();
         return;
       }
@@ -58,14 +60,14 @@ export function AcquisitionLandingTracker() {
       cancelPending?.();
       cancelPending = whenStatisticsQueueReady(() => {
         // The visitor may have withdrawn (here or in another tab) while this was waiting: check again at the moment of sending.
-        if (hasAdMeasurementConsent() && !isSiteStatisticsObjected()) track('acquisition_landing', { route, channel });
+        if (hasAdMeasurementConsent() && hasSiteStatisticsConsent()) track('acquisition_landing', { route, channel });
       });
     };
-    // Another tab changing the consent or the statistics preference arrives as a storage event: withdrawal removes what this tab
+    // Another tab changing either permission arrives as a storage event: withdrawal removes what this tab
     // kept and cancels anything pending, acceptance lets attribution start here.
     const onStorage = (e: StorageEvent) => {
-      if (e.key === null || e.key === CONSENT_STORAGE_KEY || e.key === STATS_OBJECTION_STORAGE_KEY) {
-        if (!hasAdMeasurementConsent()) cancelPending?.();
+      if (e.key === null || e.key === CONSENT_STORAGE_KEY || e.key === STATS_CONSENT_STORAGE_KEY) {
+        if (!hasAdMeasurementConsent() || !hasSiteStatisticsConsent()) cancelPending?.();
         run();
       }
     };

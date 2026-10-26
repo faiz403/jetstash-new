@@ -56,34 +56,36 @@ export function hasAdMeasurementConsent(): boolean {
 }
 
 /**
- * Site statistics objection (October 2026, proposed compliance approach pending legal review). Vercel Analytics and Speed Insights
- * count visits and page speed. They are offered on the statistical-purpose basis, which needs a simple, free way to object: this
- * is it. The objection is a plain device-side preference, never sent to JetStash, and honoured BEFORE the scripts are mounted.
+ * Site statistics consent (October 2026). Vercel Analytics and Speed Insights count visits and page speed. They are OFF by default
+ * and their scripts are not requested until the visitor explicitly allows them. This is a separate permission from the Google Ads
+ * measurement choice above: neither implies the other. The choice is a plain device-side preference, never sent to JetStash.
  */
-export const STATS_OBJECTION_STORAGE_KEY = 'jetstash-stats-objection';
+export const STATS_CONSENT_STORAGE_KEY = 'jetstash-stats-consent';
 export const STATS_PREFERENCE_CHANGED_EVENT = 'jetstash:stats-preference-changed';
 /** The one entry Vercel's analytics script itself reads and writes in the visitor's browser storage. */
 export const VERCEL_ANALYTICS_STORAGE_KEY = '__va_attribution';
 
-export function isSiteStatisticsObjected(): boolean {
-  if (typeof window === 'undefined') return false;
+export function getStoredStatisticsChoice(): ConsentChoice | null {
+  if (typeof window === 'undefined') return null;
   try {
-    return window.localStorage.getItem(STATS_OBJECTION_STORAGE_KEY) === 'objected';
+    const value = window.localStorage.getItem(STATS_CONSENT_STORAGE_KEY);
+    return value === 'granted' || value === 'denied' ? value : null;
   } catch {
-    return false;
+    return null; // storage blocked: no choice, so no statistics
   }
 }
 
-export function setSiteStatisticsObjection(objected: boolean): void {
+/** True only when the visitor has actively allowed site statistics. No decision, Decline and withdrawal are all false. */
+export function hasSiteStatisticsConsent(): boolean {
+  return getStoredStatisticsChoice() === 'granted';
+}
+
+export function storeStatisticsChoice(choice: ConsentChoice): void {
   if (typeof window === 'undefined') return;
   try {
-    if (objected) {
-      window.localStorage.setItem(STATS_OBJECTION_STORAGE_KEY, 'objected');
-      // Remove what the statistics script left behind, so objecting leaves nothing of it on the device.
-      window.localStorage.removeItem(VERCEL_ANALYTICS_STORAGE_KEY);
-    } else {
-      window.localStorage.removeItem(STATS_OBJECTION_STORAGE_KEY);
-    }
+    window.localStorage.setItem(STATS_CONSENT_STORAGE_KEY, choice);
+    // Declining or withdrawing leaves nothing of the statistics script on the device.
+    if (choice !== 'granted') window.localStorage.removeItem(VERCEL_ANALYTICS_STORAGE_KEY);
   } catch {
     // storage blocked: nothing could have been stored either
   }

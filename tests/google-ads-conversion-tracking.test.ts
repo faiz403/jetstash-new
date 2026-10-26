@@ -152,6 +152,8 @@ describe('lib/analytics.ts track() — Google Ads dispatch is additive, isolated
     vi.resetModules();
     vi.doMock('@vercel/analytics', () => ({ track: mocks.vercelTrack }));
     vi.doMock('@/lib/google-ads-conversions', () => ({ fireGoogleAdsConversion: mocks.fireGoogleAdsConversion }));
+    // October 2026: Vercel statistics are consent-first, so these tests state that the visitor has allowed them.
+    vi.doMock('@/lib/consent', () => ({ hasSiteStatisticsConsent: () => true, hasAdMeasurementConsent: () => false }));
     const { track } = await import('@/lib/analytics');
     track('route_watch_signup', { route: 'manchester-lahore', source: 'route-hero' });
     expect(mocks.vercelTrack).toHaveBeenCalledOnce();
@@ -173,7 +175,7 @@ describe('lib/analytics.ts track() — Google Ads dispatch is additive, isolated
     vi.doMock('@vercel/analytics', () => ({ track: mocks.vercelTrack }));
     vi.doMock('@/lib/google-ads-conversions', () => ({ fireGoogleAdsConversion: mocks.fireGoogleAdsConversion }));
     vi.doMock('@/lib/acquisition', () => ({ getStoredAcquisitionSource: () => 'reddit' }));
-    vi.doMock('@/lib/consent', () => ({ isSiteStatisticsObjected: () => false, hasAdMeasurementConsent: () => true }));
+    vi.doMock('@/lib/consent', () => ({ hasSiteStatisticsConsent: () => true, hasAdMeasurementConsent: () => true }));
     const { track } = await import('@/lib/analytics');
     track('tripcom_click', { route: 'manchester-lahore', source: 'route-hero' });
     expect(mocks.vercelTrack).toHaveBeenCalledTimes(2);
@@ -196,6 +198,8 @@ describe('lib/analytics.ts track() — Google Ads dispatch is additive, isolated
     vi.doMock('@vercel/analytics', () => ({ track: mocks.vercelTrack }));
     vi.doMock('@/lib/google-ads-conversions', () => ({ fireGoogleAdsConversion: mocks.fireGoogleAdsConversion }));
     vi.doMock('@/lib/acquisition', () => ({ getStoredAcquisitionSource: () => null }));
+    // October 2026: Vercel statistics are consent-first, so these tests state that the visitor has allowed them.
+    vi.doMock('@/lib/consent', () => ({ hasSiteStatisticsConsent: () => true, hasAdMeasurementConsent: () => false }));
     const { track } = await import('@/lib/analytics');
     track('tripcom_click', { route: 'manchester-lahore', source: 'route-hero' });
     expect(mocks.vercelTrack).toHaveBeenCalledTimes(1);
@@ -214,6 +218,8 @@ describe('lib/analytics.ts track() — Google Ads dispatch is additive, isolated
         throw new Error('Google Ads blew up');
       },
     }));
+    // October 2026: Vercel statistics are consent-first, so these tests state that the visitor has allowed them.
+    vi.doMock('@/lib/consent', () => ({ hasSiteStatisticsConsent: () => true, hasAdMeasurementConsent: () => false }));
     const { track } = await import('@/lib/analytics');
     expect(() => track('route_watch_signup')).not.toThrow();
     expect(mocks.vercelTrack).toHaveBeenCalledOnce();
@@ -342,7 +348,7 @@ describe('components/ui/cookie-consent-banner.tsx — Basic Consent Mode: the ta
   });
 
   it('the public consent paragraph has no em dash, en dash or hyphenated word pairing', () => {
-    const paragraphMatch = bannerSrc.match(/Optional Google Ads measurement[\s\S]*?Cookie settings\./);
+    const paragraphMatch = bannerSrc.match(/Optional Google Ads measurement[\s\S]*?Decline keeps them off\./);
     expect(paragraphMatch).not.toBeNull();
     const paragraph = paragraphMatch![0];
     expect(paragraph).not.toMatch(/[—–]/); // em dash, en dash

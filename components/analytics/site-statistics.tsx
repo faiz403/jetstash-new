@@ -3,17 +3,18 @@
 import { useEffect, useRef, useState } from 'react';
 import { Analytics } from '@vercel/analytics/next';
 import { SpeedInsights } from '@vercel/speed-insights/next';
-import { isSiteStatisticsObjected, STATS_OBJECTION_STORAGE_KEY, STATS_PREFERENCE_CHANGED_EVENT } from '@/lib/consent';
+import { hasSiteStatisticsConsent, STATS_CONSENT_STORAGE_KEY, STATS_PREFERENCE_CHANGED_EVENT, VERCEL_ANALYTICS_STORAGE_KEY } from '@/lib/consent';
 import { sanitiseStatisticsEvent } from '@/lib/analytics-privacy';
 
 /**
- * Vercel Analytics and Speed Insights, behind the visitor's Site statistics preference (October 2026; proposed compliance approach,
- * pending legal review of the statistical-purpose basis).
+ * Vercel Analytics and Speed Insights, behind the visitor's separate Site statistics permission (October 2026, consent-first).
  *
- * The scripts are mounted only when the visitor has NOT objected, and the preference is read before anything is mounted: an
- * objecting visitor never requests either script, on first load, on reload or on later navigation. (Suppressing events after the
- * script has loaded would not be enough: the script itself reads browser storage.) Mounted scripts get a beforeSend hook that
- * cleans advertising identifiers out of the URL they would otherwise send.
+ * OFF by default. The scripts are mounted only when the visitor has explicitly allowed Site statistics, and that is read before
+ * anything is mounted: a visitor who has not decided, who declined or who withdrew never requests either script (first load, reload
+ * or later navigation). Suppressing events after the script has loaded would not be enough: the script itself reads browser storage
+ * and adds the referrer. Mounted scripts get a beforeSend hook that cleans advertising identifiers out of the URL they would
+ * otherwise send. If the permission is withdrawn in another tab, this tab reloads, because a script already running cannot be
+ * unloaded.
  *
  * Until the effect has read the preference nothing is mounted, so no request is made before the choice is known.
  */
@@ -22,12 +23,21 @@ export function SiteStatistics() {
   const onRef = useRef(false);
   onRef.current = on;
   useEffect(() => {
-    const sync = () => setOn(!isSiteStatisticsObjected());
-    // The objection made in ANOTHER tab arrives as a storage event. Scripts already running in this tab cannot be unloaded (they keep
-    // observing the page even if their sends are cancelled), so this tab is reloaded, exactly as the tab where the visitor objected.
+    const sync = () => {
+      const allowed = hasSiteStatisticsConsent();
+      // No permission: also remove anything Vercel's script left from an earlier allowed period.
+      if (!allowed) {
+        try {
+          window.localStorage.removeItem(VERCEL_ANALYTICS_STORAGE_KEY);
+        } catch {
+          // storage blocked
+        }
+      }
+      setOn(allowed);
+    };
     const onStorage = (e: StorageEvent) => {
-      if (e.key !== null && e.key !== STATS_OBJECTION_STORAGE_KEY) return;
-      if (isSiteStatisticsObjected() && onRef.current) window.location.reload();
+      if (e.key !== null && e.key !== STATS_CONSENT_STORAGE_KEY) return;
+      if (!hasSiteStatisticsConsent() && onRef.current) window.location.reload();
       else sync();
     };
     sync();

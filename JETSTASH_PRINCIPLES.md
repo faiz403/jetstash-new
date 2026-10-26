@@ -857,7 +857,13 @@ markup existed site-wide with zero consumer — confirmed via full-repo grep (no
 mounted component, no listener). `@vercel/analytics` + `@vercel/speed-insights` were chosen because
 they're platform-native (no new vendor relationship beyond existing Vercel hosting), cookieless, and
 near-zero bundle cost — deliberately not Google Analytics/GTM or a self-hosted alternative, which
-would add cookie-consent implications or new infrastructure for no proportional benefit. `lib/analytics.ts`
+would add cookie-consent implications or new infrastructure for no proportional benefit. **Consent-first
+(October 2026):** both Vercel scripts are OFF by default and are not even requested until the visitor
+explicitly accepts "Site statistics", a permission separate from Google Ads measurement (neither implies the
+other; `components/analytics/site-statistics.tsx`, `lib/consent.ts`). They add the visitor's referrer to
+page views and custom events themselves, outside the `beforeSend` hook, so that is a residual provider-data
+exposure for consenting visitors; do not rebuild Vercel's analytics around it without a separate decision.
+`lib/analytics.ts`
 is the one `track()` wrapper every event goes through. Event catalog (all context, never anything that
 identifies a person or a document):
 

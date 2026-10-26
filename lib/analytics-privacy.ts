@@ -9,7 +9,7 @@
  * The referrer is sent by the Vercel script itself and cannot be changed from here; browsers send only the origin of a
  * cross-site referrer by default, which carries no click identifier.
  */
-import { hasAdMeasurementConsent, isSiteStatisticsObjected } from '@/lib/consent';
+import { hasAdMeasurementConsent, hasSiteStatisticsConsent } from '@/lib/consent';
 
 export const AD_CLICK_ID_PARAMS: readonly string[] = [
   // Google (Ads click ids, the 2023+ campaign parameters, cross-domain linker, Shopping)
@@ -71,11 +71,11 @@ export function cleanUrlForStatistics(url: string, opts: { keepCampaign: boolean
 }
 
 /**
- * The beforeSend hook for both Vercel scripts: returns the same event with a cleaned URL. If the visitor has objected to site
+ * The beforeSend hook for both Vercel scripts: returns the same event with a cleaned URL. Unless the visitor has allowed site
  * statistics, nothing is sent at all (this also stops the final flush a script already running in the page does when it unloads).
  */
 export function sanitiseStatisticsEvent<T extends { url: string }>(event: T): T | null {
-  if (isSiteStatisticsObjected()) return null;
+  if (!hasSiteStatisticsConsent()) return null;
   // Advertising attribution events are re-checked here, inside Vercel's own send hook: an event queued before a withdrawal (in this
   // tab or another) is dropped when the queue drains, however it got there.
   const name = (event as { name?: unknown }).name;

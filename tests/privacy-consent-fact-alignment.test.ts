@@ -23,7 +23,10 @@ describe('privacy notice: Google/Vercel fact alignment', () => {
   });
 
   it('does not promise one cookie or deny every advertising/tracking technology', () => {
-    expect(privacyProse).toContain('offers optional Google Ads measurement');
+    // October 2026: the notice now offers two separate optional settings, and the policy says so.
+    expect(privacyProse).toContain('Google Ads measurement (optional).');
+    expect(privacyProse).toContain('Site statistics (optional).');
+    expect(privacyProse).toContain('two separate choices');
     expect(privacyProse).not.toMatch(/one optional[^.]*measurement cookie/i);
     expect(privacyProse).not.toMatch(/we do not use Google Analytics, advertising pixels, or any other tracking/i);
     expect(privacyProse).toContain('Google\'s tag may also process ordinary browser, page, device or referrer information');
@@ -38,14 +41,15 @@ describe('privacy notice: Google/Vercel fact alignment', () => {
   });
 });
 
-describe('consent banner: Google Ads remains separate from always-on Vercel telemetry', () => {
+describe('consent banner: Google Ads measurement and Site statistics are two separate optional choices', () => {
   // Compact mobile treatment (September 2026): shorter wording, same facts —
   // Accept/Decline still have their exact existing effect, Vercel's two
   // services are still named as running regardless of the choice, and no
   // personalised advertising is configured either way.
-  it('explains the accept/decline effect and independent Vercel services', () => {
+  it('explains the accept/decline effect of each separate choice', () => {
     expect(banner).toContain('Accept loads the tag; Decline');
     expect(banner).toContain('Vercel Analytics and Speed Insights');
+    expect(banner).toContain('Accept loads them');
     expect(banner).toContain('No personalised ads');
   });
 
@@ -59,6 +63,6 @@ describe('consent banner: Google Ads remains separate from always-on Vercel tele
     expect(banner).toContain("analytics_storage: 'denied'");
     expect(googleAds).toContain("window.gtag('event', 'conversion', { send_to:");
     expect(googleAds).not.toMatch(/send_to:[\s\S]{0,200}(email|phone|name|address|route|region)/i);
-    expect(layout).toContain('<SiteStatistics />'); // Vercel telemetry stays separate from Google Ads consent; see components/analytics/site-statistics.tsx
+    expect(layout).toContain('<SiteStatistics />'); // Vercel statistics are consent-first and separate from Google Ads consent; see components/analytics/site-statistics.tsx
   });
 });

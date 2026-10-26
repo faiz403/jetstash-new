@@ -1,7 +1,7 @@
 import { track as vercelTrack } from '@vercel/analytics';
 import { fireGoogleAdsConversion } from './google-ads-conversions';
 import { getStoredAcquisitionSource } from './acquisition';
-import { hasAdMeasurementConsent, isSiteStatisticsObjected } from './consent';
+import { hasAdMeasurementConsent, hasSiteStatisticsConsent } from './consent';
 
 /**
  * The one place JetStash sends an analytics event from — a thin wrapper
@@ -153,7 +153,7 @@ export function track(event: AnalyticsEvent, properties?: Record<string, string 
     // Acquisition events are advertising attribution: they are checked against the visitor's consent at the moment of dispatch,
     // so one scheduled before a withdrawal (in this tab or another) can never be sent after it.
     const isAcquisitionEvent = event === 'acquisition_landing' || event === 'acquisition_handoff';
-    if (!isSiteStatisticsObjected() && (!isAcquisitionEvent || hasAdMeasurementConsent())) vercelTrack(event, properties);
+    if (hasSiteStatisticsConsent() && (!isAcquisitionEvent || hasAdMeasurementConsent())) vercelTrack(event, properties);
   } catch {
     // Analytics must never break the page it's measuring.
   }

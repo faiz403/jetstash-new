@@ -3,19 +3,19 @@ import { readFileSync } from 'fs';
 import { join } from 'path';
 import {
   CONSENT_STORAGE_KEY,
-  STATS_OBJECTION_STORAGE_KEY,
+  STATS_CONSENT_STORAGE_KEY,
   STATS_PREFERENCE_CHANGED_EVENT,
   VERCEL_ANALYTICS_STORAGE_KEY,
   hasAdMeasurementConsent,
-  isSiteStatisticsObjected,
-  setSiteStatisticsObjection,
+  hasSiteStatisticsConsent,
+  storeStatisticsChoice,
 } from '@/lib/consent';
 import { ACQUISITION_STORAGE_KEY, getOrClassifyAcquisitionSource, getStoredAcquisitionSource, purgeAcquisitionSource } from '@/lib/acquisition';
 import { cleanUrlForStatistics, sanitiseStatisticsEvent } from '@/lib/analytics-privacy';
 
 /**
  * Behavioural coverage (October 2026) for the two privacy changes: advertising attribution only with measurement consent, and the
- * Site statistics objection. A fake browser records every storage read/write and every URL/referrer read, so the tests prove what was
+ * consent-first Site statistics. A fake browser records every storage read/write and every URL/referrer read, so the tests prove what was
  * ACCESSED, not just what was returned. The real browser-level proof (network requests, real Vercel scripts) is in the founder
  * evidence run; these are the fast, repeatable guards.
  */
@@ -109,37 +109,47 @@ describe('advertising attribution needs the visitor to have accepted measurement
     makeBrowser();
     vi.stubGlobal('window', { get localStorage() { throw new Error('blocked'); } });
     expect(hasAdMeasurementConsent()).toBe(false);
-    expect(isSiteStatisticsObjected()).toBe(false);
+    expect(hasSiteStatisticsConsent()).toBe(false);
   });
 });
 
-describe('Site statistics objection', () => {
-  it('is off by default; objecting stores a device-side preference, removes the script\'s own storage entry and announces the change', () => {
-    const b = makeBrowser({ local: { [VERCEL_ANALYTICS_STORAGE_KEY]: '{"x":1}' } });
-    expect(isSiteStatisticsObjected()).toBe(false);
-    setSiteStatisticsObjection(true);
-    expect(isSiteStatisticsObjected()).toBe(true);
-    expect(b.local.data[STATS_OBJECTION_STORAGE_KEY]).toBe('objected');
+describe('Site statistics is consent-first', () => {
+  it.each([
+    ['no decision', {}],
+    ['Decline', { [STATS_CONSENT_STORAGE_KEY]: 'denied' }],
+    ['a corrupted value', { [STATS_CONSENT_STORAGE_KEY]: 'yes' }],
+    ['the old objection key (a different model)', { 'jetstash-stats-objection': 'objected' }],
+  ])('%s: statistics are off', (_name, local) => {
+    makeBrowser({ local });
+    expect(hasSiteStatisticsConsent()).toBe(false);
+  });
+
+  it('only an explicit Accept turns statistics on, and it is stored on the device only', () => {
+    const b = makeBrowser();
+    storeStatisticsChoice('granted');
+    expect(hasSiteStatisticsConsent()).toBe(true);
+    expect(b.local.data[STATS_CONSENT_STORAGE_KEY]).toBe('granted');
+    expect(b.events).toContain(STATS_PREFERENCE_CHANGED_EVENT);
+  });
+
+  it('declining or withdrawing turns statistics off and removes the script\'s own storage entry', () => {
+    const b = makeBrowser({ local: { [STATS_CONSENT_STORAGE_KEY]: 'granted', [VERCEL_ANALYTICS_STORAGE_KEY]: '{"x":1}' } });
+    expect(hasSiteStatisticsConsent()).toBe(true);
+    storeStatisticsChoice('denied');
+    expect(hasSiteStatisticsConsent()).toBe(false);
+    expect(b.local.data[STATS_CONSENT_STORAGE_KEY]).toBe('denied');
     expect(b.local.data[VERCEL_ANALYTICS_STORAGE_KEY]).toBeUndefined();
     expect(b.events).toContain(STATS_PREFERENCE_CHANGED_EVENT);
   });
 
-  it('turning statistics back on removes the objection', () => {
-    const b = makeBrowser({ local: { [STATS_OBJECTION_STORAGE_KEY]: 'objected' } });
-    expect(isSiteStatisticsObjected()).toBe(true);
-    setSiteStatisticsObjection(false);
-    expect(isSiteStatisticsObjected()).toBe(false);
-    expect(b.local.data[STATS_OBJECTION_STORAGE_KEY]).toBeUndefined();
-  });
-
   it('is independent of advertising consent in both directions', () => {
-    makeBrowser({ local: { [CONSENT_STORAGE_KEY]: 'granted', [STATS_OBJECTION_STORAGE_KEY]: 'objected' } });
+    makeBrowser({ local: { [CONSENT_STORAGE_KEY]: 'granted' } });
     expect(hasAdMeasurementConsent()).toBe(true);
-    expect(isSiteStatisticsObjected()).toBe(true);
+    expect(hasSiteStatisticsConsent()).toBe(false); // accepting measurement does not switch statistics on
     vi.unstubAllGlobals();
-    makeBrowser({ local: { [CONSENT_STORAGE_KEY]: 'denied' } });
-    expect(hasAdMeasurementConsent()).toBe(false);
-    expect(isSiteStatisticsObjected()).toBe(false);
+    makeBrowser({ local: { [STATS_CONSENT_STORAGE_KEY]: 'granted' } });
+    expect(hasSiteStatisticsConsent()).toBe(true);
+    expect(hasAdMeasurementConsent()).toBe(false); // accepting statistics does not switch measurement on
   });
 });
 
@@ -177,11 +187,11 @@ describe('what Vercel may receive in a page URL', () => {
   });
 
   it('drops an acquisition event inside the Vercel hook when consent is missing, so a queue that drains after a withdrawal sends nothing', () => {
-    makeBrowser({});
+    makeBrowser({ local: { [STATS_CONSENT_STORAGE_KEY]: 'granted' } });
     expect(sanitiseStatisticsEvent({ type: 'event', url: 'https://jetstash.co.uk/a', name: 'acquisition_landing' } as { url: string })).toBeNull();
     expect(sanitiseStatisticsEvent({ type: 'event', url: 'https://jetstash.co.uk/a', name: 'tripcom_click' } as { url: string })).not.toBeNull();
     vi.unstubAllGlobals();
-    makeBrowser({ local: { [CONSENT_STORAGE_KEY]: 'granted' } });
+    makeBrowser({ local: { [CONSENT_STORAGE_KEY]: 'granted', [STATS_CONSENT_STORAGE_KEY]: 'granted' } });
     expect(sanitiseStatisticsEvent({ type: 'event', url: 'https://jetstash.co.uk/a', name: 'acquisition_landing' } as { url: string })).not.toBeNull();
   });
 
@@ -195,16 +205,19 @@ describe('what Vercel may receive in a page URL', () => {
     expect(cleanUrlForStatistics('not a url', { keepCampaign: false })).toBe('not a url');
   });
 
-  it('the beforeSend hook sends nothing at all once the visitor has objected to site statistics', () => {
-    makeBrowser({ local: { [STATS_OBJECTION_STORAGE_KEY]: 'objected', [CONSENT_STORAGE_KEY]: 'granted' } });
-    expect(sanitiseStatisticsEvent({ type: 'pageview', url: 'https://jetstash.co.uk/a' })).toBeNull();
+  it('the beforeSend hook sends nothing at all unless the visitor has allowed site statistics', () => {
+    for (const local of [{}, { [CONSENT_STORAGE_KEY]: 'granted' }, { [STATS_CONSENT_STORAGE_KEY]: 'denied', [CONSENT_STORAGE_KEY]: 'granted' }] as Record<string, string>[]) {
+      vi.unstubAllGlobals();
+      makeBrowser({ local });
+      expect(sanitiseStatisticsEvent({ type: 'pageview', url: 'https://jetstash.co.uk/a' })).toBeNull();
+    }
   });
 
-  it('the beforeSend hook reads consent at send time: campaign tags pass only after Accept', () => {
-    makeBrowser({});
+  it('the beforeSend hook reads consent at send time: campaign tags pass only after Accept, and only with statistics allowed', () => {
+    makeBrowser({ local: { [STATS_CONSENT_STORAGE_KEY]: 'granted' } });
     expect(sanitiseStatisticsEvent({ type: 'pageview', url: U })!.url).not.toMatch(/utm_|gclid/);
     vi.unstubAllGlobals();
-    makeBrowser({ local: { [CONSENT_STORAGE_KEY]: 'granted' } });
+    makeBrowser({ local: { [STATS_CONSENT_STORAGE_KEY]: 'granted', [CONSENT_STORAGE_KEY]: 'granted' } });
     const out = sanitiseStatisticsEvent({ type: 'pageview', url: U })!.url;
     expect(out).toContain('utm_source=google_ads');
     expect(out).not.toContain('gclid');
@@ -214,30 +227,31 @@ describe('what Vercel may receive in a page URL', () => {
 describe('wiring', () => {
   const read = (p: string) => readFileSync(join(process.cwd(), p), 'utf8');
 
-  it('the statistics scripts are mounted only after the preference has been read, never directly from the layout', () => {
+  it('the statistics scripts are mounted only after the preference has been read and allowed, never directly from the layout', () => {
     const src = read('components/analytics/site-statistics.tsx');
     expect(src).toContain('useState(false)'); // nothing mounted until the preference is known
     expect(src).toContain('if (!on) return null;');
-    expect(src).toContain('isSiteStatisticsObjected()');
+    expect(src).toContain('setOn(allowed)');
+    expect(src).toContain('hasSiteStatisticsConsent()');
     expect(read('app/layout.tsx')).not.toMatch(/@vercel\/(analytics|speed-insights)/);
   });
 
-  it('the tracker only acts with consent and not when statistics are objected to, and purges otherwise', () => {
+  it('the tracker needs BOTH permissions (it is advertising attribution sent through the statistics scripts), and purges otherwise', () => {
     const src = read('components/analytics/acquisition-landing-tracker.tsx');
-    expect(src).toContain('hasAdMeasurementConsent()');
-    expect(src).toContain('isSiteStatisticsObjected()');
+    expect(src).toContain('!hasAdMeasurementConsent() || !hasSiteStatisticsConsent()');
     expect(src).toContain('purgeAcquisitionSource()');
     expect(src).toContain('CONSENT_GRANTED_EVENT');
   });
 
-  it('other tabs: the tracker handles consent changes from storage events, and the statistics wrapper reloads on an objection made elsewhere', () => {
+  it('other tabs: the tracker handles either permission changing in a storage event, and the statistics wrapper reloads on a withdrawal made elsewhere', () => {
     const tracker = read('components/analytics/acquisition-landing-tracker.tsx');
     expect(tracker).toContain("window.addEventListener('storage', onStorage)");
     expect(tracker).toContain('CONSENT_STORAGE_KEY');
-    expect(tracker).toContain('if (hasAdMeasurementConsent() && !isSiteStatisticsObjected()) track(');
+    expect(tracker).toContain('STATS_CONSENT_STORAGE_KEY');
+    expect(tracker).toContain('if (hasAdMeasurementConsent() && hasSiteStatisticsConsent()) track(');
     const stats = read('components/analytics/site-statistics.tsx');
-    expect(stats).toContain('window.location.reload()');
-    expect(stats).toContain('STATS_OBJECTION_STORAGE_KEY');
+    expect(stats).toContain('if (!hasSiteStatisticsConsent() && onRef.current) window.location.reload();');
+    expect(stats).toContain('STATS_CONSENT_STORAGE_KEY');
   });
 
   it('consent withdrawn in another tab reloads this tab when the Google tag is running here', () => {
@@ -253,13 +267,27 @@ describe('wiring', () => {
     expect(src).toContain('opener.focus()');
   });
 
-  it('the banner exposes the Site statistics control only in Cookie settings, with a plain toggle and a reload on objecting', () => {
+  it('the banner has two separate groups, each with its own Decline and Accept, nothing preselected and no combined button', () => {
     const src = read('components/ui/cookie-consent-banner.tsx');
-    expect(src).toContain('Turn off site statistics');
-    expect(src).toContain('Turn on site statistics');
-    expect(src).toContain('setSiteStatisticsObjection(next)');
-    expect(src).toContain('window.location.reload()');
-    expect(src).toContain('{settingsMode && (');
+    expect(src).toContain("handleStatsChoice('denied')");
+    expect(src).toContain("handleStatsChoice('granted')");
+    expect(src).toContain("handleChoice('denied')");
+    expect(src).toContain("handleChoice('granted')");
+    expect(src).not.toMatch(/Accept all|Decline all|Reject all/i);
+    expect(src).not.toMatch(/defaultChecked|checked=\{true\}/);
+    // Both permissions start undecided (null), so nothing is on until the visitor chooses.
+    expect(src).toContain('useState<ConsentChoice | null>(null)');
+    expect(src).toContain('(settingsMode || statsChoice === null) && (');
+    expect(src).toContain('(settingsMode || choice === null) && (');
+  });
+
+  it('withdrawing site statistics removes the attribution classification and reloads, because the running scripts cannot be unloaded', () => {
+    const src = read('components/ui/cookie-consent-banner.tsx');
+    const start = src.indexOf('function handleStatsChoice');
+    const body = src.slice(start, src.indexOf('function settleAfterChoice'));
+    expect(body).toContain("storeStatisticsChoice(next)");
+    expect(body).toContain('purgeAcquisitionSource()');
+    expect(body).toContain('if (statsWasGranted) window.location.reload();');
   });
 
   beforeEach(() => undefined);
