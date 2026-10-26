@@ -70,12 +70,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         >
           Skip to main content
         </a>
+        {/* Early in the document on purpose (October 2026): the banner is fixed to the bottom of the screen, so this changes
+            nothing visually, but it puts the consent choice straight after the skip link in keyboard and screen-reader order.
+            At the end of the body a keyboard user needed about 85 Tab presses on the homepage to reach Decline. */}
+        <CookieConsentBanner />
         <JsonLd data={organizationSchema()} />
         <JsonLd data={webSiteSchema()} />
         <Header />
         <main id="main-content">{children}</main>
         <Footer />
-        <CookieConsentBanner />
         <AcquisitionLandingTracker />
         <Analytics />
         <SpeedInsights />
