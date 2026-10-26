@@ -147,7 +147,8 @@ const sections: { title: string; body: React.ReactNode }[] = [
         <p>
           JetStash doesn&apos;t use cookies for anything by default. When you first visit, a notice asks about two
           optional settings. Both are off until you choose, they are two separate choices, and accepting one never
-          switches on the other. Each has its own Decline and Accept button, and you can change either at any time using
+          switches on the other. You can reject or accept both at once, or open the individual settings and choose each one
+          separately, and you can change either at any time using
           &lsquo;Cookie settings&rsquo; in the footer of every page.
         </p>
         <p>
