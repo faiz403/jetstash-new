@@ -4,8 +4,9 @@
  * Both Vercel scripts send the full page URL, query string included (the real scripts' payloads carry location.href). That means an
  * advertising click identifier such as gclid, or a campaign tag, would reach Vercel automatically, with no consent, even when
  * JetStash's own tracking is switched off. Their beforeSend hooks let the URL be cleaned before it leaves the browser:
- *   - advertising click identifiers are always removed;
- *   - campaign tags (utm_*) are removed unless the visitor has accepted optional measurement.
+ *   - only an allowlist of JetStash's own parameters (with simple values) is kept; every other query parameter is removed, so
+ *     advertising click identifiers and anything an inbound link adds never reach Vercel;
+ *   - campaign tags (utm_*) are kept only if the visitor has accepted optional measurement, and only with simple values.
  * The referrer is sent by the Vercel script itself and cannot be changed from here; browsers send only the origin of a
  * cross-site referrer by default, which carries no click identifier.
  */
@@ -20,6 +21,11 @@ export const AD_CLICK_ID_PARAMS: readonly string[] = [
 /** Campaign tags: every utm_ parameter (utm_source, utm_medium, utm_source_platform, utm_creative_format and any others). */
 export const CAMPAIGN_PARAM_PREFIX = 'utm_';
 
+/** The query parameters JetStash itself writes (airport codes, destination, trip type, region), compared in lower case. */
+export const KNOWN_QUERY_PARAMS: ReadonlySet<string> = new Set(['airport', 'departure', 'arrival', 'destination', 'triptype', 'region']);
+/** Letters, digits and a few separators, at most 40 characters: enough for a code or slug, too short and plain to carry a token or an address. */
+const SIMPLE_VALUE = /^[A-Za-z0-9_.~-]{1,40}$/;
+
 export function cleanUrlForStatistics(url: string, opts: { keepCampaign: boolean }): string {
   let u: URL;
   try {
@@ -28,11 +34,15 @@ export function cleanUrlForStatistics(url: string, opts: { keepCampaign: boolean
     return url;
   }
   let changed = false;
-  for (const key of [...u.searchParams.keys()]) {
+  // Allowlist (October 2026): only the parameters JetStash itself puts in its own URLs, with simple values, survive. Anything else an
+  // inbound link carries (click ids, tokens, email addresses, unknown tracking parameters) is dropped, so it never depends on a
+  // blocklist being complete. Campaign tags (utm_*) survive only with measurement consent and only with simple values.
+  for (const key of [...new Set(u.searchParams.keys())]) {
     const k = key.toLowerCase();
-    const isClickId = AD_CLICK_ID_PARAMS.some((p) => p.toLowerCase() === k);
-    const isCampaign = k.startsWith(CAMPAIGN_PARAM_PREFIX);
-    if (isClickId || (isCampaign && !opts.keepCampaign)) {
+    const values = u.searchParams.getAll(key);
+    const known = KNOWN_QUERY_PARAMS.has(k) && values.every((v) => SIMPLE_VALUE.test(v));
+    const campaign = k.startsWith(CAMPAIGN_PARAM_PREFIX) && opts.keepCampaign && values.every((v) => SIMPLE_VALUE.test(v));
+    if (!known && !campaign) {
       u.searchParams.delete(key);
       changed = true;
     }

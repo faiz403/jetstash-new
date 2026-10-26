@@ -154,11 +154,14 @@ const sections: { title: string; body: React.ReactNode }[] = [
           <strong className="font-semibold text-ink-800">Site statistics (optional).</strong> If you accept, JetStash
           loads Vercel Web Analytics and Vercel Speed Insights, which count visits and measure page speed so we can
           improve the site. They are built to work without cookies. Nothing about them loads until you accept: no
-          script is requested before that point, or if you decline, or if you close the notice without choosing.
-          Once running they send the address of the page you are on (with advertising click identifiers and the
-          address fragment removed before sending), your browser and device type and country, and the page that sent
-          you to JetStash if you arrived from another website, which your browser provides and which JetStash cannot
-          edit. They also keep a small value in your browser storage. JetStash&apos;s own analytics event payloads contain
+          script is requested before that point, or if you decline, or if you leave the notice unanswered.
+          Once running they send the address of the page you are on (before sending, JetStash keeps only its own simple
+          parameters such as an airport code, so advertising click identifiers, other query parameters and the address
+          fragment are removed; campaign tags such as utm_source are kept only if you also accepted Google Ads
+          measurement), your browser and device type and country, and the page that sent
+          you to JetStash if you arrived from another website, which your browser provides, which Vercel&apos;s script adds
+          to page views and to JetStash&apos;s own events, and which JetStash cannot edit. They also keep a small value
+          in your browser storage (named __va_attribution). JetStash&apos;s own analytics event payloads contain
           named events with limited contextual fields such as route, destination, state, source, trip type, region,
           intent, verdict or interest — not names, email addresses, phone numbers or form contents. Vercel and its
           services may process ordinary technical information needed to provide those services. If you decline, or
@@ -168,7 +171,7 @@ const sections: { title: string; body: React.ReactNode }[] = [
         <p>
           <strong className="font-semibold text-ink-800">Google Ads measurement (optional).</strong> Nothing about the
           Google Ads tag loads until you actively accept: no Google script is requested before that point, or if you
-          decline, or if you close the notice without choosing. If you accept, JetStash loads the Google Ads tag and
+          decline, or if you leave the notice unanswered. If you accept, JetStash loads the Google Ads tag and
           sends configured conversion signals for certain flight, hotel or baggage-partner clicks. The current
           JetStash code does not put your name, email address, phone number, address, form contents or the partner
           URL into those conversion-event payloads. Google&apos;s tag may also process ordinary browser, page, device or
@@ -179,7 +182,7 @@ const sections: { title: string; body: React.ReactNode }[] = [
           of source brought you here (for example a Google Ads click, a search result, or a link from another site)
           and attaches that kind of source to partner link clicks. This needs both choices, because it is advertising
           measurement and it is sent through Site statistics. Only the kind of source is kept, for the visit, in your
-          browser; the advertising click identifier itself is not stored or sent to Vercel.
+          browser; the advertising click identifier itself is not stored, and it is removed from the page address before that is sent to Vercel (the referrer your browser provides is outside that cleaning).
         </p>
         <p>
           Your choices are remembered locally in your own browser, not in a JetStash account or server-side profile.

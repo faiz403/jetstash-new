@@ -19,7 +19,7 @@
  * attached to an event.
  */
 
-import { hasAdMeasurementConsent } from '@/lib/consent';
+import { hasAttributionConsent } from '@/lib/consent';
 
 export type AcquisitionSource =
   | 'organic_search'
@@ -105,7 +105,7 @@ export function purgeAcquisitionSource(): void {
 /** The stored classification for this session, or null if not yet classified or not consented. Never throws off-window. */
 export function getStoredAcquisitionSource(): AcquisitionSource | null {
   if (typeof window === 'undefined') return null;
-  if (!hasAdMeasurementConsent()) return null;
+  if (!hasAttributionConsent()) return null;
   const value = window.sessionStorage.getItem(STORAGE_KEY);
   const valid: readonly string[] = [
     'organic_search',
@@ -132,7 +132,7 @@ export function getStoredAcquisitionSource(): AcquisitionSource | null {
  */
 export function getOrClassifyAcquisitionSource(): AcquisitionSource {
   if (typeof window === 'undefined') return 'unknown';
-  if (!hasAdMeasurementConsent()) return 'unknown'; // no URL, referrer or storage access without consent
+  if (!hasAttributionConsent()) return 'unknown'; // no URL, referrer or storage access without BOTH permissions
   const stored = getStoredAcquisitionSource();
   if (stored) return stored;
   const classified = classifyAcquisitionSource(new URL(window.location.href), document.referrer);

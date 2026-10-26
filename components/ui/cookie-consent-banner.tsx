@@ -55,6 +55,9 @@ export function CookieConsentBanner() {
   const [loadTag, setLoadTag] = useState(false);
   // Cookie settings (opened from the footer): the same panel, with both permissions shown whatever was chosen before.
   const [settingsMode, setSettingsMode] = useState(false);
+  // First layer (October 2026): a compact summary with Reject all / Accept all. "Choose individual settings" opens the two separate
+  // groups. Opening them, or leaving the panel alone, changes nothing: no permission is granted until a button says so.
+  const [showDetails, setShowDetails] = useState(false);
   const loadTagRef = useRef(false);
   loadTagRef.current = loadTag;
   const panelRef = useRef<HTMLDivElement>(null);
@@ -145,6 +148,35 @@ export function CookieConsentBanner() {
     }
   }
 
+  /** Reject all / Accept all on the first layer. Two separate stored permissions are set together; neither is a combined permission. */
+  function handleAll(next: ConsentChoice) {
+    const adsWasOn = choice === 'granted';
+    const statsWasOn = statsChoice === 'granted';
+    storeConsentChoice(next);
+    storeStatisticsChoice(next);
+    setChoice(next);
+    setStatsChoice(next);
+    setVisible(false);
+    if (next === 'granted') {
+      setLoadTag(true);
+      window.dispatchEvent(new Event(CONSENT_GRANTED_EVENT));
+      return;
+    }
+    purgeAcquisitionSource();
+    // Anything already running in this page cannot be unloaded, so a fresh load is the honest way to stop it.
+    if (adsWasOn || statsWasOn) window.location.reload();
+  }
+
+  function openDetails() {
+    setShowDetails(true);
+    requestAnimationFrame(() => panelRef.current?.focus());
+  }
+
+  function closeDetails() {
+    setShowDetails(false);
+    requestAnimationFrame(() => panelRef.current?.focus());
+  }
+
   function handleStatsChoice(next: ConsentChoice) {
     const statsWasGranted = statsChoice === 'granted';
     storeStatisticsChoice(next);
@@ -164,6 +196,8 @@ export function CookieConsentBanner() {
     if (adsNow && statsNow) setVisible(false);
     else requestAnimationFrame(() => panelRef.current?.focus());
   }
+
+  const summaryView = !settingsMode && !showDetails && choice === null && statsChoice === null;
 
   return (
     <>
@@ -220,6 +254,34 @@ export function CookieConsentBanner() {
           tabIndex={-1}
           className="fixed inset-x-0 bottom-0 z-50 outline-none border-t border-ink-200 bg-white px-3 pb-1 pt-1 shadow-[0_-4px_16px_rgba(0,0,0,0.12)] sm:px-8 sm:pb-4 sm:pt-4"
         >
+          {summaryView ? (
+            <div className="mx-auto flex max-w-content flex-col gap-1.5 text-xs leading-snug text-ink-600 sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:text-sm sm:leading-relaxed">
+              <div>
+                <p>
+                  <strong className="font-semibold text-ink-800">Your privacy choices.</strong> Optional Vercel Analytics and Speed Insights measure
+                  site use and page speed. Optional Google Ads measurement checks whether ads lead to partner link clicks. All are off until you
+                  choose.
+                </p>
+                <p className="mt-0.5 flex flex-wrap items-center gap-x-3">
+                  <button type="button" onClick={openDetails} className="min-h-8 font-semibold text-ink-800 underline hover:text-brass-700">
+                    Choose individual settings
+                  </button>
+                  <Link href="/privacy-policy" className="underline hover:text-brass-700">
+                    Privacy Policy
+                  </Link>
+                </p>
+              </div>
+              {/* Equal prominence: Reject all and Accept all share one style and, on phones, one width. */}
+              <div className="flex w-full shrink-0 gap-2 sm:w-auto">
+                <button type="button" onClick={() => handleAll('denied')} className={CHOICE_BUTTON}>
+                  Reject all
+                </button>
+                <button type="button" onClick={() => handleAll('granted')} className={CHOICE_BUTTON}>
+                  Accept all
+                </button>
+              </div>
+            </div>
+          ) : (
           <div className="mx-auto flex max-w-content flex-col gap-1.5 text-xs leading-snug text-ink-600 sm:gap-3 sm:text-sm sm:leading-relaxed">
             <p>
               Two optional settings, both off until you choose, and each is separate. Change either later with Cookie settings in the
@@ -275,7 +337,15 @@ export function CookieConsentBanner() {
                 </button>
               </div>
             )}
+            {!settingsMode && showDetails && choice === null && statsChoice === null && (
+              <div className="flex">
+                <button type="button" onClick={closeDetails} className={`${CHOICE_BUTTON} w-full sm:w-auto`}>
+                  Back
+                </button>
+              </div>
+            )}
           </div>
+          )}
         </div>
       )}
     </>
