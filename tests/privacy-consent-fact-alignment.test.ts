@@ -59,7 +59,6 @@ describe('consent banner: Google Ads remains separate from always-on Vercel tele
     expect(banner).toContain("analytics_storage: 'denied'");
     expect(googleAds).toContain("window.gtag('event', 'conversion', { send_to:");
     expect(googleAds).not.toMatch(/send_to:[\s\S]{0,200}(email|phone|name|address|route|region)/i);
-    expect(layout).toContain('<Analytics />');
-    expect(layout).toContain('<SpeedInsights />');
+    expect(layout).toContain('<SiteStatistics />'); // Vercel telemetry stays separate from Google Ads consent; see components/analytics/site-statistics.tsx
   });
 });

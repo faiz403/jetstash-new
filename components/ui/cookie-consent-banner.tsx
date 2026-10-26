@@ -1,14 +1,19 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import Script from 'next/script';
 import {
+  CONSENT_GRANTED_EVENT,
   CONSENT_SETTINGS_OPEN_EVENT,
+  CONSENT_STORAGE_KEY,
   getStoredConsentChoice,
+  isSiteStatisticsObjected,
+  setSiteStatisticsObjection,
   storeConsentChoice,
   type ConsentChoice,
 } from '@/lib/consent';
+import { purgeAcquisitionSource } from '@/lib/acquisition';
 import { GOOGLE_ADS_TAG_ID } from '@/lib/google-ads-conversions';
 
 /**
@@ -41,10 +46,32 @@ export function CookieConsentBanner() {
   const [visible, setVisible] = useState(false);
   const [choice, setChoice] = useState<ConsentChoice | null>(null);
   const [loadTag, setLoadTag] = useState(false);
+  // Cookie settings (opened from the footer): the same panel plus the Site statistics control.
+  const [settingsMode, setSettingsMode] = useState(false);
+  const [statsObjected, setStatsObjected] = useState(false);
+  const loadTagRef = useRef(false);
+  loadTagRef.current = loadTag;
+  const panelRef = useRef<HTMLDivElement>(null);
+  /** What had focus when Cookie settings was opened (the footer link), so closing returns the visitor to where they were. */
+  const openerRef = useRef<HTMLElement | null>(null);
+
+  function closeSettings() {
+    setVisible(false);
+    setSettingsMode(false);
+    const opener = openerRef.current;
+    openerRef.current = null;
+    if (opener && typeof opener.focus === 'function') requestAnimationFrame(() => opener.focus());
+  }
+
+  // Opening Cookie settings from the footer moves focus into the panel (the panel is early in the page for keyboard users).
+  useEffect(() => {
+    if (visible && settingsMode) panelRef.current?.focus();
+  }, [visible, settingsMode]);
 
   useEffect(() => {
     const stored = getStoredConsentChoice();
     setChoice(stored);
+    setStatsObjected(isSiteStatisticsObjected());
     if (stored === 'granted') {
       // A returning visitor who already accepted — load the tag again on
       // this fresh page load. (It genuinely wasn't loaded until now: Basic
@@ -56,22 +83,43 @@ export function CookieConsentBanner() {
     }
 
     function handleReopen() {
+      openerRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+      setStatsObjected(isSiteStatisticsObjected());
+      setSettingsMode(true);
       setVisible(true);
     }
+    // Consent withdrawn in ANOTHER tab: the Google tag already running here cannot be unloaded, so this tab reloads (as it would had the
+    // visitor withdrawn here). The reload reads the stored choice first and never requests the tag again.
+    function handleStorage(e: StorageEvent) {
+      if (e.key !== null && e.key !== CONSENT_STORAGE_KEY) return;
+      const now = getStoredConsentChoice();
+      setChoice(now);
+      if (now !== 'granted' && loadTagRef.current) window.location.reload();
+    }
     window.addEventListener(CONSENT_SETTINGS_OPEN_EVENT, handleReopen);
-    return () => window.removeEventListener(CONSENT_SETTINGS_OPEN_EVENT, handleReopen);
+    window.addEventListener('storage', handleStorage);
+    return () => {
+      window.removeEventListener(CONSENT_SETTINGS_OPEN_EVENT, handleReopen);
+      window.removeEventListener('storage', handleStorage);
+    };
   }, []);
 
   function handleChoice(next: ConsentChoice) {
     const wasGranted = choice === 'granted';
     storeConsentChoice(next);
     setChoice(next);
-    setVisible(false);
+    if (settingsMode) closeSettings();
+    else setVisible(false);
 
     if (next === 'granted') {
       setLoadTag(true);
+      // Lets advertising attribution (which needs this consent) start on the page the visitor is on.
+      window.dispatchEvent(new Event(CONSENT_GRANTED_EVENT));
       return;
     }
+
+    // Decline or withdrawal: no advertising attribution, and any classification already kept in this session is removed.
+    purgeAcquisitionSource();
 
     // Declining for the first time (wasGranted === false, loadTag === false)
     // needs nothing further — the tag was never requested, so there's
@@ -83,6 +131,18 @@ export function CookieConsentBanner() {
     // requests the tag again, rather than JetStash pretending a script that
     // already ran can be silently erased from the current page.
     if (wasGranted) {
+      window.location.reload();
+    }
+  }
+
+  function toggleSiteStatistics() {
+    const next = !statsObjected;
+    setSiteStatisticsObjection(next);
+    setStatsObjected(next);
+    if (next) {
+      purgeAcquisitionSource();
+      // The statistics scripts already running in this page cannot be unloaded, so a fresh load is the honest way to stop them:
+      // the next load reads the objection first and never requests either script.
       window.location.reload();
     }
   }
@@ -138,7 +198,9 @@ export function CookieConsentBanner() {
         <div
           role="region"
           aria-label="Cookie consent"
-          className="fixed inset-x-0 bottom-0 z-50 border-t border-ink-200 bg-white px-3 pb-1 pt-1 shadow-[0_-4px_16px_rgba(0,0,0,0.12)] sm:px-8 sm:pb-4 sm:pt-4"
+          ref={panelRef}
+          tabIndex={-1}
+          className="fixed inset-x-0 bottom-0 z-50 outline-none border-t border-ink-200 bg-white px-3 pb-1 pt-1 shadow-[0_-4px_16px_rgba(0,0,0,0.12)] sm:px-8 sm:pb-4 sm:pt-4"
         >
           <div className="mx-auto flex max-w-content flex-col gap-0.5 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
             <div className="text-xs leading-snug text-ink-600 sm:text-sm sm:leading-relaxed">
@@ -156,6 +218,20 @@ export function CookieConsentBanner() {
                   {choice === 'granted' ? "You've currently accepted this — changing to Decline switches it off." : "You've currently declined this — changing to Accept switches it on."}
                 </p>
               )}
+              {settingsMode && (
+                <div role="group" aria-labelledby="site-statistics-heading" className="mt-2 border-t border-ink-200 pt-2">
+                  <p>
+                    <strong id="site-statistics-heading" className="font-semibold text-ink-800">
+                      Site statistics:
+                    </strong>{' '}
+                    Vercel Analytics and Speed Insights count visits and page speed so JetStash can improve. They set no cookies. They are currently{' '}
+                    <span className="font-semibold text-ink-800">{statsObjected ? 'off' : 'on'}</span>.
+                  </p>
+                  <button type="button" onClick={toggleSiteStatistics} className={`${CHOICE_BUTTON} mt-2 w-full sm:w-auto`}>
+                    {statsObjected ? 'Turn on site statistics' : 'Turn off site statistics'}
+                  </button>
+                </div>
+              )}
             </div>
             {/* Equal prominence (October 2026): refusing has to be as easy and as visible as accepting, so both choices share one
                 style and, on phones, one width. Behaviour is unchanged. */}
@@ -166,6 +242,15 @@ export function CookieConsentBanner() {
               <button type="button" onClick={() => handleChoice('granted')} className={CHOICE_BUTTON}>
                 Accept measurement
               </button>
+              {settingsMode && (
+                <button
+                  type="button"
+                  onClick={closeSettings}
+                  className={CHOICE_BUTTON}
+                >
+                  Close
+                </button>
+              )}
             </div>
           </div>
         </div>

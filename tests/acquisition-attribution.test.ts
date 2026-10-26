@@ -135,7 +135,7 @@ describe('privacy design — structural guarantees (no browser environment avail
   });
 
   it('analytics payloads receive only the classified channel, never raw UTM fields', () => {
-    expect(trackerSrc).toContain("track('acquisition_landing', { route: pathname, channel })");
+    expect(trackerSrc).toContain("track('acquisition_landing', { route, channel })");
     expect(analyticsSrc).toContain("track('acquisition_handoff', { route, channel })");
 
     for (const source of [trackerSrc, analyticsSrc]) {
@@ -179,9 +179,13 @@ describe('existing events are genuinely untouched', () => {
     expect(googleAdsSrc).not.toMatch(/acquisition_handoff/);
   });
 
-  it('consent.ts and cookie-consent-banner.tsx are untouched by this change (no acquisition reference)', () => {
-    expect(consentSrc).not.toMatch(/acquisition/i);
-    expect(bannerSrc).not.toMatch(/acquisition/i);
+  // October 2026: advertising attribution now needs the visitor's measurement consent, so the banner is deliberately involved:
+  // it removes any stored classification on Decline/withdrawal and announces acceptance. consent.ts itself still never talks to
+  // Google or to the classifier.
+  it('the banner removes the stored classification on Decline and announces acceptance; consent.ts stays free of Google and the classifier', () => {
+    expect(bannerSrc).toContain('purgeAcquisitionSource()');
+    expect(bannerSrc).toContain('window.dispatchEvent(new Event(CONSENT_GRANTED_EVENT))');
+    expect(consentSrc).not.toMatch(/window\.gtag|classifyAcquisitionSource|getOrClassify|lib\/acquisition/);
   });
 
   it('Google Ads conversion firing remains gated on window.gtag existing, unaffected by this change', () => {

@@ -19,6 +19,8 @@
  * attached to an event.
  */
 
+import { hasAdMeasurementConsent } from '@/lib/consent';
+
 export type AcquisitionSource =
   | 'organic_search'
   | 'google_ads'
@@ -83,9 +85,27 @@ export function classifyAcquisitionSource(url: URL, referrer: string): Acquisiti
   return classifyFromReferrer(referrer);
 }
 
-/** The stored classification for this session, or null if not yet classified. Never throws off-window. */
+/**
+ * Advertising attribution needs the visitor's measurement consent (October 2026). Reading a click identifier (gclid) from the URL
+ * and keeping the result in session storage is advertising attribution, so nothing here reads the URL, the referrer or storage
+ * unless the visitor has accepted. No decision, Decline and withdrawal all mean: no classification, nothing stored, nothing read.
+ */
+export const ACQUISITION_STORAGE_KEY = STORAGE_KEY;
+
+/** Removes any stored classification (a Decline, a withdrawal, or one left from before this rule). Removal is always allowed. */
+export function purgeAcquisitionSource(): void {
+  if (typeof window === 'undefined') return;
+  try {
+    window.sessionStorage.removeItem(STORAGE_KEY);
+  } catch {
+    // storage blocked
+  }
+}
+
+/** The stored classification for this session, or null if not yet classified or not consented. Never throws off-window. */
 export function getStoredAcquisitionSource(): AcquisitionSource | null {
   if (typeof window === 'undefined') return null;
+  if (!hasAdMeasurementConsent()) return null;
   const value = window.sessionStorage.getItem(STORAGE_KEY);
   const valid: readonly string[] = [
     'organic_search',
@@ -112,6 +132,7 @@ export function getStoredAcquisitionSource(): AcquisitionSource | null {
  */
 export function getOrClassifyAcquisitionSource(): AcquisitionSource {
   if (typeof window === 'undefined') return 'unknown';
+  if (!hasAdMeasurementConsent()) return 'unknown'; // no URL, referrer or storage access without consent
   const stored = getStoredAcquisitionSource();
   if (stored) return stored;
   const classified = classifyAcquisitionSource(new URL(window.location.href), document.referrer);
