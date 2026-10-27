@@ -410,3 +410,24 @@ describe('components/destination/holiday-intelligence.tsx — flight vs hotel ev
     expect(componentSrc).toContain("const analyticsSource = destination.slug === 'antalya' ? 'antalya-holiday-intelligence' : 'holiday-intelligence';");
   });
 });
+
+describe('consent banner accessibility (October 2026)', () => {
+  const layoutSrc = read('app/layout.tsx');
+  const bannerSrc = read('components/ui/cookie-consent-banner.tsx');
+
+  it('renders the banner straight after the skip link, before the header and main content, so keyboard users reach it early', () => {
+    const skip = layoutSrc.indexOf('Skip to main content');
+    const banner = layoutSrc.indexOf('<CookieConsentBanner />');
+    expect(skip).toBeGreaterThan(-1);
+    expect(banner).toBeGreaterThan(skip);
+    expect(banner).toBeLessThan(layoutSrc.indexOf('<Header />'));
+    expect(banner).toBeLessThan(layoutSrc.indexOf('<main id="main-content">'));
+  });
+
+  it('gives Decline and Accept measurement the same visual weight', () => {
+    const buttons = bannerSrc.match(/<button[^>]*onClick=\{\(\) => handleChoice\('(denied|granted)'\)\}[^>]*className=\{([A-Z_]+)\}/g) ?? [];
+    expect(buttons).toHaveLength(2);
+    const classes = buttons.map((b) => b.match(/className=\{([A-Z_]+)\}/)![1]);
+    expect(new Set(classes).size).toBe(1);
+  });
+});

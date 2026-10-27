@@ -34,6 +34,9 @@ import { GOOGLE_ADS_TAG_ID } from '@/lib/google-ads-conversions';
  * JetStash fails closed by construction, not by trusting Google to suppress
  * a network request after the fact.
  */
+const CHOICE_BUTTON =
+  'flex h-11 flex-1 items-center justify-center rounded-sm border border-ink-900 bg-white px-4 text-xs font-semibold text-ink-900 transition-colors hover:bg-ink-50 sm:flex-none sm:text-sm';
+
 export function CookieConsentBanner() {
   const [visible, setVisible] = useState(false);
   const [choice, setChoice] = useState<ConsentChoice | null>(null);
@@ -154,19 +157,13 @@ export function CookieConsentBanner() {
                 </p>
               )}
             </div>
-            <div className="flex shrink-0 gap-2">
-              <button
-                type="button"
-                onClick={() => handleChoice('denied')}
-                className="flex h-11 items-center justify-center rounded-sm border border-ink-200 px-4 text-xs font-semibold text-ink-700 transition-colors hover:bg-ink-50 sm:text-sm"
-              >
+            {/* Equal prominence (October 2026): refusing has to be as easy and as visible as accepting, so both choices share one
+                style and, on phones, one width. Behaviour is unchanged. */}
+            <div className="flex w-full shrink-0 gap-2 sm:w-auto">
+              <button type="button" onClick={() => handleChoice('denied')} className={CHOICE_BUTTON}>
                 Decline
               </button>
-              <button
-                type="button"
-                onClick={() => handleChoice('granted')}
-                className="flex h-11 items-center justify-center rounded-sm bg-ink-900 px-4 text-xs font-semibold text-sand-50 transition-all hover:bg-brass-700 active:scale-[0.985] sm:text-sm"
-              >
+              <button type="button" onClick={() => handleChoice('granted')} className={CHOICE_BUTTON}>
                 Accept measurement
               </button>
             </div>
