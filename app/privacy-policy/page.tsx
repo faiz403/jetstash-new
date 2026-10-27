@@ -193,6 +193,20 @@ const sections: { title: string; body: React.ReactNode }[] = [
           browser; the advertising click identifier itself is not stored, and it is removed from the page address before that is sent to Vercel (the referrer your browser provides is outside that cleaning).
         </p>
         <p>
+          <strong className="font-semibold text-ink-800">What is stored on your device.</strong> JetStash itself sets no
+          cookies. It uses your browser&apos;s local storage for two entries that record your choices (named
+          jetstash-ad-consent and jetstash-stats-consent, each holding &ldquo;granted&rdquo; or &ldquo;denied&rdquo;),
+          which stay until you clear this site&apos;s data and are never sent to JetStash. Only if you have allowed both
+          Google Ads measurement and Site statistics, it also keeps one word in session storage (named
+          jetstash-acquisition-source) naming the kind of source that brought you here, which your browser removes when
+          the tab is closed. If your browser blocks JetStash from saving a choice to decline, a &ldquo;denied&rdquo;
+          note is kept in session storage for that tab instead (named jetstash-ad-consent:denied-override or
+          jetstash-stats-consent:denied-override). Vercel&apos;s scripts set no cookies; the only entry of theirs we know of is the
+          __va_attribution entry described above, which JetStash does not expect to exist. If you accept Google Ads
+          measurement, Google&apos;s tag may set its own cookies or storage; JetStash has not independently recorded
+          their names or durations, so please see Google&apos;s own documentation for those.
+        </p>
+        <p>
           Your choices are remembered locally in your own browser, not in a JetStash account or server-side profile.
           Declining or withdrawing switches that measurement off for every page you load after that (a one-off page
           reload may be needed to fully clear an already-loaded script from the current tab, which the control handles
@@ -210,7 +224,7 @@ const sections: { title: string; body: React.ReactNode }[] = [
         <li>To reply to your message or quote request.</li>
         <li>To send Travel Club or Route Watch updates you&apos;ve opted in to receive.</li>
         <li>To keep the website running securely and to prevent abuse.</li>
-        <li>To understand, in aggregate, how the site is used, so we can improve it.</li>
+        <li>With your permission, to measure website usage and performance so we can improve JetStash.</li>
         <li>To meet our legal obligations, where they apply.</li>
       </ul>
     ),
@@ -449,7 +463,7 @@ export default function PrivacyPolicyPage() {
 
       <section className="bg-white py-16 sm:py-24">
         <div className="mx-auto max-w-2xl px-5 sm:px-8">
-          <p className="text-sm text-ink-400">Last updated: 3 October 2026</p>
+          <p className="text-sm text-ink-400">Last updated: 27 October 2026</p>
           <div className="mt-8 flex flex-col gap-10">
             {sections.map((section, i) => (
               <div key={section.title} className="grid gap-3 border-l-2 border-brass-200 pl-6 sm:grid-cols-[2.5rem_1fr] sm:gap-5">

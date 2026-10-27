@@ -52,24 +52,27 @@ export function cleanUrlForStatistics(url: string, opts: { keepCampaign: boolean
     u.hash = '';
     changed = true;
   }
-  // Path parameters (;gclid=...) on any path segment.
-  const decode = (p: string) => {
-    try {
-      return decodeURIComponent(p).toLowerCase();
-    } catch {
-      return p.toLowerCase();
-    }
-  };
+  // Path parameters (;gclid=...) on any path segment. The separator may be a plain ";" or percent-encoded at ANY depth (%3B, %3b,
+  // %253B, %25253B ...), so a segment is split on that pattern directly instead of being decoded first (decoding can throw on a
+  // malformed escape, or stop at a depth limit, and then fail open). A parameter whose name cannot be decoded is removed.
+  const SEPARATOR = /;|%(?:25)*3b/gi;
   const cleanPath = u.pathname
     .split('/')
     .map((seg) => {
-      const parts = seg.split(';');
+      if (!/;|%(?:25)*3b/i.test(seg)) return seg;
+      const parts = seg.split(SEPARATOR);
       const keep = parts.slice(1).filter((p) => {
-        const name = decode(p).split('=')[0];
+        let name: string;
+        try {
+          name = decodeURIComponent(p).split('=')[0].toLowerCase();
+        } catch {
+          return false; // undecodable: remove rather than risk passing an identifier
+        }
         const isClickId = AD_CLICK_ID_PARAMS.some((id) => id.toLowerCase() === name);
         const isCampaign = name.startsWith(CAMPAIGN_PARAM_PREFIX);
         return !(isClickId || (isCampaign && !opts.keepCampaign));
       });
+      if (keep.length === parts.length - 1) return seg; // nothing removed: leave the segment exactly as it was
       return [parts[0], ...keep].join(';');
     })
     .join('/');
@@ -88,7 +91,9 @@ export function sanitiseStatisticsEvent<T extends { url: string }>(event: T): T 
   if (!hasSiteStatisticsConsent()) return null;
   // Advertising attribution events are re-checked here, inside Vercel's own send hook: an event queued before a withdrawal (in this
   // tab or another) is dropped when the queue drains, however it got there.
-  const name = (event as { name?: unknown }).name;
+  // The real Vercel event is { type, url, payload?: { name, data } }: a custom event's name is payload.name (verified against the
+  // script's beforeSend call). Page views and Speed Insights events have no payload.
+  const name = (event as { payload?: { name?: unknown } }).payload?.name;
   if (typeof name === 'string' && name.startsWith('acquisition_') && !hasAdMeasurementConsent()) return null;
   return { ...event, url: cleanUrlForStatistics(event.url, { keepCampaign: hasAdMeasurementConsent() }) };
 }

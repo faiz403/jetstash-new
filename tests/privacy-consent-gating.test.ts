@@ -233,11 +233,11 @@ describe('what Vercel may receive in a page URL', () => {
 
   it('drops an acquisition event inside the Vercel hook when consent is missing, so a queue that drains after a withdrawal sends nothing', () => {
     makeBrowser({ local: { [STATS_CONSENT_STORAGE_KEY]: 'granted' } });
-    expect(sanitiseStatisticsEvent({ type: 'event', url: 'https://jetstash.co.uk/a', name: 'acquisition_landing' } as { url: string })).toBeNull();
-    expect(sanitiseStatisticsEvent({ type: 'event', url: 'https://jetstash.co.uk/a', name: 'tripcom_click' } as { url: string })).not.toBeNull();
+    expect(sanitiseStatisticsEvent({ type: 'event', url: 'https://jetstash.co.uk/a', payload: { name: 'acquisition_landing' } })).toBeNull();
+    expect(sanitiseStatisticsEvent({ type: 'event', url: 'https://jetstash.co.uk/a', payload: { name: 'tripcom_click' } })).not.toBeNull();
     vi.unstubAllGlobals();
     makeBrowser({ local: { [CONSENT_STORAGE_KEY]: 'granted', [STATS_CONSENT_STORAGE_KEY]: 'granted' } });
-    expect(sanitiseStatisticsEvent({ type: 'event', url: 'https://jetstash.co.uk/a', name: 'acquisition_landing' } as { url: string })).not.toBeNull();
+    expect(sanitiseStatisticsEvent({ type: 'event', url: 'https://jetstash.co.uk/a', payload: { name: 'acquisition_landing' } })).not.toBeNull();
   });
 
   it('keeps only JetStash\'s own simple parameters: unknown parameters, tokens, e-mail addresses and complex values never reach Vercel', () => {
@@ -246,6 +246,35 @@ describe('what Vercel may receive in a page URL', () => {
     const camp = cleanUrlForStatistics('https://jetstash.co.uk/?utm_source=google_ads&utm_term=alice%40example.com', { keepCampaign: true });
     expect(camp).toContain('utm_source=google_ads');
     expect(camp).not.toMatch(/alice|utm_term/);
+  });
+
+  it('removes click ids from path parameters whatever way the separator is encoded (%3B, %3b, double-encoded)', () => {
+    for (const sep of [';', '%3B', '%3b', '%253B']) {
+      const out = cleanUrlForStatistics(`https://jetstash.co.uk/routes/a${sep}gclid=SECRET${sep}utm_source=ads${sep}keep=1/b`, { keepCampaign: false });
+      expect(out, sep).not.toMatch(/gclid|SECRET|utm_/i);
+      expect(out, sep).toContain('keep=1');
+      expect(out, sep).toContain('/routes/a');
+    }
+    // malformed escapes and deeper encodings must not fail open
+    for (const p of ['/a%FF%3Bgclid=SECRET', '/a%2525253Bgclid=SECRET', '/a%3Bgclid%3DSECRET', '/a%3B%67clid=SECRET', '/a%3Bgclid=SECRET%FF', '/a%3B%FFgclid=SECRET']) {
+      expect(cleanUrlForStatistics('https://jetstash.co.uk' + p, { keepCampaign: false }), p).not.toMatch(/SECRET|gclid/i);
+    }
+    // an encoded separator with nothing to remove is left exactly as it was
+    expect(cleanUrlForStatistics('https://jetstash.co.uk/routes/a%3Bkeep=1', { keepCampaign: false })).toBe('https://jetstash.co.uk/routes/a%3Bkeep=1');
+  });
+
+  it('uses the real Vercel event shape: the event name is payload.name, so a queued acquisition event is dropped without consent', () => {
+    const real = (name: string) => ({ type: 'event', url: 'https://jetstash.co.uk/a', payload: { name, data: { route: '/a', channel: 'google_ads' } } });
+    makeBrowser({ local: { [STATS_CONSENT_STORAGE_KEY]: 'granted' } }); // statistics yes, measurement NO
+    expect(sanitiseStatisticsEvent(real('acquisition_landing'))).toBeNull();
+    expect(sanitiseStatisticsEvent(real('acquisition_handoff'))).toBeNull();
+    expect(sanitiseStatisticsEvent(real('tripcom_click'))).not.toBeNull();
+    expect(sanitiseStatisticsEvent({ type: 'pageview', url: 'https://jetstash.co.uk/a' })).not.toBeNull();
+    vi.unstubAllGlobals();
+    makeBrowser({ local: { [STATS_CONSENT_STORAGE_KEY]: 'granted', [CONSENT_STORAGE_KEY]: 'granted' } });
+    expect(sanitiseStatisticsEvent(real('acquisition_landing'))).not.toBeNull();
+    // a custom event for a pageview-type payload-less event is never mistaken for an acquisition event
+    expect(sanitiseStatisticsEvent({ type: 'event', url: 'https://jetstash.co.uk/a' })).not.toBeNull();
   });
 
   it('drops the fragment even when consent has been given (never needed for statistics)', () => {

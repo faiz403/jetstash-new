@@ -70,7 +70,7 @@ describe('privacy policy: the live Arrive By journey is described accurately', (
   });
 
   it('shows a current Last updated date', () => {
-    expect(prose).toContain('Last updated: 3 October 2026');
+    expect(prose).toContain('Last updated: 27 October 2026');
   });
 });
 
