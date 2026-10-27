@@ -31,8 +31,10 @@ Technical direction approved by the CEO; final public wording and the merge itse
 - If localStorage is readable but unwritable, a withdrawal is honoured in that tab (sessionStorage) but another tab opened later could
   read an old grant. Exceptional edge case.
 - First-visit panel is 19% of a 390x844 screen and 31% of 320x568 (accepted; no further compression).
-- Cookie names and lifetimes set by Google's tag after Accept were NOT observed (the tag was stubbed in all tests), so the policy says so
-  instead of listing them. JetStash's own storage keys were verified by code search; no JetStash or Vercel script code sets a cookie.
+- Cookie names and lifetimes set by Google's tag after Accept were NOT observed (the tag was stubbed in all tests). The policy instead
+  cites Google's own published page (business.safety.google/adscookies, read 27 October 2026), which lists the conversion-measurement
+  cookies _gcl_aw, _gcl_gb, _gcl_au and others as analytics/advertising/security cookies with a 90-day lifespan, and states plainly
+  that this is Google's description and not an observation on JetStash. JetStash's own storage keys were verified by code search; no JetStash or Vercel script code sets a cookie.
 - The wording is a technical and regulatory assessment, not a legal certification; human privacy review is still open.
 
 Evidence: `C:\Users\faiz2\jetstash-flagship-v3-screenshots\privacy-implementation\` (browser proof, referrer probe, Codex reviews 1 to 4).

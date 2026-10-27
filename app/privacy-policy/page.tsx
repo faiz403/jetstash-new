@@ -203,8 +203,15 @@ const sections: { title: string; body: React.ReactNode }[] = [
           note is kept in session storage for that tab instead (named jetstash-ad-consent:denied-override or
           jetstash-stats-consent:denied-override). Vercel&apos;s scripts set no cookies; the only entry of theirs we know of is the
           __va_attribution entry described above, which JetStash does not expect to exist. If you accept Google Ads
-          measurement, Google&apos;s tag may set its own cookies or storage; JetStash has not independently recorded
-          their names or durations, so please see Google&apos;s own documentation for those.
+          measurement, Google&apos;s tag may set its own conversion-measurement cookies from this website&apos;s
+          domain. Google&apos;s published cookie information (
+          <a href="https://business.safety.google/adscookies/" rel="noopener noreferrer" className="underline hover:text-brass-700">
+            business.safety.google/adscookies
+          </a>
+          ) lists cookies of this kind, such as _gcl_aw, _gcl_gb and _gcl_au, as used for analytics, advertising and
+          security purposes, each with a stated lifespan of 90 days. That is Google&apos;s description, not something
+          JetStash has observed: we have not recorded which cookies the tag actually sets in your browser, so the
+          names and durations may differ, and Google lists other advertising cookies too.
         </p>
         <p>
           Your choices are remembered locally in your own browser, not in a JetStash account or server-side profile.
