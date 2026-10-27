@@ -235,7 +235,7 @@ const sections: { title: string; body: React.ReactNode }[] = [
           </li>
           <li>
             <strong className="font-semibold text-ink-800">Site statistics (Vercel Analytics and Speed Insights):</strong>{' '}
-            consent. These scripts read from and add to your device (browser storage) and send information from it, so
+            consent. These scripts access your device (they look in its browser storage) and send information from it, so
             the Privacy and Electronic Communications Regulations require us to ask first, and nothing loads until you
             accept. We also rely on your consent for the personal data they then process under UK GDPR, such as the
             page address, browser and device type, country and any referrer. You can withdraw consent at any time with
