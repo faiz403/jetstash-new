@@ -70,7 +70,11 @@ const sections: { title: string; body: React.ReactNode }[] = [
             Technical information generated automatically by visiting the site: your IP address, browser and device
             information, and standard web server logs.
           </li>
-          <li>Aggregate, cookieless usage information, described under Cookies and analytics below.</li>
+          <li>
+            Only if you explicitly accept Site statistics: usage and page-speed information sent to Vercel Web Analytics
+            and Vercel Speed Insights, described under Cookies and analytics below. Nothing is collected for this purpose
+            before you accept, and nothing more after you decline or withdraw.
+          </li>
           <li>
             Only if you explicitly accept optional Google Ads measurement: JetStash loads the Google Ads tag and
             sends configured conversion signals for certain flight, hotel or baggage-partner clicks. JetStash&apos;s
@@ -161,8 +165,11 @@ const sections: { title: string; body: React.ReactNode }[] = [
           fragment are removed; campaign tags such as utm_source are kept only if you also accepted Google Ads
           measurement), your browser and device type and country, and the page that sent
           you to JetStash if you arrived from another website, which your browser provides, which Vercel&apos;s script adds
-          to page views and to JetStash&apos;s own events, and which JetStash cannot edit. They also keep a small value
-          in your browser storage (named __va_attribution). JetStash&apos;s own analytics event payloads contain
+          to page views and to JetStash&apos;s own events, and which JetStash cannot edit. Vercel&apos;s analytics
+          script also looks in your browser storage for an entry named __va_attribution each time it sends a page
+          view or an event, so that it can attach an identifier if one is stored there. It writes or removes that entry
+          only when a website asks it to identify a visitor, which JetStash does not do, so JetStash does not expect the
+          entry to exist. If it does exist, declining or withdrawing removes it. JetStash&apos;s own analytics event payloads contain
           named events with limited contextual fields such as route, destination, state, source, trip type, region,
           intent, verdict or interest — not names, email addresses, phone numbers or form contents. Vercel and its
           services may process ordinary technical information needed to provide those services. If you decline, or
@@ -227,9 +234,13 @@ const sections: { title: string; body: React.ReactNode }[] = [
             legitimate interests and, where relevant, legal obligation.
           </li>
           <li>
-            <strong className="font-semibold text-ink-800">Analytics and Speed Insights:</strong> legitimate
-            interests, limited to understanding overall site usage and product or route interaction. JetStash&apos;s
-            event payloads do not include direct identifiers.
+            <strong className="font-semibold text-ink-800">Site statistics (Vercel Analytics and Speed Insights):</strong>{' '}
+            consent. These scripts read from and add to your device (browser storage) and send information from it, so
+            the Privacy and Electronic Communications Regulations require us to ask first, and nothing loads until you
+            accept. We also rely on your consent for the personal data they then process under UK GDPR, such as the
+            page address, browser and device type, country and any referrer. You can withdraw consent at any time with
+            &lsquo;Cookie settings&rsquo; in the footer. JetStash&apos;s event payloads do not include direct
+            identifiers.
           </li>
           <li>
             <strong className="font-semibold text-ink-800">Optional Google Ads measurement:</strong> consent. It
