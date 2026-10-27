@@ -5,6 +5,40 @@ evidence and an explicit founder decision.
 
 ## Approved
 
+### Consent-first analytics and advertising attribution — 26 October 2026 (PR #352, draft, stacked on #351; not merged)
+
+Founder-approved architecture decision after a privacy audit found that Vercel Analytics and Speed Insights sent the full page URL
+(including advertising click ids and campaign tags) and that JetStash read the gclid and kept a session channel before any consent.
+Technical direction approved by the CEO; final public wording and the merge itself still need founder sign-off.
+
+**Decision:**
+- Vercel Analytics and Speed Insights are OFF by default. Their scripts are not requested until the visitor explicitly accepts "Site
+  statistics" (`jetstash-stats-consent`), a permission separate from Google Ads measurement (`jetstash-ad-consent`). No decision,
+  Decline and withdrawal all mean no script and nothing sent; withdrawal (here or in another tab) reloads the tab.
+- Advertising attribution (gclid read, session channel, `acquisition_landing`, channel on `acquisition_handoff`) needs BOTH permissions.
+- Only JetStash's own query parameters (`airport`, `departure`, `arrival`, `destination`, `tripType`, `region`) with simple values
+  are sent to Vercel; `utm_*` only with measurement consent. Fragments and path-parameter click ids are dropped.
+- First visit shows a compact layered panel (Reject all / Accept all, equal prominence; "Choose individual settings" opens the two
+  separate groups). Cookie settings in the footer shows both at any time.
+- Google Ads conversions depend only on measurement consent, not on statistics.
+
+**Known limitations (documented, not eliminated):**
+- The Vercel script adds the visitor's referrer itself, outside `beforeSend`, on the first page view and on every custom event of a
+  page load. Browsers send only the origin cross-site by default. Only after opt-in. Removing it would mean replacing Vercel's analytics,
+  which needs a separate decision.
+- Vercel's server-side retention of URLs and referrers has not been inspected; the policy makes no retention claim.
+- Whether Production lost `acquisition_landing` events before this change is unverified.
+- If localStorage is readable but unwritable, a withdrawal is honoured in that tab (sessionStorage) but another tab opened later could
+  read an old grant. Exceptional edge case.
+- First-visit panel is 19% of a 390x844 screen and 31% of 320x568 (accepted; no further compression).
+- Cookie names and lifetimes set by Google's tag after Accept were NOT observed (the tag was stubbed in all tests). The policy instead
+  cites Google's own published page (business.safety.google/adscookies, read 27 October 2026), which lists the conversion-measurement
+  cookies _gcl_aw, _gcl_gb, _gcl_au and others as analytics/advertising/security cookies with a 90-day lifespan, and states plainly
+  that this is Google's description and not an observation on JetStash. JetStash's own storage keys were verified by code search; no JetStash or Vercel script code sets a cookie.
+- The wording is a technical and regulatory assessment, not a legal certification; human privacy review is still open.
+
+Evidence: `C:\Users\faiz2\jetstash-flagship-v3-screenshots\privacy-implementation\` (browser proof, referrer probe, Codex reviews 1 to 4).
+
 ### SEO maintenance mode — narrow 28-day indexing-pilot exception — 21 October 2026
 
 Founder-approved after the 21 October 2026 read-only indexing diagnosis. Only 27 of 89 route pages were indexed, and 99 URLs had never been crawled, with no technical blocker. SEO otherwise stays in maintenance mode, and the build freeze below still applies to everything outside this exception.

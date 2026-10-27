@@ -70,7 +70,11 @@ const sections: { title: string; body: React.ReactNode }[] = [
             Technical information generated automatically by visiting the site: your IP address, browser and device
             information, and standard web server logs.
           </li>
-          <li>Aggregate, cookieless usage information, described under Cookies and analytics below.</li>
+          <li>
+            Only if you explicitly accept Site statistics: usage and page-speed information sent to Vercel Web Analytics
+            and Vercel Speed Insights, described under Cookies and analytics below. Nothing is collected for this purpose
+            before you accept, and nothing more after you decline or withdraw.
+          </li>
           <li>
             Only if you explicitly accept optional Google Ads measurement: JetStash loads the Google Ads tag and
             sends configured conversion signals for certain flight, hotel or baggage-partner clicks. JetStash&apos;s
@@ -145,30 +149,77 @@ const sections: { title: string; body: React.ReactNode }[] = [
     body: (
       <>
         <p>
-          JetStash doesn&apos;t use cookies for anything by default. Vercel Web Analytics and Vercel Speed Insights
-          operate independently of Google Ads consent and are built to work without cookies. JetStash&apos;s own
-          analytics event payloads contain named events with limited contextual fields such as route, destination,
-          state, source, trip type, region, intent, verdict or interest — not names, email addresses, phone numbers
-          or form contents. Vercel and its services may process ordinary technical information needed to provide
-          those services.
+          JetStash doesn&apos;t use cookies for anything by default. When you first visit, a notice asks about two
+          optional settings. Both are off until you choose, they are two separate choices, and accepting one never
+          switches on the other. You can reject or accept both at once, or open the individual settings and choose each one
+          separately, and you can change either at any time using
+          &lsquo;Cookie settings&rsquo; in the footer of every page.
         </p>
         <p>
-          Separately, a cookie banner shown on your first visit offers optional Google Ads measurement. Nothing about
-          the Google Ads tag loads until you actively accept: no Google script is requested before that point, or if
-          you decline, or if you close the banner without choosing. If you accept, JetStash loads the Google Ads tag
-          and sends configured conversion signals for certain flight, hotel or baggage-partner clicks. The current
+          <strong className="font-semibold text-ink-800">Site statistics (optional).</strong> If you accept, JetStash
+          loads Vercel Web Analytics and Vercel Speed Insights, which count visits and measure page speed so we can
+          improve the site. They are built to work without cookies. Nothing about them loads until you accept: no
+          script is requested before that point, or if you decline, or if you leave the notice unanswered.
+          Once running they send the address of the page you are on (before sending, JetStash keeps only its own simple
+          parameters such as an airport code, so advertising click identifiers, other query parameters and the address
+          fragment are removed; campaign tags such as utm_source are kept only if you also accepted Google Ads
+          measurement), your browser and device type and country, and the page that sent
+          you to JetStash if you arrived from another website, which your browser provides, which Vercel&apos;s script adds
+          to page views and to JetStash&apos;s own events, and which JetStash cannot edit. Vercel&apos;s analytics
+          script also looks in your browser storage for an entry named __va_attribution each time it sends a page
+          view or an event, so that it can attach an identifier if one is stored there. It writes or removes that entry
+          only when a website asks it to identify a visitor, which JetStash does not do, so JetStash does not expect the
+          entry to exist. If it does exist, declining or withdrawing removes it. JetStash&apos;s own analytics event payloads contain
+          named events with limited contextual fields such as route, destination, state, source, trip type, region,
+          intent, verdict or interest — not names, email addresses, phone numbers or form contents. Vercel and its
+          services may process ordinary technical information needed to provide those services. If you decline, or
+          withdraw later, JetStash removes that stored value and stops sending; the page reloads once so a script
+          already running is cleared.
+        </p>
+        <p>
+          <strong className="font-semibold text-ink-800">Google Ads measurement (optional).</strong> Nothing about the
+          Google Ads tag loads until you actively accept: no Google script is requested before that point, or if you
+          decline, or if you leave the notice unanswered. If you accept, JetStash loads the Google Ads tag and
+          sends configured conversion signals for certain flight, hotel or baggage-partner clicks. The current
           JetStash code does not put your name, email address, phone number, address, form contents or the partner
           URL into those conversion-event payloads. Google&apos;s tag may also process ordinary browser, page, device or
           referrer information according to Google&apos;s own service behaviour and policies.
         </p>
         <p>
-          Your choice is remembered locally in your own browser, not in a JetStash account or server-side profile.
-          You can see and change it at any time using &lsquo;Cookie settings&rsquo; in the footer of every page —
-          declining after previously accepting switches this measurement off again for every page you load after
-          that (a one-off page reload may be needed to fully clear an already-loaded Google script from the current
-          tab, which the control handles for you). The current JetStash implementation does not configure
-          remarketing or personalised advertising. That describes JetStash&apos;s code, not every setting or behaviour
-          in Google&apos;s wider account ecosystem.
+          If you accept Google Ads measurement and Site statistics, JetStash also records, once per visit, which kind
+          of source brought you here (for example a Google Ads click, a search result, or a link from another site)
+          and attaches that kind of source to partner link clicks. This needs both choices, because it is advertising
+          measurement and it is sent through Site statistics. Only the kind of source is kept, for the visit, in your
+          browser; the advertising click identifier itself is not stored, and it is removed from the page address before that is sent to Vercel (the referrer your browser provides is outside that cleaning).
+        </p>
+        <p>
+          <strong className="font-semibold text-ink-800">What is stored on your device.</strong> JetStash itself sets no
+          cookies. It uses your browser&apos;s local storage for two entries that record your choices (named
+          jetstash-ad-consent and jetstash-stats-consent, each holding &ldquo;granted&rdquo; or &ldquo;denied&rdquo;),
+          which stay until you clear this site&apos;s data and are never sent to JetStash. Only if you have allowed both
+          Google Ads measurement and Site statistics, it also keeps one word in session storage (named
+          jetstash-acquisition-source) naming the kind of source that brought you here, which your browser removes when
+          the tab is closed. If your browser blocks JetStash from saving a choice to decline, a &ldquo;denied&rdquo;
+          note is kept in session storage for that tab instead (named jetstash-ad-consent:denied-override or
+          jetstash-stats-consent:denied-override). Vercel&apos;s scripts set no cookies; the only entry of theirs we know of is the
+          __va_attribution entry described above, which JetStash does not expect to exist. If you accept Google Ads
+          measurement, Google&apos;s tag may set its own conversion-measurement cookies from this website&apos;s
+          domain. Google&apos;s published cookie information (
+          <a href="https://business.safety.google/adscookies/" rel="noopener noreferrer" className="underline hover:text-brass-700">
+            business.safety.google/adscookies
+          </a>
+          ) lists cookies of this kind, such as _gcl_aw, _gcl_gb and _gcl_au, as used for analytics, advertising and
+          security purposes, each with a stated lifespan of 90 days. That is Google&apos;s description, not something
+          JetStash has observed: we have not recorded which cookies the tag actually sets in your browser, so the
+          names and durations may differ, and Google lists other advertising cookies too.
+        </p>
+        <p>
+          Your choices are remembered locally in your own browser, not in a JetStash account or server-side profile.
+          Declining or withdrawing switches that measurement off for every page you load after that (a one-off page
+          reload may be needed to fully clear an already-loaded script from the current tab, which the control handles
+          for you). The current JetStash implementation does not configure remarketing or personalised advertising.
+          That describes JetStash&apos;s code, not every setting or behaviour in Google&apos;s or Vercel&apos;s wider
+          service ecosystems.
         </p>
       </>
     ),
@@ -180,7 +231,7 @@ const sections: { title: string; body: React.ReactNode }[] = [
         <li>To reply to your message or quote request.</li>
         <li>To send Travel Club or Route Watch updates you&apos;ve opted in to receive.</li>
         <li>To keep the website running securely and to prevent abuse.</li>
-        <li>To understand, in aggregate, how the site is used, so we can improve it.</li>
+        <li>With your permission, to measure website usage and performance so we can improve JetStash.</li>
         <li>To meet our legal obligations, where they apply.</li>
       </ul>
     ),
@@ -204,9 +255,13 @@ const sections: { title: string; body: React.ReactNode }[] = [
             legitimate interests and, where relevant, legal obligation.
           </li>
           <li>
-            <strong className="font-semibold text-ink-800">Analytics and Speed Insights:</strong> legitimate
-            interests, limited to understanding overall site usage and product or route interaction. JetStash&apos;s
-            event payloads do not include direct identifiers.
+            <strong className="font-semibold text-ink-800">Site statistics (Vercel Analytics and Speed Insights):</strong>{' '}
+            consent. These scripts access your device (they look in its browser storage) and send information from it, so
+            the Privacy and Electronic Communications Regulations require us to ask first, and nothing loads until you
+            accept. We also rely on your consent for the personal data they then process under UK GDPR, such as the
+            page address, browser and device type, country and any referrer. You can withdraw consent at any time with
+            &lsquo;Cookie settings&rsquo; in the footer. JetStash&apos;s event payloads do not include direct
+            identifiers.
           </li>
           <li>
             <strong className="font-semibold text-ink-800">Optional Google Ads measurement:</strong> consent. It
@@ -415,7 +470,7 @@ export default function PrivacyPolicyPage() {
 
       <section className="bg-white py-16 sm:py-24">
         <div className="mx-auto max-w-2xl px-5 sm:px-8">
-          <p className="text-sm text-ink-400">Last updated: 3 October 2026</p>
+          <p className="text-sm text-ink-400">Last updated: 27 October 2026</p>
           <div className="mt-8 flex flex-col gap-10">
             {sections.map((section, i) => (
               <div key={section.title} className="grid gap-3 border-l-2 border-brass-200 pl-6 sm:grid-cols-[2.5rem_1fr] sm:gap-5">

@@ -152,6 +152,8 @@ describe('lib/analytics.ts track() — Google Ads dispatch is additive, isolated
     vi.resetModules();
     vi.doMock('@vercel/analytics', () => ({ track: mocks.vercelTrack }));
     vi.doMock('@/lib/google-ads-conversions', () => ({ fireGoogleAdsConversion: mocks.fireGoogleAdsConversion }));
+    // October 2026: Vercel statistics are consent-first, so these tests state that the visitor has allowed them.
+    vi.doMock('@/lib/consent', () => ({ hasSiteStatisticsConsent: () => true, hasAdMeasurementConsent: () => false }));
     const { track } = await import('@/lib/analytics');
     track('route_watch_signup', { route: 'manchester-lahore', source: 'route-hero' });
     expect(mocks.vercelTrack).toHaveBeenCalledOnce();
@@ -168,19 +170,44 @@ describe('lib/analytics.ts track() — Google Ads dispatch is additive, isolated
   // once for the paired acquisition_handoff. This is the new intended
   // behaviour, not a regression -- proven explicitly here rather than
   // silently loosening the "exactly once" assertion above to cover it.
-  it('a handoff event (tripcom_click) also fires the paired acquisition_handoff event, through the same two dispatches', async () => {
+  it('a handoff event (tripcom_click) also fires the paired acquisition_handoff event, through the same two dispatches, when the visitor has consented and a channel is stored', async () => {
     vi.resetModules();
     vi.doMock('@vercel/analytics', () => ({ track: mocks.vercelTrack }));
     vi.doMock('@/lib/google-ads-conversions', () => ({ fireGoogleAdsConversion: mocks.fireGoogleAdsConversion }));
+    vi.doMock('@/lib/acquisition', () => ({ getStoredAcquisitionSource: () => 'reddit' }));
+    vi.doMock('@/lib/consent', () => ({ hasSiteStatisticsConsent: () => true, hasAdMeasurementConsent: () => true }));
     const { track } = await import('@/lib/analytics');
     track('tripcom_click', { route: 'manchester-lahore', source: 'route-hero' });
     expect(mocks.vercelTrack).toHaveBeenCalledTimes(2);
     expect(mocks.fireGoogleAdsConversion).toHaveBeenCalledTimes(2);
     expect(mocks.fireGoogleAdsConversion).toHaveBeenNthCalledWith(1, 'tripcom_click');
     expect(mocks.fireGoogleAdsConversion).toHaveBeenNthCalledWith(2, 'acquisition_handoff');
-    expect(mocks.vercelTrack).toHaveBeenNthCalledWith(2, 'acquisition_handoff', { route: 'manchester-lahore', channel: 'unknown' });
+    expect(mocks.vercelTrack).toHaveBeenNthCalledWith(2, 'acquisition_handoff', { route: 'manchester-lahore', channel: 'reddit' });
     vi.doUnmock('@vercel/analytics');
     vi.doUnmock('@/lib/google-ads-conversions');
+    vi.doUnmock('@/lib/acquisition');
+    vi.doUnmock('@/lib/consent');
+  });
+
+  // October 2026: advertising attribution needs measurement consent. With no stored channel (no decision, Decline, withdrawal) the
+  // partner click is still counted, but no acquisition_handoff is dispatched to Vercel or to Google Ads.
+  it('without measurement consent a handoff event dispatches only itself: no acquisition_handoff to Vercel or Google Ads', async () => {
+    vi.resetModules();
+    mocks.vercelTrack.mockClear();
+    mocks.fireGoogleAdsConversion.mockClear();
+    vi.doMock('@vercel/analytics', () => ({ track: mocks.vercelTrack }));
+    vi.doMock('@/lib/google-ads-conversions', () => ({ fireGoogleAdsConversion: mocks.fireGoogleAdsConversion }));
+    vi.doMock('@/lib/acquisition', () => ({ getStoredAcquisitionSource: () => null }));
+    // October 2026: Vercel statistics are consent-first, so these tests state that the visitor has allowed them.
+    vi.doMock('@/lib/consent', () => ({ hasSiteStatisticsConsent: () => true, hasAdMeasurementConsent: () => false }));
+    const { track } = await import('@/lib/analytics');
+    track('tripcom_click', { route: 'manchester-lahore', source: 'route-hero' });
+    expect(mocks.vercelTrack).toHaveBeenCalledTimes(1);
+    expect(mocks.fireGoogleAdsConversion).toHaveBeenCalledTimes(1);
+    expect(mocks.fireGoogleAdsConversion).toHaveBeenCalledWith('tripcom_click');
+    vi.doUnmock('@vercel/analytics');
+    vi.doUnmock('@/lib/google-ads-conversions');
+    vi.doUnmock('@/lib/acquisition');
   });
 
   it('a Google Ads dispatch failure never prevents the Vercel Analytics call, and never throws', async () => {
@@ -191,6 +218,8 @@ describe('lib/analytics.ts track() — Google Ads dispatch is additive, isolated
         throw new Error('Google Ads blew up');
       },
     }));
+    // October 2026: Vercel statistics are consent-first, so these tests state that the visitor has allowed them.
+    vi.doMock('@/lib/consent', () => ({ hasSiteStatisticsConsent: () => true, hasAdMeasurementConsent: () => false }));
     const { track } = await import('@/lib/analytics');
     expect(() => track('route_watch_signup')).not.toThrow();
     expect(mocks.vercelTrack).toHaveBeenCalledOnce();
@@ -231,9 +260,15 @@ describe('app/layout.tsx — no Google tag install here under Basic Consent Mode
     expect(matches).toHaveLength(1);
   });
 
-  it('existing Vercel Analytics and Speed Insights are untouched', () => {
-    expect(layoutSrc).toContain('<Analytics />');
-    expect(layoutSrc).toContain('<SpeedInsights />');
+  // October 2026: Vercel Analytics and Speed Insights are mounted through <SiteStatistics />, which honours the visitor's Site
+  // statistics objection before either script exists in the page. They are still present, still on unless objected to.
+  it('Vercel Analytics and Speed Insights are mounted through <SiteStatistics />, not directly', () => {
+    expect(layoutSrc).toContain('<SiteStatistics />');
+    expect(layoutSrc).not.toContain('<Analytics />');
+    expect(layoutSrc).not.toContain('<SpeedInsights />');
+    const stats = read('components/analytics/site-statistics.tsx');
+    expect(stats).toContain('<Analytics beforeSend={sanitiseStatisticsEvent} />');
+    expect(stats).toContain('<SpeedInsights beforeSend={sanitiseStatisticsEvent} />');
   });
 });
 
@@ -313,7 +348,7 @@ describe('components/ui/cookie-consent-banner.tsx — Basic Consent Mode: the ta
   });
 
   it('the public consent paragraph has no em dash, en dash or hyphenated word pairing', () => {
-    const paragraphMatch = bannerSrc.match(/Optional Google Ads measurement[\s\S]*?Cookie settings\./);
+    const paragraphMatch = bannerSrc.match(/Optional Google Ads measurement[\s\S]*?Decline keeps them off\./);
     expect(paragraphMatch).not.toBeNull();
     const paragraph = paragraphMatch![0];
     expect(paragraph).not.toMatch(/[—–]/); // em dash, en dash
@@ -335,9 +370,14 @@ describe('components/ui/cookie-consent-banner.tsx — Basic Consent Mode: the ta
     expect(bannerSrc).toContain('window.location.reload()');
     // Scoped to the reload branch: only reachable when the previous choice
     // was 'granted', never unconditionally on every decline.
-    const reloadIdx = bannerSrc.indexOf('window.location.reload()');
-    const precedingBlock = bannerSrc.slice(bannerSrc.lastIndexOf('if (wasGranted)', reloadIdx), reloadIdx);
+    // (October 2026: the banner now has other reloads too, for withdrawal in another tab and for objecting to site statistics, so this
+    // looks at the reload that follows handleChoice's own wasGranted check, not simply the first one in the file.)
+    const wasGrantedIdx = bannerSrc.indexOf('if (wasGranted)');
+    expect(wasGrantedIdx).toBeGreaterThan(-1);
+    const reloadIdx = bannerSrc.indexOf('window.location.reload()', wasGrantedIdx);
+    const precedingBlock = bannerSrc.slice(wasGrantedIdx, reloadIdx);
     expect(precedingBlock).toContain('if (wasGranted)');
+    expect(precedingBlock.length).toBeLessThan(80); // the reload is the body of that check, nothing in between
   });
 
   it('a returning visitor with a stored "granted" choice re-loads the tag on this fresh page load without being shown the banner again', () => {

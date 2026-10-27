@@ -170,7 +170,11 @@ describe('no unsupported or overreaching claims', () => {
   });
 
   it('does not invent a precise retention period (a number of days/months/years)', () => {
-    expect(privacyPage).not.toMatch(/\b\d+\s*(day|month|year)s?\b/i);
+    // October 2026: the one number allowed is Google's own stated cookie lifespan, which the policy cites and attributes to Google's
+    // published page and says JetStash has not observed. It is removed before checking that no JetStash retention period is invented.
+    const withoutGoogleCitation = privacyPage.replace(/each with a stated lifespan of 90 days\./, '');
+    expect(withoutGoogleCitation).not.toMatch(/\b\d+\s*(day|month|year)s?\b/i);
+    expect(privacyPage).toContain('That is Google&apos;s description, not something');
   });
 });
 

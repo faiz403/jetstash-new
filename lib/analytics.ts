@@ -1,6 +1,7 @@
 import { track as vercelTrack } from '@vercel/analytics';
 import { fireGoogleAdsConversion } from './google-ads-conversions';
 import { getStoredAcquisitionSource } from './acquisition';
+import { hasAdMeasurementConsent, hasSiteStatisticsConsent } from './consent';
 
 /**
  * The one place JetStash sends an analytics event from — a thin wrapper
@@ -148,7 +149,11 @@ const ACQUISITION_HANDOFF_EVENTS: ReadonlySet<AnalyticsEvent> = new Set([
 
 export function track(event: AnalyticsEvent, properties?: Record<string, string | number | boolean>): void {
   try {
-    vercelTrack(event, properties);
+    // Site statistics objection: nothing is sent to Vercel (and nothing is queued for it) once a visitor has objected.
+    // Acquisition events are advertising attribution: they are checked against the visitor's consent at the moment of dispatch,
+    // so one scheduled before a withdrawal (in this tab or another) can never be sent after it.
+    const isAcquisitionEvent = event === 'acquisition_landing' || event === 'acquisition_handoff';
+    if (hasSiteStatisticsConsent() && (!isAcquisitionEvent || hasAdMeasurementConsent())) vercelTrack(event, properties);
   } catch {
     // Analytics must never break the page it's measuring.
   }
@@ -172,8 +177,10 @@ export function track(event: AnalyticsEvent, properties?: Record<string, string 
   if (ACQUISITION_HANDOFF_EVENTS.has(event)) {
     try {
       const route = typeof properties?.route === 'string' ? properties.route : 'unknown';
-      const channel = getStoredAcquisitionSource() ?? 'unknown';
-      track('acquisition_handoff', { route, channel });
+      // Channel attribution is advertising attribution: it exists only with the visitor's measurement consent. Without it the
+      // classification is null and no acquisition_handoff event is sent at all (not even with an 'unknown' channel).
+      const channel = getStoredAcquisitionSource();
+      if (channel) track('acquisition_handoff', { route, channel });
     } catch {
       // Acquisition pairing must never break the handoff click it describes.
     }

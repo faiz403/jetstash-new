@@ -12,15 +12,24 @@ import { join } from 'path';
  * PR wires up.
  */
 
-const mocks = vi.hoisted(() => ({ vercelTrack: vi.fn() }));
+const mocks = vi.hoisted(() => ({ vercelTrack: vi.fn(), storedChannel: vi.fn(() => null as string | null), statsConsent: vi.fn(() => true), hasConsent: vi.fn(() => true) }));
 
 vi.mock('@vercel/analytics', () => ({ track: mocks.vercelTrack }));
+// Channel attribution needs measurement consent; the real module returns null without it. The tests below drive both cases.
+vi.mock('@/lib/acquisition', () => ({ getStoredAcquisitionSource: mocks.storedChannel }));
+vi.mock('@/lib/consent', () => ({ hasSiteStatisticsConsent: mocks.statsConsent, hasAdMeasurementConsent: mocks.hasConsent }));
 
 import { track } from '@/lib/analytics';
 
 describe('track()', () => {
   afterEach(() => {
     mocks.vercelTrack.mockReset();
+    mocks.storedChannel.mockReset();
+    mocks.storedChannel.mockReturnValue(null);
+    mocks.statsConsent.mockReset();
+    mocks.statsConsent.mockReturnValue(true);
+    mocks.hasConsent.mockReset();
+    mocks.hasConsent.mockReturnValue(true);
   });
 
   it('passes the event name straight through to Vercel Web Analytics, with no properties', () => {
@@ -39,18 +48,53 @@ describe('track()', () => {
     'journey_brief_live_price_click',
     'ready_check_book_cta_click',
     'bookby_cta_click',
-  ] as const)('keeps %s and emits one paired acquisition_handoff for its verified Trip.com handoff', (event) => {
+  ] as const)('keeps %s and, with measurement consent and a stored channel, emits one paired acquisition_handoff', (event) => {
+    mocks.storedChannel.mockReturnValue('reddit');
     track(event, { route: 'manchester-islamabad', source: 'test' });
     expect(mocks.vercelTrack).toHaveBeenCalledTimes(2);
     expect(mocks.vercelTrack).toHaveBeenNthCalledWith(1, event, { route: 'manchester-islamabad', source: 'test' });
-    expect(mocks.vercelTrack).toHaveBeenNthCalledWith(2, 'acquisition_handoff', { route: 'manchester-islamabad', channel: 'unknown' });
+    expect(mocks.vercelTrack).toHaveBeenNthCalledWith(2, 'acquisition_handoff', { route: 'manchester-islamabad', channel: 'reddit' });
   });
 
-  it('keeps the standard Trip.com CTA at exactly one paired acquisition_handoff event', () => {
+  it('keeps the standard Trip.com CTA at exactly one paired acquisition_handoff event when consent and a channel exist', () => {
+    mocks.storedChannel.mockReturnValue('google_ads');
     track('tripcom_click', { route: 'manchester-dubai', source: 'fare-signal' });
     expect(mocks.vercelTrack).toHaveBeenCalledTimes(2);
     expect(mocks.vercelTrack).toHaveBeenNthCalledWith(1, 'tripcom_click', { route: 'manchester-dubai', source: 'fare-signal' });
-    expect(mocks.vercelTrack).toHaveBeenNthCalledWith(2, 'acquisition_handoff', { route: 'manchester-dubai', channel: 'unknown' });
+    expect(mocks.vercelTrack).toHaveBeenNthCalledWith(2, 'acquisition_handoff', { route: 'manchester-dubai', channel: 'google_ads' });
+  });
+
+  it.each(['tripcom_click', 'journey_choice_cta_click', 'bookby_cta_click'] as const)(
+    'sends %s itself but NO acquisition_handoff (not even channel "unknown") when there is no measurement consent',
+    (event) => {
+      mocks.storedChannel.mockReturnValue(null); // no decision, Decline, withdrawal, or nothing classified
+      track(event, { route: 'manchester-dubai', source: 'test' });
+      expect(mocks.vercelTrack).toHaveBeenCalledTimes(1);
+      expect(mocks.vercelTrack).toHaveBeenCalledWith(event, { route: 'manchester-dubai', source: 'test' });
+    },
+  );
+
+  // Withdrawal can arrive after an attribution event was scheduled (another tab, or the short wait for Vercel's queue): the check is
+  // made at the moment of dispatch, so a stale stored channel or a direct call can never send an acquisition event without consent.
+  it.each(['acquisition_landing', 'acquisition_handoff'] as const)('never sends %s to Vercel when measurement consent is not present at dispatch time', (event) => {
+    mocks.hasConsent.mockReturnValue(false);
+    mocks.storedChannel.mockReturnValue('google_ads'); // a stale stored value must not matter
+    track(event, { route: 'manchester-dubai', channel: 'google_ads' });
+    expect(mocks.vercelTrack).not.toHaveBeenCalled();
+  });
+
+  it('still sends ordinary events (not acquisition events) when measurement consent is absent', () => {
+    mocks.hasConsent.mockReturnValue(false);
+    track('contact_submit_success');
+    expect(mocks.vercelTrack).toHaveBeenCalledOnce();
+  });
+
+  it('sends nothing to Vercel, and queues nothing for it, once the visitor has objected to site statistics', () => {
+    mocks.statsConsent.mockReturnValue(false);
+    mocks.storedChannel.mockReturnValue('reddit');
+    track('tripcom_click', { route: 'manchester-dubai', source: 'fare-signal' });
+    track('contact_submit_success');
+    expect(mocks.vercelTrack).not.toHaveBeenCalled();
   });
 
   it('never throws, even when the vendor call itself throws (must never break the page it measures)', () => {
