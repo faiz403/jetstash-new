@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowRight } from 'lucide-react';
 import { track } from '@/lib/analytics';
+import { cn } from '@/lib/utils';
 
 export interface JourneyCheckOption {
   slug: string;
@@ -17,8 +18,10 @@ export interface JourneyCheckData {
   routeIndex: Record<string, string>;
 }
 
+// Styled for the ivory console card it renders in (homepage-opening-hero.tsx).
+// A missing choice after Check is pressed turns the field's border terracotta.
 const selectClass =
-  'mt-1.5 h-11 w-full appearance-none rounded-sm border border-white/15 bg-white/[0.04] pl-3 pr-9 text-sm text-sand-50 focus-visible:border-brass/60';
+  'pb-select pb-select-light mt-1.5 h-11 w-full appearance-none rounded-sm border border-ink-900/15 bg-white pl-3 pr-9 text-sm text-ink-900 focus-visible:border-brass-700 aria-[invalid=true]:border-terracotta-600';
 
 /**
  * The fast path for a visitor who already knows their route — the Atlas
@@ -98,7 +101,7 @@ export function JourneyCheckForm({ origins, destinations, routeIndex }: JourneyC
     <div>
       <form onSubmit={onSubmit} className="grid gap-3 sm:grid-cols-[1fr_1fr_auto] sm:items-end">
         <div>
-          <label htmlFor="jc-from" className="text-[11px] font-semibold uppercase tracking-wide text-ink-300">
+          <label htmlFor="jc-from" className="text-[11px] font-semibold uppercase tracking-wide text-ink-500">
             Flying from
           </label>
           <select
@@ -113,18 +116,18 @@ export function JourneyCheckForm({ origins, destinations, routeIndex }: JourneyC
             aria-invalid={needsChoice && !fromSlug ? true : undefined}
             className={selectClass}
           >
-            <option value="" className="bg-ink-900 text-sand-50">
+            <option value="" className="bg-white text-ink-900">
               Choose airport
             </option>
             {origins.map((o) => (
-              <option key={o.slug} value={o.slug} className="bg-ink-900 text-sand-50">
+              <option key={o.slug} value={o.slug} className="bg-white text-ink-900">
                 {o.label}
               </option>
             ))}
           </select>
         </div>
         <div>
-          <label htmlFor="jc-to" className="text-[11px] font-semibold uppercase tracking-wide text-ink-300">
+          <label htmlFor="jc-to" className="text-[11px] font-semibold uppercase tracking-wide text-ink-500">
             Going to
           </label>
           <select
@@ -139,11 +142,11 @@ export function JourneyCheckForm({ origins, destinations, routeIndex }: JourneyC
             aria-invalid={needsChoice && !toSlug ? true : undefined}
             className={selectClass}
           >
-            <option value="" className="bg-ink-900 text-sand-50">
+            <option value="" className="bg-white text-ink-900">
               Choose destination
             </option>
             {destinations.map((d) => (
-              <option key={d.slug} value={d.slug} className="bg-ink-900 text-sand-50">
+              <option key={d.slug} value={d.slug} className="bg-white text-ink-900">
                 {d.label}
               </option>
             ))}
@@ -158,7 +161,11 @@ export function JourneyCheckForm({ origins, destinations, routeIndex }: JourneyC
           <ArrowRight className="h-4 w-4" strokeWidth={2.25} />
         </button>
       </form>
-      <p id="jc-status" aria-live="polite" className="mt-3 min-h-[1.5rem] text-[13px] leading-relaxed text-ink-300">
+      <p
+        id="jc-status"
+        aria-live="polite"
+        className={cn('mt-3 min-h-[1.5rem] text-[13px] leading-relaxed', !hasChoice && needsChoice ? 'text-terracotta-700' : 'text-ink-500')}
+      >
         {!hasChoice ? (
           needsChoice ? (
             <>Choose both your airport and your destination, then press Check.</>

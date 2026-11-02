@@ -170,45 +170,17 @@ h1, h2 {
   background-size: 12px 8px;
 }
 
-/* Homepage journey console — warm mineral surface. The search form is the
-   first useful action on the site, so it should read as a considered travel
-   instrument against the dark photographic hero, not disappear into it. The
-   navy, brass and ivory brand palette stays intact; only this surface and its
-   controls change. */
-#your-journey > div:first-child {
-  border-color: rgba(239, 229, 210, 0.9);
-  border-radius: 1.25rem;
-  background-color: rgba(253, 251, 247, 0.98);
-}
-
-#your-journey > div:first-child > p:first-child {
-  color: #634319;
-}
-
-#your-journey label {
-  color: #454B57;
-}
-
-#your-journey select {
-  border-color: #D9D2C6;
-  border-radius: 0.75rem;
-  background-color: #FFFFFF;
+/* Light select variant — the same control on an ivory surface. Brass-500 is
+   too faint on white, so the chevron steps down to brass-700. Pair with
+   .pb-select, after which it must stay so this background-image wins. */
+.pb-select-light {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8' fill='none'%3E%3Cpath d='M1 1.5 6 6.5 11 1.5' stroke='%2385591D' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
-  background-position: right 0.9rem center;
-  background-repeat: no-repeat;
-  background-size: 12px 8px;
-  color: #0B0E14;
 }
 
-#your-journey select option {
-  background-color: #FFFFFF;
-  color: #0B0E14;
-}
-
-#your-journey select:focus-visible {
-  border-color: #85591D;
-}
-
-#your-journey p[aria-live] {
-  color: #454B57;
+/* A light surface inside a dark section (the homepage journey console sits on
+   the bg-ink-900 hero) goes back to the ink focus ring. Without this, the
+   dark-section rule above gives a light brass ring on ivory, about 1.9:1.
+   Same specificity as that rule, so it must stay after it. */
+.light-surface :focus-visible {
+  outline-color: theme('colors.ink.900');
 }

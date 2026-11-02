@@ -144,10 +144,19 @@ export function HomepageOpeningHero({
             headroom the fixed-bottom consent banner needs at 390×844 to
             clear the console without shrinking its 12px text or its 44px
             buttons — see cookie-consent-banner.tsx's own comment. No copy,
-            heading, or control changed here. */}
-        <div className="rounded-lg border border-white/10 bg-ink-900/70 px-5 pb-5 pt-1.5 shadow-[0_24px_70px_-24px_rgba(0,0,0,0.65)] backdrop-blur-md sm:p-6">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-brass-200">Check your journey</p>
-          <div className="mt-1 sm:mt-3">
+            heading, or control changed here.
+
+            Ivory console (November 2026): the card is a solid sand-50 surface
+            so the first action reads clearly against the dark photo. On a
+            crisp light edge the old 6px mobile top padding looked cramped, so
+            it is now 12px, paid for by dropping the 4px gap under the label
+            and fixing the label's line box at 16px. The submit button stays
+            within a pixel or two of where it was, so the consent-banner
+            clearance above still holds. light-surface restores the ink focus
+            ring (see globals.css). */}
+        <div className="light-surface rounded-lg border border-sand-200/90 bg-sand-50 px-5 pb-5 pt-3 shadow-[0_24px_70px_-24px_rgba(0,0,0,0.65)] sm:p-6">
+          <p className="text-[11px] font-semibold uppercase leading-4 tracking-[0.22em] text-brass-800">Check your journey</p>
+          <div className="sm:mt-3">
             <JourneyCheckForm origins={journeyCheck.origins} destinations={journeyCheck.destinations} routeIndex={journeyCheck.routeIndex} />
           </div>
         </div>
