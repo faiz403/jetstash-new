@@ -189,14 +189,17 @@ describe('Genuine no-fare scope still renders the real fallback (zero Deals AND 
     expect(html).not.toMatch(NEUTRAL_PHRASE);
   });
 
-  it('Sylhet destination (routes exist, but zero deals and zero current Fare Signal) still shows the genuine fallback', async () => {
+  it('Sylhet destination (zero deals, zero current Fare Signal, but logged checks in the archive) says it has checked before, not that nothing was logged', async () => {
+    // 3 November 2026: this test used to pin "We haven't logged a tracked fare for Sylhet yet", which was false: both Sylhet
+    // routes have logged checks. See tests/no-fare-fallback-checked-before-2026-11.test.ts.
     const routeSlugs = getRoutesByDestination('sylhet').map((r) => r.slug);
     expect(routeSlugs.length).toBeGreaterThan(0);
     expect(getDealsByDestination('sylhet')).toHaveLength(0);
     expect(hasCurrentFareSignalAmongRoutes(routeSlugs, nowIso)).toBe(false);
     const element = await DestinationPage({ params: Promise.resolve({ slug: 'sylhet' }) });
     const html = renderToStaticMarkup(element);
-    expect(html).toMatch(NO_TRACKED_FARE_PHRASE);
+    expect(html).not.toMatch(NO_TRACKED_FARE_PHRASE);
+    expect(html).toMatch(/has checked fares for Sylhet before/);
   });
 });
 

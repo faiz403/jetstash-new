@@ -102,11 +102,14 @@ describe('Stage 2 homepage evidence example', () => {
     }
   });
 
-  it('degrades fare -> verified route finding -> nothing as evidence ages (frozen dates)', () => {
+  it('degrades as evidence ages: an expired departure is replaced, never shown (frozen dates)', () => {
     expect(getHomepageEvidenceExample('2026-10-23')?.kind).toBe('fare');
-    expect(getHomepageEvidenceExample('2026-11-02')?.kind).toBe('fare');
-    // From 3 Nov the fare's 17 Nov departure is inside the 15-day promotion guard, so only the route finding remains.
-    expect(getHomepageEvidenceExample('2026-11-03')?.kind).toBe('route');
+    const lastDay = getHomepageEvidenceExample('2026-11-02');
+    expect(lastDay?.kind === 'fare' && lastDay.fare.departureDate).toBe('2026-11-17');
+    // From 3 Nov that fare's 17 Nov departure is inside the 15-day promotion guard. Until the 3 November 2026 sweep this left only
+    // the route finding; the sweep's own 3 Nov check (29 Dec departure) now takes its place, so the expired fare is never shown.
+    const firstDayAfter = getHomepageEvidenceExample('2026-11-03');
+    expect(firstDayAfter?.kind === 'fare' && firstDayAfter.fare.departureDate).toBe('2026-12-29');
     // The route's own verification lapses on 17 Nov; with nothing current the card is omitted, never stale.
     expect(getHomepageEvidenceExample('2026-11-17')).toBeNull();
   });

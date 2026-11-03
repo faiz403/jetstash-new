@@ -190,7 +190,8 @@ describe('DEST-001 — no fare invented, no route other than this one added', ()
     const observations = fareObservations.filter((o) => o.routeSlug === 'london-heathrow-bengaluru');
     // 6 October 2026: the weekly sweep appended a seventh (a clean fare only; no
     // cheaper self-transfer option was visible), again append-only.
-    expect(observations).toHaveLength(7);
+    // 3 November 2026: the weekly sweep (fare recovery) appended an eighth, a clean Gulf Air round trip, again append-only.
+    expect(observations).toHaveLength(8);
     expect(observations[0].id).toBe('obs-lhr-blr-economy-20260806-8w-v1');
     expect(observations[0].source).toBe('Gulf Air');
     expect(observations[1].id).toBe('obs-lhr-blr-economy-20260818-8w-v1');
@@ -199,6 +200,7 @@ describe('DEST-001 — no fare invented, no route other than this one added', ()
     expect(observations[4].id).toBe('obs-lhr-blr-economy-20260922-v1');
     expect(observations[5].id).toBe('obs-lhr-blr-economy-20260929-v1');
     expect(observations[6].id).toBe('obs-lhr-blr-economy-20261006-v1');
+    expect(observations[7].id).toBe('obs-lhr-blr-economy-20261103-8w-v1');
   });
 
   it('exactly one deal card exists for this route, added by Fare Coverage Expansion Batch B', () => {

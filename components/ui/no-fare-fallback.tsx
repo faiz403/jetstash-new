@@ -27,9 +27,20 @@ import { AffiliateLinkDisclosure } from './affiliate-link-disclosure';
  * needs this — it already gates on shouldShowNoFareFallback(fareSignal), the
  * fully correct per-route check, so this only ever applies false there and
  * changes nothing.
+ *
+ * `hasCheckedFaresBefore` (3 November 2026): when no current Fare Signal
+ * exists, a scope whose routes have logged checks in the archive must not
+ * say "we haven't logged a tracked fare" either. Every fare can expire at
+ * once (the 15-day departure guard did exactly that on 3 November), and the
+ * Glasgow, Edinburgh, Newcastle and Sylhet pages then made that false claim,
+ * and so did every route guide without a curated Deal (directly below its
+ * own "Earlier checks are in the fare history below"). Multi-route callers
+ * pass hasAnyObservationAmongRoutes() (data/fare-observations.ts); the route
+ * guide passes the same raw-archive test it uses for its own wording.
  */
-export function NoFareFallback({ cityLabel, routeSlug, hasFareSignalElsewhere = false }: { cityLabel: string; routeSlug?: string; hasFareSignalElsewhere?: boolean }) {
+export function NoFareFallback({ cityLabel, routeSlug, hasFareSignalElsewhere = false, hasCheckedFaresBefore = false }: { cityLabel: string; routeSlug?: string; hasFareSignalElsewhere?: boolean; hasCheckedFaresBefore?: boolean }) {
   const tripComUrl = routeSlug ? getSafeTripComFlightHandoffUrl(routeSlug) : null;
+  const searchHint = tripComUrl ? ' Search flights on Trip.com to see options.' : '';
   return (
     <div className="flex flex-col items-center rounded-md border border-dashed border-ink-200 bg-white px-6 py-12 text-center">
       <div className="flex h-11 w-11 items-center justify-center rounded-full bg-ink-50 text-ink-400">
@@ -38,7 +49,9 @@ export function NoFareFallback({ cityLabel, routeSlug, hasFareSignalElsewhere = 
       <p className="mt-4 max-w-sm text-sm leading-relaxed text-ink-600">
         {hasFareSignalElsewhere
           ? <>There&apos;s no curated fare card for {cityLabel} yet, but tracked fare evidence is available on the individual route guides.</>
-          : <>We haven&apos;t logged a tracked fare for {cityLabel} yet.{tripComUrl ? ' Search flights on Trip.com to see options.' : ''}</>}
+          : hasCheckedFaresBefore
+            ? <>JetStash has checked fares for {cityLabel} before, but there isn&apos;t a current one we can safely show.{searchHint}</>
+            : <>We haven&apos;t logged a tracked fare for {cityLabel} yet.{searchHint}</>}
       </p>
       {tripComUrl ? (
         <>

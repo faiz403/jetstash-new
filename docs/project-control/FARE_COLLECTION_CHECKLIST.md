@@ -47,7 +47,11 @@ reused:
 - [ ] If the output says `peakSeason: true` (the window overlaps the `christmas-new-year`
       occurrence in `data/peak-period-dates.ts`), label every observation from that sweep as
       peak-season in the sweep evidence, and never present it as directly comparable with fares
-      from another travel window. Public copy does not change without separate approval.
+      from another travel window. Public copy does not change without separate approval. Give every
+      record from a peak-season sweep a dated peak profile, e.g.
+      `{route}-economy-1adult-christmas-new-year-2026-v1` (3 November 2026), never the route's routine
+      series: Fare Watcher only compares records with the same profile, so this is what stops a
+      peak-season fare being measured against an off-peak baseline.
 - [ ] **KAYAK fallbacks** (Google Flights returned no usable results on 13 October):
       `leeds-bradford-antalya`, `leeds-bradford-dalaman`, `leeds-bradford-bodrum`,
       `bristol-antalya`, `bristol-dalaman`, `newcastle-dalaman`, `glasgow-dalaman`. Try Google
@@ -59,6 +63,22 @@ reused:
 - [ ] A displayed price is not verification. Record the outbound and return legs, exact airports and
       any self-transfer exactly as shown. An observation without return-leg evidence must not be
       described as verified.
+
+### Publish or decline within the week (3 November 2026)
+
+On 3 November 2026, 61 of 62 published fares disappeared at once. They shared one departure date, the 15-day departure guard
+withdrew them together, and the 13 and 20 October sweeps that would have replaced them were collected but never published. A sweep is
+therefore not finished when it has been read:
+
+- [ ] **Within 7 days of the sweep date**, either append its verified clean fares to `data/fare-observations.ts` in a PR, or record
+      in `STATUS.md` that the sweep was declined and why. "Collected, not ingested" is not a finished state.
+- [ ] **Publishable means verified at booking level:** both legs read, every booking option checked, using the selection rules in
+      `fare-evidence/weekly-sweep-2026-11-03.md` (exact airports, usefulness limits, clean decided per offer, an airline offer for
+      mixed-airline itineraries, no single-agent outlier more than 10% below the next offer). Search-row prices alone are context only.
+- [ ] **Before closing a sweep, check when the live set expires.** Every live fare leaves the site 15 days before its departure date,
+      or earlier if its route review lapses. If the earliest of those dates is less than 21 days away, the next sweep is urgent.
+- [ ] **Check route reviews too.** A fare on a route whose review lapses next week is hidden next week. List lapsing priority routes
+      in the sweep's evidence file so route re-verification can be scheduled.
 
 ## 3. Traveller profile
 

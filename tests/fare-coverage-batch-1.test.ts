@@ -237,8 +237,9 @@ describe('no Fare Watcher candidate is created merely because this PR adds an ob
       // 6 October 2026 weekly sweep appended two observations (self-transfer
       // secondary + clean) to each of these three routes; leeds-bradford-bodrum
       // was not ingested (its only source was an incomplete KAYAK page).
-      'manchester-karachi': 7,
-      'birmingham-lahore': 7,
+      // 3 November 2026 weekly sweep (fare recovery) appended one clean round trip to each of these two.
+      'manchester-karachi': 8,
+      'birmingham-lahore': 8,
       // 17 October 2026: Birmingham–Islamabad is the only December research
       // candidate retained as an active record after route-status revalidation.
       'birmingham-islamabad': 8,
