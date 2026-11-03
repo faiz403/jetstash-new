@@ -243,6 +243,7 @@ export function ArriveByManchesterPublic() {
           <button type="button" onClick={confirmPendingPlace} disabled={loading} className="rounded-sm bg-ink-900 px-5 py-2 text-sm font-semibold text-white disabled:cursor-wait disabled:opacity-60">Yes — use this place</button>
           <button type="button" onClick={rejectPendingPlace} className="rounded-sm border border-ink-300 px-5 py-2 text-sm font-semibold text-ink-900">No — change destination</button>
         </div>
+        <GoogleMapsAttribution className="mt-3" />
       </div>}
       {pending.destinationConfidence === 'NEEDS_SELECTION' && pending.pendingSelection && <div className="mt-4 rounded-md border border-brass bg-white p-4">
         <p className="text-sm font-semibold text-ink-900">We found a few possible places. Choose the one you mean:</p>
@@ -259,6 +260,7 @@ export function ArriveByManchesterPublic() {
             </button>
           ))}
         </div>
+        <GoogleMapsAttribution className="mt-3" />
       </div>}
       {(pending.destinationConfidence === 'NEEDS_CLARIFICATION' || pending.destinationConfidence === 'UNRESOLVED') && (
         <p className="mt-3 text-sm text-ink-700">Please make the destination more specific and try again.</p>

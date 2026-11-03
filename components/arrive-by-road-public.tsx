@@ -245,6 +245,7 @@ export function ArriveByRoadPublic({ airport }: { airport: RoadAirportInfo }) {
               <button type="button" onClick={() => void runJourney({ confirmedPlaceId: result.pendingConfirmation?.placeId })} disabled={loading} className="rounded-sm bg-ink-900 px-5 py-2 text-sm font-semibold text-white disabled:cursor-wait disabled:opacity-60">Yes — use this place</button>
               <button type="button" onClick={() => setResult(null)} className="rounded-sm border border-ink-300 px-5 py-2 text-sm font-semibold text-ink-900">No — change destination</button>
             </div>
+            <GoogleMapsAttribution className="mt-3" />
           </div>
         )}
         {result.outcome === 'DESTINATION_NEEDS_SELECTION' && result.pendingSelection && (
@@ -257,6 +258,7 @@ export function ArriveByRoadPublic({ airport }: { airport: RoadAirportInfo }) {
                 </button>
               ))}
             </div>
+            <GoogleMapsAttribution className="mt-3" />
           </div>
         )}
         {result.outcome === 'DESTINATION_NEEDS_CLARIFICATION' && result.clarificationReason === 'WRONG_COUNTRY' && (

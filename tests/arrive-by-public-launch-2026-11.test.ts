@@ -72,6 +72,27 @@ describe('Google Maps attribution', () => {
     expect(block(src, '{pending && <div ref={resultRef}', '</div>}\n\n')).toMatch(/<GoogleMapsAttribution\b/);
   });
 
+  // Each bordered place-check box (Google's found address or candidate list) is its own container.
+  const ownDiv = (src: string, at: number) => {
+    const open = src.lastIndexOf('<div', at);
+    const re = /<div\b|<\/div>/g;
+    re.lastIndex = open;
+    let depth = 0;
+    for (let t = re.exec(src); t; t = re.exec(src)) {
+      depth += t[0] === '</div>' ? -1 : 1;
+      if (depth === 0) return src.slice(open, t.index);
+    }
+    throw new Error('unclosed div');
+  };
+  it.each(PUBLIC_VIEWS)('%s: every place confirmation or selection box carries its own attribution', (view) => {
+    const src = read('components', `${view}.tsx`);
+    const marker = 'className="mt-4 rounded-md border border-brass bg-white p-4"';
+    const boxes: string[] = [];
+    for (let at = src.indexOf(marker); at >= 0; at = src.indexOf(marker, at + marker.length)) boxes.push(ownDiv(src, at));
+    expect(boxes.length, view).toBeGreaterThanOrEqual(1);
+    for (const box of boxes) expect(box, box.slice(0, 120)).toMatch(/<GoogleMapsAttribution\b/);
+  });
+
   it.each(['arrive-by-road-public', 'arrive-by-pakistan-public'])('%s: the result card, which also holds its place check', (view) => {
     const src = read('components', `${view}.tsx`);
     const card = block(src, '{result && <div ref={resultRef}', '</section>');

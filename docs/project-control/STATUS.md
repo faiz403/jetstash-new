@@ -32,10 +32,13 @@ hidden beta since PR #293; this makes it a public feature without changing a cal
 - **Findable:** `/arrive-by` is indexable and self-canonical, listed once in the sitemap, and linked from the footer. The in-page
   "Beta" label and the no-guarantee, no-flight-tracking wording stay.
 - **Google Maps attribution:** Arrive By shows Google place names, addresses and journey times without a map, which Google's
-  attribution rules do not allow without attribution. The text "Google Maps" now sits inside every panel that shows Google content in
-  the four public views. In the planner that is the result card, the place-choice box and the ready-by and missed-service panels; in the
-  Manchester view it also covers the driving and itinerary panels (`components/arrive-by-google-attribution.tsx`; colour token
-  `google-attribution`, #5E5E5E, one of the colours Google permits).
+  attribution rules do not allow without attribution. The text "Google Maps" now sits inside every bordered panel that shows Google
+  content in the four public views:
+  - **Planner:** the result card, the place-choice box, and the ready-by and missed-service panels.
+  - **Manchester:** the answer card, the missed-service card, and the driving, itinerary and place-check panels.
+  - **Road and Pakistan:** the result card and the place-check boxes.
+  - **Implementation:** `components/arrive-by-google-attribution.tsx`, with colour token `google-attribution` (#5E5E5E, one of the colours Google permits).
+  - **Tests:** each panel is rendered or isolated separately.
 - **Honest counting:** a pause that only asks the traveller to confirm or choose a place is now `needs_confirmation:*`, not a
   `cannot_confirm` failure. The old counter could not tell the two apart, so October's 13 of 18 `ARRIVAL_DESTINATION_UNCONFIRMED`
   outcomes may be largely this normal step; from launch the counters separate them.
