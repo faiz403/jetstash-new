@@ -47,7 +47,11 @@ reused:
 - [ ] If the output says `peakSeason: true` (the window overlaps the `christmas-new-year`
       occurrence in `data/peak-period-dates.ts`), label every observation from that sweep as
       peak-season in the sweep evidence, and never present it as directly comparable with fares
-      from another travel window. Public copy does not change without separate approval.
+      from another travel window. Public copy does not change without separate approval. Give every
+      record from a peak-season sweep a dated peak profile, e.g.
+      `{route}-economy-1adult-christmas-new-year-2026-v1` (3 November 2026), never the route's routine
+      series: Fare Watcher only compares records with the same profile, so this is what stops a
+      peak-season fare being measured against an off-peak baseline.
 - [ ] **KAYAK fallbacks** (Google Flights returned no usable results on 13 October):
       `leeds-bradford-antalya`, `leeds-bradford-dalaman`, `leeds-bradford-bodrum`,
       `bristol-antalya`, `bristol-dalaman`, `newcastle-dalaman`, `glasgow-dalaman`. Try Google

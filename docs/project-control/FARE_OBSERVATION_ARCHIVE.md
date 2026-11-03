@@ -821,7 +821,9 @@ On 3 November 2026 the 15-day departure guard withdrew every published fare that
 routes the same night for 29 December 2026 to 12 January 2027 (the generator's eight-week window,
 flagged peak season). It appended 24 observations (`obs-…-20261103-8w-v1`), each a clean round trip with
 both legs read and every booking option checked. 11 routes were held and 7 gave no usable result; none
-of those was added. Existing records are unchanged.
+of those was added. Existing records are unchanged. Because the window is peak season, each record uses
+its own profile (`{route}-economy-1adult-christmas-new-year-2026-v1`), so Fare Watcher never compares it
+with a routine-series baseline.
 
 `fare-evidence/weekly-sweep-2026-11-03.md` holds the selection rules (usefulness limits, clean
 decided per booking offer, an airline offer for mixed-airline itineraries, a 10% single-agent

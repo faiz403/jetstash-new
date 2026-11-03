@@ -32,9 +32,11 @@ import { AffiliateLinkDisclosure } from './affiliate-link-disclosure';
  * exists, a scope whose routes have logged checks in the archive must not
  * say "we haven't logged a tracked fare" either. Every fare can expire at
  * once (the 15-day departure guard did exactly that on 3 November), and the
- * Glasgow, Edinburgh, Newcastle and Sylhet pages then made that false claim.
- * Callers pass hasAnyObservationAmongRoutes() (data/fare-observations.ts),
- * the same raw-archive test the route guide uses for its own wording.
+ * Glasgow, Edinburgh, Newcastle and Sylhet pages then made that false claim,
+ * and so did every route guide without a curated Deal (directly below its
+ * own "Earlier checks are in the fare history below"). Multi-route callers
+ * pass hasAnyObservationAmongRoutes() (data/fare-observations.ts); the route
+ * guide passes the same raw-archive test it uses for its own wording.
  */
 export function NoFareFallback({ cityLabel, routeSlug, hasFareSignalElsewhere = false, hasCheckedFaresBefore = false }: { cityLabel: string; routeSlug?: string; hasFareSignalElsewhere?: boolean; hasCheckedFaresBefore?: boolean }) {
   const tripComUrl = routeSlug ? getSafeTripComFlightHandoffUrl(routeSlug) : null;

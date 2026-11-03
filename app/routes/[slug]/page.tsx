@@ -725,7 +725,11 @@ export default async function RoutePage({ params }: { params: Promise<{ slug: st
             </div>
           ) : shouldShowNoFareFallback(fareSignal) ? (
             <div className="mt-8">
-              <NoFareFallback cityLabel={`${airport.city} to ${dest.city}`} routeSlug={route.slug} />
+              <NoFareFallback
+                cityLabel={`${airport.city} to ${dest.city}`}
+                routeSlug={route.slug}
+                hasCheckedFaresBefore={allFareObservations.some((o) => o.routeSlug === route.slug)}
+              />
             </div>
           ) : null}
           {/* SEO Domination Batch 1B (23 Aug 2026) — sits directly below the

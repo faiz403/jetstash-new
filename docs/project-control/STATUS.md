@@ -47,14 +47,17 @@ No deploy caused it; pages switch as they regenerate (six-hour ISR), and the PR 
     the 27 whose route status stays publishable into December. 24 clean round trips were appended, each with both legs read and every
     booking option checked. 11 routes were held (no airline offer, a single-agent outlier more than 10% below the next offer, or not a
     useful example) and 7 gave no usable result.
-  - **Rules and evidence:** `fare-evidence/weekly-sweep-2026-11-03.md`.
+  - **Rules and evidence:** `fare-evidence/weekly-sweep-2026-11-03.md`. The window is peak season, so each record has its own
+    `…-christmas-new-year-2026-v1` profile and Fare Watcher never measures it against autumn fares.
   - **Coverage:** 25 routes have a current fare on 3 November, 22 on 17 November, 14 on 3 December and 8 on 14 December. All 24 leave
     the site on 15 December (the 29 December departure's guard date) unless later sweeps are published.
   - **Route reviews lapse sooner on many routes:** MAN–ISB's fare shows only until 16 November, MAN–LHE's until 12 November and
     LHR–JED's until 4 November.
 - **No-fare wording:** airport, destination and region-hub pages whose routes have logged checks now say "JetStash has checked fares
-  for {place} before, but there isn't a current one we can safely show." This replaces the false "haven't logged" line, which also
-  appeared on the Sylhet destination page. A test that pinned the false Sylhet wording was corrected.
+  for {place} before, but there isn't a current one we can safely show." So do route guides without a curated Deal, which had shown
+  "We haven't logged a tracked fare … yet" directly below their own "Earlier checks are in the fare history below" (found on the
+  Birmingham–Jeddah Preview). This replaces the false "haven't logged" line, which also appeared on the Sylhet destination page. A
+  test that pinned the false Sylhet wording was corrected.
 - **Safeguard:** `FARE_COLLECTION_CHECKLIST.md` "Publish or decline within the week". A sweep must be published or explicitly declined
   within 7 days, and the live set's expiry and lapsing route reviews are checked before a sweep is closed.
 - **Still open:**

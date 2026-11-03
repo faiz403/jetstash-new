@@ -4,6 +4,8 @@ import { fareObservations, isObservationPublishable } from '@/data/fare-observat
 import { getFareSignalForRoute } from '@/lib/fare-signal';
 import { getAirportPairEvidence } from '@/lib/fare-airport-pair';
 import { daysBetweenIso } from '@/lib/freshness-thresholds';
+import { generateFareWatcherCandidates } from '@/lib/fare-watcher';
+import { toTravellerFareNote } from '@/lib/fare-note-display';
 
 /**
  * Weekly sweep, 3 November 2026 (fare recovery after the 3 November mass expiry). 42 routes were searched for
@@ -53,6 +55,15 @@ describe('3 November 2026 sweep records', () => {
     }
   });
 
+  it('the traveller-facing note keeps itinerary facts and drops collection wording', () => {
+    for (const o of sweep) {
+      const note = toTravellerFareNote(o.priceNote);
+      expect(note, o.id).not.toMatch(/Google Flights|airport pair|unlabelled|booking option/i);
+      expect(note, o.id).toMatch(/^return, per person, one adult; /);
+      expect(note, o.id).toMatch(/booking direct with .+ was £[\d,]+ for the same flights/);
+    }
+  });
+
   it('every record\'s own search URL names exactly the route airports on both legs (search-form evidence, never a mismatch)', () => {
     for (const o of sweep) {
       const route = getRouteBySlug(o.routeSlug)!;
@@ -62,6 +73,23 @@ describe('3 November 2026 sweep records', () => {
       expect(evidence.source, o.id).toBe('google-flights-tfs');
       expect(evidence.status, o.id).not.toBe('mismatch');
       expect(evidence.legs.map((l) => [l.searchOrigins, l.searchDestinations]), o.id).toEqual([[[from], [to]], [[to], [from]]]);
+    }
+  });
+});
+
+describe('a peak-season window is never compared with other windows', () => {
+  it('every record carries its own Christmas and New Year 2026 profile, not the route\'s routine series', () => {
+    for (const o of sweep) expect(o.profileId, o.id).toBe(`${o.routeSlug}-economy-1adult-christmas-new-year-2026-v1`);
+    const peakProfiles = new Set(sweep.map((o) => o.profileId));
+    const earlier = fareObservations.filter((o) => o.observedDate < DAY && o.profileId && peakProfiles.has(o.profileId));
+    expect(earlier).toEqual([]);
+  });
+
+  it('so Fare Watcher builds no baseline from autumn fares and raises no candidate from these records', () => {
+    const ids = new Set(sweep.map((o) => o.id));
+    for (const day of [DAY, '2026-11-10', '2026-12-01']) {
+      const candidates = generateFareWatcherCandidates(fareObservations, day).filter((c) => ids.has(c.id) || sweep.some((o) => o.routeSlug === c.routeSlug && c.travelDates.departureDate === '2026-12-29'));
+      expect(candidates, day).toEqual([]);
     }
   });
 });

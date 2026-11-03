@@ -2,9 +2,12 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { NoFareFallback } from '@/components/ui/no-fare-fallback';
 import { hasAnyObservationAmongRoutes } from '@/data/fare-observations';
-import { getRoutesByAirport } from '@/data/routes';
-import { hasCurrentFareSignalAmongRoutes } from '@/lib/fare-signal';
+import { fareObservations } from '@/data/fare-observations';
+import { deals } from '@/data/deals';
+import { getRouteBySlug, getRoutesByAirport, routes } from '@/data/routes';
+import { getFareSignalForRoute, hasCurrentFareSignalAmongRoutes } from '@/lib/fare-signal';
 import AirportPage from '@/app/airports/[slug]/page';
+import RoutePage from '@/app/routes/[slug]/page';
 
 /**
  * "Checked before" no-fare wording (3 November 2026). When every fare expired at once, the Glasgow, Edinburgh and Newcastle
@@ -48,6 +51,23 @@ describe('real airport pages with no current fare on 3 November 2026', () => {
     vi.setSystemTime(new Date(`${DAY}T12:00:00.000Z`));
   });
   afterEach(() => vi.useRealTimers());
+
+  it('route guides with logged checks, no current fare and no curated Deal never say nothing was logged (Birmingham-Jeddah and every other)', async () => {
+    const hasDeal = (slug: string) => {
+      const route = getRouteBySlug(slug)!;
+      return deals.some((d) => d.fromAirportSlug === route.airportSlug && d.toDestinationSlug === route.destinationSlug);
+    };
+    const candidates = routes
+      .map((r) => r.slug)
+      .filter((slug) => getFareSignalForRoute(slug, DAY).state === 'none' && fareObservations.some((o) => o.routeSlug === slug) && !hasDeal(slug));
+    expect(candidates).toContain('birmingham-jeddah');
+    for (const slug of candidates) {
+      const html = norm(renderToStaticMarkup(await RoutePage({ params: Promise.resolve({ slug }) })));
+      expect(html, slug).not.toMatch(/logged a tracked fare/);
+    }
+    const jeddah = norm(renderToStaticMarkup(await RoutePage({ params: Promise.resolve({ slug: 'birmingham-jeddah' }) })));
+    expect(jeddah).toContain("JetStash has checked fares for Birmingham to Jeddah before, but there isn't a current one we can safely show.");
+  });
 
   it.each(['glasgow', 'edinburgh', 'newcastle'])('%s says it has checked before, never that nothing was logged', async (slug) => {
     const routeSlugs = getRoutesByAirport(slug).map((r) => r.slug);

@@ -212,9 +212,9 @@ Every checkpoint records these items:
   `birmingham-dubai` and `birmingham-doha` (until 2 December) and `birmingham-mumbai` (until 14 December). `birmingham-jeddah` stays
   without a fare (held). The homepage example card shows Manchester → Islamabad's fare again until 16 November.
   - **Links:** `/tracked-fares` again links to every route with a current fare (25 on release day).
-  - **Other changes:** airport, destination and hub pages with logged checks but no current fare change one sentence from "We haven't
-    logged a tracked fare … yet" to "JetStash has checked fares for … before, but there isn't a current one we can safely show."
-    None of these is a pilot page.
+  - **Other changes:** airport, destination and hub pages, and route guides without a curated Deal, that have logged checks but no
+    current fare change one sentence from "We haven't logged a tracked fare … yet" to "JetStash has checked fares for … before, but
+    there isn't a current one we can safely show." No pilot page is affected; link target `birmingham-jeddah` is.
   - **Unchanged:** titles, canonical URLs, robots, Quick answers and the pilot's link blocks.
 
 ## Wave 2 (not approved; only after a positive day-14 signal)
