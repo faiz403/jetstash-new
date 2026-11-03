@@ -1,3 +1,4 @@
+import { GoogleMapsAttribution } from '@/components/arrive-by-google-attribution';
 import { clockOf, dateLabelOf, describeDay } from '@/lib/arrive-by-journey/local-time';
 import type { JourneyPlan } from '@/lib/arrive-by-journey/types';
 
@@ -20,6 +21,7 @@ export function ArriveByReadyBySummary({ plan }: { plan: JourneyPlan }) {
     <p className="mt-1">You need to be ready by {clockOf(deadlineMs, zone)} on {dateLabelOf(deadlineMs, zone)}.</p>
     <p className="mt-1">To keep that buffer, latest acceptable physical arrival is around {clockOf(latestArrivalMs, zone)} on {dateLabelOf(latestArrivalMs, zone)}.</p>
     <p className="mt-1">{margin >= 0 ? `About ${margin} minutes to spare against that arrival time.` : `About ${Math.abs(margin)} minutes past that arrival time.`}</p>
+    <GoogleMapsAttribution className="mt-3" />
   </section>;
 }
 
@@ -55,6 +57,7 @@ export function ArriveByMissedServiceDetails({ transit, timeZone, deadline, onOp
       </> : <p className="mt-1">A reliable driving arrival time could not be confirmed.</p>}
       <p className="mt-1 text-xs text-ink-500">This estimates road travel only; it does not confirm a taxi, driver or pickup is available, or give a price. No allowance for finding or waiting for a taxi is included.</p>
     </div>}
+    <GoogleMapsAttribution className="mt-3" />
   </details>;
 }
 

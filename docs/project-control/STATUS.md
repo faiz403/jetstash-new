@@ -22,7 +22,41 @@ rate limiting rather than the current process-local limiter.
 
 **Production site:** `https://jetstash.co.uk`
 
-## Fare evidence expiry — 3 November 2026 (recovery in progress; tests-only PR #355 and fare-data PR for review, neither merged)
+## Arrive By public launch — 3 November 2026 (PR for review; not merged, not deployed)
+
+CEO directive "Arrive By must ship", on `feat/arrive-by-public-launch-2026-11` from `d961001`. Arrive By has been live as a
+hidden beta since PR #293; this makes it a public feature without changing a calculation, guard or budget.
+- **Includes PR #342** (replayed onto current main): the Doha-only public beta (evidence review 29 December 2026, fails closed
+  after it), route-page "Plan with Arrive By" only while the route presents as Direct or Connecting, generated coverage copy, and
+  "Arrive By" in the desktop and mobile navigation. #342 itself is superseded by this PR.
+- **Findable:** `/arrive-by` is indexable and self-canonical, listed once in the sitemap, and linked from the footer. The in-page
+  "Beta" label and the no-guarantee, no-flight-tracking wording stay.
+- **Google Maps attribution:** Arrive By shows Google place names, addresses and journey times without a map, which Google's
+  attribution rules do not allow without attribution. The text "Google Maps" now sits inside every bordered panel that shows Google
+  content in the four public views:
+  - **Planner:** the result card, the place-choice box, and the ready-by and missed-service panels.
+  - **Manchester:** the answer card, the missed-service card, and the driving, itinerary and place-check panels.
+  - **Road and Pakistan:** the result card and the place-check boxes.
+  - **Implementation:** `components/arrive-by-google-attribution.tsx`, with colour token `google-attribution` (#5E5E5E, one of the colours Google permits).
+  - **Tests:** each panel is rendered or isolated separately.
+- **Honest counting:** a pause that only asks the traveller to confirm or choose a place is now `needs_confirmation:*`, not a
+  `cannot_confirm` failure. The old counter could not tell the two apart, so October's 13 of 18 `ARRIVAL_DESTINATION_UNCONFIRMED`
+  outcomes may be largely this normal step; from launch the counters separate them.
+- **Coverage today:** the planner accepts 15 UK departure airports and arrivals at Islamabad, Karachi, Lahore, Doha and Manchester.
+  Route pages offering it: 10 on 3 November, 8 on 5 November and 6 on 17 November. They follow route reviews: Heathrow–Doha and
+  Heathrow–Lahore lapse 4 November, Manchester–Lahore 12 November, Manchester–Islamabad 16 November.
+- **Not changed:** calculations, the 10-call, 2,000-a-month and 5-per-minute guards, airports beyond Doha, analytics vendors, the
+  privacy notice (PR #296 already covers the full journey).
+
+## Fare evidence expiry — 3 November 2026 (DONE: tests-only PR #355 and fare recovery PR #356 merged and live)
+
+- **PR #355:** merge commit `036b013b8ac0c6cec45f0e5e718c0e335dca74cd`, merged 12:35:09 UTC on 3 November 2026.
+- **PR #356:** merge commit `d9610012704ba3526b2b04a4d75f8a9197834339`, merged 12:38:55 UTC; Production deployment succeeded
+  12:40:13 UTC; post-merge quality check passed.
+- **Verified on jetstash.co.uk:**
+  - 25 routes have a current fare (`/tracked-fares` lists 25 priced route guides), dated 3 November;
+  - the homepage example shows Manchester–Islamabad's £906;
+  - Glasgow, Edinburgh, Newcastle and Sylhet say "JetStash has checked fares … before", and no checked page says "haven't logged".
 
 On 3 November 2026 (UTC date), routes with a current Fare Signal fell from **62 of 89 to 1 of 89**. Every published
 fare except Birmingham–Islamabad's (£1,098, departing 11 December) departs on 17 November 2026, and the 15-day departure guard

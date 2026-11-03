@@ -5,6 +5,7 @@ import { PAKISTAN_AIRPORTS } from '@/lib/arrive-by-pakistan/airports';
 import { ESTIMATE_DISCLAIMER, PICKUP_MODE_CAVEATS } from '@/lib/arrive-by-pakistan/outcomes';
 import { formatMinutesHuman, formatSecondsHuman, roundClockToNearestFive, trafficContextSentence } from '@/lib/arrive-by-pakistan/format';
 import { track } from '@/lib/analytics';
+import { GoogleMapsAttribution } from '@/components/arrive-by-google-attribution';
 import type { PakistanAirportCode, PakistanJourneyResult, PakistanPickupMode } from '@/lib/arrive-by-pakistan/types';
 
 /**
@@ -264,6 +265,7 @@ export function ArriveByPakistanPublic({ initialAirportCode = 'ISB' }: { initial
               <button type="button" onClick={confirmPendingPlace} disabled={loading} className="rounded-sm bg-ink-900 px-5 py-2 text-sm font-semibold text-white disabled:cursor-wait disabled:opacity-60">Yes — use this place</button>
               <button type="button" onClick={rejectPendingPlace} className="rounded-sm border border-ink-300 px-5 py-2 text-sm font-semibold text-ink-900">No — change destination</button>
             </div>
+            <GoogleMapsAttribution className="mt-3" />
           </div>
         )}
         {result.outcome === 'DESTINATION_NEEDS_SELECTION' && result.pendingSelection && (
@@ -282,6 +284,7 @@ export function ArriveByPakistanPublic({ initialAirportCode = 'ISB' }: { initial
                 </button>
               ))}
             </div>
+            <GoogleMapsAttribution className="mt-3" />
           </div>
         )}
         {result.outcome === 'DESTINATION_NEEDS_CLARIFICATION' && result.clarificationReason === 'PRIMARY_PLACE_MISMATCH' && (
@@ -319,6 +322,7 @@ export function ArriveByPakistanPublic({ initialAirportCode = 'ISB' }: { initial
             <dd>{destinationReadinessBufferMinutes || '0'} minutes</dd>
           </>}
         </dl>
+        <GoogleMapsAttribution className="mt-4" />
       </section>
     </div>}
 

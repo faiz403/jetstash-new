@@ -12,7 +12,9 @@ describe('public indexing plumbing', () => {
     expect(new Set(sitemapUrls).size).toBe(sitemapUrls.length);
     for (const url of sitemapUrls) {
       expect(url.startsWith(`${siteConfig.url}/`) || url === siteConfig.url).toBe(true);
-      expect(url).not.toMatch(/\/(?:api|arrive-by|founder)(?:\/|$)/);
+      expect(url).not.toMatch(/\/(?:api|founder)(?:\/|$)/);
+      // Arrive By is listed only as its one public page (3 November 2026), never a legacy, API or query variant.
+      if (url.includes('arrive-by')) expect(url).toBe(`${siteConfig.url}/arrive-by`);
     }
   });
 
@@ -21,10 +23,11 @@ describe('public indexing plumbing', () => {
     expect(robots().sitemap).toBe(`${siteConfig.url}/sitemap.xml`);
   });
 
-  it('keeps the Arrive By beta noindex and out of the sitemap', () => {
+  it('lists public Arrive By once, indexable and self-canonical (3 November 2026 launch)', () => {
     const source = read('app/arrive-by/page.tsx');
-    expect(source).toContain('robots: { index: false, follow: true }');
-    expect(sitemapUrls).not.toContain(`${siteConfig.url}/arrive-by`);
+    expect(source).not.toMatch(/index:\s*false/);
+    expect(source).toContain('canonical: `${siteConfig.url}/arrive-by`');
+    expect(sitemapUrls.filter((url) => url === `${siteConfig.url}/arrive-by`)).toHaveLength(1);
   });
 
   it('builds dynamic route, airport, destination, and guide canonicals from their sitemap paths', () => {
