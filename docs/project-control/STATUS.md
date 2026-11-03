@@ -22,7 +22,33 @@ rate limiting rather than the current process-local limiter.
 
 **Production site:** `https://jetstash.co.uk`
 
-## Consent panel clearance — 2 November 2026 (PR for review; not merged, not deployed)
+## Fare evidence expiry — 3 November 2026 (recovery in progress; tests-only PR for review, not merged)
+
+At 00:00 UTC on 3 November 2026, routes with a current Fare Signal fell from **62 of 89 to 1 of 89**. Every fare
+published until then departs on 17 November 2026, and the 15-day departure guard (`lib/freshness-thresholds.ts`, 14 days plus
+a 1-day margin, 17 October 2026) correctly stopped promoting all of them on the same day. No deploy caused it. The 13 October and
+20 October sweeps were collected but never ingested, so nothing replaced them.
+- **Live effect (checked after the PR #354 deploy):** no price on the homepage, `/deals`, `/tracked-fares` or the route pages;
+  routes say "no current fare", and the homepage example card shows Manchester → Islamabad's service check without a fare. `/tracked-fares` now links to 1 route guide. The Glasgow, Edinburgh and Newcastle airport pages
+  say "We haven't logged a tracked fare … yet", which is false: fares were logged; none is current.
+- **CI:** 22 tests read today's date while asserting that specific routes have a current fare, so the quality check on `main`
+  (`4a51ac2`) failed from 3 November and would have failed every PR.
+- **Tests-only repair (branch `test/deterministic-fare-evaluation-date-2026-11`):** those suites now evaluate the data on
+  2 November 2026 (`tests/fare-evidence-clock.ts`), the last day the 17 November evidence was eligible.
+  `tests/fare-departure-expiry-2026-11.test.ts` keeps the guard honest: it checks that the rule is still 14 + 1 days and that the
+  17 November evidence stops on 3 November. It also checks that, on 3 Nov, 10 Nov and 1 Dec, no Fare Signal, deal-card range or
+  homepage example promotes a fare departing within 15 days. Disabling the guard makes 10 of its 14 tests fail. No production
+  code, fare logic or observation changed.
+- **Still open (CEO-approved 3 November):** a fresh verified sweep ingested in a separate data PR; accurate airport-page no-fare
+  wording; a safeguard against another mass expiry; an early warning before coverage drops. PR #353 is on hold until coverage is
+  restored and verified.
+
+## Consent panel clearance — 2 November 2026 (DONE, live via PR #354)
+
+Merge commit `4a51ac28e226b98f2ce448e753c237f5d71f6a3a`, merged 00:04:51 GMT on 3 November 2026. The Production deployment
+succeeded at 00:06:11 UTC. Verified on jetstash.co.uk at 320, 375, 390 and 1440: 0 px of a focused control hidden, no footer item
+stuck, the reserved space clears after Reject all, Accept all and Cookie settings Close, and no optional script or stored choice
+before consent. The CEO accepted the 14 px first-screen overlap at 375x812 and kept the wording unchanged (3 November 2026).
 
 On `fix/consent-banner-mobile-footprint-2026-11` from `2394a18` (CEO priority, ahead of homepage PR #353). Measured on Production
 on first visits: at 320x568, pressing Tab to "Flying from" left the focused control fully underneath the fixed consent panel (WCAG

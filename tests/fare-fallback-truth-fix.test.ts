@@ -9,6 +9,7 @@ import { getEffectiveRoutePresentation } from '@/lib/route-status-copy';
 import { getDealsByAirport, getDealsByDestination } from '@/data/deals';
 import AirportPage from '@/app/airports/[slug]/page';
 import DestinationPage from '@/app/destinations/[slug]/page';
+import { FARE_EVIDENCE_DATE, pinClockToFareEvidenceDate } from './fare-evidence-clock';
 
 /**
  * Fare fallback truth fix (August 2026) — regression coverage for the
@@ -29,7 +30,9 @@ import DestinationPage from '@/app/destinations/[slug]/page';
 const NO_TRACKED_FARE_PHRASE = /logged a tracked fare/i;
 const NEUTRAL_PHRASE = /no curated fare card.*tracked fare evidence is available/i;
 
-const nowIso = new Date().toISOString().slice(0, 10);
+// The real dataset is evaluated on a fixed day, and the pages rendered below read the same day.
+const nowIso = FARE_EVIDENCE_DATE;
+pinClockToFareEvidenceDate();
 // The positive MAN–AYT fixture is valid through this date, not indefinitely.
 // Use the existing explicit evaluation-date seam; do not freeze production time.
 const MAN_AYT_VALID_DATE = '2026-10-07';
