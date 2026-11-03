@@ -22,6 +22,17 @@ rate limiting rather than the current process-local limiter.
 
 **Production site:** `https://jetstash.co.uk`
 
+## Priority route review — 3 November 2026 (prepared for PR; not merged or deployed)
+
+Fresh primary evidence renews Manchester–Lahore, Manchester–Islamabad and Heathrow–Jeddah through
+3 December 2026 (30-day RECENT / CHANGING cadence; fails closed from 4 December). Manchester Airport's
+26 October announcement confirms Lahore weekly on Wednesday and Islamabad four times weekly on
+Monday/Tuesday/Thursday/Saturday. Heathrow's live SV120 record confirms Saudia departed for Jeddah
+today. Unreconfirmed numeric Islamabad/Jeddah durations are removed; Lahore's approximate 8h is
+supported by its current airport guide. Existing fare and route-status ledgers are unchanged.
+Evidence and limitations: [priority route review](route-evidence/priority-route-review-2026-11-03.md).
+The earlier expiry projections below remain historical snapshots before this review.
+
 ## Arrive By public launch — 3 November 2026 (PR for review; not merged, not deployed)
 
 CEO directive "Arrive By must ship", on `feat/arrive-by-public-launch-2026-11` from `d961001`. Arrive By has been live as a

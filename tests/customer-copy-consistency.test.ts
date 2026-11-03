@@ -99,10 +99,10 @@ describe('2. "Verified check" is gone', () => {
       const html = renderToStaticMarkup(await RoutePage({ params: Promise.resolve({ slug: 'manchester-islamabad' }) }));
       expect(html).toContain('Last fare check');
       expect(html).not.toContain('Verified check');
-      // Re-verified 17 Oct 2026 (review due 16 Nov) — the day after expiry.
-      vi.setSystemTime(new Date('2026-11-17T12:00:00.000Z'));
+      // Re-verified 3 Nov 2026 (review due 3 Dec) — the day after expiry.
+      vi.setSystemTime(new Date('2026-12-04T12:00:00.000Z'));
       const expired = renderToStaticMarkup(await RoutePage({ params: Promise.resolve({ slug: 'manchester-islamabad' }) }));
-      expect(getPublishableObservationsByRoute('manchester-islamabad', '2026-11-17')).toEqual([]);
+      expect(getPublishableObservationsByRoute('manchester-islamabad', '2026-12-04')).toEqual([]);
       expect(expired).not.toContain('Last fare check');
       expect(expired).not.toContain('Verified check');
       expect(expired).not.toContain('Fare spotted');

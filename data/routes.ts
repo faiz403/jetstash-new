@@ -1172,16 +1172,17 @@ export const routes: Route[] = [
     airportSlug: 'manchester',
     destinationSlug: 'lahore',
     flightTime: '8h direct',
-    frequency: 'Direct — current frequency not confirmed by an official schedule',
+    frequency: '1x weekly direct, on Wednesdays, per Manchester Airport. Check PIA for your exact date.',
     airlineSlugs: ['pia'],
     isDirect: true,
     verification: {
       status: 'verified',
-      sourceName: "Manchester Airport's official Lahore destination guide and route announcement, re-read 13 October 2026",
-      sourceUrl: 'https://www.manchesterairport.co.uk/destinations-and-guides/lahore/',
-      verifiedDate: '2026-10-13',
-      reviewDueDate: '2026-11-12',
-      note: 'Route Verification Maintenance (13 October 2026): Manchester Airport\'s official Lahore destination guide continues to identify direct Manchester–Lahore flights at around eight hours and PIA as the nonstop operator. Its official 19 May 2026 route announcement states that direct PIA service was to begin on 3 July 2026 (https://mediacentre.manchesterairport.co.uk/a-dozen-new-routes-are-launching-from-manchester-airport-this-summer--from-med-beach-hotspots-to-major-global-hubs/). These airport sources support the existing direct-service claim. They do not establish current operating days or frequency, so the public frequency remains explicitly unconfirmed. Classified RECENT/CHANGING (30-day review cadence); no schedule or frequency claim was added.',
+      sourceName: "Manchester Airport's 26 October 2026 PIA service announcement and current Lahore guide",
+      sourceUrl: 'https://mediacentre.manchesterairport.co.uk/pia-hits-100000-passenger-milestone-as-it-marks-12-months-of-direct-services-to-pakistan-from-manchester-airport/',
+      verifiedDate: '2026-11-03',
+      reviewDueDate: '2026-12-03',
+      note: "Re-verified 3 November 2026. Manchester Airport's 26 October 2026 announcement (https://mediacentre.manchesterairport.co.uk/pia-hits-100000-passenger-milestone-as-it-marks-12-months-of-direct-services-to-pakistan-from-manchester-airport/), read directly today, confirms PIA operates both direct Pakistan routes and specifies Lahore once weekly on Wednesdays. Its current Lahore guide (https://www.manchesterairport.co.uk/destinations-and-guides/lahore/), also read in the browser today, explicitly describes direct flights taking around eight hours; this supports the existing planning duration. Exact dates and times still require PIA confirmation. RECENT / CHANGING, 30 days: review due 3 December 2026. Evidence boundaries: docs/project-control/route-evidence/priority-route-review-2026-11-03.md. Previous verification history follows. " +
+        'Route Verification Maintenance (13 October 2026): Manchester Airport\'s official Lahore destination guide continues to identify direct Manchester–Lahore flights at around eight hours and PIA as the nonstop operator. Its official 19 May 2026 route announcement states that direct PIA service was to begin on 3 July 2026 (https://mediacentre.manchesterairport.co.uk/a-dozen-new-routes-are-launching-from-manchester-airport-this-summer--from-med-beach-hotspots-to-major-global-hubs/). These airport sources support the existing direct-service claim. They do not establish current operating days or frequency, so the public frequency remains explicitly unconfirmed. Classified RECENT/CHANGING (30-day review cadence); no schedule or frequency claim was added.',
     },
     // SEO Domination Batch 1B (23 Aug 2026): re-targets "business class to
     // lahore" now that the evidence gate from the 22 Aug attempt
@@ -1220,11 +1221,11 @@ export const routes: Route[] = [
     seoDescription:
       'PIA operates Manchester–Lahore direct. JetStash separately tracks a connecting Business Class fare, and shows how it differs from the direct route service.',
     businessClarity: {
-      routeServiceSummary: "PIA operates Manchester–Lahore direct (confirmed via Manchester Airport's own announcement, re-verified 14 August 2026).",
+      routeServiceSummary: "PIA operates Manchester–Lahore direct (confirmed via Manchester Airport's own announcement, re-verified 3 November 2026).",
       trackedFareShape: 'a self-transfer itinerary across five other airlines, with three stops each way',
       faqQuestion: "Are there direct flights from Manchester to Lahore, and is JetStash's tracked Business fare direct?",
       faqRouteServiceAnswer:
-        "PIA operates Manchester to Lahore direct — confirmed via Manchester Airport's own announcement (re-verified 14 August 2026). You may see other sources suggesting no direct UK–Lahore flights exist; that doesn't match this primary-source evidence.",
+        "PIA operates Manchester to Lahore direct — confirmed via Manchester Airport's own announcement (re-verified 3 November 2026). You may see other sources suggesting no direct UK–Lahore flights exist; that doesn't match this primary-source evidence.",
     },
     intro:
       'The flagship Pakistan corridor from the North of England. PIA runs direct Manchester to Lahore services (confirmed via Manchester Airport\'s own announcement, launched 3 July 2026) — a direct service for the North West\'s Punjabi community, avoiding a Gulf connection, an extra layover, and a transfer point where baggage could go astray.',
@@ -1236,34 +1237,22 @@ export const routes: Route[] = [
     slug: 'manchester-islamabad',
     airportSlug: 'manchester',
     destinationSlug: 'islamabad',
-    // Re-verification (17 Oct 2026): softened from an exact "7h 45m". The
-    // 13 Sept PIA fare record showed 7h 45m for a 6 Oct flight, but PK702's
-    // current tracked schedule is about 7h 25m; see verification.note.
-    flightTime: 'About 7½ hours direct',
-    // Operating-days fix (12 Sept 2026, founder-approved, MAN-ISB micro-seed
-    // real-user follow-up — Person A specifically asked which days the
-    // direct service runs). The prior "2 weekly" statement was itself
-    // already flagged in this route's own verification note as needing a
-    // recheck ("any later frequency increase remain unconfirmed"), and was
-    // genuinely stale: current operational flight-tracking evidence (see
-    // verification.note for the full detail, source description and
-    // corroboration) shows a consistent 4x-weekly Mon/Tue/Thu/Sat pattern
-    // across multiple consecutive real weeks, not the earlier 2-weekly
-    // figure. This hero-facing string is deliberately short (a family
-    // scanning the page, not an audit reader) — the dated evidence, exact
-    // source, and "typical current pattern, never a guarantee" explanation
-    // live in verification.note instead, per the same convention every
-    // other verified route fact already follows.
+    // 3 November 2026: the current primary service source gives no duration;
+    // the airport guide's 6h45m conflicts with the older tracking estimate.
+    flightTime: 'Direct; check PIA for the scheduled duration',
+    // 3 November 2026: Manchester Airport now confirms the existing weekdays
+    // and four weekly departures in its 26 October announcement.
     frequency: '4x weekly direct. Typical days: Mon, Tue, Thu & Sat. Check PIA for your exact date.',
     airlineSlugs: ['pia'],
     isDirect: true,
     verification: {
       status: 'verified',
-      sourceName: "Manchester Airport's own Pakistan International Airlines operator page (manchesterairport.co.uk/flight-operators/pakistan-international-airlines/)",
-      sourceUrl: 'https://www.manchesterairport.co.uk/flight-operators/pakistan-international-airlines/',
-      verifiedDate: '2026-10-17',
-      reviewDueDate: '2026-11-16',
-      note: 'Re-verified 17 October 2026 after the 12 October review date lapsed and the route correctly failed closed to "Verification pending". Primary source: Manchester Airport\'s own PIA operator page (checked 17 October 2026; server Last-Modified 16 October 2026) states "From Manchester, PIA flies direct to Islamabad, providing a nonstop connection between the North of England and Pakistan. The route returned in 2025 after a five-year break", and that PIA uses Terminal 2. That page proves the operator, direct/nonstop status and current operation. It does NOT state frequency, operating days, duration or timings. Those rest on secondary operational flight-tracking evidence for PK702, checked 17 October 2026: FlightAware (flightaware.com/live/flight/PIA702/history) shows Manchester to Islamabad departures on Sat 3, Mon 5, Tue 6, Thu 8, Sat 10, Mon 12, Tue 13 and Thu 15 October with Sat 17 October scheduled, and FlightRadar24 (flightradar24.com/data/flights/pk702) lists 19, 20, 22 and 24 October, a consistent Mon/Tue/Thu/Sat 4x-weekly pattern, so the existing hedged frequency wording is retained as a typical current pattern, not a guarantee. The scheduled times shown (19:40 BST departure, 07:05 PKT arrival next day) give about 7h 25m and recent actual times were 6h 36m to 7h 26m, while the 13 September PIA fare record (obs-man-isb-economy-20260913-pia-direct-v1) showed 7h 45m for a 6 October departure, so the exact "7h 45m" is softened to "About 7½ hours", which both support. The northern winter schedule season begins 25 October 2026 and may change days or times, so this stays in the 30-day RECENT / CHANGING review category. Previous verification (12 September 2026, Manchester Airport media centre launch article of 6 October 2025 plus flight tracking) follows. Re-verified 12 September 2026, prompted by real MAN-ISB micro-seed user feedback asking which days the direct service actually runs. The prior 14 August check (2 weekly, per PIA\'s own homepage/news content) is superseded. PIA\'s own schedule/booking channel was inaccessible during this check (403 response), so the operating-day pattern is instead evidenced by current operational flight-tracking data for flight PK702 (flightaware.com/live/flight/PIA702, checked 12 September 2026) — not a primary operator source, but real completed and scheduled flight history: Manchester departures on Tue 1 Sep, Thu 3 Sep, Sat 5 Sep, Mon 7 Sep, Tue 8 Sep, Thu 10 Sep, Sat 12 Sep (en route) and Mon 14 Sep (scheduled), a consistent Mon/Tue/Thu/Sat, 4x-weekly pattern across multiple consecutive real weeks, not a single snapshot. This is corroborated by independent current schedule/search evidence (two separate current searches also describing the route as operating four times weekly). Together this confirms direct status, PIA as operator, and today\'s real operating pattern. It is presented as a "typical current pattern" rather than a guarantee: flight-tracking history proves what has actually operated recently, not that every future week will match exactly, and JetStash has no real-time schedule inventory.',
+      sourceName: "Manchester Airport's 26 October 2026 PIA service announcement and current PIA operator page",
+      sourceUrl: 'https://mediacentre.manchesterairport.co.uk/pia-hits-100000-passenger-milestone-as-it-marks-12-months-of-direct-services-to-pakistan-from-manchester-airport/',
+      verifiedDate: '2026-11-03',
+      reviewDueDate: '2026-12-03',
+      note: "Re-verified 3 November 2026. Manchester Airport's 26 October 2026 announcement (https://mediacentre.manchesterairport.co.uk/pia-hits-100000-passenger-milestone-as-it-marks-12-months-of-direct-services-to-pakistan-from-manchester-airport/), read directly today, confirms PIA's direct Islamabad service has increased to four flights weekly, departing Manchester on Monday, Tuesday, Thursday and Saturday. The retained typical current pattern now has primary airport evidence, replacing reliance on secondary tracking alone; check PIA for the exact date. The airport's current PIA operator page was also read in the browser today and confirms nonstop Islamabad service. Neither source gives a duration. The current Islamabad guide publishes 6h45m, conflicting with the older 7.5-hour tracking estimate, so no numeric duration is renewed on the route or destination. PIA's homepage was blocked by security verification; no booking search was submitted. RECENT / CHANGING, 30 days: review due 3 December 2026. Evidence boundaries: docs/project-control/route-evidence/priority-route-review-2026-11-03.md. Previous verification history follows. " +
+        'Re-verified 17 October 2026 after the 12 October review date lapsed and the route correctly failed closed to "Verification pending". Primary source: Manchester Airport\'s own PIA operator page (checked 17 October 2026; server Last-Modified 16 October 2026) states "From Manchester, PIA flies direct to Islamabad, providing a nonstop connection between the North of England and Pakistan. The route returned in 2025 after a five-year break", and that PIA uses Terminal 2. That page proves the operator, direct/nonstop status and current operation. It does NOT state frequency, operating days, duration or timings. Those rest on secondary operational flight-tracking evidence for PK702, checked 17 October 2026: FlightAware (flightaware.com/live/flight/PIA702/history) shows Manchester to Islamabad departures on Sat 3, Mon 5, Tue 6, Thu 8, Sat 10, Mon 12, Tue 13 and Thu 15 October with Sat 17 October scheduled, and FlightRadar24 (flightradar24.com/data/flights/pk702) lists 19, 20, 22 and 24 October, a consistent Mon/Tue/Thu/Sat 4x-weekly pattern, so the existing hedged frequency wording is retained as a typical current pattern, not a guarantee. The scheduled times shown (19:40 BST departure, 07:05 PKT arrival next day) give about 7h 25m and recent actual times were 6h 36m to 7h 26m, while the 13 September PIA fare record (obs-man-isb-economy-20260913-pia-direct-v1) showed 7h 45m for a 6 October departure, so the exact "7h 45m" is softened to "About 7½ hours", which both support. The northern winter schedule season begins 25 October 2026 and may change days or times, so this stays in the 30-day RECENT / CHANGING review category. Previous verification (12 September 2026, Manchester Airport media centre launch article of 6 October 2025 plus flight tracking) follows. Re-verified 12 September 2026, prompted by real MAN-ISB micro-seed user feedback asking which days the direct service actually runs. The prior 14 August check (2 weekly, per PIA\'s own homepage/news content) is superseded. PIA\'s own schedule/booking channel was inaccessible during this check (403 response), so the operating-day pattern is instead evidenced by current operational flight-tracking data for flight PK702 (flightaware.com/live/flight/PIA702, checked 12 September 2026) — not a primary operator source, but real completed and scheduled flight history: Manchester departures on Tue 1 Sep, Thu 3 Sep, Sat 5 Sep, Mon 7 Sep, Tue 8 Sep, Thu 10 Sep, Sat 12 Sep (en route) and Mon 14 Sep (scheduled), a consistent Mon/Tue/Thu/Sat, 4x-weekly pattern across multiple consecutive real weeks, not a single snapshot. This is corroborated by independent current schedule/search evidence (two separate current searches also describing the route as operating four times weekly). Together this confirms direct status, PIA as operator, and today\'s real operating pattern. It is presented as a "typical current pattern" rather than a guarantee: flight-tracking history proves what has actually operated recently, not that every future week will match exactly, and JetStash has no real-time schedule inventory.',
     },
     intro:
       'Manchester to Islamabad direct services (confirmed via Manchester Airport\'s own announcement, launched 25 October 2025) are the practical choice for families based across Yorkshire, Lancashire and the wider North West heading to Punjab or onward to Khyber Pakhtunkhwa.',
@@ -1411,7 +1400,7 @@ export const routes: Route[] = [
     slug: 'london-heathrow-jeddah',
     airportSlug: 'london-heathrow',
     destinationSlug: 'jeddah',
-    flightTime: 'About 6h 15m, per Saudia\'s published route figure; not yet reconfirmed against a current Saudia schedule',
+    flightTime: 'Direct; check Saudia for the scheduled duration',
     frequency: 'Saudia operates direct service; exact current frequency not confirmed by a current official schedule',
     airlineSlugs: ['saudia'],
     isDirect: true,
@@ -1441,11 +1430,12 @@ export const routes: Route[] = [
     // route-status event was added, since the route has not ended.
     verification: {
       status: 'verified',
-      sourceName: "Heathrow's current SV120 flight tracker and official Saudi Arabia route page",
+      sourceName: "Heathrow's live SV120 departure record, read in the browser on 3 November 2026",
       sourceUrl: 'https://www.heathrow.com/departures/terminal-4/flight-details/SV120',
-      verifiedDate: '2026-10-05',
-      reviewDueDate: '2026-11-04',
-      note: 'Saudia\'s own live booking page lists London (LHR) to Jeddah (JED) as a current, bookable route, with genuinely fresh fare timestamps ("Viewed 8 minutes ago") across multiple date ranges spanning September through October 2026 -- this is current, dated, primary evidence, not a marketing page alone. No specific current frequency figure was independently reconfirmed this session (Heathrow\'s own routes table separately states 2 daily flights, but that table\'s surrounding article carries an older 2025 dateline, so it is not relied on alone here). Classified RECENT / CHANGING (30-day window), not STABLE, because this route just lost an operator (British Airways) and its full current operating pattern under Saudia alone has not yet been independently reconfirmed over time. Route Verification Recovery Batch 2 (5 October 2026): Heathrow\'s current SV120 tracker was reread and showed Saudia departing London Heathrow (LHR) for Jeddah (JED), while Heathrow\'s official Saudi Arabia route page states daily Jeddah service. This reconfirms the direct Saudia route; no new duration claim is added.',
+      verifiedDate: '2026-11-03',
+      reviewDueDate: '2026-12-03',
+      note: "Re-verified 3 November 2026 in the browser: Heathrow's live SV120 record identifies Saudia, London Heathrow (LHR) to Jeddah (JED), Tuesday 3 November, and DEPARTED at 14:39 (scheduled departure 14:15, estimated arrival 23:20). This is an actual current airport flight record, rather than the text-fetch page shell. It supports continuing Saudia direct service but not a weekly frequency or representative duration; the old 6h15m figure is removed rather than re-dated. British Airways remains excluded and no route-level service event is introduced. RECENT / CHANGING, 30 days: review due 3 December 2026. Evidence boundaries: docs/project-control/route-evidence/priority-route-review-2026-11-03.md. Previous verification history follows. " +
+        'Saudia\'s own live booking page lists London (LHR) to Jeddah (JED) as a current, bookable route, with genuinely fresh fare timestamps ("Viewed 8 minutes ago") across multiple date ranges spanning September through October 2026 -- this is current, dated, primary evidence, not a marketing page alone. No specific current frequency figure was independently reconfirmed this session (Heathrow\'s own routes table separately states 2 daily flights, but that table\'s surrounding article carries an older 2025 dateline, so it is not relied on alone here). Classified RECENT / CHANGING (30-day window), not STABLE, because this route just lost an operator (British Airways) and its full current operating pattern under Saudia alone has not yet been independently reconfirmed over time. Route Verification Recovery Batch 2 (5 October 2026): Heathrow\'s current SV120 tracker was reread and showed Saudia departing London Heathrow (LHR) for Jeddah (JED), while Heathrow\'s official Saudi Arabia route page states daily Jeddah service. This reconfirms the direct Saudia route; no new duration claim is added.',
     },
     intro:
       'The primary direct Umrah arrival route from the UK. Saudia operates direct service, confirmed via its own current booking page. British Airways ended its Heathrow-Jeddah service from 24 April 2026, as part of a wider Middle East network reduction, and is no longer included as a current operator here. Check the exact date and current schedule before booking. Most flight-inclusive Umrah packages are built around the Jeddah corridor, with onward ground transport to Makkah.',

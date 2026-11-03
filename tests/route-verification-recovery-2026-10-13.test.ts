@@ -23,8 +23,8 @@ describe('13 October route verification recovery preserves the intended Fare Sig
     const route = getRouteBySlug(slug)!;
 
     expect(route.verification?.status).toBe('verified');
-    expect(route.verification?.verifiedDate).toBe('2026-10-13');
-    expect(route.verification?.reviewDueDate).toBe('2026-11-12');
+    expect(route.verification?.verifiedDate).toBe(slug === 'manchester-lahore' ? '2026-11-03' : '2026-10-13');
+    expect(route.verification?.reviewDueDate).toBe(slug === 'manchester-lahore' ? '2026-12-03' : '2026-11-12');
     expect(route.verification?.sourceUrl).toMatch(/^https:\/\//);
     expect(route.verification?.note).toContain('13 October 2026');
 
