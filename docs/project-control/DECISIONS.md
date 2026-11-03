@@ -261,8 +261,8 @@ beta. The launch PR (merge needs separate CEO approval; merging is also the earl
 - `/arrive-by` indexable, self-canonical (every `?airport=`, `?departure=` and `?arrival=` variant points to it) and
   listed once in `app/sitemap.ts`; "Arrive By" in the footer as well as the main navigation;
 - the 21 October Doha-only public beta and route-status gating, released together with the launch;
-- Google Maps attribution ("Google Maps", per Google's attribution rules) wherever Google Maps Platform content is shown
-  without a map;
+- Google Maps attribution ("Google Maps", per Google's attribution rules) inside every panel that shows Google Maps Platform
+  content without a map;
 - counting a place-confirmation step as `needs_confirmation:*`, not as a `cannot_confirm` failure.
 
 Everything else stands: no calculation changes, redesign or new analytics vendors; the 10-call, 2,000-a-month and

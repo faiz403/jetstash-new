@@ -32,11 +32,13 @@ hidden beta since PR #293; this makes it a public feature without changing a cal
 - **Findable:** `/arrive-by` is indexable and self-canonical, listed once in the sitemap, and linked from the footer. The in-page
   "Beta" label and the no-guarantee, no-flight-tracking wording stay.
 - **Google Maps attribution:** Arrive By shows Google place names, addresses and journey times without a map, which Google's
-  attribution rules do not allow without attribution. The text "Google Maps" now sits in every result container of the four public
-  views and in the planner's place-choice box (`components/arrive-by-google-attribution.tsx`; colour token `google-attribution`,
-  #5E5E5E, one of the colours Google permits).
+  attribution rules do not allow without attribution. The text "Google Maps" now sits inside every panel that shows Google content in
+  the four public views. In the planner that is the result card, the place-choice box and the ready-by and missed-service panels; in the
+  Manchester view it also covers the driving and itinerary panels (`components/arrive-by-google-attribution.tsx`; colour token
+  `google-attribution`, #5E5E5E, one of the colours Google permits).
 - **Honest counting:** a pause that only asks the traveller to confirm or choose a place is now `needs_confirmation:*`, not a
-  `cannot_confirm` failure. Most of October's "failures" (13 of 18 `ARRIVAL_DESTINATION_UNCONFIRMED`) were this normal step.
+  `cannot_confirm` failure. The old counter could not tell the two apart, so October's 13 of 18 `ARRIVAL_DESTINATION_UNCONFIRMED`
+  outcomes may be largely this normal step; from launch the counters separate them.
 - **Coverage today:** the planner accepts 15 UK departure airports and arrivals at Islamabad, Karachi, Lahore, Doha and Manchester.
   Route pages offering it: 10 on 3 November, 8 on 5 November and 6 on 17 November. They follow route reviews: Heathrow–Doha and
   Heathrow–Lahore lapse 4 November, Manchester–Lahore 12 November, Manchester–Islamabad 16 November.

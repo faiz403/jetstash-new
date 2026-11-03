@@ -102,6 +102,7 @@ function JourneyChain({ title, itinerary, timeZone }: { title: string; itinerary
         ? <Walk key={index} leg={leg} />
         : <Transit key={index} leg={leg} timeZone={timeZone} />)}
     </ol>
+    <GoogleMapsAttribution className="mt-3" />
   </details>;
 }
 
@@ -118,6 +119,7 @@ function CarEstimate({ estimate, result, scenario }: { estimate: GoogleCarRescue
       <h3 className="mt-2 font-display text-xl">Car/taxi driving estimate unavailable.</h3>
       <p className="mt-2 text-sm text-ink-600">Arrive By could not get a usable direct DRIVE route.</p>
     </>}
+    {estimate.status === 'AVAILABLE' && <GoogleMapsAttribution className="mt-3" />}
   </section>;
 }
 
@@ -283,6 +285,7 @@ export function ArriveByManchesterPublic() {
         <p className="mt-2 font-semibold">{transitResult.fallbackJudgement.meetsDeadline
           ? `It still gets you there, with about ${transitResult.fallbackJudgement.minutesFromDeadline} minutes spare.`
           : `That is about ${transitResult.fallbackJudgement.minutesFromDeadline} minutes late.`}</p>
+        <GoogleMapsAttribution className="mt-3" />
       </section>}
 
       {result.immediateCar && <CarEstimate estimate={result.immediateCar} result={result} scenario="immediate" />}

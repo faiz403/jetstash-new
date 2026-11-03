@@ -11,8 +11,9 @@ import type { JourneyPlan, NotEvidencedReason } from './types';
  * submissions = result_usable + needs_confirmation:* + cannot_confirm:* + refused:* + error.
  *
  * needs_confirmation (3 November 2026): when the engine stops only to ask the traveller to confirm or choose their start
- * or destination, that is a normal step of the journey, not a failure. It used to be counted as cannot_confirm, which
- * made most October "failures" (13 of 18 were ARRIVAL_DESTINATION_UNCONFIRMED) look like defects.
+ * or destination, that is a normal step of the journey, not a failure. It used to be counted as cannot_confirm, so the
+ * counters could not tell it from a real failure (13 of October's 18 were ARRIVAL_DESTINATION_UNCONFIRMED). Only a pause
+ * that actually offers a choice counts as needs_confirmation; the reason alone never does.
  *
  * Privacy: nothing about the traveller or their request can reach a key or a
  * value. Keys are built only from a UTC date and a field name taken from a fixed
