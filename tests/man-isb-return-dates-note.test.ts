@@ -78,8 +78,18 @@ describe('Fare Signal CTA note on Manchester-Islamabad', () => {
     expect(html).not.toContain('enter 17 November');
   });
 
-  it('drops the dates once that fare is no longer eligible', () => {
+  it('drops that fare\'s dates once it is no longer eligible, and names the next displayed fare\'s dates instead', () => {
+    // 3 November 2026: the 17 November departure left the guard window the same day the weekly sweep logged a 29 December one.
     const { signal, html } = render(EXPIRED_DATE);
+    expect(signal.state).toBe('current');
+    expect(signal.observation?.departureDate).toBe('2026-12-29');
+    expect(html).not.toContain('17 November');
+    expect(html).toContain('Select Return and enter 29 December 2026 to 12 January 2027.');
+  });
+
+  it('drops the dates when no fare is eligible at all', () => {
+    // Before the route's first logged check nothing is causally available, so this stays a no-fare state whatever is appended later.
+    const { signal, html } = render('2026-01-01');
     expect(signal.state).toBe('none');
     expect(html).not.toContain('Opens a new Trip.com search');
     expect(html).not.toContain('November to');

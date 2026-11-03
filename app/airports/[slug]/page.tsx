@@ -5,6 +5,7 @@ import { Plane, ArrowUpRight, Info } from 'lucide-react';
 import { airports, getAirportBySlug } from '@/data/airports';
 import { truncateMetadataDescription } from '@/data/routes';
 import { getDealsByAirport } from '@/data/deals';
+import { hasAnyObservationAmongRoutes } from '@/data/fare-observations';
 import { getRoutesByAirport, getRouteDestination } from '@/data/routes';
 import { routeStatusEvents } from '@/data/route-status-events';
 import { getEffectiveRoutePresentation } from '@/lib/route-status-copy';
@@ -272,7 +273,11 @@ export default async function AirportPage({ params }: { params: Promise<{ slug: 
             </div>
           ) : (
             <div className="mt-8">
-              <NoFareFallback cityLabel={airport.name} hasFareSignalElsewhere={airportHasFareSignalElsewhere} />
+              <NoFareFallback
+                cityLabel={airport.name}
+                hasFareSignalElsewhere={airportHasFareSignalElsewhere}
+                hasCheckedFaresBefore={hasAnyObservationAmongRoutes(routesHere.map((r) => r.slug))}
+              />
             </div>
           )}
         </div>

@@ -813,3 +813,18 @@ omitted. No airline checkout verification or saved screenshot is claimed.
 The evidence requirements otherwise remain in force. The source research and its limits are
 preserved in the linked evidence file; do not treat this archive write-up as proof of current fare
 availability.
+
+## Weekly sweep — 3 November 2026 (fare recovery)
+
+On 3 November 2026 the 15-day departure guard withdrew every published fare that departed on
+17 November, leaving one route with a current fare. The CEO-approved recovery sweep searched 42
+routes the same night for 29 December 2026 to 12 January 2027 (the generator's eight-week window,
+flagged peak season). It appended 24 observations (`obs-…-20261103-8w-v1`), each a clean round trip with
+both legs read and every booking option checked. 11 routes were held and 7 gave no usable result; none
+of those was added. Existing records are unchanged.
+
+`fare-evidence/weekly-sweep-2026-11-03.md` holds the selection rules (usefulness limits, clean
+decided per booking offer, an airline offer for mixed-airline itineraries, a 10% single-agent
+outlier guard), per-route results, the held and no-result routes, each fare's last display day, and
+why the 13 and 20 October sweeps were never published. `isObservationPublishable()` is true for all
+24 on 3 November; `tests/weekly-sweep-2026-11-03.test.ts` asserts the records and what visitors see.

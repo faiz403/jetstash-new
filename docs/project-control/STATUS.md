@@ -22,7 +22,7 @@ rate limiting rather than the current process-local limiter.
 
 **Production site:** `https://jetstash.co.uk`
 
-## Fare evidence expiry — 3 November 2026 (recovery in progress; tests-only PR for review, not merged)
+## Fare evidence expiry — 3 November 2026 (recovery in progress; tests-only PR #355 and fare-data PR for review, neither merged)
 
 On 3 November 2026 (UTC date), routes with a current Fare Signal fell from **62 of 89 to 1 of 89**. Every published
 fare except Birmingham–Islamabad's (£1,098, departing 11 December) departs on 17 November 2026, and the 15-day departure guard
@@ -42,9 +42,26 @@ No deploy caused it; pages switch as they regenerate (six-hour ISR), and the PR 
   17 November evidence stops on 3 November. It also checks that, on 3 Nov, 10 Nov and 1 Dec, no Fare Signal, deal-card range or
   homepage example promotes a fare departing within 15 days. Disabling the guard makes 10 of its 14 tests fail. No production
   code, fare logic or observation changed.
-- **Still open (CEO-approved 3 November):** a fresh verified sweep ingested in a separate data PR; accurate airport-page no-fare
-  wording; a safeguard against another mass expiry; an early warning before coverage drops. PR #353 is on hold until coverage is
-  restored and verified.
+- **Fare recovery (branch `data/fare-recovery-sweep-2026-11-03`, based on the tests-only branch):**
+  - **Sweep:** 42 routes searched on 3 November for 29 December 2026 to 12 January 2027: the 15 commercial-priority routes, then
+    the 27 whose route status stays publishable into December. 24 clean round trips were appended, each with both legs read and every
+    booking option checked. 11 routes were held (no airline offer, a single-agent outlier more than 10% below the next offer, or not a
+    useful example) and 7 gave no usable result.
+  - **Rules and evidence:** `fare-evidence/weekly-sweep-2026-11-03.md`.
+  - **Coverage:** 25 routes have a current fare on 3 November, 22 on 17 November, 14 on 3 December and 8 on 14 December. All 24 leave
+    the site on 15 December (the 29 December departure's guard date) unless later sweeps are published.
+  - **Route reviews lapse sooner on many routes:** MAN–ISB's fare shows only until 16 November, MAN–LHE's until 12 November and
+    LHR–JED's until 4 November.
+- **No-fare wording:** airport, destination and region-hub pages whose routes have logged checks now say "JetStash has checked fares
+  for {place} before, but there isn't a current one we can safely show." This replaces the false "haven't logged" line, which also
+  appeared on the Sylhet destination page. A test that pinned the false Sylhet wording was corrected.
+- **Safeguard:** `FARE_COLLECTION_CHECKLIST.md` "Publish or decline within the week". A sweep must be published or explicitly declined
+  within 7 days, and the live set's expiry and lapsing route reviews are checked before a sweep is closed.
+- **Still open:**
+  - an automated early warning before coverage drops (next PR);
+  - route re-verification for lapsing priority routes (separate CEO decision);
+  - the 47 unswept routes, whose route reviews have lapsed or lapse within days.
+  - PR #353 stays on hold until coverage is restored and verified.
 
 ## Consent panel clearance — 2 November 2026 (DONE, live via PR #354)
 

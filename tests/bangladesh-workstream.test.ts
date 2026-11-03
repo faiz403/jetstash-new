@@ -291,7 +291,8 @@ describe('BD-001 — no fare invented, no unrelated destination or route added',
       // Append-only growth; verification status is unchanged.
       'london-heathrow-dhaka': { count: 7, latestId: 'obs-lhr-dac-economy-20261006-v1' },
       'london-heathrow-sylhet': { count: 7, latestId: 'obs-lhr-zyl-economy-20261006-v1' },
-      'manchester-dhaka': { count: 8, latestId: 'obs-man-dac-economy-20261006-v1' },
+      // 3 November 2026 weekly sweep (fare recovery): one clean Saudia round trip appended to manchester-dhaka only.
+      'manchester-dhaka': { count: 9, latestId: 'obs-man-dac-economy-20261103-8w-v1' },
       'manchester-sylhet': { count: 7, latestId: 'obs-man-zyl-economy-20261006-v1' },
     };
     for (const slug of ALL_BANGLADESH_ROUTE_SLUGS) {
