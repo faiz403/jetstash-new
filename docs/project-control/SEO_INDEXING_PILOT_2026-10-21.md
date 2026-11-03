@@ -189,6 +189,11 @@ Every checkpoint records these items:
   label unchanged. No link, title, canonical, robots or pilot-page change. Homepage text is otherwise frozen to the 18 November
   checkpoint. The PR #349 merge commit is `287fb42f759cdad5b7a66e555e2d07ce2399cd0f` (00:37:16 BST on 24 October 2026).
 
+- **Consent panel clearance (CEO priority, 2 November 2026; dated by its Production release, merge commit and time to be added
+  then):** layout only, on every page. While the first-visit consent panel is on screen, the page reserves its height at the
+  bottom and keyboard focus stops above it instead of underneath it. Nothing is rendered differently in the server HTML: no visible
+  text, link, title, canonical, robots or pilot-page change.
+
 ## Wave 2 (not approved; only after a positive day-14 signal)
 
 **Ready now** (verification current, no pending status on 21 Oct):
