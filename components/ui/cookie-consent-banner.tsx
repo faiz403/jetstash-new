@@ -77,6 +77,23 @@ export function CookieConsentBanner() {
     if (visible && settingsMode) panelRef.current?.focus();
   }, [visible, settingsMode]);
 
+  // While the panel is on screen, publish its height for globals.css (November 2026): a control that takes keyboard focus scrolls
+  // into view above the panel instead of underneath it (at 320x568 "Flying from" was fully hidden), and the end of every page can
+  // scroll clear of it. Removed as soon as the panel closes. Changes nothing about what the panel shows or what any choice does.
+  useEffect(() => {
+    const panel = panelRef.current;
+    if (!visible || !panel) return;
+    const root = document.documentElement;
+    const publish = () => root.style.setProperty('--consent-banner-h', `${panel.offsetHeight}px`);
+    publish();
+    const observer = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(publish);
+    observer?.observe(panel);
+    return () => {
+      observer?.disconnect();
+      root.style.removeProperty('--consent-banner-h');
+    };
+  }, [visible]);
+
   useEffect(() => {
     const stored = getStoredConsentChoice();
     const storedStats = getStoredStatisticsChoice();

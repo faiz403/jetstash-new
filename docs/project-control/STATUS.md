@@ -22,6 +22,20 @@ rate limiting rather than the current process-local limiter.
 
 **Production site:** `https://jetstash.co.uk`
 
+## Consent panel clearance — 2 November 2026 (PR for review; not merged, not deployed)
+
+On `fix/consent-banner-mobile-footprint-2026-11` from `2394a18` (CEO priority, ahead of homepage PR #353). Measured on Production
+on first visits: at 320x568, pressing Tab to "Flying from" left the focused control fully underneath the fixed consent panel (WCAG
+2.2 2.4.11), the submit button was 17 px hidden at 320 and 14 px at 375x812, and at every size the last footer items could never
+scroll clear of the panel. Touch visitors could already scroll the journey finder clear and use it without choosing.
+- **Fix:** while the panel is on screen it publishes its height as `--consent-banner-h`; `globals.css` uses it for
+  `scroll-padding-bottom` and the body's bottom padding. After the fix: 0 px hidden on focus at 320, 375, 390 and 1440, no footer
+  item stuck under the panel, and the variable is removed after Reject all, Accept all or closing Cookie settings.
+- **Unchanged:** panel wording, layout, Reject all / Accept all styling, consent storage and script gating.
+- **Still open:** on the first screen at 375x812 the panel still covers the bottom 14 px of the submit button. Clearing it needs
+  shorter first-layer wording (a privacy-wording decision) or smaller tap targets (rejected).
+- **SEO pilot event:** layout only, logged in `SEO_INDEXING_PILOT_2026-10-21.md`.
+
 ## Atlas service-ended card wording — 24 October 2026 (PR for review; not merged, not deployed)
 
 On `fix/mumbai-card-wording-2026-10-24` from `287fb42`, the one approved exception to the homepage text freeze (CEO ruling,
