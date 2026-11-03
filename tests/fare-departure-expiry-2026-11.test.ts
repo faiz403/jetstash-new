@@ -14,8 +14,8 @@ import {
 import { FARE_EVIDENCE_DATE } from './fare-evidence-clock';
 
 /**
- * Departure expiry (3 November 2026). Every fare published until now departed on 17 November 2026,
- * and at midnight on 3 November the 15-day departure guard stopped promoting all of them at once.
+ * Departure expiry (3 November 2026). All but one of the fares published until now departed on 17 November
+ * 2026, and on 3 November the 15-day departure guard stopped promoting them at once.
  * That was the guard working. These tests keep it that way: the rule itself is unchanged, the
  * boundary falls on the right day, and on real data no surface promotes a fare that departs
  * inside the guard. Several date-sensitive suites now evaluate the data on FARE_EVIDENCE_DATE

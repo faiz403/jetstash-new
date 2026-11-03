@@ -24,13 +24,16 @@ rate limiting rather than the current process-local limiter.
 
 ## Fare evidence expiry — 3 November 2026 (recovery in progress; tests-only PR for review, not merged)
 
-At 00:00 UTC on 3 November 2026, routes with a current Fare Signal fell from **62 of 89 to 1 of 89**. Every fare
-published until then departs on 17 November 2026, and the 15-day departure guard (`lib/freshness-thresholds.ts`, 14 days plus
-a 1-day margin, 17 October 2026) correctly stopped promoting all of them on the same day. No deploy caused it. The 13 October and
-20 October sweeps were collected but never ingested, so nothing replaced them.
-- **Live effect (checked after the PR #354 deploy):** no price on the homepage, `/deals`, `/tracked-fares` or the route pages;
-  routes say "no current fare", and the homepage example card shows Manchester → Islamabad's service check without a fare. `/tracked-fares` now links to 1 route guide. The Glasgow, Edinburgh and Newcastle airport pages
-  say "We haven't logged a tracked fare … yet", which is false: fares were logged; none is current.
+On 3 November 2026 (UTC date), routes with a current Fare Signal fell from **62 of 89 to 1 of 89**. Every published
+fare except Birmingham–Islamabad's (£1,098, departing 11 December) departs on 17 November 2026, and the 15-day departure guard
+(`lib/freshness-thresholds.ts`, 14 days plus a 1-day margin, 17 October 2026) correctly stopped promoting them on the same day.
+No deploy caused it; pages switch as they regenerate (six-hour ISR), and the PR #354 deploy at 00:06 UTC rebuilt them all. The
+13 October and 20 October sweeps were collected but never ingested, so nothing replaced them.
+- **Live effect (checked after the PR #354 deploy):** the only current price left is Birmingham–Islamabad's £1,098 (its route
+  page, `/tracked-fares`, the Birmingham airport page and the Islamabad destination page). The homepage and `/deals` show no
+  price; every other route says "no current fare" above its dated fare history; the homepage example card shows Manchester →
+  Islamabad's service check without a fare. `/tracked-fares` now links to 1 route guide. The Glasgow, Edinburgh and Newcastle
+  airport pages say "We haven't logged a tracked fare … yet", which is false: fares were logged; none is current.
 - **CI:** 22 tests read today's date while asserting that specific routes have a current fare, so the quality check on `main`
   (`4a51ac2`) failed from 3 November and would have failed every PR.
 - **Tests-only repair (branch `test/deterministic-fare-evaluation-date-2026-11`):** those suites now evaluate the data on

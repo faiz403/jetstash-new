@@ -194,9 +194,9 @@ Every checkpoint records these items:
   screen, the page reserves its height at the bottom and keyboard focus stops above it instead of underneath it. Nothing is
   rendered differently in the server HTML: no visible text, link, title, canonical, robots or pilot-page change.
 
-- **Fare evidence expiry (no deploy; 00:00 UTC on 3 November 2026):** **every pilot page and link target lost its fare card.**
-  All published fares depart on 17 November 2026, and the 15-day departure guard withdrew them on 3 November, not on
-  17 November as the PR #347 entry above assumed. Routes with a current fare fell from 62 to 1 of 89. Pilot pages
+- **Fare evidence expiry (no deploy; from the 3 November 2026 UTC date, as pages regenerate):** **every pilot page and link
+  target lost its fare card.** Every published fare except Birmingham–Islamabad's (11 December departure) departs on 17 November
+  2026, and the 15-day departure guard withdrew them on 3 November, not on 17 November as the PR #347 entry above assumed. Routes with a current fare fell from 62 to 1 of 89. Pilot pages
   `manchester-islamabad`, `manchester-dubai` and `birmingham-delhi` and all five link targets now say "no current fare", and
   the homepage example-check card now shows only Manchester → Islamabad's service check, with no fare (same link). **`/tracked-fares` now links to 1 route guide instead of every target**, so the
   internal links this pilot relied on there are gone until fares return. Titles, canonical URLs, robots, Quick answers and the
