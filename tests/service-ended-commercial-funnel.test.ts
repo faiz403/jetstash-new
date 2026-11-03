@@ -14,6 +14,7 @@ import {
 } from '@/lib/booking-providers';
 import { getTipsForScope } from '@/data/traveller-tips';
 import RoutePage from '@/app/routes/[slug]/page';
+import { pinClockToFareEvidenceDate } from './fare-evidence-clock';
 
 /**
  * Service-Ended Route Commercial Funnel Fix (12 Sept 2026, founder-approved,
@@ -27,6 +28,8 @@ import RoutePage from '@/app/routes/[slug]/page';
  */
 
 const NOW_ISO = '2026-09-12';
+// Route pages rendered here read today's date; evaluate them on a fixed day (see tests/fare-evidence-clock.ts).
+pinClockToFareEvidenceDate();
 
 describe('1-2. Service-ended + connectingAlternative + exact handoff → connecting alternative renders, current Trip.com CTA renders', () => {
   it('manchester-delhi: connectingAlternative section and a current Trip.com CTA both render', async () => {

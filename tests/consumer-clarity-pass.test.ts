@@ -9,6 +9,7 @@ import { RouteCardFare } from '@/components/route/route-card-fare';
 import { AirportRouteGrid, type AirportRouteItem } from '@/components/airport/airport-route-grid';
 import { airportShortName, describeFareStops } from '@/lib/route-card-fare';
 import type { FareSignalObservation } from '@/lib/fare-signal';
+import { pinClockToFareEvidenceDate } from './fare-evidence-clock';
 
 /**
  * Consumer clarity pass (3 Oct 2026). Pins the shared-template changes: airport pages lead with
@@ -16,6 +17,9 @@ import type { FareSignalObservation } from '@/lib/fare-signal';
  * fixed fare hierarchy, and nothing makes a live-price, cheapest or savings claim. Route pages,
  * fare selection and affiliate links are intentionally not exercised here (they were not changed).
  */
+
+// The airport and destination pages below show real dated fares; evaluate them on a fixed day (see tests/fare-evidence-clock.ts).
+pinClockToFareEvidenceDate();
 
 const norm = (html: string) => html.replace(/<!-- -->/g, "").replace(/&#x27;/g, "'").replace(/&gt;/g, '>').replace(/&amp;/g, '&').replace(/\s+/g, ' ');
 

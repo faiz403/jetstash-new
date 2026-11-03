@@ -189,10 +189,22 @@ Every checkpoint records these items:
   label unchanged. No link, title, canonical, robots or pilot-page change. Homepage text is otherwise frozen to the 18 November
   checkpoint. The PR #349 merge commit is `287fb42f759cdad5b7a66e555e2d07ce2399cd0f` (00:37:16 BST on 24 October 2026).
 
-- **Consent panel clearance (CEO priority, 2 November 2026; dated by its Production release, merge commit and time to be added
-  then):** layout only, on every page. While the first-visit consent panel is on screen, the page reserves its height at the
-  bottom and keyboard focus stops above it instead of underneath it. Nothing is rendered differently in the server HTML: no visible
-  text, link, title, canonical, robots or pilot-page change.
+- **Consent panel clearance (PR #354; merge commit `4a51ac28e226b98f2ce448e753c237f5d71f6a3a`, merged 00:04:51 GMT on
+  3 November 2026, Production deployment 00:06:11 UTC):** layout only, on every page. While the first-visit consent panel is on
+  screen, the page reserves its height at the bottom and keyboard focus stops above it instead of underneath it. Nothing is
+  rendered differently in the server HTML: no visible text, link, title, canonical, robots or pilot-page change.
+
+- **Fare evidence expiry (no deploy; from the 3 November 2026 UTC date, as pages regenerate):** **every pilot page and link
+  target lost its fare card.** Every published fare except Birmingham–Islamabad's (11 December departure) departs on 17 November
+  2026, and the 15-day departure guard withdrew them on 3 November, not on 17 November as the PR #347 entry above assumed. Routes with a current fare fell from 62 to 1 of 89. Pilot pages
+  `manchester-islamabad`, `manchester-dubai` and `birmingham-delhi` and all five link targets now say "no current fare", and
+  the homepage example-check card now shows only Manchester → Islamabad's service check, with no fare (same link). **`/tracked-fares` now links to 1 route guide instead of every target**, so the
+  internal links this pilot relied on there are gone until fares return. Titles, canonical URLs, robots, Quick answers and the
+  pilot's own link blocks are unchanged. Read the 4 November (Day 14) checkpoint with this in mind. Fare recovery will be logged
+  here as its own event.
+
+- **Date-deterministic fare tests (tests-only PR, 3 November 2026; dated by its Production release, merge commit and time to be
+  added then):** no production code changes. The deploy it triggers renders the same pages as the build before it.
 
 ## Wave 2 (not approved; only after a positive day-14 signal)
 
