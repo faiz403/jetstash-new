@@ -256,6 +256,20 @@ guards are unchanged; no paid Google probes or budget increase without separate 
 Production release is planned after the SEO pilot's Day 28 assessment (18 November 2026) unless the
 founder approves an earlier date.
 
+**Amendment (3 November 2026, CEO directive "Arrive By must ship"):** Arrive By becomes a public feature, not a hidden
+beta. The launch PR (merge needs separate CEO approval; merging is also the earlier-date approval above) permits:
+- `/arrive-by` indexable, self-canonical (every `?airport=`, `?departure=` and `?arrival=` variant points to it) and
+  listed once in `app/sitemap.ts`; "Arrive By" in the footer as well as the main navigation;
+- the 21 October Doha-only public beta and route-status gating, released together with the launch;
+- Google Maps attribution ("Google Maps", per Google's attribution rules) wherever Google Maps Platform content is shown
+  without a map;
+- counting a place-confirmation step as `needs_confirmation:*`, not as a `cannot_confirm` failure.
+
+Everything else stands: no calculation changes, redesign or new analytics vendors; the 10-call, 2,000-a-month and
+rate-limit guards are unchanged; no paid services or budget increase; the in-product "Beta" label and the
+no-guarantee, no-flight-tracking wording stay, because there is still no external-user validation. Further
+airport releases (DXB, DEL, BOM, AMD, DAC) still go one at a time with their own evidence review date.
+
 ### Travel Confidence is evidence, not a mysterious score
 
 Show understandable states and warnings. Do not reduce confidence to an unexplained number.

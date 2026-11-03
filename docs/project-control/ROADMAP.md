@@ -77,10 +77,12 @@ business meetings and religious travel. A traveller enters their starting locati
 and required arrival time; JetStash works backwards to show the fastest and easiest plausible
 journeys, including conservative airport, immigration, baggage and onward-ground-time allowances.
 
-**Current status:** LIVE as a limited beta since the PR #293 launch (3 October 2026 reconciliation); FROZEN for
-feature work. The evidence-gated specification remains in `ARRIVE_BY_SPEC.md`. MAN is transit-first;
-ISB / LHE / KHI are road-pickup-first; unsupported airports fail closed. Reopen only if real beta evidence
-identifies a defect or a clearly validated opportunity. See `STATUS.md` for the full record.
+**Current status:** LIVE as a limited beta since the PR #293 launch (3 October 2026 reconciliation). **Public launch
+prepared 3 November 2026** (CEO directive; launch PR awaiting merge approval): indexable, in the sitemap, navigation and
+footer, Doha released, Google Maps attribution, honest confirmation-step counting. The evidence-gated specification
+remains in `ARRIVE_BY_SPEC.md`. MAN is transit-first; ISB / LHE / KHI / DOH are road-pickup-first; unsupported airports
+fail closed. Next: further airports one at a time (DXB, DEL, BOM, AMD, DAC), each with its own evidence review date;
+route-page links depend on route re-verification. See `STATUS.md` and `DECISIONS.md` for the full record.
 
 **Non-negotiable boundary:** it must never promise that a traveller will arrive on time. It must
 label assumptions, uncertainty, connection risk and the point after which the journey is no longer

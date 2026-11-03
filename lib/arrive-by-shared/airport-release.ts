@@ -45,7 +45,7 @@ export const ARRIVE_BY_RELEASED_AIRPORTS: Readonly<Record<string, ReleaseEntry>>
   DOH: {
     status: 'public_beta',
     decidedDate: '2026-10-21',
-    approvedNote: 'Founder direction 21 Oct 2026: Doha-only Arrive By public beta first, before the other evidenced airports; takes effect only with a separately approved Production release.',
+    approvedNote: 'Founder direction 21 Oct 2026: Doha-only Arrive By public beta first, before the other evidenced airports. Released with the Arrive By public launch (CEO directive 3 Nov 2026), effective from its approved Production merge.',
     evidenceReviewDueDate: '2026-12-29',
   },
 };

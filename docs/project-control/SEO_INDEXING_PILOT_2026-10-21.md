@@ -203,10 +203,11 @@ Every checkpoint records these items:
   pilot's own link blocks are unchanged. Read the 4 November (Day 14) checkpoint with this in mind. Fare recovery will be logged
   here as its own event.
 
-- **Date-deterministic fare tests (tests-only PR, 3 November 2026; dated by its Production release, merge commit and time to be
-  added then):** no production code changes. The deploy it triggers renders the same pages as the build before it.
+- **Date-deterministic fare tests (PR #355; merge commit `036b013b8ac0c6cec45f0e5e718c0e335dca74cd`, merged 12:35:09 UTC on
+  3 November 2026):** no production code changes. The deploy it triggers renders the same pages as the build before it.
 
-- **Fare recovery (data PR, 3 November 2026; dated by its Production release, merge commit and time to be added then):** **fare
+- **Fare recovery (PR #356; merge commit `d9610012704ba3526b2b04a4d75f8a9197834339`, merged 12:38:55 UTC on 3 November 2026,
+  Production deployment 12:40:13 UTC; verified live: 25 routes with a current fare):** **fare
   cards return** on pilot pages `manchester-islamabad` (until 16 November, when its route review lapses), `manchester-dubai` and
   `birmingham-delhi` (until 14 December). They also return on link targets `london-heathrow-bengaluru` (until 27 November),
   `birmingham-dubai` and `birmingham-doha` (until 2 December) and `birmingham-mumbai` (until 14 December). `birmingham-jeddah` stays
@@ -216,6 +217,16 @@ Every checkpoint records these items:
     current fare change one sentence from "We haven't logged a tracked fare … yet" to "JetStash has checked fares for … before, but
     there isn't a current one we can safely show." No pilot page is affected; link target `birmingham-jeddah` is.
   - **Unchanged:** titles, canonical URLs, robots, Quick answers and the pilot's link blocks.
+
+- **Arrive By public launch (launch PR, 3 November 2026; dated by its Production release, merge commit and time to be added
+  then):** **every page, pilot pages included, gains an "Arrive By" link** in the header (desktop and mobile) and in the footer,
+  and `/arrive-by` becomes indexable and joins the sitemap (one more URL). The page's title changes from "Arrive By (Beta)" to
+  "Arrive By: when to leave for your flight and onward journey".
+  - **Pilot pages:** `manchester-islamabad` keeps its "Plan with Arrive By" panel while its route presents as Direct (its review
+    lapses on 16 November). `manchester-dubai` and `birmingham-delhi` get no panel (Dubai and Delhi are not released).
+  - **Link targets:** `birmingham-doha` gains a Doha panel (Doha's first public release); `manchester-doha` and, until its review
+    lapses on 4 November, `london-heathrow-doha` do too. Neither is a pilot page.
+  - **Unchanged:** route-page titles, canonical URLs, robots, Quick answers and the pilot's link blocks.
 
 ## Wave 2 (not approved; only after a positive day-14 signal)
 

@@ -563,8 +563,9 @@ describe('gated generic UI path', () => {
     }
   });
 
-  it('the generic road route is noindex-safe: it is an API route, absent from the sitemap', () => {
+  it('the generic road route is noindex-safe: it is an API route, absent from the sitemap (only the public /arrive-by page is listed)', () => {
     const sitemap = readFileSync(join(process.cwd(), 'app', 'sitemap.ts'), 'utf8');
-    expect(sitemap).not.toMatch(/arrive-by/);
+    expect(sitemap).not.toMatch(/api\/arrive-by|arrive-by\/road|\/api\//);
+    expect(sitemap.match(/arrive-by[^'"`]*/g)).toEqual(['arrive-by']);
   });
 });

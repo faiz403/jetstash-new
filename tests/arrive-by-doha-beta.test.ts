@@ -117,8 +117,10 @@ describe('discoverability without indexing', () => {
     expect(header.match(/mainNav\.map/g)).toHaveLength(2);
   });
 
-  it('keeps /arrive-by noindex and out of the sitemap', () => {
-    expect(read('app', 'arrive-by', 'page.tsx')).toContain('robots: { index: false, follow: true }');
-    expect(read('app', 'sitemap.ts')).not.toContain('/arrive-by');
+  it('is public since the 3 November 2026 launch: indexable, canonical and in the sitemap', () => {
+    const page = read('app', 'arrive-by', 'page.tsx');
+    expect(page).not.toMatch(/index:\s*false/);
+    expect(page).toContain('canonical: `${siteConfig.url}/arrive-by`');
+    expect(read('app', 'sitemap.ts')).toContain("'/arrive-by'");
   });
 });

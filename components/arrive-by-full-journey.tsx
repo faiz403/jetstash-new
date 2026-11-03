@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import Link from 'next/link';
 import { ArriveByIntroduction } from '@/components/arrive-by-introduction';
+import { GoogleMapsAttribution } from '@/components/arrive-by-google-attribution';
 import { ArriveByMissedServiceDetails, ArriveByReadyBySummary, ArriveByRoadEstimateDisclosure, ArriveByScheduledFlightDisclosure } from '@/components/arrive-by-result-explanations';
 import { calendarDayOffset, clockOf, dateLabelOf, describeDay } from '@/lib/arrive-by-journey/local-time';
 import type { AirportOption } from '@/lib/arrive-by-journey/airport-options';
@@ -202,6 +203,7 @@ export function ArriveByFullJourney({ departureAirports, arrivalAirports, initia
             : 'Please make it more specific (a town, postcode or place name).'}
         </p>
       )}
+      {(detail.pendingConfirmation || detail.pendingSelection) && <GoogleMapsAttribution className="mt-3" />}
     </div>;
   }
 
@@ -307,6 +309,7 @@ export function ArriveByFullJourney({ departureAirports, arrivalAirports, initia
         {plan.state !== 'CANNOT_CONFIRM' && <p className="mt-3 text-xs text-ink-500" data-testid="driving-assumption">Leave time assumes you drive to the airport (live traffic). It doesn't include parking, drop-off, shuttle or rental-car return time.</p>}
         <p className="mt-3 text-xs text-ink-500">This is an estimate, not a guarantee. Traffic, airport processing and pickup time can change your actual times. Airport-level estimates only.</p>
         <p className="mt-3 text-xs text-ink-500">Leave extra time and confirm your itinerary and onward arrangements before travelling.</p>
+        <GoogleMapsAttribution className="mt-3" />
         <div className="mt-5 flex flex-wrap gap-3 border-t border-ink-200 pt-4">
           {matchedRoute ? <Link href={`/routes/${matchedRoute.routeSlug}`} className="rounded-sm bg-ink-900 px-4 py-2 text-sm font-semibold text-white hover:bg-ink-800">View {matchedRoute.departureLabel} → {matchedRoute.arrivalLabel} route information</Link> : <Link href="/routes" className="rounded-sm bg-ink-900 px-4 py-2 text-sm font-semibold text-white hover:bg-ink-800">Explore route guides</Link>}
           <button type="button" onClick={() => startRef.current?.focus()} className="rounded-sm border border-ink-300 px-4 py-2 text-sm font-semibold text-ink-900 hover:bg-white">Edit journey details</button>

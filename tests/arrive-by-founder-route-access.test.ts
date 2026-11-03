@@ -38,9 +38,10 @@ describe('private route metadata prevents indexing', () => {
 });
 
 describe('page is absent from sitemap/public navigation', () => {
-  it('app/sitemap.ts never references arrive-by or this founder route', () => {
+  it('app/sitemap.ts never references this founder route; its only Arrive By entry is the public /arrive-by page (3 November 2026)', () => {
     const sitemapSrc = readFileSync(join(process.cwd(), 'app', 'sitemap.ts'), 'utf8');
-    expect(sitemapSrc).not.toMatch(/arrive-by/);
+    expect(sitemapSrc).not.toMatch(/founder/);
+    expect(sitemapSrc.match(/arrive-by[^'"`]*/g)).toEqual(['arrive-by']);
   });
 
   it('app/robots.ts disallows /founder as a path prefix, which covers this route too', () => {

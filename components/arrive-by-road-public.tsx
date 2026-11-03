@@ -5,6 +5,7 @@ import { ESTIMATE_DISCLAIMER, PICKUP_MODE_CAVEATS } from '@/lib/arrive-by-shared
 import { formatMinutesHuman, formatSecondsHuman, roundClockToNearestFive, trafficContextSentence } from '@/lib/arrive-by-shared/format';
 import { isoToClock } from '@/lib/arrive-by-shared/timezone';
 import { track } from '@/lib/analytics';
+import { GoogleMapsAttribution } from '@/components/arrive-by-google-attribution';
 import type { RoadJourneyResult, RoadPickupMode } from '@/lib/arrive-by-shared/road-types';
 import type { RoadAirportInfo } from '@/lib/arrive-by-shared/shell-dispatch';
 
@@ -267,6 +268,7 @@ export function ArriveByRoadPublic({ airport }: { airport: RoadAirportInfo }) {
         {result.deadlineReason && <p className="mt-3 text-sm text-ink-600">You said this matters because: {result.deadlineReason}</p>}
         {hasRoute && <p className="mt-3 text-sm text-ink-600">{PICKUP_MODE_CAVEATS[pickupMode]}</p>}
         <p className="mt-3 text-xs text-ink-500">{ESTIMATE_DISCLAIMER}</p>
+        <GoogleMapsAttribution className="mt-3" />
       </section>
     </div>}
 

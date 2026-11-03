@@ -53,6 +53,9 @@ module.exports = {
           100: '#F7F2E9',
           200: '#EFE5D2',
         },
+        // Google Maps text attribution colour: Google's attribution rules allow only white, #1F1F1F or #5E5E5E.
+        // Used by components/arrive-by-google-attribution.tsx only; not part of the brand palette.
+        'google-attribution': '#5E5E5E',
       },
       fontFamily: {
         display: ['var(--font-display)', 'serif'],

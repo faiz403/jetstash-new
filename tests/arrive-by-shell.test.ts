@@ -32,12 +32,13 @@ const founderManPageSrc = readFileSync(founderManPagePath, 'utf8');
 const founderPkPageSrc = readFileSync(founderPkPagePath, 'utf8');
 
 describe('/arrive-by canonical page — indexing controls and founder-gate absence', () => {
-  it('sets robots index:false, follow:true', () => {
-    expect(pageSrc).toMatch(/robots:\s*{\s*index:\s*false,\s*follow:\s*true\s*}/);
+  it('is indexable with one canonical URL since the 3 November 2026 public launch', () => {
+    expect(pageSrc).not.toMatch(/index:\s*false/);
+    expect(pageSrc).toContain('canonical: `${siteConfig.url}/arrive-by`');
   });
 
-  it('is absent from app/sitemap.ts', () => {
-    expect(sitemapSrc).not.toMatch(/['"`]\/arrive-by['"`]/);
+  it('is listed once in app/sitemap.ts', () => {
+    expect(sitemapSrc.match(/['"`]\/arrive-by['"`]/g)).toHaveLength(1);
   });
 
   it('the page and shell never check FOUNDER_DASHBOARD_ENABLED or call notFound()', () => {

@@ -5,6 +5,7 @@ import { PAKISTAN_AIRPORTS } from '@/lib/arrive-by-pakistan/airports';
 import { ESTIMATE_DISCLAIMER, PICKUP_MODE_CAVEATS } from '@/lib/arrive-by-pakistan/outcomes';
 import { formatMinutesHuman, formatSecondsHuman, roundClockToNearestFive, trafficContextSentence } from '@/lib/arrive-by-pakistan/format';
 import { track } from '@/lib/analytics';
+import { GoogleMapsAttribution } from '@/components/arrive-by-google-attribution';
 import type { PakistanAirportCode, PakistanJourneyResult, PakistanPickupMode } from '@/lib/arrive-by-pakistan/types';
 
 /**
@@ -319,6 +320,7 @@ export function ArriveByPakistanPublic({ initialAirportCode = 'ISB' }: { initial
             <dd>{destinationReadinessBufferMinutes || '0'} minutes</dd>
           </>}
         </dl>
+        <GoogleMapsAttribution className="mt-4" />
       </section>
     </div>}
 

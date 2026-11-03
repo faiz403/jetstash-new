@@ -2,6 +2,7 @@
 
 import { useMemo, useRef, useState, type FormEvent } from 'react';
 import { track } from '@/lib/analytics';
+import { GoogleMapsAttribution } from '@/components/arrive-by-google-attribution';
 import {
   topLevelOutcome, topLevelVerdict,
   type TopLevelOutcome, type GoogleCarRescue, type GoogleDestinationPendingResult, type GoogleItinerary, type GoogleJourneyLeg,
@@ -260,6 +261,7 @@ export function ArriveByManchesterPublic() {
       {(pending.destinationConfidence === 'NEEDS_CLARIFICATION' || pending.destinationConfidence === 'UNRESOLVED') && (
         <p className="mt-3 text-sm text-ink-700">Please make the destination more specific and try again.</p>
       )}
+      <GoogleMapsAttribution className="mt-4" />
     </div>}
 
     {result && <div ref={resultRef} tabIndex={-1} aria-live="polite" className="mt-8 scroll-mt-20 outline-none">
@@ -272,6 +274,7 @@ export function ArriveByManchesterPublic() {
         {result.readinessMinutes > 0 && <p className="mt-1 text-lg">You entered <strong>{minutesLabel(result.readinessMinutes)}</strong> after arrival to be ready, so you need to physically arrive by <strong>{readyByClock}</strong>.</p>}
         {result.deadlineReason && <p className="mt-3 text-sm text-ink-600">You said this matters because: {result.deadlineReason}</p>}
         <p className="mt-3 text-xs text-ink-500">This is an estimate, not a guarantee. Delays, disruption and traffic can change your actual arrival.</p>
+        <GoogleMapsAttribution className="mt-3" />
       </section>
 
       {transitResult?.judgement.meetsDeadline && primaryWasAssessed && <section className={`mt-4 rounded-md border p-5 sm:p-6 ${transitResult.fallbackJudgement.meetsDeadline ? 'border-brass/60 bg-white' : 'border-terracotta-400 bg-terracotta-50'}`}>

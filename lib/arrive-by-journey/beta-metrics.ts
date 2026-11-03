@@ -8,7 +8,11 @@ import type { JourneyPlan, NotEvidencedReason } from './types';
  *
  * Purpose: answer "did people submit a journey, and what happened?" with counts
  * only. For every genuine submission exactly ONE terminal outcome is counted, so
- * submissions = result_usable + cannot_confirm:* + refused:* + error.
+ * submissions = result_usable + needs_confirmation:* + cannot_confirm:* + refused:* + error.
+ *
+ * needs_confirmation (3 November 2026): when the engine stops only to ask the traveller to confirm or choose their start
+ * or destination, that is a normal step of the journey, not a failure. It used to be counted as cannot_confirm, which
+ * made most October "failures" (13 of 18 were ARRIVAL_DESTINATION_UNCONFIRMED) look like defects.
  *
  * Privacy: nothing about the traveller or their request can reach a key or a
  * value. Keys are built only from a UTC date and a field name taken from a fixed
@@ -46,8 +50,13 @@ type _EveryReasonIsCounted = Exclude<NotEvidencedReason, CannotConfirmReason | '
 const _everyReasonIsCounted: _EveryReasonIsCounted = true;
 void _everyReasonIsCounted;
 
+/** The two places a journey can pause for the traveller to confirm or choose; fixed names only. */
+export const CONFIRMATION_SIDES = ['START_LOCATION', 'ARRIVAL_DESTINATION'] as const;
+export type ConfirmationSide = (typeof CONFIRMATION_SIDES)[number];
+
 export type BetaOutcome =
   | { kind: 'result_usable' }
+  | { kind: 'needs_confirmation'; side: ConfirmationSide }
   | { kind: 'cannot_confirm'; reason: CannotConfirmReason | 'UNSPECIFIED' }
   | { kind: 'refused_rate_limit' }
   | { kind: 'refused_budget' }
@@ -75,13 +84,20 @@ export function toAllowedReason(value: unknown): CannotConfirmReason | 'UNSPECIF
   return typeof value === 'string' && REASON_SET.has(value) ? (value as CannotConfirmReason) : 'UNSPECIFIED';
 }
 
+const offersChoice = (detail: { pendingConfirmation?: unknown; pendingSelection?: unknown } | undefined) =>
+  Boolean(detail?.pendingConfirmation || detail?.pendingSelection);
+
 /** The single terminal outcome for a plan the engine returned. Never throws. */
-export function classifyPlan(plan: Pick<JourneyPlan, 'state' | 'notEvidenced'> | null | undefined): BetaOutcome {
+export function classifyPlan(plan: (Pick<JourneyPlan, 'state' | 'notEvidenced'> & Partial<Pick<JourneyPlan, 'startDetail' | 'arrivalDetail'>>) | null | undefined): BetaOutcome {
   try {
     if (!plan) return { kind: 'error' };
     if (plan.state !== 'CANNOT_CONFIRM') return { kind: 'result_usable' };
-    if (plan.notEvidenced?.reason === 'MONTHLY_BUDGET_UNAVAILABLE') return { kind: 'refused_budget' };
-    return { kind: 'cannot_confirm', reason: toAllowedReason(plan.notEvidenced?.reason) };
+    const reason = plan.notEvidenced?.reason;
+    if (reason === 'MONTHLY_BUDGET_UNAVAILABLE') return { kind: 'refused_budget' };
+    // Only a pause that actually offers the traveller a place to confirm or choose is a confirmation step.
+    if (reason === 'START_LOCATION_UNCONFIRMED' && offersChoice(plan.startDetail)) return { kind: 'needs_confirmation', side: 'START_LOCATION' };
+    if (reason === 'ARRIVAL_DESTINATION_UNCONFIRMED' && offersChoice(plan.arrivalDetail)) return { kind: 'needs_confirmation', side: 'ARRIVAL_DESTINATION' };
+    return { kind: 'cannot_confirm', reason: toAllowedReason(reason) };
   } catch {
     return { kind: 'error' };
   }
@@ -91,6 +107,7 @@ export function classifyPlan(plan: Pick<JourneyPlan, 'state' | 'notEvidenced'> |
 export function outcomeField(outcome: BetaOutcome): string {
   switch (outcome.kind) {
     case 'result_usable': return 'result_usable';
+    case 'needs_confirmation': return `needs_confirmation:${(CONFIRMATION_SIDES as readonly string[]).includes(outcome.side) ? outcome.side : 'UNSPECIFIED'}`;
     case 'cannot_confirm': return `cannot_confirm:${toAllowedReason(outcome.reason)}`;
     case 'refused_rate_limit': return 'refused:rate_limit';
     case 'refused_budget': return 'refused:budget';
@@ -104,7 +121,7 @@ export function metricKey(utcDay: string, field: string): string {
 
 function outcomeSignals(outcome: BetaOutcome): BetaSignal[] {
   const signals: BetaSignal[] = [];
-  if (outcome.kind === 'result_usable' || outcome.kind === 'cannot_confirm') {
+  if (outcome.kind === 'result_usable' || outcome.kind === 'needs_confirmation' || outcome.kind === 'cannot_confirm') {
     signals.push('calculation_completed');
   } else {
     signals.push('calculation_failed');
