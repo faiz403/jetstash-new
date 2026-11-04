@@ -1,7 +1,6 @@
 import type { NextRequest } from 'next/server';
-import { createHash } from 'node:crypto';
 import { checkRateLimit, getClientIdentifier } from '@/lib/form-security';
-import { InMemoryCallBudgetStore, getConfiguredCallBudgetStore } from '@/lib/arrive-by-journey/call-budget';
+import { InMemoryVisitorWindowStore, createVisitorRateLimiter, getConfiguredVisitorWindowStore } from '@/lib/arrive-by-shared/visitor-window-store';
 
 /**
  * One shared rate-limit budget across every public Arrive By endpoint
@@ -20,38 +19,33 @@ export function checkArriveByRateLimit(request: NextRequest): { limited: boolean
   return checkRateLimit(`arrive-by:${getClientIdentifier(request)}`, ARRIVE_BY_RATE_LIMIT_MAX, ARRIVE_BY_RATE_LIMIT_WINDOW_MS);
 }
 
-/** Full journeys spend billable calls, so production uses a shared limiter and fails closed if it is unavailable. */
-const localJourneyRateStore = new InMemoryCallBudgetStore();
+const WINDOW_SECONDS = ARRIVE_BY_RATE_LIMIT_WINDOW_MS / 1000;
+const localVisitorWindowStore = new InMemoryVisitorWindowStore();
 
-export async function checkPublicJourneyRateLimit(
-  request: NextRequest,
-  env: Record<string, string | undefined> = process.env,
-): Promise<{ limited: boolean; unavailable?: boolean }> {
-  const configured = getConfiguredCallBudgetStore(env);
-  if (env.NODE_ENV === 'production' && !configured) return { limited: true, unavailable: true };
-  const store = configured ?? localJourneyRateStore;
-  const clientHash = createHash('sha256').update(getClientIdentifier(request)).digest('hex');
-  try {
-    const count = await store.incrementBy(`arrive-by:journey-rate:${clientHash}`, 1, ARRIVE_BY_RATE_LIMIT_WINDOW_MS / 1000);
-    return { limited: count > ARRIVE_BY_RATE_LIMIT_MAX };
-  } catch {
-    return { limited: true, unavailable: true };
-  }
+type LimitResult = { limited: boolean; unavailable?: boolean };
+
+/**
+ * Per-visitor, fixed-window limiter on its own counter (visitor-window-store.ts), not on the monthly Google-call budget. The window
+ * opens on a visitor's first request and closes on its own; refused requests never extend it. Production uses the shared store and
+ * fails closed if it is unavailable.
+ */
+function checkVisitorWindow(request: NextRequest, env: Record<string, string | undefined>, kind: 'journey' | 'interaction', max: number): Promise<LimitResult> {
+  const configured = getConfiguredVisitorWindowStore(env);
+  if (env.NODE_ENV === 'production' && !configured) return Promise.resolve({ limited: true, unavailable: true });
+  return createVisitorRateLimiter({
+    store: configured ?? localVisitorWindowStore,
+    keyPrefix: `arrive-by:visitor-window:${kind}`,
+    max,
+    windowSeconds: WINDOW_SECONDS,
+  }).check(getClientIdentifier(request));
+}
+
+/** Full journeys spend billable calls, so production uses a shared limiter and fails closed if it is unavailable. */
+export function checkPublicJourneyRateLimit(request: NextRequest, env: Record<string, string | undefined> = process.env): Promise<LimitResult> {
+  return checkVisitorWindow(request, env, 'journey', ARRIVE_BY_RATE_LIMIT_MAX);
 }
 
 /** UI counters are non-billable and must not consume the five-call journey allowance. */
-export async function checkPublicJourneyInteractionRateLimit(
-  request: NextRequest,
-  env: Record<string, string | undefined> = process.env,
-): Promise<{ limited: boolean; unavailable?: boolean }> {
-  const configured = getConfiguredCallBudgetStore(env);
-  if (env.NODE_ENV === 'production' && !configured) return { limited: true, unavailable: true };
-  const store = configured ?? localJourneyRateStore;
-  const clientHash = createHash('sha256').update(getClientIdentifier(request)).digest('hex');
-  try {
-    const count = await store.incrementBy(`arrive-by:interaction-rate:${clientHash}`, 1, ARRIVE_BY_RATE_LIMIT_WINDOW_MS / 1000);
-    return { limited: count > ARRIVE_BY_INTERACTION_RATE_LIMIT_MAX };
-  } catch {
-    return { limited: true, unavailable: true };
-  }
+export function checkPublicJourneyInteractionRateLimit(request: NextRequest, env: Record<string, string | undefined> = process.env): Promise<LimitResult> {
+  return checkVisitorWindow(request, env, 'interaction', ARRIVE_BY_INTERACTION_RATE_LIMIT_MAX);
 }

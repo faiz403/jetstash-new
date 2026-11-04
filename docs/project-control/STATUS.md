@@ -22,6 +22,20 @@ rate limiting rather than the current process-local limiter.
 
 **Production site:** `https://jetstash.co.uk`
 
+## Arrive By visitor rate limiter repair — 4 November 2026 (PR for review; not merged, not deployed)
+
+- **Defect (found live on 4 November 2026):** the per-visitor limiter shared the monthly Google budget's counter, which runs INCRBY
+  then EXPIRE on every request. Refused requests therefore re-armed the 60 second expiry, so a visitor who kept retrying was locked
+  out until they stopped for a full minute.
+- **Fix:** a separate fixed-window counter used only by the visitor limiter (`lib/arrive-by-shared/visitor-window-store.ts`): one
+  atomic Redis script per request, expiry set only when the window opens (or if a counter somehow has none). Same published numbers
+  (five calculations per 60 seconds, 30 interactions), same hashed keys under a new prefix, same fail-closed behaviour.
+- **Untouched:** `lib/arrive-by-journey/call-budget.ts` and the 2,000-call monthly Google counter, the ten-call journey ceiling, and
+  all five endpoints' call order. A test pins that the monthly counter file is unchanged in behaviour.
+- **Not done:** the script has been run against a faithful fake, not the live Upstash store; a one-key live check is the pre-merge
+  or post-merge verification step. Shared-IP risk (a household or mobile carrier sharing one address shares one allowance) is
+  unchanged by this fix and is assessed separately.
+
 ## Trip.com affiliate pause switch — 4 November 2026 (PR #360 merged; pause ACTIVE and verified live)
 
 - **Live record (UTC, 4 November 2026):** #360 merged as `f5d04206a5d1341065d1dd0e8afcc76f4fb718ef` at 15:32:22; Production
