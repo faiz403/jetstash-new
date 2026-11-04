@@ -22,7 +22,15 @@ rate limiting rather than the current process-local limiter.
 
 **Production site:** `https://jetstash.co.uk`
 
-## Trip.com affiliate pause switch — 4 November 2026 (PR for review; not merged, not deployed; the pause itself is NOT active)
+## Trip.com affiliate pause switch — 4 November 2026 (PR #360 merged; pause ACTIVE and verified live)
+
+- **Live record (UTC, 4 November 2026):** #360 merged as `f5d04206a5d1341065d1dd0e8afcc76f4fb718ef` at 15:32:22; Production
+  deployment 15:34:02 (the activation time); verified at 15:47:20 by a cache-disabled crawl of all 157 sitemap pages: Trip.com
+  links 258 → 0 (flights 229 → 0, hotels 29 → 0), pages with the affiliate ID 90 → 0, no affiliate ID in any of 46 browser
+  bundles, no redirects. The founder emailed `affiliation@trip.com` on 4 November 2026 asking for written clarification and stating
+  the pause. **The agreement is neither accepted, terminated nor resolved by this.** Keep the pause until the contractual position
+  is clarified. The affiliate-disclosure page no longer names Trip.com as a current partner while the pause is on, and the privacy policy's
+  "Other websites you link to" section no longer says "booking partners such as Trip.com" (follow-up PR).
 
 - **Why:** Trip.com's updated Online Cooperation Agreement (deemed accepted by continued participation, clause 15.2; SEO restricted
   without written approval, clause 3.2.5; link parameters, clause 3.2.3) raises questions JetStash has asked in writing and not had

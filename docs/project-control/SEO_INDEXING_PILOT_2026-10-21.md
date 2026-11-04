@@ -218,8 +218,8 @@ Every checkpoint records these items:
     there isn't a current one we can safely show." No pilot page is affected; link target `birmingham-jeddah` is.
   - **Unchanged:** titles, canonical URLs, robots, Quick answers and the pilot's link blocks.
 
-- **Arrive By public launch (launch PR, 3 November 2026; dated by its Production release, merge commit and time to be added
-  then):** **every page, pilot pages included, gains an "Arrive By" link** in the header (desktop and mobile) and in the footer,
+- **Arrive By public launch (PR #357; merge commit `4bcc5eae`, merged 14:07:02 UTC on 4 November 2026, Production deployment
+  14:08:24 UTC):** **every page, pilot pages included, gains an "Arrive By" link** in the header (desktop and mobile) and in the footer,
   and `/arrive-by` becomes indexable and joins the sitemap (one more URL). The page's title changes from "Arrive By (Beta)" to
   "Arrive By: when to leave for your flight and onward journey".
   - **Pilot pages:** `manchester-islamabad` keeps its "Plan with Arrive By" panel while its route presents as Direct (its review
@@ -227,6 +227,20 @@ Every checkpoint records these items:
   - **Link targets:** `birmingham-doha` gains a Doha panel (Doha's first public release); `manchester-doha` and, until its review
     lapses on 4 November, `london-heathrow-doha` do too. Neither is a pilot page.
   - **Unchanged:** route-page titles, canonical URLs, robots, Quick answers and the pilot's link blocks.
+
+- **Priority route re-verification (PR #358; merge commit `51fd65389b5fa4f8dabbda55811e3f2891d083ff`, merged 13:47:45 UTC on
+  4 November 2026, Production deployment 13:49:02 UTC; verified live):** Manchester–Lahore, Manchester–Islamabad and London
+  Heathrow–Jeddah reviews renewed to 3 December 2026. Heathrow–Doha and Heathrow–Lahore stay in their
+  fail-closed "Verification in Progress" state, with titles to match. **`manchester-islamabad` is a pilot page and its review
+  now runs to 3 December, not 16 November as the PR #357 entry above assumed.** Titles, canonical URLs, robots and the pilot's
+  link blocks are unchanged.
+
+- **Trip.com affiliate pause (PR #360; merge commit `f5d04206a5d1341065d1dd0e8afcc76f4fb718ef`, merged 15:32:22 UTC on
+  4 November 2026, Production deployment 15:34:02 UTC; verified live at 15:47:20 UTC against all 157 sitemap pages):**
+  **every Trip.com flight and hotel link was removed from every page** (258 links on 90 pages before; 0 after). Pages that had one
+  now show no flight button or, on route guides, a Google Flights link that earns JetStash nothing. No title, canonical URL, robots,
+  Quick answer, sitemap entry or internal link changed. The pilot pages carry no Trip.com link either. The pause is a build-time switch and reverses by removing the Vercel
+  variable and redeploying. Expect no ranking effect; read any day-14 movement without attributing it to this change.
 
 ## Wave 2 (not approved; only after a positive day-14 signal)
 
