@@ -5,7 +5,8 @@ import { buildAtlasAirports, computeRouteIntelligenceLevel } from '@/lib/atlas-n
 import { getRouteByAirportAndDestination } from '@/data/routes';
 
 const atlasSrc = readFileSync(join(process.cwd(), 'components/founder/atlas-feel-test.tsx'), 'utf8');
-const NOW_ISO = new Date().toISOString().slice(0, 10);
+// Fixed so the suite never depends on the real clock: route reviews lapse daily (CI failed on 4 Nov 2026 when this read today's date).
+const NOW_ISO = '2026-11-03';
 
 describe('Route Atlas destination interaction', () => {
   const destinations = buildAtlasAirports().flatMap((airport) =>
