@@ -33,7 +33,8 @@ import { computeRouteIntelligenceLevel, buildAtlasAirports } from '@/lib/atlas-n
  * conflict either.
  */
 
-const NOW_ISO = new Date().toISOString().slice(0, 10);
+// Fixed so the suite never depends on the real clock: route reviews lapse daily (CI failed on 4 Nov 2026 when this read today's date).
+const NOW_ISO = '2026-11-03';
 const SECOND_PASS_SLUGS = ['birmingham-dubai', 'birmingham-doha', 'birmingham-jeddah', 'london-heathrow-dubai', 'birmingham-delhi', 'birmingham-ahmedabad'];
 
 describe('All six second-pass routes exist with the correct evidence-driven shape', () => {
@@ -191,14 +192,29 @@ describe('The London Heathrow/Gatwick metadata-title collision is fixed for Duba
     expect(gatwick.metadataTitle).toContain('London Gatwick');
   });
 
+  // The route's own review date, so both cases follow the data rather than the real clock: the last
+  // day its verification is current, and the day after, when it must fail closed to "Verification in
+  // Progress" (see the 4 Nov 2026 CI failure, when this test still read today's date).
+  const LAHORE_LAST_CURRENT_DAY = getRouteBySlug('london-heathrow-lahore')!.verification!.reviewDueDate!;
+  const LAHORE_FIRST_EXPIRED_DAY = new Date(Date.parse(`${LAHORE_LAST_CURRENT_DAY}T00:00:00Z`) + 86_400_000).toISOString().slice(0, 10);
+
   it('a non-colliding London route (e.g. london-heathrow-lahore, the only London route to Lahore) still uses the plain "London" origin, not the longer disambiguated form', () => {
-    const presentation = getRoutePresentation(getRouteBySlug('london-heathrow-lahore')!, NOW_ISO);
+    const presentation = getRoutePresentation(getRouteBySlug('london-heathrow-lahore')!, LAHORE_LAST_CURRENT_DAY);
     // The connector became an en dash in the 20 Aug 2026 peak-period title
     // fix (see data/routes.ts) — "London–Lahore", not "London to Lahore" —
     // but the origin disambiguation this test actually covers is unaffected:
     // it's still the plain "London" origin, not "London Heathrow".
     expect(presentation.metadataTitle).toContain('London–Lahore');
     expect(presentation.metadataTitle).not.toContain('London Heathrow–Lahore');
+  });
+
+  it('once that route\'s verification has expired it fails closed to "Verification in Progress", still with the plain "London" origin', () => {
+    const presentation = getRoutePresentation(getRouteBySlug('london-heathrow-lahore')!, LAHORE_FIRST_EXPIRED_DAY);
+    expect(presentation.metadataTitle).toContain('Verification in Progress');
+    expect(presentation.metadataTitle).toContain('London to Lahore');
+    expect(presentation.metadataTitle).not.toContain('London Heathrow');
+    // The expired title must not keep presenting the verified-route wording.
+    expect(presentation.metadataTitle).not.toContain('London–Lahore');
   });
 
   it('the visible H1/breadcrumb pair (not the <title>) is unaffected — still the plain city name for both Dubai routes', () => {

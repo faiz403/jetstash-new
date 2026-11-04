@@ -19,7 +19,8 @@ import { routeStatusEvents } from '@/data/route-status-events';
  * live-data structural checks (route/warning records), not a
  * historical-fact test — matches this suite's existing convention.
  */
-const NOW_ISO = new Date().toISOString().slice(0, 10);
+// Fixed so the suite never depends on the real clock: route reviews lapse daily (CI failed on 4 Nov 2026 when this read today's date).
+const NOW_ISO = '2026-11-03';
 
 describe('Route-warning truth alignment: the three unsourced "3 times a week" warnings no longer publicly render', () => {
   it('1. Birmingham–Amritsar no longer exposes bhx-atq-reduced-frequency as an active warning', () => {

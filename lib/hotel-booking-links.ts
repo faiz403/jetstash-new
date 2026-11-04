@@ -34,6 +34,8 @@
  * retyped inconsistently).
  */
 
+import { isTripComAffiliatePaused } from '@/lib/tripcom-affiliate-pause';
+
 /** rel attribute for every Trip.com hotel outbound <a> — matches the flight CTA's own rel value. */
 export const HOTEL_PROVIDER_REL = 'nofollow sponsored noopener noreferrer';
 
@@ -130,10 +132,12 @@ const TRIPCOM_HOTEL_URLS: Readonly<Record<string, string>> = {
  * or guessed URL, and never fall back to any other provider.
  */
 export function getTripComHotelUrl(evidenceId: string): string | null {
+  if (isTripComAffiliatePaused()) return null;
   return TRIPCOM_HOTEL_URLS[evidenceId] ?? null;
 }
 
 /** Whether a property has a real, dashboard-verified Trip.com hotel link — the fail-closed gate every hotel CTA checks before rendering. */
 export function hasTripComHotelLink(evidenceId: string): boolean {
+  if (isTripComAffiliatePaused()) return false;
   return evidenceId in TRIPCOM_HOTEL_URLS;
 }

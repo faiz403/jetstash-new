@@ -31,7 +31,8 @@ import { getRouteIntelligenceDisplay, getRouteIntelligenceDisplayForRoute } from
  * Route Intelligence from public view again.
  */
 
-const NOW_ISO = new Date().toISOString().slice(0, 10);
+// Fixed so the suite never depends on the real clock: route reviews lapse daily (CI failed on 4 Nov 2026 when this read today's date).
+const NOW_ISO = '2026-11-03';
 
 describe('Shared display adapter (lib/route-intelligence-display.ts) reuses the Atlas\'s own canonical wording', () => {
   const atlasSrc = readFileSync(join(process.cwd(), 'components/founder/atlas-feel-test.tsx'), 'utf8');
