@@ -39,6 +39,7 @@
 import { getRouteBySlug, getRouteAirport, getRouteDestination } from '@/data/routes';
 import { routeStatusEvents } from '@/data/route-status-events';
 import { getEffectiveRoutePresentation } from '@/lib/route-status-copy';
+import { isTripComAffiliatePaused } from '@/lib/tripcom-affiliate-pause';
 
 export const PROVIDER_NAME = 'Trip.com';
 
@@ -340,6 +341,7 @@ const TRIPCOM_DESTINATION_URLS: Readonly<Record<string, string>> = {
  * rule, not a gap to silently paper over.
  */
 export function getTripComRouteUrl(routeSlug: string): string | null {
+  if (isTripComAffiliatePaused()) return null;
   return TRIPCOM_ROUTE_URLS[routeSlug] ?? null;
 }
 
@@ -485,6 +487,7 @@ export function getTripComFlightHandoff(
   destinationSlug?: string,
   nowIso = new Date().toISOString().slice(0, 10),
 ): TripComFlightHandoff | null {
+  if (isTripComAffiliatePaused()) return null;
   const route = getRouteBySlug(routeSlug);
   const isServiceEnded = Boolean(route) && getEffectiveRoutePresentation(route!, routeStatusEvents, nowIso).status === 'service-ended';
 
@@ -538,6 +541,7 @@ export function getTripComFlightHandoffUrl(
   originSlug?: string,
   destinationSlug?: string,
 ): string | null {
+  if (isTripComAffiliatePaused()) return null;
   const routeUrl = getTripComRouteUrl(routeSlug)
     ?? (originSlug && destinationSlug ? TRIPCOM_DESTINATION_URLS[`${originSlug}-${destinationSlug}`] : null);
   if (!routeUrl) return null;
@@ -550,6 +554,7 @@ export function getTripComFlightHandoffUrl(
 
 /** Exact destination handoff for a verified airport pair, or null when Trip.com's tool could not produce one. */
 export function getTripComDestinationHandoffUrl(originSlug: string, destinationSlug: string): string | null {
+  if (isTripComAffiliatePaused()) return null;
   const routeUrl = TRIPCOM_DESTINATION_URLS[`${originSlug}-${destinationSlug}`];
   if (!routeUrl) return null;
   return routeUrl.replace(
@@ -560,5 +565,6 @@ export function getTripComDestinationHandoffUrl(originSlug: string, destinationS
 
 /** Whether a route has a real, dashboard-verified Trip.com link — the fail-closed gate every CTA checks before rendering. */
 export function hasTripComRoute(routeSlug: string): boolean {
+  if (isTripComAffiliatePaused()) return false;
   return routeSlug in TRIPCOM_ROUTE_URLS;
 }

@@ -22,6 +22,23 @@ rate limiting rather than the current process-local limiter.
 
 **Production site:** `https://jetstash.co.uk`
 
+## Trip.com affiliate pause switch — 4 November 2026 (PR for review; not merged, not deployed; the pause itself is NOT active)
+
+- **Why:** Trip.com's updated Online Cooperation Agreement (deemed accepted by continued participation, clause 15.2; SEO restricted
+  without written approval, clause 3.2.5; link parameters, clause 3.2.3) raises questions JetStash has asked in writing and not had
+  answered. On 4 November 2026 the founder decided to be able to pause affiliate handoffs while seeking written clarification.
+- **What:** one switch, `NEXT_PUBLIC_TRIPCOM_AFFILIATE_PAUSED`, read by `lib/tripcom-affiliate-pause.ts`. When it is exactly `true`,
+  every Trip.com flight and hotel lookup (seven functions in `lib/booking-providers.ts` and `lib/hotel-booking-links.ts`) returns null
+  and the existing fail-closed behaviour applies: no Trip.com button, and route pages show the Google Flights search, which says
+  JetStash earns no commission from it. **Off by default: merging this changes nothing on Production.** It is turned on by setting the
+  variable in Vercel and redeploying, and off by removing it and redeploying.
+- **Evidence (build scan of 475 rendered files):** an unpaused build has the affiliate ID in 179 files and Trip.com links in 90; a
+  paused build has 0 and 0, and its browser bundles contain no affiliate data. Tests cover every route, airport pair and hotel.
+- **Not done / remains:** the URL tables stay in the code as dormant data. Plain-text mentions of Trip.com remain in the affiliate
+  disclosure, the privacy policy and hotel-evidence provenance text. Pausing does not reverse any acceptance the agreement may imply,
+  and nothing here records the agreement as terminated, accepted or resolved. The monthly Google-call guard and the Arrive By rate
+  limiter are untouched.
+
 ## Priority route review — 3 November 2026 (prepared for PR; not merged or deployed)
 
 Fresh primary evidence renews Manchester–Lahore, Manchester–Islamabad and Heathrow–Jeddah through
