@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { PageHero } from '@/components/sections/page-hero';
 import { siteConfig } from '@/lib/site-config';
+import { isTripComAffiliatePaused } from '@/lib/tripcom-affiliate-pause';
 
 export const metadata: Metadata = {
   title: 'Affiliate Disclosure',
@@ -16,7 +17,9 @@ const sections: { title: string; body: React.ReactNode }[] = [
   },
   {
     title: 'Who you book with',
-    body: 'JetStash does not sell flights, take payment or make bookings. When you click through and book, you book with the third-party provider, and your contract is with that provider, not with JetStash. Trip.com is currently our flight-booking partner where a flight link is shown.',
+    body: isTripComAffiliatePaused()
+      ? 'JetStash does not sell flights, take payment or make bookings. When you click through and book, you book with the third-party provider, and your contract is with that provider, not with JetStash. JetStash is not currently showing flight booking links that earn it a commission. Any flight search link shown goes to Google Flights, which pays JetStash nothing.'
+      : 'JetStash does not sell flights, take payment or make bookings. When you click through and book, you book with the third-party provider, and your contract is with that provider, not with JetStash. Trip.com is currently our flight-booking partner where a flight link is shown.',
   },
   {
     title: 'It never changes your price',

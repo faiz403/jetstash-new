@@ -31,9 +31,25 @@ describe('affiliate disclosure states where the booking contract sits', () => {
     expect(affiliateProse).toMatch(/JetStash does not sell flights, take payment or make bookings/);
   });
 
-  it('says the contract is with the third-party provider and names Trip.com as the current flight partner', () => {
+  it('says the contract is with the third-party provider and names Trip.com as the current flight partner when links are live', () => {
     expect(affiliateProse).toMatch(/your contract is with that provider, not with JetStash/);
     expect(affiliateProse).toMatch(/Trip\.com is currently our flight-booking partner where a flight link is shown/);
+  });
+
+  it('does not name Trip.com as a current partner while the affiliate pause is on, and says Google Flights earns nothing', () => {
+    expect(affiliateProse).toMatch(/isTripComAffiliatePaused\(\) \?/);
+    expect(affiliateProse).toMatch(/JetStash is not currently showing flight booking links that earn it a commission/);
+    expect(affiliateProse).toMatch(/Any flight search link shown goes to Google Flights, which pays JetStash nothing/);
+    const start = affiliateProse.indexOf('isTripComAffiliatePaused() ?');
+    const pausedBranch = affiliateProse.slice(start, affiliateProse.indexOf(": 'JetStash does not sell", start));
+    expect(pausedBranch.length).toBeGreaterThan(100);
+    expect(pausedBranch).not.toMatch(/Trip\.com/);
+  });
+
+  it('the privacy policy describes external booking links without naming Trip.com as a partner', () => {
+    const prose = privacy.replace(/\s+/g, ' ');
+    expect(prose).toMatch(/links to airlines, flight-search and booking websites/);
+    expect(prose).not.toMatch(/booking partners such as Trip\.com/);
   });
 
   it('does not bring ATOL, ABTA or Terms wording into this change', () => {
