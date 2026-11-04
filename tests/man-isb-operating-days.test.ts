@@ -59,18 +59,18 @@ describe('route verification expiry does not rewrite standing service or fare ev
     expect(signal.observation?.id).not.toBe('obs-man-isb-economy-20260825-8w-v1');
   });
 
-  // Re-verified 17 Oct 2026 against Manchester Airport's PIA operator page
-  // (review due 16 Nov), so the fail-closed boundary is now 17 November.
-  it('fails closed on 17 November without promoting the retired £460 fare or stale weekdays', async () => {
+  // Re-verified 3 Nov 2026 against Manchester Airport's PIA announcement
+  // (review due 3 Dec), so the fail-closed boundary is now 4 December.
+  it('fails closed on 4 December without promoting the retired £460 fare or stale weekdays', async () => {
     const route = getRouteBySlug('manchester-islamabad')!;
-    expect(route.verification?.reviewDueDate).toBe('2026-11-16');
-    const presentation = getEffectiveRoutePresentation(route, routeStatusEvents, '2026-11-17');
+    expect(route.verification?.reviewDueDate).toBe('2026-12-03');
+    const presentation = getEffectiveRoutePresentation(route, routeStatusEvents, '2026-12-04');
     expect(presentation.status).toBe('unverified');
     expect(presentation.frequency).toBeNull();
-    const signal = getFareSignalForRoute(route.slug, '2026-11-17');
+    const signal = getFareSignalForRoute(route.slug, '2026-12-04');
     expect(signal.state).toBe('none');
     expect(signal.observation).toBeNull();
-    const html = await renderManIsbPage('2026-11-17');
+    const html = await renderManIsbPage('2026-12-04');
     expect(html).not.toMatch(/Mon, Tue, Thu (&|&amp;) Sat/);
     expect(html).not.toContain('4x weekly direct');
     expect(html).not.toContain('Fare spotted');

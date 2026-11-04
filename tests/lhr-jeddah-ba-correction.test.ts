@@ -54,13 +54,13 @@ describe('LHR-Jeddah British Airways correction', () => {
 
   it('5. the new verification is genuinely dated and fails closed once its own review window passes', () => {
     const route = getRouteBySlug(ROUTE_SLUG)!;
-    expect(route.verification?.verifiedDate).toBe('2026-10-05');
-    expect(route.verification?.reviewDueDate).toBe('2026-11-04');
+    expect(route.verification?.verifiedDate).toBe('2026-11-03');
+    expect(route.verification?.reviewDueDate).toBe('2026-12-03');
     // Within the window: current.
     expect(isVerificationCurrent(route.verification, '2026-11-03')).toBe(true);
     // Past the window: fails closed, exactly like every other route's cadence.
-    expect(isVerificationCurrent(route.verification, '2026-11-05')).toBe(false);
-    expect(getDealAirlineDisplayStatus(route, 'saudia', '2026-11-05')).toBe('unverified');
+    expect(isVerificationCurrent(route.verification, '2026-12-04')).toBe(false);
+    expect(getDealAirlineDisplayStatus(route, 'saudia', '2026-12-04')).toBe('unverified');
   });
 
   it('6. no other route was changed by this correction', () => {

@@ -67,6 +67,15 @@ Using existing JetStash mechanisms only — no new monitoring system:
 
 ## Batch history
 
+### Priority route review — 3 November 2026
+
+Fresh airport evidence checked today renews Manchester–Lahore, Manchester–Islamabad
+and Heathrow–Jeddah to 3 December 2026, retaining the 30-day RECENT / CHANGING cadence.
+Manchester Airport's 26 October announcement supplies primary evidence for both PIA
+operating patterns; Heathrow's live SV120 record supplies current Saudia evidence.
+Numeric Islamabad/Jeddah durations are not renewed. Full sources, boundaries and
+preserved-history details: [priority route review](route-evidence/priority-route-review-2026-11-03.md).
+
 ### Batch 1 — 18 August 2026
 
 Selected the 10 `verified`-status routes with the nearest `reviewDueDate`, excluding all

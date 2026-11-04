@@ -110,8 +110,8 @@ describe('Stage 2 homepage evidence example', () => {
     // the route finding; the sweep's own 3 Nov check (29 Dec departure) now takes its place, so the expired fare is never shown.
     const firstDayAfter = getHomepageEvidenceExample('2026-11-03');
     expect(firstDayAfter?.kind === 'fare' && firstDayAfter.fare.departureDate).toBe('2026-12-29');
-    // The route's own verification lapses on 17 Nov; with nothing current the card is omitted, never stale.
-    expect(getHomepageEvidenceExample('2026-11-17')).toBeNull();
+    // The route's own verification lapses on 4 Dec; with nothing current the card is omitted, never stale.
+    expect(getHomepageEvidenceExample('2026-12-04')).toBeNull();
   });
 
   it('with no eligible evidence the example is simply absent (nothing invented)', () => {
@@ -239,7 +239,7 @@ describe('Stage 2 evidence card safeguards on awkward fares (fixtures)', () => {
 describe('Stage 2 evidence expiry guard (cached-page safety)', () => {
   it('the expiry date is the first day the selection changes, and the guard is wired around the card', () => {
     expect(getHomepageEvidenceExpiryIso('2026-10-23')).toBe('2026-11-03');
-    expect(getHomepageEvidenceExpiryIso('2026-11-03')).toBe('2026-11-17');
+    expect(getHomepageEvidenceExpiryIso('2026-11-03')).toBe('2026-12-04');
     expect(getHomepageEvidenceExpiryIso('2030-01-01')).toBeNull();
     // An example that never changes inside the horizon still gets a conservative re-check date, not unlimited validity.
     expect(getHomepageEvidenceExpiryIso('2026-10-23', 3)).toBe('2026-10-26');

@@ -31,6 +31,6 @@ describe('homepage example without a current fare', () => {
   });
 
   it('shows nothing once the route\'s own verification has lapsed, rather than a stale finding', () => {
-    expect(getHomepageEvidenceExample('2026-11-17')).toBeNull();
+    expect(getHomepageEvidenceExample('2026-12-04')).toBeNull();
   });
 });

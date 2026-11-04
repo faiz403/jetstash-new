@@ -16,9 +16,9 @@ import { getDestinationBySlug } from '@/data/destinations';
 const NOW = '2026-10-13';
 const LHE_URL = 'https://www.trip.com/flights/Manchester-to-Lahore/tickets-MAN-LHE?flighttype=S&dcity=MAN&acity=LHE&locale=en-XX&curr=GBP&Allianceid=9804124&SID=327450313&trip_sub1=&trip_sub3=D19082226';
 
-// MAN→ISB was re-verified on 17 Oct 2026 (review due 16 Nov), so its
+// MAN→ISB was re-verified on 3 Nov 2026 (review due 3 Dec), so its
 // suppressed-fare case is now exercised the day after that expiry.
-const MAN_ISB_EXPIRED = '2026-11-17';
+const MAN_ISB_EXPIRED = '2026-12-04';
 
 function renderSignal(routeSlug: string, nowIso = NOW) {
   return renderToStaticMarkup(FareSignal({

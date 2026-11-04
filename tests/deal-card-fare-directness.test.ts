@@ -155,8 +155,8 @@ describe('FareRangeSummary.observedDirectness aggregates per-observation fareDir
   // the 14-day departure guard already empties both ranges by then (their
   // newest checks depart 17 Nov). 17 Oct is verified and inside the guard.
   it.each([
-    ['manchester-islamabad', 'man-isb-economy', '2026-10-17', '2026-11-17'],
-    ['manchester-lahore', 'man-lhe-economy', '2026-10-17', '2026-11-13'],
+    ['manchester-islamabad', 'man-isb-economy', '2026-10-17', '2026-12-04'],
+    ['manchester-lahore', 'man-lhe-economy', '2026-10-17', '2026-12-04'],
   ])('%s stops publishing its fare range and direct-service badge after verification expires', (slug, dealId, valid, expired) => {
     const deal = deals.find((d) => d.id === dealId)!;
     expect(getFareRangeSummary(slug, 'Economy', valid)).not.toBeNull();
