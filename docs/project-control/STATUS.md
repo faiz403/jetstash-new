@@ -1,18 +1,21 @@
 # JetStash Current Status
 
-**Last reconciled:** 14 September 2026 (project-control truth through PR #272)
+**Latest release reconciliation:** 5 November 2026, through PR #363. The older dated programme/count snapshots below are historical.
 
 **Production branch:** `main`
 
-**Application release baseline:** `2f1ede5` (PR #272 merge — session-only acquisition-source
-attribution). This reconciliation closes the full Astra founder-review programme (#1–#20, PRs
-through #272) and records the resulting operating-state change — **build freeze, validation mode,
-90-day first-booking goal** — immediately below. See "Astra programme closure and current operating
-state — 14 September 2026" for what actually changed. The route/fare/product counts in the
-27 August snapshot further below were not affected by this reconciliation and remain the latest
-available derivation; they are not superseded by this entry, only the *programme-state* narrative
-around them is. Older dated counts and delivery notes remain historical evidence of what was true at
-the time.
+**Confirmed Production baseline:** `9d91f2e0c02c184060325504b9cfcebe989d5917` (PR #363). Vercel Production
+`dpl_H6mhwiDdQqhfQ957gpxu4iDgzrm1` was Ready at 02:52:26 UTC on 5 November; the custom domain was confirmed serving it.
+PR #362 is also merged and deployed, not outstanding. No deployment is authorised by a documentation update.
+
+**Current founder direction — 5 November:** execute the Website Improvement Programme through small, tested PRs, beginning
+with archive-aware fare-card wording, then review the existing homepage PR #353. Stop before every Production merge for approval.
+This is a specific exception to the older engineering freeze, not permission for arbitrary features, fabricated evidence or growth claims.
+Keep Trip.com paused, the monthly Google counter unchanged and all 28 reserved calls held. JetStash stays on Vercel; do not reopen
+Netlify work. Commercial plan suitability remains a separate decision; no subscription or settings change is authorised.
+
+The 14 September programme reconciliation used `2f1ede5` (PR #272). Its closure and older route/fare counts are retained below
+as dated history, not today's authoritative inventory. Recompute current coverage at an explicit evaluation date before using it.
 
 **Launch readiness:** ready for controlled public organic use. Google Ads Basic Consent Mode and
 conversion tracking are live; missing instrumentation is no longer the paid-growth blocker.
@@ -22,7 +25,173 @@ rate limiting rather than the current process-local limiter.
 
 **Production site:** `https://jetstash.co.uk`
 
-## Consent panel clearance — 2 November 2026 (PR for review; not merged, not deployed)
+## Archive-aware fare-card wording — 5 November 2026 (prepared for review; not deployed)
+
+- The two lead route-card templates now distinguish recorded history with no eligible fare (**"No current fare to show"**) from
+  genuinely never-observed routes (**"No fare logged yet"**). Only a server-derived history-presence boolean reaches the airport grid.
+- Browser verification found the same contradiction in lower DealCards. Their cabin-scoped no-range copy now checks archive presence,
+  not publication eligibility. Package wording, range calculations, price selection, route status and booking destinations are unchanged.
+- Explicit 5 November replay: 128 lead-card and 84 lower-card corrections, 50 public pages affected. All 25 Fare Signals, selected
+  observations, prices and historical ranges are unchanged; Fare Watcher / Route Watch / Standout remain 0 / 0 / 0.
+- Local gate: 5,657 tests, TypeScript, lint, production build and diff check pass. Thirty browser renders (Production comparison plus
+  local 1440/390/320px checks) found no horizontal overflow, failed images or Trip.com links. No Google/API submissions or counter probes.
+- This is a presentation-truth fix, not a freshness/eligibility policy change or an approved release. Merge still requires founder approval.
+
+## Dependency security maintenance — 5 November 2026 (PR #363 merged and verified in Production)
+
+- **Release:** merged `9d91f2e0c02c184060325504b9cfcebe989d5917` at 02:51:12 UTC; exact-SHA Production Ready 02:52:26 UTC.
+  Ten read-only page checks returned 200; sampled displayed prices matched the pre-release crawl; optimized images and homepage-to-route
+  navigation worked; no Trip.com links appeared in that sample. No rollback was indicated. No Google API or counter probe was performed.
+
+- Founder-approved response to the independent audit: Next.js `15.5.24` → `15.5.29`, within the existing major/minor line;
+  locked sharp `0.35.4` → `0.35.5`, source-map-js `1.2.1` → `1.2.2`, and patched compatible development-only Vite/brace-expansion dependencies.
+- Next.js still declares PostCSS `8.4.31`, so a Next-scoped override uses the already installed compatible PostCSS `8.5.28`.
+  This removes the vulnerable nested copy without overriding other consumers or changing the application CSS pipeline.
+- Lockfile audit: critical/high affected package nodes `1 / 5` → `0 / 0`. Nine moderate development-tool nodes remain disclosed;
+  this is not a claim that every advisory has been eliminated or that Production exploitation was demonstrated.
+- Exposure review found repository-controlled local images, no remote image hosts or upload feature, SVG optimization not enabled,
+  and no Server Actions. No exploit or live routing request was attempted. These conditions narrow exposure, not permission to leave
+  affected versions installed.
+- No fare records, selectors, route evidence, affiliate configuration, UI, Arrive By logic, monthly Google counter or held calls changed.
+  Trip.com remains paused. Hosting research and fare-card copy corrections are separate; neither is implemented by this patch.
+
+## Arrive By visitor rate limiter repair — 4 November 2026 (PR #362 merged and in Production)
+
+- **Release:** merged `a4313be050a05f8eae6aad45e223e7ac9b4f0c9a` at 00:12:48 UTC on 5 November; exact-SHA deployment
+  `dpl_E442hD51AxAshsFrBQeSSbujzNqS` Ready at 00:14:07 UTC. It is an ancestor of the verified #363 Production release.
+
+- **Defect (found live on 4 November 2026):** the per-visitor limiter shared the monthly Google budget's counter, which runs INCRBY
+  then EXPIRE on every request. Refused requests therefore re-armed the 60 second expiry, so a visitor who kept retrying was locked
+  out until they stopped for a full minute.
+- **Fix:** a separate fixed-window counter used only by the visitor limiter (`lib/arrive-by-shared/visitor-window-store.ts`): one
+  atomic Redis script per request, expiry set only when the window opens (or if a counter somehow has none). Same published numbers
+  (five calculations per 60 seconds, 30 interactions), same hashed keys under a new prefix, same fail-closed behaviour.
+- **Untouched:** `lib/arrive-by-journey/call-budget.ts` and the 2,000-call monthly Google counter, the ten-call journey ceiling, and
+  all five endpoints' call order. A test pins that the monthly counter file is unchanged in behaviour.
+- **Validation boundary:** the implementation's offline fixed-window regression evidence is retained. The release is complete by
+  founder acceptance; this documentation reconciliation did not rerun a live Upstash check, read counters or consume Google calls.
+  Shared-IP risk (a household or mobile carrier sharing one address shares one allowance) remains unchanged.
+
+## Trip.com affiliate pause switch — 4 November 2026 (PR #360 merged; pause ACTIVE and verified live)
+
+- **Live record (UTC, 4 November 2026):** #360 merged as `f5d04206a5d1341065d1dd0e8afcc76f4fb718ef` at 15:32:22; Production
+  deployment 15:34:02 (the activation time); verified at 15:47:20 by a cache-disabled crawl of all 157 sitemap pages: Trip.com
+  links 258 → 0 (flights 229 → 0, hotels 29 → 0), pages with the affiliate ID 90 → 0, no affiliate ID in any of 46 browser
+  bundles, no redirects. The founder emailed `affiliation@trip.com` on 4 November 2026 asking for written clarification and stating
+  the pause. **The agreement is neither accepted, terminated nor resolved by this.** Keep the pause until the contractual position
+  is clarified. The affiliate-disclosure page no longer names Trip.com as a current partner while the pause is on, and the privacy policy's
+  "Other websites you link to" section no longer says "booking partners such as Trip.com" (follow-up PR).
+
+- **Why:** Trip.com's updated Online Cooperation Agreement (deemed accepted by continued participation, clause 15.2; SEO restricted
+  without written approval, clause 3.2.5; link parameters, clause 3.2.3) raises questions JetStash has asked in writing and not had
+  answered. On 4 November 2026 the founder decided to be able to pause affiliate handoffs while seeking written clarification.
+- **What:** one switch, `NEXT_PUBLIC_TRIPCOM_AFFILIATE_PAUSED`, read by `lib/tripcom-affiliate-pause.ts`. When it is exactly `true`,
+  every Trip.com flight and hotel lookup (seven functions in `lib/booking-providers.ts` and `lib/hotel-booking-links.ts`) returns null
+  and the existing fail-closed behaviour applies: no Trip.com button, and route pages show the Google Flights search, which says
+  JetStash earns no commission from it. **Off by default: merging this changes nothing on Production.** It is turned on by setting the
+  variable in Vercel and redeploying, and off by removing it and redeploying.
+- **Evidence (build scan of 475 rendered files):** an unpaused build has the affiliate ID in 179 files and Trip.com links in 90; a
+  paused build has 0 and 0, and its browser bundles contain no affiliate data. Tests cover every route, airport pair and hotel.
+- **Not done / remains:** the URL tables stay in the code as dormant data. Plain-text mentions of Trip.com remain in the affiliate
+  disclosure, the privacy policy and hotel-evidence provenance text. Pausing does not reverse any acceptance the agreement may imply,
+  and nothing here records the agreement as terminated, accepted or resolved. The monthly Google-call guard and the Arrive By rate
+  limiter are untouched.
+
+## Priority route review — 3 November 2026 (prepared for PR; not merged or deployed)
+
+Fresh primary evidence renews Manchester–Lahore, Manchester–Islamabad and Heathrow–Jeddah through
+3 December 2026 (30-day RECENT / CHANGING cadence; fails closed from 4 December). Manchester Airport's
+26 October announcement confirms Lahore weekly on Wednesday and Islamabad four times weekly on
+Monday/Tuesday/Thursday/Saturday. Heathrow's live SV120 record confirms Saudia departed for Jeddah
+today. Unreconfirmed numeric Islamabad/Jeddah durations are removed; Lahore's approximate 8h is
+supported by its current airport guide. Existing fare and route-status ledgers are unchanged.
+Evidence and limitations: [priority route review](route-evidence/priority-route-review-2026-11-03.md).
+The earlier expiry projections below remain historical snapshots before this review.
+
+## Arrive By public launch — 3 November 2026 (PR for review; not merged, not deployed)
+
+CEO directive "Arrive By must ship", on `feat/arrive-by-public-launch-2026-11` from `d961001`. Arrive By has been live as a
+hidden beta since PR #293; this makes it a public feature without changing a calculation, guard or budget.
+- **Includes PR #342** (replayed onto current main): the Doha-only public beta (evidence review 29 December 2026, fails closed
+  after it), route-page "Plan with Arrive By" only while the route presents as Direct or Connecting, generated coverage copy, and
+  "Arrive By" in the desktop and mobile navigation. #342 itself is superseded by this PR.
+- **Findable:** `/arrive-by` is indexable and self-canonical, listed once in the sitemap, and linked from the footer. The in-page
+  "Beta" label and the no-guarantee, no-flight-tracking wording stay.
+- **Google Maps attribution:** Arrive By shows Google place names, addresses and journey times without a map, which Google's
+  attribution rules do not allow without attribution. The text "Google Maps" now sits inside every bordered panel that shows Google
+  content in the four public views:
+  - **Planner:** the result card, the place-choice box, and the ready-by and missed-service panels.
+  - **Manchester:** the answer card, the missed-service card, and the driving, itinerary and place-check panels.
+  - **Road and Pakistan:** the result card and the place-check boxes.
+  - **Implementation:** `components/arrive-by-google-attribution.tsx`, with colour token `google-attribution` (#5E5E5E, one of the colours Google permits).
+  - **Tests:** each panel is rendered or isolated separately.
+- **Honest counting:** a pause that only asks the traveller to confirm or choose a place is now `needs_confirmation:*`, not a
+  `cannot_confirm` failure. The old counter could not tell the two apart, so October's 13 of 18 `ARRIVAL_DESTINATION_UNCONFIRMED`
+  outcomes may be largely this normal step; from launch the counters separate them.
+- **Coverage today:** the planner accepts 15 UK departure airports and arrivals at Islamabad, Karachi, Lahore, Doha and Manchester.
+  Route pages offering it: 10 on 3 November, 8 on 5 November and 6 on 17 November. They follow route reviews: Heathrow–Doha and
+  Heathrow–Lahore lapse 4 November, Manchester–Lahore 12 November, Manchester–Islamabad 16 November.
+- **Not changed:** calculations, the 10-call, 2,000-a-month and 5-per-minute guards, airports beyond Doha, analytics vendors, the
+  privacy notice (PR #296 already covers the full journey).
+
+## Fare evidence expiry — 3 November 2026 (DONE: tests-only PR #355 and fare recovery PR #356 merged and live)
+
+- **PR #355:** merge commit `036b013b8ac0c6cec45f0e5e718c0e335dca74cd`, merged 12:35:09 UTC on 3 November 2026.
+- **PR #356:** merge commit `d9610012704ba3526b2b04a4d75f8a9197834339`, merged 12:38:55 UTC; Production deployment succeeded
+  12:40:13 UTC; post-merge quality check passed.
+- **Verified on jetstash.co.uk:**
+  - 25 routes have a current fare (`/tracked-fares` lists 25 priced route guides), dated 3 November;
+  - the homepage example shows Manchester–Islamabad's £906;
+  - Glasgow, Edinburgh, Newcastle and Sylhet say "JetStash has checked fares … before", and no checked page says "haven't logged".
+
+On 3 November 2026 (UTC date), routes with a current Fare Signal fell from **62 of 89 to 1 of 89**. Every published
+fare except Birmingham–Islamabad's (£1,098, departing 11 December) departs on 17 November 2026, and the 15-day departure guard
+(`lib/freshness-thresholds.ts`, 14 days plus a 1-day margin, 17 October 2026) correctly stopped promoting them on the same day.
+No deploy caused it; pages switch as they regenerate (six-hour ISR), and the PR #354 deploy at 00:06 UTC rebuilt them all. The
+13 October and 20 October sweeps were collected but never ingested, so nothing replaced them.
+- **Live effect (checked after the PR #354 deploy):** the only current price left is Birmingham–Islamabad's £1,098 (its route
+  page, `/tracked-fares`, the Birmingham airport page and the Islamabad destination page). The homepage and `/deals` show no
+  price; every other route says "no current fare" above its dated fare history; the homepage example card shows Manchester →
+  Islamabad's service check without a fare. `/tracked-fares` now links to 1 route guide. The Glasgow, Edinburgh and Newcastle
+  airport pages say "We haven't logged a tracked fare … yet", which is false: fares were logged; none is current.
+- **CI:** 22 tests read today's date while asserting that specific routes have a current fare, so the quality check on `main`
+  (`4a51ac2`) failed from 3 November and would have failed every PR.
+- **Tests-only repair (branch `test/deterministic-fare-evaluation-date-2026-11`):** those suites now evaluate the data on
+  2 November 2026 (`tests/fare-evidence-clock.ts`), the last day the 17 November evidence was eligible.
+  `tests/fare-departure-expiry-2026-11.test.ts` keeps the guard honest: it checks that the rule is still 14 + 1 days and that the
+  17 November evidence stops on 3 November. It also checks that, on 3 Nov, 10 Nov and 1 Dec, no Fare Signal, deal-card range or
+  homepage example promotes a fare departing within 15 days. Disabling the guard makes 10 of its 14 tests fail. No production
+  code, fare logic or observation changed.
+- **Fare recovery (branch `data/fare-recovery-sweep-2026-11-03`, based on the tests-only branch):**
+  - **Sweep:** 42 routes searched on 3 November for 29 December 2026 to 12 January 2027: the 15 commercial-priority routes, then
+    the 27 whose route status stays publishable into December. 24 clean round trips were appended, each with both legs read and every
+    booking option checked. 11 routes were held (no airline offer, a single-agent outlier more than 10% below the next offer, or not a
+    useful example) and 7 gave no usable result.
+  - **Rules and evidence:** `fare-evidence/weekly-sweep-2026-11-03.md`. The window is peak season, so each record has its own
+    `…-christmas-new-year-2026-v1` profile and Fare Watcher never measures it against autumn fares.
+  - **Coverage:** 25 routes have a current fare on 3 November, 22 on 17 November, 14 on 3 December and 8 on 14 December. All 24 leave
+    the site on 15 December (the 29 December departure's guard date) unless later sweeps are published.
+  - **Route reviews lapse sooner on many routes:** MAN–ISB's fare shows only until 16 November, MAN–LHE's until 12 November and
+    LHR–JED's until 4 November.
+- **No-fare wording:** airport, destination and region-hub pages whose routes have logged checks now say "JetStash has checked fares
+  for {place} before, but there isn't a current one we can safely show." So do route guides without a curated Deal, which had shown
+  "We haven't logged a tracked fare … yet" directly below their own "Earlier checks are in the fare history below" (found on the
+  Birmingham–Jeddah Preview). This replaces the false "haven't logged" line, which also appeared on the Sylhet destination page. A
+  test that pinned the false Sylhet wording was corrected.
+- **Safeguard:** `FARE_COLLECTION_CHECKLIST.md` "Publish or decline within the week". A sweep must be published or explicitly declined
+  within 7 days, and the live set's expiry and lapsing route reviews are checked before a sweep is closed.
+- **Still open:**
+  - an automated early warning before coverage drops (next PR);
+  - route re-verification for lapsing priority routes (separate CEO decision);
+  - the 47 unswept routes, whose route reviews have lapsed or lapse within days.
+  - PR #353 stays on hold until coverage is restored and verified.
+
+## Consent panel clearance — 2 November 2026 (DONE, live via PR #354)
+
+Merge commit `4a51ac28e226b98f2ce448e753c237f5d71f6a3a`, merged 00:04:51 GMT on 3 November 2026. The Production deployment
+succeeded at 00:06:11 UTC. Verified on jetstash.co.uk at 320, 375, 390 and 1440: 0 px of a focused control hidden, no footer item
+stuck, the reserved space clears after Reject all, Accept all and Cookie settings Close, and no optional script or stored choice
+before consent. The CEO accepted the 14 px first-screen overlap at 375x812 and kept the wording unchanged (3 November 2026).
 
 On `fix/consent-banner-mobile-footprint-2026-11` from `2394a18` (CEO priority, ahead of homepage PR #353). Measured on Production
 on first visits: at 320x568, pressing Tab to "Flying from" left the focused control fully underneath the fixed consent panel (WCAG

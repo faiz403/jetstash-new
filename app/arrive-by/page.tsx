@@ -4,21 +4,24 @@ import { ArriveByShell } from '@/components/arrive-by-shell';
 import { getShellAirportLookup } from '@/lib/arrive-by-shared/airport-capability';
 import { getArrivalAirportOptions, getDepartureAirportOptions } from '@/lib/arrive-by-journey/airport-options';
 import { getPublicJourneyRoutePairs } from '@/lib/arrive-by-journey/public-route-pairs';
+import { siteConfig } from '@/lib/site-config';
 
 /**
- * The canonical Arrive By public beta — one product, airport-driven
+ * The canonical Arrive By planner — one product, airport-driven
  * configuration (see lib/arrive-by-shared/airport-registry.ts), rather
- * than a separate page per country. Deliberately noindex, follow and
- * absent from app/sitemap.ts for this beta stage, and not linked from
- * main navigation — we validate the unified experience first.
+ * than a separate page per country. Public since the 3 November 2026 CEO
+ * launch directive (see DECISIONS.md): indexable, in app/sitemap.ts and in
+ * the main navigation and footer. Every `?airport=`, `?departure=` or
+ * `?arrival=` variant canonicalises to this one URL. The in-page "Beta"
+ * label stays: there is still no external-user validation.
  */
 
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-  title: 'Arrive By (Beta)',
-  description: "Find out when you'll actually reach where you're going after you land — a live traffic-aware and public-transport journey estimate.",
-  robots: { index: false, follow: true },
+  title: 'Arrive By: when to leave for your flight and onward journey',
+  description: "Find out when you'll actually reach where you're going after you land — a live traffic-aware journey estimate, with public transport where supported.",
+  alternates: { canonical: `${siteConfig.url}/arrive-by` },
 };
 
 /**

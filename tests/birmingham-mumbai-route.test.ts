@@ -22,8 +22,11 @@ import AirportPage from '@/app/airports/[slug]/page';
 import { getFareSectionCopy } from '@/lib/fare-section-copy';
 import { FamilyVisitBlock } from '@/components/sections/family-visit-block';
 import { NoFareFallback } from '@/components/ui/no-fare-fallback';
+import { pinClockToFareEvidenceDate } from './fare-evidence-clock';
 
 const FIXED_TODAY = '2026-07-23';
+// Pages rendered here read today's date; evaluate them on a fixed day (see tests/fare-evidence-clock.ts).
+pinClockToFareEvidenceDate();
 
 /**
  * Recursively walks a tree of React elements (as returned by calling a

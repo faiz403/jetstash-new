@@ -154,11 +154,11 @@ describe('Evidenced, legitimate uses elsewhere are untouched — this is not a g
 });
 
 describe('No route/fare/verification data changed — this PR is editorial wording only', () => {
-  it('manchester-lahore: isDirect and verification status are unchanged; frequency stays honestly unconfirmed (a secondary-press-only frequency claim was corrected out of this record on evidence-compliance review); reviewDueDate reflects only the genuine primary-sourced direct-status re-check', () => {
+  it('manchester-lahore: isDirect and verification status are unchanged; frequency now has primary airport evidence for weekly Wednesday service; reviewDueDate reflects only the genuine primary-sourced direct-status re-check', () => {
     expect(lahore.isDirect).toBe(true);
-    expect(lahore.frequency).toBe('Direct — current frequency not confirmed by an official schedule');
+    expect(lahore.frequency).toBe('1x weekly direct, on Wednesdays, per Manchester Airport. Check PIA for your exact date.');
     expect(lahore.verification?.status).toBe('verified');
-    expect(lahore.verification?.reviewDueDate).toBe('2026-11-12');
+    expect(lahore.verification?.reviewDueDate).toBe('2026-12-03');
   });
 
   it('manchester-dubai: verification, frequency, flightTime, isDirect are unchanged', () => {

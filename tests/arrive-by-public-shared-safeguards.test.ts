@@ -15,6 +15,10 @@ import { getEstimateLabel, resolveAirportProfile } from '@/lib/arrive-by-shared/
 import { resolveRoutingOrigin } from '@/lib/arrive-by-shared/airport-registry';
 import { JOURNEY_CALL_CEILING, MONTHLY_CALL_LIMIT } from '@/lib/arrive-by-journey/call-budget';
 import { PublicCallBudgetUnavailable, runPublicGoogleCalculation } from '@/lib/arrive-by-shared/public-call-budget';
+import { VISITOR_WINDOW_SCRIPT } from '@/lib/arrive-by-shared/visitor-window-store';
+
+/** The key a recorded Redis write is about: the script's KEYS[1] for the visitor limiter, otherwise the first command's key. */
+const writeKey = (write: string[][]) => (write[0][0] === 'EVAL' ? write[0][3] : write[0][1]);
 
 // All HTTP is mocked, including the actual Redis REST adapter. No live quota or provider is touched.
 const STORE = 'https://shared-budget.example.test';
@@ -62,8 +66,15 @@ function world(options: { failure?: 'rate' | 'reserve' | 'settle'; providerFailu
       writes.push(commands);
       const [, key, rawDelta] = commands[0];
       const delta = Number(rawDelta);
-      if ((options.failure === 'rate' && key.startsWith('arrive-by:journey-rate:'))
-        || (options.failure === 'reserve' && key === MONTH && delta > 0)
+      if (commands[0][0] === 'EVAL') {
+        // Visitor fixed-window limiter: one atomic script, EVAL script 1 key windowSeconds. Windows are not advanced in these tests.
+        const visitorKey = commands[0][3];
+        if (options.failure === 'rate' && visitorKey.startsWith('arrive-by:visitor-window:journey:')) return new Response('{}', { status: 503 });
+        const nextHit = (counts.get(visitorKey) ?? 0) + 1;
+        counts.set(visitorKey, nextHit);
+        return new Response(JSON.stringify([{ result: nextHit }]));
+      }
+      if ((options.failure === 'reserve' && key === MONTH && delta > 0)
         || (options.failure === 'settle' && key === MONTH && delta < 0)) return new Response('{}', { status: 503 });
       // No await between read and write: matches the store's atomic INCRBY contract.
       const next = (counts.get(key) ?? 0) + delta;
@@ -112,10 +123,13 @@ describe('all legacy APIs use the durable canonical calculation limiter', () => 
     const before = env.google.length;
     expect((await post(request(body, ip))).status).toBe(429);
     expect(env.google).toHaveLength(before);
-    const rateWrites = env.writes.filter((w) => w[0][1].startsWith('arrive-by:journey-rate:'));
-    expect(new Set(rateWrites.map((w) => w[0][1])).size).toBe(1);
-    expect(rateWrites[0][0][1]).toMatch(/^arrive-by:journey-rate:[a-f0-9]{64}$/);
-    expect(rateWrites.every((w) => w[0][2] === '1' && w[1][2] === '60')).toBe(true);
+    const rateWrites = env.writes.filter((w) => writeKey(w).startsWith('arrive-by:visitor-window:journey:'));
+    expect(new Set(rateWrites.map(writeKey)).size).toBe(1);
+    expect(writeKey(rateWrites[0])).toMatch(/^arrive-by:visitor-window:journey:[a-f0-9]{64}$/);
+    expect(rateWrites).toHaveLength(6);
+    // Fixed window: one atomic script per request (INCR; expiry only for a new counter), a 60 second window, never a per-request re-arm.
+    expect(rateWrites.every((w) => w.length === 1 && w[0][0] === 'EVAL' && w[0][1] === VISITOR_WINDOW_SCRIPT && w[0][4] === '60')).toBe(true);
+    expect(env.writes.some((w) => w.some((c) => c[0] === 'EXPIRE' && c[1].startsWith('arrive-by:visitor-window:')))).toBe(false);
   });
 
   it('switching across all four APIs does not reset the durable client allowance; interaction is independent', async () => {
@@ -127,8 +141,8 @@ describe('all legacy APIs use the durable canonical calculation limiter', () => 
     const spent = env.google.length;
     expect((await canonical(request(canonicalBody, ip))).status).toBe(429);
     expect(env.google).toHaveLength(spent);
-    expect([...env.counts.keys()].filter((key) => key.startsWith('arrive-by:journey-rate:'))).toHaveLength(1);
-    expect([...env.counts.keys()].filter((key) => key.startsWith('arrive-by:interaction-rate:'))).toHaveLength(1);
+    expect([...env.counts.keys()].filter((key) => key.startsWith('arrive-by:visitor-window:journey:'))).toHaveLength(1);
+    expect([...env.counts.keys()].filter((key) => key.startsWith('arrive-by:visitor-window:interaction:'))).toHaveLength(1);
   });
 
   it.each(legacy)('$name fails closed on durable rate backend failure', async ({ post, body }) => {
@@ -241,7 +255,13 @@ describe('one monthly ledger across legacy and canonical provider calls', () => 
     for (const endpoint of all) await endpoint.post(request(endpoint.body, '203.0.113.99'));
     const recorded = JSON.stringify({ writes: env.writes, alerts: vi.mocked(console.warn).mock.calls });
     expect(recorded).not.toMatch(/Rawalpindi|Sheffield|Preston|203\.0\.113\.99|landingAt|destination|deadline|place_id|fixture-key/);
-    expect(env.writes.every((w) => w[0][0] === 'INCRBY' && Number.isFinite(Number(w[0][2])) && w[1][0] === 'EXPIRE')).toBe(true);
+    // Monthly counter writes are unchanged: INCRBY then EXPIRE. Visitor-limiter writes use the separate fixed-window commands.
+    const monthlyWrites = env.writes.filter((w) => !writeKey(w).startsWith('arrive-by:visitor-window:'));
+    expect(monthlyWrites.length).toBeGreaterThan(0);
+    expect(monthlyWrites.every((w) => w[0][0] === 'INCRBY' && Number.isFinite(Number(w[0][2])) && w[1][0] === 'EXPIRE')).toBe(true);
+    const visitorWrites = env.writes.filter((w) => writeKey(w).startsWith('arrive-by:visitor-window:'));
+    expect(visitorWrites.length).toBeGreaterThan(0);
+    expect(visitorWrites.every((w) => w.length === 1 && w[0][0] === 'EVAL')).toBe(true);
     expect(vi.mocked(console.warn)).toHaveBeenCalledWith(expect.stringMatching(/^\[arrive-by\] monthly Google call allowance at 50%: \d+\/2000 \(2027-01\)$/));
   });
 });

@@ -127,7 +127,7 @@ describe('real archive and publication safeguards', () => {
   });
   it('keeps pending, expired and methodology-excluded evidence blocked', () => {
     expect(getFareRangeSummary('london-gatwick-istanbul', 'Economy', NOW)).toBeNull();
-    expect(getFareRangeSummary('manchester-islamabad', 'Economy', '2026-11-17')).toBeNull();
+    expect(getFareRangeSummary('manchester-islamabad', 'Economy', '2026-12-04')).toBeNull();
     expect(getPublishableObservationsByRouteAndCabin('london-gatwick-istanbul', 'Economy', NOW)
       .some(o => o.id === 'obs-lgw-ist-economy-20260818-8w-v1')).toBe(false);
   });

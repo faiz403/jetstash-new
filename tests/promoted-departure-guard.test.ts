@@ -213,16 +213,16 @@ describe('MAN→ISB on 17 October 2026', () => {
   const route = getRouteBySlug('manchester-islamabad')!;
 
   it('is re-verified against the Manchester Airport PIA operator page with a 30-day review', () => {
-    expect(route.verification?.sourceUrl).toBe('https://www.manchesterairport.co.uk/flight-operators/pakistan-international-airlines/');
-    expect(route.verification?.verifiedDate).toBe('2026-10-17');
-    expect(route.verification?.reviewDueDate).toBe('2026-11-16');
+    expect(route.verification?.sourceUrl).toBe('https://mediacentre.manchesterairport.co.uk/pia-hits-100000-passenger-milestone-as-it-marks-12-months-of-direct-services-to-pakistan-from-manchester-airport/');
+    expect(route.verification?.verifiedDate).toBe('2026-11-03');
+    expect(route.verification?.reviewDueDate).toBe('2026-12-03');
     expect(getEffectiveRoutePresentation(route, routeStatusEvents, TODAY).status).toBe('direct');
   });
 
-  it('softens the exact 7h 45m duration to wording both current sources support', () => {
+  it('withholds a numeric duration that the fresh primary service source does not support', () => {
     expect(route.flightTime).not.toContain('7h 45m');
-    expect(route.flightTime).toBe('About 7½ hours direct');
-    expect(getDestinationBySlug('islamabad')?.flightTimeFromUK).toBe('About 7½ hours direct from Manchester');
+    expect(route.flightTime).toBe('Direct; check PIA for the scheduled duration');
+    expect(getDestinationBySlug('islamabad')?.flightTimeFromUK).toBe('Direct from Manchester; check the scheduled duration');
   });
 
   it('headlines the 6 Oct £521 Etihad check, not the £480 check for a 20 Oct departure', () => {
@@ -270,8 +270,8 @@ describe('MAN→ISB on 17 October 2026', () => {
   });
 
   it('still fails closed after the new review date', () => {
-    expect(getFareSignalForRoute(route.slug, '2026-11-17').state).toBe('none');
-    expect(getFareRangeSummary(route.slug, 'Economy', '2026-11-17')).toBeNull();
+    expect(getFareSignalForRoute(route.slug, '2026-12-04').state).toBe('none');
+    expect(getFareRangeSummary(route.slug, 'Economy', '2026-12-04')).toBeNull();
   });
 });
 

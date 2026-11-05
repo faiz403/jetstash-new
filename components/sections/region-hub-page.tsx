@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { LinkButton } from '@/components/ui/button';
 import { Destination } from '@/data/destinations';
 import { getDealsByRegionGroup } from '@/data/deals';
+import { hasAnyObservationAmongRoutes } from '@/data/fare-observations';
 import { getRoutesByDestination, getRouteAirport } from '@/data/routes';
 import { routeStatusEvents } from '@/data/route-status-events';
 import { getEffectiveRoutePresentation } from '@/lib/route-status-copy';
@@ -54,6 +55,7 @@ export function RegionHubPage({
     regionRoutes.map((r) => r.slug),
     new Date().toISOString().slice(0, 10)
   );
+  const regionHasCheckedFaresBefore = hasAnyObservationAmongRoutes(regionRoutes.map((r) => r.slug));
 
   return (
     <>
@@ -202,7 +204,11 @@ export function RegionHubPage({
             </div>
           ) : (
             <div className="mt-8">
-              <NoFareFallback cityLabel={eyebrow} hasFareSignalElsewhere={regionHasFareSignalElsewhere} />
+              <NoFareFallback
+                cityLabel={eyebrow}
+                hasFareSignalElsewhere={regionHasFareSignalElsewhere}
+                hasCheckedFaresBefore={regionHasCheckedFaresBefore}
+              />
             </div>
           )}
         </div>

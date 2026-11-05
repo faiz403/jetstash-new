@@ -37,6 +37,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     '/business-class',
     '/quote-request',
     '/travel-ready-check',
+    '/arrive-by',
     '/travel-club',
     '/about',
     '/contact',

@@ -7,6 +7,7 @@ import { getFareSignalForRoute } from '@/lib/fare-signal';
 import { getTripComFlightHandoffUrl, TRIPCOM_FRESH_SEARCH_NOTE } from '@/lib/booking-providers';
 import { buildTrackedFareAirportGroups } from '@/lib/tracked-fare-groups';
 import { FareSignal } from '@/components/route/fare-signal';
+import { FARE_EVIDENCE_DATE, pinClockToFareEvidenceDate } from './fare-evidence-clock';
 
 /**
  * Trip.com fresh-search trust clarification (PR #142, August 2026).
@@ -29,7 +30,9 @@ const dealCardSrc = readFileSync(join(process.cwd(), 'components/ui/deal-card.ts
 const holidayIntelSrc = readFileSync(join(process.cwd(), 'components/destination/holiday-intelligence.tsx'), 'utf8');
 const bookingProvidersSrc = readFileSync(join(process.cwd(), 'lib/booking-providers.ts'), 'utf8');
 
-const nowIso = new Date().toISOString().slice(0, 10);
+// Which routes have a current fare depends on the day, so the dataset is evaluated on a fixed one (see tests/fare-evidence-clock.ts).
+const nowIso = FARE_EVIDENCE_DATE;
+pinClockToFareEvidenceDate();
 // This positive fixture uses MAN–AYT's last valid route-review day, rather
 // than assuming its production evidence remains current forever.
 const MAN_AYT_VALID_DATE = '2026-10-07';

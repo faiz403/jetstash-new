@@ -241,6 +241,35 @@ redesign, no calculation changes, no airport broadening, no new analytics vendor
 evidence identifies a defect or a clearly validated opportunity. It stays `noindex` and out of the main
 navigation and sitemap during the beta.
 
+**Amendment (21 October 2026, founder-approved, narrow):** the founder's goal is Arrive By on all 89
+routes, reached progressively and only where journeys genuinely calculate. This amendment permits, for
+that workstream only:
+- airport broadening one release at a time, starting with a **Doha-only public beta**, then the other
+  airports with existing capability evidence (DXB, DEL, BOM, AMD, DAC) after observing Doha;
+- every release entry carries an evidence review date and fails closed to internal-only after it;
+- a route page offers Arrive By only while it presents the route as Direct or Connecting;
+- an "Arrive By" item in the main desktop and mobile navigation.
+
+Everything else in the 3 October decision stands: `/arrive-by` stays `noindex` and out of the sitemap;
+no calculation changes, redesign or new analytics vendors; the 10-call, 2,000-a-month and rate-limit
+guards are unchanged; no paid Google probes or budget increase without separate approval. The first
+Production release is planned after the SEO pilot's Day 28 assessment (18 November 2026) unless the
+founder approves an earlier date.
+
+**Amendment (3 November 2026, CEO directive "Arrive By must ship"):** Arrive By becomes a public feature, not a hidden
+beta. The launch PR (merge needs separate CEO approval; merging is also the earlier-date approval above) permits:
+- `/arrive-by` indexable, self-canonical (every `?airport=`, `?departure=` and `?arrival=` variant points to it) and
+  listed once in `app/sitemap.ts`; "Arrive By" in the footer as well as the main navigation;
+- the 21 October Doha-only public beta and route-status gating, released together with the launch;
+- Google Maps attribution ("Google Maps", per Google's attribution rules) inside every panel that shows Google Maps Platform
+  content without a map;
+- counting a place-confirmation step as `needs_confirmation:*`, not as a `cannot_confirm` failure.
+
+Everything else stands: no calculation changes, redesign or new analytics vendors; the 10-call, 2,000-a-month and
+rate-limit guards are unchanged; no paid services or budget increase; the in-product "Beta" label and the
+no-guarantee, no-flight-tracking wording stay, because there is still no external-user validation. Further
+airport releases (DXB, DEL, BOM, AMD, DAC) still go one at a time with their own evidence review date.
+
 ### Travel Confidence is evidence, not a mysterious score
 
 Show understandable states and warnings. Do not reduce confidence to an unexplained number.

@@ -5,6 +5,7 @@ import { routes, getRouteAirport, getRouteDestination } from '@/data/routes';
 import { getFareSignalForRoute } from '@/lib/fare-signal';
 import { getSafeTripComFlightHandoffUrl } from '@/lib/booking-providers';
 import { buildTrackedFareAirportGroups } from '@/lib/tracked-fare-groups';
+import { FARE_EVIDENCE_DATE, pinClockToFareEvidenceDate } from './fare-evidence-clock';
 
 /**
  * Tracked Fares handoff parity fix (PR #141, August 2026).
@@ -31,7 +32,9 @@ import { buildTrackedFareAirportGroups } from '@/lib/tracked-fare-groups';
 const routeGuideSrc = readFileSync(join(process.cwd(), 'app/routes/[slug]/page.tsx'), 'utf8');
 const groupsSrc = readFileSync(join(process.cwd(), 'lib/tracked-fare-groups.ts'), 'utf8');
 
-const nowIso = new Date().toISOString().slice(0, 10);
+// Which routes have a current fare depends on the day, so the dataset is evaluated on a fixed one (see tests/fare-evidence-clock.ts).
+const nowIso = FARE_EVIDENCE_DATE;
+pinClockToFareEvidenceDate();
 
 /** The exact resolver call the route guide makes for a given route — the ground truth every tracked-fare entry must match. */
 function routeGuideHandoffUrl(routeSlug: string): string | null {

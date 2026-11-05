@@ -37,11 +37,11 @@ describe('Business Class presentation guard', () => {
     expect(html).not.toContain('Tracked Business fare');
   });
 
-  it('withholds Lahore history once its route verification expires on 13 November', async () => {
-    const valid = await renderRouteAt('manchester-lahore', '2026-11-12');
+  it('withholds Lahore history once its route verification expires on 4 December', async () => {
+    const valid = await renderRouteAt('manchester-lahore', '2026-12-03');
     expect(valid).toContain('3,051');
     expect(valid).not.toContain('Tracked Business fare');
-    const expired = await renderRouteAt('manchester-lahore', '2026-11-13');
+    const expired = await renderRouteAt('manchester-lahore', '2026-12-04');
     expect(expired).not.toContain('3,051');
     expect(expired).not.toContain('Tracked Business fare');
     expect(expired).not.toContain('Fare spotted');
@@ -70,8 +70,8 @@ describe('Route-page priority remains answer-first', () => {
   });
 
   it('does not keep the positive fare panel after MAN→ISB verification expires', async () => {
-    // Re-verified 17 Oct 2026 (review due 16 Nov) — the day after expiry.
-    const html = await renderRouteAt('manchester-islamabad', '2026-11-17');
+    // Re-verified 3 Nov 2026 (review due 3 Dec) — the day after expiry.
+    const html = await renderRouteAt('manchester-islamabad', '2026-12-04');
     expect(html).not.toContain('Fare spotted');
     expect(html).not.toContain('Journey Choice');
     const fallback = 'JetStash has checked this route before';

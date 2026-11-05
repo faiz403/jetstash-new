@@ -1,7 +1,7 @@
 # SEO indexing pilot: baseline, targets and measurement plan
 
 - **Approved:** by the founder on 21 October 2026. This is a narrow exception to SEO maintenance mode; see DECISIONS.md.
-- **Status:** on branch `seo/indexing-pilot-2026-10-21`, based on `eaa4f48` (main after PR #340). Opened as a PR for review; not merged, not deployed.
+- **Status:** LIVE. Merged as PR #341 (`56f90da`); Production deployment 21 October 2026 12:48 UTC, which is Day 0. Checkpoints: Day 7 on 28 October, Day 14 on 4 November, Day 28 on 18 November 2026.
 - **Measurement start:** the 28-day window starts on the day an approved Production deployment goes live, not when local work began.
 
 ## Why
@@ -189,10 +189,81 @@ Every checkpoint records these items:
   label unchanged. No link, title, canonical, robots or pilot-page change. Homepage text is otherwise frozen to the 18 November
   checkpoint. The PR #349 merge commit is `287fb42f759cdad5b7a66e555e2d07ce2399cd0f` (00:37:16 BST on 24 October 2026).
 
-- **Consent panel clearance (CEO priority, 2 November 2026; dated by its Production release, merge commit and time to be added
-  then):** layout only, on every page. While the first-visit consent panel is on screen, the page reserves its height at the
-  bottom and keyboard focus stops above it instead of underneath it. Nothing is rendered differently in the server HTML: no visible
-  text, link, title, canonical, robots or pilot-page change.
+- **Consent panel clearance (PR #354; merge commit `4a51ac28e226b98f2ce448e753c237f5d71f6a3a`, merged 00:04:51 GMT on
+  3 November 2026, Production deployment 00:06:11 UTC):** layout only, on every page. While the first-visit consent panel is on
+  screen, the page reserves its height at the bottom and keyboard focus stops above it instead of underneath it. Nothing is
+  rendered differently in the server HTML: no visible text, link, title, canonical, robots or pilot-page change.
+
+- **Fare evidence expiry (no deploy; from the 3 November 2026 UTC date, as pages regenerate):** **every pilot page and link
+  target lost its fare card.** Every published fare except Birmingham–Islamabad's (11 December departure) departs on 17 November
+  2026, and the 15-day departure guard withdrew them on 3 November, not on 17 November as the PR #347 entry above assumed. Routes with a current fare fell from 62 to 1 of 89. Pilot pages
+  `manchester-islamabad`, `manchester-dubai` and `birmingham-delhi` and all five link targets now say "no current fare", and
+  the homepage example-check card now shows only Manchester → Islamabad's service check, with no fare (same link). **`/tracked-fares` now links to 1 route guide instead of every target**, so the
+  internal links this pilot relied on there are gone until fares return. Titles, canonical URLs, robots, Quick answers and the
+  pilot's own link blocks are unchanged. Read the 4 November (Day 14) checkpoint with this in mind. Fare recovery will be logged
+  here as its own event.
+
+- **Date-deterministic fare tests (PR #355; merge commit `036b013b8ac0c6cec45f0e5e718c0e335dca74cd`, merged 12:35:09 UTC on
+  3 November 2026):** no production code changes. The deploy it triggers renders the same pages as the build before it.
+
+- **Fare recovery (PR #356; merge commit `d9610012704ba3526b2b04a4d75f8a9197834339`, merged 12:38:55 UTC on 3 November 2026,
+  Production deployment 12:40:13 UTC; verified live: 25 routes with a current fare):** **fare
+  cards return** on pilot pages `manchester-islamabad` (until 16 November, when its route review lapses), `manchester-dubai` and
+  `birmingham-delhi` (until 14 December). They also return on link targets `london-heathrow-bengaluru` (until 27 November),
+  `birmingham-dubai` and `birmingham-doha` (until 2 December) and `birmingham-mumbai` (until 14 December). `birmingham-jeddah` stays
+  without a fare (held). The homepage example card shows Manchester → Islamabad's fare again until 16 November.
+  - **Links:** `/tracked-fares` again links to every route with a current fare (25 on release day).
+  - **Other changes:** airport, destination and hub pages, and route guides without a curated Deal, that have logged checks but no
+    current fare change one sentence from "We haven't logged a tracked fare … yet" to "JetStash has checked fares for … before, but
+    there isn't a current one we can safely show." No pilot page is affected; link target `birmingham-jeddah` is.
+  - **Unchanged:** titles, canonical URLs, robots, Quick answers and the pilot's link blocks.
+
+- **Arrive By public launch (PR #357; merge commit `4bcc5eae`, merged 14:07:02 UTC on 4 November 2026, Production deployment
+  14:08:24 UTC):** **every page, pilot pages included, gains an "Arrive By" link** in the header (desktop and mobile) and in the footer,
+  and `/arrive-by` becomes indexable and joins the sitemap (one more URL). The page's title changes from "Arrive By (Beta)" to
+  "Arrive By: when to leave for your flight and onward journey".
+  - **Pilot pages:** `manchester-islamabad` keeps its "Plan with Arrive By" panel while its route presents as Direct (its review
+    lapses on 16 November). `manchester-dubai` and `birmingham-delhi` get no panel (Dubai and Delhi are not released).
+  - **Link targets:** `birmingham-doha` gains a Doha panel (Doha's first public release); `manchester-doha` and, until its review
+    lapses on 4 November, `london-heathrow-doha` do too. Neither is a pilot page.
+  - **Unchanged:** route-page titles, canonical URLs, robots, Quick answers and the pilot's link blocks.
+
+- **Priority route re-verification (PR #358; merge commit `51fd65389b5fa4f8dabbda55811e3f2891d083ff`, merged 13:47:45 UTC on
+  4 November 2026, Production deployment 13:49:02 UTC; verified live):** Manchester–Lahore, Manchester–Islamabad and London
+  Heathrow–Jeddah reviews renewed to 3 December 2026. Heathrow–Doha and Heathrow–Lahore stay in their
+  fail-closed "Verification in Progress" state, with titles to match. **`manchester-islamabad` is a pilot page and its review
+  now runs to 3 December, not 16 November as the PR #357 entry above assumed.** Titles, canonical URLs, robots and the pilot's
+  link blocks are unchanged.
+
+- **Trip.com affiliate pause (PR #360; merge commit `f5d04206a5d1341065d1dd0e8afcc76f4fb718ef`, merged 15:32:22 UTC on
+  4 November 2026, Production deployment 15:34:02 UTC; verified live at 15:47:20 UTC against all 157 sitemap pages):**
+  **every Trip.com flight and hotel link was removed from every page** (258 links on 90 pages before; 0 after). Pages that had one
+  now show no flight button or, on route guides, a Google Flights link that earns JetStash nothing. No title, canonical URL, robots,
+  Quick answer, sitemap entry or internal link changed. The pilot pages carry no Trip.com link either. The pause is a build-time switch and reverses by removing the Vercel
+  variable and redeploying. Expect no ranking effect; read any day-14 movement without attributing it to this change.
+
+- **Affiliate disclosure and privacy wording while the Trip.com pause is active (PR #361; merge commit
+  `18ca514e9ca04a2bdcd62fd1947aaf29dd622216`, merged 21:11:18 UTC on 4 November 2026, Production deployment active 21:12:20 UTC;
+  verified live at 21:13:03 UTC against all 157 sitemap pages, 0 fetch failures, 0 Trip.com links):** `/affiliate-disclosure`
+  no longer names Trip.com as the current flight-booking partner while the pause is on, and `/privacy-policy` now says the site
+  links to "flight-search and booking websites". Only those two pages' wording changed. No title, canonical URL, robots, sitemap
+  entry or internal link changed anywhere in the crawl. Expect no ranking effect.
+
+- **Arrive By visitor-window repair (PR #362; merge `a4313be050a05f8eae6aad45e223e7ac9b4f0c9a`, merged 00:12:48 UTC on
+  5 November 2026; exact-SHA Production Ready 00:14:07 UTC):** server-side visitor limiting only. No route/fare data, titles,
+  canonical URLs, robots, sitemap, pilot copy or internal links changed. It is complete, not an outstanding release.
+
+- **Dependency security patch (PR #363; merge `9d91f2e0c02c184060325504b9cfcebe989d5917`, merged 02:51:12 UTC on
+  5 November 2026; exact-SHA Production Ready 02:52:26 UTC and custom-domain deployment confirmed):** Next.js 15.5.29 and
+  compatible security dependency fixes. No application copy, route/fare records, metadata, sitemap or internal links changed.
+  The ten-page release smoke matched sampled displayed prices and retained the Trip.com pause. No ranking effect is established.
+
+- **Archive-aware airport/destination fare-card copy (prepared for review, not Production-deployed):** cards with recorded history
+  but no eligible representative fare change "No fare logged yet" to "No current fare to show". Never-observed cards retain the old
+  wording. The same history-presence distinction now applies to cabin-scoped DealCard absence copy; package wording and all range
+  calculations remain unchanged. The audit's 128 instances on 34 pages cover the two lead card templates only. Final 5 November replay:
+  those 128 plus 84 lower-card corrections across 50 pages total. Fare selection, titles, canonical URLs, robots, sitemap, Quick answers and internal-link destinations
+  are unchanged. Record the actual merge/deployment here only after separate approval and release.
 
 ## Wave 2 (not approved; only after a positive day-14 signal)
 

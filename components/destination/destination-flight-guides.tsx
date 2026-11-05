@@ -1,7 +1,8 @@
 import Link from 'next/link';
 import { ArrowUpRight, Plane } from 'lucide-react';
 import type { Destination } from '@/data/destinations';
-import { airportShortName } from '@/lib/route-card-fare';
+import { hasAnyObservationAmongRoutes } from '@/data/fare-observations';
+import { airportShortName, getFareCardEmptyStateLabel } from '@/lib/route-card-fare';
 import { RouteCardFare } from '@/components/route/route-card-fare';
 import { getDestinationFlightGuideEntries, type DestinationFlightGuideEntry } from '@/lib/destination-flight-guides';
 import { getTripComDestinationHandoffUrl, PROVIDER_REL, getTripComSearchCtaLabel, TRIPCOM_NO_FARE_SEARCH_NOTE } from '@/lib/booking-providers';
@@ -77,7 +78,9 @@ export function DestinationFlightGuides({ destination, nowIso }: DestinationFlig
                     nowIso={nowIso}
                   />
                 ) : (
-                  <p className="text-sm text-ink-600">No fare logged yet</p>
+                  <p className="text-sm text-ink-600">
+                    {getFareCardEmptyStateLabel(entry.routeSlug !== null && hasAnyObservationAmongRoutes([entry.routeSlug]))}
+                  </p>
                 )}
               </div>
               <Link

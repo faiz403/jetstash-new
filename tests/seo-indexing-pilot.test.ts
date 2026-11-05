@@ -20,8 +20,8 @@ import { SeoRouteLinks } from '@/components/route/seo-route-links';
 // Fixed dates only: the day the pilot was built, each review date (inclusive),
 // the day after it, and the day after Birmingham-Delhi's review.
 const BUILT = '2026-10-21';
-const MANCHESTER_REVIEW_DAY = '2026-11-16';
-const AFTER_MANCHESTER_REVIEWS = '2026-11-17';
+const MANCHESTER_REVIEW_DAY = '2026-12-03';
+const AFTER_MANCHESTER_REVIEWS = '2026-12-04';
 const MANCHESTER_DUBAI_REVIEW_DAY = '2027-01-19';
 const AFTER_MANCHESTER_DUBAI_REVIEW = '2027-01-20';
 const AFTER_BIRMINGHAM_DELHI_REVIEW = '2026-12-04';
@@ -75,7 +75,7 @@ describe('SEO indexing pilot: link eligibility (fail-closed)', () => {
     const later = getSeoRouteLinks(AFTER_MANCHESTER_REVIEWS).map((l) => l.slug);
     expect(later).not.toContain('manchester-islamabad');
     expect(later).toContain('manchester-dubai');
-    expect(later).toContain('birmingham-delhi');
+    expect(later).not.toContain('birmingham-delhi');
     expect(getSeoRouteLinks(MANCHESTER_DUBAI_REVIEW_DAY).map((l) => l.slug)).toContain('manchester-dubai');
     expect(getSeoRouteLinks(AFTER_MANCHESTER_DUBAI_REVIEW).map((l) => l.slug)).not.toContain('manchester-dubai');
   });
@@ -117,14 +117,14 @@ describe('SEO indexing pilot: link eligibility (fail-closed)', () => {
 });
 
 describe('SEO indexing pilot: Quick answers state only what the cited source supports', () => {
-  it('Manchester-Islamabad: nonstop and operator from Manchester Airport, no operating days claimed', () => {
+  it('Manchester-Islamabad: the airport now supports operator, nonstop service and weekdays, but no duration', () => {
     const html = renderQuickAnswers(route('manchester-islamabad'), BUILT);
     expect(html).toContain('Manchester to Islamabad (MAN → ISB): quick answers');
     expect(html).toContain('PIA flies direct to Islamabad');
-    expect(html).toContain('does not list operating days');
+    expect(html).toContain('four departures a week, on Monday, Tuesday, Thursday and Saturday');
     expect(html).not.toContain('Mon, Tue, Thu');
     expect(html).not.toContain('How long is the journey?');
-    expect(html).toContain('which supports PIA as the operator and the nonstop service');
+    expect(html).toContain('which supports PIA as the operator, the nonstop service and four weekly departures');
   });
 
   it('promises withdrawal of the added answers, never a status change', () => {

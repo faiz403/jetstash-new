@@ -109,14 +109,14 @@ export interface QuickAnswersContent {
 }
 
 const QUICK_ANSWERS: Record<(typeof SEO_PILOT_PAGE_SLUGS)[number], QuickAnswersContent> = {
-  // Manchester Airport's PIA operator page (checked 17 Oct 2026) supports the
-  // operator and the nonstop service only — not duration, days or frequency.
+  // Manchester Airport's 26 October announcement, checked 3 November 2026,
+  // supports the operator, nonstop service and weekdays, but no duration.
   'manchester-islamabad': {
-    evidenceVerifiedDate: '2026-10-17',
+    evidenceVerifiedDate: '2026-11-03',
     expectedStatus: 'direct',
-    sourceSupports: 'PIA as the operator and the nonstop service',
-    isDirect: 'Yes. Manchester Airport’s own PIA page says PIA flies direct to Islamabad, a nonstop service that returned in 2025 after a five-year break.',
-    frequency: 'Manchester Airport’s page does not list operating days or a weekly frequency. Any typical days shown elsewhere on this page come from recent flight-tracking history, not from the airport or PIA, and the northern winter schedule season starts on 25 October 2026, when days and times may change. Check PIA for your exact date.',
+    sourceSupports: 'PIA as the operator, the nonstop service and four weekly departures on Monday, Tuesday, Thursday and Saturday',
+    isDirect: 'Yes. Manchester Airport’s 26 October 2026 announcement confirms PIA flies direct to Islamabad; its current PIA operator page also confirms the nonstop service.',
+    frequency: 'Manchester Airport’s 26 October 2026 announcement lists four departures a week, on Monday, Tuesday, Thursday and Saturday. This is the published pattern, not a guarantee for every date. Check PIA for your exact date.',
     selfTransfer: 'PIA’s nonstop is one flight on one ticket, so there is no connection to miss. Search results may also show connecting itineraries; if one is marked “self-transfer” or “separate tickets”, it is several separate bookings, and the next airline does not have to rebook you if you miss a connection.',
   },
   // Emirates' own Manchester–Dubai route page (checked 21 Oct 2026) states

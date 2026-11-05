@@ -279,10 +279,11 @@ describe('Defect 2 follow-up (founder review) — cabin-specific fallback wordin
   // renderToStaticMarkup(DealCard({ deal })) pattern already established in
   // tests/antalya-fare-package-truth.test.ts. Proves the exact HTML a
   // visitor receives for the two cards at the centre of this whole defect.
-  it('man-isb-business genuinely renders "No Business class fare checks logged yet" — the real card Participant 1 misread', () => {
+  it('man-isb-business keeps the Business scope without denying its historical fare checks', () => {
     const dealDef = deals.find((d) => d.id === 'man-isb-business')!;
     const html = renderToStaticMarkup(DealCard({ deal: dealDef, nowIso }));
-    expect(html).toContain('No Business class fare checks logged yet — check the live price below');
+    expect(html).toContain('No current Business class fare to show — check the live price below');
+    expect(html).not.toContain('No Business class fare checks logged yet');
     expect(html).not.toMatch(/>No fare checks logged yet/);
   });
 
@@ -296,9 +297,9 @@ describe('Defect 2 follow-up (founder review) — cabin-specific fallback wordin
   it('MAN→ISB Economy fails closed after verification expiry rather than displaying its historical range as current', () => {
     const dealDef = deals.find((d) => d.id === 'man-isb-economy')!;
     expect(getFareRangeSummary('manchester-islamabad', 'Economy', '2026-10-12')).not.toBeNull();
-    // Re-verified 17 Oct 2026 (review due 16 Nov) — the day after expiry.
-    expect(getFareRangeSummary('manchester-islamabad', 'Economy', '2026-11-17')).toBeNull();
-    const html = renderToStaticMarkup(DealCard({ deal: dealDef, nowIso: '2026-11-17' }));
+    // Re-verified 3 Nov 2026 (review due 3 Dec) — the day after expiry.
+    expect(getFareRangeSummary('manchester-islamabad', 'Economy', '2026-12-04')).toBeNull();
+    const html = renderToStaticMarkup(DealCard({ deal: dealDef, nowIso: '2026-12-04' }));
     expect(html).not.toMatch(/£\d/);
     expect(html).toContain('Verification pending');
   });

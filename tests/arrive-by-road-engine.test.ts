@@ -34,7 +34,7 @@ const clearGateTables = () => {
 /** Capability evidence AND a public release: both gates open (test-only). */
 const enableGeneric = (code: string) => {
   evidenceTable[code] = supported();
-  releaseTable[code] = { status: 'public_beta', decidedDate: '2026-09-30', approvedNote: 'test-only release' };
+  releaseTable[code] = { status: 'public_beta', decidedDate: '2026-09-30', approvedNote: 'test-only release', evidenceReviewDueDate: '2099-12-31' };
 };
 const passedChecks = { identityVerified: true, routeProbed: true };
 const supported = (): CapabilityEvidence => ({ status: 'road_supported', verifiedDate: '2026-09-30', note: 'test-only evidence', checks: passedChecks });
@@ -515,10 +515,20 @@ describe('gated generic UI path', () => {
     for (const code of ['ISB', 'MAN']) expect(getRoadAirportInfo(code)).toBeUndefined();
   });
 
-  it('no generic airport is released, so none reaches the generic UI in production (whatever evidence exists)', () => {
+  it('only the released Doha beta reaches the generic UI in production; every other evidenced airport stays out', () => {
     Object.assign(evidenceTable, shippedEvidence);
-    expect(Object.keys(shippedRelease)).toEqual([]);
-    for (const code of Object.keys(shippedEvidence)) expect(getRoadAirportInfo(code), code).toBeUndefined();
+    Object.assign(releaseTable, shippedRelease);
+    expect(Object.keys(shippedRelease)).toEqual(['DOH']);
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date('2026-11-20T12:00:00Z'));
+    try {
+      for (const code of Object.keys(shippedEvidence).filter((c) => c !== 'DOH')) expect(getRoadAirportInfo(code), code).toBeUndefined();
+      expect(getRoadAirportInfo('DOH')).toBeDefined();
+      vi.setSystemTime(new Date('2026-12-30T00:30:00Z'));
+      expect(getRoadAirportInfo('DOH')).toBeUndefined();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it('the generic UI never posts anything but the airport code, and tracks only coarse events', () => {
@@ -553,8 +563,9 @@ describe('gated generic UI path', () => {
     }
   });
 
-  it('the generic road route is noindex-safe: it is an API route, absent from the sitemap', () => {
+  it('the generic road route is noindex-safe: it is an API route, absent from the sitemap (only the public /arrive-by page is listed)', () => {
     const sitemap = readFileSync(join(process.cwd(), 'app', 'sitemap.ts'), 'utf8');
-    expect(sitemap).not.toMatch(/arrive-by/);
+    expect(sitemap).not.toMatch(/api\/arrive-by|arrive-by\/road|\/api\//);
+    expect(sitemap.match(/arrive-by[^'"`]*/g)).toEqual(['arrive-by']);
   });
 });

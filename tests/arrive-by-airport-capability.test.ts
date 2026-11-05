@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import {
@@ -28,10 +28,16 @@ const evidence = (status: CapabilityEvidence['status']): CapabilityEvidence => (
 const read = (...parts: string[]) => readFileSync(join(process.cwd(), ...parts), 'utf8');
 
 describe('capability gate — Phase A ships no worldwide enablement', () => {
-  it('nothing beyond the four special profiles is publicly journey-eligible, whatever evidence is stored (release gate)', () => {
-    expect(Object.keys(ARRIVE_BY_RELEASED_AIRPORTS)).toEqual([]);
-    const eligible = getCatalogueAirports().filter((a) => getAirportCapability(a.iata)?.journeyEligible).map((a) => a.iata).sort();
-    expect(eligible).toEqual(['ISB', 'KHI', 'LHE', 'MAN']);
+  it('nothing beyond the four special profiles and the released Doha beta is publicly journey-eligible, whatever evidence is stored (release gate)', () => {
+    expect(Object.keys(ARRIVE_BY_RELEASED_AIRPORTS)).toEqual(['DOH']);
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date('2026-11-20T12:00:00Z'));
+    try {
+      const eligible = getCatalogueAirports().filter((a) => getAirportCapability(a.iata)?.journeyEligible).map((a) => a.iata).sort();
+      expect(eligible).toEqual(['DOH', 'ISB', 'KHI', 'LHE', 'MAN']);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it('every catalogue airport without an override is catalogued and not eligible', () => {
@@ -61,14 +67,14 @@ describe('capability gate — Phase A ships no worldwide enablement', () => {
 
 describe('capability status transitions (pure resolution over an injected evidence table)', () => {
   it('road_supported evidence PLUS a release makes a catalogue airport eligible; route_testable never does', () => {
-    const released = { LHR: { status: 'public_beta' as const, decidedDate: '2026-09-30', approvedNote: 'test' } };
+    const released = { LHR: { status: 'public_beta' as const, decidedDate: '2026-09-30', approvedNote: 'test', evidenceReviewDueDate: '2099-12-31' } };
     expect(getAirportCapability('LHR', { LHR: evidence('road_supported') }, released)).toMatchObject({ status: 'road_supported', journeyEligible: true, capabilityApproved: true, releaseStatus: 'public_beta' });
     expect(getAirportCapability('LHR', { LHR: evidence('route_testable') }, released)).toMatchObject({ status: 'route_testable', journeyEligible: false, capabilityApproved: false });
   });
 
   it('temporarily_unsupported beats everything, including a special profile', () => {
     expect(getAirportCapability('ISB', { ISB: evidence('temporarily_unsupported') })).toMatchObject({ status: 'temporarily_unsupported', journeyEligible: false, note: 'test evidence' });
-    expect(getAirportCapability('LHR', { LHR: evidence('temporarily_unsupported') }, { LHR: { status: 'public', decidedDate: '2026-09-30', approvedNote: 'test' } })?.journeyEligible).toBe(false);
+    expect(getAirportCapability('LHR', { LHR: evidence('temporarily_unsupported') }, { LHR: { status: 'public', decidedDate: '2026-09-30', approvedNote: 'test', evidenceReviewDueDate: '2099-12-31' } })?.journeyEligible).toBe(false);
   });
 
   it('evidence for a code outside the catalogue never creates an airport', () => {

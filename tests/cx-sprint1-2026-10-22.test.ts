@@ -63,9 +63,9 @@ describe('no internal or evidence-review wording in customer-visible data', () =
     expect(offenders).toEqual([]);
   });
 
-  it('keeps the uncertainty: the Heathrow-Jeddah duration still says it is not reconfirmed', () => {
+  it('keeps the uncertainty: Heathrow-Jeddah publishes no unreconfirmed numeric duration', () => {
     const r = routes.find((x) => x.slug === 'london-heathrow-jeddah')!;
-    expect(r.flightTime).toBe("About 6h 15m, per Saudia's published route figure; not yet reconfirmed against a current Saudia schedule");
+    expect(r.flightTime).toBe("Direct; check Saudia for the scheduled duration");
   });
 });
 

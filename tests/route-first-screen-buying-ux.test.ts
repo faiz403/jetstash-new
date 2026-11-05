@@ -7,6 +7,7 @@ import { getTripComFlightHandoffUrl, GENERIC_FLIGHT_SEARCH_URL, SERVICE_ENDED_CT
 import { getFareSignalForRoute } from '@/lib/fare-signal';
 import { FareSignal, checkPricesHeading } from '@/components/route/fare-signal';
 import RoutePage from '@/app/routes/[slug]/page';
+import { pinClockToFareEvidenceDate } from './fare-evidence-clock';
 
 /**
  * First-screen buying fix (3 Oct 2026, founder-approved). A real traveller asked for
@@ -20,6 +21,8 @@ import RoutePage from '@/app/routes/[slug]/page';
 
 const routePageSrc = readFileSync(join(process.cwd(), 'app/routes/[slug]/page.tsx'), 'utf8');
 const NOW_ISO = '2026-10-03';
+// Route pages rendered here read today's date; evaluate them on a fixed day (see tests/fare-evidence-clock.ts).
+pinClockToFareEvidenceDate();
 const norm = (html: string) => html.replace(/&#x27;/g, "'").replace(/&amp;/g, '&').replace(/\s+/g, ' ');
 
 async function renderPage(slug: string) {

@@ -70,8 +70,8 @@ export const destinations: Destination[] = [
     description:
       'Islamabad is the green, planned counterpoint to Pakistan\'s older cities, and a useful base for visiting family across Punjab and Khyber Pakhtunkhwa, with easy onward travel to the north.',
     bestFor: ['Family visits', 'Gateway to northern Pakistan'],
-    // Same correction as the manchester-islamabad route record (17 Oct 2026).
-    flightTimeFromUK: 'About 7½ hours direct from Manchester',
+    // 3 November 2026: no current primary schedule supports a fixed duration.
+    flightTimeFromUK: 'Direct from Manchester; check the scheduled duration',
     ukAirports: ['manchester', 'birmingham'],
     visaNote: 'e-Visa required for UK passport holders, typically processed within 7 days.',
     familyVisitContent: {

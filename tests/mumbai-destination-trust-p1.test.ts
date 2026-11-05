@@ -188,8 +188,9 @@ describe('Mumbai destination P1 trust fix', () => {
     // exact "7h 45m" to "About 7½ hours" with the MAN-ISB re-verification.
     // Recomputed 22 Oct 2026: Amritsar's flightTimeFromUK and packingNote now
     // name Birmingham (re-verified) instead of the lapsed Gatwick route.
+    // 3 Nov 2026: Islamabad no longer renews the conflicting numeric duration.
     const otherDestinations = destinations.filter((item) => item.slug !== 'mumbai');
     const digest = createHash('sha256').update(JSON.stringify(otherDestinations)).digest('hex');
-    expect(digest).toBe('2398bc1a27dc5543ceb488349fb4778b3e5370e7a4ed238b50de86d63486fd56');
+    expect(digest).toBe('09affed915c0369061566175e69caa4c910f6c7ed0abc6a30147876f73d88947');
   });
 });

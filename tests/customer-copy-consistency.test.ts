@@ -12,6 +12,7 @@ import { buildTrackedFareAirportGroups, formatCoverageAsOf, getTrackedFareCovera
 import { isSelfTransferItinerary } from '@/lib/fare-self-transfer';
 import { GENERIC_FLIGHT_SEARCH_CTA_LABEL, SERVICE_ENDED_CTA_LABEL, TRIPCOM_DEFAULT_CTA_LABEL } from '@/lib/booking-providers';
 import { footerNav, mainNav } from '@/lib/site-config';
+import { FARE_EVIDENCE_DATE } from './fare-evidence-clock';
 
 /**
  * 10 October 2026 customer copy / consistency batch. Presentation only: none of these
@@ -98,10 +99,10 @@ describe('2. "Verified check" is gone', () => {
       const html = renderToStaticMarkup(await RoutePage({ params: Promise.resolve({ slug: 'manchester-islamabad' }) }));
       expect(html).toContain('Last fare check');
       expect(html).not.toContain('Verified check');
-      // Re-verified 17 Oct 2026 (review due 16 Nov) — the day after expiry.
-      vi.setSystemTime(new Date('2026-11-17T12:00:00.000Z'));
+      // Re-verified 3 Nov 2026 (review due 3 Dec) — the day after expiry.
+      vi.setSystemTime(new Date('2026-12-04T12:00:00.000Z'));
       const expired = renderToStaticMarkup(await RoutePage({ params: Promise.resolve({ slug: 'manchester-islamabad' }) }));
-      expect(getPublishableObservationsByRoute('manchester-islamabad', '2026-11-17')).toEqual([]);
+      expect(getPublishableObservationsByRoute('manchester-islamabad', '2026-12-04')).toEqual([]);
       expect(expired).not.toContain('Last fare check');
       expect(expired).not.toContain('Verified check');
       expect(expired).not.toContain('Fare spotted');
@@ -147,17 +148,24 @@ describe('3. no-fare copy distinguishes "no current fare" from "none ever logged
   });
 
   it('every real route with no current fare but checks in the archive says it has checked before and nothing is safe to show, never "hasn\'t logged", and does not expose the hidden history', async () => {
-    // The route page derives its Fare Signal from today's date, so the candidates must too.
-    const today = new Date().toISOString().slice(0, 10);
+    // The route page derives its Fare Signal from today's date, so the candidates must too. Both read
+    // a fixed day, because which routes lack a current fare changes as evidence ages (tests/fare-evidence-clock.ts).
+    const today = FARE_EVIDENCE_DATE;
     const candidates = routes.filter((route) => getFareSignalForRoute(route.slug, today).state === 'none' && fareObservations.some((o) => o.routeSlug === route.slug));
     if (candidates.length === 0) return; // wording is covered by the unit cases above if every route has a current fare
     expect(NOW.length).toBe(10);
-    for (const route of candidates.slice(0, 4)) {
-      const html = renderToStaticMarkup(await RoutePage({ params: Promise.resolve({ slug: route.slug }) })).replace(/&#x27;/g, "'");
-      expect(html, route.slug).toContain("JetStash has checked this route before, but there isn't a current fare we can safely show.");
-      expect(html, route.slug).not.toContain("hasn't logged a fare");
-      // Founder ruling 10 Oct 2026: observations the publishability rules reject stay hidden; no history panel appears.
-      if (getPublishableObservationsByRoute(route.slug, today).length === 0) expect(html, route.slug).not.toContain('fare-history');
+    vi.useFakeTimers({ toFake: ['Date'] });
+    try {
+      vi.setSystemTime(new Date(`${today}T12:00:00.000Z`));
+      for (const route of candidates.slice(0, 4)) {
+        const html = renderToStaticMarkup(await RoutePage({ params: Promise.resolve({ slug: route.slug }) })).replace(/&#x27;/g, "'");
+        expect(html, route.slug).toContain("JetStash has checked this route before, but there isn't a current fare we can safely show.");
+        expect(html, route.slug).not.toContain("hasn't logged a fare");
+        // Founder ruling 10 Oct 2026: observations the publishability rules reject stay hidden; no history panel appears.
+        if (getPublishableObservationsByRoute(route.slug, today).length === 0) expect(html, route.slug).not.toContain('fare-history');
+      }
+    } finally {
+      vi.useRealTimers();
     }
   });
 });

@@ -28,7 +28,8 @@ export function Header() {
           <span className="font-display text-2xl tracking-tight text-sand-50">{siteConfig.name}</span>
         </Link>
 
-        <nav className="hidden items-center gap-7 lg:flex" aria-label="Main navigation">
+        {/* gap-5 below xl keeps seven items clear of the logo and CTA at a 1024px viewport. */}
+        <nav className="hidden items-center gap-5 lg:flex xl:gap-7" aria-label="Main navigation">
           {mainNav.map((item) => (
             <Link
               key={item.href}

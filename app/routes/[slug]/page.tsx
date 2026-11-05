@@ -145,7 +145,7 @@ export default async function RoutePage({ params }: { params: Promise<{ slug: st
     notFound();
     return null;
   }
-  const arriveByPair = getPublicJourneyRoutePair(airport.code, dest.iataCode);
+  const arriveByPair = getPublicJourneyRoutePair(airport.code, dest.iataCode, nowIso);
   const seoPilotActive = isSeoPilotPage(route.slug) && isRouteEligibleForSeoLink(route, nowIso);
   const seoRouteLinks = seoPilotActive ? getSeoRouteLinks(nowIso, route.slug) : [];
   const quickAnswers = seoPilotActive ? getQuickAnswersContent(route, nowIso) : null;
@@ -725,7 +725,11 @@ export default async function RoutePage({ params }: { params: Promise<{ slug: st
             </div>
           ) : shouldShowNoFareFallback(fareSignal) ? (
             <div className="mt-8">
-              <NoFareFallback cityLabel={`${airport.city} to ${dest.city}`} routeSlug={route.slug} />
+              <NoFareFallback
+                cityLabel={`${airport.city} to ${dest.city}`}
+                routeSlug={route.slug}
+                hasCheckedFaresBefore={allFareObservations.some((o) => o.routeSlug === route.slug)}
+              />
             </div>
           ) : null}
           {/* SEO Domination Batch 1B (23 Aug 2026) — sits directly below the

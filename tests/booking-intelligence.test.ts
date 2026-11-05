@@ -138,16 +138,16 @@ describe('computeBookBySnapshot — unsupported inputs return null rather than g
   describe('verification-pending leakage fix (audit finding): a priority route whose verification has since expired — fully deterministic on the `now` parameter, no system-clock mocking needed', () => {
     const route = getRouteBySlug('manchester-lahore')!;
 
-    it('sanity: the fixture route\'s real reviewDueDate is 2026-11-12 (refreshed by the 13 October 2026 Route Verification Maintenance batch)', () => {
-      expect(route.verification?.reviewDueDate).toBe('2026-11-12');
+    it('sanity: the fixture route\'s real reviewDueDate is 2026-12-03 (refreshed by the 3 November 2026 primary-source review)', () => {
+      expect(route.verification?.reviewDueDate).toBe('2026-12-03');
     });
 
     it('2026-07-23 (before reviewDueDate): still produces a snapshot normally', () => {
       expect(computeBookBySnapshot('manchester-lahore', new Date('2026-07-23T12:00:00Z'))).not.toBeNull();
     });
 
-    it('2026-11-13 (the day after reviewDueDate): stops producing a snapshot, even though the route is still in BOOK_BY_PRIORITY_ROUTE_SLUGS and still has upcoming peak-period occurrences', () => {
-      expect(computeBookBySnapshot('manchester-lahore', new Date('2026-11-13T12:00:00Z'))).toBeNull();
+    it('2026-12-04 (the day after reviewDueDate): stops producing a snapshot, even though the route is still in BOOK_BY_PRIORITY_ROUTE_SLUGS and still has upcoming peak-period occurrences', () => {
+      expect(computeBookBySnapshot('manchester-lahore', new Date('2026-12-04T12:00:00Z'))).toBeNull();
     });
 
     it('a far-future date: still null — expiry does not un-expire with more time passing', () => {

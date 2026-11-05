@@ -8,6 +8,7 @@ import { isBookByRoute } from '@/lib/booking-intelligence';
 import { getTripComRouteUrl } from '@/lib/booking-providers';
 import { travellerTips } from '@/data/traveller-tips';
 import { computeRouteIntelligenceLevel } from '@/lib/atlas-network-data';
+import { FARE_EVIDENCE_DATE, pinClockToFareEvidenceDate } from './fare-evidence-clock';
 
 /**
  * Route Completion Batch 1 (August 2026) — Manchester-Dubai and
@@ -23,7 +24,9 @@ import { computeRouteIntelligenceLevel } from '@/lib/atlas-network-data';
  * genuine new evidence, or if Doha is ever closed by gaming the score.
  */
 
-const NOW_ISO = new Date().toISOString().slice(0, 10);
+// Grades depend on whether the fare evidence is current, so they are evaluated on a fixed day (see tests/fare-evidence-clock.ts).
+const NOW_ISO = FARE_EVIDENCE_DATE;
+pinClockToFareEvidenceDate();
 const BATCH_1_SLUGS = ['manchester-dubai', 'manchester-doha'] as const;
 const NEW_DUBAI_OBS_ID = 'obs-man-dxb-economy-20260806-8w-v1';
 
@@ -201,6 +204,8 @@ describe('Manchester-Dubai\'s new fare observation matches the approved specific
       // 6 October 2026 weekly sweep — a self-transfer secondary and a clean fare.
       'obs-man-dxb-economy-20261006-selftransfer-v1',
       'obs-man-dxb-economy-20261006-v1',
+      // 3 November 2026 weekly sweep (fare recovery) — a clean Saudia round trip, both legs read.
+      'obs-man-dxb-economy-20261103-8w-v1',
     ].includes(o.id));
     expect(historic.length).toBeGreaterThanOrEqual(2);
     for (const o of historic) {
