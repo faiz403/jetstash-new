@@ -22,6 +22,20 @@ rate limiting rather than the current process-local limiter.
 
 **Production site:** `https://jetstash.co.uk`
 
+## Dependency security maintenance — 5 November 2026 (for review; not merged or Production-deployed)
+
+- Founder-approved response to the independent audit: Next.js `15.5.24` → `15.5.29`, within the existing major/minor line;
+  locked sharp `0.35.4` → `0.35.5`, source-map-js `1.2.1` → `1.2.2`, and patched compatible development-only Vite/brace-expansion dependencies.
+- Next.js still declares PostCSS `8.4.31`, so a Next-scoped override uses the already installed compatible PostCSS `8.5.28`.
+  This removes the vulnerable nested copy without overriding other consumers or changing the application CSS pipeline.
+- Lockfile audit: critical/high affected package nodes `1 / 5` → `0 / 0`. Nine moderate development-tool nodes remain disclosed;
+  this is not a claim that every advisory has been eliminated or that Production exploitation was demonstrated.
+- Exposure review found repository-controlled local images, no remote image hosts or upload feature, SVG optimization not enabled,
+  and no Server Actions. No exploit or live routing request was attempted. These conditions narrow exposure, not permission to leave
+  affected versions installed.
+- No fare records, selectors, route evidence, affiliate configuration, UI, Arrive By logic, monthly Google counter or held calls changed.
+  Trip.com remains paused. Hosting research and fare-card copy corrections are separate; neither is implemented by this patch.
+
 ## Arrive By visitor rate limiter repair — 4 November 2026 (PR for review; not merged, not deployed)
 
 - **Defect (found live on 4 November 2026):** the per-visitor limiter shared the monthly Google budget's counter, which runs INCRBY
