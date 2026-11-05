@@ -258,12 +258,20 @@ Every checkpoint records these items:
   compatible security dependency fixes. No application copy, route/fare records, metadata, sitemap or internal links changed.
   The ten-page release smoke matched sampled displayed prices and retained the Trip.com pause. No ranking effect is established.
 
-- **Archive-aware airport/destination fare-card copy (prepared for review, not Production-deployed):** cards with recorded history
+- **Archive-aware airport/destination fare-card copy (PR #364; merge `6410aa6e119722b4d5f1c4b6ebb301a61ef0d0b3`, merged 14:12:29 UTC
+  on 5 November 2026; Production verification recorded as successful in the CEO decision of 5 November, deployment id and Ready time
+  not captured here):** cards with recorded history
   but no eligible representative fare change "No fare logged yet" to "No current fare to show". Never-observed cards retain the old
   wording. The same history-presence distinction now applies to cabin-scoped DealCard absence copy; package wording and all range
   calculations remain unchanged. The audit's 128 instances on 34 pages cover the two lead card templates only. Final 5 November replay:
   those 128 plus 84 lower-card corrections across 50 pages total. Fare selection, titles, canonical URLs, robots, sitemap, Quick answers and internal-link destinations
-  are unchanged. Record the actual merge/deployment here only after separate approval and release.
+  are unchanged.
+
+- **Homepage first-visit usability (PR #353; prepared for review, not Production-deployed):** homepage text changes: the eyebrow gains
+  "to Pakistan, India or the Gulf" from sm up, phones gain a "For UK travellers flying to Pakistan, India and the Gulf." line below the
+  console, and the closing button reads "Check my journey" (was "Check my trip"). The `<h1>`, `<title>`, meta description, canonical,
+  robots, sitemap, route/fare records and internal links are unchanged. Treat as a homepage-text event for the pilot; record the actual
+  merge/deployment here only after separate approval and release.
 
 ## Wave 2 (not approved; only after a positive day-14 signal)
 

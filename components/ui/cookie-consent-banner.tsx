@@ -269,27 +269,47 @@ export function CookieConsentBanner() {
           aria-label="Cookie consent"
           ref={panelRef}
           tabIndex={-1}
-          className="fixed inset-x-0 bottom-0 z-50 outline-none border-t border-ink-200 bg-white px-3 pb-1 pt-1 shadow-[0_-4px_16px_rgba(0,0,0,0.12)] sm:px-8 sm:pb-4 sm:pt-4"
+          className="fixed inset-x-0 bottom-0 z-50 max-h-[85vh] overflow-y-auto outline-none border-t border-ink-200 bg-white px-3 pb-2 pt-2 shadow-[0_-4px_16px_rgba(0,0,0,0.12)] sm:px-8 sm:pb-4 sm:pt-4"
         >
           {summaryView ? (
             <div className="mx-auto flex max-w-content flex-col gap-1.5 text-xs leading-snug text-ink-600 sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:text-sm sm:leading-relaxed">
               <div>
-                <p>
-                  <strong className="font-semibold text-ink-800">Your privacy choices.</strong> Optional Vercel Analytics and Speed Insights measure
-                  site use and page speed. Optional Google Ads measurement checks whether ads lead to partner link clicks. All are off until you
-                  choose.
-                </p>
-                <p className="mt-0.5 flex flex-wrap items-center gap-x-3">
-                  <button type="button" onClick={openDetails} className="min-h-8 font-semibold text-ink-800 underline hover:text-brass-700">
-                    Choose individual settings
-                  </button>
+                {/* Phones (November 2026): a shorter first layer, about 100px instead of 160px, so the panel leaves the page's first
+                    action in view. Same two optional permissions, same Privacy Policy link and Choose individual settings, nothing
+                    pre-ticked; the vendor-by-vendor wording is one tap away and from sm up this layer reads exactly as before. */}
+                <p className="sm:hidden">
+                  <strong className="font-semibold text-ink-800">Your privacy choices.</strong> Optional site statistics (Vercel) and Google Ads
+                  measurement are off until you choose.{' '}
                   <Link href="/privacy-policy" className="underline hover:text-brass-700">
                     Privacy Policy
                   </Link>
                 </p>
+                <div className="hidden sm:block">
+                  <p>
+                    <strong className="font-semibold text-ink-800">Your privacy choices.</strong> Optional Vercel Analytics and Speed Insights
+                    measure site use and page speed. Optional Google Ads measurement checks whether ads lead to partner link clicks. All are off
+                    until you choose.
+                  </p>
+                  <p className="mt-0.5 flex flex-wrap items-center gap-x-3">
+                    <button type="button" onClick={openDetails} className="min-h-8 font-semibold text-ink-800 underline hover:text-brass-700">
+                      Choose individual settings
+                    </button>
+                    <Link href="/privacy-policy" className="underline hover:text-brass-700">
+                      Privacy Policy
+                    </Link>
+                  </p>
+                </div>
               </div>
               {/* Equal prominence: Reject all and Accept all share one style and, on phones, one width. */}
-              <div className="flex w-full shrink-0 gap-2 sm:w-auto">
+              <div className="flex w-full shrink-0 items-center gap-2 sm:w-auto">
+                <button
+                  type="button"
+                  onClick={openDetails}
+                  aria-label="Choose individual settings"
+                  className="min-h-11 shrink-0 px-1 text-xs font-semibold text-ink-800 underline hover:text-brass-700 sm:hidden"
+                >
+                  Settings
+                </button>
                 <button type="button" onClick={() => handleAll('denied')} className={CHOICE_BUTTON}>
                   Reject all
                 </button>

@@ -20,18 +20,21 @@ export function PageHero({
   description,
   stats,
   heroKey,
+  heroOverlay,
   children,
   size = 'default',
   className,
   immediate = false,
 }: {
-  eyebrow?: string;
+  eyebrow?: React.ReactNode;
   title: React.ReactNode;
   description?: React.ReactNode;
   /** Real, data-derived figures only. */
   stats?: { value: string; label: string }[];
   /** Key into public/images/heroes/ for an optional photographic backdrop. */
   heroKey?: string;
+  /** Passed to HeroBackdrop; leave unset for the even veil every other page uses. */
+  heroOverlay?: 'uniform' | 'directional';
   children?: React.ReactNode;
   /** A shallower arrival moment for index pages where discovery should begin above the fold. */
   size?: 'default' | 'compact';
@@ -57,7 +60,7 @@ export function PageHero({
 }) {
   return (
     <section className={cn('relative overflow-hidden bg-ink-900', size === 'compact' ? 'py-12 sm:py-14' : 'py-16 sm:py-20', className)}>
-      <HeroBackdrop heroKey={heroKey} />
+      <HeroBackdrop heroKey={heroKey} overlay={heroOverlay} />
       <div
         className="absolute -right-24 top-1/2 hidden h-[420px] w-[420px] -translate-y-1/2 rounded-full border border-white/[0.04] lg:block"
         aria-hidden="true"

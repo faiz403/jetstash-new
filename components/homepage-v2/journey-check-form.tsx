@@ -101,7 +101,7 @@ export function JourneyCheckForm({ origins, destinations, routeIndex }: JourneyC
     <div>
       <form onSubmit={onSubmit} className="grid gap-3 sm:grid-cols-[1fr_1fr_auto] sm:items-end">
         <div>
-          <label htmlFor="jc-from" className="text-[11px] font-semibold uppercase tracking-wide text-ink-500">
+          <label htmlFor="jc-from" className="text-xs font-semibold uppercase tracking-wide text-ink-500">
             Flying from
           </label>
           <select
@@ -127,7 +127,7 @@ export function JourneyCheckForm({ origins, destinations, routeIndex }: JourneyC
           </select>
         </div>
         <div>
-          <label htmlFor="jc-to" className="text-[11px] font-semibold uppercase tracking-wide text-ink-500">
+          <label htmlFor="jc-to" className="text-xs font-semibold uppercase tracking-wide text-ink-500">
             Going to
           </label>
           <select

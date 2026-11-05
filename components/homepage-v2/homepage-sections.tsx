@@ -36,7 +36,7 @@ import { SeoRouteLinks } from '@/components/route/seo-route-links';
    fix. */
 export function CommercialPaths() {
   return (
-    <section className="bg-sand-100 py-10 sm:py-14">
+    <section className="bg-sand-100 pb-6 pt-10 sm:pb-8 sm:pt-14">
       <div className="mx-auto max-w-content px-5 sm:px-8">
         <div className="flex flex-col gap-4 border-y border-ink-100 py-6 sm:flex-row sm:items-center sm:justify-between">
           <div>
@@ -190,7 +190,7 @@ export function RouteWatchInvite({ watchRoute = null }: { watchRoute?: { slug: s
   const href = watchRoute ? `/routes/${watchRoute.slug}#route-watch` : '/routes';
   const label = watchRoute ? `Watch ${watchRoute.label}` : 'Choose a route to watch';
   return (
-    <section className="bg-sand-100 py-14 sm:py-20">
+    <section className="bg-sand-100 pb-14 pt-8 sm:pb-20 sm:pt-10">
       <div className="mx-auto max-w-content px-5 sm:px-8">
         <div className="flex flex-col gap-6 rounded-lg border border-ink-100 bg-white p-7 shadow-card sm:flex-row sm:items-center sm:justify-between sm:p-9">
           <div className="max-w-xl">
@@ -237,7 +237,7 @@ export function ClosingBand() {
           href="#your-journey"
           className="inline-flex h-12 items-center justify-center gap-1.5 rounded-sm bg-brass px-6 text-sm font-semibold text-ink-900 transition-all hover:bg-brass-400"
         >
-          Check my trip
+          Check my journey
           <ArrowRight className="h-4 w-4" strokeWidth={2.25} />
         </Link>
       </div>
