@@ -3,6 +3,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { deals } from '@/data/deals';
 import { getRouteByAirportAndDestination } from '@/data/routes';
 import { DealCard } from '@/components/ui/deal-card';
+import { getObservationsByRouteAndCabin } from '@/data/fare-observations';
 
 /**
  * Astra bounded trust review (10 Sept 2026) — finding #4, Mumbai unavailable
@@ -66,10 +67,12 @@ describe('DealCard never promises "check the live price below" when no live-pric
     expect(html).toContain('Direct flight comparison is not available for this airport yet.');
   });
 
-  it('a genuinely live, no-fare route (manchester-islamabad, man-isb-business) keeps the original promise unchanged — this fix is additive, not a rewrite', () => {
+  it('a route with historical Business checks keeps its cabin scope and only promises a live check when the CTA exists', () => {
     const dealDef = deals.find((d) => d.id === 'man-isb-business')!;
-    const html = renderToStaticMarkup(DealCard({ deal: dealDef }));
-    expect(html).toContain('No Business class fare checks logged yet — check the live price below');
+    expect(getObservationsByRouteAndCabin('manchester-islamabad', 'Business').length).toBeGreaterThan(0);
+    const html = renderToStaticMarkup(DealCard({ deal: dealDef, nowIso: NOW_ISO }));
+    expect(html).toContain('No current Business class fare to show — check the live price below');
+    expect(html).not.toContain('No Business class fare checks logged yet');
     expect(html).toContain('Search Manchester to Islamabad flights on Trip.com');
   });
 

@@ -249,6 +249,22 @@ Every checkpoint records these items:
   links to "flight-search and booking websites". Only those two pages' wording changed. No title, canonical URL, robots, sitemap
   entry or internal link changed anywhere in the crawl. Expect no ranking effect.
 
+- **Arrive By visitor-window repair (PR #362; merge `a4313be050a05f8eae6aad45e223e7ac9b4f0c9a`, merged 00:12:48 UTC on
+  5 November 2026; exact-SHA Production Ready 00:14:07 UTC):** server-side visitor limiting only. No route/fare data, titles,
+  canonical URLs, robots, sitemap, pilot copy or internal links changed. It is complete, not an outstanding release.
+
+- **Dependency security patch (PR #363; merge `9d91f2e0c02c184060325504b9cfcebe989d5917`, merged 02:51:12 UTC on
+  5 November 2026; exact-SHA Production Ready 02:52:26 UTC and custom-domain deployment confirmed):** Next.js 15.5.29 and
+  compatible security dependency fixes. No application copy, route/fare records, metadata, sitemap or internal links changed.
+  The ten-page release smoke matched sampled displayed prices and retained the Trip.com pause. No ranking effect is established.
+
+- **Archive-aware airport/destination fare-card copy (prepared for review, not Production-deployed):** cards with recorded history
+  but no eligible representative fare change "No fare logged yet" to "No current fare to show". Never-observed cards retain the old
+  wording. The same history-presence distinction now applies to cabin-scoped DealCard absence copy; package wording and all range
+  calculations remain unchanged. The audit's 128 instances on 34 pages cover the two lead card templates only. Final 5 November replay:
+  those 128 plus 84 lower-card corrections across 50 pages total. Fare selection, titles, canonical URLs, robots, sitemap, Quick answers and internal-link destinations
+  are unchanged. Record the actual merge/deployment here only after separate approval and release.
+
 ## Wave 2 (not approved; only after a positive day-14 signal)
 
 **Ready now** (verification current, no pending status on 21 Oct):

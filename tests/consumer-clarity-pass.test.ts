@@ -103,9 +103,9 @@ describe('route card fare hierarchy', () => {
 
 describe('airport route grid', () => {
   const items: AirportRouteItem[] = [
-    { slug: 'manchester-istanbul', country: 'Turkey', title: 'Manchester → Istanbul', statusLabel: 'Direct', detail: 'Published timings vary', fare: null },
-    { slug: 'manchester-dubai', country: 'United Arab Emirates', title: 'Manchester → Dubai', statusLabel: 'Direct', detail: null, fare: null },
-    { slug: 'manchester-lahore', country: 'Pakistan', title: 'Manchester → Lahore', statusLabel: 'Direct', detail: null, fare: null },
+    { slug: 'manchester-istanbul', country: 'Turkey', title: 'Manchester → Istanbul', statusLabel: 'Direct', detail: 'Published timings vary', fare: null, hasLoggedFare: false },
+    { slug: 'manchester-dubai', country: 'United Arab Emirates', title: 'Manchester → Dubai', statusLabel: 'Direct', detail: null, fare: null, hasLoggedFare: false },
+    { slug: 'manchester-lahore', country: 'Pakistan', title: 'Manchester → Lahore', statusLabel: 'Direct', detail: null, fare: null, hasLoggedFare: false },
   ];
 
   it('server-renders every route (nothing depends on JavaScript), with an honest empty fare line and the long prose behind Details', () => {

@@ -3,7 +3,7 @@ import { Deal, DealCabin, formatChecked, getDealFareDirectnessLabel, getDealAirl
 import { getRouteByAirportAndDestination } from '@/data/routes';
 import { routeStatusEvents } from '@/data/route-status-events';
 import { getEffectiveRoutePresentation } from '@/lib/route-status-copy';
-import { getFareRangeSummary, getPublishableObservationsByRouteAndCabin } from '@/data/fare-observations';
+import { getFareRangeSummary, getObservationsByRouteAndCabin } from '@/data/fare-observations';
 import { getSafeTripComFlightHandoffUrl, SERVICE_ENDED_CTA_LABEL, getTripComSearchCtaLabel, TRIPCOM_FRESH_SEARCH_NOTE, TRIPCOM_NO_FARE_SEARCH_NOTE, PROVIDER_REL } from '@/lib/booking-providers';
 import { getFareFreshnessState, daysBetweenIso, OBSERVATION_STALE_DAYS } from '@/lib/freshness-thresholds';
 import { toTravellerFareNote } from '@/lib/fare-note-display';
@@ -69,7 +69,9 @@ export function DealCard({ deal, nowIso, headingLevel = 'h3' }: { deal: Deal; no
   // fares, which are not evidence for a bundled product's price; see
   // isBundledProductDeal's doc comment in data/deals.ts.
   const range = matchedRoute && !isBundledProductDeal(deal) ? getFareRangeSummary(matchedRoute.slug, deal.cabin, effectiveNowIso) : null;
-  const hasLoggedChecks = matchedRoute ? getPublishableObservationsByRouteAndCabin(matchedRoute.slug, deal.cabin, effectiveNowIso).length > 0 : false;
+  // History presence is not publication eligibility: expired or held-back checks were still logged.
+  // This flag words the empty state only; range and price selection keep their existing gates.
+  const hasLoggedChecks = matchedRoute ? getObservationsByRouteAndCabin(matchedRoute.slug, deal.cabin).length > 0 : false;
   // A duration belongs to a specific airport-to-destination route, never to
   // a destination in general. This presentation removes duration facts when
   // the route is unverified or the service has ended.
@@ -294,10 +296,10 @@ export function DealCard({ deal, nowIso, headingLevel = 'h3' }: { deal: Deal; no
                 // second, independent check — so the promise can never
                 // outrun what actually renders beneath it.
                 //
-                // No-current-fare truth fix (17 Oct 2026): the range is also
-                // null when publishable checks exist but none passes the
-                // 14-day departure guard. "Logged yet" would then be false,
-                // so those cards say there is no current fare instead.
+                // No-current-fare truth: the range can be null because of
+                // travel dates, observation age or route evidence. Those
+                // checks still exist historically, so "logged yet" is only
+                // valid when this route/cabin has never been recorded.
                 : hasLoggedChecks
                   ? tripComUrl
                     ? `No current ${cabinLabel[deal.cabin]} fare to show — check the live price below`

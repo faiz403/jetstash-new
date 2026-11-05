@@ -3,12 +3,13 @@
 import { useState, type ReactNode } from 'react';
 import Link from 'next/link';
 import { ArrowUpRight, MapPin } from 'lucide-react';
+import { getFareCardEmptyStateLabel } from '@/lib/route-card-fare';
 
 /**
  * Consumer clarity pass (3 Oct 2026). The airport page's destination list: the first thing a
  * visitor wants from an airport page is "where can I go from here?", so the route cards now
  * lead the page. Each card shows the exact route, its verified status, the fare summary
- * (or an honest "No fare logged yet"), and one action. The long flight-time prose that used to
+ * (or an archive-aware empty state), and one action. The long flight-time prose that used to
  * sit in every card moved behind "Details".
  *
  * Client component only for the country filter. The server renders every route in the initial
@@ -26,6 +27,8 @@ export interface AirportRouteItem {
   detail: string | null;
   /** The RouteCardFare summary, or null when JetStash has no publishable fare for the route. */
   fare: ReactNode | null;
+  /** Server-derived archive presence only; no withheld observation data reaches the client. */
+  hasLoggedFare: boolean;
 }
 
 export function AirportRouteGrid({ items }: { items: AirportRouteItem[] }) {
@@ -72,7 +75,7 @@ export function AirportRouteGrid({ items }: { items: AirportRouteItem[] }) {
             <p className="mt-1.5">
               <span className="inline-block rounded-full border border-ink-200 px-2.5 py-0.5 text-xs font-medium text-ink-700">{item.statusLabel}</span>
             </p>
-            <div className="mt-4 flex-1">{item.fare ?? <p className="text-sm text-ink-600">No fare logged yet</p>}</div>
+            <div className="mt-4 flex-1">{item.fare ?? <p className="text-sm text-ink-600">{getFareCardEmptyStateLabel(item.hasLoggedFare)}</p>}</div>
             <Link
               href={`/routes/${item.slug}`}
               className="group mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-ink-900"

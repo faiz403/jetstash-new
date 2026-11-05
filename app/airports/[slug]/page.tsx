@@ -96,6 +96,7 @@ export default async function AirportPage({ params }: { params: Promise<{ slug: 
         fare: showsFare ? (
           <RouteCardFare observation={signal.observation!} state={signal.state as 'current' | 'recent'} lowerSelfTransfer={signal.lowerSelfTransfer ?? null} nowIso={nowIsoForFareCheck} />
         ) : null,
+        hasLoggedFare: hasAnyObservationAmongRoutes([route.slug]),
       },
     ];
   });
