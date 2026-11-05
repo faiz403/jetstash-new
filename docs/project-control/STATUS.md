@@ -1,18 +1,21 @@
 # JetStash Current Status
 
-**Last reconciled:** 14 September 2026 (project-control truth through PR #272)
+**Latest release reconciliation:** 5 November 2026, through PR #363. The older dated programme/count snapshots below are historical.
 
 **Production branch:** `main`
 
-**Application release baseline:** `2f1ede5` (PR #272 merge — session-only acquisition-source
-attribution). This reconciliation closes the full Astra founder-review programme (#1–#20, PRs
-through #272) and records the resulting operating-state change — **build freeze, validation mode,
-90-day first-booking goal** — immediately below. See "Astra programme closure and current operating
-state — 14 September 2026" for what actually changed. The route/fare/product counts in the
-27 August snapshot further below were not affected by this reconciliation and remain the latest
-available derivation; they are not superseded by this entry, only the *programme-state* narrative
-around them is. Older dated counts and delivery notes remain historical evidence of what was true at
-the time.
+**Confirmed Production baseline:** `9d91f2e0c02c184060325504b9cfcebe989d5917` (PR #363). Vercel Production
+`dpl_H6mhwiDdQqhfQ957gpxu4iDgzrm1` was Ready at 02:52:26 UTC on 5 November; the custom domain was confirmed serving it.
+PR #362 is also merged and deployed, not outstanding. No deployment is authorised by a documentation update.
+
+**Current founder direction — 5 November:** execute the Website Improvement Programme through small, tested PRs, beginning
+with archive-aware fare-card wording, then review the existing homepage PR #353. Stop before every Production merge for approval.
+This is a specific exception to the older engineering freeze, not permission for arbitrary features, fabricated evidence or growth claims.
+Keep Trip.com paused, the monthly Google counter unchanged and all 28 reserved calls held. JetStash stays on Vercel; do not reopen
+Netlify work. Commercial plan suitability remains a separate decision; no subscription or settings change is authorised.
+
+The 14 September programme reconciliation used `2f1ede5` (PR #272). Its closure and older route/fare counts are retained below
+as dated history, not today's authoritative inventory. Recompute current coverage at an explicit evaluation date before using it.
 
 **Launch readiness:** ready for controlled public organic use. Google Ads Basic Consent Mode and
 conversion tracking are live; missing instrumentation is no longer the paid-growth blocker.
@@ -22,7 +25,23 @@ rate limiting rather than the current process-local limiter.
 
 **Production site:** `https://jetstash.co.uk`
 
-## Dependency security maintenance — 5 November 2026 (for review; not merged or Production-deployed)
+## Archive-aware fare-card wording — 5 November 2026 (prepared for review; not deployed)
+
+- The two lead route-card templates now distinguish recorded history with no eligible fare (**"No current fare to show"**) from
+  genuinely never-observed routes (**"No fare logged yet"**). Only a server-derived history-presence boolean reaches the airport grid.
+- Browser verification found the same contradiction in lower DealCards. Their cabin-scoped no-range copy now checks archive presence,
+  not publication eligibility. Package wording, range calculations, price selection, route status and booking destinations are unchanged.
+- Explicit 5 November replay: 128 lead-card and 84 lower-card corrections, 50 public pages affected. All 25 Fare Signals, selected
+  observations, prices and historical ranges are unchanged; Fare Watcher / Route Watch / Standout remain 0 / 0 / 0.
+- Local gate: 5,657 tests, TypeScript, lint, production build and diff check pass. Thirty browser renders (Production comparison plus
+  local 1440/390/320px checks) found no horizontal overflow, failed images or Trip.com links. No Google/API submissions or counter probes.
+- This is a presentation-truth fix, not a freshness/eligibility policy change or an approved release. Merge still requires founder approval.
+
+## Dependency security maintenance — 5 November 2026 (PR #363 merged and verified in Production)
+
+- **Release:** merged `9d91f2e0c02c184060325504b9cfcebe989d5917` at 02:51:12 UTC; exact-SHA Production Ready 02:52:26 UTC.
+  Ten read-only page checks returned 200; sampled displayed prices matched the pre-release crawl; optimized images and homepage-to-route
+  navigation worked; no Trip.com links appeared in that sample. No rollback was indicated. No Google API or counter probe was performed.
 
 - Founder-approved response to the independent audit: Next.js `15.5.24` → `15.5.29`, within the existing major/minor line;
   locked sharp `0.35.4` → `0.35.5`, source-map-js `1.2.1` → `1.2.2`, and patched compatible development-only Vite/brace-expansion dependencies.
@@ -36,7 +55,10 @@ rate limiting rather than the current process-local limiter.
 - No fare records, selectors, route evidence, affiliate configuration, UI, Arrive By logic, monthly Google counter or held calls changed.
   Trip.com remains paused. Hosting research and fare-card copy corrections are separate; neither is implemented by this patch.
 
-## Arrive By visitor rate limiter repair — 4 November 2026 (PR for review; not merged, not deployed)
+## Arrive By visitor rate limiter repair — 4 November 2026 (PR #362 merged and in Production)
+
+- **Release:** merged `a4313be050a05f8eae6aad45e223e7ac9b4f0c9a` at 00:12:48 UTC on 5 November; exact-SHA deployment
+  `dpl_E442hD51AxAshsFrBQeSSbujzNqS` Ready at 00:14:07 UTC. It is an ancestor of the verified #363 Production release.
 
 - **Defect (found live on 4 November 2026):** the per-visitor limiter shared the monthly Google budget's counter, which runs INCRBY
   then EXPIRE on every request. Refused requests therefore re-armed the 60 second expiry, so a visitor who kept retrying was locked
@@ -46,9 +68,9 @@ rate limiting rather than the current process-local limiter.
   (five calculations per 60 seconds, 30 interactions), same hashed keys under a new prefix, same fail-closed behaviour.
 - **Untouched:** `lib/arrive-by-journey/call-budget.ts` and the 2,000-call monthly Google counter, the ten-call journey ceiling, and
   all five endpoints' call order. A test pins that the monthly counter file is unchanged in behaviour.
-- **Not done:** the script has been run against a faithful fake, not the live Upstash store; a one-key live check is the pre-merge
-  or post-merge verification step. Shared-IP risk (a household or mobile carrier sharing one address shares one allowance) is
-  unchanged by this fix and is assessed separately.
+- **Validation boundary:** the implementation's offline fixed-window regression evidence is retained. The release is complete by
+  founder acceptance; this documentation reconciliation did not rerun a live Upstash check, read counters or consume Google calls.
+  Shared-IP risk (a household or mobile carrier sharing one address shares one allowance) remains unchanged.
 
 ## Trip.com affiliate pause switch — 4 November 2026 (PR #360 merged; pause ACTIVE and verified live)
 

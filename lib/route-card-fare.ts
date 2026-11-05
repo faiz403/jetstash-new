@@ -7,6 +7,11 @@ import type { FareSignalObservation } from '@/lib/fare-signal';
  * selects or alters a fare; it only words what the existing Fare Signal already holds.
  */
 
+/** Copy only: an absent selected fare does not mean the archive is empty. */
+export function getFareCardEmptyStateLabel(hasLoggedFare: boolean): string {
+  return hasLoggedFare ? 'No current fare to show' : 'No fare logged yet';
+}
+
 /**
  * "Manchester Airport" -> "Manchester", "London Heathrow" stays "London Heathrow". This is the
  * same short label the homepage journey finder already uses, and it keeps Heathrow and Gatwick

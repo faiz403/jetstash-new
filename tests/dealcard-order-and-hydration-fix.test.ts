@@ -279,10 +279,11 @@ describe('Defect 2 follow-up (founder review) — cabin-specific fallback wordin
   // renderToStaticMarkup(DealCard({ deal })) pattern already established in
   // tests/antalya-fare-package-truth.test.ts. Proves the exact HTML a
   // visitor receives for the two cards at the centre of this whole defect.
-  it('man-isb-business genuinely renders "No Business class fare checks logged yet" — the real card Participant 1 misread', () => {
+  it('man-isb-business keeps the Business scope without denying its historical fare checks', () => {
     const dealDef = deals.find((d) => d.id === 'man-isb-business')!;
     const html = renderToStaticMarkup(DealCard({ deal: dealDef, nowIso }));
-    expect(html).toContain('No Business class fare checks logged yet — check the live price below');
+    expect(html).toContain('No current Business class fare to show — check the live price below');
+    expect(html).not.toContain('No Business class fare checks logged yet');
     expect(html).not.toMatch(/>No fare checks logged yet/);
   });
 
