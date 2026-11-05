@@ -242,6 +242,13 @@ Every checkpoint records these items:
   Quick answer, sitemap entry or internal link changed. The pilot pages carry no Trip.com link either. The pause is a build-time switch and reverses by removing the Vercel
   variable and redeploying. Expect no ranking effect; read any day-14 movement without attributing it to this change.
 
+- **Affiliate disclosure and privacy wording while the Trip.com pause is active (PR #361; merge commit
+  `18ca514e9ca04a2bdcd62fd1947aaf29dd622216`, merged 21:11:18 UTC on 4 November 2026, Production deployment active 21:12:20 UTC;
+  verified live at 21:13:03 UTC against all 157 sitemap pages, 0 fetch failures, 0 Trip.com links):** `/affiliate-disclosure`
+  no longer names Trip.com as the current flight-booking partner while the pause is on, and `/privacy-policy` now says the site
+  links to "flight-search and booking websites". Only those two pages' wording changed. No title, canonical URL, robots, sitemap
+  entry or internal link changed anywhere in the crawl. Expect no ranking effect.
+
 ## Wave 2 (not approved; only after a positive day-14 signal)
 
 **Ready now** (verification current, no pending status on 21 Oct):

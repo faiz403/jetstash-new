@@ -4,7 +4,8 @@ import { NextRequest } from 'next/server';
 const store = vi.hoisted(() => {
   const counts = new Map<string, number>();
   return {
-    incrementBy: vi.fn(async (key: string) => {
+    durable: true,
+    hit: vi.fn(async (key: string) => {
       const count = (counts.get(key) ?? 0) + 1;
       counts.set(key, count);
       return count;
@@ -12,9 +13,9 @@ const store = vi.hoisted(() => {
   };
 });
 
-vi.mock('@/lib/arrive-by-journey/call-budget', () => ({
-  InMemoryCallBudgetStore: class {},
-  getConfiguredCallBudgetStore: () => store,
+vi.mock('@/lib/arrive-by-shared/visitor-window-store', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/lib/arrive-by-shared/visitor-window-store')>()),
+  getConfiguredVisitorWindowStore: () => store,
 }));
 
 import {
@@ -37,8 +38,8 @@ describe('Arrive By interaction rate limit', () => {
   it('has its own bounded interaction allowance and stores only a hashed client key', async () => {
     for (let i = 0; i < ARRIVE_BY_INTERACTION_RATE_LIMIT_MAX; i += 1) expect(await checkPublicJourneyInteractionRateLimit(request('203.0.113.24'), env)).toEqual({ limited: false });
     expect(await checkPublicJourneyInteractionRateLimit(request('203.0.113.24'), env)).toEqual({ limited: true });
-    const keys = store.incrementBy.mock.calls.map(([key]) => key);
-    expect(keys).toContainEqual(expect.stringMatching(/^arrive-by:interaction-rate:[a-f0-9]{64}$/));
+    const keys = store.hit.mock.calls.map(([key]) => key);
+    expect(keys).toContainEqual(expect.stringMatching(/^arrive-by:visitor-window:interaction:[a-f0-9]{64}$/));
     expect(keys.some((key) => key.includes('203.0.113.24'))).toBe(false);
   });
 });

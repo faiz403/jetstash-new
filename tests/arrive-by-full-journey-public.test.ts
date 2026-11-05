@@ -34,7 +34,8 @@ describe('public full-journey launch surface', () => {
     for (let count = 0; count < 5; count += 1) expect(await checkPublicJourneyRateLimit(request(ip), env)).toEqual({ limited: false });
     expect(await checkPublicJourneyRateLimit(request(ip), env)).toEqual({ limited: true });
     const source = readFileSync(join(process.cwd(), 'lib', 'arrive-by-shared', 'rate-limit.ts'), 'utf8');
-    expect(source).toContain("createHash('sha256')");
+    const store = readFileSync(join(process.cwd(), 'lib', 'arrive-by-shared', 'visitor-window-store.ts'), 'utf8');
+    expect(store).toContain("createHash('sha256')");
     expect(source).toContain('ARRIVE_BY_RATE_LIMIT_MAX');
   });
 
