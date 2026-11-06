@@ -3,9 +3,8 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 /**
- * Homepage first-visit usability (PR #353, November 2026). Measured at 320x720, 375x667 and 390x844 on the branch before this
- * change, the first-visit consent panel covered the homepage submit button. The fixes are layout only: a shorter phone panel,
- * and the console ahead of the description on a phone. No consent behaviour, no data and no copy that other tests pin changed.
+ * Homepage first-visit usability (November 2026). The shared consent panel is in normal flow so it cannot cover the homepage form;
+ * the mobile console remains before explanatory copy. Consent behavior and storage are unchanged.
  */
 const read = (p: string) => readFileSync(join(process.cwd(), p), 'utf8');
 const hero = read('components/homepage-v2/homepage-opening-hero.tsx');
@@ -58,7 +57,7 @@ describe('console before description on a phone', () => {
 
   it('still says the approved description verbatim and no longer passes it through PageHero', () => {
     expect(hero).toContain(
-      "Direct or with stops? What fare did we last see? Has the service changed? Pick your airport and destination to find out, then check today's price with a booking provider."
+      'See dated fares, route changes and travel requirements before you book. Then check the price with a booking provider.'
     );
     const tag = openingTag(hero, 'PageHero');
     expect(tag).toContain('heroOverlay="directional"'); // proves the scan reached the props after the eyebrow
@@ -112,13 +111,17 @@ describe('first-visit consent panel on a phone', () => {
     expect(banner).toMatch(/aria-label="Choose individual settings"[\s\S]{0,80}min-h-11[^"]*sm:hidden/);
   });
 
-  it('cannot grow past the viewport: the panel scrolls inside itself', () => {
-    expect(banner).toContain('fixed inset-x-0 bottom-0 z-50 max-h-[85vh] overflow-y-auto');
+  it('stays in normal flow rather than covering page controls', () => {
+    expect(banner).toContain('className="relative w-full');
+    expect(banner).not.toMatch(/className="[^"]*(?:fixed|absolute)\b/);
+    expect(banner).not.toContain('max-h-[85vh]');
   });
 
-  it('is never a gate: nothing is granted until a button says so, and the page end still scrolls clear of it', () => {
+  it('is never a gate: nothing is granted until a button says so, and the optional scripts remain consent-gated', () => {
     expect(banner).not.toMatch(/useState<ConsentChoice \| null>\(['"]granted['"]\)/);
-    expect(banner).toContain("root.style.setProperty('--consent-banner-h'");
+    expect(banner).toContain("storeConsentChoice(next)");
+    expect(banner).toContain("if (stored === 'granted')");
+    expect(banner).toContain('{loadTag && (');
   });
 });
 

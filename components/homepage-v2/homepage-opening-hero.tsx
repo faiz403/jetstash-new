@@ -67,7 +67,7 @@ const SHORT_VIEWPORT_HERO_PADDING = '[@media(max-height:800px)]:py-8';
 
 const AUDIENCE_LINE = 'For UK travellers flying to Pakistan, India and the Gulf.';
 const HERO_DESCRIPTION =
-  "Direct or with stops? What fare did we last see? Has the service changed? Pick your airport and destination to find out, then check today's price with a booking provider.";
+  'See dated fares, route changes and travel requirements before you book. Then check the price with a booking provider.';
 
 export function HomepageOpeningHero({
   journeyCheck,
@@ -112,64 +112,16 @@ export function HomepageOpeningHero({
           link — both point at #your-journey and previously scrolled down to
           the standalone section this console replaces.
 
-          Mobile pull-up margin (September 2026, consent-overlay fix):
-          PageHero wraps every caller's children in its own fixed `mt-7`
-          (28px) — shared by 13 other pages, not something this component
-          can change. That wrapper has no padding/border of its own, so its
-          margin and this div's margin are adjoining and collapse per normal
-          CSS rules: parent +28px against this div's -16px nets to a smaller
-          real gap above the console, on mobile only (sm:mt-0 cancels it
-          back to PageHero's untouched 28px at sm: and up — desktop is
-          pixel-identical to before, confirmed via getComputedStyle).
-          JourneyCheckForm and PageHero are both untouched.
-
-          Deliberately a plain fixed -16px, not tied to the consent banner's
-          own state or to env(safe-area-inset-bottom) (2 Sep 2026, founder
-          review, reverting an earlier draft that coupled the two): this
-          margin is a static CSS rule with no way to know whether the
-          banner is even visible, so a safe-area-dependent version would
-          have stayed pulled up by the same amount after the visitor
-          dismisses it — a real latent bug, not just unneeded complexity.
-          JetStash currently does not use viewport-fit=cover, so
-          env(safe-area-inset-bottom) is 0 on every real device today
-          anyway (see cookie-consent-banner.tsx's own comment); if that
-          config is ever adopted, it needs a proper site-wide safe-area
-          review, not a homepage-specific coupling landed years earlier. */}
+          The form is first on mobile and the explanatory copy follows; larger screens retain the approved desktop order. */}
       <div className="flex flex-col xl:relative">
-      {/* Consumer clarity pass (3 Oct 2026): the three questions JetStash actually answers, in the traveller's own words,
-          ending with where today's price comes from. No claim of live prices, cheapest fares, market-wide comparison or
-          savings. Moved here from PageHero's description slot (November 2026) with the same type, width and entrance, so
-          that on a phone (order-2) the console comes first and the first-visit consent panel no longer hides it: the
-          document order, and everything from sm up, is unchanged. The -mt-3 cancels 12px of the 28px PageHero puts above
-          its children, leaving the 16px h1-to-description gap the slot had. */}
+      {/* Concise scope-setting copy: JetStash provides dated route research, while booking providers confirm prices. */}
       <div className="stagger-in stagger-3 order-2 mt-6 max-w-xl animate-fade-up sm:order-1 sm:-mt-3 sm:mb-7">
         {/* Who it is for. From sm up the eyebrow badge says this (above); on a phone the badge stays short and this line carries it. */}
         <p className="mb-2 text-base font-semibold text-sand-100 sm:hidden">{AUDIENCE_LINE}</p>
         <p className="text-lg leading-relaxed text-ink-300">{HERO_DESCRIPTION}</p>
       </div>
       <div id="your-journey" className="order-1 -mt-3 max-w-2xl sm:order-2 sm:mt-0">
-        {/* Mobile-only spacing trim (September 2026, consent-overlay fix):
-            only the two gaps ABOVE the form's submit button are tightened —
-            the card's own top padding and the label-to-form gap — since
-            those are the only spacing in this component that actually
-            affects the button's vertical position; a first pass here
-            mistakenly also trimmed spacing below the button (the trust
-            line, the secondary CTA row), which does nothing for clearance
-            and was reverted. sm: values are untouched, so desktop is
-            pixel-identical to before. This exists solely to buy back
-            headroom the fixed-bottom consent banner needs at 390×844 to
-            clear the console without shrinking its 12px text or its 44px
-            buttons — see cookie-consent-banner.tsx's own comment. No copy,
-            heading, or control changed here.
-
-            Ivory console (November 2026): the card is a solid sand-50 surface
-            so the first action reads clearly against the dark photo. On a
-            crisp light edge the old 6px mobile top padding looked cramped, so
-            it is now 12px, paid for by dropping the 4px gap under the label
-            and fixing the label's line box at 16px. The submit button stays
-            within a pixel or two of where it was, so the consent-banner
-            clearance above still holds. light-surface restores the ink focus
-            ring (see globals.css). */}
+        {/* Ivory console: the solid sand surface keeps the first action distinct from the dark hero image. */}
         <div className="light-surface rounded-lg border border-sand-200/90 bg-sand-50 px-5 pb-5 pt-3 shadow-[0_24px_70px_-24px_rgba(0,0,0,0.65)] sm:p-6">
           <p className="text-[11px] font-semibold uppercase leading-4 tracking-[0.22em] text-brass-800">Check your journey</p>
           <div className="sm:mt-3">

@@ -2,28 +2,35 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
-/**
- * Consent panel clearance (November 2026). The first-visit panel is fixed to the bottom of the screen. Measured on Production at
- * 320x568, Tab put "Flying from" fully underneath it, and at every size the last footer items could never scroll clear of it. The
- * panel now publishes its height while it is on screen, and the page reserves that space. Nothing about consent itself changes.
- */
+/** The shared first-visit consent choice stays in normal page flow and never covers page controls. */
 const read = (p: string) => readFileSync(join(process.cwd(), p), 'utf8');
 const banner = read('components/ui/cookie-consent-banner.tsx');
 const css = read('app/globals.css');
+const layout = read('app/layout.tsx');
 
 describe('consent panel clearance', () => {
-  it('publishes the panel height only while it is visible, and removes it when the panel closes', () => {
-    const start = banner.indexOf("root.style.setProperty('--consent-banner-h'");
-    expect(start).toBeGreaterThan(-1);
-    const effect = banner.slice(banner.lastIndexOf('useEffect(() => {', start), banner.indexOf('}, [visible]);', start));
-    expect(effect).toContain('if (!visible || !panel) return;');
-    expect(effect).toContain("root.style.removeProperty('--consent-banner-h');");
-    // Layout only: no consent is stored, granted or announced here.
-    expect(effect).not.toMatch(/store(Consent|Statistics)Choice|setLoadTag|CONSENT_GRANTED_EVENT|setVisible/);
+  it('renders after the shared header and before page content, in normal document flow', () => {
+    expect(layout.indexOf('<Header />')).toBeGreaterThan(-1);
+    expect(layout.indexOf('<CookieConsentBanner />')).toBeGreaterThan(layout.indexOf('<Header />'));
+    expect(layout.indexOf('<CookieConsentBanner />')).toBeLessThan(layout.indexOf('<main id="main-content">'));
+    expect(banner).toContain('className="relative w-full');
+    expect(banner).not.toMatch(/className="[^\"]*(?:fixed|absolute)\b/);
+    expect(banner).not.toContain('--consent-banner-h');
   });
 
-  it('keeps focused controls and the end of the page clear of the panel, and falls back to 0 once a choice is made', () => {
-    expect(css).toContain('scroll-padding-bottom: var(--consent-banner-h, 0px);');
-    expect(css).toContain('padding-bottom: var(--consent-banner-h, 0px);');
+  it('does not reserve artificial viewport space for a fixed panel', () => {
+    expect(css).not.toContain('--consent-banner-h');
+    expect(css).not.toContain('scroll-padding-bottom');
+  });
+
+  it('keeps consent optional, separate and accessible with visible decision controls', () => {
+    expect(banner).toContain('aria-label="Cookie consent"');
+    expect(banner).toContain('Reject all');
+    expect(banner).toContain('Accept all');
+    expect(banner).toContain('Choose individual settings');
+    expect(banner).toContain('CONSENT_STORAGE_KEY');
+    expect(banner).toContain('STATS_CONSENT_STORAGE_KEY');
+    expect(banner).toContain('h-11');
+    expect(banner).toContain('min-h-11');
   });
 });
