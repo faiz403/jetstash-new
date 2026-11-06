@@ -856,7 +856,7 @@ export default async function RoutePage({ params }: { params: Promise<{ slug: st
       {/* Destination-scoped family guidance must not render on route pages — see the "More about {dest.city}" card below for the link to it. */}
 
       {alternativeRoutes.length > 0 && (
-        <section className="bg-sand-50 py-14 sm:py-16">
+        <section className="bg-sand-50 py-10 sm:py-16">
           <div className="mx-auto max-w-content px-5 sm:px-8">
             <div className="flex items-center gap-2.5">
               <GitCompareArrows className="h-5 w-5 text-terracotta-600" strokeWidth={2} />
@@ -867,7 +867,10 @@ export default async function RoutePage({ params }: { params: Promise<{ slug: st
               If more than one airport is realistically within reach, comparing the total journey, not just the
               headline fare, is usually worth the extra few minutes.
             </p>
-            <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {/* Route-page PR E: compact rows instead of full cards (same status label, route heading, service line and link; the link's
+                visible words appear from sm up and stay in the accessible name on a phone). A list, so a screen reader announces how many
+                airports there are. */}
+            <ul role="list" className="mt-6 grid gap-0 divide-y divide-ink-200 border-y border-ink-200 sm:mt-8 sm:grid-cols-2 sm:gap-5 sm:divide-y-0 sm:border-y-0 lg:grid-cols-3">
               {alternativeRoutes.map((altRoute) => {
                 const altAirport = getRouteAirport(altRoute);
                 if (!altAirport) return null;
@@ -880,32 +883,35 @@ export default async function RoutePage({ params }: { params: Promise<{ slug: st
                 const altPresentation = getEffectiveRoutePresentation(altRoute, routeStatusEvents, nowIso);
                 const altAirlines = getAirlinesBySlugs(altPresentation.airlineSlugs);
                 return (
-                  <Link
-                    key={altRoute.slug}
-                    href={`/routes/${altRoute.slug}`}
-                    className="group flex flex-col rounded-md border border-ink-100 bg-white p-6 transition-all hover:-translate-y-1 hover:shadow-card-hover"
-                  >
-                    <span className="text-xs font-semibold uppercase tracking-wide text-ink-400">
-                      {altPresentation.statusLabel}
-                    </span>
-                    <h3 className="mt-1.5 font-display text-xl text-ink-900">{altAirport.city} → {dest.city}</h3>
-                    <p className="mt-1 text-sm text-ink-500">
-                      {altPresentation.status === 'unverified'
-                        ? 'Verification in progress — check directly before booking'
-                        : altPresentation.status === 'service-ended'
-                          ? 'Direct service ended — check current options before booking'
-                          : altAirlines.length > 0
-                            ? `${altPresentation.flightTime} · ${altAirlines.map((a) => a.name).join(', ')}`
-                            : altPresentation.flightTime}
-                    </p>
-                    <span className="mt-4 flex items-center gap-1.5 text-sm font-semibold text-ink-900">
-                      Compare this route
-                      <ArrowUpRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" strokeWidth={2.25} />
-                    </span>
-                  </Link>
+                  <li key={altRoute.slug}>
+                    <Link
+                      href={`/routes/${altRoute.slug}`}
+                      className="group flex items-start justify-between gap-3 py-3.5 transition-colors hover:bg-sand-100 sm:h-full sm:flex-col sm:justify-start sm:gap-0 sm:rounded-md sm:border sm:border-ink-100 sm:bg-white sm:p-6 sm:transition-all sm:hover:-translate-y-1 sm:hover:bg-white sm:hover:shadow-card-hover"
+                    >
+                      <div className="min-w-0">
+                        <span className="block text-xs font-semibold uppercase tracking-wide text-ink-400">
+                          {altPresentation.statusLabel}
+                        </span>
+                        <h3 className="mt-1 font-display text-lg leading-snug text-ink-900 sm:mt-1.5 sm:text-xl">{altAirport.city} → {dest.city}</h3>
+                        <p className="mt-0.5 text-sm text-ink-500 sm:mt-1">
+                          {altPresentation.status === 'unverified'
+                            ? 'Verification in progress — check directly before booking'
+                            : altPresentation.status === 'service-ended'
+                              ? 'Direct service ended — check current options before booking'
+                              : altAirlines.length > 0
+                                ? `${altPresentation.flightTime} · ${altAirlines.map((a) => a.name).join(', ')}`
+                                : altPresentation.flightTime}
+                        </p>
+                      </div>
+                      <span className="flex shrink-0 items-center gap-1.5 text-sm font-semibold text-ink-900 sm:mt-4">
+                        <span className="sr-only sm:not-sr-only">Compare this route</span>
+                        <ArrowUpRight className="h-5 w-5 sm:h-4 sm:w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" strokeWidth={2.25} aria-hidden="true" />
+                      </span>
+                    </Link>
+                  </li>
                 );
               })}
-            </div>
+            </ul>
           </div>
         </section>
       )}

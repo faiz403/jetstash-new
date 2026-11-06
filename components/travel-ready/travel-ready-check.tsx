@@ -18,6 +18,7 @@ import { getTripComFlightHandoff, PROVIDER_REL, SERVICE_ENDED_CTA_LABEL, getTrip
 import { getBaggageAffiliateUrl, BAGGAGE_PROVIDER_REL } from '@/lib/baggage-affiliate-link';
 import { AffiliateLinkDisclosure } from '@/components/ui/affiliate-link-disclosure';
 import { RouteWatchForm } from '@/components/route/route-watch-form';
+import { TravelReadyDisclosure } from '@/components/travel-ready/travel-ready-disclosure';
 import { track } from '@/lib/analytics';
 
 /**
@@ -75,6 +76,12 @@ interface TravelReadyCheckProps {
    */
   showInlineRouteWatch?: boolean;
   onResult?: (signal: TravelReadySignal | null) => void;
+  /**
+   * Route-page PR E: render the check behind a native disclosure (components/travel-ready/travel-ready-disclosure.tsx) whose summary is
+   * the check's own heading and scope line. Everything stays in the page and keeps its state while closed. Defaults to false, so the
+   * standalone /travel-ready-check page is unchanged.
+   */
+  collapsible?: boolean;
 }
 
 const supportedDestinations = destinations.filter((d) => TRAVEL_READY_SUPPORTED_COUNTRIES.includes(d.country));
@@ -84,6 +91,7 @@ export function TravelReadyCheck({
   airportSlugForCta,
   showInlineRouteWatch = true,
   onResult,
+  collapsible = false,
 }: TravelReadyCheckProps) {
   const [destinationSlug, setDestinationSlug] = useState(defaultDestinationSlug ?? '');
   const [isBritishPassport, setIsBritishPassport] = useState<'yes' | 'no' | ''>('');
@@ -222,15 +230,16 @@ export function TravelReadyCheck({
   // if lib/baggage-affiliate-link.ts has no configured URL.
   const baggageAffiliateUrl = getBaggageAffiliateUrl();
 
-  return (
-    <section
-      aria-label="Travel Ready Check"
-      className="rounded-md border border-ink-100 bg-white p-6 shadow-card sm:p-8"
-    >
-      <div className="flex items-center gap-2.5">
+  // Inside a <summary> only phrasing content and a heading are allowed (HTML content model), so the eyebrow and the scope line are spans
+  // there (with display set by class); the standalone page keeps its original div and p, so its markup is unchanged.
+  const Eyebrow = collapsible ? 'span' : 'div';
+  const Scope = collapsible ? 'span' : 'p';
+  const heading = (
+    <>
+      <Eyebrow className="flex items-center gap-2.5">
         <ShieldCheck className="h-4.5 w-4.5 text-terracotta-600" strokeWidth={2} />
         <span className="text-xs font-semibold uppercase tracking-wide text-terracotta-600">Travel Ready Check</span>
-      </div>
+      </Eyebrow>
       <h2 className="mt-3 max-w-2xl font-display text-2xl leading-snug text-ink-900 sm:text-[1.7rem]">
         Can you actually travel on these dates, with the documents you have?
       </h2>
@@ -245,11 +254,15 @@ export function TravelReadyCheck({
         (which already asks the British-passport question). Wording only —
         no nationality/passport added, no rules-engine change.
       */}
-      <p className="mt-2 max-w-2xl text-sm text-ink-500">
+      <Scope className={`${collapsible ? 'block ' : ''}mt-2 max-w-2xl text-sm text-ink-500`}>
         A private readiness check, not a price check — passport validity and visa guidance for British passport
         holders on your specific trip, sourced from official government pages.
-      </p>
+      </Scope>
+    </>
+  );
 
+  const body = (
+    <>
       {!result ? (
         <form onSubmit={handleSubmit} className="mt-6 flex flex-col gap-4">
           <div>
@@ -614,6 +627,22 @@ export function TravelReadyCheck({
           </p>
           <AffiliateLinkDisclosure providerName="Travel Luggage & Cabin Bags" className="mt-1 text-ink-400" />
         </div>
+      )}
+    </>
+  );
+
+  return (
+    <section
+      aria-label="Travel Ready Check"
+      className="rounded-md border border-ink-100 bg-white p-6 shadow-card sm:p-8"
+    >
+      {collapsible ? (
+        <TravelReadyDisclosure summary={heading}>{body}</TravelReadyDisclosure>
+      ) : (
+        <>
+          {heading}
+          {body}
+        </>
       )}
     </section>
   );

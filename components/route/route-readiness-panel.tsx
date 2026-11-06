@@ -64,6 +64,7 @@ export function TravelReadySlot({
       airportSlugForCta={airportSlug}
       showInlineRouteWatch={false}
       onResult={shared?.setSignal}
+      collapsible
     />
   );
 }

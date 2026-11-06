@@ -439,6 +439,15 @@ rules came with it:
 - **Public route introductions never describe a booking provider's handoff.** That belongs in internal `note` fields; the page shows the
   action that exists (a verified handoff or the plain search), not an account of what a provider lacks.
 
+### 9.7 Shortening a route page never removes information (decision record, November 2026)
+Page length is reduced by changing how content is presented, not by deleting it. A long, optional block (today the Travel Ready Check form) goes behind
+a **native** `<details>` whose `<summary>` is the block's own heading and scope line, so its content stays in the HTML, its state survives collapsing,
+the outline and headings are unchanged, and it works without JavaScript. It must open by itself wherever the page points at it (URL fragment,
+`hashchange`, and a click on any in-page link to it) and must never close on its own or touch browser history. Repeated comparison cards become compact
+list rows with the same status, heading, service line and link. Anything carrying a warning, a dated fare, a disclosure or a status stays visible. There
+is no fixed screen-count target: a page with important booking warnings may legitimately be long, and each change is measured at 320, 390 and 1440px
+before the next is considered.
+
 ## 10. The Founder Command Centre (`/founder`)
 
 A private, unlinked, `noindex`'d dashboard (`app/founder/page.tsx` + `lib/founder-insights.ts`)
