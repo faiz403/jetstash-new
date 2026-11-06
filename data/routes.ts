@@ -834,7 +834,7 @@ export const routes: Route[] = [
       remainingUncertainty: 'Exact departure times and date availability vary by schedule.',
     }],
     intro:
-      'Gatwick Airport announced daily direct Pegasus service to Istanbul Sabiha Gokcen for summer 2026. Trip.com does not currently provide an exact airport-specific dateless handoff for this route, so check the airline and airport directly before booking.',
+      'Gatwick Airport announced daily direct Pegasus service to Istanbul Sabiha Gokcen for summer 2026. Check the airline and airport directly before booking.',
     bookingWindowNote:
       'This guide is route context, not a booking prediction. Check the exact airport, schedule, fare conditions and baggage terms before booking.',
     peakPeriodIds: [],
@@ -864,7 +864,7 @@ export const routes: Route[] = [
       },
     ],
     intro:
-      'Gatwick has published seasonal direct service to Antalya from Jet2 and SunExpress. Exact dates, frequency and duration vary by schedule, and Trip.com does not currently provide an exact airport-specific dateless handoff for this route.',
+      'Gatwick has published seasonal direct service to Antalya from Jet2 and SunExpress. Exact dates, frequency and duration vary by schedule.',
     bookingWindowNote:
       'This guide is route context, not a booking prediction. Check the exact seasonal schedule, fare conditions and baggage terms before booking.',
     peakPeriodIds: [],
@@ -889,7 +889,7 @@ export const routes: Route[] = [
       airlineSlug: 'sunexpress', status: 'verified', sourceName: "SunExpress official UK network material and Summer 2026 flight plan", sourceUrl: 'https://www.sunexpress.com/en-gb/company/media-center/press-releases/sunexpress-named-official-airline-partner-of-crystal-palace-football-club/', verifiedDate: '2026-09-07', reviewDueDate: '2026-10-07', effectivePeriod: 'Current seasonal UK network / summer 2026 plan', supportedClaim: 'Confirms nonstop SunExpress London Gatwick-Dalaman service.', remainingUncertainty: 'Exact dates, frequency and duration vary by schedule.',
     }],
     intro:
-      'Gatwick–Dalaman is a seasonal SunExpress route. It ran in summer 2026 and is announced again for Summer 2027, but SunExpress’s winter 2026/27 timetable lists no Dalaman flights. Exact dates, frequency and duration vary, and Trip.com does not currently provide an exact airport-specific dateless handoff for this route.',
+      'Gatwick–Dalaman is a seasonal SunExpress route. It ran in summer 2026 and is announced again for Summer 2027, but SunExpress’s winter 2026/27 timetable lists no Dalaman flights. Exact dates, frequency and duration vary.',
     bookingWindowNote:
       'This guide is route context, not a booking prediction. Check the exact seasonal schedule, fare conditions and baggage terms before booking.',
     peakPeriodIds: [],
@@ -915,7 +915,7 @@ export const routes: Route[] = [
     // Bodrum service for winter 2026/27 or Summer 2027. The dated history is
     // kept in the verification note below.
     intro:
-      'Gatwick–Bodrum is a seasonal route. SunExpress flew it twice weekly in summer 2026 but has not listed it for winter 2026/27 or Summer 2027, and other operators are not yet confirmed. Check the exact airline and itinerary before booking; Trip.com does not currently provide an exact airport-specific dateless handoff for this route.',
+      'Gatwick–Bodrum is a seasonal route. SunExpress flew it twice weekly in summer 2026 but has not listed it for winter 2026/27 or Summer 2027, and other operators are not yet confirmed. Check the exact airline and itinerary before booking.',
     bookingWindowNote:
       'This guide is route context, not a booking prediction. Check the seasonal schedule, fare conditions and baggage terms before booking.',
     peakPeriodIds: [],
@@ -940,7 +940,7 @@ export const routes: Route[] = [
       airlineSlug: 'sunexpress', status: 'verified', sourceName: 'SunExpress official Summer 2026 flight plan, corroborated by current Crystal Palace F.C. partnership press release', sourceUrl: 'https://static.sunexpress.com/media/wn1lmfyn/sxs-flightplan-s26-27nov_0126.pdf', verifiedDate: '2026-09-07', reviewDueDate: '2026-10-07', effectivePeriod: 'April-October 2026 published plan', supportedClaim: 'Lists seasonal direct SunExpress service from London Gatwick to Izmir.', remainingUncertainty: 'Exact frequency, dates and duration vary by schedule.',
     }],
     intro:
-      'Gatwick–Izmir is a seasonal SunExpress route. It ran in SunExpress’s April-October 2026 plan and is announced again for Summer 2027, but SunExpress’s winter 2026/27 timetable lists Izmir only from London Stansted, not Gatwick. Exact dates, frequency and duration vary, and Trip.com does not currently provide an exact airport-specific dateless handoff for this route.',
+      'Gatwick–Izmir is a seasonal SunExpress route. It ran in SunExpress’s April-October 2026 plan and is announced again for Summer 2027, but SunExpress’s winter 2026/27 timetable lists Izmir only from London Stansted, not Gatwick. Exact dates, frequency and duration vary.',
     bookingWindowNote:
       'This guide is route context, not a booking prediction. Check the seasonal schedule, fare conditions and baggage terms before booking.',
     peakPeriodIds: [],
@@ -1028,7 +1028,7 @@ export const routes: Route[] = [
       remainingUncertainty: 'Exact weekly frequency and duration are not stated by this source.',
     }],
     intro:
-      'London Gatwick\'s own live flight board confirms current direct easyJet service to Marrakech, with more than one flight observed on the same day. Exact frequency and duration remain date-specific, so check the exact flight before booking. Trip.com does not currently provide an airport-specific dateless handoff for Gatwick.',
+      'London Gatwick\'s own live flight board confirms current direct easyJet service to Marrakech, with more than one flight observed on the same day. Exact frequency and duration remain date-specific, so check the exact flight before booking.',
     bookingWindowNote:
       'This guide is route context, not a booking prediction. Check the exact service, duration, fare conditions and baggage terms before booking.',
     peakPeriodIds: [],
@@ -1118,7 +1118,7 @@ export const routes: Route[] = [
       },
     ],
     intro:
-      'Current easyJet and British Airways evidence supports direct London Gatwick–Agadir service, with easyJet publishing bookable dates from late September 2026. Exact operators, dates, frequency and duration vary by schedule, so check the specific flight before booking. Trip.com does not currently provide an airport-specific dateless handoff for Gatwick.',
+      'Current easyJet and British Airways evidence supports direct London Gatwick–Agadir service, with easyJet publishing bookable dates from late September 2026. Exact operators, dates, frequency and duration vary by schedule, so check the specific flight before booking.',
     bookingWindowNote:
       'This guide is route context, not a booking prediction. Check the exact service, duration, fare conditions and baggage terms before booking.',
     peakPeriodIds: [],
@@ -1140,7 +1140,7 @@ export const routes: Route[] = [
       note: 'Route Verification Refresh, 12 September due-soon batch (7 September 2026): reconfirmed via the same primary source, still live. A genuine current LHR-CMN fare option still appears in the page\'s live fare calendar today, confirming Heathrow-Casablanca service continues to exist. A material new observation, however: Stansted (STN) and Gatwick (LGW) city-pair labels now appear far more often in the same live calendar (9 and 5 occurrences respectively, versus 1 for LHR, at a comparatively lower price point), which was not noted in the prior evidence and suggests Royal Air Maroc may now be prioritising other London airports over Heathrow for this route. Heathrow\'s own airline/terminal listing (the prior corroborating source) returned a 404 on every URL attempted this session and was not independently re-checked. Classified RECENT/CHANGING (30-day window) on the strength of this genuine relative-prominence shift across London airports -- not a contradiction of the Heathrow claim itself, but a real volatility signal worth a shorter review window.',
     },
     intro:
-      'Royal Air Maroc currently publishes London Heathrow–Casablanca options, with Heathrow identifying Casablanca as a Royal Air Maroc destination from Terminal 4. Check the exact date, itinerary, duration and fare before booking. Trip.com does not currently provide an airport-specific dateless handoff for Heathrow.',
+      'Royal Air Maroc currently publishes London Heathrow–Casablanca options, with Heathrow identifying Casablanca as a Royal Air Maroc destination from Terminal 4. Check the exact date, itinerary, duration and fare before booking.',
     bookingWindowNote:
       'This guide is route context, not a booking prediction. Check the exact service, duration, fare conditions and baggage terms before booking.',
     peakPeriodIds: [],
@@ -1162,7 +1162,7 @@ export const routes: Route[] = [
       note: 'Route Intelligence Freshness rolling-review Batch 2 (3 September 2026): reconfirmed via the same source, still live. This session\'s check read the source\'s own route table in full for the first time and found a specific, dated operator and frequency figure not previously extracted: "Tangier, Morocco -- Air Arabia -- 6 x weekly". Air Arabia is not currently in data/airlines.ts, so this evidence is recorded here rather than added to airlineSlugs/frequency/intro in this routine metadata refresh -- adding a new airline catalog entry is a separate decision, out of scope for a reconfirmation pass. Reclassified STABLE (90-day window) on the strength of this specific, dated frequency figure. Exact operator/duration confirmation for a public claim remains a follow-up if Air Arabia is added to the airline catalog.',
     },
     intro:
-      'London Gatwick publishes direct service to Tangier. Exact operators, dates, frequency and duration vary by schedule, so check the specific flight before booking. Trip.com does not currently provide an airport-specific dateless handoff for Gatwick.',
+      'London Gatwick publishes direct service to Tangier. Exact operators, dates, frequency and duration vary by schedule, so check the specific flight before booking.',
     bookingWindowNote:
       'This guide is route context, not a booking prediction. Check the exact service, duration, fare conditions and baggage terms before booking.',
     peakPeriodIds: [],

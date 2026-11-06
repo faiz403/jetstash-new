@@ -279,12 +279,26 @@ Every checkpoint records these items:
   visible copy, heading, `<title>`, meta description, canonical, robots, sitemap, route/fare record or internal link changes, so no
   pilot-page text event.
 
-- **Route-page Travel Ready Check below fare history (PR B; prepared for review, not Production-deployed):** a layout and order change on
+- **Route-page Travel Ready Check below fare history (PR #366 "PR B"; merge `96426c2d9b76d45ee6368d2c53b7d361d61b4f9c`, merged 02:12:01 UTC on
+  6 November 2026, Production deployment Ready within about a minute, deployment id not captured; live verification from 02:13 UTC):** a layout and order change on
   every route page that carries the Travel Ready Check, including **all three pilot pages** (manchester-islamabad, manchester-dubai,
   birmingham-delhi). The check's text is unchanged but now follows the fare history instead of preceding it, and one new visible
   sentence is added where it used to be ("Travelling on set dates? Passport validity and visa guidance for your documents is in the Travel
   Ready Check, below the fare history."). Headings, `<title>`, meta description, canonical, robots, sitemap, Quick answers, route/fare
-  records and internal link targets are unchanged. Treat as a content-order event for the three pilot pages; record the actual
+  records and internal link targets are unchanged. Treat as a content-order event for the three pilot pages.
+
+- **Route-page fare clarity and traveller next steps (PR C; prepared for review, not Production-deployed):** visible text changes on 46 of
+  the 89 route pages, including **all three pilot pages**. manchester-islamabad: the badge "Direct" becomes "Direct service", the price line
+  gains "· connecting", the route-service callout sentence is reworded, and the hero flight-time line "Typical flight time: Direct; check
+  PIA for the scheduled duration" becomes "Typical flight time not verified. Check the airline's current schedule." (also in the Flight time
+  row). manchester-dubai: the badge, price qualifier and callout sentence change. birmingham-delhi: the hero flight-time line "Connecting
+  via Amritsar — journey time depends on the connection" becomes "Journey time varies by itinerary and connection." (also in the Flight time
+  row). Elsewhere: "Direct service" badge on 34 direct pages, "· connecting" on 15, 16 flight-time lines replaced, Manchester-Delhi and
+  Manchester-Mumbai gain a Google Flights search card and a reworded hero ("Direct service ended", "Connecting alternatives may be available…", no
+  undated stop or duration figures; not pilot pages), and the obsolete Trip.com handoff sentence leaves nine route introductions
+  (visible on London-Gatwick-Tangier today). The headings on the three pilot pages, `<title>`, meta description, canonical, robots, sitemap, Quick
+  answers, prices, route and fare records and internal link targets are unchanged; the only heading that changes anywhere is the lower section
+  on Manchester-Delhi and Manchester-Mumbai (not pilot pages), "You can still fly this route with a connection" becoming "Connecting alternatives". Treat as a content-wording event for the three pilot pages; record the actual
   merge/deployment here only after separate approval and release.
 
 ## Wave 2 (not approved; only after a positive day-14 signal)

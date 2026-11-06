@@ -53,13 +53,13 @@ function renderFareSignalForRoute(slug: string): string {
 
 describe('1. existing PR #155 direct-vs-connecting wording is completely unchanged', () => {
   it('routeVsFareMismatch() says both things plainly (sprint 1 wording)', () => {
-    expect(fareSignalSrc).toContain('Nonstop flights are listed for this route, but this tracked fare is a connecting journey, so its price is not a nonstop price.');
+    expect(fareSignalSrc).toContain('Nonstop services are listed for this route, but this tracked fare is for a connecting journey. It is not a nonstop fare.');
     expect(fareSignalSrc).toContain("This route's verified service connects, but this tracked fare is a nonstop journey.");
   });
 
   it('a real direct-route + connecting-fare mismatch still renders the original wording, not the new connecting-vs-connecting one', () => {
     const html = renderFareSignalForRoute('manchester-islamabad');
-    expect(html).toContain('Nonstop flights are listed for this route, but this tracked fare is a connecting journey, so its price is not a nonstop price.');
+    expect(html).toContain('Nonstop services are listed for this route, but this tracked fare is for a connecting journey. It is not a nonstop fare.');
     expect(html).not.toContain('This tracked fare is a different connecting journey.');
   });
 });

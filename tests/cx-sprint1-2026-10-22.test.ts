@@ -78,9 +78,11 @@ describe('fare cards state route type and fare type beside the price', () => {
 
   it('Manchester-Islamabad: "Connecting fare, not nonstop" and the plain explanation come before the lower self-transfer offer and the booking button', async () => {
     const html = renderToStaticMarkup(await RoutePage({ params: Promise.resolve({ slug: 'manchester-islamabad' }) }));
-    const price = html.indexOf('return</p>');
+    // Route-page PR C: the price line now ends with the "· connecting" qualifier, so it is the price marker (and proves the qualifier
+    // sits on the price line, ahead of the pill).
+    const price = html.indexOf('· connecting');
     const tag = html.indexOf('Connecting fare, not nonstop');
-    const callout = html.indexOf('Nonstop flights are listed for this route, but this tracked fare is a connecting journey');
+    const callout = html.indexOf('Nonstop services are listed for this route, but this tracked fare is for a connecting journey');
     const lower = html.indexOf('Lower fare also seen');
     const cta = html.indexOf('flights on Trip.com');
     expect(price).toBeGreaterThan(-1);

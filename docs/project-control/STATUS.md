@@ -1,6 +1,6 @@
 # JetStash Current Status
 
-**Latest release reconciliation:** 6 November 2026, through PR #365. The older dated programme/count snapshots below are historical.
+**Latest release reconciliation:** 6 November 2026, through PR #366. The older dated programme/count snapshots below are historical.
 
 **Production branch:** `main`
 
@@ -27,8 +27,20 @@ collapsed email classes are gone from every one of them, 25 pages still show "Fa
 changed no `data/` or `lib/` file), and Tab order through Route Watch is airport, destination, purpose, email, submit with a 2px focus
 outline on each stop. Reject still stores both choices denied with zero tag or Google requests. The only Trip.com text on any route page
 is one prose sentence on London-Gatwick-Tangier (existing editorial copy: "Trip.com does not currently provide an airport-specific
-dateless handoff for Gatwick"), not a link; there are no Trip.com links. No Google routing call was made. No deployment is authorised by a
-documentation update.
+dateless handoff for Gatwick"), not a link; there are no Trip.com links (route-page PR C removes that sentence). No Google routing call was
+made.
+PR #366 (route-page "PR B": Travel Ready Check below fare history) merged as `96426c2d9b76d45ee6368d2c53b7d361d61b4f9c` at 02:12:01 UTC on
+6 November after an independent Codex review (`ce46a57` PASS WITH NOTES, no P1/P2, two P3s fixed in head `3aff2db68413a2419edcc7ff83a247dc10709edb`;
+delta check PASS). The Vercel Deployments list showed the Production deployment of `96426c2` Ready (1m 8s build); its deployment id was not
+captured. Live read-only verification from 02:13 UTC: the Travel Ready Check appears on exactly 72 of the 89 route pages and is absent from
+the other 17 (every Barcelona, Faro, Athens and Rome pair); on all 72 the pointer line precedes Route Watch, `id="travel-ready"` follows it,
+the check heading appears once and there is exactly one Route Watch form; no in-page anchor lacks a target; the fare history heading sits
+about 1,250px higher on a 390px phone (Manchester-Doha 3,285 to 1,998px; Manchester-Islamabad 6,472 to 5,240px) and about 800px higher at
+1440px; Tab reaches the pointer, Enter lands on the section and the next Tab enters the check; after running the check Book-By's badge
+changes and its link back works by keyboard; a client-side move from Islamabad to Lahore carries no signal over; 25 pages still show "Fare
+spotted"; there are no Trip.com links; consent, the homepage, the journey form and the PR A fixes are intact; no Google routing call was
+made. At 320x568 the first check field after the pointer sits flush with the bottom edge (later stops are fully visible). No deployment is
+authorised by a documentation update.
 
 **Current founder direction — 5 November:** execute the Website Improvement Programme through small, tested PRs, beginning
 with archive-aware fare-card wording, then homepage PR #353 (merged 6 November), then the route-page programme below. Stop before every Production merge for approval.
@@ -47,7 +59,49 @@ rate limiting rather than the current process-local limiter.
 
 **Production site:** `https://jetstash.co.uk`
 
-## Route-page Travel Ready Check below fare history — 6 November 2026 (PR B prepared for review; not merged, not deployed)
+## Route-page fare clarity and traveller next steps — 6 November 2026 (PR C prepared for review; not merged, not deployed)
+
+- CEO-approved after the 6 November route-page audit; presentation and prose only. No price, route status, fare classification, verification,
+  fare history or Trip.com change: a before/after comparison of all 89 live route pages against a local build with the Trip.com pause on
+  found every price identical, 25 pages showing "Fare spotted" in both, no Trip.com text, 43 pages byte-identical in text and 46 changed
+  only as listed here.
+- **A. Service versus fare.** A verified direct route's badge now reads "Direct service" (34 pages; `getRouteHeroBadgeLabel`, every other
+  status keeps its canonical label). On the 15 pages where a verified direct route shows a connecting fare, the price line carries
+  "· connecting" (for example "£906 return · connecting"; "connecting", not "with a stop", because an itinerary may have several stops), the
+  "Connecting fare, not nonstop" pill is unchanged, and the explanation reads "Nonstop services are listed for this route, but this tracked
+  fare is for a connecting journey. It is not a nonstop fare." (the lower fare cards use the same sentence). The airline in the callout still
+  comes from the route record.
+- **B. Ended-service next step.** Manchester-Delhi and Manchester-Mumbai (service ended, evidenced connecting alternatives) no longer end
+  on "No current fare tracked." They show "Find connecting alternatives", "The former nonstop service on this route has ended. JetStash has
+  not checked live availability for connecting flights." and a "Search connecting flights on Google Flights" button with the note "Opens
+  Google Flights. JetStash does not earn commission from this link. It does not fill in your search: enter your airports and travel dates
+  there. The former nonstop service has ended, so results may show connecting itineraries." The link is the plain Google Flights URL (no query string, routing API, tracking or affiliate
+  parameter) and is used only on a service-ended route that carries evidenced connecting-alternative data and has no monetised handoff,
+  which is every such route while the Trip.com pause is on. If Trip.com resumes, a verified handoff keeps its own label and takes precedence.
+  No stop count, journey time, airline or itinerary is promised in that card.
+- **B2. Ended-service hero (CEO ruling of 6 November, same PR).** The hero on those two pages reads "Direct service ended" with "The former
+  nonstop service has ended. Connecting alternatives may be available. Check current flights, stops and total journey times for your dates
+  before booking." The earlier "connecting flights available" claim and the undated "Usually 1 stop · 12 to 15h total" line are gone from the
+  hero. Other wording on those pages that conflicted was corrected too: the "More route information" summary now points at the route-status
+  evidence instead of "the current connecting journey", and the lower section is "Connecting alternatives" ("may be available, but JetStash has
+  not checked them live", with its labelled general pattern kept) instead of "You can still fly this route with a connection". The canonical
+  `service-ended` status, its evidence, the `connectingAlternative` data and the canonical `presentation.statusHeadline` and `summary` are
+  unchanged: only this page's wording differs (`lib/route-first-screen-copy.ts`).
+- **C. Flight-time wording.** One helper (`lib/route-first-screen-copy.ts`) feeds the hero line and the "Flight time" row. Verified durations
+  are unchanged. Status-first values without a duration figure (16 pages) are replaced: direct, "Typical flight time not verified. Check the
+  airline's current schedule." (6 pages); connecting, "Journey time varies by itinerary and connection." (8); unverified, "Journey time not
+  yet confirmed." (2). The record's own `flightTime` string is never edited.
+- **D. Obsolete Trip.com sentence.** Removed from the public `intro` of nine routes (Gatwick-Istanbul, Antalya, Dalaman, Bodrum, Izmir,
+  Marrakech, Agadir, Tangier and Heathrow-Casablanca). Only the booking-handoff sentence was removed; internal `note` fields, status, fare and
+  verification records are unchanged.
+- Known limits, not changed here: the canonical service-ended `statusHeadline` ("Former direct service ended · connecting flights available") and
+  `summary` ("…See below for the current connecting journey…") still exist for the surfaces that read them (Arrive By's route warning, the
+  Manchester-Mumbai journey brief and the homepage evidence source); they no longer reach the two route pages but deserve the same wording
+  decision. The 320x568 ended-route button needs a scroll (it is fully visible at 390px). Some lower "Other UK airports" cards still print raw
+  `flightTime` strings without the flight-time label. Three SEO-pilot pages change text: see the pilot log.
+- Not an approved release; merge still requires CEO approval.
+
+## Route-page Travel Ready Check below fare history — 6 November 2026 (PR #366 "PR B" merged `96426c2`; Production live-verified)
 
 - The 6 November audit measured the Travel Ready Check (a five-field form, about 1,350px tall on a phone) sitting between the first-screen
   fare card and the fare history, which pushed the fare evidence 3,200-6,500px down a 390px-wide page. It now renders in its own section
@@ -65,8 +119,8 @@ rate limiting rather than the current process-local limiter.
   fare, route, Route Status, verification, Trip.com, analytics and data records are unchanged; the only wording changes are the new pointer
   sentence and the Book-By note's link wording described above. The three SEO-pilot pages (Manchester-Islamabad, Manchester-Dubai, Birmingham-Delhi) are affected: see
   the pilot log.
-- Not an approved release; merge still requires CEO approval. PR C (direct versus connecting fare clarity, ended-service search, flight
-  duration wording) follows as a separate PR.
+- Merged on explicit CEO approval; verification results are in the baseline paragraph above. PR C (direct versus connecting fare clarity,
+  ended-service search, flight duration wording) follows as a separate PR.
 
 ## Route-page accessibility and signup fixes — 6 November 2026 (PR #365 "PR A" merged `f0ab8df`; Production live-verified)
 
