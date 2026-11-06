@@ -296,8 +296,9 @@ Every checkpoint records these items:
   row). Elsewhere: "Direct service" badge on 34 direct pages, "· connecting" on 15, 16 flight-time lines replaced, Manchester-Delhi and
   Manchester-Mumbai gain a Google Flights search card and a reworded hero ("Direct service ended", "Connecting alternatives may be available…", no
   undated stop or duration figures; not pilot pages), and the obsolete Trip.com handoff sentence leaves nine route introductions
-  (visible on London-Gatwick-Tangier today). Headings, `<title>`, meta description, canonical, robots, sitemap, Quick answers, prices, route
-  and fare records and internal link targets are unchanged. Treat as a content-wording event for the three pilot pages; record the actual
+  (visible on London-Gatwick-Tangier today). The headings on the three pilot pages, `<title>`, meta description, canonical, robots, sitemap, Quick
+  answers, prices, route and fare records and internal link targets are unchanged; the only heading that changes anywhere is the lower section
+  on Manchester-Delhi and Manchester-Mumbai (not pilot pages), "You can still fly this route with a connection" becoming "Connecting alternatives". Treat as a content-wording event for the three pilot pages; record the actual
   merge/deployment here only after separate approval and release.
 
 ## Wave 2 (not approved; only after a positive day-14 signal)

@@ -74,12 +74,11 @@ rate limiting rather than the current process-local limiter.
 - **B. Ended-service next step.** Manchester-Delhi and Manchester-Mumbai (service ended, evidenced connecting alternatives) no longer end
   on "No current fare tracked." They show "Find connecting alternatives", "The former nonstop service on this route has ended. JetStash has
   not checked live availability for connecting flights." and a "Search connecting flights on Google Flights" button with the note "Opens
-  Google Flights. JetStash does not earn commission from this link. The former nonstop service has ended, so expect connecting itineraries.
-  Enter your airports and dates there." The link is the plain Google Flights URL (no query string, routing API, tracking or affiliate
+  Google Flights. JetStash does not earn commission from this link. It does not fill in your search: enter your airports and travel dates
+  there. The former nonstop service has ended, so results may show connecting itineraries." The link is the plain Google Flights URL (no query string, routing API, tracking or affiliate
   parameter) and is used only on a service-ended route that carries evidenced connecting-alternative data and has no monetised handoff,
   which is every such route while the Trip.com pause is on. If Trip.com resumes, a verified handoff keeps its own label and takes precedence.
-  No stop count, journey time, airline or itinerary is promised in that card. The Google note also says the link does not fill in the search:
-  "It does not fill in your search: enter your airports and travel dates there."
+  No stop count, journey time, airline or itinerary is promised in that card.
 - **B2. Ended-service hero (CEO ruling of 6 November, same PR).** The hero on those two pages reads "Direct service ended" with "The former
   nonstop service has ended. Connecting alternatives may be available. Check current flights, stops and total journey times for your dates
   before booking." The earlier "connecting flights available" claim and the undated "Usually 1 stop · 12 to 15h total" line are gone from the
