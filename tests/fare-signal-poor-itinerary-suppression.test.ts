@@ -399,7 +399,7 @@ describe('11. route-vs-fare mismatch behaviour', () => {
     const html = renderFareSignalForRoute('manchester-lahore');
     expect(html).toContain('Fare spotted');
     expect(html).toContain('Route service');
-    expect(html).toContain('Nonstop flights are listed for this route, but this tracked fare is a connecting journey, so its price is not a nonstop price.');
+    expect(html).toContain('Nonstop services are listed for this route, but this tracked fare is for a connecting journey. It is not a nonstop fare.');
   });
 });
 

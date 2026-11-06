@@ -2,7 +2,7 @@ import { AlertTriangle, ArrowUpRight, CalendarDays, Info, Plane, Search, Sparkle
 import { formatFareLegDirectness, type FareSignal as FareSignalData, type FareSignalObservation } from '@/lib/fare-signal';
 import type { StandoutFarePresentation } from '@/lib/standout-fare';
 import { formatChecked } from '@/data/deals';
-import { NO_VERIFIED_PARTNER_LINK_NOTE, PROVIDER_REL, SERVICE_ENDED_CTA_LABEL, getTripComSearchCtaLabel, GENERIC_FLIGHT_SEARCH_URL, GENERIC_FLIGHT_SEARCH_CTA_LABEL, GENERIC_FLIGHT_SEARCH_REL, GENERIC_FLIGHT_SEARCH_NOTE, TRIPCOM_FRESH_SEARCH_NOTE, TRIPCOM_NO_FARE_SEARCH_NOTE, getTripComReturnDatesNote } from '@/lib/booking-providers';
+import { NO_VERIFIED_PARTNER_LINK_NOTE, PROVIDER_REL, SERVICE_ENDED_CTA_LABEL, getTripComSearchCtaLabel, GENERIC_FLIGHT_SEARCH_URL, GENERIC_FLIGHT_SEARCH_CTA_LABEL, GENERIC_FLIGHT_SEARCH_REL, GENERIC_FLIGHT_SEARCH_NOTE, ENDED_SERVICE_FLIGHT_SEARCH_CTA_LABEL, ENDED_SERVICE_FLIGHT_SEARCH_NOTE, TRIPCOM_FRESH_SEARCH_NOTE, TRIPCOM_NO_FARE_SEARCH_NOTE, getTripComReturnDatesNote } from '@/lib/booking-providers';
 import { SELF_TRANSFER_LABEL, SELF_TRANSFER_EXPLANATION } from '@/lib/fare-self-transfer';
 import { TrackedOutboundLink } from '@/components/ui/tracked-outbound-link';
 import { AffiliateLinkDisclosure } from '@/components/ui/affiliate-link-disclosure';
@@ -216,6 +216,29 @@ function NoCtaFallback() {
  * event correctly names a generic, non-partner outbound click. A minimal
  * dedicated event is a candidate for later, not bundled into this fix.
  */
+/**
+ * Route-page PR C (CEO-approved): the next step for a service-ended route that still has evidenced connecting-alternative data (today
+ * Manchester-Delhi and Manchester-Mumbai) when no monetised handoff resolves, which is every route while the Trip.com affiliate pause
+ * is on. Same plain Google Flights URL as GenericFlightSearchFallback (no query string, no routing API, no tracking, no commission),
+ * but its label and note say the former nonstop service has ended so it can never imply that service still operates.
+ */
+function ServiceEndedFlightSearchFallback() {
+  return (
+    <div className="mt-3 sm:mt-5">
+      <a
+        href={GENERIC_FLIGHT_SEARCH_URL}
+        target="_blank"
+        rel={GENERIC_FLIGHT_SEARCH_REL}
+        className="inline-flex min-h-12 w-full items-center justify-center gap-1.5 rounded-sm border-2 border-ink-700 bg-white px-5 py-3 text-base font-semibold text-ink-900 transition-all hover:border-ink-900 hover:bg-sand-100 active:scale-[0.985] sm:w-auto"
+      >
+        {ENDED_SERVICE_FLIGHT_SEARCH_CTA_LABEL}
+        <ArrowUpRight className="h-4 w-4" strokeWidth={2.25} />
+      </a>
+      <p className="mt-2 text-xs leading-snug text-ink-400">{ENDED_SERVICE_FLIGHT_SEARCH_NOTE}</p>
+    </div>
+  );
+}
+
 function GenericFlightSearchFallback() {
   return (
     <div className="mt-3 sm:mt-5">
@@ -285,7 +308,18 @@ function NoFareLead({
       : "JetStash hasn't logged a fare for this route yet.";
   return (
     <div>
-      {connecting && hasCta ? (
+      {isServiceEnded && hasCta ? (
+        // Route-page PR C (CEO-approved): availability has not been checked live, so this says "Find connecting alternatives"
+        // and promises no stop count, journey time, airline or itinerary (the record's "usually" figures are editorial, not dated).
+        <>
+          <p className="font-display text-xl leading-tight text-ink-900 sm:text-2xl">Find connecting alternatives</p>
+          <p className="mt-1 text-sm leading-relaxed text-ink-700">
+            The former nonstop service on this route has ended. JetStash has not checked live availability for connecting flights.
+          </p>
+          <p className="mt-1 text-sm text-ink-600">{noFareLine}</p>
+          <p className="mt-3 text-sm font-semibold text-ink-900">{checkPricesHeading(routeLabel)}</p>
+        </>
+      ) : connecting && hasCta ? (
         <>
           <p className="font-display text-xl leading-tight text-ink-900 sm:text-2xl">Connecting flights available</p>
           <p className="mt-1 text-sm leading-relaxed text-ink-700">
@@ -394,7 +428,7 @@ function routeVsFareMismatch(
   // verified nonstop service and a connecting tracked fare are both true, and
   // a visitor must not read the connecting fare's price as a nonstop price.
   const note = fareDirectness === 'connecting'
-    ? 'Nonstop flights are listed for this route, but this tracked fare is a connecting journey, so its price is not a nonstop price.'
+    ? 'Nonstop services are listed for this route, but this tracked fare is for a connecting journey. It is not a nonstop fare.'
     : "This route's verified service connects, but this tracked fare is a nonstop journey.";
   return { routeValue, note };
 }
@@ -409,6 +443,15 @@ export function isConnectingFareOnDirectRoute(
   fareDirectness: FareSignalObservation['directness']
 ): boolean {
   return routeDirectness === 'direct' && fareDirectness === 'connecting';
+}
+
+/**
+ * Route-page PR C (CEO-approved): when a verified direct route shows a connecting fare, the word "connecting" sits on the same line as
+ * the price so the number can never be read as a nonstop price. Deliberately "connecting", not "with a stop": an itinerary may involve
+ * more than one stop. The separate "Connecting fare, not nonstop" pill below is unchanged.
+ */
+function ConnectingPriceQualifier() {
+  return <span className="ml-2 align-middle font-sans text-base font-semibold text-terracotta-800 sm:text-lg">· connecting</span>;
 }
 
 function ConnectingFareTag() {
@@ -552,7 +595,7 @@ interface RouteContextProps {
   routeServiceConnections?: { outbound?: string[]; return?: string[] } | null;
 }
 
-function CurrentSignal({ data, nowIso, lowerSelfTransfer, tripComUrl, routeSlug, routeDirectness, routeStatusLabel, routeAirlineLabel, routeServiceConnections, standoutFare, isServiceEnded = false }: { data: FareSignalObservation; nowIso: string; lowerSelfTransfer?: FareSignalObservation | null; tripComUrl: string | null; routeSlug: string; standoutFare?: StandoutFarePresentation | null; isServiceEnded?: boolean } & RouteContextProps) {
+function CurrentSignal({ data, nowIso, lowerSelfTransfer, tripComUrl, routeSlug, routeDirectness, routeStatusLabel, routeAirlineLabel, routeServiceConnections, standoutFare, isServiceEnded = false, endedAlternativeEligible = false }: { data: FareSignalObservation; nowIso: string; lowerSelfTransfer?: FareSignalObservation | null; tripComUrl: string | null; routeSlug: string; standoutFare?: StandoutFarePresentation | null; isServiceEnded?: boolean; endedAlternativeEligible?: boolean } & RouteContextProps) {
   const routing = formatRouting(data);
   const mismatch = routeVsFareMismatch(routeDirectness, routeStatusLabel, routeAirlineLabel, data.directness)
     ?? routeServiceFareMismatch(routeServiceConnections, routeStatusLabel, routeAirlineLabel, data.directness, data.connectionAirports, data.airline, routeAirlineLabel ? routeAirlineLabel.split(", ") : []);
@@ -572,7 +615,7 @@ function CurrentSignal({ data, nowIso, lowerSelfTransfer, tripComUrl, routeSlug,
             {standout && <Sparkles className="h-3.5 w-3.5" strokeWidth={2.25} aria-hidden="true" />}
             {standout ? 'Standout Fare' : 'Fare spotted'}
           </p>
-          <p className="mt-1 font-display text-3xl text-ink-900">£{data.price.toLocaleString('en-GB')} return</p>
+          <p className="mt-1 font-display text-3xl text-ink-900">£{data.price.toLocaleString('en-GB')} return{isConnectingFareOnDirectRoute(routeDirectness, data.directness) ? <ConnectingPriceQualifier /> : null}</p>
           {isConnectingFareOnDirectRoute(routeDirectness, data.directness) ? <ConnectingFareTag /> : null}
           {lowerSelfTransfer && data.hasPositiveNonSelfTransferEvidence ? <p className="mt-1.5 text-sm font-medium text-ink-700">Lowest comparable non-self-transfer fare observed</p> : null}
           <JourneyConsequenceLine consequences={data.journeyConsequences} />
@@ -626,7 +669,7 @@ function CurrentSignal({ data, nowIso, lowerSelfTransfer, tripComUrl, routeSlug,
           returnDatesNote={isServiceEnded ? null : getTripComReturnDatesNote(routeSlug, data)}
         />
       ) : isServiceEnded ? (
-        <NoCtaFallback />
+        endedAlternativeEligible ? <ServiceEndedFlightSearchFallback /> : <NoCtaFallback />
       ) : (
         <GenericFlightSearchFallback />
       )}
@@ -634,7 +677,7 @@ function CurrentSignal({ data, nowIso, lowerSelfTransfer, tripComUrl, routeSlug,
   );
 }
 
-function RecentSignal({ data, nowIso, tripComUrl, routeSlug, routeDirectness, routeStatusLabel, routeAirlineLabel, routeServiceConnections, isServiceEnded = false }: { data: FareSignalObservation; nowIso: string; tripComUrl: string | null; routeSlug: string; isServiceEnded?: boolean } & RouteContextProps) {
+function RecentSignal({ data, nowIso, tripComUrl, routeSlug, routeDirectness, routeStatusLabel, routeAirlineLabel, routeServiceConnections, isServiceEnded = false, endedAlternativeEligible = false }: { data: FareSignalObservation; nowIso: string; tripComUrl: string | null; routeSlug: string; isServiceEnded?: boolean; endedAlternativeEligible?: boolean } & RouteContextProps) {
   const routing = formatRouting(data);
   const mismatch = routeVsFareMismatch(routeDirectness, routeStatusLabel, routeAirlineLabel, data.directness)
     ?? routeServiceFareMismatch(routeServiceConnections, routeStatusLabel, routeAirlineLabel, data.directness, data.connectionAirports, data.airline, routeAirlineLabel ? routeAirlineLabel.split(", ") : []);
@@ -643,7 +686,7 @@ function RecentSignal({ data, nowIso, tripComUrl, routeSlug, routeDirectness, ro
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-terracotta-600">Last tracked fare</p>
-          <p className="mt-1 font-display text-3xl text-ink-900">£{data.price.toLocaleString('en-GB')} return</p>
+          <p className="mt-1 font-display text-3xl text-ink-900">£{data.price.toLocaleString('en-GB')} return{isConnectingFareOnDirectRoute(routeDirectness, data.directness) ? <ConnectingPriceQualifier /> : null}</p>
           {isConnectingFareOnDirectRoute(routeDirectness, data.directness) ? <ConnectingFareTag /> : null}
           <JourneyConsequenceLine consequences={data.journeyConsequences} />
         </div>
@@ -662,7 +705,7 @@ function RecentSignal({ data, nowIso, tripComUrl, routeSlug, routeDirectness, ro
           label={isServiceEnded ? SERVICE_ENDED_CTA_LABEL : undefined}
         />
       ) : isServiceEnded ? (
-        <NoCtaFallback />
+        endedAlternativeEligible ? <ServiceEndedFlightSearchFallback /> : <NoCtaFallback />
       ) : (
         <GenericFlightSearchFallback />
       )}
@@ -727,6 +770,9 @@ export function FareSignal({
   standoutFare?: StandoutFarePresentation | null;
 }) {
   const effectiveNowIso = nowIso ?? new Date().toISOString().slice(0, 10);
+  // Route-page PR C: a service-ended route gets the ended-service Google Flights search only when it still carries evidenced
+  // connecting-alternative data (the page passes connectingSummary only when presentation.canShowConnectingAlternative is true).
+  const endedAlternativeEligible = isServiceEnded && connectingSummary !== null;
   return (
     <section aria-labelledby="fare-signal-heading" className="rounded-md border border-ink-200 bg-sand-50 p-4 sm:p-6">
       <div className="flex items-center gap-2.5">
@@ -747,8 +793,8 @@ export function FareSignal({
         <p className="mt-4 text-sm font-medium text-ink-700">{signal.strongerSignal}</p>
       )}
       <div className="mt-3 sm:mt-4">
-        {signal.state === 'current' && signal.observation ? <CurrentSignal data={signal.observation} nowIso={effectiveNowIso} lowerSelfTransfer={signal.lowerSelfTransfer} tripComUrl={tripComUrl} routeSlug={routeSlug} routeDirectness={routeDirectness} routeStatusLabel={routeStatusLabel} routeAirlineLabel={routeAirlineLabel} routeServiceConnections={routeServiceConnections} standoutFare={standoutFare} isServiceEnded={isServiceEnded} /> : null}
-        {signal.state === 'recent' && signal.observation ? <RecentSignal data={signal.observation} nowIso={effectiveNowIso} tripComUrl={tripComUrl} routeSlug={routeSlug} routeDirectness={routeDirectness} routeStatusLabel={routeStatusLabel} routeAirlineLabel={routeAirlineLabel} routeServiceConnections={routeServiceConnections} isServiceEnded={isServiceEnded} /> : null}
+        {signal.state === 'current' && signal.observation ? <CurrentSignal data={signal.observation} nowIso={effectiveNowIso} lowerSelfTransfer={signal.lowerSelfTransfer} tripComUrl={tripComUrl} routeSlug={routeSlug} routeDirectness={routeDirectness} routeStatusLabel={routeStatusLabel} routeAirlineLabel={routeAirlineLabel} routeServiceConnections={routeServiceConnections} standoutFare={standoutFare} isServiceEnded={isServiceEnded} endedAlternativeEligible={endedAlternativeEligible} /> : null}
+        {signal.state === 'recent' && signal.observation ? <RecentSignal data={signal.observation} nowIso={effectiveNowIso} tripComUrl={tripComUrl} routeSlug={routeSlug} routeDirectness={routeDirectness} routeStatusLabel={routeStatusLabel} routeAirlineLabel={routeAirlineLabel} routeServiceConnections={routeServiceConnections} isServiceEnded={isServiceEnded} endedAlternativeEligible={endedAlternativeEligible} /> : null}
         {signal.state === 'none' ? (
           // Final acceptance tweak (3 Oct 2026): from lg up the lead and the button sit side by side, so a wide screen
           // (where the cookie banner is only a short bar) shows the button without a scroll. Below lg nothing changes:
@@ -762,7 +808,7 @@ export function FareSignal({
                 isServiceEnded={isServiceEnded}
                 routeDirectness={routeDirectness}
                 connectingSummary={connectingSummary}
-                hasCta={Boolean(tripComUrl) || !isServiceEnded}
+                hasCta={Boolean(tripComUrl) || !isServiceEnded || endedAlternativeEligible}
                 hasFareHistory={hasFareHistory}
                 hasLoggedFares={hasLoggedFares}
               />
@@ -780,7 +826,7 @@ export function FareSignal({
                 label={isServiceEnded ? SERVICE_ENDED_CTA_LABEL : undefined}
               />
             ) : isServiceEnded ? (
-              <NoCtaFallback />
+              endedAlternativeEligible ? <ServiceEndedFlightSearchFallback /> : <NoCtaFallback />
             ) : (
               <GenericFlightSearchFallback />
             )}

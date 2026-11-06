@@ -411,6 +411,23 @@ copy further, not to silently let the promise go unfulfilled. See
 `docs/travel-club-email-sequence.md` for the actual manual send templates and the "no fixed
 schedule, segment every send" discipline.
 
+### 9.6 The route first screen separates service type from fare type (decision record, November 2026)
+A route page names two different facts and never lets one stand in for the other: the **service** the route has (the badge: "Direct
+service", "Connecting", "Direct service ended", "Verification pending") and the **fare** it shows (price line, pill, callout). When a
+verified direct route shows a connecting fare, the price line itself carries "· connecting" (not "with a stop": an itinerary may have
+several), beside the unchanged "Connecting fare, not nonstop" pill and a callout that names the route's listed service and says the fare
+is not a nonstop fare. Three more standing rules came with it:
+- **An ended direct service is never represented as operating, and never a dead end.** A service-ended route that still carries evidenced
+  `connectingAlternative` data gets "Find connecting alternatives" and the plain Google Flights search labelled "Search connecting flights
+  on Google Flights" (`ENDED_SERVICE_FLIGHT_SEARCH_*` in `lib/booking-providers.ts`): no stop count, journey time, airline or itinerary is
+  promised, because the record's "usually" figures are editorial and undated, and a monetised handoff, when one exists, takes precedence.
+- **A label's value must be what the label says.** `lib/route-first-screen-copy.ts` keeps every stated duration and replaces only
+  status-first values with no duration figure ("Typical flight time not verified. Check the airline's current schedule." / "Journey time
+  varies by itinerary and connection." / "Journey time not yet confirmed."). It never says "not published": an airline may have published a
+  schedule JetStash has not verified.
+- **Public route introductions never describe a booking provider's handoff.** That belongs in internal `note` fields; the page shows the
+  action that exists (a verified handoff or the plain search), not an account of what a provider lacks.
+
 ## 10. The Founder Command Centre (`/founder`)
 
 A private, unlinked, `noindex`'d dashboard (`app/founder/page.tsx` + `lib/founder-insights.ts`)

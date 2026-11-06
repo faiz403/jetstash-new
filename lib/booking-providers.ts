@@ -434,20 +434,33 @@ export function getTripComSearchCtaLabel(routeSlug?: string, names?: { origin: s
  * earns nothing).
  *
  * Callers must gate this on: no monetised handoff resolves (tripComUrl is
- * null) AND the route's effective status is not 'service-ended' — a
- * service-ended route without a qualifying connectingAlternative+exact-URL
- * pair (see getTripComFlightHandoff below) keeps its own distinct
- * fail-closed messaging (NO_VERIFIED_PARTNER_LINK_NOTE) rather than gaining
- * a second, potentially confusing "search anyway" action. Manchester-Delhi
- * and Manchester-Mumbai never reach this fallback in practice: both resolve
- * a real service-ended-connecting handoff (see getTripComFlightHandoff), so
- * tripComUrl is never null for them.
+ * null) AND the route's effective status is not 'service-ended'. A
+ * service-ended route never gets this generic label: with evidenced
+ * connectingAlternative data it gets the distinct
+ * ENDED_SERVICE_FLIGHT_SEARCH_* wording below, and without it it keeps its
+ * own fail-closed messaging (NO_VERIFIED_PARTNER_LINK_NOTE). Manchester-Delhi
+ * and Manchester-Mumbai resolve a real service-ended-connecting Trip.com
+ * handoff only while the affiliate pause is off (see
+ * getTripComFlightHandoff); while it is on (route-page PR C, November
+ * 2026) they get the ended-service Google Flights search instead of a
+ * dead end.
  */
 export const GENERIC_FLIGHT_SEARCH_URL = 'https://www.google.com/travel/flights';
 export const GENERIC_FLIGHT_SEARCH_CTA_LABEL = 'Search flights on Google Flights';
 export const GENERIC_FLIGHT_SEARCH_REL = 'nofollow noopener noreferrer';
 export const GENERIC_FLIGHT_SEARCH_NOTE =
   'Opens Google Flights. JetStash does not earn commission from this link. Enter your airports and dates there.';
+
+/**
+ * Route-page PR C (6 November 2026, CEO-approved): the same plain Google Flights handoff, worded for a service-ended route that still
+ * carries evidenced connecting-alternative data (today Manchester-Delhi and Manchester-Mumbai). The label asks for connecting
+ * flights, and the note says the former nonstop service has ended, so it can never imply that service still operates. It promises no
+ * stop count, journey time, airline or itinerary, and it is never used when a monetised handoff resolves (that keeps
+ * SERVICE_ENDED_CTA_LABEL).
+ */
+export const ENDED_SERVICE_FLIGHT_SEARCH_CTA_LABEL = 'Search connecting flights on Google Flights';
+export const ENDED_SERVICE_FLIGHT_SEARCH_NOTE =
+  'Opens Google Flights. JetStash does not earn commission from this link. The former nonstop service has ended, so expect connecting itineraries. Enter your airports and dates there.';
 
 /**
  * Resolves the one public flight handoff for a published route.

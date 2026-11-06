@@ -167,7 +167,7 @@ describe('Stage 2 deal-card scanning order (nothing removed)', () => {
       if (tag !== -1) {
         expect(tag, deal.id).toBeGreaterThan(source);
         expect(tag, deal.id).toBeLessThan(travel);
-        expect(html, deal.id).toContain('so its price is not a nonstop price');
+        expect(html, deal.id).toContain('It is not a nonstop fare.');
       }
       // The source line carries a date.
       expect(html.slice(source, source + 400), deal.id).toMatch(/\d{1,2} [A-Z][a-z]+ 20\d\d/);

@@ -52,6 +52,7 @@ import { getPublicJourneyRoutePair } from '@/lib/arrive-by-journey/public-route-
 import { isSeoPilotPage, isRouteEligibleForSeoLink, getSeoRouteLinks, getQuickAnswersContent } from '@/lib/seo-indexing-pilot';
 import { RouteQuickAnswers } from '@/components/route/route-quick-answers';
 import { SeoRouteLinks } from '@/components/route/seo-route-links';
+import { getFlightTimeDisplay, getRouteHeroBadgeLabel } from '@/lib/route-first-screen-copy';
 
 /**
  * Route-hero focal-position overrides, keyed by destination slug. HeroBackdrop's default
@@ -283,7 +284,9 @@ export default async function RoutePage({ params }: { params: Promise<{ slug: st
                 label (see RoutePresentationBase's doc comment), so a new
                 status value (e.g. 'service-ended') can never silently fall
                 through to the wrong badge. */}
-            <Badge variant="dark">{presentation.statusLabel}</Badge>
+            {/* Route-page PR C: a verified direct route's badge reads "Direct service" (via getRouteHeroBadgeLabel), so it names the service and
+                can never be read as a statement about the fare shown below it. Every other status keeps the canonical label. */}
+            <Badge variant="dark">{getRouteHeroBadgeLabel(presentation.status, presentation.statusLabel)}</Badge>
           </div>
           <h1 className="stagger-in stagger-2 mt-3 animate-fade-up font-display text-4xl leading-[1.05] tracking-tight text-sand-50 sm:mt-4 sm:text-5xl">
             {airport.city} to {dest.city}
@@ -295,7 +298,7 @@ export default async function RoutePage({ params }: { params: Promise<{ slug: st
           </p>
           {(presentation.status === 'direct' || presentation.status === 'connecting') && (
             <p className="stagger-in stagger-4 mt-2 animate-fade-up text-sm text-ink-300">
-              Typical flight time: {presentation.flightTime}
+              {getFlightTimeDisplay(presentation.flightTime).heroLine}
             </p>
           )}
           {presentation.status === 'service-ended' && firstScreenConnecting && (
@@ -391,7 +394,7 @@ export default async function RoutePage({ params }: { params: Promise<{ slug: st
               </div>
             ) : (
               <>
-                <RouteStat icon={<Clock className="h-4 w-4" strokeWidth={2} />} label="Flight time" value={presentation.flightTime} />
+                <RouteStat icon={<Clock className="h-4 w-4" strokeWidth={2} />} label="Flight time" value={getFlightTimeDisplay(presentation.flightTime).rowValue} />
                 <RouteStat icon={<Calendar className="h-4 w-4" strokeWidth={2} />} label="Frequency" value={presentation.frequency} />
                 {presentationAirlines.length > 0 && (
                   <RouteStat icon={<Plane className="h-4 w-4" strokeWidth={2} />} label="Airlines" value={presentationAirlines.map((a) => a.name).join(', ')} />
