@@ -903,6 +903,8 @@ explicitly accepts "Site statistics", a permission separate from Google Ads meas
 other; `components/analytics/site-statistics.tsx`, `lib/consent.ts`). They add the visitor's referrer to
 page views and custom events themselves, outside the `beforeSend` hook, so that is a residual provider-data
 exposure for consenting visitors; do not rebuild Vercel's analytics around it without a separate decision.
+The shared consent notice stays in normal document flow between navigation and page content; it must not cover
+primary actions, and optional consent must never be required to use the site.
 `lib/analytics.ts`
 is the one `track()` wrapper every event goes through. Event catalog (all context, never anything that
 identifies a person or a document):
