@@ -126,7 +126,8 @@ rate limiting rather than the current process-local limiter.
 - Known limits: the consent banner still covers content on a first visit (separate item); two Other-airport rows can read "London → Doha"
   (Heathrow and Gatwick), a pre-existing ambiguity the compact rows keep rather than hide: adding the airport name is proposed, not done.
 - Unreviewed branch found (read-only, nothing merged): `fix/homepage-consent-and-clarity-2026-11` (single commit `bc245c2`, 15:05 UTC 6 November,
-  branched from `2669374`, no pull request) moves the consent notice from a fixed bottom panel into normal flow under the header on every page,
+  branched from `2669374`; PR #370 was opened for it at 15:53 UTC with an empty description, and its `quality` check failed) moves the consent notice
+  from a fixed bottom panel into normal flow under the header on every page,
   removes the scroll-padding published for it, rewrites the consent tests and touches the homepage hero. It reverses the accepted fixed-panel design
   rather than duplicating completed work, and would push every first-visit page down by the banner height (about 100px at 390px).
 - Not an approved release; merge still requires CEO approval.
