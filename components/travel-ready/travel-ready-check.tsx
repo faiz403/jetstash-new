@@ -273,7 +273,7 @@ export function TravelReadyCheck({
                 // answer over to a different destination/document.
                 setDocumentValidity('');
               }}
-              className="mt-1.5 h-11 w-full rounded-sm border border-ink-200 bg-white px-3 text-sm text-ink-900 focus-visible:border-brass sm:max-w-sm"
+              className="mt-1.5 h-11 w-full rounded-sm border border-ink-200 bg-white px-3 text-base text-ink-900 sm:text-sm focus-visible:border-brass sm:max-w-sm"
             >
               <option value="">Select destination</option>
               {supportedDestinations.map((d) => (
@@ -332,7 +332,7 @@ export function TravelReadyCheck({
                   // choice (e.g. switching to "visa or permit" and back).
                   setDocumentValidity('');
                 }}
-                className="mt-1.5 h-11 w-full rounded-sm border border-ink-200 bg-white px-3 text-sm text-ink-900 focus-visible:border-brass sm:max-w-sm"
+                className="mt-1.5 h-11 w-full rounded-sm border border-ink-200 bg-white px-3 text-base text-ink-900 sm:text-sm focus-visible:border-brass sm:max-w-sm"
               >
                 <option value="none">None of these</option>
                 {country === 'Pakistan' && <option value="nicop-poc">NICOP or Pakistan Origin Card (POC)</option>}
@@ -388,7 +388,7 @@ export function TravelReadyCheck({
                 id="ready-exemption-generic"
                 value={exemptionDocument}
                 onChange={(e) => setExemptionDocument(e.target.value as ExemptionDocument)}
-                className="mt-1.5 h-11 w-full rounded-sm border border-ink-200 bg-white px-3 text-sm text-ink-900 focus-visible:border-brass sm:max-w-sm"
+                className="mt-1.5 h-11 w-full rounded-sm border border-ink-200 bg-white px-3 text-base text-ink-900 sm:text-sm focus-visible:border-brass sm:max-w-sm"
               >
                 <option value="none">No, not yet</option>
                 <option value="visa-or-permit">Yes, I already hold one</option>
@@ -409,7 +409,7 @@ export function TravelReadyCheck({
                   clearSubmissionError();
                   setDepartureDate(e.target.value);
                 }}
-                className="mt-1.5 h-11 w-full rounded-sm border border-ink-200 px-3 text-sm text-ink-900 focus-visible:border-brass"
+                className="mt-1.5 h-11 w-full rounded-sm border border-ink-200 px-3 text-base text-ink-900 sm:text-sm focus-visible:border-brass"
               />
             </div>
             <div>
@@ -424,7 +424,7 @@ export function TravelReadyCheck({
                   clearSubmissionError();
                   setArrivalDate(e.target.value);
                 }}
-                className="mt-1.5 h-11 w-full rounded-sm border border-ink-200 px-3 text-sm text-ink-900 focus-visible:border-brass"
+                className="mt-1.5 h-11 w-full rounded-sm border border-ink-200 px-3 text-base text-ink-900 sm:text-sm focus-visible:border-brass"
               />
               <p className="mt-1.5 text-xs text-ink-400">
                 The date you land, not your UK departure date — some passport and stay rules are measured from
@@ -443,7 +443,7 @@ export function TravelReadyCheck({
                   clearSubmissionError();
                   setReturnDate(e.target.value);
                 }}
-                className="mt-1.5 h-11 w-full rounded-sm border border-ink-200 px-3 text-sm text-ink-900 focus-visible:border-brass"
+                className="mt-1.5 h-11 w-full rounded-sm border border-ink-200 px-3 text-base text-ink-900 sm:text-sm focus-visible:border-brass"
               />
             </div>
             <div>
@@ -458,7 +458,7 @@ export function TravelReadyCheck({
                   clearSubmissionError();
                   setPassportExpiryDate(e.target.value);
                 }}
-                className="mt-1.5 h-11 w-full rounded-sm border border-ink-200 px-3 text-sm text-ink-900 focus-visible:border-brass"
+                className="mt-1.5 h-11 w-full rounded-sm border border-ink-200 px-3 text-base text-ink-900 sm:text-sm focus-visible:border-brass"
               />
             </div>
           </div>

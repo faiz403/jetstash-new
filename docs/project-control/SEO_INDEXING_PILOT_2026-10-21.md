@@ -267,11 +267,16 @@ Every checkpoint records these items:
   those 128 plus 84 lower-card corrections across 50 pages total. Fare selection, titles, canonical URLs, robots, sitemap, Quick answers and internal-link destinations
   are unchanged.
 
-- **Homepage first-visit usability (PR #353; prepared for review, not Production-deployed):** homepage text changes: the eyebrow gains
+- **Homepage first-visit usability (PR #353; merge `305542cfe57e3390aca89ac1ab58d9ad488329ef`, merged 00:09:17 UTC on 6 November 2026,
+  Production deployment Ready minutes later, deployment id not captured; live smoke at 00:11 UTC confirmed the new copy):** homepage text changes: the eyebrow gains
   "to Pakistan, India or the Gulf" from sm up, phones gain a "For UK travellers flying to Pakistan, India and the Gulf." line below the
   console, and the closing button reads "Check my journey" (was "Check my trip"). The `<h1>`, `<title>`, meta description, canonical,
-  robots, sitemap, route/fare records and internal links are unchanged. Treat as a homepage-text event for the pilot; record the actual
-  merge/deployment here only after separate approval and release.
+  robots, sitemap, route/fare records and internal links are unchanged. Treat as a homepage-text event for the pilot.
+
+- **Route-page accessibility and signup fixes (PR A; prepared for review, not Production-deployed):** colour, size and layout classes
+  only (route facts and the WhatsApp share button contrast; Route Watch and Travel Club email field height; 16px phone controls). No
+  visible copy, heading, `<title>`, meta description, canonical, robots, sitemap, route/fare record or internal link changes, so no
+  pilot-page text event. Record the actual merge/deployment here only after separate approval and release.
 
 ## Wave 2 (not approved; only after a positive day-14 signal)
 

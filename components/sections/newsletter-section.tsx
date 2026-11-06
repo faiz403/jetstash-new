@@ -106,7 +106,7 @@ export function NewsletterSection() {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="you@example.com"
-                      className="h-12 flex-1 rounded-sm border border-white/15 bg-white/5 px-4 text-sand-50 placeholder:text-ink-400 focus-visible:border-brass"
+                      className="h-12 w-full min-w-0 rounded-sm border border-white/15 bg-white/5 px-4 text-base text-sand-50 placeholder:text-ink-400 focus-visible:border-brass sm:w-auto sm:flex-1"
                     />
                     <button
                       type="submit"
@@ -126,7 +126,7 @@ export function NewsletterSection() {
                         id="nearestAirport"
                         value={nearestAirport}
                         onChange={(e) => setNearestAirport(e.target.value)}
-                        className="mt-1.5 h-11 w-full rounded-sm border border-white/15 bg-white/5 px-3 text-sm text-sand-50 focus-visible:border-brass"
+                        className="mt-1.5 h-11 w-full rounded-sm border border-white/15 bg-white/5 px-3 text-base text-sand-50 focus-visible:border-brass sm:text-sm"
                       >
                         <option value="" className="bg-ink-900">Select airport</option>
                         {airports.map((a) => (
@@ -144,7 +144,7 @@ export function NewsletterSection() {
                         id="interest"
                         value={interest}
                         onChange={(e) => setInterest(e.target.value)}
-                        className="mt-1.5 h-11 w-full rounded-sm border border-white/15 bg-white/5 px-3 text-sm text-sand-50 focus-visible:border-brass"
+                        className="mt-1.5 h-11 w-full rounded-sm border border-white/15 bg-white/5 px-3 text-base text-sand-50 focus-visible:border-brass sm:text-sm"
                       >
                         <option value="" className="bg-ink-900">Choose an area we actively monitor</option>
                         {TRAVEL_INTEREST_OPTIONS.map((opt) => (

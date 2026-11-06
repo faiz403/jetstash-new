@@ -122,7 +122,7 @@ export function RouteWatchForm({ defaultAirportSlug, defaultDestinationSlug, def
                 required
                 value={airportSlug}
                 onChange={(e) => setAirportSlug(e.target.value)}
-                className="mt-1.5 h-11 w-full rounded-sm border border-ink-200 bg-white px-3 text-sm text-ink-900 focus-visible:border-brass"
+                className="mt-1.5 h-11 w-full rounded-sm border border-ink-200 bg-white px-3 text-base text-ink-900 sm:text-sm focus-visible:border-brass"
               >
                 <option value="">Select airport</option>
                 {airports.map((a) => (
@@ -137,7 +137,7 @@ export function RouteWatchForm({ defaultAirportSlug, defaultDestinationSlug, def
                 required
                 value={destinationSlug}
                 onChange={(e) => setDestinationSlug(e.target.value)}
-                className="mt-1.5 h-11 w-full rounded-sm border border-ink-200 bg-white px-3 text-sm text-ink-900 focus-visible:border-brass"
+                className="mt-1.5 h-11 w-full rounded-sm border border-ink-200 bg-white px-3 text-base text-ink-900 sm:text-sm focus-visible:border-brass"
               >
                 <option value="">Select destination</option>
                 {destinations.map((d) => (
@@ -153,7 +153,7 @@ export function RouteWatchForm({ defaultAirportSlug, defaultDestinationSlug, def
               id="watch-intent"
               value={intent}
               onChange={(e) => setIntent(e.target.value)}
-              className="mt-1.5 h-11 w-full rounded-sm border border-ink-200 bg-white px-3 text-sm text-ink-900 focus-visible:border-brass"
+              className="mt-1.5 h-11 w-full rounded-sm border border-ink-200 bg-white px-3 text-base text-ink-900 sm:text-sm focus-visible:border-brass"
             >
               <option value="">Prefer not to say</option>
               {ROUTE_WATCH_INTENT_OPTIONS.map((opt) => (
@@ -172,7 +172,7 @@ export function RouteWatchForm({ defaultAirportSlug, defaultDestinationSlug, def
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@example.com"
-              className="h-11 flex-1 rounded-sm border border-ink-200 px-4 text-sm text-ink-900 focus-visible:border-brass"
+              className="h-11 w-full min-w-0 rounded-sm border border-ink-200 px-4 text-base text-ink-900 focus-visible:border-brass sm:w-auto sm:flex-1 sm:text-sm"
             />
             <button
               type="submit"

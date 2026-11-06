@@ -404,6 +404,7 @@ export default async function RoutePage({ params }: { params: Promise<{ slug: st
                 text={presentation.shareText}
                 route={route.slug}
                 source="route-hero"
+                variant="light"
               />
             </div>
           )}
