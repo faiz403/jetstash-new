@@ -102,9 +102,11 @@ export function TravelReadyDisclosure({ summary, children }: { summary: ReactNod
 
   return (
     <details ref={ref} className="group" data-travel-ready-disclosure="">
-      <summary className="flex cursor-pointer list-none flex-col gap-3 rounded-sm outline-none focus-visible:ring-2 focus-visible:ring-brass-600 focus-visible:ring-offset-2 sm:flex-row sm:items-start sm:justify-between sm:gap-4 [&::-webkit-details-marker]:hidden">
-        <span className="block min-w-0">{summary}</span>
-        <span className="inline-flex min-h-11 shrink-0 items-center gap-1.5 whitespace-nowrap text-sm font-semibold text-ink-900 sm:mt-1 sm:min-h-0">
+      {/* The summary's children are the check's eyebrow (a span), its h2 and its scope line (a span), placed directly in the grid, then the
+          toggle: a heading is only valid as a direct child of <summary> (never inside a span), so the grid, not a wrapper, lays them out. */}
+      <summary className="grid cursor-pointer list-none rounded-sm outline-none focus-visible:ring-2 focus-visible:ring-brass-600 focus-visible:ring-offset-2 sm:grid-cols-[minmax(0,1fr)_auto] sm:gap-x-4 [&>*:not(:last-child)]:sm:col-start-1 [&::-webkit-details-marker]:hidden">
+        {summary}
+        <span className="mt-3 inline-flex min-h-11 items-center gap-1.5 whitespace-nowrap text-sm font-semibold text-ink-900 sm:col-start-2 sm:row-span-3 sm:row-start-1 sm:mt-1 sm:min-h-0 sm:self-start">
           <span className="group-open:hidden">Show the check</span>
           <span className="hidden group-open:inline">Hide the check</span>
           <ChevronDown className="h-4 w-4 transition-transform group-open:rotate-180" strokeWidth={2.25} aria-hidden="true" />

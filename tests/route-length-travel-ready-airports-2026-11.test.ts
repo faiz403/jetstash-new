@@ -93,6 +93,19 @@ describe('route-page PR E', () => {
       expect(summary).not.toMatch(/role=|tabindex=/); // native semantics, no ARIA overrides
       expect(summary).toMatch(/<svg[^>]*aria-hidden="true"/); // the chevron is decorative
       expect(summary).not.toMatch(/<(?:div|p|ul|ol|form|section)\b/); // no flow content inside the summary
+      // the direct children of <summary> are span, h2, span, span: the heading is a direct child (never inside a span), as the content model requires
+      const inner = summary.slice(summary.indexOf('>') + 1);
+      const direct: string[] = [];
+      let depth = 0;
+      for (const m of inner.matchAll(/<(\/?)([a-z0-9]+)\b[^>]*?(\/?)>/gi)) {
+        const [, closing, name, selfClosing] = m;
+        if (closing) { depth--; continue; }
+        if (depth === 0) direct.push(name.toLowerCase());
+        if (!selfClosing) depth++; // React renders svg children as open and close tags, so every non-self-closing tag is balanced
+      }
+      expect(direct).toEqual(['span', 'h2', 'span', 'span']);
+      // and no heading, paragraph or block content sits inside any span of the summary
+      for (const span of inner.matchAll(/<span\b[^>]*>([\s\S]*?)<\/span>/g)) expect(span[1]).not.toMatch(/<h[1-6]\b/);
       expect(html.split(`>${H2}<`).length - 1).toBe(1); // the heading appears exactly once on the page
     });
 
@@ -105,9 +118,11 @@ describe('route-page PR E', () => {
       // every control of the standalone check is present in the collapsed markup
       const ids = (h: string) => [...h.matchAll(/\sid="([^"]+)"/g)].map((m) => m[1]).sort();
       expect(ids(collapsed)).toEqual(ids(plainCheck));
-      expect(collapsed.match(/<input\b/g)?.length).toBe(plainCheck.match(/<input\b/g)?.length);
-      expect(collapsed.match(/<select\b/g)?.length).toBe(plainCheck.match(/<select\b/g)?.length);
-      expect(collapsed.match(/<button\b/g)?.length).toBe(plainCheck.match(/<button\b/g)?.length);
+      for (const tag of ['input', 'select', 'button', 'label', 'fieldset']) {
+        const n = plainCheck.match(new RegExp(`<${tag}\\b`, 'g'))?.length ?? 0;
+        expect(n, `${tag} controls exist in the standalone check`).toBeGreaterThan(0);
+        expect(collapsed.match(new RegExp(`<${tag}\\b`, 'g'))?.length ?? 0, tag).toBe(n);
+      }
     });
 
     it('nothing is removed: every field, the scope note, the privacy sentence and the submit button are in the page while it is closed', async () => {
@@ -150,24 +165,33 @@ describe('route-page PR E', () => {
 
     describe('opening behaviour (executed against a minimal fake window and document)', () => {
       type Listener = (event?: never) => void;
+      // Registries keyed like the browser: a listener is removed only when type, function AND capture flag all match the registration.
+      type Registered<F> = { type: string; fn: F; capture: boolean };
       function setup(hash: string, href = PAGE + hash) {
         const details: DisclosureLike = { open: false };
-        const hashListeners: Listener[] = [];
-        const clickListeners: ((e: ClickEventLike) => void)[] = [];
-        const captures: boolean[] = [];
+        const winRegistry: Registered<Listener>[] = [];
+        const docRegistry: Registered<(e: ClickEventLike) => void>[] = [];
         const win: OpenerWindowLike & { location: { hash: string; href: string } } = {
           location: { hash, href },
-          addEventListener: (_t, l) => void hashListeners.push(l as Listener),
-          removeEventListener: (_t, l) => void hashListeners.splice(hashListeners.indexOf(l as Listener), 1),
+          addEventListener: (type, fn) => void winRegistry.push({ type, fn: fn as Listener, capture: false }),
+          removeEventListener: (type, fn) => {
+            const i = winRegistry.findIndex((r) => r.type === type && r.fn === (fn as Listener) && r.capture === false);
+            if (i >= 0) winRegistry.splice(i, 1);
+          },
         };
         const doc: OpenerDocumentLike = {
-          addEventListener: (_t, l, capture) => { clickListeners.push(l); captures.push(capture); },
-          removeEventListener: (_t, l) => void clickListeners.splice(clickListeners.indexOf(l), 1),
+          addEventListener: (type, fn, capture) => void docRegistry.push({ type, fn, capture }),
+          removeEventListener: (type, fn, capture) => {
+            const i = docRegistry.findIndex((r) => r.type === type && r.fn === fn && r.capture === capture);
+            if (i >= 0) docRegistry.splice(i, 1);
+          },
         };
         const cleanup = attachTravelReadyOpeners(() => details, win, doc);
         const link = (href: string | null, extra: Partial<ClickEventLike> = {}): ClickEventLike => ({ target: { closest: () => (href === null ? null : { getAttribute: () => href }) }, button: 0, ...extra });
-        const click = (e: ClickEventLike) => clickListeners.forEach((l) => l(e));
-        return { details, win, hashListeners, clickListeners, captures, cleanup, link, click };
+        // Dispatch only to listeners registered for that event type (as the browser does), whatever their capture flag.
+        const click = (e: ClickEventLike) => docRegistry.filter((r) => r.type === 'click').forEach((r) => r.fn(e));
+        const hashchange = () => winRegistry.filter((r) => r.type === 'hashchange').forEach((r) => r.fn());
+        return { details, win, winRegistry, docRegistry, cleanup, link, click, hashchange };
       }
 
       it('opens on mount when the URL carries the fragment, and stays closed otherwise', () => {
@@ -178,15 +202,16 @@ describe('route-page PR E', () => {
 
       it('opens on a hashchange to the fragment but not to another one', () => {
         const s = setup('');
-        s.win.location.hash = '#route-watch'; s.hashListeners.forEach((l) => l());
+        expect(s.winRegistry.map((r) => r.type)).toEqual(['hashchange']);
+        s.win.location.hash = '#route-watch'; s.hashchange();
         expect(s.details.open).toBe(false);
-        s.win.location.hash = '#travel-ready'; s.hashListeners.forEach((l) => l());
+        s.win.location.hash = '#travel-ready'; s.hashchange();
         expect(s.details.open).toBe(true);
       });
 
       it('opens on a plain click on an in-page link to the section, including a second click when the hash is already set, in the capture phase', () => {
         const s = setup('#travel-ready');
-        expect(s.captures).toEqual([true]);
+        expect(s.docRegistry.map((r) => [r.type, r.capture])).toEqual([['click', true]]);
         s.details.open = false; // the visitor closed it; the hash is unchanged
         s.click(s.link('#travel-ready'));
         expect(s.details.open).toBe(true);
@@ -210,11 +235,13 @@ describe('route-page PR E', () => {
       it('never closes it, and its cleanup removes both listeners', () => {
         const s = setup('#travel-ready');
         s.click(s.link('#route-watch'));
-        s.hashListeners.forEach((l) => l());
+        s.hashchange();
         expect(s.details.open).toBe(true); // nothing the opener does can close it
-        s.cleanup();
-        expect(s.hashListeners).toHaveLength(0);
-        expect(s.clickListeners).toHaveLength(0);
+        expect(s.winRegistry).toHaveLength(1);
+        expect(s.docRegistry).toHaveLength(1);
+        s.cleanup(); // the fake removes a listener only when type, function AND capture flag match the registration
+        expect(s.winRegistry).toHaveLength(0);
+        expect(s.docRegistry).toHaveLength(0);
         const code = read('components/travel-ready/travel-ready-disclosure.tsx').replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
         expect(code).not.toMatch(/\.open\s*=\s*false/);
         expect(code).not.toMatch(/history\.(push|replace)State|preventDefault\(/); // browser history and navigation are left alone
@@ -238,18 +265,23 @@ describe('route-page PR E', () => {
 
   describe('2. Other UK airports as compact rows', () => {
     it('every route page with alternatives renders a list with one row per alternative route, keeping each row\'s status, heading, link and service line', async () => {
+      const alternativesOf = (slug: string) => {
+        const dest = getDestinationBySlug(routes.find((r) => r.slug === slug)!.destinationSlug)!;
+        return getRoutesByDestination(dest.slug).filter((r) => r.slug !== slug && getAirportBySlug(r.airportSlug));
+      };
+      // Expected inventory is derived from the data BEFORE rendering; the rendered count is measured from the HTML, so the two are independent.
+      const expectedPages = routes.filter((r) => alternativesOf(r.slug).length > 0).length;
+      expect(expectedPages).toBeGreaterThan(0);
       let pages = 0;
-      let expectedPages = 0;
       for (const route of routes) {
         const dest = getDestinationBySlug(route.destinationSlug)!;
-        const alternatives = getRoutesByDestination(dest.slug).filter((r) => r.slug !== route.slug && getAirportBySlug(r.airportSlug));
+        const alternatives = alternativesOf(route.slug);
         const html = plain(await render(route.slug));
         if (alternatives.length === 0) {
           expect(html, route.slug).not.toContain(`Other UK airports for ${dest.city}`);
           continue;
         }
-        expectedPages++;
-        pages++;
+        if (html.includes(`Other UK airports for ${dest.city}`)) pages++;
         const start = html.indexOf(`Other UK airports for ${dest.city}`);
         expect(start, route.slug).toBeGreaterThan(-1);
         const section = html.slice(start, html.indexOf('</section>', start));
@@ -270,7 +302,6 @@ describe('route-page PR E', () => {
         }
       }
       expect(pages).toBe(expectedPages);
-      expect(pages).toBeGreaterThan(0);
     });
 
     it('every service-line branch (unverified, service ended, verified) is exercised by real pages', async () => {
