@@ -302,7 +302,9 @@ Every checkpoint records these items:
   answers, prices, route and fare records and internal link targets are unchanged; the only heading that changes anywhere is the lower section
   on Manchester-Delhi and Manchester-Mumbai (not pilot pages), "You can still fly this route with a connection" becoming "Connecting alternatives". Treat as a content-wording event for the three pilot pages.
 
-- **Route-page first-screen action and duplication (PR D; prepared for review, not Production-deployed):** visible text changes on the route
+- **Route-page first-screen action and duplication (PR #368 "PR D"; merge `69a0924cedcdc0db67eb7bafcfab21ff33cbd29f`, merged 15:22:31 UTC on
+  6 November 2026, Production deployment building about a minute later, deployment id and exact Ready time not captured; live verification from
+  about 15:25 UTC):** visible text changes on the route
   pages, including **all three pilot pages**. manchester-islamabad: the "Connecting fare, not nonstop" pill under the price is removed,
   the airline, cabin and checked date read as one line on a phone, the hero line "Typical flight time not verified. Check the airline's
   current schedule." is removed (the same sentence stays as the Flight time row), and the fare section's card no longer repeats the
@@ -311,8 +313,7 @@ Every checkpoint records these items:
   removed (it stays as the Flight time row). Elsewhere: the pill leaves 15 pages, 16 hero flight-time lines are removed (6 direct, 10
   connecting), and Manchester-Delhi and Manchester-Mumbai (not pilot pages)
   lose the repeated hero badge and the ended-service card restatement. Headings, `<title>`, meta description, canonical, robots, sitemap, Quick
-  answers, prices, route and fare records and internal link targets are unchanged. Treat as a content-removal event for all three pilot pages; record
-  the actual merge/deployment here only after separate approval and release.
+  answers, prices, route and fare records and internal link targets are unchanged. Treat as a content-removal event for all three pilot pages.
 
 ## Wave 2 (not approved; only after a positive day-14 signal)
 

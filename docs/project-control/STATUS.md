@@ -1,6 +1,6 @@
 # JetStash Current Status
 
-**Latest release reconciliation:** 6 November 2026, through PR #367. The older dated programme/count snapshots below are historical.
+**Latest release reconciliation:** 6 November 2026, through PR #368. The older dated programme/count snapshots below are historical.
 
 **Production branch:** `main`
 
@@ -54,6 +54,21 @@ Flights button and its disclaimers, and the link is `https://www.google.com/trav
 is no horizontal scroll, text fields are 16px, consent is unchanged, and there were zero Google routing requests and zero external requests.
 The undated "Usually 1 stop" and "12 to 15h total" pattern appears only in the lower "Connecting alternatives" section of those two pages, not in
 the hero. No Google routing call was made.
+PR #368 (route-page "PR D": first-screen action and duplication) merged as `69a0924cedcdc0db67eb7bafcfab21ff33cbd29f` at 15:22:31 UTC on
+6 November, on explicit CEO approval, at exact head `48476765e36428ef624040774c3e5f8fea15db8a` (Codex `98baa3e` PASS WITH NOTES with five P3s fixed, delta
+`4847676` PASS with no defects; GitHub checks green; Vercel Preview `4847676` Ready). The Vercel Deployments list showed the Production
+deployment of `69a0924` building about a minute after the merge; its deployment id and exact Ready time were not captured. Live read-only
+verification from about 15:25 UTC: all 89 route pages returned 200 and were text-identical to a local build of the same tree with the
+Trip.com pause on (the tree whose fare evidence had already been compared with the previous Production: prices, checked dates, travel dates,
+airline and cabin text and coverage notes identical); 25 pages show "Fare spotted"; 15 "· connecting" qualifiers; 34 "Direct service"
+badges; zero Trip.com text or links; on the 15 connecting-fare pages every page keeps the qualifier, the Route service explanation, the
+checked date and the price, and none carries a separate pill under the price. The primary action is fully visible on 12 of 15 pages at
+390x844 (median bottom edge 799px; maximum 873px), none at 320x568 or 320x720 (median 975px; reached by scrolling), and all 15 at 1440x900
+(721px). At 320, 390 and 1440px: Tab reaches the Google link with a 3px outline (`rel="nofollow noopener noreferrer"`, never opened), no
+horizontal scroll, Reject stores both choices denied, the Travel Ready section and form, Route Watch (email field 44px, 16px on phones) and
+the fare-history anchor are present, and there were zero Google routing requests and zero external requests. A separate branch
+(`fix/homepage-consent-and-clarity-2026-11`, "keep consent choices clear of mobile actions") appeared in the Vercel Deployments list as a
+Preview; it was not touched or reviewed here.
 
 **Current founder direction — 5 November:** execute the Website Improvement Programme through small, tested PRs, beginning
 with archive-aware fare-card wording, then homepage PR #353 (merged 6 November), then the route-page programme below. Stop before every Production merge for approval.
@@ -72,7 +87,22 @@ rate limiting rather than the current process-local limiter.
 
 **Production site:** `https://jetstash.co.uk`
 
-## Route-page first-screen action and duplication — 6 November 2026 (PR D prepared for review; not merged, not deployed)
+## Arrive By service-ended wording — 6 November 2026 (prepared for review; not merged, not deployed)
+
+- CEO-approved narrow trust correction. `lib/arrive-by/route-support.ts` now gives a service-ended route that carries evidenced
+  connecting-alternative data (`presentation.canShowConnectingAlternative`, true for Manchester-Delhi and Manchester-Mumbai) the approved
+  warning: "The former direct service has ended. Connecting alternatives may be available, but JetStash has not checked live flight
+  availability. Check current flights, stops and journey times for your dates before booking." It replaces the canonical summary's "See below
+  for the current connecting journey and how to check today's price". A service-ended route without that evidence keeps the canonical
+  fail-closed summary ("Check current options directly with airlines before booking"); verification-pending, unspecified and every other
+  status are untouched.
+- Only the warning string changed: canonical statuses, `presentation.summary`, `statusHeadline`, route evidence, the Stage 1 calculations and
+  the public planner are unchanged. Exposure: none today (see the corrected trust-review note in the PR D section: the Stage 1 engine's only
+  renderer is an unused founder component and `/founder/arrive-by` 404s in production), so this removes a latent contradiction rather than
+  a live one. Tests: `tests/arrive-by-service-ended-wording-2026-11.test.ts`.
+- Not an approved release; merge still requires CEO approval.
+
+## Route-page first-screen action and duplication — 6 November 2026 (PR #368 "PR D" merged `69a0924`; Production live-verified)
 
 - CEO-approved after the 6 November reassessment; presentation only. No price, airline, observed date, fare classification, route status,
   verification, Trip.com or data change; the Trip.com pause stays on. Not a redesign: no new card, element or feature.
@@ -106,16 +136,19 @@ rate limiting rather than the current process-local limiter.
     no status gate of its own (only the Route Watch helper has one), so widening the candidate list to a service-ended route would surface the
     canonical ended headline there; that list is pilot-controlled.
   - Manchester-Mumbai journey brief: not public (`/founder/journey-brief/manchester-mumbai` 404s in production).
-  - **Arrive By: a genuine contradiction.** Manchester-Delhi and Manchester-Mumbai are supported Arrive By routes, and for a service-ended
-    route its route warning is the canonical `presentation.summary`: "There's no current nonstop service on Manchester to Delhi — the
-    previously-verified direct service has ended. See below for the current connecting journey and how to check today's price." In Arrive By
-    there is no "below", and "the current connecting journey" asserts an availability that has not been checked live. Not changed here
-    (scope); a one-string fix in `lib/arrive-by/route-support.ts` is proposed for CEO approval.
+  - **Arrive By: a wording contradiction in the Stage 1 engine, not customer-visible.** Manchester-Delhi and Manchester-Mumbai are in the
+    Stage 1 engine's supported set (`lib/arrive-by/route-support.ts`), and for a service-ended route its route warning was the canonical
+    `presentation.summary`: "There's no current nonstop service on Manchester to Delhi — the previously-verified direct service has ended. See
+    below for the current connecting journey and how to check today's price." There is no "below", and "the current connecting journey" asserts
+    an availability that has not been checked live. Correction to the first report of this finding (which implied a public surface): the only
+    component that renders that warning (`components/founder/arrive-by-preview.tsx`) is not imported anywhere, `/founder/arrive-by` 404s in
+    production, and the public planner uses a different engine that never offers an ended route (`getPublicJourneyRoutePairs`). It is a
+    dormant defect, fixed in the follow-up PR "Arrive By service-ended wording" below.
   - The canonical `statusHeadline` ("Former direct service ended · connecting flights available") now has no public consumer for an ended route.
 - Known limits: at 320 the action still needs a scroll on the connecting-fare pages; Manchester-Istanbul, Birmingham-Dalaman and
   Birmingham-Athens sit 13-29px below the 844px fold at 390; the first-visit consent banner covers the action on phones; page length is unchanged
   in kind (PR E is a separate proposal).
-- Not an approved release; merge still requires CEO approval.
+- Merged on explicit CEO approval; verification results are in the baseline paragraph above.
 
 ## Route-page fare clarity and traveller next steps — 6 November 2026 (PR #367 "PR C" merged `2669374`; Production live-verified)
 

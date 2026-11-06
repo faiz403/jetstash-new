@@ -55,7 +55,12 @@ export interface RouteSupportFound {
   /**
    * Existing route-status/warning wording only — the ledger event's own
    * customer-facing headline, or the route's safe pending summary, or an
-   * active route-warning title. Never authored fresh here.
+   * active route-warning title. Never authored fresh here, with one
+   * CEO-approved exception (6 November 2026): a service-ended route that
+   * carries evidenced connecting-alternative data gets
+   * ARRIVE_BY_SERVICE_ENDED_WITH_ALTERNATIVES_WARNING (see below), because the
+   * canonical summary points to a section ("See below ...") that Arrive By
+   * does not have and calls the connecting journey "current".
    */
   routeWarning: string | null;
   /** route.flightTime, verbatim — shown for context, never parsed for arithmetic. */
@@ -69,6 +74,26 @@ export interface RouteSupportNotFound {
 }
 
 export type RouteSupportResult = RouteSupportFound | RouteSupportNotFound;
+
+/**
+ * Arrive By's route warning for a service-ended route that still carries evidenced connecting-alternative data (CEO-approved wording,
+ * 6 November 2026). The canonical `presentation.summary` for that case ends "See below for the current connecting journey and how to
+ * check today's price": Arrive By has no section below, and no connecting journey has been checked live, so "current" asserted more than
+ * JetStash knows. This says what is evidenced (the former direct service has ended), that alternatives MAY be available, that live
+ * availability has not been checked, and what the traveller must do.
+ */
+export const ARRIVE_BY_SERVICE_ENDED_WITH_ALTERNATIVES_WARNING =
+  'The former direct service has ended. Connecting alternatives may be available, but JetStash has not checked live flight availability. Check current flights, stops and journey times for your dates before booking.';
+
+/**
+ * The warning for a service-ended route. Only a route whose own presentation says connecting-alternative evidence exists
+ * (`canShowConnectingAlternative`, true only when the record carries `connectingAlternative`) gets the wording above; a route without
+ * that evidence keeps the canonical summary, which already fails closed ("Check current options directly with airlines before booking").
+ * The canonical status, summary and evidence are never edited.
+ */
+export function getServiceEndedRouteWarning(presentation: { canShowConnectingAlternative: boolean; summary: string }): string {
+  return presentation.canShowConnectingAlternative ? ARRIVE_BY_SERVICE_ENDED_WITH_ALTERNATIVES_WARNING : presentation.summary;
+}
 
 /** Earliest ledger-verified date (across all non-superseded, non-cancelled lifecycle events) on or after which this route's current direct/connecting service is no longer confirmed. Null if no such event exists. */
 function getEarliestServiceBoundaryDate(routeEvents: RouteStatusEvent[]): { date: string; event: RouteStatusEvent } | null {
@@ -126,7 +151,7 @@ export function getArriveByRouteSupport(originAirportSlug: string, destinationSl
       routeSlug,
       journeyType: 'service-ended',
       blockedForTravelDate: true,
-      routeWarning: presentation.summary,
+      routeWarning: getServiceEndedRouteWarning(presentation),
       routeFlightTimeText: route.flightTime,
       sourceProvenance,
     };
