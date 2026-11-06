@@ -44,7 +44,7 @@ describe('source order', () => {
     expect(pageSrc).not.toMatch(/<TravelReadyCheck\b/);
   });
 
-  it('the Travel Ready Check component itself is untouched by this PR: still the same heading and a scope note', () => {
+  it('content spot-check: the Travel Ready Check component keeps its heading and its scope note (the component file is also unmodified in this PR; this is not a byte-for-byte preservation guard)', () => {
     expect(checkSrc).toContain(CHECK_HEADING);
     expect(checkSrc).toContain('A private readiness check, not a price check');
   });

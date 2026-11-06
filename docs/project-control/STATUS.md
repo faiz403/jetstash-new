@@ -61,8 +61,9 @@ rate limiting rather than the current process-local limiter.
 - Book-By's verdict badge still folds in the visitor's Travel Ready result on the five priority routes: `RouteReadinessPanel` was replaced
   by a small context in `components/route/route-readiness-panel.tsx` (`RouteReadinessProvider`, `BookByPanel`, `TravelReadySlot`) because the
   two panels are no longer adjacent. Nothing leaves the visitor's browser, as before.
-- Moving the section improves information order; it does not by itself shorten the page. No copy, fare, route, Route Status, verification,
-  Trip.com, analytics or data change. The three SEO-pilot pages (Manchester-Islamabad, Manchester-Dubai, Birmingham-Delhi) are affected: see
+- Moving the section improves information order; it does not by itself shorten the page. The Travel Ready Check's own copy and all
+  fare, route, Route Status, verification, Trip.com, analytics and data records are unchanged; the only wording changes are the new pointer
+  sentence and the Book-By note's link wording described above. The three SEO-pilot pages (Manchester-Islamabad, Manchester-Dubai, Birmingham-Delhi) are affected: see
   the pilot log.
 - Not an approved release; merge still requires CEO approval. PR C (direct versus connecting fare clarity, ended-service search, flight
   duration wording) follows as a separate PR.
