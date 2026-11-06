@@ -26,8 +26,7 @@ import { TravellerTipList } from '@/components/route/traveller-tip-list';
 import { CommunityNotesPanel } from '@/components/route/community-notes-panel';
 import { RouteWatchForm } from '@/components/route/route-watch-form';
 import { WhatsAppShareButton } from '@/components/route/whatsapp-share-button';
-import { RouteReadinessPanel } from '@/components/route/route-readiness-panel';
-import { TravelReadyCheck } from '@/components/travel-ready/travel-ready-check';
+import { RouteReadinessProvider, BookByPanel, TravelReadySlot } from '@/components/route/route-readiness-panel';
 import { JsonLd, breadcrumbSchema } from '@/components/seo/json-ld';
 import { siteConfig } from '@/lib/site-config';
 import { getSafeTripComFlightHandoffUrl } from '@/lib/booking-providers';
@@ -250,8 +249,12 @@ export default async function RoutePage({ params }: { params: Promise<{ slug: st
     journeyChoice ? journeyChoice.lowerFare : null
   );
 
+  // The 5 Book-By priority routes always carried the Travel Ready Check; every other route carries it only when it
+  // serves a country the check covers (unchanged from before PR B).
+  const showTravelReady = Boolean(bookBySnapshot) || TRAVEL_READY_SUPPORTED_COUNTRIES.includes(dest.country);
+
   return (
-    <>
+    <RouteReadinessProvider>
       <JsonLd
         data={breadcrumbSchema([
           { name: 'Home', href: '/' },
@@ -575,37 +578,31 @@ export default async function RoutePage({ params }: { params: Promise<{ slug: st
         </section>
       )}
 
-      {bookBySnapshot ? (
+      {bookBySnapshot && (
         <section className="bg-sand-50 py-10 sm:py-12">
           <div className="mx-auto max-w-content px-5 sm:px-8">
-            <RouteReadinessPanel
-              initialSnapshot={bookBySnapshot}
-              initialEngineSnapshot={engineSnapshot}
-              destinationSlug={dest.slug}
-              airportSlug={airport.slug}
-            />
+            <BookByPanel initialSnapshot={bookBySnapshot} initialEngineSnapshot={engineSnapshot} />
           </div>
         </section>
-      ) : (
-        TRAVEL_READY_SUPPORTED_COUNTRIES.includes(dest.country) && (
-          <section className="bg-sand-50 py-10 sm:py-12">
-            <div className="mx-auto max-w-content px-5 sm:px-8">
-              {/* Duplicate Route Watch fix (real-user validation follow-up,
-                  30 Aug 2026): this route page always renders its own
-                  separate RouteWatchForm further down (see below) — without
-                  this prop, a non-"ready-to-continue" Travel Ready verdict
-                  also rendered a second, inline Route Watch form right here,
-                  which a founder testing this exact page (Manchester-Mumbai)
-                  reasonably perceived as "it navigated me to Route Watch
-                  instead of showing my result". No navigation ever occurred;
-                  see TravelReadyCheck's own showInlineRouteWatch doc comment,
-                  which has said routes pages must set this false since the
-                  feature's original commit — this call site was simply never
-                  updated to do it. */}
-              <TravelReadyCheck defaultDestinationSlug={dest.slug} airportSlugForCta={airport.slug} showInlineRouteWatch={false} />
-            </div>
-          </section>
-        )
+      )}
+
+      {/* Route-page PR B (November 2026): the Travel Ready Check (a five-field form, about 1,350px tall on a phone) now
+          sits below the fare history so travellers reach the fare evidence sooner. Nothing about it was removed or
+          reworded: it renders in full in the section with id="travel-ready" after the fare section, and this single
+          line keeps it discoverable where the form used to be. Book-By's verdict badge still folds in its result via
+          RouteReadinessProvider (components/route/route-readiness-panel.tsx). */}
+      {showTravelReady && (
+        <section className={`bg-sand-50 pb-6 sm:pb-8 ${bookBySnapshot ? '' : 'pt-6 sm:pt-8'}`} aria-label="Travel documents">
+          <div className="mx-auto max-w-content px-5 sm:px-8">
+            <p className="max-w-3xl text-sm leading-relaxed text-ink-700">
+              Travelling on set dates? Passport validity and visa guidance for your documents is in the{' '}
+              <a href="#travel-ready" className="font-semibold text-ink-900 underline decoration-brass-600 underline-offset-2 hover:text-brass-700">
+                Travel Ready Check
+              </a>
+              , below the fare history.
+            </p>
+          </div>
+        </section>
       )}
 
       {arriveByPair && <ArriveByRoutePanel departureAirport={arriveByPair.departureAirport} arrivalAirport={arriveByPair.arrivalAirport} />}
@@ -747,6 +744,17 @@ export default async function RoutePage({ params }: { params: Promise<{ slug: st
           </div>
         </div>
       </section>
+
+      {/* Travel Ready Check, moved here from above the fare history (route-page PR B). id="travel-ready" is the target of
+          the pointer line above and of Book-By's "see the Travel Ready Check" link; the global scroll-padding-top keeps
+          it clear of the sticky header. */}
+      {showTravelReady && (
+        <section id="travel-ready" className="bg-sand-50 py-10 sm:py-12">
+          <div className="mx-auto max-w-content px-5 sm:px-8">
+            <TravelReadySlot destinationSlug={dest.slug} airportSlug={airport.slug} />
+          </div>
+        </section>
+      )}
 
       {/* Verification-pending leakage fix: pending must never be mapped to
           the 'connecting' branch here — canShowConnectingAlternative is
@@ -940,6 +948,6 @@ export default async function RoutePage({ params }: { params: Promise<{ slug: st
           </div>
         </div>
       </section>
-    </>
+    </RouteReadinessProvider>
   );
 }

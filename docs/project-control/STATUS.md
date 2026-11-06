@@ -1,6 +1,6 @@
 # JetStash Current Status
 
-**Latest release reconciliation:** 6 November 2026, through PR #353. The older dated programme/count snapshots below are historical.
+**Latest release reconciliation:** 6 November 2026, through PR #365. The older dated programme/count snapshots below are historical.
 
 **Production branch:** `main`
 
@@ -15,7 +15,20 @@ Deployments list showed the Production deployment of `305542c` Ready (55s build)
 live read-only smoke at 00:11 UTC returned 200 and zero Trip.com mentions on 13 pages and showed the new homepage copy; the consent panel
 measured 117px (320x568, 320x720, 375x667), 100px (390x844), 135px (768x1024) and 113px (1440x900) with no overflow or overlap, and Reject
 stored both choices denied with zero tag or Google requests. The merge changed no `data/` or `lib/` file, so the 25 Fare Signals are
-unchanged. No deployment is authorised by a documentation update.
+unchanged.
+PR #365 (route-page accessibility and signup fixes, "PR A") merged as `f0ab8dfba47e4f5aa46f24f1a2e87ae9397e6ae0` at 01:39:31 UTC on
+6 November after an independent Codex review (`c6e858c` FAIL on one real P2 plus three P3s, all fixed; head `8b6c9fd4bcb4aafef273e18d8623a49ea20adc24`
+PASS WITH NOTES, no P1/P2). The Vercel Deployments list showed the Production deployment of `f0ab8df` Ready (1m 8s build) within about a
+minute; its deployment id was not captured. Live read-only verification from 01:40 UTC: on Manchester-Doha, Manchester-Islamabad,
+London-Dubai, Manchester-Delhi and /travel-club at 320, 390 and 1440px the route-fact labels measure 8.48:1 and values and the WhatsApp
+button 18.69:1 (were 2.45:1 and 1.08:1), every form field is at least 44px tall (Route Watch email was 18px, Travel Club 21px) and
+controls are 16px on phones, with no overflow; all 89 route pages return 200 with one h1, the old dark-hero fact classes and the
+collapsed email classes are gone from every one of them, 25 pages still show "Fare spotted" (the 25 Fare Signals are unchanged; the merge
+changed no `data/` or `lib/` file), and Tab order through Route Watch is airport, destination, purpose, email, submit with a 2px focus
+outline on each stop. Reject still stores both choices denied with zero tag or Google requests. The only Trip.com text on any route page
+is one prose sentence on London-Gatwick-Tangier (existing editorial copy: "Trip.com does not currently provide an airport-specific
+dateless handoff for Gatwick"), not a link; there are no Trip.com links. No Google routing call was made. No deployment is authorised by a
+documentation update.
 
 **Current founder direction — 5 November:** execute the Website Improvement Programme through small, tested PRs, beginning
 with archive-aware fare-card wording, then homepage PR #353 (merged 6 November), then the route-page programme below. Stop before every Production merge for approval.
@@ -34,7 +47,27 @@ rate limiting rather than the current process-local limiter.
 
 **Production site:** `https://jetstash.co.uk`
 
-## Route-page accessibility and signup fixes — 6 November 2026 (PR A prepared for review; not merged, not deployed)
+## Route-page Travel Ready Check below fare history — 6 November 2026 (PR B prepared for review; not merged, not deployed)
+
+- The 6 November audit measured the Travel Ready Check (a five-field form, about 1,350px tall on a phone) sitting between the first-screen
+  fare card and the fare history, which pushed the fare evidence 3,200-6,500px down a 390px-wide page. It now renders in its own section
+  (`id="travel-ready"`) after the fare section (fare history, deals and Route Watch). Every function, field, warning and scope note of the
+  check is unchanged (`components/travel-ready/travel-ready-check.tsx` is not modified).
+- One pointer line stays where the form used to be, so it remains discoverable: "Travelling on set dates? Passport validity and visa
+  guidance for your documents is in the Travel Ready Check, below the fare history." It links to `#travel-ready`. Book-By's existing "see
+  below before you book" note now links to the section when the note comes from the Travel Ready Check; route-warning notes keep the old
+  wording. Existing anchors `#fare-history` and `#route-watch` are unchanged. Routes whose country the check does not cover show neither the
+  check nor the pointer, as before.
+- Book-By's verdict badge still folds in the visitor's Travel Ready result on the five priority routes: `RouteReadinessPanel` was replaced
+  by a small context in `components/route/route-readiness-panel.tsx` (`RouteReadinessProvider`, `BookByPanel`, `TravelReadySlot`) because the
+  two panels are no longer adjacent. Nothing leaves the visitor's browser, as before.
+- Moving the section improves information order; it does not by itself shorten the page. No copy, fare, route, Route Status, verification,
+  Trip.com, analytics or data change. The three SEO-pilot pages (Manchester-Islamabad, Manchester-Dubai, Birmingham-Delhi) are affected: see
+  the pilot log.
+- Not an approved release; merge still requires CEO approval. PR C (direct versus connecting fare clarity, ended-service search, flight
+  duration wording) follows as a separate PR.
+
+## Route-page accessibility and signup fixes — 6 November 2026 (PR #365 "PR A" merged `f0ab8df`; Production live-verified)
 
 - A read-only mobile audit of live `/routes/[slug]` (320/390/1440px; 89 pages classified, 11 measured, 6 viewed; average about 6.4/10)
   found two defects, fixed here without any copy, fare, route, Route Status, verification or Trip.com change:
@@ -47,6 +80,9 @@ rate limiting rather than the current process-local limiter.
      before) so iOS Safari does not zoom on focus (not tested on a device). The light WhatsApp share button no longer turns its text
      green on hover (measured about 3.87:1 against its tinted hover background); it keeps the dark ink text.
 - Also corrects the homepage test assertion Codex flagged on PR #353 (P3: the `<PageHero[^>]*description=` regex stopped at the first `>`).
+- Merged on explicit CEO approval; verification results are in the baseline paragraph above. Remaining P3 recorded for a later PR: the
+  WhatsApp hover-contrast guard test (`tests/route-page-accessibility-signup-2026-11.test.ts`) does not reject `hover:text-white` or
+  opacity-suffixed hover utilities.
 - Approved next, as separate PRs after review and Production verification: PR B (move Travel Ready Check below fare history, no change to
   its functions or warnings) and PR C (make a direct service versus a connecting fare unmistakable on the first screen; a clearly labelled
   Google Flights search on ended-service Manchester-Delhi and Manchester-Mumbai without implying the direct service operates; separate
