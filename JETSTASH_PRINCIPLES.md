@@ -413,10 +413,17 @@ schedule, segment every send" discipline.
 
 ### 9.6 The route first screen separates service type from fare type (decision record, November 2026)
 A route page names two different facts and never lets one stand in for the other: the **service** the route has (the badge: "Direct
-service", "Connecting", "Direct service ended", "Verification pending") and the **fare** it shows (price line, pill, callout). When a
+service", "Connecting", "Direct service ended", "Verification pending") and the **fare** it shows (price line, callout). When a
 verified direct route shows a connecting fare, the price line itself carries "· connecting" (not "with a stop": an itinerary may have
-several), beside the unchanged "Connecting fare, not nonstop" pill and a callout that names the route's listed service and says the fare
-is not a nonstop fare. Three more standing rules came with it:
+several), directly above a callout that names the route's listed service and says the fare is not a nonstop fare. Four more standing
+rules came with it:
+- **Say each fact once on the first screen, in the place that carries it.** The separate "Connecting fare, not nonstop" pill under the
+  price was removed (route-page PR D) because the price qualifier, the routing line and the callout already said it; the fare section's
+  card keeps its own pill and dated evidence but not the repeated sentence when the first-screen card already states it in full. A hero
+  never carries a flight-time line that only says nothing is verified (that sentence stays as the "Flight time" row), a service-ended
+  route has no badge repeating its own "Direct service ended" status line, and the ended-service card does not restate the ending a third
+  time. What is never removed in the name of brevity: the dated fare evidence, the "· connecting" qualifier, the route-service explanation
+  and the disclosure beside any link. The primary search action follows those disclosures and is never moved ahead of them.
 - **An ended direct service is never represented as operating, and never a dead end.** A service-ended route that still carries evidenced
   `connectingAlternative` data gets "Find connecting alternatives" and the plain Google Flights search labelled "Search connecting flights
   on Google Flights" (`ENDED_SERVICE_FLIGHT_SEARCH_*` in `lib/booking-providers.ts`): no stop count, journey time, airline or itinerary is

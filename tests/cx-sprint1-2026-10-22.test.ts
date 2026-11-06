@@ -76,18 +76,17 @@ describe('fare cards state route type and fare type beside the price', () => {
   });
   afterEach(() => vi.useRealTimers());
 
-  it('Manchester-Islamabad: "Connecting fare, not nonstop" and the plain explanation come before the lower self-transfer offer and the booking button', async () => {
+  it('Manchester-Islamabad: the "· connecting" qualifier and the plain explanation come before the lower self-transfer offer and the booking button', async () => {
     const html = renderToStaticMarkup(await RoutePage({ params: Promise.resolve({ slug: 'manchester-islamabad' }) }));
-    // Route-page PR C: the price line now ends with the "· connecting" qualifier, so it is the price marker (and proves the qualifier
-    // sits on the price line, ahead of the pill).
+    // Route-page PR C: the price line ends with the "· connecting" qualifier, so it is the price marker.
+    // Route-page PR D: the separate "Connecting fare, not nonstop" pill no longer sits under the first-screen price (the qualifier, the
+    // routing line and this explanation say it), so the order is price qualifier, then explanation, then the lower offer, then the CTA.
     const price = html.indexOf('· connecting');
-    const tag = html.indexOf('Connecting fare, not nonstop');
     const callout = html.indexOf('Nonstop services are listed for this route, but this tracked fare is for a connecting journey');
     const lower = html.indexOf('Lower fare also seen');
     const cta = html.indexOf('flights on Trip.com');
     expect(price).toBeGreaterThan(-1);
-    expect(tag).toBeGreaterThan(price);
-    expect(callout).toBeGreaterThan(tag);
+    expect(callout).toBeGreaterThan(price);
     expect(lower).toBeGreaterThan(callout);
     expect(cta).toBeGreaterThan(lower);
   });

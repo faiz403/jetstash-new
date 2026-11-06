@@ -8,6 +8,7 @@ import { TrackedOutboundLink } from '@/components/ui/tracked-outbound-link';
 import { AffiliateLinkDisclosure } from '@/components/ui/affiliate-link-disclosure';
 import { FareAgeWarning } from '@/components/route/fare-age-warning';
 import { getFareAgeWarningText } from '@/lib/fare-age-warning';
+import { ENDED_SERVICE_FARE_CARD_LEAD } from '@/lib/route-first-screen-copy';
 
 /**
  * Self-transfer prominence fix (25 Aug 2026, founder-approved). Renders
@@ -313,9 +314,7 @@ function NoFareLead({
         // and promises no stop count, journey time, airline or itinerary (the record's "usually" figures are editorial, not dated).
         <>
           <p className="font-display text-xl leading-tight text-ink-900 sm:text-2xl">Find connecting alternatives</p>
-          <p className="mt-1 text-sm leading-relaxed text-ink-700">
-            The former nonstop service on this route has ended. JetStash has not checked live availability for connecting flights.
-          </p>
+          <p className="mt-1 text-sm leading-relaxed text-ink-700">{ENDED_SERVICE_FARE_CARD_LEAD}</p>
           <p className="mt-1 text-sm text-ink-600">{noFareLine}</p>
           <p className="mt-3 text-sm font-semibold text-ink-900">{checkPricesHeading(routeLabel)}</p>
         </>
@@ -435,8 +434,8 @@ function routeVsFareMismatch(
 
 /**
  * True when the route's verified service is nonstop but the featured fare is a
- * connecting itinerary. Drives the plain "Connecting fare, not nonstop" cue
- * rendered directly beside the price, ahead of any secondary offer.
+ * connecting itinerary. Drives the "· connecting" qualifier rendered on the
+ * price line itself (see ConnectingPriceQualifier).
  */
 export function isConnectingFareOnDirectRoute(
   routeDirectness: 'direct' | 'connecting' | null,
@@ -448,21 +447,12 @@ export function isConnectingFareOnDirectRoute(
 /**
  * Route-page PR C (CEO-approved): when a verified direct route shows a connecting fare, the word "connecting" sits on the same line as
  * the price so the number can never be read as a nonstop price. Deliberately "connecting", not "with a stop": an itinerary may involve
- * more than one stop. The separate "Connecting fare, not nonstop" pill below is unchanged.
+ * more than one stop. Route-page PR D removed the separate "Connecting fare, not nonstop" pill that used to sit under the price: this
+ * qualifier, the routing line ("Connecting outbound · ... via JED") and the Route service explanation already say it, so the pill was a
+ * fourth statement of one fact. The disclosure itself is unchanged and still sits directly under the price.
  */
 function ConnectingPriceQualifier() {
   return <span className="ml-2 align-middle font-sans text-base font-semibold text-terracotta-800 sm:text-lg">· connecting</span>;
-}
-
-function ConnectingFareTag() {
-  return (
-    <p className="mt-2">
-      <span className="inline-flex items-center gap-1.5 rounded-full border border-terracotta-200 bg-terracotta-50 px-2.5 py-1 text-xs font-semibold text-terracotta-800">
-        <Plane className="h-3.5 w-3.5" strokeWidth={2.25} aria-hidden="true" />
-        Connecting fare, not nonstop
-      </span>
-    </p>
-  );
 }
 
 /**
@@ -616,13 +606,17 @@ function CurrentSignal({ data, nowIso, lowerSelfTransfer, tripComUrl, routeSlug,
             {standout ? 'Standout Fare' : 'Fare spotted'}
           </p>
           <p className="mt-1 font-display text-3xl text-ink-900">£{data.price.toLocaleString('en-GB')} return{isConnectingFareOnDirectRoute(routeDirectness, data.directness) ? <ConnectingPriceQualifier /> : null}</p>
-          {isConnectingFareOnDirectRoute(routeDirectness, data.directness) ? <ConnectingFareTag /> : null}
           {lowerSelfTransfer && data.hasPositiveNonSelfTransferEvidence ? <p className="mt-1.5 text-sm font-medium text-ink-700">Lowest comparable non-self-transfer fare observed</p> : null}
           <JourneyConsequenceLine consequences={data.journeyConsequences} />
         </div>
         <div className="text-sm text-ink-600 sm:text-right">
-          <p>{data.airline} · {data.cabin}</p>
-          <p className="mt-1">Checked {formatChecked(data.observedDate)}</p>
+          {/* Route-page PR D: on a phone the airline, cabin and checked date read as one line (they were three stacked lines); from sm
+              up the date sits under the airline on the right, as before. */}
+          <p>
+            {data.airline} · {data.cabin}
+            <span className="sm:hidden"> · </span>
+            <span className="sm:mt-1 sm:block">Checked {formatChecked(data.observedDate)}</span>
+          </p>
           <FareAgeWarning observedDate={data.observedDate} nowIso={nowIso} />
           <p className="mt-1 text-xs text-ink-500">
             {data.fareCoverageLevel === 'full-continuous'
@@ -687,7 +681,6 @@ function RecentSignal({ data, nowIso, tripComUrl, routeSlug, routeDirectness, ro
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-terracotta-600">Last tracked fare</p>
           <p className="mt-1 font-display text-3xl text-ink-900">£{data.price.toLocaleString('en-GB')} return{isConnectingFareOnDirectRoute(routeDirectness, data.directness) ? <ConnectingPriceQualifier /> : null}</p>
-          {isConnectingFareOnDirectRoute(routeDirectness, data.directness) ? <ConnectingFareTag /> : null}
           <JourneyConsequenceLine consequences={data.journeyConsequences} />
         </div>
         <p className="text-sm text-ink-600">Checked {formatChecked(data.observedDate)}</p>

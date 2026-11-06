@@ -55,7 +55,23 @@ const cabinLabel: Record<DealCabin, string> = {
  * guessing from the route/page name — default stays 'h3', the correct
  * level everywhere else.
  */
-export function DealCard({ deal, nowIso, headingLevel = 'h3' }: { deal: Deal; nowIso?: string; headingLevel?: 'h2' | 'h3' }) {
+export function DealCard({
+  deal,
+  nowIso,
+  headingLevel = 'h3',
+  connectingExplanationShownAbove = false,
+}: {
+  deal: Deal;
+  nowIso?: string;
+  headingLevel?: 'h2' | 'h3';
+  /**
+   * Route-page PR D. True only on a route page whose first-screen fare card already states, in full, that the featured fare is a connecting
+   * journey on a route with nonstop service. The card then keeps its "Connecting fare, not nonstop" pill and its own travel dates,
+   * checked date and fare note beside the price, and drops only the explanatory sentence that repeated the first-screen text word for
+   * word. Every other caller (hubs, destination and airport pages, /deals) leaves this false and is unchanged.
+   */
+  connectingExplanationShownAbove?: boolean;
+}) {
   const RouteHeading = headingLevel;
   // Optional injection seam for deterministic tests only — production
   // callers pass nothing and get the exact prior behaviour (today's real
@@ -180,9 +196,11 @@ export function DealCard({ deal, nowIso, headingLevel = 'h3' }: { deal: Deal; no
                       <Plane className="h-3.5 w-3.5" strokeWidth={2.25} aria-hidden="true" />
                       Connecting fare, not nonstop
                     </span>
-                    <p className="mt-1.5 text-sm text-ink-600">
-                      Nonstop services are listed for this route, but this tracked fare is for a connecting journey. It is not a nonstop fare.
-                    </p>
+                    {!connectingExplanationShownAbove && (
+                      <p className="mt-1.5 text-sm text-ink-600">
+                        Nonstop services are listed for this route, but this tracked fare is for a connecting journey. It is not a nonstop fare.
+                      </p>
+                    )}
                   </>
                 ) : presentation?.status === 'connecting' && range.observedDirectness === 'direct' ? (
                   <p className="text-sm text-ink-600">

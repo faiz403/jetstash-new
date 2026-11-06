@@ -1,6 +1,6 @@
 # JetStash Current Status
 
-**Latest release reconciliation:** 6 November 2026, through PR #366. The older dated programme/count snapshots below are historical.
+**Latest release reconciliation:** 6 November 2026, through PR #367. The older dated programme/count snapshots below are historical.
 
 **Production branch:** `main`
 
@@ -41,6 +41,19 @@ changes and its link back works by keyboard; a client-side move from Islamabad t
 spotted"; there are no Trip.com links; consent, the homepage, the journey form and the PR A fixes are intact; no Google routing call was
 made. At 320x568 the first check field after the pointer sits flush with the bottom edge (later stops are fully visible). No deployment is
 authorised by a documentation update.
+PR #367 (route-page "PR C": fare clarity and traveller next steps) merged as `2669374818d324cb7d1339d93afb3956d2487943` at 14:18:18 UTC on
+6 November, on explicit CEO approval, at exact head `ca6d9c0938dc7be269e6b2acf26baab7ce26b15d` (Codex `8ab9adb` PASS WITH NOTES, `61e0033` PASS WITH
+NOTES with two documentation P3s fixed, delta `ca6d9c0` PASS with no defects; GitHub checks green). The Vercel Deployments list showed the
+Production deployment of `2669374` Ready (1m 12s build) within about two minutes; its deployment id and exact Ready time were not captured.
+Live read-only verification afterwards: all 89 route pages returned 200 and were text-identical to a local build of the same tree with the
+Trip.com pause on; 25 pages show "Fare spotted" with prices, airlines and dates unchanged; 34 "Direct service" badges; 15 "· connecting"
+price qualifiers with the approved explanation; 16 flight-time replacements with verified durations preserved; zero Trip.com text or links;
+the nine introductions are clean; Manchester-Delhi and Manchester-Mumbai show the approved hero, "Find connecting alternatives", the Google
+Flights button and its disclaimers, and the link is `https://www.google.com/travel/flights` with `target="_blank"` and
+`rel="nofollow noopener noreferrer"` (never opened); the button is reachable by keyboard with a 3px focus outline at 320, 390 and 1440px, there
+is no horizontal scroll, text fields are 16px, consent is unchanged, and there were zero Google routing requests and zero external requests.
+The undated "Usually 1 stop" and "12 to 15h total" pattern appears only in the lower "Connecting alternatives" section of those two pages, not in
+the hero. No Google routing call was made.
 
 **Current founder direction — 5 November:** execute the Website Improvement Programme through small, tested PRs, beginning
 with archive-aware fare-card wording, then homepage PR #353 (merged 6 November), then the route-page programme below. Stop before every Production merge for approval.
@@ -59,7 +72,50 @@ rate limiting rather than the current process-local limiter.
 
 **Production site:** `https://jetstash.co.uk`
 
-## Route-page fare clarity and traveller next steps — 6 November 2026 (PR C prepared for review; not merged, not deployed)
+## Route-page first-screen action and duplication — 6 November 2026 (PR D prepared for review; not merged, not deployed)
+
+- CEO-approved after the 6 November reassessment; presentation only. No price, airline, observed date, fare classification, route status,
+  verification, Trip.com or data change; the Trip.com pause stays on. Not a redesign: no new card, element or feature.
+- **What changed.**
+  1. The separate "Connecting fare, not nonstop" pill under the first-screen price is gone (15 pages). The "· connecting" qualifier on the price
+     line, the routing line and the "Route service" explanation already said it. The explanation sentence is unchanged and still sits under
+     the routing line, ahead of the search button.
+  2. The fare section's card further down keeps its pill, travel dates, checked date and fare note, but no longer repeats the explanation
+     sentence when the first-screen card states it (`DealCard` prop `connectingExplanationShownAbove`, set only by the route page and only
+     when the first-screen fare is a connecting fare on a direct route; every other caller is unchanged).
+  3. Airline, cabin and checked date read as one line on a phone ("Saudia · Economy · Checked 3 November 2026"; three stacked lines before);
+     from sm up the layout is as before.
+  4. A "not verified" or "varies" flight-time sentence is no longer a hero line (14 pages: 6 direct and 8 connecting); it stays as the "Flight
+     time" row in the route facts. A verified duration still shows in the hero.
+  5. A service-ended hero (Manchester-Delhi, Manchester-Mumbai) no longer shows a badge repeating its own "Direct service ended" status
+     line, and the ended-service fare card leads with "JetStash has not checked live availability for connecting flights." instead of
+     restating the ending a third time. The CEO-approved hero heading and supporting text, the Google Flights button and its note are unchanged.
+- **Measured** (live Production = `main` `2669374` against the local PR D build with the Trip.com pause on; exact tables in the PR): on a 390x844
+  phone the primary search action on the 15 connecting-fare pages moved from fully visible on 0 pages to 12 (median bottom edge 858px to
+  799px; Manchester-Islamabad 896px to 789px); the other three are 6-29px below the fold. At 320x568 and 320x720 it is still below the
+  fold on those pages (median 1014px to 975px) and is reached by scrolling; the price is now visible on a first visit at 320x568. At 1440px
+  every action stays visible and moves up (Islamabad's now clears the consent banner). No page's action moved down. Repeated statements
+  across the 89 pages: the explanation sentence 21 to 15 occurrences (once per qualifying page), the pill 21 to 6 (the fare section card's
+  own pill on the pages that have one), the direct-route "Typical flight time not verified" sentence 12 to 6 (the Flight time row). The first-screen fare card is 59px shorter on a 390px phone on each qualifying page (Manchester-Istanbul's
+  sections were compared one by one: the card is the only one that changed); Manchester-Islamabad is 173px shorter overall. The consent banner is unchanged (117px at 320, 100px at
+  390, 113px at 1440) and still covers the action on a first visit at phone widths: reducing it was deliberately not attempted.
+- **Trust review (CEO request): outdated canonical service-ended wording.** Checked in source and on Production:
+  - Homepage evidence: not affected. `lib/homepage-evidence.ts` reads `statusHeadline` but only links routes whose status is direct or
+    connecting, so the ended wording never reaches it; no live non-route page carries "connecting flights available" or "former direct
+    service ended" (68 non-route sitemap pages and the homepage scanned).
+  - Manchester-Mumbai journey brief: not public (`/founder/journey-brief/manchester-mumbai` 404s in production).
+  - **Arrive By: a genuine contradiction.** Manchester-Delhi and Manchester-Mumbai are supported Arrive By routes, and for a service-ended
+    route its route warning is the canonical `presentation.summary`: "There's no current nonstop service on Manchester to Delhi — the
+    previously-verified direct service has ended. See below for the current connecting journey and how to check today's price." In Arrive By
+    there is no "below", and "the current connecting journey" asserts an availability that has not been checked live. Not changed here
+    (scope); a one-string fix in `lib/arrive-by/route-support.ts` is proposed for CEO approval.
+  - The canonical `statusHeadline` ("Former direct service ended · connecting flights available") now has no public consumer for an ended route.
+- Known limits: at 320 the action still needs a scroll on the connecting-fare pages; Manchester-Istanbul, Birmingham-Dalaman and
+  Birmingham-Athens sit 6-29px below the 844px fold at 390; the first-visit consent banner covers the action on phones; page length is unchanged
+  in kind (PR E is a separate proposal).
+- Not an approved release; merge still requires CEO approval.
+
+## Route-page fare clarity and traveller next steps — 6 November 2026 (PR #367 "PR C" merged `2669374`; Production live-verified)
 
 - CEO-approved after the 6 November route-page audit; presentation and prose only. No price, route status, fare classification, verification,
   fare history or Trip.com change: a before/after comparison of all 89 live route pages against a local build with the Trip.com pause on
@@ -99,7 +155,11 @@ rate limiting rather than the current process-local limiter.
   Manchester-Mumbai journey brief and the homepage evidence source); they no longer reach the two route pages but deserve the same wording
   decision. The 320x568 ended-route button needs a scroll (it is fully visible at 390px). Some lower "Other UK airports" cards still print raw
   `flightTime` strings without the flight-time label. Three SEO-pilot pages change text: see the pilot log.
-- Not an approved release; merge still requires CEO approval.
+- Merged on explicit CEO approval; verification results are in the baseline paragraph above. The CEO accepted the labelled general
+  connecting pattern still shown on Delhi and Mumbai as an overview, with its continued accuracy to be checked in a future evidence review.
+  A 6 November independent reassessment of the live pages (internal judgement, not user-tested; no conversion evidence) put the route pages
+  at about 7.2/10 against the 6.4/10 audit baseline. Its remaining findings (page length and repetition, first-screen action position,
+  duplicated fare statements, touch-target size, consent crowding at 320x568, JavaScript weight) drive PR D and the proposed PR E below.
 
 ## Route-page Travel Ready Check below fare history — 6 November 2026 (PR #366 "PR B" merged `96426c2`; Production live-verified)
 
@@ -120,7 +180,7 @@ rate limiting rather than the current process-local limiter.
   sentence and the Book-By note's link wording described above. The three SEO-pilot pages (Manchester-Islamabad, Manchester-Dubai, Birmingham-Delhi) are affected: see
   the pilot log.
 - Merged on explicit CEO approval; verification results are in the baseline paragraph above. PR C (direct versus connecting fare clarity,
-  ended-service search, flight duration wording) follows as a separate PR.
+  ended-service search, flight duration wording) followed as PR #367 and is merged.
 
 ## Route-page accessibility and signup fixes — 6 November 2026 (PR #365 "PR A" merged `f0ab8df`; Production live-verified)
 

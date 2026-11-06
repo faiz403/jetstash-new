@@ -27,8 +27,12 @@ export const JOURNEY_TIME_NOT_CONFIRMED = 'Journey time not yet confirmed.';
 const DURATION_FIGURE = /\b\d+(?:\.\d+)?\s?(?:h|hr|hrs|hours?)\b|\b\d+\s?(?:–|-|to)\s?\d+\s?(?:h|hr|hrs|hours?)\b/i;
 
 export interface FlightTimeDisplay {
-  /** The whole hero line: "Typical flight time: <value>" for a duration or neutral statement, or an approved sentence on its own. */
-  heroLine: string;
+  /**
+   * The hero line: "Typical flight time: <value>" for a duration or neutral statement. Null when the value was replaced by an approved
+   * "not verified" sentence (route-page PR D): the hero then carries no flight-time line at all, because the same sentence is already
+   * the "Flight time" row in the route facts and a hero line that only says nothing is known pushed the fare card down the phone screen.
+   */
+  heroLine: string | null;
   /** The value for a labelled "Flight time" row: the original value, or the approved sentence when it was replaced. */
   rowValue: string;
   /** True only when a status-first value without a duration figure was replaced. */
@@ -44,7 +48,7 @@ export function getFlightTimeDisplay(flightTime: string): FlightTimeDisplay {
   else if (/^connecting\b/i.test(value)) sentence = JOURNEY_TIME_VARIES_CONNECTING;
   else if (/^direct\b/i.test(value)) sentence = FLIGHT_TIME_NOT_VERIFIED_DIRECT;
   if (!sentence) return keep;
-  return { heroLine: sentence, rowValue: sentence, replaced: true };
+  return { heroLine: null, rowValue: sentence, replaced: true };
 }
 
 /**
@@ -101,3 +105,19 @@ export const ENDED_SERVICE_ALTERNATIVES_INTRO =
 export function getRouteHeroBadgeLabel(status: string, statusLabel: string): string {
   return status === 'direct' && statusLabel === 'Direct' ? 'Direct service' : statusLabel;
 }
+
+/**
+ * Route-page PR D (CEO-approved scope: remove redundant status statements). A service-ended hero already opens with the bold status
+ * line "Direct service ended" directly under the title, which is word for word the canonical badge label, so the badge above the title
+ * only repeated it. Every other status keeps its badge: there the badge is the only place the status is named at that level.
+ */
+export function shouldShowRouteHeroBadge(status: string): boolean {
+  return status !== 'service-ended';
+}
+
+/**
+ * The first sentence of the ended-service fare card. The hero directly above already says the former nonstop service has ended, and the
+ * note under the Google Flights button explains what the results may show, so the card's own lead no longer states the ending a third
+ * time; it says only what the card adds: JetStash has not checked connecting availability live.
+ */
+export const ENDED_SERVICE_FARE_CARD_LEAD = 'JetStash has not checked live availability for connecting flights.';

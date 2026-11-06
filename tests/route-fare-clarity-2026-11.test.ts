@@ -43,15 +43,16 @@ const NEW_CALLOUT = 'Nonstop services are listed for this route, but this tracke
 
 describe('C. flight-time wording (shared helper)', () => {
   it('replaces status-first values that state no duration with the three approved sentences', () => {
+    // Route-page PR D: a replaced value keeps its approved sentence in the "Flight time" row but no longer has a hero line (heroLine is null).
     expect(getFlightTimeDisplay('Direct; check PIA for the scheduled duration')).toEqual({
-      heroLine: "Typical flight time not verified. Check the airline's current schedule.",
+      heroLine: null,
       rowValue: "Typical flight time not verified. Check the airline's current schedule.",
       replaced: true,
     });
-    expect(getFlightTimeDisplay('Direct service listed by Manchester Airport; check the exact flight for duration').heroLine).toBe(FLIGHT_TIME_NOT_VERIFIED_DIRECT);
-    expect(getFlightTimeDisplay('Connecting; stops and journey time vary by itinerary').heroLine).toBe('Journey time varies by itinerary and connection.');
-    expect(getFlightTimeDisplay('Connecting via Amritsar — journey time depends on the connection').heroLine).toBe(JOURNEY_TIME_VARIES_CONNECTING);
-    expect(getFlightTimeDisplay('Unverified — actual stop count and journey time vary by date').heroLine).toBe('Journey time not yet confirmed.');
+    expect(getFlightTimeDisplay('Direct service listed by Manchester Airport; check the exact flight for duration').rowValue).toBe(FLIGHT_TIME_NOT_VERIFIED_DIRECT);
+    expect(getFlightTimeDisplay('Connecting; stops and journey time vary by itinerary').rowValue).toBe('Journey time varies by itinerary and connection.');
+    expect(getFlightTimeDisplay('Connecting via Amritsar — journey time depends on the connection').rowValue).toBe(JOURNEY_TIME_VARIES_CONNECTING);
+    expect(getFlightTimeDisplay('Unverified — actual stop count and journey time vary by date').rowValue).toBe('Journey time not yet confirmed.');
     expect(JOURNEY_TIME_NOT_CONFIRMED).toBe('Journey time not yet confirmed.');
   });
 
@@ -92,7 +93,7 @@ describe('C. flight-time wording (shared helper)', () => {
       const d = getFlightTimeDisplay(p.flightTime);
       // a value that states a duration may still begin with a status word ("Direct destination listed by Gatwick; approximately 3h"); one that
       // states none must never sit under the flight-time label
-      if (/^Typical flight time: (?:Direct|Connecting|Unverified)\b/i.test(d.heroLine)) expect(DURATION.test(p.flightTime), route.slug).toBe(true);
+      if (d.heroLine && /^Typical flight time: (?:Direct|Connecting|Unverified)\b/i.test(d.heroLine)) expect(DURATION.test(p.flightTime), route.slug).toBe(true);
       const statusFirstNoDuration = /^(?:direct|connecting|unverified)\b/i.test(p.flightTime.trim()) && !DURATION.test(p.flightTime);
       expect(d.replaced, route.slug).toBe(statusFirstNoDuration);
       if (DURATION.test(p.flightTime)) {
@@ -129,21 +130,23 @@ describe('A. badge, price qualifier and callout on rendered pages', () => {
     expect(getRouteHeroBadgeLabel('direct', 'Something else')).toBe('Something else');
   });
 
-  it('every rendered page: the qualifier appears exactly where the "Connecting fare, not nonstop" pill does, on the price line, ahead of the pill; the old callout sentence is gone; no Trip.com text remains', async () => {
-    let withPill = 0;
+  it('every rendered page: the qualifier sits on the first-screen price line and the explanation follows it exactly once; the old callout sentence is gone; no Trip.com text remains', async () => {
+    // Route-page PR D: the separate pill no longer sits under the first-screen price, and the fare section's card below no longer repeats the
+    // explanatory sentence, so the sentence appears exactly once per page (it keeps its own pill, covered in the PR D test file).
+    let withQualifier = 0;
     const directBadgePages: string[] = [];
     for (const route of routes) {
       const html = await render(route.slug);
-      const hasPill = html.includes('Connecting fare, not nonstop');
       const q = html.indexOf('· connecting</span>');
-      expect(q > -1, route.slug).toBe(hasPill);
-      if (hasPill) {
-        withPill++;
+      if (q > -1) {
+        withQualifier++;
         const price = html.indexOf('return<span');
         expect(price, route.slug).toBeGreaterThan(-1);
         expect(price, route.slug).toBeLessThan(q);
-        expect(q, route.slug).toBeLessThan(html.indexOf('Connecting fare, not nonstop'));
-        expect(html, route.slug).toContain(NEW_CALLOUT);
+        expect(html.split(NEW_CALLOUT).length - 1, route.slug).toBe(1);
+        expect(html.indexOf(NEW_CALLOUT), route.slug).toBeGreaterThan(q);
+      } else {
+        expect(html, route.slug).not.toContain(NEW_CALLOUT);
       }
       expect(html, route.slug).not.toContain(OLD_CALLOUT);
       expect(html, route.slug).not.toMatch(/Trip\.com/);
@@ -154,7 +157,7 @@ describe('A. badge, price qualifier and callout on rendered pages', () => {
         expect(html, route.slug).toContain('Direct flights available'); // the status line is unchanged
       }
     }
-    expect(withPill).toBeGreaterThanOrEqual(10);
+    expect(withQualifier).toBeGreaterThanOrEqual(10);
     expect(directBadgePages.length).toBeGreaterThan(20);
   });
 
@@ -196,7 +199,9 @@ describe('B. ended-service alternatives (Trip.com pause on)', () => {
     const html = await render(slug);
     const card = fareCard(html);
     expect(card).toContain('Find connecting alternatives');
-    expect(card).toContain('The former nonstop service on this route has ended.');
+    // Route-page PR D: the card no longer restates the ending (the hero directly above says it, and the note under the button explains
+    // what the results may show); it says only what the card adds.
+    expect(card).not.toContain('The former nonstop service on this route has ended.');
     expect(card).toContain('JetStash has not checked live availability for connecting flights.');
     expect(card).toContain(ENDED_SERVICE_FLIGHT_SEARCH_CTA_LABEL);
     expect(card).toContain('Search connecting flights on Google Flights');

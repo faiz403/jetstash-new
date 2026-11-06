@@ -287,7 +287,9 @@ Every checkpoint records these items:
   Ready Check, below the fare history."). Headings, `<title>`, meta description, canonical, robots, sitemap, Quick answers, route/fare
   records and internal link targets are unchanged. Treat as a content-order event for the three pilot pages.
 
-- **Route-page fare clarity and traveller next steps (PR C; prepared for review, not Production-deployed):** visible text changes on 46 of
+- **Route-page fare clarity and traveller next steps (PR #367 "PR C"; merge `2669374818d324cb7d1339d93afb3956d2487943`, merged 14:18:18 UTC on
+  6 November 2026, Production deployment Ready about two minutes later, deployment id and exact Ready time not captured; live verification
+  afterwards):** visible text changes on 46 of
   the 89 route pages, including **all three pilot pages**. manchester-islamabad: the badge "Direct" becomes "Direct service", the price line
   gains "· connecting", the route-service callout sentence is reworded, and the hero flight-time line "Typical flight time: Direct; check
   PIA for the scheduled duration" becomes "Typical flight time not verified. Check the airline's current schedule." (also in the Flight time
@@ -298,8 +300,19 @@ Every checkpoint records these items:
   undated stop or duration figures; not pilot pages), and the obsolete Trip.com handoff sentence leaves nine route introductions
   (visible on London-Gatwick-Tangier today). The headings on the three pilot pages, `<title>`, meta description, canonical, robots, sitemap, Quick
   answers, prices, route and fare records and internal link targets are unchanged; the only heading that changes anywhere is the lower section
-  on Manchester-Delhi and Manchester-Mumbai (not pilot pages), "You can still fly this route with a connection" becoming "Connecting alternatives". Treat as a content-wording event for the three pilot pages; record the actual
-  merge/deployment here only after separate approval and release.
+  on Manchester-Delhi and Manchester-Mumbai (not pilot pages), "You can still fly this route with a connection" becoming "Connecting alternatives". Treat as a content-wording event for the three pilot pages.
+
+- **Route-page first-screen action and duplication (PR D; prepared for review, not Production-deployed):** visible text changes on the route
+  pages, including **two of the three pilot pages**. manchester-islamabad: the "Connecting fare, not nonstop" pill under the price is removed,
+  the airline, cabin and checked date read as one line on a phone, the hero line "Typical flight time not verified. Check the airline's
+  current schedule." is removed (the same sentence stays as the Flight time row), and the fare section's card no longer repeats the
+  "Nonstop services are listed for this route…" sentence. manchester-dubai: the pill and the phone line layout change (and the repeated
+  sentence, where its fare section card showed it). birmingham-delhi: the hero line "Journey time varies by itinerary and connection." is
+  removed (it stays as the Flight time row). Elsewhere: the pill leaves 15 pages, 14 hero flight-time lines are removed (6 direct, 8
+  connecting), and Manchester-Delhi and Manchester-Mumbai (not pilot pages)
+  lose the repeated hero badge and the ended-service card restatement. Headings, `<title>`, meta description, canonical, robots, sitemap, Quick
+  answers, prices, route and fare records and internal link targets are unchanged. Treat as a content-removal event for two pilot pages; record
+  the actual merge/deployment here only after separate approval and release.
 
 ## Wave 2 (not approved; only after a positive day-14 signal)
 
