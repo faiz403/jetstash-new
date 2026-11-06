@@ -731,12 +731,15 @@ presenting an unsourced number as an official rule.
 **Engine integration is additive, not a rewrite.** `computeReadiness(routeSlug, now,
 travelReadySignal?)` gained an optional 3rd parameter (default `null`, preserving every existing
 call site's behaviour). `components/route/route-readiness-panel.tsx` is the only place that supplies
-a real one — it lifts the Travel Ready Check result client-side, entirely in the visitor's browser,
-and re-derives the Book-By panel's badge with it folded into the same priority tree (`critical` →
-`wait-critical`, `caution` → `ready-with-caution`, alongside route warnings). On the 5 Book-By
-priority routes this produces one merged panel; on every other route serving a supported country,
-Travel Ready Check renders as its own standalone card (no engine badge exists there to merge with);
-everywhere else, nothing new renders at all.
+a real one — `TravelReadySlot` publishes the Travel Ready Check result through a small client context
+(`RouteReadinessProvider`), entirely in the visitor's browser, and `BookByPanel` re-derives the Book-By
+panel's badge with it folded into the same priority tree (`critical` → `wait-critical`, `caution` →
+`ready-with-caution`, alongside route warnings). Since route-page PR B (November 2026) the Travel Ready
+Check sits in its own `id="travel-ready"` section after the fare history, so the fare evidence is reached
+sooner, with a one-line pointer where it used to be; on the 5 Book-By priority routes the Book-By panel
+stays near the top and shares its signal with the check across the page; on every other route serving a
+supported country the check is the same section without a badge to merge with; everywhere else, nothing
+new renders at all.
 
 **Privacy boundary.** No API route and no server persistence exist for the check itself — it's a
 pure function of form inputs, computed and thrown away in the browser, mirroring the site's

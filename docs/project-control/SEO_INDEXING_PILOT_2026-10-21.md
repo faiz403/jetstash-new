@@ -273,10 +273,19 @@ Every checkpoint records these items:
   console, and the closing button reads "Check my journey" (was "Check my trip"). The `<h1>`, `<title>`, meta description, canonical,
   robots, sitemap, route/fare records and internal links are unchanged. Treat as a homepage-text event for the pilot.
 
-- **Route-page accessibility and signup fixes (PR A; prepared for review, not Production-deployed):** colour, size and layout classes
+- **Route-page accessibility and signup fixes (PR #365 "PR A"; merge `f0ab8dfba47e4f5aa46f24f1a2e87ae9397e6ae0`, merged 01:39:31 UTC on
+  6 November 2026, Production deployment Ready within about a minute, deployment id not captured; live verification from 01:40 UTC):** colour, size and layout classes
   only (route facts and the WhatsApp share button contrast; Route Watch and Travel Club email field height; 16px phone controls). No
   visible copy, heading, `<title>`, meta description, canonical, robots, sitemap, route/fare record or internal link changes, so no
-  pilot-page text event. Record the actual merge/deployment here only after separate approval and release.
+  pilot-page text event.
+
+- **Route-page Travel Ready Check below fare history (PR B; prepared for review, not Production-deployed):** a layout and order change on
+  every route page that carries the Travel Ready Check, including **all three pilot pages** (manchester-islamabad, manchester-dubai,
+  birmingham-delhi). The check's text is unchanged but now follows the fare history instead of preceding it, and one new visible
+  sentence is added where it used to be ("Travelling on set dates? Passport validity and visa guidance for your documents is in the Travel
+  Ready Check, below the fare history."). Headings, `<title>`, meta description, canonical, robots, sitemap, Quick answers, route/fare
+  records and internal link targets are unchanged. Treat as a content-order event for the three pilot pages; record the actual
+  merge/deployment here only after separate approval and release.
 
 ## Wave 2 (not approved; only after a positive day-14 signal)
 

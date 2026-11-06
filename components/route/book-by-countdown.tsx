@@ -183,7 +183,17 @@ export function BookByCountdown({
 
       {warningReasons.length > 0 && (
         <p className="mt-2 text-sm text-terracotta-700">
-          {warningReasons.length === 1 ? warningReasons[0].label : `${warningReasons.length} active notes on this route`} — see below before you book.
+          {warningReasons.length === 1 ? warningReasons[0].label : `${warningReasons.length} active notes on this route`} —{' '}
+          {warningReasons.every((r) => r.source === 'travel-ready-check') ? (
+            <>
+              <a href="#travel-ready" className="font-semibold underline underline-offset-2 hover:text-terracotta-800">
+                see the Travel Ready Check
+              </a>{' '}
+              before you book.
+            </>
+          ) : (
+            'see below before you book.'
+          )}
         </p>
       )}
 

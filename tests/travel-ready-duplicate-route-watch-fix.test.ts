@@ -35,17 +35,19 @@ import { join } from 'path';
 
 const routePageSrc = readFileSync(join(process.cwd(), 'app', 'routes', '[slug]', 'page.tsx'), 'utf8');
 
-describe('Duplicate Route Watch fix — the raw route-page TravelReadyCheck call', () => {
-  it('passes showInlineRouteWatch={false}, matching the component\'s own documented requirement for route pages', () => {
-    const callMatch = routePageSrc.match(/<TravelReadyCheck[^/]*\/>/);
-    expect(callMatch, 'expected to find the raw <TravelReadyCheck ... /> call in app/routes/[slug]/page.tsx').not.toBeNull();
+const readinessModuleSrc = readFileSync(join(process.cwd(), 'components', 'route', 'route-readiness-panel.tsx'), 'utf8');
+
+describe('Duplicate Route Watch fix — the route-page TravelReadyCheck call', () => {
+  it('is made only inside TravelReadySlot (route-page PR B moved it out of the page), and passes showInlineRouteWatch={false}, matching the component\'s own documented requirement for route pages', () => {
+    expect(routePageSrc).not.toMatch(/<TravelReadyCheck\b/);
+    const callMatch = readinessModuleSrc.match(/<TravelReadyCheck[\s\S]*?\/>/);
+    expect(callMatch, 'expected to find the <TravelReadyCheck ... /> call in components/route/route-readiness-panel.tsx').not.toBeNull();
     expect(callMatch![0]).toContain('showInlineRouteWatch={false}');
   });
 
-  it('the RouteReadinessPanel branch (Book-By priority routes) is untouched and unaffected by this fix', () => {
-    // Confirms this fix didn't touch the other branch, which already
-    // handles this correctly via its own internal showInlineRouteWatch={false}.
-    expect(routePageSrc).toContain('<RouteReadinessPanel');
+  it('the page renders the Travel Ready Check through TravelReadySlot for every route that carries it (Book-By priority routes and other supported countries alike)', () => {
+    expect(routePageSrc).toContain('<TravelReadySlot');
+    expect(routePageSrc).toContain('<BookByPanel');
   });
 });
 
@@ -60,12 +62,12 @@ describe('Duplicate Route Watch fix — the route page still has exactly one sep
   });
 
   it('this duplicate-form configuration cannot silently regress: the raw TravelReadyCheck call and the page\'s own RouteWatchForm must never both go unguarded', () => {
-    // If a future edit adds a second raw <TravelReadyCheck ... /> call to
-    // this file without showInlineRouteWatch={false}, this test fails —
-    // every <TravelReadyCheck> call in this file that isn't routed through
-    // RouteReadinessPanel must explicitly suppress its own inline form,
-    // since this page already has a dedicated RouteWatchForm section.
-    const travelReadyCheckCalls = routePageSrc.match(/<TravelReadyCheck[^/]*\/>/g) ?? [];
+    // If a future edit adds a second <TravelReadyCheck ... /> call to the
+    // page or to the readiness module without showInlineRouteWatch={false},
+    // this test fails — every <TravelReadyCheck> call on a route page must
+    // explicitly suppress its own inline form, since this page already has a
+    // dedicated RouteWatchForm section.
+    const travelReadyCheckCalls = [...(routePageSrc.match(/<TravelReadyCheck[\s\S]*?\/>/g) ?? []), ...(readinessModuleSrc.match(/<TravelReadyCheck[\s\S]*?\/>/g) ?? [])];
     expect(travelReadyCheckCalls.length).toBeGreaterThan(0);
     for (const call of travelReadyCheckCalls) {
       expect(call, call).toContain('showInlineRouteWatch={false}');

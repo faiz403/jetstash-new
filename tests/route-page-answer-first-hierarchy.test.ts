@@ -64,16 +64,19 @@ describe('1. Source order — the three demoted sections now sit after the fare-
     expect(alternativeRoutesIdx).toBeLessThan(travellerTipsIdx);
   });
 
-  it('the trust-critical Route Status and Warning panels, and the Book-By/Travel Ready next-action tools, are still positioned before the fare-evidence block — this PR never touched their relative position', () => {
+  it('the trust-critical Route Status and Warning panels, the Book-By panel and the Travel Ready pointer are still positioned before the fare-evidence block (the Travel Ready Check itself moved below it in route-page PR B, see tests/route-page-travel-ready-after-fare-history-2026-11.test.ts)', () => {
     const routeStatusIdx = routePageSrc.indexOf("routeStatusCopy.kind === 'withdrawal-announced'");
     const warningBannerIdx = routePageSrc.indexOf('<WarningBanner');
-    const readinessOrReadyIdx = routePageSrc.indexOf('<RouteReadinessPanel');
+    const bookByIdx = routePageSrc.indexOf('<BookByPanel');
+    const pointerIdx = routePageSrc.indexOf('href="#travel-ready"');
     expect(routeStatusIdx).toBeGreaterThan(-1);
     expect(warningBannerIdx).toBeGreaterThan(-1);
-    expect(readinessOrReadyIdx).toBeGreaterThan(-1);
+    expect(bookByIdx).toBeGreaterThan(-1);
+    expect(pointerIdx).toBeGreaterThan(-1);
     expect(routeStatusIdx).toBeLessThan(fareSectionHeadingIdx);
     expect(warningBannerIdx).toBeLessThan(fareSectionHeadingIdx);
-    expect(readinessOrReadyIdx).toBeLessThan(fareSectionHeadingIdx);
+    expect(bookByIdx).toBeLessThan(fareSectionHeadingIdx);
+    expect(pointerIdx).toBeLessThan(fareSectionHeadingIdx);
   });
 });
 

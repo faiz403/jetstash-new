@@ -69,10 +69,11 @@ describe('Route Watch entry points — traced, not assumed', () => {
     expect(call).not.toContain('showInlineRouteWatch={false}');
   });
 
-  it('both route-page TravelReadyCheck embeddings (raw call and RouteReadinessPanel) suppress the inline form, deferring to the page\'s own full-context RouteWatchForm', () => {
-    expect(routePageSrc).toMatch(/<TravelReadyCheck[^/]*showInlineRouteWatch=\{false\}[^/]*\/>/);
+  it('the route page embeds the Travel Ready Check only through TravelReadySlot, whose TravelReadyCheck call suppresses the inline form, deferring to the page\'s own full-context RouteWatchForm', () => {
+    expect(routePageSrc).not.toMatch(/<TravelReadyCheck\b/); // route-page PR B: the page no longer calls it directly
+    expect(routePageSrc).toContain('<TravelReadySlot');
     const panelSrc = readFileSync(join(process.cwd(), 'components', 'route', 'route-readiness-panel.tsx'), 'utf8');
-    expect(panelSrc).toContain('showInlineRouteWatch={false}');
+    expect(panelSrc).toMatch(/<TravelReadyCheck[\s\S]*?showInlineRouteWatch=\{false\}[\s\S]*?\/>/);
   });
 });
 
