@@ -33,7 +33,7 @@ export function WhatsAppShareButton({
 
   const className =
     variant === 'light'
-      ? 'inline-flex items-center gap-2 rounded-sm border border-ink-200 px-4 py-2.5 text-sm font-semibold text-ink-900 transition-colors hover:border-[#25D366]/40 hover:bg-[#25D366]/10 hover:text-[#128C4A]'
+      ? 'inline-flex items-center gap-2 rounded-sm border border-ink-200 px-4 py-2.5 text-sm font-semibold text-ink-900 transition-colors hover:border-[#25D366]/40 hover:bg-[#25D366]/10'
       : 'inline-flex items-center gap-2 rounded-sm border border-white/15 bg-white/5 px-4 py-2.5 text-sm font-semibold text-sand-100 transition-colors hover:bg-[#25D366]/15 hover:text-[#25D366]';
 
   return (

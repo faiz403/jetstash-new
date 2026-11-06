@@ -62,14 +62,18 @@ describe('console before description on a phone', () => {
     );
     const tag = openingTag(hero, 'PageHero');
     expect(tag).toContain('heroOverlay="directional"'); // proves the scan reached the props after the eyebrow
-    expect(tag).not.toMatch(/\sdescription=/);
+    expect(tag).not.toMatch(/\sdescription\s*=/); // JSX allows whitespace around `=`
   });
 
   it('would notice a description prop added after the eyebrow (the old regex could not)', () => {
     const mutated = hero.replace('heroKey="routes"', 'heroKey="routes"\n      description="x"');
     expect(mutated).not.toBe(hero);
-    expect(openingTag(mutated, 'PageHero')).toMatch(/\sdescription=/);
+    expect(openingTag(mutated, 'PageHero')).toMatch(/\sdescription\s*=/);
     expect(mutated).not.toMatch(/<PageHero[^>]*description=/); // the previous assertion's blind spot
+    // JSX also allows spaces around `=`; the check must catch `description = "x"` too (Codex re-review, P3)
+    const spaced = hero.replace('heroKey="routes"', 'heroKey="routes"\n      description = "x"');
+    expect(spaced).not.toBe(hero);
+    expect(openingTag(spaced, 'PageHero')).toMatch(/\sdescription\s*=/);
   });
 
   it('names who it is for: in the eyebrow from sm up, in its own line on a phone, with the approved eyebrow text intact', () => {

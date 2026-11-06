@@ -43,7 +43,9 @@ rate limiting rather than the current process-local limiter.
      (18.7:1) and the existing `variant="light"` share button.
   2. The Route Watch and Travel Club email fields collapsed to 18px and 21px tall below 640px (`flex-1` inside a `flex-col`). They are
      now full width on phones and 44-48px tall, with `sm:flex-1` for the row layout. Inputs and selects in Route Watch, Travel Club and the
-     Travel Ready Check are 16px on phones (14px from sm up) so iOS Safari does not zoom on focus (not tested on a device).
+     Travel Ready Check are 16px on phones (14px from sm up, except the Travel Club email input, which stays 16px at every width, as
+     before) so iOS Safari does not zoom on focus (not tested on a device). The light WhatsApp share button no longer turns its text
+     green on hover (measured about 3.87:1 against its tinted hover background); it keeps the dark ink text.
 - Also corrects the homepage test assertion Codex flagged on PR #353 (P3: the `<PageHero[^>]*description=` regex stopped at the first `>`).
 - Approved next, as separate PRs after review and Production verification: PR B (move Travel Ready Check below fare history, no change to
   its functions or warnings) and PR C (make a direct service versus a connecting fare unmistakable on the first screen; a clearly labelled

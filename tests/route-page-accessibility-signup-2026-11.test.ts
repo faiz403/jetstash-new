@@ -42,17 +42,33 @@ const token = (name: string) => {
 const classNamesWith = (src: string, ...needles: string[]) =>
   [...src.matchAll(/className="([^"]*)"/g)].map((m) => m[1]).filter((c) => needles.every((n) => c.includes(n)));
 
+/** The colour token in a class string, e.g. `text-ink-500` -> `#454B57`. */
+const classColor = (classes: string, prefix: 'text' | 'bg') => {
+  const m = classes.match(new RegExp(`(?:^|\\s)${prefix}-([a-z]+-\\d+)(?:\\s|$)`));
+  expect(m, `no ${prefix}-* colour in "${classes}"`).not.toBeNull();
+  return token(m![1]);
+};
+/** Blend `fg` at `alpha` over `bg` (hex strings). */
+const blend = (fg: string, alpha: number, bg: string) => {
+  const c = (h: string) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
+  const [f, b] = [c(fg), c(bg)];
+  return '#' + f.map((v, i) => Math.round(v * alpha + b[i] * (1 - alpha)).toString(16).padStart(2, '0')).join('');
+};
+
 describe('route facts are readable on the light section they sit in', () => {
-  it('the section that renders them is a light surface, and RouteStat uses dark-on-light tokens that pass WCAG AA', () => {
+  it('the section that renders them is a light surface, and the classes RouteStat actually renders pass WCAG AA on it', () => {
     expect(routePage).toMatch(/<section className="[^"]*bg-sand-50[^"]*" aria-labelledby="more-route-information-heading">/);
     expect(routePage).toContain('<RouteStat');
     const surface = token('sand-50');
-    expect(routeStat).toContain('text-ink-500'); // label
-    expect(routeStat).toContain('text-ink-900'); // value
-    expect(routeStat).toContain('text-brass-700'); // icon
-    expect(contrast(token('ink-500'), surface)).toBeGreaterThanOrEqual(4.5);
-    expect(contrast(token('ink-900'), surface)).toBeGreaterThanOrEqual(4.5);
-    expect(contrast(token('brass-700'), surface)).toBeGreaterThanOrEqual(3); // non-text icon
+    const code = routeStat.replace(/\/\*[\s\S]*?\*\//g, ''); // the explanatory comment names tokens too; only rendered classes count
+    const label = code.match(/<p className="([^"]*)">\{label\}<\/p>/);
+    const value = code.match(/<p className="([^"]*)">\{value\}<\/p>/);
+    const icon = code.match(/<div className="([^"]*)">\{icon\}<\/div>/);
+    expect(label && value && icon).toBeTruthy();
+    expect(contrast(classColor(label![1], 'text'), surface)).toBeGreaterThanOrEqual(4.5);
+    expect(contrast(classColor(value![1], 'text'), surface)).toBeGreaterThanOrEqual(4.5);
+    // the icon is a non-text glyph on its own tile (bg-sand-200), WCAG 1.4.11 asks for 3:1
+    expect(contrast(classColor(icon![1], 'text'), classColor(icon![1], 'bg'))).toBeGreaterThanOrEqual(3);
   });
 
   it('no longer uses the dark-hero palette that measured 2.45:1 (labels) and 1.08:1 (values)', () => {
@@ -74,6 +90,20 @@ describe('WhatsApp share on the route page', () => {
     expect(light![1]).toContain('text-ink-900');
     expect(light![1]).not.toContain('text-sand-100');
     expect(contrast(token('ink-900'), token('sand-50'))).toBeGreaterThanOrEqual(4.5);
+  });
+
+  it('keeps readable text on hover: the old green hover text (#128C4A on its 10% green tint) measured about 3.87:1', () => {
+    const surface = token('sand-50');
+    const hoverBg = blend('#25D366', 0.1, surface);
+    expect(contrast('#128C4A', hoverBg)).toBeLessThan(4.5); // the regression this guards against
+    const light = whatsapp.match(/variant === 'light'\s*\?\s*'([^']*)'/)![1];
+    const hoverTexts = [...light.matchAll(/hover:text-(\[#[0-9a-fA-F]{6}\]|[a-z]+-\d+)/g)].map((m) => m[1]);
+    for (const h of hoverTexts) {
+      const hex = h.startsWith('[#') ? h.slice(1, -1) : token(h);
+      expect(contrast(hex, hoverBg), `hover text ${h}`).toBeGreaterThanOrEqual(4.5);
+    }
+    expect(hoverTexts).not.toContain('[#128C4A]');
+    expect(contrast(token('ink-900'), hoverBg)).toBeGreaterThanOrEqual(4.5); // the dark text it keeps
   });
 
   it('keeps the dark variant for dark surfaces, unchanged', () => {
