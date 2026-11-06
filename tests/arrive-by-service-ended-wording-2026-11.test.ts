@@ -95,24 +95,43 @@ describe('Arrive By service-ended route warning', () => {
     });
 
     it('other statuses are untouched: no supported route that is not service-ended carries the approved wording', () => {
+      let checked = 0;
       for (const slug of SUPPORTED_ROUTE_SLUGS) {
         const route = getRouteBySlug(slug)!;
         const status = getEffectiveRoutePresentation(route, routeStatusEvents, '2026-11-06').status;
         if (status === 'service-ended') continue;
         const [airport, destination] = [route.airportSlug, route.destinationSlug];
         const support = getArriveByRouteSupport(airport, destination, '2026-12-20', LATER);
-        if (support.supported) expect(support.routeWarning ?? '', slug).not.toBe(APPROVED);
+        expect(support.supported, slug).toBe(true); // a supported route must never be rejected here, or this loop would assert nothing
+        if (!support.supported) continue;
+        expect(support.routeWarning ?? '', slug).not.toBe(APPROVED);
+        checked++;
       }
+      expect(checked).toBeGreaterThanOrEqual(3); // Lahore, Islamabad, Dubai and Dhaka are not service-ended
     });
 
-    it('a travel date before a future boundary keeps the ledger wording, never the approved sentence', () => {
-      // 1 August 2026: Manchester-Mumbai is still direct with the withdrawal announced (31 August); an earlier travel date plans normally.
-      const early = getArriveByRouteSupport('manchester', 'mumbai', '2026-08-20', '2026-08-01T00:00:00.000Z');
+    const WITHDRAWAL_HEADLINE = 'IndiGo direct service withdrawal announced, effective 31 August 2026';
+    const BEFORE_WITHDRAWAL = '2026-08-01T00:00:00.000Z'; // Manchester-Mumbai is still direct, withdrawal announced for 31 August
+
+    it('a travel date BEFORE a future boundary keeps the exact ledger headline and plans normally, never the approved sentence', () => {
+      const early = getArriveByRouteSupport('manchester', 'mumbai', '2026-08-20', BEFORE_WITHDRAWAL);
       expect(early.supported).toBe(true);
-      if (early.supported) {
-        expect(early.journeyType).not.toBe('service-ended');
-        expect(early.routeWarning ?? '').not.toBe(APPROVED);
-      }
+      if (!early.supported) return;
+      expect(early.journeyType).toBe('direct');
+      expect(early.blockedForTravelDate).toBe(false);
+      expect(early.routeWarning).toBe(WITHDRAWAL_HEADLINE);
+      expect(early.routeWarning).not.toBe(APPROVED);
+    });
+
+    it('a travel date ON OR AFTER a future boundary (the blocked branch) keeps the ledger wording, never the approved sentence', () => {
+      const blocked = getArriveByRouteSupport('manchester', 'mumbai', '2026-09-05', BEFORE_WITHDRAWAL);
+      expect(blocked.supported).toBe(true);
+      if (!blocked.supported) return;
+      expect(blocked.journeyType).toBe('verification-pending');
+      expect(blocked.blockedForTravelDate).toBe(true);
+      expect(blocked.routeWarning).toBe(`Your required arrival date falls on or after the date this service's operator named for a change. ${WITHDRAWAL_HEADLINE}`);
+      expect(blocked.routeWarning).not.toBe(APPROVED);
+      expect(blocked.routeWarning).not.toMatch(FALSE_CLAIMS);
     });
   });
 
