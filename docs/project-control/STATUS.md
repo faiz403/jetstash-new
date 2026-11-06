@@ -1,12 +1,14 @@
 # JetStash Current Status
 
-**Latest release reconciliation:** 5 November 2026, through PR #363. The older dated programme/count snapshots below are historical.
+**Latest release reconciliation:** 5 November 2026, through PR #364. The older dated programme/count snapshots below are historical.
 
 **Production branch:** `main`
 
 **Confirmed Production baseline:** `9d91f2e0c02c184060325504b9cfcebe989d5917` (PR #363). Vercel Production
 `dpl_H6mhwiDdQqhfQ957gpxu4iDgzrm1` was Ready at 02:52:26 UTC on 5 November; the custom domain was confirmed serving it.
-PR #362 is also merged and deployed, not outstanding. No deployment is authorised by a documentation update.
+PR #362 is also merged and deployed, not outstanding. PR #364 (archive-aware fare-card wording) merged as
+`6410aa6e119722b4d5f1c4b6ebb301a61ef0d0b3` at 14:12:29 UTC on 5 November; the CEO decision of 5 November records its Production
+verification as successful (this session did not capture the deployment id or Ready time). No deployment is authorised by a documentation update.
 
 **Current founder direction — 5 November:** execute the Website Improvement Programme through small, tested PRs, beginning
 with archive-aware fare-card wording, then review the existing homepage PR #353. Stop before every Production merge for approval.
@@ -25,7 +27,25 @@ rate limiting rather than the current process-local limiter.
 
 **Production site:** `https://jetstash.co.uk`
 
-## Archive-aware fare-card wording — 5 November 2026 (prepared for review; not deployed)
+## Homepage first-visit usability — 5 November 2026 (PR #353 updated for review; not merged, not deployed)
+
+- PR #353 (ivory journey console) now includes current `main` (through PR #364) with no conflicts. The CEO approved improving the existing
+  design, not rebuilding it.
+- Measured on the branch before this change, the first-visit consent panel covered the homepage submit button at 320x720 and 375x667
+  (and the whole console at 320x568). On a phone the first-visit panel is now about 100-117px instead of 159-176px (same two optional
+  permissions, same Privacy Policy link, equal Reject all / Accept all; a 44px Settings control opens the individual choices; the panel
+  scrolls inside itself above 85% of the viewport). From sm up the panel is unchanged. The page end still scrolls clear of it.
+- On a phone the journey console now sits above the description (visual order only; document order and desktop are unchanged), so the
+  submit button is fully visible above the panel at 320x720, 375x667 and 390x844. Form labels are 12px, not 11px.
+- The hero photograph shows through on the far side from lg up (a left-to-right overlay on the homepage only; every other hero keeps the
+  even veil). Measured text contrast over the real rendered pixels stays at 6.9:1 or better. Hero text now names its audience (eyebrow
+  from sm up; a line below the console on phones). The closing action reads "Check my journey" to match the console. Spacing above Route
+  Watch is tighter.
+- No fare, route, Route Status, Trip.com, Arrive By, analytics or consent-logic code or data changed. Homepage text changed, so this is a
+  homepage SEO-pilot event: log the actual merge/deployment in `SEO_INDEXING_PILOT_2026-10-21.md` only after separate approval and release.
+- This is not an approved release; merge still requires CEO approval.
+
+## Archive-aware fare-card wording — 5 November 2026 (PR #364 merged; Production verification reported successful)
 
 - The two lead route-card templates now distinguish recorded history with no eligible fare (**"No current fare to show"**) from
   genuinely never-observed routes (**"No fare logged yet"**). Only a server-derived history-presence boolean reaches the airport grid.
@@ -35,7 +55,8 @@ rate limiting rather than the current process-local limiter.
   observations, prices and historical ranges are unchanged; Fare Watcher / Route Watch / Standout remain 0 / 0 / 0.
 - Local gate: 5,657 tests, TypeScript, lint, production build and diff check pass. Thirty browser renders (Production comparison plus
   local 1440/390/320px checks) found no horizontal overflow, failed images or Trip.com links. No Google/API submissions or counter probes.
-- This is a presentation-truth fix, not a freshness/eligibility policy change or an approved release. Merge still requires founder approval.
+- This is a presentation-truth fix, not a freshness/eligibility policy change. Merged as PR #364
+  (`6410aa6e119722b4d5f1c4b6ebb301a61ef0d0b3`, 14:12:29 UTC on 5 November 2026).
 
 ## Dependency security maintenance — 5 November 2026 (PR #363 merged and verified in Production)
 

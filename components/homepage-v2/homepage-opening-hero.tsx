@@ -65,6 +65,10 @@ import type { HomepageEvidenceExample } from '@/lib/homepage-evidence';
 // so an interpolated `${VAR}:py-8` silently never generates any CSS at all.
 const SHORT_VIEWPORT_HERO_PADDING = '[@media(max-height:800px)]:py-8';
 
+const AUDIENCE_LINE = 'For UK travellers flying to Pakistan, India and the Gulf.';
+const HERO_DESCRIPTION =
+  "Direct or with stops? What fare did we last see? Has the service changed? Pick your airport and destination to find out, then check today's price with a booking provider.";
+
 export function HomepageOpeningHero({
   journeyCheck,
   evidence = null,
@@ -76,7 +80,11 @@ export function HomepageOpeningHero({
 }) {
   return (
     <PageHero
-      eyebrow="Before you book a flight"
+      eyebrow={
+        <span>
+          Before you book a flight<span className="hidden sm:inline"> to Pakistan, India or the Gulf</span>
+        </span>
+      }
       // Founder copy correction (August 2026): this exact headline reads in
       // font-sans, not the site's usual Fraunces display face — a deliberate,
       // one-off typographic break so the homepage's opening line doesn't look
@@ -85,12 +93,9 @@ export function HomepageOpeningHero({
       // for every other page and every other heading on this one) — see
       // PageHero's own doc comment, still unchanged.
       title={<span className="font-sans">Check the journey behind the fare.</span>}
-      // Consumer clarity pass (3 Oct 2026): the previous description ("See the route, what has changed and what you
-      // still need to check") was accurate but abstract. This version asks the three questions JetStash actually
-      // answers, in the traveller's own words, and ends by saying where today's price comes from. No claim of live
-      // prices, cheapest fares, market-wide comparison or savings.
-      description="Direct or with stops? What fare did we last see? Has the service changed? Pick your airport and destination to find out, then check today's price with a booking provider."
+      // The description is rendered below, inside the console column, so a phone can show the console before it (see there).
       heroKey="routes"
+      heroOverlay="directional"
       size="compact"
       className={SHORT_VIEWPORT_HERO_PADDING}
       // Real-user validation, Stage A (30 Aug 2026): this is the very first
@@ -130,8 +135,19 @@ export function HomepageOpeningHero({
           anyway (see cookie-consent-banner.tsx's own comment); if that
           config is ever adopted, it needs a proper site-wide safe-area
           review, not a homepage-specific coupling landed years earlier. */}
-      <div className="xl:relative">
-      <div id="your-journey" className="-mt-4 max-w-2xl sm:mt-0">
+      <div className="flex flex-col xl:relative">
+      {/* Consumer clarity pass (3 Oct 2026): the three questions JetStash actually answers, in the traveller's own words,
+          ending with where today's price comes from. No claim of live prices, cheapest fares, market-wide comparison or
+          savings. Moved here from PageHero's description slot (November 2026) with the same type, width and entrance, so
+          that on a phone (order-2) the console comes first and the first-visit consent panel no longer hides it: the
+          document order, and everything from sm up, is unchanged. The -mt-3 cancels 12px of the 28px PageHero puts above
+          its children, leaving the 16px h1-to-description gap the slot had. */}
+      <div className="stagger-in stagger-3 order-2 mt-6 max-w-xl animate-fade-up sm:order-1 sm:-mt-3 sm:mb-7">
+        {/* Who it is for. From sm up the eyebrow badge says this (above); on a phone the badge stays short and this line carries it. */}
+        <p className="mb-2 text-base font-semibold text-sand-100 sm:hidden">{AUDIENCE_LINE}</p>
+        <p className="text-lg leading-relaxed text-ink-300">{HERO_DESCRIPTION}</p>
+      </div>
+      <div id="your-journey" className="order-1 -mt-3 max-w-2xl sm:order-2 sm:mt-0">
         {/* Mobile-only spacing trim (September 2026, consent-overlay fix):
             only the two gaps ABOVE the form's submit button are tightened —
             the card's own top padding and the label-to-form gap — since
@@ -144,10 +160,19 @@ export function HomepageOpeningHero({
             headroom the fixed-bottom consent banner needs at 390×844 to
             clear the console without shrinking its 12px text or its 44px
             buttons — see cookie-consent-banner.tsx's own comment. No copy,
-            heading, or control changed here. */}
-        <div className="rounded-lg border border-white/10 bg-ink-900/70 px-5 pb-5 pt-1.5 shadow-[0_24px_70px_-24px_rgba(0,0,0,0.65)] backdrop-blur-md sm:p-6">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-brass-200">Check your journey</p>
-          <div className="mt-1 sm:mt-3">
+            heading, or control changed here.
+
+            Ivory console (November 2026): the card is a solid sand-50 surface
+            so the first action reads clearly against the dark photo. On a
+            crisp light edge the old 6px mobile top padding looked cramped, so
+            it is now 12px, paid for by dropping the 4px gap under the label
+            and fixing the label's line box at 16px. The submit button stays
+            within a pixel or two of where it was, so the consent-banner
+            clearance above still holds. light-surface restores the ink focus
+            ring (see globals.css). */}
+        <div className="light-surface rounded-lg border border-sand-200/90 bg-sand-50 px-5 pb-5 pt-3 shadow-[0_24px_70px_-24px_rgba(0,0,0,0.65)] sm:p-6">
+          <p className="text-[11px] font-semibold uppercase leading-4 tracking-[0.22em] text-brass-800">Check your journey</p>
+          <div className="sm:mt-3">
             <JourneyCheckForm origins={journeyCheck.origins} destinations={journeyCheck.destinations} routeIndex={journeyCheck.routeIndex} />
           </div>
         </div>
@@ -176,9 +201,11 @@ export function HomepageOpeningHero({
       </div>
       {/* Stage 2 (23 Oct 2026): one evidenced example beside (wide) or below (narrow) the console. Omitted entirely when nothing eligible exists. */}
       {evidence ? (
-        <HomepageEvidenceExpiryGuard expiresOnIso={evidenceExpiresOnIso}>
-          <HomepageEvidenceCard example={evidence} />
-        </HomepageEvidenceExpiryGuard>
+        <div className="order-3">
+          <HomepageEvidenceExpiryGuard expiresOnIso={evidenceExpiresOnIso}>
+            <HomepageEvidenceCard example={evidence} />
+          </HomepageEvidenceExpiryGuard>
+        </div>
       ) : null}
       </div>
     </PageHero>

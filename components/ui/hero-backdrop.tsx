@@ -19,9 +19,16 @@ export function HeroBackdrop({
   heroKey,
   image,
   objectPositionClassName,
+  overlay = 'uniform',
 }: {
   heroKey?: string;
   image?: BrandImage | null;
+  /**
+   * 'uniform' (every hero but the homepage) is one even ink veil. 'directional' (November 2026, homepage) keeps the same
+   * veil behind the text column and lets the photograph through on the far side from lg up, where the text never reaches
+   * (the example card there carries its own backdrop). Below lg it is identical to 'uniform': text spans the full width.
+   */
+  overlay?: 'uniform' | 'directional';
   /**
    * Optional `object-position` utility class override (see e.g.
    * ROUTE_HERO_FOCAL_POSITION in app/routes/[slug]/page.tsx) — omit for the
@@ -48,7 +55,12 @@ export function HeroBackdrop({
         className={cn('object-cover', objectPositionClassName)}
         aria-hidden="true"
       />
-      <div className="absolute inset-0 bg-ink-950/75" />
+      <div
+        className={cn(
+          'absolute inset-0 bg-ink-950/75',
+          overlay === 'directional' && 'lg:bg-transparent lg:bg-gradient-to-r lg:from-ink-950/90 lg:via-ink-950/65 lg:to-ink-950/20'
+        )}
+      />
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(200,147,46,0.12),transparent_60%)]" />
     </>
   );
