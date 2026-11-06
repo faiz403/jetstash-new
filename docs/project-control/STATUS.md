@@ -1,6 +1,6 @@
 # JetStash Current Status
 
-**Latest release reconciliation:** 5 November 2026, through PR #364. The older dated programme/count snapshots below are historical.
+**Latest release reconciliation:** 6 November 2026, through PR #353. The older dated programme/count snapshots below are historical.
 
 **Production branch:** `main`
 
@@ -8,10 +8,17 @@
 `dpl_H6mhwiDdQqhfQ957gpxu4iDgzrm1` was Ready at 02:52:26 UTC on 5 November; the custom domain was confirmed serving it.
 PR #362 is also merged and deployed, not outstanding. PR #364 (archive-aware fare-card wording) merged as
 `6410aa6e119722b4d5f1c4b6ebb301a61ef0d0b3` at 14:12:29 UTC on 5 November; the CEO decision of 5 November records its Production
-verification as successful (this session did not capture the deployment id or Ready time). No deployment is authorised by a documentation update.
+verification as successful (this session did not capture the deployment id or Ready time).
+PR #353 (homepage console and phone consent panel) merged as `305542cfe57e3390aca89ac1ab58d9ad488329ef` at 00:09:17 UTC on
+6 November after an independent Codex review of head `ede0d439c2381900ad9438fdad7331f4c2c4cfff` (PASS WITH NOTES, no P1/P2). The Vercel
+Deployments list showed the Production deployment of `305542c` Ready (55s build) minutes later; its deployment id was not captured. A
+live read-only smoke at 00:11 UTC returned 200 and zero Trip.com mentions on 13 pages and showed the new homepage copy; the consent panel
+measured 117px (320x568, 320x720, 375x667), 100px (390x844), 135px (768x1024) and 113px (1440x900) with no overflow or overlap, and Reject
+stored both choices denied with zero tag or Google requests. The merge changed no `data/` or `lib/` file, so the 25 Fare Signals are
+unchanged. No deployment is authorised by a documentation update.
 
 **Current founder direction — 5 November:** execute the Website Improvement Programme through small, tested PRs, beginning
-with archive-aware fare-card wording, then review the existing homepage PR #353. Stop before every Production merge for approval.
+with archive-aware fare-card wording, then homepage PR #353 (merged 6 November), then the route-page programme below. Stop before every Production merge for approval.
 This is a specific exception to the older engineering freeze, not permission for arbitrary features, fabricated evidence or growth claims.
 Keep Trip.com paused, the monthly Google counter unchanged and all 28 reserved calls held. JetStash stays on Vercel; do not reopen
 Netlify work. Commercial plan suitability remains a separate decision; no subscription or settings change is authorised.
@@ -27,7 +34,26 @@ rate limiting rather than the current process-local limiter.
 
 **Production site:** `https://jetstash.co.uk`
 
-## Homepage first-visit usability — 5 November 2026 (PR #353 updated for review; not merged, not deployed)
+## Route-page accessibility and signup fixes — 6 November 2026 (PR A prepared for review; not merged, not deployed)
+
+- A read-only mobile audit of live `/routes/[slug]` (320/390/1440px; 89 pages classified, 11 measured, 6 viewed; average about 6.4/10)
+  found two defects, fixed here without any copy, fare, route, Route Status, verification or Trip.com change:
+  1. The "Flight time / Frequency / Airlines" facts and the WhatsApp share button used dark-hero colours on the light "More route
+     information" section: labels measured 2.45:1 and values and button text 1.08:1. They now use `text-ink-500` (8.5:1), `text-ink-900`
+     (18.7:1) and the existing `variant="light"` share button.
+  2. The Route Watch and Travel Club email fields collapsed to 18px and 21px tall below 640px (`flex-1` inside a `flex-col`). They are
+     now full width on phones and 44-48px tall, with `sm:flex-1` for the row layout. Inputs and selects in Route Watch, Travel Club and the
+     Travel Ready Check are 16px on phones (14px from sm up, except the Travel Club email input, which stays 16px at every width, as
+     before) so iOS Safari does not zoom on focus (not tested on a device). The light WhatsApp share button no longer turns its text
+     green on hover (measured about 3.87:1 against its tinted hover background); it keeps the dark ink text.
+- Also corrects the homepage test assertion Codex flagged on PR #353 (P3: the `<PageHero[^>]*description=` regex stopped at the first `>`).
+- Approved next, as separate PRs after review and Production verification: PR B (move Travel Ready Check below fare history, no change to
+  its functions or warnings) and PR C (make a direct service versus a connecting fare unmistakable on the first screen; a clearly labelled
+  Google Flights search on ended-service Manchester-Delhi and Manchester-Mumbai without implying the direct service operates; separate
+  flight duration from service status). Trip.com stays paused.
+- Not an approved release; merge still requires CEO approval.
+
+## Homepage first-visit usability — 5 November 2026 (PR #353 merged 6 November 2026; Production live-verified)
 
 - PR #353 (ivory journey console) now includes current `main` (through PR #364) with no conflicts. The CEO approved improving the existing
   design, not rebuilding it.
@@ -42,8 +68,11 @@ rate limiting rather than the current process-local limiter.
   from sm up; a line below the console on phones). The closing action reads "Check my journey" to match the console. Spacing above Route
   Watch is tighter.
 - No fare, route, Route Status, Trip.com, Arrive By, analytics or consent-logic code or data changed. Homepage text changed, so this is a
-  homepage SEO-pilot event: log the actual merge/deployment in `SEO_INDEXING_PILOT_2026-10-21.md` only after separate approval and release.
-- This is not an approved release; merge still requires CEO approval.
+  homepage SEO-pilot event, logged in `SEO_INDEXING_PILOT_2026-10-21.md`.
+- Merged as `305542cfe57e3390aca89ac1ab58d9ad488329ef` at 00:09:17 UTC on 6 November 2026 on explicit CEO approval, after the Codex
+  review of head `ede0d439c2381900ad9438fdad7331f4c2c4cfff` (PASS WITH NOTES; one P3 test-assertion note, corrected in the route-page PR A).
+  Production deployment Ready; see the baseline paragraph above for the live checks. Remaining weaknesses recorded at merge: the
+  320x568 submit still needs a scroll; the mobile Route Atlas and the three competing desktop first-screen elements were not reworked.
 
 ## Archive-aware fare-card wording — 5 November 2026 (PR #364 merged; Production verification reported successful)
 

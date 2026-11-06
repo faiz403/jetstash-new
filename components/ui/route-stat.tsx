@@ -1,20 +1,23 @@
 /**
- * Accessibility production pass (27 Aug 2026): the label line ("Flight time" /
- * "Frequency" / "Airlines") was `text-ink-400`, which measures ~4.0:1 against
- * this component's dark route-hero surface — short of WCAG AA's 4.5:1 for
- * normal-size text. Same defect class the Route Atlas fix (LAUNCH_CHECKLIST.md
- * A11, 7 Aug 2026) already corrected there — `text-ink-300` is the same
- * proven, dark-surface-safe token (~7.6-7.9:1), reused here rather than a new
- * one. RouteStat's only call site is the dark route-hero stat block in
- * app/routes/[slug]/page.tsx, so this is a fully contained swap.
+ * Route-page accessibility fix (6 Nov 2026): the "Flight time" / "Frequency" /
+ * "Airlines" block now sits in the light "More route information" section
+ * (app/routes/[slug]/page.tsx), but this component still used the palette it
+ * had when it lived on the dark route hero (labels `text-ink-300`, values
+ * `text-sand-100`). On the light `bg-sand-50` surface that measured 2.45:1
+ * for the labels and 1.08:1 for the values, so the facts were effectively
+ * invisible. It is now styled for the light surface: label `text-ink-500`
+ * (8.5:1), value `text-ink-900` (18.7:1), icon `text-brass-700` (5.9:1).
+ * RouteStat's only call site is that light section, so the palette is not
+ * parameterised; if it is ever used on a dark surface again, add a `tone`
+ * prop rather than reverting these tokens.
  */
 export function RouteStat({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
   return (
     <div className="flex w-full items-baseline gap-2 sm:w-auto sm:items-center sm:gap-2.5">
-      <div className="hidden h-9 w-9 items-center justify-center rounded-sm bg-white/10 text-brass-300 sm:flex">{icon}</div>
+      <div className="hidden h-9 w-9 items-center justify-center rounded-sm bg-sand-200 text-brass-700 sm:flex">{icon}</div>
       <div className="flex flex-wrap items-baseline gap-x-2 sm:block">
-        <p className="text-xs text-ink-300">{label}</p>
-        <p className="text-sm font-semibold text-sand-100">{value}</p>
+        <p className="text-xs text-ink-500">{label}</p>
+        <p className="text-sm font-semibold text-ink-900">{value}</p>
       </div>
     </div>
   );

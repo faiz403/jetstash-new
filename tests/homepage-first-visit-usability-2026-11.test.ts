@@ -15,6 +15,36 @@ const pageHero = read('components/sections/page-hero.tsx');
 const form = read('components/homepage-v2/journey-check-form.tsx');
 const sections = read('components/homepage-v2/homepage-sections.tsx');
 
+/**
+ * The full JSX opening tag of `<name`: scans to the first `>` that is outside braces, quotes and `//` comments. A bare
+ * `/<PageHero[^>]*description=/` regex stops at the first `>` inside the eyebrow's nested JSX and so never reaches the later
+ * props (Codex review of PR #353, P3: re-adding `description=` after the eyebrow would still have passed).
+ */
+function openingTag(src: string, name: string): string {
+  const start = src.indexOf(`<${name}`);
+  if (start === -1) throw new Error(`<${name}> not found`);
+  let depth = 0;
+  let quote: string | null = null;
+  for (let i = start; i < src.length; i++) {
+    const c = src[i];
+    if (quote) {
+      if (c === '\\') i++;
+      else if (c === quote) quote = null;
+    } else if (c === '/' && src[i + 1] === '/') {
+      while (i < src.length && src[i] !== '\n') i++;
+    } else if (c === '"' || c === "'" || c === '`') {
+      quote = c;
+    } else if (c === '{') {
+      depth++;
+    } else if (c === '}') {
+      depth--;
+    } else if (c === '>' && depth === 0 && src[i - 1] !== '=') {
+      return src.slice(start, i + 1);
+    }
+  }
+  throw new Error(`<${name}> opening tag not closed`);
+}
+
 describe('console before description on a phone', () => {
   it('keeps the description in the document before the console but shows it after on a phone only', () => {
     const description = hero.indexOf('{HERO_DESCRIPTION}');
@@ -30,7 +60,20 @@ describe('console before description on a phone', () => {
     expect(hero).toContain(
       "Direct or with stops? What fare did we last see? Has the service changed? Pick your airport and destination to find out, then check today's price with a booking provider."
     );
-    expect(hero).not.toMatch(/<PageHero[^>]*description=/);
+    const tag = openingTag(hero, 'PageHero');
+    expect(tag).toContain('heroOverlay="directional"'); // proves the scan reached the props after the eyebrow
+    expect(tag).not.toMatch(/\sdescription\s*=/); // JSX allows whitespace around `=`
+  });
+
+  it('would notice a description prop added after the eyebrow (the old regex could not)', () => {
+    const mutated = hero.replace('heroKey="routes"', 'heroKey="routes"\n      description="x"');
+    expect(mutated).not.toBe(hero);
+    expect(openingTag(mutated, 'PageHero')).toMatch(/\sdescription\s*=/);
+    expect(mutated).not.toMatch(/<PageHero[^>]*description=/); // the previous assertion's blind spot
+    // JSX also allows spaces around `=`; the check must catch `description = "x"` too (Codex re-review, P3)
+    const spaced = hero.replace('heroKey="routes"', 'heroKey="routes"\n      description = "x"');
+    expect(spaced).not.toBe(hero);
+    expect(openingTag(spaced, 'PageHero')).toMatch(/\sdescription\s*=/);
   });
 
   it('names who it is for: in the eyebrow from sm up, in its own line on a phone, with the approved eyebrow text intact', () => {
