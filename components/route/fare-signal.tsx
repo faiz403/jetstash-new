@@ -451,6 +451,21 @@ export function isConnectingFareOnDirectRoute(
  * qualifier, the routing line ("Connecting outbound · ... via JED") and the Route service explanation already say it, so the pill was a
  * fourth statement of one fact. The disclosure itself is unchanged and still sits directly under the price.
  */
+/**
+ * Route-page PR D: true when the first-screen fare card (a current or last tracked fare) states, in full, that its fare is a connecting
+ * journey on a route with nonstop service: the "· connecting" qualifier plus the Route service explanation. The route page uses it to
+ * decide whether the fare section's card further down may drop its own copy of that explanation. It mirrors the condition under which
+ * CurrentSignal and RecentSignal render the explanation (a direct route and a connecting fare, in a state other than "none"), so the
+ * explanation can never be dropped from the lower card without being present above it.
+ */
+export function firstScreenStatesConnectingFare(
+  routeStatus: string,
+  signal: Pick<FareSignalData, 'state'> & { observation: Pick<FareSignalObservation, 'directness'> | null }
+): boolean {
+  if (signal.state === 'none' || !signal.observation) return false;
+  return isConnectingFareOnDirectRoute(routeStatus === 'direct' || routeStatus === 'connecting' ? routeStatus : null, signal.observation.directness);
+}
+
 function ConnectingPriceQualifier() {
   return <span className="ml-2 align-middle font-sans text-base font-semibold text-terracotta-800 sm:text-lg">· connecting</span>;
 }
@@ -610,7 +625,7 @@ function CurrentSignal({ data, nowIso, lowerSelfTransfer, tripComUrl, routeSlug,
           <JourneyConsequenceLine consequences={data.journeyConsequences} />
         </div>
         <div className="text-sm text-ink-600 sm:text-right">
-          {/* Route-page PR D: on a phone the airline, cabin and checked date read as one line (they were three stacked lines); from sm
+          {/* Route-page PR D: on a phone the airline, cabin and checked date read as one line (they were two stacked lines); from sm
               up the date sits under the airline on the right, as before. */}
           <p>
             {data.airline} · {data.cabin}

@@ -83,16 +83,16 @@ rate limiting rather than the current process-local limiter.
   2. The fare section's card further down keeps its pill, travel dates, checked date and fare note, but no longer repeats the explanation
      sentence when the first-screen card states it (`DealCard` prop `connectingExplanationShownAbove`, set only by the route page and only
      when the first-screen fare is a connecting fare on a direct route; every other caller is unchanged).
-  3. Airline, cabin and checked date read as one line on a phone ("Saudia · Economy · Checked 3 November 2026"; three stacked lines before);
+  3. Airline, cabin and checked date read as one line on a phone ("Saudia · Economy · Checked 3 November 2026"; two stacked lines before);
      from sm up the layout is as before.
-  4. A "not verified" or "varies" flight-time sentence is no longer a hero line (14 pages: 6 direct and 8 connecting); it stays as the "Flight
+  4. A "not verified" or "varies" flight-time sentence is no longer a hero line (16 pages: 6 direct and 10 connecting); it stays as the "Flight
      time" row in the route facts. A verified duration still shows in the hero.
   5. A service-ended hero (Manchester-Delhi, Manchester-Mumbai) no longer shows a badge repeating its own "Direct service ended" status
      line, and the ended-service fare card leads with "JetStash has not checked live availability for connecting flights." instead of
      restating the ending a third time. The CEO-approved hero heading and supporting text, the Google Flights button and its note are unchanged.
 - **Measured** (live Production = `main` `2669374` against the local PR D build with the Trip.com pause on; exact tables in the PR): on a 390x844
   phone the primary search action on the 15 connecting-fare pages moved from fully visible on 0 pages to 12 (median bottom edge 858px to
-  799px; Manchester-Islamabad 896px to 789px); the other three are 6-29px below the fold. At 320x568 and 320x720 it is still below the
+  799px; Manchester-Islamabad 896px to 789px); the other three are 13-29px below the fold. At 320x568 and 320x720 it is still below the
   fold on those pages (median 1014px to 975px) and is reached by scrolling; the price is now visible on a first visit at 320x568. At 1440px
   every action stays visible and moves up (Islamabad's now clears the consent banner). No page's action moved down. Repeated statements
   across the 89 pages: the explanation sentence 21 to 15 occurrences (once per qualifying page), the pill 21 to 6 (the fare section card's
@@ -100,9 +100,11 @@ rate limiting rather than the current process-local limiter.
   sections were compared one by one: the card is the only one that changed); Manchester-Islamabad is 173px shorter overall. The consent banner is unchanged (117px at 320, 100px at
   390, 113px at 1440) and still covers the action on a first visit at phone widths: reducing it was deliberately not attempted.
 - **Trust review (CEO request): outdated canonical service-ended wording.** Checked in source and on Production:
-  - Homepage evidence: not affected. `lib/homepage-evidence.ts` reads `statusHeadline` but only links routes whose status is direct or
-    connecting, so the ended wording never reaches it; no live non-route page carries "connecting flights available" or "former direct
-    service ended" (68 non-route sitemap pages and the homepage scanned).
+  - Homepage evidence: not affected today. `lib/homepage-evidence.ts` reads `statusHeadline`, but its only candidate is
+    `manchester-islamabad` (a direct route), so the ended wording cannot reach it; no live non-route page carries "connecting flights
+    available" or "former direct service ended" (68 non-route sitemap pages and the homepage scanned). Caveat: the evidence-fare branch has
+    no status gate of its own (only the Route Watch helper has one), so widening the candidate list to a service-ended route would surface the
+    canonical ended headline there; that list is pilot-controlled.
   - Manchester-Mumbai journey brief: not public (`/founder/journey-brief/manchester-mumbai` 404s in production).
   - **Arrive By: a genuine contradiction.** Manchester-Delhi and Manchester-Mumbai are supported Arrive By routes, and for a service-ended
     route its route warning is the canonical `presentation.summary`: "There's no current nonstop service on Manchester to Delhi — the
@@ -111,7 +113,7 @@ rate limiting rather than the current process-local limiter.
     (scope); a one-string fix in `lib/arrive-by/route-support.ts` is proposed for CEO approval.
   - The canonical `statusHeadline` ("Former direct service ended · connecting flights available") now has no public consumer for an ended route.
 - Known limits: at 320 the action still needs a scroll on the connecting-fare pages; Manchester-Istanbul, Birmingham-Dalaman and
-  Birmingham-Athens sit 6-29px below the 844px fold at 390; the first-visit consent banner covers the action on phones; page length is unchanged
+  Birmingham-Athens sit 13-29px below the 844px fold at 390; the first-visit consent banner covers the action on phones; page length is unchanged
   in kind (PR E is a separate proposal).
 - Not an approved release; merge still requires CEO approval.
 

@@ -1,6 +1,8 @@
+import { createElement } from 'react';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 import RoutePage from '@/app/routes/[slug]/page';
+import { FareSignal, firstScreenStatesConnectingFare } from '@/components/route/fare-signal';
 import { DealCard } from '@/components/ui/deal-card';
 import { deals } from '@/data/deals';
 import { routes } from '@/data/routes';
@@ -148,7 +150,48 @@ describe('route-page PR D', () => {
       );
     });
 
-    it('a page whose first-screen fare is not a connecting fare on a direct route keeps the explanation in the card (nothing is dropped without a replacement)', async () => {
+    it('the page flag is true only where the first-screen card states the explanation (explicit fixtures, including the fallback cases)', () => {
+      const obs = (directness: 'direct' | 'connecting' | null) => ({ directness });
+      const cases: [string, string, 'current' | 'recent' | 'none', 'direct' | 'connecting' | null | 'no-observation', boolean][] = [
+        ['direct route, connecting fare, current', 'direct', 'current', 'connecting', true],
+        ['direct route, connecting fare, recent', 'direct', 'recent', 'connecting', true],
+        ['direct route, no first-screen fare (state none): the lower card keeps its sentence', 'direct', 'none', 'connecting', false],
+        ['direct route, observation missing', 'direct', 'current', 'no-observation', false],
+        ['direct route, direct fare: nothing to explain', 'direct', 'current', 'direct', false],
+        ['direct route, fare directness unknown', 'direct', 'current', null, false],
+        ['connecting route, connecting fare', 'connecting', 'current', 'connecting', false],
+        ['connecting route, direct fare (its own explanation, not this one)', 'connecting', 'current', 'direct', false],
+        ['service-ended route', 'service-ended', 'current', 'connecting', false],
+        ['unverified route', 'unverified', 'current', 'connecting', false],
+      ];
+      for (const [label, status, state, directness, expected] of cases) {
+        const signal = { state, observation: directness === 'no-observation' ? null : obs(directness) };
+        expect(firstScreenStatesConnectingFare(status, signal), label).toBe(expected);
+      }
+    });
+
+    it('a "last tracked fare" (recent) first-screen card keeps the qualifier and the explanation, with no separate pill', () => {
+      const live = getFareSignalForRoute('manchester-islamabad', TODAY);
+      expect(live.observation).toBeTruthy();
+      const html = renderToStaticMarkup(
+        createElement(FareSignal, {
+          signal: { ...live, state: 'recent' },
+          nowIso: TODAY,
+          tripComUrl: null,
+          routeSlug: 'manchester-islamabad',
+          routeDirectness: 'direct',
+          routeStatusLabel: 'Direct',
+          routeAirlineLabel: 'PIA',
+        })
+      );
+      expect(html).toContain('Last tracked fare');
+      expect(html).toMatch(/return<span[^>]*>· connecting<\/span>/);
+      expect(html).toContain(EXPLANATION);
+      expect(html).toContain('Route service');
+      expect(html).not.toContain('Connecting fare, not nonstop');
+    });
+
+    it('on every real page, a lower card pill is accompanied by the explanation exactly once on the page (the fallback itself is covered by the fixtures above)', async () => {
       for (const route of routes) {
         const html = await render(route.slug);
         const card = fareCardOf(html);

@@ -39,7 +39,7 @@ import { HeroBackdrop } from '@/components/ui/hero-backdrop';
 import { JourneyChoice } from '@/components/route/journey-choice';
 import { getJourneyChoiceForRoute } from '@/lib/journey-choice-route-adapter';
 import { getJourneyChoiceTripComHandoff } from '@/lib/tripcom-dated-handoff';
-import { FareSignal, isConnectingFareOnDirectRoute } from '@/components/route/fare-signal';
+import { FareSignal, firstScreenStatesConnectingFare } from '@/components/route/fare-signal';
 import { getFareSignalForRoute, shouldShowNoFareFallback } from '@/lib/fare-signal';
 import { getApprovedStandoutFare } from '@/lib/standout-fare';
 import { FareWindowReconciliationNote } from '@/components/route/fare-window-reconciliation-note';
@@ -186,13 +186,7 @@ export default async function RoutePage({ params }: { params: Promise<{ slug: st
   const fareSignal = getFareSignalForRoute(route.slug, nowIso);
   // Route-page PR D: true when the first-screen fare card (current or last tracked fare) already says in full that its fare is a
   // connecting journey on a route with nonstop service, so the fare section's card below does not repeat the same sentence.
-  const firstScreenExplainsConnectingFare =
-    fareSignal.state !== 'none' &&
-    Boolean(fareSignal.observation) &&
-    isConnectingFareOnDirectRoute(
-      presentation.status === 'direct' || presentation.status === 'connecting' ? presentation.status : null,
-      fareSignal.observation!.directness
-    );
+  const firstScreenExplainsConnectingFare = firstScreenStatesConnectingFare(presentation.status, fareSignal);
   // First-screen buying fix (3 Oct 2026): the connecting pattern already held in route data, surfaced next to the
   // fare block only where the route status permits it (service-ended routes), never inferred.
   const firstScreenConnecting = presentation.canShowConnectingAlternative ? route.connectingAlternative ?? null : null;
