@@ -870,7 +870,7 @@ export default async function RoutePage({ params }: { params: Promise<{ slug: st
             {/* Route-page PR E: compact rows instead of full cards (same status label, route heading, service line and link; the link's
                 visible words appear from sm up and stay in the accessible name on a phone). A list, so a screen reader announces how many
                 airports there are. */}
-            <ul className="mt-6 grid gap-0 divide-y divide-ink-200 border-y border-ink-200 sm:mt-8 sm:grid-cols-2 sm:gap-5 sm:divide-y-0 sm:border-y-0 lg:grid-cols-3">
+            <ul role="list" className="mt-6 grid gap-0 divide-y divide-ink-200 border-y border-ink-200 sm:mt-8 sm:grid-cols-2 sm:gap-5 sm:divide-y-0 sm:border-y-0 lg:grid-cols-3">
               {alternativeRoutes.map((altRoute) => {
                 const altAirport = getRouteAirport(altRoute);
                 if (!altAirport) return null;
@@ -888,7 +888,7 @@ export default async function RoutePage({ params }: { params: Promise<{ slug: st
                       href={`/routes/${altRoute.slug}`}
                       className="group flex items-start justify-between gap-3 py-3.5 transition-colors hover:bg-sand-100 sm:h-full sm:flex-col sm:justify-start sm:gap-0 sm:rounded-md sm:border sm:border-ink-100 sm:bg-white sm:p-6 sm:transition-all sm:hover:-translate-y-1 sm:hover:bg-white sm:hover:shadow-card-hover"
                     >
-                      <span className="min-w-0">
+                      <div className="min-w-0">
                         <span className="block text-xs font-semibold uppercase tracking-wide text-ink-400">
                           {altPresentation.statusLabel}
                         </span>
@@ -902,7 +902,7 @@ export default async function RoutePage({ params }: { params: Promise<{ slug: st
                                 ? `${altPresentation.flightTime} · ${altAirlines.map((a) => a.name).join(', ')}`
                                 : altPresentation.flightTime}
                         </p>
-                      </span>
+                      </div>
                       <span className="flex shrink-0 items-center gap-1.5 text-sm font-semibold text-ink-900 sm:mt-4">
                         <span className="sr-only sm:not-sr-only">Compare this route</span>
                         <ArrowUpRight className="h-5 w-5 sm:h-4 sm:w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" strokeWidth={2.25} aria-hidden="true" />

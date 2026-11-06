@@ -101,8 +101,10 @@ rate limiting rather than the current process-local limiter.
 - **1. Travel Ready Check behind a native disclosure** (route pages only; `/travel-ready-check` is unchanged). The `<summary>` is the check's own
   eyebrow, heading and scope line plus "Show the check" / "Hide the check"; the form, result, warnings and privacy note are in the page at all
   times (a closed `<details>` keeps its content in the DOM, so the check's state and Book-By's shared signal are untouched). It opens by itself
-  from a direct `#travel-ready` fragment, a hashchange and any click on a link to `#travel-ready` (the pointer line and Book-By's note), including a
-  second click when the hash has not changed; it never closes by itself and no history entry is added or removed.
+  from a direct `#travel-ready` fragment, a hashchange and a plain click on a link to this page's `#travel-ready` (the pointer line and Book-By's note),
+  including a second click when the hash has not changed; links to another page, external links and modified clicks (new tab or window) never open
+  it; it never closes by itself and no history entry is added or removed. Inside the summary only phrasing content and the h2 are used (HTML content
+  model), and the airport list carries `role="list"`.
   Files: `components/travel-ready/travel-ready-disclosure.tsx` (new), `travel-ready-check.tsx` (`collapsible` prop, default false),
   `components/route/route-readiness-panel.tsx` (passes `collapsible`).
 - **2. Other UK airports as compact rows** (`app/routes/[slug]/page.tsx`): a list with one row per alternative route, same status label, route
@@ -119,7 +121,7 @@ rate limiting rather than the current process-local limiter.
 - **Behaviour (Playwright on the build, 320, 390 and 1440px; nothing submitted):** closed by default; the pointer link, a second click on the same hash,
   a direct URL fragment, a `hashchange` and Book-By's link all open it with the heading clear of the header; Back restores the previous hash without
   error; field values survive close and open; after running the check Book-By's badge is the same open or closed; the closed form is not tabbable and
-  Tab from the summary moves on; Enter and Space toggle it; a 3px focus ring shows; it works without JavaScript (a click opens it); no external or Google
+  Tab from the summary moves on; Enter and Space toggle it; a 2px focus ring shows; it works without JavaScript (a click opens it); no external or Google
   request. Tests: `tests/route-length-travel-ready-airports-2026-11.test.ts`.
 - Known limits: the consent banner still covers content on a first visit (separate item); two Other-airport rows can read "London → Doha"
   (Heathrow and Gatwick), a pre-existing ambiguity the compact rows keep rather than hide: adding the airport name is proposed, not done.
