@@ -315,6 +315,19 @@ Every checkpoint records these items:
   lose the repeated hero badge and the ended-service card restatement. Headings, `<title>`, meta description, canonical, robots, sitemap, Quick
   answers, prices, route and fare records and internal link targets are unchanged. Treat as a content-removal event for all three pilot pages.
 
+- **Arrive By service-ended wording (PR #369; merge `30dcf8b3b724e0573986de6c928cdbabde453454`, merged 15:44:23 UTC on 6 November 2026, Production
+  deployment Ready (1m 8s build), deployment id not captured):** a warning string in the Stage 1 Arrive By engine, rendered on no customer page. No
+  route-page, pilot-page, heading, `<title>`, meta description, canonical, robots, sitemap or internal-link change; all 89 route pages were compared
+  with a local build of the same tree and were identical. Not a pilot-page event.
+
+- **Route-page Travel Ready disclosure and compact airport rows (PR E; prepared for review, not Production-deployed):** a layout change on every
+  route page that carries the Travel Ready Check (72 of 89, **all three pilot pages**) and every page with alternative airports. The check now sits
+  behind a native `<details>` whose summary is its own heading and scope line; its content stays in the HTML (closed `<details>` content is in the
+  DOM), and two UI strings, "Show the check" and "Hide the check", are added. "Other UK airports" cards become compact list rows with the same
+  status, heading and link text. All headings (h1-h3), `<title>`, meta description, canonical, robots, sitemap, Quick answers, prices, route and fare
+  records and internal link targets are identical on all 89 pages (compared against Production). Treat as a layout and content-order event for the
+  three pilot pages; the pilot's content and headings are unchanged. Record the actual merge/deployment here only after separate approval and release.
+
 ## Wave 2 (not approved; only after a positive day-14 signal)
 
 **Ready now** (verification current, no pending status on 21 Oct):

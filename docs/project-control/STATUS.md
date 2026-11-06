@@ -1,6 +1,6 @@
 # JetStash Current Status
 
-**Latest release reconciliation:** 6 November 2026, through PR #368. The older dated programme/count snapshots below are historical.
+**Latest release reconciliation:** 6 November 2026, through PR #369. The older dated programme/count snapshots below are historical.
 
 **Production branch:** `main`
 
@@ -68,7 +68,13 @@ checked date and the price, and none carries a separate pill under the price. Th
 horizontal scroll, Reject stores both choices denied, the Travel Ready section and form, Route Watch (email field 44px, 16px on phones) and
 the fare-history anchor are present, and there were zero Google routing requests and zero external requests. A separate branch
 (`fix/homepage-consent-and-clarity-2026-11`, "keep consent choices clear of mobile actions") appeared in the Vercel Deployments list as a
-Preview; it was not touched or reviewed here.
+Preview; it was not touched or reviewed here (reviewed read-only afterwards: see the PR E section).
+PR #369 (Arrive By service-ended wording) merged as `30dcf8b3b724e0573986de6c928cdbabde453454` at 15:44:23 UTC on 6 November, on explicit CEO
+approval, at exact head `29c88443308e4e9e13ba1a5a408f757052300665` (Codex `db1bd63` PASS WITH NOTES, two test P3s fixed, delta `29c8844` PASS with no
+defects; GitHub checks green; Vercel Preview `29c8844` Ready). The Vercel Deployments list shows the Production deployment of `30dcf8b` Ready (1m 8s
+build); its deployment id and exact Ready time were not captured. The change renders on no customer page, and a read-only comparison of all 89 route
+pages with a local build of the same tree found them identical, with 25 Fare Signals, 15 qualifiers, 34 badges, zero Trip.com text or links and zero
+Google routing requests. The Trip.com pause and the 28 reserved Google calls were not touched.
 
 **Current founder direction — 5 November:** execute the Website Improvement Programme through small, tested PRs, beginning
 with archive-aware fare-card wording, then homepage PR #353 (merged 6 November), then the route-page programme below. Stop before every Production merge for approval.
@@ -87,7 +93,43 @@ rate limiting rather than the current process-local limiter.
 
 **Production site:** `https://jetstash.co.uk`
 
-## Arrive By service-ended wording — 6 November 2026 (prepared for review; not merged, not deployed)
+## Route-page length: Travel Ready disclosure and compact airport rows — 6 November 2026 (PR E prepared for review; not merged, not deployed)
+
+- CEO-approved scope (6 November): changes 1 and 2 only. Changes 3 (merge the two link-card sections) and 4 (drop the repeated destination
+  photograph on the fare card) are deferred until these are measured. Presentation only; nothing is removed, no data, fare, route status,
+  verification, Trip.com or calculation change.
+- **1. Travel Ready Check behind a native disclosure** (route pages only; `/travel-ready-check` is unchanged). The `<summary>` is the check's own
+  eyebrow, heading and scope line plus "Show the check" / "Hide the check"; the form, result, warnings and privacy note are in the page at all
+  times (a closed `<details>` keeps its content in the DOM, so the check's state and Book-By's shared signal are untouched). It opens by itself
+  from a direct `#travel-ready` fragment, a hashchange and any click on a link to `#travel-ready` (the pointer line and Book-By's note), including a
+  second click when the hash has not changed; it never closes by itself and no history entry is added or removed.
+  Files: `components/travel-ready/travel-ready-disclosure.tsx` (new), `travel-ready-check.tsx` (`collapsible` prop, default false),
+  `components/route/route-readiness-panel.tsx` (passes `collapsible`).
+- **2. Other UK airports as compact rows** (`app/routes/[slug]/page.tsx`): a list with one row per alternative route, same status label, route
+  heading (`h3`), service line and link; "Compare this route" stays in the accessible name and shows from sm up; the card look is kept from sm up.
+- **Measured** (live Production = `main` against the local PR E build, Trip.com pause on): at 390px the Travel Ready block goes from 1,380-1,404px
+  to 403px (about 980-1,000px saved, not the 1,350px first estimated: the heading and scope stay visible); Other UK airports 704 to 517 (Islamabad),
+  1,412 to 868 (Dubai), 872 to 580 (Doha), 632 to 445 (Delhi). Page height at 390px falls 976-1,545px (Karachi -11%, Islamabad -10%, Delhi -12%,
+  Doha -17%, Dubai -20%); at 320px 1,097-1,622px (-11% to -19%); at 1440px 639px (-8% to -12%: the compact rows do not shorten the desktop card grid).
+  No horizontal scroll on any measured page.
+- **Content and SEO parity (all 89 pages, Production against the build):** headings (h1-h3), `<title>`, meta description, canonical, robots and every
+  internal link are identical on every page; the only text difference is the two new strings "Show the check" and "Hide the check" on the 72 pages that
+  carry the check; the 17 pages without it are text-identical. No server-rendered `open` attribute. The three SEO pilot pages keep their headings and
+  Quick answers.
+- **Behaviour (Playwright on the build, 320, 390 and 1440px; nothing submitted):** closed by default; the pointer link, a second click on the same hash,
+  a direct URL fragment, a `hashchange` and Book-By's link all open it with the heading clear of the header; Back restores the previous hash without
+  error; field values survive close and open; after running the check Book-By's badge is the same open or closed; the closed form is not tabbable and
+  Tab from the summary moves on; Enter and Space toggle it; a 3px focus ring shows; it works without JavaScript (a click opens it); no external or Google
+  request. Tests: `tests/route-length-travel-ready-airports-2026-11.test.ts`.
+- Known limits: the consent banner still covers content on a first visit (separate item); two Other-airport rows can read "London → Doha"
+  (Heathrow and Gatwick), a pre-existing ambiguity the compact rows keep rather than hide: adding the airport name is proposed, not done.
+- Unreviewed branch found (read-only, nothing merged): `fix/homepage-consent-and-clarity-2026-11` (single commit `bc245c2`, 15:05 UTC 6 November,
+  branched from `2669374`, no pull request) moves the consent notice from a fixed bottom panel into normal flow under the header on every page,
+  removes the scroll-padding published for it, rewrites the consent tests and touches the homepage hero. It reverses the accepted fixed-panel design
+  rather than duplicating completed work, and would push every first-visit page down by the banner height (about 100px at 390px).
+- Not an approved release; merge still requires CEO approval.
+
+## Arrive By service-ended wording — 6 November 2026 (PR #369 merged `30dcf8b`; Production live-verified)
 
 - CEO-approved narrow trust correction. `lib/arrive-by/route-support.ts` now gives a service-ended route that carries evidenced
   connecting-alternative data (`presentation.canShowConnectingAlternative`, true for Manchester-Delhi and Manchester-Mumbai) the approved
@@ -100,7 +142,7 @@ rate limiting rather than the current process-local limiter.
   the public planner are unchanged. Exposure: none today (see the corrected trust-review note in the PR D section: the Stage 1 engine's only
   renderer is an unused founder component and `/founder/arrive-by` 404s in production), so this removes a latent contradiction rather than
   a live one. Tests: `tests/arrive-by-service-ended-wording-2026-11.test.ts`.
-- Not an approved release; merge still requires CEO approval.
+- Merged on explicit CEO approval; verification results are in the baseline paragraph above.
 
 ## Route-page first-screen action and duplication — 6 November 2026 (PR #368 "PR D" merged `69a0924`; Production live-verified)
 
