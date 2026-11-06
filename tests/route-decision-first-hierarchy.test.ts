@@ -47,7 +47,10 @@ describe('decision-first route hierarchy', () => {
 
   it('keeps service-ended truth concise above the action and full evidence below it', async () => {
     const html = await renderRoute('manchester-delhi');
-    expect(html).toContain('Former direct service ended · connecting flights available');
+    // PR C (CEO ruling): the hero heading is "Direct service ended" and the supporting text claims no availability and no typical figures
+    expect(html).toContain('The former nonstop service has ended. Connecting alternatives may be available. Check current flights, stops and total journey times for your dates before booking.');
+    expect(html).not.toContain('Former direct service ended · connecting flights available');
+    expect(html).not.toMatch(/Usually 1 stop · /);
     expect(html.indexOf('Flight time, frequency and airline facts from the previous direct service are no longer shown.'))
       .toBeGreaterThan(html.indexOf('More route information'));
   });

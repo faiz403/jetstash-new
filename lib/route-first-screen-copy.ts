@@ -48,6 +48,52 @@ export function getFlightTimeDisplay(flightTime: string): FlightTimeDisplay {
 }
 
 /**
+ * Ended-service hero (route-page PR C, CEO ruling of 6 November 2026). A service-ended route's hero used to say "Former direct service
+ * ended · connecting flights available" and "Usually 1 stop · 12 to 15h total": an availability claim and typical stop and duration
+ * figures that are editorial and undated. It now states only what is evidenced (the nonstop service has ended) and says that
+ * connecting alternatives MAY be available and must be checked for the traveller's own dates. The record's `connectingAlternative`
+ * data, the canonical `service-ended` status and its evidence are untouched; only this page's wording differs.
+ */
+export const ENDED_SERVICE_HERO_HEADING = 'Direct service ended';
+export const ENDED_SERVICE_HERO_SUPPORTING =
+  'The former nonstop service has ended. Connecting alternatives may be available. Check current flights, stops and total journey times for your dates before booking.';
+/** A service-ended route with no evidenced connecting alternative promises nothing about alternatives. */
+export const ENDED_SERVICE_HERO_SUPPORTING_NO_ALTERNATIVE =
+  'The former nonstop service has ended. Check current options directly with airlines before booking.';
+
+export function getEndedServiceHeroCopy(canShowConnectingAlternative: boolean): { heading: string; supporting: string } {
+  return {
+    heading: ENDED_SERVICE_HERO_HEADING,
+    supporting: canShowConnectingAlternative ? ENDED_SERVICE_HERO_SUPPORTING : ENDED_SERVICE_HERO_SUPPORTING_NO_ALTERNATIVE,
+  };
+}
+
+/**
+ * The "More route information" summary. The canonical service-ended summary for a route with connecting-alternative data ends "See below
+ * for the current connecting journey and how to check today's price", which reads as if a current connecting journey has been
+ * confirmed. On the route page it now points at the evidence instead. The canonical `presentation.summary` is unchanged and still feeds
+ * Arrive By and the Manchester-Mumbai journey brief; every other status and every route without connecting-alternative data keeps it.
+ */
+export function getRouteSummaryForPage(
+  presentation: { status: string; canShowConnectingAlternative: boolean; summary: string },
+  pair: string
+): string {
+  if (presentation.status === 'service-ended' && presentation.canShowConnectingAlternative) {
+    return `There's no current nonstop service on ${pair}: the previously-verified direct service has ended. The route status below sets out the evidence.`;
+  }
+  return presentation.summary;
+}
+
+/**
+ * The connecting-alternative section for a service-ended route. It no longer says the journey "is still possible with a connection"
+ * (an availability claim); it says alternatives may be available, that JetStash has not checked them live, and that the pattern below
+ * is a general overview.
+ */
+export const ENDED_SERVICE_ALTERNATIVES_HEADING = 'Connecting alternatives';
+export const ENDED_SERVICE_ALTERNATIVES_INTRO =
+  'The direct service on this route has ended. Connecting alternatives may be available, but JetStash has not checked them live. The general pattern below is an overview, not a live check: confirm current flights, stops and total journey times for your dates before booking.';
+
+/**
  * The route hero badge. `presentation.statusLabel` stays the one canonical label everywhere else (catalogue, hubs, cards, links);
  * only a verified direct route's "Direct" is reworded on the route page, where the fare sits directly below. Any other status or
  * label passes through untouched, so a future status can never silently fall through to the wrong badge.

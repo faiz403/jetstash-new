@@ -3,15 +3,21 @@ import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 import RoutePage from '@/app/routes/[slug]/page';
 import { FareSignal } from '@/components/route/fare-signal';
-import { routes } from '@/data/routes';
+import { getRouteBySlug, routes } from '@/data/routes';
 import { routeStatusEvents } from '@/data/route-status-events';
 import { getEffectiveRoutePresentation } from '@/lib/route-status-copy';
 import {
+  ENDED_SERVICE_ALTERNATIVES_HEADING,
+  ENDED_SERVICE_ALTERNATIVES_INTRO,
+  ENDED_SERVICE_HERO_SUPPORTING,
+  ENDED_SERVICE_HERO_SUPPORTING_NO_ALTERNATIVE,
   FLIGHT_TIME_NOT_VERIFIED_DIRECT,
   JOURNEY_TIME_NOT_CONFIRMED,
   JOURNEY_TIME_VARIES_CONNECTING,
+  getEndedServiceHeroCopy,
   getFlightTimeDisplay,
   getRouteHeroBadgeLabel,
+  getRouteSummaryForPage,
 } from '@/lib/route-first-screen-copy';
 import {
   ENDED_SERVICE_FLIGHT_SEARCH_CTA_LABEL,
@@ -291,5 +297,94 @@ describe('D. obsolete Trip.com handoff sentence removed from the nine public int
 
   it('no public route introduction mentions Trip.com at all', () => {
     expect(routes.filter((r) => /Trip\.com/i.test(r.intro)).map((r) => r.slug)).toEqual([]);
+  });
+});
+
+describe('E. ended-service hero (CEO ruling of 6 November 2026): no availability claim and no undated typical figures above the fold', () => {
+  const HERO_SUPPORTING = 'The former nonstop service has ended. Connecting alternatives may be available. Check current flights, stops and total journey times for your dates before booking.';
+  const heroOf = (html: string) => html.slice(html.indexOf('<h1'), html.indexOf('id="fare-signal-heading"'));
+
+  describe.each([
+    ['Trip.com paused', 'true'],
+    ['Trip.com not paused (a verified handoff exists)', 'false'],
+  ])('%s', (_label, paused) => {
+    beforeAll(() => {
+      vi.useFakeTimers({ toFake: ['Date'] });
+      vi.setSystemTime(new Date(`${TODAY}T12:00:00Z`));
+      vi.stubEnv('NEXT_PUBLIC_TRIPCOM_AFFILIATE_PAUSED', paused);
+    });
+    afterAll(() => {
+      vi.unstubAllEnvs();
+      vi.useRealTimers();
+    });
+
+    it.each(['manchester-delhi', 'manchester-mumbai'])('%s: the hero heading and supporting text are exactly the ruling, with nothing undated or promised', async (slug) => {
+      const html = await render(slug);
+      const hero = heroOf(html);
+      expect(ENDED_SERVICE_HERO_SUPPORTING).toBe(HERO_SUPPORTING);
+      expect(hero).toMatch(/<p[^>]*>Direct service ended<\/p>/); // the bold heading line (the badge says the same)
+      expect(hero).toContain(HERO_SUPPORTING);
+      expect(hero).not.toMatch(/Usually|\bstops? ·|12 to 15h|Varies widely|layover|Former direct service ended|connecting flights available/i);
+      expect(html).not.toContain('Former direct service ended · connecting flights available');
+    });
+
+    it.each(['manchester-delhi', 'manchester-mumbai'])('%s: no contradictory availability wording anywhere else on the page', async (slug) => {
+      const html = await render(slug);
+      expect(html).not.toMatch(/current connecting journey|journey itself is still possible|You can still fly this route with a connection|connecting flights available/i);
+      // the summary now points at the evidence, and the lower section says alternatives may be available and were not checked live
+      expect(html).toContain('the previously-verified direct service has ended. The route status below sets out the evidence.');
+      expect(html).toContain(ENDED_SERVICE_ALTERNATIVES_HEADING);
+      expect(html).toContain(ENDED_SERVICE_ALTERNATIVES_INTRO);
+      expect(ENDED_SERVICE_ALTERNATIVES_INTRO).toContain('JetStash has not checked them live');
+      // the historical evidence and the labelled general pattern are preserved
+      expect(html).toContain('Post-effective-date verification');
+      expect(html).toContain('Typical stops');
+      expect(html).toContain('Typical total journey time');
+    });
+  });
+
+  it('the Google Flights note tells the traveller the link does not fill in their search', () => {
+    expect(ENDED_SERVICE_FLIGHT_SEARCH_NOTE).toContain('It does not fill in your search: enter your airports and travel dates there.');
+    expect(ENDED_SERVICE_FLIGHT_SEARCH_NOTE).toContain('JetStash does not earn commission from this link');
+    expect(ENDED_SERVICE_FLIGHT_SEARCH_NOTE).toContain('results may show connecting itineraries');
+    expect(ENDED_SERVICE_FLIGHT_SEARCH_NOTE).not.toMatch(/expect connecting/);
+  });
+
+  it('helpers: alternatives wording only with evidenced connecting-alternative data; canonical summary kept everywhere else', () => {
+    expect(getEndedServiceHeroCopy(true)).toEqual({ heading: 'Direct service ended', supporting: HERO_SUPPORTING });
+    expect(getEndedServiceHeroCopy(false)).toEqual({ heading: 'Direct service ended', supporting: ENDED_SERVICE_HERO_SUPPORTING_NO_ALTERNATIVE });
+    expect(ENDED_SERVICE_HERO_SUPPORTING_NO_ALTERNATIVE).not.toMatch(/alternative|connecting/i);
+    const canonical = 'canonical summary';
+    expect(getRouteSummaryForPage({ status: 'direct', canShowConnectingAlternative: false, summary: canonical }, 'A to B')).toBe(canonical);
+    expect(getRouteSummaryForPage({ status: 'service-ended', canShowConnectingAlternative: false, summary: canonical }, 'A to B')).toBe(canonical);
+    expect(getRouteSummaryForPage({ status: 'service-ended', canShowConnectingAlternative: true, summary: canonical }, 'A to B')).toContain('The route status below sets out the evidence.');
+  });
+
+  it('canonical service-ended status, evidence and connecting-alternative data are unchanged', () => {
+    for (const slug of ['manchester-delhi', 'manchester-mumbai']) {
+      const route = getRouteBySlug(slug)!;
+      const p = getEffectiveRoutePresentation(route, routeStatusEvents, TODAY);
+      expect(p.status, slug).toBe('service-ended');
+      expect(p.statusLabel, slug).toBe('Direct service ended');
+      expect(p.canShowConnectingAlternative, slug).toBe(true);
+      // the canonical headline and summary still exist for the surfaces that use them (Arrive By, journey brief, homepage evidence)
+      expect(p.statusHeadline, slug).toBe('Former direct service ended · connecting flights available');
+      expect(p.summary, slug).toContain('See below for the current connecting journey');
+      expect(route.connectingAlternative!.typicalStops, slug).toBe(1);
+      expect(route.connectingAlternative!.hubAirports.length, slug).toBeGreaterThanOrEqual(3);
+    }
+    expect(getRouteBySlug('manchester-delhi')!.connectingAlternative!.typicalJourneyTime).toBe('12 to 15h total, depending on layover length');
+    expect(getRouteBySlug('manchester-mumbai')!.connectingAlternative!.typicalJourneyTime).toBe('Varies widely by connection and layover length');
+  });
+
+  it('every other page keeps its hero: a direct route still reads "Direct flights available" and a connecting route its own headline', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date(`${TODAY}T12:00:00Z`));
+    try {
+      expect(await render('manchester-doha')).toContain('Direct flights available');
+      expect(await render('manchester-amritsar')).toContain('Connecting flights available');
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

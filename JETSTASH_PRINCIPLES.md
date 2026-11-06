@@ -421,6 +421,10 @@ is not a nonstop fare. Three more standing rules came with it:
   `connectingAlternative` data gets "Find connecting alternatives" and the plain Google Flights search labelled "Search connecting flights
   on Google Flights" (`ENDED_SERVICE_FLIGHT_SEARCH_*` in `lib/booking-providers.ts`): no stop count, journey time, airline or itinerary is
   promised, because the record's "usually" figures are editorial and undated, and a monetised handoff, when one exists, takes precedence.
+  The same rule governs the whole page, not only the card: the hero says "Direct service ended" and that connecting alternatives *may* be
+  available (never "available"), and no section says the journey "is still possible" or that a "current connecting journey" exists, because
+  availability has not been checked live. The canonical `presentation` wording is left alone; the route page overrides it through
+  `lib/route-first-screen-copy.ts`.
 - **A label's value must be what the label says.** `lib/route-first-screen-copy.ts` keeps every stated duration and replaces only
   status-first values with no duration figure ("Typical flight time not verified. Check the airline's current schedule." / "Journey time
   varies by itinerary and connection." / "Journey time not yet confirmed."). It never says "not published": an airline may have published a

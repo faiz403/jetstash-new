@@ -35,7 +35,7 @@ describe('1-2. Service-ended + connectingAlternative + exact handoff → connect
   it('manchester-delhi: connectingAlternative section and a current Trip.com CTA both render', async () => {
     const element = await RoutePage({ params: Promise.resolve({ slug: 'manchester-delhi' }) });
     const html = renderToStaticMarkup(element);
-    expect(html).toContain('You can still fly this route with a connection');
+    expect(html).toContain('Connecting alternatives'); // PR C: the section no longer says the journey "is still possible"
     expect(html).toContain('Dubai');
     expect(html).toContain(SERVICE_ENDED_CTA_LABEL);
   });
@@ -43,7 +43,7 @@ describe('1-2. Service-ended + connectingAlternative + exact handoff → connect
   it('manchester-mumbai: connectingAlternative section and a current Trip.com CTA both render', async () => {
     const element = await RoutePage({ params: Promise.resolve({ slug: 'manchester-mumbai' }) });
     const html = renderToStaticMarkup(element);
-    expect(html).toContain('You can still fly this route with a connection');
+    expect(html).toContain('Connecting alternatives'); // PR C: the section no longer says the journey "is still possible"
     expect(html).toContain('Dubai');
     expect(html).toContain(SERVICE_ENDED_CTA_LABEL);
   });
@@ -145,7 +145,9 @@ describe('8. Fresh connecting fares remain separate from the ended direct servic
       expect(html, slug).toContain(expected.get(slug));
       expect(html, slug).toContain('Checked 4 October 2026');
       expect(html, slug).toContain('Connecting outbound · return directness unconfirmed');
-      expect(html.toLowerCase(), slug).toContain('connecting flights available');
+      // PR C (CEO ruling): the hero says connecting alternatives MAY be available; it no longer claims they are
+      expect(html, slug).toContain('Connecting alternatives may be available.');
+      expect(html.toLowerCase(), slug).not.toContain('connecting flights available');
       expect(html, slug).not.toContain('Standout Fare');
     }
   });

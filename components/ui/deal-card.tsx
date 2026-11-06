@@ -181,7 +181,7 @@ export function DealCard({ deal, nowIso, headingLevel = 'h3' }: { deal: Deal; no
                       Connecting fare, not nonstop
                     </span>
                     <p className="mt-1.5 text-sm text-ink-600">
-                      Nonstop services are listed for this route, but this fare is for a connecting journey. It is not a nonstop fare.
+                      Nonstop services are listed for this route, but this tracked fare is for a connecting journey. It is not a nonstop fare.
                     </p>
                   </>
                 ) : presentation?.status === 'connecting' && range.observedDirectness === 'direct' ? (

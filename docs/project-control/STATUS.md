@@ -78,7 +78,16 @@ rate limiting rather than the current process-local limiter.
   Enter your airports and dates there." The link is the plain Google Flights URL (no query string, routing API, tracking or affiliate
   parameter) and is used only on a service-ended route that carries evidenced connecting-alternative data and has no monetised handoff,
   which is every such route while the Trip.com pause is on. If Trip.com resumes, a verified handoff keeps its own label and takes precedence.
-  No stop count, journey time, airline or itinerary is promised in that card.
+  No stop count, journey time, airline or itinerary is promised in that card. The Google note also says the link does not fill in the search:
+  "It does not fill in your search: enter your airports and travel dates there."
+- **B2. Ended-service hero (CEO ruling of 6 November, same PR).** The hero on those two pages reads "Direct service ended" with "The former
+  nonstop service has ended. Connecting alternatives may be available. Check current flights, stops and total journey times for your dates
+  before booking." The earlier "connecting flights available" claim and the undated "Usually 1 stop · 12 to 15h total" line are gone from the
+  hero. Other wording on those pages that conflicted was corrected too: the "More route information" summary now points at the route-status
+  evidence instead of "the current connecting journey", and the lower section is "Connecting alternatives" ("may be available, but JetStash has
+  not checked them live", with its labelled general pattern kept) instead of "You can still fly this route with a connection". The canonical
+  `service-ended` status, its evidence, the `connectingAlternative` data and the canonical `presentation.statusHeadline` and `summary` are
+  unchanged: only this page's wording differs (`lib/route-first-screen-copy.ts`).
 - **C. Flight-time wording.** One helper (`lib/route-first-screen-copy.ts`) feeds the hero line and the "Flight time" row. Verified durations
   are unchanged. Status-first values without a duration figure (16 pages) are replaced: direct, "Typical flight time not verified. Check the
   airline's current schedule." (6 pages); connecting, "Journey time varies by itinerary and connection." (8); unverified, "Journey time not
@@ -86,9 +95,11 @@ rate limiting rather than the current process-local limiter.
 - **D. Obsolete Trip.com sentence.** Removed from the public `intro` of nine routes (Gatwick-Istanbul, Antalya, Dalaman, Bodrum, Izmir,
   Marrakech, Agadir, Tangier and Heathrow-Casablanca). Only the booking-handoff sentence was removed; internal `note` fields, status, fare and
   verification records are unchanged.
-- Known limits, not changed here: the ended-route hero still says "Former direct service ended · connecting flights available" and shows the
-  record's editorial "Usually 1 stop · 12 to 15h total" summary (undated, and hedged for Mumbai in the data); the 320x568 button needs a scroll
-  (it is fully visible at 390px). Three SEO-pilot pages change text: see the pilot log.
+- Known limits, not changed here: the canonical service-ended `statusHeadline` ("Former direct service ended · connecting flights available") and
+  `summary` ("…See below for the current connecting journey…") still exist for the surfaces that read them (Arrive By's route warning, the
+  Manchester-Mumbai journey brief and the homepage evidence source); they no longer reach the two route pages but deserve the same wording
+  decision. The 320x568 ended-route button needs a scroll (it is fully visible at 390px). Some lower "Other UK airports" cards still print raw
+  `flightTime` strings without the flight-time label. Three SEO-pilot pages change text: see the pilot log.
 - Not an approved release; merge still requires CEO approval.
 
 ## Route-page Travel Ready Check below fare history — 6 November 2026 (PR #366 "PR B" merged `96426c2`; Production live-verified)

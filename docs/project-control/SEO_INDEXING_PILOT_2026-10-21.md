@@ -294,7 +294,8 @@ Every checkpoint records these items:
   row). manchester-dubai: the badge, price qualifier and callout sentence change. birmingham-delhi: the hero flight-time line "Connecting
   via Amritsar — journey time depends on the connection" becomes "Journey time varies by itinerary and connection." (also in the Flight time
   row). Elsewhere: "Direct service" badge on 34 direct pages, "· connecting" on 15, 16 flight-time lines replaced, Manchester-Delhi and
-  Manchester-Mumbai gain a Google Flights search card, and the obsolete Trip.com handoff sentence leaves nine route introductions
+  Manchester-Mumbai gain a Google Flights search card and a reworded hero ("Direct service ended", "Connecting alternatives may be available…", no
+  undated stop or duration figures; not pilot pages), and the obsolete Trip.com handoff sentence leaves nine route introductions
   (visible on London-Gatwick-Tangier today). Headings, `<title>`, meta description, canonical, robots, sitemap, Quick answers, prices, route
   and fare records and internal link targets are unchanged. Treat as a content-wording event for the three pilot pages; record the actual
   merge/deployment here only after separate approval and release.

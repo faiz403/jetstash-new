@@ -39,13 +39,13 @@ describe('DealCard reconciles a mismatched fare against the route\'s own directn
     const html = renderToStaticMarkup(DealCard({ deal, nowIso: NOW_ISO })).replace(/\s+/g, ' ');
     expect(html).toContain('Connecting</span>');
     expect(html).toContain('Connecting fare, not nonstop');
-    expect(html).toContain('Nonstop services are listed for this route, but this fare is for a connecting journey. It is not a nonstop fare.');
+    expect(html).toContain('Nonstop services are listed for this route, but this tracked fare is for a connecting journey. It is not a nonstop fare.');
   });
 
   it('renders reconciliation from the selected period classification', () => {
     const deal = deals.find((d) => d.id === 'man-dxb-economy')!;
     const html = renderToStaticMarkup(DealCard({ deal, nowIso: NOW_ISO })).replace(/\s+/g, ' ');
-    expect(html).toContain('Nonstop services are listed for this route, but this fare is for a connecting journey. It is not a nonstop fare.');
+    expect(html).toContain('Nonstop services are listed for this route, but this tracked fare is for a connecting journey. It is not a nonstop fare.');
   });
 
   it('a card where the fare already agrees with the route\'s own directness renders no reconciliation line at all -- nothing changes for the common case', () => {

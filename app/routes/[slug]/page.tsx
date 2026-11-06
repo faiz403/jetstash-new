@@ -52,7 +52,14 @@ import { getPublicJourneyRoutePair } from '@/lib/arrive-by-journey/public-route-
 import { isSeoPilotPage, isRouteEligibleForSeoLink, getSeoRouteLinks, getQuickAnswersContent } from '@/lib/seo-indexing-pilot';
 import { RouteQuickAnswers } from '@/components/route/route-quick-answers';
 import { SeoRouteLinks } from '@/components/route/seo-route-links';
-import { getFlightTimeDisplay, getRouteHeroBadgeLabel } from '@/lib/route-first-screen-copy';
+import {
+  ENDED_SERVICE_ALTERNATIVES_HEADING,
+  ENDED_SERVICE_ALTERNATIVES_INTRO,
+  getEndedServiceHeroCopy,
+  getFlightTimeDisplay,
+  getRouteHeroBadgeLabel,
+  getRouteSummaryForPage,
+} from '@/lib/route-first-screen-copy';
 
 /**
  * Route-hero focal-position overrides, keyed by destination slug. HeroBackdrop's default
@@ -294,16 +301,20 @@ export default async function RoutePage({ params }: { params: Promise<{ slug: st
           {/* Same rule as the badge: the explanatory sentence comes from
               presentation, never a local ternary, so the two cannot disagree. */}
           <p className="stagger-in stagger-3 mt-3 animate-fade-up text-base font-semibold leading-relaxed text-sand-100 sm:mt-4 sm:text-lg">
-            {presentation.statusHeadline}
+            {presentation.status === 'service-ended'
+              ? getEndedServiceHeroCopy(presentation.canShowConnectingAlternative).heading
+              : presentation.statusHeadline}
           </p>
           {(presentation.status === 'direct' || presentation.status === 'connecting') && (
             <p className="stagger-in stagger-4 mt-2 animate-fade-up text-sm text-ink-300">
               {getFlightTimeDisplay(presentation.flightTime).heroLine}
             </p>
           )}
-          {presentation.status === 'service-ended' && firstScreenConnecting && (
-            <p className="stagger-in stagger-4 mt-2 animate-fade-up text-sm text-ink-300">
-              Usually {firstScreenConnecting.typicalStops} {firstScreenConnecting.typicalStops === 1 ? 'stop' : 'stops'} · {firstScreenConnecting.typicalJourneyTime}
+          {/* Route-page PR C (CEO ruling, 6 November 2026): a service-ended hero states only what is evidenced and says connecting
+              alternatives MAY be available. The record's undated "usually 1 stop · 12 to 15h" summary no longer sits in the hero. */}
+          {presentation.status === 'service-ended' && (
+            <p className="stagger-in stagger-4 mt-2 max-w-2xl animate-fade-up text-sm leading-relaxed text-ink-300">
+              {getEndedServiceHeroCopy(presentation.canShowConnectingAlternative).supporting}
             </p>
           )}
 
@@ -370,7 +381,7 @@ export default async function RoutePage({ params }: { params: Promise<{ slug: st
           <div className="max-w-3xl">
             <p className="text-xs font-bold uppercase tracking-[0.16em] text-terracotta-700">Supporting detail</p>
             <h2 id="more-route-information-heading" className="mt-2 font-display text-2xl text-ink-900 sm:text-3xl">More route information</h2>
-            <p className="mt-3 text-base leading-relaxed text-ink-600">{presentation.summary}</p>
+            <p className="mt-3 text-base leading-relaxed text-ink-600">{getRouteSummaryForPage(presentation, `${airport.city} to ${dest.city}`)}</p>
             <div className="mt-5 flex items-center gap-1.5 text-xs text-ink-500">
               <span className={`inline-block h-1.5 w-1.5 shrink-0 rounded-full ${routeIntelligence.dotClassName}`} aria-hidden="true" />
               {routeIntelligence.label}
@@ -781,14 +792,14 @@ export default async function RoutePage({ params }: { params: Promise<{ slug: st
               {presentation.status === 'direct'
                 ? 'The realistic 1-stop alternative'
                 : presentation.status === 'service-ended'
-                  ? 'You can still fly this route with a connection'
+                  ? ENDED_SERVICE_ALTERNATIVES_HEADING
                   : 'How this connecting route usually works'}
             </h2>
             <p className="mt-2 max-w-2xl text-sm text-ink-500">
               {presentation.status === 'direct'
                 ? 'Worth knowing even if you book the direct flight. Useful as a fallback, and this is what the route looks like once the direct service is unavailable.'
                 : presentation.status === 'service-ended'
-                  ? 'The direct service on this route has ended, but the journey itself is still possible with a connection. Here is the realistic connecting pattern travellers use instead.'
+                  ? ENDED_SERVICE_ALTERNATIVES_INTRO
                   : 'No confirmed direct service currently exists on this route. Here is the realistic connecting pattern most travellers use.'}
             </p>
             <div className="mt-7 grid gap-5 sm:grid-cols-3">

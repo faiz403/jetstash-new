@@ -100,15 +100,19 @@ describe('no fare + a safe handoff: a helpful, honest lead instead of a dead-loo
   });
 });
 
-describe('service-ended routes: connecting flights are available, said first', () => {
+describe('service-ended routes: the former nonstop service ended, said first, with a safe next step and no availability claim', () => {
   for (const slug of ['manchester-delhi', 'manchester-mumbai']) {
-    it(`${slug}: the top of the fare block says connecting flights are available, the former direct service ended, the typical pattern and shows the connecting CTA`, async () => {
+    it(`${slug}: the hero says the nonstop service ended and that alternatives MAY be available, with no typical figures; the fare block shows the connecting CTA and the lower section keeps the general pattern`, async () => {
       const html = await renderPage(slug);
       const route = getRouteBySlug(slug)!;
       const alt = route.connectingAlternative!;
       expect(alt).toBeTruthy();
-      const lead = html.indexOf('Former direct service ended · connecting flights available');
+      const lead = html.indexOf('The former nonstop service has ended. Connecting alternatives may be available.');
       expect(lead).toBeGreaterThan(-1);
+      // PR C (CEO ruling): the undated typical figures are not in the hero; they remain only in the lower, labelled general pattern
+      const hero = html.slice(0, html.indexOf('id="fare-signal-heading"'));
+      expect(hero).not.toContain('Usually');
+      expect(hero).not.toContain(alt.typicalJourneyTime);
       expect(html).toContain(`Usually ${alt.typicalStops} stop`);
       expect(html).toContain(alt.typicalJourneyTime);
       for (const hub of alt.hubAirports) expect(html).toContain(hub);
@@ -122,7 +126,8 @@ describe('service-ended routes: connecting flights are available, said first', (
       // The route page still shows the same connecting block; the fare is a
       // separately recorded exact-route observation rather than an invented
       // continuation of the ended nonstop service.
-      expect(html).toContain('You can still fly this route with a connection');
+      expect(html).toContain('Connecting alternatives');
+      expect(html).not.toContain('You can still fly this route with a connection');
       expect(html).not.toContain('Standout Fare');
     });
   }

@@ -460,7 +460,7 @@ export const GENERIC_FLIGHT_SEARCH_NOTE =
  */
 export const ENDED_SERVICE_FLIGHT_SEARCH_CTA_LABEL = 'Search connecting flights on Google Flights';
 export const ENDED_SERVICE_FLIGHT_SEARCH_NOTE =
-  'Opens Google Flights. JetStash does not earn commission from this link. The former nonstop service has ended, so expect connecting itineraries. Enter your airports and dates there.';
+  'Opens Google Flights. JetStash does not earn commission from this link. It does not fill in your search: enter your airports and travel dates there. The former nonstop service has ended, so results may show connecting itineraries.';
 
 /**
  * Resolves the one public flight handoff for a published route.
