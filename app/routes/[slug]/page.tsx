@@ -39,7 +39,7 @@ import { HeroBackdrop } from '@/components/ui/hero-backdrop';
 import { JourneyChoice } from '@/components/route/journey-choice';
 import { getJourneyChoiceForRoute } from '@/lib/journey-choice-route-adapter';
 import { getJourneyChoiceTripComHandoff } from '@/lib/tripcom-dated-handoff';
-import { FareSignal } from '@/components/route/fare-signal';
+import { FareSignal, firstScreenStatesConnectingFare } from '@/components/route/fare-signal';
 import { getFareSignalForRoute, shouldShowNoFareFallback } from '@/lib/fare-signal';
 import { getApprovedStandoutFare } from '@/lib/standout-fare';
 import { FareWindowReconciliationNote } from '@/components/route/fare-window-reconciliation-note';
@@ -59,6 +59,7 @@ import {
   getFlightTimeDisplay,
   getRouteHeroBadgeLabel,
   getRouteSummaryForPage,
+  shouldShowRouteHeroBadge,
 } from '@/lib/route-first-screen-copy';
 
 /**
@@ -183,6 +184,9 @@ export default async function RoutePage({ params }: { params: Promise<{ slug: st
   // evidence than Journey Choice's own exact-match comparison batch.
   const journeyChoice = getJourneyChoiceForRoute(route.slug, nowIso);
   const fareSignal = getFareSignalForRoute(route.slug, nowIso);
+  // Route-page PR D: true when the first-screen fare card (current or last tracked fare) already says in full that its fare is a
+  // connecting journey on a route with nonstop service, so the fare section's card below does not repeat the same sentence.
+  const firstScreenExplainsConnectingFare = firstScreenStatesConnectingFare(presentation.status, fareSignal);
   // First-screen buying fix (3 Oct 2026): the connecting pattern already held in route data, surfaced next to the
   // fare block only where the route status permits it (service-ended routes), never inferred.
   const firstScreenConnecting = presentation.canShowConnectingAlternative ? route.connectingAlternative ?? null : null;
@@ -285,17 +289,21 @@ export default async function RoutePage({ params }: { params: Promise<{ slug: st
             <span>/</span>
             <span className="text-ink-200">{dest.city}</span>
           </nav>
-          <div className="stagger-in stagger-1 flex animate-fade-up flex-wrap items-center gap-3">
-            {/* Presentation-integrity fix: never re-derive label text via a
-                local ternary — presentation.statusLabel is the one canonical
-                label (see RoutePresentationBase's doc comment), so a new
-                status value (e.g. 'service-ended') can never silently fall
-                through to the wrong badge. */}
-            {/* Route-page PR C: a verified direct route's badge reads "Direct service" (via getRouteHeroBadgeLabel), so it names the service and
-                can never be read as a statement about the fare shown below it. Every other status keeps the canonical label. */}
-            <Badge variant="dark">{getRouteHeroBadgeLabel(presentation.status, presentation.statusLabel)}</Badge>
-          </div>
-          <h1 className="stagger-in stagger-2 mt-3 animate-fade-up font-display text-4xl leading-[1.05] tracking-tight text-sand-50 sm:mt-4 sm:text-5xl">
+          {shouldShowRouteHeroBadge(presentation.status) && (
+            <div className="stagger-in stagger-1 flex animate-fade-up flex-wrap items-center gap-3">
+              {/* Presentation-integrity fix: never re-derive label text via a
+                  local ternary — presentation.statusLabel is the one canonical
+                  label (see RoutePresentationBase's doc comment), so a new
+                  status value (e.g. 'service-ended') can never silently fall
+                  through to the wrong badge. */}
+              {/* Route-page PR C: a verified direct route's badge reads "Direct service" (via getRouteHeroBadgeLabel), so it names the service and
+                  can never be read as a statement about the fare shown below it. Every other status keeps the canonical label.
+                  Route-page PR D: a service-ended route has no badge, because its bold status line directly under the title says the same
+                  words (see shouldShowRouteHeroBadge). */}
+              <Badge variant="dark">{getRouteHeroBadgeLabel(presentation.status, presentation.statusLabel)}</Badge>
+            </div>
+          )}
+          <h1 className={`stagger-in stagger-2 animate-fade-up font-display text-4xl leading-[1.05] tracking-tight text-sand-50 sm:text-5xl ${shouldShowRouteHeroBadge(presentation.status) ? 'mt-3 sm:mt-4' : ''}`}>
             {airport.city} to {dest.city}
           </h1>
           {/* Same rule as the badge: the explanatory sentence comes from
@@ -305,7 +313,9 @@ export default async function RoutePage({ params }: { params: Promise<{ slug: st
               ? getEndedServiceHeroCopy(presentation.canShowConnectingAlternative).heading
               : presentation.statusHeadline}
           </p>
-          {(presentation.status === 'direct' || presentation.status === 'connecting') && (
+          {/* Route-page PR D: a verified duration still shows here; a "not verified" or "varies" sentence no longer does, because the
+              same sentence is the Flight time row in the route facts below (see getFlightTimeDisplay). */}
+          {(presentation.status === 'direct' || presentation.status === 'connecting') && getFlightTimeDisplay(presentation.flightTime).heroLine && (
             <p className="stagger-in stagger-4 mt-2 animate-fade-up text-sm text-ink-300">
               {getFlightTimeDisplay(presentation.flightTime).heroLine}
             </p>
@@ -732,7 +742,7 @@ export default async function RoutePage({ params }: { params: Promise<{ slug: st
           {dealsHere.length > 0 ? (
             <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {dealsHere.map((deal) => (
-                <DealCard key={deal.id} deal={deal} />
+                <DealCard key={deal.id} deal={deal} connectingExplanationShownAbove={firstScreenExplainsConnectingFare} />
               ))}
             </div>
           ) : shouldShowNoFareFallback(fareSignal) ? (
