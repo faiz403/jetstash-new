@@ -455,13 +455,18 @@ describe('consent banner accessibility (October 2026)', () => {
   const layoutSrc = read('app/layout.tsx');
   const bannerSrc = read('components/ui/cookie-consent-banner.tsx');
 
-  it('renders the banner straight after the skip link, before the header and main content, so keyboard users reach it early', () => {
+  it('renders the banner after navigation and before main content, without covering the page', () => {
     const skip = layoutSrc.indexOf('Skip to main content');
     const banner = layoutSrc.indexOf('<CookieConsentBanner />');
+    const header = layoutSrc.indexOf('<Header />');
+    const main = layoutSrc.indexOf('<main id="main-content">');
     expect(skip).toBeGreaterThan(-1);
     expect(banner).toBeGreaterThan(skip);
-    expect(banner).toBeLessThan(layoutSrc.indexOf('<Header />'));
-    expect(banner).toBeLessThan(layoutSrc.indexOf('<main id="main-content">'));
+    expect(header).toBeGreaterThan(skip);
+    expect(banner).toBeGreaterThan(header);
+    expect(banner).toBeLessThan(main);
+    expect(bannerSrc).toContain('className="relative w-full');
+    expect(bannerSrc).not.toMatch(/className="[^"]*(?:fixed|absolute)\b/);
   });
 
   it('gives Decline and Accept measurement the same visual weight', () => {

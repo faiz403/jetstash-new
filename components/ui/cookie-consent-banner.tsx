@@ -77,23 +77,6 @@ export function CookieConsentBanner() {
     if (visible && settingsMode) panelRef.current?.focus();
   }, [visible, settingsMode]);
 
-  // While the panel is on screen, publish its height for globals.css (November 2026): a control that takes keyboard focus scrolls
-  // into view above the panel instead of underneath it (at 320x568 "Flying from" was fully hidden), and the end of every page can
-  // scroll clear of it. Removed as soon as the panel closes. Changes nothing about what the panel shows or what any choice does.
-  useEffect(() => {
-    const panel = panelRef.current;
-    if (!visible || !panel) return;
-    const root = document.documentElement;
-    const publish = () => root.style.setProperty('--consent-banner-h', `${panel.offsetHeight}px`);
-    publish();
-    const observer = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(publish);
-    observer?.observe(panel);
-    return () => {
-      observer?.disconnect();
-      root.style.removeProperty('--consent-banner-h');
-    };
-  }, [visible]);
-
   useEffect(() => {
     const stored = getStoredConsentChoice();
     const storedStats = getStoredStatisticsChoice();
@@ -239,48 +222,27 @@ export function CookieConsentBanner() {
         </>
       )}
 
-      {/* Compact mobile treatment (September 2026, homepage-hero-console
-          overlap fix): shorter, factually-equivalent copy plus explicit
-          h-11 (44px) buttons — a fixed height via flex centring, not a
-          padding/line-height estimate, so the tap target is exact regardless
-          of font metrics. Fine print stays at the normal text-xs (12px) —
-          clearance comes from a small mobile-only spacing trim in the
-          homepage hero instead of shrinking the privacy notice
-          (homepage-opening-hero.tsx's own doc comment explains why).
-
-          Ordinary fixed padding, not safe-area-aware: JetStash's viewport
-          metadata (app/layout.tsx) does not set `viewportFit: 'cover'`, so
-          under the current app configuration `env(safe-area-inset-bottom)`
-          genuinely evaluates to 0 on every real device today — WebKit only
-          reports a nonzero inset once a page opts into viewport-fit=cover,
-          which this app does not. An earlier draft of this fix coupled this
-          padding to `env(safe-area-inset-bottom)` with a matching
-          compensation in homepage-opening-hero.tsx's own margin, as
-          forward-looking insurance — deliberately removed (2 Sep 2026,
-          founder review): that coupling only reads the banner's own state
-          while the banner is visible, but the hero's compensating margin is
-          a static CSS rule with no such condition, so it would have stayed
-          pulled up after Accept/Decline too. If viewport-fit=cover is ever
-          adopted, that should trigger its own site-wide safe-area review,
-          not a homepage-specific hidden coupling landed years earlier. */}
+      {/* The notice uses normal page flow on every screen size. Decision controls keep 44px touch targets and optional choices remain separate. */}
       {visible && (
         <div
           role="region"
           aria-label="Cookie consent"
           ref={panelRef}
           tabIndex={-1}
-          className="fixed inset-x-0 bottom-0 z-50 max-h-[85vh] overflow-y-auto outline-none border-t border-ink-200 bg-white px-3 pb-2 pt-2 shadow-[0_-4px_16px_rgba(0,0,0,0.12)] sm:px-8 sm:pb-4 sm:pt-4"
+          className="relative w-full outline-none border-b border-ink-200 bg-sand-50 px-4 py-3 sm:px-8 sm:py-4"
         >
           {summaryView ? (
             <div className="mx-auto flex max-w-content flex-col gap-1.5 text-xs leading-snug text-ink-600 sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:text-sm sm:leading-relaxed">
               <div>
-                {/* Phones (November 2026): a shorter first layer, about 100px instead of 160px, so the panel leaves the page's first
-                    action in view. Same two optional permissions, same Privacy Policy link and Choose individual settings, nothing
-                    pre-ticked; the vendor-by-vendor wording is one tap away and from sm up this layer reads exactly as before. */}
+                {/* Compact mobile summary keeps the privacy choice concise; individual permissions remain available without accepting. */}
                 <p className="sm:hidden">
                   <strong className="font-semibold text-ink-800">Your privacy choices.</strong> Optional site statistics (Vercel) and Google Ads
                   measurement are off until you choose.{' '}
-                  <Link href="/privacy-policy" className="underline hover:text-brass-700">
+                  <button type="button" onClick={openDetails} className="inline-flex min-h-11 items-center font-semibold text-ink-800 underline hover:text-brass-700">
+                    Choose individual settings
+                  </button>
+                  {' '}
+                  <Link href="/privacy-policy" className="inline-flex min-h-11 items-center underline hover:text-brass-700">
                     Privacy Policy
                   </Link>
                 </p>
@@ -323,7 +285,7 @@ export function CookieConsentBanner() {
             <p>
               Two optional settings, both off until you choose, and each is separate. Change either later with Cookie settings in the
               footer.{' '}
-              <Link href="/privacy-policy" className="underline hover:text-brass-700">
+               <Link href="/privacy-policy" className="inline-flex min-h-11 items-center underline hover:text-brass-700">
                 Privacy Policy
               </Link>
             </p>

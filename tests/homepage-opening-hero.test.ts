@@ -27,9 +27,9 @@ describe('homepage opening hero uses the approved copy', () => {
     // Consumer clarity pass (3 Oct 2026): plainer proposition, still no live-price, cheapest or market-wide claim.
     expect(heroSrc).toContain('Check the journey behind the fare.');
     expect(heroSrc).toContain(
-      "Direct or with stops? What fare did we last see? Has the service changed? Pick your airport and destination to find out, then check today's price with a booking provider."
+      'See dated fares, route changes and travel requirements before you book. Then check the price with a booking provider.'
     );
-    const visibleCopy = ['Check the journey behind the fare.', "Direct or with stops? What fare did we last see? Has the service changed? Pick your airport and destination to find out, then check today's price with a booking provider."].join(' ');
+    const visibleCopy = ['Check the journey behind the fare.', 'See dated fares, route changes and travel requirements before you book. Then check the price with a booking provider.'].join(' ');
     expect(visibleCopy).not.toMatch(/cheapest|guaranteed|live price|best price|compare the market/i);
   });
 
@@ -145,7 +145,8 @@ describe('the hero owns #your-journey, and the Route Atlas CTA points at a real 
 
 describe('the Atlas introduction uses the approved copy', () => {
   it('has the exact Atlas introduction sentence', () => {
-    expect(atlasSrc).toContain('Explore where you can fly from your UK airport and see what JetStash has verified about each route.');
+    expect(atlasSrc).toContain('Explore routes from your UK airport.');
+    expect(atlasSrc).toContain('Prefer to browse? Choose an airport, then select a country to explore its destinations.');
   });
 
   it('no longer contains the old, airport-name-interpolated Atlas headline', () => {
@@ -171,12 +172,12 @@ describe('mobile visual-polish pass: trust line, map attribution, swipe cue', ()
     // dark-surface contrast as part of the A11 accessibility corrections
     // (docs/project-control/LAUNCH_CHECKLIST.md, A11); wording/position
     // asserted here are otherwise unrelated to and unaffected by that fix.
-    const introMatch = atlasSrc.match(/<p className="mt-1 text-xs text-ink-300">([\s\S]*?)<\/p>/);
+    const introMatch = atlasSrc.match(/<p className="mt-1 text-sm text-ink-300">([\s\S]*?)<\/p>/);
     expect(introMatch).not.toBeNull();
     expect(introMatch![1]).not.toContain('CC BY 4.0');
     expect(introMatch![1]).not.toContain('VictorCazanave');
     // The user-facing instruction sentence stays — only the attribution moved.
-    expect(introMatch![1]).toContain('Choose a departure airport, then follow the light to explore its destinations.');
+    expect(introMatch![1]).toContain('Prefer to browse? Choose an airport, then select a country to explore its destinations.');
   });
 
   it('the attribution still exists beneath the map, with wording preserved exactly', () => {

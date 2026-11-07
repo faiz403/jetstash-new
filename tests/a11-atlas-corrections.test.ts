@@ -113,7 +113,7 @@ describe('2. Dark-surface text contrast — Atlas moved off text-ink-400/text-in
   });
 
   it('the affected captions now use text-ink-300 — the token this codebase already established as proven-readable on these dark surfaces', () => {
-    expect(atlasSrc).toContain('<p className="mt-1 text-xs text-ink-300">');
+    expect(atlasSrc).toContain('<p className="mt-1 text-sm text-ink-300">');
     expect(atlasSrc).toContain('<span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-300">Flying from</span>');
     expect(atlasSrc).toContain('What the colours mean');
     expect(atlasSrc).toContain('Country glow');

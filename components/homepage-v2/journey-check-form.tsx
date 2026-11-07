@@ -164,7 +164,7 @@ export function JourneyCheckForm({ origins, destinations, routeIndex }: JourneyC
       <p
         id="jc-status"
         aria-live="polite"
-        className={cn('mt-3 min-h-[1.5rem] text-[13px] leading-relaxed', !hasChoice && needsChoice ? 'text-terracotta-700' : 'text-ink-500')}
+        className={cn('mt-3 min-h-[1.5rem] text-sm leading-relaxed', !hasChoice && needsChoice ? 'text-terracotta-700' : 'text-ink-500')}
       >
         {!hasChoice ? (
           needsChoice ? (
