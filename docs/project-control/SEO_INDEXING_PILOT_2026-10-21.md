@@ -320,13 +320,23 @@ Every checkpoint records these items:
   route-page, pilot-page, heading, `<title>`, meta description, canonical, robots, sitemap or internal-link change; all 89 route pages were compared
   with a local build of the same tree and were identical. Not a pilot-page event.
 
-- **Route-page Travel Ready disclosure and compact airport rows (PR E; prepared for review, not Production-deployed):** a layout change on every
+- **Route-page Travel Ready disclosure and compact airport rows (PR #371; merge `b8e25950fa0de1a8ba86e992635e57579f445913`, merged 21:53:32 UTC on 6 November 2026,
+  Production deployment Ready (1m 4s build), deployment id and exact Ready time not captured; live verification from the same evening):** a layout change on every
   route page that carries the Travel Ready Check (72 of 89, **all three pilot pages**) and every page with alternative airports. The check now sits
   behind a native `<details>` whose summary is its own heading and scope line; its content stays in the HTML (closed `<details>` content is in the
   DOM), and two UI strings, "Show the check" and "Hide the check", are added. "Other UK airports" cards become compact list rows with the same
   status, heading and link text. All headings (h1-h3), `<title>`, meta description, canonical, robots, sitemap, Quick answers, prices, route and fare
   records and internal link targets are identical on all 89 pages (compared against Production). Treat as a layout and content-order event for the
-  three pilot pages; the pilot's content and headings are unchanged. Record the actual merge/deployment here only after separate approval and release.
+  three pilot pages; the pilot's content and headings are unchanged. Production was compared with a build of the same tree: all 89 pages identical apart from
+  the two toggle strings on the 72 pages that carry the check.
+
+- **Same-city airport labels (prepared for review, not Production-deployed; record the merge and deployment here after separate approval and release):** a
+  visible content change to the card headings (`h3`) in "Other UK airports" on 11 route pages: `manchester-dubai` (**an SEO pilot page**), `manchester-doha`,
+  `glasgow-dubai`, `edinburgh-dubai`, `newcastle-dubai`, `birmingham-dubai`, `birmingham-doha` (the two rows "London → Dubai/Doha" become "London Heathrow → …"
+  and "London Gatwick → …"), and `london-heathrow-dubai`, `london-gatwick-dubai`, `london-heathrow-doha`, `london-gatwick-doha` (the other London airport's row
+  now names its airport). 85 of the 89 pages carry the section: the other 74 are unchanged, and the 4 pages with no alternative airport are untouched. H1, `<title>`, meta description, canonical, robots,
+  sitemap, internal link targets, prices, route and fare records are unchanged. Treat as a small content-wording event for `manchester-dubai`; the pilot's
+  headings (h1/h2), Quick answers and title experiment are unchanged.
 
 ## Wave 2 (not approved; only after a positive day-14 signal)
 

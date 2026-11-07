@@ -1,6 +1,6 @@
 # JetStash Current Status
 
-**Latest release reconciliation:** 6 November 2026, through PR #369. The older dated programme/count snapshots below are historical.
+**Latest release reconciliation:** 6 November 2026, through PR #371 (`b8e2595`). The older dated programme/count snapshots below are historical.
 
 **Production branch:** `main`
 
@@ -93,7 +93,22 @@ rate limiting rather than the current process-local limiter.
 
 **Production site:** `https://jetstash.co.uk`
 
-## Route-page length: Travel Ready disclosure and compact airport rows — 6 November 2026 (PR E prepared for review; not merged, not deployed)
+## Same-city airport labels — 7 November 2026 (small functional PR, prepared for review; not merged, not deployed)
+
+- CEO-approved (7 November): in "Other UK airports", a row shows the airport name instead of the city only where the city alone is ambiguous, either
+  because two alternative rows share a city or because a row's city is this page's own departure city. "London → Doha" twice becomes
+  "London Heathrow → Doha" and "London Gatwick → Doha"; every other row keeps its city-only heading.
+- **11 pages change, all visible card headings (`h3`), nothing else:** `manchester-dubai`, `manchester-doha`, `glasgow-dubai`, `edinburgh-dubai`,
+  `newcastle-dubai`, `birmingham-dubai`, `birmingham-doha` (two London rows each, now named), and `london-heathrow-dubai`, `london-gatwick-dubai`,
+  `london-heathrow-doha`, `london-gatwick-doha` (the other London airport's row, which read identically to the page's own title, is now named).
+  One of them, `manchester-dubai`, is an SEO pilot page. 85 of the 89 pages carry the section: 11 change and the other 74 render the same headings; the 4 pages with no alternative airport are untouched.
+- **Unchanged by design:** route H1, `<title>`, meta description, canonical, robots, links and link targets, route status, fare evidence, the 25 Fare
+  Signals and the Trip.com pause. The Heathrow and Gatwick pages still share the H1 "London to Doha/Dubai" (an SEO decision, not part of this change).
+- Files: `lib/alternative-airport-label.ts` (new pure rule), `app/routes/[slug]/page.tsx` (heading only). Tests: `tests/same-city-airport-labels-2026-11.test.ts`
+  (rule, all 89 pages: no two identical rows, no row equal to its own page, exactly the 11 pages above change; H1 and canonical unchanged), plus the
+  one heading assertion in `tests/route-length-travel-ready-airports-2026-11.test.ts` updated to the same rule.
+
+## Route-page length: Travel Ready disclosure and compact airport rows — 6 November 2026 (PR #371 merged `b8e2595`; Production live-verified)
 
 - CEO-approved scope (6 November): changes 1 and 2 only. Changes 3 (merge the two link-card sections) and 4 (drop the repeated destination
   photograph on the fare card) are deferred until these are measured. Presentation only; nothing is removed, no data, fare, route status,
@@ -123,14 +138,21 @@ rate limiting rather than the current process-local limiter.
   error; field values survive close and open; after running the check Book-By's badge is the same open or closed; the closed form is not tabbable and
   Tab from the summary moves on; Enter and Space toggle it; a 2px focus ring shows; it works without JavaScript (a click opens it); no external or Google
   request. Tests: `tests/route-length-travel-ready-airports-2026-11.test.ts`.
-- Known limits: the consent banner still covers content on a first visit (separate item); two Other-airport rows can read "London → Doha"
-  (Heathrow and Gatwick), a pre-existing ambiguity the compact rows keep rather than hide: adding the airport name is proposed, not done.
-- Unreviewed branch found (read-only, nothing merged): `fix/homepage-consent-and-clarity-2026-11` (single commit `bc245c2`, 15:05 UTC 6 November,
-  branched from `2669374`; PR #370 was opened for it at 15:53 UTC with an empty description, and its `quality` check failed) moves the consent notice
-  from a fixed bottom panel into normal flow under the header on every page,
-  removes the scroll-padding published for it, rewrites the consent tests and touches the homepage hero. It reverses the accepted fixed-panel design
-  rather than duplicating completed work, and would push every first-visit page down by the banner height (about 100px at 390px).
-- Not an approved release; merge still requires CEO approval.
+- **Merged** as `b8e25950fa0de1a8ba86e992635e57579f445913` at 21:53:32 UTC on 6 November at head `456e79dd02094e30f29238358a54942930b78f5c` (Codex
+  PASS NO DEFECTS on `3dc7c85`; `456e79d` adds one documentation sentence; CI green). The Production deployment was Ready (1m 4s build); its deployment id
+  and exact Ready time were not captured. Live verification on Production: all 89 pages text-identical to a build of the same tree, 72 closed disclosures,
+  headings, meta and links identical, 25 Fare Signals, zero Trip.com, zero Google routing requests; every opening route, Back, kept field values, Enter and
+  Space, the 2px focus ring and the closed-form tab order pass at 320, 390 and 1440px; nothing was submitted. Heights match the build.
+- Known limit: the consent banner still covers content on a first visit (separate item). The "London → Doha" duplicate-row ambiguity is fixed by the
+  Same-city airport labels entry above.
+- PR #370 (`fix/homepage-consent-and-clarity-2026-11`, single commit `bc245c2`, 15:05 UTC 6 November, branched from `2669374`; opened 15:53 UTC with an
+  empty description, its `quality` check failed) was **closed without merging at 21:54:04 UTC on 6 November; the branch is kept**. It moved the consent
+  notice from the fixed bottom panel into normal flow and reversed the accepted fixed-panel design. Read-only origin review (7 November): the commit and the
+  pull request come from a Codex Desktop thread in the founder's ChatGPT project "Jetstash.co.uk" on the founder's own computer, working from a founder
+  instruction to concentrate on the homepage and customer experience. GitHub shows only the founder account because Codex used the local git identity and the
+  ChatGPT Codex Connector GitHub App. No evidence of an outside intruder: see the evidence summary in the CEO report of 7 November.
+- Commercial status recorded 6 November: Ontime Travel is awaiting partner agreement (no reply since 21 October; not an established partnership; nothing is
+  sent without approval). CJ baggage-affiliate earnings are unverified (no authenticated report yet).
 
 ## Arrive By service-ended wording — 6 November 2026 (PR #369 merged `30dcf8b`; Production live-verified)
 
