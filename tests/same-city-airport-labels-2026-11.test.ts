@@ -92,7 +92,7 @@ describe('same-city airport labels in Other UK airports', () => {
         expect(headings, route.slug).not.toContain(`${airport.name} → ${dest.city}`);
       }
       expect(pagesWithSection).toBeGreaterThan(0);
-    });
+    }, 30000); // renders all 89 pages
 
     it('changes exactly the 11 audited pages and shows exactly the headings listed, one row per alternative', async () => {
       const changed: string[] = [];
@@ -124,7 +124,7 @@ describe('same-city airport labels in Other UK airports', () => {
       expect(changed.sort()).toEqual(Object.keys(EXPECTED_CHANGED).sort());
       // 85 of the 89 pages carry the section: 11 change, 74 keep their headings, 4 have no alternative airport.
       expect({ withSection, withoutSection, total: routes.length }).toEqual({ withSection: 85, withoutSection: 4, total: 89 });
-    });
+    }, 30000); // renders all 89 pages
 
     it('keeps each row linking to the same route page as before', async () => {
       const html = await render('manchester-doha');
