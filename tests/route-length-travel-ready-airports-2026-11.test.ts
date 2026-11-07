@@ -276,6 +276,7 @@ describe('route-page PR E', () => {
       for (const route of routes) {
         const dest = getDestinationBySlug(route.destinationSlug)!;
         const alternatives = alternativesOf(route.slug);
+        const pageAirport = getAirportBySlug(route.airportSlug)!;
         const html = plain(await render(route.slug));
         if (alternatives.length === 0) {
           expect(html, route.slug).not.toContain(`Other UK airports for ${dest.city}`);
@@ -292,7 +293,10 @@ describe('route-page PR E', () => {
           const row = rows.find((r) => r.includes(`href="/routes/${alt.slug}"`));
           expect(row, `${route.slug} -> ${alt.slug} row`).toBeTruthy();
           const p = getEffectiveRoutePresentation(alt, routeStatusEvents, TODAY);
-          expect(row, `${route.slug} -> ${alt.slug} heading`).toContain(`${airport.city} → ${dest.city}</h3>`);
+          // The airport name replaces the city only where the city alone is ambiguous (same-city airports; see same-city-airport-labels-2026-11.test.ts).
+          const sameCity = [pageAirport, ...alternatives.map((a) => getAirportBySlug(a.airportSlug)!)].filter((a) => a.city === airport.city);
+          const origin = sameCity.length > 1 ? airport.name : airport.city;
+          expect(row, `${route.slug} -> ${alt.slug} heading`).toContain(`${origin} → ${dest.city}</h3>`);
           expect(row, `${route.slug} -> ${alt.slug} status`).toContain(p.statusLabel);
           expect(row, `${route.slug} -> ${alt.slug} link text`).toContain('Compare this route'); // visible from sm up, always in the accessible name
           // the service line, per status, within THIS row

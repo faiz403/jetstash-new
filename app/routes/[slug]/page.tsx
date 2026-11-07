@@ -35,6 +35,7 @@ import { computeReadiness } from '@/lib/travel-intelligence-engine';
 import { TRAVEL_READY_SUPPORTED_COUNTRIES } from '@/lib/travel-ready-check';
 import { getDestinationImage } from '@/lib/brand-images';
 import { getFareSectionCopy } from '@/lib/fare-section-copy';
+import { getAlternativeAirportOriginLabel } from '@/lib/alternative-airport-label';
 import { HeroBackdrop } from '@/components/ui/hero-backdrop';
 import { JourneyChoice } from '@/components/route/journey-choice';
 import { getJourneyChoiceForRoute } from '@/lib/journey-choice-route-adapter';
@@ -166,6 +167,10 @@ export default async function RoutePage({ params }: { params: Promise<{ slug: st
     // current journey answer or fare evidence.
     .filter((d) => shouldRenderRouteDealCard(d, nowIso));
   const alternativeRoutes = getRoutesByDestination(dest.slug).filter((r) => r.slug !== route.slug);
+  const alternativeAirports = alternativeRoutes.flatMap((r) => {
+    const a = getRouteAirport(r);
+    return a ? [a] : [];
+  });
   const peakPeriods = getRoutePeakPeriods(route);
   const activeWarnings = getActiveWarningsByRoute(route.slug);
   const timelineEvents = getTimelineByRoute(route.slug);
@@ -874,6 +879,8 @@ export default async function RoutePage({ params }: { params: Promise<{ slug: st
               {alternativeRoutes.map((altRoute) => {
                 const altAirport = getRouteAirport(altRoute);
                 if (!altAirport) return null;
+                // Same-city airports (London Heathrow / London Gatwick) show the airport name so no two rows, and no row and this page, read identically.
+                const altOriginLabel = getAlternativeAirportOriginLabel(altAirport, airport, alternativeAirports);
                 // Verification-pending leakage fix: comparison cards must go
                 // through the same reusable gate as the route's own page —
                 // never read altRoute.flightTime or its airlines raw. Uses
@@ -892,7 +899,7 @@ export default async function RoutePage({ params }: { params: Promise<{ slug: st
                         <span className="block text-xs font-semibold uppercase tracking-wide text-ink-400">
                           {altPresentation.statusLabel}
                         </span>
-                        <h3 className="mt-1 font-display text-lg leading-snug text-ink-900 sm:mt-1.5 sm:text-xl">{altAirport.city} → {dest.city}</h3>
+                        <h3 className="mt-1 font-display text-lg leading-snug text-ink-900 sm:mt-1.5 sm:text-xl">{altOriginLabel} → {dest.city}</h3>
                         <p className="mt-0.5 text-sm text-ink-500 sm:mt-1">
                           {altPresentation.status === 'unverified'
                             ? 'Verification in progress — check directly before booking'
