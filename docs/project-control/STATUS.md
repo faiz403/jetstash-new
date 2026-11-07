@@ -101,7 +101,7 @@ rate limiting rather than the current process-local limiter.
 - **11 pages change, all visible card headings (`h3`), nothing else:** `manchester-dubai`, `manchester-doha`, `glasgow-dubai`, `edinburgh-dubai`,
   `newcastle-dubai`, `birmingham-dubai`, `birmingham-doha` (two London rows each, now named), and `london-heathrow-dubai`, `london-gatwick-dubai`,
   `london-heathrow-doha`, `london-gatwick-doha` (the other London airport's row, which read identically to the page's own title, is now named).
-  One of them, `manchester-dubai`, is an SEO pilot page. The other 78 pages with the section, and the 17 without it, render the same headings.
+  One of them, `manchester-dubai`, is an SEO pilot page. 85 of the 89 pages carry the section: 11 change and the other 74 render the same headings; the 4 pages with no alternative airport are untouched.
 - **Unchanged by design:** route H1, `<title>`, meta description, canonical, robots, links and link targets, route status, fare evidence, the 25 Fare
   Signals and the Trip.com pause. The Heathrow and Gatwick pages still share the H1 "London to Doha/Dubai" (an SEO decision, not part of this change).
 - Files: `lib/alternative-airport-label.ts` (new pure rule), `app/routes/[slug]/page.tsx` (heading only). Tests: `tests/same-city-airport-labels-2026-11.test.ts`

@@ -96,12 +96,16 @@ describe('same-city airport labels in Other UK airports', () => {
 
     it('changes exactly the 11 audited pages and shows exactly the headings listed, one row per alternative', async () => {
       const changed: string[] = [];
+      let withSection = 0;
+      let withoutSection = 0;
       for (const route of routes) {
         const airport = getAirportBySlug(route.airportSlug)!;
         const dest = getDestinationBySlug(route.destinationSlug)!;
         const alternatives = getRoutesByDestination(dest.slug).filter((r) => r.slug !== route.slug && getAirportBySlug(r.airportSlug));
         const headings = altHeadings(alternativesSection(await render(route.slug), dest.city));
         expect(headings.length, route.slug).toBe(alternatives.length);
+        if (alternatives.length > 0) withSection++;
+        else withoutSection++;
 
         // Independent derivation of what the old (city-only) headings were: a page changed iff using cities would have been ambiguous.
         const oldHeadings = alternatives.map((a) => `${getAirportBySlug(a.airportSlug)!.city} → ${dest.city}`);
@@ -118,6 +122,8 @@ describe('same-city airport labels in Other UK airports', () => {
         }
       }
       expect(changed.sort()).toEqual(Object.keys(EXPECTED_CHANGED).sort());
+      // 85 of the 89 pages carry the section: 11 change, 74 keep their headings, 4 have no alternative airport.
+      expect({ withSection, withoutSection, total: routes.length }).toEqual({ withSection: 85, withoutSection: 4, total: 89 });
     });
 
     it('keeps each row linking to the same route page as before', async () => {

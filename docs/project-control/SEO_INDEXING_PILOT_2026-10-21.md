@@ -334,7 +334,7 @@ Every checkpoint records these items:
   visible content change to the card headings (`h3`) in "Other UK airports" on 11 route pages: `manchester-dubai` (**an SEO pilot page**), `manchester-doha`,
   `glasgow-dubai`, `edinburgh-dubai`, `newcastle-dubai`, `birmingham-dubai`, `birmingham-doha` (the two rows "London → Dubai/Doha" become "London Heathrow → …"
   and "London Gatwick → …"), and `london-heathrow-dubai`, `london-gatwick-dubai`, `london-heathrow-doha`, `london-gatwick-doha` (the other London airport's row
-  now names its airport). The other 78 pages with the section, and the 17 without it, are unchanged. H1, `<title>`, meta description, canonical, robots,
+  now names its airport). 85 of the 89 pages carry the section: the other 74 are unchanged, and the 4 pages with no alternative airport are untouched. H1, `<title>`, meta description, canonical, robots,
   sitemap, internal link targets, prices, route and fare records are unchanged. Treat as a small content-wording event for `manchester-dubai`; the pilot's
   headings (h1/h2), Quick answers and title experiment are unchanged.
 
