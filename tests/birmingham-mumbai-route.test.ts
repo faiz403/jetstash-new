@@ -544,8 +544,11 @@ describe('Direct-route share-text formatting fix — no nested parentheses, no r
     // This test is about the general share-text formatting behaviour, not
     // about a specific route, so it's repointed to another real route
     // carrying the same "direct (attribution)" pattern.
-    const route = getRouteBySlug('glasgow-dubai')!;
-    expect(route.flightTime).toBe('7h 40m direct (Emirates route page)');
+    // 10 November 2026: glasgow-dubai's flightTime moved to the current Emirates
+    // timetable wording, so the attribution pattern is fixtured explicitly on a
+    // copy of the real direct, verified record rather than on whichever
+    // duration text the route carries today.
+    const route = { ...getRouteBySlug('glasgow-dubai')!, flightTime: '7h 40m direct (Emirates route page)' };
     const p = getRoutePresentation(route, FIXED_TODAY);
     expect(p.status).toBe('direct');
     expect(p.shareText).toContain('7h 40m (Emirates route page)');
