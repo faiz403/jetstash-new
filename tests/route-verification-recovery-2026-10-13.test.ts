@@ -23,10 +23,11 @@ describe('13 October route verification recovery preserves the intended Fare Sig
     const route = getRouteBySlug(slug)!;
 
     expect(route.verification?.status).toBe('verified');
-    expect(route.verification?.verifiedDate).toBe(slug === 'manchester-lahore' ? '2026-11-03' : '2026-10-13');
-    expect(route.verification?.reviewDueDate).toBe(slug === 'manchester-lahore' ? '2026-12-03' : '2026-11-12');
+    // london-gatwick-faro was re-read against the same sources on 10 November 2026 (30-day cadence).
+    expect(route.verification?.verifiedDate).toBe(slug === 'manchester-lahore' ? '2026-11-03' : '2026-11-10');
+    expect(route.verification?.reviewDueDate).toBe(slug === 'manchester-lahore' ? '2026-12-03' : '2026-12-10');
     expect(route.verification?.sourceUrl).toMatch(/^https:\/\//);
-    expect(route.verification?.note).toContain('13 October 2026');
+    expect(route.verification?.note).toContain(slug === 'manchester-lahore' ? '13 October 2026' : '10 November 2026');
 
     for (const date of ['2026-10-13', '2026-10-15']) {
       expect(getEffectiveRoutePresentation(route, routeStatusEvents, date).status).toBe('direct');
