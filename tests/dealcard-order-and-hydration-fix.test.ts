@@ -297,9 +297,9 @@ describe('Defect 2 follow-up (founder review) — cabin-specific fallback wordin
   it('MAN→ISB Economy fails closed after verification expiry rather than displaying its historical range as current', () => {
     const dealDef = deals.find((d) => d.id === 'man-isb-economy')!;
     expect(getFareRangeSummary('manchester-islamabad', 'Economy', '2026-10-12')).not.toBeNull();
-    // Re-verified 3 Nov 2026 (review due 3 Dec) — the day after expiry.
-    expect(getFareRangeSummary('manchester-islamabad', 'Economy', '2026-12-04')).toBeNull();
-    const html = renderToStaticMarkup(DealCard({ deal: dealDef, nowIso: '2026-12-04' }));
+    // Re-verified 14 Nov 2026 (review due 14 Dec) — the day after expiry.
+    expect(getFareRangeSummary('manchester-islamabad', 'Economy', '2026-12-15')).toBeNull();
+    const html = renderToStaticMarkup(DealCard({ deal: dealDef, nowIso: '2026-12-15' }));
     expect(html).not.toMatch(/£\d/);
     expect(html).toContain('Verification pending');
   });

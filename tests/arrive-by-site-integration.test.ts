@@ -23,11 +23,11 @@ describe('Arrive By final site integration', () => {
   });
 
   it('removes a route panel once the route page stops presenting it as Direct or Connecting', () => {
-    // Manchester-Islamabad's 3 Nov check is due 3 Dec 2026 (inclusive); without re-verification it presents as unverified after.
+    // Manchester-Islamabad's 14 Nov check is due 14 Dec 2026 (inclusive); without re-verification it presents as unverified after.
     vi.useFakeTimers({ toFake: ['Date'] });
-    vi.setSystemTime(new Date('2026-12-03T12:00:00Z'));
-    expect(getPublicJourneyRoutePair('MAN', 'ISB', '2026-12-03')).toMatchObject({ routeSlug: 'manchester-islamabad' });
-    expect(getPublicJourneyRoutePair('MAN', 'ISB', '2026-12-04')).toBeUndefined();
+    vi.setSystemTime(new Date('2026-12-14T12:00:00Z'));
+    expect(getPublicJourneyRoutePair('MAN', 'ISB', '2026-12-14')).toMatchObject({ routeSlug: 'manchester-islamabad' });
+    expect(getPublicJourneyRoutePair('MAN', 'ISB', '2026-12-15')).toBeUndefined();
   });
 
   it('accepts an allowlisted full-journey airport pair without changing the legacy airport-only dispatch', () => {

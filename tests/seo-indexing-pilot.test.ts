@@ -20,8 +20,8 @@ import { SeoRouteLinks } from '@/components/route/seo-route-links';
 // Fixed dates only: the day the pilot was built, each review date (inclusive),
 // the day after it, and the day after Birmingham-Delhi's review.
 const BUILT = '2026-10-21';
-const MANCHESTER_REVIEW_DAY = '2026-12-03';
-const AFTER_MANCHESTER_REVIEWS = '2026-12-04';
+const MANCHESTER_REVIEW_DAY = '2026-12-14';
+const AFTER_MANCHESTER_REVIEWS = '2026-12-15';
 const MANCHESTER_DUBAI_REVIEW_DAY = '2027-01-19';
 const AFTER_MANCHESTER_DUBAI_REVIEW = '2027-01-20';
 const AFTER_BIRMINGHAM_DELHI_REVIEW = '2026-12-04';
@@ -121,8 +121,9 @@ describe('SEO indexing pilot: Quick answers state only what the cited source sup
     const html = renderQuickAnswers(route('manchester-islamabad'), BUILT);
     expect(html).toContain('Manchester to Islamabad (MAN → ISB): quick answers');
     expect(html).toContain('PIA flies direct to Islamabad');
-    expect(html).toContain('four departures a week, on Monday, Tuesday, Thursday and Saturday');
+    expect(html).toContain('four departures a week from 15 November, on Monday, Thursday, Friday and Sunday');
     expect(html).not.toContain('Mon, Tue, Thu');
+    expect(html).not.toContain('Monday, Tuesday, Thursday and Saturday');
     expect(html).not.toContain('How long is the journey?');
     expect(html).toContain('which supports PIA as the operator, the nonstop service and four weekly departures');
   });

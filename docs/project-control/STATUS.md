@@ -1,6 +1,14 @@
 # JetStash Current Status
 
-**Latest release reconciliation:** 6 November 2026, through PR #371 (`b8e2595`). The older dated programme/count snapshots below are historical.
+**Latest release reconciliation:** 14 November 2026, through PR #374 (`c7b19e7`). The older dated programme/count snapshots below are historical.
+
+PRs merged and Production-deployed since the 6 November reconciliation below: #372 (`850ff63`, 7 November; homepage consent banner in normal flow), #373
+(`b306770dda4d9b6df93692f0c04804bbaf27203a`, 14:21:58 UTC on 7 November; same-city airport labels) and #374 (`c7b19e72e5668c653f8c5d5344902f6009efb604`, 00:12 UTC on
+11 November; four route verifications re-read against official sources on 10 November). Production was compared before and after #374 over all 89 route
+pages: exactly seven Dubai pages changed (three flight durations; no title, description, H1, canonical, fare or affiliate change). **Open, not merged:** the
+Manchester-Islamabad operating-day correction (branch `fix/islamabad-schedule-check-2026-11-14`): Manchester Airport's own PK702 flight information shows
+Mon/Thu/Fri/Sun from 15 November, not Mon/Tue/Thu/Sat. At 14 November, 36 of 89 route verifications are current and 53 have lapsed (they fail closed to the
+"historical" wording); the next due are Birmingham-Amritsar (21 November) and London Heathrow-Delhi and -Bengaluru (27 November).
 
 **Production branch:** `main`
 

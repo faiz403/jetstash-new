@@ -35,13 +35,13 @@ async function renderManIsbPage(day = NOW_ISO) {
 describe('1. MAN->ISB exposes the operating-day information', () => {
   it('the route frequency field states the operating days', () => {
     const route = getRouteBySlug('manchester-islamabad')!;
-    expect(route.frequency).toMatch(/Mon.*Tue.*Thu.*Sat/);
+    expect(route.frequency).toMatch(/Mon.*Thu.*Fri.*Sun/);
   });
 
   it('renders on the route page while the recorded verification is valid', async () => {
-    const html = await renderManIsbPage();
+    const html = await renderManIsbPage('2026-11-15');
     // '&' is HTML-escaped to '&amp;' in rendered static markup.
-    expect(html).toMatch(/Mon, Tue, Thu (&|&amp;) Sat/);
+    expect(html).toMatch(/Mon, Thu, Fri (&|&amp;) Sun/);
   });
 });
 
@@ -49,7 +49,9 @@ describe('route verification expiry does not rewrite standing service or fare ev
   it('allows PIA schedule guidance on 12 October, separately from the connecting £480 recheck', async () => {
     const route = getRouteBySlug('manchester-islamabad')!;
     expect(getEffectiveRoutePresentation(route, routeStatusEvents, '2026-10-12').status).toBe('direct');
-    expect(await renderManIsbPage('2026-10-12')).toMatch(/Mon, Tue, Thu (&|&amp;) Sat/);
+    // Rendering a past date shows today's recorded pattern, which is dated
+    // "from 15 Nov 2026" in the same string, so it cannot be read as 12 Oct's.
+    expect(await renderManIsbPage('2026-10-12')).toMatch(/Mon, Thu, Fri (&|&amp;) Sun/);
     const signal = getFareSignalForRoute(route.slug, '2026-10-12');
     expect(signal.state).toBe('current');
     expect(signal.observation?.id).toBe('obs-man-isb-economy-20260825-recheck-v1');
@@ -59,19 +61,19 @@ describe('route verification expiry does not rewrite standing service or fare ev
     expect(signal.observation?.id).not.toBe('obs-man-isb-economy-20260825-8w-v1');
   });
 
-  // Re-verified 3 Nov 2026 against Manchester Airport's PIA announcement
-  // (review due 3 Dec), so the fail-closed boundary is now 4 December.
-  it('fails closed on 4 December without promoting the retired £460 fare or stale weekdays', async () => {
+  // Re-verified 14 Nov 2026 against Manchester Airport's own PK702 flight
+  // information (review due 14 Dec), so the fail-closed boundary is now 15 December.
+  it('fails closed on 15 December without promoting the retired £460 fare or stale weekdays', async () => {
     const route = getRouteBySlug('manchester-islamabad')!;
-    expect(route.verification?.reviewDueDate).toBe('2026-12-03');
-    const presentation = getEffectiveRoutePresentation(route, routeStatusEvents, '2026-12-04');
+    expect(route.verification?.reviewDueDate).toBe('2026-12-14');
+    const presentation = getEffectiveRoutePresentation(route, routeStatusEvents, '2026-12-15');
     expect(presentation.status).toBe('unverified');
     expect(presentation.frequency).toBeNull();
-    const signal = getFareSignalForRoute(route.slug, '2026-12-04');
+    const signal = getFareSignalForRoute(route.slug, '2026-12-15');
     expect(signal.state).toBe('none');
     expect(signal.observation).toBeNull();
-    const html = await renderManIsbPage('2026-12-04');
-    expect(html).not.toMatch(/Mon, Tue, Thu (&|&amp;) Sat/);
+    const html = await renderManIsbPage('2026-12-15');
+    expect(html).not.toMatch(/Mon, Thu, Fri (&|&amp;) Sun/);
     expect(html).not.toContain('4x weekly direct');
     expect(html).not.toContain('Fare spotted');
     // Expiry suppresses public claims; it does not mutate the standing archive.
@@ -84,7 +86,7 @@ describe('route verification expiry does not rewrite standing service or fare ev
 describe('2. wording uses non-guaranteed framing', () => {
   // Copy consolidation (12 Sept 2026, founder-approved): the hero-facing
   // `frequency` string is deliberately short for a family scanning the
-  // page ("4x weekly direct. Typical days: Mon, Tue, Thu & Sat. Check PIA
+  // page ("4x weekly direct. Typical days from 15 Nov 2026: Mon, Thu, Fri & Sun. Check PIA
   // for your exact date.") — the fuller "typical current pattern, never a
   // guarantee" explanation and its dated evidence live in
   // verification.note instead, per the same convention every other
@@ -101,12 +103,28 @@ describe('2. wording uses non-guaranteed framing', () => {
   });
 });
 
-describe('3-6. Monday, Tuesday, Thursday, Saturday all appear', () => {
+// 14 Nov 2026: Manchester Airport's own flight information lists PK702 on
+// Mon/Thu/Fri/Sun from 15 Nov and none on Tue/Wed/Sat; the former
+// Mon/Tue/Thu/Sat days ran until 12 Nov.
+describe('3-6. the days from 15 November 2026: Monday, Thursday, Friday, Sunday', () => {
   const route = getRouteBySlug('manchester-islamabad')!;
   it('Monday', () => expect(route.frequency).toContain('Mon'));
-  it('Tuesday', () => expect(route.frequency).toContain('Tue'));
   it('Thursday', () => expect(route.frequency).toContain('Thu'));
-  it('Saturday', () => expect(route.frequency).toContain('Sat'));
+  it('Friday', () => expect(route.frequency).toContain('Fri'));
+  it('Sunday', () => expect(route.frequency).toContain('Sun'));
+  it('no longer claims Tuesday or Saturday', () => {
+    expect(route.frequency).not.toMatch(/Tue|Sat/);
+  });
+  it('dates the pattern, so it is not read as a permanent timetable', () => {
+    expect(route.frequency).toContain('from 15 Nov 2026');
+  });
+  it('records the 14 November source check and the unread PIA schedule', () => {
+    expect(route.verification?.verifiedDate).toBe('2026-11-14');
+    const note = route.verification?.note ?? '';
+    expect(note).toContain('Operating-day correction, re-verified 14 November 2026');
+    expect(note).toContain('Mon/Thu/Fri/Sun from 15 November');
+    expect(note).toMatch(/PIA's published schedule was not read/);
+  });
 });
 
 describe('7. exact-date verification caveat appears', () => {
@@ -191,14 +209,16 @@ describe('12. no direct fare is invented', () => {
 });
 
 describe('13. no other route receives MAN->ISB weekday data accidentally', () => {
-  it('manchester-lahore (a similarly-named PIA route) does not carry the Mon/Tue/Thu/Sat pattern', () => {
+  it('manchester-lahore (a similarly-named PIA route) does not carry the Islamabad weekday pattern', () => {
     const lahore = getRouteBySlug('manchester-lahore')!;
+    expect(lahore.frequency).not.toMatch(/Mon, Thu, Fri & Sun/);
     expect(lahore.frequency).not.toMatch(/Mon, Tue, Thu & Sat/);
   });
 
   it('no other route in the catalogue picked up this exact frequency string', () => {
     const matches = routes.filter((r) =>
-      r.slug !== 'manchester-islamabad' && r.frequency.includes('Mon, Tue, Thu & Sat')
+      r.slug !== 'manchester-islamabad' &&
+      (r.frequency.includes('Mon, Thu, Fri & Sun') || r.frequency.includes('Mon, Tue, Thu & Sat'))
     );
     expect(matches).toHaveLength(0);
   });
