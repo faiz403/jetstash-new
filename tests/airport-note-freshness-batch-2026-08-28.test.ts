@@ -36,7 +36,7 @@ import { routes } from '@/data/routes';
 describe('Birmingham–Amritsar is accurately represented in airport-notes.ts', () => {
   it('bhx-gulf-connections names the verified direct Amritsar service as a specific exception', () => {
     const note = airportNotes.find((n) => n.id === 'bhx-gulf-connections');
-    expect(note?.body).toContain('direct Birmingham–Amritsar service');
+    expect(note?.body).toContain('Birmingham–Amritsar is the one nonstop exception where its route guide shows it as verified');
   });
 
   it('the claim matches the underlying verified route evidence', () => {
@@ -54,7 +54,7 @@ describe('Amritsar destination flightTimeFromUK matches the actually-verified di
     const amritsar = getDestinationBySlug('amritsar');
     expect(amritsar?.flightTimeFromUK).toContain('Direct from Birmingham');
     const birminghamRoute = routes.find((r) => r.slug === 'birmingham-amritsar');
-    expect(birminghamRoute?.verification).toMatchObject({ status: 'verified', verifiedDate: '2026-10-22' });
+    expect(birminghamRoute?.verification).toMatchObject({ status: 'verified', verifiedDate: '2026-11-14' });
   });
 
   it('no longer names London Gatwick while its verification has lapsed', () => {

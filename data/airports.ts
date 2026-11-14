@@ -135,7 +135,7 @@ export const airports: Airport[] = [
     longHaulRoutes: ['Dubai', 'Doha', 'Amritsar'],
     shortHaulHighlights: ['Barcelona', 'Rome', 'Malaga', 'Antalya', 'Agadir', 'Tangier'],
     whyThisAirport:
-      'Gatwick works well as a Gulf gateway and Mediterranean leisure airport, with a confirmed direct Amritsar service, though not daily — check operating days before booking. Birmingham also has a current direct Amritsar service, so compare your specific dates and total airport journey. Its Ahmedabad service currently has a genuine, unresolved conflict over which London airport Air India actually uses, so confirm the exact departure airport before assuming Gatwick. For Pakistan and Delhi/Mumbai-bound India travel specifically, Heathrow still has the wider network.',
+      'Gatwick works well as a Gulf gateway and Mediterranean leisure airport, with a confirmed direct Amritsar service, though not daily — check operating days before booking. Birmingham also has a nonstop Amritsar option where its route guide shows it as verified, so compare your specific dates and total airport journey. Its Ahmedabad service currently has a genuine, unresolved conflict over which London airport Air India actually uses, so confirm the exact departure airport before assuming Gatwick. For Pakistan and Delhi/Mumbai-bound India travel specifically, Heathrow still has the wider network.',
     servesCommunities: ['South London', 'Croydon', 'Surrey', 'Sussex'],
     hasDirectLongHaul: true,
   },

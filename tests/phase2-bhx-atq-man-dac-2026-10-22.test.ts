@@ -20,15 +20,15 @@ describe('Birmingham-Amritsar re-verification', () => {
   const route = getRouteBySlug('birmingham-amritsar')!;
 
   it('records the fresh check on the 30-day RECENT / CHANGING window', () => {
-    expect(route.verification).toMatchObject({ status: 'verified', verifiedDate: '2026-10-22', reviewDueDate: '2026-11-21' });
+    expect(route.verification).toMatchObject({ status: 'verified', verifiedDate: '2026-11-14', reviewDueDate: '2026-12-14' });
     const days = (Date.parse(route.verification!.reviewDueDate) - Date.parse(route.verification!.verifiedDate)) / 86_400_000;
     expect(days).toBe(30);
   });
 
-  it('separates the winter schedule from earlier departures', () => {
-    expect(route.flightTime.startsWith("Nonstop: about 10h 35m out and 12h 35m back on Air India's winter schedule from 25 October 2026")).toBe(true);
-    expect(route.flightTime).toContain('(about 10h 10m and 11h 40m before then)');
-    expect(route.intro).toContain('winter schedule from 25 October 2026 shows AI118 at about 10h 35m (about 10h 10m on earlier departures)');
+  it('uses Air India\'s booking-availability durations for mid-November 2026, replacing the 22 October widget figures', () => {
+    expect(route.flightTime).toBe("Nonstop: about 10h 10m out and 11h 20m back on Air India's published schedule for mid-November 2026 (timings can change with the winter timetable)");
+    expect(route.flightTime).not.toMatch(/10h 35m|12h 35m|11h 40m/);
+    expect(route.intro).toContain("published schedule for mid-November 2026 shows AI118 at about 10h 10m outbound and AI117 at about 11h 20m back");
   });
 
   it('claims no weekly count and names no operating weekdays', () => {
@@ -40,8 +40,8 @@ describe('Birmingham-Amritsar re-verification', () => {
   });
 
   it('stays direct through the review date and fails closed the day after', () => {
-    expect(getEffectiveRoutePresentation(route, routeStatusEvents, '2026-11-21').status).toBe('direct');
-    expect(getEffectiveRoutePresentation(route, routeStatusEvents, '2026-11-22').status).not.toBe('direct');
+    expect(getEffectiveRoutePresentation(route, routeStatusEvents, '2026-12-14').status).toBe('direct');
+    expect(getEffectiveRoutePresentation(route, routeStatusEvents, '2026-12-15').status).not.toBe('direct');
   });
 });
 
@@ -130,7 +130,9 @@ describe('Amritsar destination copy matches current route verification', () => {
   it('names Birmingham, not the lapsed Gatwick route, as the direct option', () => {
     expect(amritsar.flightTimeFromUK).toMatch(/Direct from Birmingham/);
     expect(amritsar.flightTimeFromUK).not.toMatch(/Gatwick/);
-    expect(amritsar.familyVisitContent!.packingNote).toMatch(/from Birmingham does not operate daily/);
+    expect(amritsar.familyVisitContent!.packingNote).toMatch(/from Birmingham, where its route guide shows one as verified, does not operate daily/);
+    // 14 Nov 2026: status-independent, so it stays true after the route's verification expires.
+    expect(amritsar.familyVisitContent!.packingNote).not.toMatch(/Air India/);
     expect(amritsar.familyVisitContent!.packingNote).not.toMatch(/Birmingham, Leeds Bradford or Manchester departure would mean a connecting/);
   });
 });

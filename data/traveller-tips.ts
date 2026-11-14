@@ -116,7 +116,7 @@ export const travellerTips: TravellerTip[] = [
     scope: { routeSlug: 'birmingham-amritsar' },
     category: 'logistics',
     title: 'Confirm the specific flight day before assuming a non-stop exists',
-    body: 'Birmingham to Amritsar is currently shown by JetStash as a direct service. Confirm your exact flight day, timing and baggage terms before booking, rather than assuming the service runs every day.',
+    body: 'Confirm your exact flight day, timing and baggage terms before booking, rather than assuming a non-stop runs every day.',
   },
   {
     id: 'gatwick-amritsar-reduced-frequency',
