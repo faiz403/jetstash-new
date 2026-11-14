@@ -338,6 +338,14 @@ Every checkpoint records these items:
   sitemap, internal link targets, prices, route and fare records are unchanged. Treat as a small content-wording event for `manchester-dubai`; the pilot's
   headings (h1/h2), Quick answers and title experiment are unchanged.
 
+- **Manchester-Islamabad operating-day correction (prepared for review, not Production-deployed; record the merge and deployment here after separate approval and release):**
+  a necessary factual correction to **an SEO pilot page**, directed in the CEO execution directive of 14 November 2026. Third-party listings disagreed with the
+  stored Mon/Tue/Thu/Sat days; Manchester Airport's own PK702 flight information (read 14 November 2026) lists departures on Mon/Thu/Fri/Sun only from 15 November,
+  and FlightAware agrees. The `frequency` line, the verification note and dates (verified 14 November, review due 14 December) and the pilot's Quick-answers
+  frequency answer change; the answer is re-dated with the record, as this document's winter-check note intends. H1, `<title>`, meta description, canonical, robots,
+  sitemap, internal link targets, fares and affiliate links are unchanged. PIA's own schedule was blocked by a bot-verification page and not read. Treat as a
+  content-wording event for `manchester-islamabad` in the day-28 reading.
+
 ## Wave 2 (not approved; only after a positive day-14 signal)
 
 **Ready now** (verification current, no pending status on 21 Oct):

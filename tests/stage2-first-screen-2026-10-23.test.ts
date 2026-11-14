@@ -110,8 +110,8 @@ describe('Stage 2 homepage evidence example', () => {
     // the route finding; the sweep's own 3 Nov check (29 Dec departure) now takes its place, so the expired fare is never shown.
     const firstDayAfter = getHomepageEvidenceExample('2026-11-03');
     expect(firstDayAfter?.kind === 'fare' && firstDayAfter.fare.departureDate).toBe('2026-12-29');
-    // The route's own verification lapses on 4 Dec; with nothing current the card is omitted, never stale.
-    expect(getHomepageEvidenceExample('2026-12-04')).toBeNull();
+    // The route's own verification lapses on 15 Dec (re-verified 14 Nov); with nothing current the card is omitted, never stale.
+    expect(getHomepageEvidenceExample('2026-12-15')).toBeNull();
   });
 
   it('with no eligible evidence the example is simply absent (nothing invented)', () => {

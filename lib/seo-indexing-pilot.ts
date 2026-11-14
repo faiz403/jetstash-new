@@ -109,14 +109,15 @@ export interface QuickAnswersContent {
 }
 
 const QUICK_ANSWERS: Record<(typeof SEO_PILOT_PAGE_SLUGS)[number], QuickAnswersContent> = {
-  // Manchester Airport's 26 October announcement, checked 3 November 2026,
-  // supports the operator, nonstop service and weekdays, but no duration.
+  // Manchester Airport's flight information (checked 14 November 2026) and its
+  // 26 October announcement support the operator, nonstop service and the
+  // weekdays from 15 November, but no duration.
   'manchester-islamabad': {
-    evidenceVerifiedDate: '2026-11-03',
+    evidenceVerifiedDate: '2026-11-14',
     expectedStatus: 'direct',
-    sourceSupports: 'PIA as the operator, the nonstop service and four weekly departures on Monday, Tuesday, Thursday and Saturday',
+    sourceSupports: 'PIA as the operator, the nonstop service and four weekly departures on Monday, Thursday, Friday and Sunday from 15 November 2026',
     isDirect: 'Yes. Manchester Airport’s 26 October 2026 announcement confirms PIA flies direct to Islamabad; its current PIA operator page also confirms the nonstop service.',
-    frequency: 'Manchester Airport’s 26 October 2026 announcement lists four departures a week, on Monday, Tuesday, Thursday and Saturday. This is the published pattern, not a guarantee for every date. Check PIA for your exact date.',
+    frequency: 'Manchester Airport’s own flight information, checked 14 November 2026, lists four departures a week from 15 November, on Monday, Thursday, Friday and Sunday. This is a typical current pattern, not a guarantee for every date, and winter schedules can change. Check PIA for your exact date.',
     selfTransfer: 'PIA’s nonstop is one flight on one ticket, so there is no connection to miss. Search results may also show connecting itineraries; if one is marked “self-transfer” or “separate tickets”, it is several separate bookings, and the next airline does not have to rebook you if you miss a connection.',
   },
   // Emirates' own Manchester–Dubai route page (checked 21 Oct 2026) states

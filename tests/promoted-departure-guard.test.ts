@@ -212,10 +212,10 @@ describe('UK midnight, UTC render dates and six-hour ISR caching', () => {
 describe('MAN→ISB on 17 October 2026', () => {
   const route = getRouteBySlug('manchester-islamabad')!;
 
-  it('is re-verified against the Manchester Airport PIA operator page with a 30-day review', () => {
-    expect(route.verification?.sourceUrl).toBe('https://mediacentre.manchesterairport.co.uk/pia-hits-100000-passenger-milestone-as-it-marks-12-months-of-direct-services-to-pakistan-from-manchester-airport/');
-    expect(route.verification?.verifiedDate).toBe('2026-11-03');
-    expect(route.verification?.reviewDueDate).toBe('2026-12-03');
+  it('is re-verified against Manchester Airport\'s own PK702 flight information with a 30-day review', () => {
+    expect(route.verification?.sourceUrl).toBe('https://www.manchesterairport.co.uk/departures/');
+    expect(route.verification?.verifiedDate).toBe('2026-11-14');
+    expect(route.verification?.reviewDueDate).toBe('2026-12-14');
     expect(getEffectiveRoutePresentation(route, routeStatusEvents, TODAY).status).toBe('direct');
   });
 
@@ -270,8 +270,8 @@ describe('MAN→ISB on 17 October 2026', () => {
   });
 
   it('still fails closed after the new review date', () => {
-    expect(getFareSignalForRoute(route.slug, '2026-12-04').state).toBe('none');
-    expect(getFareRangeSummary(route.slug, 'Economy', '2026-12-04')).toBeNull();
+    expect(getFareSignalForRoute(route.slug, '2026-12-15').state).toBe('none');
+    expect(getFareRangeSummary(route.slug, 'Economy', '2026-12-15')).toBeNull();
   });
 });
 

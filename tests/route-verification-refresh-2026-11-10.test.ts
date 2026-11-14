@@ -50,7 +50,7 @@ describe('10 November 2026 route verification refresh', () => {
 
   it('the SEO pilot pages were not touched by this refresh', () => {
     // Their verification evidence stays exactly as recorded before the refresh.
-    expect(getRouteBySlug('manchester-islamabad')!.verification!.verifiedDate).toBe('2026-11-03');
+    expect(getRouteBySlug('manchester-islamabad')!.verification!.verifiedDate).toBe('2026-11-14');
     expect(getRouteBySlug('manchester-dubai')!.verification!.verifiedDate).toBe('2026-10-21');
   });
 });
