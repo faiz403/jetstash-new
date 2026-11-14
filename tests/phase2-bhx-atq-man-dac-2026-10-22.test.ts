@@ -32,7 +32,7 @@ describe('Birmingham-Amritsar re-verification', () => {
   });
 
   it('claims no weekly count and names no operating weekdays', () => {
-    expect(route.frequency).toBe('Nonstop on selected days rather than daily; operating days vary, so confirm your date with Air India');
+    expect(route.frequency).toBe('Nonstop on selected days rather than daily; operating days vary, and Air India\'s own schedule page does not always list the nonstop, so confirm your date with Air India');
     expect(route.frequency).not.toMatch(/\b(one|two|three|four|five|six|\d+) (days?|times|flights)\b/i);
     const visible = [route.frequency, route.intro, route.bookingWindowNote].join(' ');
     expect(visible).not.toMatch(/monday|tuesday|wednesday|thursday|friday|saturday|sunday|several times weekly/i);

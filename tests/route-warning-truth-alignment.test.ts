@@ -51,7 +51,7 @@ describe('Route-warning truth alignment: the three unsourced "3 times a week" wa
 
   it('4a. Birmingham–Amritsar\'s refreshed route presentation remains hedged and direct', () => {
     const route = getRouteBySlug('birmingham-amritsar')!;
-    expect(route.frequency).toBe('Nonstop on selected days rather than daily; operating days vary, so confirm your date with Air India');
+    expect(route.frequency).toBe('Nonstop on selected days rather than daily; operating days vary, and Air India\'s own schedule page does not always list the nonstop, so confirm your date with Air India');
     // Pinned to the review due date, not the live clock (same pattern as 4b):
     // the day after, the route must fail closed until it is re-verified.
     expect(route.verification?.reviewDueDate).toBe('2026-11-21');
