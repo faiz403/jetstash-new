@@ -37,8 +37,8 @@ import { travellerTips, getTipsForScope } from '@/data/traveller-tips';
  * the original version of this tip go stale.
  */
 
-// Inside the 22 October 2026 re-verification window (review due 21 November).
-const NOW_ISO = '2026-10-22';
+// Inside the 14 November 2026 re-verification window (review due 14 December).
+const NOW_ISO = '2026-11-14';
 const route = getRouteBySlug('birmingham-amritsar')!;
 const presentation = getEffectiveRoutePresentation(route, routeStatusEvents, NOW_ISO);
 const tip = getTipsForScope({ routeSlug: 'birmingham-amritsar' })[0];
@@ -55,7 +55,7 @@ describe('1. Canonical route state is verified direct', () => {
   });
 
   it('route facts are the deliberately hedged verified direct facts', () => {
-    expect(route.flightTime).toBe('Nonstop: about 10h 35m out and 12h 35m back on Air India\'s winter schedule from 25 October 2026 (about 10h 10m and 11h 40m before then)');
+    expect(route.flightTime).toBe('Nonstop: about 10h 10m out and 11h 20m back on Air India\'s published schedule for mid-November 2026 (timings can change with the winter timetable)');
     expect(route.frequency).toBe('Nonstop on selected days rather than daily; operating days vary, so confirm your date with Air India');
     expect(route.airlineSlugs).toEqual(['air-india']);
     expect(route.peakPeriodIds).toEqual(['baisakhi', 'diwali', 'uk-summer-holidays']);
@@ -69,18 +69,22 @@ describe('2. The traveller tip no longer contradicts the route\'s effective pres
     expect(tip.category).toBe('logistics');
   });
 
-  it('matches the direct service state without inventing a precise schedule', () => {
+  it('is about checking the flight, without stating a service status of its own', () => {
+    // 14 Nov 2026: the tip must stay true before AND after the route's verification expires, so it asserts no
+    // current status ("shown as direct", "currently operates"): it only tells the traveller what to confirm.
     expect(tip.title).toMatch(/non-stop/i);
-    expect(tip.body).toMatch(/direct service/i);
+    expect(tip.body).not.toMatch(/\b(currently|shown|direct|verified|operates|service)\b/i);
   });
 
-  it('agrees with the route\'s own effective presentation label rather than asserting its own status', () => {
-    // The tip must defer to JetStash's canonical presentation ("shown by
-    // JetStash as ...") rather than independently declaring a service
-    // state — so it should surface the same status word the route page
-    // itself renders, and do so as a description of what JetStash shows,
-    // not as a freestanding claim.
-    expect(tip.body.toLowerCase()).toContain(presentation.statusLabel.toLowerCase());
+  it('cannot contradict the route\'s presentation, including after the verification expires', () => {
+    // The tip carries no status word, so it agrees with the canonical presentation whatever it is: direct while the
+    // verification is current and unverified once it has lapsed.
+    const lapsed = getEffectiveRoutePresentation(route, routeStatusEvents, '2026-12-15');
+    expect(presentation.status).toBe('direct');
+    expect(lapsed.status).toBe('unverified');
+    for (const label of [presentation.statusLabel, lapsed.statusLabel]) {
+      expect(tip.body.toLowerCase()).not.toContain(label.toLowerCase());
+    }
   });
 
   it('does not publish an unsupported frequency or day-of-week claim', () => {

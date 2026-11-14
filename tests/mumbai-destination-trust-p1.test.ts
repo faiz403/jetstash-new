@@ -189,8 +189,10 @@ describe('Mumbai destination P1 trust fix', () => {
     // Recomputed 22 Oct 2026: Amritsar's flightTimeFromUK and packingNote now
     // name Birmingham (re-verified) instead of the lapsed Gatwick route.
     // 3 Nov 2026: Islamabad no longer renews the conflicting numeric duration.
+    // Recomputed 14 Nov 2026: Amritsar's packingNote and flightTimeFromUK are now status-independent (no current-status claim, and the
+    // flight-time clause names just the airport so the fail-closed guard engages); no other destination record changed.
     const otherDestinations = destinations.filter((item) => item.slug !== 'mumbai');
     const digest = createHash('sha256').update(JSON.stringify(otherDestinations)).digest('hex');
-    expect(digest).toBe('09affed915c0369061566175e69caa4c910f6c7ed0abc6a30147876f73d88947');
+    expect(digest).toBe('6876affe5e8bbd9de82a64d2019cf3ef47e57bf1bec453d930391149cd49cf63');
   });
 });
