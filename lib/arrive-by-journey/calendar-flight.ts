@@ -2,6 +2,8 @@ import { formatLocalDateTime, parseLocalDateTime } from './local-time';
 
 export const MAX_FLIGHT_CALENDAR_BYTES = 128 * 1024;
 const MAX_EVENTS = 50;
+const HOUR_MS = 60 * 60 * 1000;
+const DAY_MS = 24 * HOUR_MS;
 
 export interface CalendarFlightEvent {
   id: string;
@@ -12,15 +14,110 @@ export interface CalendarFlightEvent {
 
 interface CalendarProperty { header: string; value: string }
 
-/** The airport-clock offset the standard time-zone database gives a TZID-qualified time. */
-interface ZoneCheck { zone: string; offsetMs: number }
+/** A TZID-qualified time the standard database converted: the zone (as the database names it), the name the file used, and the instant produced. */
+interface ZoneCheck { zone: string; label: string; instantMs: number }
 
-/** A calendar's own VTIMEZONE definition, reduced to the offsets it declares. */
-interface ZoneDefinition { offsetsMs: number[]; usable: boolean }
+/** Yearly "nth weekday of a month" rule, the only recurrence shape calendars use for clock changes. */
+interface YearlyRule { month: number; nth: number; weekday: number; untilMs?: number }
+
+/** One STANDARD or DAYLIGHT observance of a calendar's own VTIMEZONE. Times are wall-clock values stored as UTC milliseconds. */
+interface Observance { startLocalMs?: number; fromMs?: number; toMs?: number; rule?: YearlyRule; seen: Set<string> }
+
+interface ZoneDefinition { observances: Observance[]; usable: boolean }
+
+const WEEKDAYS = ['SU', 'MO', 'TU', 'WE', 'TH', 'FR', 'SA'];
+
+const canonicalZone = (zone: string): string => {
+  try { return new Intl.DateTimeFormat('en-GB', { timeZone: zone }).resolvedOptions().timeZone; } catch { return zone; }
+};
 
 function offsetOf(value: string): number | null {
   const match = /^([+-])([01]\d|2[0-3])([0-5]\d)([0-5]\d)?$/.exec(value);
   return match ? (match[1] === '-' ? -1 : 1) * ((Number(match[2]) * 60 + Number(match[3])) * 60 + Number(match[4] ?? 0)) * 1000 : null;
+}
+
+function localMsOf(value: string): number | null {
+  const match = /^(\d{4})(\d{2})(\d{2})T([01]\d|2[0-3])([0-5]\d)([0-5]\d)$/.exec(value);
+  return match ? Date.UTC(Number(match[1]), Number(match[2]) - 1, Number(match[3]), Number(match[4]), Number(match[5]), Number(match[6])) : null;
+}
+
+/** Only YEARLY;BYMONTH;BYDAY=<n><weekday> (optionally INTERVAL=1, UNTIL, WKST) is understood; anything else is unsupported. */
+function yearlyRuleOf(value: string): YearlyRule | null {
+  const parts = new Map<string, string>();
+  for (const part of value.split(';')) {
+    const [key, ...rest] = part.split('=');
+    const name = key.toUpperCase();
+    if (!name || !rest.length || parts.has(name) || !['FREQ', 'BYMONTH', 'BYDAY', 'INTERVAL', 'UNTIL', 'WKST'].includes(name)) return null;
+    parts.set(name, rest.join('=').toUpperCase());
+  }
+  const month = /^(\d{1,2})$/.exec(parts.get('BYMONTH') ?? '');
+  const day = /^([+-]?[1-5])(SU|MO|TU|WE|TH|FR|SA)$/.exec(parts.get('BYDAY') ?? '');
+  if (parts.get('FREQ') !== 'YEARLY' || !month || !day || Number(month[1]) < 1 || Number(month[1]) > 12) return null;
+  if (parts.has('INTERVAL') && parts.get('INTERVAL') !== '1') return null;
+  const rule: YearlyRule = { month: Number(month[1]) - 1, nth: Number(day[1]), weekday: WEEKDAYS.indexOf(day[2]) };
+  if (parts.has('UNTIL')) {
+    const until = /^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})Z$/.exec(parts.get('UNTIL') ?? '');
+    if (!until) return null;
+    rule.untilMs = Date.UTC(Number(until[1]), Number(until[2]) - 1, Number(until[3]), Number(until[4]), Number(until[5]), Number(until[6]));
+  }
+  return rule;
+}
+
+function dayOfMonth(year: number, { month, nth, weekday }: YearlyRule): number | null {
+  if (nth > 0) {
+    const day = 1 + ((weekday - new Date(Date.UTC(year, month, 1)).getUTCDay() + 7) % 7) + (nth - 1) * 7;
+    return day <= new Date(Date.UTC(year, month + 1, 0)).getUTCDate() ? day : null;
+  }
+  const last = new Date(Date.UTC(year, month + 1, 0));
+  const day = last.getUTCDate() - ((last.getUTCDay() - weekday + 7) % 7) - (-nth - 1) * 7;
+  return day >= 1 ? day : null;
+}
+
+/** The latest moment, at or before `instantMs`, that this observance came into force; null if none yet. */
+function latestOnset(observance: Observance, instantMs: number): number | null {
+  const startLocalMs = observance.startLocalMs as number;
+  const fromMs = observance.fromMs as number;
+  const { rule } = observance;
+  const onsets = [startLocalMs - fromMs];
+  if (rule) {
+    const timeOfDay = ((startLocalMs % DAY_MS) + DAY_MS) % DAY_MS;
+    // Once a rule has ended, its last yearly instance is the latest that can apply.
+    const year = Math.min(new Date(instantMs).getUTCFullYear(), rule.untilMs === undefined ? Infinity : new Date(rule.untilMs).getUTCFullYear());
+    for (const candidate of [year - 1, year]) {
+      const day = dayOfMonth(candidate, rule);
+      if (day === null) continue;
+      const local = Date.UTC(candidate, rule.month, day) + timeOfDay;
+      const utc = local - fromMs;
+      if (local >= startLocalMs && (rule.untilMs === undefined || utc <= rule.untilMs)) onsets.push(utc);
+    }
+  }
+  const started = onsets.filter((onset) => onset <= instantMs);
+  return started.length ? Math.max(...started) : null;
+}
+
+/** The offset a calendar's own definition applies at an instant, or null when that is unclear. */
+function embeddedOffsetAt(definition: ZoneDefinition, instantMs: number): number | null {
+  let best: { onset: number; toMs: number } | undefined;
+  let tie = false;
+  for (const observance of definition.observances) {
+    const onset = latestOnset(observance, instantMs);
+    if (onset === null) continue;
+    if (!best || onset > best.onset) { best = { onset, toMs: observance.toMs as number }; tie = false; }
+    else if (onset === best.onset && observance.toMs !== best.toMs) tie = true;
+  }
+  if (tie) return null;
+  if (best) return best.toMs;
+  // Before every onset, the earliest observance's "from" offset applies.
+  const earliest = [...definition.observances].sort((a, b) => (a.startLocalMs as number) - (b.startLocalMs as number))[0];
+  return earliest.fromMs as number;
+}
+
+/** The offset the standard database applies at an instant. */
+function databaseOffsetAt(instantMs: number, zone: string): number {
+  const minute = Math.floor(instantMs / 60000) * 60000;
+  const local = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/.exec(formatLocalDateTime(minute, zone));
+  if (!local) throw new Error('The calendar time zone could not be checked.');
+  return Date.UTC(Number(local[1]), Number(local[2]) - 1, Number(local[3]), Number(local[4]), Number(local[5])) - minute;
 }
 
 function instant(property: CalendarProperty): { ms: number; check?: ZoneCheck } {
@@ -38,21 +135,24 @@ function instant(property: CalendarProperty): { ms: number; check?: ZoneCheck } 
   const parsed = parseLocalDateTime(local, zone);
   if (!parsed.ok) throw new Error('The calendar time or time zone is invalid or ambiguous. Enter the flight times manually.');
   const ms = parsed.ms + Number(match[6]) * 1000;
-  // The offset the database applied to this wall-clock time, kept so an embedded VTIMEZONE can be checked against it.
-  const offsetMs = Date.UTC(Number(match[1]), Number(match[2]) - 1, Number(match[3]), Number(match[4]), Number(match[5])) - parsed.ms;
-  return { ms, check: match[7] ? undefined : { zone, offsetMs } };
+  return { ms, check: match[7] ? undefined : { zone: canonicalZone(zone), label: zone, instantMs: ms } };
 }
 
 /**
- * The importer converts TZID times with the standard time-zone database, never with a calendar's own rules.
- * If the file embeds a definition for the same zone, it must declare the offset the database applied;
- * a conflicting, duplicated or unreadable definition is refused rather than silently overridden.
+ * Times are always converted with the standard time-zone database, never with a calendar's own rules. If the file
+ * also embeds a definition for the same zone, that definition must be one this reader can evaluate and must give
+ * the same offset as the database at the flight time and a day either side; otherwise the event is refused rather
+ * than imported at a time the traveller's own calendar might read differently.
  */
-function assertZoneAgrees({ zone, offsetMs }: ZoneCheck, definitions: Map<string, ZoneDefinition[]>): void {
+function assertZoneAgrees({ zone, label, instantMs }: ZoneCheck, definitions: Map<string, ZoneDefinition[]>): void {
   const matches = definitions.get(zone);
   if (!matches) return;
-  if (matches.length > 1 || !matches[0].usable) throw new Error(`The calendar defines the time zone ${zone} in a way that cannot be checked safely. Enter the flight times manually.`);
-  if (!matches[0].offsetsMs.includes(offsetMs)) throw new Error(`The calendar describes the time zone ${zone} differently from the standard time-zone database, so its times could not safely be imported. Enter the flight times manually.`);
+  if (matches.length > 1 || !matches[0].usable) throw new Error(`The calendar defines the time zone ${label} in a way that cannot be checked safely. Enter the flight times manually.`);
+  for (const sample of [instantMs, instantMs - DAY_MS - 2 * HOUR_MS, instantMs + DAY_MS + 2 * HOUR_MS]) {
+    if (embeddedOffsetAt(matches[0], sample) !== databaseOffsetAt(sample, zone)) {
+      throw new Error(`The calendar describes the time zone ${label} differently from the standard time-zone database, so its times could not safely be imported. Enter the flight times manually.`);
+    }
+  }
 }
 
 /** Restricted RFC 5545 reader, run in the browser only. No remote attachments, recurrence expansion or calendar timezone code is executed. */
@@ -64,7 +164,8 @@ export function parseFlightCalendar(text: string): { events: CalendarFlightEvent
   const candidates: { event: CalendarFlightEvent; checks: ZoneCheck[] }[] = [];
   const definitions = new Map<string, ZoneDefinition[]>();
   let properties: Record<string, CalendarProperty[]> | undefined;
-  let zone: { tzids: string[]; offsetsMs: number[]; observances: number; usable: boolean } | undefined;
+  let zone: { tzids: string[]; observances: Observance[]; usable: boolean } | undefined;
+  let observance: Observance | undefined;
   const components: string[] = [];
   let closed = false;
   let total = 0;
@@ -81,8 +182,12 @@ export function parseFlightCalendar(text: string): { events: CalendarFlightEvent
         if (++total > MAX_EVENTS) throw new Error('Choose a calendar file with no more than 50 events.');
         properties = {};
       }
-      if (component === 'VTIMEZONE' && components.length === 1) zone = { tzids: [], offsetsMs: [], observances: 0, usable: true };
-      if (zone && components.length === 2 && components[1] === 'VTIMEZONE' && (component === 'STANDARD' || component === 'DAYLIGHT')) zone.observances++;
+      if (component === 'VTIMEZONE' && components.length === 1) zone = { tzids: [], observances: [], usable: true };
+      else if (zone) {
+        // Inside a VTIMEZONE only STANDARD/DAYLIGHT observances directly under it are understood; anything else is unsupported.
+        if (components.length === 2 && (component === 'STANDARD' || component === 'DAYLIGHT')) observance = { seen: new Set() };
+        else zone.usable = false;
+      }
       components.push(component);
       continue;
     }
@@ -90,12 +195,18 @@ export function parseFlightCalendar(text: string): { events: CalendarFlightEvent
       const component = line.slice(4).toUpperCase();
       if (components.pop() !== component) throw new Error('This calendar contains an incomplete event or calendar.');
       if (component === 'VCALENDAR') closed = true;
+      if (zone && observance && components.length === 2 && (component === 'STANDARD' || component === 'DAYLIGHT')) {
+        if (observance.startLocalMs === undefined || observance.fromMs === undefined || observance.toMs === undefined) zone.usable = false;
+        zone.observances.push(observance);
+        observance = undefined;
+        continue;
+      }
       if (component === 'VTIMEZONE' && zone && components.length === 1) {
         const finished = zone;
         zone = undefined;
-        // A definition naming several zones, or none, cannot vouch for any of them.
-        const usable = finished.usable && finished.tzids.length === 1 && finished.observances > 0 && finished.offsetsMs.length === finished.observances;
-        for (const tzid of finished.tzids.length ? finished.tzids : ['']) definitions.set(tzid, [...(definitions.get(tzid) ?? []), { offsetsMs: finished.offsetsMs, usable }]);
+        // A definition naming several zones, or none, or with no observances, cannot vouch for any of them.
+        const usable = finished.usable && finished.tzids.length === 1 && finished.observances.length > 0;
+        for (const tzid of finished.tzids.length ? finished.tzids.map(canonicalZone) : ['']) definitions.set(tzid, [...(definitions.get(tzid) ?? []), { observances: finished.observances, usable }]);
         continue;
       }
       if (component !== 'VEVENT' || !properties) continue;
@@ -120,15 +231,27 @@ export function parseFlightCalendar(text: string): { events: CalendarFlightEvent
     if (!components.length) throw new Error('Choose a complete .ics calendar file from your flight booking.');
     if (components.length === 1 && /^METHOD:CANCEL$/i.test(line)) throw new Error('This is a cancelled calendar invitation. Use the current flight booking.');
     if (zone && components[1] === 'VTIMEZONE') {
-      // Only the zone's name and the offsets it declares are read; its rules are never executed.
+      // Only the zone's name and its observances' start, offsets and yearly rule are read; no calendar code is executed.
       const colon = line.indexOf(':');
-      const name = (colon < 0 ? line : line.slice(0, colon)).split(';')[0].toUpperCase();
+      const header = colon < 0 ? line : line.slice(0, colon);
+      const name = header.split(';')[0].toUpperCase();
       const value = colon < 0 ? '' : line.slice(colon + 1);
-      if (components.length === 2 && name === 'TZID') {
-        zone.tzids.push(value.replace(/^"(.*)"$/, '$1'));
-      } else if (components.length === 3 && name === 'TZOFFSETTO') {
-        const offset = offsetOf(value);
-        if (offset === null) zone.usable = false; else zone.offsetsMs.push(offset);
+      if (components.length === 2) {
+        if (name === 'TZID') zone.tzids.push(value.replace(/^"(.*)"$/, '$1'));
+      } else if (components.length === 3 && observance) {
+        const duplicate = observance.seen.has(name);
+        observance.seen.add(name);
+        if (['RDATE', 'EXDATE'].includes(name) || (['DTSTART', 'TZOFFSETFROM', 'TZOFFSETTO', 'RRULE'].includes(name) && duplicate)) zone.usable = false;
+        else if (name === 'DTSTART') {
+          const start = header.includes(';') ? null : localMsOf(value);
+          if (start === null) zone.usable = false; else observance.startLocalMs = start;
+        } else if (name === 'TZOFFSETFROM' || name === 'TZOFFSETTO') {
+          const offset = offsetOf(value);
+          if (offset === null) zone.usable = false; else if (name === 'TZOFFSETFROM') observance.fromMs = offset; else observance.toMs = offset;
+        } else if (name === 'RRULE') {
+          const rule = yearlyRuleOf(value);
+          if (rule === null) zone.usable = false; else observance.rule = rule;
+        }
       }
       continue;
     }
