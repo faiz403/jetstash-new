@@ -124,11 +124,11 @@ describe('flight calendar import: embedded time-zone definitions', () => {
   it('refuses a definition whose offsets are right somewhere but wrong on the flight day', () => {
     const swapped = zoneDefinition('Europe/London',
       observance('STANDARD', '19700301T020000', '+0100', '+0000', yearly(3, '1SU')),
-      observance('DAYLIGHT', '19701001T010000', '+0000', '+0100', yearly(10, '1SU')));
+      observance('DAYLIGHT', '19701004T010000', '+0000', '+0100', yearly(10, '1SU')));
     expect(() => parseFlightCalendar(calendar(swapped, winter))).toThrow(/differently/);
     expect(() => parseFlightCalendar(calendar(swapped, summer))).toThrow(/differently/);
     const lateSpring = zoneDefinition('Europe/London',
-      observance('DAYLIGHT', '19700429T010000', '+0000', '+0100', yearly(4, '-1SU')),
+      observance('DAYLIGHT', '19700426T010000', '+0000', '+0100', yearly(4, '-1SU')),
       observance('STANDARD', '19701025T020000', '+0100', '+0000', yearly(10, '-1SU')));
     expect(() => parseFlightCalendar(calendar(lateSpring, flight('Europe/London', '20260405T220000', '20260406T060000')))).toThrow(/differently/);
     expect(parseFlightCalendar(calendar(lateSpring, winter)).events[0].departsMs).toBe(Date.parse('2026-12-20T22:00:00Z'));
@@ -194,4 +194,70 @@ describe('flight calendar import: embedded time-zone definitions', () => {
     const wrong = zoneDefinition('Europe/London', observance('STANDARD', '19700101T000000', '+0200', '+0200'));
     expect(() => parseFlightCalendar(calendar(winter, wrong))).toThrow(/differently/);
   });
+});
+
+describe('flight calendar import: embedded definitions are evaluated exactly', () => {
+  it.each(['5SU', '-5SU'])('refuses a fifth-weekday rule (%s) as unsupported, because some years have no such day', (day) => {
+    const fifth = zoneDefinition('Europe/London',
+      observance('DAYLIGHT', '19760229T000000', '+0000', '+0100', `RRULE:FREQ=YEARLY;BYMONTH=2;BYDAY=${day};UNTIL=20201231T235959Z`),
+      observance('STANDARD', '20030101T000000', '+0100', '+0000'));
+    expect(() => parseFlightCalendar(calendar(fifth, winter))).toThrow(/cannot be checked safely/);
+  });
+
+  it('refuses a definition that shows the flight wall time twice', () => {
+    const overlap = zoneDefinition('Europe/London',
+      observance('DAYLIGHT', '20261220T200000', '+0000', '+0100'),
+      observance('STANDARD', '20261220T223000', '+0100', '+0000'));
+    expect(() => parseFlightCalendar(calendar(overlap, winter))).toThrow(/differently/);
+  });
+
+  it('refuses a definition that never shows the flight wall time', () => {
+    const gap = zoneDefinition('Europe/London',
+      observance('STANDARD', '19700101T000000', '+0000', '+0000'),
+      observance('DAYLIGHT', '20261220T213000', '+0000', '+0100'));
+    expect(() => parseFlightCalendar(calendar(gap, winter))).toThrow(/differently/);
+  });
+
+  it('evaluates a rule whose onset falls in the next local year instead of skipping it', () => {
+    const nextYear = zoneDefinition('Europe/London',
+      observance('STANDARD', '19700102T000000', '+0100', '+0000', yearly(1, '1FR')),
+      observance('DAYLIGHT', '20261231T220000', '+0000', '+0100'));
+    expect(() => parseFlightCalendar(calendar(nextYear, flight('Europe/London', '20261231T233000', '20270101T060000')))).toThrow(/differently/);
+  });
+
+  it.each([
+    ['an impossible start date', observance('STANDARD', '20260230T000000', '+0100', '+0000')],
+    ['an impossible end date', observance('STANDARD', '19701025T020000', '+0100', '+0000', yearly(10, '-1SU', ';UNTIL=20261345T990000Z'))],
+    ['an unknown week start', observance('STANDARD', '19701025T020000', '+0100', '+0000', yearly(10, '-1SU', ';WKST=XX'))],
+    ['a start date that is not on the rule day', observance('STANDARD', '19701024T020000', '+0100', '+0000', yearly(10, '-1SU'))],
+  ])('refuses %s', (_, broken) => {
+    expect(() => parseFlightCalendar(calendar(zoneDefinition('Europe/London', broken, observance('DAYLIGHT', '19700329T010000', '+0000', '+0100', yearly(3, '-1SU'))), winter))).toThrow(/cannot be checked safely/);
+  });
+
+  it('treats more observances than any real zone declares as unsupported', () => {
+    const many = zoneDefinition('Europe/London', ...Array.from({ length: 11 }, (_, i) => observance('STANDARD', `${1970 + i}0101T000000`, '+0000', '+0000')));
+    expect(() => parseFlightCalendar(calendar(many, winter))).toThrow(/cannot be checked safely/);
+  });
+});
+
+describe('flight calendar import: correct definitions are never wrongly refused', () => {
+  const zones: Record<string, string> = { 'Europe/London': london(), 'America/New_York': newYork, 'Asia/Kolkata': kolkata,
+    'Australia/Sydney': zoneDefinition('Australia/Sydney', observance('DAYLIGHT', '19701004T020000', '+1000', '+1100', yearly(10, '1SU')), observance('STANDARD', '19700405T030000', '+1100', '+1000', yearly(4, '1SU'))) };
+  const stamp = (d: Date, hour: number) => `${d.getUTCFullYear()}${String(d.getUTCMonth() + 1).padStart(2, '0')}${String(d.getUTCDate()).padStart(2, '0')}T${String(hour).padStart(2, '0')}0000`;
+  it('imports every hour on and around each clock-change weekend and on one day a month, except clock-change wall times', () => {
+    const wrong: string[] = [];
+    for (const [zone, definition] of Object.entries(zones)) {
+      const days = new Set<number>();
+      for (let month = 0; month < 12; month++) days.add(Date.UTC(2026, month, 15));
+      for (const month of zone === 'Asia/Kolkata' ? [] : [2, 3, 9, 10]) for (let day = 1; day <= 31; day++) if (day < 3 || day > 25 || (month === 9 && day < 8) || (month === 3 && day < 8) || (month === 10 && day < 8) || (month === 2 && day > 7 && day < 16)) days.add(Date.UTC(2026, month, day));
+      for (const ms of days) {
+        const d = new Date(ms);
+        for (let hour = 0; hour < 24; hour++) {
+          try { parseFlightCalendar(calendar(definition, event(`DTSTART;TZID=${zone}:${stamp(d, hour)}\nDTEND;TZID=${zone}:${stamp(d, hour).replace(/0000$/, '0001')}`))); }
+          catch (error) { if (!/ambiguous/.test((error as Error).message)) wrong.push(`${zone} ${stamp(d, hour)}: ${(error as Error).message.slice(0, 60)}`); }
+        }
+      }
+    }
+    expect(wrong).toEqual([]);
+  }, 60000);
 });

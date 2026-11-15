@@ -2,8 +2,9 @@ import { formatLocalDateTime, parseLocalDateTime } from './local-time';
 
 export const MAX_FLIGHT_CALENDAR_BYTES = 128 * 1024;
 const MAX_EVENTS = 50;
-const HOUR_MS = 60 * 60 * 1000;
-const DAY_MS = 24 * HOUR_MS;
+const DAY_MS = 24 * 60 * 60 * 1000;
+// More observances than any real zone declares; anything larger is treated as unsupported.
+const MAX_OBSERVANCES = 10;
 
 export interface CalendarFlightEvent {
   id: string;
@@ -14,8 +15,8 @@ export interface CalendarFlightEvent {
 
 interface CalendarProperty { header: string; value: string }
 
-/** A TZID-qualified time the standard database converted: the zone (as the database names it), the name the file used, and the instant produced. */
-interface ZoneCheck { zone: string; label: string; instantMs: number }
+/** A TZID-qualified time the standard database converted: the zone (as the database names it), the name the file used, the instant produced and the wall-clock time the file gave (as UTC milliseconds). */
+interface ZoneCheck { zone: string; label: string; instantMs: number; localMs: number }
 
 /** Yearly "nth weekday of a month" rule, the only recurrence shape calendars use for clock changes. */
 interface YearlyRule { month: number; nth: number; weekday: number; untilMs?: number }
@@ -38,10 +39,12 @@ function offsetOf(value: string): number | null {
 
 function localMsOf(value: string): number | null {
   const match = /^(\d{4})(\d{2})(\d{2})T([01]\d|2[0-3])([0-5]\d)([0-5]\d)$/.exec(value);
-  return match ? Date.UTC(Number(match[1]), Number(match[2]) - 1, Number(match[3]), Number(match[4]), Number(match[5]), Number(match[6])) : null;
+  if (!match) return null;
+  const ms = Date.UTC(Number(match[1]), Number(match[2]) - 1, Number(match[3]), Number(match[4]), Number(match[5]), Number(match[6]));
+  return new Date(ms).getUTCDate() === Number(match[3]) && new Date(ms).getUTCMonth() === Number(match[2]) - 1 ? ms : null;
 }
 
-/** Only YEARLY;BYMONTH;BYDAY=<n><weekday> (optionally INTERVAL=1, UNTIL, WKST) is understood; anything else is unsupported. */
+/** Only YEARLY;BYMONTH;BYDAY=<n><weekday> with n from 1 to 4 or -1 to -4 (optionally INTERVAL=1, UNTIL, WKST) is understood: every such month has that day each year. Anything else is unsupported. */
 function yearlyRuleOf(value: string): YearlyRule | null {
   const parts = new Map<string, string>();
   for (const part of value.split(';')) {
@@ -51,14 +54,16 @@ function yearlyRuleOf(value: string): YearlyRule | null {
     parts.set(name, rest.join('=').toUpperCase());
   }
   const month = /^(\d{1,2})$/.exec(parts.get('BYMONTH') ?? '');
-  const day = /^([+-]?[1-5])(SU|MO|TU|WE|TH|FR|SA)$/.exec(parts.get('BYDAY') ?? '');
+  const day = /^([+-]?[1-4])(SU|MO|TU|WE|TH|FR|SA)$/.exec(parts.get('BYDAY') ?? '');
   if (parts.get('FREQ') !== 'YEARLY' || !month || !day || Number(month[1]) < 1 || Number(month[1]) > 12) return null;
   if (parts.has('INTERVAL') && parts.get('INTERVAL') !== '1') return null;
+  if (parts.has('WKST') && !WEEKDAYS.includes(parts.get('WKST') as string)) return null;
   const rule: YearlyRule = { month: Number(month[1]) - 1, nth: Number(day[1]), weekday: WEEKDAYS.indexOf(day[2]) };
   if (parts.has('UNTIL')) {
-    const until = /^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})Z$/.exec(parts.get('UNTIL') ?? '');
-    if (!until) return null;
-    rule.untilMs = Date.UTC(Number(until[1]), Number(until[2]) - 1, Number(until[3]), Number(until[4]), Number(until[5]), Number(until[6]));
+    const until = /^(\d{8}T\d{6})Z$/.exec(parts.get('UNTIL') ?? '');
+    const untilMs = until ? localMsOf(until[1]) : null;
+    if (untilMs === null) return null;
+    rule.untilMs = untilMs;
   }
   return rule;
 }
@@ -81,9 +86,9 @@ function latestOnset(observance: Observance, instantMs: number): number | null {
   const onsets = [startLocalMs - fromMs];
   if (rule) {
     const timeOfDay = ((startLocalMs % DAY_MS) + DAY_MS) % DAY_MS;
-    // Once a rule has ended, its last yearly instance is the latest that can apply.
+    // Local and UTC years can differ by a day, so look a year either side; once a rule has ended its last yearly instance is the latest that can apply.
     const year = Math.min(new Date(instantMs).getUTCFullYear(), rule.untilMs === undefined ? Infinity : new Date(rule.untilMs).getUTCFullYear());
-    for (const candidate of [year - 1, year]) {
+    for (const candidate of [year - 1, year, year + 1]) {
       const day = dayOfMonth(candidate, rule);
       if (day === null) continue;
       const local = Date.UTC(candidate, rule.month, day) + timeOfDay;
@@ -112,14 +117,6 @@ function embeddedOffsetAt(definition: ZoneDefinition, instantMs: number): number
   return earliest.fromMs as number;
 }
 
-/** The offset the standard database applies at an instant. */
-function databaseOffsetAt(instantMs: number, zone: string): number {
-  const minute = Math.floor(instantMs / 60000) * 60000;
-  const local = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/.exec(formatLocalDateTime(minute, zone));
-  if (!local) throw new Error('The calendar time zone could not be checked.');
-  return Date.UTC(Number(local[1]), Number(local[2]) - 1, Number(local[3]), Number(local[4]), Number(local[5])) - minute;
-}
-
 function instant(property: CalendarProperty): { ms: number; check?: ZoneCheck } {
   const parameters = property.header.split(';').slice(1);
   const values = parameters.filter((p) => p.toUpperCase().startsWith('VALUE='));
@@ -135,23 +132,27 @@ function instant(property: CalendarProperty): { ms: number; check?: ZoneCheck } 
   const parsed = parseLocalDateTime(local, zone);
   if (!parsed.ok) throw new Error('The calendar time or time zone is invalid or ambiguous. Enter the flight times manually.');
   const ms = parsed.ms + Number(match[6]) * 1000;
-  return { ms, check: match[7] ? undefined : { zone: canonicalZone(zone), label: zone, instantMs: ms } };
+  const localMs = Date.UTC(Number(match[1]), Number(match[2]) - 1, Number(match[3]), Number(match[4]), Number(match[5]), Number(match[6]));
+  return { ms, check: match[7] ? undefined : { zone: canonicalZone(zone), label: zone, instantMs: ms, localMs } };
 }
 
 /**
  * Times are always converted with the standard time-zone database, never with a calendar's own rules. If the file
- * also embeds a definition for the same zone, that definition must be one this reader can evaluate and must give
- * the same offset as the database at the flight time and a day either side; otherwise the event is refused rather
- * than imported at a time the traveller's own calendar might read differently.
+ * also embeds a definition for the same zone, that definition must be one this reader can evaluate, and it must show
+ * the flight's wall-clock time at exactly one instant, the instant the database produced. A definition that gives a
+ * different instant, shows that wall time twice (an overlap) or never (a gap) is refused rather than imported at a
+ * time the traveller's own calendar might read differently.
  */
-function assertZoneAgrees({ zone, label, instantMs }: ZoneCheck, definitions: Map<string, ZoneDefinition[]>): void {
+function assertZoneAgrees({ zone, label, instantMs, localMs }: ZoneCheck, definitions: Map<string, ZoneDefinition[]>): void {
   const matches = definitions.get(zone);
   if (!matches) return;
   if (matches.length > 1 || !matches[0].usable) throw new Error(`The calendar defines the time zone ${label} in a way that cannot be checked safely. Enter the flight times manually.`);
-  for (const sample of [instantMs, instantMs - DAY_MS - 2 * HOUR_MS, instantMs + DAY_MS + 2 * HOUR_MS]) {
-    if (embeddedOffsetAt(matches[0], sample) !== databaseOffsetAt(sample, zone)) {
-      throw new Error(`The calendar describes the time zone ${label} differently from the standard time-zone database, so its times could not safely be imported. Enter the flight times manually.`);
-    }
+  const definition = matches[0];
+  const offsets = new Set(definition.observances.flatMap((observance) => [observance.fromMs as number, observance.toMs as number]));
+  const instants = new Set<number>();
+  for (const offset of offsets) if (embeddedOffsetAt(definition, localMs - offset) === offset) instants.add(localMs - offset);
+  if (instants.size !== 1 || !instants.has(instantMs)) {
+    throw new Error(`The calendar describes the time zone ${label} differently from the standard time-zone database, so its times could not safely be imported. Enter the flight times manually.`);
   }
 }
 
@@ -196,8 +197,12 @@ export function parseFlightCalendar(text: string): { events: CalendarFlightEvent
       if (components.pop() !== component) throw new Error('This calendar contains an incomplete event or calendar.');
       if (component === 'VCALENDAR') closed = true;
       if (zone && observance && components.length === 2 && (component === 'STANDARD' || component === 'DAYLIGHT')) {
-        if (observance.startLocalMs === undefined || observance.fromMs === undefined || observance.toMs === undefined) zone.usable = false;
-        zone.observances.push(observance);
+        const { startLocalMs, fromMs, toMs, rule } = observance;
+        const started = startLocalMs === undefined ? null : new Date(startLocalMs);
+        // A recurring observance's DTSTART must itself fall on the rule's day; otherwise its meaning is undefined.
+        const synchronised = !rule || (started !== null && started.getUTCMonth() === rule.month && started.getUTCDate() === dayOfMonth(started.getUTCFullYear(), rule));
+        if (startLocalMs === undefined || fromMs === undefined || toMs === undefined || !synchronised || zone.observances.length >= MAX_OBSERVANCES) zone.usable = false;
+        else zone.observances.push(observance);
         observance = undefined;
         continue;
       }
