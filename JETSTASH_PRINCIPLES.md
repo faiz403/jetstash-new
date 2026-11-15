@@ -325,7 +325,8 @@ destinations have real photography; airport and hero coverage is partial — see
   unavailable. It carries the shared affiliate disclosure and a fresh-search warning. No generated
   placeholder URL, new flight-data service or change to the Trip.com pause is introduced.
 - **Skyscanner**: still declined pre-launch (see README); not configured anywhere in
-  `lib/booking-providers.ts` — nothing currently reads a second provider.
+  `lib/booking-providers.ts`, which still configures Trip.com only. The inactive CJ adapter above is the only other
+  provider code path; its record list is empty, so no second provider renders anywhere.
 - **Link semantics**: every outbound affiliate `<a>` uses `PROVIDER_REL`
   (`"nofollow sponsored noopener noreferrer"`) and opens in a new tab — matches Google's guidance
   for paid/affiliate links, defined once, never hand-typed at a call site.

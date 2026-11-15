@@ -74,3 +74,79 @@ describe('flight calendar import', () => {
     expect(() => parseFlightCalendar(`BEGIN:VCALENDAR\nMETHOD:CANCEL\n${event()}\nEND:VCALENDAR`)).toThrow(/cancelled/);
   });
 });
+
+const observance = (kind: 'STANDARD' | 'DAYLIGHT', to: string) => `BEGIN:${kind}\nDTSTART:19700101T000000\nTZOFFSETFROM:+0000\nTZOFFSETTO:${to}\nEND:${kind}`;
+const zoneDefinition = (tzid: string, ...parts: string[]) => `BEGIN:VTIMEZONE\nTZID:${tzid}\n${parts.join('\n')}\nEND:VTIMEZONE`;
+const londonValid = zoneDefinition('Europe/London', observance('STANDARD', '+0000'), observance('DAYLIGHT', '+0100'));
+const kolkataValid = zoneDefinition('Asia/Kolkata', observance('STANDARD', '+0530'));
+const flight = (zone: string, start: string, end: string, endZone = zone) => event(`DTSTART;TZID=${zone}:${start}\nDTEND;TZID=${endZone}:${end}\nSUMMARY:Flight`);
+
+describe('flight calendar import: embedded time-zone definitions', () => {
+  it('refuses the reproduced Europe/London +0200 definition instead of importing 22:00Z for 20 December', () => {
+    const wrong = zoneDefinition('Europe/London', observance('STANDARD', '+0200'));
+    expect(() => parseFlightCalendar(calendar(wrong, flight('Europe/London', '20261220T220000', '20261221T060000')))).toThrow(/differently from the standard time-zone database/);
+  });
+
+  it('accepts valid winter and summer definitions and reads the same instants as the standard database', () => {
+    const winter = parseFlightCalendar(calendar(londonValid, kolkataValid, flight('Europe/London', '20261220T220000', '20261221T113000', 'Asia/Kolkata')));
+    expect(winter.events[0].departsMs).toBe(Date.parse('2026-12-20T22:00:00Z'));
+    expect(winter.events[0].arrivesMs).toBe(Date.parse('2026-12-21T06:00:00Z'));
+    const summer = parseFlightCalendar(calendar(londonValid, kolkataValid, flight('"Europe/London"', '20260720T220000', '20260721T113000', 'Asia/Kolkata')));
+    expect(summer.events[0].departsMs).toBe(Date.parse('2026-07-20T21:00:00Z'));
+    expect(calendarFlightTimes(summer.events[0], 'Europe/London', 'Asia/Kolkata')).toEqual({ departsLocal: '2026-07-20T22:00', arrivesLocal: '2026-07-21T11:30' });
+  });
+
+  it('accepts valid definitions on either side of both clock changes', () => {
+    const spring = parseFlightCalendar(calendar(londonValid, flight('Europe/London', '20260328T220000', '20260329T120000')));
+    expect([spring.events[0].departsMs, spring.events[0].arrivesMs]).toEqual([Date.parse('2026-03-28T22:00:00Z'), Date.parse('2026-03-29T11:00:00Z')]);
+    const autumn = parseFlightCalendar(calendar(londonValid, flight('Europe/London', '20261024T220000', '20261025T120000')));
+    expect([autumn.events[0].departsMs, autumn.events[0].arrivesMs]).toEqual([Date.parse('2026-10-24T21:00:00Z'), Date.parse('2026-10-25T12:00:00Z')]);
+  });
+
+  it('still refuses clock-change wall times when a valid definition is present', () => {
+    expect(() => parseFlightCalendar(calendar(londonValid, event('DTSTART;TZID=Europe/London:20260329T013000\nDTEND:20260329T120000Z')))).toThrow(/ambiguous/);
+    expect(() => parseFlightCalendar(calendar(londonValid, event('DTSTART;TZID=Europe/London:20261025T013000\nDTEND:20261025T120000Z')))).toThrow(/ambiguous/);
+  });
+
+  it('refuses a definition that omits the offset in force on the flight day', () => {
+    const winterOnly = zoneDefinition('Europe/London', observance('STANDARD', '+0000'));
+    expect(() => parseFlightCalendar(calendar(winterOnly, flight('Europe/London', '20260720T220000', '20260721T060000')))).toThrow(/differently/);
+    const summerOnly = zoneDefinition('Europe/London', observance('DAYLIGHT', '+0100'));
+    expect(() => parseFlightCalendar(calendar(summerOnly, flight('Europe/London', '20261220T220000', '20261221T060000')))).toThrow(/differently/);
+  });
+
+  it('checks the arrival time zone as well as the departure time zone', () => {
+    const wrongKolkata = zoneDefinition('Asia/Kolkata', observance('STANDARD', '+0500'));
+    expect(() => parseFlightCalendar(calendar(londonValid, wrongKolkata, flight('Europe/London', '20261220T220000', '20261221T113000', 'Asia/Kolkata')))).toThrow(/Asia\/Kolkata differently/);
+  });
+
+  it.each([
+    ['a duplicated definition', [londonValid, londonValid]],
+    ['a definition with no zone name', [`BEGIN:VTIMEZONE\n${observance('STANDARD', '+0000')}\nEND:VTIMEZONE`, zoneDefinition('Europe/London')]],
+    ['a definition with no observances', [zoneDefinition('Europe/London')]],
+    ['an unreadable offset', [zoneDefinition('Europe/London', observance('STANDARD', 'abc'))]],
+    ['an observance without an offset', [zoneDefinition('Europe/London', observance('STANDARD', '+0000'), 'BEGIN:DAYLIGHT\nDTSTART:19700101T000000\nEND:DAYLIGHT')]],
+    ['two zone names in one definition', [`BEGIN:VTIMEZONE\nTZID:Europe/London\nTZID:Europe/Paris\n${observance('STANDARD', '+0000')}\nEND:VTIMEZONE`]],
+  ])('refuses %s rather than guessing', (_, zones) => {
+    expect(() => parseFlightCalendar(calendar(...zones, flight('Europe/London', '20261220T220000', '20261221T060000')))).toThrow(/cannot be checked safely|differently/);
+  });
+
+  it('ignores definitions for zones the event does not use and keeps files without definitions working', () => {
+    const wrongParis = zoneDefinition('Europe/Paris', observance('STANDARD', '+0900'));
+    expect(parseFlightCalendar(calendar(wrongParis, flight('Europe/London', '20261220T220000', '20261221T060000'))).events).toHaveLength(1);
+    expect(parseFlightCalendar(calendar(flight('Europe/London', '20261220T220000', '20261221T060000'))).events).toHaveLength(1);
+    expect(parseFlightCalendar(calendar(wrongParis, event())).events).toHaveLength(1);
+  });
+
+  it('skips only the conflicting event and reports it, keeping a separate valid event', () => {
+    const wrong = zoneDefinition('Europe/London', observance('STANDARD', '+0200'));
+    const parsed = parseFlightCalendar(calendar(wrong, flight('Europe/London', '20261220T220000', '20261221T060000'), event()));
+    expect(parsed.skipped).toBe(1);
+    expect(parsed.events.map((e) => e.title)).toEqual(['Flight to Delhi']);
+  });
+
+  it('reads a definition that appears after the event that uses it', () => {
+    const wrong = zoneDefinition('Europe/London', observance('STANDARD', '+0200'));
+    expect(() => parseFlightCalendar(calendar(flight('Europe/London', '20261220T220000', '20261221T060000'), wrong))).toThrow(/differently/);
+  });
+});
