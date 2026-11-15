@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { MAX_FLIGHT_CALENDAR_BYTES, calendarFlightTimes, parseFlightCalendar } from '@/lib/arrive-by-journey/calendar-flight';
+import { parseLocalDateTime } from '@/lib/arrive-by-journey/local-time';
 
 const event = (fields = 'DTSTART:20261220T220000Z\nDTEND:20261221T060000Z\nSUMMARY:Flight to Delhi') => `BEGIN:VEVENT\n${fields}\nEND:VEVENT`;
 const calendar = (...events: string[]) => `BEGIN:VCALENDAR\nVERSION:2.0\n${events.join('\n')}\nEND:VCALENDAR`;
@@ -253,11 +254,46 @@ describe('flight calendar import: correct definitions are never wrongly refused'
       for (const ms of days) {
         const d = new Date(ms);
         for (let hour = 0; hour < 24; hour++) {
-          try { parseFlightCalendar(calendar(definition, event(`DTSTART;TZID=${zone}:${stamp(d, hour)}\nDTEND;TZID=${zone}:${stamp(d, hour).replace(/0000$/, '0001')}`))); }
-          catch (error) { if (!/ambiguous/.test((error as Error).message)) wrong.push(`${zone} ${stamp(d, hour)}: ${(error as Error).message.slice(0, 60)}`); }
+          const file = calendar(definition, event(`DTSTART;TZID=${zone}:${stamp(d, hour)}\nDTEND;TZID=${zone}:${stamp(d, hour).replace(/0000$/, '0001')}`));
+          const expected = parseLocalDateTime(`${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}-${String(d.getUTCDate()).padStart(2, '0')}T${String(hour).padStart(2, '0')}:00`, zone);
+          try {
+            const got = parseFlightCalendar(file).events[0].departsMs;
+            if (!expected.ok || got !== expected.ms) wrong.push(`${zone} ${stamp(d, hour)}: imported ${new Date(got).toISOString()} but the database gives ${expected.ok ? new Date(expected.ms).toISOString() : 'an ambiguous time'}`);
+          } catch (error) {
+            if (expected.ok || !/ambiguous/.test((error as Error).message)) wrong.push(`${zone} ${stamp(d, hour)}: ${(error as Error).message.slice(0, 60)}`);
+          }
         }
       }
     }
     expect(wrong).toEqual([]);
   }, 60000);
+});
+
+describe('flight calendar import: hostile definitions found in review are refused', () => {
+  it('orders observances by effective UTC onset before the first change', () => {
+    const wrongFirst = zoneDefinition('Europe/London', observance('STANDARD', '20270101T000000', '+0000', '+0000'), observance('STANDARD', '20270101T010000', '+0200', '+0000'));
+    expect(() => parseFlightCalendar(calendar(wrongFirst, winter))).toThrow(/differently/);
+    const rightFirst = zoneDefinition('Europe/London', observance('STANDARD', '20270101T000000', '-0200', '+0000'), observance('STANDARD', '20270101T010000', '+0000', '-0200'));
+    expect(parseFlightCalendar(calendar(rightFirst, winter)).events[0].departsMs).toBe(Date.parse('2026-12-20T22:00:00Z'));
+  });
+
+  it('refuses when a candidate instant cannot be judged because simultaneous observances disagree', () => {
+    const unclear = zoneDefinition('Europe/London',
+      observance('STANDARD', '19700101T000000', '+0000', '+0000'),
+      observance('DAYLIGHT', '20261220T210000', '+0000', '+0100'),
+      observance('DAYLIGHT', '20261220T210000', '+0000', '+0200'),
+      observance('STANDARD', '20261220T223000', '+0100', '+0000'));
+    expect(() => parseFlightCalendar(calendar(unclear, winter))).toThrow(/differently/);
+  });
+
+  it('refuses years below 1000 rather than letting them be read as 19xx', () => {
+    const early = zoneDefinition('Europe/London', observance('STANDARD', '00010101T000000', '+0000', '+0000'), observance('STANDARD', '18500101T000000', '+0000', '+0200'));
+    expect(() => parseFlightCalendar(calendar(early, winter))).toThrow(/cannot be checked safely/);
+    expect(() => parseFlightCalendar(calendar(event('DTSTART;TZID=Europe/London:00991220T220000\nDTEND;TZID=Europe/London:00991221T060000')))).toThrow(/could not be read/);
+  });
+
+  it('refuses a file that defines more time zones than any real calendar needs', () => {
+    const zones = Array.from({ length: 21 }, (_, i) => zoneDefinition(`Etc/GMT+${(i % 12) + 1}`, observance('STANDARD', '19700101T000000', '+0000', '+0000')));
+    expect(() => parseFlightCalendar(calendar(...zones, winter))).toThrow(/too many time zones/);
+  });
 });
