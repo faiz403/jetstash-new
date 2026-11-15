@@ -121,9 +121,10 @@ function embeddedOffsetAt(definition: ZoneDefinition, instantMs: number): number
   if (best) return best.toMs;
   // Before every onset, the earliest observance's "from" offset applies; the earliest is judged by its effective UTC onset.
   const effective = (o: Observance) => (o.startLocalMs as number) - (o.fromMs as number);
-  const [first, second] = [...definition.observances].sort((a, b) => effective(a) - effective(b));
-  if (second && effective(second) === effective(first) && second.fromMs !== first.fromMs) return null;
-  return first.fromMs as number;
+  const earliest = Math.min(...definition.observances.map(effective));
+  const first = definition.observances.filter((o) => effective(o) === earliest);
+  if (first.some((o) => o.fromMs !== first[0].fromMs)) return null; // every observance sharing the earliest onset must agree
+  return first[0].fromMs as number;
 }
 
 function instant(property: CalendarProperty): { ms: number; check?: ZoneCheck } {
@@ -196,7 +197,9 @@ export function parseFlightCalendar(text: string): { events: CalendarFlightEvent
         if (++total > MAX_EVENTS) throw new Error('Choose a calendar file with no more than 50 events.');
         properties = {};
       }
-      if (component === 'VTIMEZONE' && components.length === 1) {
+      // A VTIMEZONE belongs directly under the calendar; one anywhere else is malformed, not something to ignore.
+      if (component === 'VTIMEZONE' && components.length !== 1) throw new Error('This calendar contains an incomplete event or calendar.');
+      if (component === 'VTIMEZONE') {
         if (++definitionCount > MAX_DEFINITIONS) throw new Error('This calendar defines too many time zones to check safely. Enter the flight times manually.');
         zone = { tzids: [], observances: [], usable: true };
       }

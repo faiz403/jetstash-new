@@ -297,3 +297,27 @@ describe('flight calendar import: hostile definitions found in review are refuse
     expect(() => parseFlightCalendar(calendar(...zones, winter))).toThrow(/too many time zones/);
   });
 });
+
+describe('flight calendar import: contradictory earliest offsets and misplaced definitions', () => {
+  it('refuses conflicting source offsets at the earliest onset whatever order the observances appear in', () => {
+    const rows = [
+      observance('STANDARD', '20270101T000000', '+0000', '+0000'),
+      observance('STANDARD', '20270101T000000', '+0000', '+0100'),
+      observance('STANDARD', '20270101T020000', '+0200', '+0000'),
+    ];
+    const orders = [[0, 1, 2], [0, 2, 1], [1, 0, 2], [1, 2, 0], [2, 0, 1], [2, 1, 0]];
+    for (const order of orders) expect(() => parseFlightCalendar(calendar(zoneDefinition('Europe/London', ...order.map((i) => rows[i])), winter)), order.join()).toThrow(/differently/);
+  });
+
+  it('refuses a calendar that places a time-zone definition anywhere but directly under the calendar', () => {
+    const wrong = zoneDefinition('Europe/London', observance('STANDARD', '19700101T000000', '+0200', '+0200'));
+    expect(() => parseFlightCalendar(calendar(event(`DTSTART;TZID=Europe/London:20261220T220000\nDTEND;TZID=Europe/London:20261221T060000\n${wrong}`)))).toThrow(/incomplete/);
+    expect(() => parseFlightCalendar(calendar(`BEGIN:X-WRAPPER\n${wrong}\nEND:X-WRAPPER`, winter))).toThrow(/incomplete/);
+    expect(() => parseFlightCalendar(calendar(`BEGIN:VTIMEZONE\nTZID:Europe/London\n${wrong}\nEND:VTIMEZONE`, winter))).toThrow(/incomplete/);
+  });
+
+  it('refuses historical definitions whose offsets include seconds rather than comparing them loosely', () => {
+    const lmt = zoneDefinition('Europe/London', observance('STANDARD', '18000101T000000', '-000115', '-000115'));
+    expect(() => parseFlightCalendar(calendar(lmt, flight('Europe/London', '18001220T220000', '18001221T060000')))).toThrow(/differently|cannot be checked/);
+  });
+});
