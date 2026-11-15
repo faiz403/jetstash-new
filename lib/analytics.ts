@@ -63,6 +63,7 @@ export type AnalyticsEvent =
   // Outbound affiliate link
   | 'tripcom_click'
   | 'tripcom_hotel_click'
+  | 'cj_flight_click'
   // Lead-capture conversions (Contact, Quote Request, Newsletter)
   | 'contact_submit_success'
   // Astra Big Job #4 closure (13 Sept 2026): fires once per form session,
@@ -135,12 +136,12 @@ export type AnalyticsEvent =
  * checked for same-session partner handoffs without touching the
  * tripcom_click/tripcom_hotel_click payload itself.
  */
-// These specialist events are each emitted only by a verified Trip.com
-// handoff. Keep their product-level measurement intact while pairing them
+// These events are emitted only by a verified provider handoff. Keep their product-level measurement intact while pairing them
 // with the same coarse acquisition attribution as the standard CTA.
 const ACQUISITION_HANDOFF_EVENTS: ReadonlySet<AnalyticsEvent> = new Set([
   'tripcom_click',
   'tripcom_hotel_click',
+  'cj_flight_click',
   'journey_choice_cta_click',
   'journey_brief_live_price_click',
   'ready_check_book_cta_click',

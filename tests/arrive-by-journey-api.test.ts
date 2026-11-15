@@ -539,9 +539,9 @@ describe('the internal UI and its non-public status', () => {
     expect(page).toContain('getDepartureAirportOptions()');
   });
 
-  it('only Doha is released: no worldwide release beyond MAN/ISB/LHE/KHI and the Doha beta', () => {
+  it('only the individually released Doha and Delhi betas extend the four explicit profiles', () => {
     const src = read('lib', 'arrive-by-shared', 'airport-release.ts');
     const releasedCodes = [...src.matchAll(/^\s{2}([A-Z]{3}): \{/gm)].map((m) => m[1]);
-    expect(releasedCodes).toEqual(['DOH']);
+    expect(releasedCodes).toEqual(['DOH', 'DEL']);
   });
 });

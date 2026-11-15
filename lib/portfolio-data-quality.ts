@@ -6,6 +6,7 @@ import { routeStatusEvents, validateStatusLedger } from '@/data/route-status-eve
 import { routeWarnings } from '@/data/route-warnings';
 import { routes, type Route } from '@/data/routes';
 import { getTripComFlightHandoff, getTripComRouteUrl } from '@/lib/booking-providers';
+import { getCjFlightHandoff } from '@/lib/cj-flight-handoff';
 import { isSelfTransferItinerary } from '@/lib/fare-self-transfer';
 import { getFareSignalForRoute } from '@/lib/fare-signal';
 import { daysBetweenIso } from '@/lib/freshness-thresholds';
@@ -57,7 +58,7 @@ export interface PortfolioRouteAuditRow {
   currentFareKind: 'clean' | 'self-transfer' | null;
   currentFareProfile: string | null;
   bookingHandoffType: string | null;
-  commercialHandoffType: 'exact-tripcom' | 'tripcom-destination-fallback' | 'google-flights' | 'none';
+  commercialHandoffType: 'exact-cj' | 'exact-tripcom' | 'tripcom-destination-fallback' | 'google-flights' | 'none';
   exactAirportPreserved: boolean;
   monetised: boolean;
   currentCta: string | null;
@@ -248,6 +249,8 @@ export function buildPortfolioAudit(nowIso: string): PortfolioRouteAuditRow[] {
     const publishable = getPublishableObservationsByRoute(route.slug, nowIso);
     const selectedRaw = signal.observation ? fareObservations.find((observation) => observation.id === signal.observation?.id) : undefined;
     const handoff = getTripComFlightHandoff(route.slug, route.airportSlug, route.destinationSlug, nowIso);
+    const cjHandoff = handoff ? null : getCjFlightHandoff(route.slug, nowIso);
+    const monetised = Boolean(handoff || cjHandoff);
     const verificationCurrent = presentation.status !== 'unverified'
       && presentation.status !== 'service-ended'
       && Boolean(route.verification?.reviewDueDate && route.verification.reviewDueDate >= nowIso);
@@ -267,8 +270,8 @@ export function buildPortfolioAudit(nowIso: string): PortfolioRouteAuditRow[] {
       : presentation.status === 'unverified'
       ? 'EVIDENCE_GAP'
       : !signal.observation
-          ? (handoff ? 'FARE_GAP' : 'EVIDENCE_GAP')
-          : !handoff
+          ? (monetised ? 'FARE_GAP' : 'EVIDENCE_GAP')
+          : !monetised
             ? 'TRAFFIC_READY_NON_MONETISED'
             : verificationCurrent
               ? 'TRAFFIC_READY'
@@ -330,15 +333,15 @@ export function buildPortfolioAudit(nowIso: string): PortfolioRouteAuditRow[] {
       currentFareRefreshDueDate: signal.observation ? addDays(signal.observation.observedDate, 14) : null,
       currentFareKind: selectedRaw ? (isSelfTransferItinerary(selectedRaw.priceNote) ? 'self-transfer' : 'clean') : null,
       currentFareProfile: selectedRaw?.profileId ?? null,
-      bookingHandoffType: handoff?.kind ?? null,
+      bookingHandoffType: handoff?.kind ?? (cjHandoff ? 'cj-exact-airports' : null),
       commercialHandoffType: handoff
         ? handoff.kind === 'destination-fallback' ? 'tripcom-destination-fallback' : 'exact-tripcom'
-        : 'google-flights',
-      exactAirportPreserved: Boolean(handoff),
-      monetised: Boolean(handoff),
+        : cjHandoff ? 'exact-cj' : 'google-flights',
+      exactAirportPreserved: monetised,
+      monetised,
       currentCta: handoff
         ? handoff.kind === 'service-ended-connecting' ? 'Compare connecting flights on Trip.com' : 'Compare flights on Trip.com'
-        : 'Search flights on Google Flights',
+        : cjHandoff ? 'Search flights on Air India' : 'Search flights on Google Flights',
       farePublishable: Boolean(signal.observation),
       fareSuppressionReason,
       fareRescueCategory,

@@ -10,6 +10,20 @@ a real measurable funnel blocker; the same specific need independently requested
 relevant travellers; a confirmed booking's reconciliation/follow-up work; an approved partner
 integration). `ACTIVE` here means "continuing evidence/observation," not "open for a build PR."
 
+## Immediate recovery work, 15 November 2026
+
+The founder explicitly authorised local fixes to commercial blockers, maintenance and Arrive By. The prepared branch is `codex/revenue-recovery-2026-11-15`; it is not a Production release or a revenue result.
+
+| Item | State | Next evidence needed |
+| --- | --- | --- |
+| Arrive By calendar entry and Delhi road beta | Prepared locally | Passing full checks, browser verification and approved publication |
+| Independent Air India/CJ flight handoff | Adapter prepared, no links activated | Signed-in account terms, exact Get Code URL and verified airport landing |
+| Trip.com flights and hotels | Paused | Resolve the pending account/agreement issue; no silent acceptance or unpause |
+| Maintenance report | Generator corrected locally | Publish after validation; actual source reviews stay manual |
+| Audience and first eligible booking | Unresolved | Current first-party traffic and provider transaction evidence; code changes are not demand |
+
+No paid promotion, new subscription, bulk SEO expansion or agency follow-up is authorised by this queue. Existing homepage scope and fare-evidence rules remain.
+
 ## Delivery queue
 
 **Current baseline:** `2f1ede5`, reconciled 14 September 2026 — see `COMPLETED.md`'s September 2026

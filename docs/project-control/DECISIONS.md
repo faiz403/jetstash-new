@@ -390,3 +390,15 @@ Batch B's own evidence files.
 - An opaque `x/10` Travel Confidence Score.
 - Customer-facing arrival promises based on guessed schedules or minimum connection assumptions.
 - Hardcoded or invented travel facts added merely to avoid an empty state.
+
+## 15 November 2026: bounded recovery work authorised by the founder
+
+The founder explicitly asked to fix the commercial, audience, maintenance and Arrive By weaknesses. This permits the local patch despite the earlier feature freeze. It does not imply new revenue, permit invented affiliate links or remove the separate publication approvals in `AGENTS.md`.
+
+Keep the Trip.com flights/hotels pause until the account/agreement dependency is resolved. Prepare an independent Air India/CJ action in the existing route booking slot, with exact generated URL, airport landing and current UK programme terms as activation prerequisites. The list remains empty until those facts are verified. A click is not a sale and a live CTA is not earnings.
+
+Reduce manual flight entry with optional browser-local calendar import. Do not imply live flight identification, schedule validation or automatic connection assembly. The imported event must cover first departure to final landing and be checked by the traveller.
+
+Delhi is the next individual road-only arrival beta, prepared using the existing 30 September capability proof and its unchanged 29 December review deadline. Keep beta wording, country restrictions and paid-call guards. Other generic airports remain internal. No new paid probe or flight-data service is authorised.
+
+Replace fixed historical audit conclusions with the current inventory and clearly dated search evidence. Audience growth and income require external outcomes; no follow-up messages are to be sent to agencies.

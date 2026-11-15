@@ -515,17 +515,19 @@ describe('gated generic UI path', () => {
     for (const code of ['ISB', 'MAN']) expect(getRoadAirportInfo(code)).toBeUndefined();
   });
 
-  it('only the released Doha beta reaches the generic UI in production; every other evidenced airport stays out', () => {
+  it('only the released Doha and Delhi betas reach the generic UI; other evidenced airports stay out', () => {
     Object.assign(evidenceTable, shippedEvidence);
     Object.assign(releaseTable, shippedRelease);
-    expect(Object.keys(shippedRelease)).toEqual(['DOH']);
+    expect(Object.keys(shippedRelease)).toEqual(['DOH', 'DEL']);
     vi.useFakeTimers({ toFake: ['Date'] });
     vi.setSystemTime(new Date('2026-11-20T12:00:00Z'));
     try {
-      for (const code of Object.keys(shippedEvidence).filter((c) => c !== 'DOH')) expect(getRoadAirportInfo(code), code).toBeUndefined();
+      for (const code of Object.keys(shippedEvidence).filter((c) => !shippedRelease[c])) expect(getRoadAirportInfo(code), code).toBeUndefined();
       expect(getRoadAirportInfo('DOH')).toBeDefined();
+      expect(getRoadAirportInfo('DEL')).toBeDefined();
       vi.setSystemTime(new Date('2026-12-30T00:30:00Z'));
       expect(getRoadAirportInfo('DOH')).toBeUndefined();
+      expect(getRoadAirportInfo('DEL')).toBeUndefined();
     } finally {
       vi.useRealTimers();
     }

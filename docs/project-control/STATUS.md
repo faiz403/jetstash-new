@@ -1,5 +1,17 @@
 # JetStash Current Status
 
+## 15 November 2026: recovery patch prepared locally
+
+Founder instruction: fix the income, audience, maintenance and Arrive By weaknesses, including the paused promotion. Branch `codex/revenue-recovery-2026-11-15` starts from `b4188dd` (PR #377). The founder subsequently approved pushing this prepared branch and opening its PR on 15 November. No Production merge is authorised. Older release summaries below remain historical.
+
+* Arrive By: remove unconfirmed sample flight times; optionally import explicit, timezone-bearing flight calendar events locally in the browser, with airport-clock previews and an explicit apply step. No upload, booking lookup, flight-status claim or new paid API. Unsupported files keep manual entry available.
+* Coverage: prepare Delhi as the next single road-only arrival beta on existing 30 September capability evidence. Same-country India restrictions and 29 December evidence expiry remain. Other internal airports remain gated. This is not a new live capability check or a worldwide launch.
+* Commercial: add a separately gated Air India/CJ flight action in the existing Fare Signal slot. The record list is empty pending current account/terms and exact generated-link/landing verification. No earning flight link has been activated. Trip.com flights and hotels remain paused.
+* Maintenance: replace the audit generator's fixed October conclusions with current derived totals, overdue/next-14-day source queue, honest fare gaps and explicit historical Search Console labelling. Local 15 November run with the pause ON: 89 routes, 25 publishable fare signals, 64 fare gaps, 53 route reviews overdue, two due within 14 days, zero monetised flight handoffs. Generated report: `commercial-completeness-2026-11-15.md` and companion JSON.
+* Audience/income remain unproven. The bundled Search Console export settles through 29 September and cannot be used as today's acquisition evidence. GSC Wizard returned a paid-plan requirement, so no subscription was bought. The current CJ browser is signed out. No agency follow-up, public post, tracked affiliate click or billable routing call was made.
+* Validation: strict TypeScript, separate lint, all 5,871 tests in 306 files and the Production-shaped build passed. Local HTTP checks passed for all 89 route pages and the Delhi form render. Browser interactions remain pending because the cloud browser cannot reach the local server. Secure CJ sign-in timed out; a fresh account navigation still showed the email login. See `recovery-preparation-2026-11-15.md`. Push/PR publication was approved by the founder on 15 November; tracked link verification, merge and deployment remain separately gated under `AGENTS.md`.
+
+
 **Latest release reconciliation:** 14 November 2026, through PR #375 (`eb753d0`). The older dated programme/count snapshots below are historical.
 
 PRs merged and Production-deployed since the 6 November reconciliation below: #372 (`850ff63`, 7 November; homepage consent banner in normal flow), #373

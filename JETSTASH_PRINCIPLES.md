@@ -24,7 +24,7 @@ pre-rendered, and status-sensitive surfaces use six-hour ISR so sourced service 
 effect without a code deployment.
 
 Two business models sit on top of that content:
-1. **Affiliate commission** on outbound flight-booking clicks (Trip.com, JetStash's sole active provider).
+1. **Affiliate commission** on eligible bookings through verified provider links. A click is not income. Trip.com promotion is currently paused; CJ flight activation remains account-gated.
 2. **Manual lead capture** for Umrah/family/group trips and a curated (not automated) "Travel Club"
    fare-alert mailing list.
 
@@ -285,10 +285,14 @@ destinations have real photography; airport and hero coverage is partial — see
 
 ## 7. Affiliate & monetisation strategy
 
-**Everything outbound funnels through one file: `lib/booking-providers.ts`.** No component
-constructs a booking URL by hand.
+**Flight URLs come from provider-specific verified records.** Trip.com uses
+`lib/booking-providers.ts`; the independently gated Air India/CJ alternative uses
+`data/cj-flight-links.ts` and `lib/cj-flight-handoff.ts`. No component constructs a booking URL.
 
-- **Primary — and sole active — provider**: Trip.com. TravelUp was removed entirely (founder
+- **Existing flight provider**: Trip.com, promotional use paused since 4 November 2026 pending the
+  account/agreement clarification. The pause applies to flight and hotel promotion. Do not turn it
+  off as a code fix or treat Google Flights fallbacks as earning links. TravelUp was removed entirely
+  (founder
   decision, 4 August 2026): its generic-search CTA frequently reset the traveller's intended
   departure airport (e.g. Manchester silently becoming London), judged an unacceptable user
   experience. Trip.com has no equivalent problem because every link is route-specific by
@@ -300,15 +304,26 @@ constructs a booking URL by hand.
   `Allianceid`/`SID` and Trip.com's own Ad ID (`trip_sub3`) — never hand-typed, never guessed, never
   reconstructed from a URL pattern. `getTripComRouteUrl(routeSlug)` is the one lookup every booking
   CTA reads from; it returns `null` for a route with no verified link.
-- **Fail-closed, no generic fallback — the permanent rule.** 23 of JetStash's 32 routes have a
-  link; the other 9 (all London-origin: 7 Heathrow, 2 Gatwick) do not, and get **no booking CTA at
-  all** rather than a generic one. Trip.com's Flights-page tool has no Heathrow/Gatwick-specific
+- **Exact-airport partner handoff or no paid CTA.** Coverage is derived from current records and
+  the pause configuration, never from an old fixed route total. Where no verified paid handoff
+  resolves, the existing Google Flights fallback remains explicitly non-monetised.
+  Trip.com's Flights-page tool has no Heathrow/Gatwick-specific
   entry, only a generic "London" resolving to the aggregate `LON` code; Trip.com's normal consumer
   search interface *can* select Heathrow/Gatwick specifically, but only via a dated search
   (confirmed live — even a one-way search attached a return date), and a Custom Link wraps that URL
   unedited, dates included. JetStash's standing rule: **an exact airport-specific Trip.com link, or
   no provider CTA — never a broadened generic redirect.** This is unchanged if a 10th, 11th, etc.
   route is later found unsupported — never invent a fallback to fill the gap.
+- **Independent CJ flight alternative (prepared 15 November 2026).** Air India is the first
+  supported adapter. Its public record list starts empty: joined programme status alone does not
+  authorise a link. Each record must contain the exact unedited Get Code URL for JetStash
+  publisher property 101818709, the exact airport pair, current active relationship and UK website
+  promotion checks, a human-readable evidence note and an explicit review date no more than 30
+  days after verification. Missing, duplicate, future, expired or invalid records return no CTA.
+  This date is an editorial review limit, not a claim about the programme's referral period.
+  The alternative occupies the route page's existing Fare Signal action slot when Trip.com is
+  unavailable. It carries the shared affiliate disclosure and a fresh-search warning. No generated
+  placeholder URL, new flight-data service or change to the Trip.com pause is introduced.
 - **Skyscanner**: still declined pre-launch (see README); not configured anywhere in
   `lib/booking-providers.ts` — nothing currently reads a second provider.
 - **Link semantics**: every outbound affiliate `<a>` uses `PROVIDER_REL`
@@ -321,9 +336,9 @@ constructs a booking URL by hand.
   terms warning remain additive; the disclosure never replaces an evidence caveat.
 - **To add a route's link**: generate it through Trip.com's own Affiliate Link dashboard (never
   hand-construct one), confirm it lands on the correct route, and add the exact output to
-  `TRIPCOM_ROUTE_URLS`. To add a new provider: design its own shape in
-  `lib/booking-providers.ts` — Trip.com's fixed-URL-per-route model doesn't generalise to a
-  base-URL-plus-params provider the way the old TravelUp/CJ architecture did.
+  `TRIPCOM_ROUTE_URLS`, subject to the pause. The CJ adapter accepts complete verified records,
+  never a base URL plus invented tracking parameters. Actual advertiser terms and landing
+  evidence remain prerequisites for activation.
 
 **Lead-capture side** (not affiliate commission, but the second revenue channel):
 `/quote-request` and `/contact` route to a real inbox (`siteConfig.contactEmail`, overridable via

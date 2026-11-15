@@ -105,9 +105,9 @@ describe('capability and release are separate gates', () => {
 describe('committed live evidence does not expose anything', () => {
   afterEach(() => { vi.useRealTimers(); });
 
-  it('there is real committed evidence, and Doha is the only release, bound to its evidence review date', () => {
+  it('there is real committed evidence, and Doha and Delhi releases are bound to their evidence review dates', () => {
     expect(Object.keys(shippedEvidence).length).toBeGreaterThan(20);
-    expect(Object.keys(shippedRelease)).toEqual(['DOH']);
+    expect(Object.keys(shippedRelease)).toEqual(['DOH', 'DEL']);
     expect(shippedRelease.DOH).toMatchObject({ status: 'public_beta', evidenceReviewDueDate: '2026-12-29' });
     expect(shippedEvidence.DOH).toMatchObject({ status: 'road_supported', verifiedDate: '2026-09-30', checks: passedChecks });
   });
@@ -115,7 +115,7 @@ describe('committed live evidence does not expose anything', () => {
   it('every other airport with road_supported evidence is still NOT journey-eligible in the shipped state', () => {
     vi.useFakeTimers({ toFake: ['Date'] });
     vi.setSystemTime(IN_DOHA_WINDOW);
-    const supported = Object.entries(shippedEvidence).filter(([code, e]) => e.status === 'road_supported' && code !== 'DOH').map(([code]) => code);
+    const supported = Object.entries(shippedEvidence).filter(([code, e]) => e.status === 'road_supported' && !shippedRelease[code]).map(([code]) => code);
     expect(supported.length).toBeGreaterThan(20);
     for (const code of supported) {
       expect(getAirportCapability(code), code).toMatchObject({ status: 'road_supported', capabilityApproved: true, releaseStatus: 'internal_only', journeyEligible: false });
@@ -128,15 +128,15 @@ describe('committed live evidence does not expose anything', () => {
     const eligible = () => getCatalogueAirports().filter((a) => getAirportCapability(a.iata)?.journeyEligible).map((a) => a.iata).sort();
     vi.useFakeTimers({ toFake: ['Date'] });
     vi.setSystemTime(IN_DOHA_WINDOW);
-    expect(eligible()).toEqual(['DOH', 'ISB', 'KHI', 'LHE', 'MAN']);
+    expect(eligible()).toEqual(['DEL', 'DOH', 'ISB', 'KHI', 'LHE', 'MAN']);
     vi.setSystemTime(new Date('2026-12-29T23:00:00Z'));
-    expect(eligible()).toEqual(['DOH', 'ISB', 'KHI', 'LHE', 'MAN']);
+    expect(eligible()).toEqual(['DEL', 'DOH', 'ISB', 'KHI', 'LHE', 'MAN']);
     vi.setSystemTime(new Date('2026-12-30T00:30:00Z'));
     expect(eligible()).toEqual(['ISB', 'KHI', 'LHE', 'MAN']);
   });
 
   it('the public shell refuses a verified-but-unreleased airport and shows the safe "can\'t calculate yet" state', () => {
-    for (const code of ['LHR', 'DXB', 'DEL', 'JFK', 'SYD', 'GVA']) {
+    for (const code of ['LHR', 'DXB', 'JFK', 'SYD', 'GVA']) {
       const lookup = getShellAirportLookup(code);
       expect(lookup?.road, code).toBeUndefined();
       expect(resolveShellDispatch(code, lookup).kind, code).toBe('not_yet_supported');
@@ -146,7 +146,7 @@ describe('committed live evidence does not expose anything', () => {
   it('the public API refuses a verified-but-unreleased airport with a 404, before any Google call', async () => {
     const fetchSpy = vi.fn();
     global.fetch = fetchSpy as unknown as typeof fetch;
-    for (const code of ['LHR', 'DXB', 'DEL']) {
+    for (const code of ['LHR', 'DXB']) {
       const response = await postRoad(new NextRequest('http://localhost/api/arrive-by/road', {
         method: 'POST',
         headers: { 'x-forwarded-for': `203.0.113.${Math.floor(Math.random() * 1e6)}` },
