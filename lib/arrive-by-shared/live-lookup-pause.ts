@@ -12,7 +12,7 @@
  */
 
 export const LIVE_LOOKUP_PAUSED_DETAIL =
-  "Arrive By's live road-time checks are paused, so it can't confirm road journey times right now. Nothing you entered is wrong. Your flight and the times you entered are shown, but we won't guess the drive.";
+  "Arrive By's live road-time checks are paused, so it can't confirm road journey times right now. Nothing you entered is wrong, and we won't guess the drive.";
 
 /** True only when ARRIVE_BY_LIVE_LOOKUPS is explicitly 'off' (case-insensitive). Unset or any other value means live. */
 export function isLiveLookupPaused(env: Record<string, string | undefined> = process.env): boolean {

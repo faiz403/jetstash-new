@@ -7,6 +7,9 @@ import { LIVE_LOOKUP_UNAVAILABLE_DETAIL, planFullJourney } from '@/lib/arrive-by
 import { PublicCallBudgetUnavailable, runPublicGoogleCalculation } from '@/lib/arrive-by-shared/public-call-budget';
 import { isLiveLookupPaused, LIVE_LOOKUP_PAUSED_DETAIL } from '@/lib/arrive-by-shared/live-lookup-pause';
 import ArriveByPage from '@/app/arrive-by/page';
+import { POST as founderManchesterPost } from '@/app/api/founder/arrive-by/google/route';
+import { POST as founderPakistanPost } from '@/app/api/founder/arrive-by-pakistan/google/route';
+import { NextRequest } from 'next/server';
 
 /**
  * 16 Nov 2026: when Google refuses or cannot be reached (for example the Google Cloud trial ends and billing is disabled), every
@@ -26,17 +29,22 @@ const originalFetch = global.fetch;
 const unstubbedFetch = vi.fn(async () => { throw new Error('unexpected real network call'); });
 beforeEach(() => {
   unstubbedFetch.mockClear();
+  // Live baseline, whatever the inherited environment says.
+  vi.stubEnv('ARRIVE_BY_LIVE_LOOKUPS', 'on');
   vi.useFakeTimers({ toFake: ['Date'] });
   vi.setSystemTime(new Date('2027-01-14T09:00:00.000Z'));
   // Safety net: any request that is not given an explicit stub fails the test instead of reaching a real server.
   global.fetch = unstubbedFetch as unknown as typeof fetch;
 });
 afterEach(() => {
-  expect(unstubbedFetch).not.toHaveBeenCalled();
-  global.fetch = originalFetch;
-  vi.unstubAllEnvs();
-  vi.useRealTimers();
-  vi.restoreAllMocks();
+  try {
+    expect(unstubbedFetch).not.toHaveBeenCalled();
+  } finally {
+    global.fetch = originalFetch;
+    vi.unstubAllEnvs();
+    vi.useRealTimers();
+    vi.restoreAllMocks();
+  }
 });
 
 describe('GoogleCallLedger.liveLookupUnavailable', () => {
@@ -201,7 +209,32 @@ describe('the controlled pause (ARRIVE_BY_LIVE_LOOKUPS=off)', () => {
     expect(result.notEvidenced?.reason).not.toBe('LIVE_LOOKUP_UNAVAILABLE');
   });
 
-  it('is live again when the setting is on or removed', async () => {
+  it('keeps the connection disclosure for a declared connecting itinerary (paused and outage answers)', async () => {
+    const connecting = { ...BODY, flight: { ...BODY.flight, declaredConnections: 1 } };
+    const guard = new MonthlyCallGuard({ store: new InMemoryCallBudgetStore(), requireDurable: false });
+    const deps = { apiKey: 'k', guard, nowIso: new Date().toISOString(), airportMode: 'public', originMode: 'LIVE', flightConnections: 'FINAL_ARRIVAL_ANCHOR' } as const;
+    vi.stubEnv('ARRIVE_BY_LIVE_LOOKUPS', 'off');
+    const paused = await planFullJourney(cleanJourneyInput(connecting), deps);
+    vi.stubEnv('ARRIVE_BY_LIVE_LOOKUPS', 'on');
+    const outage = await planFullJourney(cleanJourneyInput(connecting), { ...deps, baseFetch: (async () => denied403()) as unknown as typeof fetch });
+    for (const result of [paused, outage]) {
+      expect(result.notEvidenced?.reason).toBe('LIVE_LOOKUP_UNAVAILABLE');
+      expect(result.scheduledFlightAssumption).toBeDefined();
+      expect(result.timeline.find((leg) => leg.kind === 'FLIGHT')?.label).toMatch(/connection not checked/);
+    }
+  });
+
+  it('also stops the founder-only legacy endpoints (they cannot reach Google while paused)', async () => {
+    vi.stubEnv('ARRIVE_BY_LIVE_LOOKUPS', 'off');
+    vi.stubEnv('GOOGLE_ROUTES_API_KEY', 'test-key');
+    for (const post of [founderManchesterPost, founderPakistanPost]) {
+      const response = await post(new NextRequest('http://localhost/api/founder', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({}) }));
+      expect(response.status).toBe(503);
+      expect((await response.json()).error).toBe(LIVE_LOOKUP_PAUSED_DETAIL);
+    }
+  });
+
+  it('is live again when the setting is on', async () => {
     vi.stubEnv('ARRIVE_BY_LIVE_LOOKUPS', 'on');
     const result = await plan((async () => json({ status: 'ZERO_RESULTS', results: [] })) as unknown as typeof fetch);
     expect(result.reasons).not.toEqual([LIVE_LOOKUP_PAUSED_DETAIL]);

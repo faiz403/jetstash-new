@@ -18,7 +18,7 @@ restriction; the 2,000-calls-a-month application cap is the only enforced limit 
   REQUEST_DENIED/OVER_*_LIMIT/UNKNOWN_ERROR) say so plainly (reason `LIVE_LOOKUP_UNAVAILABLE`), never "your start location needs
   confirming". One usable answer (including ZERO_RESULTS) keeps the input-specific messages.
 - Controlled pause: `ARRIVE_BY_LIVE_LOOKUPS=off` (Vercel env, redeploy, founder approval) makes live lookups refuse with no budget
-  reservation and no Google request, and puts a notice on /arrive-by. There is deliberately no date-based automatic switch; a continuation
+  reservation and no Google request (public endpoints and the founder-only endpoints alike), and puts a notice on /arrive-by. Local probe scripts are not covered; do not run them while paused. There is deliberately no date-based automatic switch; a continuation
   decision, not a calendar, decides. The entered flight and times stay on the result; no drive is ever guessed.
 - The final upgrade-or-lapse decision is made before 24 December after an independent council review. Until then no merge, deployment,
   API-key change or billing change.

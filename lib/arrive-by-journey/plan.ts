@@ -98,7 +98,7 @@ export async function planFullJourney(input: JourneyInput, deps: PlanDeps): Prom
   }
 
   // Controlled pause (ARRIVE_BY_LIVE_LOOKUPS=off): no reservation and no Google call at all.
-  if (isLiveLookupPaused(process.env)) return liveLookupUnavailablePlan(solverBase, LIVE_LOOKUP_PAUSED_DETAIL);
+  if (isLiveLookupPaused(process.env)) return withScheduledFlightAssumption(liveLookupUnavailablePlan(solverBase, LIVE_LOOKUP_PAUSED_DETAIL), input.flight, arrival.name, deps.flightConnections);
 
   // 3. Monthly reservation (fails closed)
   const ceiling = deps.ceiling ?? JOURNEY_CALL_CEILING;
@@ -152,7 +152,7 @@ export async function planFullJourney(input: JourneyInput, deps: PlanDeps): Prom
     // Every live lookup failed at the service level (Google unreachable, key refused, billing ended): say so plainly instead of
     // letting the engines' swallowed errors read as "your start location needs confirming".
     if (!ledger.exhausted && ledger.liveLookupUnavailable) {
-      return { ...liveLookupUnavailablePlan(solverBase, LIVE_LOOKUP_UNAVAILABLE_DETAIL), calls: { used: ledger.used, ceiling, breakdown: { ...ledger.breakdown() } } };
+      return withScheduledFlightAssumption({ ...liveLookupUnavailablePlan(solverBase, LIVE_LOOKUP_UNAVAILABLE_DETAIL), calls: { used: ledger.used, ceiling, breakdown: { ...ledger.breakdown() } } }, input.flight, arrival.name, deps.flightConnections);
     }
 
     // 5. Solve
