@@ -1,9 +1,12 @@
+import { Children, Suspense, type ReactNode } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { GoogleCallLedger, InMemoryCallBudgetStore, MonthlyCallGuard } from '@/lib/arrive-by-journey/call-budget';
 import { classifyPlan } from '@/lib/arrive-by-journey/beta-metrics';
 import { cleanJourneyInput } from '@/lib/arrive-by-journey/clean-journey-input';
 import { LIVE_LOOKUP_UNAVAILABLE_DETAIL, planFullJourney } from '@/lib/arrive-by-journey/plan';
 import { PublicCallBudgetUnavailable, runPublicGoogleCalculation } from '@/lib/arrive-by-shared/public-call-budget';
+import { isLiveLookupPaused, LIVE_LOOKUP_PAUSED_DETAIL } from '@/lib/arrive-by-shared/live-lookup-pause';
+import ArriveByPage from '@/app/arrive-by/page';
 
 /**
  * 16 Nov 2026: when Google refuses or cannot be reached (for example the Google Cloud trial ends and billing is disabled), every
@@ -31,6 +34,7 @@ beforeEach(() => {
 afterEach(() => {
   expect(unstubbedFetch).not.toHaveBeenCalled();
   global.fetch = originalFetch;
+  vi.unstubAllEnvs();
   vi.useRealTimers();
   vi.restoreAllMocks();
 });
@@ -116,6 +120,9 @@ describe('the public journey when Google is unavailable', () => {
     expect(result.reasons).toEqual([LIVE_LOOKUP_UNAVAILABLE_DETAIL]);
     expect(result.reasons.join(' ')).not.toMatch(/start location|too broad|town, postcode|driving route/i);
     expect(result.reasons[0]).toMatch(/can't run live checks right now/);
+    // What the traveller entered stays visible: the flight is on the timeline, the drive is explicitly not evidenced.
+    expect(result.timeline.some((leg) => leg.kind === 'FLIGHT')).toBe(true);
+    expect(result.timeline.some((leg) => leg.kind === 'ORIGIN_ACCESS' || leg.kind === 'ONWARD')).toBe(false);
     expect(result.startDetail).toBeUndefined();
     expect(result.arrivalDetail).toBeUndefined();
     expect(result.headline).toBeUndefined();
@@ -159,5 +166,69 @@ describe('the legacy per-airport calculations', () => {
       await metered(GEOCODE);
       return 'engine result';
     }, { NODE_ENV: 'test' })).resolves.toBe('engine result');
+  });
+});
+
+describe('the controlled pause (ARRIVE_BY_LIVE_LOOKUPS=off)', () => {
+  it('is paused only when explicitly set to off (any case, trimmed); unset, on and anything else stay live', () => {
+    expect(isLiveLookupPaused({})).toBe(false);
+    for (const value of ['off', 'OFF', ' Off ']) expect(isLiveLookupPaused({ ARRIVE_BY_LIVE_LOOKUPS: value })).toBe(true);
+    for (const value of ['on', 'ON', '', 'false', '0', 'paused']) expect(isLiveLookupPaused({ ARRIVE_BY_LIVE_LOOKUPS: value })).toBe(false);
+  });
+
+  it('answers the public journey without reserving budget or making any Google request, and keeps the entered flight', async () => {
+    vi.stubEnv('ARRIVE_BY_LIVE_LOOKUPS', 'off');
+    const store = new InMemoryCallBudgetStore();
+    const spy = vi.spyOn(store, 'incrementBy');
+    const baseFetch = vi.fn(async () => { throw new Error('must not be called'); });
+    const guard = new MonthlyCallGuard({ store, requireDurable: false });
+    const result = await planFullJourney(cleanJourneyInput(BODY), { apiKey: 'test-key', guard, nowIso: new Date().toISOString(), airportMode: 'public', originMode: 'LIVE', transitFirst: 'LIVE', placeNames: 'LIVE', flightConnections: 'FINAL_ARRIVAL_ANCHOR', baseFetch: baseFetch as unknown as typeof fetch });
+    expect(baseFetch).not.toHaveBeenCalled();
+    expect(spy).not.toHaveBeenCalled();
+    expect(result.state).toBe('CANNOT_CONFIRM');
+    expect(result.notEvidenced?.reason).toBe('LIVE_LOOKUP_UNAVAILABLE');
+    expect(result.reasons).toEqual([LIVE_LOOKUP_PAUSED_DETAIL]);
+    expect(result.reasons[0]).not.toMatch(/start location|too broad|town, postcode/i);
+    expect(result.timeline.some((leg) => leg.kind === 'FLIGHT')).toBe(true);
+    expect(result.headline).toBeUndefined();
+    expect(classifyPlan(result)).toEqual({ kind: 'error' });
+  });
+
+  it('still reports bad input as bad input while paused (validation runs before the pause)', async () => {
+    vi.stubEnv('ARRIVE_BY_LIVE_LOOKUPS', 'off');
+    const guard = new MonthlyCallGuard({ store: new InMemoryCallBudgetStore(), requireDurable: false });
+    const result = await planFullJourney(cleanJourneyInput({ ...BODY, flight: { departsLocal: '2027-01-15T11:00', arrivesLocal: '2027-01-15T11:00' } }), { apiKey: 'k', guard, nowIso: new Date().toISOString(), airportMode: 'public', originMode: 'LIVE' });
+    expect(result.notEvidenced?.reason).not.toBe('LIVE_LOOKUP_UNAVAILABLE');
+  });
+
+  it('is live again when the setting is on or removed', async () => {
+    vi.stubEnv('ARRIVE_BY_LIVE_LOOKUPS', 'on');
+    const result = await plan((async () => json({ status: 'ZERO_RESULTS', results: [] })) as unknown as typeof fetch);
+    expect(result.reasons).not.toEqual([LIVE_LOOKUP_PAUSED_DETAIL]);
+  });
+
+  it('makes the legacy per-airport calculations refuse with the pause message and no Google request', async () => {
+    vi.stubEnv('ARRIVE_BY_LIVE_LOOKUPS', 'off');
+    const calculate = vi.fn(async () => 'must not run');
+    const error = await runPublicGoogleCalculation(calculate, { NODE_ENV: 'test', ARRIVE_BY_LIVE_LOOKUPS: 'off' }).catch((reason: unknown) => reason);
+    expect(calculate).not.toHaveBeenCalled();
+    expect(error).toBeInstanceOf(PublicCallBudgetUnavailable);
+    expect((error as PublicCallBudgetUnavailable).reason).toBe('LIVE_LOOKUP_PAUSED');
+    expect((error as PublicCallBudgetUnavailable).message).toBe(LIVE_LOOKUP_PAUSED_DETAIL);
+  });
+
+  it('shows a plain notice above the Arrive By form only while paused', async () => {
+    const live = await ArriveByPage({ searchParams: Promise.resolve({}) });
+    const liveChildren = Children.toArray((live as unknown as { props: { children: ReactNode } }).props.children) as Array<{ type?: unknown; props?: Record<string, unknown> }>;
+    expect(liveChildren).toHaveLength(1);
+    expect(liveChildren[0].type).toBe(Suspense);
+
+    vi.stubEnv('ARRIVE_BY_LIVE_LOOKUPS', 'off');
+    const paused = await ArriveByPage({ searchParams: Promise.resolve({}) });
+    const pausedChildren = Children.toArray((paused as unknown as { props: { children: ReactNode } }).props.children) as Array<{ type?: unknown; props?: Record<string, unknown> }>;
+    expect(pausedChildren).toHaveLength(2);
+    expect(pausedChildren[0].props?.role).toBe('status');
+    expect(JSON.stringify(pausedChildren[0].props)).toContain('Live road-time checks are paused');
+    expect(pausedChildren[1].type).toBe(Suspense);
   });
 });
