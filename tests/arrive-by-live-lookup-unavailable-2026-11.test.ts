@@ -19,13 +19,17 @@ const json = (body: unknown, status = 200) => new Response(JSON.stringify(body),
 const denied403 = () => json({ error: { code: 403, status: 'PERMISSION_DENIED' } }, 403);
 
 const originalFetch = global.fetch;
+/** Fallback for any request a test did not stub. The engines swallow fetch errors, so afterEach also asserts it was never reached. */
+const unstubbedFetch = vi.fn(async () => { throw new Error('unexpected real network call'); });
 beforeEach(() => {
+  unstubbedFetch.mockClear();
   vi.useFakeTimers({ toFake: ['Date'] });
   vi.setSystemTime(new Date('2027-01-14T09:00:00.000Z'));
   // Safety net: any request that is not given an explicit stub fails the test instead of reaching a real server.
-  global.fetch = (async () => { throw new Error('unexpected real network call'); }) as unknown as typeof fetch;
+  global.fetch = unstubbedFetch as unknown as typeof fetch;
 });
 afterEach(() => {
+  expect(unstubbedFetch).not.toHaveBeenCalled();
   global.fetch = originalFetch;
   vi.useRealTimers();
   vi.restoreAllMocks();

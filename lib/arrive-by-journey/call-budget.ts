@@ -102,7 +102,11 @@ export class GoogleCallLedger {
     );
   };
 
-  /** Classifies one answer for `liveLookupUnavailable`. Never throws and never consumes the caller's body (it reads a clone). */
+  /**
+   * Classifies one answer for `liveLookupUnavailable`. Never throws and never consumes the caller's body (it reads a clone).
+   * For Geocoding, the answer is handed back only after its body has been read once, so a stalled body delays delivery of the
+   * Response beyond its headers; every Geocoding caller parses the JSON immediately anyway.
+   */
   private async observe(url: string, response: Response): Promise<void> {
     try {
       const status = response.status;
