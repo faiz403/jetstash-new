@@ -5,6 +5,7 @@ import { enteredOriginLeg, roadArrivalLeg } from './providers';
 import { googleOriginLeg, type OriginLegOutcome } from './origin-leg';
 import { transitArrivalLeg } from './transit-arrival-leg';
 import { solveJourney, shortPlaceName } from './solver';
+import { isLiveLookupPaused, LIVE_LOOKUP_PAUSED_DETAIL } from '@/lib/arrive-by-shared/live-lookup-pause';
 import { scheduledFlightForSolver, withScheduledFlightAssumption, type FlightConnectionPolicy } from './scheduled-flight';
 import { STATE_LABEL, type JourneyInput, type JourneyPlan, type NotEvidencedReason, type ResolvedLeg } from './types';
 
@@ -49,6 +50,19 @@ export interface PlanDeps {
   placeNameLookup?: PlaceNameLookup;
 }
 
+/** Shown when live lookups are down. Deliberately says the places the traveller entered are not the problem. */
+export const LIVE_LOOKUP_UNAVAILABLE_DETAIL = "Arrive By can't run live checks right now, so this journey can't be confirmed. The places you entered are not the problem. Please try again later.";
+
+/**
+ * CANNOT CONFIRM because live road lookups are not available (outage, or the controlled pause). Keeps what the traveller entered
+ * (the flight and any entered airport-exit or pickup times) on the timeline, and says plainly that the drive was not checked.
+ */
+function liveLookupUnavailablePlan(base: Omit<Parameters<typeof solveJourney>[0], 'originLeg' | 'arrivalLeg'>, detail: string): JourneyPlan {
+  const leg = { status: 'NOT_EVIDENCED', reason: 'LIVE_LOOKUP_UNAVAILABLE', detail } as const;
+  const plan = solveJourney({ ...base, originLeg: leg, arrivalLeg: leg });
+  return { ...plan, headline: undefined, state: 'CANNOT_CONFIRM', stateLabel: STATE_LABEL.CANNOT_CONFIRM, reasons: [detail], notEvidenced: { reason: 'LIVE_LOOKUP_UNAVAILABLE', detail } };
+}
+
 function refusal(reason: NotEvidencedReason, detail: string): JourneyPlan {
   return { state: 'CANNOT_CONFIRM', stateLabel: STATE_LABEL.CANNOT_CONFIRM, reasons: [detail], notEvidenced: { reason, detail }, timeline: [] };
 }
@@ -82,6 +96,9 @@ export async function planFullJourney(input: JourneyInput, deps: PlanDeps): Prom
   if (!input.destination.trim() || input.destination.length > 180 || !input.start.trim() || input.start.length > 180) {
     return refusal('INVALID_INPUT', 'Enter where you are starting from and where you are going.');
   }
+
+  // Controlled pause (ARRIVE_BY_LIVE_LOOKUPS=off): no reservation and no Google call at all.
+  if (isLiveLookupPaused(process.env)) return withScheduledFlightAssumption(liveLookupUnavailablePlan(solverBase, LIVE_LOOKUP_PAUSED_DETAIL), input.flight, arrival.name, deps.flightConnections);
 
   // 3. Monthly reservation (fails closed)
   const ceiling = deps.ceiling ?? JOURNEY_CALL_CEILING;
@@ -131,6 +148,12 @@ export async function planFullJourney(input: JourneyInput, deps: PlanDeps): Prom
         : { status: 'NOT_EVIDENCED', reason: 'ARRIVAL_ROUTE_UNAVAILABLE', detail: "We couldn't get a reliable driving route from the arrival airport to that destination." };
     }
     if (ledger.exhausted) arrivalLeg = { status: 'NOT_EVIDENCED', reason: 'CALL_CEILING_REACHED' };
+
+    // Every live lookup failed at the service level (Google unreachable, key refused, billing ended): say so plainly instead of
+    // letting the engines' swallowed errors read as "your start location needs confirming".
+    if (!ledger.exhausted && ledger.liveLookupUnavailable) {
+      return withScheduledFlightAssumption({ ...liveLookupUnavailablePlan(solverBase, LIVE_LOOKUP_UNAVAILABLE_DETAIL), calls: { used: ledger.used, ceiling, breakdown: { ...ledger.breakdown() } } }, input.flight, arrival.name, deps.flightConnections);
+    }
 
     // 5. Solve
     const plan = solveJourney({ ...solverBase, originLeg, arrivalLeg });

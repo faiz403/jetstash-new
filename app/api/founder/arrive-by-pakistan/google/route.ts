@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { isLiveLookupPaused, LIVE_LOOKUP_PAUSED_DETAIL } from '@/lib/arrive-by-shared/live-lookup-pause';
 import { computePakistanJourney } from '@/lib/arrive-by-pakistan/journey';
 import { cleanInput } from '@/lib/arrive-by-pakistan/clean-input';
 
@@ -11,6 +12,7 @@ function founderEnabled(): boolean {
 
 export async function POST(request: NextRequest) {
   if (!founderEnabled()) return NextResponse.json({ error: 'Not found' }, { status: 404 });
+  if (isLiveLookupPaused()) return NextResponse.json({ error: LIVE_LOOKUP_PAUSED_DETAIL }, { status: 503 });
   const apiKey = process.env.GOOGLE_ROUTES_API_KEY;
   if (!apiKey) return NextResponse.json({ error: 'Live journey lookup is not configured.' }, { status: 503 });
   try {

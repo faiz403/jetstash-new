@@ -1,9 +1,10 @@
 import { GoogleCallLedger, JOURNEY_CALL_CEILING, type BudgetDenial } from '@/lib/arrive-by-journey/call-budget';
+import { isLiveLookupPaused, LIVE_LOOKUP_PAUSED_DETAIL } from '@/lib/arrive-by-shared/live-lookup-pause';
 import { createJourneyCallGuard } from '@/lib/arrive-by-journey/internal-access';
 
 export class PublicCallBudgetUnavailable extends Error {
-  constructor(public readonly reason: BudgetDenial | 'CALL_CEILING_REACHED') {
-    super("Arrive By can't run live checks right now. Please try again later.");
+  constructor(public readonly reason: BudgetDenial | 'CALL_CEILING_REACHED' | 'LIVE_LOOKUP_UNAVAILABLE' | 'LIVE_LOOKUP_PAUSED') {
+    super(reason === 'LIVE_LOOKUP_PAUSED' ? LIVE_LOOKUP_PAUSED_DETAIL : "Arrive By can't run live checks right now. Please try again later.");
     this.name = 'PublicCallBudgetUnavailable';
   }
 }
@@ -18,6 +19,8 @@ export async function runPublicGoogleCalculation<T>(
   calculate: (meteredFetch: typeof fetch) => Promise<T>,
   env: Record<string, string | undefined> = process.env,
 ): Promise<T> {
+  // Controlled pause: no reservation and no Google call.
+  if (isLiveLookupPaused(env)) throw new PublicCallBudgetUnavailable('LIVE_LOOKUP_PAUSED');
   const { guard } = createJourneyCallGuard(env, {
     onAlert: (alert) => console.warn(`[arrive-by] monthly Google call allowance at ${alert.level}%: ${alert.used}/${alert.limit} (${alert.month})`),
   });
@@ -29,6 +32,8 @@ export async function runPublicGoogleCalculation<T>(
     // Engines turn fetch errors into unavailable routes. Never accept a
     // partial result after the ledger refused an over-ceiling provider call.
     if (ledger.exhausted) throw new PublicCallBudgetUnavailable('CALL_CEILING_REACHED');
+    // Every lookup failed at the service level: report the outage rather than the engine's "route unavailable" for the traveller's input.
+    if (ledger.liveLookupUnavailable) throw new PublicCallBudgetUnavailable('LIVE_LOOKUP_UNAVAILABLE');
     return result;
   } finally {
     await guard.settle(reservation, ledger.used);
