@@ -49,6 +49,9 @@ export interface PlanDeps {
   placeNameLookup?: PlaceNameLookup;
 }
 
+/** Shown when live lookups are down. Deliberately says the places the traveller entered are not the problem. */
+export const LIVE_LOOKUP_UNAVAILABLE_DETAIL = "Arrive By can't run live checks right now, so this journey can't be confirmed. The places you entered are not the problem. Please try again later.";
+
 function refusal(reason: NotEvidencedReason, detail: string): JourneyPlan {
   return { state: 'CANNOT_CONFIRM', stateLabel: STATE_LABEL.CANNOT_CONFIRM, reasons: [detail], notEvidenced: { reason, detail }, timeline: [] };
 }
@@ -131,6 +134,12 @@ export async function planFullJourney(input: JourneyInput, deps: PlanDeps): Prom
         : { status: 'NOT_EVIDENCED', reason: 'ARRIVAL_ROUTE_UNAVAILABLE', detail: "We couldn't get a reliable driving route from the arrival airport to that destination." };
     }
     if (ledger.exhausted) arrivalLeg = { status: 'NOT_EVIDENCED', reason: 'CALL_CEILING_REACHED' };
+
+    // Every live lookup failed at the service level (Google unreachable, key refused, billing ended): say so plainly instead of
+    // letting the engines' swallowed errors read as "your start location needs confirming".
+    if (!ledger.exhausted && ledger.liveLookupUnavailable) {
+      return { ...refusal('LIVE_LOOKUP_UNAVAILABLE', LIVE_LOOKUP_UNAVAILABLE_DETAIL), calls: { used: ledger.used, ceiling, breakdown: { ...ledger.breakdown() } } };
+    }
 
     // 5. Solve
     const plan = solveJourney({ ...solverBase, originLeg, arrivalLeg });

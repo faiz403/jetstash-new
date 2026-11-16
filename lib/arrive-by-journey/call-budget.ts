@@ -49,9 +49,14 @@ export class CallCeilingExceeded extends Error {
  * refusal is also recorded on the ledger (`exhausted`) -- the orchestrator
  * reads that flag, not the engine's message, to decide CANNOT CONFIRM.
  */
+/** Google's body-level statuses (legacy Geocoding answers HTTP 200) that mean the service refused us, not that the traveller's input was bad. */
+const GEOCODE_SERVICE_FAILURE_STATUSES: ReadonlySet<string> = new Set(['REQUEST_DENIED', 'OVER_DAILY_LIMIT', 'OVER_QUERY_LIMIT', 'UNKNOWN_ERROR']);
+
 export class GoogleCallLedger {
   private count = 0;
   private refused = false;
+  private serviceFailures = 0;
+  private serviceSuccesses = 0;
   private readonly byKind: Record<GoogleCallKind, number> = { geocode: 0, routes: 0, identity: 0, other: 0 };
 
   constructor(
@@ -64,6 +69,12 @@ export class GoogleCallLedger {
   get used(): number { return this.count; }
   get exhausted(): boolean { return this.refused; }
   get remaining(): number { return Math.max(0, this.ceiling - this.count); }
+  /**
+   * True when at least one request was sent and EVERY answer was a service-level failure (network error, 401/403/429/5xx, or a
+   * Geocoding REQUEST_DENIED-style status). That is the signature of Google being unreachable or refusing the project (for example
+   * billing ended), as opposed to one bad place name. A single usable answer anywhere means it is NOT an outage.
+   */
+  get liveLookupUnavailable(): boolean { return this.serviceFailures > 0 && this.serviceSuccesses === 0; }
   breakdown(): Readonly<Record<GoogleCallKind, number>> { return { ...this.byKind }; }
 
   /** Counts one billable call, or throws (and remembers that it did) when the ceiling is already used up. */
@@ -79,8 +90,38 @@ export class GoogleCallLedger {
   readonly fetch: typeof fetch = (input, init) => {
     const url = String(input instanceof Request ? input.url : input);
     this.charge(url.includes('/geocode/') ? 'geocode' : url.includes('routes.googleapis.com') ? 'routes' : 'other');
-    return this.baseFetch(input, init);
+    return Promise.resolve(this.baseFetch(input, init)).then(
+      async (response) => {
+        await this.observe(url, response);
+        return response;
+      },
+      (error: unknown) => {
+        this.serviceFailures += 1;
+        throw error;
+      },
+    );
   };
+
+  /** Classifies one answer for `liveLookupUnavailable`. Never throws and never consumes the caller's body (it reads a clone). */
+  private async observe(url: string, response: Response): Promise<void> {
+    try {
+      const status = response.status;
+      if (status === 401 || status === 403 || status === 429 || status >= 500) {
+        this.serviceFailures += 1;
+        return;
+      }
+      if (response.ok && url.includes('/geocode/')) {
+        const body = (await response.clone().json()) as { status?: unknown };
+        if (typeof body?.status === 'string' && GEOCODE_SERVICE_FAILURE_STATUSES.has(body.status)) {
+          this.serviceFailures += 1;
+          return;
+        }
+      }
+    } catch {
+      // An unreadable body is not evidence of an outage.
+    }
+    this.serviceSuccesses += 1;
+  }
 }
 
 /** The single primitive the monthly guard needs: an atomic add (negative allowed) that returns the new total. */
