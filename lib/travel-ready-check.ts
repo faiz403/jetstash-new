@@ -134,6 +134,8 @@ export interface TravelReadyCheckItem {
   status: 'pass' | 'fail' | 'caution' | 'unknown';
   detail: string;
   officialSource?: { title: string; url: string };
+  /** The rule's own additionalOfficialSources, for parts the primary source doesn't cover. */
+  additionalSources?: { title: string; url: string }[];
   lastVerifiedDate?: string;
   /** The rule's own reviewDueDate, unmodified — never a newly invented interval. */
   reviewDueDate?: string;
@@ -405,6 +407,7 @@ export function evaluateTravelReadiness(input: TravelReadyCheckInput, now: Date)
           status: 'unknown',
           detail: `${exemptionRule.requirement} This exemption is specifically framed for a British passport holder. You've told us your passport isn't British, so JetStash can't confirm this exemption — or your passport's own entry requirements — apply to you. Check official guidance for your specific passport's nationality before booking.`,
           officialSource: exemptionRule.officialSource,
+          additionalSources: exemptionRule.additionalOfficialSources,
           lastVerifiedDate: exemptionRule.lastVerifiedDate,
           reviewDueDate: exemptionRule.reviewDueDate,
         },
@@ -531,6 +534,7 @@ export function evaluateTravelReadiness(input: TravelReadyCheckInput, now: Date)
         status: 'unknown',
         detail: 'This exemption rule is due for re-verification — official confirmation required.',
         officialSource: exemptionRule.officialSource,
+        additionalSources: exemptionRule.additionalOfficialSources,
         lastVerifiedDate: exemptionRule.lastVerifiedDate,
         reviewDueDate: exemptionRule.reviewDueDate,
         stale: true,
@@ -543,6 +547,7 @@ export function evaluateTravelReadiness(input: TravelReadyCheckInput, now: Date)
         status: 'pass',
         detail: exemptionRule.requirement,
         officialSource: exemptionRule.officialSource,
+        additionalSources: exemptionRule.additionalOfficialSources,
         lastVerifiedDate: exemptionRule.lastVerifiedDate,
         reviewDueDate: exemptionRule.reviewDueDate,
       });
