@@ -245,7 +245,7 @@ export const travelReadyRules: TravelReadyRule[] = [
     // document only — see pk-nicop-poc-expired-guidance below for the
     // separate, deliberately non-pass guidance an expired/lost/renewing
     // card gets instead.
-    requirement: 'A valid NICOP (National Identity Card for Overseas Pakistanis), SNICOP, or Pakistan Origin Card (POC) is recognised for visa-free entry into Pakistan, for an unlimited stay.',
+    requirement: 'A valid NICOP (National Identity Card for Overseas Pakistanis), SNICOP, or Pakistan Origin Card (POC) is recognised for visa-free entry into Pakistan.',
     visaRequired: false,
     caveat: 'This exemption applies specifically to a currently valid NICOP/SNICOP or POC, travelling alongside a British passport — bring both documents. An expired, lost or renewing NICOP/POC is treated differently; see the separate guidance JetStash shows for that case rather than assuming this same exemption applies. GOV.UK covers NICOP/SNICOP; the POC exemption is stated by NADRA. Confirm with your airline before you travel.',
     officialSource: GOVUK('Pakistan', 'pakistan'),
@@ -272,7 +272,7 @@ export const travelReadyRules: TravelReadyRule[] = [
     // claim could not be reconciled to a dated official directive during
     // reconciliation, so this rule sticks to what FIA's own page actually
     // says, not what a news article summarised it as.
-    requirement: 'An expired, lost or currently-renewing NICOP or Pakistan Origin Card (POC) is not treated the same as a valid one. A NADRA-issued renewal slip lets you travel; without one, FIA Immigration may issue a free landing permit on arrival — valid for 72 hours only — on presentation of the expired card (or a "B" form). That is FIA\'s published procedure on arrival; it does not guarantee that an airline will board you at departure.',
+    requirement: 'An expired, lost or currently-renewing NICOP or Pakistan Origin Card (POC) is not treated the same as a valid one. FIA\'s published procedure mentions a NADRA-issued renewal slip; without one, FIA Immigration may issue a free landing permit on arrival — valid for 72 hours only — on presentation of the expired card (or a "B" form). That is FIA\'s procedure on arrival; it does not guarantee that an airline will board you at departure, so confirm with your airline first.',
     caveat: 'This is informational, not a JetStash readiness pass — a 72-hour landing permit is a materially different, time-limited position from unrestricted visa-free entry. Confirm your exact position directly with FIA/NADRA and your airline before booking a non-refundable fare.',
     officialSource: {
       title: 'FIA Immigration — procedure for expired/lost NICOP/POC',

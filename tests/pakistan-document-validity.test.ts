@@ -153,6 +153,20 @@ describe('10-11. Official sources: FIA source attached to the expired branch, va
     expect(rule?.caveat).toMatch(/GOV\.UK covers NICOP\/SNICOP/);
   });
 
+  it('the valid-document wording states visa-free entry only, with no stay-length claim', () => {
+    const result = evaluateTravelReadiness({ ...VALID_TRIP, documentValidity: 'valid' }, NOW);
+    const check = result.checks.find((c) => c.id === 'visa-requirement');
+    expect(check?.detail).toMatch(/visa-free entry/i);
+    expect(check?.detail).not.toMatch(/unlimited|indefinite/i);
+  });
+
+  it('the expired-branch wording does not say a renewal slip "lets you travel"', () => {
+    const result = evaluateTravelReadiness({ ...VALID_TRIP, documentValidity: 'expired-lost-renewing' }, NOW);
+    const check = result.checks.find((c) => c.id === 'visa-requirement');
+    expect(check?.detail).not.toMatch(/lets you travel/i);
+    expect(check?.detail).toMatch(/confirm with your airline/i);
+  });
+
   it('the non-British-passport branch repeats the POC wording, so it also carries the NADRA source and stays not-enough-information', () => {
     const result = evaluateTravelReadiness({ ...VALID_TRIP, isBritishPassport: false, documentValidity: 'valid' }, NOW);
     expect(result.verdict).toBe('not-enough-information');
