@@ -550,6 +550,20 @@ export function TravelReadyCheck({
                       {check.stale && ' (due for re-verification)'}
                     </p>
                   )}
+                  {check.additionalSources?.map((source) => (
+                    <p key={source.url} className="mt-1 text-xs text-ink-400">
+                      <a
+                        href={source.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        data-analytics="ready-check-source-click"
+                        onClick={() => track('ready_check_source_click', { source: source.title })}
+                        className="underline underline-offset-2 hover:text-terracotta-600"
+                      >
+                        {source.title}
+                      </a>
+                    </p>
+                  ))}
                 </li>
               ))}
             </ul>

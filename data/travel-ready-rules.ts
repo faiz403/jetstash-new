@@ -146,6 +146,12 @@ export interface TravelReadyRule {
   /** Uncertainty or scope note, always shown alongside the requirement. */
   caveat?: string;
   officialSource: TravelReadyOfficialSource;
+  /**
+   * Further official sources for parts of the rule `officialSource` doesn't
+   * cover (e.g. one document type backed by a different government body).
+   * Rendered as extra links beside the primary source.
+   */
+  additionalOfficialSources?: TravelReadyOfficialSource[];
   lastVerifiedDate: string;
   reviewDueDate: string;
 }
@@ -163,6 +169,19 @@ const SAUDI_REVIEW_DUE = '2027-03-06';
 // and FIA's own expired/lost NICOP/POC procedure page.
 const PK_NICOP_POC_VERIFIED = '2026-09-13';
 const PK_NICOP_POC_REVIEW_DUE = '2027-03-13';
+
+// 18 Nov 2026: GOV.UK's Pakistan page covers NICOP/SNICOP only and never
+// mentions POC. NADRA's own POC page (read in a browser on this date) lists
+// visa-free entry into Pakistan as a POC benefit, so POC is attributed to
+// NADRA and NICOP/SNICOP stays attributed to GOV.UK. The page's consent
+// overlay was left unaccepted, so nothing beyond that wording is relied on.
+const PK_POC_EXEMPTION_VERIFIED = '2026-11-18';
+const PK_POC_EXEMPTION_REVIEW_DUE = '2027-05-18';
+
+const NADRA_POC: TravelReadyOfficialSource = {
+  title: 'NADRA — Pakistan Origin Card (POC), visa-free entry',
+  url: 'https://www.nadra.gov.pk/identityDocument/poc?action=new',
+};
 
 const GOVUK = (country: string, slug: string): TravelReadyOfficialSource => ({
   title: `GOV.UK foreign travel advice — ${country} entry requirements`,
@@ -228,10 +247,11 @@ export const travelReadyRules: TravelReadyRule[] = [
     // card gets instead.
     requirement: 'A valid NICOP (National Identity Card for Overseas Pakistanis), SNICOP, or Pakistan Origin Card (POC) is recognised for visa-free entry into Pakistan, for an unlimited stay.',
     visaRequired: false,
-    caveat: 'This exemption applies specifically to a currently valid NICOP/SNICOP or POC, travelling alongside a British passport — bring both documents. An expired, lost or renewing NICOP/POC is treated differently; see the separate guidance JetStash shows for that case rather than assuming this same exemption applies.',
+    caveat: 'This exemption applies specifically to a currently valid NICOP/SNICOP or POC, travelling alongside a British passport — bring both documents. An expired, lost or renewing NICOP/POC is treated differently; see the separate guidance JetStash shows for that case rather than assuming this same exemption applies. GOV.UK covers NICOP/SNICOP; the POC exemption is stated by NADRA. Confirm with your airline before you travel.',
     officialSource: GOVUK('Pakistan', 'pakistan'),
-    lastVerifiedDate: PK_NICOP_POC_VERIFIED,
-    reviewDueDate: PK_NICOP_POC_REVIEW_DUE,
+    additionalOfficialSources: [NADRA_POC],
+    lastVerifiedDate: PK_POC_EXEMPTION_VERIFIED,
+    reviewDueDate: PK_POC_EXEMPTION_REVIEW_DUE,
   },
   {
     id: 'pk-nicop-poc-expired-guidance',
@@ -252,7 +272,7 @@ export const travelReadyRules: TravelReadyRule[] = [
     // claim could not be reconciled to a dated official directive during
     // reconciliation, so this rule sticks to what FIA's own page actually
     // says, not what a news article summarised it as.
-    requirement: 'An expired, lost or currently-renewing NICOP or Pakistan Origin Card (POC) is not treated the same as a valid one. A NADRA-issued renewal slip lets you travel; without one, FIA Immigration may issue a free landing permit on arrival — valid for 72 hours only — on presentation of the expired card (or a "B" form).',
+    requirement: 'An expired, lost or currently-renewing NICOP or Pakistan Origin Card (POC) is not treated the same as a valid one. A NADRA-issued renewal slip lets you travel; without one, FIA Immigration may issue a free landing permit on arrival — valid for 72 hours only — on presentation of the expired card (or a "B" form). That is FIA\'s published procedure on arrival; it does not guarantee that an airline will board you at departure.',
     caveat: 'This is informational, not a JetStash readiness pass — a 72-hour landing permit is a materially different, time-limited position from unrestricted visa-free entry. Confirm your exact position directly with FIA/NADRA and your airline before booking a non-refundable fare.',
     officialSource: {
       title: 'FIA Immigration — procedure for expired/lost NICOP/POC',

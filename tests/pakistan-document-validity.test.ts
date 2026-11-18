@@ -144,6 +144,20 @@ describe('10-11. Official sources: FIA source attached to the expired branch, va
     expect(check?.officialSource).toBeTruthy();
     expect(check?.officialSource?.url).toContain('gov.uk');
   });
+
+  it('POC is attributed to NADRA as an additional source, alongside GOV.UK for NICOP/SNICOP', () => {
+    const result = evaluateTravelReadiness({ ...VALID_TRIP, documentValidity: 'valid' }, NOW);
+    const check = result.checks.find((c) => c.id === 'visa-requirement');
+    expect(check?.additionalSources?.map((s) => s.url)).toContain('https://www.nadra.gov.pk/identityDocument/poc?action=new');
+    const rule = getRule('Pakistan', 'nicop-poc-holder', 'document-exemption');
+    expect(rule?.caveat).toMatch(/GOV\.UK covers NICOP\/SNICOP/);
+  });
+
+  it('the expired-branch guidance says the arrival procedure does not guarantee airline boarding', () => {
+    const result = evaluateTravelReadiness({ ...VALID_TRIP, documentValidity: 'expired-lost-renewing' }, NOW);
+    const check = result.checks.find((c) => c.id === 'visa-requirement');
+    expect(check?.detail).toMatch(/does not guarantee that an airline will board you/i);
+  });
 });
 
 describe('12. Valid result still works for the Person C profile (British passport, MAN→ISB, NICOP/POC, January travel, valid document)', () => {
