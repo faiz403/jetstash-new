@@ -153,6 +153,14 @@ describe('10-11. Official sources: FIA source attached to the expired branch, va
     expect(rule?.caveat).toMatch(/GOV\.UK covers NICOP\/SNICOP/);
   });
 
+  it('the non-British-passport branch repeats the POC wording, so it also carries the NADRA source and stays not-enough-information', () => {
+    const result = evaluateTravelReadiness({ ...VALID_TRIP, isBritishPassport: false, documentValidity: 'valid' }, NOW);
+    expect(result.verdict).toBe('not-enough-information');
+    const check = result.checks.find((c) => c.id === 'visa-requirement');
+    expect(check?.status).toBe('unknown');
+    expect(check?.additionalSources?.map((s) => s.url)).toContain('https://www.nadra.gov.pk/identityDocument/poc?action=new');
+  });
+
   it('the expired-branch guidance says the arrival procedure does not guarantee airline boarding', () => {
     const result = evaluateTravelReadiness({ ...VALID_TRIP, documentValidity: 'expired-lost-renewing' }, NOW);
     const check = result.checks.find((c) => c.id === 'visa-requirement');

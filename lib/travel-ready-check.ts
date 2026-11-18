@@ -407,6 +407,7 @@ export function evaluateTravelReadiness(input: TravelReadyCheckInput, now: Date)
           status: 'unknown',
           detail: `${exemptionRule.requirement} This exemption is specifically framed for a British passport holder. You've told us your passport isn't British, so JetStash can't confirm this exemption — or your passport's own entry requirements — apply to you. Check official guidance for your specific passport's nationality before booking.`,
           officialSource: exemptionRule.officialSource,
+          additionalSources: exemptionRule.additionalOfficialSources,
           lastVerifiedDate: exemptionRule.lastVerifiedDate,
           reviewDueDate: exemptionRule.reviewDueDate,
         },
