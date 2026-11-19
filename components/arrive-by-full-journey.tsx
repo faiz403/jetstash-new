@@ -1,8 +1,9 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
+import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react';
 import Link from 'next/link';
 import { ArriveByIntroduction } from '@/components/arrive-by-introduction';
+import { ArriveByCalendarImport } from '@/components/arrive-by-calendar-import';
 import { GoogleMapsAttribution } from '@/components/arrive-by-google-attribution';
 import { ArriveByMissedServiceDetails, ArriveByReadyBySummary, ArriveByRoadEstimateDisclosure, ArriveByScheduledFlightDisclosure } from '@/components/arrive-by-result-explanations';
 import { calendarDayOffset, clockOf, dateLabelOf, describeDay } from '@/lib/arrive-by-journey/local-time';
@@ -34,9 +35,6 @@ import {
  */
 
 const field = 'mt-1 w-full rounded-sm border border-ink-200 bg-white px-3 py-2 text-base text-ink-900';
-
-const tomorrowInLondon = () =>
-  new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/London', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date(Date.now() + 24 * 60 * 60 * 1000));
 
 const PICKUP_LABELS = {
   family: 'Family/friend collecting me',
@@ -78,12 +76,11 @@ const label = (option: AirportOption) => `${option.code} · ${option.name} (${op
 type Pending = 'start' | 'destination';
 
 export function ArriveByFullJourney({ departureAirports, arrivalAirports, initialAirportPair, prefillNotice, routePairs }: { departureAirports: AirportOption[]; arrivalAirports: AirportOption[]; initialAirportPair?: { departureAirport: string; arrivalAirport: string }; prefillNotice?: string; routePairs: PublicJourneyRoutePair[] }) {
-  const day = useMemo(tomorrowInLondon, []);
   const [start, setStart] = useState('');
   const [departureAirport, setDepartureAirport] = useState(initialAirportPair?.departureAirport ?? departureAirports.find((a) => a.code === 'MAN')?.code ?? departureAirports[0]?.code ?? '');
-  const [departsLocal, setDepartsLocal] = useState(`${day}T11:00`);
+  const [departsLocal, setDepartsLocal] = useState('');
   const [arrivalAirport, setArrivalAirport] = useState(initialAirportPair?.arrivalAirport ?? arrivalAirports.find((a) => a.code === 'ISB')?.code ?? arrivalAirports[0]?.code ?? '');
-  const [arrivesLocal, setArrivesLocal] = useState(`${day}T18:00`);
+  const [arrivesLocal, setArrivesLocal] = useState('');
   const [destination, setDestination] = useState('');
   const [hasConnection, setHasConnection] = useState(false);
   const [bufferMinutes, setBufferMinutes] = useState('120');
@@ -226,17 +223,18 @@ export function ArriveByFullJourney({ departureAirports, arrivalAirports, initia
           <input ref={startRef} className={field} required maxLength={180} value={start} placeholder="e.g. Preston" onChange={(e) => { chosenNames.current.start = undefined; setStart(e.target.value); setRecovery((r) => invalidateSide(r, 'start')); clearResult(); }} />
         </label>
         <label className="text-sm">Which airport are you flying from?
-          <select className={field} value={departureAirport} onChange={(e) => { setDepartureAirport(e.target.value); clearResult(); }}>{departureAirports.map((option) => <option key={option.code} value={option.code}>{label(option)}</option>)}</select>
+          <select className={field} value={departureAirport} onChange={(e) => { setDepartureAirport(e.target.value); setDepartsLocal(''); setArrivesLocal(''); clearResult(); }}>{departureAirports.map((option) => <option key={option.code} value={option.code}>{label(option)}</option>)}</select>
         </label>
         <label className="text-sm">How many minutes before the flight do you want to be at the departure airport?
           <input className={field} type="number" min="0" max="480" step="5" required value={bufferMinutes} onChange={(e) => { setBufferMinutes(e.target.value); clearResult(); }} />
         </label>
       </fieldset>
       <fieldset disabled={loading} className="grid gap-4 border-t border-ink-200 pt-4"><legend className="pt-4 text-base font-semibold text-ink-900">Your flight</legend>
-        <label className="text-sm">When does the flight leave? <span className="text-ink-500">(local time at the departure airport)</span><input className={field} type="datetime-local" required value={departsLocal} onChange={(e) => { setDepartsLocal(e.target.value); clearResult(); }} /></label>
         <label className="text-sm">Where are you landing?
-          <select className={field} value={arrivalAirport} onChange={(e) => { const country = (code: string) => arrivalAirports.find((a) => a.code === code)?.country; setRecovery((r) => invalidateForArrivalAirportChange(r, country(arrivalAirport), country(e.target.value))); setArrivalAirport(e.target.value); clearResult(); }}>{arrivalAirports.map((option) => <option key={option.code} value={option.code}>{label(option)}</option>)}</select>
+          <select className={field} value={arrivalAirport} onChange={(e) => { const country = (code: string) => arrivalAirports.find((a) => a.code === code)?.country; setRecovery((r) => invalidateForArrivalAirportChange(r, country(arrivalAirport), country(e.target.value))); setArrivalAirport(e.target.value); setDepartsLocal(''); setArrivesLocal(''); clearResult(); }}>{arrivalAirports.map((option) => <option key={option.code} value={option.code}>{label(option)}</option>)}</select>
         </label>
+        <ArriveByCalendarImport key={`${departureAirport}:${arrivalAirport}`} departure={departureAirports.find((option) => option.code === departureAirport)} arrival={arrivalAirports.find((option) => option.code === arrivalAirport)} onApply={(times) => { setDepartsLocal(times.departsLocal); setArrivesLocal(times.arrivesLocal); clearResult(); }} />
+        <label className="text-sm">When does the flight leave? <span className="text-ink-500">(local time at the departure airport)</span><input className={field} type="datetime-local" required value={departsLocal} onChange={(e) => { setDepartsLocal(e.target.value); clearResult(); }} /></label>
         <label className="text-sm">When does it land? <span className="text-ink-500">(final scheduled landing, local time at the arrival airport)</span><input className={field} type="datetime-local" required value={arrivesLocal} onChange={(e) => { setArrivesLocal(e.target.value); clearResult(); }} /></label>
         <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={hasConnection} onChange={(e) => { setHasConnection(e.target.checked); clearResult(); }} /> Does your itinerary include a connection?</label>
         {hasConnection && <p className="text-sm text-ink-600">Enter your first departure and final scheduled landing. We do not check the flight connection; onward timing assumes you reach the final arrival airport at the time you enter.</p>}

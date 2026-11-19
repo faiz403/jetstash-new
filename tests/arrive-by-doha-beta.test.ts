@@ -23,8 +23,7 @@ const read = (...parts: string[]) => readFileSync(join(process.cwd(), ...parts),
 afterEach(() => { vi.useRealTimers(); });
 
 describe('Doha release entry', () => {
-  it('releases only Doha, as a public beta bound to a 90-day evidence review', () => {
-    expect(Object.keys(ARRIVE_BY_RELEASED_AIRPORTS)).toEqual(['DOH']);
+  it('keeps Doha a public beta bound to its original 90-day evidence review', () => {
     expect(ARRIVE_BY_RELEASED_AIRPORTS.DOH.status).toBe('public_beta');
     const evidence = ROAD_CAPABILITY_EVIDENCE.DOH;
     expect(evidence).toMatchObject({ status: 'road_supported', checks: { identityVerified: true, routeProbed: true } });

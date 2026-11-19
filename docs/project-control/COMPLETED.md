@@ -127,3 +127,7 @@ when due even though the underlying feature is complete:
 - fare observations;
 - affiliate destinations and deep links; and
 - external provider credentials or attributes after an account/configuration change.
+
+## 15 November 2026: local recovery preparation, not a release
+
+Prepared calendar-assisted flight-time entry, the single-airport Delhi road beta, a fail-closed CJ flight-link adapter and current-data audit reporting on `codex/revenue-recovery-2026-11-15`. Publication, account activation, traffic growth and income are not completed. See the current Status and recovery note for validation and remaining dependencies.

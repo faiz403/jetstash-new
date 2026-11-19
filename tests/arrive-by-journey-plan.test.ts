@@ -371,9 +371,13 @@ describe('airport rules (UK departures only; capability-gated arrivals)', () => 
     expect(resolveJourneyAirports('EDI', 'ZZZ')).toMatchObject({ ok: false });
   });
 
-  it('public mode additionally requires release, which no generic airport has: only the four explicit profiles pass', () => {
-    for (const code of ['ISB', 'LHE', 'KHI', 'MAN']) expect(resolveJourneyAirports('EDI', code, 'public').ok, code).toBe(true);
-    for (const code of ['LHR', 'DXB', 'DEL', 'SYD']) expect(resolveJourneyAirports('EDI', code, 'public').ok, code).toBe(false);
+  it('public mode additionally requires a current individual airport release', () => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date('2026-11-20T12:00:00Z'));
+    try {
+      for (const code of ['ISB', 'LHE', 'KHI', 'MAN', 'DOH', 'DEL']) expect(resolveJourneyAirports('EDI', code, 'public').ok, code).toBe(true);
+      for (const code of ['LHR', 'DXB', 'SYD']) expect(resolveJourneyAirports('EDI', code, 'public').ok, code).toBe(false);
+    } finally { vi.useRealTimers(); }
   });
 
   it('a refused airport never reaches Google or the monthly budget', async () => {
@@ -469,9 +473,9 @@ describe('scope: public full journey and arrival-only compatibility', () => {
     expect(read('lib', 'arrive-by-journey', 'solver.ts')).toContain("from '../arrive-by-shared/format'");
   });
 
-  it('only Doha is released: no worldwide release beyond MAN/ISB/LHE/KHI and the Doha beta', () => {
+  it('only the individually released Doha and Delhi betas extend the four explicit profiles', () => {
     const src = read('lib', 'arrive-by-shared', 'airport-release.ts');
     const releasedCodes = [...src.matchAll(/^\s{2}([A-Z]{3}): \{/gm)].map((m) => m[1]);
-    expect(releasedCodes).toEqual(['DOH']);
+    expect(releasedCodes).toEqual(['DOH', 'DEL']);
   });
 });

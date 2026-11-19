@@ -28,13 +28,13 @@ const evidence = (status: CapabilityEvidence['status']): CapabilityEvidence => (
 const read = (...parts: string[]) => readFileSync(join(process.cwd(), ...parts), 'utf8');
 
 describe('capability gate — Phase A ships no worldwide enablement', () => {
-  it('nothing beyond the four special profiles and the released Doha beta is publicly journey-eligible, whatever evidence is stored (release gate)', () => {
-    expect(Object.keys(ARRIVE_BY_RELEASED_AIRPORTS)).toEqual(['DOH']);
+  it('nothing beyond the four special profiles and the released Doha and Delhi betas is publicly journey-eligible (release gate)', () => {
+    expect(Object.keys(ARRIVE_BY_RELEASED_AIRPORTS)).toEqual(['DOH', 'DEL']);
     vi.useFakeTimers({ toFake: ['Date'] });
     vi.setSystemTime(new Date('2026-11-20T12:00:00Z'));
     try {
       const eligible = getCatalogueAirports().filter((a) => getAirportCapability(a.iata)?.journeyEligible).map((a) => a.iata).sort();
-      expect(eligible).toEqual(['DOH', 'ISB', 'KHI', 'LHE', 'MAN']);
+      expect(eligible).toEqual(['DEL', 'DOH', 'ISB', 'KHI', 'LHE', 'MAN']);
     } finally {
       vi.useRealTimers();
     }

@@ -48,6 +48,12 @@ export const ARRIVE_BY_RELEASED_AIRPORTS: Readonly<Record<string, ReleaseEntry>>
     approvedNote: 'Founder direction 21 Oct 2026: Doha-only Arrive By public beta first, before the other evidenced airports. Released with the Arrive By public launch (CEO directive 3 Nov 2026), effective from its approved Production merge.',
     evidenceReviewDueDate: '2026-12-29',
   },
+  DEL: {
+    status: 'public_beta',
+    decidedDate: '2026-11-15',
+    approvedNote: 'Prepared in response to the founder\'s 15 Nov 2026 instruction to improve Arrive By coverage. Delhi is the next individual road-only beta; effective only after the approved Production merge. Uses the existing 30 Sep capability probe, not a new live check.',
+    evidenceReviewDueDate: '2026-12-29',
+  },
 };
 
 const todayUtc = () => new Date().toISOString().slice(0, 10);
@@ -58,7 +64,8 @@ export function getGenericAirportRelease(
   nowIso: string = todayUtc(),
 ): GenericAirportReleaseStatus {
   const entry = table[code];
-  if (!entry || nowIso.slice(0, 10) > entry.evidenceReviewDueDate) return 'internal_only';
+  const day = nowIso.slice(0, 10);
+  if (!entry || day < entry.decidedDate || day > entry.evidenceReviewDueDate) return 'internal_only';
   return entry.status;
 }
 
