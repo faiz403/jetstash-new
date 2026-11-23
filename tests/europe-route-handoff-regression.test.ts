@@ -16,10 +16,10 @@ describe('Europe route-guide handoff regression', () => {
       const routeHandoff = getTripComFlightHandoffUrl(routeSlug, origin, destination);
       expect(destinationHandoff, routeSlug).not.toBeNull();
       expect(routeHandoff, routeSlug).not.toBeNull();
-      expect(routeHandoff).toContain('locale=en-XX&curr=GBP');
+      expect(routeHandoff).toBe(destinationHandoff);
+      expect(routeHandoff).not.toMatch(/[?&](locale|curr)=/);
       expect(routeHandoff).toContain('Allianceid=9804124');
       expect(routeHandoff).toContain('SID=327450313');
-      expect(routeHandoff).toBe(destinationHandoff);
     }
   });
 

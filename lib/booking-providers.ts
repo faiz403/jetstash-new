@@ -44,9 +44,9 @@ import { isTripComAffiliatePaused } from '@/lib/tripcom-affiliate-pause';
 export const PROVIDER_NAME = 'Trip.com';
 
 /**
- * Trip.com's Affiliate Link tool accepts these market settings on a custom
- * flight link and preserves the affiliate identifiers. They request the UK
- * English / GBP presentation without changing route or search parameters.
+ * Used only by the separate legacy dated-handoff builder. Do not add these to
+ * dashboard-generated public handoffs: Trip.com warns that editing generated
+ * affiliate URLs can affect tracking, so those URLs must pass through intact.
  */
 export const TRIPCOM_UK_LOCALE = 'en-XX';
 export const TRIPCOM_UK_CURRENCY = 'GBP';
@@ -508,22 +508,14 @@ export function getTripComFlightHandoff(
     if (!route?.connectingAlternative) return null;
     const exactUrl = getTripComRouteUrl(routeSlug);
     if (!exactUrl) return null;
-    const url = exactUrl.includes('locale=') || exactUrl.includes('curr=') ? exactUrl : exactUrl.replace(
-      '&Allianceid=',
-      `&locale=${TRIPCOM_UK_LOCALE}&curr=${TRIPCOM_UK_CURRENCY}&Allianceid=`,
-    );
-    return { url, kind: 'service-ended-connecting' };
+    return { url: exactUrl, kind: 'service-ended-connecting' };
   }
 
   const routeUrl = getTripComRouteUrl(routeSlug)
     ?? (originSlug && destinationSlug ? TRIPCOM_DESTINATION_URLS[`${originSlug}-${destinationSlug}`] : null);
   if (!routeUrl) return null;
-  const url = routeUrl.includes('locale=') || routeUrl.includes('curr=') ? routeUrl : routeUrl.replace(
-    '&Allianceid=',
-    `&locale=${TRIPCOM_UK_LOCALE}&curr=${TRIPCOM_UK_CURRENCY}&Allianceid=`,
-  );
   return {
-    url,
+    url: routeUrl,
     kind: getTripComRouteUrl(routeSlug) ? 'exact-route' : 'destination-fallback',
   };
 }
@@ -544,10 +536,9 @@ export function getSafeTripComFlightHandoffUrl(
 }
 
 /**
- * Raw dashboard-generated route/destination handoff. This preserves the
- * existing contract for frozen, evidence-only products that deliberately
- * show a historical route search rather than a public booking CTA. Public
- * commercial CTAs must call getSafeTripComFlightHandoffUrl() instead.
+ * Returns the dashboard-generated route/destination URL byte-for-byte. This
+ * preserves affiliate tracking parameters; public commercial CTAs must call
+ * getSafeTripComFlightHandoffUrl() instead for the route-truth gate.
  */
 export function getTripComFlightHandoffUrl(
   routeSlug: string,
@@ -557,23 +548,14 @@ export function getTripComFlightHandoffUrl(
   if (isTripComAffiliatePaused()) return null;
   const routeUrl = getTripComRouteUrl(routeSlug)
     ?? (originSlug && destinationSlug ? TRIPCOM_DESTINATION_URLS[`${originSlug}-${destinationSlug}`] : null);
-  if (!routeUrl) return null;
-  if (routeUrl.includes('locale=') || routeUrl.includes('curr=')) return routeUrl;
-  return routeUrl.replace(
-    '&Allianceid=',
-    `&locale=${TRIPCOM_UK_LOCALE}&curr=${TRIPCOM_UK_CURRENCY}&Allianceid=`,
-  );
+  return routeUrl ?? null;
 }
 
 /** Exact destination handoff for a verified airport pair, or null when Trip.com's tool could not produce one. */
 export function getTripComDestinationHandoffUrl(originSlug: string, destinationSlug: string): string | null {
   if (isTripComAffiliatePaused()) return null;
   const routeUrl = TRIPCOM_DESTINATION_URLS[`${originSlug}-${destinationSlug}`];
-  if (!routeUrl) return null;
-  return routeUrl.replace(
-    '&Allianceid=',
-    `&locale=${TRIPCOM_UK_LOCALE}&curr=${TRIPCOM_UK_CURRENCY}&Allianceid=`,
-  );
+  return routeUrl ?? null;
 }
 
 /** Whether a route has a real, dashboard-verified Trip.com link — the fail-closed gate every CTA checks before rendering. */

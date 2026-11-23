@@ -14,7 +14,7 @@ import { DestinationFlightGuides } from '@/components/destination/destination-fl
 import { getDestinationBySlug } from '@/data/destinations';
 
 const NOW = '2026-10-13';
-const LHE_URL = 'https://www.trip.com/flights/Manchester-to-Lahore/tickets-MAN-LHE?flighttype=S&dcity=MAN&acity=LHE&locale=en-XX&curr=GBP&Allianceid=9804124&SID=327450313&trip_sub1=&trip_sub3=D19082226';
+const LHE_URL = 'https://www.trip.com/flights/Manchester-to-Lahore/tickets-MAN-LHE?flighttype=S&dcity=MAN&acity=LHE&Allianceid=9804124&SID=327450313&trip_sub1=&trip_sub3=D19082226';
 
 // MAN→ISB was re-verified on 14 Nov 2026 (review due 14 Dec), so its
 // suppressed-fare case is now exercised the day after that expiry.

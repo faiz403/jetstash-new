@@ -249,14 +249,14 @@ describe('no Trip.com URL contains a fixed departure or return date', () => {
   });
 });
 
-describe('public flight handoffs request the UK GBP presentation without changing attribution', () => {
-  it.each(SUPPORTED_ROUTES.filter((slug) => !SERVICE_ENDED_EXACT_ROUTES.includes(slug)))('%s adds the supported locale/currency fields to the shared handoff URL', (slug) => {
+describe('public flight handoffs preserve dashboard-generated URLs exactly', () => {
+  it.each(SUPPORTED_ROUTES.filter((slug) => !SERVICE_ENDED_EXACT_ROUTES.includes(slug)))('%s returns the original dashboard URL unchanged', (slug) => {
     const source = getTripComRouteUrl(slug)!;
     const handoff = getTripComFlightHandoffUrl(slug)!;
-    expect(handoff).toContain('locale=en-XX&curr=GBP');
+    expect(handoff).toBe(source);
+    expect(handoff).not.toMatch(/[?&](locale|curr)=/);
     expect(handoff).toContain('Allianceid=9804124');
     expect(handoff).toContain('SID=327450313');
-    expect(handoff.replace('&locale=en-XX&curr=GBP', '')).toBe(source);
   });
 
   it.each(UNSUPPORTED_ROUTES)('%s remains fail-closed with no handoff URL', (slug) => {
@@ -269,9 +269,8 @@ describe('public flight handoffs request the UK GBP presentation without changin
     const handoff = getTripComFlightHandoff(slug, undefined, undefined, '2026-09-08');
     expect(handoff).not.toBeNull();
     expect(handoff!.kind).toBe('service-ended-connecting');
-    // Same underlying URL as the retained dashboard record, only with the
-    // locale/currency fields applied — never a different or invented link.
-    expect(handoff!.url.replace('&locale=en-XX&curr=GBP', '')).toBe(exactUrl);
+    // The dashboard-generated URL is passed through byte-for-byte.
+    expect(handoff!.url).toBe(exactUrl);
     expect(getSafeTripComFlightHandoffUrl(slug, undefined, undefined, '2026-09-08')).toBe(handoff!.url);
   });
 

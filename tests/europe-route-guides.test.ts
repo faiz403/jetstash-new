@@ -31,7 +31,7 @@ describe('Europe route-guide completion', () => {
   it('preserves exact booking handoffs while Gatwick remains fail-closed', () => {
     for (const [origin, destination] of HANDOFFS) {
       const url = getTripComDestinationHandoffUrl(origin, destination);
-      expect(url, `${origin}-${destination}`).toMatch(/curr=GBP/);
+      expect(url, `${origin}-${destination}`).not.toMatch(/[?&](locale|curr)=/);
       expect(url).toContain('Allianceid=');
       expect(url).toContain('SID=');
     }
