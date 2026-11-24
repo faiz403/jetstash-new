@@ -111,7 +111,7 @@ describe('Fare Signal CTA note on Manchester-Islamabad', () => {
   it('leaves the Trip.com URL, affiliate identifiers and tracking source unchanged', () => {
     const { html, tripComUrl } = render(CURRENT_DATE);
     expect(tripComUrl).toBe(
-      'https://www.trip.com/flights/Manchester-to-Islamabad/tickets-MAN-ISB?flighttype=S&dcity=MAN&acity=ISB&locale=en-XX&curr=GBP&Allianceid=9804124&SID=327450313&trip_sub1=&trip_sub3=D19082296',
+      'https://www.trip.com/flights/Manchester-to-Islamabad/tickets-MAN-ISB?flighttype=S&dcity=MAN&acity=ISB&Allianceid=9804124&SID=327450313&trip_sub1=&trip_sub3=D19082296',
     );
     expect(html).toContain(`href="${tripComUrl!.replace(/&/g, '&amp;')}"`);
     expect(html).not.toContain('showfarefirst');

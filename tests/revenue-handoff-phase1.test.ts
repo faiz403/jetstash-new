@@ -80,8 +80,8 @@ describe('First Revenue Sprint Phase 1 — public route handoffs', () => {
       expect(url.searchParams.get('Allianceid'), route.slug).toBe('9804124');
       expect(url.searchParams.get('SID'), route.slug).toBe('327450313');
       expect(url.searchParams.get('trip_sub3'), route.slug).toMatch(/^D\d+$/);
-      expect(url.searchParams.get('locale'), route.slug).toBe('en-XX');
-      expect(url.searchParams.get('curr'), route.slug).toBe('GBP');
+      expect(url.searchParams.has('locale'), route.slug).toBe(false);
+      expect(url.searchParams.has('curr'), route.slug).toBe(false);
       expect(handoff.url).not.toMatch(/localhost|\?[^?]*\?|&&/);
     }
   });

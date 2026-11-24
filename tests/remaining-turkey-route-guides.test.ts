@@ -116,7 +116,7 @@ describe('remaining Turkey route guides', () => {
   it('keeps exact Trip.com handoffs on non-London routes and fails closed for all new Gatwick routes', () => {
     for (const slug of BUILT.filter((value) => !value.startsWith('london-gatwick-'))) {
       const url = getTripComFlightHandoffUrl(slug);
-      expect(url, slug).toContain('locale=en-XX&curr=GBP');
+      expect(url, slug).not.toMatch(/[?&](locale|curr)=/);
       expect(url, slug).toContain('Allianceid=9804124');
       expect(url, slug).toContain('SID=327450313');
       expect(url, slug).not.toContain('ddate=');
