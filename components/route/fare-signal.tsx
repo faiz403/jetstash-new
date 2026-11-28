@@ -9,6 +9,8 @@ import { AffiliateLinkDisclosure } from '@/components/ui/affiliate-link-disclosu
 import { FareAgeWarning } from '@/components/route/fare-age-warning';
 import { getFareAgeWarningText } from '@/lib/fare-age-warning';
 import { ENDED_SERVICE_FARE_CARD_LEAD } from '@/lib/route-first-screen-copy';
+import type { CjFlightHandoff } from '@/lib/cj-flight-handoff';
+import { CjFlightCta } from '@/components/route/cj-flight-cta';
 
 /**
  * Self-transfer prominence fix (25 Aug 2026, founder-approved). Renders
@@ -600,7 +602,7 @@ interface RouteContextProps {
   routeServiceConnections?: { outbound?: string[]; return?: string[] } | null;
 }
 
-function CurrentSignal({ data, nowIso, lowerSelfTransfer, tripComUrl, routeSlug, routeDirectness, routeStatusLabel, routeAirlineLabel, routeServiceConnections, standoutFare, isServiceEnded = false, endedAlternativeEligible = false }: { data: FareSignalObservation; nowIso: string; lowerSelfTransfer?: FareSignalObservation | null; tripComUrl: string | null; routeSlug: string; standoutFare?: StandoutFarePresentation | null; isServiceEnded?: boolean; endedAlternativeEligible?: boolean } & RouteContextProps) {
+function CurrentSignal({ data, nowIso, lowerSelfTransfer, tripComUrl, cjHandoff, routeSlug, routeDirectness, routeStatusLabel, routeAirlineLabel, routeServiceConnections, standoutFare, isServiceEnded = false, endedAlternativeEligible = false }: { data: FareSignalObservation; nowIso: string; lowerSelfTransfer?: FareSignalObservation | null; tripComUrl: string | null; cjHandoff?: CjFlightHandoff | null; routeSlug: string; standoutFare?: StandoutFarePresentation | null; isServiceEnded?: boolean; endedAlternativeEligible?: boolean } & RouteContextProps) {
   const routing = formatRouting(data);
   const mismatch = routeVsFareMismatch(routeDirectness, routeStatusLabel, routeAirlineLabel, data.directness)
     ?? routeServiceFareMismatch(routeServiceConnections, routeStatusLabel, routeAirlineLabel, data.directness, data.connectionAirports, data.airline, routeAirlineLabel ? routeAirlineLabel.split(", ") : []);
@@ -677,6 +679,8 @@ function CurrentSignal({ data, nowIso, lowerSelfTransfer, tripComUrl, routeSlug,
           // only); never on a service-ended route's connecting search.
           returnDatesNote={isServiceEnded ? null : getTripComReturnDatesNote(routeSlug, data)}
         />
+      ) : cjHandoff && (!isServiceEnded || endedAlternativeEligible) ? (
+        <CjFlightCta handoff={cjHandoff} routeSlug={routeSlug} serviceEnded={isServiceEnded} />
       ) : isServiceEnded ? (
         endedAlternativeEligible ? <ServiceEndedFlightSearchFallback /> : <NoCtaFallback />
       ) : (
@@ -686,7 +690,7 @@ function CurrentSignal({ data, nowIso, lowerSelfTransfer, tripComUrl, routeSlug,
   );
 }
 
-function RecentSignal({ data, nowIso, tripComUrl, routeSlug, routeDirectness, routeStatusLabel, routeAirlineLabel, routeServiceConnections, isServiceEnded = false, endedAlternativeEligible = false }: { data: FareSignalObservation; nowIso: string; tripComUrl: string | null; routeSlug: string; isServiceEnded?: boolean; endedAlternativeEligible?: boolean } & RouteContextProps) {
+function RecentSignal({ data, nowIso, tripComUrl, cjHandoff, routeSlug, routeDirectness, routeStatusLabel, routeAirlineLabel, routeServiceConnections, isServiceEnded = false, endedAlternativeEligible = false }: { data: FareSignalObservation; nowIso: string; tripComUrl: string | null; cjHandoff?: CjFlightHandoff | null; routeSlug: string; isServiceEnded?: boolean; endedAlternativeEligible?: boolean } & RouteContextProps) {
   const routing = formatRouting(data);
   const mismatch = routeVsFareMismatch(routeDirectness, routeStatusLabel, routeAirlineLabel, data.directness)
     ?? routeServiceFareMismatch(routeServiceConnections, routeStatusLabel, routeAirlineLabel, data.directness, data.connectionAirports, data.airline, routeAirlineLabel ? routeAirlineLabel.split(", ") : []);
@@ -712,6 +716,8 @@ function RecentSignal({ data, nowIso, tripComUrl, routeSlug, routeDirectness, ro
           routeSlug={routeSlug}
           label={isServiceEnded ? SERVICE_ENDED_CTA_LABEL : undefined}
         />
+      ) : cjHandoff && (!isServiceEnded || endedAlternativeEligible) ? (
+        <CjFlightCta handoff={cjHandoff} routeSlug={routeSlug} serviceEnded={isServiceEnded} />
       ) : isServiceEnded ? (
         endedAlternativeEligible ? <ServiceEndedFlightSearchFallback /> : <NoCtaFallback />
       ) : (
@@ -725,6 +731,7 @@ export function FareSignal({
   signal,
   nowIso,
   tripComUrl,
+  cjHandoff = null,
   routeSlug,
   routeDirectness = null,
   routeStatusLabel = null,
@@ -749,6 +756,7 @@ export function FareSignal({
   /** Same date used to derive this page's Fare Signal, for stable SSR age copy. */
   nowIso?: string;
   tripComUrl: string | null;
+  cjHandoff?: CjFlightHandoff | null;
   routeSlug: string;
   /**
    * True when the route's presentation status is `service-ended` (Route
@@ -801,8 +809,8 @@ export function FareSignal({
         <p className="mt-4 text-sm font-medium text-ink-700">{signal.strongerSignal}</p>
       )}
       <div className="mt-3 sm:mt-4">
-        {signal.state === 'current' && signal.observation ? <CurrentSignal data={signal.observation} nowIso={effectiveNowIso} lowerSelfTransfer={signal.lowerSelfTransfer} tripComUrl={tripComUrl} routeSlug={routeSlug} routeDirectness={routeDirectness} routeStatusLabel={routeStatusLabel} routeAirlineLabel={routeAirlineLabel} routeServiceConnections={routeServiceConnections} standoutFare={standoutFare} isServiceEnded={isServiceEnded} endedAlternativeEligible={endedAlternativeEligible} /> : null}
-        {signal.state === 'recent' && signal.observation ? <RecentSignal data={signal.observation} nowIso={effectiveNowIso} tripComUrl={tripComUrl} routeSlug={routeSlug} routeDirectness={routeDirectness} routeStatusLabel={routeStatusLabel} routeAirlineLabel={routeAirlineLabel} routeServiceConnections={routeServiceConnections} isServiceEnded={isServiceEnded} endedAlternativeEligible={endedAlternativeEligible} /> : null}
+        {signal.state === 'current' && signal.observation ? <CurrentSignal data={signal.observation} nowIso={effectiveNowIso} lowerSelfTransfer={signal.lowerSelfTransfer} tripComUrl={tripComUrl} cjHandoff={cjHandoff} routeSlug={routeSlug} routeDirectness={routeDirectness} routeStatusLabel={routeStatusLabel} routeAirlineLabel={routeAirlineLabel} routeServiceConnections={routeServiceConnections} standoutFare={standoutFare} isServiceEnded={isServiceEnded} endedAlternativeEligible={endedAlternativeEligible} /> : null}
+        {signal.state === 'recent' && signal.observation ? <RecentSignal data={signal.observation} nowIso={effectiveNowIso} tripComUrl={tripComUrl} cjHandoff={cjHandoff} routeSlug={routeSlug} routeDirectness={routeDirectness} routeStatusLabel={routeStatusLabel} routeAirlineLabel={routeAirlineLabel} routeServiceConnections={routeServiceConnections} isServiceEnded={isServiceEnded} endedAlternativeEligible={endedAlternativeEligible} /> : null}
         {signal.state === 'none' ? (
           // Final acceptance tweak (3 Oct 2026): from lg up the lead and the button sit side by side, so a wide screen
           // (where the cookie banner is only a short bar) shows the button without a scroll. Below lg nothing changes:
@@ -816,7 +824,7 @@ export function FareSignal({
                 isServiceEnded={isServiceEnded}
                 routeDirectness={routeDirectness}
                 connectingSummary={connectingSummary}
-                hasCta={Boolean(tripComUrl) || !isServiceEnded || endedAlternativeEligible}
+                hasCta={Boolean(tripComUrl || cjHandoff) || !isServiceEnded || endedAlternativeEligible}
                 hasFareHistory={hasFareHistory}
                 hasLoggedFares={hasLoggedFares}
               />
@@ -833,6 +841,8 @@ export function FareSignal({
                 hasDisplayedFare={false}
                 label={isServiceEnded ? SERVICE_ENDED_CTA_LABEL : undefined}
               />
+            ) : cjHandoff && (!isServiceEnded || endedAlternativeEligible) ? (
+              <CjFlightCta handoff={cjHandoff} routeSlug={routeSlug} serviceEnded={isServiceEnded} />
             ) : isServiceEnded ? (
               endedAlternativeEligible ? <ServiceEndedFlightSearchFallback /> : <NoCtaFallback />
             ) : (

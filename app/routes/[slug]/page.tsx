@@ -1,3 +1,4 @@
+import { getCjFlightHandoff } from '@/lib/cj-flight-handoff';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
@@ -228,6 +229,7 @@ export default async function RoutePage({ params }: { params: Promise<{ slug: st
   // dashboard-verified map (the 9 London-origin routes today) — never a generic
   // Trip.com fallback. See getTripComFlightHandoffUrl's doc comment.
   const tripComUrl = getSafeTripComFlightHandoffUrl(route.slug, airport.slug, dest.slug);
+  const cjHandoff = getCjFlightHandoff(route.slug, nowIso);
   // Journey Choice dated Trip.com handoff pilot (24 Aug 2026, founder-
   // approved, manchester-islamabad only — see lib/tripcom-dated-handoff.ts's
   // own doc comment for the two-part commercial evidence this pilot rests
@@ -367,7 +369,7 @@ export default async function RoutePage({ params }: { params: Promise<{ slug: st
           <FareSignal
             signal={fareSignal}
             nowIso={nowIso}
-            tripComUrl={tripComUrl}
+            tripComUrl={tripComUrl} cjHandoff={cjHandoff}
             routeSlug={route.slug}
             routeDirectness={presentation.status === 'direct' || presentation.status === 'connecting' ? presentation.status : null}
             routeStatusLabel={presentation.status === 'direct' || presentation.status === 'connecting' ? presentation.statusLabel : null}

@@ -394,10 +394,10 @@ describe('departure capability is directional and separate from arrival capabili
     }
   });
 
-  it('departure evidence never carries a release, and only the Doha arrival beta is released', () => {
+  it('departure evidence never carries a release; arrival releases remain Doha and Delhi only', () => {
     const src = readFileSync(join(process.cwd(), 'lib', 'arrive-by-shared', 'airport-release.ts'), 'utf8');
     const releasedCodes = [...src.matchAll(/^\s{2}([A-Z]{3}): \{/gm)].map((m) => m[1]);
-    expect(releasedCodes).toEqual(['DOH']);
+    expect(releasedCodes).toEqual(['DOH', 'DEL']);
   });
 });
 

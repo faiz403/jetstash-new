@@ -194,12 +194,13 @@ describe('existing events are genuinely untouched', () => {
 });
 
 describe('acquisition_handoff pairing — structural proof', () => {
-  it('every verified Trip.com handoff event triggers the paired acquisition_handoff event', () => {
+  it('every verified flight or hotel partner handoff event triggers the paired acquisition_handoff event', () => {
     const match = analyticsSrc.match(/ACQUISITION_HANDOFF_EVENTS[^=]*=\s*new Set\(\[([^\]]*)\]\)/);
     expect(match).toBeTruthy();
     const members = match![1].split(',').map((s) => s.trim().replace(/'/g, '')).filter(Boolean);
     expect(members.sort()).toEqual([
       'bookby_cta_click',
+      'cj_flight_click',
       'journey_brief_live_price_click',
       'journey_choice_cta_click',
       'ready_check_book_cta_click',

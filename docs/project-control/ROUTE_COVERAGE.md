@@ -171,3 +171,7 @@ have all of the following:
 - No expansion to a route just because a competitor lists it.
 - No unlabelled estimate, inferred connection time or passenger arrival promise.
 - No claim that the queue is a universal popularity ranking.
+
+## 15 November 2026 recovery preparation
+
+No route-service fact, review date or fare observation was changed by this patch. The offline current-inventory report lists source-review work and cannot itself refresh evidence. The bundled September Search Console data is historical, not current demand. Delhi's Arrive By release is a separate road-capability decision, not a new nonstop-flight claim or route-catalogue expansion. CJ flight records remain empty until exact-airport commercial evidence is obtained.

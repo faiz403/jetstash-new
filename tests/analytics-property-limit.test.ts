@@ -147,7 +147,7 @@ describe('Vercel Pro two-property ceiling', () => {
 describe('the four reduced events keep exactly the right two properties', () => {
   const find = (needle: string) => sites.find((s) => s.raw.includes(needle));
 
-  it('every TrackedOutboundLink properties={{...}} call site (tripcom_click, tripcom_hotel_click and journey_choice_cta_click) sends route + source, never origin/destination', () => {
+  it('every TrackedOutboundLink properties={{...}} call site (including CJ flight clicks) sends route + source, never origin/destination', () => {
     // 3 pre-existing tripcom_click sites (fare-signal, deal-card,
     // no-fare-fallback) + 2 in the one shared
     // components/destination/holiday-intelligence.tsx (Hotel Intelligence
@@ -185,7 +185,8 @@ describe('the four reduced events keep exactly the right two properties', () => 
     // site here, gated behind FOUNDER_DASHBOARD_ENABLED like every other
     // founder-only surface. 8 → 9.
     const tripcomSites = sites.filter((s) => s.label === 'properties={{...}}' && s.raw.includes('source:'));
-    expect(tripcomSites.length).toBe(9);
+    // CJ adds one existing-slot alternative with route + provider only.
+    expect(tripcomSites.length).toBe(10);
     for (const s of tripcomSites) {
       expect(s.props.length, `${s.file}: ${s.raw}`).toBe(2);
       expect(s.raw).toMatch(/route:/);
