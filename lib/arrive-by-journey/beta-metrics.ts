@@ -29,7 +29,7 @@ import type { JourneyPlan, NotEvidencedReason } from './types';
 
 export const BETA_METRIC_TTL_SECONDS = 90 * 24 * 60 * 60;
 
-/** Every CANNOT CONFIRM reason that can become a counter name. MONTHLY_BUDGET_UNAVAILABLE is counted as refused:budget instead. */
+/** Every CANNOT CONFIRM reason that can become a counter name. MONTHLY_BUDGET_UNAVAILABLE is counted as refused:budget and LIVE_LOOKUP_UNAVAILABLE (a service outage, not a traveller input problem) as error. */
 export const CANNOT_CONFIRM_REASONS = [
   'ORIGIN_LEG_MISSING',
   'START_LOCATION_UNCONFIRMED',
@@ -47,7 +47,7 @@ export const CANNOT_CONFIRM_REASONS = [
 export type CannotConfirmReason = (typeof CANNOT_CONFIRM_REASONS)[number];
 
 // Compile-time guard: adding a NotEvidencedReason without deciding how it is counted is a type error.
-type _EveryReasonIsCounted = Exclude<NotEvidencedReason, CannotConfirmReason | 'MONTHLY_BUDGET_UNAVAILABLE'> extends never ? true : never;
+type _EveryReasonIsCounted = Exclude<NotEvidencedReason, CannotConfirmReason | 'MONTHLY_BUDGET_UNAVAILABLE' | 'LIVE_LOOKUP_UNAVAILABLE'> extends never ? true : never;
 const _everyReasonIsCounted: _EveryReasonIsCounted = true;
 void _everyReasonIsCounted;
 
@@ -95,6 +95,7 @@ export function classifyPlan(plan: (Pick<JourneyPlan, 'state' | 'notEvidenced'> 
     if (plan.state !== 'CANNOT_CONFIRM') return { kind: 'result_usable' };
     const reason = plan.notEvidenced?.reason;
     if (reason === 'MONTHLY_BUDGET_UNAVAILABLE') return { kind: 'refused_budget' };
+    if (reason === 'LIVE_LOOKUP_UNAVAILABLE') return { kind: 'error' };
     // Only a pause that actually offers the traveller a place to confirm or choose is a confirmation step.
     if (reason === 'START_LOCATION_UNCONFIRMED' && offersChoice(plan.startDetail)) return { kind: 'needs_confirmation', side: 'START_LOCATION' };
     if (reason === 'ARRIVAL_DESTINATION_UNCONFIRMED' && offersChoice(plan.arrivalDetail)) return { kind: 'needs_confirmation', side: 'ARRIVAL_DESTINATION' };

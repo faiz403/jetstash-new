@@ -5,6 +5,7 @@ import { getShellAirportLookup } from '@/lib/arrive-by-shared/airport-capability
 import { getArrivalAirportOptions, getDepartureAirportOptions } from '@/lib/arrive-by-journey/airport-options';
 import { getPublicJourneyRoutePairs } from '@/lib/arrive-by-journey/public-route-pairs';
 import { siteConfig } from '@/lib/site-config';
+import { isLiveLookupPaused, LIVE_LOOKUP_PAUSED_DETAIL } from '@/lib/arrive-by-shared/live-lookup-pause';
 
 /**
  * The canonical Arrive By planner — one product, airport-driven
@@ -41,7 +42,15 @@ export default async function ArriveByPage({ searchParams }: { searchParams: Pro
     && departureAirports.some((option) => option.code === requestedDeparture)
     && arrivalAirports.some((option) => option.code === requestedArrival));
 
-  return <Suspense fallback={null}>
+  return <>
+    {isLiveLookupPaused() && (
+      <div role="status" className="mx-auto max-w-5xl px-4 pt-6 sm:px-8">
+        <p className="rounded-md border border-terracotta-400 bg-terracotta-50 px-4 py-3 text-sm text-ink-800">
+          <strong className="font-semibold">Live road-time checks are paused.</strong> {LIVE_LOOKUP_PAUSED_DETAIL}
+        </p>
+      </div>
+    )}
+    <Suspense fallback={null}>
     <ArriveByShell
       lookup={lookup}
       departureAirports={departureAirports}
@@ -50,5 +59,6 @@ export default async function ArriveByPage({ searchParams }: { searchParams: Pro
       prefillNotice={hasPairRequest && !hasValidPair ? 'That airport pair is not available in Arrive By yet. Choose from the supported airports below.' : undefined}
       routePairs={getPublicJourneyRoutePairs()}
     />
-  </Suspense>;
+    </Suspense>
+  </>;
 }

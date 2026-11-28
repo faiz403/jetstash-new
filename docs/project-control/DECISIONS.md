@@ -5,6 +5,24 @@ evidence and an explicit founder decision.
 
 ## Approved
 
+### Arrive By continuity and Google Cloud — 16 November 2026 (CEO; branch `fix/arrive-by-outage-message-2026-11-16`, not merged, not deployed)
+
+The Google Cloud free trial behind Arrive By (GBP 221 credit, spend GBP 0) ends on **24 December 2026**. **No billing upgrade is authorised.**
+Read-only findings (16 November): Google offers no verified hard spend cap for Routes, Geocoding or Places (budgets only alert; per-day
+quotas show Unlimited and not adjustable on the trial); the one API key is restricted to those three APIs but has no application
+restriction; the 2,000-calls-a-month application cap is the only enforced limit and it fails closed.
+
+**Decision:**
+- Keep Arrive By working normally while the trial is active.
+- When Google refuses or cannot be reached for EVERY lookup in a journey (billing disabled, 403, 429, 5xx, network failure, Geocoding
+  REQUEST_DENIED/OVER_*_LIMIT/UNKNOWN_ERROR) say so plainly (reason `LIVE_LOOKUP_UNAVAILABLE`), never "your start location needs
+  confirming". One usable answer (including ZERO_RESULTS) keeps the input-specific messages.
+- Controlled pause: `ARRIVE_BY_LIVE_LOOKUPS=off` (Vercel env, redeploy, founder approval) makes live lookups refuse with no budget
+  reservation and no Google request (public endpoints and the founder-only endpoints alike), and puts a notice on /arrive-by. Local probe scripts are not covered; do not run them while paused. There is deliberately no date-based automatic switch; a continuation
+  decision, not a calendar, decides. The entered flight and times stay on the result; no drive is ever guessed.
+- The final upgrade-or-lapse decision is made before 24 December after an independent council review. Until then no merge, deployment,
+  API-key change or billing change.
+
 ### Consent-first analytics and advertising attribution — 26 October 2026 (PR #352, draft, stacked on #351; not merged)
 
 Founder-approved architecture decision after a privacy audit found that Vercel Analytics and Speed Insights sent the full page URL

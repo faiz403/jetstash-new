@@ -313,9 +313,10 @@ describe('Arrive By beta counters: privacy', () => {
     expect(source).not.toMatch(/console\./);
   });
 
-  it('counts every NotEvidencedReason except the budget one, and nothing else', () => {
+  it('counts every NotEvidencedReason except the budget and live-lookup-outage ones, and nothing else', () => {
     expect(new Set(CANNOT_CONFIRM_REASONS).size).toBe(CANNOT_CONFIRM_REASONS.length);
     expect(CANNOT_CONFIRM_REASONS).not.toContain('MONTHLY_BUDGET_UNAVAILABLE');
+    expect(CANNOT_CONFIRM_REASONS).not.toContain('LIVE_LOOKUP_UNAVAILABLE');
     expect(CANNOT_CONFIRM_REASONS).toHaveLength(12);
   });
 });
